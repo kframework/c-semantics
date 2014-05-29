@@ -5,6 +5,7 @@ static inline int fu (unsigned short data)
   return data;
 }
 void ru(i)
+      int i;
 {
    if(fu(i++)!=5)abort();
    if(fu(++i)!=7)abort();
@@ -14,6 +15,7 @@ static inline int fs (signed short data)
   return data;
 }
 void rs(i)
+      int i;
 {
    if(fs(i++)!=5)abort();
    if(fs(++i)!=7)abort();

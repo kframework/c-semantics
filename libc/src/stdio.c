@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// TODO(chathhorn): placeholder.
+int fprintf(FILE *stream, const char *format, ...) {
+      return 0;
+}
+
 int getc(FILE *stream){
 	return fgetc(stream);
 }
@@ -10,7 +15,6 @@ int puts(const char * str){
 }
 
 int __fslPutc(char c, int handle);
-// int __fslOpenFile(const char* filename, int handle);
 int __fslOpenFile(const char* filename, const char* mode);
 int __fslCloseFile(int handle);
 int __fslFGetC(int handle, unsigned long long int offset);

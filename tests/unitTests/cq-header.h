@@ -1,4 +1,4 @@
-   int printf(const char *format, ...);
+   int printf(const char * restrict format, ...);
    struct defs {
      int cbits;          /* No. of bits per char           */
      int ibits;          /*                 int            */

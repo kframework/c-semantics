@@ -5,7 +5,7 @@ module LIBC-THREADS
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
      
@@ -24,67 +24,64 @@ module LIBC-THREADS
      
      syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
-          <k> 
-               prepareBuiltin((Identifier("thrd_create")), 
-                    (ThreadIdPointer:KResult,, ThreadFuncPointer:KResult,, 
-                    ThreadArg:KResult))
+          <k> prepareBuiltin(Identifier("thrd_create"), 
+                    ListItem(ThIdPointer:KResult)
+                    ListItem(ThFuncPointer:KResult)
+                    ListItem(ThArg:KResult))
                => Computation(
-                    (* ThreadIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
+                    (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                     ~> spawn-aux(
-                    Fresh:Int, ThreadFuncPointer:KResult, ThreadArg:KResult)
+                    Fresh:Int, ThFuncPointer:KResult, ThArg:KResult)
           ...</k>
-          <nextThreadId> Fresh:Int => Fresh:Int +Int 1 </nextThreadId>
+          <next-thread-id> Fresh:Int => Fresh:Int +Int 1 </next-thread-id>
           [structural]
      /*
      See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
      */
      rule [thrd-create]:
           <thread>...
-               <k> 
-                    spawn-aux(
-                         ThreadId:Int, ThreadFuncPointer:KResult, ThreadArg:KResult) 
+               <k> spawn-aux(
+                         ThId:Int, ThFuncPointer:KResult, ThArg:KResult) 
                     => thrd-success 
                ...</k>
-               <currTU> Tu:K </currTU>
+               <curr-tu> Tu:K </curr-tu>
                <buffer> .List </buffer>
           ...</thread>
           <genv> Env:Map </genv>
-          <threadStatus> 
-               Status:Map => Status:Map[threadRunning / ThreadId:Int]
-          </threadStatus>
+          <thread-status> 
+               Status:Map => Status[threadRunning <- ThId:Int]
+          </thread-status>
           <br/>
           (.Bag =>
           <thread>...
-               <nextLoc> firstLoc(ThreadId:Int) </nextLoc>
-               <threadId> ThreadId:Int </threadId>
-               <k> 
-                    Call(ThreadFuncPointer:KResult, klist(ThreadArg:KResult)) 
+               <next-loc> 0 @ thread(ThId:Int) </next-loc>
+               <thread-id> ThId:Int </thread-id>
+               <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
                </k>
                <env> Env:Map </env>
-               <currTU> Tu:K </currTU>
+               <curr-tu> Tu:K </curr-tu>
           ...</thread>)
           [large, ndthread]
           
      rule [thrd-current]:
-          <k> 
-               prepareBuiltin((Identifier("thrd_current")), .KList)
-               => tv(ThreadId:Int, t(.Set, int))
+          <k> prepareBuiltin(Identifier("thrd_current"), .List)
+               => tv(ThId:Int, t(.Set, int))
           ...</k>
-          <threadId> ThreadId:Int </threadId>
+          <thread-id> ThId:Int </thread-id>
           [structural]
           
      syntax K ::= "join-aux" "(" Int "," Value ")"
           
      rule [thrd-join-start]:
-          prepareBuiltin((Identifier("thrd_join")),
-               (tv(ThreadId:Int, t(_, int)),, ResultPointer:KResult))
-          => join-aux(ThreadId:Int, ResultPointer:KResult)
+          prepareBuiltin(Identifier("thrd_join"),
+               ListItem(tv(ThId:Int, t(_, int)))
+               ListItem(ResultPointer:KResult))
+          => join-aux(ThId:Int, ResultPointer:KResult)
           [structural]
      
      rule [thrd-join]:
           <thread>...
-               <k> 
-                    join-aux(ThreadId:Int, tv(Loc:SymLoc, _))
+               <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
                     => #if (Loc =/=K NullPointer) 
                          #then Computation((* Loc) := V:KResult) 
                          #else .K
@@ -95,25 +92,25 @@ module LIBC-THREADS
           ...</thread>
           <thread>...
                <k> V:KResult </k>
-               <threadId> ThreadId:Int </threadId>
+               <thread-id> ThId:Int </thread-id>
           ...</thread>
           [ndthread]
 
      rule [mtx-init]:
-          <k> 
-               prepareBuiltin((Identifier("mtx_init")),
-               (tv(Loc:Int, _),, tv(Type:Int, _)))
+          <k> prepareBuiltin(Identifier("mtx_init"),
+                    ListItem(tv(Loc:Int, _))
+                    ListItem(tv(Type:Int, _)))
                => thrd-success
           ...</k>
           <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
-          when notBool (Loc in keys M:Map)
+          when notBool (Loc in keys(M))
                andBool (Type ==Int cfg:mtxPlain) 
           [structural]
 
      rule [mtx-lock]:
-          <k> 
-               prepareBuiltin((Identifier("mtx_lock")), (tv(Loc:Int, _)))
+          <k> prepareBuiltin(Identifier("mtx_lock"), 
+                    ListItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
@@ -121,12 +118,12 @@ module LIBC-THREADS
           <glocks> B:Bag (.Bag => BagItem(Loc)) </glocks>
           <locks>... .Bag => BagItem(Loc) ...</locks>
           when (notBool (Loc #inBag B))
-          andBool (Type:Int ==Int cfg:mtxPlain)
+               andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
 
      rule [mtx-unlock]:
-          <k> 
-               prepareBuiltin((Identifier("mtx_unlock")), (tv(Loc:Int, _)))
+          <k> prepareBuiltin(Identifier("mtx_unlock"),
+                    ListItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>

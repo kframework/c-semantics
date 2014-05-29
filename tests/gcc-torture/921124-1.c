@@ -1,7 +1,8 @@
 void exit(int status);
 void abort(void);
 int f(x, d1, d2, d3)
-   double d1, d2, d3;
+      int x;
+      double d1, d2, d3;
 {
    return x;
 }
@@ -9,6 +10,7 @@ int f(x, d1, d2, d3)
 void g(b,s,x,y,i,j)
      char *b,*s;
      double x,y;
+     int i, j;
 {
   if (x != 1.0 || y != 2.0 || i != 3 || j != 4)
     abort();

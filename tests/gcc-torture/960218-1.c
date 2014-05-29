@@ -3,12 +3,14 @@ void abort(void);
 int glob;
 
 int g (x)
+      int x;
 {
   glob = x;
   return 0;
 }
 
 void f (x)
+      int x;
 {
   int a = ~x;
   while (a)

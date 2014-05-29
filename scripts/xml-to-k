@@ -73,7 +73,7 @@ my %ignoreThese = (
 	'ForClauseDeclaration' => 1,
 );
 
-my $reader = new XML::LibXML::Reader(string => $input) 
+my $reader = new XML::LibXML::Reader(string => $input, huge => 1) 
       or die "cannot create XML::LibXML::Reader object\n";
 $reader->read;
 
@@ -107,7 +107,6 @@ print nameToLabel('TranslationUnit') . $tu ;
 if ($ltl ne "") {
 	print $ltl;
 }
-
 
 sub printStatus {
 	my ($reader) = (@_);
@@ -155,7 +154,7 @@ sub elementToK {
 		$reader->nextElement;
 		$reader->read;
 		my $str = escapeWString($reader->value);
-		my $ident = "'WStringLiteral" . paren(paren($str));
+		my $ident = "'WStringLiteral" . paren($str);
 		return ($inNextState, $ident);
 	} elsif ($label eq 'Variadic') {
 		return ($inNextState, paren("$BOOL true") . paren(KLIST_IDENTITY));
@@ -264,9 +263,9 @@ sub escapeString {
 sub escapeWString {
 	my ($str) = (@_);
 	my $decoded = decode_base64($str);
-	my $retval = '_`(_`)(KList2KLabel_((';
 	utf8::decode($decoded);
 	my @charArray = split(//, $decoded);
+      my @str;
 	for my $c (@charArray) {
 		utf8::encode($c);
 		my @charPartArray = split(//, $c);
@@ -274,11 +273,12 @@ sub escapeWString {
 		for my $cp (@charPartArray) {
 			$single = ($single << 8) + ord($cp);
 		}
-		$retval .= "$RAT $single" . paren(KLIST_IDENTITY) . KLIST_SEPARATOR . " ";
+		push @str, "$RAT($single)" . paren(KLIST_IDENTITY);
 	}
-	
-	$retval .= ".KList)), .KList)";
-	return $retval;
+
+	return "'klist(_`(_`)(KList2KLabel_("
+            . paren(join(KLIST_SEPARATOR, @str))
+	      . ".KList), .KList))";
 }
 
 sub paren {

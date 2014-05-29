@@ -23,7 +23,7 @@ int f (b, c)
 }
 int main ()
 {
-  char buf[4];
+  unsigned char buf[4];
   buf[0] = 170; buf[1] = 5;
   if (f (buf, 'd') != 85)
     abort ();

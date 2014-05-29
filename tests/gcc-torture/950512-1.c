@@ -2,12 +2,14 @@ void exit(int status);
 void abort(void);
 unsigned
 f1 (x)
+      int x;
 {
   return ((unsigned) (x != 0) - 3) / 2;
 }
 
 unsigned long long
 f2 (x)
+      int x;
 {
   return ((unsigned long long) (x != 0) - 3) / 2;
 }

@@ -14,7 +14,6 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 	$(wildcard $(LIBC_DIR)/includes/*) \
-	$(wildcard $(LIBC_DIR)/src/*)
 
 .PHONY: default check-vars semantics clean
 
@@ -32,25 +31,13 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@mkdir -p $(DIST_DIR)/includes
 	@mkdir -p $(DIST_DIR)/lib
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-trans-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-kompiled-nd-thread $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
+	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
-	@mv $(DIST_DIR)/*.c $(DIST_DIR)/lib
-	@echo "Compiling the standard library..."
-	@echo compiling clib
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/clib.o $(DIST_DIR)/lib/clib.c
-	@echo compiling ctype
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/ctype.o $(DIST_DIR)/lib/ctype.c
-	@echo compiling math
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/math.o $(DIST_DIR)/lib/math.c
-	@echo compiling stdio
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/stdio.o $(DIST_DIR)/lib/stdio.c
-	@echo compiling stdlib
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/stdlib.o $(DIST_DIR)/lib/stdlib.c
-	@echo compiling string
-	@$(DIST_DIR)/kcc -c -o $(DIST_DIR)/lib/string.o $(DIST_DIR)/lib/string.c
+	@echo "Translating the standard library..."
+	@$(DIST_DIR)/kcc -clib -o $(DIST_DIR)/lib/libc.o $(wildcard $(LIBC_DIR)/src/*.c)
 	@echo "Done."
 	@echo "Testing kcc..."
 	@perl $(SCRIPTS_DIR)/testInstall.pl $(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c $(DIST_DIR)/testProgram.compiled

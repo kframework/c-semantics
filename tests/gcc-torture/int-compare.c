@@ -3,27 +3,32 @@ void abort(void);
 #include <limits.h>
 
 int gt (a, b)
+      int a, b;
 {
   return a > b;
 }
 
 int ge (a, b)
+      int a, b;
 {
   return a >= b;
 }
 
 int lt (a, b)
+      int a, b;
 {
   return a < b;
 }
 
 int le (a, b)
+      int a, b;
 {
   return a <= b;
 }
 
 void
 true (c)
+      int c;
 {
   if (!c)
     abort();
@@ -31,6 +36,7 @@ true (c)
 
 void
 false (c)
+      int c;
 {
   if (c)
     abort();

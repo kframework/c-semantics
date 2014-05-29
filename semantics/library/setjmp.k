@@ -4,7 +4,7 @@ module LIBC-SETJMP
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
 
      /*@ 
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
@@ -33,7 +33,7 @@ module LIBC-SETJMP
      // reached that point normally or from a call to longjmp
      // fixme check bounds
      // fixme obviously need to rework configuration to make this easy
-     syntax K ::= "bag" "(" Bag ")"
+     syntax CValue ::= bag(Bag)
      
      syntax K ::= "ignoreLocals"
      
@@ -41,7 +41,7 @@ module LIBC-SETJMP
      // never called?
      rule [ignoreLocals]:
           <k> ignoreLocals => . ...</k>
-          <localAddresses> _ => .Set </localAddresses>
+          <local-addresses> _ => .Set </local-addresses>
           [structural]
           
      /*@ 
@@ -91,41 +91,42 @@ module LIBC-SETJMP
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> 
-               (prepareBuiltin(Identifier("setjmp"), tv(Loc:SymLoc, 
-                    t(_, pointerType(t(_, 
-                    structType(Identifier("__jmp_buf_tag")))))))
+          <k> (prepareBuiltin(Identifier("setjmp"),
+               ListItem(tv(Loc:SymLoc, t(_, pointerType(t(_, 
+                    structType(Identifier("jmp_buf_"), _, _)))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
-                         <threadState>
-                              <threadContinuation> K:K </threadContinuation>
-                              <savedThreadLocal>C:Bag</savedThreadLocal>
-                         </threadState>
+                         <thread-state>
+                              <thread-continuation> K:K </thread-continuation>
+                              <saved-thread-local>C:Bag</saved-thread-local>
+                         </thread-state>
                     ))
                     ~> tv(0, t(.Set, int))
                )
                ~> K:K
           </k>
-          <threadLocal> C:Bag </threadLocal>
+          <thread-local> C:Bag </thread-local>
           [structural]
 
      syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
      context longjmp-aux(HOLE => reval(HOLE), _)
      rule [longjmp-prepare]:
-          prepareBuiltin(Identifier("longjmp"), (V:KResult,, V':KResult))
-          => longjmp-aux(*(V:KResult), V':KResult)
+          prepareBuiltin(Identifier("longjmp"),
+               ListItem(V:KResult)
+               ListItem(V':KResult))
+          => longjmp-aux(*(V), V')
           [structural]
      
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
           <k> 
-               longjmp-aux(tv(bag(
-                    <threadState>
-                         <threadContinuation> K:K </threadContinuation>
-                         <savedThreadLocal>C:Bag</savedThreadLocal>
-                    </threadState>
-               ), t(_, structType(Identifier("__jmp_buf_tag")))), 
+               longjmp-aux(tv(agg(ListItem(bag(
+                    <thread-state>
+                         <thread-continuation> K:K </thread-continuation>
+                         <saved-thread-local>C:Bag</saved-thread-local>
+                    </thread-state>
+               ))), t(_, structType(Identifier("jmp_buf_"), _, _))), 
                     tv(I:Int, t(_, int))) ~> _
                => ignoreLocals 
                     ~> #if I:Int ==Int 0 
@@ -133,6 +134,6 @@ module LIBC-SETJMP
                          #else tv(I:Int, t(.Set, int)) #fi 
                     ~> K:K
           </k>
-          <threadLocal> _ => C:Bag </threadLocal>
+          <thread-local> _ => C:Bag </thread-local>
           [structural]
 endmodule

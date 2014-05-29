@@ -53,37 +53,40 @@ module LIBC-STDARG
      // fixme can add lots of checks here
      // tool fixme, change Value to K and unquote error
      rule [va-start]:
-          prepareBuiltin((Identifier("__va_start")), 
-               (ApLoc:KResult,, ArgLoc:KResult))
+          prepareBuiltin(Identifier("__va_start"), 
+               ListItem(ApLoc:KResult)
+               ListItem(ArgLoc:KResult))
           => Computation(*(ApLoc) := incSymbolic(ArgLoc))
                ~> skipval
           [structural]
      
-     syntax K ::= "va-inc-aux" "(" K "," K "," K ")" // [strict(3)]
-     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
-     // fixme can do lots of checks here too
-     
      rule [va-inc-start]:
-          prepareBuiltin((Identifier("__va_inc")), 
-               (ApLoc:KResult,, Size:KResult))
+          prepareBuiltin(Identifier("__va_inc"), 
+               ListItem(ApLoc:TypedValue) 
+               ListItem(Size:TypedValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
+     syntax K ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
+     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
+     // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:KResult, _:KResult, Ap:KResult)
+          va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
           [structural]                  
           
      // fixme can do lots of checks here too
      rule [va-copy]:
-          prepareBuiltin((Identifier("__va_copy")), 
-               (ApLoc:KResult,, Other:KResult))
+          prepareBuiltin(Identifier("__va_copy"), 
+               ListItem(ApLoc:KResult) 
+               ListItem(Other:KResult))
           => Computation(*(ApLoc) := Other) ~> skipval
           [structural]
           
      // fixme can do lots of checks here too
      rule [va-end]:
-          prepareBuiltin((Identifier("__va_end")), (_:KResult)) => skipval
+          prepareBuiltin(Identifier("__va_end"),
+               ListItem(_:KResult)) => skipval
           [structural]
 endmodule

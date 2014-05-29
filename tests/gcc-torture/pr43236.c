@@ -1,7 +1,8 @@
+#include "fsl-header.h"
 /* { dg-options "-ftree-loop-distribution" } */
 extern void abort(void);
-extern void *memset(void *s, int c, __SIZE_TYPE__ n);
-extern int memcmp(const void *s1, const void *s2, __SIZE_TYPE__ n);
+extern void *memset(void *s, int c, size_t n);
+extern int memcmp(const void *s1, const void *s2, size_t n);
 /*extern int printf(const char *format, ...);*/
 
 int main()

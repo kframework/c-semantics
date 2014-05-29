@@ -2,7 +2,7 @@
 #include <stddef.h>
 /* PR target/21297 */
 //;
-extern int memcmp (const char *, const char *, size_t);
+extern int memcmp (const void *, const void *, size_t);
 extern void abort ();
 
 void

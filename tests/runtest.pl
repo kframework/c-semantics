@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -19,7 +20,7 @@ if ($numArgs != 2) {
 	die "Not enough command line arguments"
 }
 
-my $kcc = "../dist/kcc";
+my $kcc = "kcc";
 #my $kcc = "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -fvararg-calls -dparse -dc";
 #my $kcc = "ccomp -fbitfields -flonglong -fstruct-passing -fstruct-assign -fvararg-calls";
 my $gcc = "gcc -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99";
@@ -132,8 +133,8 @@ sub performTest {
 
 	if ($kccCompileRetval) {
 		if ($shouldFail) {
-			if ($lookForError) {
-				return reportFailure($testName, $timer, "Failure---Was expecting particular runtime message but failed to compile");
+			if ($lookForError && !($kccCompileOutput =~ /Error $lookForError/m)) {
+				return reportFailure($testName, $timer, "Failure---Was expecting particular error message but failed to compile");
 			}
 			return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
 		} else {

@@ -1,63 +1,84 @@
-require "syntax.k"
-require "statement.k"
-
-require "compat.k"
-require "declaration.k"
+require "binding.k"
 require "bitsize.k"
 require "bits.k"
-require "typing.k"
-require "literal.k"
-require "compound-literal.k"
+require "builtin.k"
+require "compat.k"
 require "conversion.k"
+require "debug.k"
+require "dynamic.k"
+require "env.k"
+require "error.k"
+require "literal.k"
 require "promotion.k"
-require "alloc.k"
+require "settings.k"
 require "symloc.k"
+require "syntax.k"
+require "type-builder.k"
+require "typing.k"
 
-require "memory.k"
+require "decl/definition.k"
+require "decl/enum.k"
+require "decl/initializer.k"
+require "decl/tagged.k"
+require "decl/typedef.k"
+require "decl/zero.k"
 
-require "expression/additive-operators.k"
-require "expression/assignment.k"
-require "expression/bitwise.k"
-require "expression/cast.k"
-require "expression/conditional.k"
-require "expression/eval.k"
-require "expression/identifier.k"
-require "expression/logical.k"
-require "expression/members.k"
-require "expression/multiplicative-operators.k"
-require "expression/reference.k"
-require "expression/relational.k"
-require "expression/sizeof.k"
-require "expression/unary-arithmetic.k"
+require "expr/additive.k"
+require "expr/assignment.k"
+require "expr/bitwise.k"
+require "expr/cast.k"
+require "expr/conditional.k"
+require "expr/eval.k"
+require "expr/members.k"
+require "expr/multiplicative.k"
+require "expr/reference.k"
+require "expr/relational.k"
+require "expr/sizeof.k"
+require "expr/unary.k"
 
-module C11-COMMON
-     imports COMPAT
+require "memory/alloc.k"
+require "memory/reading.k"
+require "memory/writing.k"
 
-     imports C-DECLARATION
+module C-COMMON
+     imports C-BINDING
      imports C-BITSIZE
      imports C-BITS
-     imports C-TYPING
-     imports C-LITERAL
-     imports C-COMPOUND-LITERAL
+     imports C-BUILTIN
+     imports COMPAT
      imports C-CONVERSION
-     imports C-MEMORY-ALLOC
-     imports C-SYMLOC
+     imports C-DYNAMIC
+     imports C-ENV
+     imports C-ERROR
+     imports C-LITERAL
      imports C-PROMOTION
+     imports C-SETTINGS
+     imports C-SYMLOC
+     imports C-SYNTAX
+     imports C-TYPE-BUILDER
+     imports C-TYPING
 
-     imports C-MEMORY
+     imports C-DECL-DEFINITION
+     imports C-DECL-ENUM
+     imports C-DECL-INITIALIZER
+     imports C-DECL-TAGGED
+     imports C-DECL-TYPEDEF
+     imports C-DECL-ZERO
 
-     imports C-EXPRESSION-ADDITIVE-OPERATORS
-     imports C-EXPRESSION-ASSIGNMENT
-     imports C-EXPRESSION-BITWISE
-     imports C-EXPRESSION-CAST
-     imports C-EXPRESSION-CONDITIONAL
-     imports C-EXPRESSION-EVAL
-     imports C-EXPRESSION-IDENTIFIER
-     imports C-EXPRESSION-LOGICAL
-     imports C-EXPRESSION-MEMBERS
-     imports C-EXPRESSION-MULTIPLICATIVE-OPERATORS
-     imports C-EXPRESSION-REFERENCE
-     imports C-EXPRESSION-RELATIONAL
-     imports C-EXPRESSION-SIZEOF
-     imports C-EXPRESSION-UNARY-ARITHMETIC
+     imports C-COMMON-EXPR-ADDITIVE
+     imports C-COMMON-EXPR-ASSIGNMENT
+     imports C-COMMON-EXPR-BITWISE
+     imports C-COMMON-EXPR-CAST
+     imports C-COMMON-EXPR-CONDITIONAL
+     imports C-COMMON-EXPR-EVAL
+     imports C-COMMON-EXPR-MEMBERS
+     imports C-COMMON-EXPR-MULTIPLICATIVE
+     imports C-COMMON-EXPR-REFERENCE
+     imports C-COMMON-EXPR-RELATIONAL
+     imports C-COMMON-EXPR-SIZEOF
+     imports C-COMMON-EXPR-UNARY
+
+     imports C-MEMORY-ALLOC
+     imports C-MEMORY-READING
+     imports C-MEMORY-WRITING
 endmodule

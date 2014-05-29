@@ -1,13 +1,13 @@
 #include <math.h>
 
-int abs( int num ){
+int abs(int num) {
 	if (num >= 0) {
 		return num;
 	} else {
 		return -num;
 	}
 }
-double fabs( double num ){
+double fabs(double num) {
 	if (num >= 0.0) {
 		return num;
 	} else {

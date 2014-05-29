@@ -15,7 +15,7 @@ union both
   struct small small;
 };
 
-extern void *calloc (__SIZE_TYPE__, __SIZE_TYPE__);
+extern void *calloc (size_t, size_t);
 extern void free (void *);
 
 static int __attribute__((noinline))

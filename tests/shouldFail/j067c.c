@@ -1,4 +1,5 @@
-volatile int f();
+typedef int fun();
+volatile fun f;
 
 int main(void){
 

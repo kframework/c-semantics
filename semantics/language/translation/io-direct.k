@@ -1,98 +1,90 @@
 module C-IO-DIRECT
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-MEMORY-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-BITS-SYNTAX
-     imports C11-ERROR-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= writeBytes(SymLoc, K)
+     syntax K ::= writeBytes(SymLoc, DataList)
+     syntax K ::= writeByte(SymLoc, CValue)
 
-     rule writeBytes(Loc:SymLoc, K:KResult, _)
-          => writeBytes(Loc, K)
+     // In the static semantics, we only allow writing to memory during
+     // initialization (of statics).
+     rule writeBytes(Loc:SymLoc, D:DataList, T:Type) => writeBytes(Loc, D)
+          when isInitializerType(T)
+          [structural]
 
-     rule writeBytes(Loc:SymLoc, dataList((V:K,, L:KList)))
+     rule writeBytes(_, _, T:Type) => .
+          when notBool isInitializerType(T)
+          [structural]
+
+     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
           => writeByte(Loc, V) ~> 
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
-     rule writeBytes(_, dataList(.KList)) => .
+
+     rule writeBytes(_, dataList(.List)) => .
           [structural] 
 
-     rule [write-byte]:
-          <k> writeByte(loc(Base:SymBase, Offset:Int, 0), V:K) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, Attrs:Bag, M:Map => M:Map[V / Offset]) 
+               Base |-> object(_, Len:Int, (M:Map => M:Map[V <- Offset]))
           ...</mem>
-          <notWritable> NotWritable:Map </notWritable>
-          when (notBool (BagItem(mconst) in Attrs))
-               andBool (notBool (loc(Base, Offset, 0) in keys NotWritable))
-               andBool (Offset <Int Len)
-          [large, structural]
+          when (Offset <Int Len) andBool notBool isSymbolic(V)
+          [structural]
 
+     rule (. => CVUB("IO1", "Non-constant initializer.", "6.6"))
+          ~> writeByte(_, V:CValue)
+          when isSymbolic(V)
+          [structural]
+
+     syntax K ::= readByte(SymLoc) 
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," KList ")"
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
      
-     rule readBytes(Loc:SymLoc, Size:Int) 
-          => readBytes-aux(Loc, Size, .KList) 
+     rule readBytes(Loc:SymLoc, Size:Int, _) 
+          => readBytes-aux(Loc, Size, .List) 
           [structural] 
           
      // fixme sNat
-     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:KList)
+     rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
           => readByte(Loc)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
           when Size:Int >Int 0
           [structural]
-     rule (tv(V:KList, T:Type) => .K)
-               ~> readBytes-aux(_, _, 
-                    (Aux:KList => (Aux,, tv(V, T))))
+     rule (tv(V:CValue, T:Type) => .K)
+          ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
           [structural]        
           
-     syntax KList ::= values(KList) [function]
-     rule values((tv(K:K, _),, L:KList)) => (K:K,, values(L:KList))
-     rule values(.KList) => .KList
+     syntax List ::= values(List) [function]
+     rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K:K) values(L:List)
+     rule values(.List) => .List
 
-     rule readBytes-aux(_, 0, Aux:KList) 
-          => dataList(values(Aux:KList)) 
+     rule readBytes-aux(_, 0, Aux:List) 
+          => dataList(values(Aux:List)) 
           [structural] 
      
-     // FIXME make sure it's a byte
-     rule [read-byte-fast]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0))
-               => assert(Offset <Int Len, 2) ~> tv(V, t(.Set, no-type))
+     rule <k> readByte(loc(Base:SymBase, Offset:Int))
+               => tv(V, t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, (_ Offset:Int |-> V:K)) 
+               Base |-> object(_, _, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          [large, structural]
-          
-     rule [read-byte-lazy]:
-          <k> readByte(loc(Base:SymBase, Offset:Int, 0)) 
-               => assert(Offset:Int <Int Len:Int, 2)
-                    ~> tv(piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte), 
-                         t(.Set, no-type))
+          [structural]
+     rule <k> readByte(loc(Base:SymBase, Offset:Int)) 
+               => tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
-               Base |-> memblock(Len:Int, _, 
-                    M:Map => M:Map[
-                         piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte) 
-                         / Offset]) 
+               Base |-> object(_, _, 
+                    M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
-          when notBool Offset in (keys M)
-          [large, structural]
-
-     rule [delete-sized-block]:
-          <k>
-               deleteSizedBlock(loc(Base:SymBase, _:Int, _:Int), Len:Int) => . 
-          ...</k>
-          <mem>... Base |-> memblock(Len, _, _) => .Map ...</mem>
-          [structural] 
-     
-     rule [delete-block]:
-          <k> deleteBlock(loc(Base:SymBase, _:Int, _:Int)) => .K ...</k>
-          <mem>... Base |-> memblock(_, _, _) => .Map ...</mem>
-          [structural] 
+          when notBool Offset in (keys(M))
+          [structural]
 
 endmodule

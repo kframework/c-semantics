@@ -98,8 +98,10 @@ let announceFunctionName ((n, decl, _, _):name) =
   let rec findProto = function
       PROTO (d, args, _) when isJUSTBASE d -> 
         List.iter (fun (_, (an, _, _, _)) -> !Lexerhack.add_identifier an) args
-
     | PROTO (d, _, _) -> findProto d
+    | NOPROTO (d, args, _) when isJUSTBASE d -> 
+        List.iter (fun (_, (an, _, _, _)) -> !Lexerhack.add_identifier an) args
+    | NOPROTO (d, _, _) -> findProto d
     | PARENTYPE (_, d, _) -> findProto d
     | PTR (_, d) -> findProto d
     | ARRAY (d, _, _, _) -> findProto d
@@ -149,13 +151,17 @@ let doFunctionDef (loc: cabsloc)
   FUNDEF (fname, b, loc, lend)
 
 
+(* TODO(chathhorn): damnit, parser trying to be clever here. *)
 let doOldParDecl (names: string list)
                  ((pardefs: name_group list), (isva: bool)) 
     : single_name list * bool =
   let findOneName n =
     (* Search in pardefs for the definition for this parameter *)
     let rec loopGroups = function
-        [] -> ([SpecType Tint], (n, JUSTBASE, [], cabslu))
+        [] -> (*chathhorn: ([SpecType Timaginary], (n, JUSTBASE, [], cabslu))*)
+            let msg = Printf.sprintf "undeclared identifier in parameter identifier list" in
+            parse_error msg;
+            raise Parsing.Parse_error
       | (specs, names) :: restgroups ->
           let rec loopNames = function
               [] -> loopGroups restgroups
@@ -220,6 +226,8 @@ let transformOffsetOf (speclist, dtype) member =
 	PTR (attrs, addPointer dtype)
     | PROTO (dtype, names, variadic) ->
 	PROTO (addPointer dtype, names, variadic)
+    | NOPROTO (dtype, names, variadic) ->
+	NOPROTO (addPointer dtype, names, variadic)
   in
   let nullType = (speclist, addPointer dtype) in
   let nullExpr = CONSTANT (CONST_INT "0") in
@@ -421,7 +429,7 @@ location:
 global:
 | declaration                           { $1 }
 | function_def                          { $1 } 
-/*(* Some C header files ar shared with the C++ compiler and have linkage 
+/*(* Some C header files are shared with the C++ compiler and have linkage 
    * specification *)*/
 | EXTERN string_constant declaration    { LINKAGE (fst $2, (*handleLoc*) (snd $2), [ $3 ]) }
 | EXTERN string_constant LBRACE globals RBRACE 
@@ -433,23 +441,12 @@ global:
     * "declaration". For now we keep it at global scope only because in local
     * scope it looks too much like a function call  *) */
 | IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list SEMICOLON
-	{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-/*
-                           { (* Convert pardecl to new style *)
-                             let pardecl, isva = doOldParDecl $3 $5 in 
-                             (* Make the function declarator *)
-                             doDeclaration ((*handleLoc*) (snd $1)) []
-                               [((fst $1, PROTO(JUSTBASE, pardecl,isva), [], cabslu),
-                                 NO_INIT)]
-                            }*/
+{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+
 /* (* Old style function prototype, but without any arguments *) */
 | IDENT LPAREN RPAREN  SEMICOLON
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-                           /*{ (* Make the function declarator *)
-                             doDeclaration ((*handleLoc*)(snd $1)) []
-                               [((fst $1, PROTO(JUSTBASE,[],false), [], cabslu),
-                                 NO_INIT)]
-                            }*/
+
 /* transformer for a toplevel construct */
 | AT_TRANSFORM LBRACE global RBRACE  IDENT/*to*/  LBRACE globals RBRACE {
     checkConnective(fst $5);
@@ -856,7 +853,7 @@ block_begin:
 block_attrs:
    /* empty */                                              { [] }
 |  BLOCKATTRIBUTE paren_attr_list_ne
-                                        { [("__blockattribute__", $2)] }
+                                        { [SpecAttr("__blockattribute__", $2)] }
 ;
 
 /* statements and declarations in a block, in any order (for C99 support) */
@@ -980,7 +977,8 @@ decl_spec_list:                         /* ISO 6.7 */
 |   INLINE decl_spec_list_opt           { SpecInline :: $2, $1 }
 |   NORETURN decl_spec_list_opt           { SpecNoReturn :: $2, $1 }
 |   cvspec decl_spec_list_opt           { (fst $1) :: $2, snd $1 }
-|   attribute_nocv decl_spec_list_opt   { SpecAttr (fst $1) :: $2, snd $1 }
+|   attribute_nocv decl_spec_list_opt   
+      { (SpecAttr (fst (fst $1), snd (fst $1))) :: $2, snd $1 }
 /* specifier pattern variable (must be last in spec list) */
 |   AT_SPECIFIER LPAREN IDENT RPAREN    { [ SpecPattern(fst $3) ], $1 }
 |	alignment_specifier decl_spec_list_opt { SpecAlignment (fst $1) :: $2, snd $1 }
@@ -1185,7 +1183,7 @@ direct_old_proto_decl:
   direct_decl LPAREN old_parameter_list_ne RPAREN old_pardef_list
                                    { let par_decl, isva = doOldParDecl $3 $5 in
                                      let n, decl = $1 in
-                                     (n, PROTO(decl, par_decl, isva), [])
+                                     (n, NOPROTO(decl, par_decl, isva), [])
                                    }
 | direct_decl LPAREN                       RPAREN
                                    { let n, decl = $1 in
@@ -1197,7 +1195,7 @@ direct_old_proto_decl:
                                    { let par_decl, isva 
                                              = doOldParDecl $5 $10 in
                                      let n, decl = $3 in
-                                     (n, PROTO(decl, par_decl, isva), [])
+                                     (n, NOPROTO(decl, par_decl, isva), [])
                                    }
 */
 ;
@@ -1297,51 +1295,21 @@ function_def_start:  /* (* ISO 6.9.1 *) */
 /* (* New-style function that does not have a return type *) */
 | IDENT parameter_list_startscope rest_par_list RPAREN 
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-/*
-                           { let (params, isva) = $3 in
-                             let fdec = 
-                               (fst $1, PROTO(JUSTBASE, params, isva), [], snd $1) in
-                             announceFunctionName fdec;
-                             (* Default is int type *)
-                             let defSpec = [SpecType Tint] in
-                             (snd $1, defSpec, fdec)
-                           }*/
 
 /* (* No return type and old-style parameter list *) */
 | IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-/*
-                           { (* Convert pardecl to new style *)
-                             let pardecl, isva = doOldParDecl $3 $5 in
-                             (* Make the function declarator *)
-                             let fdec = (fst $1,
-                                         PROTO(JUSTBASE, pardecl,isva), 
-                                         [], snd $1) in
-                             announceFunctionName fdec;
-                             (* Default is int type *)
-                             let defSpec = [SpecType Tint] in
-                             (snd $1, defSpec, fdec) 
-                            }*/
+
 /* (* No return type and no parameters *) */
 | IDENT LPAREN                      RPAREN
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-/*
-                           { (* Make the function declarator *)
-                             let fdec = (fst $1,
-                                         PROTO(JUSTBASE, [], false), 
-                                         [], snd $1) in
-                             announceFunctionName fdec;
-                             (* Default is int type *)
-                             let defSpec = [SpecType Tint] in
-                             (snd $1, defSpec, fdec)
-                            }*/
 ;
 
 /* const/volatile as type specifier elements */
 cvspec:
     CONST                               { SpecCV(CV_CONST), $1 }
-|   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   RESTRICT                            { SpecCV(CV_RESTRICT), $1 }
+|   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   ATOMIC                              { 
 parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
 SpecCV(CV_ATOMIC), $1 }
@@ -1359,7 +1327,7 @@ attributes_with_asm:
     /* empty */                         { [] }
 |   attribute attributes_with_asm       { fst $1 :: $2 }
 |   ASM LPAREN string_constant RPAREN attributes        
-                                        { ("__asm__", 
+                                        { SpecAttr("__asm__", 
 					   [CONSTANT(CONST_STRING (fst $3))]) :: $5 }
 ;
 
@@ -1385,10 +1353,10 @@ attribute_nocv_list:
 
 /* __attribute__ plus const/volatile */
 attribute:
-    attribute_nocv                      { $1 }
-|   CONST                               { ("const", []), $1 }
-|   RESTRICT                            { ("restrict",[]), $1 }
-|   VOLATILE                            { ("volatile",[]), $1 }
+    attribute_nocv         { SpecAttr (fst $1), (snd $1) }
+|   CONST                  { SpecCV CV_CONST, $1 }
+|   RESTRICT               { SpecCV CV_RESTRICT, $1 }
+|   VOLATILE               { SpecCV CV_VOLATILE, $1 }
 ;
 
 /* (* sm: I need something that just includes __attribute__ and nothing more,
@@ -1403,8 +1371,8 @@ just_attribute:
 /* this can't be empty, b/c I folded that possibility into the calling
  * productions to avoid some S/R conflicts */
 just_attributes:
-    just_attribute                      { [$1] }
-|   just_attribute just_attributes      { $1 :: $2 }
+    just_attribute                      { [SpecAttr $1] }
+|   just_attribute just_attributes      { (SpecAttr $1) :: $2 }
 ;
 
 /** (* PRAGMAS and ATTRIBUTES *) ***/
@@ -1622,8 +1590,8 @@ paren_attr_list:
 /*** GCC ASM instructions ***/
 asmattr:
      /* empty */                        { [] }
-|    VOLATILE  asmattr                  { ("volatile", []) :: $2 }
-|    CONST asmattr                      { ("const", []) :: $2 } 
+|    VOLATILE  asmattr                  { (SpecCV CV_VOLATILE) :: $2 }
+|    CONST asmattr                      { (SpecCV CV_CONST) :: $2 } 
 ;
 asmtemplate: 
     one_string_constant                          { [$1] }

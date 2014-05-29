@@ -22,7 +22,7 @@ size_t strlen(const char * str) {
     return(s - str);
 }
 
-void* memset (void* dest, int value, size_t len) {
+void* memset(void* dest, int value, size_t len) {
 	unsigned char *ptr = (unsigned char*)dest;
 	while (len-- > 0) {
 		*ptr++ = value;
@@ -84,7 +84,7 @@ char *strstr(const char *haystack, const char *needle) {
 }
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
-char *strtok_r(char *s, const char *delimiters, char **lasts) {
+char *strtok_r(char *restrict s, const char *restrict delimiters, char **restrict lasts) {
 	char *sbegin, *send;
 	sbegin = s ? s : *lasts;
 	sbegin += strspn(sbegin, delimiters);
@@ -113,7 +113,7 @@ int strcmp (const char * s1, const char * s2) {
 }
 
 void *memmove(void *s1, const void *s2, size_t n) {
-	char* tmp = (char*)malloc(n);
+	unsigned char* tmp = malloc(n);
 	memcpy(tmp, s2, n);
 	memcpy(s1, tmp, n);
 	free(tmp);
@@ -127,7 +127,7 @@ char *strchr(const char *s, int c) {
 	character we were looking for.  */
 	while (*s != '\0' && *s != (char)c)
 		s++;
-	return ( (*s == c) ? (char *) s : NULL );
+	return ((*s == c) ? (char *) s : NULL);
 }
 
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings#The_strncmp_function
@@ -170,9 +170,9 @@ char *(strrchr)(const char *s, int c) {
 
 // from http://www.danielvik.com/2010/02/fast-memcpy-in-c.html
 // by Daniel Vik
-void* memcpy(void* dest, const void* src, size_t count) {
-	char* dst8 = (char*)dest;
-	char* src8 = (char*)src;
+void* memcpy(void* restrict dest, const void* restrict src, size_t count) {
+	unsigned char* dst8 = (unsigned char*)dest;
+	unsigned char* src8 = (unsigned char*)src;
 
 	while (count--) {
 		*dst8++ = *src8++;

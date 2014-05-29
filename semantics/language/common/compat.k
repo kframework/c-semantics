@@ -1,89 +1,84 @@
 module COMPAT-SYNTAX
-     syntax K ::= "l" "(" KLabel ")" [avoid]
-     // hybrid doesn't work with list operator, and strict doesn't do what's
-     // expected
-     syntax K ::= "klist" "(" KList ")" [klabel('klist)]
+     syntax K ::= l(KLabel) [avoid]
+     syntax K ::= klist(KList) [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
-     syntax String ::= "nthChar" "(" String "," Int ")" [function]
-     syntax String ::= "butFirstChar" "(" String ")" [function]
+     syntax String ::= nthChar(String, Int) [function]
+     syntax String ::= butFirstChar(String) [function]
      
-     syntax List ::= "stringToList" "(" String ")" [function]
+     syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
+
+     syntax String ::= idToString(CId) [function]
 
      syntax String ::= toUpperCase(String) [function]
 
-     syntax Bool ::= "all" "(" KList "," KLabel ")" [function]
+     syntax Bool ::= all(List, KLabel) [function]
 
      syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 
      syntax Bag ::= toBag(List) [function]
-                | toBag(KList) [function]
-
-     syntax Int ::= "lengthKList" KList [function]
 
      syntax Bool ::= BagItem "in" Bag [function]
-               | K "#inBag" Bag [function]
+                   | K "#inBag" Bag [function]
 
-     syntax KList ::= eraseKLabel(KLabel, KList) [function]
-
-     syntax Int ::= "string2Base" "(" String "," Int ")"
+     syntax Int ::= string2Base(String, Int)
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
-     syntax String ::= "base2String" "(" Int "," Int ")"
+     syntax String ::= base2String(Int, Int)
           [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
-     syntax Float ::= "sqrtFloat" "(" Float ")" 
+     syntax Float ::= sqrtFloat(Float)
           [function, hook(#FLOAT:sqrtFloat)]
-     syntax Float ::= "logFloat" "(" Float ")" 
+     syntax Float ::= logFloat(Float)
           [function, hook(#FLOAT:logFloat)]
-     syntax Float ::= "expFloat" "(" Float ")" 
+     syntax Float ::= expFloat(Float)
           [function, hook(#FLOAT:expFloat)]
-     syntax Float ::= "atanFloat" "(" Float ")" 
+     syntax Float ::= atanFloat(Float)
           [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "acosFloat" "(" Float ")" 
+     syntax Float ::= acosFloat(Float)
           [function, hook(#FLOAT:acosFloat)]
-     syntax Float ::= "asinFloat" "(" Float ")" 
+     syntax Float ::= asinFloat(Float)
           [function, hook(#FLOAT:asinFloat)]
-     syntax Float ::= "tanFloat" "(" Float ")" 
+     syntax Float ::= tanFloat(Float)
           [function, hook(#FLOAT:tanFloat)]
-     syntax Float ::= "cosFloat" "(" Float ")" 
+     syntax Float ::= cosFloat(Float)
           [function, hook(#FLOAT:cosFloat)]
-     syntax Float ::= "sinFloat" "(" Float ")" 
+     syntax Float ::= sinFloat(Float)
           [function, hook(#FLOAT:sinFloat)]
-     syntax Float ::= "atan2Float" "(" Float "," Float ")" 
+     syntax Float ::= atan2Float(Float, Float)
           [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= "floorFloat" "(" Float ")" 
+     syntax Float ::= floorFloat(Float)
           [function, hook(#FLOAT:floorFloat)]
 
      // TODO(chathhorn): ugly
-     syntax K ::= "toKRList" "(" KList ")"
+     syntax K ::= toKRList(List)
 
-     syntax KResult ::= "krlist" "(" KList ")"
+     syntax KResult ::= krlist(List) [klabel('krlist)]
 
-     syntax KList ::= reverseList(KList) [function]
+     syntax List ::= reverseList(List) [function]
 
-     syntax ListItem ::= "ListItem" "(" Bag ")"
-     syntax K ::= ListToK(List)
-     syntax K ::= "map" "(" Map ")"
+     syntax ListItem ::= ListItem(Bag)
+     syntax K ::= list(List)
+     syntax K ::= map(Map)
+     syntax K ::= set(Set)
 
-     syntax K ::= "klistToK" "(" KList ")" [function]
+     syntax K ::= listToK(List) [function]
      
-     syntax K ::= "kpair" "(" K "," K ")"
+     syntax K ::= kpair(K, K)
 
+     syntax KList ::= Int "to" Int [function]
      syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
 
-     syntax KList ::= Int "to" Int [function]
+     syntax List ::= times(Int, K) [function]
 
-     syntax KList ::= times(Int, K) [function]
+     // syntax Int ::= lengthList(List) [function]
 
-     syntax K ::= writeConfig(String)
-                // | readConfig(String)
+     syntax Map ::= Map "[" K "<-" K "]"
+     rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
-     // TODO(chathhorn): better place for this?
-     syntax K ::= case(Int)
-
+     syntax List ::= values(Map) [function]
 endmodule
 
 module COMPAT
@@ -100,6 +95,8 @@ module COMPAT
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
 
+     rule idToString(Identifier(S:String)) => S
+
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)
 
@@ -110,9 +107,9 @@ module COMPAT
           butFirstChar(S:String) 
           => substrString(S:String, 1, lengthString(S:String))
 
-     rule all((K:K,, L:KList), Lbl:KLabel) 
+     rule all(ListItem(K:K) L:List, Lbl:KLabel) 
           => Lbl(K) andBool all(L, Lbl)
-     rule all(.KList, _) => true 
+     rule all(.List, _) => true 
           
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))
@@ -138,88 +135,61 @@ module COMPAT
           when K:K =/=K K':K
 
      rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
+     // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
+     // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
 
      rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
      rule toBag(.List) => .Bag
 
-     rule toBag(K:K,, L:KList) => BagItem(K) toBag(L)
-     rule toBag(.KList) => .Bag
-
-     rule lengthKList (_:K,, L:KList) => 1 +Int lengthKList L
-     rule lengthKList .KList => 0
-
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
 
-     rule eraseKLabel(L:KLabel, L(Ks:KList)) => eraseKLabel(L, Ks)
-     rule eraseKLabel(L:KLabel, L':KLabel(Ks:KList)) => L'(eraseKLabel(L, Ks))
-          when L =/=KLabel L'
-     rule eraseKLabel(L:KLabel, (K:K,,Ks:KList)) 
-          => eraseKLabel(L, K),,eraseKLabel(L, Ks)
-          when Ks =/=KList .KList
-     rule eraseKLabel(_, .KList) => .KList
-     rule eraseKLabel(_, .K) => .K
-
-     rule klist(L:KList) => toKRList(L) 
+     rule list(L:List) => toKRList(L) 
           [structural]
 
-     syntax K ::= "toKRList'" "(" KList ")"
-     context toKRList'(_,, HOLE,, _)
-     rule toKRList(L:KList) => toKRList'(L) ~> krlist(.KList)
+     syntax K ::= "toKRList'" "(" List ")"
+     context toKRList'(_:List ListItem(HOLE) _:List)
+     rule toKRList(L:List) => toKRList'(L) ~> krlist(.List)
           [structural]
-     rule toKRList'(_,, (V:KResult => .KList)) ~> krlist((.KList => V),, _) 
+     rule toKRList'(_:List (ListItem(V:KResult) => .List)) 
+          ~> krlist((.List => ListItem(V)) _:List) 
+          when getKLabel(V) =/=KLabel 'krlist
           [structural]
-     rule toKRList'(.KList) => .
+     // Somewhat contrived feature: nested lists are flattened.
+     rule toKRList'(_:List (ListItem(krlist(L:List)) => .List)) 
+          ~> krlist((.List => L) _:List) 
+          [structural]
+     rule toKRList'(.List) => .
           [structural]
      
-     rule reverseList(.KList) => .KList
-     rule reverseList((K:K,, L:KList)) => reverseList(L:KList),, K:K
+     rule reverseList(.List) => .List
+     rule reverseList(ListItem(K:K) L:List)
+          => reverseList(L:List) ListItem(K:K)
 
-	rule N:Int to N => .KList
-	rule N:Int to N':Int => (N,,((N +Int 1) to N'))
-		when N <Int N'
+     rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
+     rule listToK(.List) => .K
 
-     rule klistToK((K:K,, L:KList)) => K ~> klistToK(L)
-     rule klistToK(.KList) => .K
+     rule N:Int to N => .KList
+     rule N:Int to N':Int => (N,, ((N +Int 1) to N'))
+          when N <Int N'
 
-     rule times(0, _) => .KList
-     rule times(N:Int, K:K) => (K,, times(N -Int 1, K))
+     rule times(0, _) => .List
+     rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
           when N >Int 0
 
-     // Read/write the current configuration.
-     syntax K ::= saveConfiguration(Int, String) 
-               //  | loadConfiguration(Int, String) 
-               //  | loadConfigurationByte(K)
+     syntax List ::= klistToList(KList) [function]
 
-     rule <exec>
-               <global> B:Bag </global>
-               <k> 
-                    writeConfig(F:String) 
-                    => saveConfiguration(#open(F), K2String(CompiledProgram(B))) 
-               ...</k>
-          ...</exec>
+     rule klistToList((K:K,, L:KList)) => ListItem(K) klistToList(L)
+     rule klistToList(.KList) => .List
 
-     rule (. => #write(Fd, substrString(S, 0, 1000))) 
-          ~> saveConfiguration(Fd:Int, 
-               (S:String => substrString(S, 1000, lengthString(S)))) 
-          when S =/=String ""
+     rule klist(L:KList) => list(klistToList(L))
+          [structural, anywhere]
 
-     // syntax K ::= fuzz(String)
+     // rule lengthList(L:List) => size(L)
 
-     // rule (. => #write(Fd, S)  ~> fuzz(S))
-     //      ~> saveConfiguration(Fd:Int, (S:String => "")) 
-     //      when S =/=String ""
+     rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
+     rule values(.Map) => .List
 
-     rule saveConfiguration(Fd:Int, "") => #close(Fd)
-
-     // rule readConfig(F:String) 
-     //      => loadConfiguration(#open(F, "r"), "")
-     // rule (. => loadConfigurationByte(#read(Fd, 1000))) 
-     //      ~> loadConfiguration(Fd:Int, _)
-     // rule (loadConfigurationByte(S2:String) => .) 
-     //      ~> loadConfiguration(_, (S:String => S +String S2))
-     // rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) 
-     //      => #close(Fd) ~> doLoadConfiguration(String2Bag(S))
 endmodule
 

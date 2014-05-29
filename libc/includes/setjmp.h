@@ -2,10 +2,10 @@
 #define _KCC_SETJMP_H
 #include <kcc_settings.h>
 
-struct __jmp_buf_tag {
+struct jmp_buf_ {
 	unsigned char used;
 };
-typedef struct __jmp_buf_tag jmp_buf[1];
+typedef struct jmp_buf_ jmp_buf[1];
 int setjmp(jmp_buf xxenv);
 void longjmp(jmp_buf yyenv, int zzval);
 

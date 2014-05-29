@@ -5,6 +5,8 @@ use warnings;
 use File::Spec::Functions qw(catfile);
 use File::Temp;
 use File::Copy;
+use MIME::Base64;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 setpgrp;
 
@@ -23,6 +25,10 @@ $SIG{'INT'} = 'interruptHandler'; # handle control-c
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 my $PROGRAM_NAME = "EXTERN_IDENTIFIER";
 
+my $EXEC_DEF = catfile($SCRIPTS_DIR, "c11-kompiled");
+my $EXEC_ND_DEF = catfile($SCRIPTS_DIR, "c11-nd-kompiled");
+my $EXEC_ND_THREAD_DEF = catfile($SCRIPTS_DIR, "c11-nd-thread-kompiled");
+
 my $KRUN = "krun";
 
 my @temporaryFiles = ();
@@ -32,7 +38,7 @@ exit main();
 sub main {
       my $fileInput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', 
-            SUFFIX => '.c11', 
+            SUFFIX => '.bin', 
             UNLINK => 0);
       my $fileOutput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', 
@@ -44,21 +50,30 @@ sub main {
 
       # The function "linkedProgram()" is attached to the bottom of this script
       # by kcc.
-      print $fileInput linkedProgram();
+      binmode($fileInput, ':raw');
 
-      my $argc = $#ARGV < 0? 1 : $#ARGV + 1;
-      my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
+      my $gzippedConf = decode_base64(linkedProgram());
+      my $gunzippedConf;
+
+      gunzip \$gzippedConf => \$gunzippedConf
+            or die "gunzip failed: $GunzipError\n";
+
+      print $fileInput $gunzippedConf;
+
+      my $argc = $#ARGV + 2;
+      my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
 
       my %krun_args = (
-                  '--output-mode' => 'raw', 
-                  '--output' => $fileOutput, 
-                  '--parser' => 'cat', 
-                  '-d' => catfile($SCRIPTS_DIR, "c11-kompiled"), 
+                  '--output' => 'pretty', 
+                  '--output-file' => $fileOutput, 
+                  '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
-                  "-cARGV=\\\"$argv\\\",,.KList" => '',
-                  '' => $fileInput
+                  "-cARGV=\"($argv .List)\"" => '',
+                  '--load-cfg' => $fileInput
                   );
+
+      my @options = ();
 
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
@@ -85,6 +100,7 @@ sub main {
 
       # Set the arguments to krun based on the value of environment variables.
       if (defined $ENV{PROFILE}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--profile'} = '';
       }
 
@@ -105,36 +121,39 @@ sub main {
       }
 
       if (defined $ENV{SEARCH}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
-            delete $krun_args{'--io'};
-            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            push @options, 'NOIO';
+            $krun_args{'-d'} = $EXEC_ND_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
       }
 
       if (defined $ENV{THREADSEARCH}) {
+            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
-            delete $krun_args{'--io'};
-            $krun_args{'-d'} = catfile($SCRIPTS_DIR, "c11-kompiled-nd-thread");
+            push @options, 'NOIO';
+            $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
       }
 
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
-            $krun_args{'-d'} = 
-                  catfile($SCRIPTS_DIR, "c11-kompiled-nd");
+            $krun_args{'-d'} = $EXEC_ND_DEF;
             $krun_args{'--output-mode'} = 'pretty';
-            delete $krun_args{'--io'};
+            push @options, 'NOIO';
             delete $krun_args{'--output'};
             print 'LTL model checking... ';
             print "(with non-deterministic expression sequencing)\n";
       }
 
+      @options = map {"SetItem($_)"} @options;
+      push @options, ".Set";
+      $krun_args{'-cOPTIONS="(' . (join ' ', @options) . ')"'} = '';
+
       # Execute krun with the arguments in (flattened) %krun_args.
       my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
-      # my $cmd = "$KRUN -cIN=\\\"$fileInput\\\"" 
-      #       . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n" if defined $ENV{VERBOSE};
       system($cmd);
 
@@ -154,8 +173,8 @@ sub main {
       if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
             my $graphOutputFile = "kcc-search-results.dot";
 
-            print "Generated $fileOutput\n";
-            print "Examining the output...\n";
+            print "Generated $fileOutput\n" if defined $ENV{VERBOSE};
+            print "Examining the output...\n" if defined $ENV{VERBOSE};
             my $graphOutput = graphSearch($graphOutputFile, $fileOutput);
             print "$graphOutput\n";
             print "Generated $graphOutputFile.\n";
@@ -163,10 +182,10 @@ sub main {
             if (defined $ENV{GRAPH}) {
                   print "Generating graph...\n";
                   system("dot -Tps2 $graphOutputFile > kcc-search-results.ps") == 0 
-                        or die "Running dot failed: $?";
+                        or die "Running dot failed: $?\n";
                   print "Generated kcc-search-results.ps.\n";
                   system("ps2pdf kcc-search-results.ps kcc-search-results.pdf") == 0 
-                        or die "Running ps2pdf failed: $?";
+                        or die "Running ps2pdf failed: $?\n";
                   print "Generated kcc-search-results.pdf\n";
             }
             return 0;
@@ -179,14 +198,14 @@ sub main {
       return processResult($fileOutput, defined $ENV{VERBOSE});
 }
 
-sub parseResultLine {
+sub parseRawResultLine {
       my ($parsed) = (@_);
 
       /< k > (.*) <\/ k >/ && do {
             $parsed->{finalComp} = $1;
       };
 
-      /< errorCell > # "(.*)"\(\.KList\) <\/ errorCell >/ && do {
+      /< error-cell > # "(.*)"\(\.KList\) <\/ error-cell >/ && do {
             $parsed->{haveError} = 1;
             my $output = $1;
             $output =~ s/\%/\%\%/g;
@@ -195,16 +214,16 @@ sub parseResultLine {
             $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
       };
 
-      /< currentFunction > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ currentFunction >/ && do {
+      /< curr-function > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ curr-function >/ && do {
             $parsed->{errorFunc} = $1;
       };
 
-      /< currentProgramLoc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ currentProgramLoc >/ && do {
+      /< curr-program-loc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ curr-program-loc >/ && do {
             $parsed->{errorFile} = $1;
             $parsed->{errorLine} = $2;
       };
 
-      /< finalComputation > (.*) <\/ finalComputation >/ && do {
+      /< final-computation > (.*) <\/ final-computation >/ && do {
             $parsed->{finalComp} = $1;
       };
 
@@ -220,9 +239,69 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< resultValue > 'tv\(KList2KLabel # (-?\d+)\(\.KList\)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ resultValue >/ && do {
+      /< result-value > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ result-value >/ && do {
             $parsed->{exitCode} = $1;
       };
+}
+
+# TODO(chathhorn): We have two functions here because of the newlines -- the
+# regexes below match against the whole file as opposed to a line at a time.
+sub parseResult {
+      my ($parsed) = (@_);
+
+      /<k>(.*?)<\/k>/s && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /<error-cell>\s*"(.*)"\s*<\/error-cell>/ && do {
+            $parsed->{haveError} = 1;
+            my $output = $1;
+            $output =~ s/\%/\%\%/g;
+            $output =~ s/`/\\`/g;
+            $output =~ s/\\\\/\\\\\\\\/g;
+            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
+      };
+
+      /<curr-function>\s*(Identifier \( "(.*?)" \)|(file-scope))\s*<\/curr-function>/ && do {
+            $parsed->{errorFunc} = $2;
+      };
+
+      /<curr-program-loc>\s*CabsLoc\s*\(\s*"(.*)"\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*<\/curr-program-loc>/ && do {
+            $parsed->{errorFile} = $1;
+            $parsed->{errorLine} = $2;
+      };
+
+      /<final-computation>(.*?)<\/final-computation>/s && do {
+            $parsed->{finalComp} = $1;
+      };
+
+      /<computation>(.*?)<\/computation>/s && do {
+            $parsed->{finalCompGoto} = $1;
+      };
+
+      /<type>(.*?)<\/type>/s && do {
+            $parsed->{finalCompType} = $1;
+      };
+
+      /<output>\s*#buffer\s*\(\s*"(.*)"\s*\)\s*<\/output>/ && do {
+            $parsed->{output} = $1;
+      };
+
+      /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+            $parsed->{exitCode} = $1;
+      };
+}
+
+sub unindent {
+      my ($str) = (@_);
+
+      my @lines = split "\n", $str;
+
+      for (@lines) {
+            s/^\s+//;
+      }
+
+      return join "\n", @lines;
 }
 
 sub processResult {
@@ -230,11 +309,10 @@ sub processResult {
       my %parsed;
 
       open(OUT, "<$fileOutput");
-
-      for (<OUT>) {
-            print if $verbose;
-            parseResultLine(\%parsed);
-      }
+      local $/;
+      local $_ = <OUT>;
+      print if $verbose;
+      parseResult(\%parsed);
 
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
                   || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
@@ -254,21 +332,21 @@ sub processResult {
             if (defined $parsed{finalComp}) {
                   print "=============================================================\n";
                   print "Final Computation:\n";
-                  print substr($parsed{finalComp}, 0, 1000);
+                  print unindent(substr($parsed{finalComp}, 0, 1000));
                   print "\n";
             }
 
             if (defined $parsed{finalCompGoto}) {
                   print "=============================================================\n";
                   print "Final Goto Map Computation:\n";
-                  print substr($parsed{finalCompGoto}, 0, 1000);
+                  print unindent(substr($parsed{finalCompGoto}, 0, 1000));
                   print "\n";
             }
 
             if (defined $parsed{finalCompType}) {
                   print "=============================================================\n";
                   print "Final Type Computation:\n";
-                  print substr($parsed{finalCompType}, 0, 1000);
+                  print unindent(substr($parsed{finalCompType}, 0, 1000));
                   print "\n";
             }
       }
@@ -326,7 +404,7 @@ sub graphSearch {
                         $solutions[-1]->{'num'} = $numSolutions;
                   };
 
-                  parseResultLine($solutions[-1]);
+                  parseRawResultLine($solutions[-1]);
 
                   # keep reading (and throwing away) until we hit a state
                   /^state (\d+)/ && do {
@@ -362,7 +440,7 @@ sub graphSearch {
                               $states{$currentStateNumber} = $currentOutput;
                         };
 
-                        /< errorCell > (.*) <\/ errorCell >/ && do {
+                        /< error-cell > (.*) <\/ error-cell >/ && do {
                               my $currentOutput = $1;
                               $errorStates{$currentStateNumber} = "";
                         };
@@ -511,4 +589,3 @@ END {
 }
 
 # The parsed file contents of the program to execute with krun gets appended.
-

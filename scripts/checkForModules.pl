@@ -6,6 +6,9 @@ my @requiredModules = qw(
 	DBI
 	DBD::SQLite
 	Getopt::Declare
+      MIME::Base64
+      IO::Compress::Gzip
+      IO::Uncompress::Gunzip
 );
 my @missingPackages = ();
 

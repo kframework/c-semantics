@@ -1,107 +1,108 @@
 module C-BITSIZE-SYNTAX
-     // needs to be heated to top of K for struct and union types
-     syntax K ::= bitSizeofType(K) [strict]
-     syntax K ::= "byteSizeofType" "(" Type ")"
+     syntax Int ::= bitSizeofType(Type) [function]
+     syntax Int ::= byteSizeofType(Type) [function]
+
+     syntax Int ::= bitSizeofStruct(FieldInfo) [function]
+     syntax Int ::= bitSizeofUnion(FieldInfo) [function]
 
      // generates a tv(size, cfg:sizeut)
-     syntax K ::= "sizeofType" "(" K ")" [strict]
+     syntax K ::= sizeofType(K) [strict]
+
+     syntax Int ::= maxByteSizeofList(List) [function]
 endmodule
 
 module C-BITSIZE
      imports C-BITSIZE-SYNTAX
 
      imports C-BITS-SYNTAX
-     imports C-DECLARATION-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
-     syntax K ::= bitSizeofList(KList)
-     syntax K ::= "bitSizeofList-aux" "(" K "," Int "," KList ")" [strict(1)]
-     
+     imports COMPAT-SYNTAX
+
      rule sizeofType(T:Type)
-          => cast(cfg:sizeut, byteSizeofType(T)) 
+          => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
           [structural]
-
-     syntax K ::= "byteSizeofType-aux" "(" K ")" [strict]
      rule byteSizeofType(T:Type)
-          => byteSizeofType-aux(bitSizeofType(T)) 
-          [structural, anywhere]
-     rule byteSizeofType-aux(V:TypedValue)
-          => bitsToBytes(value(V))
-          [structural]
+          => bitsToBytes(bitSizeofType(T)) 
 
-     // TODO(chathhorn): BUG? Note doesn't heat when .K.
-     rule bitSizeofList-aux(K:K, X:Int, L:KList)
-          => K ~> bitSizeofList-aux(HOLE, X, L) 
-          when notBool (K ==K .K) [heat]
-     rule K:KResult ~> bitSizeofList-aux(HOLE, X:Int, L:KList)
-          => bitSizeofList-aux(K, X, L) [cool]
+     syntax Int ::= numBytes(Type) [function]
+     rule numBytes(t(_, bool)) => cfg:sizeofBool
+     rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
+     rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
+     rule numBytes(t(_, int)) => cfg:sizeofInt
+     rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
+     rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
      
-      // TODO(chathhorn)
-     rule bitSizeofList(L:KList) => bitSizeofList-aux(., 0, L:KList)
-          [structural]
-     rule bitSizeofList-aux((. => bitSizeofType(T:K)),
-               _:Int, ((T:K => .KList),, _:KList))
-          [structural]
-     rule bitSizeofList-aux((tv(Len':Int, _) => .),
-               (Len:Int => Len:Int +Int Len':Int), _)
-          [structural]
-     rule bitSizeofList-aux(., Len:Int, .KList) 
-          => tv(Len:Int, cfg:largestUnsigned)
-          [structural]
+     rule numBytes(t(_, float)) => cfg:sizeofFloat
+     rule numBytes(t(_, double)) => cfg:sizeofDouble
+     rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
+
+     rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
+     rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
+     rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
+     rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
+     rule numBytes(t(_, unsigned-long-long-int)) 
+          => numBytes(t(.Set, long-long-int))
+     rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
+
+     syntax Int ::= byteSizeofList(List) [function]
+     syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]
+
+     rule byteSizeofList(L:List) => byteSizeofList'(0, L)
+     rule byteSizeofList'(
+          (Sz:Int => Sz +Int byteSizeofType(T)),
+          (ListItem(T:Type) => .List) _)
+     rule byteSizeofList'(Sz:Int, .List) => Sz
           
-     syntax K ::= "maxBitSizeofList" "(" KList ")"
-     syntax K ::= "maxBitSizeofList-aux" "(" KList "," Int ")"
-     rule maxBitSizeofList(L:KList) => maxBitSizeofList-aux(L, 0)
-          [structural, anywhere]
-     rule maxBitSizeofList-aux((T:KResult,, L:KList), N:Int)
-          => bitSizeofType(T) ~> maxBitSizeofList-aux(L, N) 
-          [structural] 
-     rule (tv(N':Int, _) => .) 
-          ~> maxBitSizeofList-aux(_:KList, (N:Int => maxInt(N, N'))) 
-          [structural] 
-     rule maxBitSizeofList-aux(.KList, N:Int) => tv(N, cfg:largestUnsigned)
-          [structural] 
+     syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
+     rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
+     rule maxByteSizeofList'(
+          (Sz:Int => maxInt(Sz, byteSizeofType(T))),
+          (ListItem(T:Type) => .List) _:List)
+     rule maxByteSizeofList'(Sz:Int, .List) => Sz
      
-     rule bitSizeofType(t(_, arrayType(T:KResult, N:Int))) 
-          => bitSizeofType(T:KResult) * tv(N:Int, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, flexibleArrayType(_:KResult))) 
-          => tv(0, cfg:largestUnsigned) 
-          [structural, anywhere]
+     rule bitSizeofType(t(_, no-type)) 
+          => 0
+     rule bitSizeofType(t(_, arrayType(T:Type, N:Int))) 
+          => bitSizeofType(T) *Int N
+     rule bitSizeofType(t(_, flexibleArrayType(_))) 
+          => 0
      rule bitSizeofType(t(_, functionType(_, _))) 
-          => tv(cfg:bitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
+          => cfg:bitsPerByte
      rule bitSizeofType(t(_, pointerType(_))) 
-          => tv(cfg:ptrsize *Int cfg:bitsPerByte, cfg:largestUnsigned) 
-          [structural, anywhere]
+          => cfg:ptrsize *Int cfg:bitsPerByte
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
-          => tv(N:Int, cfg:largestUnsigned) 
-          [structural, anywhere]
-     rule bitSizeofType(t(_, qualifiedType(T:KResult, _))) 
-          => bitSizeofType(T:KResult) 
-          [structural, anywhere]
-     rule bitSizeofType(T:Type) 
-          => tv(numBits(T), cfg:largestUnsigned) 
+          => N
+     rule bitSizeofType(T:Type) => numBytes(T) *Int cfg:bitsPerByte
           when isBasicType(T)
-          [structural, anywhere]
-     rule bitSizeofType(typedDeclaration(T:Type, _:Id)) 
-          => bitSizeofType(T) 
-          [structural, anywhere]
+     rule bitSizeofType(typedDeclaration(T:Type, _)) 
+          => bitSizeofType(T)
 
-     rule <k> 
-               bitSizeofType(t(_, structType(S:Id))) => bitSizeofList(L:KList) 
-          ...</k>
-          <structs>... S:Id |-> aggregateInfo(L:KList, _, _) ...</structs>
-          [structural] 
-     rule <k> 
-               bitSizeofType(t(_, unionType(S:Id))) => maxBitSizeofList(L) 
-          ...</k>
-          <structs>... S |-> aggregateInfo(L:KList, _, _) ...</structs>
-          [structural]
-          
+     rule bitSizeofType(t(_, structType(_, NBits:Int, _))) 
+          => NBits
+     rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
+          => NBits
+
+     rule bitSizeofStruct(fieldInfo(Decls:List, _, _))
+          => byteSizeofList(Decls) *Int cfg:bitsPerByte
+     rule bitSizeofUnion(fieldInfo(Decls:List, _, _))
+          => maxByteSizeofList(Decls) *Int cfg:bitsPerByte
+
+     //- derived
+     syntax Int ::= bitsToBytes(CSize) [function]
+     rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
+          when cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1) 
+          when notBool cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:CSize) => N // Pass through sym values.
+          when isInt(N) =/=K true
+
 endmodule

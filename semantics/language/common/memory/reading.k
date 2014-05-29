@@ -1,201 +1,219 @@
 module C-MEMORY-READING-SYNTAX
-     // TODO(chathhorn) error check
-     syntax K ::= "joinIntegerBytes-aux" "(" Type "," KList "," K ")"
-     syntax K ::= "read-aux" "(" SymLoc "," Type "," K ")" [klabel('read-aux)]
-     
+     // location, type
+     syntax K ::= read(SymLoc, Type)
+
+     // Returns the bytes in the order in which they are in memory.
+     syntax K ::= readBytes(SymLoc, Int, Type)
+
+     syntax K ::= concretize(Type, K) [strict(2)] 
+
+     // data, offset, size in bits
+     syntax K ::= extractBitsFromList(K, Int, Int) [strict(1)]
+
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
-     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," KList ")"
+     // TODO(chathhorn): used in ltlmc?
+     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
           [function]
 endmodule
 
 module C-MEMORY-READING
      imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C11-ERROR-SYNTAX
-     imports C11-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     // loc, size in bits
-     syntax K ::= "extractBitsFromMem" "(" SymLoc "," Int ")"
-     
-     rule extractBitsFromList(dataList(L:KList), N:Int, M:Int) 
-          => extractBitsFromList-aux(
-               dataList(explodeToBits(L:KList)), N:Int, M:Int, .KList)
-          [structural]
-     // fixme snat
-     rule extractBitsFromList-aux(
-               dataList((piece(_, 1),, L:KList)), 
-               Offset:Int, NumBits:Int, .KList)
-          => extractBitsFromList-aux(
-               dataList(L:KList), 
-               Offset:Int -Int 1, NumBits:Int, .KList)
-          when Offset:Int >Int 0
-          [structural] 
-     rule extractBitsFromList-aux(
-               dataList((piece(N:Bits, 1),, L:KList)), 
-               0, NumBits:Int, Done:KList)
-          => extractBitsFromList-aux(
-               dataList(L:KList), 
-               0, NumBits:Int -Int 1, (Done:KList,, piece(N, 1)))
-          when NumBits >Int 0
-          [structural] 
-     
-     rule extractBitsFromList-aux(_, 0, 0, Done:KList) => dataList(Done:KList)
-          [structural] 
-     
-     rule read(Loc:SymLoc, T:Type) 
-          => read-aux(Loc, T, bitSizeofType(T))
-          when notBool(isFunctionType(T))
-          [structural]
-     
-     syntax K ::= "readActual" "(" SymLoc "," Type "," K ")" 
-          [strict(3), klabel('readActual)]
-     
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
-     rule [read-thread-local]:
-          <k> 
-               ('read-aux => 'readActual)(loc(_ @ Th:Int, _:Int, _:Int),, _,, _) 
-          ...</k>
-          <threadId> Th </threadId>
+     rule read(Loc:SymLoc, T:Type)
+          => readActual(Loc, T)
+          when isThreadDuration(Loc) orBool isAutoDuration(Loc)
           [structural]
-     rule [read-shared]: // read global or shared data
-          ('read-aux => 'readActual)(loc(_ @ 0, _:Int, _:Int),, _,, _)
-          [ndtrans]
-     rule [read-allocated]: // read data of "allocated" duration
-          ('read-aux => 'readActual)
-               (loc(_ @ allocatedDuration, _:Int, _:Int),, _,, _)
+     // read data of "allocated" duration
+     rule read(Loc:SymLoc, T:Type)
+          => readActual(Loc, T)
+          when notBool isThreadDuration(Loc)
+               andBool notBool isAutoDuration(Loc)
+               andBool Loc =/=K NullPointer
           [ndtrans]
      
-     rule [read]:
-          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
-          => concretize(T, 
-               readBytes(Loc, bitsToBytes(value(BitSize))))
+     syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
+     rule readActual(Loc:SymLoc, T:Type)
+          => concretize(T, readBytes(Loc, byteSizeofType(T), T))
           when notBool isBitfieldType(T)
           [structural]
-     rule [read-bitfield]:
-          readActual(Loc:SymLoc, T:Type, BitSize:TypedValue)
-          => concretize(T, 
-               fillToBytes(extractBitsFromMem(Loc, value(BitSize)))) 
+     rule readActual(Loc:SymLoc, T:Type)
+          => concretize(T, fillToBytes(extractBitsFromMem(Loc, T))) 
           when isBitfieldType(T)
           [structural]
-     
-     syntax K ::= "joinIntegerBytes" "(" Type "," KList ")"
-     rule concretize(T:Type, dataList(L:KList)) 
-          => joinIntegerBytes(T, L) 
+
+     rule concretize(T:Type, dataList(L:List)) 
+          => joinIntegerBytes(T, L)
           when hasIntegerType(T) 
                andBool notBool isBitfieldType(T) 
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:KResult, Len:Int)), 
-               dataList(L:KList)) 
+     rule concretize(t(S:Set, bitfieldType(T:Type, Len:CSize)), dataList(L:List)) 
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
+          when (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-          
+     rule concretize(T:Type, dataList(L:List))
+          => joinFloatBytes(T, L)
+          when hasFloatType(T)
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
+          [structural]
+
+     // fixme should also check sizes are appropriate
+     rule concretize(T:Type, dataList(L:List)) 
+          => joinPointerBytes(T, L)
+          when isPointerType(T)
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
+          [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(unknown, stripQualifiers(T))
+          when (#hasUnknown(L) ==K true)
+               andBool (#hasTrap(L) =/=K true)
+               andBool notBool (isStructType(T) orBool isUnionType(T))
+          [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(trap, stripQualifiers(T))
+          when (#hasTrap(L) ==K true)
+               andBool notBool isUCharType(T)
+               andBool notBool (isStructType(T) orBool isUnionType(T))
+          [structural]
+     rule concretize(T:Type, dataList(L:List))
+          => tv(unknown, stripQualifiers(T))
+          when (#hasTrap(L) ==K true)
+               andBool isUCharType(T)
+          [structural]
+     rule concretize(T:Type, dataList(L:List)) 
+          => tv(agg(L), stripQualifiers(T))
+          when isStructType(T) orBool isUnionType(T)
+          [structural]
+
+     syntax Bool ::= "#hasUnknown" "(" List ")" [function]
+     syntax Bool ::= "#hasTrap" "(" List ")" [function]
+
+     rule #hasUnknown(_ ListItem(piece(unknown, _)) _) => true
+     rule #hasTrap(_ ListItem(piece(trap, _)) _) => true
+
+     // TODO(chathhorn): half-assed floating point support.
+     syntax TypedValue ::= joinFloatBytes(Type, List) [function]
+     syntax TypedValue ::= joinFloatBytes(Type, Float, Int, List) [function]
+     rule joinFloatBytes(T:Type,
+               ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
+          => joinFloatBytes(T, F, NBits, L)
+     rule joinFloatBytes(T:Type,
+               ListItem(piece(0, NBits:Int)) L:List)
+          => joinFloatBytes(T, 0.0, NBits, L)
+     rule joinFloatBytes(T:Type, F:Float, Len:Int,
+               ListItem(piece(encodedFloat(_), NBits:Int)) L:List)
+          => joinFloatBytes(T, F, Len +Int NBits, L)
+     rule joinFloatBytes(T:Type, 0.0, Len:Int,
+               ListItem(piece(0, NBits:Int)) L:List)
+          => joinFloatBytes(T, 0.0, Len +Int NBits, L)
+     rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
+          => tv(F, stripQualifiers(T))
+          when Len ==Int bitSizeofType(T)
+
+     syntax TypedValue ::= joinPointerBytes(Type, List) [function]
+     syntax TypedValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
+     rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
+          => joinPointerBytes-aux(T, L, N)
+          when Len ==Int cfg:bitsPerByte
+     rule joinPointerBytes-aux(T:Type, 
+               ListItem(piece(subObject(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
+               L:List, subObject(Loc, 0, End:Int))
+          => joinPointerBytes-aux(T, L, subObject(Loc, 0, End +Int 1))
+          when (Len ==Int cfg:bitsPerByte)
+               andBool (SNatEnd ==Int End +Int 1)
+     rule joinPointerBytes-aux(T:Type, .List, subObject(Loc:SymLoc, 0, _))
+          => tv(Loc, stripQualifiers(T))
+     rule joinPointerBytes-aux(T:Type, 
+               ListItem(piece(0, Len:Int)) L:List, 0)
+          => joinPointerBytes-aux(T, L, 0)
+          when (Len ==Int cfg:bitsPerByte)
+     rule joinPointerBytes-aux(T:Type, .List, 0)
+          => tv(NullPointer, stripQualifiers(T))
+
+     syntax TypedValue ::= joinIntegerBytes(Type, List) [function]
+     syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
+     rule joinIntegerBytes(T:Type, L:List)
+          => joinIntegerBytes-aux(T, L, piece(0, 0)) 
+     rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0)) 
+          => tv(unknown, stripQualifiers(T))
+          when isUCharType(T)
+     rule joinIntegerBytes-aux(T:Type, 
+               L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
+          => joinIntegerBytes-aux(T, 
+               L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
+     rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
+          => interpret(stripQualifiers(T), piece(N, Len)) 
+
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
      // shouldn't need to do the < min one since values start positive
 
      // interpret the values of reading from mem
-     syntax K ::= interpret(Type, K) [function]
-     syntax K ::= "interpret-aux" "(" Type "," K ")" [function]
-     
-     rule [interpret-start]:
-          interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     
-     rule [interpret-done]:
-          interpret-aux(T:Type, I:Int) => tv(I, T)
+     syntax TypedValue ::= interpret(Type, K) [function]
+     syntax TypedValue ::= "interpret-aux" "(" Type "," K ")" [function]
+     rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
+     rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
           when (min(T) <=Int I) 
                andBool (max(T) >=Int I)
                andBool hasIntegerType(T)
-     rule [interpret-too-big]:
-          interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(numBits(T))))
+     rule interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
           when (I:Int >Int max(T))
                andBool hasIntegerType(T)
-     rule [interpret-too-little]:
-          interpret-aux(T:Type, I:Int) 
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(numBits(T))))
+     rule interpret-aux(T:Type, I:Int) 
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           when (I:Int <Int min(T))
                andBool hasIntegerType(T)
-          
-     // FIXME very unsafe, not checking size of list or its contents
-     rule concretize(T:KResult, 
-               dataList((piece(encodedFloat(F:Float), Len:Int),, _))) 
-          => tv(F:Float, T:KResult)
-          when isFloatType(T:KResult)
-               andBool (Len:Int ==Int cfg:bitsPerByte)
-          [structural]
-
-     syntax K ::= "joinPointerBytes" "(" Type "," KList ")"
-     syntax K ::= "joinPointerBytes-aux" "(" Type "," KList "," K ")"
-     // fixme should also check sizes are appropriate
-     rule concretize(T:Type, dataList(L:KList)) 
-          => joinPointerBytes(T, L)
-          when isPointerType(T)
-          [structural]
-     rule joinPointerBytes(T:Type, (piece(N:Bits, Len:Int),, L:KList))
-          => joinPointerBytes-aux(T, L, N)
-          when Len ==Int cfg:bitsPerByte
-          [structural]
-     // fixme sNat
-     rule joinPointerBytes-aux(T:Type, 
-               (piece(subObject(N:Ptr, SNatEnd:Int, SNatEnd:Int), Len:Int),, 
-               L:KList), subObject(N, 0, End:Int))
-          => joinPointerBytes-aux(T, L, subObject(N, 0, End +Int 1))
-          when (Len ==Int cfg:bitsPerByte)
-               andBool (SNatEnd ==Int End +Int 1)
-          [structural]
-     rule joinPointerBytes-aux(T:KResult, .KList, subObject(N:SymLoc, 0, _:Int))
-          => checkValidLoc(N) ~> tv(N, T:KResult)
-          [structural]
-
-     rule concretize(t(S:Set, structType(I:Id)), dataList(L:KList)) 
-          => tv(L, t(S, structType(I))) 
-          [structural]
-     rule concretize(t(S:Set, unionType(I:Id)), dataList(L:KList)) 
-          => tv(L, t(S, unionType(I)))
-          [structural]
-
-     // FIXME assuming bytes?
-     rule [joinIntegerBytes-start]:
-          joinIntegerBytes(T:Type, L:KList) 
-          => joinIntegerBytes-aux(T, L, piece(0, 0)) 
-          [structural]
      
-     // fixme may want to consider restricting further, or loosening
-     rule [joinIntegerBytes-unknown-char]:
-          joinIntegerBytes-aux(T:Type, 
-               piece(unknown(Len:Int), Len:Int), piece(0, 0))
-          => tv(piece(unknown(Len), Len), T)
-          when isCharType(T)
-          [structural]
+     // loc, size in bits
+     syntax K ::= extractBitsFromMem(SymLoc, Type)
      
-     rule [joinIntegerBytes-step]:
-          joinIntegerBytes-aux(T:Type, 
-               (L:KList,, piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
-          => joinIntegerBytes-aux(T, 
-               L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-          [structural]
-     rule [joinIntegerBytes-done]:
-          joinIntegerBytes-aux(T:Type, .KList, piece(N:Int, Len:Int)) 
-          => interpret(T, piece(N, Len)) 
-          [structural]
-     
-     rule extractBitsFromMem(Loc:SymLoc, Size:Int)
+     rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
-               readBytes(
-                    floorLoc(Loc), bitsToBytes(Size +Int getBitOffset(Loc))), 
-               getBitOffset(Loc), Size)
+               readBytes(Loc, byteSizeofType(T), T), 0, bitSizeofType(T))
+          [structural] 
+
+     rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
+          => extractBitsFromList-aux(
+               dataList(explodeToBits(L:List)), N:Int, M:Int, .List)
+          [structural]
+     // fixme snat
+     rule extractBitsFromList-aux(
+               dataList(ListItem(piece(_, 1)) L:List), 
+               Offset:Int, NumBits:Int, .List)
+          => extractBitsFromList-aux(
+               dataList(L:List), 
+               Offset:Int -Int 1, NumBits:Int, .List)
+          when Offset:Int >Int 0
+          [structural] 
+     rule extractBitsFromList-aux(
+               dataList(ListItem(piece(N:Bits, 1)) L:List), 
+               0, NumBits:Int, Done:List)
+          => extractBitsFromList-aux(
+               dataList(L:List), 
+               0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
+          when NumBits >Int 0
           [structural] 
      
+     rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
+          [structural] 
+
 endmodule
 

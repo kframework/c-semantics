@@ -6,8 +6,8 @@
 // stdlib.h
 #define EXIT_FAILURE 1
 #define RAND_MAX 2147483647
-typedef struct {int quot; int rem;} div_t;
-typedef struct {long int quot; long int rem;} ldiv_t;
+typedef struct div_t_ {int quot; int rem;} div_t;
+typedef struct ldiv_t_ {long int quot; long int rem;} ldiv_t;
 
 void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);

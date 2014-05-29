@@ -1,563 +1,344 @@
-module C-TYPING-MISC-SYNTAX
-     syntax K ::= "addStruct" "(" Id "," KList ")"
-     syntax K ::= "addUnion" "(" Id "," KList ")"
-endmodule
-
 module C-TYPING-MISC
-     imports C-TYPING-MISC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECLARATION-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+
      imports COMPAT-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
 
-     rule isTruthValue(tv(V:K, t(_, T:SimpleType))) 
-          => T ==K int andBool (V ==K 0 orBool V ==K 1)
-
-     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
-     
-     rule char => cfg:charAlias [structural, anywhere]
-
-     syntax Int ::= numBytes(Type) [function]
-     rule numBytes(t(_, bool)) => cfg:sizeofBool
-     rule numBytes(t(_, signed-char)) => cfg:sizeofSignedChar
-     rule numBytes(t(_, short-int)) => cfg:sizeofShortInt
-     rule numBytes(t(_, int)) => cfg:sizeofInt
-     rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
-     rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
-     
-     rule numBytes(t(_, float)) => cfg:sizeofFloat
-     rule numBytes(t(_, double)) => cfg:sizeofDouble
-     rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
-
-     rule numBytes(t(_, unsigned-char)) => numBytes(t(.Set, signed-char))
-     rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
-     rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
-     rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
-     rule numBytes(t(_, unsigned-long-long-int)) 
-          => numBytes(t(.Set, long-long-int))
-     
-     rule numBytes(t(_, enumType(_:Id))) => cfg:sizeofEnum
-     
-     rule numBits(t(S:Set, T:SimpleType)) 
-          => numBytes(t(S, T)) *Int cfg:bitsPerByte
-          when getKLabel(T) =/=KLabel 'bitfieldType
-     rule numBits(t(_, bitfieldType(_, N:Int))) => N:Int
-
-     syntax SimpleType ::= simpleType(Type) [function]
      rule simpleType(t(_, T:SimpleType)) => T
+          
+     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
-     syntax Type ::= stripConst(Type) [function]
-     rule stripConst(t((SetItem(Const) => .Set) _, _))
-     rule stripConst(t(S:Set, T:SimpleType)) => t(S, T)
-          when notBool Const in S
+     rule char => cfg:charAlias
 
-     rule allowWrite(lval(N:SymLoc, T:Type)) => lv(N, stripConst(T))
-          [structural, anywhere]
-
-     rule isBasicType('t(_,, K:K)) => #if (
-          (K:K ==K bool)
-          orBool (K:K ==K void)
-          orBool (K:K ==K char)
-          orBool (K:K ==K short-int)
-          orBool (K:K ==K int)
-          orBool (K:K ==K long-int)
-          orBool (K:K ==K long-long-int)
-          orBool (K:K ==K float)
-          orBool (K:K ==K double)
-          orBool (K:K ==K long-double)
-          orBool (K:K ==K signed-char)
-          orBool (K:K ==K unsigned-char)
-          orBool (K:K ==K unsigned-short-int)
-          orBool (K:K ==K unsigned-int)
-          orBool (K:K ==K unsigned-long-int)
-          orBool (K:K ==K unsigned-long-long-int)
-          orBool (K:K ==K no-type)
-          orBool (getKLabel(K:K) ==KLabel 'enumType)
-          ) #then true #else false #fi
-
-     rule setOfTypes => 
-          SetItem(l('arrayType))
-          SetItem(l('bitfieldType))
-          SetItem(l('functionType))
-          SetItem(l('pointerType))
-          SetItem(l('structType))
-          SetItem(l('unionType))
-          SetItem(l('qualifiedType))
-
-     rule unsignedIntegerTypes => 
-          SetItem(bool)
-          SetItem(unsigned-char)
-          SetItem(unsigned-short-int)
-          SetItem(unsigned-int)
-          SetItem(unsigned-long-int)
-          SetItem(unsigned-long-long-int)
-
-     rule signedIntegerTypes => 
-          SetItem(char)
-          SetItem(signed-char)
-          SetItem(short-int)
-          SetItem(int)
-          SetItem(long-int)
-          SetItem(long-long-int)
-
-     rule [hasSameSignedness]: 
-          hasSameSignedness(T:Type, T':Type)
-          => (hasSignedIntegerType(T) andBool hasSignedIntegerType(T'))
-               orBool 
-               (hasUnsignedIntegerType(T) andBool hasUnsignedIntegerType(T'))
-     
-     rule [correspondingUnsigned-int]: 
-          correspondingUnsignedType(t(S:Set, int))
+     // Char types?
+     rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
-     rule [correspondingUnsigned-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-int))
+     rule correspondingUnsignedType(t(S:Set, long-int))
           => t(S, unsigned-long-int)
-     rule [correspondingUnsigned-long-long-int]: 
-          correspondingUnsignedType(t(S:Set, long-long-int))
+     rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
-     rule hasIntegerType(T:Type) 
-          => ((hasUnsignedIntegerType(T) ==K true) 
-               orBool (hasSignedIntegerType(T) ==K true))
-     
-     rule hasUnsignedIntegerType(t(_, T:SimpleType)) => true
-          when (T in unsignedIntegerTypes)
-     rule hasUnsignedIntegerType(t(_, T:SimpleType)) => false
-          when (T in signedIntegerTypes)
 
-     rule hasUnsignedIntegerType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T)) in setOfTypes) 
-                    orBool isFloatType(t(S, T)))
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
-          when hasUnsignedIntegerType(T) ==Bool true
-     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
-          when hasUnsignedIntegerType(T) ==Bool false
-     
-     rule hasSignedIntegerType(t(_, T:SimpleType)) => true
-          when (T in signedIntegerTypes)
-     rule hasSignedIntegerType(t(_, T:SimpleType)) => false
-          when (T in unsignedIntegerTypes)
+     rule correspondingSignedType(t(S:Set, unsigned-int))
+          => t(S, int)
+     rule correspondingSignedType(t(S:Set, unsigned-long-int))
+          => t(S, long-int)
+     rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
+          => t(S, long-long-int)
 
-     rule hasSignedIntegerType(t(_, enumType(_:Id))) => true // choice fixme
-     rule hasSignedIntegerType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool ((l(getKLabel(T)) in setOfTypes) 
-                    orBool isFloatType(t(S, T)))
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => true
-          when hasSignedIntegerType(T) ==Bool true
-     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _:Int))) => false
-          when hasSignedIntegerType(T) ==Bool false
-
-     rule min(t(_, bitfieldType(T:Type, _:Int))) => 0
+     rule min(t(_, bitfieldType(T:Type, _))) => 0
           when hasUnsignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
-          => (2 ^Int absInt(N:Int)) -Int 1
+          => (2 ^Int absInt(N)) -Int 1
           when hasUnsignedIntegerType(T)
      
      rule min(t(_, bitfieldType(T:Type, N:Int)))
-          => 0 -Int (2 ^Int absInt(N:Int -Int 1))
+          => 0 -Int (2 ^Int absInt(N -Int 1))
           when hasSignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int)))
-          => (2 ^Int absInt(N:Int -Int 1)) -Int 1
+          => (2 ^Int absInt(N -Int 1)) -Int 1
           when hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
      
      rule min(t(_, signed-char)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char)) 
-          => (2 ^Int absInt(numBits(t(.Set, signed-char)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
      rule min(t(_, short-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
      rule max(t(_, short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, short-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
      rule min(t(_, int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
      rule max(t(_, int)) 
-          => (2 ^Int absInt(numBits(t(.Set, int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
      rule min(t(_, long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
      rule max(t(_, long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
      rule min(t(_, long-long-int)) 
-          => 0 -Int (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, long-long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
      
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char)) 
-          => 2 ^Int absInt(numBits(t(.Set, unsigned-char))) -Int 1
+          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-short-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int)) 
-          => (2 ^Int absInt(numBits(t(.Set, unsigned-long-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
-     rule min(t(_, enumType(_:Id))) => cfg:enumMin
-     rule max(t(_, enumType(_:Id))) => cfg:enumMax
-     
-     /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
-     Two types have compatible type if their types are the same. Additional
-     rules for determining whether two types are compatible are described in
-     6.7.2 for type specifiers, in 6.7.3 for type qualifiers, and in 6.7.6 for
-     declarators.  Moreover, two structure, union, or enumerated types declared
-     in separate translation units are compatible if their tags and members
-     satisfy the following requirements: If one is declared with a tag, the
-     other shall be declared with the same tag. If both are completed anywhere
-     within their respective translation units, then the following additional
-     requirements apply: there shall be a one-to-one correspondence between
-     their members such that each pair of corresponding members are declared
-     with compatible types; if one member of the pair is declared with an
-     alignment specifier, the other is declared with an equivalent alignment
-     specifier; and if one member of the pair is declared with a name, the
-     other is declared with the same name. For two structures, corresponding
-     members shall be declared in the same order. For two structures or unions,
-     corresponding bit-fields shall have the same widths. For two enumerations,
-     corresponding members shall have the same values.
-     
-     \source[n1570]{\para{6.7.3}{10}}
-     For two qualified types to be compatible, both shall have the identically
-     qualified version of a compatible type; the order of type qualifiers
-     within a list of specifiers or qualifiers does not affect the specified
-     type.
-     }*/
-     
-     rule [typeCompatible-identical]:
-          isTypeCompatible(T:Type, T:Type) => true 
-     rule [typeCompatible-two-ints]:
-          isTypeCompatible(T:Type, T':Type) => true 
+     rule min(t(_, enumType(_))) => cfg:enumMin
+     rule max(t(_, enumType(_))) => cfg:enumMax
+
+     rule inRange(V:Int, T:Type)
+          => ((V <=Int max(T)) andBool (V >=Int min(T)))
           when hasIntegerType(T)
-               andBool hasIntegerType(T') 
-     rule [typeCompatible-two-ptr]:
-          isTypeCompatible(t(_, pointerType(_)), t(_, pointerType(_))) => true 
-     rule [typeCompatible-ptr-int]:
-          isTypeCompatible(t(_, pointerType(_)), T:Type) => true
-          when hasIntegerType(T) 
-     rule [typeCompatible-int-ptr]:
-          isTypeCompatible(T:Type, t(_, pointerType(_))) => true
-          when hasIntegerType(T)
-          
-     rule [typeCompatible-declarations]:
-          isTypeCompatible(typedDeclaration(T:Type, _:Id), 
-               typedDeclaration(T':Type, _:Id))
-          => isTypeCompatible(T, T') 
-     rule [typeCompatible-prototypes]:
-          isTypeCompatible(t(_, prototype(T:Type)), t(_, prototype(T':Type))) 
-          => isTypeCompatible(T, T') 
-
-     rule [typeCompatible-array-right]:
-          isTypeCompatible(T:Type, t(S:Set, arrayType(T':Type, _:Int)))
-          => isTypeCompatible(T, t(S:Set, pointerType(T'))) 
-     rule [typeCompatible-array-left]:
-          isTypeCompatible(t(S:Set, arrayType(T:Type, _:Int)), T':Type)
-          => isTypeCompatible(t(S, pointerType(T)), T') 
+     rule inRange(V:Float, T:Type)
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
+          when hasFloatType(T)
      
-     rule [typeCompatible-incompleteArray-right]:
-          isTypeCompatible(T:Type, t(S:Set, incompleteArrayType(T':Type)))
-          => isTypeCompatible(T, t(S, pointerType(T'))) 
-     rule [typeCompatible-incompleteArray-left]:
-          isTypeCompatible(t(S:Set, incompleteArrayType(T:Type)), T':Type)
-          => isTypeCompatible(t(S, pointerType(T)), T') 
+     syntax Float ::= fmax(Type) [function]
+     syntax Float ::= fmin(Type) [function]
 
-     rule [typeCompatible-function-void-left]:
-          isTypeCompatible(t(_, functionType(T:Type, 
-               typedDeclaration(t(_, void), _:Id))),
-               t(_, functionType(T':Type, .KList)))
-          => isTypeCompatible(T, T') 
-     rule [typeCompatible-function-void-right]:
-          isTypeCompatible(t(_, functionType(T:Type, .KList)),
-               t(_, functionType(T':Type, 
-               typedDeclaration(t(_, void), _:Id))))
-          => isTypeCompatible(T, T') 
-     rule [typeCompatible-function]:
-          isTypeCompatible(t(S:Set, functionType(T:Type, 
-               (TA:Type,, L:KList))),
-               t(S':Set, functionType(T':Type, (TA':Type,, L':KList))))
-          => isTypeCompatible(t(S, functionType(T, L)), 
-               t(S', functionType(T', L')))
-               andBool isTypeCompatible(TA, TA') 
-     rule [typeCompatible-incompleteArray-nil]:
-          isTypeCompatible(t(_, functionType(T:Type, .KList)),
-               t(_, functionType(T':Type, .KList)))
-          => isTypeCompatible(T, T') 
-     rule isTypeCompatible(T:Type, T':Type) => true
-          when (hasIntegerType(T) orBool isFloatType(T))
-               andBool (hasIntegerType(T') orBool isFloatType(T')) 
-               
-     syntax K ::= "addGlobalAggregate" "(" Id "," K ")"
-     syntax K ::= "addLocalAggregate" "(" Id "," K ")"
-     
-     syntax K ::= "addStruct-aux" "(" Id "," KList "," K "," Map "," Map "," KList ")"
-          [strict(3)]
-     syntax K ::= "addUnion-aux" "(" Id "," KList "," Map "," Map "," KList ")"
+     // TODO(chathhorn): real floating point support.
+     rule fmin(t(_, float)) => 0.0 -Float (3.4 *Float (10.0 ^Float 38.0))
+     rule fmax(t(_, float)) => 3.4 *Float (10.0 ^Float 38.0)
 
-     // TODO(chathhorn): why the hell was this necessary? this has got to be a
-     // BUG.
-     rule addStruct-aux(A:Id, B:KList, K:K, C:Map, D:Map, E:KList) 
-          => K ~> addStruct-aux(A, B, HOLE, C, D, E) [heat]
-     rule K:K ~> addStruct-aux(A:Id, B:KList, HOLE, C:Map, D:Map, E:KList)
-          => addStruct-aux(A, B, K, C, D, E) [cool]
+     // TODO(chathhorn): maude's floats are double-precision.
+     // rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
+     // rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
+     rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
 
-     rule addStruct(S:Id, L:KList) 
-          => addStruct-aux(S:Id, L:KList,
-               tv(0, cfg:largestUnsigned), .Map, .Map, L:KList)
-          when L:KList =/=KList .KList
-          [structural]
-     rule addStruct-aux(
-               S:Id
-               , (typedDeclaration(T:Type, Field:Id),, L:KList)
-               , V:TypedValue
-               , Types:Map
-               , Offsets:Map
-               , L':KList
-          ) 
-          => addStruct-aux(S, L, V + bitSizeofType(T),
-               Types:Map[T / Field], Offsets:Map[value(V) / Field], L')
-          [structural]
-     rule <k> 
-               addStruct-aux(S:Id, .KList, _, Types:Map, Offsets:Map, L:KList) 
-               => #if (F:Id ==K file-scope) 
-                    #then (addGlobalAggregate(S, 
-                         aggregateInfo(L, Types, Offsets))) 
-                    #else (addLocalAggregate(S, 
-                         aggregateInfo(L, Types, Offsets)))
-                    #fi
-          ...</k>
-          <currentFunction> F:Id </currentFunction>
-          [structural]        
-          
-     rule addUnion(S:Id, L:KList) 
-          => addUnion-aux(S:Id, L:KList, .Map, .Map, L:KList)
-          when L:KList =/=KList .KList
-          [structural]
-     rule addUnion-aux(
-               S:Id
-               , (typedDeclaration(T:Type, Field:Id),, L:KList)
-               , Types:Map
-               , Offsets:Map
-               , L':KList
-          ) 
-          => addUnion-aux(S, L,
-               Types:Map[T / Field], Offsets:Map[0 / Field],
-               L')
-          [structural]
-     rule <k> 
-               addUnion-aux(S:Id, .KList, Types:Map, Offsets:Map, L:KList) 
-               => #if (F ==K file-scope)
-                    #then (addGlobalAggregate(S,
-                         aggregateInfo(L, Types, Offsets))) 
-                    #else (addLocalAggregate(S,
-                         aggregateInfo(L, Types, Offsets)))
-                    #fi
-          ...</k>
-          <currentFunction> F:Id </currentFunction>
-          [structural]
+     // rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
+     // rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
+     rule fmin(t(_, long-double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
+     rule fmax(t(_, long-double)) => 1.79 *Float (10.0 ^Float 308.0)
 
-     rule <k> addGlobalAggregate(X:Id, K:K) => . ...</k>
-          <structs> M':Map => M':Map[K / X] </structs>
-          <gstructs> M:Map => M:Map[K / X] </gstructs>
-          [structural]
-     rule <k> addLocalAggregate(X:Id, K:K) => . ...</k>
-          <structs> M:Map => M:Map[K / X] </structs>
-          [structural]
-          
-     rule isFloatType(t(_, float)) => true 
-     rule isFloatType(t(_, double)) => true 
-     rule isFloatType(t(_, long-double)) => true 
-     rule isFloatType(t(_, qualifiedType(T:Type, _)))
-          => isFloatType(T) 
-     rule isFloatType(t(_, T:SimpleType)) => false
-          when (T =/=K float)
-               andBool (T =/=K double)
-               andBool (T =/=K long-double)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isCharType-char]: isCharType(t(_, char)) => true 
-     rule [isCharType-qualified]:
-          isCharType(t(_, qualifiedType(T:Type, _)))
-          => isCharType(T) 
-     rule [isCharType-unsigned-char]: isCharType(t(_, unsigned-char)) => true 
-     rule [isCharType-signed-char]: isCharType(t(_, signed-char)) => true 
-     rule [isCharType-other]: isCharType(t(_, T:SimpleType)) => false
-          when (T =/=K char)
-               andBool (T =/=K unsigned-char)
-               andBool (T =/=K signed-char)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isWCharType-wchar]: isWCharType(t(_, T:SimpleType)) => true 
-          when T ==K simpleType(cfg:wcharut)
-          
-     rule [isWCharType-other]: isWCharType(t(_, T:SimpleType)) => false
-          when (T =/=K simpleType(cfg:wcharut))
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType )
-          
-     rule [isWCharType-qualified]:
-          isWCharType(t(_, qualifiedType(T:Type, _)))
-          => isWCharType(T) 
-     
-     rule [isPointerType-pointer]: isPointerType(t(_, pointerType(_))) => true 
-     rule [isPointerType-qualified]:
-          isPointerType(t(_, qualifiedType(T:Type, _)))
-          => isPointerType(T) 
-     rule [isPointerType-other]: isPointerType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'pointerType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     
-     rule [isBoolType-bool]: isBoolType(t(_, bool)) => true 
-     rule [isBoolType-qualifiedType]:
-          isBoolType(t(_, qualifiedType(T:Type, _)))
-          => isBoolType(T) 
-     rule [isBoolType-other]: isBoolType(t(_, T:SimpleType)) => false
-          when (T =/=K bool)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isArrayType-array]: isArrayType(t(_, arrayType(_, _:Int))) => true 
-     rule [isArrayType-incompleteArray]:
-          isArrayType(t(_, incompleteArrayType(_)))
-          => true 
-     rule [isArrayType-flexibleArray]:
-          isArrayType(t(_, flexibleArrayType(_)))
-          => true 
-     rule [isArrayType-qualified]:
-          isArrayType(t(_, qualifiedType(T:Type, _)))
-          => isArrayType(T)
-     rule [isArrayType-other]: isArrayType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'arrayType)
-               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
-               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule isAggregateType(T:Type)
-          => isArrayType(T) orBool isStructType(T) 
-          
-     rule [isStructType-struct]:
-          isStructType(t(_, structType(_:Id))) => true 
-     rule [isStructType-qualified]:
-          isStructType(t(_, qualifiedType(T:Type, _)))
-          => isStructType(T) 
-     rule [isStructType-other]: isStructType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'structType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isUnionType-union]: isUnionType(t(_, unionType(_:Id))) => true 
-     rule [isUnionType-qualified]:
-          isUnionType(t(_, qualifiedType(T:Type, _)))
-          => isUnionType(T) 
-     rule [isUnionType-other]: isUnionType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'unionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType )
+     rule getParams(t(_, functionType(_, P:List))) => P
+     rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
+          => t(Mods, functionType(R, P))
+     rule getReturn(t(_, functionType(R:Type, _))) => R
 
-     rule [isIncompleteType-true]:
-          isIncompleteType(t(_, incompleteArrayType(_)))
-          => true 
-     rule [isIncompleteType-qualified]:
-          isIncompleteType(t(_, qualifiedType(T:Type, _)))
-          => isIncompleteType(T) 
-     rule [isIncompleteType-false]: isIncompleteType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'incompleteArrayType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isExternType-qualified]: 
-          isExternType(t(_, qualifiedType(T:Type, K:K))) 
-          => #if (K ==K Extern) #then (true) #else (isExternType(T)) #fi 
-          
-     rule [isExternType-false]: isExternType(t(_, T:SimpleType)) => false
-          when getKLabel(T) =/=KLabel 'qualifiedType 
-          
-     rule [isStaticType-qualified]: 
-          isStaticType(t(_, qualifiedType(T:Type, K:K))) 
-          => #if (K ==K Static) #then (true) #else (isStaticType(T)) #fi
-          
-     rule [isStaticType-false]: isStaticType(t(_, T:SimpleType)) => false
-          when getKLabel(T) =/=KLabel 'qualifiedType 
-          
-     rule [isConstType-qualified]: 
-          isConstType(t(_, qualifiedType(T:Type, _:K)))
-          => isConstType(T)
-          
-     rule [isConstType-false]: 
-          isConstType(t(S:Set, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'qualifiedType )
-               andBool (notBool Const in S)
-          
-     rule [isConstType-true]: 
-          isConstType(t(SetItem(Const) _, _)) => true
-          
-     rule [isBitfieldType-true]:
-          isBitfieldType(t(_, bitfieldType(_, _:Int))) => true 
-     rule [isBitfieldType-false]: isBitfieldType(t(_, T:SimpleType)) => false
-          when getKLabel(T) =/=KLabel 'bitfieldType
-          
-     rule [isFunctionType-true]:
-          isFunctionType(t(_, functionType(_, _:KList)))
-          => true 
-     rule [isFunctionType-prototype]:
-          isFunctionType(t(_, prototype(T:Type)))
-          => isFunctionType(T) 
-     rule [isFunctionType-qualified]:
-          isFunctionType(t(_, qualifiedType(T:Type, _)))
-          => isFunctionType(T) 
-     rule [isFunctionType-false]: isFunctionType(t(_, T:SimpleType)) => false
-          when (getKLabel(T) =/=KLabel 'functionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-               andBool (getKLabel(T) =/=KLabel 'prototype)
-          
-     rule [isFunctionPointerType-fp]:
-          isFunctionPointerType(t(_, pointerType(t(_,
-               functionType(_, _:KList)))))
-          => true 
-     rule [isFunctionPointerType-qualified]:
-          isFunctionPointerType(t(_, qualifiedType(T:Type, _)))
-          => isFunctionPointerType(T) 
-     rule [isFunctionPointerType-qualified-pointer]: 
-          isFunctionPointerType(t(_, pointerType(t(_,
-               qualifiedType(T:Type, _))))) 
-          => isFunctionPointerType(t(.Set, pointerType(T))) 
-     rule [isFunctionPointerType-notPointer]:
-          isFunctionPointerType(t(_, T:SimpleType))
-          => false
-          when (getKLabel(T) =/=KLabel 'pointerType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     rule [isFunctionPointerType-notFunction]:
-          isFunctionPointerType(t(_, pointerType(t(_, T:SimpleType))))
-          => false
-          when (getKLabel(T) =/=KLabel 'functionType)
-               andBool (getKLabel(T) =/=KLabel 'qualifiedType)
-          
-     // /*@ \source[n1570]{\para{6.2.5}{18}}
-     // Integer and floating types are collectively called arithmetic types.
-     // Each arithmetic type belongs to one type domain: the real type domain
-     // comprises the real types, the complex type domain comprises the complex
-     // types. 
-     // */
-     rule isArithmeticType(T:Type)
-          => hasIntegerType(T) orBool isFloatType(T)
-
-     rule unqualifyType(t(_:Set, qualifiedType(T:Type, _))) => T
-     rule unqualifyType(t(_:Set, T:SimpleType)) => t(.Set, T)
-          when getKLabel(T) =/=KLabel 'qualifiedType 
-          
-     rule removeStorageSpecifiers(t(_, qualifiedType(T:Type, _)))
-          => T
-     rule removeStorageSpecifiers(t(S:Set, T:SimpleType)) => t(S, T)
-          when getKLabel(T) =/=KLabel 'qualifiedType
-          
      rule getModifiers(t(S:Set, _)) => S
+     rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
+     rule getModifiers(variadic) => .Set
+
+     rule getProvenance(t(SetItem(fromArray(X:Int, Y:Int))_, _))
+          => SetItem(fromArray(X, Y))
+     rule getProvenance(t(Mods:Set, T:SimpleType)) => .Set
+          when notBool isFromArray(t(Mods, T))
+     rule getProvenance(typedDeclaration(T:Type, _)) => getProvenance(T)
+     rule getProvenance(variadic) => .Set
+
+     syntax Type ::= setModifiers(Type, Set) [function]
+     rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
+     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+          => setModifiers(T, Mods)
+
+     rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(T:Type)
+          => intersectSet(getModifiers(T), typeQualifiers)
+          when notBool isArrayType(T)
+
+     rule getStorageSpecifiers(T:Type)
+          => intersectSet(getModifiers(T), storageSpecifiers)
+
+     // These are the only actual members "type qualifier" syntactic class.
+     rule typeQualifiers =>
+          SetItem(Const)
+          SetItem(Restrict)
+          SetItem(Volatile)
+          SetItem(Atomic)
+
+     rule storageSpecifiers =>
+          SetItem(Static)
+          SetItem(Extern)
+          SetItem(Auto)
+          SetItem(ThreadLocal)
+          SetItem(Register)
+          // For disabling various checks during initialization (i.e.,
+          // const-ness and such).
+          SetItem(Initializer)
+          // Also typedef, technically.
+
+     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
+          => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
+     rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
+     rule stripQualifiers(T:Type)
+          => setModifiers(T, getModifiers(T) -Set typeQualifiers)
+          when notBool isArrayType(T)
+
+     rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
+          => t(Mods -Set storageSpecifiers, T)
+     rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(stripStorageSpecifiers(T), X)
+
+     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
+
+     rule addQualifier(Q:CVSpecifier, T:Type)
+          => addQualifiers(SetItem(Q), T)
+
+     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:CSize)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               arrayType(addQualifiers(Quals, T), N))
+     rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               incompleteArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               flexibleArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
+          when notBool isArrayType(T)
+
+     syntax Type ::= addModifier(Modifier, Type) [function]
+     rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
+
+     syntax Type ::= addModifiers(Set, Type) [function]
+     rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
+          => t(Mods' Mods, T)
+          
+     rule innerType(t(_, arrayType(T:Type, _))) => T
+     rule innerType(t(_, incompleteArrayType(T:Type))) => T
+     rule innerType(t(_, flexibleArrayType(T:Type))) => T
+     rule innerType(t(_, pointerType(T:Type))) => T
+     rule innerType(t(_, bitfieldType(T:Type, _))) => T
+     rule innerType(t(_, functionType(T:Type, _))) => T
+     rule innerType(typedDeclaration(T:Type, _)) => T
+
+     rule <k> completeTags(T:Type) => completeTags(Tags, T) ...</k>
+          <structs> Tags:Map </structs>
+          when Tags =/=Map .Map
+     rule <k> completeTags(T:Type) => T ...</k>
+          <structs> .Map </structs>
+
+     // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
+     // checking it to tell whether a tag has been completed or not was
+     // probably the better way to do things.
+     rule completeTag(X:CId, Info:FieldInfo, T:Type)
+          => completeTags(X |-> Info, T)
+
+     rule completeTags(Tags:Map, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
+          => t(S, bitfieldType(completeTags(Tags, T), Sz))
+     rule completeTags(Tags:Map, t(S:Set, functionType(R:Type, Args:List)))
+          => t(S, functionType(completeTags(Tags, R), completeTagsInList(Tags, Args)))
+     rule completeTags(Tags:Map, t(S:Set, pointerType(T:Type)))
+          => t(S, pointerType(completeTags(Tags, T)))
+     rule completeTags(Tags:Map, t(S:Set, arrayType(T:Type, Sz:CSize)))
+          => t(S, arrayType(completeTags(Tags, T), Sz))
+     rule completeTags(Tags:Map, t(S:Set, incompleteArrayType(T:Type)))
+          => t(S, incompleteArrayType(completeTags(Tags, T)))
+     rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
+          => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
+
+     rule completeTags(_ X:CId |-> Info:FieldInfo,
+               t(S:Set, incompleteStructType(X:CId)))
+          => t(S, structType(X, bitSizeofStruct(Info), Info)) 
+     rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
+          => t(S, incompleteStructType(X))
+          when notBool X in keys(Tags)
+     rule completeTags(X |-> _ Tags:Map, t(S:Set,
+               structType(X:CId, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, structType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+     // Don't complete recursive struct definitions.
+     rule completeTags(Tags:Map, t(S:Set,
+               structType(X:CId, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, structType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+          when notBool (X in keys(Tags))
+
+     rule completeTags(_ X:CId |-> Info:FieldInfo,
+               t(S:Set, incompleteUnionType(X:CId)))
+          => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
+     rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
+          => t(S, incompleteUnionType(X))
+          when notBool X in keys(Tags)
+     rule completeTags(X |-> _ Tags:Map, t(S:Set,
+               unionType(X:CId, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, unionType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+     rule completeTags(Tags:Map, t(S:Set,
+               unionType(X:CId, NBits:Int,
+                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
+          => t(S, unionType(X, NBits,
+               fieldInfo(
+                    completeTagsInList(Tags, Decls),
+                    completeTagsInMap(Tags, Types),
+                    Offsets)))
+          when notBool (X in keys(Tags))
+
+     rule completeTags(_, t(S:Set, T:SimpleType))
+          => t(S, T)
+          when (getKLabel(T) =/=KLabel 'bitfieldType)
+               andBool (getKLabel(T) =/=KLabel 'functionType )
+               andBool (getKLabel(T) =/=KLabel 'pointerType )
+               andBool (getKLabel(T) =/=KLabel 'arrayType )
+               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
+               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
+               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
+     // Function parameters.
+     rule completeTags(Tags:Map, typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(completeTags(Tags, T), X)
+     rule completeTags(_, variadic) => variadic
+
+     rule completeTagsInList(Tags:Map, ListItem(T:Type) L:List)
+          => ListItem(completeTags(Tags, T)) completeTagsInList(Tags, L)
+     rule completeTagsInList(_, .List) => .List
+
+     rule completeTagsInMap(Tags:Map, X:CId |-> T:Type M:Map)
+          => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
+     rule completeTagsInMap(_, .Map) => .Map
+
+     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
+
+     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+
+     rule #isNPC(tv(0, T:Type)) => true
+          when hasIntegerType(T)
+               andBool fromConstantExpr(T)
+
+     rule #isNPC(tv(NullPointer, T:Type)) => true
+          when isPointerType(T)
+               andBool (innerType(T) ==K void)
+               andBool fromConstantExpr(T)
+
+     // TODO(chathhorn)
+     rule fromConstantExpr(_) => true
+
+     rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
+          => stripUnionMarker(S)
+     rule stripUnionMarker(SetItem(K:K) S:Set)
+          => SetItem(K) stripUnionMarker(S)
+          when getKLabel(K) =/=KLabel 'fromUnion
+     rule stripUnionMarker(.Set) => .Set
+
+     rule idsFromParams(
+               ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
+          => ListItem(X) idsFromParams(L)
+          when T =/=K void
+     rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
+     rule idsFromParams(ListItem(variadic)) => .List
+     rule idsFromParams(.List) => .List
 endmodule
 

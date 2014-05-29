@@ -12,7 +12,7 @@ extern size_t strlen (const char *);
 extern int strcmp (const char *, const char *);
 extern char *strchr (const char *, int);
 extern char *strrchr (const char *, int);
-extern char *strncpy (char *, const char *, size_t);
+extern char *strncpy (char * restrict, const char * restrict, size_t);
 extern void *memset (void *, int, size_t);
 extern int memcmp (const void *, const void *, size_t);
 

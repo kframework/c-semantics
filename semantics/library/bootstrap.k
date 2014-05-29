@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax C ::= "vararg" "(" K ")" [hybrid, strict]
-     syntax K ::= "prepareBuiltin" "(" Id "," KList ")" 
+     syntax K ::= varg(K) [hybrid, strict]
+     syntax K ::= prepareBuiltin(CId, List) 
      syntax K ::= incSymbolic(K)
 endmodule
 
@@ -12,42 +12,39 @@ module LIBC-BOOTSTRAP
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-BUILTIN-SYNTAX
-     imports C-EXPRESSION-EVAL-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-TYPING-SYNTAX
 
-     // TODO(chathhorn): not pretty
-     rule rkludge(vararg(K:K)) => vararg(K) [structural, anywhere]
+     imports COMPAT-SYNTAX
 
-     syntax KList ::= idsFromDeclList(KList) [function]
-     
-     rule [idsFromDeclList-one]:
-          idsFromDeclList((L:KList,, typedDeclaration(t(_, T:K), X:Id)))
-          => idsFromDeclList(L:KList),, X:Id
-          when T:K =/=K void
-          [structural]
-     rule [idsFromDeclList-void]:
-          idsFromDeclList((L:KList,, typedDeclaration(t(_, void), _:Id)))
-          => idsFromDeclList(L:KList)
-          [structural]
-     rule [idsFromDeclList-vararg]:
-          idsFromDeclList((L:KList,, 
-               typedDeclaration(T:KResult, X:Id),, t(_, variadic)))
-          => idsFromDeclList((L:KList,, typedDeclaration(T:KResult, X:Id)))
-               // assumes variadic args are placed in incremental blocks
-               ,, vararg(incSymbolic(cast(t(.Set, 
-               pointerType(t(.Set, unsigned-char))), &(X:Id))))
-          [structural]
-     rule [idsFromDeclList-done]:
-          idsFromDeclList(.KList) => .KList [structural]
+     rule rkludge(varg(K:K)) => varg(K) [structural, anywhere]
 
-     context incSymbolic((HOLE => reval(HOLE)))
-     rule [incSymbolic]:
-          incSymbolic(tv(Loc:SymLoc, T:KResult)) => tv(linc(Loc), T:KResult)
+     context incSymbolic(HOLE => reval(HOLE))
+     rule incSymbolic(tv(Loc:SymLoc, T:Type))
+          => tv(loc(linc(base(Loc)), offset(Loc)), T)
           [structural]
-          
-     context prepareBuiltin(_, (_,, (HOLE => reval(HOLE)),, _))
-     rule [prepareBuiltin]:
-          handleBuiltin(F:Id, t(_, functionType(_:KResult, L:KList)))
-          => Return(prepareBuiltin(F:Id, idsFromDeclList(L:KList)))
+
+     // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
+     // particular, I don't understand why we should do the consecutive
+     // addresses thing.
+     context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
+          <curr-function> F:CId </curr-function>
+          <curr-function-params> P:List </curr-function-params>
+          <types>... F |-> T:Type ...</types>
+          when variadic in getParams(T)
           [structural]
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, P)) ...</k>
+          <curr-function> F:CId </curr-function>
+          <curr-function-params> P:List </curr-function-params>
+          <types>... F |-> T:Type ...</types>
+          when notBool variadic in getParams(T)
+          [structural]
+
+     syntax List ::= makeVarArgs(List) [function]
+     rule makeVarArgs(L:List ListItem(X:CId) ListItem(vararg(0)) _)
+          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
+     rule makeVarArgs(L:List ListItem(X:CId))
+          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
+          when notBool vararg(0) in (L ListItem(X))
 endmodule

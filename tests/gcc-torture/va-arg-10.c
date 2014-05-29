@@ -8,7 +8,7 @@ void abort(void);
 #define va_copy __va_copy
 #endif
 
-extern __SIZE_TYPE__ strlen (const char *);
+extern size_t strlen (const char *);
 
 int
 to_hex (unsigned int a)

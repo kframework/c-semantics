@@ -1,308 +1,263 @@
 module C-MEMORY-WRITING-SYNTAX
-     syntax KList ::= explodeToBits(KList) [function]
-     // For error.k.
-     syntax K ::= "write-aux" "(" SymLoc "," Value "," K ")" [strict(3)]
+     // location, value
+     syntax K ::= write(SymLoc, CValue, Type)
+
+     // Either buffered or unbuffered depending on whether we're executing.
+     syntax K ::= writeBytes(SymLoc, K, Type) [strict(2)]
+
+     syntax List ::= explodeToBits(List) [function]
+
+     // TODO(chathhorn): For trans/symbolic-value.k
+     syntax DataList ::= splitBytes(Value) [function]
+     syntax K ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
 endmodule
 
 module C-MEMORY-WRITING
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
-          
-     syntax K ::= writeBitfield(SymLoc, Type, K) [strict(3)] 
-     syntax Bool ::= isByteLoc(SymLoc) [function]
-     syntax K ::= splitBytes(Value) [function]
-     syntax K ::= calculateNewBytes(Int, K, K)
-          [latex(\terminal{calcNewBytes(}{#1}, {#2}, {#3}\terminal{)}), strict(3)] 
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
      
-     rule write(lv(Dest:SymLoc, T':Type), tv(V:KList, T:Type)) 
-          => write-aux(Dest, tv(V, T), bitSizeofType(T)) 
-          when notBool isConstType(T')
+     // Write thread-local or auto.
+     rule write(Loc:SymLoc, V:CValue, T:Type)
+          => write-specific(Loc, V, T)
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+               andBool (notBool isConstType(T) orBool isInitializerType(T))
           [structural]
-     
-     syntax K ::= "write-specific" "(" SymLoc "," Value "," Int ")"
-     
-     rule [write-thread-local]:
-          <k> 
-               write-aux(
-                    loc(N:Int @ Th:Int, Offset:Int, BitOffset:Int), 
-                    tv(L:KList, T:Type), BitSize:TypedValue)
-               => write-specific(
-                    loc(N @ Th, Offset, BitOffset), 
-                    tv(L, T), value(BitSize))
-          ...</k>
-          <threadId> Th </threadId>
+     // Write global, shared data, or "allocated" duration.
+     rule write(Loc:SymLoc, V:CValue, T:Type)
+          => write-specific(Loc, V, T)
+          when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
+               andBool (notBool isConstType(T) orBool isInitializerType(T))
+               andBool (notBool isStringLoc(Loc) orBool isInitializerType(T))
+          [ndtrans]
+     rule (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
+          ~> write(_, _, T:Type)
+          when isConstType(T)
+               andBool notBool isInitializerType(T)
           [structural]
-     // write global or shared data
-     rule [write]:
-          write-aux(
-               loc(N:Int @ 0, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:Type), BitSize:TypedValue)
-          => write-specific(
-               loc(N @ 0, Offset, BitOffset), 
-               tv(L, T), value(BitSize))
-          [ndtrans]
-     // write data of "allocated" duration
-     rule [write-allocated]:
-          write-aux(
-               loc(N:Int @ allocatedDuration, Offset:Int, BitOffset:Int), 
-               tv(L:KList, T:Type), BitSize:TypedValue)
-          => write-specific(
-               loc(N @ allocatedDuration, Offset, BitOffset), 
-               tv(L, T), value(BitSize))
-          [ndtrans]
+     rule (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
+          ~> write(Loc:SymLoc, _, T:Type)
+          when isStringLoc(Loc)
+               andBool notBool isInitializerType(T)
+          [structural]
 
-     syntax Set ::= attrs(Type) [function]
-     rule attrs(t(S:Set, _)) => S
-
-     rule [write-normal]:
-          write-specific(Loc:SymLoc, tv(V:KList, T:Type), BitSize:Int)
-          => writeBytes(Loc, splitBytes(tv(V, T)), false)
-          when (BitSize %Int cfg:bitsPerByte ==Int 0)
-               andBool (isByteLoc(Loc) ==K true)
+     rule write-specific(Loc:SymLoc, V:CValue, T:Type)
+          => writeBytes(Loc, splitBytes(tv(V, T)), T)
+          when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(T))
           [structural]
-     rule [write-normal-union-field]:
-          (. => makeUnknown(Loc, t(.Set, unionType(S))))
-          ~> write-specific(Loc:SymLoc, 
-               tv(_, t((SetItem(fromUnion(S:Id)) => .Set) _, _)), _)
-          when isByteLoc(Loc)
+     rule (. => makeUnknown(UnionLoc, F, Fields))
+          ~> write-specific(_, _,
+               t((SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
+                    => .Set) _, _))
           [structural]
           
-     syntax K ::= "makeUnknown" "(" SymLoc "," Type ")" [function]
-     syntax K ::= "makeUnknown-aux" "(" SymLoc "," K ")" [strict(2)]
-     
-     rule makeUnknown(Loc:SymLoc, T:Type)
-          => makeUnknown-aux(Loc, byteSizeofType(T)) 
-     rule makeUnknown-aux(Loc:SymLoc, Len:TypedValue)
-          => writeBytes(Loc, dataList(times(value(Len), 
-               piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))), true)
-          [structural]
-          
-     syntax Bool ::= hasUnionMarker(Type) [function]
-     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
+     syntax K ::= makeUnknown(SymLoc, CId, FieldInfo)
 
-     syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_)) _:Set), _)) => true
-     
-     rule [write-struct]:
-          write-specific(Loc:SymLoc, 
-               tv((V:K,, V':K,, L:KList), T:Type), BitSize:Int)
-          => writeBytes(Loc, dataList((V,, V',, L)), false)
-          when (BitSize:Int %Int cfg:bitsPerByte ==Int 0)
-               andBool isByteLoc(Loc)
-               andBool (notBool isBitfieldType(T))
+     // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
+     // TODO(chathhorn): breaks open a lot of abstractions.
+     rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
+               F |-> T:Type _, _))
+          => writeBytes(Loc +bytes byteSizeofType(T),
+               dataList(times(
+                    maxByteSizeofList(L) -Int byteSizeofType(T), 
+                    piece(unknown, cfg:bitsPerByte))), 
+                    initializerType(T))
+          when maxByteSizeofList(L) >Int byteSizeofType(T)
+          [structural]
+     rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .
+          when maxByteSizeofList(L) <=Int byteSizeofType(T)
+          [structural]
+
+     rule write-specific(Loc:SymLoc,
+               agg(ListItem(V:CValue) ListItem(V':CValue) L:List),
+               T:Type)
+          => writeBytes(Loc, dataList(ListItem(V) ListItem(V') L), T)
+          when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
+               andBool notBool isBitfieldType(T)
           [structural]
           
-     syntax Value ::= justBits(Int, Type) [function]
-     syntax Value ::= "justBits-aux" "(" Int "," Type ")" [function]
+     syntax Int ::= justBits(Int, Type) [function]
+     syntax Int ::= "justBits-aux" "(" Int "," Type ")" [function]
      rule justBits(I:Int, _) => I
           when I >=Int 0 
           
      rule justBits(I:Int, T:Type) => justBits-aux(I, T)
           when I <Int 0 
      rule justBits-aux(I:Int, T:Type)
-          => justBits-aux((I +Int max(T) +Int 1), T)
+          => justBits-aux(I +Int max(T) +Int 1, T)
           when I <Int 0 
      // fixme sNat
      rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int))) 
           => N +Int (1 <<Int (Len -Int 1))
           when Len >Int 0 andBool N >=Int 0
      
-     rule [massage-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
-          => write-specific(Loc, tv(justBits(I, T), T), BitSize)
-          when (BitSize %Int cfg:bitsPerByte =/=Int 0
-               orBool notBool(isByteLoc(Loc))
+     rule write-specific(Loc:SymLoc, I:Int, T:Type)
+          => write-specific(Loc, justBits(I, T), T)
+          when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
                orBool isBitfieldType(T))
                andBool (I <Int 0)
           [structural]
      
-     rule [write-bitfield]:
-          write-specific(Loc:SymLoc, tv(I:Int, T:Type), BitSize:Int)
-          => writeBitfield(
-               Loc
-               , T
-               , calculateNewBytes(
-                    getBitOffset(Loc)
-                    , piece(I, BitSize)
-                    , readBytes(floorLoc(Loc), 
-                         bitsToBytes(BitSize +Int getBitOffset(Loc))
-                    )
-               )
-          )
-          when (BitSize:Int %Int cfg:bitsPerByte =/=Int 0)
-               orBool (notBool isByteLoc(Loc))
-               orBool (isBitfieldType(T) 
-                    andBool notBool hasUnionMarker(T))
-               andBool (I >=Int 0)
+     rule write-specific(Loc:SymLoc, V:Int, T:Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytes(Loc, byteSizeofType(T), T)), T)
+          when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
+               andBool (V >=Int 0)
           [structural]
           
-     rule writeBitfield(Loc:SymLoc, _, dataList(L:KList))
-          => writeBytes(floorLoc(Loc), dataList(L), false)
-          [structural] 
+     syntax K ::= calculateNewBytes(Bits, K)
+          [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)] 
           
-     syntax K ::= "calculateNewBytes-aux" "(" Int "," K "," K "," KList ")"
-     rule calculateNewBytes(Len:Int, N:Bits, dataList(L:KList)) 
-          => calculateNewBytes-aux(Len, dataList(explodeToBits(N)),
-               dataList(explodeToBits(L)), .KList)
+     rule calculateNewBytes(N:Bits, dataList(L:List)) 
+          => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
+               dataList(explodeToBits(L)), .List)
           [structural]
      
-     syntax K ::= joinBitsToBytes(KList) [function]
+     syntax K ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
+     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List), 
+               dataList(ListItem(piece(_, 1)) L':List), Result:List) 
+          => calculateNewBytes-aux(dataList(L), 
+               dataList(L'), Result ListItem(piece(N, 1)))
+          [structural]
+     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List) 
+          => joinBitsToBytes(Result L) 
+          [structural]
+     
+     syntax K ::= joinBitsToBytes(List) [function]
+     rule joinBitsToBytes(L:List)
+          => joinBitsToBytes-aux(dataList(L), dataList(.List))
+
      syntax K ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
-     
-     // fixme sNat
-     rule calculateNewBytes-aux(N:Int, K:K, 
-               dataList((piece(Bit:Bits, 1),, L:KList)), Result:KList) 
-          => calculateNewBytes-aux(N -Int 1, K, 
-               dataList(L), (Result,, piece(Bit, 1))) 
-          when N >Int 0
-          [structural]
-     
-     rule calculateNewBytes-aux(0, dataList((piece(N:Bits, 1),, L:KList)), 
-               dataList((piece(_, 1),, L':KList)), Result:KList) 
-          => calculateNewBytes-aux(0, dataList(L), 
-               dataList(L'), (Result,, piece(N, 1))) 
-          [structural]
-     rule calculateNewBytes-aux(0, dataList(.KList), 
-               dataList(L:KList), Result:KList) 
-          => joinBitsToBytes((Result:KList,, L:KList)) 
-          [structural]
-     
-     rule joinBitsToBytes(L:KList)
-          => joinBitsToBytes-aux(dataList(L:KList), dataList(.KList))
      rule joinBitsToBytes-aux(
-               dataList((piece(N:Bits, Len:Int),, piece(M:Bits, 1),, L:KList)),
-               dataList(R:KList))
+               dataList(ListItem(piece(N:Bits, Len:Int)) ListItem(piece(M:Bits, 1)) L:List),
+               dataList(R:List))
           => joinBitsToBytes-aux(
-               dataList((piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1),, L)), 
+               dataList(ListItem(piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1)) L), 
                dataList(R))
           when Len <Int cfg:bitsPerByte 
           [structural]
      rule joinBitsToBytes-aux(
-               dataList((piece(N:Bits, Len:Int),, L:KList)), dataList(R:KList))
+               dataList(ListItem(piece(N:Bits, Len:Int)) L:List), dataList(R:List))
           => joinBitsToBytes-aux(
-               dataList(L), dataList((R,, piece(N, Len))))
+               dataList(L), dataList(R ListItem(piece(N, Len))))
           when Len ==Int cfg:bitsPerByte 
           [structural]
-     rule joinBitsToBytes-aux(dataList(.KList), dataList(R:KList))
+     rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
           => dataList(R) 
           [structural]
      
-     rule explodeToBits((K:Bits,, L:KList))
-          => (explodeToBits(K),, explodeToBits(L))
-          when L =/=KList .KList
-     rule explodeToBits(piece(N:Bits, Len:Int)) => splinter(N, Len)
+     rule explodeToBits(ListItem(K:Bits) L:List)
+          => explodeToBits(ListItem(K)) explodeToBits(L)
+          when L =/=List .List
+     rule explodeToBits(ListItem(piece(N:Bits, Len:Int))) 
+          => splinter(N, Len)
           when Len >Int 0
           [structural]
-     rule explodeToBits(piece(_:Bits, 0)) => .KList
-     rule explodeToBits(.KList) => .KList
+     rule explodeToBits(ListItem(piece(_:Bits, 0))) => .List
+     rule explodeToBits(.List) => .List
      
-     syntax KList ::= splinter(Bits, Int) [function] 
-     syntax KList ::= "splinter-aux" "(" Bits "," Int "," Int ")" [function]
+     syntax List ::= splinter(Bits, Int) [function] 
+     syntax List ::= "splinter-aux" "(" Bits "," Int "," Int ")" [function]
      rule splinter(N:Bits, Len:Int) => splinter-aux(N, Len, 0)
-     rule splinter-aux(_, Len:Int, Len:Int) => .KList
+     rule splinter-aux(_, Len:Int, Len:Int) => .List
      rule splinter-aux(N:Bits, Len:Int, Pos:Int)
-          => splinter-aux(N, Len, Pos +Int 1),, piece(bitRange(N, Pos, Pos), 1)
+          => splinter-aux(N, Len, Pos +Int 1) 
+               ListItem(piece(bitRange(N, Pos, Pos), 1))
           when Pos <Int Len
           
      // this general rule is useful for unknowns, abstracts, etc
-     rule [splitBytes-other]:
-          splitBytes(tv(N:Bits, T:Type))
-          => dataList(piece(N, cfg:bitsPerByte))
-          when isCharType(T) andBool (isInt(N) =/=K true)
-     rule [splitBytes-int]:
-          splitBytes(tv(I:Int, T:Type)) 
+     rule splitBytes(tv(N:Bits, T:Type))
+          => dataList(ListItem(piece(N, cfg:bitsPerByte)))
+          when hasCharType(T) andBool (isInt(N) =/=K true)
+     rule splitBytes(tv(unknown, T:Type))
+          => dataList(splitUnknown(bitSizeofType(T)))
+     rule splitBytes(tv(I:Int, T:Type)) 
           => splitIntegerBytes(I, T, byteSizeofType(T))
           when hasIntegerType(T)
-     rule [splitBytes-float]:
-          splitBytes(tv(F:Float, T:Type)) 
+     rule splitBytes(tv(F:Float, T:Type)) 
           => splitFloatBytes(F, T, byteSizeofType(T))
-          when isFloatType(T)
-     rule [splitBytes-pointer]:
-          splitBytes(tv(I:Ptr, t(S:Set, pointerType(T:Type)))) 
-          => splitPointerBytes(I, t(S, pointerType(T)), 
-               byteSizeofType(t(.Set, pointerType(T))))
-     rule [splitBytes-struct]:
-          splitBytes(tv(L:KList, t(S:Set, structType(I:Id)))) 
-          => splitStructBytes(dataList(L), t(S, structType(I)), 
-               byteSizeofType(t(S, structType(I))))
-     rule [splitBytes-union]:
-          splitBytes(tv(L:KList, t(S:Set, unionType(I:Id)))) 
-          => splitStructBytes(dataList(L), t(S, unionType(I)), 
-               byteSizeofType(t(S, unionType(I))))
+          when hasFloatType(T)
+     rule splitBytes(tv(Loc:SymLoc, T:Type))
+          => splitPointerBytes(Loc, T, byteSizeofType(T))
+          when isPointerType(T)
+     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))) 
+          => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
+               byteSizeofType(t(S, structType(X, NBits, Info))))
+     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)))) 
+          => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
+               byteSizeofType(t(S, unionType(X, NBits, Info))))
      
-     syntax K ::= splitIntegerBytes(Int, Type, K) [strict(3)]
-     syntax K ::= "splitIntegerBytes-aux" "(" Int "," Type "," Int "," KList ")"
-          [function]
-     rule splitIntegerBytes(I:Int, T:Type, Len:TypedValue) 
-          => splitIntegerBytes-aux(I, T, value(Len), .KList)
-     rule splitIntegerBytes-aux(I:Int, T:Type, Len:Int, L:KList)
-          => splitIntegerBytes-aux(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
-               (L,, lowestByte(I, T)))
-          when Len >Int 0
-     rule splitIntegerBytes-aux(_, _, 0, L:KList)
-          => dataList(L) 
-          
-     syntax K ::= splitStructBytes(K, Type, K) [strict(3)]
-     syntax K ::= splitStructBytes(K, Type, Int, KList) 
+     syntax List ::= splitUnknown(Int) [function]
+     rule splitUnknown(N:Int)
+          => ListItem(piece(unknown, cfg:bitsPerByte))
+               splitUnknown(N -Int cfg:bitsPerByte)
+          when N >Int 0
+     rule splitUnknown(N:Int) => .List
+          when N <=Int 0
 
-     rule splitStructBytes(dataList(L:KList), T:Type, Len:TypedValue) 
-          => splitStructBytes(dataList(L), T, value(Len), .KList) 
-          [structural, anywhere]
-     rule splitStructBytes(dataList((piece(N:Bits, PieceLen:Int),, Rest:KList)),
-               T:Type, Len:Int, L:KList)
+     syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
+     syntax DataList ::= splitIntegerBytes(Int, Type, Int, List) [function]
+
+     rule splitIntegerBytes(I:Int, T:Type, Len:Int) 
+          => splitIntegerBytes(I, T, Len, .List)
+     rule splitIntegerBytes(I:Int, T:Type, Len:Int, L:List)
+          => splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
+               L ListItem(lowestByte(I, T)))
+          when Len >Int 0
+     rule splitIntegerBytes(_, _, 0, L:List) => dataList(L) 
+          
+     syntax DataList ::= splitStructBytes(K, Type, Int) [function]
+     syntax DataList ::= splitStructBytes(K, Type, Int, List)  [function]
+
+     rule splitStructBytes(dataList(L:List), T:Type, Len:Int) 
+          => splitStructBytes(dataList(L), T, Len, .List) 
+     rule splitStructBytes(
+          dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
+               T:Type, Len:Int, L:List)
           => splitStructBytes(dataList(Rest), T, Len -Int 1,
-               (L,, piece(N, PieceLen)))
+               L ListItem(piece(N, PieceLen)))
           when PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
-          [structural, anywhere]
-     rule splitStructBytes(_, _, 0, L:KList)
-          => dataList(L) 
-          [structural, anywhere]
+     rule splitStructBytes(_, _, 0, L:List) => dataList(L) 
           
-     syntax K ::= splitPointerBytes(Ptr, Type, K) [strict(3)]
-     syntax K ::= "splitPointerBytes-aux" "(" Ptr "," Type "," Int "," K "," KList ")"
+     syntax DataList ::= splitPointerBytes(SymLoc, Type, Int) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Type, Int, K, List) [function]
 
-     rule splitPointerBytes(I:Ptr, T:Type, Len:TypedValue)
-          => splitPointerBytes-aux(I, T, value(Len), 0, .KList) 
-          [structural, anywhere]
-     rule splitPointerBytes-aux(I:Ptr, T:Type, Len:Int, N:Int, L:KList)
-          => splitPointerBytes-aux(I, T, Len -Int 1, N +Int 1,
-               (L,, piece(subObject(I, N, N), cfg:bitsPerByte)))
+     rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int)
+          => splitPointerBytes(Loc, T, Len, 0, .List) 
+     rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int, N:Int, L:List)
+          => splitPointerBytes(Loc, T, Len -Int 1, N +Int 1,
+               L ListItem(piece(subObject(Loc, N, N), cfg:bitsPerByte)))
           when Len >Int 0
-          [structural, anywhere]
-     rule splitPointerBytes-aux(_, _, 0, _, L:KList) 
-          => dataList(L:KList)
-          [structural, anywhere]
+     rule splitPointerBytes(_, _, 0, _, L:List) => dataList(L:List)
           
-     syntax K ::= splitFloatBytes(Float, Type, K) [strict(3)]
-     syntax K ::= splitFloatBytes(Float, Type, Int, KList)
+     syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
+     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
 
-     rule splitFloatBytes(F:Float, T:Type, Len:TypedValue) 
-          => splitFloatBytes(F, T, value(Len) -Int 1, 
-               piece(encodedFloat(F), cfg:bitsPerByte)) 
-          when value(Len) >Int 0
-          [structural, anywhere]
-     rule splitFloatBytes(F:Float, T:Type, Len:Int, L:KList) 
+     rule splitFloatBytes(F:Float, T:Type, Len:Int) 
+          => splitFloatBytes(F, T, Len -Int 1, 
+               ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
+          when Len >Int 0
+     rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List) 
           => splitFloatBytes(F, T, Len -Int 1,
-               (L,, piece(unknown(cfg:bitsPerByte), cfg:bitsPerByte))) 
+               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte))) 
           when Len >Int 0
-          [structural, anywhere]
-     rule splitFloatBytes(_, _:Type, 0, L:KList) 
-          => dataList(L) 
-          [structural, anywhere]
+     rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L) 
           
      syntax Bits ::= lowestByte(Int, Type) [function]
 
@@ -315,6 +270,4 @@ module C-MEMORY-WRITING
 
      rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
           
-     rule isByteLoc(Loc:SymLoc) => getBitOffset(Loc) ==Int 0
 endmodule
-

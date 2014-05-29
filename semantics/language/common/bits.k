@@ -1,30 +1,32 @@
 module C-BITS-SYNTAX
-     syntax Ptr ::= Int | SymLoc
 
      syntax Bits ::= Int
 
+     syntax Trap ::= "trap"
+     syntax Unknown ::= "unknown"
+     syntax Bits ::= Trap
+     syntax Bits ::= Unknown
+
      syntax Bits ::= piece(Bits, Int)
-     syntax Bits ::= unknown(Int)
      syntax Bits ::= Bits "bit::" Bits
 
      // original number, from, to inclusive
      syntax Bits ::= bitRange(Bits, Int, Int)
 
      // loc, size in bytes
-     syntax Bits ::= "encodedFloat" "(" Float ")"
+     syntax Bits ::= encodedFloat(Float)
      // object, start piece, end piece
-     syntax Bits ::= "subObject" "(" Ptr "," K "," K ")"
+     syntax Bits ::= subObject(SymLoc, Int, Int)
 
-     syntax Int ::= "bitsToBytes" "(" Int ")" [function]
+     syntax K ::= fillToBytes(K) [strict] 
+     syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
-     syntax K ::= "fillToBytes" "(" K ")" [strict] 
-     syntax K ::= "fillToBytes-aux" "(" K "," KList ")" [function]
+     syntax DataList ::= dataList(List)
+     syntax KResult ::= DataList
 
-     syntax KResult ::= "dataList" "(" KList ")"
-
-     syntax Bits ::= right:
+     syntax Bits ::= 
                    "~Bits" Bits
-                   [function, right, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
+                   [function, latex(\mathop{\sim_{\scriptstyle\it Bits}}{#1})]
                    > left:
                    Bits "/Bits" Bits
                    [function, left, latex({#1}\mathrel{\div_{\scriptstyle\it Bits}}{#2})]
@@ -43,36 +45,35 @@ endmodule
 module C-BITS
      imports C-BITS-SYNTAX
 
-     imports C11-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      // this maintains byte order
-     rule [fillToBytes-start]:
-          fillToBytes(dataList(L:KList)) 
-          => fillToBytes-aux(dataList(L), .KList) 
+     rule fillToBytes(dataList(L:List)) 
+          => fillToBytes-aux(dataList(L), .List) 
           [structural]
-     rule [fillToBytes-foundByte]:
-          fillToBytes-aux(dataList((L:KList,, 
-               piece(N:Bits, Len:Int))), L':KList)
-          => fillToBytes-aux(dataList(L), (piece(N, Len),, L'))
+     rule fillToBytes-aux(dataList(
+               L:List ListItem(piece(N:Bits, Len:Int))), 
+               L':List)
+          => fillToBytes-aux(dataList(L), ListItem(piece(N, Len)) L')
           when Len ==Int cfg:bitsPerByte
           [structural]
      
-     rule [fillToBytes-addBit]:
-          fillToBytes-aux(dataList(piece(N:Bits, Len:Int)), L':KList)
-          => fillToBytes-aux(dataList((piece(0, 1),, piece(N, Len))), L')
+     rule fillToBytes-aux(dataList(ListItem(piece(N:Bits, Len:Int))), L':List)
+          => fillToBytes-aux(dataList(
+               ListItem(piece(0, 1)) ListItem(piece(N, Len))),
+               L')
           when Len <Int cfg:bitsPerByte
           [structural]
           
-     rule [fillToBytes-combineBits]:
-          fillToBytes-aux(dataList((L:KList,, piece(N:Bits, Len:Int),, 
-               piece(N':Bits, Len':Int))), L':KList)
-          => fillToBytes-aux(dataList((L,, piece(piece(N, Len) 
+     rule fillToBytes-aux(dataList(
+               L:List ListItem(piece(N:Bits, Len:Int))
+               ListItem(piece(N':Bits, Len':Int))), L':List)
+          => fillToBytes-aux(dataList(L ListItem(piece(piece(N, Len) 
                bit:: piece(N', Len'), Len +Int Len'))), L')
           when Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
                     
-     rule [fillToBytes-done]:
-          fillToBytes-aux(dataList(.KList), L:KList) => dataList(L)
+     rule fillToBytes-aux(dataList(.List), L:List) => dataList(L)
           [structural]
           
      // coallesce bitranges that are adjacent
@@ -94,15 +95,15 @@ module C-BITS
      rule piece(piece(N:Bits, Len:Int), Len:Int) => piece(N, Len) 
           [structural, anywhere]
 
-     rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos:Int)
+     rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos)
           => bitRange(N, absInt(Pos -Int Len), absInt(Pos -Int Len))
           when (Pos >Int 0) andBool (Pos -Int Len >=Int 0)
           [structural, anywhere]
           
      rule bitRange(_ bit:: piece(N:Bits, 1), 0, 0) => piece(N, 1)
-          [anywhere, anywhere]
+          [structural, anywhere]
      rule bitRange(piece(N:Bits, 1), 0, 0) => piece(N, 1)
-          [anywhere, anywhere]
+          [structural, anywhere]
           
      rule bitRange(piece(bitRange(N:Bits, Start:Int, End:Int), Len:Int), 0, 0)
           => bitRange(piece(bitRange(N, Start, Start), 1), 0, 0)
@@ -143,54 +144,38 @@ module C-BITS
           => piece((N <<Int Len') |Int N', Len +Int Len')
           [structural, anywhere]
 
-     //- derived
-     rule bitsToBytes(N:Int) => absInt(N:Int /Int cfg:bitsPerByte)
-          when cfg:bitsPerByte dividesInt N:Int
-          [structural]
-     rule bitsToBytes(N:Int) => absInt((N:Int /Int cfg:bitsPerByte) +Int 1) 
-          when notBool cfg:bitsPerByte dividesInt N:Int
-          [structural]
-
-     // these could be so much better...
-     rule ~Bits X:Int => ~Int X
-     rule [bnot-unknown]: 
-          ~Bits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
+     // Shouldn't really ever see traps or unknowns here, but it might be nice
+     // to at least support unknowns in these operations at some point.
+     rule ~Bits N:Int => ~Int N
+     rule ~Bits trap => trap
+     rule ~Bits unknown => unknown
      
-     rule X:Int /Bits Y:Int => X /Int Y
+     rule M:Int /Bits N:Int => M /Int N
+     rule trap /Bits M:Int => trap
+          when M =/=Int 0
+     rule unknown /Bits M:Int => unknown
+          when M =/=Int 0
 
-     rule X:Int xorBits Y:Int => X xorInt Y
-     rule [xor-unknown-right]: 
-          _:Bits xorBits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [xor-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) xorBits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
+     rule M:Int xorBits N:Int => M xorInt N
+     rule _ xorBits trap => trap
+     rule trap xorBits _ => trap
+     rule _ xorBits unknown => unknown
+     rule unknown xorBits _ => unknown
 
      rule X:Int |Bits Y:Int => X |Int Y
-     rule [or-unknown-right]: 
-          _:Bits |Bits piece(unknown(Len:Int), Len:Int) 
-          => piece(unknown(Len:Int), Len:Int)
-     rule [or-unknown-left]: 
-          piece(unknown(Len:Int), Len:Int) |Bits _:Bits 
-          => piece(unknown(Len:Int), Len:Int)
+     rule _ |Bits trap => trap
+     rule trap |Bits _ => trap
+     rule _ |Bits unknown => unknown
+     rule unknown |Bits _ => unknown
 
      rule X:Int &Bits Y:Int => X &Int Y
-     rule [and-unknown-zero-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
-          when N ==Int 0 
-     rule [and-unknown-right]:
-          N:Int &Bits piece(unknown(Len:Int), Len)
-          => 0
+     rule _ &Bits trap => trap
+     rule trap &Bits _ => trap
+     rule 0 &Bits unknown => 0
+     rule N:Int &Bits unknown => unknown
           when N =/=Int 0 
-     rule [and-unknown-zero-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
-          when N ==Int 0 
-     rule [and-unknown-left]:
-          piece(unknown(Len:Int), Len) &Bits N:Int
-          => 0
+     rule unknown &Bits 0 => 0
+     rule unknown &Bits N:Int => unknown
           when N =/=Int 0
 
 endmodule

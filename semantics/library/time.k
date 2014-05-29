@@ -7,7 +7,8 @@ module LIBC-TIME
      
      // fixme, just a placeholder
      rule [time]:
-          prepareBuiltin((Identifier("time")), _:KResult) 
+          prepareBuiltin(Identifier("time"), 
+               ListItem(_:KResult))
           => tv(0, t(.Set, long-long-int))
           [structural]
 endmodule

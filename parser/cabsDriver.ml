@@ -95,8 +95,6 @@ let rec processOneFile (cabs: Cabs.file) =
 		);
 		let inputFilename = 
 			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
-		let programName = "TranslationUnitName(\"" ^ inputFilename ^ "\")" in
-		(* printf "%s\n" programName; *)
 		let data = cabsToXML cabs !fileContents inputFilename in
 			
 		printf "%s\n" data; 

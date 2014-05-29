@@ -2,6 +2,7 @@ void exit(int status);
 void abort(void);
 inline
 void f (x)
+      int x;
 {
   int *(p[25]);
   int m[25*7];

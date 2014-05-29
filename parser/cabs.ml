@@ -98,7 +98,7 @@ and cvspec =
 and spec_elem =
     SpecTypedef          
   | SpecCV of cvspec            (* const/volatile *)
-  | SpecAttr of attribute       (* __attribute__ *)
+  | SpecAttr of (string * expression list)       (* __attribute__ *)
   | SpecStorage of storage
   (* technically these two should be grouped too *)
   | SpecInline
@@ -136,6 +136,9 @@ and decl_type =
                                            * decl is never a PTR. *)
  | PTR of attribute list * decl_type      (* Prints "* attrs decl" *)
  | PROTO of decl_type * single_name list * bool 
+                                          (* Prints "decl (args[, ...])".
+                                           * decl is never a PTR.*)
+ | NOPROTO of decl_type * single_name list * bool 
                                           (* Prints "decl (args[, ...])".
                                            * decl is never a PTR.*)
 
@@ -338,5 +341,5 @@ and initwhat =
 
                                         (* Each attribute has a name and some
                                          * optional arguments *)
-and attribute = string * expression list
+and attribute = spec_elem
 

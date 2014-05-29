@@ -6,12 +6,12 @@ module LIBC-STDLIB
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-MEMORY-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C11-SETTINGS-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= "printString" "(" K ")"
+     syntax K ::= printString(K)
 
      rule printString(S:String)
           => writeToFD(1, ordChar(firstChar(S:String)))
@@ -26,15 +26,16 @@ module LIBC-STDLIB
           [interpRule]
      
      rule [exit]:
-          <k> 
-               prepareBuiltin((Identifier("exit")), tv(I:Int, t(_, int))) ~> _
+          <k> prepareBuiltin(Identifier("exit"), 
+                    ListItem(tv(I:Int, t(_, int))))
+               ~> _
                => tv(I:Int, t(.Set, int)) 
           </k>
           [structural]
 
      rule [abort]:
-          <k> 
-               prepareBuiltin((Identifier("abort")), .KList) ~> _ 
+          <k> prepareBuiltin(Identifier("abort"), .List) 
+               ~> _ 
                => printString("Aborted") ~> tv(134, t(.Set, int)) 
           </k>
      
@@ -45,18 +46,13 @@ module LIBC-STDLIB
      The malloc function returns either a null pointer or a pointer to the
      allocated space.
      }*/
-     syntax K ::= "newAlloc" "(" Int ")" [function]
-     rule newAlloc(Base:Int) => loc(Base @ allocatedDuration, 0, 0)
-     
-     rule [malloc]:
-          <k> 
-               prepareBuiltin((Identifier("malloc")), tv(Len:Int, _:KResult))
-               => alloc(newAlloc(N), Len:Int)
-                    ~> tv(newAlloc(N), 
-                         t(.Set, pointerType(t(.Set, void))))
+     rule <k> prepareBuiltin(Identifier("malloc"),
+                    ListItem(tv(Len:Int, _:KResult)))
+               => alloc(Base, t(.Set, no-type), Len:Int)
+               ~> tv(lnew(Base), t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... .Map => newAlloc(N) |-> Len:Int ...</malloced>
-          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
+          <malloced>... .Map => Base |-> Len:Int ...</malloced>
+          <next-malloced> Base:SymBase => linc(Base) </next-malloced>
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
@@ -80,67 +76,64 @@ module LIBC-STDLIB
      if the new object could not be allocated.
      }*/
      rule [realloc]:
-          <k> 
-               prepareBuiltin((Identifier("realloc")), (tv(OldLoc:SymLoc, _),, 
-                    tv(NewLen:Int, _:KResult)))
-               => realloc(OldLoc, newAlloc(N), OldLen:Int, NewLen:Int)
-                    ~> tv(newAlloc(N), t(.Set, pointerType(t(.Set, void))))
+          <k> prepareBuiltin(Identifier("realloc"),
+                    ListItem(tv(loc(OldBase:SymBase, 0), _))
+                    ListItem(tv(NewLen:Int, _)))
+               => realloc(OldBase, NewBase, OldLen, NewLen)
+               ~> tv(lnew(NewBase), t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
-               (OldLoc => newAlloc(N)) |-> (OldLen:Int => NewLen:Int) 
+               (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
           ...</malloced>
-          <nextMalloced> N:Int => N +Int 1 </nextMalloced>
-          when OldLoc =/=K NullPointer
+          <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
      
      rule [realloc-null]:
-          prepareBuiltin((Identifier("realloc")), 
-               (tv(NullPointer, _),, Len:KResult)) 
-          => prepareBuiltin((Identifier("malloc")), Len:KResult)
+          prepareBuiltin(Identifier("realloc"),
+               ListItem(tv(NullPointer, _))
+               ListItem(Len:KResult))
+          => prepareBuiltin(Identifier("malloc"), ListItem(Len:KResult))
           [structural]
 
      syntax K ::= "calloc-aux"
      rule [calloc]:
-          prepareBuiltin((Identifier("calloc")), 
-               (tv(N:Int, _),, tv(Size:Int, _)))
-          => prepareBuiltin((Identifier("malloc")),
-               tv(N:Int *Int Size:Int, cfg:sizeut))
+          prepareBuiltin(Identifier("calloc"),
+               ListItem(tv(N:Int, _))
+               ListItem(tv(Size:Int, _)))
+          => prepareBuiltin(Identifier("malloc"),
+               ListItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
-     rule [calloc-aux]:
-          (. => zeroBlock(Loc:SymLoc) ) 
-          ~> tv(Loc, t(_, pointerType(t(_, void))))
-          ~> (calloc-aux => .K)
+     rule (. => zeroObject(base(Loc)) ) 
+          ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
+          ~> (calloc-aux => .)
           [structural]
 
      rule [free]:
-          <k> 
-               prepareBuiltin((Identifier("free")),
-                    tv(Loc:SymLoc, t(_, pointerType(_))))
-               => deleteSizedBlock(Loc, Len:Int) 
-                    ~> skipval
+          <k> prepareBuiltin(Identifier("free"),
+                    ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
+               => deleteSizedObject(Base, Len:Int) 
+               ~> skipval
           ...</k>
-          <malloced>... Loc |-> Len:Int => .Map ...</malloced>
+          <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
           
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
-          <k> 
-               prepareBuiltin((Identifier("rand")), .KList)
+          <k> prepareBuiltin((Identifier("rand")), .List)
                => tv(absInt(randomRandom(Seed:Int)) 
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
-          <randNat> Seed:Int => Seed:Int +Int 1 </randNat>
+          <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
           [structural]
           
      rule [srand]:
-          <k> 
-               prepareBuiltin((Identifier("srand")),
-                    tv(N:Int, t(.Set, unsigned-int)))
+          <k> prepareBuiltin(Identifier("srand"),
+                    ListItem(tv(N:Int, t(.Set, unsigned-int))))
                => skipval
           ...</k>
-          <randNat> _ => N:Int </randNat>
+          <rand-nat> _ => N:Int </rand-nat>
           [structural]
 
 endmodule

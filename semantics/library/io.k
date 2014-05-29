@@ -1,10 +1,12 @@
 module LIBC-IO-SYNTAX
-     syntax K ::= "writeToFD" "(" Int "," Int ")"
-     syntax K ::= "writeToFD" "(" Int "," String ")"
-     syntax K ::= "readFromFD" "(" Int ")"
-     syntax K ::= "readFromFD" "(" Int "," Int ")"
-     syntax K ::= "flush" "(" Int ")"
+     syntax K ::= writeToFD(Int, Int)
+     syntax K ::= writeToFD(Int, String)
+     syntax K ::= readFromFD(Int)
+     syntax K ::= readFromFD(Int, Int)
+     syntax K ::= flush(Int)
      syntax K ::= "f-flush" "(" Int ")"
+
+     syntax ExecOpts ::= "NOIO"
 endmodule
 
 module LIBC-IO
@@ -29,8 +31,7 @@ module LIBC-IO
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
-          <k> 
-               readFromFD(FD:Int) 
+          <k> readFromFD(FD:Int) 
                => tv(ordChar(firstChar(S:String)), t(.Set, int))  
           ...</k>
           <fid> FD </fid>
@@ -42,35 +43,35 @@ module LIBC-IO
      rule [readFromFD-empty-buff]:
           <k> readFromFD(FD:Int) ...</k>
           <fid> FD </fid>
-          <nextByte> .K => chrChar(#getc(FD)) </nextByte>
+          <next-byte> .K => chrChar(#getc(FD)) </next-byte>
           <buff> "" </buff>
           [structural]
-     rule <nextByte> Byte:String => .K </nextByte>
+     rule <next-byte> Byte:String => .K </next-byte>
           <buff> Buff:String => Buff +String Byte </buff>
           [structural]
      rule <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
           <fid> FD </fid>
-          <nextByte> #EOF </nextByte>
+          <next-byte> #EOF </next-byte>
           [observable]
 
-     rule <nextByte> chrChar((#EOF)::K) => #EOF </nextByte>
-          [simplification]
+     rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
+          [structural, simplification]
 
      syntax K ::= "f-sent" "(" Int "," String ")"
      syntax K ::= "f-sendString" "(" Int "," String ")"
      
-     // can't lex string2KList correctly in #fPrint(N:Int,,
-     // string2KList(S:String))
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
-          <fileCommands>... 
+          <file-commands>... 
                . => f-flush(FD)
-          </fileCommands>
+          </file-commands>
           [structural]
      rule [f-flush]:
-          <fileCommands>
-               f-flush(FD:Int) => f-sendString(FD, S) ~> f-sent(FD, S)
-          ...</fileCommands>
+          <file-commands>
+               f-flush(FD:Int)
+               => f-sendString(FD, S)
+               ~> f-sent(FD, S)
+          ...</file-commands>
           <file>...
                <fid> FD:Int </fid>
                <buff> S:String => "" </buff>
@@ -79,24 +80,31 @@ module LIBC-IO
           [structural]
 
      rule [sendString-one]:
-          <fileCommands> 
+          <file-commands> 
                f-sendString(FD:Int, S:String) 
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
-          ...</fileCommands>
-          when S =/=String ""
+          ...</file-commands>
+          <options> Opts:Set </options>
+          when (S =/=String "")
+               andBool notBool (NOIO in Opts)
+          [structural]
+     rule <file-commands> 
+               f-sendString(_, _) => .
+          ...</file-commands>
+          <options> SetItem(NOIO) ...</options>
           [structural]
      rule [sendString-done]:
-          <fileCommands> f-sendString(_, "") => .K ...</fileCommands>
+          <file-commands> f-sendString(_, "") => . ...</file-commands>
           [structural]
 
      rule [f-sent]:
-          <files>...
-               <fileCommands> f-sent(FD:Int, S:String) => .K ...</fileCommands>
+          <file-commands> f-sent(FD:Int, S:String) => . ...</file-commands>
+          <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>
                <done>... .List => ListItem(S) </done>
-          ...</files>
+          ...</file>
           [structural]
           
      rule [combine-done]:
