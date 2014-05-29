@@ -1,7 +1,5 @@
 module C-EXECUTION-ERROR
      imports C-ERROR-SYNTAX
-     imports C-ERROR-MAP-SYNTAX
-     imports C-CONSTRAINT-MAP-SYNTAX
 
      imports C-EXECUTION-INIT-SYNTAX
 
@@ -79,7 +77,7 @@ module C-EXECUTION-ERROR
           [structural]
           
      rule [err00041]:
-          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", cv("6.5.15:3")) ) ~>
+          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(ListItem(t(_, void)) ListItem(t(_, T:SimpleType)))
           when T =/=K void
           [structural]
@@ -89,7 +87,7 @@ module C-EXECUTION-ERROR
           when T =/=K void
           [structural]
      rule [err00043]:
-          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", cv("6.5.15:3")) ) ~>
+          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
           types(ListItem(T:Type) ListItem(T':Type))
           when (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))

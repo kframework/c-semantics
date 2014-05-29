@@ -13,12 +13,10 @@ module C-MEMORY-ALLOC-SYNTAX
 
      syntax K ::= sizeofObject(SymBase)
 
-     syntax K ::= makeUnwritableSubObject(K)
-
      syntax K ::= allocObject(SymBase, Type)
      syntax K ::= allocObjectIfAbsent(SymBase, Type)
-
      syntax Map ::= createAllocMap(KList, Bits) [function]
+
 endmodule
 
 module C-MEMORY-ALLOC
@@ -43,7 +41,7 @@ module C-MEMORY-ALLOC
                ~> writeString(Loc +bytes 1, butFirstChar(S:String))
           when S:String =/=String ""
           [structural]
-     // fixme this bare 4 needs to be updated to handle different size wchar_ts
+     //TODO this bare 4 needs to be updated to handle different size wchar_ts
      rule writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
           => Computation(
                allowWrite(* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
@@ -77,7 +75,7 @@ module C-MEMORY-ALLOC
 
      rule <k> alloc(Base:SymBase, T:Type, Len:Int) => . ...</k>
           <mem>...
-               .Map => Base |-> object(T, Len, .Map)
+               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
           ...</mem>
           when notBool isLinkerLoc(Base)
           [structural]
@@ -100,19 +98,10 @@ module C-MEMORY-ALLOC
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
           
-     // c99 6.5:2 If a side effect on a scalar object is unsequenced relative
-     // to either a different side effect on the same scalar object or a value
-     // computation using the value of the same scalar object, the behavior is
-     // undefined. If there are multiple allowable orderings of the
-     // subexpressions of an expression, the behavior is undefined if such an
-     // unsequenced side effect occurs in any of the orderings
-     //
-     // i take this to mean that if i write to a location twice or read from a
-     // location after being written to, then it is a problem
-          
+
      rule allocString(Base:SymBase, S:String)
-          => allocObject(Base, addQualifier(Const,
-               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))))
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ~> writeString(lnew(Base), S)
           [structural]
      rule allocWString(Base:SymBase, S:List)

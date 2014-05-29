@@ -15,8 +15,8 @@ module C-COMMON-EXPR-MEMBERS
      A postfix expression followed by the \cinline{.} operator and an
      identifier designates a member of a structure or union object. The value
      is that of the named member, and is an lvalue if the first expression is
-     an lvalue. \broken{If the first expression has qualified type, the result
-     has the so-qualified version of the type of the designated member.}
+     an lvalue. If the first expression has qualified type, the result has the
+     so-qualified version of the type of the designated member.
      }*/
      rule lval(Loc:SymLoc, t(Mods:Set,
                structType(S:CId, _, Fields:FieldInfo))) . F:CId

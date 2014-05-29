@@ -12,6 +12,7 @@ module C-DECL-INITIALIZER-SYNTAX
 
      syntax K ::= allowWrite(K) [strict]
      syntax Type ::= initializerType(Type) [function]
+     syntax K ::= singleIntInit(K) [strict]
 endmodule
 
 module C-DECL-INITIALIZER
@@ -31,8 +32,7 @@ module C-DECL-INITIALIZER
           => lv(N, initializerType(T))
           [structural]
 
-     rule initializerType(T:Type)
-          => addStorage(Initializer, stripConst(T))
+     rule initializerType(T:Type) => addStorage(Initializer, T)
 
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
@@ -56,7 +56,7 @@ module C-DECL-INITIALIZER
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
           )
-          when hasCharType(T) andBool (lengthString(S) <=Int Len)
+          when isWCharType(T) andBool (size(S) <=Int Len)
           [structural]
 
      rule figureInit(
@@ -359,22 +359,13 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>... 
-               . => Computation(allowWrite(K) := K') ~> possiblyMakeConst(T, K)
+               . => Computation(allowWrite(K) := K')
           </saved-init>
           when (isBasicType(T) 
                     orBool isPointerType(T) 
                     orBool isBitfieldType(T))
                andBool notBool isStructType(T')
                andBool notBool isUnionType(T')
-          [structural]
-     
-     syntax K ::= possiblyMakeConst(Type, K)
-     
-     rule possiblyMakeConst(T:Type, K:K) => makeUnwritableSubObject(K)
-          when isConstType(T)
-          [structural]
-     rule possiblyMakeConst(T:Type, _) => .
-          when notBool isConstType(T)
           [structural]
           
      // this is used to have an aggregate on the RHS of a compound init

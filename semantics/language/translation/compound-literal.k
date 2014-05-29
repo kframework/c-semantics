@@ -89,44 +89,33 @@ module C-COMPOUND-LITERAL
 
      }*/  
           
-     rule <k> (. => allocString(Base, S))
+     rule <k> (. => allocString(string(S), S))
                ~> stringLiteral(S:String)
           ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> (Base:SymBase => linc(Base)) </next-static-loc>
-          <string-lits>
-               M:Map
-               (.Map => S |-> lv(lnew(Base), t(.Set, 
-                    arrayType(t(.Set, char), lengthString(S) +Int 1))))
-          </string-lits>
-          when notBool (S in keys(M))
+          <mem> Mem:Map </mem>
+          when notBool (string(S) in keys(Mem))
           [structural]
           
-     syntax K ::= wstring(List)
-     rule <k> (. => allocWString(Base, S))
+     // TODO(chathhorn): possibly do string allocation lazily, although we'd
+     // want to make sure all allocations got triggered statically.
+     rule <k> (. => allocWString(wstring(S), S))
                ~> wstringLiteral(S:List)
           ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
-          <string-lits>
-               M:Map
-               (.Map => wstring(S) |-> lv(lnew(Base), t(.Set, 
-                    arrayType(cfg:wcharut, size(S) +Int 1))))
-          </string-lits>
-          when notBool wstring(S) in keys(M)
+          <mem> Mem:Map </mem>
+          when notBool (wstring(S) in keys(Mem))
           [structural]
           
-     rule <k> stringLiteral(S:String) => V ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <string-lits>... S |-> V:LValue ...</string-lits>
+     rule <k> stringLiteral(S:String)
+               => lv(lnew(string(S)),
+                    t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
+          ...</k>
+          <mem>... string(S) |-> _ ...</mem>
           [structural]
-     rule <k> wstringLiteral(S:List) => V ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <string-lits>... wstring(S) |-> V:LValue ...</string-lits>
+     rule <k> wstringLiteral(S:List)
+               => lv(lnew(wstring(S)),
+                    t(.Set, arrayType(cfg:wcharut, lengthList(S) +Int 1)))
+          ...</k>
+          <mem>... wstring(S) |-> _ ...</mem>
           [structural]
 
 endmodule

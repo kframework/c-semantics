@@ -73,15 +73,15 @@ module C-DECL-LOCAL
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
-               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
+               allowInit(figureInit(X, T, K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
-          ~> defineAndInit(X, stripStorageSpecifiers(T), 
-               allowInit(figureInit(X, stripStorageSpecifiers(T), K)))
+          ~> defineAndInit(X, T, 
+               allowInit(figureInit(X, T, K)))
           when isNaked(T)
           [structural] 
      // This is pretty contrived, but we don't give local extern decls an entry

@@ -2,33 +2,34 @@ module C-SYMLOC-SYNTAX
      syntax SymBase ::= base(SymLoc) [function]
      syntax Int ::= offset(SymLoc) [function]
 
-     // We got basically 4 different memory sorts:
-     // allocated -- allocated duration. The heap.
-     // thread -- thread local and also auto storage class. Automatic storage
-     // duration (the stack) plus thread-local.
-     // static -- per-TU memory allocated during the translation phase.
-     // Corresponds to the static storage class, data segment, bss, etc.
-     // argv -- where the arguments to main() go.
-     // 
-     // Also, we have special "linker" locations for unresolved (before
-     // linking) external references.
-     // 
-     // TODO(chathhorn): maybe add an actual "auto" storage duration?
+     //Allocated duration.
      syntax Duration ::= "allocated" [avoid]
-     syntax Duration ::= "argv"
-     syntax Duration ::= link(String)
+     // Static duration.
      syntax Duration ::= static(String)
+     syntax Duration ::= link(String)
+     syntax SymBase ::= string(String)
+     syntax SymBase ::= wstring(List)
+     // Thread local duration.
      syntax Duration ::= thread(Int)
+     // Auto storage duration.
      syntax Duration ::= auto(Int)
+     syntax Duration ::= "argv"
+     // We strip storage class specifiers when processing declarations, so this
+     // is how we keep track of register-ness.
+     syntax Duration ::= register(Int)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
-     syntax Bool ::= isArgvDuration(SymLoc) [function]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
      syntax Bool ::= isAutoDuration(SymLoc) [function]
 
+     syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymBase) [function]
+     syntax Bool ::= isArgvLoc(SymLoc) [function]
+     syntax Bool ::= isRegisterLoc(SymLoc) [function]
+
+     syntax SymBase ::= autoToRegister(SymBase) [function]
 
      // I.e., static, argv, allocated, or thread (the same as "not
      // isLinkerLoc," except it's a "positive" check). This is mostly intended
@@ -69,46 +70,62 @@ module C-SYMLOC
      imports C-SETTINGS-SYNTAX
 
      syntax Bool ::= "#isAllocatedDuration" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isArgvDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isAutoDuration" "(" SymLoc ")" [function]
 
+     syntax Bool ::= "#isStringLoc" "(" SymLoc ")" [function]
      syntax Bool ::= "#isLinkerLoc" "(" SymBase ")" [function]
+     syntax Bool ::= "#isArgvLoc" "(" SymLoc ")" [function]
+     syntax Bool ::= "#isRegisterLoc" "(" SymLoc ")" [function]
 
      rule isPhysicalLoc(Loc:SymLoc) 
           => (isAllocatedDuration(Loc) 
-               orBool isArgvDuration(Loc)
                orBool isStaticDuration(Loc)
                orBool isThreadDuration(Loc)
                orBool isAutoDuration(Loc))
 
      rule isAllocatedDuration(Loc:SymLoc) 
           => #isAllocatedDuration(Loc) ==K true
-     rule isArgvDuration(Loc:SymLoc) 
-          => #isArgvDuration(Loc) ==K true
      rule isStaticDuration(Loc:SymLoc)
           => #isStaticDuration(Loc) ==K true
      rule isThreadDuration(Loc:SymLoc)
           => #isThreadDuration(Loc) ==K true
      rule isAutoDuration(Loc:SymLoc)
           => #isAutoDuration(Loc) ==K true
+     rule isStringLoc(Loc:SymLoc)
+          => #isStringLoc(Loc) ==K true
 
      rule isLinkerLoc(Base:SymBase)
           => #isLinkerLoc(Base) ==K true
+     rule isArgvLoc(Loc:SymLoc) 
+          => #isArgvLoc(Loc) ==K true
+     rule isRegisterLoc(Loc:SymLoc) 
+          => #isRegisterLoc(Loc) ==K true
+
+     rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
      rule #isAllocatedDuration(loc(_ @ allocated, _)) => true
 
-     rule #isArgvDuration(loc(_ @ argv, _)) => true
-
      rule #isStaticDuration(loc(_ @ static(_), _)) => true
      rule #isStaticDuration(loc(_ @ link(_), _)) => true
+     rule #isStaticDuration(loc(string(_), _)) => true
+     rule #isStaticDuration(loc(wstring(_), _)) => true
 
      rule #isThreadDuration(loc(_ @ thread(_), _)) => true
 
      rule #isAutoDuration(loc(_ @ auto(_), _)) => true
+     rule #isAutoDuration(loc(_ @ argv, _)) => true
+     rule #isAutoDuration(loc(_ @ register(_), _)) => true
+
+     rule #isStringLoc(loc(string(_), _)) => true
+     rule #isStringLoc(loc(wstring(_), _)) => true
 
      rule #isLinkerLoc(_ @ link(_)) => true
+
+     rule #isArgvLoc(loc(_ @ argv, _)) => true
+
+     rule #isRegisterLoc(loc(_ @ register(_), _)) => true
 
      rule base(loc(Base:SymBase, _)) => Base
 
@@ -134,6 +151,7 @@ module C-SYMLOC
 
      rule getThreadId(loc(_ @ thread(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ auto(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ register(Th:Int), _)) => Th
 
      rule getOffset(loc(_, Off:Int)) => Off
      

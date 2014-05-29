@@ -12,6 +12,7 @@ endmodule
 
 module C-IO-BUFFERED
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -26,18 +27,26 @@ module C-IO-BUFFERED
 
      syntax List ::= bwrite(SymLoc, K)
 
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), T:Type)
-          => checkWrite(Loc, T) 
-          ~> writeByte(Loc, V)
-          ~> writeBytes(Loc +bytes 1, dataList(L), T)
+     syntax K ::=  writeBytes(SymLoc, List)
+     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
+          => checkWrite(Loc, T)  
+          // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
+          // if the object has a declared type and checkEff is only meaningful
+          // in the case of a declared type being present. Also it'd be nice to
+          // combine the checks.
+          ~> setEffectiveType(Loc, T)
+          ~> checkEffectiveType(T, getEffectiveType(Loc))
+          ~> writeBytes(Loc, Bytes)
           when notBool isInitializerType(T)
-          [structural]
-     rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List), T:Type)
-          => writeByte(Loc, V)
-          ~> writeBytes(Loc +bytes 1, dataList(L), T)
+     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
+          => writeBytes(Loc, Bytes)
           when isInitializerType(T)
+
+     rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
+          => writeByte(Loc, V)
+          ~> writeBytes(Loc +bytes 1, L)
           [structural]
-     rule writeBytes(_, dataList(.List), _) => .
+     rule writeBytes(_, .List) => .
           [structural] 
 
      syntax K ::= checkWrite(SymLoc, Type)
@@ -46,16 +55,15 @@ module C-IO-BUFFERED
           <locs-written>
                Locs:Bag (.Bag => BagItem(loc(Base, Offset)))
           </locs-written>
-          <not-writable> NotWritable:Set </not-writable>
           when // Sequencing.
                (notBool BagItem(loc(Base, Offset)) in Locs)
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
-               andBool (notBool isConstType(ObjT))
-               andBool (notBool (loc(Base, Offset) in NotWritable))
+               andBool (notBool Const in getQualsAtOffset(ObjT, Offset))
                // Volatile.
-               andBool (notBool isVolatileType(ObjT) orBool isVolatileType(T))
+               andBool ((notBool Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T))
           [structural]
      rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
@@ -70,22 +78,18 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           when Offset >=Int Len orBool Offset <Int 0
           [structural] 
-     rule <k> (. => UNDEF("EIO3", "Trying to modify a string literal or an object declared with const type.", "6.4.5, 6.7.3"))
-               ~> checkWrite(loc(Base:SymBase, _), _)
+     rule <k> (. => UNDEF("EIO3", "Trying to modify an object declared with const type.", "6.7.3"))
+               ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when isConstType(ObjT)
+          when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
-               ~> checkWrite(loc(Base:SymBase, _), T:Type)
+     rule <k> (. => UNDEF("EIO5", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
+               ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when notBool isVolatileType(T) andBool isVolatileType(ObjT)
-          [structural]
-     rule <k> (. => UNDEF("EIO5", "Trying to modify an object declared with const type.", "6.7.3") )
-               ~> checkWrite(Loc:SymLoc, _)
-          ...</k>
-          <not-writable>... SetItem(Loc) ...</not-writable>
+          when notBool isVolatileType(T)
+               andBool Volatile in getQualsAtOffset(ObjT, Offset)
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
@@ -107,7 +111,8 @@ module C-IO-BUFFERED
           => SetItem(Loc) locations(L)
 
      rule readBytes(Loc:SymLoc, Size:Int, T:Type)
-          => readBytes-aux(Loc, Size, .List, T) 
+          => checkEffectiveType(T, getEffectiveType(Loc))
+          ~> readBytes-aux(Loc, Size, .List, T) 
           [structural] 
           
      // loc, size in bytes, aux list
@@ -117,18 +122,16 @@ module C-IO-BUFFERED
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
           when Size >Int 0
           [structural]
-     rule readBytes-aux(_, 0, Aux:List, _) => dataList(values(Aux)) 
+     rule readBytes-aux(_, 0, Aux:List, _) => dataList(bvalues(Aux)) 
           [structural] 
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, 
                (Aux:List => Aux ListItem(tv(V, T))), _)
           [structural]        
      
-     syntax List ::= values(List) [function]
-     rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K) values(L)
-     rule values(.List) => .List
-
-     // FIXME make sure it's a byte
+     syntax List ::= bvalues(List) [function]
+     rule bvalues(ListItem(tv(K:K, _)) L:List) => ListItem(K) bvalues(L)
+     rule bvalues(.List) => .List
 
      syntax Error ::= "errorReadOutOfBounds"
                     | "errorUnseqEffects"
@@ -136,10 +139,13 @@ module C-IO-BUFFERED
      
      syntax K ::= readByte(SymLoc, Type)
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
+               // TODO(chathhorn): do we really need to check this stuff every
+               // byte?
                => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(ObjT) orBool isVolatileType(T),
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
@@ -153,7 +159,8 @@ module C-IO-BUFFERED
                => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(ObjT) orBool isVolatileType(T),
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
@@ -166,8 +173,9 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(ObjT) orBool isVolatileType(T), 
-                   errorNonVolatileLVal)
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T), 
+                    errorNonVolatileLVal)
                ~> tv(piece(trap, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -182,8 +190,9 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert(notBool isVolatileType(ObjT) orBool isVolatileType(T), 
-                   errorNonVolatileLVal)
+               ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T), 
+                    errorNonVolatileLVal)
                ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
           <mem>... 
@@ -271,4 +280,159 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural] 
 
+     syntax K ::= getEffectiveType(SymLoc)
+     rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int))
+               => getTypeAtOffset(T, Offset)
+          ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          when notBool isNoType(T)
+          [structural]
+     rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T' ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <effective-types>...
+               loc(Base, Offset) |-> T':Type
+          ...</effective-types>
+          when isNoType(T)
+          [structural]
+     rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <effective-types> EffTypes:Map </effective-types>
+          when isNoType(T)
+               andBool notBool (loc(Base, Offset) in keys(EffTypes))
+          [structural]
+
+     syntax K ::= setEffectiveType(SymLoc, Type)
+     rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .
+          ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          when notBool isNoType(T)
+          [structural]
+     rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
+          ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <effective-types>...
+               .Map => loc(Base, Offset) |-> T'
+          ...</effective-types>
+          when isNoType(T)
+          [structural]
+
+     syntax K ::= checkEffectiveType(Type, K) [strict(2)]
+     rule checkEffectiveType(L:Type, Eff:Type) => .
+          when #effectivelyCompat(L, Eff) ==K true
+          [structural]
+     rule (. => UNDEF("EIO9", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
+          ~> checkEffectiveType(L:Type, Eff:Type)
+          when #effectivelyCompat(L, Eff) =/=K true
+          [structural]
+
+     // An  object shall have its stored value accessed only by an lvalue
+     // expression that has one of
+     syntax Bool ::= "#effectivelyCompat" "(" Type "," Type ")" [function]
+     // - a type compatible with the effective type of the object,
+     // - a qualified version of a type compatible with the effective type of
+     // the object,
+     rule #effectivelyCompat(L:Type, Eff:Type) => true
+          when areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+     // - a type that is the signed or unsigned type corresponding to the
+     // effective type of the object,
+     // - a type that is the signed or unsigned type corresponding to a
+     // qualified version of the effective type of the object,
+     rule #effectivelyCompat(L:Type, Eff:Type) => true
+          when areCompatible(correspondingUnsignedType(stripQualifiers(L)),
+                    stripQualifiers(Eff))
+               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+          // TODO(chathhorn): some sort of ==Type? Can't really compare types
+          // straight up because of special modifiers.
+     rule #effectivelyCompat(L:Type, Eff:Type) => true
+          when areCompatible(correspondingSignedType(stripQualifiers(L)),
+                    stripQualifiers(Eff))
+               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+     // - an aggregate or union type that includes one of the aforementioned
+     // types among its members (including, recursively, a member of a
+     // subaggregate or contained union), or
+     rule #effectivelyCompat(L:Type, Eff:Type)
+          => #effectivelyCompat(L, effInnerType(Eff))
+          when isAggregateType(Eff)
+               andBool notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+                    andBool getQualifiers(Eff) <=Set getQualifiers(L))
+               andBool notBool hasCharType(L)
+     // TODO(chathhorn): this is where things get sketchy. Very unclear
+     // about the implications of strict aliasing w/r/t unions. As it is, we
+     // let it pass if we're compatible with one of the union members of the
+     // effective type.
+     rule #effectivelyCompat(L:Type,
+     // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
+               t(Mods:Set, unionType(X:CId, Sz:Int, fieldInfo(Decls:List, Types:Map, Offs:Map))))
+          => effectivelyCompatWithUnion(L, values(Types))
+          when notBool (areCompatible(
+                         stripQualifiers(L),
+                         stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
+                    andBool intersectSet(Mods, typeQualifiers)
+                         <=Set getQualifiers(L))
+               andBool notBool hasCharType(L)
+     // - a character type.
+     rule #effectivelyCompat(L:Type, _) => true
+          when hasCharType(L)
+
+     syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
+     rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)
+          => #effectivelyCompat(T, T')
+               orElseBool effectivelyCompatWithUnion(T, L)
+     rule effectivelyCompatWithUnion(_, .List) => false
+
+     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
+     // or array, it'll return the struct/union/array type and not the type of
+     // its first member. Returns no-type when nothing seems to be aligned at
+     // that offset.
+     syntax Type ::= getTypeAtOffset(Type, Int) [function]
+     rule getTypeAtOffset(T:Type, 0) => T
+     // Preserve the qualifiers.
+     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
+          when (Offset =/=Int 0)
+               andBool notBool isAggregateType(T)
+     // Arrays.
+     rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
+          => getTypeAtOffset(addQualifiers(Mods, T),
+               Offset %Int byteSizeofType(T))
+          when Offset =/=Int 0 // We assume the offset must be in range.
+     // Structs.
+     rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
+               _ ListItem(typedDeclaration(_, F1:CId))
+                 ListItem(typedDeclaration(_, F2:CId)) _,
+               _ F1 |-> T:Type,
+               _ F1 |-> Offset1:Int F2 |-> Offset2:Int
+          ))), Offset:Int)
+          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
+          when (Offset =/=Int 0)
+               andBool (Offset1 <=Int Offset)
+               andBool (Offset2 >Int Offset)
+     rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
+               _ ListItem(typedDeclaration(_, F1:CId)),
+               _ F1 |-> T:Type,
+               _ F1 |-> Offset1:Int
+          ))), Offset:Int)
+          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
+          when (Offset =/=Int 0)
+               andBool (Offset1 <=Int Offset)
+
+     syntax Set ::= getQualsAtOffset(Type, Int) [function]
+     rule getQualsAtOffset(T:Type, Offset:Int)
+          => getQualsAtOffset(getTypeAtOffset(T, Offset))
+
+     syntax Set ::= getQualsAtOffset(Type) [function]
+     rule getQualsAtOffset(T:Type) => getQualifiers(T)
+          when notBool isAggregateType(T)
+     rule getQualsAtOffset(T:Type)
+          => getQualifiers(T) getQualsAtOffset(effInnerType(T))
+          when isAggregateType(T)
+     // TODO(chathhorn): absolutely no idea what to do about qualifiers on
+     // union members -- do we need to get the effective type of the object?
+
+     syntax Type ::= effInnerType(K) [function]
+     rule effInnerType(T:Type) => innerType(T)
+          when isArrayType(T)
+     rule effInnerType(t(_, structType(_, _, fieldInfo(
+               ListItem(typedDeclaration(T:Type, _)) _, _, _))))
+          => T
 endmodule

@@ -66,12 +66,8 @@ module C-DECL-TAGGED
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
-     rule makeUnionFieldInfo(L:List) 
-          => makeUnionFieldInfo'(
-               L,
-               .Map, .Map,
-               L)
-          when L =/=List .List
+     rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
+	  when L =/=List .List
 
      rule makeUnionFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:CId)) L:List

@@ -3,13 +3,11 @@ require "bitsize.k"
 require "bits.k"
 require "builtin.k"
 require "compat.k"
-require "constraint-map.k"
 require "conversion.k"
 require "debug.k"
 require "dynamic.k"
 require "env.k"
 require "error.k"
-require "error-map.k"
 require "literal.k"
 require "promotion.k"
 require "settings.k"
@@ -48,12 +46,10 @@ module C-COMMON
      imports C-BITS
      imports C-BUILTIN
      imports COMPAT
-     imports C-CONSTRAINT-MAP
      imports C-CONVERSION
      imports C-DYNAMIC
      imports C-ENV
      imports C-ERROR
-     imports C-ERROR-MAP
      imports C-LITERAL
      imports C-PROMOTION
      imports C-SETTINGS
