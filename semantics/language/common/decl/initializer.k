@@ -203,7 +203,7 @@ module C-DECL-INITIALIZER
           [structural] 
      
      rule <curr-subobject>
-               (next ListItem(te(K:K[N:Int], T:Type)) 
+               (ListItem(next) ListItem(te(K:K[N:Int], T:Type)) 
                     => ListItem(te(K[N +Int 1], T))) 
                ListItem(te(K, t(_, incompleteArrayType(_))))
           ...</curr-subobject>
