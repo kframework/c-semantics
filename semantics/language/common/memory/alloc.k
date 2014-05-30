@@ -64,7 +64,7 @@ module C-MEMORY-ALLOC
                => alloc(Base, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
-          when notBool (SetItem(Base) in (keys M))
+          when notBool (SetItem(Base) in (keys(M)))
           [structural] 
      rule <k> allocObjectIfAbsent(Base:SymBase, _) => . 
           ...</k>
@@ -79,10 +79,14 @@ module C-MEMORY-ALLOC
           [structural]
      
      // Used by calloc.
+     syntax Map ::= createMap(KList,Bits) [function]
+     rule createMap(.KList, B:Bits) => .Map
+     rule createMap((I:K,, KL:KList), B:Bits) => (I |-> B) createMap(KL, B) 
+    
      rule <k> zeroObject(Base:SymBase) => . ...</k>
           <mem>...
                Base |-> object(_, Len:Int, 
-                    _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
+                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
           

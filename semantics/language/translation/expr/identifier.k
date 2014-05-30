@@ -34,7 +34,7 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
-          <external-uses>... (. => SetItem(X)) </external-uses>
+          <external-uses>... (.Set => SetItem(X)) </external-uses>
           when isLinkerLoc(Base)
           [structural]
 

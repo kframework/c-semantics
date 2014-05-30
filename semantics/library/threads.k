@@ -102,7 +102,7 @@ module LIBC-THREADS
                     ListItem(tv(Type:Int, _)))
                => thrd-success
           ...</k>
-          <mutexes> M:Map (. => Loc |-> Type:Int) </mutexes>
+          <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
           when notBool (Loc in keys(M))
                andBool (Type ==Int cfg:mtxPlain) 

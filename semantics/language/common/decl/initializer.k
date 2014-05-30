@@ -130,8 +130,8 @@ module C-DECL-INITIALIZER
 
      rule <k> getInit => initializer(K:K) ...</k>
           <saved-init> K:K => . </saved-init> 
-          <curr-object> _:List => . </curr-object> 
-          <curr-subobject> _:List => . </curr-subobject> 
+          <curr-object> _:List => .List </curr-object> 
+          <curr-subobject> _:List => .List </curr-subobject> 
           [structural] 
 
      syntax KItem ::= startInit(Type, CId, K)
@@ -155,8 +155,8 @@ module C-DECL-INITIALIZER
      rule fillInits(.List) => .K
           [structural] 
      
-     syntax ListItem ::= "next"
-     syntax ListItem ::= "block"
+     syntax List ::= "next"
+     syntax List ::= "block"
      
      rule <curr-subobject> 
                ListItem(te(K:K, t(Mods:Set, arrayType(T:Type, Len:CSize))))
@@ -220,7 +220,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           when F' =/=K #NoName
           [structural] 
-      
+
      rule <curr-subobject>
                (next ListItem(te(K:K . F:CId, T:Type)) 
                     => ListItem(te(K . F', T')))
@@ -265,18 +265,18 @@ module C-DECL-INITIALIZER
                ~> finishCompoundInit(next ListItem(te(K, T)) ListItem(Remainder))
           ...</k>
           <curr-subobject> 
-               (_:List => .) 
+               (_:List => .List) 
                ListItem(te(K:K, T:Type)) 
-               (ListItem(Remainder:K) => .)
+               (ListItem(Remainder:K) => .List)
           </curr-subobject>
           <curr-object>
-               (. => ListItem(te(K, T)))
+               (.List => ListItem(te(K, T)))
           ...</curr-object>
           when isAggregateType(T) orBool isUnionType(T)
           [structural]
      rule <k> finishCompoundInit(L:List) => . ...</k>
           <curr-object>
-               (ListItem(te(_:K, _:Type)) => .)
+               (ListItem(te(_:K, _:Type)) => .List)
           ...</curr-object>
           <curr-subobject> (_ => L) </curr-subobject>
           [structural] 
@@ -387,7 +387,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural] 
           
-     syntax ListItem ::= findStruct(Type)
+     syntax List ::= findStruct(Type)
           
      rule <curr-subobject>
                findStruct(T:Type) (ListItem(te(_, T':Type)) => .List)

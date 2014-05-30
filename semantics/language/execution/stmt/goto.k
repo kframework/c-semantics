@@ -214,7 +214,7 @@ module C-STMT-GOTO
      
      //  skip variables from other blocks
      rule <k> addVariablesForBlock(TargetBlock:Int, 
-                    ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .)
+                    ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .List)
                     _:List)
                )
           ...</k>
@@ -225,7 +225,7 @@ module C-STMT-GOTO
      //  skip variables in the real history
      rule <k> addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(
-                         _:Int, TargetBlock:Int, Decl:K)) => .)
+                         _:Int, TargetBlock:Int, Decl:K)) => .List)
                     _:List)
                )
           ...</k>
