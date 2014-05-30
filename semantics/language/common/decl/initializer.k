@@ -220,7 +220,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           when F' =/=K #NoName
           [structural] 
-      
+
      rule <curr-subobject>
                (next ListItem(te(K:K . F:CId, T:Type)) 
                     => ListItem(te(K . F', T')))

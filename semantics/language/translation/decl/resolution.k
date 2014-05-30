@@ -73,7 +73,7 @@ module C-DECL-RESOLUTION
                SetItem(X:CId)
           ...</external-uses>
           <external-decls>...
-               X |-> set((SetItem(Tu:String) => .Map) _)
+               X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
           <external-defs>...
                X |-> Base:SymBase
