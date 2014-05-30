@@ -138,7 +138,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (. => ERROR("FD8", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
-          when lengthList(Params) >Int 2
+          when size(Params) >Int 2
           [structural]
      rule (. => ERROR("FD9", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))

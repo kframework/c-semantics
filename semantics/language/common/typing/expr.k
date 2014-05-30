@@ -132,7 +132,7 @@ module C-TYPING-EXPR
           [structural]
      rule <type>
                wstringLiteral(L:List)
-               => t(.Set, arrayType(cfg:wcharut, lengthList(L) +Int 1)) 
+               => t(.Set, arrayType(cfg:wcharut, size(L) +Int 1)) 
           ...</type>
           [structural]
           
