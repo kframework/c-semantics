@@ -134,7 +134,6 @@ module C-TYPING-PREDICATES
      rule isExternType(T:Type) => Extern in getStorageSpecifiers(T)
      rule isStaticType(T:Type) => Static in getStorageSpecifiers(T)
      rule isRegisterType(T:Type) => Register in getStorageSpecifiers(T)
-     rule isInitializerType(T:Type) => Initializer in getStorageSpecifiers(T)
 
      rule isConstType(T:Type) => Const in getQualifiers(T)
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)

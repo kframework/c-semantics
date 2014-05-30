@@ -117,7 +117,7 @@ module C-DECL-LOCAL
                => allocObjectIfAbsent(Base, T')
                ~> addToEnv(X, Base)
                ~> giveType(X, T')
-               ~> K
+               ~> allowInit(K)
                ~> sequencePoint
           ...</k>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
@@ -140,8 +140,7 @@ module C-DECL-LOCAL
           [structural] 
           
      syntax K ::= justInit(K) [strict]
-     rule justInit(initValue(_, _, K:K)) 
-          => K ~> sequencePoint
+     rule justInit(initValue(_, _, K:K)) => allowInit(K) ~> sequencePoint
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>

@@ -161,9 +161,6 @@ module C-TYPING-MISC
           SetItem(Auto)
           SetItem(ThreadLocal)
           SetItem(Register)
-          // For disabling various checks during initialization (i.e.,
-          // const-ness and such).
-          SetItem(Initializer)
           // Also typedef, technically.
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))

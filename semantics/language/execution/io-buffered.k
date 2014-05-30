@@ -28,19 +28,21 @@ module C-IO-BUFFERED
      syntax ListItem ::= bwrite(SymLoc, K)
 
      syntax K ::=  writeBytes(SymLoc, List)
-     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
-          => checkWrite(Loc, T)  
-          // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
-          // if the object has a declared type and checkEff is only meaningful
-          // in the case of a declared type being present. Also it'd be nice to
-          // combine the checks.
-          ~> setEffectiveType(Loc, T)
-          ~> checkEffectiveType(T, getEffectiveType(Loc))
-          ~> writeBytes(Loc, Bytes)
-          when notBool isInitializerType(T)
-     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
-          => writeBytes(Loc, Bytes)
-          when isInitializerType(T)
+     rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
+               => checkWrite(Loc, T)  
+               // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
+               // if the object has a declared type and checkEff is only meaningful
+               // in the case of a declared type being present. Also it'd be nice to
+               // combine the checks.
+               ~> setEffectiveType(Loc, T)
+               ~> checkEffectiveType(T, getEffectiveType(Loc))
+               ~> writeBytes(Loc, Bytes)
+          ...</k>
+          <initializing> false </initializing>
+     rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
+               => writeBytes(Loc, Bytes)
+          ...</k>
+          <initializing> true </initializing>
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -341,11 +343,13 @@ module C-IO-BUFFERED
 
      syntax K ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L:Type, Eff:Type) => .
-          when #effectivelyCompat(L, Eff) ==K true
+          when (#effectivelyCompat(L, Eff) ==K true)
+               orBool isNoType(Eff)
           [structural]
      rule (. => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
-          when #effectivelyCompat(L, Eff) =/=K true
+          when (#effectivelyCompat(L, Eff) =/=K true)
+               andBool notBool isNoType(Eff)
           [structural]
 
      // An  object shall have its stored value accessed only by an lvalue

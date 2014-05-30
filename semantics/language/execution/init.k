@@ -68,15 +68,15 @@ module C-EXECUTION-INIT
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
           => allocObject(N +Int 1 @ argv, strType(S))
           ~> writeString(lnew(N +Int 1 @ argv), S)
-          ~> Computation(
-               allowWrite(Identifier("#incomingArgumentsArray")[N])
-                    := lv(lnew(N +Int 1 @ argv), strType(S)))
+          ~> allowInit(Computation(
+               Identifier("#incomingArgumentsArray")[N]
+                    := lv(lnew(N +Int 1 @ argv), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int) 
-          => Computation(
-               allowWrite(Identifier("#incomingArgumentsArray")[N])
-                    := NullPointerConstant)
+          => allowInit(Computation(
+               Identifier("#incomingArgumentsArray")[N]
+                    := NullPointerConstant))
           [structural]
           
      rule pgmArgs(L:List)

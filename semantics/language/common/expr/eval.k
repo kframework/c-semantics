@@ -69,7 +69,6 @@ module C-COMMON-EXPR-EVAL
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
           when notBool isArrayType(T) 
                andBool notBool isFunctionType(T) 
-          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -81,10 +80,10 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, stripQualifiers(arrayToPointer(T)))
+          => checkRegister(Loc) ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
           when isArrayType(T) 
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, arrayToPointer(T))
+          => checkRegister(Loc) ~> tv(Loc, arrayToPointer(T))
           when isArrayType(T)
 
      syntax Type ::= arrayToPointer(Type) [function]
@@ -110,24 +109,35 @@ module C-COMMON-EXPR-EVAL
           => instantiate(Loc, T)
           when notBool isArrayType(T)
                andBool notBool isFunctionType(T) 
+
+     syntax K ::= checkRegister(SymLoc)
+     rule <k> checkRegister(_) => . ...</k>
+          <initializing> true </initializing>
+          [structural]
+     rule <k> checkRegister(Loc:SymLoc) => . ...</k>
+          <initializing> false </initializing>
+          when notBool isRegisterLoc(Loc)
+          [structural]
+     rule <k> checkRegister(Loc:SymLoc)
+               => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
+          ...</k>
+          <initializing> false </initializing>
+          when isRegisterLoc(Loc)
           [structural]
 
      syntax K ::= checkUse(K) [strict]
-
      rule checkUse(V:KResult) => V
           when isTypedValue(V) =/=K true
+          [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
           when (isSymLoc(V) =/=K true)
                andBool (isTrap(V) =/=K true)
-     rule checkUse(tv(V:SymLoc, T:Type))
-          => checkLoc(V) ~> tv(V, T)
-          when notBool isRegisterLoc(V)
-     rule checkUse(tv(V:SymLoc, T:Type))
-          => UNDEF("CEE1", "Address of a value declared with register storage class used in an expression.", "")
-          ~> tv(V, T)
-          when isRegisterLoc(V)
+          [structural]
+     rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
+          [structural]
      rule checkUse(tv(trap, T:Type))
           => UNDEF("CEE2", "Indeterminate value used in an expression.", "")
           ~> tv(trap, T)
+          [structural]
      
 endmodule

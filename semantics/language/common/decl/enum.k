@@ -37,10 +37,9 @@ module C-DECL-ENUM
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => . 
           [structural] 
 
-
      syntax K ::= enumInit(CId, K) [strict(2)]
      rule enumInit(X:CId, V:TypedValue)
-          => Computation(allowWrite(X) := V)
+          => Computation(X := V)
           when hasIntegerType(type(V))
      rule (. => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
           ~> enumInit(_, tv(_, T:Type))

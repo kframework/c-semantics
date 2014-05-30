@@ -42,7 +42,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isBitfieldType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
-     syntax Bool ::= isInitializerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
      syntax Bool ::= isIncompleteArrayType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
@@ -88,11 +87,6 @@ module C-TYPING-SYNTAX
           [klabel('unionType)]
      syntax SimpleType ::= incompleteUnionType(CId)
           [klabel('incompleteUnionType)]
-
-     // Writing to an lvalue with this qualifier ignores qualifiers on the
-     // underlying object (const and volatile) and disables checking for
-     // unsequenced reads/writes.
-     syntax Storage ::= "Initializer"
 
      // Basic types
      syntax SimpleType ::= "char" [function]

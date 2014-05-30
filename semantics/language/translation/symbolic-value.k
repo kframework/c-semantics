@@ -31,7 +31,9 @@ module C-SYMBOLIC-VALUE
 
      rule write(symVal, _, T:Type) => .
           when notBool isConstType(T)
-               orBool isInitializerType(T)
+          [structural]
+     rule <k> write(symVal, _, _) => . ...</k>
+          <initializing> true </initializing>
           [structural]
 
      rule bitSizeofType(T:Type) => symVal

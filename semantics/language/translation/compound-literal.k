@@ -57,8 +57,7 @@ module C-COMPOUND-LITERAL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> zero(X)
-               ~> Init
+               ~> allowInit(zero(X) ~> Init)
                ~> X
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -66,7 +65,6 @@ module C-COMPOUND-LITERAL
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <initializing> true </initializing>
           [structural]
-
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)
                ~> giveType(X, T)

@@ -51,7 +51,8 @@ module C-COMPOUND-LITERAL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> Init ~> sequencePoint
+               ~> allowInit(Init)
+               ~> sequencePoint
                ~> X
           ...</k>
           <compound-lit-map> M:Map => M[Base <- X] </compound-lit-map>
@@ -66,7 +67,8 @@ module C-COMPOUND-LITERAL
      rule <k> handleCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
                => addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> Init ~> sequencePoint
+               ~> allowInit(Init)
+               ~> sequencePoint
                ~> X
           ...</k>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>

@@ -34,7 +34,7 @@ module C-MEMORY-ALLOC
      
      rule writeString(Loc:SymLoc, S:String)
           => Computation(
-               allowWrite(* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               * tv(Loc, t(.Set, pointerType(t(.Set, char))))
                := tv(ordChar(firstChar(S:String)), t(.Set, char)))
                ~> writeString(Loc +bytes 1, butFirstChar(S:String))
           when S:String =/=String ""
@@ -42,18 +42,18 @@ module C-MEMORY-ALLOC
      // TODO this bare 4 needs to be updated to handle different size wchar_ts
      rule writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
           => Computation(
-               allowWrite(* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
                := tv(N, cfg:wcharut))
                ~> writeWString(Loc +bytes 4, S)
           [structural] 
      rule writeString(Loc:SymLoc, "")
           => Computation(
-               allowWrite(* tv(Loc, t(.Set, pointerType(t(.Set, char))))) 
+               * tv(Loc, t(.Set, pointerType(t(.Set, char))))
                := tv(0, t(.Set, char)))
           [structural]
      rule writeWString(Loc:SymLoc, .List)
           => Computation(
-               allowWrite(* tv(Loc, t(.Set, pointerType(cfg:wcharut)))) 
+               * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
                := tv(0, cfg:wcharut))
           [structural] 
 
@@ -95,12 +95,12 @@ module C-MEMORY-ALLOC
      rule allocString(Base:SymBase, S:String)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ~> writeString(lnew(Base), S)
+          ~> allowInit(writeString(lnew(Base), S))
           [structural]
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
                arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1))))
-          ~> writeWString(lnew(Base), S)
+          ~> allowInit(writeWString(lnew(Base), S))
           [structural] 
      
 endmodule

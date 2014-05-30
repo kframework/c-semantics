@@ -127,7 +127,7 @@ module C-EXPR-FUNCTION-CALL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> Computation(allowWrite(X) := V)
+               ~> allowInit(Computation(X := V))
           ...</k>
           <curr-function-params>...
                (.List => ListItem(X))
