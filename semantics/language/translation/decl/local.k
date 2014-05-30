@@ -73,6 +73,9 @@ module C-DECL-LOCAL
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
+               // Need the allowInit here to enable storing compound literals
+               // and again below to enable storing the value of this declared
+               // variable into the actual static memory.
                allowInit(figureInit(X, T, K)))
           when isStaticType(T)
                andBool (notBool isExternType(T))
@@ -80,8 +83,7 @@ module C-DECL-LOCAL
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
-          ~> defineAndInit(X, T, 
-               allowInit(figureInit(X, T, K)))
+          ~> defineAndInit(X, T, figureInit(X, T, K))
           when isNaked(T)
           [structural] 
      // This is pretty contrived, but we don't give local extern decls an entry
@@ -142,7 +144,9 @@ module C-DECL-LOCAL
      syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)] 
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
                => giveType(X, T)
-               ~> K
+               // Needed because we still need to process the initializers and
+               // we also need to disable e.g. const checks during init.
+               ~> allowInit(K)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -152,18 +156,6 @@ module C-DECL-LOCAL
                LocalTypes:Map => LocalTypes[.K <- kpair(X, BlockNum)]
           </local-types>
           [structural] 
-     // For function parameters. TODO(chathhorn): handle better?
-     // rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
-     //           => giveType(X, T)
-     //           ~> K
-     //      ...</k>
-     //      <block-history> .List </block-history>
-     //      <curr-tu> Tu:String </curr-tu>
-     //      <tu-id> Tu </tu-id>
-     //      <local-types>
-     //           LocalTypes:Map => LocalTypes[.K <- kpair(X, 0)]
-     //      </local-types>
-     //      [structural] 
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[Info <- X] </structs>

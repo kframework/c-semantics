@@ -38,6 +38,12 @@ module C-EXPR-IDENTIFIER
           when isLinkerLoc(Base)
           [structural]
 
-     rule <k> instantiate(_, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
-
+     rule <k> instantiate(Loc:SymLoc, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
+          when notBool isConstType(T)
+               orBool notBool isStaticDuration(Loc)
+               orBool isLinkerLoc(Loc)
+     rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
+          when isConstType(T)
+               andBool isStaticDuration(Loc) 
+               andBool notBool isLinkerLoc(Loc)
 endmodule

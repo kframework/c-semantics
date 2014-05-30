@@ -25,6 +25,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isAutoDuration(SymLoc) [function]
 
      syntax Bool ::= isStringLoc(SymLoc) [function]
+     syntax Bool ::= isLinkerLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymBase) [function]
      syntax Bool ::= isArgvLoc(SymLoc) [function]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
@@ -99,6 +100,8 @@ module C-SYMLOC
           => #isStringLoc(Loc) ==K true
      rule isLinkerLoc(Base:SymBase)
           => #isLinkerLoc(Base) ==K true
+     rule isLinkerLoc(Loc:SymLoc)
+          => #isLinkerLoc(base(Loc)) ==K true
      rule isArgvLoc(Loc:SymLoc) 
           => #isArgvLoc(Loc) ==K true
      rule isRegisterLoc(Loc:SymLoc) 

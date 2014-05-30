@@ -29,27 +29,45 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
      
      // Write thread-local or auto.
-     rule write(Loc:SymLoc, V:CValue, T:Type)
-          => write-specific(Loc, V, T)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> false </initializing>
           when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
+               andBool notBool isConstType(T)
+          [structural]
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> true </initializing>
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
           [structural]
      // Write global, shared data, or "allocated" duration.
-     rule write(Loc:SymLoc, V:CValue, T:Type)
-          => write-specific(Loc, V, T)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> false </initializing>
           when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
-               andBool (notBool isStringLoc(Loc) orBool isInitializerType(T))
+               andBool notBool isConstType(T)
+               andBool notBool isStringLoc(Loc)
           [ndtrans]
-     rule (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
-          ~> write(_, _, T:Type)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> true </initializing>
+          when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
+          [ndtrans]
+     rule <k> (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
+               ~> write(_, _, T:Type)
+          ...</k>
+          <initializing> false </initializing>
           when isConstType(T)
-               andBool notBool isInitializerType(T)
           [structural]
-     rule (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
-          ~> write(Loc:SymLoc, _, T:Type)
+     rule <k> (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
+               ~> write(Loc:SymLoc, _, _)
+          ...</k>
+          <initializing> false </initializing>
           when isStringLoc(Loc)
-               andBool notBool isInitializerType(T)
           [structural]
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
@@ -58,14 +76,13 @@ module C-MEMORY-WRITING
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(T))
           [structural]
-     rule (. => makeUnknown(UnionLoc, F, Fields))
+     rule (. => allowInit(makeUnknown(UnionLoc, F, Fields)))
           ~> write-specific(_, _,
                t((SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
                     => .Set) _, _))
           [structural]
           
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
@@ -73,8 +90,7 @@ module C-MEMORY-WRITING
           => writeBytes(Loc +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T), 
-                    piece(unknown, cfg:bitsPerByte))), 
-                    initializerType(T))
+                    piece(unknown, cfg:bitsPerByte))), T)
           when maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
      rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .

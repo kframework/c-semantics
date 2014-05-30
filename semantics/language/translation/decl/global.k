@@ -12,8 +12,6 @@ module C-DECL-GLOBAL-SYNTAX
      // processing the TU if a tentative def exists and the type is still
      // incomplete.
      syntax K ::= declState(SymBase, Type, DeclState, Bool)
-
-     syntax K ::= allowInit(K)
 endmodule
 
 module C-DECL-GLOBAL
@@ -264,7 +262,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, internal, 
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -296,7 +294,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -315,7 +313,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -346,7 +344,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -368,7 +366,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -524,11 +522,6 @@ module C-DECL-GLOBAL
           ~> declareExternalVariable'(initValue(X:CId, _, K:K), 
                initialized, _, _)
           when  K =/=K .K
-          [structural]
-
-     syntax K ::= setInitializing(Bool)
-     rule <k> setInitializing(I:Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
           [structural]
 
      syntax K ::= updateDecl(CId, Linkage, DeclState)
@@ -764,18 +757,6 @@ module C-DECL-GLOBAL
      rule completeTagInTags(_, _, .Set) => .K
           [structural]
      rule completeTagInTags(S:CId, _, SetItem(S)) => .K
-          [structural]
-
-     syntax K ::= "allowInit'"
-     rule allowInit(K:K)
-          => setInitializing(true)
-          ~> K
-          ~> allowInit'
-          [structural]
-     rule R:KResult ~> allowInit'
-          => setInitializing(false) ~> R
-          [structural]
-     rule allowInit' => setInitializing(false)
           [structural]
 
      syntax K ::= giveCompositeType(CId, Type)

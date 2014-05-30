@@ -10,10 +10,10 @@ module C-DECL-INITIALIZER-SYNTAX
      // These are also used by compound literals.
      syntax KResult ::= initValue(CId, Type, K)
 
-     syntax KItem ::= allowWrite(K) [strict]
-     syntax Type ::= initializerType(Type) [function]
-
      syntax KItem ::= singleIntInit(K) [strict]
+
+     syntax KItem ::= allowInit(K)
+
 endmodule
 
 module C-DECL-INITIALIZER
@@ -29,11 +29,22 @@ module C-DECL-INITIALIZER
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule allowWrite(lval(N:SymLoc, T:Type))
-          => lv(N, initializerType(T))
+     syntax KItem ::= "initDone"
+     rule allowInit(K:K)
+          => setInitializing(true)
+          ~> K
+          ~> initDone
+          [structural]
+     rule R:KResult ~> initDone
+          => setInitializing(false) ~> R
+          [structural]
+     rule initDone => setInitializing(false)
           [structural]
 
-     rule initializerType(T:Type) => addStorage(Initializer, T)
+     syntax KItem ::= setInitializing(Bool)
+     rule <k> setInitializing(I:Bool) => .K ...</k>
+          <initializing> _ => I </initializing>
+          [structural]
 
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K)) 
           => CodeLoc(.K, L) ~> figureInit(X, T, K) 
@@ -97,14 +108,14 @@ module C-DECL-INITIALIZER
      // base types
      rule figureInit(X:CId, T:Type, SingleInit(K:K))
           => figureInit-aux(X, T, 
-               initializer(Computation(allowWrite(X) := K)))
+               initializer(Computation(X := K)))
           when notBool isArrayType(T)
           [structural] 
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
           => figureInit-aux(X, T,
-               initializer(Computation(allowWrite(X) := K)))
+               initializer(Computation(X := K)))
           when notBool (isAggregateType(T) orBool isUnionType(T))
           [structural] 
 
@@ -360,7 +371,7 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>... 
-               . => Computation(allowWrite(K) := K')
+               . => Computation(K := K')
           </saved-init>
           when (isBasicType(T) 
                     orBool isPointerType(T) 
@@ -405,7 +416,7 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               .K => Computation(allowWrite(K) := K')
+               .K => Computation(K := K')
           </saved-init> 
           [structural] 
      
