@@ -143,8 +143,7 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(.List, .List) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)
-          => intersectSet(Mods, typeQualifiers)
-               ==Set intersectSet(Mods', typeQualifiers)
+          => '_==Set_(intersectSet(Mods, typeQualifiers) ,, intersectSet(Mods', typeQualifiers))
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T

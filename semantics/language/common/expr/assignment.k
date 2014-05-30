@@ -49,7 +49,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      }*/
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when hasArithmeticType(T') andBool hasArithmeticType(T)
-               andBool (getQualifiers(T) ==Set .Set)
+               andBool ('_==Set_(getQualifiers(T) ,, .Set))
                andBool (T' =/=K T)
           [structural]
 
