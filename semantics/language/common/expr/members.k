@@ -30,7 +30,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
 
      // The last two parameters are for convenience and should be the same.
-     syntax K ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
+     syntax KItem ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
           [function]
 
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
@@ -51,7 +51,7 @@ module C-COMMON-EXPR-MEMBERS
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
 
-     syntax K ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
+     syntax KItem ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
           [function]
      
      rule extractField(F:CId, L:List, Mods:Set, S:CId, Fields:FieldInfo,

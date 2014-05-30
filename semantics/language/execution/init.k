@@ -1,8 +1,8 @@
 module C-EXECUTION-INIT-SYNTAX
-     syntax K ::= pgmArgs(List) [function]
-     syntax K ::= incomingArguments(List) [klabel('incomingArguments)]
-     syntax K ::= callMain(Int, K) [klabel('callMain)]
-     syntax K ::= "initMainThread"
+     syntax KItem ::= pgmArgs(List) [function]
+     syntax KItem ::= incomingArguments(List) [klabel('incomingArguments)]
+     syntax KItem ::= callMain(Int, K) [klabel('callMain)]
+     syntax KItem ::= "initMainThread"
 
 endmodule
 
@@ -60,7 +60,7 @@ module C-EXECUTION-INIT
      rule strType(S:String)
           => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
      
-     syntax K ::= "incomingArguments-aux" "(" List "," Int ")"
+     syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
      rule incomingArguments(L:List) 
           => incomingArguments-aux(L, 0) 
@@ -86,7 +86,7 @@ module C-EXECUTION-INIT
                (size(L)) +Int 1)))
           [structural]
 
-     syntax K ::= makeArgv(CId, Type)
+     syntax KItem ::= makeArgv(CId, Type)
      rule makeArgv(X:CId, T:Type) 
           => allocObject(0 @ argv, T)
           ~> addToEnv(X, 0 @ argv)
@@ -95,7 +95,7 @@ module C-EXECUTION-INIT
 
      /*@ These helpers are used to get around a bug in \K related to successive
      ``/''s in strings. */
-     syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
+     syntax KItem ::= "stdinStr" [function] | "stdoutStr" [function]
      
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
@@ -178,7 +178,7 @@ module C-EXECUTION-INIT
           [ndtrans]
      
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax K ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
+     syntax KItem ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
      rule callMain-aux(t(.Set,
           functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _) 
           => Call(Identifier("main"), list(.List))

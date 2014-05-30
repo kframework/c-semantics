@@ -1,13 +1,13 @@
 module C-IO-BUFFERED-SYNTAX
-     syntax K ::= realloc(SymBase, SymBase, Int, Int)
+     syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
 
      // deletes the base object from memory, given a location
-     syntax K ::= deleteObject(SymBase)
+     syntax KItem ::= deleteObject(SymBase)
      // deletes the base object from memory, given a location and it size (as a
      // check)
-     syntax K ::= deleteSizedObject(SymBase, Int)
+     syntax KItem ::= deleteSizedObject(SymBase, Int)
 
-     syntax K ::= writeByte(SymLoc, CValue)
+     syntax KItem ::= writeByte(SymLoc, CValue)
 endmodule
 
 module C-IO-BUFFERED
@@ -27,7 +27,7 @@ module C-IO-BUFFERED
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
-     syntax K ::=  writeBytes(SymLoc, List)
+     syntax KItem ::=  writeBytes(SymLoc, List)
      rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
           => checkWrite(Loc, T)  
           // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
@@ -49,7 +49,7 @@ module C-IO-BUFFERED
      rule writeBytes(_, .List) => .
           [structural] 
 
-     syntax K ::= checkWrite(SymLoc, Type)
+     syntax KItem ::= checkWrite(SymLoc, Type)
      rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => . ...</k>
           <thread-id> ThreadId:Int </thread-id>
           <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
@@ -139,7 +139,7 @@ module C-IO-BUFFERED
           [structural]
           
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
+     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List, T:Type)
           => readByte(Loc, T)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
@@ -160,7 +160,7 @@ module C-IO-BUFFERED
                     | "errorUnseqEffects"
                     | "errorNonVolatileLVal"
      
-     syntax K ::= readByte(SymLoc, Type)
+     syntax KItem ::= readByte(SymLoc, Type)
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
@@ -266,7 +266,7 @@ module C-IO-BUFFERED
           ...</k>
           [structural]
           
-     syntax K ::= copyBytes(Int, SymBase, SymBase)
+     syntax KItem ::= copyBytes(Int, SymBase, SymBase)
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>... 
@@ -283,7 +283,7 @@ module C-IO-BUFFERED
      rule copyBytes(0, _, _) => .
           [structural]   
 
-     syntax K ::= copyObjectType(SymBase, SymBase)
+     syntax KItem ::= copyObjectType(SymBase, SymBase)
      rule <k> copyObjectType(Old:SymBase, New:SymBase) => . ...</k>
           <mem>... 
                Old |-> object(T:Type, _, _)
@@ -303,7 +303,7 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural] 
 
-     syntax K ::= getEffectiveType(SymLoc)
+     syntax KItem ::= getEffectiveType(SymLoc)
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int))
                => getTypeAtOffset(T, Offset)
           ...</k>
@@ -324,7 +324,7 @@ module C-IO-BUFFERED
                andBool notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
 
-     syntax K ::= setEffectiveType(SymLoc, Type)
+     syntax KItem ::= setEffectiveType(SymLoc, Type)
      rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
@@ -339,7 +339,7 @@ module C-IO-BUFFERED
           when isNoType(T)
           [structural]
 
-     syntax K ::= checkEffectiveType(Type, K) [strict(2)]
+     syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L:Type, Eff:Type) => .
           when #effectivelyCompat(L, Eff) ==K true
           [structural]

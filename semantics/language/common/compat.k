@@ -1,6 +1,6 @@
 module COMPAT-SYNTAX
-     syntax K ::= l(KLabel) [avoid]
-     syntax K ::= klist(KList) [klabel('klist)]
+     syntax KItem ::= l(KLabel) [avoid]
+     syntax KItem ::= klist(KList) [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
@@ -52,20 +52,20 @@ module COMPAT-SYNTAX
           [function, hook(#FLOAT:floorFloat)]
 
      // TODO(chathhorn): ugly
-     syntax K ::= toKRList(List)
+     syntax KItem ::= toKRList(List)
 
      syntax KResult ::= krlist(List) [klabel('krlist)]
 
      syntax List ::= reverseList(List) [function]
 
      syntax ListItem ::= ListItem(Bag)
-     syntax K ::= list(List)
-     syntax K ::= map(Map)
-     syntax K ::= set(Set)
+     syntax KItem ::= list(List)
+     syntax KItem ::= map(Map)
+     syntax KItem ::= set(Set)
 
-     syntax K ::= listToK(List) [function]
+     syntax KItem ::= listToK(List) [function]
      
-     syntax K ::= kpair(K, K)
+     syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
      syntax Bool ::= K "in" List [function]
@@ -75,8 +75,8 @@ module COMPAT-SYNTAX
 
      // syntax Int ::= lengthList(List) [function]
 
-     syntax Map ::= Map "[" K "<-" K "]"
-     rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
+     //syntax Map ::= Map "[" K "<-" K "]"
+     //rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
      syntax List ::= values(Map) [function]
 endmodule
@@ -148,7 +148,7 @@ module COMPAT
      rule list(L:List) => toKRList(L) 
           [structural]
 
-     syntax K ::= "toKRList'" "(" List ")"
+     syntax KItem ::= "toKRList'" "(" List ")"
      context toKRList'(_:List ListItem(HOLE) _:List)
      rule toKRList(L:List) => toKRList'(L) ~> krlist(.List)
           [structural]

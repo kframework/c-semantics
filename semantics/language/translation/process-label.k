@@ -1,5 +1,5 @@
 module C-PROCESS-LABEL-SYNTAX
-     syntax K ::= calculateGotoMap(CId, K)
+     syntax KItem ::= calculateGotoMap(CId, K)
 endmodule
 
 module C-PROCESS-LABEL
@@ -26,7 +26,7 @@ module C-PROCESS-LABEL
      to declare the remaining variables
      */
      
-     syntax K ::= "waitingOnGotoMap"
+     syntax KItem ::= "waitingOnGotoMap"
      rule <k> calculateGotoMap(F:CId, K:K) => waitingOnGotoMap ...</k>
           <curr-function> _ => F </curr-function>
           <curr-tu> Tu:String </curr-tu>
@@ -62,7 +62,7 @@ module C-PROCESS-LABEL
           when M =/=Map .Map
           [structural] 
 
-     syntax K ::= endBlockForGoto(Int)
+     syntax KItem ::= endBlockForGoto(Int)
      rule <computation> 
                   BlockStatement(Blk:K) => Blk ~> popBlock
           ...</computation>

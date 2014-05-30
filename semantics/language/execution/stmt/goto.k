@@ -4,8 +4,8 @@ module C-STMT-GOTO
      imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= getIdOfDeclaration(K) [function]
-     syntax K ::= getIdOfName(K) [function]
+     syntax KItem ::= getIdOfDeclaration(K) [function]
+     syntax KItem ::= getIdOfName(K) [function]
 
      rule getIdOfDeclaration(
                DeclarationDefinition(InitNameGroup(_, list(ListItem(K:K)))))
@@ -89,11 +89,11 @@ module C-STMT-GOTO
                     
      */
 
-     syntax K ::= processGoto(K) [klabel('processGoto)]
-     syntax K ::= processGotoDown(K) [klabel('processGotoDown)] 
+     syntax KItem ::= processGoto(K) [klabel('processGoto)]
+     syntax KItem ::= processGotoDown(K) [klabel('processGotoDown)] 
 
      // declaration stack, actual local variables
-     syntax K ::= processGotoSameBlock(List, List)
+     syntax KItem ::= processGotoSameBlock(List, List)
      rule <k> Goto(Lbl:CId) ~> _ => processGoto(GotoInfo) </k>
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
@@ -209,7 +209,7 @@ module C-STMT-GOTO
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural] 
           
-     syntax K ::= addVariablesForBlock(Int, List)
+     syntax KItem ::= addVariablesForBlock(Int, List)
           [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
      
      //  skip variables from other blocks
@@ -234,7 +234,7 @@ module C-STMT-GOTO
           when getIdOfDeclaration(Decl) in Vars
           [structural]
      
-     syntax K ::= "enableInits"
+     syntax KItem ::= "enableInits"
      
      rule <k> enableInits => . ...</k>
           <should-init> _ => true </should-init>

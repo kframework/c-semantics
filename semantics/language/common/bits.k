@@ -18,8 +18,8 @@ module C-BITS-SYNTAX
      // object, start piece, end piece
      syntax Bits ::= subObject(SymLoc, Int, Int)
 
-     syntax K ::= fillToBytes(K) [strict] 
-     syntax K ::= "fillToBytes-aux" "(" K "," List ")" [function]
+     syntax KItem ::= fillToBytes(K) [strict] 
+     syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
      syntax DataList ::= dataList(List)
      syntax KResult ::= DataList

@@ -6,7 +6,7 @@ module C-COMMON-EXPR-RELATIONAL
      imports C-PROMOTION-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
-     syntax K ::= makeTruth(Bool) [function]
+     syntax KItem ::= makeTruth(Bool) [function]
      rule makeTruth(B:Bool)
           => #if B #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
 

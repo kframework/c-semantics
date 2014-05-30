@@ -49,7 +49,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      }*/
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when hasArithmeticType(T') andBool hasArithmeticType(T)
-               andBool (getQualifiers(T) ==Set .Set)
+               andBool ('_==Set_(getQualifiers(T) ,, .Set))
                andBool (T' =/=K T)
           [structural]
 
@@ -132,7 +132,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax K ::= compoundAssignment(KLabel, K, K) [strict(2,3)]
+     syntax KItem ::= compoundAssignment(KLabel, K, K) [strict(2,3)]
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))

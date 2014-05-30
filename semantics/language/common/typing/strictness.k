@@ -1,5 +1,5 @@
 module C-TYPING-STRICTNESS-SYNTAX
-     syntax K ::= "evalToType"
+     syntax KItem ::= "evalToType"
 
 endmodule
 
@@ -10,7 +10,7 @@ module C-TYPING-STRICTNESS
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= "waitingOnDeclType"
+     syntax KItem ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
           <k> (. => DeclType(Spec, Decl)) ~> evalToType ...</k>
           <type> 
@@ -90,7 +90,7 @@ module C-TYPING-STRICTNESS
      rule typeStrictTernaryOpsThird =>
           SetItem(l('_?_:_))
 
-     syntax K ::= "THOLE"
+     syntax KItem ::= "THOLE"
 
      rule <type>
                Lbl:KLabel(K:K) => K ~> Lbl(THOLE)

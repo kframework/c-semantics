@@ -1,20 +1,20 @@
 module C-MEMORY-ALLOC-SYNTAX
-     syntax K ::= object(Type, Int, Map)
+     syntax KItem ::= object(Type, Int, Map)
 
-     syntax K ::= writeString(SymLoc, String)
-     syntax K ::= writeWString(SymLoc, List)
+     syntax KItem ::= writeString(SymLoc, String)
+     syntax KItem ::= writeWString(SymLoc, List)
 
-     syntax K ::= allocString(SymBase, String)
-     syntax K ::= allocWString(SymBase, List)
+     syntax KItem ::= allocString(SymBase, String)
+     syntax KItem ::= allocWString(SymBase, List)
 
-     syntax K ::= alloc(SymBase, Type, Int)
+     syntax KItem ::= alloc(SymBase, Type, Int)
 
-     syntax K ::= zeroObject(SymBase)
+     syntax KItem ::= zeroObject(SymBase)
 
-     syntax K ::= sizeofObject(SymBase)
+     syntax KItem ::= sizeofObject(SymBase)
 
-     syntax K ::= allocObject(SymBase, Type)
-     syntax K ::= allocObjectIfAbsent(SymBase, Type)
+     syntax KItem ::= allocObject(SymBase, Type)
+     syntax KItem ::= allocObjectIfAbsent(SymBase, Type)
 endmodule
 
 module C-MEMORY-ALLOC

@@ -27,7 +27,7 @@ module C-CHECK-LOC
                andBool notBool Base in keys(Links)
           [structural]
 
-     syntax K ::= checkOffsets(Int, Int) [function]
+     syntax KItem ::= checkOffsets(Int, Int) [function]
      rule checkOffsets(Offset:Int, Len:Int) => .
           when (Offset <=Int Len) andBool (Offset >=Int 0)
      rule checkOffsets(Offset:Int, Len:Int) => errorLocBounds

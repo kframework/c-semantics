@@ -1,8 +1,8 @@
 module C-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
-     syntax K ::= arithInterpret(Type, BaseValue) [function]
+     syntax KItem ::= arithInterpret(Type, BaseValue) [function]
      // as described in 6.3 // totype, fromvalue
-     syntax K ::= cast(Type, Value)
+     syntax KItem ::= cast(Type, Value)
 endmodule
 
 module C-CONVERSION

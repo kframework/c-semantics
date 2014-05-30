@@ -8,8 +8,8 @@ module C-DECL-ENUM
      imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= fillEnums(K)
-     syntax K ::= "fillEnums-aux" "(" K "," K ")"
+     syntax KItem ::= fillEnums(K)
+     syntax KItem ::= "fillEnums-aux" "(" K "," K ")"
 
      rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
           [structural] 
@@ -38,7 +38,7 @@ module C-DECL-ENUM
           [structural] 
 
 
-     syntax K ::= enumInit(CId, K) [strict(2)]
+     syntax KItem ::= enumInit(CId, K) [strict(2)]
      rule enumInit(X:CId, V:TypedValue)
           => Computation(allowWrite(X) := V)
           when hasIntegerType(type(V))

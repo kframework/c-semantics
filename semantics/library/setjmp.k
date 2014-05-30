@@ -35,7 +35,7 @@ module LIBC-SETJMP
      // fixme obviously need to rework configuration to make this easy
      syntax CValue ::= bag(Bag)
      
-     syntax K ::= "ignoreLocals"
+     syntax KItem ::= "ignoreLocals"
      
      // there seems to be a problem here related to locals.  what if longjmp is
      // never called?
@@ -108,7 +108,7 @@ module LIBC-SETJMP
           <thread-local> C:Bag </thread-local>
           [structural]
 
-     syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
+     syntax KItem ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
      context longjmp-aux(HOLE => reval(HOLE), _)
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"),

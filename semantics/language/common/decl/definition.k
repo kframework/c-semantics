@@ -1,8 +1,8 @@
 module C-DECL-DEFINITION-SYNTAX
-     syntax K ::= declare(K, K) [strict(1)]
+     syntax KItem ::= declare(K, K) [strict(1)]
 
      // The declare "backend" implemented in the trans or exec semantics.
-     syntax K ::= "declare'" "(" K "," K ")" [strict(1)]
+     syntax KItem ::= "declare'" "(" K "," K ")" [strict(1)]
 
      // Turns typedDeclarations into Types in function params.
      syntax Type ::= elideDeclParams(Type) [function]

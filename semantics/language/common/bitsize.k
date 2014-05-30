@@ -6,7 +6,7 @@ module C-BITSIZE-SYNTAX
      syntax Int ::= bitSizeofUnion(FieldInfo) [function]
 
      // generates a tv(size, cfg:sizeut)
-     syntax K ::= sizeofType(K) [strict]
+     syntax KItem ::= sizeofType(K) [strict]
 
      syntax Int ::= maxByteSizeofList(List) [function]
 endmodule

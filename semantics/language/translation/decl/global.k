@@ -55,7 +55,7 @@ module C-DECL-GLOBAL
           when F =/=K file-scope
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
-               andBool (getQualifiers(T) ==Set .Set)
+               andBool ('_==Set_(getQualifiers(T) ,, .Set))
           [structural] 
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
@@ -67,7 +67,7 @@ module C-DECL-GLOBAL
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           when isFunctionType(T)
                andBool validGlobalStorageClass(T)
-               andBool getQualifiers(T) ==Set .Set
+               andBool '_==Set_(getQualifiers(T) ,, .Set)
           [structural] 
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
@@ -132,9 +132,9 @@ module C-DECL-GLOBAL
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 
      rule checkParam(T:Type) => .
-          when getStorageSpecifiers(T) ==Set .Set
+          when '_==Set_(getStorageSpecifiers(T) ,, .Set)
                orBool (notBool isVoidType(T)
-                    andBool getStorageSpecifiers(T) ==Set SetItem(Register))
+                    andBool '_==Set_(getStorageSpecifiers(T) ,, SetItem(Register)))
 
      rule (. => ERROR("DG5", "function parameter appears with storage "
                +String "class other than register."))

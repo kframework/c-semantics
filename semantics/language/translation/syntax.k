@@ -1,6 +1,6 @@
 module C-ABSTRACT-SYNTAX
      imports C-SYNTAX
-     syntax K ::= "AnonymousName" // new, argument is type
+     syntax KItem ::= "AnonymousName" // new, argument is type
      rule AnonymousName => #NoName [macro, structural]
      
      syntax C ::= Definition

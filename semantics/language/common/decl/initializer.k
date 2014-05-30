@@ -5,15 +5,15 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax Value ::= functionObject(CId, List, Type, K)
 
      // CId, type, initializer.
-     syntax K ::= figureInit(CId, K, K) [strict(2)] 
+     syntax KItem ::= figureInit(CId, K, K) [strict(2)] 
 
      // These are also used by compound literals.
      syntax KResult ::= initValue(CId, Type, K)
 
-     syntax K ::= allowWrite(K) [strict]
+     syntax KItem ::= allowWrite(K) [strict]
      syntax Type ::= initializerType(Type) [function]
 
-     syntax K ::= singleIntInit(K) [strict]
+     syntax KItem ::= singleIntInit(K) [strict]
 endmodule
 
 module C-DECL-INITIALIZER
@@ -109,7 +109,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      // id, type, initializer
-     syntax K ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
+     syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
      rule figureInit-aux(X:CId, T:Type, initializer(K:K))
           => initValue(X, T, K)
           when isCompleteType(T)
@@ -122,9 +122,9 @@ module C-DECL-INITIALIZER
           <incomplete-length> N:Int </incomplete-length>
           [structural] 
           
-     syntax K ::= te(K, Type) [klabel('te)]
-     syntax K ::= "getInit"
-     syntax K ::= fillInit(K)
+     syntax KItem ::= te(K, Type) [klabel('te)]
+     syntax KItem ::= "getInit"
+     syntax KItem ::= fillInit(K)
                 | fillInits(List)
                 | "fillInit-aux" "(" K ")"
 
@@ -134,7 +134,7 @@ module C-DECL-INITIALIZER
           <curr-subobject> _:List => . </curr-subobject> 
           [structural] 
 
-     syntax K ::= startInit(Type, CId, K)
+     syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:Type, X:CId, CompoundInit(list(L:List)))
                => fillInits(L) ~> getInit
           ...</k>
@@ -259,7 +259,7 @@ module C-DECL-INITIALIZER
      rule fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) 
           [structural] 
           
-     syntax K ::= finishCompoundInit(List)
+     syntax KItem ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L:List)))
                => fillInits(L)
                ~> finishCompoundInit(next ListItem(te(K, T)) ListItem(Remainder))
@@ -282,7 +282,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      context fillInit(InitFragment(HOLE, _)) 
-     syntax K ::= buildDesignator(K)
+     syntax KItem ::= buildDesignator(K)
      
      // note that these clear the current subobject cell, because it will be
      // repopulated when building the designator
@@ -336,7 +336,7 @@ module C-DECL-INITIALIZER
           when isArrayType(T)
           [structural] 
      
-     syntax K ::= "popInit"
+     syntax KItem ::= "popInit"
      
      syntax Int ::= getTopArrayUse(K) [function]
      rule getTopArrayUse(_:CId) => 0
@@ -346,7 +346,7 @@ module C-DECL-INITIALIZER
      rule getTopArrayUse((K:K[N:Int])[_]) => getTopArrayUse(K[N])
      rule getTopArrayUse((K:K . _:CId)[_]) => getTopArrayUse(K)
      
-     syntax K ::= initializeSingleInit(K)
+     syntax KItem ::= initializeSingleInit(K)
           
      rule (. => typeof(K)) ~> initializeSingleInit(K:K)
           [structural] 
@@ -371,14 +371,14 @@ module C-DECL-INITIALIZER
           
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
-     syntax K ::= initFromAggregateRHS(K, Type)
+     syntax KItem ::= initFromAggregateRHS(K, Type)
      rule T:Type ~> initializeSingleInit(K:K) 
           => initFromAggregateRHS(K, T)
           when isStructType(T)
                orBool isUnionType(T)
           [structural] 
           
-     syntax K ::= initFromStructRHS(K, Type)
+     syntax KItem ::= initFromStructRHS(K, Type)
      rule <k> initFromAggregateRHS(K:K, t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))
                => initFromStructRHS(K, t(S, structType(X, NBits, Info)))
           ...</k>
@@ -477,8 +477,8 @@ module C-DECL-INITIALIZER
           when (S =/=String "") andBool hasCharType(T)
           [structural]
           
-     syntax K ::= initHead(String) [function]
-     syntax K ::= initTail(String) [function]
+     syntax KItem ::= initHead(String) [function]
+     syntax KItem ::= initTail(String) [function]
      rule initHead(S:String) 
           => SingleInit(tv(ordChar(firstChar(S)), t(.Set, char)))
      rule initTail(S:String)

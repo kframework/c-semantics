@@ -46,10 +46,10 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     syntax K ::= "Call'" "(" K "," K ")"
+     syntax KItem ::= "Call'" "(" K "," K ")"
      syntax KResult ::= rvlist(List)
 
-     syntax K ::= revalParams(K)
+     syntax KItem ::= revalParams(K)
      context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
@@ -73,7 +73,7 @@ module C-EXPR-FUNCTION-CALL
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
 
-     syntax K ::= application(String, K, Type, List) [strict(2)]
+     syntax KItem ::= application(String, K, Type, List) [strict(2)]
      context application(_, HOLE, _, _)
 
      /*@ This extra step is useful for putting the function name in the
@@ -91,7 +91,7 @@ module C-EXPR-FUNCTION-CALL
           when notBool areCompatible(CallT, DefT)
           [structural]
 
-     syntax K ::= "application'" "(" String "," K "," List ")"
+     syntax KItem ::= "application'" "(" String "," K "," List ")"
 
      rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, BlK:K), L:List) 
                ~> K:K 

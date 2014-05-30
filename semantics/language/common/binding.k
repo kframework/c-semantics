@@ -1,8 +1,8 @@
 module C-BINDING-SYNTAX
      // TypedValues, Types, CIds
-     syntax K ::= bind(List, List, List)
-     syntax K ::= bindParam(CId, Type, K)
-     syntax K ::= bindParam(CId)
+     syntax KItem ::= bind(List, List, List)
+     syntax KItem ::= bindParam(CId, Type, K)
+     syntax KItem ::= bindParam(CId)
      syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= isArgPromoted(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
@@ -85,7 +85,7 @@ module C-BINDING
      rule bind(.List, .List, .List) => .
           [structural]
 
-     syntax K ::= bindVariadics(List, Int)
+     syntax KItem ::= bindVariadics(List, Int)
      rule (. => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
           ~> bindVariadics(
                (ListItem(V:TypedValue) => .List) _,

@@ -7,7 +7,7 @@ require "typing/predicates.k"
 require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
-     syntax K ::= typeof(K)
+     syntax KItem ::= typeof(K)
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
@@ -20,7 +20,7 @@ module C-TYPING-SYNTAX
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax K ::= DeclType(K, K) [avoid, strict(1)] 
+     syntax KItem ::= DeclType(K, K) [avoid, strict(1)] 
 
      syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
@@ -157,12 +157,12 @@ module C-TYPING-SYNTAX
      syntax Type ::= typedDeclaration(Type, CId) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
-     syntax K ::= simplifyTruth(K) [function]
+     syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
      syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax K ::= completeTags(K) [strict]
+     syntax KItem ::= completeTags(K) [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]

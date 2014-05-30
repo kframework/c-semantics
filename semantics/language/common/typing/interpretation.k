@@ -14,7 +14,7 @@ module C-TYPING-INTERPRETATION
      // going to be used in a typed name.
      syntax Type ::= extractActualType(Type) [function] 
 
-     syntax K ::= BitFieldType(K, K) [strict] 
+     syntax KItem ::= BitFieldType(K, K) [strict] 
      
      rule Specifier(list(L:List)) => canonicalizeType(toBag(L))
           [structural]
@@ -140,7 +140,7 @@ module C-TYPING-INTERPRETATION
           <decl-type-holder> T:Type => . ...</decl-type-holder>
           [structural]
 
-     syntax K ::= "extractActualTypeFreezer"
+     syntax KItem ::= "extractActualTypeFreezer"
      rule <k> DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</k>
           <decl-type-holder> (. => T) ...</decl-type-holder>
           [structural]
@@ -181,7 +181,7 @@ module C-TYPING-INTERPRETATION
      rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T:K)))) 
           => extractActualType(t(S S', T))
           
-     syntax K ::= NameAndType(CId, K) [strict(2)] 
+     syntax KItem ::= NameAndType(CId, K) [strict(2)] 
           
      rule SingleName(T:Type, Name(X:CId, K:K)) 
           => NameAndType(X, DeclType(T, K))
