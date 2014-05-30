@@ -157,7 +157,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc> 
                     <computation> S </computation>
                     <computation-tail>
@@ -196,7 +196,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc> 
                     <computation> S </computation>
                     <computation-tail>

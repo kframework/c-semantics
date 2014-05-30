@@ -55,7 +55,7 @@ module C-DECL-RESOLUTION
                SetItem(X:CId)
           ...</external-uses>
           <external-decls>...
-               X |-> set((SetItem(Tu:String) => .) _)
+               X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
           <external-defs>...
                X |-> Base':SymBase
@@ -65,7 +65,7 @@ module C-DECL-RESOLUTION
                X |-> (Base:SymBase => Base')
           ...</genv>
           <linkings>...
-               (. => Base |-> Base')
+               (.Map => Base |-> Base')
           ...</linkings>
           when isLinkerLoc(Base)
      rule <k> resolveReferences ...</k>
@@ -73,7 +73,7 @@ module C-DECL-RESOLUTION
                SetItem(X:CId)
           ...</external-uses>
           <external-decls>...
-               X |-> set((SetItem(Tu:String) => .) _)
+               X |-> set((SetItem(Tu:String) => .Map) _)
           ...</external-decls>
           <external-defs>...
                X |-> Base:SymBase
@@ -86,7 +86,7 @@ module C-DECL-RESOLUTION
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
-               (SetItem(X:CId) => .)
+               (SetItem(X:CId) => .Set)
           ...</external-uses>
           <external-decls>...
                (X:CId |-> set(.Set) => .Map)

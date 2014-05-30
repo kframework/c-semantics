@@ -355,7 +355,7 @@ module C-DECL-GLOBAL
           <next-link-loc> Base:SymBase => linc(Base) </next-link-loc>
           <externals>
                Exts:Map
-               (. => X |-> declState(Base, T, declared, false))
+               (.Map => X |-> declState(Base, T, declared, false))
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
@@ -377,7 +377,7 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals>
                Ints:Map
-               (. => X |-> declState(Base, T, declared, false))
+               (.Map => X |-> declState(Base, T, declared, false))
           </internals>
           when isStaticType(T)
                andBool notBool (X in keys(Exts))
@@ -559,8 +559,8 @@ module C-DECL-GLOBAL
      // No previous decl, this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls> Decls:Map (. => X |-> set(SetItem(Tu))) </external-decls>
-          <external-types> _ (. => X |-> T') </external-types>
+          <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
+          <external-types> _ (.Map => X |-> T') </external-types>
           when isLinkerLoc(Base')
                andBool notBool X in keys(Decls)
           [structural]
@@ -605,7 +605,7 @@ module C-DECL-GLOBAL
                andBool (Base =/=K Base')
           [structural]
      
-     syntax K ::= recordTentDef(CId, Linkage)
+     syntax KItem ::= recordTentDef(CId, Linkage)
      rule <k> recordTentDef(X:CId, internal) => . ...</k>
           <internals>...
                X |-> declState(_, _, _, (_ => true))
@@ -640,7 +640,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Base':SymBase => linc(Base') </next-static-loc>
-          <linkings>... (. => Base |-> Base') </linkings>
+          <linkings>... (.Map => Base |-> Base') </linkings>
           when isLinkerLoc(Base)
           [structural]
 

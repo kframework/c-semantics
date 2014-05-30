@@ -75,7 +75,7 @@ module C-DECL-LOCAL
                => defineAndInit(X, T, NoInit, autoToRegister(Base))
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           when isCompleteType(T)
                andBool isRegisterType(T)
                andBool (notBool X in Vars)
@@ -92,7 +92,7 @@ module C-DECL-LOCAL
                => defineAndInit(X, T, figureInit(X, T, K), Base)
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           when notBool X in Vars
                andBool notBool isRegisterType(T)
           [structural] 
@@ -100,7 +100,7 @@ module C-DECL-LOCAL
                => defineAndInit(X, T, figureInit(X, T, K), autoToRegister(Base))
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           when notBool X in Vars
                andBool isRegisterType(T)
           [structural] 

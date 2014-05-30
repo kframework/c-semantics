@@ -130,8 +130,8 @@ module C-DECL-INITIALIZER
 
      rule <k> getInit => initializer(K:K) ...</k>
           <saved-init> K:K => . </saved-init> 
-          <curr-object> _:List => . </curr-object> 
-          <curr-subobject> _:List => . </curr-subobject> 
+          <curr-object> _:List => .List </curr-object> 
+          <curr-subobject> _:List => .List </curr-subobject> 
           [structural] 
 
      syntax KItem ::= startInit(Type, CId, K)
@@ -265,18 +265,18 @@ module C-DECL-INITIALIZER
                ~> finishCompoundInit(next ListItem(te(K, T)) ListItem(Remainder))
           ...</k>
           <curr-subobject> 
-               (_:List => .) 
+               (_:List => .List) 
                ListItem(te(K:K, T:Type)) 
-               (ListItem(Remainder:K) => .)
+               (ListItem(Remainder:K) => .List)
           </curr-subobject>
           <curr-object>
-               (. => ListItem(te(K, T)))
+               (.List => ListItem(te(K, T)))
           ...</curr-object>
           when isAggregateType(T) orBool isUnionType(T)
           [structural]
      rule <k> finishCompoundInit(L:List) => . ...</k>
           <curr-object>
-               (ListItem(te(_:K, _:Type)) => .)
+               (ListItem(te(_:K, _:Type)) => .List)
           ...</curr-object>
           <curr-subobject> (_ => L) </curr-subobject>
           [structural] 

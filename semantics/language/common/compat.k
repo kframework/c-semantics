@@ -134,7 +134,7 @@ module COMPAT
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
 
-     //TODO rule X:Bag ==Bag Y:Bag => (Bag2KLabel X)(.KList) ==K (Bag2KLabel Y)(.KList)
+     //TODO Support ==Bag: rule X:Bag ==Bag Y:Bag => (Bag2KLabel X)(.KList) ==K (Bag2KLabel Y)(.KList)
      // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
      // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
