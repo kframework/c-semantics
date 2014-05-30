@@ -1,5 +1,5 @@
 module C-SEQUENCE-POINT-SYNTAX
-     syntax K ::= "sequencePoint"
+     syntax KItem ::= "sequencePoint"
 endmodule
 
 module C-SEQUENCE-POINT

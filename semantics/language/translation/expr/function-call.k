@@ -11,7 +11,7 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KResult ::= rvlist(List)
 
-     syntax K ::= revalParams(K)
+     syntax KItem ::= revalParams(K)
      context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _))
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)

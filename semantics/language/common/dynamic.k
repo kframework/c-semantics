@@ -14,9 +14,9 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
 
      syntax Type ::= type(K) [function]
-     syntax K ::= value(TypedValue) [function]
+     syntax KItem ::= value(TypedValue) [function]
 
-     syntax K ::= "discard"
+     syntax KItem ::= "discard"
      syntax Value ::= "emptyValue"
      
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
@@ -37,20 +37,20 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= funLabel(CId)
      syntax CId ::= case(Int)
 
-     syntax K ::= "pushBlock"
-     syntax K ::= "popBlock"
+     syntax KItem ::= "pushBlock"
+     syntax KItem ::= "popBlock"
 
      syntax Statement ::= "loopMarked"
-     syntax K ::= "popLoop"
+     syntax KItem ::= "popLoop"
 
      //  nesting-depth, currentBlock, decl
-     syntax K ::= frozenDeclaration(Int, Int, K)
+     syntax KItem ::= frozenDeclaration(Int, Int, K)
      //  nesting-depth, block history, continuation, loop stack, decl stack
-     syntax K ::= gotoObject(Int, List, K, List, List)
+     syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
 
-     syntax K ::= loadObj(Bag)
+     syntax KItem ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
 
 endmodule

@@ -1,7 +1,7 @@
 module C-SYNTAX
      // these are semantic
-     syntax K ::= reval(K) [semantic]
-     syntax K ::= peval(K) [semantic]
+     syntax KItem ::= reval(K) [semantic]
+     syntax KItem ::= peval(K) [semantic]
      
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
@@ -186,7 +186,7 @@ module C-SYNTAX
                (* Prints "decl (args[, ...])".
                 * decl is never a PTR.*)
      */
-     syntax K ::= "JustBase"
+     syntax KItem ::= "JustBase"
      syntax DeclType ::= FunctionType(K)
           [klabel('FunctionType), strict]
      // third argument should also be strict, but not doing anything with
@@ -202,8 +202,8 @@ module C-SYNTAX
      syntax DeclType ::= NoPrototype(K, K, Bool)
           [klabel('NoPrototype), strict(1, 2)]
      
-     syntax K ::= "NotVariadic"
-     syntax K ::= "Variadic"
+     syntax KItem ::= "NotVariadic"
+     syntax KItem ::= "Variadic"
      
      /*
      and name_group = specifier * name list
@@ -680,6 +680,6 @@ module C-SYNTAX
      // String, List
      syntax C ::= Attribute(String, K) [klabel('Attribute)]
      
-     syntax K ::= CodeLoc(K, K) [klabel('CodeLoc)]
+     syntax KItem ::= CodeLoc(K, K) [klabel('CodeLoc)]
      
 endmodule

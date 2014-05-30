@@ -10,7 +10,7 @@ module LIBC-STRING
      
      // try to use getString
      // fixme should detect overlaps
-     syntax K ::= strcpy(SymLoc, SymLoc, SymLoc)
+     syntax KItem ::= strcpy(SymLoc, SymLoc, SymLoc)
      rule prepareBuiltin(Identifier("strcpy"),
                ListItem(tv(Dest:SymLoc, t(_, pointerType(_))))
                ListItem(tv(Src:SymLoc, t(_, pointerType(_)))))

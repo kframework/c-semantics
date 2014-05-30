@@ -1,10 +1,10 @@
 module LIBC-IO-SYNTAX
-     syntax K ::= writeToFD(Int, Int)
-     syntax K ::= writeToFD(Int, String)
-     syntax K ::= readFromFD(Int)
-     syntax K ::= readFromFD(Int, Int)
-     syntax K ::= flush(Int)
-     syntax K ::= "f-flush" "(" Int ")"
+     syntax KItem ::= writeToFD(Int, Int)
+     syntax KItem ::= writeToFD(Int, String)
+     syntax KItem ::= readFromFD(Int)
+     syntax KItem ::= readFromFD(Int, Int)
+     syntax KItem ::= flush(Int)
+     syntax KItem ::= "f-flush" "(" Int ")"
 
      syntax ExecOpts ::= "NOIO"
 endmodule
@@ -57,8 +57,8 @@ module LIBC-IO
      rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
           [structural, simplification]
 
-     syntax K ::= "f-sent" "(" Int "," String ")"
-     syntax K ::= "f-sendString" "(" Int "," String ")"
+     syntax KItem ::= "f-sent" "(" Int "," String ")"
+     syntax KItem ::= "f-sendString" "(" Int "," String ")"
      
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>

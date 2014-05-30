@@ -12,7 +12,7 @@ module C-DECL-TYPEDEF
      rule Typedef(NameGroup(_:Type, list(.List))) => .K
           [structural]
 
-     syntax K ::= defineType(K) [strict] 
+     syntax KItem ::= defineType(K) [strict] 
 
      rule defineType(typedDeclaration(T:Type, X:CId)) 
           => giveType(typedef(X), T) 

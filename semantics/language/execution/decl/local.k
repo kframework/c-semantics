@@ -17,7 +17,7 @@ module C-DECL-LOCAL
           => declareInternalVariable(X, T, K)
           [structural] 
           
-     syntax K ::= declareInternalVariable(CId, Type, K)
+     syntax KItem ::= declareInternalVariable(CId, Type, K)
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
                => addToEnv(X, Base) 
                ~> giveType(X, T')
@@ -61,7 +61,7 @@ module C-DECL-LOCAL
                andBool (K =/=K NoInit)
           [structural] 
                     
-     syntax K ::= declareOnly(CId, Type)
+     syntax KItem ::= declareOnly(CId, Type)
      rule <k> declareOnly(X:CId, T:Type)
                => defineAndInit(X, T, NoInit, Base)
           ...</k>
@@ -87,7 +87,7 @@ module C-DECL-LOCAL
           when isCompleteType(T)
           [structural] 
 
-     syntax K ::= declareAndDefine(CId, Type, K)
+     syntax KItem ::= declareAndDefine(CId, Type, K)
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
                => defineAndInit(X, T, figureInit(X, T, K), Base)
           ...</k>
@@ -112,7 +112,7 @@ module C-DECL-LOCAL
           <local-vars>... ListItem(X) ...</local-vars>
           [structural] 
 
-     syntax K ::= defineAndInit(CId, Type, K, SymBase) [strict(3)] 
+     syntax KItem ::= defineAndInit(CId, Type, K, SymBase) [strict(3)] 
      rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, K:K), Base:SymBase)
                => allocObjectIfAbsent(Base, T')
                ~> addToEnv(X, Base)
@@ -139,7 +139,7 @@ module C-DECL-LOCAL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural] 
           
-     syntax K ::= justInit(K) [strict]
+     syntax KItem ::= justInit(K) [strict]
      rule justInit(initValue(_, _, K:K)) 
           => K ~> sequencePoint
           [structural]

@@ -1,9 +1,9 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
-     syntax K ::= rkludge(K) [function, klabel('rkludge)]
-     syntax K ::= pkludge(K) [function, klabel('pkludge)]
-     syntax K ::= instantiate(SymLoc, Type)
-     syntax K ::= checkLoc(SymLoc)
+     syntax KItem ::= rkludge(K) [function, klabel('rkludge)]
+     syntax KItem ::= pkludge(K) [function, klabel('pkludge)]
+     syntax KItem ::= instantiate(SymLoc, Type)
+     syntax KItem ::= checkLoc(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -112,7 +112,7 @@ module C-COMMON-EXPR-EVAL
                andBool notBool isFunctionType(T) 
           [structural]
 
-     syntax K ::= checkUse(K) [strict]
+     syntax KItem ::= checkUse(K) [strict]
 
      rule checkUse(V:KResult) => V
           when isTypedValue(V) =/=K true

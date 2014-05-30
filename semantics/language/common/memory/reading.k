@@ -1,19 +1,19 @@
 module C-MEMORY-READING-SYNTAX
      // location, type
-     syntax K ::= read(SymLoc, Type)
+     syntax KItem ::= read(SymLoc, Type)
 
      // Returns the bytes in the order in which they are in memory.
-     syntax K ::= readBytes(SymLoc, Int, Type)
+     syntax KItem ::= readBytes(SymLoc, Int, Type)
 
-     syntax K ::= concretize(Type, K) [strict(2)] 
+     syntax KItem ::= concretize(Type, K) [strict(2)] 
 
      // data, offset, size in bits
-     syntax K ::= extractBitsFromList(K, Int, Int) [strict(1)]
+     syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
-     syntax K ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
+     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
           [function]
 endmodule
 
@@ -44,7 +44,7 @@ module C-MEMORY-READING
                andBool Loc =/=K NullPointer
           [ndtrans]
      
-     syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
+     syntax KItem ::= readActual(SymLoc, Type) [klabel('readActual)]
      rule readActual(Loc:SymLoc, T:Type)
           => concretize(T, readBytes(Loc, byteSizeofType(T), T))
           when notBool isBitfieldType(T)
@@ -183,7 +183,7 @@ module C-MEMORY-READING
                andBool hasIntegerType(T)
      
      // loc, size in bits
-     syntax K ::= extractBitsFromMem(SymLoc, Type)
+     syntax KItem ::= extractBitsFromMem(SymLoc, Type)
      
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(

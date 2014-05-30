@@ -15,7 +15,7 @@ module C-COMPOUND-LITERAL
      imports COMPAT-SYNTAX
 
      syntax CId ::= compoundLiteral(Int)
-     syntax K ::= handleCompoundLiteral(K) [strict]
+     syntax KItem ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage

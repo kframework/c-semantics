@@ -1,5 +1,5 @@
 module C-DECL-ZERO-SYNTAX
-     syntax K ::= zero(CId)
+     syntax KItem ::= zero(CId)
 endmodule
 
 module C-DECL-ZERO
@@ -18,7 +18,7 @@ module C-DECL-ZERO
           <types>... X |-> T:Type ...</types>
           [structural] 
           
-     syntax K ::= zeroType(K, Type)
+     syntax KItem ::= zeroType(K, Type)
           
      // c1x 6.7.9:10 If an object that has automatic storage duration is not
      // initialized explicitly, its value is indeterminate. If an object that
@@ -65,14 +65,14 @@ module C-DECL-ZERO
      rule zeroType(_, t(_, flexibleArrayType(_))) => .
           [structural]
           
-     syntax K ::= zeroStruct(K, List)
+     syntax KItem ::= zeroStruct(K, List)
      rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List) 
           => zeroType(X . F, T) ~> zeroStruct(X, L) 
           [structural] 
      rule zeroStruct(_, .List) => .
           [structural] 
 
-     syntax K ::= getZero(Type) [function]
+     syntax KItem ::= getZero(Type) [function]
      rule getZero(T:Type) => 0
           when hasIntegerType(T)
      rule getZero(T:Type) => 0.0

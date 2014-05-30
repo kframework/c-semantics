@@ -1,20 +1,20 @@
 module C-ERROR-SYNTAX
      // Deprecated...
-     syntax K ::= ERROR(String, String)
-     syntax K ::= ERROR(String, String, KList)
-     syntax K ::= ERROR(String, String, String, String)
+     syntax KItem ::= ERROR(String, String)
+     syntax KItem ::= ERROR(String, String, KList)
+     syntax KItem ::= ERROR(String, String, String, String)
 
      // Error code, desc., C11 citation.
-     syntax K ::= UNDEF(String, String, String)
-     syntax K ::= UNSPEC(String, String, String)
-     syntax K ::= CV(String, String, String)
-     syntax K ::= CVUB(String, String, String)
+     syntax KItem ::= UNDEF(String, String, String)
+     syntax KItem ::= UNSPEC(String, String, String)
+     syntax KItem ::= CV(String, String, String)
+     syntax KItem ::= CVUB(String, String, String)
 
      syntax KResult ::= Bool
      syntax Error ::= "errorDummy"
-     syntax K ::= assert(K, Error) [strict(1)]
+     syntax KItem ::= assert(K, Error) [strict(1)]
 
-     syntax K ::= EXIT(String)
+     syntax KItem ::= EXIT(String)
 endmodule
 
 module C-ERROR

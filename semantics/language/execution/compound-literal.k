@@ -13,7 +13,7 @@ module C-COMPOUND-LITERAL
      imports COMPAT-SYNTAX
 
      syntax CId ::= compoundLiteral(Int)
-     syntax K ::= handleCompoundLiteral(K) [strict]
+     syntax KItem ::= handleCompoundLiteral(K) [strict]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed

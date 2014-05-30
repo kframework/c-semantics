@@ -32,7 +32,7 @@ module C-STMT-IF-THEN
           => maybeSymVal(S1 ~> checkResult, S2 ~> checkResult)
           [structural]
 
-     syntax K ::= maybeSymVal(K, K) [strict]
+     syntax KItem ::= maybeSymVal(K, K) [strict]
                 | "checkResult"
 
      syntax KResult ::= "noResult"

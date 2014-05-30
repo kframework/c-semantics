@@ -67,7 +67,7 @@ module LIBC-STDARG
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
-     syntax K ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
+     syntax KItem ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
      context va-inc-aux(_, _, (HOLE => reval(HOLE)))
      // fixme can do lots of checks here too
      rule [va-inc]:

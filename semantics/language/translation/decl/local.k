@@ -1,5 +1,5 @@
 module C-DECL-LOCAL-SYNTAX
-     syntax K ::= declareInternalVariable(CId, Type, K)
+     syntax KItem ::= declareInternalVariable(CId, Type, K)
 endmodule
 
 module C-DECL-LOCAL
@@ -102,7 +102,7 @@ module C-DECL-LOCAL
           when isExternType(T) andBool K =/=K NoInit
           [structural] 
 
-     syntax K ::= initLocalStatic(CId, K) [strict(2)] 
+     syntax KItem ::= initLocalStatic(CId, K) [strict(2)] 
      rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
@@ -139,7 +139,7 @@ module C-DECL-LOCAL
                orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
           
-     syntax K ::= defineAndInit(CId, Type, K) [strict(3)] 
+     syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)] 
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
                => giveType(X, T)
                ~> K

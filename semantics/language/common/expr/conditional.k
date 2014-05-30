@@ -1,6 +1,6 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
-     syntax K ::= types(List)
+     syntax KItem ::= types(List)
 endmodule
 
 module C-COMMON-EXPR-CONDITIONAL
@@ -12,9 +12,9 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
 
-     syntax K ::= getTypes(List)
+     syntax KItem ::= getTypes(List)
      context types(_:List ListItem(HOLE) _:List)
-     syntax K ::= convertedType(K) [strict]
+     syntax KItem ::= convertedType(K) [strict]
      
      rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]
      
@@ -23,7 +23,7 @@ module C-COMMON-EXPR-CONDITIONAL
           => ListItem(retype(typeof(K))) wrapWithTypeOf(L)
      rule wrapWithTypeOf(.List) => .List
      
-     syntax K ::= retype(K) [strict]
+     syntax KItem ::= retype(K) [strict]
      
      // fixme, not handling qualifiers correctly
      rule retype(T:Type) => t(.Set, pointerType(innerType(T)))

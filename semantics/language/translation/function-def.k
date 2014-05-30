@@ -1,5 +1,5 @@
 module C-FUNCTION-DEF-SYNTAX
-     syntax K ::= initFunction(K, K) [strict]
+     syntax KItem ::= initFunction(K, K) [strict]
      syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
@@ -65,7 +65,7 @@ module C-FUNCTION-DEF
           when notBool isFunctionType(T)
                orBool (getParams(T) =/=List .List)
      
-     syntax K ::= processFunDef(CId, K)
+     syntax KItem ::= processFunDef(CId, K)
 
      rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, Proto)
@@ -77,7 +77,7 @@ module C-FUNCTION-DEF
           ...</functions>
           [structural]
 
-     syntax K ::= checkFunDefType(CId, Type)
+     syntax KItem ::= checkFunDefType(CId, Type)
      rule checkFunDefType(X:CId, T:Type) => .
           when isVoidOrComplete(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
@@ -110,7 +110,7 @@ module C-FUNCTION-DEF
           => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
      rule areVoidOrComplete(.List) => true
 
-     syntax K ::= checkMainDef(Type)
+     syntax KItem ::= checkMainDef(Type)
      rule checkMainDef(t(_, functionType(t(_, int),
                ListItem(t(_, void)))))
           => .
@@ -163,7 +163,7 @@ module C-FUNCTION-DEF
                andBool (notBool Base in keys(M))
           [structural]
 
-     syntax K ::= safeBody(CId, K) [function]
+     syntax KItem ::= safeBody(CId, K) [function]
 
      rule safeBody(X:CId, Blk:K) 
           => Blk ~> Return(NothingExpression)
@@ -171,9 +171,9 @@ module C-FUNCTION-DEF
      rule safeBody(Identifier("main"), Blk:K) 
           => Blk ~> Return(tv(0, t(.Set, int)))
 
-     syntax K ::= "returnToFileScope"
+     syntax KItem ::= "returnToFileScope"
 
-     syntax K ::= staticEval(CId, List, K)
+     syntax KItem ::= staticEval(CId, List, K)
      rule <k> staticEval(X:CId, Params:List, Blk:K)
                => populateFromGlobal
                ~> dummyBind(Params)
@@ -203,7 +203,7 @@ module C-FUNCTION-DEF
                _
           ) => true
 
-     syntax K ::= dummyBind(List)
+     syntax KItem ::= dummyBind(List)
      
      rule dummyBind(.List) => .
           [structural]

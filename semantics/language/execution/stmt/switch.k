@@ -8,8 +8,8 @@ module C-STMT-SWITCH
      imports COMPAT-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
-     syntax K ::= handleSwitch(Int, K) [strict(2)] 
-     syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"
+     syntax KItem ::= handleSwitch(Int, K) [strict(2)] 
+     syntax KItem ::= "handleSwitch-aux" "(" K "," Value "," K ")"
      
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the
@@ -47,7 +47,7 @@ module C-STMT-SWITCH
           [structural] 
           
      // K to be evaluated, val it should be, casehelper
-     syntax K ::= tryCase(K, Value, K)
+     syntax KItem ::= tryCase(K, Value, K)
      context tryCase((HOLE => reval(HOLE)), _, _)
      rule (. => tryCase(Exp, V, CaseHelper)) 
           ~> handleSwitch-aux(SN:Int, V:Value,

@@ -1,6 +1,6 @@
 module C-TRANSLATION-INIT-SYNTAX
      syntax Bag ::= mergeObj(Bag, Bag) [function]
-     syntax K ::= "link" | "cleanup"
+     syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
 
@@ -58,7 +58,7 @@ module C-TRANSLATION-INIT
           ...</translation-units>
           [structural]
           
-     syntax K ::= preDeclareStrings(List)
+     syntax KItem ::= preDeclareStrings(List)
      
      rule preDeclareStrings(ListItem(K:K) L:List)
           => allowInit(K ~> discard)
@@ -67,7 +67,7 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(.List) => .K
           [structural]
      
-     syntax K ::= addBuiltins(Map)
+     syntax KItem ::= addBuiltins(Map)
           
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
@@ -158,7 +158,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     syntax K ::= "printSuccess"
+     syntax KItem ::= "printSuccess"
      rule printSuccess => #write(#stdout, "Translation successful!\n")
 
 endmodule

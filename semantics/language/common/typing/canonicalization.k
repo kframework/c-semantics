@@ -1,5 +1,5 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
-     syntax K ::= canonicalizeType(Bag)
+     syntax KItem ::= canonicalizeType(Bag)
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -12,7 +12,7 @@ module C-TYPING-CANONICALIZATION
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
      
-     syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
+     syntax KItem ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
 
      rule canonicalizeType(B:Bag)
@@ -29,8 +29,8 @@ module C-TYPING-CANONICALIZATION
           ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _) 
           [structural]
           
-     syntax K ::= atomic(Type)
-     syntax K ::= alignas(Type)
+     syntax KItem ::= atomic(Type)
+     syntax KItem ::= alignas(Type)
      
      rule (T:Type => .)
           ~> canonicalizeType-aux(
@@ -112,7 +112,7 @@ module C-TYPING-CANONICALIZATION
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      
-     syntax K ::= canonicalizeSpecifier(Bag)
+     syntax KItem ::= canonicalizeSpecifier(Bag)
 
      rule <k> canonicalizeSpecifier(BagItem(Named(X:CId)))
                => t(.Set, typedefType(X, T))

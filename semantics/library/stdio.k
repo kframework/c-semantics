@@ -24,8 +24,8 @@ module LIBC-STDIO
      syntax String ::= symBaseToString(SymBase) [function]
 
      // getString returns the string without the null terminator
-     syntax K ::= getString(K)
-     syntax K ::= "getString-aux" "(" SymLoc "," String ")"
+     syntax KItem ::= getString(K)
+     syntax KItem ::= "getString-aux" "(" SymLoc "," String ")"
      rule getString(Loc:SymLoc) => getString-aux(Loc, "")
           [structural, anywhere]
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
@@ -132,7 +132,7 @@ module LIBC-STDIO
           => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
      
-     syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")"
+     syntax KItem ::= "fsl-open-file-aux" "(" String "," String "," K ")"
           [strict(3)]
      
      rule [fslOpenFile-aux]:
@@ -156,7 +156,7 @@ module LIBC-STDIO
           ...</files>
           [structural]
 
-     syntax K ::= "fsl-open-file" "(" K "," K ")" [strict]
+     syntax KItem ::= "fsl-open-file" "(" K "," K ")" [strict]
 
      //////////////////////////--  
 
@@ -184,7 +184,7 @@ module LIBC-STDIO
                ~> tv(lengthString(S), t(.Set, int)) 
           [structural]
      
-     syntax K ::= sprintf(K, SymLoc) [strict(1)]
+     syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
           prepareBuiltin(Identifier("sprintf"),
                ListItem(tv(Dest:SymLoc, _))
@@ -198,7 +198,7 @@ module LIBC-STDIO
                ~> tv(lengthString(S), t(.Set, int))
           [structural]
      
-     syntax K ::= snprintf(K, SymLoc, Int) [strict(1)]
+     syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           prepareBuiltin(Identifier("snprintf"),
                ListItem(tv(Dest:SymLoc, _))
@@ -218,11 +218,11 @@ module LIBC-STDIO
           => tv(lengthString(S), t(.Set, int))
           [structural]
      
-     syntax K ::= "new-printf-aux" "(" K ")" [strict]
-     syntax K ::= formatter(K, K) [strict(1)]
-     syntax K ::= "formatter-aux" "(" K ")" [strict]
-     syntax K ::= "formatter-next" "(" K ")"
-     syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
+     syntax KItem ::= "new-printf-aux" "(" K ")" [strict]
+     syntax KItem ::= formatter(K, K) [strict(1)]
+     syntax KItem ::= "formatter-aux" "(" K ")" [strict]
+     syntax KItem ::= "formatter-next" "(" K ")"
+     syntax KItem ::= "formatter-arg" "(" K ")" [strict(1)]
      rule formatter-next(varg(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
@@ -455,8 +455,8 @@ module LIBC-STDIO
      specified above, the behavior is undefined.
      */
 
-     syntax K ::= "getFormatType"
-     syntax K ::= "getFormatType-aux" "(" K "," K ")"
+     syntax KItem ::= "getFormatType"
+     syntax KItem ::= "getFormatType-aux" "(" K "," K ")"
      rule <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
           <format-length> Length:K </format-length>
           <format-state> State:K </format-state>

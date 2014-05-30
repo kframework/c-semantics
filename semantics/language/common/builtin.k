@@ -1,6 +1,6 @@
 module C-BUILTIN-SYNTAX
      syntax Map ::= "builtins" [function]
-     syntax K ::= "handleBuiltin"
+     syntax KItem ::= "handleBuiltin"
 endmodule
 
 module C-BUILTIN
@@ -73,7 +73,7 @@ module C-BUILTIN
      rule jmp_buf => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
 
      // Used by stddef.h.
-     syntax K ::= offsetOf(K, K) [strict(1)]
+     syntax KItem ::= offsetOf(K, K) [strict(1)]
      rule OffsetOf(T:KResult, K:K, F:CId)
           => offsetOf(DeclType(T:KResult, K:K), F:CId)
           [structural]

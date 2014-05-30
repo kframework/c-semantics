@@ -95,7 +95,7 @@ module C-COMMON-EXPR-ADDITIVE
                andBool T' =/=K void
           [structural]
                
-     syntax K ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
+     syntax KItem ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
      rule addToPointer(Loc:SymLoc, T:Type, I:Int, tv(Size:Int, _))
           => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
           when ifFromArrayInBounds(T, I)
@@ -151,7 +151,7 @@ module C-COMMON-EXPR-ADDITIVE
      }*/
 
      // ptr1, ptr2, size of ptr type
-     syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
+     syntax KItem ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
           [strict(3)]
      rule tv(L1:SymLoc, t(_, pointerType(T:Type)))
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))

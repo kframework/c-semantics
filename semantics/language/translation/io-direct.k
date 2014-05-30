@@ -11,8 +11,8 @@ module C-IO-DIRECT
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= writeBytes(SymLoc, DataList)
-     syntax K ::= writeByte(SymLoc, CValue)
+     syntax KItem ::= writeBytes(SymLoc, DataList)
+     syntax KItem ::= writeByte(SymLoc, CValue)
 
      // In the static semantics, we only allow writing to memory during
      // initialization (of statics).
@@ -44,9 +44,9 @@ module C-IO-DIRECT
           when isSymbolic(V)
           [structural]
 
-     syntax K ::= readByte(SymLoc) 
+     syntax KItem ::= readByte(SymLoc) 
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
+     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
      
      rule readBytes(Loc:SymLoc, Size:Int, _) 
           => readBytes-aux(Loc, Size, .List) 

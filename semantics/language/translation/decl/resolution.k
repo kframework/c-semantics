@@ -1,6 +1,6 @@
 module C-DECL-RESOLUTION-SYNTAX
-     syntax K ::= "allocateIncompleteTentatives"
-     syntax K ::= "resolveReferences"
+     syntax KItem ::= "allocateIncompleteTentatives"
+     syntax KItem ::= "resolveReferences"
 endmodule
 
 module C-DECL-RESOLUTION

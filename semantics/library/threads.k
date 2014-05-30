@@ -12,7 +12,7 @@ module LIBC-THREADS
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     syntax K ::= "thrd-success" | "thrd-error" | "thrd-timeout" 
+     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout" 
                 | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, t(.Set, int)) [macro, structural]
      rule thrd-error => tv(1, t(.Set, int)) [macro, structural]
@@ -20,9 +20,9 @@ module LIBC-THREADS
      rule thrd-busy => tv(3, t(.Set, int)) [macro, structural]
      rule thrd-nomem => tv(4, t(.Set, int)) [macro, structural]
      
-     syntax K ::= "threadRunning"
+     syntax KItem ::= "threadRunning"
      
-     syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
+     syntax KItem ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
           <k> prepareBuiltin(Identifier("thrd_create"), 
                     ListItem(ThIdPointer:KResult)
@@ -70,7 +70,7 @@ module LIBC-THREADS
           <thread-id> ThId:Int </thread-id>
           [structural]
           
-     syntax K ::= "join-aux" "(" Int "," Value ")"
+     syntax KItem ::= "join-aux" "(" Int "," Value ")"
           
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),

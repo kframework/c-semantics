@@ -1,7 +1,7 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
-     syntax K ::= addGlobalTag(CId, FieldInfo)
-     syntax K ::= addLocalTag(CId, FieldInfo)
+     syntax KItem ::= addGlobalTag(CId, FieldInfo)
+     syntax KItem ::= addLocalTag(CId, FieldInfo)
 
      syntax FieldInfo ::= makeStructFieldInfo(List) [function]
      syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
@@ -80,7 +80,7 @@ module C-DECL-TAGGED
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
 
-     syntax K ::= addTag(CId, FieldInfo)
+     syntax KItem ::= addTag(CId, FieldInfo)
      rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
                // Elide function parameter names in struct types.
                => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))

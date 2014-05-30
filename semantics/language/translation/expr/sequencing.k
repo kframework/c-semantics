@@ -4,7 +4,7 @@ module C-EXPR-SEQUENCING
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= commaEval(K) [strict]
+     syntax KItem ::= commaEval(K) [strict]
 
      rule commaEval(R:KResult) => rkludge(R)
           [structural]

@@ -11,7 +11,7 @@ module LIBC-STDLIB
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= printString(K)
+     syntax KItem ::= printString(K)
 
      rule printString(S:String)
           => writeToFD(1, ordChar(firstChar(S:String)))
@@ -95,7 +95,7 @@ module LIBC-STDLIB
           => prepareBuiltin(Identifier("malloc"), ListItem(Len:KResult))
           [structural]
 
-     syntax K ::= "calloc-aux"
+     syntax KItem ::= "calloc-aux"
      rule [calloc]:
           prepareBuiltin(Identifier("calloc"),
                ListItem(tv(N:Int, _))
