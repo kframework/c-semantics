@@ -57,7 +57,8 @@ module C-COMPOUND-LITERAL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> allowInit(zero(X) ~> Init)
+               ~> zero(X)
+               ~> Init
                ~> X
           ...</k>
           <curr-tu> Tu:String </curr-tu>
