@@ -327,10 +327,10 @@ module C-IO-BUFFERED
           [structural]
 
      syntax K ::= setEffectiveType(SymLoc, Type)
-     rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .
+     rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T)
+          when notBool isNoType(T) orBool hasCharType(T')
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
           ...</k>
@@ -338,7 +338,7 @@ module C-IO-BUFFERED
           <effective-types>...
                .Map => loc(Base, Offset) |-> T'
           ...</effective-types>
-          when isNoType(T)
+          when isNoType(T) andBool notBool hasCharType(T')
           [structural]
 
      syntax K ::= checkEffectiveType(Type, K) [strict(2)]
