@@ -70,9 +70,9 @@ module C-PROCESS-LABEL
           <goto-block-history> ListItem(_:Int) ...</goto-block-history>
           [structural] 
      rule <computation>
-               Block(Num:Int, _, list(L:List)) => listToK(L)
+               (Block(Num:Int, _, list(L:List)) => listToK(L))
           ...</computation> 
-          <goto-block-history> . => ListItem(Num) ...</goto-block-history>
+          <goto-block-history> (.List => ListItem(Num)) ...</goto-block-history>
           [structural] 
           
      rule <computation> popBlock => .K ...</computation>

@@ -194,14 +194,24 @@ module C-FUNCTION-DEF
 
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
+     syntax Bool ::= cIdIsInList(CId,List) [function]
+
+     rule cIdIsInList(X:CId, .List) => false
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) Tail:List)) => true
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List)) => cIdIsInList(X, Tail) when X =/=K Y
+
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
+
+     rule #hasDupIds'(.List) => false
      rule #hasDupIds'(
-               _
                ListItem(typedDeclaration(_, X:CId))
-               _
+               Tail:List
+          ) => true when cIdIsInList(X, Tail) ==K true
+
+     rule #hasDupIds'(
                ListItem(typedDeclaration(_, X:CId))
-               _
-          ) => true
+               Tail:List
+          ) => #hasDupIds'(Tail) when cIdIsInList(X, Tail) ==K false
 
      syntax KItem ::= dummyBind(List)
      
