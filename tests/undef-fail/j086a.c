@@ -1,9 +1,7 @@
-int f(a)
-int a;
-{
+int f(a){
 	return a;
 }
 
 int main(void){
-	return f(0);
+	return 0;
 }
