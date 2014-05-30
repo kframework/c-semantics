@@ -81,7 +81,7 @@ module C-COMPOUND-LITERAL
           [structural]
      rule <k> wstringLiteral(S:List)
                => lv(lnew(wstring(S)),
-                    t(.Set, arrayType(cfg:wcharut, lengthList(S) +Int 1)))
+                    t(.Set, arrayType(cfg:wcharut, size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
           [structural]

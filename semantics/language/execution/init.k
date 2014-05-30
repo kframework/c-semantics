@@ -83,7 +83,7 @@ module C-EXECUTION-INIT
           => makeArgv(
                Identifier("#incomingArgumentsArray"), 
                t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
-               (lengthList L) +Int 1)))
+               (size(L)) +Int 1)))
           [structural]
 
      syntax K ::= makeArgv(CId, Type)

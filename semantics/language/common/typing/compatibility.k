@@ -127,7 +127,7 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))
           => #areCompat(T, T') andBool #areParamsCompat(L, L')
-          when (lengthList(L) ==Int lengthList(L'))
+          when (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
 
      syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]

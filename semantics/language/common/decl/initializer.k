@@ -67,7 +67,7 @@ module C-DECL-INITIALIZER
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(wstringLiteral(S)))))))
           )
-          when isWCharType(T) andBool (lengthList(S) <=Int Len)
+          when isWCharType(T) andBool (size(S) <=Int Len)
           [structural] 
      
      rule figureInit(_, t(_, (incompleteArrayType(T:Type) 
@@ -77,7 +77,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, lengthList(S) +Int 1))),
+          => arrayType(T, size(S) +Int 1))),
                SingleInit(wstringLiteral(S:List))) 
           when isWCharType(T)
           [structural] 
@@ -430,7 +430,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isWCharType(T) andBool lengthList(S) ==Int Len
+          when isWCharType(T) andBool size(S) ==Int Len
           [structural] 
      rule <k> fillInit(SingleInit(stringLiteral(S:String)))
                => fillInit(SingleInit(stringLiteral(S +String "\x00")))
@@ -448,7 +448,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                     ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when isWCharType(T) andBool lengthList(S) <Int Len
+          when isWCharType(T) andBool size(S) <Int Len
           [structural] 
      rule <k> fillInit(SingleInit(stringLiteral(S:String)))
                => fillInit-aux(SingleInit(stringLiteral(S +String "\x00")))

@@ -99,7 +99,7 @@ module C-MEMORY-ALLOC
           [structural]
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
-               arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1))))
+               arrayType(cfg:wcharut, 4 *Int (size(S) +Int 1))))
           ~> writeWString(lnew(Base), S)
           [structural] 
      
