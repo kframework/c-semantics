@@ -155,8 +155,8 @@ module C-DECL-INITIALIZER
      rule fillInits(.List) => .K
           [structural] 
      
-     syntax List ::= "next"
-     syntax List ::= "block"
+     syntax KItem ::= "next"
+     syntax KItem ::= "block"
      
      rule <curr-subobject> 
                ListItem(te(K:K, t(Mods:Set, arrayType(T:Type, Len:CSize))))
@@ -189,14 +189,14 @@ module C-DECL-INITIALIZER
           
      // fixme should i worry about basetype here_
      rule <curr-subobject> 
-               (next ListItem(te(K:K[N:Int], T:Type)) 
+               (ListItem(next) ListItem(te(K:K[N:Int], T:Type)) 
                     => ListItem(te(K[N +Int 1], T)))
                ListItem(te(K, t(_, arrayType(_, Len:Int))))
           ...</curr-subobject>
           when Len >Int N +Int 1
           [structural] 
      rule <curr-subobject>
-               next (ListItem(te(K:K[N:Int], _:Type)) => .List)
+               ListItem(next) (ListItem(te(K:K[N:Int], _:Type)) => .List)
                     ListItem(te(K:K, t(_, arrayType(_, Len:Int))))
           ...</curr-subobject>
           when notBool Len >Int N +Int 1
@@ -210,7 +210,7 @@ module C-DECL-INITIALIZER
           [structural] 
      
      rule <curr-subobject>
-               (next ListItem(te(K:K . F:CId, T:Type))
+               (ListItem(next) ListItem(te(K:K . F:CId, T:Type))
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo(_ 
@@ -222,7 +222,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      rule <curr-subobject>
-               (next ListItem(te(K:K . F:CId, T:Type)) 
+               (ListItem(next) ListItem(te(K:K . F:CId, T:Type)) 
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo(_ 
@@ -234,14 +234,14 @@ module C-DECL-INITIALIZER
           [structural] 
           
      rule <curr-subobject>
-               next (ListItem(te(K:K . F:CId, T:Type)) => .List)
+               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List)
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo(_ ListItem(typedDeclaration(T, F)), _, _)
                ))))
           ...</curr-subobject>
           [structural] 
      rule <curr-subobject>
-               next (ListItem(te(K:K . F:CId, T:Type)) => .List)
+               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List)
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo(_
                          ListItem(typedDeclaration(T, F))
@@ -251,7 +251,7 @@ module C-DECL-INITIALIZER
           [structural] 
           
      rule <curr-subobject>
-               next (ListItem(te(K:K . _, _)) => .List)
+               ListItem(next) (ListItem(te(K:K . _, _)) => .List)
                ListItem(te(K:K, t(_, unionType(_, _, _))))
           ...</curr-subobject>
           [structural] 
@@ -262,7 +262,7 @@ module C-DECL-INITIALIZER
      syntax KItem ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L:List)))
                => fillInits(L)
-               ~> finishCompoundInit(next ListItem(te(K, T)) ListItem(Remainder))
+               ~> finishCompoundInit(ListItem(next) ListItem(te(K, T)) ListItem(Remainder))
           ...</k>
           <curr-subobject> 
                (_:List => .List) 
@@ -292,7 +292,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
           <curr-subobject>
-               _:List => block ListItem(te(K, T))
+               _:List => ListItem(block) ListItem(te(K, T))
           </curr-subobject>
           when isStructType(T) orBool isUnionType(T)
           [structural] 
@@ -303,7 +303,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
           <curr-subobject>
-               _:List => block ListItem(te(K, T))
+               _:List => ListItem(block) ListItem(te(K, T))
           </curr-subobject>
           when isArrayType(T)
           [structural] 
@@ -312,7 +312,7 @@ module C-DECL-INITIALIZER
                => buildDesignator(More)
           ...</k>
           <curr-subobject> 
-               block (.List => ListItem(te(K . F, T)))
+               ListItem(block) (.List => ListItem(te(K . F, T)))
                     ListItem('te(K:K,, 't(_,, Lbl:KLabel(S:CId,, _))))
           ...</curr-subobject>
           <structs>... 
@@ -322,7 +322,7 @@ module C-DECL-INITIALIZER
           [structural] 
           
      rule <k> buildDesignator(NextInit) => NextInit ...</k>
-          <curr-subobject> (block => .List) ...</curr-subobject>
+          <curr-subobject> (ListItem(block) => .List) ...</curr-subobject>
           [structural] 
 
      context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _)) 
@@ -330,7 +330,7 @@ module C-DECL-INITIALIZER
                => buildDesignator(More)
           ...</k>
           <curr-subobject> 
-               block (.List => ListItem(te(K[N], innerType(T))))
+               ListItem(block) (.List => ListItem(te(K[N], innerType(T))))
                     ListItem(te(K:K, T:Type)) 
           ...</curr-subobject>
           when isArrayType(T)
@@ -354,7 +354,7 @@ module C-DECL-INITIALIZER
      // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':K) => . ...</k>
           <curr-subobject>
-               (.List => next) ListItem(te(K:K, T:Type))
+               (.List => ListItem(next)) ListItem(te(K:K, T:Type))
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
@@ -399,7 +399,7 @@ module C-DECL-INITIALIZER
      rule <k> initFromStructRHS(K':K, t(_, structType(S:CId, _, _))) => . ...</k>
           <curr-subobject> 
                findStruct(t(_, structType(S:CId, _, _)))
-                    ListItem(te(K:K, t(_, structType(S:CId, _, _)))) => next 
+                    ListItem(te(K:K, t(_, structType(S:CId, _, _)))) => ListItem(next) 
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
