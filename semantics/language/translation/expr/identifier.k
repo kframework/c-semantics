@@ -39,7 +39,11 @@ module C-EXPR-IDENTIFIER
           [structural]
 
      rule <k> instantiate(Loc:SymLoc, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
-          when notBool isConstType(T) orBool notBool isStaticDuration(Loc)
+          when notBool isConstType(T)
+               orBool notBool isStaticDuration(Loc)
+               orBool isLinkerLoc(Loc)
      rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
-          when isConstType(T) andBool isStaticDuration(Loc) 
+          when isConstType(T)
+               andBool isStaticDuration(Loc) 
+               andBool notBool isLinkerLoc(Loc)
 endmodule
