@@ -155,8 +155,8 @@ module C-DECL-INITIALIZER
      rule fillInits(.List) => .K
           [structural] 
      
-     syntax ListItem ::= "next"
-     syntax ListItem ::= "block"
+     syntax List ::= "next"
+     syntax List ::= "block"
      
      rule <curr-subobject> 
                ListItem(te(K:K, t(Mods:Set, arrayType(T:Type, Len:CSize))))
@@ -387,7 +387,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural] 
           
-     syntax ListItem ::= findStruct(Type)
+     syntax List ::= findStruct(Type)
           
      rule <curr-subobject>
                findStruct(T:Type) (ListItem(te(_, T':Type)) => .List)

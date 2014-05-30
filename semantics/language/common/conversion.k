@@ -58,7 +58,7 @@ module C-CONVERSION
           when hasIntegerType(T)
           [structural, anywhere]
      rule cast(t(Mods:Set, bool), tv(F:Float, T:Type))
-          => #if F ==Float Int2Float(0)
+          => #if F ==Float Int2Float(0,0,0)
                #then tv(0, t(Mods, bool)) 
                #else tv(1, t(Mods, bool)) #fi
           when hasFloatType(T)
@@ -266,9 +266,9 @@ module C-CONVERSION
      6.8.6.4).
      }*/
      rule cast(T':Type, tv(V:Int, T:Type)) 
-          => tv(Int2Float(V), T')
+          => tv(Int2Float(V,0,0), T')
           when hasIntegerType(T)
-               andBool inRange(Int2Float(V), T')
+               andBool inRange(Int2Float(V,0,0), T')
           [structural, anywhere]
      
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{

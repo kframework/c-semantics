@@ -25,7 +25,7 @@ module C-IO-BUFFERED
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax ListItem ::= bwrite(SymLoc, K)
+     syntax List ::= bwrite(SymLoc, K)
 
      syntax KItem ::=  writeBytes(SymLoc, List)
      rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
