@@ -64,7 +64,7 @@ module C-MEMORY-ALLOC
                => alloc(Base, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
-          when notBool (SetItem(Base) in (keys M))
+          when notBool (SetItem(Base) in (keys(M)))
           [structural] 
      rule <k> allocObjectIfAbsent(Base:SymBase, _) => . 
           ...</k>
