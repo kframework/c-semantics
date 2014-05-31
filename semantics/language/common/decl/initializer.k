@@ -208,44 +208,47 @@ module C-DECL-INITIALIZER
                ListItem(te(K, t(_, incompleteArrayType(_))))
           ...</curr-subobject>
           [structural] 
+
+     //define a extra constructor in List to get the 
+     //information of next T' and F' if we have next operator
+     syntax List ::= searchInFieldInfoList(Type,CId,List,List) [function]
+		   | resultInFieldInfoList(List,List)
+     
+     rule searchInFieldInfoList(T:Type,F:CId,.List,L:List) => resultInFieldInfoList(.List,L)
+     rule searchInFieldInfoList(T:Type,F:CId,
+			ListItem(typedDeclaration(T, F)) 
+			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
+		=> resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L1) when F' =/=K #NoName
+     rule searchInFieldInfoList(T:Type,F:CId,
+			ListItem(typedDeclaration(T, F)) 
+			ListItem(typedDeclaration(_, #NoName))
+			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
+		=> resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L1)
+     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T, F)),L1:List) => resultInFieldInfoList(.List,L1)
+     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T', F')) L:List,L1:List) 
+		=> searchInFieldInfoList(T:Type, F:CId, L:List,L1) when T =/=K T' andBool F =/=K F'
      
      rule <curr-subobject>
-               (ListItem(next) ListItem(te(K:K . F:CId, T:Type))
-                    => ListItem(te(K . F', T')))
+               ListItem(next) ListItem(te(K:K . F:CId, T:Type)) 
                ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(_ 
-                         ListItem(typedDeclaration(T, F))
-                         ListItem(typedDeclaration(T':Type, F':CId)) _, _, _)
+                    fieldInfo( (L:List => searchInFieldInfoList(T,F,L,L)), _, _)
                ))))
           ...</curr-subobject>
-          when F' =/=K #NoName
+          [structural] 
+
+     rule <curr-subobject>
+               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List) 
+               ListItem(te(K:K, t(_, structType(_, _,
+                    fieldInfo((resultInFieldInfoList(.List,L:List) => L), _, _)
+               ))))
+          ...</curr-subobject>
           [structural] 
 
      rule <curr-subobject>
                (ListItem(next) ListItem(te(K:K . F:CId, T:Type)) 
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(_ 
-                         ListItem(typedDeclaration(T, F))
-                         ListItem(typedDeclaration(_, #NoName))
-                         ListItem(typedDeclaration(T':Type, F':CId)) _, _, _)
-               ))))
-          ...</curr-subobject>
-          [structural] 
-          
-     rule <curr-subobject>
-               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List)
-               ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(_ ListItem(typedDeclaration(T, F)), _, _)
-               ))))
-          ...</curr-subobject>
-          [structural] 
-     rule <curr-subobject>
-               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List)
-               ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(_
-                         ListItem(typedDeclaration(T, F))
-                         ListItem(typedDeclaration(_, #NoName)), _, _)
+                    fieldInfo((resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L:List) => L), _, _)
                ))))
           ...</curr-subobject>
           [structural] 
@@ -383,14 +386,14 @@ module C-DECL-INITIALIZER
                => initFromStructRHS(K, t(S, structType(X, NBits, Info)))
           ...</k>
           <curr-subobject>
-               .List => findStruct(t(S, structType(X, NBits, Info)))
+               .List => ListItem(findStruct(t(S, structType(X, NBits, Info))))
           ...</curr-subobject>
           [structural] 
           
-     syntax List ::= findStruct(Type)
+     syntax KItem ::= findStruct(Type)
           
      rule <curr-subobject>
-               findStruct(T:Type) (ListItem(te(_, T':Type)) => .List)
+               ListItem(findStruct(T:Type)) (ListItem(te(_, T':Type)) => .List)
           ...</curr-subobject>
           when T =/=K T'
           [structural] 
@@ -398,7 +401,7 @@ module C-DECL-INITIALIZER
      // fixme unsafe, might have started to initialize other things
      rule <k> initFromStructRHS(K':K, t(_, structType(S:CId, _, _))) => . ...</k>
           <curr-subobject> 
-               findStruct(t(_, structType(S:CId, _, _)))
+               ListItem(findStruct(t(_, structType(S:CId, _, _))))
                     ListItem(te(K:K, t(_, structType(S:CId, _, _)))) => ListItem(next) 
           ...</curr-subobject>
           <incomplete-length>
