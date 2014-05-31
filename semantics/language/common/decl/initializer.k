@@ -214,21 +214,35 @@ module C-DECL-INITIALIZER
      syntax List ::= searchInFieldInfoList(Type,CId,List,List) [function]
 		   | resultInFieldInfoList(List,List)
      
-     rule searchInFieldInfoList(T:Type,F:CId,.List,L:List) => resultInFieldInfoList(.List,L)
+     rule searchInFieldInfoList(T:Type,F:CId,.List,L:List)
+				 => resultInFieldInfoList(.List,L)
      rule searchInFieldInfoList(T:Type,F:CId,
 			ListItem(typedDeclaration(T, F)) 
-			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
-		=> resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L1) when F' =/=K #NoName
+			ListItem(typedDeclaration(T':Type, F':CId)) 
+							L:List,L1:List) 
+		=> resultInFieldInfoList(
+			ListItem(typedDeclaration(T':Type, F':CId)),L1)
+	 when F' =/=K #NoName
+
      rule searchInFieldInfoList(T:Type,F:CId,
 			ListItem(typedDeclaration(T, F)) 
 			ListItem(typedDeclaration(_, #NoName))
-			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
-		=> resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L1)
-     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T, F)),L1:List) => resultInFieldInfoList(.List,L1)
-     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T, F))
-					ListItem(typedDeclaration(_, #NoName)),L1:List) => resultInFieldInfoList(.List,L1)
-     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T', F')) L:List,L1:List) 
-		=> searchInFieldInfoList(T:Type, F:CId, L:List,L1) when T =/=K T' andBool F =/=K F'
+			ListItem(typedDeclaration(T':Type, F':CId)) 
+							L:List,L1:List) 
+		=> resultInFieldInfoList(
+				ListItem(typedDeclaration(T':Type, F':CId)),L1)
+
+     rule searchInFieldInfoList(T:Type,F:CId,
+			ListItem(typedDeclaration(T, F)),L1:List) 
+				=> resultInFieldInfoList(.List,L1)
+     rule searchInFieldInfoList(T:Type,F:CId,
+			ListItem(typedDeclaration(T, F))
+			ListItem(typedDeclaration(_, #NoName)),L1:List)
+			 => resultInFieldInfoList(.List,L1)
+     rule searchInFieldInfoList(T:Type,F:CId,
+			ListItem(typedDeclaration(T', F')) L:List,L1:List) 
+			=> searchInFieldInfoList(T:Type, F:CId,
+				 L:List,L1) when T =/=K T' andBool F =/=K F'
      
      rule <curr-subobject>
                ListItem(next) ListItem(te(K:K . F:CId, T:Type)) 
