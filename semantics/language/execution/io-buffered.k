@@ -25,7 +25,7 @@ module C-IO-BUFFERED
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax List ::= bwrite(SymLoc, K)
+     syntax KItem ::= bwrite(SymLoc, K)
 
      syntax KItem ::=  writeBytes(SymLoc, List)
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
@@ -107,11 +107,11 @@ module C-IO-BUFFERED
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
-          <buffer>... (.List => bwrite(loc(Base, Offset), V)) </buffer>
+          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
           [structural]
           
      rule <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int), V:K) => .List)
+               (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
           <mem>...
                Base |-> object(_, Len:Int, M:Map => M[V <- Offset])
@@ -121,7 +121,7 @@ module C-IO-BUFFERED
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
-     rule locations(bwrite(Loc:SymLoc, _) L:List)
+     rule locations(ListItem(bwrite(Loc:SymLoc, _)) L:List)
           => SetItem(Loc) locations(L)
 
      rule <k> readBytes(Loc:SymLoc, Size:Int, T:Type)
@@ -243,7 +243,7 @@ module C-IO-BUFFERED
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
 //             <locs-written> Locs:Bag </locs-written>
-//             <buffer>... bwrite(Loc, V:K) Mem:List </buffer>
+//             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
 //             when notBool Loc in locations(Mem:List)
 //             [structural]
 //             // for speed in interpretation; forces local buffer to be flushed
@@ -423,17 +423,14 @@ module C-IO-BUFFERED
           => getTypeAtOffset(addQualifiers(Mods, T),
                Offset %Int byteSizeofType(T))
           when Offset =/=Int 0 // We assume the offset must be in range.
-     // Structs.
+     // Structs.TODO: make sure this rule is ok by Chris
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
-               _ ListItem(typedDeclaration(_, F1:CId))
-                 ListItem(typedDeclaration(_, F2:CId)) _,
+	       _ (ListItem(typedDeclaration(_, F1:CId)) => .List),
                _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int F2 |-> Offset2:Int
+               _ F1 |-> Offset1:Int
           ))), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
           when (Offset =/=Int 0)
-               andBool (Offset1 <=Int Offset)
-               andBool (Offset2 >Int Offset)
+               andBool (Offset1 >Int Offset)
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
                _ ListItem(typedDeclaration(_, F1:CId)),
                _ F1 |-> T:Type,

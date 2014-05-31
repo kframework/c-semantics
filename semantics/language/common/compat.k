@@ -149,7 +149,8 @@ module COMPAT
           [structural]
 
      syntax KItem ::= "toKRList'" "(" List ")"
-     context toKRList'(_:List ListItem(HOLE) _:List)
+     //TODO: overcome the context associative matching
+     //context toKRList'(_:List ListItem(HOLE) _:List)
      rule toKRList(L:List) => toKRList'(L) ~> krlist(.List)
           [structural]
      rule toKRList'(_:List (ListItem(V:KResult) => .List)) 
