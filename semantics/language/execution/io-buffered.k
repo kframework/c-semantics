@@ -421,24 +421,12 @@ module C-IO-BUFFERED
           when Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.TODO: make sure this rule is ok by Chris
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
-                 ListItem(typedDeclaration(_, F1:CId))
-                 ListItem(typedDeclaration(_, F2:CId)) _,
+	       _ (ListItem(typedDeclaration(_, F1:CId)) => .List),
                _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int F2 |-> Offset2:Int
-          ))), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
-          when (Offset =/=Int 0)
-               andBool (Offset1 <=Int Offset)
-               andBool (Offset2 >Int Offset)
-     rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
-                 (ListItem(typedDeclaration(_, F1:CId)) => .List)
-                 ListItem(typedDeclaration(_, F2:CId)) _,
-               _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int F2 |-> Offset2:Int
+               _ F1 |-> Offset1:Int
           ))), Offset:Int)
           when (Offset =/=Int 0)
-               andBool ((Offset1 >Int Offset)
-               		orBool (Offset2 <=Int Offset))
+               andBool (Offset1 >Int Offset)
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
                _ ListItem(typedDeclaration(_, F1:CId)),
                _ F1 |-> T:Type,
