@@ -13,7 +13,8 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-CONVERSION-SYNTAX
 
      syntax KItem ::= getTypes(List)
-     context types(_:List ListItem(HOLE) _:List)
+     //TODO: overcome the context associative matching
+     //context types(_:List ListItem(HOLE) _:List)
      syntax KItem ::= convertedType(K) [strict]
      
      rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]

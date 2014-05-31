@@ -105,8 +105,13 @@ module C-MEMORY-READING
      syntax Bool ::= "#hasUnknown" "(" List ")" [function]
      syntax Bool ::= "#hasTrap" "(" List ")" [function]
 
-     rule #hasUnknown(_ ListItem(piece(unknown, _)) _) => true
-     rule #hasTrap(_ ListItem(piece(trap, _)) _) => true
+     rule #hasUnknown(.List) => false
+     rule #hasUnknown(ListItem(piece(unknown, _)) L:List) => true
+     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L) when B =/=K unknown
+
+     rule #hasTrap(.List) => false
+     rule #hasTrap(ListItem(piece(trap, _)) L:List) => true
+     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L) when B =/=K trap
 
      // TODO(chathhorn): half-assed floating point support.
      syntax TypedValue ::= joinFloatBytes(Type, List) [function]

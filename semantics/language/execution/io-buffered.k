@@ -25,7 +25,7 @@ module C-IO-BUFFERED
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax List ::= bwrite(SymLoc, K)
+     syntax KItem ::= bwrite(SymLoc, K)
 
      syntax KItem ::=  writeBytes(SymLoc, List)
      rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
@@ -105,11 +105,11 @@ module C-IO-BUFFERED
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
-          <buffer>... (.List => bwrite(loc(Base, Offset), V)) </buffer>
+          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
           [structural]
           
      rule <buffer>
-               (bwrite(loc(Base:SymBase, Offset:Int), V:K) => .List)
+               (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
           <mem>...
                Base |-> object(_, Len:Int, M:Map => M[V <- Offset])
@@ -119,7 +119,7 @@ module C-IO-BUFFERED
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
-     rule locations(bwrite(Loc:SymLoc, _) L:List)
+     rule locations(ListItem(bwrite(Loc:SymLoc, _)) L:List)
           => SetItem(Loc) locations(L)
 
      rule <k> readBytes(Loc:SymLoc, Size:Int, T:Type)
@@ -241,7 +241,7 @@ module C-IO-BUFFERED
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
 //             <locs-written> Locs:Bag </locs-written>
-//             <buffer>... bwrite(Loc, V:K) Mem:List </buffer>
+//             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
 //             when notBool Loc in locations(Mem:List)
 //             [structural]
 //             // for speed in interpretation; forces local buffer to be flushed

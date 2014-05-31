@@ -223,7 +223,7 @@ module C-TYPING-PREDICATES
      rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
 
      syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
+     rule #hasUnionMarker(t((SetItem(fromUnion(_, _, _)) _:Set), _)) => true
 
      rule isFromArray(T:Type) => #isFromArray(T) ==K true
 
