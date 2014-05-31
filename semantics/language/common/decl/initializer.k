@@ -225,6 +225,8 @@ module C-DECL-INITIALIZER
 			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
 		=> resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L1)
      rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T, F)),L1:List) => resultInFieldInfoList(.List,L1)
+     rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T, F))
+					ListItem(typedDeclaration(_, #NoName)),L1:List) => resultInFieldInfoList(.List,L1)
      rule searchInFieldInfoList(T:Type,F:CId,ListItem(typedDeclaration(T', F')) L:List,L1:List) 
 		=> searchInFieldInfoList(T:Type, F:CId, L:List,L1) when T =/=K T' andBool F =/=K F'
      
