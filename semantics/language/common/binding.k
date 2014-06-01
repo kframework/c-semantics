@@ -183,8 +183,7 @@ module C-BINDING
 
      // "are argument-promoted".
      rule areArgPromoted(ListItem(T:Type) L:List)
-          => isArgPromoted(T) andBool areArgPromoted(L)
-     rule areArgPromoted(.List) => true
+          => all(L, isArgPromoted) ==K true
      
      rule isArgPromoted(T:Type) =>
           areCompatible(T, argPromoteType(T))

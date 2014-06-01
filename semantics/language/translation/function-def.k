@@ -106,9 +106,7 @@ module C-FUNCTION-DEF
           orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
-     rule areVoidOrComplete(ListItem(Head:Type) Tail:List)
-          => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
-     rule areVoidOrComplete(.List) => true
+     rule areVoidOrComplete(L:List) => all(L, isVoidOrComplete) ==K true
 
      syntax K ::= checkMainDef(Type)
      rule checkMainDef(t(_, functionType(t(_, int),
