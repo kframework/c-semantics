@@ -138,6 +138,11 @@ module C-CONFIGURATION
                                    <local-addresses color="lightgray">
                                         .Set
                                    </local-addresses> 
+
+                                   // Loc |-> set(set(SymBase))
+                                   <restrict> .Map </restrict>
+                                   // Set of Loc
+                                   <modified> .Set </modified>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">

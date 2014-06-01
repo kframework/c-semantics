@@ -137,6 +137,7 @@ module C-TYPING-PREDICATES
 
      rule isConstType(T:Type) => Const in getQualifiers(T)
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
+     rule isRestrictType(T:Type) => Restrict in getQualifiers(T)
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#hasChar" "(" Type ")" [function]

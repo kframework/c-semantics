@@ -17,6 +17,19 @@ module C-EXPR-IDENTIFIER
           [structural]
 
      rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
+          when notBool isPointerType(T)
+          [structural]
+     rule <k> instantiate(Loc:SymLoc, T:Type)
+               => read(Loc, addProvenance(unbased, T))
+          ...</k>
+          when isPointerType(T)
+               andBool notBool isRestrictType(T)
+          [structural]
+     rule <k> instantiate(Loc:SymLoc, T:Type)
+               => read(Loc, addProvenance(basedOn(base(Loc)), T))
+          ...</k>
+          when isPointerType(T)
+               andBool isRestrictType(T)
           [structural]
 endmodule
 

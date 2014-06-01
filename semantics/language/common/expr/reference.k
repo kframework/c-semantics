@@ -1,4 +1,10 @@
+module C-COMMON-EXPR-REFERENCE-SYNTAX
+     syntax K ::= checkRestrict(SymLoc, Type)
+endmodule
+
 module C-COMMON-EXPR-REFERENCE
+     imports C-COMMON-EXPR-REFERENCE-SYNTAX
+
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -41,7 +47,9 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:Type)) => lv(Loc, innerType(T))
+     rule *(tv(Loc:SymLoc, T:Type))
+          => checkRestrict(Loc, T)
+          ~> lv(Loc, innerType(T))
           when isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer

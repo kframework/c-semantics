@@ -105,6 +105,7 @@ module C-COMMON-EXPR-EVAL
           => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
 
+     // Lvalue conversion.
      rule rkludge(lval(Loc:SymLoc, T:Type)) 
           => instantiate(Loc, T)
           when notBool isArrayType(T)

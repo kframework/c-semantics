@@ -1,8 +1,12 @@
 module C-CHECK-LOC
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      // fixme could additionally use the type to check whether that type is
      // valid for that pointer
@@ -40,5 +44,52 @@ module C-CHECK-LOC
           [structural]
      rule errorLocBounds
           => UNDEF("ECL3", "Found pointer that refers outside the bounds of an object + 1.", "6.2.4")
+          [structural]
+
+     rule <k> checkRestrict(Loc:SymLoc, T:Type) => . ...</k>
+          <modified> Modified:Set </modified>
+          <restrict>...
+               Loc |-> set((.Set => SetItem(set(getBases(T)))) _)
+          ...</restrict>
+          when notBool (Loc in Modified)
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, T:Type) => . ...</k>
+          <restrict>
+               Restricts:Map (.Map => Loc |-> set(SetItem(set(getBases(T)))))
+          </restrict>
+          when notBool (Loc in keys(Restricts))
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, T:Type)
+               => checkRestrict(getBases(T), getBases(T), Bases)
+          ...</k>
+          <modified> Modified:Set </modified>
+          <restrict>... Loc |-> set(Bases:Set) ...</restrict>
+          when Loc in Modified
+          [structural]
+
+     syntax K ::= checkRestrict(Set, Set, Set)
+
+     rule (. => checkRestrict'(B))
+          ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
+          [structural]
+     rule checkRestrict(.Set, Bases:Set, SetItem(set(Bases:Set)))
+          => .
+          [structural]
+     rule (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.", "6.7.3.1:4"))
+          ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
+          when PrevBases =/=Set SetItem(set(Bases))
+
+     syntax K ::= "checkRestrict'" "(" Provenance ")"
+     rule <k> checkRestrict'(basedOn(Base:SymBase)) => . ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          when notBool isConstType(innerType(T))
+          [structural]
+     rule checkRestrict'(unbased) => .
+          [structural]
+     rule <k> (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type.", "6.7.3.1:4"))
+               ~> checkRestrict'(basedOn(Base:SymBase))
+          ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          when isConstType(innerType(T))
           [structural]
 endmodule

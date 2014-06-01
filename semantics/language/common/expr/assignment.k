@@ -119,8 +119,11 @@ module C-COMMON-EXPR-ASSIGNMENT
      // *** TODO(chathhorn) *** Does this only happen with unions? But if so,
      // why doesn't the standard just say that?
 
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-               => write(Loc, V, T) ~> tv(V, T)
+     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => write(Loc, V, transferProvenance(T, T'))
+          ~> tv(V, transferProvenance(T, T'))
+          when (getQualifiers(T') ==Set getQualifiers(T))
+               andBool (simpleType(T') ==K simpleType(T))
           [structural]
      
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{

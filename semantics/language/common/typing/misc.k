@@ -123,17 +123,30 @@ module C-TYPING-MISC
      rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
-     rule getProvenance(t(SetItem(fromArray(X:Int, Y:Int))_, _))
-          => SetItem(fromArray(X, Y))
-     rule getProvenance(t(Mods:Set, T:SimpleType)) => .Set
-          when notBool isFromArray(t(Mods, T))
-     rule getProvenance(typedDeclaration(T:Type, _)) => getProvenance(T)
-     rule getProvenance(variadic) => .Set
-
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
+
+     rule getProvenance(T:Type)
+          => filterSet(getModifiers(T), '#isProvenance)
+
+     syntax Bool ::= "#isProvenance" "(" K ")" [function, klabel('#isProvenance)]
+     rule #isProvenance(fromArray(_, _)) => true
+     rule #isProvenance(fromUnion(_, _, _)) => true
+     rule #isProvenance(basedOn(_)) => true
+     rule #isProvenance(unbased) => true
+     rule #isProvenance(oldStyle) => true
+
+     rule getBases(T:Type)
+          => filterSet(getModifiers(T), '#isBases)
+
+     rule transferProvenance(From:Type, To:Type)
+          => addModifiers(getProvenance(From), To)
+
+     syntax Bool ::= "#isBases" "(" K ")" [function, klabel('#isBases)]
+     rule #isBases(basedOn(_)) => true
+     rule #isBases(unbased) => true
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
@@ -178,7 +191,7 @@ module C-TYPING-MISC
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
-     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
+     rule addProvenance(P:Provenance, T:Type) => addModifier(P, T)
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
@@ -194,6 +207,8 @@ module C-TYPING-MISC
                flexibleArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           when notBool isArrayType(T)
+
+     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
      syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)

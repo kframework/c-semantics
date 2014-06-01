@@ -55,6 +55,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isRegisterType(Type) [function]
 
+     // Type qualifiers.
+     syntax Bool ::= isRestrictType(Type) [function]
+
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
 
@@ -126,27 +129,36 @@ module C-TYPING-SYNTAX
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
      syntax Provenance ::= fromArray(Int, Int)
+     // Used for detecting violations of aliasing restictions on
+     // restrict-qualified pointers.
+     syntax Provenance ::= basedOn(SymBase)
+     syntax Provenance ::= "unbased"
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
-     syntax Modifier ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
+     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
      // Tag for old-style function defs.
-     syntax Modifier ::= "oldStyle"
+     syntax Provenance ::= "oldStyle"
 
      // Returns both type qualifiers, storage class specifiers, and any the
      // other information stored in the modifiers list (e.g., fromUnion,
      // fromArray, oldStyle).
      syntax Set ::= getModifiers(Type) [function]
 
+     syntax Set ::= getProvenance(Type) [function]
+     syntax Set ::= getBases(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
-     syntax Set ::= getProvenance(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
 
-     syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addProvenance(Provenance, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
+     syntax Type ::= addStorage(Storage, Type) [function]
+
+     // From, to.
+     syntax Type ::= transferProvenance(Type, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 

@@ -38,6 +38,7 @@ module C-IO-BUFFERED
                ~> checkEffectiveType(T, getEffectiveType(Loc))
                ~> writeBytes(Loc, Bytes)
           ...</k>
+          <modified>... .Set => SetItem(Loc) ...</modified>
           <initializing> false </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
