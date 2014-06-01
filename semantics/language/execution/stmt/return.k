@@ -30,7 +30,7 @@ module C-STMT-RETURN
           <k> Return(_:KResult) ...</k>
           <local-addresses> .Set => Addresses </local-addresses>
           <block-stack> 
-               ListItem(_ <local-addresses> Addresses:Set </local-addresses>)
+               ListItem(bag2K(_ <local-addresses> Addresses:Set </local-addresses>))
                => .List
           ...</block-stack>
           [structural] 
@@ -60,7 +60,7 @@ module C-STMT-RETURN
                ...</control-details>  => C)
           </control>
           <call-stack>
-               ListItem(
+               ListItem(bag2K(
                     <call-stack-frame>...
                          <continuation> K:K </continuation>
                          <stack-control>
@@ -77,7 +77,7 @@ module C-STMT-RETURN
                               CurrLoc:K
                          </stack-curr-program-loc>
                     ...</call-stack-frame>
-               ) => .List
+               )) => .List
           ...</call-stack>
           [structural] 
 endmodule

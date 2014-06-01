@@ -102,7 +102,7 @@ module C-EXPR-FUNCTION-CALL
                ~> BlK
           </k>
           <call-stack> .List => ListItem(
-               <call-stack-frame>...
+               bag2K(<call-stack-frame>...
                     <stack-control> 
                          <curr-tu> OldTu:K </curr-tu>
                          C:Bag 
@@ -111,7 +111,7 @@ module C-EXPR-FUNCTION-CALL
                     <stack-curr-function> CurrFun:K </stack-curr-function>
                     <stack-curr-function-params> CurrFunParams:List </stack-curr-function-params>
                     <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
-               ...</call-stack-frame>
+               ...</call-stack-frame>)
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>
