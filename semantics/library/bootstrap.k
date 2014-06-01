@@ -42,8 +42,14 @@ module LIBC-BOOTSTRAP
           [structural]
 
      syntax List ::= makeVarArgs(List) [function]
-     rule makeVarArgs(L:List ListItem(X:CId) ListItem(vararg(0)) _)
+		   | makeVarArgsAux(List) [function]
+     rule makeVarArgsAux(L:List ListItem(X:CId) ListItem(vararg(0)))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
+     rule makeVarArgsAux(L:List ListItem(X:CId)) 
+		=> makeVarArgsAux(L)
+		when X =/=K vararg(0)
+     rule makeVarArgs(L:List) => makeVarArgsAux(L)
+		when vararg(0) in L
      rule makeVarArgs(L:List ListItem(X:CId))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
           when notBool vararg(0) in (L ListItem(X))
