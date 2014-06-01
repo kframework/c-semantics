@@ -80,11 +80,24 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc) ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
-          when isArrayType(T) 
+          => checkRegister(Loc)
+          ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
+          when isArrayType(T) andBool notBool isRestrictType(T)
+     rule rkludge(lval(Loc:SymLoc, T:Type))
+          => checkRegister(Loc)
+          ~> tv(Loc, addProvenance(basedOn(base(Loc)),
+               stripQualifiers(arrayToPointer(T))))
+          when isArrayType(T) andBool isRestrictType(T)
+          
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc) ~> tv(Loc, arrayToPointer(T))
-          when isArrayType(T)
+          => checkRegister(Loc)
+          ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
+          when isArrayType(T) andBool notBool isRestrictType(T)
+     rule pkludge(lval(Loc:SymLoc, T:Type))
+          => checkRegister(Loc)
+          ~> tv(Loc, addProvenance(basedOn(base(Loc)),
+               stripQualifiers(arrayToPointer(T))))
+          when isArrayType(T) andBool isRestrictType(T)
 
      syntax Type ::= arrayToPointer(Type) [function]
      rule arrayToPointer(t(Mods:Set, T:SimpleType))

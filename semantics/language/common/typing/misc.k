@@ -139,7 +139,7 @@ module C-TYPING-MISC
      rule #isProvenance(oldStyle) => true
 
      rule getBases(T:Type)
-          => filterSet(getModifiers(T), '#isBases)
+          => filterSet(SetItem(unbased) getModifiers(T), '#isBases)
 
      rule transferProvenance(From:Type, To:Type)
           => addModifiers(getProvenance(From), To)
