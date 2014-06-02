@@ -35,6 +35,11 @@ module C-CONVERSION
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
                andBool (N <Int min(T))
+     rule (. => UNSPEC("CCV2", "Signed overflow.", "6.3.1.3:3"))
+          ~> arithInterpret(T:Type, I:Int)
+          when hasSignedIntegerType(T)
+               andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
+          [structural]      
 
      // TODO(chathhorn): the rules for cast are a bit of a mess because we've
      // assumed they apply apply anywhere but they still need to raise some

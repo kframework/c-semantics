@@ -1,10 +1,11 @@
 module C-COMMON-EXPR-RELATIONAL
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax K ::= makeTruth(Bool) [function]
      rule makeTruth(B:Bool)
@@ -82,21 +83,58 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(Offset <Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
+     rule (. => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
+          ~> tv(loc(Base:SymBase, _), T:Type) < tv(loc(Base':SymBase, _), T:Type)
+          when Base =/=K Base'
+          [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                <= tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset <=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
+          [structural]
+     rule (. => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
+          ~> tv(loc(Base:SymBase, _), T:Type) <= tv(loc(Base':SymBase, _), T:Type)
+          when Base =/=K Base'
           [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                > tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset >Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
+     rule (. => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
+          ~> tv(loc(Base:SymBase, _), T:Type) > tv(loc(Base':SymBase, _), T:Type)
+          when Base =/=K Base'
+          [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                >= tv(loc(Base:SymBase, Offset':Int), T':Type)
           => makeTruth(Offset >=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
+     rule (. => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
+          ~> tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T:Type)
+          when Base =/=K Base'
+          [structural]
+
+     rule (. => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+          ~> tv(_, T:Type) < tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          [structural]
+     rule (. => CV("CER6", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+          ~> tv(_, T:Type) <= tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          [structural] 
+     rule (. => CV("CER7", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+          ~> tv(_, T:Type) > tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          [structural] 
+     rule (. => CV("CER8", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+          ~> tv(_, T:Type) >= tv(_, T':Type)
+          when (hasIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          [structural] 
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
      The \cinline{==} (equal to) and \cinline{!=} (not equal to) operators are
