@@ -50,7 +50,7 @@ module C-EXPR-FUNCTION-CALL
      syntax KResult ::= rvlist(List)
 
      syntax KItem ::= revalParams(K)
-     context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     //TODO: context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
@@ -102,7 +102,7 @@ module C-EXPR-FUNCTION-CALL
                ~> BlK
           </k>
           <call-stack> .List => ListItem(
-               <call-stack-frame>...
+               bag2K(<call-stack-frame>...
                     <stack-control> 
                          <curr-tu> OldTu:K </curr-tu>
                          C:Bag 
@@ -111,7 +111,7 @@ module C-EXPR-FUNCTION-CALL
                     <stack-curr-function> CurrFun:K </stack-curr-function>
                     <stack-curr-function-params> CurrFunParams:List </stack-curr-function-params>
                     <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
-               ...</call-stack-frame>
+               ...</call-stack-frame>)
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>

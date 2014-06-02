@@ -20,10 +20,10 @@ module C-STMT-BLOCK
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
           </local>
           <block-stack> .List 
-               => ListItem(C
+               => ListItem(bag2K(C
                <nesting-depth> N </nesting-depth> 
                <local-vars> Vars </local-vars>
-               <local-addresses> Addresses </local-addresses>)
+               <local-addresses> Addresses </local-addresses>))
           ...</block-stack>
           [structural] 
           
@@ -39,7 +39,7 @@ module C-STMT-BLOCK
                (<local-addresses> .Set </local-addresses> => .Bag)
           </local>
           <block-stack> 
-               ListItem(C:Bag) => .List 
+               ListItem(bag2K(C:Bag)) => .List 
           ...</block-stack>
           [structural] 
           

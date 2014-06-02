@@ -27,7 +27,7 @@ module LIBC-BOOTSTRAP
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
-     context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
+     //TODO: context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
      rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
@@ -42,8 +42,14 @@ module LIBC-BOOTSTRAP
           [structural]
 
      syntax List ::= makeVarArgs(List) [function]
-     rule makeVarArgs(L:List ListItem(X:CId) ListItem(vararg(0)) _)
+		   | makeVarArgsAux(List) [function]
+     rule makeVarArgsAux(L:List ListItem(X:CId) ListItem(vararg(0)))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
+     rule makeVarArgsAux(L:List ListItem(X:CId)) 
+		=> makeVarArgsAux(L)
+		when X =/=K vararg(0)
+     rule makeVarArgs(L:List) => makeVarArgsAux(L)
+		when vararg(0) in L
      rule makeVarArgs(L:List ListItem(X:CId))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
           when notBool vararg(0) in (L ListItem(X))

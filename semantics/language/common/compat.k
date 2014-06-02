@@ -58,7 +58,8 @@ module COMPAT-SYNTAX
 
      syntax List ::= reverseList(List) [function]
 
-     syntax List ::= ListItem(Bag)
+     //TODO: syntax List ::= ListItem(Bag)
+     syntax KItem ::= bag2K(Bag)
      syntax KItem ::= list(List)
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)

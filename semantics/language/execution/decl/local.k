@@ -66,7 +66,7 @@ module C-DECL-LOCAL
                => defineAndInit(X, T, NoInit, Base)
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          <local-vars> Vars:List (. => ListItem(X)) </local-vars>
+          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           when isCompleteType(T)
                andBool notBool isRegisterType(T)
                andBool (notBool X in Vars)
@@ -83,8 +83,8 @@ module C-DECL-LOCAL
      // Same as above, but for the case where the variable has already been
      // declared. This is seen if we goto earlier in the same block.
      rule <k> declareOnly(X:CId, T:Type) => . ...</k>
-          <local-vars>... ListItem(X) ...</local-vars>
-          when isCompleteType(T)
+          <local-vars> Vars </local-vars>
+          when isCompleteType(T) andBool X in Vars
           [structural] 
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
@@ -109,7 +109,8 @@ module C-DECL-LOCAL
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
-          <local-vars>... ListItem(X) ...</local-vars>
+          <local-vars> Vars </local-vars>
+		when X in Vars
           [structural] 
 
      syntax KItem ::= defineAndInit(CId, Type, K, SymBase) [strict(3)] 

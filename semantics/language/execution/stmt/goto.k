@@ -133,36 +133,89 @@ module C-STMT-GOTO
           [structural] 
           
      // - second case, we're in a different block
+     //TODO: make sure Chris will like this
+     //assume that BlockNum will be unique in BlockHistory
+     //will delete the second rule in processGoto-pop-differing
+     // in the first list of resultInGotoObjectList, if it is
+     //.List, it means that we need to popBlock
+     //otherwise, follow the sharing history rule
+     syntax List ::= searchInGotoObjectList(List,List,List,List) [function]
+		   | preSearchInGotoObjectList(Int,List,List,List,List) [function]
+		   | resultInGotoObjectList(List,List,List)
+
+     rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
+			Postfix:List,Actual:List,Store:List)
+			=> resultInGotoObjectList(.List,.List,Store) 
+			when notBool BlockNum in BH
+     rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
+			Postfix:List,Actual:List,Store:List)
+			=> searchInGotoObjectList(BH,
+			Postfix,Actual,Store)
+			when BlockNum in BH
+
+     rule searchInGotoObjectList(.List,Postfix:List,
+		Actual:List,Store:List) 
+		=> resultInGotoObjectList(.List,.List,Store)
+		when Actual =/=List .List
+     rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int)
+		,Postfix:List,Actual:List ListItem(Current:Int),Store:List) 
+		=> resultInGotoObjectList(.List,.List,Store)
+		when BlockNum =/=Int Current
+     rule searchInGotoObjectList(BH:List ListItem(Current:Int)
+		,Postfix:List,Actual:List ListItem(Current),Store:List) 
+		=> searchInGotoObjectList(BH,
+		ListItem(Current) Postfix,Actual,Store) 
+     rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int)
+		,Postfix:List,.List,Store:List) 
+		=> resultInGotoObjectList(ListItem(BlockNum),BH,Postfix)
+     rule searchInGotoObjectList(BH:List
+		,Postfix:List,.List,Store:List) 
+		=> resultInGotoObjectList(.List,BH,Postfix)
+
+     rule <k> processGoto(gotoObject(SIntDepth:Int, 
+                    ((ListItem(CurrentBlock:Int) BlockHistory:List) 
+			=>  preSearchInGotoObjectList(BlockNum,
+			ListItem(CurrentBlock) BlockHistory,.List,
+			ActualHistory,ListItem(CurrentBlock) BlockHistory)), 
+                    _, _, _)) 
+          ...</k>
+          <nesting-depth> Depth:Int </nesting-depth>
+          <block-history> ListItem(BlockNum:Int) ActualHistory:List </block-history>
+          when (SIntDepth =/=Int Depth 
+		  orBool (ListItem(CurrentBlock) BlockHistory) 
+			=/=List (ListItem(BlockNum) ActualHistory))
+		andBool (SIntDepth =/=Int Depth +Int 1 
+		  orBool BlockHistory =/=List (ListItem(BlockNum) ActualHistory))
+          [structural] 
+
+     rule <k> processGotoDown(gotoObject(TargetDepth:Int, 
+                    (ListItem(BlockNum:Int) BlockHist:List 
+			=> searchInGotoObjectList(BlockHist,.List,
+			ActualHist,BlockHist) ), _, _,_))
+          ...</k>
+          <nesting-depth> ActualDepth:Int </nesting-depth>
+          <block-history> ActualHist:List </block-history>
+          when (TargetDepth =/=Int ActualDepth 
+		  orBool BlockHist
+			=/=List ActualHist)
+		andBool (TargetDepth =/=Int ActualDepth +Int 1 
+		  orBool ActualHist =/=List (ListItem(BlockNum) BlockHist))
+          [structural] 
      
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
-     rule [processGoto-pop-differing-1]:
+     rule [processGoto-pop-differing]:
           <k> (. => popBlock) 
-               ~> processGoto(gotoObject(
-                    _:Int, TargetBlockHistory:List, _, _, _))
+               ~> processGoto(gotoObject(_,
+                    (resultInGotoObjectList(.List,.List, Store:List)
+			=> Store), _, _, _))
           ...</k>
-          <block-history> 
-               ListItem(BlockNum:Int) _:List
-          </block-history>
-          when notBool BlockNum in TargetBlockHistory
-          [structural] 
-          
-     //  same
-     rule [processGoto-pop-differing-2]:
-          <k> (. => popBlock) 
-               ~> processGoto(gotoObject(_:Int, 
-                    _:List ListItem(BlockNum:Int)
-                    TargetBlockHistory:List, _, _, _))
-          ...</k>
-          <block-history>
-               ListItem(BlockNum:Int) ActualHistory:List
-          </block-history>
-          when TargetBlockHistory =/=List ActualHistory
+	  when Store =/=List .List
           [structural] 
                
      //  once we share a history, we start to push
      rule <k> processGoto(gotoObject(TargetDepth:Int, 
-                    (Prefix:List ListItem(_:Int) ActualHistory:List),
+                    resultInGotoObjectList(ListItem(_:Int),Prefix:List,ActualHistory:List),
                     K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
                     ~> processGotoDown(gotoObject(TargetDepth, 
@@ -180,7 +233,8 @@ module C-STMT-GOTO
                ~> addToHistory(TargetBlk)
                ~> addVariablesForBlock(TargetBlk, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
-                    (_ ListItem(TargetBlk:Int) ActualHist:List), _, _,
+                    resultInGotoObjectList(ListItem(TargetBlk:Int),
+			Prefix:List, ActualHist:List), _, _,
                     DeclStk:List))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>

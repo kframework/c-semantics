@@ -13,7 +13,7 @@ module C-STMT-BLOCK
                C:Bag
           </local>
           <block-stack> 
-               .List => ListItem(C)
+               .List => ListItem(bag2K(C))
           ...</block-stack>
           [structural] 
           
@@ -22,7 +22,7 @@ module C-STMT-BLOCK
                (_ => C)
           </local>
           <block-stack>
-               ListItem(C:Bag) => .List 
+               ListItem(bag2K(C:Bag)) => .List 
           ...</block-stack>
           [structural] 
           
