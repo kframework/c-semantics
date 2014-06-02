@@ -13,7 +13,7 @@ module C-TYPING-MISC
      //TODO(chathhorn): a lot of junk dumped here.
 
      rule simpleType(t(_, T:SimpleType)) => T
-          
+
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
      rule char => cfg:charAlias
@@ -38,7 +38,7 @@ module C-TYPING-MISC
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
           => (2 ^Int absInt(N)) -Int 1
           when hasUnsignedIntegerType(T)
-     
+
      rule min(t(_, bitfieldType(T:Type, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
           when hasSignedIntegerType(T)
@@ -48,7 +48,7 @@ module C-TYPING-MISC
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
-     
+
      rule min(t(_, signed-char)) 
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char)) 
@@ -332,7 +332,7 @@ module C-TYPING-MISC
 
      rule #isNPC(tv(NullPointer, T:Type)) => true
           when isPointerType(T)
-               andBool (innerType(T) ==K void)
+               andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
 
      // TODO(chathhorn)

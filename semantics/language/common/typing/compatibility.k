@@ -31,7 +31,7 @@ module C-TYPING-COMPATIBILITY
      members shall be declared in the same order. For two structures or unions,
      corresponding bit-fields shall have the same widths. For two enumerations,
      corresponding members shall have the same values.
-     
+
      \source[n1570]{\para{6.7.3}{10}}
      For two qualified types to be compatible, both shall have the identically
      qualified version of a compatible type; the order of type qualifiers
@@ -43,8 +43,8 @@ module C-TYPING-COMPATIBILITY
 
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
-     rule #areCompat(T:Type, T) => true 
-     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true 
+     rule #areCompat(T:Type, T) => true
+     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
           when sameQualifiers(Mods, Mods')
 
      rule #areCompat(
@@ -98,7 +98,7 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, pointerType(T':Type)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
-          
+
      // Struct and union fields.
      rule #areCompat(
                typedDeclaration(T:Type, X:CId),
@@ -201,6 +201,6 @@ module C-TYPING-COMPATIBILITY
                ListItem(T:Type) P:List,
                ListItem(T':Type) P':List)
           => ListItem(compositeType(T, T')) compositeParams(P, P')
-     
+
 endmodule
 

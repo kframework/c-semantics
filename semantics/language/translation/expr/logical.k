@@ -15,7 +15,7 @@ module C-EXPR-LOGICAL
      rule (tv(V:CValue, T:Type) => simplifyTruth(tv(V,T))) && _
           when notBool isTruthValue(tv(V,T)) // symVal is a truth value.
           [structural]
-                    
+
      context _ || (HOLE => reval(HOLE))
      rule tv(0, t(_, int)) || V:KResult => V
           [structural]

@@ -15,13 +15,13 @@ module C-COMMON-EXPR-RELATIONAL
      If both of the operands have arithmetic type, the usual arithmetic
      conversions are performed.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.8}{4}}}{
      For the purposes of these operators, a pointer to an object that is not an
      element of an array behaves the same as a pointer to the first element of
      an array of length one with the type of the object as its element type.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.8}{5}}}{
      When two pointers are compared, the result depends on the relative
      locations in the address space of the objects pointed to. If two pointers
@@ -38,43 +38,51 @@ module C-COMMON-EXPR-RELATIONAL
      \cinline{Q+1} compares greater than \cinline{P}. In all other cases, the
      behavior is undefined.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.8}{6}}}{
      Each of the operators \cinline{<} (less than), \cinline{>} (greater than),
      \cinline{<=} (less than or equal to), and \cinline{>=} (greater than or
      equal to) shall yield 1 if the specified relation is true and 0 if it is
      false. The result has type \cinline{int}.
      }*/
-          
-     rule tv(I1:Int, T:Type) < tv(I2:Int, T:Type)
+
+     rule tv(I1:Int, T:Type) < tv(I2:Int, T':Type)
           => makeTruth(I1 <Int I2)
           when isPromoted(T) orBool isPointerType(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) <= tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) <= tv(I2:Int, T':Type)
           => makeTruth(I1 <=Int I2)
           when isPromoted(T) orBool isPointerType(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) > tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) > tv(I2:Int, T':Type)
           => makeTruth(I1 >Int I2)
           when isPromoted(T) orBool isPointerType(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) >= tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) >= tv(I2:Int, T':Type)
           => makeTruth(I1 >=Int I2)
           when isPromoted(T) orBool isPointerType(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) < tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) < tv(F2:Float, T':Type)
           => makeTruth(F1 <Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) <= tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) <= tv(F2:Float, T':Type)
           => makeTruth(F1 <=Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) > tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) > tv(F2:Float, T':Type)
           => makeTruth(F1 >Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) >= tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) >= tv(F2:Float, T':Type)
           => makeTruth(F1 >=Float F2)
+          when T ==Type T'
           [structural]
-     
+
      //- comparison of pointers
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
@@ -84,8 +92,9 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) andBool isPointerType(T')
           [structural]
      rule (. => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) < tv(loc(Base':SymBase, _), T:Type)
+          ~> tv(loc(Base:SymBase, _), T:Type) < tv(loc(Base':SymBase, _), T':Type)
           when Base =/=K Base'
+               andBool T ==Type T'
           [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                <= tv(loc(Base:SymBase, Offset':Int), T':Type)
@@ -93,8 +102,9 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) andBool isPointerType(T')
           [structural]
      rule (. => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) <= tv(loc(Base':SymBase, _), T:Type)
+          ~> tv(loc(Base:SymBase, _), T:Type) <= tv(loc(Base':SymBase, _), T':Type)
           when Base =/=K Base'
+               andBool T ==Type T'
           [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                > tv(loc(Base:SymBase, Offset':Int), T':Type)
@@ -102,8 +112,9 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) andBool isPointerType(T')
           [structural]
      rule (. => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) > tv(loc(Base':SymBase, _), T:Type)
+          ~> tv(loc(Base:SymBase, _), T:Type) > tv(loc(Base':SymBase, _), T':Type)
           when Base =/=K Base'
+               andBool T ==Type T'
           [structural]
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                >= tv(loc(Base:SymBase, Offset':Int), T':Type)
@@ -111,8 +122,9 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) andBool isPointerType(T')
           [structural]
      rule (. => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T:Type)
+          ~> tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T':Type)
           when Base =/=K Base'
+               andBool T ==Type T'
           [structural]
 
      rule (. => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
@@ -142,7 +154,7 @@ module C-COMMON-EXPR-RELATIONAL
      Each of the operators yields 1 if the specified relation is true and 0 if
      it is false. The result has type \cinline{int}. For any pair of operands,
      exactly one of the relations is true.
-     
+
      If both of the operands have arithmetic type, the usual arithmetic
      conversions are performed. Values of complex types are equal if and only
      if both their real parts are equal and also their imaginary parts are
@@ -150,25 +162,27 @@ module C-COMMON-EXPR-RELATIONAL
      equal if and only if the results of their conversions to the (complex)
      result type determined by the usual arithmetic conversions are equal.
      }*/
-     
-     rule tv(I1:Int, T:Type) == tv(I2:Int, T:Type)
+
+     rule tv(I1:Int, T:Type) == tv(I2:Int, T':Type)
           => makeTruth(I1 ==K I2)
-          when isPromoted(T) 
-               orBool isPointerType(T)
+          when (isPromoted(T) orBool isPointerType(T))
+               andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) != tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) != tv(I2:Int, T':Type)
           => makeTruth(I1 =/=K I2)
-          when isPromoted(T) 
-               orBool isPointerType(T)
+          when (isPromoted(T) orBool isPointerType(T))
+               andBool T ==Type T'
           [structural]
-          
-     rule tv(F1:Float, T:Type) == tv(F2:Float, T:Type) 
+
+     rule tv(F1:Float, T:Type) == tv(F2:Float, T':Type) 
           => makeTruth(F1 ==Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) != tv(F2:Float, T:Type) 
+     rule tv(F1:Float, T:Type) != tv(F2:Float, T':Type) 
           => makeTruth(F1 =/=Float F2)
+          when T ==Type T'
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{5--7}}}{
      Otherwise, at least one operand is a pointer. If one operand is a pointer
      and the other is a null pointer constant, the null pointer constant is
@@ -200,7 +214,7 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) 
                andBool isPointerType(T')
           [structural]
-     
+
      // if one of the pointers is null, it's also straightforward
      rule tv(NullPointer, T:Type) == tv(N:SymLoc, T':Type)
           => makeTruth(NullPointer ==K N)
@@ -222,9 +236,9 @@ module C-COMMON-EXPR-RELATIONAL
           when isPointerType(T) 
                andBool isPointerType(T')
           [structural]
-          
-     // otherwise, there are a number of cases.  
-     // First, they are part of the same object        
+
+     // otherwise, there are a number of cases.
+     // First, they are part of the same object
      rule tv(loc(Base:SymBase, Offset:Int), T:Type)
                == tv(loc(Base:SymBase, Offset':Int), T':Type) 
           => makeTruth(Offset ==Int Offset')
@@ -235,7 +249,7 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(Offset =/=Int Offset')
           when isPointerType(T) andBool isPointerType(T')
           [structural]
-          
+
      // next, they are part of different objects.  
      // here, if the two objects are alive, and our pointers are in bounds, we
      // can conclude something.  if one of the objects is dead, we can't
@@ -268,9 +282,9 @@ module C-COMMON-EXPR-RELATIONAL
                andBool (Offset <Int Len)
                andBool (Offset' <Int Len')
           [structural]
-     
+
      // otherwise we can't conclude anything
-          
+
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
      rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':Type)
@@ -283,7 +297,7 @@ module C-COMMON-EXPR-RELATIONAL
                andBool isPromoted(T')
                andBool isNullPointerConstant(tv(N, T'))
           [structural]
-     
+
      rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':Type)
           when isPromoted(T) 
                andBool isPointerType(T')

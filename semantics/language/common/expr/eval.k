@@ -94,13 +94,13 @@ module C-COMMON-EXPR-EVAL
           => stripQualifiers(
                addProvenance(basedOn(base(Loc)),
                addProvenance(fromArray(0,
-                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
+                    byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
                t(getModifiers(T), pointerType(innerType(T))))))
           when isRestrictType(T)
      rule arrayToPointer(_, T:Type)
           => stripQualifiers(
                addProvenance(fromArray(0,
-                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
+                    byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
                t(getModifiers(T), pointerType(innerType(T)))))
           when notBool isRestrictType(T)
 

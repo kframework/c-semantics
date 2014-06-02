@@ -15,16 +15,16 @@ module C-COMMON-EXPR-CONDITIONAL
      syntax K ::= getTypes(List)
      context types(_:List ListItem(HOLE) _:List)
      syntax K ::= convertedType(K) [strict]
-     
+
      rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]
-     
+
      syntax List ::=  wrapWithTypeOf(List) [function]
      rule wrapWithTypeOf(ListItem(K:K) L:List)
           => ListItem(retype(typeof(K))) wrapWithTypeOf(L)
      rule wrapWithTypeOf(.List) => .List
-     
+
      syntax K ::= retype(K) [strict]
-     
+
      // fixme, not handling qualifiers correctly
      rule retype(T:Type) => t(.Set, pointerType(innerType(T)))
           when isArrayType(T)
@@ -34,7 +34,7 @@ module C-COMMON-EXPR-CONDITIONAL
           [structural]
      rule retype(T:Type) => T
           when notBool (isArrayType(T) orBool isFunctionType(T))
-          [structural]   
+          [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
      evaluation and the evaluation of the second or third operand (whichever is
@@ -42,10 +42,10 @@ module C-COMMON-EXPR-CONDITIONAL
      unequal to 0; the third operand is evaluated only if the first compares
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
-     }*/  
+     }*/
      rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K 
           [structural]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
      type that would be determined by the usual arithmetic conversions, were
@@ -60,7 +60,7 @@ module C-COMMON-EXPR-CONDITIONAL
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      \broken{If both the second and third operands are pointers or one is a
      null pointer constant and the other is a pointer, the result type is a
@@ -76,30 +76,29 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule [conditional-left-is-null]:
-          (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
+     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
           when hasIntegerType(T1)
                andBool isPointerType(T2)
           [structural]
-     rule [conditional-right-is-null]:
-          (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
+     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
           when hasIntegerType(T2)
                andBool isPointerType(T1)
           [structural]
-          
+
      // fixme, this is wrong
      rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : _
           when isPointerType(T1)
                andBool isPointerType(T2)
           [structural]
-          
+
      // this should take care of the void/struct cases
-     rule (types(ListItem(T:Type) ListItem(T:Type)) => convertedType(T))
+     rule (types(ListItem(T:Type) ListItem(T':Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
+               andBool T ==Type T'
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))

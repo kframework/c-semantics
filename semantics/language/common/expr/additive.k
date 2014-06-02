@@ -16,7 +16,7 @@ module C-COMMON-EXPR-ADDITIVE
      operand shall be a pointer to a complete object type and the other shall
      have integer type.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{3}}}{
      For subtraction, one of the following shall hold:
      \begin{itemize}
@@ -31,27 +31,27 @@ module C-COMMON-EXPR-ADDITIVE
      \end{itemize}
      (Decrementing is equivalent to subtracting 1.)
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{4}}}{
      If both operands have arithmetic type, the usual arithmetic conversions
      are performed on them.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{5}}}{
      The result of the binary \cinline{+} operator is the sum of the operands.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{6}}}{
      The result of the binary \cinline{-} operator is the difference resulting
      from the subtraction of the second operand from the first.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{7}}}{
      For the purposes of these operators, a pointer to an object that is not an
      element of an array behaves the same as a pointer to the first element of
      an array of length one with the type of the object as its element type.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{8}}}{
      When an expression that has integer type is added to or subtracted from a
      pointer, the result has the type of the pointer operand. If the pointer
@@ -75,7 +75,7 @@ module C-COMMON-EXPR-ADDITIVE
      object, it shall not be used as the operand of a unary \cinline{*}
      operator that is evaluated.
      }*/
-     
+
      rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
           => addToPointer(Loc, T', I)
           when hasIntegerType(T) andBool isPointerType(T')
@@ -91,22 +91,22 @@ module C-COMMON-EXPR-ADDITIVE
           when hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
-               
+
      syntax K ::= addToPointer(SymLoc, Type, Int) [function]
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => tv(Loc +bytes (I *Int byteSizeofType(innerType(T))),
                newFromArray(T, I))
           when ifFromArrayInBounds(T, I)
           [structural]
-     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
-          addToPointer(_, T:Type, I:Int)
+     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
+          ~> addToPointer(_, T:Type, I:Int)
           when notBool ifFromArrayInBounds(T, I)
           [structural]
-          
+
      syntax Type ::= newFromArray(Type, Int) [function]
      rule newFromArray(
                t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
-               pointerType(T:Type)), I:Int) 
+               pointerType(T:Type)), I:Int)
           => t(SetItem(fromArray(Offset +Int I *Int byteSizeofType(T), Len)) Mods,
                pointerType(T))
      rule newFromArray(T:Type, _) => T
@@ -114,7 +114,7 @@ module C-COMMON-EXPR-ADDITIVE
 
      syntax Bool ::= ifFromArrayInBounds(Type, Int) [function]
      rule ifFromArrayInBounds(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
+               t(SetItem(fromArray(Offset:Int, Len:Int)) _,
                pointerType(T:Type)), I:Int)
           => true
           when Offset +Int (I *Int byteSizeofType(T)) <Int Len
@@ -159,20 +159,21 @@ module C-COMMON-EXPR-ADDITIVE
           => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
           when (Offset1 -Int Offset2) %Int Size ==Int 0
           [structural]
-     
-     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
+
+     rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))
-          when isPromoted(T)
+          when isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 -Int I2))
-          when isPromoted(T)
+          when isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
           => arithInterpret(T, F1 +Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
           => arithInterpret(T, (F1 -Float F2))
+          when T ==Type T'
           [structural]
 endmodule
-

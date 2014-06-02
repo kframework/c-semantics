@@ -48,7 +48,7 @@ module C-CONVERSION
      //- switch assumes casts can happen anywhere
      rule cast(T':Type, tv(V:CValue, T:Type))
           => transferProvenance(T, tv(V, T'))
-          when T ==Type T'
+          when stripQualifiers(T) ==Type stripQualifiers(T')
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
