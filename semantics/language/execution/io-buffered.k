@@ -36,14 +36,43 @@ module C-IO-BUFFERED
                // combine the checks.
                ~> setEffectiveType(Loc, T)
                ~> checkEffectiveType(T, getEffectiveType(Loc))
+               ~> setModified(Loc, T)
+               ~> saveProvenance(Loc, T)
                ~> writeBytes(Loc, Bytes)
           ...</k>
-          <modified>... .Set => SetItem(Loc) ...</modified>
           <initializing> false </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
           ...</k>
           <initializing> true </initializing>
+
+     syntax K ::= setModified(SymLoc, Type)
+     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+          <modified>...
+               Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T)))
+          ...</modified>
+     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+          <modified>
+               Modified:Map (.Map => Loc |-> byteSizeofType(T))
+          </modified>
+          when notBool Loc in keys(Modified)
+
+     // TODO(chathhorn): a big hack that I'm pretty sure doesn't cover all the
+     // cases (e.g., the first member in a struct).
+     syntax K ::= saveProvenance(SymLoc, Type)
+     rule <k> saveProvenance(Loc:SymLoc, T:Type) => . ...</k>
+          <provenance>...
+               Loc |-> set(_ => getProvenance(T))
+          ...</provenance>
+          when getProvenance(T) =/=Set .Set
+     rule <k> saveProvenance(Loc:SymLoc, T:Type) => . ...</k>
+          <provenance>
+               Bases:Map (.Map => Loc |-> set(getProvenance(T)))
+          </provenance>
+          when notBool Loc in keys(Bases)
+               andBool getProvenance(T) =/=Set .Set
+     rule saveProvenance(_, T:Type) => .
+          when getProvenance(T) ==Set .Set
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -370,8 +399,6 @@ module C-IO-BUFFERED
           when areCompatible(correspondingUnsignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
-          // TODO(chathhorn): some sort of ==Type? Can't really compare types
-          // straight up because of special modifiers.
      rule #effectivelyCompat(L:Type, Eff:Type) => true
           when areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
@@ -393,8 +420,7 @@ module C-IO-BUFFERED
      // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
                t(Mods:Set, unionType(X:CId, Sz:Int, fieldInfo(Decls:List, Types:Map, Offs:Map))))
           => effectivelyCompatWithUnion(L, values(Types))
-          when notBool (areCompatible(
-                         stripQualifiers(L),
+          when notBool (areCompatible(stripQualifiers(L),
                          stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))

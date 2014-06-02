@@ -29,6 +29,8 @@ module C-SYMBOLIC-VALUE
      // common.
      rule symVal +bytes _:Int => symVal
 
+     rule base(symVal) => symVal
+
      rule write(symVal, _, T:Type) => .
           when notBool isConstType(T)
           [structural]

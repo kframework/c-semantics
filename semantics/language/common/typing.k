@@ -12,6 +12,9 @@ module C-TYPING-SYNTAX
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
 
+     syntax Bool ::= Type "==Type" Type [function]
+     syntax Bool ::= Type "=/=Type" Type [function]
+
      syntax SimpleType ::= simpleType(Type) [function]
 
      // TODO(chathhorn): move?
@@ -132,7 +135,6 @@ module C-TYPING-SYNTAX
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase)
-     syntax Provenance ::= "unbased"
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
@@ -156,8 +158,10 @@ module C-TYPING-SYNTAX
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addModifiers(Set, Type) [function]
 
      // From, to.
+     syntax TypedValue ::= transferProvenance(Type, TypedValue) [function]
      syntax Type ::= transferProvenance(Type, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId) 

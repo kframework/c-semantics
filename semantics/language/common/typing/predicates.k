@@ -5,6 +5,46 @@ module C-TYPING-PREDICATES
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
+     // Equality modulo provenance (and storage specifiers).
+     rule T:Type ==Type T':Type => #typesEq(T, T') ==K true
+     rule T:Type =/=Type T':Type => #typesEq(T, T') =/=K true
+
+     syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
+     rule #typesEq(T:Type, T) => true
+     rule #typesEq(T:Type, T':Type) => true
+          when (getQualifiers(T) ==Set getQualifiers(T'))
+               andBool (simpleType(T) ==K simpleType(T'))
+     rule #typesEq(
+               typedDeclaration(T:Type, X:CId),
+               typedDeclaration(T':Type, X:CId))
+          => #typesEq(T, T')
+     rule #typesEq(
+               t(Mods:Set, pointerType(T:Type)),
+               t(Mods':Set, pointerType(T':Type)))
+          => #typesEq(T, T')
+          when intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers)
+     rule #typesEq(
+               t(Mods:Set, arrayType(T:Type, Len:Int)),
+               t(Mods':Set, arrayType(T':Type, Len)))
+          => #typesEq(T, T')
+          when intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers)
+     rule #typesEq(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
+          => #typesEq(T, T')
+          when intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers)
+     rule #typesEq(
+               t(Mods:Set, flexibleArrayType(T:Type)),
+               t(Mods':Set, flexibleArrayType(T':Type)))
+          => #typesEq(T, T')
+          when intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers)
+     // Not continued for structs and unions because provenance doesn't appear
+     // on them for now.
+          
      rule isBasicType(T:Type) => #isBasic(T) ==K true
 
      syntax Bool ::= "#isBasic" "(" Type ")" [function]

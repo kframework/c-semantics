@@ -135,18 +135,19 @@ module C-TYPING-MISC
      rule #isProvenance(fromArray(_, _)) => true
      rule #isProvenance(fromUnion(_, _, _)) => true
      rule #isProvenance(basedOn(_)) => true
-     rule #isProvenance(unbased) => true
      rule #isProvenance(oldStyle) => true
 
      rule getBases(T:Type)
-          => filterSet(SetItem(unbased) getModifiers(T), '#isBases)
+          => filterSet(getModifiers(T), '#isBases)
 
      rule transferProvenance(From:Type, To:Type)
           => addModifiers(getProvenance(From), To)
 
+     rule transferProvenance(From:Type, tv(V:CValue, To:Type))
+          => tv(V, transferProvenance(From, To))
+
      syntax Bool ::= "#isBases" "(" K ")" [function, klabel('#isBases)]
      rule #isBases(basedOn(_)) => true
-     rule #isBases(unbased) => true
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
@@ -213,7 +214,6 @@ module C-TYPING-MISC
      syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
 
-     syntax Type ::= addModifiers(Set, Type) [function]
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
           => t(Mods' Mods, T)
           

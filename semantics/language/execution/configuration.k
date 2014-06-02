@@ -139,10 +139,12 @@ module C-CONFIGURATION
                                         .Set
                                    </local-addresses> 
 
-                                   // Loc |-> set(set(SymBase))
+                                   // SymLoc |-> set(Provenance)
+                                   <provenance> .Map </provenance>
+                                   // SymLoc |-> set(set(basedOns))
                                    <restrict> .Map </restrict>
-                                   // Set of Loc
-                                   <modified> .Set </modified>
+                                   // SymLoc |-> Int (nbytes modified)
+                                   <modified> .Map </modified>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">

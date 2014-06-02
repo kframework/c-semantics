@@ -41,10 +41,9 @@ module C-CONVERSION
      // errors.
 
      //- switch assumes casts can happen anywhere
-     rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
-          [structural, anywhere]
-     rule cast(t(Mods':Set, T':SimpleType), tv(V:CValue, t(_, T':SimpleType))) 
-          => tv(V, t(Mods', T'))
+     rule cast(T':Type, tv(V:CValue, T:Type))
+          => transferProvenance(T, tv(V, T'))
+          when T ==Type T'
           [structural, anywhere]
           
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -340,14 +339,14 @@ module C-CONVERSION
      a trap representation.
      }*/
      // choice implementation defined behavior
-     rule cast(T':Type, tv(V:SymLoc, T:Type))
-          => tv(V, transferProvenance(T, T'))
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => transferProvenance(T, tv(Loc, T'))
           when hasIntegerType(T)
-               andBool notBool isNullPointerConstant(tv(V, T))
+               andBool notBool isNullPointerConstant(tv(Loc, T))
                andBool isPointerType(T')
           [structural, anywhere]
-     rule cast(T':Type, tv(L:SymLoc, T:Type))
-          => tv(L, transferProvenance(T, T'))
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => transferProvenance(T, tv(Loc, T'))
           when hasIntegerType(T)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -360,12 +359,12 @@ module C-CONVERSION
      }*/
      // fixme needs to check size
      rule cast(T':Type, tv(N:Int, T:Type))
-          => tv(N, transferProvenance(T, T'))
+          => transferProvenance(T, tv(N, T'))
           when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
-     rule cast(T':Type, tv(L:SymLoc, T:Type))
-          => tv(L, transferProvenance(T, T'))
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => transferProvenance(T, tv(Loc, T'))
           when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
@@ -390,7 +389,7 @@ module C-CONVERSION
      // choice
      // TODO needs to handle alignment
      rule cast(T':Type, tv(Loc:SymLoc, T:Type))
-          => tv(Loc, transferProvenance(T, T'))
+          => transferProvenance(T, tv(Loc, T'))
           when isPointerType(T) andBool isPointerType(T')
           [structural, anywhere]
 endmodule

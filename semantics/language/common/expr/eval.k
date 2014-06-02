@@ -81,29 +81,26 @@ module C-COMMON-EXPR-EVAL
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
           => checkRegister(Loc)
-          ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
-          when isArrayType(T) andBool notBool isRestrictType(T)
-     rule rkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(Loc, addProvenance(basedOn(base(Loc)),
-               stripQualifiers(arrayToPointer(T))))
-          when isArrayType(T) andBool isRestrictType(T)
-          
+          ~> tv(Loc, arrayToPointer(Loc, T))
+          when isArrayType(T)
      rule pkludge(lval(Loc:SymLoc, T:Type))
           => checkRegister(Loc)
-          ~> tv(Loc, stripQualifiers(arrayToPointer(T)))
-          when isArrayType(T) andBool notBool isRestrictType(T)
-     rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(Loc, addProvenance(basedOn(base(Loc)),
-               stripQualifiers(arrayToPointer(T))))
-          when isArrayType(T) andBool isRestrictType(T)
+          ~> tv(Loc, arrayToPointer(Loc, T))
+          when isArrayType(T)
 
-     syntax Type ::= arrayToPointer(Type) [function]
-     rule arrayToPointer(t(Mods:Set, T:SimpleType))
-          => t(Mods SetItem(fromArray(0, arrayLength(t(Mods, T)))),
-               pointerType(innerType(t(Mods, T))))
-     
+     syntax Type ::= arrayToPointer(SymLoc, Type) [function]
+     rule arrayToPointer(Loc:SymLoc, T:Type)
+          => stripQualifiers(
+               addProvenance(basedOn(base(Loc)),
+               addProvenance(fromArray(0, arrayLength(T)),
+               t(getModifiers(T), pointerType(innerType(T))))))
+          when isRestrictType(T)
+     rule arrayToPointer(_, T:Type)
+          => stripQualifiers(
+               addProvenance(fromArray(0, arrayLength(T)),
+               t(getModifiers(T), pointerType(innerType(T)))))
+          when notBool isRestrictType(T)
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
      A function designator is an expression that has function type.  Except
      when it is the operand of the \cinline{sizeof} operator, the
