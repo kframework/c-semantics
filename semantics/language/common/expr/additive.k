@@ -76,34 +76,30 @@ module C-COMMON-EXPR-ADDITIVE
      operator that is evaluated.
      }*/
      
-     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
-               + tv(I:Int, T:Type)
-          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
-          when hasIntegerType(T)
-               andBool T' =/=K void
+     rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
+          => addToPointer(Loc, T', I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
           [structural]
-     rule tv(I:Int, T:Type)
-               + tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type)))
-          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
-          when hasIntegerType(T)
-               andBool T' =/=K void
+     rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
+          => addToPointer(Loc, T', I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
           [structural]
-     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
-               - tv(I:Int, T:Type)
-          => addToPointer(Loc, t(Mods, pointerType(T')), 0 -Int I, sizeofType(T')) 
-          when hasIntegerType(T)
-               andBool T' =/=K void
+     rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
+          => addToPointer(Loc, T', 0 -Int I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
           [structural]
                
-     syntax K ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
-     rule addToPointer(Loc:SymLoc, T:Type, I:Int, tv(Size:Int, _))
-          => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
+     syntax K ::= addToPointer(SymLoc, Type, Int) [function]
+     rule addToPointer(Loc:SymLoc, T:Type, I:Int)
+          => tv(Loc +bytes (I *Int byteSizeofType(innerType(T))),
+               newFromArray(T, I))
           when ifFromArrayInBounds(T, I)
           [structural]
-     // TODO(chathhorn): the fromArray tag gets lost during e.g. assignment --
-     // probably need to tag the memory.
      rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
-          addToPointer(_, T:Type, I:Int, tv(_, _))
+          addToPointer(_, T:Type, I:Int)
           when notBool ifFromArrayInBounds(T, I)
           [structural]
           
@@ -111,21 +107,22 @@ module C-COMMON-EXPR-ADDITIVE
      rule newFromArray(
                t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
                pointerType(T:Type)), I:Int) 
-          => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
+          => t(SetItem(fromArray(Offset +Int I *Int byteSizeofType(T), Len)) Mods,
+               pointerType(T))
      rule newFromArray(T:Type, _) => T
           when notBool isFromArray(T)
 
-     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
+     syntax Bool ::= ifFromArrayInBounds(Type, Int) [function]
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
-               pointerType(_)), I:Int)
+               pointerType(T:Type)), I:Int)
           => true
-          when Offset +Int I <=Int Len
+          when Offset +Int (I *Int byteSizeofType(T)) <Int Len
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _,
-               pointerType(_)), I:Int)
+               pointerType(T:Type)), I:Int)
           => false
-          when Offset +Int I >Int Len
+          when Offset +Int (I *Int byteSizeofType(T)) >=Int Len
      rule ifFromArrayInBounds(T:Type, _) => true
           when notBool isFromArray(T)
 

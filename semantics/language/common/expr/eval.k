@@ -10,6 +10,7 @@ module C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-EVAL-SYNTAX
 
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
@@ -92,12 +93,14 @@ module C-COMMON-EXPR-EVAL
      rule arrayToPointer(Loc:SymLoc, T:Type)
           => stripQualifiers(
                addProvenance(basedOn(base(Loc)),
-               addProvenance(fromArray(0, arrayLength(T)),
+               addProvenance(fromArray(0,
+                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
                t(getModifiers(T), pointerType(innerType(T))))))
           when isRestrictType(T)
      rule arrayToPointer(_, T:Type)
           => stripQualifiers(
-               addProvenance(fromArray(0, arrayLength(T)),
+               addProvenance(fromArray(0,
+                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
                t(getModifiers(T), pointerType(innerType(T)))))
           when notBool isRestrictType(T)
 
