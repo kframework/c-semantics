@@ -70,8 +70,8 @@ module C-SYMLOC-SYNTAX
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
      syntax SymLoc ::= addProv(Set, SymLoc) [function]
      // From, to.
-     syntax K ::= transferProv(SymLoc, K) [strict(2)]
-     syntax K ::= transferProv(Set, K) [strict(2)]
+     syntax KItem ::= transferProv(SymLoc, K) [strict(2)]
+     syntax KItem ::= transferProv(Set, K) [strict(2)]
 
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger

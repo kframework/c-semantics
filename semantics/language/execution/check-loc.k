@@ -11,7 +11,7 @@ module C-CHECK-LOC
      rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
           [structural]
 
-     syntax K ::= "checkLoc'" "(" SymLoc ")"
+     syntax KItem ::= "checkLoc'" "(" SymLoc ")"
      rule checkLoc'(NullPointer) => .
           [structural]
      rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
@@ -82,7 +82,7 @@ module C-CHECK-LOC
           when loc(Base, Offset) in keys(Modified)
           [structural]
 
-     syntax K ::= checkRestrict(Set, Set, Set)
+     syntax KItem ::= checkRestrict(Set, Set, Set)
 
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
@@ -97,7 +97,7 @@ module C-CHECK-LOC
           when PrevBases =/=Set SetItem(set(Bases))
           [structural]
 
-     syntax K ::= "checkRestrict'" "(" Provenance ")"
+     syntax KItem ::= "checkRestrict'" "(" Provenance ")"
      rule <k> checkRestrict'(basedOn(Base:SymBase)) => . ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           when notBool isConstType(innerType(T))

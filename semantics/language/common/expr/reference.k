@@ -1,5 +1,5 @@
 module C-COMMON-EXPR-REFERENCE-SYNTAX
-     syntax K ::= checkRestrict(SymLoc, Type)
+     syntax KItem ::= checkRestrict(SymLoc, Type)
 endmodule
 
 module C-COMMON-EXPR-REFERENCE
