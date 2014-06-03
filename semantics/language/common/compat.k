@@ -135,8 +135,21 @@ module COMPAT
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
           when K:K =/=K K':K
 
-     //TODO Support ==Bag: rule X:Bag ==Bag Y:Bag => (Bag2KLabel X)(.KList) ==K (Bag2KLabel Y)(.KList)
-     // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
+     //TODO Support ==Bag: Might need to support multiset equivalence
+     syntax Bag ::= removeBagItem(Bag, K) [function]
+     rule removeBagItem(.Bag, _:K) => .Bag
+     rule removeBagItem(BagItem(A:K) B:Bag,A) => B
+     rule removeBagItem(BagItem(A:K) B:Bag,A':K) => BagItem(A:K) removeBagItem(B,A')
+	 when A =/=K A'
+
+     rule .Bag ==Bag .Bag => true 
+     rule _:BagItem _:Bag ==Bag .Bag => false
+     rule .Bag ==Bag _:BagItem _:Bag => false
+     rule BagItem(K:K) B:Bag ==Bag B':Bag => B ==Bag removeBagItem(B',K)
+	 when BagItem(K) in B':Bag
+     rule BagItem(K:K) _:Bag ==Bag B':Bag => false
+	 when notBool (BagItem(K) in B':Bag)
+
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
      // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
 

@@ -420,11 +420,17 @@ module C-IO-BUFFERED
                Offset %Int byteSizeofType(T))
           when Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
-     rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
-	       _ (ListItem(typedDeclaration(_, F1:CId)) => .List),
-               _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int
+     rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, SI:Int, fieldInfo(
+	       F1List:List (ListItem(typedDeclaration(_, F1:CId))),
+               F2Map:Map (F1 |-> T:Type),
+               F3Map:Map (F1 |-> Offset1:Int)
           ))), Offset:Int)
+	=>
+	  getTypeAtOffset(t(Mods, structType(SCId, SI, fieldInfo(
+	       F1List,
+               F2Map (F1 |-> T),
+               F3Map (F1 |-> Offset1)
+          ))), Offset)
           when (Offset =/=Int 0)
                andBool (Offset1 >Int Offset)
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(

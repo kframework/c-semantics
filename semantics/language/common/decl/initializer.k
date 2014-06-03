@@ -214,12 +214,12 @@ module C-DECL-INITIALIZER
      syntax List ::= searchInFieldInfoList(Type,CId,List,List) [function]
 		   | resultInFieldInfoList(List,List)
      
-     rule searchInFieldInfoList(T:Type,F:CId,.List,L:List)
+     rule searchInFieldInfoList(_:Type,_:CId,.List,L:List)
 				 => resultInFieldInfoList(.List,L)
      rule searchInFieldInfoList(T:Type,F:CId,
 			ListItem(typedDeclaration(T, F)) 
 			ListItem(typedDeclaration(T':Type, F':CId)) 
-							L:List,L1:List) 
+							_:List,L1:List) 
 		=> resultInFieldInfoList(
 			ListItem(typedDeclaration(T':Type, F':CId)),L1)
 	 when F' =/=K #NoName
@@ -228,7 +228,7 @@ module C-DECL-INITIALIZER
 			ListItem(typedDeclaration(T, F)) 
 			ListItem(typedDeclaration(_, #NoName))
 			ListItem(typedDeclaration(T':Type, F':CId)) 
-							L:List,L1:List) 
+							_:List,L1:List) 
 		=> resultInFieldInfoList(
 				ListItem(typedDeclaration(T':Type, F':CId)),L1)
 
@@ -240,7 +240,7 @@ module C-DECL-INITIALIZER
 			ListItem(typedDeclaration(_, #NoName)),L1:List)
 			 => resultInFieldInfoList(.List,L1)
      rule searchInFieldInfoList(T:Type,F:CId,
-			ListItem(typedDeclaration(T', F')) L:List,L1:List) 
+			ListItem(typedDeclaration(T':Type, F':CId)) L:List,L1:List) 
 			=> searchInFieldInfoList(T:Type, F:CId,
 				 L:List,L1) when T =/=K T' andBool F =/=K F'
      
@@ -253,7 +253,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      rule <curr-subobject>
-               ListItem(next) (ListItem(te(K:K . F:CId, T:Type)) => .List) 
+               ListItem(next) (ListItem(te(K:K . _:CId, _:Type)) => .List) 
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo((resultInFieldInfoList(.List,L:List) => L), _, _)
                ))))
@@ -261,7 +261,7 @@ module C-DECL-INITIALIZER
           [structural] 
 
      rule <curr-subobject>
-               (ListItem(next) ListItem(te(K:K . F:CId, T:Type)) 
+               (ListItem(next) ListItem(te(K:K . _:CId, _:Type)) 
                     => ListItem(te(K . F', T')))
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo((resultInFieldInfoList(ListItem(typedDeclaration(T':Type, F':CId)),L:List) => L), _, _)

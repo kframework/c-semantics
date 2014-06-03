@@ -199,8 +199,8 @@ module C-FUNCTION-DEF
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
      syntax Bool ::= cIdIsInList(CId,List) [function]
 
-     rule cIdIsInList(X:CId, .List) => false
-     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) Tail:List)) => true
+     rule cIdIsInList(_:CId, .List) => false
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List)) => true
      rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List)) => cIdIsInList(X, Tail) when X =/=K Y
 
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true

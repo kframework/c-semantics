@@ -28,7 +28,7 @@ module C-DECL-RESOLUTION
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
-     rule <k> (.K => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
+    /*TODO: map problem rule <k> (.K => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -47,10 +47,11 @@ module C-DECL-RESOLUTION
           when notBool Tentative
                orBool (State =/=K declared)
           [structural]
-
+*/
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
-     rule <k> resolveReferences ...</k>
+    /*TODO: map problem
+	rule <k> resolveReferences ...</k>
           <external-uses>...
                SetItem(X:CId)
           ...</external-uses>
@@ -83,7 +84,7 @@ module C-DECL-RESOLUTION
                X |-> Base
           ...</genv>
           when notBool isLinkerLoc(Base)
-
+*/
      rule <k> resolveReferences ...</k>
           <external-uses>...
                (SetItem(X:CId) => .Set)
