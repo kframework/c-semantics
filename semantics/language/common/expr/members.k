@@ -95,6 +95,6 @@ module C-COMMON-EXPR-MEMBERS
      row-major order (last subscript varies fastest).
      }*/
      rule E1:K[E2:K] => *(E1 + E2) 
-          [structural]
+          [macro, structural]
 
 endmodule

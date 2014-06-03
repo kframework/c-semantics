@@ -2,7 +2,7 @@ module C-ABSTRACT-SYNTAX
      imports C-SYNTAX
      syntax K ::= "AnonymousName" // new, argument is type
      rule AnonymousName => #NoName [macro, structural]
-     
+
      syntax C ::= Definition
      syntax Definition ::= "DefinitionLoc" "(" K "," K ")"
           [klabel('DefinitionLoc)]
@@ -19,10 +19,10 @@ module C-ABSTRACT-SYNTAX
      syntax Expression ::= Conditional(K, K, K)
           [klabel('Conditional)]
      rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro, structural]
-     
+
      syntax Expression ::= ArrayIndex(K, K) [klabel('ArrayIndex)]
      rule ArrayIndex(K1:K, K2:K) => K1:K[K2:K] [macro, structural]
-     
+
      syntax Expression ::= Negative(K) [klabel('Negative)]
      rule Negative(K:K) => - K:K [macro, structural]
      syntax Expression ::= Positive(K) [klabel('Positive)]
@@ -80,7 +80,7 @@ module C-ABSTRACT-SYNTAX
      rule LogicalAnd(K1:K, K2:K) => K1:K && K2:K [macro, structural]
      syntax Expression ::= LogicalOr(K, K) [klabel('LogicalOr)]
      rule LogicalOr(K1:K, K2:K) => K1:K || K2:K [macro, structural]
-     
+
      syntax Expression ::= "Assign" "(" K "," K ")" [klabel('Assign)]
      rule Assign(K1:K, K2:K) => K1:K := K2:K [macro, structural]
      syntax Expression ::= "AssignMultiply" "(" K "," K ")"
@@ -113,12 +113,11 @@ module C-ABSTRACT-SYNTAX
      syntax Expression ::= "AssignRightShift" "(" K "," K ")"
           [klabel('AssignRightShift)]
      rule AssignRightShift(K1:K, K2:K) => K1:K >>= K2:K [macro, structural]
-     
+
      syntax Expression ::= Dot(K, CId) [klabel('Dot)]
      rule Dot(K:K, X:CId) => K:K . X:CId [macro, structural]
      syntax Expression ::= Arrow(K, CId) [klabel('Arrow)]
      rule Arrow(K:K, X:CId) => K:K -> X:CId [macro, structural]
-     
 
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
