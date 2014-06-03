@@ -16,7 +16,7 @@ module C-COMMON-EXPR-ADDITIVE
      operand shall be a pointer to a complete object type and the other shall
      have integer type.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{3}}}{
      For subtraction, one of the following shall hold:
      \begin{itemize}
@@ -31,27 +31,27 @@ module C-COMMON-EXPR-ADDITIVE
      \end{itemize}
      (Decrementing is equivalent to subtracting 1.)
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{4}}}{
      If both operands have arithmetic type, the usual arithmetic conversions
      are performed on them.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{5}}}{
      The result of the binary \cinline{+} operator is the sum of the operands.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{6}}}{
      The result of the binary \cinline{-} operator is the difference resulting
      from the subtraction of the second operand from the first.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{7}}}{
      For the purposes of these operators, a pointer to an object that is not an
      element of an array behaves the same as a pointer to the first element of
      an array of length one with the type of the object as its element type.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.5.6}{8}}}{
      When an expression that has integer type is added to or subtracted from a
      pointer, the result has the type of the pointer operand. If the pointer
@@ -75,59 +75,56 @@ module C-COMMON-EXPR-ADDITIVE
      object, it shall not be used as the operand of a unary \cinline{*}
      operator that is evaluated.
      }*/
-     
-     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
-               + tv(I:Int, T:Type)
-          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
-          when hasIntegerType(T)
-               andBool T' =/=K void
-          [structural]
-     rule tv(I:Int, T:Type)
-               + tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type)))
-          => addToPointer(Loc, t(Mods, pointerType(T')), I, sizeofType(T'))
-          when hasIntegerType(T)
-               andBool T' =/=K void
-          [structural]
-     rule tv(Loc:SymLoc, t(Mods:Set, pointerType(T':Type))) 
-               - tv(I:Int, T:Type)
-          => addToPointer(Loc, t(Mods, pointerType(T')), 0 -Int I, sizeofType(T')) 
-          when hasIntegerType(T)
-               andBool T' =/=K void
-          [structural]
-               
-     syntax KItem ::= addToPointer(SymLoc, Type, K, K) [strict(4)]
-     rule addToPointer(Loc:SymLoc, T:Type, I:Int, tv(Size:Int, _))
-          => tv(Loc +bytes (I *Int Size), newFromArray(T, I))
-          when ifFromArrayInBounds(T, I)
-          [structural]
-     // TODO(chathhorn): the fromArray tag gets lost during e.g. assignment --
-     // probably need to tag the memory.
-     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) ) ~>
-          addToPointer(_, T:Type, I:Int, tv(_, _))
-          when notBool ifFromArrayInBounds(T, I)
-          [structural]
-          
-     syntax Type ::= newFromArray(Type, Int) [function]
-     rule newFromArray(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
-               pointerType(T:Type)), I:Int) 
-          => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
-     rule newFromArray(T:Type, _) => T
-          when notBool isFromArray(T)
 
-     syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
+     rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
+          => addToPointer(Loc, T', I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
+          [structural]
+     rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
+          => addToPointer(Loc, T', I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
+          [structural]
+     rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
+          => addToPointer(Loc, T', 0 -Int I)
+          when hasIntegerType(T) andBool isPointerType(T')
+               andBool simpleType(innerType(T')) =/=K void
+          [structural]
+
+     syntax KItem ::= addToPointer(SymLoc, Type, Int) [function]
+     rule addToPointer(Loc:SymLoc, T:Type, I:Int)
+          => tv(newFromArray(Loc, T, I)
+               +bytes (I *Int byteSizeofType(innerType(T))), T)
+          when ifFromArrayInBounds(Loc, T, I)
+          [structural]
+     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
+          ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
+          when notBool ifFromArrayInBounds(Loc, T, I)
+          [structural]
+
+     syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
+     rule newFromArray(
+               loc(Base:SymBase, Offset:Int, SetItem(
+                    fromArray(ArrOffset:Int, Len:Int)) Prov:Set), T:Type, I:Int)
+          => loc(Base, Offset, SetItem(
+               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+     rule newFromArray(Loc:SymLoc, _, _) => Loc
+          when notBool isFromArray(Loc)
+
+     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
      rule ifFromArrayInBounds(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
-               pointerType(_)), I:Int)
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
           => true
-          when Offset +Int I <=Int Len
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
      rule ifFromArrayInBounds(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) _,
-               pointerType(_)), I:Int)
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
           => false
-          when Offset +Int I >Int Len
-     rule ifFromArrayInBounds(T:Type, _) => true
-          when notBool isFromArray(T)
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
+          when notBool isFromArray(Loc)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same
@@ -157,25 +154,27 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
-     rule computePointerDifference(loc(Base:SymBase, Offset1:Int),
-               loc(Base:SymBase, Offset2:Int), tv(Size:Int, _))
-          => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
-          when (Offset1 -Int Offset2) %Int Size ==Int 0
+     rule computePointerDifference(Loc1:SymLoc,
+               Loc2:SymLoc, tv(Size:Int, _))
+          => tv((offset(Loc1) -Int offset(Loc2)) /Int Size, cfg:ptrdiffut)
+          when (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
+               andBool base(Loc1) ==K base(Loc2)
           [structural]
-     
-     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
+
+     rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))
-          when isPromoted(T)
+          when isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 -Int I2))
-          when isPromoted(T)
+          when isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
           => arithInterpret(T, F1 +Float F2)
+          when T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
           => arithInterpret(T, (F1 -Float F2))
+          when T ==Type T'
           [structural]
 endmodule
-

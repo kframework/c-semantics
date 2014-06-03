@@ -9,40 +9,42 @@ module C-EXPR-ADDITIVE
 
      imports C-SETTINGS-SYNTAX
 
-     rule tv(V':K, t(S:Set, pointerType(T':Type))) + tv(V:K, T:Type)
-          => tv(symVal, t(S, pointerType(T')))
+     rule tv(V':CValue, t(Mods:Set, pointerType(T':Type))) + tv(V:CValue, T:Type)
+          => tv(symVal, t(Mods, pointerType(T')))
           when ((V ==K symVal) orBool (V' ==K symVal))
                andBool hasIntegerType(T)
-               andBool T' =/=K void
+               andBool simpleType(T') =/=K void
           [structural]
-     rule tv(V:K, T:Type) + tv(V':K, t(S:Set, pointerType(T':Type)))
-          => tv(symVal, t(S, pointerType(T')))
+     rule tv(V:CValue, T:Type) + tv(V':CValue, t(Mods:Set, pointerType(T':Type)))
+          => tv(symVal, t(Mods, pointerType(T')))
           when ((V ==K symVal) orBool (V' ==K symVal))
                andBool hasIntegerType(T)
-               andBool T' =/=K void
+               andBool simpleType(T') =/=K void
           [structural]
-     rule tv(V':K, t(S:Set, pointerType(T':Type))) - tv(V:K, T:Type)
-          => tv(symVal, t(S, pointerType(T')))
+     rule tv(V':CValue, t(Mods:Set, pointerType(T':Type))) - tv(V:CValue, T:Type)
+          => tv(symVal, t(Mods, pointerType(T')))
           when ((V ==K symVal) orBool (V' ==K symVal))
                andBool hasIntegerType(T)
-               andBool T' =/=K void
+               andBool simpleType(T') =/=K void
           [structural]
-               
 
-     rule tv(V:K, t(_, pointerType(T:Type))) - tv(V':K, t(_, pointerType(T:Type)))
+     rule tv(V:CValue, t(_, pointerType(T:Type))) - tv(V':CValue, t(_, pointerType(T':Type)))
           => tv(symVal, cfg:ptrdiffut)
           when (V ==K symVal) orBool (V' ==K symVal)
+               andBool T ==Type T'
           [structural]
-     
-     rule tv(V:K, T:Type) + tv(V':K, T:Type)
+
+     rule tv(V:CValue, T:Type) + tv(V':CValue, T':Type)
           => tv(symVal, T)
           when ((V ==K symVal) orBool (V' ==K symVal))
                andBool (isPromoted(T) orBool hasFloatType(T))
+               andBool T ==Type T'
           [structural]
-     rule tv(V:K, T:Type) - tv(V':K, T:Type)
+     rule tv(V:CValue, T:Type) - tv(V':CValue, T':Type)
           => tv(symVal, T)
           when ((V ==K symVal) orBool (V' ==K symVal))
                andBool (isPromoted(T) orBool hasFloatType(T))
+               andBool T ==Type T'
           [structural]
 
 endmodule

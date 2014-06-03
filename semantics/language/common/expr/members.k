@@ -24,9 +24,8 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
      rule lval(Loc:SymLoc, t(Mods:Set,
                unionType(S:CId, _, Fields:FieldInfo))) . F:CId
-          => lookupField(F, Loc,
-               stripUnionMarker(Mods) SetItem(fromUnion(Loc, F, Fields)),
-               S, Fields, Fields)
+          => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
+               Mods, S, Fields, Fields)
           [structural]
 
      // The last two parameters are for convenience and should be the same.
@@ -53,7 +52,7 @@ module C-COMMON-EXPR-MEMBERS
 
      syntax KItem ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
           [function]
-     
+
      rule extractField(F:CId, L:List, Mods:Set, S:CId, Fields:FieldInfo,
           fieldInfo(_,
                F |-> t(Mods':Set, T':SimpleType) _,
@@ -62,7 +61,7 @@ module C-COMMON-EXPR-MEMBERS
                fillToBytes(extractBitsFromList(dataList(L),
                     Offset *Int cfg:bitsPerByte,
                     bitSizeofType(completeTag(S, Fields, t(Mods Mods', T'))))))
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an
      identifier designates a member of a structure or union object. The value
@@ -96,6 +95,6 @@ module C-COMMON-EXPR-MEMBERS
      row-major order (last subscript varies fastest).
      }*/
      rule E1:K[E2:K] => *(E1 + E2) 
-          [structural]
+          [macro, structural]
 
 endmodule

@@ -43,10 +43,10 @@ module C-MEMORY-READING
                andBool notBool isAutoDuration(Loc)
                andBool Loc =/=K NullPointer
           [ndtrans]
-     
+
      syntax KItem ::= readActual(SymLoc, Type) [klabel('readActual)]
      rule readActual(Loc:SymLoc, T:Type)
-          => concretize(T, readBytes(Loc, byteSizeofType(T), T))
+          => concretize(T, readBytes(stripProv(Loc), byteSizeofType(T), T))
           when notBool isBitfieldType(T)
           [structural]
      rule readActual(Loc:SymLoc, T:Type)
@@ -107,11 +107,13 @@ module C-MEMORY-READING
 
      rule #hasUnknown(.List) => false
      rule #hasUnknown(ListItem(piece(unknown, _)) _:List) => true
-     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L) when B =/=K unknown
+     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L)
+          when B =/=K unknown
 
      rule #hasTrap(.List) => false
      rule #hasTrap(ListItem(piece(trap, _)) _:List) => true
-     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L) when B =/=K trap
+     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L)
+          when B =/=K trap
 
      // TODO(chathhorn): half-assed floating point support.
      syntax TypedValue ::= joinFloatBytes(Type, List) [function]
@@ -186,13 +188,13 @@ module C-MEMORY-READING
           => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           when (I:Int <Int min(T))
                andBool hasIntegerType(T)
-     
+
      // loc, size in bits
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
-     
+
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
-               readBytes(Loc, byteSizeofType(T), T), 0, bitSizeofType(T))
+               readBytes(stripProv(Loc), byteSizeofType(T), T), 0, bitSizeofType(T))
           [structural] 
 
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
@@ -216,7 +218,7 @@ module C-MEMORY-READING
                0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
           when NumBits >Int 0
           [structural] 
-     
+
      rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
           [structural] 
 

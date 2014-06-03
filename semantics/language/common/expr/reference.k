@@ -1,4 +1,11 @@
+module C-COMMON-EXPR-REFERENCE-SYNTAX
+     syntax K ::= checkRestrict(SymLoc, Type)
+endmodule
+
 module C-COMMON-EXPR-REFERENCE
+     imports C-COMMON-EXPR-REFERENCE-SYNTAX
+
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -22,7 +29,8 @@ module C-COMMON-EXPR-REFERENCE
      }
      */
      rule &(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, 1)), pointerType(T)))
+          => tv(addProv(fromArray(0, 2 *Int byteSizeofType(T)), Loc),
+               t(.Set, pointerType(T)))
           when notBool isRegisterLoc(Loc)
           [structural]
      rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
@@ -41,7 +49,9 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:Type)) => lv(Loc, innerType(T))
+     rule *(tv(Loc:SymLoc, T:Type))
+          => checkRestrict(Loc, T)
+          ~> lv(stripFromArray(Loc), innerType(T))
           when isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer

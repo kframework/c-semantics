@@ -12,6 +12,9 @@ module C-TYPING-SYNTAX
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
 
+     syntax Bool ::= Type "==Type" Type [function]
+     syntax Bool ::= Type "=/=Type" Type [function]
+
      syntax SimpleType ::= simpleType(Type) [function]
 
      // TODO(chathhorn): move?
@@ -24,7 +27,7 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
-     
+
      syntax Bool ::= hasArithmeticType(Type) [function]
      syntax Bool ::= hasCharType(Type) [function]
      syntax Bool ::= isUCharType(Type) [function]
@@ -55,12 +58,15 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isStaticType(Type) [function]
      syntax Bool ::= isRegisterType(Type) [function]
 
+     // Type qualifiers.
+     syntax Bool ::= isRestrictType(Type) [function]
+
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
 
      syntax CSize ::= Int
      syntax CValue ::= CSize
-     
+
      // Composite types
      syntax SimpleType ::= enumType(CId)
           [klabel('enumType)]
@@ -121,32 +127,24 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(Type) [function]
      syntax Bool ::= inRange(CValue, Type) [function]
 
-     syntax Modifier ::= Storage | CVSpecifier | Provenance
-     // Pointers from an array need to be checked that they don't go out of
-     // bounds of that array, even if that array happens to be part of a larger
-     // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, Int)
-     // Used to tag union members so the rest of the bytes in the union can be
-     // marked as undefined upon write.
-     syntax Modifier ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
+     syntax Modifier ::= Storage | CVSpecifier
+
+     // Returns both type qualifiers, storage class specifiers, and any the
+     // other information stored in the modifiers list (e.g., oldStyle).
+     syntax Set ::= getModifiers(Type) [function]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
 
-     // Returns both type qualifiers, storage class specifiers, and any the
-     // other information stored in the modifiers list (e.g., fromUnion,
-     // fromArray, oldStyle).
-     syntax Set ::= getModifiers(Type) [function]
-
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
-     syntax Set ::= getProvenance(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
 
-     syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
+     syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addModifiers(Set, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId) 
           [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
@@ -160,11 +158,6 @@ module C-TYPING-SYNTAX
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
-
-     syntax Bool ::= hasUnionMarker(Type) [function]
-     syntax Set ::= stripUnionMarker(Set) [function]
-
-     syntax Bool ::= isFromArray(Type) [function]
 
      syntax Bool ::= isNullPointerConstant(TypedValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]

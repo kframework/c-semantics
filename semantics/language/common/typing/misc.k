@@ -13,7 +13,7 @@ module C-TYPING-MISC
      //TODO(chathhorn): a lot of junk dumped here.
 
      rule simpleType(t(_, T:SimpleType)) => T
-          
+
      rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
      rule char => cfg:charAlias
@@ -38,7 +38,7 @@ module C-TYPING-MISC
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
           => (2 ^Int absInt(N)) -Int 1
           when hasUnsignedIntegerType(T)
-     
+
      rule min(t(_, bitfieldType(T:Type, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
           when hasSignedIntegerType(T)
@@ -48,7 +48,7 @@ module C-TYPING-MISC
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
-     
+
      rule min(t(_, signed-char)) 
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char)) 
@@ -123,13 +123,6 @@ module C-TYPING-MISC
      rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
-     rule getProvenance(t(SetItem(fromArray(X:Int, Y:Int))_, _))
-          => SetItem(fromArray(X, Y))
-     rule getProvenance(t(Mods:Set, T:SimpleType)) => .Set
-          when notBool isFromArray(t(Mods, T))
-     rule getProvenance(typedDeclaration(T:Type, _)) => getProvenance(T)
-     rule getProvenance(variadic) => .Set
-
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
@@ -178,8 +171,6 @@ module C-TYPING-MISC
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
-     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
-
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
 
@@ -195,13 +186,14 @@ module C-TYPING-MISC
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           when notBool isArrayType(T)
 
+     rule addStorage(S:Storage, T:Type) => addModifier(S, T)
+
      syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
 
-     syntax Type ::= addModifiers(Set, Type) [function]
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
           => t(Mods' Mods, T)
-          
+
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
@@ -317,18 +309,11 @@ module C-TYPING-MISC
 
      rule #isNPC(tv(NullPointer, T:Type)) => true
           when isPointerType(T)
-               andBool (innerType(T) ==K void)
+               andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
 
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true
-
-     rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
-          => stripUnionMarker(S)
-     rule stripUnionMarker(SetItem(K:K) S:Set)
-          => SetItem(K) stripUnionMarker(S)
-          when getKLabel(K) =/=KLabel 'fromUnion
-     rule stripUnionMarker(.Set) => .Set
 
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )

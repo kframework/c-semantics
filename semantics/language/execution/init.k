@@ -55,11 +55,11 @@ module C-EXECUTION-INIT
      syntax TypedValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, t(.Set, pointerType(t(.Set, void))))
-     
+
      syntax Type ::= strType(String) [function]
      rule strType(S:String)
           => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
-     
+
      syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
      rule incomingArguments(L:List) 
@@ -78,7 +78,7 @@ module C-EXECUTION-INIT
                Identifier("#incomingArgumentsArray")[N]
                     := NullPointerConstant))
           [structural]
-          
+
      rule pgmArgs(L:List)
           => makeArgv(
                Identifier("#incomingArgumentsArray"), 
@@ -96,7 +96,7 @@ module C-EXECUTION-INIT
      /*@ These helpers are used to get around a bug in \K related to successive
      ``/''s in strings. */
      syntax KItem ::= "stdinStr" [function] | "stdoutStr" [function]
-     
+
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 

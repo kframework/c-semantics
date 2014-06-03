@@ -35,18 +35,22 @@ module C-CONVERSION
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
                andBool (N <Int min(T))
+     rule (. => UNSPEC("CCV2", "Signed overflow.", "6.3.1.3:3"))
+          ~> arithInterpret(T:Type, I:Int)
+          when hasSignedIntegerType(T)
+               andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
+          [structural]      
 
      // TODO(chathhorn): the rules for cast are a bit of a mess because we've
      // assumed they apply apply anywhere but they still need to raise some
      // errors.
 
      //- switch assumes casts can happen anywhere
-     rule cast(T:Type, tv(V:CValue, T:Type)) => tv(V, T)
+     rule cast(T':Type, tv(V:CValue, T:Type))
+          => tv(V, T')
+          when stripQualifiers(T) ==Type stripQualifiers(T')
           [structural, anywhere]
-     rule cast(t(Mods':Set, T':SimpleType), tv(V:CValue, t(_, T':SimpleType))) 
-          => tv(V, t(Mods', T'))
-          [structural, anywhere]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if
      the value compares equal to 0; otherwise, the result is 1.
@@ -80,7 +84,7 @@ module C-CONVERSION
                andBool notBool isBoolType(T')
                andBool inRange(V, T')
           [structural, anywhere]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
      repeatedly adding or subtracting one more than the maximum value that can
@@ -124,7 +128,7 @@ module C-CONVERSION
           when (I <Int min(t(Mods, unsigned-long-long-int)))
                andBool hasIntegerType(T)          
           [structural, anywhere]
-     
+
      rule cast(T':Type, tv(I:Int, T:Type)) 
           => tv(I %Int (max(T') +Int 1), T')
           when isBitfieldType(T')
@@ -228,21 +232,22 @@ module C-CONVERSION
           [structural]
 
      // TODO(chathhorn): not sure about this.
-     rule cast(T':Type, tv(unknown, T:Type)) => tv(unknown, T')
+     rule cast(T':Type, tv(unknown, T:Type))
+          => tv(unknown, T')
           when bitSizeofType(T') >=Int bitSizeofType(T)
           [structural, anywhere]
-     rule cast(T':Type, tv(unknown, T:Type)) => tv(trap, T')
+     rule cast(T':Type, tv(unknown, T:Type))
+          => tv(trap, T')
           when bitSizeofType(T') <=Int bitSizeofType(T)
           [structural, anywhere]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
      other than \cinline{_Bool}, the fractional part is discarded (i.e., the
      value is truncated toward zero). If the value of the integral part cannot
      be represented by the integer type, the behavior is undefined.
      }*/
-     rule cast(T':Type, tv(V:Float, T:Type)) 
-          => tv(Float2Int(V), T')
+     rule cast(T':Type, tv(V:Float, T:Type)) => tv(Float2Int(V), T')
           when hasIntegerType(T') andBool hasFloatType(T)
                andBool inRange(Float2Int(V), T')
                andBool notBool isBoolType (T')
@@ -265,8 +270,7 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(T':Type, tv(V:Int, T:Type)) 
-          => tv(Int2Float(V,53,11), T')
+     rule cast(T':Type, tv(V:Int, T:Type)) => tv(Int2Float(V,53,11), T')
           when hasIntegerType(T)
                andBool inRange(Int2Float(V,53,11), T')
           [structural, anywhere]
@@ -322,7 +326,8 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(T':Type, V:TypedValue) => tv(NullPointer, T')
+     rule cast(T':Type, V:TypedValue)
+          => tv(NullPointer, T')
           when isNullPointerConstant(V)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -339,12 +344,14 @@ module C-CONVERSION
      a trap representation.
      }*/
      // choice implementation defined behavior
-     rule cast(T':Type, tv(V:SymLoc, T:Type)) => tv(V, T')
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => tv(Loc, T')
           when hasIntegerType(T)
-               andBool notBool isNullPointerConstant(tv(V, T))
+               andBool notBool isNullPointerConstant(tv(Loc, T))
                andBool isPointerType(T')
           [structural, anywhere]
-     rule cast(T':Type, tv(L:SymLoc, T:Type)) => tv(L, T')
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => tv(Loc, T')
           when hasIntegerType(T)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -356,12 +363,14 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      // fixme needs to check size
-     rule cast(T':Type, tv(N:Int, t(_, pointerType(_)))) => tv(N, T')
-          when hasIntegerType(T')
+     rule cast(T':Type, tv(N:Int, T:Type))
+          => tv(N, T')
+          when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
-     rule cast(T':Type, tv(L:SymLoc, t(_, pointerType(_)))) => tv(L, T')
-          when hasIntegerType(T')
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => tv(Loc, T')
+          when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
           
@@ -384,9 +393,9 @@ module C-CONVERSION
      }*/
      // choice
      // TODO needs to handle alignment
-     rule cast(t(Mods':Set, pointerType(T':Type)), 
-               tv(Loc:SymLoc, t(_, pointerType(_)))) 
-          => tv(Loc, t(Mods', pointerType(T')))
+     rule cast(T':Type, tv(Loc:SymLoc, T:Type))
+          => tv(Loc, T')
+          when isPointerType(T) andBool isPointerType(T')
           [structural, anywhere]
 endmodule
 

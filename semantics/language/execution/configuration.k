@@ -138,6 +138,14 @@ module C-CONFIGURATION
                                    <local-addresses color="lightgray">
                                         .Set
                                    </local-addresses> 
+
+                                   // These are used for verifying the aliasing
+                                   // restrictions on restrict-qualified
+                                   // pointers.
+                                   // SymLoc |-> set(set(basedOns))
+                                   <restrict> .Map </restrict>
+                                   // SymLoc |-> Int (nbytes modified)
+                                   <modified> .Map </modified>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">

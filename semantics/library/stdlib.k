@@ -20,11 +20,11 @@ module LIBC-STDLIB
           [structural]
      rule printString("") => writeToFD(1, 10)
           [structural]
-     
+
      rule [debug]:
           prepareBuiltin(Identifier("__debug"), _) => skipval
           [interpRule]
-     
+
      rule [exit]:
           <k> prepareBuiltin(Identifier("exit"), 
                     ListItem(tv(I:Int, t(_, int))))
@@ -38,7 +38,7 @@ module LIBC-STDLIB
                ~> _ 
                => printString("Aborted") ~> tv(134, t(.Set, int)) 
           </k>
-     
+
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
      The \cinline{malloc} function allocates space for an object whose size is
      specified by \cinline{size} and whose value is indeterminate.
@@ -54,7 +54,7 @@ module LIBC-STDLIB
           <malloced>... .Map => Base |-> Len:Int ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
           [structural]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
      The \cinline{realloc} function deallocates the old object pointed to by
      \cinline{ptr} and returns a pointer to a new object that has the size
@@ -75,6 +75,8 @@ module LIBC-STDLIB
      may have the same value as a pointer to the old object), or a null pointer
      if the new object could not be allocated.
      }*/
+     rule prepareBuiltin(Identifier("realloc"),
+          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) _)
      rule [realloc]:
           <k> prepareBuiltin(Identifier("realloc"),
                     ListItem(tv(loc(OldBase:SymBase, 0), _))
@@ -87,7 +89,7 @@ module LIBC-STDLIB
           ...</malloced>
           <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
-     
+
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
                ListItem(tv(NullPointer, _))
@@ -109,6 +111,8 @@ module LIBC-STDLIB
           ~> (calloc-aux => .)
           [structural]
 
+     rule prepareBuiltin(Identifier("free"),
+          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
                     ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
@@ -117,7 +121,7 @@ module LIBC-STDLIB
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
-          
+
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
@@ -127,7 +131,7 @@ module LIBC-STDLIB
           ...</k>
           <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
           [structural]
-          
+
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
                     ListItem(tv(N:Int, t(.Set, unsigned-int))))

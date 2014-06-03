@@ -163,7 +163,7 @@ module C-LTLMC
                     <mem> Mem:Map </mem> 
                ...</T> ...</generatedTop>, 
                Loc:SymLoc, T:Type) 
-          => dumbRead'(Mem, Loc, T, byteSizeofType(T), .List)
+          => dumbRead'(Mem, stripProv(Loc), T, byteSizeofType(T), .List)
 
      rule dumbRead'(
           (BaseMap:Map (Base |-> object(OT:Type, OI:Int, (OffMap:Map (Offset |-> V:K))))), 

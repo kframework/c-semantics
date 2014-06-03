@@ -80,6 +80,8 @@ module COMPAT-SYNTAX
      //rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
      syntax List ::= values(Map) [function]
+
+     syntax Set ::= filterSet(Set, KLabel) [function]
 endmodule
 
 module COMPAT
@@ -205,6 +207,14 @@ module COMPAT
 
      rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
      rule values(.Map) => .List
+
+     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
+          => SetItem(K) filterSet(S, Pred)
+          when Pred(K) ==K true
+     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
+          => filterSet(S, Pred)
+          when Pred(K) =/=K true
+     rule filterSet(.Set, _) => .Set
 
 endmodule
 

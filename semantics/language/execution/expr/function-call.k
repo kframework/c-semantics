@@ -19,7 +19,7 @@ module C-EXPR-FUNCTION-CALL
      The postfix expression denotes the called function. The list of
      expressions specifies the arguments to the function.
      }*/
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{6}}}{
      \broken{If the expression that denotes the called function has a type that
      does not include a prototype, the integer promotions are performed on each
@@ -34,7 +34,7 @@ module C-EXPR-FUNCTION-CALL
      types of the arguments after promotion are not compatible with those of
      the parameters after promotion, the behavior is undefined, except for the
      following cases: 
-     
+
      \begin{itemize}
      \item one promoted type is a signed integer type, the other promoted type
      is the corresponding unsigned integer type, and the value is representable
@@ -54,9 +54,9 @@ module C-EXPR-FUNCTION-CALL
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
-     
-     rule Call(F:KResult, K:K) 
-          => sequencePoint ~> Call'(F, K) 
+
+     rule Call(tv(Loc:SymLoc, T:Type), K:K) 
+          => sequencePoint ~> Call'(tv(stripProv(Loc), T), K) 
 
      context Call'(_, (HOLE => revalParams(HOLE)))
 

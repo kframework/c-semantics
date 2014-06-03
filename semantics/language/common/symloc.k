@@ -41,13 +41,15 @@ module C-SYMLOC-SYNTAX
 
 
      // Base, byte offset, bit offset.
-     syntax SymLoc ::= loc(SymBase, Int) [klabel('loc)]
+     syntax SymLoc ::= loc(SymBase, Int, Set)
+     syntax SymLoc ::= loc(SymBase, Int)
      syntax SymLoc ::= "NullPointer"
 
      syntax KResult ::= SymLoc
 
      syntax SymBase ::= linc(SymBase) [function]
      syntax SymLoc ::= lnew(SymBase) [function]
+     syntax SymLoc ::= restrictedNew(SymBase) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -62,14 +64,40 @@ module C-SYMLOC-SYNTAX
      syntax String ::= getTU(SymLoc) [function]
      syntax Int ::= getThreadId(SymLoc) [function]
 
-     syntax Int ::= getOffset(SymLoc) [function]
+     syntax Set ::= prov(SymLoc) [function]
+     syntax Set ::= getBases(SymLoc) [function]
+     syntax Set ::= getBases(Set) [function]
+     syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
+     syntax SymLoc ::= addProv(Set, SymLoc) [function]
+     // From, to.
+     syntax K ::= transferProv(SymLoc, K) [strict(2)]
+     syntax K ::= transferProv(Set, K) [strict(2)]
 
+     // Pointers from an array need to be checked that they don't go out of
+     // bounds of that array, even if that array happens to be part of a larger
+     // object (i.e., surrounded by valid addresses).
+     syntax Provenance ::= fromArray(Int, Int)
+     // Used for detecting violations of aliasing restictions on
+     // restrict-qualified pointers.
+     syntax Provenance ::= basedOn(SymBase)
+     // Used to tag union members so the rest of the bytes in the union can be
+     // marked as undefined upon write.
+     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
+
+     syntax Bool ::= hasUnionMarker(SymLoc) [function]
+
+     syntax Bool ::= isFromArray(SymLoc) [function]
+     syntax SymLoc ::= stripFromArray(SymLoc) [function]
+
+     syntax SymLoc ::= stripProv(SymLoc) [function]
 endmodule
 
 module C-SYMLOC
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     imports C-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax Bool ::= "#isAllocatedDuration" "(" SymLoc ")" [function]
      syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
@@ -81,8 +109,8 @@ module C-SYMLOC
      syntax Bool ::= "#isArgvLoc" "(" SymLoc ")" [function]
      syntax Bool ::= "#isRegisterLoc" "(" SymLoc ")" [function]
 
-     rule isPhysicalLoc(Loc:SymLoc) 
-          => (isAllocatedDuration(Loc) 
+     rule isPhysicalLoc(Loc:SymLoc)
+          => (isAllocatedDuration(Loc)
                orBool isStaticDuration(Loc)
                orBool isThreadDuration(Loc)
                orBool isAutoDuration(Loc))
@@ -110,37 +138,55 @@ module C-SYMLOC
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
      rule #isAllocatedDuration(loc(_ @ allocated, _)) => true
+     rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
 
      rule #isStaticDuration(loc(_ @ static(_), _)) => true
+     rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
      rule #isStaticDuration(loc(_ @ link(_), _)) => true
+     rule #isStaticDuration(loc(_ @ link(_), _, _)) => true
      rule #isStaticDuration(loc(string(_), _)) => true
+     rule #isStaticDuration(loc(string(_), _, _)) => true
      rule #isStaticDuration(loc(wstring(_), _)) => true
+     rule #isStaticDuration(loc(wstring(_), _, _)) => true
 
      rule #isThreadDuration(loc(_ @ thread(_), _)) => true
+     rule #isThreadDuration(loc(_ @ thread(_), _, _)) => true
 
      rule #isAutoDuration(loc(_ @ auto(_), _)) => true
+     rule #isAutoDuration(loc(_ @ auto(_), _, _)) => true
      rule #isAutoDuration(loc(_ @ argv, _)) => true
+     rule #isAutoDuration(loc(_ @ argv, _, _)) => true
      rule #isAutoDuration(loc(_ @ register(_), _)) => true
+     rule #isAutoDuration(loc(_ @ register(_), _, _)) => true
 
      rule #isStringLoc(loc(string(_), _)) => true
+     rule #isStringLoc(loc(string(_), _, _)) => true
      rule #isStringLoc(loc(wstring(_), _)) => true
+     rule #isStringLoc(loc(wstring(_), _, _)) => true
 
      rule #isLinkerLoc(_ @ link(_)) => true
 
      rule #isArgvLoc(loc(_ @ argv, _)) => true
+     rule #isArgvLoc(loc(_ @ argv, _, _)) => true
 
      rule #isRegisterLoc(loc(_ @ register(_), _)) => true
+     rule #isRegisterLoc(loc(_ @ register(_), _, _)) => true
 
      rule base(loc(Base:SymBase, _)) => Base
+     rule base(loc(Base:SymBase, _, _)) => Base
 
      rule offset(loc(_, Offset:Int)) => Offset
+     rule offset(loc(_, Offset:Int, _)) => Offset
 
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
      rule lnew(Base:SymBase) => loc(Base, 0)
+     rule restrictedNew(Base:SymBase) => loc(Base, 0, SetItem(basedOn(Base)))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
+     rule loc(Base:SymBase, Offset:Int, Prov:Set) +bytes N:Int
+          => loc(Base, Offset +Int N, Prov)
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B
@@ -148,17 +194,96 @@ module C-SYMLOC
      rule loc(_, A:Int) <=bytes loc(_, B:Int) => A <=Int B
      rule loc(_, A:Int) ==bytes loc(_, B:Int) => A ==Int B
 
+     rule loc(_, A:Int, _) >bytes loc(_, B:Int, _) => A >Int B
+     rule loc(_, A:Int, _) >=bytes loc(_, B:Int, _) => A >=Int B
+     rule loc(_, A:Int, _) <bytes loc(_, B:Int, _) => A <Int B
+     rule loc(_, A:Int, _) <=bytes loc(_, B:Int, _) => A <=Int B
+     rule loc(_, A:Int, _) ==bytes loc(_, B:Int, _) => A ==Int B
+
      rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _)) => A ==K B
+     rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _)) => A ==K B
 
      rule getTU(loc(_ @ static(Tu:String), _)) => Tu
+     rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
      rule getTU(loc(_ @ link(Tu:String), _)) => Tu
+     rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
 
      rule getThreadId(loc(_ @ thread(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ thread(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ auto(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ auto(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ register(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ register(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ argv, _)) => 0
+     rule getThreadId(loc(_ @ argv, _, _)) => 0
 
-     rule getOffset(loc(_, Off:Int)) => Off
-     
+     rule addProv(P:Provenance, loc(Base:SymBase, Offset:Int, Prov:Set))
+          => loc(Base, Offset, Prov SetItem(P))
+     rule addProv(P:Provenance, loc(Base:SymBase, Offset:Int))
+          => loc(Base, Offset, SetItem(P))
+     rule addProv(_:Provenance, NullPointer) => NullPointer
+
+     rule addProv(Prov':Set, loc(Base:SymBase, Offset:Int, Prov:Set))
+          => loc(Base, Offset, Prov Prov')
+     rule addProv(Prov':Set, loc(Base:SymBase, Offset:Int))
+          => loc(Base, Offset, Prov')
+     rule addProv(_:Set, NullPointer) => NullPointer
+
+     rule prov(loc(_, _, Prov:Set)) => Prov
+     rule prov(loc(_, _)) => .Set
+     rule prov(NullPointer) => .Set
+
+     rule getBases(Loc:SymLoc) => getBases(prov(Loc))
+
+     rule getBases(Prov:Set) => filterSet(Prov, '#isBases)
+
+     rule transferProv(From:SymLoc, tv(To:SymLoc, T:Type))
+          => tv(addProv(prov(From), To), T)
+          [structural]
+     rule transferProv(_:SymLoc, tv(V:CValue, T:Type)) => tv(V, T)
+          when isSymLoc(V) =/=K true
+          [structural]
+     rule transferProv(Prov:Set, tv(Loc:SymLoc, T:Type))
+          => tv(addProv(Prov, Loc), T)
+          [structural]
+     rule transferProv(_:Set, tv(V:CValue, T:Type)) => tv(V, T)
+          when isSymLoc(V) =/=K true
+          [structural]
+
+     rule transferProv(From:SymLoc, lv(To:SymLoc, T:Type))
+          => lv(addProv(prov(From), To), T)
+          [structural]
+     rule transferProv(Prov:Set, lv(Loc:SymLoc, T:Type))
+          => lv(addProv(Prov, Loc), T)
+          [structural]
+
+     rule transferProv(From:SymLoc, lval(To:SymLoc, T:Type))
+          => lval(addProv(prov(From), To), T)
+          [structural]
+     rule transferProv(Prov:Set, lval(Loc:SymLoc, T:Type))
+          => lval(addProv(Prov, Loc), T)
+          [structural]
+
+     syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
+     rule #isBases(basedOn(_)) => true
+
+     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(Loc) ==K true
+
+     syntax Bool ::= #hasUnionMarker(SymLoc) [function]
+     rule #hasUnionMarker(loc(_, _, SetItem(fromUnion(_, _, _)) _)) => true
+
+     rule isFromArray(Loc:SymLoc) => #isFromArray(Loc) ==K true
+
+     syntax Bool ::= "#isFromArray" "(" SymLoc ")" [function]
+     rule #isFromArray(loc(_, _, SetItem(fromArray(_, _)) _)) => true
+
+     rule stripFromArray(loc(_, _, (SetItem(fromArray(_, _)) => .Set) _))
+     rule stripFromArray(Loc:SymLoc) => Loc
+          when notBool isFromArray(Loc)
+
+     rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
+     rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
+     rule stripProv(NullPointer) => NullPointer
+
 endmodule
 
