@@ -287,15 +287,4 @@ module C-TYPING-PREDICATES
           => true 
      rule #isFunctionPointer(typedDeclaration(T:Type, _))
           => #isFunctionPointer(T)
-
-     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
-
-     syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((_:Set SetItem(fromUnion(_, _, _)) _:Set), _)) => true
-
-     rule isFromArray(T:Type) => #isFromArray(T) ==K true
-
-     syntax Bool ::= "#isFromArray" "(" Type ")" [function]
-     rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
-
 endmodule

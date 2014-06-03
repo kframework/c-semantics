@@ -44,7 +44,7 @@ module C-FUNCTION-DEF
                +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
           when hasDupParams(T)
-     
+
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
 
@@ -64,7 +64,7 @@ module C-FUNCTION-DEF
      rule emptyToVoid(T:Type) => T
           when notBool isFunctionType(T)
                orBool (getParams(T) =/=List .List)
-     
+
      syntax K ::= processFunDef(CId, K)
 
      rule <k> processFunDef(X:CId, Blk:K)
@@ -142,7 +142,7 @@ module C-FUNCTION-DEF
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
           when T =/=K void
           [structural]
-          
+
      syntax Bool ::= "#isArgvType" "(" Type ")" [function]
      rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
@@ -152,13 +152,11 @@ module C-FUNCTION-DEF
           when T ==K char
 
      rule <k> initFunction(
-               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
-               Fun:KResult) 
+               tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
                => .
           ...</k>
-          <functions> M:Map => M[Fun <- Base] </functions>
-          when isFunctionType(T)
-               andBool (notBool Base in keys(M))
+          <functions> M:Map => M[Fun <- base(Loc)] </functions>
+          when isFunctionType(T) andBool (notBool base(Loc) in keys(M))
           [structural]
 
      syntax K ::= safeBody(CId, K) [function]
@@ -202,7 +200,7 @@ module C-FUNCTION-DEF
           ) => true
 
      syntax K ::= dummyBind(List)
-     
+
      rule dummyBind(.List) => .
           [structural]
      rule dummyBind(ListItem(variadic)) => .

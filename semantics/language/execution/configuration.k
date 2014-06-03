@@ -139,8 +139,9 @@ module C-CONFIGURATION
                                         .Set
                                    </local-addresses> 
 
-                                   // SymLoc |-> set(Provenance)
-                                   <provenance> .Map </provenance>
+                                   // These are used for verifying the aliasing
+                                   // restrictions on restrict-qualified
+                                   // pointers.
                                    // SymLoc |-> set(set(basedOns))
                                    <restrict> .Map </restrict>
                                    // SymLoc |-> Int (nbytes modified)

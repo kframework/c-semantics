@@ -1,6 +1,6 @@
 module LIBC-STDIO-SYNTAX
      // offset, type, length, checklength
-     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")" 
+     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
           [strict(3, 4)]
 endmodule
 
@@ -30,12 +30,12 @@ module LIBC-STDIO
           [structural, anywhere]
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
           [structural, anywhere]
-     
+
      rule [getString-pre]:
           (. => read(Loc, t(.Set, char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
-          
+
      syntax Value ::= str(String)
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
@@ -46,36 +46,36 @@ module LIBC-STDIO
           tv(0, _) ~> getString-aux(_, S:String)
           => str(S)
           [structural]
-          
+
      rule [pointerToString]:
-          pointerToString(loc(N:SymBase, M:Int))
-          => "[sym(" +String symBaseToString(N) +String ") + " 
-               +String Int2String(M) +String "]"
+          pointerToString(Loc:SymLoc)
+          => "[sym(" +String symBaseToString(base(Loc)) +String ") + "
+               +String Int2String(offset(Loc)) +String "]"
           [structural]
-          
+
      rule [symBaseToString-thread]:
           symBaseToString(B:Int @ thread(Th:Int))
-          => Int2String(B) +String " @ " 
+          => Int2String(B) +String " @ "
           +String "thread(" +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
           symBaseToString(B:Int @ allocated)
-          => Int2String(B) +String " @ " 
-          +String "allocated" 
+          => Int2String(B) +String " @ "
+          +String "allocated"
           [structural]
      rule [sub-pointerToString-static]:
           symBaseToString(B:Int @ static(Tu:String))
-          => Int2String(B) +String " @ " 
+          => Int2String(B) +String " @ "
           +String "static(" +String Tu +String ")"
           [structural]
      rule [sub-pointerToString-link]:
           symBaseToString(B:Int @ link(Tu:String))
-          => Int2String(B) +String " @ " 
+          => Int2String(B) +String " @ "
           +String "link(" +String Tu +String ")"
           [structural]
-     
+
      rule [pointerToString-done]:
-          pointerToString(NullPointer) => "NullPointer" 
+          pointerToString(NullPointer) => "NullPointer"
           [structural]
 
      syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
@@ -87,13 +87,13 @@ module LIBC-STDIO
           [structural]
      rule [nextvarg]:
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
-          => vpair(read(Loc, T), 
+          => vpair(read(Loc, T),
                varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
           when value(Len) ==Int value(Len')
           [structural]
-     
+
      rule [putchar]:
-          prepareBuiltin(Identifier("putchar"), 
+          prepareBuiltin(Identifier("putchar"),
                ListItem(tv(N:Int, _)))
           => writeToFD(1, N) ~> tv(N, t(.Set, int))
           [structural]
@@ -106,8 +106,8 @@ module LIBC-STDIO
           [structural]
 
      rule [getchar]:
-          prepareBuiltin(Identifier("getchar"), .List) 
-          => flush(1) ~> readFromFD(0) 
+          prepareBuiltin(Identifier("getchar"), .List)
+          => flush(1) ~> readFromFD(0)
           [structural]
 
      rule [fslFGetC]:
@@ -131,10 +131,10 @@ module LIBC-STDIO
                ListItem(Mode:KResult))
           => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
-     
+
      syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")"
           [strict(3)]
-     
+
      rule [fslOpenFile-aux]:
           fsl-open-file(str(Filename:String), str(Mode:String))
           => fsl-open-file-aux("file:" +String Filename, Mode,
@@ -142,11 +142,11 @@ module LIBC-STDIO
           [structural]
 
      rule [fslOpenFile]:
-          <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _)) 
-               => tv(FD, t(.Set, int)) 
+          <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _))
+               => tv(FD, t(.Set, int))
           ...</k>
           <files>...
-               (.Bag => 
+               (.Bag =>
                     <file>...
                          <fid> FD </fid>
                          <uri> FileName </uri>
@@ -158,7 +158,7 @@ module LIBC-STDIO
 
      syntax K ::= "fsl-open-file" "(" K "," K ")" [strict]
 
-     //////////////////////////--  
+     //////////////////////////
 
      // C1X Here we might want to assume different threads cannot interleave
      // wrt printf, based on 7.1.4:5.  However, 7.1.4:4 seems to say exactly
@@ -176,28 +176,28 @@ module LIBC-STDIO
                ListItem(VarArgs:KResult))
           => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
-          
+
      rule [printf-done]:
           new-printf-aux(formattedResult(S:String))
-          => writeToFD(1, S) 
-               ~> flush(1) 
-               ~> tv(lengthString(S), t(.Set, int)) 
+          => writeToFD(1, S)
+               ~> flush(1)
+               ~> tv(lengthString(S), t(.Set, int))
           [structural]
-     
+
      syntax K ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
           prepareBuiltin(Identifier("sprintf"),
                ListItem(tv(Dest:SymLoc, _))
-               ListItem(Format:KResult) 
+               ListItem(Format:KResult)
                ListItem(VarArgs:KResult))
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
-          => writeString(Dest, S) 
+          => writeString(Dest, S)
                ~> tv(lengthString(S), t(.Set, int))
           [structural]
-     
+
      syntax K ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           prepareBuiltin(Identifier("snprintf"),
@@ -217,7 +217,7 @@ module LIBC-STDIO
           snprintf(formattedResult(S:String), _, 0)
           => tv(lengthString(S), t(.Set, int))
           [structural]
-     
+
      syntax K ::= "new-printf-aux" "(" K ")" [strict]
      syntax K ::= formatter(K, K) [strict(1)]
      syntax K ::= "formatter-aux" "(" K ")" [strict]
@@ -236,18 +236,18 @@ module LIBC-STDIO
           <k> formatter(str(S:String), VarArgs:KResult)
                => formatter-aux(VarArgs:KResult)
           ...</k>
-          (.Bag => 
+          (.Bag =>
                <formatting>...
                     <format> stringToList(S:String) </format>
                ...</formatting>
           )
           [structural]
-     
+
      syntax Value ::= "formattedResult" "(" K ")"
-     
+
      rule [format-done]:
-          <k> 
-               formatter-aux(_) 
+          <k>
+               formatter-aux(_)
                => formattedResult(listToString(Result:List))
           ...</k>
           (
@@ -268,7 +268,7 @@ module LIBC-STDIO
           <format-state> "normal" </format-state>
           when S:String =/=String "%"
           [structural]
-          
+
      rule [format-reset]:
           <k> formatter-aux(_) ...</k>
           <format-mods> _ => .Map </format-mods>
@@ -282,8 +282,8 @@ module LIBC-STDIO
           <format-state> "normal" => "%" </format-state>
           [structural]
 
-     // %[flags][width][.precision][length]type   
-     
+     // %[flags][width][.precision][length]type
+
      /*@ \source[n1570]{\para{7.21.6.1}{4}}
      Each conversion specification is introduced by the character \texttt{\%}.
      After the \texttt{\%}, the following appear in sequence:
@@ -325,7 +325,7 @@ module LIBC-STDIO
      converted. A negative field width argument is taken as a \texttt{-} flag
      followed by a positive field width. A negative precision argument is taken
      as if the precision were omitted. }*/
-     
+
      /*@ \fromStandard{\source[n1570]{\para{7.21.6.1}{6}}}{
      The flag characters and their meanings are:
      \begin{description}
@@ -375,7 +375,7 @@ module LIBC-STDIO
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
           [structural]
-          
+
      // ignoring num width
      rule [format-width]:
           <k> formatter-aux(_) ...</k>
@@ -383,7 +383,7 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           when ordChar(C:String) >Int ordChar("0")
                andBool ordChar(C:String) <=Int ordChar("9")
-          [structural]   
+          [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
      The length modifiers and their meanings are:
@@ -470,15 +470,15 @@ module LIBC-STDIO
      rule getFormatType-aux("%F", _) => t(.Set, double) [structural]
      rule getFormatType-aux("%g", _) => t(.Set, double) [structural]
      rule getFormatType-aux("%G", _) => t(.Set, double) [structural]
-               
+
      rule getFormatType-aux("%c", "")
           => t(.Set, int) [structural]
      rule getFormatType-aux("%s", "")
           => t(.Set, pointerType(t(.Set, char))) [structural]
-     
+
      rule getFormatType-aux("%p", "")
           => t(.Set, pointerType(t(.Set, void))) [structural]
-     
+
      rule getFormatType-aux("%d", "")
           => t(.Set, int) [structural]
      rule getFormatType-aux("%o", "")
@@ -491,7 +491,7 @@ module LIBC-STDIO
           => t(.Set, unsigned-int) [structural]
      rule getFormatType-aux("%n", "")
           => t(.Set, pointerType(t(.Set, int))) [structural]
-     
+
      rule getFormatType-aux("%d", "l")
           => t(.Set, long-int) [structural]
      rule getFormatType-aux("%o", "l")
@@ -504,7 +504,7 @@ module LIBC-STDIO
           => t(.Set, unsigned-long-int) [structural]
      rule getFormatType-aux("%n", "l")
           => t(.Set, pointerType(t(.Set, long-int))) [structural]
-     
+
      rule getFormatType-aux("%d", "ll")
           => t(.Set, long-long-int) [structural]
      rule getFormatType-aux("%o", "ll")
@@ -518,7 +518,6 @@ module LIBC-STDIO
      rule getFormatType-aux("%n", "ll")
           => t(.Set, pointerType(t(.Set, long-long-int))) [structural]
 
-          
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{d},\texttt{i}]
@@ -546,7 +545,7 @@ module LIBC-STDIO
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
-          
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{o},\texttt{u},\texttt{x},\texttt{X}]
@@ -586,7 +585,7 @@ module LIBC-STDIO
      rule [format-%u]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
-          <format-result>... 
+          <format-result>...
                .List => ListItem(Int2String(D:Int))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
@@ -601,8 +600,8 @@ module LIBC-STDIO
      rule [format-%x]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(base2String(D:Int, 16)) 
+          <format-result>...
+               .List => ListItem(base2String(D:Int, 16))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
@@ -616,8 +615,8 @@ module LIBC-STDIO
      rule [format-%X]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(toUpperCase(base2String(D:Int, 16))) 
+          <format-result>...
+               .List => ListItem(toUpperCase(base2String(D:Int, 16)))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -655,8 +654,8 @@ module LIBC-STDIO
      rule [format-%f]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(Float2String(D:Float)) 
+          <format-result>...
+               .List => ListItem(Float2String(D:Float))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
           [structural]
@@ -670,12 +669,12 @@ module LIBC-STDIO
      rule [format-%F]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(toUpperCase(Float2String(D:Float))) 
+          <format-result>...
+               .List => ListItem(toUpperCase(Float2String(D:Float)))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
           [structural]
-          
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{e},\texttt{E}]
@@ -735,8 +734,8 @@ module LIBC-STDIO
      rule [format-%g]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(Float2String(D:Float)) 
+          <format-result>...
+               .List => ListItem(Float2String(D:Float))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
           [structural]
@@ -750,8 +749,8 @@ module LIBC-STDIO
      rule [format-%G]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(toUpperCase(Float2String(D:Float))) 
+          <format-result>...
+               .List => ListItem(toUpperCase(Float2String(D:Float)))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
           [structural]
@@ -768,7 +767,7 @@ module LIBC-STDIO
      \item[\texttt{c}]
      If no \texttt{l} length modifier is present, the \cinline{int} argument is
      converted to an \cinline{unsigned char}, and the resulting character is
-     written. 
+     written.
 
      \broken{If an \texttt{l} length modifier is present, the \cinline{wint_t}
      argument is converted as if by an \texttt{ls} conversion specification
@@ -788,13 +787,13 @@ module LIBC-STDIO
      rule [format-%c]:
           <k> formatter-aux(_) ...</k>
           <format-arg> C:Int => .K </format-arg>
-          <format-result>... 
-               .List => ListItem(chrChar(((C:Int %Int 256) +Int 256) 
-                    %Int 256)) 
+          <format-result>...
+               .List => ListItem(chrChar(((C:Int %Int 256) +Int 256)
+                    %Int 256))
           </format-result>
           <format-state> "%c" => "reset" </format-state>
           [structural]
-          
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{s}]
@@ -824,7 +823,7 @@ module LIBC-STDIO
      */
      rule [format-%s-start]:
           <k> formatter-aux(V:KResult)
-               => formatter-next(V:KResult)       
+               => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("s") => .List ...</format>
           <format-state> "%" => "%s" </format-state>
@@ -840,7 +839,7 @@ module LIBC-STDIO
           <k> (str(S:String) => .K)
                ~> formatter-aux(_)
           ...</k>
-          <format-result>... 
+          <format-result>...
                .List => ListItem(S:String)
           </format-result>
           <format-state> "%s-read" => "reset" </format-state>
@@ -856,7 +855,7 @@ module LIBC-STDIO
      */
      rule [format-%p-start]:
           <k> formatter-aux(V:KResult)
-               => formatter-next(V:KResult)       
+               => formatter-next(V:KResult)
           ...</k>
           <format> ListItem("p") => .List ...</format>
           <format-state> "%" => "%p" </format-state>
@@ -869,7 +868,7 @@ module LIBC-STDIO
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]
-          
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{n}]
@@ -880,7 +879,7 @@ module LIBC-STDIO
      width, or a precision, the behavior is undefined.}
      \end{description}
      */
-     
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{\%}]
@@ -892,7 +891,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem("%") => .List ...</format>
           <format-result>...
-               .List => ListItem("%") 
+               .List => ListItem("%")
           </format-result>
           <format-state> "%" => "reset" </format-state>
           [structural]

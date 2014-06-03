@@ -27,7 +27,7 @@ module C-COMMON-EXPR-EVAL
           => 36893488147419103232
      rule arrayLength(t(_, incompleteArrayType(_)))
           => 36893488147419103232
-     
+
      // chathhorn: to work around the new semantics for contexts.
      rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
@@ -48,13 +48,13 @@ module C-COMMON-EXPR-EVAL
      // address taken), and that object is uninitialized (not declared with an
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
-     
+
      rule rkludge(skipval) => skipval
      rule rkludge(emptyValue) => emptyValue
      rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
 
      rule pkludge(tv(V:CValue, T:Type)) => tv(V, T)
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
      \cinline{_Alignof} operator, the unary \cinline{&} operator, the
@@ -67,6 +67,13 @@ module C-COMMON-EXPR-EVAL
      value has the non-atomic version of the type of the lvalue; otherwise, the
      value has the type of the lvalue. \ldots
      }*/
+
+     // Lvalue conversion.
+     rule rkludge(lval(Loc:SymLoc, T:Type)) 
+          => instantiate(Loc, T)
+          when notBool isArrayType(T)
+               andBool notBool isFunctionType(T) 
+
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
           when notBool isArrayType(T) 
                andBool notBool isFunctionType(T) 
@@ -82,26 +89,29 @@ module C-COMMON-EXPR-EVAL
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
           => checkRegister(Loc)
-          ~> tv(Loc, arrayToPointer(Loc, T))
+          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
           when isArrayType(T)
      rule pkludge(lval(Loc:SymLoc, T:Type))
           => checkRegister(Loc)
-          ~> tv(Loc, arrayToPointer(Loc, T))
+          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
           when isArrayType(T)
 
-     syntax Type ::= arrayToPointer(SymLoc, Type) [function]
-     rule arrayToPointer(Loc:SymLoc, T:Type)
+     syntax Type ::= arrayToPtrType(Type) [function]
+     rule arrayToPtrType(T:Type)
           => stripQualifiers(
-               addProvenance(basedOn(base(Loc)),
-               addProvenance(fromArray(0,
+               t(getModifiers(T), pointerType(innerType(T))))
+
+     syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
+     rule arrayToPtrLoc(Loc:SymLoc, T:Type)
+          => addProv(basedOn(base(Loc)),
+               addProv(fromArray(0,
                     byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
-               t(getModifiers(T), pointerType(innerType(T))))))
+               Loc))
           when isRestrictType(T)
-     rule arrayToPointer(_, T:Type)
-          => stripQualifiers(
-               addProvenance(fromArray(0,
-                    byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
-               t(getModifiers(T), pointerType(innerType(T)))))
+     rule arrayToPtrLoc(Loc:SymLoc, T:Type)
+          => addProv(fromArray(0,
+               byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
+               Loc)
           when notBool isRestrictType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
@@ -117,12 +127,6 @@ module C-COMMON-EXPR-EVAL
      rule pkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
           when isFunctionType(T) 
-
-     // Lvalue conversion.
-     rule rkludge(lval(Loc:SymLoc, T:Type)) 
-          => instantiate(Loc, T)
-          when notBool isArrayType(T)
-               andBool notBool isFunctionType(T) 
 
      syntax K ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => . ...</k>
@@ -153,5 +157,5 @@ module C-COMMON-EXPR-EVAL
           => UNDEF("CEE2", "Indeterminate value used in an expression.", "")
           ~> tv(trap, T)
           [structural]
-     
+
 endmodule

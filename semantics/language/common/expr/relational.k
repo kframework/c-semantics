@@ -86,45 +86,45 @@ module C-COMMON-EXPR-RELATIONAL
      //- comparison of pointers
      // fixme could check 6.5.8:2
      // fixme there are further restrictions on pointers
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               < tv(loc(Base:SymBase, Offset':Int), T':Type)
-          => makeTruth(Offset <Int Offset')
+     rule tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
+          => makeTruth(offset(Loc) <Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool base(Loc) ==K base(Loc')
           [structural]
      rule (. => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) < tv(loc(Base':SymBase, _), T':Type)
-          when Base =/=K Base'
+          ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
+          when base(Loc) =/=K base(Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               <= tv(loc(Base:SymBase, Offset':Int), T':Type)
-          => makeTruth(Offset <=Int Offset')
+     rule tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
+          => makeTruth(offset(Loc) <=Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool base(Loc) ==K base(Loc')
           [structural]
      rule (. => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) <= tv(loc(Base':SymBase, _), T':Type)
-          when Base =/=K Base'
+          ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
+          when base(Loc) =/=K base(Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               > tv(loc(Base:SymBase, Offset':Int), T':Type)
-          => makeTruth(Offset >Int Offset')
+     rule tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
+          => makeTruth(offset(Loc) >Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool (base(Loc) ==K base(Loc'))
           [structural]
      rule (. => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) > tv(loc(Base':SymBase, _), T':Type)
-          when Base =/=K Base'
-               andBool T ==Type T'
+          ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
+          when (base(Loc) =/=K base(Loc'))
+               andBool (T ==Type T')
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               >= tv(loc(Base:SymBase, Offset':Int), T':Type)
-          => makeTruth(Offset >=Int Offset')
+     rule tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
+          => makeTruth(offset(Loc) >=Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool (base(Loc) ==K base(Loc'))
           [structural]
      rule (. => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
-          ~> tv(loc(Base:SymBase, _), T:Type) >= tv(loc(Base':SymBase, _), T':Type)
-          when Base =/=K Base'
-               andBool T ==Type T'
+          ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
+          when (base(Loc) =/=K base(Loc'))
+               andBool (T ==Type T')
           [structural]
 
      rule (. => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
@@ -239,51 +239,28 @@ module C-COMMON-EXPR-RELATIONAL
 
      // otherwise, there are a number of cases.
      // First, they are part of the same object
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               == tv(loc(Base:SymBase, Offset':Int), T':Type) 
-          => makeTruth(Offset ==Int Offset')
+     rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type) 
+          => makeTruth(offset(Loc) ==Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool (base(Loc) ==K base(Loc'))
           [structural]
-     rule tv(loc(Base:SymBase, Offset:Int), T:Type)
-               != tv(loc(Base:SymBase, Offset':Int), T':Type) 
-          => makeTruth(Offset =/=Int Offset')
+     rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type) 
+          => makeTruth(offset(Loc) =/=Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
+               andBool (base(Loc) ==K base(Loc'))
           [structural]
 
-     // next, they are part of different objects.  
-     // here, if the two objects are alive, and our pointers are in bounds, we
-     // can conclude something.  if one of the objects is dead, we can't
-     // conclude anything (the address could have been reused)
-     rule <k> tv(loc(Base:SymBase, Offset:Int), T:Type)
-                    == tv(loc(Base':SymBase, Offset':Int), T':Type) 
-               => tv(0, t(.Set, int))
-          ...</k>
-          <mem> ...
-               Base |-> object(_, Len:Int, _)
-               Base' |-> object(_, Len':Int, _)
-          ...</mem>
+     // next, they are part of different objects.
+     rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type) 
+          => tv(0, t(.Set, int))
           when (isPointerType(T) andBool isPointerType(T'))
-               andBool (Base =/=K Base')
-               // TODO(chathhorn): many of these checks are redundant now; e.g.
-               // we trap on out-of-bounds pointers in all exprs.
-               andBool (Offset <Int Len)
-               andBool (Offset' <Int Len')
+               andBool (base(Loc) =/=K base(Loc'))
           [structural]
-     rule <k> tv(loc(Base:SymBase, Offset:Int), T:Type)
-                    != tv(loc(Base':SymBase, Offset':Int), T':Type) 
-               => tv(1, t(.Set, int))
-          ...</k>
-          <mem> ...
-               Base |-> object(_, Len:Int, _)
-               Base' |-> object(_, Len':Int, _)
-          ...</mem>
+     rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type) 
+          => tv(1, t(.Set, int))
           when isPointerType(T) andBool isPointerType(T')
-               andBool (Base =/=K Base')
-               andBool (Offset <Int Len)
-               andBool (Offset' <Int Len')
+               andBool (base(Loc) =/=K base(Loc'))
           [structural]
-
-     // otherwise we can't conclude anything
 
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
@@ -309,5 +286,3 @@ module C-COMMON-EXPR-RELATIONAL
                andBool isNullPointerConstant(tv(N, T'))
           [structural]
 endmodule
-
-

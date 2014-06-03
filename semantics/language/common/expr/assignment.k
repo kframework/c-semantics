@@ -5,6 +5,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -17,7 +18,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      operand is sequenced after the value computations of the left and right
      operands. The evaluations of the operands are unsequenced.
      }*/
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{1}}{
      One of the following shall hold:112)
 
@@ -120,11 +121,11 @@ module C-COMMON-EXPR-ASSIGNMENT
      // why doesn't the standard just say that?
 
      rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => write(Loc, V, transferProvenance(T, T'))
-          ~> transferProvenance(T, tv(V, T'))
+          => write(Loc, V, T')
+          ~> transferProv(Loc, tv(V, T'))
           when T' ==Type T
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
      Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the
      simple assignment expression \cinline{E1 = E1 op (E2)}, except that the
@@ -138,7 +139,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
-          
+
      rule E1:K *= E2:K => compoundAssignment('_*_, E1, E2)
           [structural]
      rule E1:K /= E2:K => compoundAssignment('_/_, E1, E2)

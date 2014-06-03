@@ -29,7 +29,8 @@ module C-COMMON-EXPR-REFERENCE
      }
      */
      rule &(lval(Loc:SymLoc, T:Type))
-          => tv(Loc, t(SetItem(fromArray(0, 2 *Int byteSizeofType(T))), pointerType(T)))
+          => tv(addProv(fromArray(0, 2 *Int byteSizeofType(T)), Loc),
+               t(.Set, pointerType(T)))
           when notBool isRegisterLoc(Loc)
           [structural]
      rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))

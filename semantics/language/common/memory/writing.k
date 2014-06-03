@@ -27,7 +27,7 @@ module C-MEMORY-WRITING
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     
+
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
@@ -71,23 +71,23 @@ module C-MEMORY-WRITING
           [structural]
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
-          => writeBytes(Loc, splitBytes(tv(V, T)), T)
+          => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
-               andBool (notBool hasUnionMarker(T))
+               andBool (notBool hasUnionMarker(Loc))
           [structural]
      rule (. => allowInit(makeUnknown(UnionLoc, F, Fields)))
-          ~> write-specific(_, _,
-               t((SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
-                    => .Set) _, _))
+          ~> write-specific(
+               loc(_, _, (SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
+                    => .Set) _), _, _)
           [structural]
-          
+
      syntax K ::= makeUnknown(SymLoc, CId, FieldInfo)
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
                F |-> T:Type _, _))
-          => writeBytes(Loc +bytes byteSizeofType(T),
+          => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T), 
                     piece(unknown, cfg:bitsPerByte))), T)
@@ -100,16 +100,16 @@ module C-MEMORY-WRITING
      rule write-specific(Loc:SymLoc,
                agg(ListItem(V:CValue) ListItem(V':CValue) L:List),
                T:Type)
-          => writeBytes(Loc, dataList(ListItem(V) ListItem(V') L), T)
+          => writeBytes(stripProv(Loc), dataList(ListItem(V) ListItem(V') L), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool notBool isBitfieldType(T)
           [structural]
-          
+
      syntax Int ::= justBits(Int, Type) [function]
      syntax Int ::= "justBits-aux" "(" Int "," Type ")" [function]
      rule justBits(I:Int, _) => I
           when I >=Int 0 
-          
+
      rule justBits(I:Int, T:Type) => justBits-aux(I, T)
           when I <Int 0 
      rule justBits-aux(I:Int, T:Type)
@@ -119,31 +119,31 @@ module C-MEMORY-WRITING
      rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int))) 
           => N +Int (1 <<Int (Len -Int 1))
           when Len >Int 0 andBool N >=Int 0
-     
+
      rule write-specific(Loc:SymLoc, I:Int, T:Type)
           => write-specific(Loc, justBits(I, T), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
                orBool isBitfieldType(T))
                andBool (I <Int 0)
           [structural]
-     
+
      rule write-specific(Loc:SymLoc, V:Int, T:Type)
-          => writeBytes(Loc,
+          => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytes(Loc, byteSizeofType(T), T)), T)
+                    readBytes(stripProv(Loc), byteSizeofType(T), T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
                andBool (V >=Int 0)
           [structural]
-          
+
      syntax K ::= calculateNewBytes(Bits, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)] 
-          
+
      rule calculateNewBytes(N:Bits, dataList(L:List)) 
           => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
                dataList(explodeToBits(L)), .List)
           [structural]
-     
+
      syntax K ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
      rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List), 
                dataList(ListItem(piece(_, 1)) L':List), Result:List) 
@@ -153,7 +153,7 @@ module C-MEMORY-WRITING
      rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List) 
           => joinBitsToBytes(Result L) 
           [structural]
-     
+
      syntax K ::= joinBitsToBytes(List) [function]
      rule joinBitsToBytes(L:List)
           => joinBitsToBytes-aux(dataList(L), dataList(.List))

@@ -128,27 +128,6 @@ module C-TYPING-MISC
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
-     rule getProvenance(T:Type)
-          => filterSet(getModifiers(T), '#isProvenance)
-
-     syntax Bool ::= "#isProvenance" "(" K ")" [function, klabel('#isProvenance)]
-     rule #isProvenance(fromArray(_, _)) => true
-     rule #isProvenance(fromUnion(_, _, _)) => true
-     rule #isProvenance(basedOn(_)) => true
-     rule #isProvenance(oldStyle) => true
-
-     rule getBases(T:Type)
-          => filterSet(getModifiers(T), '#isBases)
-
-     rule transferProvenance(From:Type, To:Type)
-          => addModifiers(getProvenance(From), To)
-
-     rule transferProvenance(From:Type, tv(V:CValue, To:Type))
-          => tv(V, transferProvenance(From, To))
-
-     syntax Bool ::= "#isBases" "(" K ")" [function, klabel('#isBases)]
-     rule #isBases(basedOn(_)) => true
-
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
@@ -192,8 +171,6 @@ module C-TYPING-MISC
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
-     rule addProvenance(P:Provenance, T:Type) => addModifier(P, T)
-
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
 
@@ -216,7 +193,7 @@ module C-TYPING-MISC
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
           => t(Mods' Mods, T)
-          
+
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
@@ -337,13 +314,6 @@ module C-TYPING-MISC
 
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true
-
-     rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
-          => stripUnionMarker(S)
-     rule stripUnionMarker(SetItem(K:K) S:Set)
-          => SetItem(K) stripUnionMarker(S)
-          when getKLabel(K) =/=KLabel 'fromUnion
-     rule stripUnionMarker(.Set) => .Set
 
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )

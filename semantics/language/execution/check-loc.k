@@ -8,21 +8,24 @@ module C-CHECK-LOC
 
      imports COMPAT-SYNTAX
 
-     // fixme could additionally use the type to check whether that type is
-     // valid for that pointer
-     rule checkLoc(NullPointer) => .
-     rule <k> checkLoc(loc(Base:SymBase, Offset:Int))
+     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
+          [structural]
+
+     syntax K ::= "checkLoc'" "(" SymLoc ")"
+     rule checkLoc'(NullPointer) => .
+          [structural]
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
                => checkOffsets(Offset, Len)
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
-     rule <k> checkLoc(loc(Base:SymBase, 0)) => . ...</k>
+     rule <k> checkLoc'(loc(Base:SymBase, 0)) => . ...</k>
           <functions>... Base |-> _ ...</functions>
           [structural]
-     rule <k> checkLoc(loc((Base:SymBase => Base'), _)) ...</k>
+     rule <k> checkLoc'(loc((Base:SymBase => Base'), _)) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
-     rule <k> checkLoc(loc(Base:SymBase, _)) => errorLocInvalid ...</k>
+     rule <k> checkLoc'(loc(Base:SymBase, _)) => errorLocInvalid ...</k>
           <mem> Mem:Map </mem>
           <functions> Funs:Map </functions>
           <linkings> Links:Map </linkings>
@@ -46,29 +49,37 @@ module C-CHECK-LOC
           => UNDEF("ECL3", "Found pointer that refers outside the bounds of an object + 1.", "6.2.4")
           [structural]
 
-     rule <k> checkRestrict(Loc:SymLoc, T:Type) => . ...</k>
-          <modified> Modified:Map </modified>
-          <restrict>...
-               Loc |-> set((.Set => SetItem(set(getBases(T)))) _)
-          ...</restrict>
-          // TODO(chathhorn): finer-grain modified detection. This can fail for
-          // the case of aggregates.
-          when notBool Loc in keys(Modified)
-          [structural]
-     rule <k> checkRestrict(Loc:SymLoc, T:Type) => . ...</k>
-          <restrict>
-               Restricts:Map (.Map => Loc |-> set(SetItem(set(getBases(T)))))
-          </restrict>
-          when notBool (Loc in keys(Restricts))
-          [structural]
-     rule <k> checkRestrict(Loc:SymLoc, T:Type)
-               => checkRestrict(getBases(T), getBases(T), Bases)
+     // TODO(chathhorn): finer-grain modified detection. This can fail for the
+     // case of aggregates.
+     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
+               => .
           ...</k>
           <modified> Modified:Map </modified>
-          <restrict>... Loc |-> set(Bases:Set) ...</restrict>
-          // TODO(chathhorn): finer-grain modified detection. This can fail for
-          // the case of aggregates.
-          when Loc in keys(Modified)
+          <restrict>...
+               loc(Base, Offset) |-> set((.Set => SetItem(set(getBases(Prov)))) _)
+          ...</restrict>
+          when notBool loc(Base, Offset) in keys(Modified)
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, _) => . ...</k>
+          <restrict>
+               Restricts:Map
+               (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
+          </restrict>
+          when notBool (stripProv(Loc) in keys(Restricts))
+          [structural]
+     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
+               => checkRestrict(getBases(Prov), getBases(Prov), Bases)
+          ...</k>
+          <modified> Modified:Map </modified>
+          <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
+          when loc(Base, Offset) in keys(Modified)
+          [structural]
+     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int), _)
+               => checkRestrict(.Set, .Set, Bases)
+          ...</k>
+          <modified> Modified:Map </modified>
+          <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
+          when loc(Base, Offset) in keys(Modified)
           [structural]
 
      syntax K ::= checkRestrict(Set, Set, Set)

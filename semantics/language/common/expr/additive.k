@@ -94,37 +94,37 @@ module C-COMMON-EXPR-ADDITIVE
 
      syntax K ::= addToPointer(SymLoc, Type, Int) [function]
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
-          => tv(Loc +bytes (I *Int byteSizeofType(innerType(T))),
-               newFromArray(T, I))
-          when ifFromArrayInBounds(T, I)
+          => tv(newFromArray(Loc, T, I)
+               +bytes (I *Int byteSizeofType(innerType(T))), T)
+          when ifFromArrayInBounds(Loc, T, I)
           [structural]
      rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
-          ~> addToPointer(_, T:Type, I:Int)
-          when notBool ifFromArrayInBounds(T, I)
+          ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
+          when notBool ifFromArrayInBounds(Loc, T, I)
           [structural]
 
-     syntax Type ::= newFromArray(Type, Int) [function]
+     syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
      rule newFromArray(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
-               pointerType(T:Type)), I:Int)
-          => t(SetItem(fromArray(Offset +Int I *Int byteSizeofType(T), Len)) Mods,
-               pointerType(T))
-     rule newFromArray(T:Type, _) => T
-          when notBool isFromArray(T)
+               loc(Base:SymBase, Offset:Int, SetItem(
+                    fromArray(ArrOffset:Int, Len:Int)) Prov:Set), T:Type, I:Int)
+          => loc(Base, Offset, SetItem(
+               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+     rule newFromArray(Loc:SymLoc, _, _) => Loc
+          when notBool isFromArray(Loc)
 
-     syntax Bool ::= ifFromArrayInBounds(Type, Int) [function]
+     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
      rule ifFromArrayInBounds(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) _,
-               pointerType(T:Type)), I:Int)
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
           => true
-          when Offset +Int (I *Int byteSizeofType(T)) <Int Len
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
      rule ifFromArrayInBounds(
-               t(SetItem(fromArray(Offset:Int, Len:Int)) _,
-               pointerType(T:Type)), I:Int)
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
           => false
-          when Offset +Int (I *Int byteSizeofType(T)) >=Int Len
-     rule ifFromArrayInBounds(T:Type, _) => true
-          when notBool isFromArray(T)
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
+          when notBool isFromArray(Loc)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same
@@ -154,10 +154,11 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(L1, L2, sizeofType(T))
           [structural]
-     rule computePointerDifference(loc(Base:SymBase, Offset1:Int),
-               loc(Base:SymBase, Offset2:Int), tv(Size:Int, _))
-          => tv((Offset1 -Int Offset2) /Int Size, cfg:ptrdiffut)
-          when (Offset1 -Int Offset2) %Int Size ==Int 0
+     rule computePointerDifference(Loc1:SymLoc,
+               Loc2:SymLoc, tv(Size:Int, _))
+          => tv((offset(Loc1) -Int offset(Loc2)) /Int Size, cfg:ptrdiffut)
+          when (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
+               andBool base(Loc1) ==K base(Loc2)
           [structural]
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)

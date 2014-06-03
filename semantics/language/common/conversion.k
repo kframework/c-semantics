@@ -47,10 +47,10 @@ module C-CONVERSION
 
      //- switch assumes casts can happen anywhere
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => transferProvenance(T, tv(V, T'))
+          => tv(V, T')
           when stripQualifiers(T) ==Type stripQualifiers(T')
           [structural, anywhere]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if
      the value compares equal to 0; otherwise, the result is 1.
@@ -84,7 +84,7 @@ module C-CONVERSION
                andBool notBool isBoolType(T')
                andBool inRange(V, T')
           [structural, anywhere]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
      repeatedly adding or subtracting one more than the maximum value that can
@@ -128,7 +128,7 @@ module C-CONVERSION
           when (I <Int min(t(Mods, unsigned-long-long-int)))
                andBool hasIntegerType(T)          
           [structural, anywhere]
-     
+
      rule cast(T':Type, tv(I:Int, T:Type)) 
           => tv(I %Int (max(T') +Int 1), T')
           when isBitfieldType(T')
@@ -233,14 +233,14 @@ module C-CONVERSION
 
      // TODO(chathhorn): not sure about this.
      rule cast(T':Type, tv(unknown, T:Type))
-          => tv(unknown, transferProvenance(T, T'))
+          => tv(unknown, T')
           when bitSizeofType(T') >=Int bitSizeofType(T)
           [structural, anywhere]
      rule cast(T':Type, tv(unknown, T:Type))
-          => tv(trap, transferProvenance(T, T'))
+          => tv(trap, T')
           when bitSizeofType(T') <=Int bitSizeofType(T)
           [structural, anywhere]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
      other than \cinline{_Bool}, the fractional part is discarded (i.e., the
@@ -327,7 +327,7 @@ module C-CONVERSION
      pointer to any object or function.
      }*/
      rule cast(T':Type, V:TypedValue)
-          => tv(NullPointer, transferProvenance(type(V), T'))
+          => tv(NullPointer, T')
           when isNullPointerConstant(V)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -345,13 +345,13 @@ module C-CONVERSION
      }*/
      // choice implementation defined behavior
      rule cast(T':Type, tv(Loc:SymLoc, T:Type))
-          => transferProvenance(T, tv(Loc, T'))
+          => tv(Loc, T')
           when hasIntegerType(T)
                andBool notBool isNullPointerConstant(tv(Loc, T))
                andBool isPointerType(T')
           [structural, anywhere]
      rule cast(T':Type, tv(Loc:SymLoc, T:Type))
-          => transferProvenance(T, tv(Loc, T'))
+          => tv(Loc, T')
           when hasIntegerType(T)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -364,12 +364,12 @@ module C-CONVERSION
      }*/
      // fixme needs to check size
      rule cast(T':Type, tv(N:Int, T:Type))
-          => transferProvenance(T, tv(N, T'))
+          => tv(N, T')
           when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
      rule cast(T':Type, tv(Loc:SymLoc, T:Type))
-          => transferProvenance(T, tv(Loc, T'))
+          => tv(Loc, T')
           when hasIntegerType(T') andBool isPointerType(T)
                andBool notBool isBoolType (T')
           [structural, anywhere]
@@ -394,7 +394,7 @@ module C-CONVERSION
      // choice
      // TODO needs to handle alignment
      rule cast(T':Type, tv(Loc:SymLoc, T:Type))
-          => transferProvenance(T, tv(Loc, T'))
+          => tv(Loc, T')
           when isPointerType(T) andBool isPointerType(T')
           [structural, anywhere]
 endmodule
