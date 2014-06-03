@@ -87,6 +87,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
 
      syntax Bool ::= isFromArray(SymLoc) [function]
+     syntax SymLoc ::= stripFromArray(SymLoc) [function]
 
      syntax SymLoc ::= stripProv(SymLoc) [function]
 endmodule
@@ -276,8 +277,13 @@ module C-SYMLOC
      syntax Bool ::= "#isFromArray" "(" SymLoc ")" [function]
      rule #isFromArray(loc(_, _, SetItem(fromArray(_, _)) _)) => true
 
+     rule stripFromArray(loc(_, _, (SetItem(fromArray(_, _)) => .Set) _))
+     rule stripFromArray(Loc:SymLoc) => Loc
+          when notBool isFromArray(Loc)
+
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(NullPointer) => NullPointer
+
 endmodule
 
