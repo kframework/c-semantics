@@ -75,6 +75,8 @@ module LIBC-STDLIB
      may have the same value as a pointer to the old object), or a null pointer
      if the new object could not be allocated.
      }*/
+     rule prepareBuiltin(Identifier("realloc"),
+          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) _)
      rule [realloc]:
           <k> prepareBuiltin(Identifier("realloc"),
                     ListItem(tv(loc(OldBase:SymBase, 0), _))
@@ -109,6 +111,8 @@ module LIBC-STDLIB
           ~> (calloc-aux => .)
           [structural]
 
+     rule prepareBuiltin(Identifier("free"),
+          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
                     ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
