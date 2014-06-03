@@ -80,7 +80,7 @@ module C-MEMORY-ALLOC
      
      // Used by calloc.
      syntax Map ::= createMap(KList,Bits) [function]
-     rule createMap(.KList, B:Bits) => .Map
+     rule createMap(.KList, _:Bits) => .Map
      rule createMap((I:K,, KL:KList), B:Bits) => (I |-> B) createMap(KL, B) 
     
      rule <k> zeroObject(Base:SymBase) => . ...</k>

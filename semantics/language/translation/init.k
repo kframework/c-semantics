@@ -73,6 +73,7 @@ module C-TRANSLATION-INIT
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
+    /*TODO: Unsupported map pattern in the rule left-hand side
      rule <k> (.K => declare(
                typedDeclaration(T, Identifier(B)), 
                initializer(initFunction(
@@ -90,7 +91,7 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           when (Identifier(B) in keys(Defs))
                orBool (notBool Identifier(B) in keys(Types))
-     
+     */
      rule addBuiltins(.Map) => .K
 
      // TODO(chathhorn): it'd be nice to remove the unused builtins from

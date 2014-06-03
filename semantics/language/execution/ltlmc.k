@@ -98,11 +98,14 @@ module C-LTLMC
      //      => ltlLVal(B, P)
 
      // "strictness"
-     rule ltlRVal(B:Bag, _:KLabel(P:CProp => ltlRVal(B, P)))
+     rule ltlRVal(B:Bag, L:KLabel(P:CProp))
+	 	=> ltlRVal(B, L(ltlRVal(B, P)))
           when notBool (isValueProp(P) ==K true)
-     rule ltlRVal(B:Bag, _:KLabel((L:CProp => ltlRVal(B, L)),, _))
+     rule ltlRVal(B:Bag, M:KLabel(L:CProp,, KL:KList))
+		=> ltlRVal(B, M(ltlRVal(B, L),, KL))
           when notBool (isValueProp(L) ==K true)
-     rule ltlRVal(B:Bag, Lbl:KLabel(_,, (R:CProp => ltlRVal(B, R))))
+     rule ltlRVal(B:Bag, Lbl:KLabel(KL:KList,, R:CProp))
+		=> ltlRVal(B, Lbl(KL,, ltlRVal(B, R)))
           when notBool (isValueProp(R) ==K true)
                // Don't try resolving the field specifier.
                andBool (Lbl =/=KLabel '_._)
@@ -163,11 +166,18 @@ module C-LTLMC
           => dumbRead'(Mem, Loc, T, byteSizeofType(T), .List)
 
      rule dumbRead'(
-          (_ Base |-> object(_, _, (_ Offset |-> V:K))), 
-          loc(Base:SymBase, (Offset:Int => Offset +Int 1)), 
-          _, 
-          (NBytes:Int => NBytes -Int 1), 
-          _:List (.List => ListItem(V)))
+          (BaseMap:Map (Base |-> object(OT:Type, OI:Int, (OffMap:Map (Offset |-> V:K))))), 
+          loc(Base:SymBase, (Offset:Int)), 
+          TT:Type, 
+          (NBytes:Int), 
+          VL:List)
+	=>
+	  dumbRead'(
+          (BaseMap (Base |-> object(OT, OI, (OffMap (Offset |-> V))))), 
+          loc(Base, (Offset +Int 1)), 
+          TT, 
+          (NBytes -Int 1), 
+          VL ListItem(V))
           when NBytes >Int 0
 
      syntax ValueProp ::= joinBytes(Type, K) [function]
