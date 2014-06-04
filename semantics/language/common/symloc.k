@@ -3,7 +3,7 @@ module C-SYMLOC-SYNTAX
      syntax Int ::= offset(SymLoc) [function]
 
      // Allocated duration.
-     syntax Duration ::= "allocated" [avoid]
+     syntax Duration ::= "allocated" [avoid,klabel(allocated)]
      // Static duration.
      syntax Duration ::= static(String)
      syntax Duration ::= link(String)

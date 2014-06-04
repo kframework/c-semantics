@@ -560,7 +560,7 @@ module C-DECL-GLOBAL
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
-          <external-types> _ (.Map => X |-> T') </external-types>
+          <external-types>... (.Map => X |-> T') ...</external-types>
           when isLinkerLoc(Base')
                andBool notBool X in keys(Decls)
           [structural]
@@ -568,8 +568,8 @@ module C-DECL-GLOBAL
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
-          <external-types> _ (.Map => X |-> T') </external-types>
-          <external-defs> _ (.Map => X |-> Base') </external-defs>
+          <external-types>... (.Map => X |-> T') ...</external-types>
+          <external-defs>... (.Map => X |-> Base') ...</external-defs>
           when notBool isLinkerLoc(Base')
                andBool notBool X in keys(Decls)
           [structural]

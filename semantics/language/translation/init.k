@@ -101,6 +101,7 @@ module C-TRANSLATION-INIT
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.
 
+/*TODO: deal with bag bugs, cannot merge two bags
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
 
@@ -162,7 +163,7 @@ module C-TRANSLATION-INIT
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
-
+*/
      syntax KItem ::= "printSuccess"
      rule printSuccess => #write(#stdout, "Translation successful!\n")
 

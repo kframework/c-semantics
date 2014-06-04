@@ -100,9 +100,19 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
+     syntax KItem ::= midInitMainThread(String)
+
+     rule <threads>
+	     <thread>...
+ 		<k> initMainThread => midInitMainThread(MainTU) ...</k>
+	     ...</thread>
+	  </threads>
+	  <main-tu> SetItem(MainTU:String) </main-tu>
+	 [structural]
+
      rule <threads>
                <thread>...
-                    <k> initMainThread => populateFromGlobal ...</k>
+                    <k> midInitMainThread(MainTU:String) => populateFromGlobal ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...
@@ -117,7 +127,6 @@ module C-EXECUTION-INIT
                     ...</thread-local>
                ...</thread>
           </threads>
-          <main-tu> SetItem(MainTU:String) </main-tu>
           <files>...
                ( .Bag =>
                <file>...
@@ -139,6 +148,7 @@ module C-EXECUTION-INIT
           ...</files>
           when MainTU =/=K .K
           [structural]
+
      
      /*@ 
      \begin{lrbox}{\LstBox}

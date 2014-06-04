@@ -270,10 +270,10 @@ module C-IO-BUFFERED
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>... 
-               Old |-> object(_, _, _ N:Int |-> K:K)
-               New |-> object(_, _, _ (.Map => (N' -Int 1) |-> K))
+               Old |-> object(_, _, M:Map)
+               New |-> object(_, _, _ (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
-          when (N' ==Int N +Int 1) andBool (N' >Int 0)
+          when ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
