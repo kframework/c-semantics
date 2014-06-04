@@ -123,10 +123,16 @@ module C-TYPING-MISC
      rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
-     rule getProvenance(t(SetItem(fromArray(X:Int, Y:Int))_, _))
-          => SetItem(fromArray(X, Y))
-     rule getProvenance(t(Mods:Set, T:SimpleType)) => .Set
-          when notBool isFromArray(t(Mods, T))
+     syntax Set ::= midGetProvenance(K,Set,SimpleType) [function]
+     rule midGetProvenance(fromArray(X:Int, Y:Int),_:Set,_:SimpleType)
+	    => SetItem(fromArray(X, Y))
+     rule midGetProvenance(ModK:K,S:Set,ST:SimpleType)
+	    =>  getProvenance(t(S,ST))
+	    when getKLabel(ModK) =/=KLabel 'fromArray
+     rule getProvenance(t(SetItem(K:K) Mods:Set, T:SimpleType)) 
+	    => midGetProvenance(K,Mods,T)
+     rule getProvenance(t(.Set, T:SimpleType)) 
+	    => .Set
      rule getProvenance(typedDeclaration(T:Type, _)) => getProvenance(T)
      rule getProvenance(variadic) => .Set
 
@@ -326,11 +332,14 @@ module C-TYPING-MISC
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true
 
-     rule stripUnionMarker(SetItem(fromUnion(_,_,_)) S:Set)
-          => stripUnionMarker(S)
-     rule stripUnionMarker(SetItem(K:K) S:Set)
-          => SetItem(K) stripUnionMarker(S)
+     syntax Set ::= midStripUnionMarker(K,Set) [function]
+     rule midStripUnionMarker(fromUnion(_,_,_),S:Set)
+	    => stripUnionMarker(S)
+     rule midStripUnionMarker(K:K,S:Set)
+	  => SetItem(K) stripUnionMarker(S)
           when getKLabel(K) =/=KLabel 'fromUnion
+     rule stripUnionMarker(SetItem(K:K) S:Set)
+          => midStripUnionMarker(K,S)
      rule stripUnionMarker(.Set) => .Set
 
      rule idsFromParams(

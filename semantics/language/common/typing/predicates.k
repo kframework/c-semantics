@@ -223,10 +223,27 @@ module C-TYPING-PREDICATES
      rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
 
      syntax Bool ::= #hasUnionMarker(Type) [function]
-     rule #hasUnionMarker(t((SetItem(fromUnion(_, _, _)) _:Set), _)) => true
+		   | #midHasUnionMarker(K,Set,SimpleType) [function]
+
+     rule #midHasUnionMarker(fromUnion(_,_,_),_:Set,_:SimpleType) => true
+     rule #midHasUnionMarker(K:K,S:Set,ST:SimpleType) 
+	  => #hasUnionMarker(t(S,ST))
+	   when getKLabel(K) =/=KLabel 'fromUnion
+     rule #hasUnionMarker(t((SetItem(K:K) S:Set), ST:SimpleType)) 
+	  => #midHasUnionMarker(K,S,ST) 
+     rule #hasUnionMarker(t(.Set,_:SimpleType)) => false
 
      rule isFromArray(T:Type) => #isFromArray(T) ==K true
 
-     syntax Bool ::= "#isFromArray" "(" Type ")" [function]
-     rule #isFromArray(t(SetItem(fromArray(_, _)) _, _)) => true
+     syntax Bool ::= #isFromArray(Type) [function]
+		    | #midIsFromArray(K,Set,SimpleType) [function]
+ 
+     rule #midIsFromArray(fromArray(_, _) , _:Set, _:SimpleType) => true
+     rule #midIsFromArray(K:K,S:Set,ST:SimpleType) 
+	  => #isFromArray(t(S,ST))
+	   when getKLabel(K) =/=KLabel 'fromArray
+     rule #isFromArray(t((SetItem(K:K) S:Set), ST:SimpleType)) 
+	   => #midIsFromArray(K,S,ST) 
+     rule #isFromArray(t(.Set,_:SimpleType)) => false
+
 endmodule
