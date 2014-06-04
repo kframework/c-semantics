@@ -109,7 +109,7 @@ module COMPAT
           => substrString(S:String, 1, lengthString(S:String))
 
      rule all(ListItem(K:K) L:List, Lbl:KLabel) 
-          => Lbl(K) andBool all(L, Lbl)
+          => Lbl(K:K) andBool all(L, Lbl)
      rule all(.List, _) => true 
           
      rule toUpperCase(S:String)

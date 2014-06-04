@@ -576,7 +576,7 @@ module C-DECL-GLOBAL
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls>... X |-> set(_ (.Set => SetItem(Tu))) ...</external-decls>
+          <external-decls>... X |-> set(_:Set (.Set => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> (_ => T') ...</external-types>
           when isLinkerLoc(Base')
           [structural]
