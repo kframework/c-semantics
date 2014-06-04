@@ -68,31 +68,35 @@ module C-TRANSLATION-INIT
           [structural]
      
      syntax KItem ::= addBuiltins(Map)
+		    | midOfAddBuiltins(CId,Type)
           
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
-    /*TODO: Unsupported map pattern in the rule left-hand side
-     rule <k> (.K => declare(
-               typedDeclaration(T, Identifier(B)), 
+
+     rule <k> (. => midOfAddBuiltins(Identifier(B),T))
+		~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
+
+     rule addBuiltins(.Map) => .K
+  
+     rule <k> (midOfAddBuiltins(B:CId,T:Type) => declare(
+               typedDeclaration(T, B), 
                initializer(initFunction(
-                    &(Identifier(B)),
-                    functionObject(Identifier(B), .List, T, handleBuiltin)
-               ))))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _)
-          ...</k>
-          <external-types>... Identifier(B) |-> _ ...</external-types>
+                    &(B),
+                    functionObject(B, .List, T, handleBuiltin)
+               )))) ...</k>
+          <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool Identifier(B) in keys(Defs)
+          when notBool B in keys(Defs)
           
-     rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
+     rule <k> (midOfAddBuiltins(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (Identifier(B) in keys(Defs))
-               orBool (notBool Identifier(B) in keys(Types))
-     */
-     rule addBuiltins(.Map) => .K
+          when (B in keys(Defs))
+               orBool (notBool B in keys(Types))
+
+     
 
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.

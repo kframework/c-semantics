@@ -52,17 +52,50 @@ module C-MEMORY-WRITING
                andBool notBool isInitializerType(T)
           [structural]
 
+     syntax KItem ::= midWriteSpecific(Modifier,SymLoc,CValue,Set,Set,SimpleType)
+
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(Loc, splitBytes(tv(V, T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
-               andBool (notBool hasUnionMarker(T))
+               andBool (hasUnionMarker(T) =/=K true)
           [structural]
-     rule (. => makeUnknown(UnionLoc, F, Fields))
-          ~> write-specific(_, _,
-               t((SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
-                    => .Set) _, _))
-          [structural]
+
+     rule write-specific(Loc:SymLoc, V:CValue,
+               t(SetItem(M:Modifier) S:Set, ST:SimpleType))
+	  => midWriteSpecific(M,Loc,V,S,.Set, ST)
+	  when (bitSizeofType(t(SetItem(M) S,ST)) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (isBitfieldType(t(SetItem(M) S,ST)) ==K true)
+               orBool (hasUnionMarker(t(SetItem(M) S,ST)) ==K true)
+	  [structural]
+
+     rule midWriteSpecific(M:Modifier,Loc:SymLoc,
+		V:CValue,SetItem(M':Modifier) S:Set,NoUnionSet:Set
+		,ST:SimpleType) => midWriteSpecific(M', Loc,
+                V,S,SetItem(M) NoUnionSet,ST)
+	  when hasUnionMarker(t(SetItem(M),ST)) =/=K true
+	  [structural]
+
+     rule (. => makeUnknown(UnionLoc, F, Fields)) 
+	   ~> midWriteSpecific((fromUnion(UnionLoc:SymLoc, 
+		F:CId, Fields:FieldInfo) => M),_:SymLoc,
+		_:CValue,(SetItem(M:Modifier) => .Set) _:Set,
+		_:Set,_:SimpleType)
+	  [structural]
+
+     rule midWriteSpecific(fromUnion(UnionLoc:SymLoc, 
+		F:CId, Fields:FieldInfo),Loc:SymLoc,
+		V:CValue,.Set,NoUnionSet:Set,ST:SimpleType)
+		=> (makeUnknown(UnionLoc, F, Fields)
+		   ~> write-specific(Loc, V, t(NoUnionSet,ST)))
+	  [structural]
+
+     rule midWriteSpecific(M:Modifier,Loc:SymLoc,
+		V:CValue,.Set,NoUnionSet:Set
+		,ST:SimpleType) => 
+		write-specific(Loc, V, t(SetItem(M) NoUnionSet,ST))
+	  when hasUnionMarker(t(SetItem(M),ST)) =/=K true
+	  [structural]
           
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
 

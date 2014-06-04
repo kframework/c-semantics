@@ -108,24 +108,29 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
           
      syntax Type ::= newFromArray(Type, Int) [function]
+/*TODO: map problem
      rule newFromArray(
                t(SetItem(fromArray(Offset:Int, Len:Int)) Mods:Set,
                pointerType(T:Type)), I:Int) 
           => t(SetItem(fromArray(Offset +Int I, Len)) Mods, pointerType(T))
+*/
      rule newFromArray(T:Type, _) => T
           when notBool isFromArray(T)
 
      syntax Bool ::= ifFromArrayInBounds(K, Int) [function]
+/*TODO: map
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _, 
                pointerType(_)), I:Int)
           => true
           when Offset +Int I <=Int Len
+
      rule ifFromArrayInBounds(
                t(SetItem(fromArray(Offset:Int, Len:Int)) _,
                pointerType(_)), I:Int)
           => false
           when Offset +Int I >Int Len
+*/
      rule ifFromArrayInBounds(T:Type, _) => true
           when notBool isFromArray(T)
 
