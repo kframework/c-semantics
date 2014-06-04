@@ -82,7 +82,7 @@ module C-TYPING-PREDICATES
      rule #isBasic(t(_, enumType(_))) => true
 
      syntax Set ::= "basicTypes" [function]
-     rule basicTypes => 
+     rule basicTypes =>
           unsignedIntegerTypes
           signedIntegerTypes
           floatTypes
@@ -90,7 +90,7 @@ module C-TYPING-PREDICATES
           SetItem(no-type)
 
      syntax Set ::= "floatTypes" [function]
-     rule floatTypes => 
+     rule floatTypes =>
           SetItem(float)
           SetItem(double)
           SetItem(long-double)
@@ -205,7 +205,7 @@ module C-TYPING-PREDICATES
 
      rule isConstType(T:Type) => Const in getQualifiers(T)
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
-     rule isRestrictType(T:Type) => Restrict in getQualifiers(T)
+     rule isRestrictType(T:Type) => #isRestrict(T) ==K true
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#hasChar" "(" Type ")" [function]
@@ -224,6 +224,7 @@ module C-TYPING-PREDICATES
                    | "#isBitfield" "(" Type ")" [function]
                    | "#isFunction" "(" Type ")" [function]
                    | "#isFunctionPointer" "(" Type ")" [function]
+                   | "#isRestrict" "(" Type ")" [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
           when T in floatTypes 
@@ -287,4 +288,6 @@ module C-TYPING-PREDICATES
           => true 
      rule #isFunctionPointer(typedDeclaration(T:Type, _))
           => #isFunctionPointer(T)
+
+     rule #isRestrict(t(SetItem(Restrict) _, _)) => true
 endmodule

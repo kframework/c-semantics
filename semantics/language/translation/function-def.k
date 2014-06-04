@@ -66,7 +66,6 @@ module C-FUNCTION-DEF
                orBool (getParams(T) =/=List .List)
 
      syntax K ::= processFunDef(CId, K)
-
      rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)

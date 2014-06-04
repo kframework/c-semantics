@@ -86,13 +86,13 @@ module C-COMMON-EXPR-ASSIGNMENT
           when isBoolType(T') andBool isPointerType(T)
           [structural]
 
-     rule (. => ERROR("EA1", "Incompatible types in assignment or function call arguments."))
+     rule (. => ERROR("CEA1", "Incompatible types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
           when (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
 
-     rule (. => ERROR("EA2", "Incompatible pointer types in assignment or function call arguments."))
+     rule (. => ERROR("CEA2", "Incompatible pointer types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(_, T:Type)
           when isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
@@ -101,7 +101,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                     ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
                     andBool areCompatible(innerType(T'), innerType(T)))
 
-     rule (. => CV("EA3", "Lvalue required as left operand in assignment.", ""))
+     rule (. => CV("CEA3", "Lvalue required as left operand in assignment.", ""))
           ~> tv(_, _) := tv(_, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
@@ -119,12 +119,6 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      // *** TODO(chathhorn) *** Does this only happen with unions? But if so,
      // why doesn't the standard just say that?
-
-     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
-          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
      Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the

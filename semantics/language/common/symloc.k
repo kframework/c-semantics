@@ -49,7 +49,7 @@ module C-SYMLOC-SYNTAX
 
      syntax SymBase ::= linc(SymBase) [function]
      syntax SymLoc ::= lnew(SymBase) [function]
-     syntax SymLoc ::= restrictedNew(SymBase) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, RestrictTag) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -79,7 +79,7 @@ module C-SYMLOC-SYNTAX
      syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
-     syntax Provenance ::= basedOn(SymBase)
+     syntax Provenance ::= basedOn(SymBase, RestrictTag)
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
@@ -181,7 +181,8 @@ module C-SYMLOC
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
      rule lnew(Base:SymBase) => loc(Base, 0)
-     rule restrictedNew(Base:SymBase) => loc(Base, 0, SetItem(basedOn(Base)))
+     rule restrictedNew(Base:SymBase, Tag:RestrictTag)
+          => loc(Base, 0, SetItem(basedOn(Base, Tag)))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
@@ -265,7 +266,7 @@ module C-SYMLOC
           [structural]
 
      syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
-     rule #isBases(basedOn(_)) => true
+     rule #isBases(basedOn(_, _)) => true
 
      rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(Loc) ==K true
 

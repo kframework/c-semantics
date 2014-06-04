@@ -33,7 +33,7 @@ module C-EXPR-FUNCTION-CALL
      function is defined with a type that does not include a prototype, and the
      types of the arguments after promotion are not compatible with those of
      the parameters after promotion, the behavior is undefined, except for the
-     following cases: 
+     following cases:
 
      \begin{itemize}
      \item one promoted type is a signed integer type, the other promoted type
@@ -55,8 +55,8 @@ module C-EXPR-FUNCTION-CALL
           when all(L, isKResult)
           [structural]
 
-     rule Call(tv(Loc:SymLoc, T:Type), K:K) 
-          => sequencePoint ~> Call'(tv(stripProv(Loc), T), K) 
+     rule Call(tv(Loc:SymLoc, T:Type), K:K)
+          => sequencePoint ~> Call'(tv(stripProv(Loc), T), K)
 
      context Call'(_, (HOLE => revalParams(HOLE)))
 
@@ -80,7 +80,7 @@ module C-EXPR-FUNCTION-CALL
         transition graph. */
      rule <k> application(Tu:String,
                     functionObject(X:CId, Params:List, DefT:Type, Blk:K),
-                    CallT:Type, L:List) 
+                    CallT:Type, L:List)
                => application'(Tu, functionObject(X, Params, DefT, Blk), L)
           ...</k>
           when areCompatible(CallT, DefT)
@@ -93,19 +93,19 @@ module C-EXPR-FUNCTION-CALL
 
      syntax K ::= "application'" "(" String "," K "," List ")"
 
-     rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, BlK:K), L:List) 
-               ~> K:K 
+     rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
+               ~> K:K
                => sequencePoint
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
                ~> sequencePoint
-               ~> BlK
+               ~> Blk
           </k>
           <call-stack> .List => ListItem(
                <call-stack-frame>...
-                    <stack-control> 
+                    <stack-control>
                          <curr-tu> OldTu:K </curr-tu>
-                         C:Bag 
+                         C:Bag
                     </stack-control>
                     <continuation> K:K </continuation>
                     <stack-curr-function> CurrFun:K </stack-curr-function>

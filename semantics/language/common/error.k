@@ -64,7 +64,7 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
-          
+
      // See C-COMMON-EXPR-IDENTIFIER.
      rule <k> (. => ERROR("00021a", "Trying to look up identifier " 
                +String S +String 

@@ -16,7 +16,7 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T:Type ...</types>
           when notBool isRestrictType(T)
           [structural]
-     rule <k> X:CId => lv(restrictedNew(Base), T) ...</k>
+     rule <k> X:CId => lv(restrictedNew(Base, getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           when isRestrictType(T)
@@ -24,6 +24,10 @@ module C-EXPR-IDENTIFIER
 
      rule instantiate(Loc:SymLoc, T:Type)
           => transferProv(getBases(Loc), read(Loc, T))
+          when isRestrictType(T)
+          [structural]
+     rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
+          when notBool isRestrictType(T)
           [structural]
 endmodule
 

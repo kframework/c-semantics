@@ -69,7 +69,7 @@ module C-TYPING-MISC
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int)) 
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
-     
+
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char)) 
           => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
@@ -95,7 +95,7 @@ module C-TYPING-MISC
      rule inRange(V:Float, T:Type)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           when hasFloatType(T)
-     
+
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
 
@@ -229,7 +229,7 @@ module C-TYPING-MISC
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:CId)))
-          => t(S, structType(X, bitSizeofStruct(Info), Info)) 
+          => t(S, structType(X, bitSizeofStruct(Info), Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
           when notBool X in keys(Tags)
@@ -322,5 +322,59 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
+
+     rule tagRestrict(Tag:RestrictTag, t(Mods:Set, T:SimpleType))
+          => t(tagRestrict(Tag, Mods), tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(tagRestrict(Tag, T), X)
+     rule tagRestrict(_, variadic) => variadic
+
+     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType) [function]
+     rule tagRestrict(_, T:BaseType) => T
+     rule tagRestrict(_, enumType(X:CId)) => enumType(X)
+     rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
+     rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
+          => pointerType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, arrayType(T:Type, Sz:CSize))
+          => arrayType(tagRestrict(Tag, T), Sz)
+     rule tagRestrict(Tag:RestrictTag, incompleteArrayType(T:Type))
+          => incompleteArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, flexibleArrayType(T:Type))
+          => flexibleArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(_, incompleteStructType(X:CId))
+          => incompleteStructType(X)
+     rule tagRestrict(Tag:RestrictTag, structType(X:CId, NBits:Int,
+               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
+          => structType(X, NBits,
+               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(_, incompleteUnionType(X:CId))
+          => incompleteUnionType(X)
+     rule tagRestrict(Tag:RestrictTag, unionType(X:CId, NBits:Int,
+               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
+          => unionType(X, NBits,
+               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(_, functionType(T:Type, Params:List))
+          => functionType(T, Params)
+
+     syntax List ::= tagRestrict(RestrictTag, List) [function]
+     rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
+          => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
+     rule tagRestrict(_, .List) => .List
+
+     syntax Map ::= tagRestrict(RestrictTag, Map) [function]
+     rule tagRestrict(Tag:RestrictTag, X:CId |-> T:Type M:Map)
+          => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
+     rule tagRestrict(_, .Map) => .Map
+
+     syntax Set ::= tagRestrict(RestrictTag, Set) [function]
+     rule tagRestrict(Tag:RestrictTag, S:Set)
+          => SetItem(RestrictBlock(Tag)) S
+          when Restrict in S
+     rule tagRestrict(_, S:Set) => S
+          when notBool (Restrict in S)
+
+     rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
+          => Tag
+
 endmodule
 

@@ -103,7 +103,7 @@ module C-COMMON-EXPR-EVAL
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(basedOn(base(Loc)),
+          => addProv(basedOn(base(Loc), getRestrictBlock(T)),
                addProv(fromArray(0,
                     byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
                Loc))

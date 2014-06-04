@@ -23,7 +23,7 @@ module C-TYPING-SYNTAX
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax K ::= DeclType(K, K) [avoid, strict(1)] 
+     syntax K ::= DeclType(K, K) [avoid, strict(1)]
 
      syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
@@ -77,9 +77,9 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= pointerType(Type)
           [klabel('pointerType)]
 
-     syntax SimpleType ::= arrayType(Type, CSize) 
+     syntax SimpleType ::= arrayType(Type, CSize)
           [klabel('arrayType)]
-     syntax SimpleType ::= incompleteArrayType(Type) 
+     syntax SimpleType ::= incompleteArrayType(Type)
           [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
@@ -95,14 +95,17 @@ module C-TYPING-SYNTAX
           [klabel('incompleteUnionType)]
 
      // Basic types
-     syntax SimpleType ::= "char" [function]
-     syntax SimpleType ::= "void" | "bool" | "short-int" | "int" 
-                         | "long-int" | "long-long-int"
-     syntax SimpleType ::= "float" | "double" | "long-double"
-     syntax SimpleType ::= "signed-char" | "unsigned-char"
-     syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" 
-                         | "unsigned-long-int" | "unsigned-long-long-int"
-     syntax SimpleType ::= "no-type"
+     // TODO(chathhorn): probably should create subsorts for
+     // Unsigned/SignedIntTYpe, etc.
+     syntax SimpleType ::= BaseType
+     syntax BaseType ::= "char" [function]
+     syntax BaseType ::= "void" | "bool" | "short-int" | "int"
+                        | "long-int" | "long-long-int"
+     syntax BaseType ::= "float" | "double" | "long-double"
+     syntax BaseType ::= "signed-char" | "unsigned-char"
+     syntax BaseType ::= "unsigned-short-int" | "unsigned-int"
+                        | "unsigned-long-int" | "unsigned-long-long-int"
+     syntax BaseType ::= "no-type"
 
      // These aren't real types, but are values that can appear in type
      // contexts.
@@ -116,8 +119,8 @@ module C-TYPING-SYNTAX
      syntax Type ::= getReturn(Type) [function]
 
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
-     syntax Type ::= correspondingUnsignedType(Type) [function] 
-     syntax Type ::= correspondingSignedType(Type) [function] 
+     syntax Type ::= correspondingUnsignedType(Type) [function]
+     syntax Type ::= correspondingSignedType(Type) [function]
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
@@ -135,6 +138,10 @@ module C-TYPING-SYNTAX
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
 
+     // Special restrict modifier tagged with a block num.
+     syntax Modifier ::= RestrictBlock(RestrictTag)
+     syntax RestrictTag ::= Int | CId | "global"
+
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
 
@@ -146,8 +153,8 @@ module C-TYPING-SYNTAX
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addModifiers(Set, Type) [function]
 
-     syntax Type ::= typedDeclaration(Type, CId) 
-          [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
+     syntax Type ::= typedDeclaration(Type, CId)
+          [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
      syntax K ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
@@ -164,6 +171,8 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
+     syntax Type ::= tagRestrict(RestrictTag, Type) [function]
+     syntax RestrictTag ::= getRestrictBlock(Type) [function]
 endmodule
 
 module C-TYPING
