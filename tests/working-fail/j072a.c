@@ -1,8 +1,8 @@
-_Noreturn void f(void){
-	return;
-}
+_Alignas(1) struct s;
+_Alignas(4) struct s {
+	int x;
+};
 
 int main(void){
-	f();
-	return 0;
+	struct s x;
 }

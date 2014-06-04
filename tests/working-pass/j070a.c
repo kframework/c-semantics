@@ -1,10 +1,9 @@
-int f(int * restrict p, int * restrict q) {
-	return 5;
+inline int f(void);
+
+int main(void) {
+	return 0;
 }
 
-int main(void){
-	int p = 5;
-	int q = 6;
-	f(&p, &q);
+inline int f(void){
 	return 0;
 }

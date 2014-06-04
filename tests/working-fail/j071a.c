@@ -1,5 +1,8 @@
-inline int f(void);
+_Noreturn void f(void){
+	return;
+}
 
-int main(void) {
+int main(void){
+	f();
 	return 0;
 }

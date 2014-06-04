@@ -1,9 +1,7 @@
-int f(int x[static 5]){
+int f(register void){
 	return 0;
 }
 
 int main(void){
-	int a[4] = {0};
-	f(a);
 	return 0;
 }

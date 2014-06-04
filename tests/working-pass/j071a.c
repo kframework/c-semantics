@@ -1,9 +1,7 @@
-inline int f(void);
-
-int main(void) {
-	return 0;
+_Noreturn void f(void){
+	while (1) {}
 }
 
-inline int f(void){
+int main(void){
 	return 0;
 }
