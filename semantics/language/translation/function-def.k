@@ -44,7 +44,7 @@ module C-FUNCTION-DEF
                +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
           when hasDupParams(T)
-     
+
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
 
@@ -64,7 +64,7 @@ module C-FUNCTION-DEF
      rule emptyToVoid(T:Type) => T
           when notBool isFunctionType(T)
                orBool (getParams(T) =/=List .List)
-     
+
      syntax KItem ::= processFunDef(CId, K)
 
      rule <k> processFunDef(X:CId, Blk:K)
@@ -106,9 +106,7 @@ module C-FUNCTION-DEF
           orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
-     rule areVoidOrComplete(ListItem(Head:Type) Tail:List)
-          => isVoidOrComplete(Head) andBool areVoidOrComplete(Tail)
-     rule areVoidOrComplete(.List) => true
+     rule areVoidOrComplete(L:List) => all(L, 'isVoidOrComplete) ==K true
 
      syntax KItem ::= checkMainDef(Type)
      rule checkMainDef(t(_, functionType(t(_, int),
@@ -144,7 +142,7 @@ module C-FUNCTION-DEF
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
           when T =/=K void
           [structural]
-          
+
      syntax Bool ::= "#isArgvType" "(" Type ")" [function]
      rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
@@ -154,13 +152,11 @@ module C-FUNCTION-DEF
           when T ==K char
 
      rule <k> initFunction(
-               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
-               Fun:KResult) 
+               tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
                => .
           ...</k>
-          <functions> M:Map => M[Fun <- Base] </functions>
-          when isFunctionType(T)
-               andBool (notBool Base in keys(M))
+          <functions> M:Map => M[Fun <- base(Loc)] </functions>
+          when isFunctionType(T) andBool (notBool base(Loc) in keys(M))
           [structural]
 
      syntax KItem ::= safeBody(CId, K) [function]
@@ -192,32 +188,36 @@ module C-FUNCTION-DEF
      rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
      rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
 
-     /*TODO: no associative matching in Java currently, 
-	we will do it once we have the associative matching.  
-	*/
+     // TODO: no associative matching in Java currently, we will do it once we
+     // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
      syntax Bool ::= cIdIsInList(CId,List) [function]
 
      rule cIdIsInList(_:CId, .List) => false
-     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List)) => true
-     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List)) => cIdIsInList(X, Tail) when X =/=K Y
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List))
+          => true
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List))
+          => cIdIsInList(X, Tail)
+          when X =/=K Y
 
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
 
      rule #hasDupIds'(.List) => false
      rule #hasDupIds'(
                ListItem(typedDeclaration(_, X:CId))
-               Tail:List
-          ) => true when cIdIsInList(X, Tail) ==K true
+               Tail:List)
+          => true
+          when cIdIsInList(X, Tail) ==K true
 
      rule #hasDupIds'(
                ListItem(typedDeclaration(_, X:CId))
-               Tail:List
-          ) => #hasDupIds'(Tail) when cIdIsInList(X, Tail) ==K false
+               Tail:List)
+          => #hasDupIds'(Tail)
+          when cIdIsInList(X, Tail) ==K false
 
      syntax KItem ::= dummyBind(List)
-     
+
      rule dummyBind(.List) => .
           [structural]
      rule dummyBind(ListItem(variadic)) => .

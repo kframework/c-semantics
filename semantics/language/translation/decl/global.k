@@ -11,9 +11,7 @@ module C-DECL-GLOBAL-SYNTAX
      // linkage, which must then be completed and allocated at the end of
      // processing the TU if a tentative def exists and the type is still
      // incomplete.
-     syntax K ::= declState(SymBase, Type, DeclState, Bool)
-
-     syntax K ::= allowInit(K)
+     syntax KItem ::= declState(SymBase, Type, DeclState, Bool)
 endmodule
 
 module C-DECL-GLOBAL
@@ -39,7 +37,7 @@ module C-DECL-GLOBAL
           => checkDeclType(T, K) 
           ~> declare''(T, K)
 
-     syntax K ::= "declare''" "(" Type "," K ")"
+     syntax KItem ::= "declare''" "(" Type "," K ")"
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K) 
                => declareInternalVariable(X, T, K)
           ...</k>
@@ -113,7 +111,7 @@ module C-DECL-GLOBAL
                andBool notBool validGlobalStorageClass(T)
           [structural] 
           
-     syntax K ::= checkDeclType(Type, K) [function]
+     syntax KItem ::= checkDeclType(Type, K) [function]
                | checkParams(Type) [function]
                | checkParam(Type) [function]
      // Checks if the type is complete if there's an initializer.
@@ -158,7 +156,7 @@ module C-DECL-GLOBAL
           when (K =/=K NoInit)
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
 
-     syntax K ::= declareExternalVariable(CId, Type, K)
+     syntax KItem ::= declareExternalVariable(CId, Type, K)
 
      syntax Bool ::= validStorageClass(Type) [function]
                    | "validStorageClass'" "(" Type "," Set ")" [function]
@@ -242,7 +240,7 @@ module C-DECL-GLOBAL
      
      // Naked function declarations are treated as though they were qualified
      // extern.
-     syntax K ::= isExtern(Type) [function]
+     syntax KItem ::= isExtern(Type) [function]
      rule isExtern(T:Type)
           => (isExternType(T) orBool isFunctionType(T))
                andBool notBool isStaticType(T)
@@ -264,7 +262,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, internal, 
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -296,7 +294,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -315,7 +313,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -346,7 +344,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -368,7 +366,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
-                    allowInit(figureInit(X, T, K)), 
+                    allowInit(figureInit(X, T, K)),
                     declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -406,7 +404,7 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax K ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," K ")"
+     syntax KItem ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," K ")"
           [strict(1)]
 
      // *** Incomplete ***
@@ -526,12 +524,7 @@ module C-DECL-GLOBAL
           when  K =/=K .K
           [structural]
 
-     syntax K ::= setInitializing(Bool)
-     rule <k> setInitializing(I:Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
-
-     syntax K ::= updateDecl(CId, Linkage, DeclState)
+     syntax KItem ::= updateDecl(CId, Linkage, DeclState)
      rule <k> updateDecl(X:CId, external, S':DeclState) 
                => updateLinkState(X, T', Base') 
           ...</k>
@@ -555,7 +548,7 @@ module C-DECL-GLOBAL
           ...</internals>
           [structural]
 
-     syntax K ::= updateLinkState(CId, Type, SymBase)
+     syntax KItem ::= updateLinkState(CId, Type, SymBase)
      // No previous decl, this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -623,7 +616,7 @@ module C-DECL-GLOBAL
      // might end up in memory if the address of the symbol is taken in
      // multiple initializers, but it should work out as long as the symbolic
      // linker locs are transparent enough.
-     syntax K ::= allocateDecl(CId)
+     syntax KItem ::= allocateDecl(CId)
      rule <k> allocateDecl(X:CId) 
                => allocObject(Base, T) 
           ...</k>
@@ -719,7 +712,7 @@ module C-DECL-GLOBAL
                orBool DS =/=K declared
           [structural]
 
-     syntax K ::= completeTagInIntDecls(CId, FieldInfo, Set)
+     syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, Set)
 		| midCompleteTagInIntDecls(CId,FieldInfo,CId)
 
      rule <k> ( . => midCompleteTagInIntDecls(Tag,Info,X)) 
@@ -784,19 +777,7 @@ module C-DECL-GLOBAL
           when S =/=K S2
           [structural]
 
-     syntax K ::= "allowInit'"
-     rule allowInit(K:K)
-          => setInitializing(true)
-          ~> K
-          ~> allowInit'
-          [structural]
-     rule R:KResult ~> allowInit'
-          => setInitializing(false) ~> R
-          [structural]
-     rule allowInit' => setInitializing(false)
-          [structural]
-
-     syntax K ::= giveCompositeType(CId, Type)
+     syntax KItem ::= giveCompositeType(CId, Type)
      rule <k> giveCompositeType(X:CId, T':Type)
                => giveType(X, compositeType(T, T'))
           ...</k>

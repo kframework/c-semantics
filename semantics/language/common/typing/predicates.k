@@ -1,9 +1,77 @@
 module C-TYPING-PREDICATES
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
+
+     // Equality modulo provenance, storage specifiers, and struct/union
+     // completeness. This is actually a looser notion of type equality than
+     // "areCompatible()".
+     // TODO(chathhorn): doesn't handle functions very gracefully.
+     rule T:Type ==Type T':Type => #typesEq(T, T') ==K true
+     rule T:Type =/=Type T':Type => #typesEq(T, T') =/=K true
+
+     syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
+     rule #typesEq(T:Type, T) => true
+     rule #typesEq(T:Type, T':Type) => true
+          when (getQualifiers(T) ==Set getQualifiers(T'))
+               andBool (simpleType(T) ==K simpleType(T'))
+     rule #typesEq(
+               typedDeclaration(T:Type, X:CId),
+               typedDeclaration(T':Type, X:CId))
+          => #typesEq(T, T')
+     rule #typesEq(
+               t(Mods:Set, pointerType(T:Type)),
+               t(Mods':Set, pointerType(T':Type)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, arrayType(T:Type, Len:Int)),
+               t(Mods':Set, arrayType(T':Type, Len)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, flexibleArrayType(T:Type)),
+               t(Mods':Set, flexibleArrayType(T':Type)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, structType(X:CId, _, _)),
+               t(Mods':Set, structType(X:CId, _, _)))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, structType(X:CId, _, _)),
+               t(Mods':Set, incompleteStructType(X:CId)))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, incompleteStructType(X:CId)),
+               t(Mods':Set, structType(X:CId, _, _)))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, unionType(X:CId, _, _)),
+               t(Mods':Set, unionType(X:CId, _, _)))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, unionType(X:CId, _, _)),
+               t(Mods':Set, incompleteUnionType(X:CId)))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, incompleteUnionType(X:CId)),
+               t(Mods':Set, unionType(X:CId, _, _)))
+          => true
+          when sameQualifiers(Mods, Mods')
 
      rule isBasicType(T:Type) => #isBasic(T) ==K true
 
@@ -66,7 +134,7 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= "#hasUnsignedInteger" "(" Type ")" [function]
                    | "#hasSignedInteger" "(" Type ")" [function]
-     
+
      rule #hasUnsignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasUnsignedInteger(T)
      rule #hasUnsignedInteger(t(_, T:SimpleType)) => true
@@ -130,14 +198,14 @@ module C-TYPING-PREDICATES
      // */
      rule hasArithmeticType(T:Type)
           => hasIntegerType(T) orBool hasFloatType(T)
-               
+
      rule isExternType(T:Type) => Extern in getStorageSpecifiers(T)
      rule isStaticType(T:Type) => Static in getStorageSpecifiers(T)
      rule isRegisterType(T:Type) => Register in getStorageSpecifiers(T)
-     rule isInitializerType(T:Type) => Initializer in getStorageSpecifiers(T)
 
      rule isConstType(T:Type) => Const in getQualifiers(T)
      rule isVolatileType(T:Type) => Volatile in getQualifiers(T)
+     rule isRestrictType(T:Type) => Restrict in getQualifiers(T)
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#hasChar" "(" Type ")" [function]
@@ -170,10 +238,10 @@ module C-TYPING-PREDICATES
 
      rule #isPointer(t(_, pointerType(_))) => true 
      rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T) 
-     
+
      rule #isBoolT(t(_, bool)) => true 
      rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T) 
-          
+
      rule #isArray(t(_, arrayType(_, _))) => true 
      rule #isArray(t(_, incompleteArrayType(_))) => true 
      rule #isArray(t(_, flexibleArrayType(_))) => true 
@@ -208,7 +276,7 @@ module C-TYPING-PREDICATES
      rule #isIncompleteUnion(t(_, incompleteUnionType(_))) => true 
      rule #isIncompleteUnion(typedDeclaration(T:Type, _))
           => #isIncompleteUnion(T) 
-          
+
      rule #isBitfield(t(_, bitfieldType(_, _))) => true 
      rule #isBitfield(typedDeclaration(T:Type, _)) => #isBitfield(T)
 
@@ -219,31 +287,4 @@ module C-TYPING-PREDICATES
           => true 
      rule #isFunctionPointer(typedDeclaration(T:Type, _))
           => #isFunctionPointer(T)
-
-     rule hasUnionMarker(T:Type) => #hasUnionMarker(T) ==K true
-
-     syntax Bool ::= #hasUnionMarker(Type) [function]
-		   | #midHasUnionMarker(K,Set,SimpleType) [function]
-
-     rule #midHasUnionMarker(fromUnion(_,_,_),_:Set,_:SimpleType) => true
-     rule #midHasUnionMarker(K:K,S:Set,ST:SimpleType) 
-	  => #hasUnionMarker(t(S,ST))
-	   when getKLabel(K) =/=KLabel 'fromUnion
-     rule #hasUnionMarker(t((SetItem(K:K) S:Set), ST:SimpleType)) 
-	  => #midHasUnionMarker(K,S,ST) 
-     rule #hasUnionMarker(t(.Set,_:SimpleType)) => false
-
-     rule isFromArray(T:Type) => #isFromArray(T) ==K true
-
-     syntax Bool ::= #isFromArray(Type) [function]
-		    | #midIsFromArray(K,Set,SimpleType) [function]
- 
-     rule #midIsFromArray(fromArray(_, _) , _:Set, _:SimpleType) => true
-     rule #midIsFromArray(K:K,S:Set,ST:SimpleType) 
-	  => #isFromArray(t(S,ST))
-	   when getKLabel(K) =/=KLabel 'fromArray
-     rule #isFromArray(t((SetItem(K:K) S:Set), ST:SimpleType)) 
-	   => #midIsFromArray(K,S,ST) 
-     rule #isFromArray(t(.Set,_:SimpleType)) => false
-
 endmodule

@@ -1,5 +1,7 @@
-int x;
-const int x;
+int f(a){
+	return a;
+}
+
 int main(void){
 	return 0;
 }

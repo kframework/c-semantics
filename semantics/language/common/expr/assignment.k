@@ -5,6 +5,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -17,7 +18,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      operand is sequenced after the value computations of the left and right
      operands. The evaluations of the operands are unsequenced.
      }*/
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{1}}{
      One of the following shall hold:112)
 
@@ -50,13 +51,13 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when hasArithmeticType(T') andBool hasArithmeticType(T)
                andBool ('_==Set_(getQualifiers(T) ,, .Set))
-               andBool (T' =/=K T)
+               andBool (T' =/=Type T)
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
-               andBool (T' =/=K T)
+               andBool (T' =/=Type T)
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
@@ -64,7 +65,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when areCompatible(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
@@ -72,13 +73,13 @@ module C-COMMON-EXPR-ASSIGNMENT
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when (isVoidType(T') orBool isVoidType(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
 
      rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
           when isPointerType(T')
                andBool isNullPointerConstant(V)
-               andBool (T' =/=K type(V))
+               andBool (T' =/=Type type(V))
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
@@ -119,10 +120,12 @@ module C-COMMON-EXPR-ASSIGNMENT
      // *** TODO(chathhorn) *** Does this only happen with unions? But if so,
      // why doesn't the standard just say that?
 
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-               => write(Loc, V, T) ~> tv(V, T)
+     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => write(Loc, V, T')
+          ~> transferProv(Loc, tv(V, T'))
+          when T' ==Type T
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
      Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the
      simple assignment expression \cinline{E1 = E1 op (E2)}, except that the
@@ -136,7 +139,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
-          
+
      rule E1:K *= E2:K => compoundAssignment('_*_, E1, E2)
           [structural]
      rule E1:K /= E2:K => compoundAssignment('_/_, E1, E2)

@@ -66,7 +66,6 @@ module C-COMPOUND-LITERAL
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <initializing> true </initializing>
           [structural]
-
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)
                ~> giveType(X, T)

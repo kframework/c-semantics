@@ -22,6 +22,8 @@ module C-BINDING
      imports C-TYPING-SYNTAX
      imports C-ERROR-SYNTAX
 
+     imports COMPAT-SYNTAX
+
      // Construct the function parameters. Takes three lists: (1) the formal
      // parameters (ids and types) from the function definition, (2) the
      // prototype from the function definition, if any (as a list of parameter
@@ -148,19 +150,6 @@ module C-BINDING
      syntax TypedValue ::= argPromote(K) [function]
      rule argPromote(tv(V:CValue, T:Type))
           => cast(argPromoteType(T), tv(V, T))
-     // TODO(chathhorn): don't understand the purpose of this.
-     //          when (T ==K float) 
-     //          orElseBool (hasIntegerType(t(Mods, T)) 
-     //               andBool ((rank(t(Mods, T)) <Int rank(t(.Set, int))) 
-     //                    orElseBool isBitfieldType(t(Mods, T))))
-     //  rule argPromote(tv(V:CValue, t(Mods:Set, T:SimpleType)))
-     //       => tv(V, t(Mods, T))
-     //       when  ((notBool hasIntegerType(t(Mods, T))
-     //                 andBool (notBool T ==K float)
-     //                 andBool (notBool isArrayType(t(Mods, T)))) 
-     //            orBool (T ==K double)
-     //            orBool (T ==K long-double))
-     //            orElseBool (rank(t(Mods, T)) >=Int rank(t(.Set, int)))
 
      // "integer promotions" are used when doing arithmetic conversions, and
      // for unary ~, +, - "usual arithmetic conversions" are used when doing
@@ -182,12 +171,9 @@ module C-BINDING
                andBool notBool hasFloatType(T)
 
      // "are argument-promoted".
-     rule areArgPromoted(ListItem(T:Type) L:List)
-          => isArgPromoted(T) andBool areArgPromoted(L)
-     rule areArgPromoted(.List) => true
+     rule areArgPromoted(L:List) => all(L, 'isArgPromoted) ==K true
      
-     rule isArgPromoted(T:Type) =>
-          areCompatible(T, argPromoteType(T))
+     rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))
 
 endmodule
 
