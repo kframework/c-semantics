@@ -69,7 +69,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     syntax Bool ::= K "in" List [function]
+     //TODO: make sure this is in current including List syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
@@ -130,10 +130,10 @@ module COMPAT
                     andBool ordChar(C) <=Int ordChar("z"))
           
      // this should probably go in the k prelude
-     rule K:K in (ListItem(K:K) _:List) => true
-     rule _:K in .List => false
-     rule K:K in (ListItem(K':K) L:List) => K:K in L:List
-          when K:K =/=K K':K
+     //rule K:K in (ListItem(K:K) _:List) => true
+     //rule _:K in .List => false
+     //rule K:K in (ListItem(K':K) L:List) => K:K in L:List
+         // when K:K =/=K K':K
 
      //TODO Support ==Bag: Might need to support multiset equivalence
      syntax Bag ::= removeBagItem(Bag, K) [function]

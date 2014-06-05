@@ -1,5 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax KItem ::= loadMergeObj(K, K) [function]
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -67,20 +67,20 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(.List) => .K
           [structural]
      
-     syntax KItem ::= addBuiltins(Map)
-		    | midOfAddBuiltins(CId,Type)
+     syntax KItem ::= addBuiltin(Map)
+		    | midOfAddBuiltin(CId,Type)
           
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
 
-     rule <k> (. => midOfAddBuiltins(Identifier(B),T))
-		~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
+     rule <k> (. => midOfAddBuiltin(Identifier(B),T))
+		~> addBuiltin((B:String |-> T:Type => .Map) _) ...</k>
 
-     rule addBuiltins(.Map) => .K
+     rule addBuiltin(.Map) => .K
   
-     rule <k> (midOfAddBuiltins(B:CId,T:Type) => declare(
+     rule <k> (midOfAddBuiltin(B:CId,T:Type) => declare(
                typedDeclaration(T, B), 
                initializer(initFunction(
                     &(B),
@@ -90,7 +90,7 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           when notBool B in keys(Defs)
           
-     rule <k> (midOfAddBuiltins(B:CId,_:Type) => . ) ...</k>
+     rule <k> (midOfAddBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           when (B in keys(Defs))
@@ -101,14 +101,14 @@ module C-TRANSLATION-INIT
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.
 
-/*TODO: deal with bag bugs, cannot merge two bags
-     rule mergeObj(B:Bag, .Bag) => B
-     rule mergeObj(.Bag, B:Bag) => B
+     rule loadMergeObj(bag2K(B:Bag), bag2K(.Bag)) => loadObj(bag2K(B))
+     rule loadMergeObj(bag2K(.Bag), bag2K(B:Bag)) => loadObj(bag2K(B))
 
      // TODO(chathhorn): Check compatibility of decls instead of dumbly
      // merging.
-     rule mergeObj(
-          (<global>
+     /*TODO: java backend cannot merge two Bag variables
+     rule loadMergeObj(
+          bag2K(<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
 
@@ -126,7 +126,7 @@ module C-TRANSLATION-INIT
 
                <translation-units> TUs1:Bag </translation-units>
           </global>),
-          (<global>
+	  bag2K(<global>
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
 
@@ -145,6 +145,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs2:Bag </translation-units>
           </global>))
           =>
+          loadObj(bag2K(
           <global>
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
@@ -162,7 +163,7 @@ module C-TRANSLATION-INIT
                <main-tu> Main1 Main2 </main-tu>
 
                <translation-units> TUs1 TUs2 </translation-units>
-          </global>
+          </global>))
 */
      syntax KItem ::= "printSuccess"
      rule printSuccess => #write(#stdout, "Translation successful!\n")

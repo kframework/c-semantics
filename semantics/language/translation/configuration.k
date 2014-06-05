@@ -62,9 +62,9 @@ module C-CONFIGURATION
      <effective-types> .Map </effective-types>
 
      <k color="green" multiplicity="?"> 
-          loadObj(mergeObj(
+          loadMergeObj(
                unwrapObj($OBJ1:Bag), 
-               unwrapObj($OBJ2:Bag)))
+               unwrapObj($OBJ2:Bag))
           ~> $PGM:K 
           ~> link
           ~> cleanup
