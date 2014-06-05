@@ -32,16 +32,19 @@ module C-EXPR-BITWISE
           when isPromoted(T1) andBool isPromoted(T2)
           [structural]
 
-     rule tv(E1:CValue, T:Type) & tv(E2:CValue, T:Type) => tv(symVal, T)
+     rule tv(E1:CValue, T:Type) & tv(E2:CValue, T':Type) => tv(symVal, T)
           when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(E1:CValue, T:Type) ^ tv(E2:CValue, T:Type) => tv(symVal, T)
+     rule tv(E1:CValue, T:Type) ^ tv(E2:CValue, T':Type) => tv(symVal, T)
           when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
+               andBool T ==Type T'
           [structural]
-     rule tv(E1:CValue, T:Type) | tv(E2:CValue, T:Type) => tv(symVal, T)
+     rule tv(E1:CValue, T:Type) | tv(E2:CValue, T':Type) => tv(symVal, T)
           when ((E1 ==K symVal) orBool (E2 ==K symVal))
                andBool isPromoted(T)
+               andBool T ==Type T'
           [structural]
 endmodule

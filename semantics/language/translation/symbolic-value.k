@@ -29,9 +29,19 @@ module C-SYMBOLIC-VALUE
      // common.
      rule symVal +bytes _:Int => symVal
 
+     rule base(symVal) => symVal
+     rule offset(symVal) => symVal
+     rule prov(symVal) => .Set
+
+     rule addProv(_:Set, symVal) => symVal
+     rule addProv(_:Provenance, symVal) => symVal
+     rule stripProv(symVal) => symVal
+
      rule write(symVal, _, T:Type) => .
           when notBool isConstType(T)
-               orBool isInitializerType(T)
+          [structural]
+     rule <k> write(symVal, _, _) => . ...</k>
+          <initializing> true </initializing>
           [structural]
 
      rule bitSizeofType(T:Type) => symVal
@@ -46,7 +56,7 @@ module C-SYMBOLIC-VALUE
      rule write-specific(Loc:SymLoc, symVal, T:Type)
           => writeBytes(Loc, dataList(ListItem(symVal)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
           [structural]
 
      //rule symVal => tv(symVal, t(.Set, no-type))

@@ -2,12 +2,14 @@ module C-TYPING-INTERPRETATION
      imports C-TYPING-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
 
-     imports C-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-BITSIZE-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+
      imports COMPAT-SYNTAX
 
      // Rules that use specifier should be careful to use extractActualType if
@@ -35,7 +37,6 @@ module C-TYPING-INTERPRETATION
      syntax KLabel ::= makeArrayType(CSize)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
      
-     // FIXME: throwing away specifier.
      rule ArrayType(T:Type, tv(N:Int, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
@@ -47,6 +48,14 @@ module C-TYPING-INTERPRETATION
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
+     rule (. => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
+          ~> ArrayType(_, tv(_:Float, _), _)
+          [structural]
+     rule (. => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
+          ~> ArrayType(_, tv(Len:Int, _), _)
+          when Len <=Int 0
+          [structural]
+     
      rule PointerType(Specifier(list(Quals:List)), T:Type)
           => pushTypeDown(T, makePointerType(listToSet(Quals)))
           [structural]

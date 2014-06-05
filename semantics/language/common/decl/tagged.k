@@ -14,6 +14,7 @@ module C-DECL-TAGGED
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -26,9 +27,15 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           when L =/=List .List
           [structural]
+     rule (. => UNDEF("CDT1", "Structs cannot be empty.", "6.7.2.1") )
+          ~> StructDef(_, krlist(.List))
+          [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           when L =/=List .List
+          [structural]
+     rule (. => UNDEF("CDT2", "Unions cannot be empty.", "6.7.2.1") )
+          ~> UnionDef(_, krlist(.List))
           [structural]
 
      rule makeStructFieldInfo(L:List) 

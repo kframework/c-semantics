@@ -103,7 +103,8 @@ module C-CONFIGURATION
                UnknownCabsLoc
           </curr-program-loc>
 
-          // Toggle to allow writes for initializers.
+          // Toggle to allow writes and other special treatment for
+          // initializers.
           <initializing> false </initializing>
 
           <control-details> // TODO(chathhorn): dumb name

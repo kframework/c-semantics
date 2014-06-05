@@ -967,10 +967,7 @@ decl_spec_list:                         /* ISO 6.7 */
 |   STATIC  decl_spec_list_opt          { SpecStorage STATIC :: $2, $1 }
 |   AUTO   decl_spec_list_opt           { SpecStorage AUTO :: $2, $1 }
 |   REGISTER decl_spec_list_opt         { SpecStorage REGISTER :: $2, $1}
-|   THREAD_LOCAL decl_spec_list_opt     { 
-	parse_warn "Encountered _Thread_local type.  These are not yet supported, and are currently ignored.";
-	SpecStorage THREAD_LOCAL :: $2, $1
-}
+|   THREAD_LOCAL decl_spec_list_opt     { SpecStorage THREAD_LOCAL :: $2, $1 }
                                         /* ISO 6.7.2 */
 |   type_spec decl_spec_list_opt_no_named { SpecType (fst $1) :: $2, snd $1 }
                                         /* ISO 6.7.4 */
@@ -1054,10 +1051,7 @@ type_spec:   /* ISO 6.7.2 */
 	Timaginary, $1 
 }
 /* shift reduce conflict with other ATOMIC */
-|   ATOMIC LPAREN type_name RPAREN {
-	parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
-	let b, d = $3 in Tatomic (b, d), $1
-	}
+|   ATOMIC LPAREN type_name RPAREN { let b, d = $3 in Tatomic (b, d), $1 }
 ;
 /* parse_error "Struct declaration lists must contain at least one element."; raise Parsing.Parse_error */
 struct_decl_list: /* (* ISO 6.7.2. Except that we allow empty structs. We 
@@ -1310,9 +1304,7 @@ cvspec:
     CONST                               { SpecCV(CV_CONST), $1 }
 |   RESTRICT                            { SpecCV(CV_RESTRICT), $1 }
 |   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
-|   ATOMIC                              { 
-parse_warn "Encountered _Atomic type.  These are not yet supported, and are currently ignored.";
-SpecCV(CV_ATOMIC), $1 }
+|   ATOMIC                              { SpecCV(CV_ATOMIC), $1 }
 ;
 
 /*** GCC attributes ***/

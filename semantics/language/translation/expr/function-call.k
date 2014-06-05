@@ -36,7 +36,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule bindParam(_, T:Type, V:TypedValue)
-          => Computation(allowWrite(lv(symVal, T)) := V)
+          => allowInit(Computation(lv(symVal, T) := V))
      rule bindParam(_) => .
 
 endmodule

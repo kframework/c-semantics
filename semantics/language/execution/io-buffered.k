@@ -28,19 +28,33 @@ module C-IO-BUFFERED
      syntax KItem ::= bwrite(SymLoc, K)
 
      syntax KItem ::=  writeBytes(SymLoc, List)
-     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
-          => checkWrite(Loc, T)  
-          // TODO(chathhorn): this is pretty inefficient -- setEff does nothing
-          // if the object has a declared type and checkEff is only meaningful
-          // in the case of a declared type being present. Also it'd be nice to
-          // combine the checks.
-          ~> setEffectiveType(Loc, T)
-          ~> checkEffectiveType(T, getEffectiveType(Loc))
-          ~> writeBytes(Loc, Bytes)
-          when notBool isInitializerType(T)
-     rule writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
-          => writeBytes(Loc, Bytes)
-          when isInitializerType(T)
+     rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
+               => checkWrite(Loc, T)  
+               // TODO(chathhorn): this is pretty inefficient -- setEff does
+               // nothing if the object has a declared type and checkEff is
+               // only meaningful in the case of a declared type being present.
+               // Also it'd be nice to combine the checks.
+               ~> setEffectiveType(Loc, T)
+               ~> checkEffectiveType(T, getEffectiveType(Loc))
+               ~> setModified(Loc, T)
+               ~> writeBytes(Loc, Bytes)
+          ...</k>
+          <initializing> false </initializing>
+     rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
+               => writeBytes(Loc, Bytes)
+          ...</k>
+          <initializing> true </initializing>
+
+     syntax KItem ::= setModified(SymLoc, Type)
+     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+          <modified>...
+               Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T)))
+          ...</modified>
+     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+          <modified>
+               Modified:Map (.Map => Loc |-> byteSizeofType(T))
+          </modified>
+          when notBool Loc in keys(Modified)
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -107,7 +121,7 @@ module C-IO-BUFFERED
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
           [structural]
-          
+
      rule <buffer>
                (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
@@ -137,7 +151,7 @@ module C-IO-BUFFERED
           when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
-          
+
      // loc, size in bytes, aux list
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List, T:Type)
@@ -146,12 +160,12 @@ module C-IO-BUFFERED
           when Size >Int 0
           [structural]
      rule readBytes-aux(_, 0, Aux:List, _) => dataList(bvalues(Aux)) 
-          [structural] 
+          [structural]
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, 
                (Aux:List => Aux ListItem(tv(V, T))), _)
-          [structural]        
-     
+          [structural]
+
      syntax List ::= bvalues(List) [function]
      rule bvalues(ListItem(tv(K:K, _)) L:List) => ListItem(K) bvalues(L)
      rule bvalues(.List) => .List
@@ -159,7 +173,7 @@ module C-IO-BUFFERED
      syntax Error ::= "errorReadOutOfBounds"
                     | "errorUnseqEffects"
                     | "errorNonVolatileLVal"
-     
+
      syntax KItem ::= readByte(SymLoc, Type)
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                // TODO(chathhorn): do we really need to check this stuff every
@@ -233,7 +247,7 @@ module C-IO-BUFFERED
      rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
           <linkings>... LinkBase |-> Base:SymBase ...</linkings>
           [structural]
-          
+
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc) 
@@ -265,7 +279,7 @@ module C-IO-BUFFERED
                ~> deleteSizedObject(Old, OldLen)
           ...</k>
           [structural]
-          
+
      syntax KItem ::= copyBytes(Int, SymBase, SymBase)
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
@@ -289,7 +303,7 @@ module C-IO-BUFFERED
                Old |-> object(T:Type, _, _)
                New |-> object((_ => T), _, _)
           ...</mem>
-          
+
      rule <k> deleteSizedObject(Base:SymBase, Len:Int) => . 
           ...</k>
           <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
@@ -297,7 +311,7 @@ module C-IO-BUFFERED
           // buffer, not just empty
           <buffer> .List </buffer>
           [structural] 
-     
+
      rule <k> deleteObject(Base:SymBase) => .K ...</k>
           <mem>... Base |-> object(_, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
@@ -325,10 +339,10 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
-     rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .
+     rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T)
+          when notBool isNoType(T) orBool hasCharType(T')
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
           ...</k>
@@ -336,16 +350,18 @@ module C-IO-BUFFERED
           <effective-types>...
                .Map => loc(Base, Offset) |-> T'
           ...</effective-types>
-          when isNoType(T)
+          when isNoType(T) andBool notBool hasCharType(T')
           [structural]
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L:Type, Eff:Type) => .
-          when #effectivelyCompat(L, Eff) ==K true
+          when (#effectivelyCompat(L, Eff) ==K true)
+               orBool isNoType(Eff)
           [structural]
      rule (. => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
-          when #effectivelyCompat(L, Eff) =/=K true
+          when (#effectivelyCompat(L, Eff) =/=K true)
+               andBool notBool isNoType(Eff)
           [structural]
 
      // An  object shall have its stored value accessed only by an lvalue
@@ -365,8 +381,6 @@ module C-IO-BUFFERED
           when areCompatible(correspondingUnsignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
-          // TODO(chathhorn): some sort of ==Type? Can't really compare types
-          // straight up because of special modifiers.
      rule #effectivelyCompat(L:Type, Eff:Type) => true
           when areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
@@ -388,8 +402,7 @@ module C-IO-BUFFERED
      // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
                t(Mods:Set, unionType(X:CId, Sz:Int, fieldInfo(Decls:List, Types:Map, Offs:Map))))
           => effectivelyCompatWithUnion(L, values(Types))
-          when notBool (areCompatible(
-                         stripQualifiers(L),
+          when notBool (areCompatible(stripQualifiers(L),
                          stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
@@ -421,13 +434,12 @@ module C-IO-BUFFERED
           when Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, SI:Int, fieldInfo(
-	       F1List:List (ListItem(typedDeclaration(_, F1:CId))),
+               F1List:List (ListItem(typedDeclaration(_, F1:CId))),
                F2Map:Map (F1 |-> T:Type),
                F3Map:Map (F1 |-> Offset1:Int)
           ))), Offset:Int)
-	=>
-	  getTypeAtOffset(t(Mods, structType(SCId, SI, fieldInfo(
-	       F1List,
+          => getTypeAtOffset(t(Mods, structType(SCId, SI, fieldInfo(
+               F1List,
                F2Map (F1 |-> T),
                F3Map (F1 |-> Offset1)
           ))), Offset)

@@ -16,12 +16,14 @@ module C-IO-DIRECT
 
      // In the static semantics, we only allow writing to memory during
      // initialization (of statics).
-     rule writeBytes(Loc:SymLoc, D:DataList, T:Type) => writeBytes(Loc, D)
-          when isInitializerType(T)
+     rule <k> writeBytes(Loc:SymLoc, D:DataList, _)
+               => writeBytes(Loc, D)
+          ...</k>
+          <initializing> true </initializing>
           [structural]
 
-     rule writeBytes(_, _, T:Type) => .
-          when notBool isInitializerType(T)
+     rule <k> writeBytes(_, _, _) => . ...</k>
+          <initializing> false </initializing>
           [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
@@ -39,7 +41,7 @@ module C-IO-DIRECT
           when (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
 
-     rule (. => CVUB("IO1", "Non-constant initializer.", "6.6"))
+     rule (. => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
           when isSymbolic(V)
           [structural]

@@ -1,15 +1,15 @@
 module C-MEMORY-WRITING-SYNTAX
      // location, value
-     syntax KItem ::= write(SymLoc, CValue, Type)
+     syntax K ::= write(SymLoc, CValue, Type)
 
      // Either buffered or unbuffered depending on whether we're executing.
-     syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2)]
+     syntax K ::= writeBytes(SymLoc, K, Type) [strict(2)]
 
      syntax List ::= explodeToBits(List) [function]
 
      // TODO(chathhorn): For trans/symbolic-value.k
      syntax DataList ::= splitBytes(Value) [function]
-     syntax KItem ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
+     syntax K ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
 endmodule
 
 module C-MEMORY-WRITING
@@ -27,87 +27,70 @@ module C-MEMORY-WRITING
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     
+
      // Write thread-local or auto.
-     rule write(Loc:SymLoc, V:CValue, T:Type)
-          => write-specific(Loc, V, T)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> false </initializing>
           when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
+               andBool notBool isConstType(T)
+          [structural]
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> true </initializing>
+          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
           [structural]
      // Write global, shared data, or "allocated" duration.
-     rule write(Loc:SymLoc, V:CValue, T:Type)
-          => write-specific(Loc, V, T)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> false </initializing>
           when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
-               andBool (notBool isConstType(T) orBool isInitializerType(T))
-               andBool (notBool isStringLoc(Loc) orBool isInitializerType(T))
+               andBool notBool isConstType(T)
+               andBool notBool isStringLoc(Loc)
           [ndtrans]
-     rule (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
-          ~> write(_, _, T:Type)
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+               => write-specific(Loc, V, T)
+          ...</k>
+          <initializing> true </initializing>
+          when (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
+          [ndtrans]
+     rule <k> (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
+               ~> write(_, _, T:Type)
+          ...</k>
+          <initializing> false </initializing>
           when isConstType(T)
-               andBool notBool isInitializerType(T)
           [structural]
-     rule (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
-          ~> write(Loc:SymLoc, _, T:Type)
+     rule <k> (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
+               ~> write(Loc:SymLoc, _, _)
+          ...</k>
+          <initializing> false </initializing>
           when isStringLoc(Loc)
-               andBool notBool isInitializerType(T)
           [structural]
-
-     syntax KItem ::= midWriteSpecific(Modifier,SymLoc,CValue,Set,Set,SimpleType)
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
-          => writeBytes(Loc, splitBytes(tv(V, T)), T)
+          => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
-               andBool (hasUnionMarker(T) =/=K true)
+               andBool (notBool hasUnionMarker(Loc))
+          [structural]
+     rule (. => allowInit(makeUnknown(UnionLoc, F, Fields)))
+          ~> write-specific(
+               loc(_, _, (SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
+                    => .Set) _), _, _)
           [structural]
 
-     rule write-specific(Loc:SymLoc, V:CValue,
-               t(SetItem(M:Modifier) S:Set, ST:SimpleType))
-	  => midWriteSpecific(M,Loc,V,S,.Set, ST)
-	  when (bitSizeofType(t(SetItem(M) S,ST)) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(t(SetItem(M) S,ST)) ==K true)
-               orBool (hasUnionMarker(t(SetItem(M) S,ST)) ==K true)
-	  [structural]
-
-     rule midWriteSpecific(M:Modifier,Loc:SymLoc,
-		V:CValue,SetItem(M':Modifier) S:Set,NoUnionSet:Set
-		,ST:SimpleType) => midWriteSpecific(M', Loc,
-                V,S,SetItem(M) NoUnionSet,ST)
-	  when hasUnionMarker(t(SetItem(M),ST)) =/=K true
-	  [structural]
-
-     rule (. => makeUnknown(UnionLoc, F, Fields)) 
-	   ~> midWriteSpecific((fromUnion(UnionLoc:SymLoc, 
-		F:CId, Fields:FieldInfo) => M),_:SymLoc,
-		_:CValue,(SetItem(M:Modifier) => .Set) _:Set,
-		_:Set,_:SimpleType)
-	  [structural]
-
-     rule midWriteSpecific(fromUnion(UnionLoc:SymLoc, 
-		F:CId, Fields:FieldInfo),Loc:SymLoc,
-		V:CValue,.Set,NoUnionSet:Set,ST:SimpleType)
-		=> (makeUnknown(UnionLoc, F, Fields)
-		   ~> write-specific(Loc, V, t(NoUnionSet,ST)))
-	  [structural]
-
-     rule midWriteSpecific(M:Modifier,Loc:SymLoc,
-		V:CValue,.Set,NoUnionSet:Set
-		,ST:SimpleType) => 
-		write-specific(Loc, V, t(SetItem(M) NoUnionSet,ST))
-	  when hasUnionMarker(t(SetItem(M),ST)) =/=K true
-	  [structural]
-          
-     syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-
+     syntax K ::= makeUnknown(SymLoc, CId, FieldInfo)
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
                F |-> T:Type _, _))
-          => writeBytes(Loc +bytes byteSizeofType(T),
+          => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T), 
-                    piece(unknown, cfg:bitsPerByte))), 
-                    initializerType(T))
+                    piece(unknown, cfg:bitsPerByte))), T)
           when maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
      rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .
@@ -117,16 +100,16 @@ module C-MEMORY-WRITING
      rule write-specific(Loc:SymLoc,
                agg(ListItem(V:CValue) ListItem(V':CValue) L:List),
                T:Type)
-          => writeBytes(Loc, dataList(ListItem(V) ListItem(V') L), T)
+          => writeBytes(stripProv(Loc), dataList(ListItem(V) ListItem(V') L), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool notBool isBitfieldType(T)
           [structural]
-          
+
      syntax Int ::= justBits(Int, Type) [function]
      syntax Int ::= "justBits-aux" "(" Int "," Type ")" [function]
      rule justBits(I:Int, _) => I
           when I >=Int 0 
-          
+
      rule justBits(I:Int, T:Type) => justBits-aux(I, T)
           when I <Int 0 
      rule justBits-aux(I:Int, T:Type)
@@ -136,32 +119,32 @@ module C-MEMORY-WRITING
      rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int))) 
           => N +Int (1 <<Int (Len -Int 1))
           when Len >Int 0 andBool N >=Int 0
-     
+
      rule write-specific(Loc:SymLoc, I:Int, T:Type)
           => write-specific(Loc, justBits(I, T), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
                orBool isBitfieldType(T))
                andBool (I <Int 0)
           [structural]
-     
+
      rule write-specific(Loc:SymLoc, V:Int, T:Type)
-          => writeBytes(Loc,
+          => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytes(Loc, byteSizeofType(T), T)), T)
+                    readBytes(stripProv(Loc), byteSizeofType(T), T)), T)
           when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(T))
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
                andBool (V >=Int 0)
           [structural]
-          
-     syntax KItem ::= calculateNewBytes(Bits, K)
+
+     syntax K ::= calculateNewBytes(Bits, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)] 
-          
+
      rule calculateNewBytes(N:Bits, dataList(L:List)) 
           => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
                dataList(explodeToBits(L)), .List)
           [structural]
-     
-     syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
+
+     syntax K ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
      rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List), 
                dataList(ListItem(piece(_, 1)) L':List), Result:List) 
           => calculateNewBytes-aux(dataList(L), 
@@ -170,12 +153,12 @@ module C-MEMORY-WRITING
      rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List) 
           => joinBitsToBytes(Result L) 
           [structural]
-     
-     syntax KItem ::= joinBitsToBytes(List) [function]
+
+     syntax K ::= joinBitsToBytes(List) [function]
      rule joinBitsToBytes(L:List)
           => joinBitsToBytes-aux(dataList(L), dataList(.List))
 
-     syntax KItem ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
+     syntax K ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
      rule joinBitsToBytes-aux(
                dataList(ListItem(piece(N:Bits, Len:Int)) ListItem(piece(M:Bits, 1)) L:List),
                dataList(R:List))
