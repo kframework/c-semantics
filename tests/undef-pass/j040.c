@@ -18,6 +18,6 @@ int h(x)
 
 int main(void) {
       int x = 0;
-      return f(1) + f(&x) + h(3.3);
+      return f(1) + g(&x) + h(3.3);
 }
 
