@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 int main(void){
       int* p;
       {
@@ -12,7 +14,7 @@ int main(void){
       }
       y;
 
-      int *p = malloc(sizeof(int));
+      p = malloc(sizeof(int));
       *p = 5;
       free(p);
 
