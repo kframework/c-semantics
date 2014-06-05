@@ -23,6 +23,7 @@ module COMPAT-SYNTAX
 		   | K "in" MSet [function]
 
      syntax MSet ::= toMSet(List) [function]
+     syntax MSet ::= removeMSetItem(MSet,K) [function]
 
      /*TODO: Bag does not work in Java backend
 	syntax Bool ::= Bag "==Bag" Bag [function]
@@ -179,7 +180,6 @@ module COMPAT
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
 */
-     syntax MSet ::= removeMSetItem(MSet,K)
      
      rule removeMSetItem(.MSet,K:K) => .MSet
      rule removeMSetItem(MSetItem(K:K) M:MSet,K) => M

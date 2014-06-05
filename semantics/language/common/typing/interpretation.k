@@ -17,14 +17,8 @@ module C-TYPING-INTERPRETATION
      syntax Type ::= extractActualType(Type) [function] 
 
      syntax KItem ::= BitFieldType(K, K) [strict] 
-     
-     syntax KItem ::= toBagOfType(List,Bag) [function]
 
-     rule toBagOfType(.List,B:Bag) => canonicalizeType(B)
-     rule toBagOfType(ListItem(K:K) L:List,B:Bag)
-		=> toBagOfType(L,BagItem(K) B)
-
-     rule Specifier(list(L:List)) => toBagOfType(L,.Bag)
+     rule Specifier(list(L:List)) => toMSet(L)
           [structural]
           
      rule BitFieldType(T:Type, tv(N:CSize, _))

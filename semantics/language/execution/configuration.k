@@ -58,7 +58,7 @@ module C-CONFIGURATION
      <thread-info color="yellow">
           <thread-status color="yellow"> .Map </thread-status>
           <mutexes color="yellow"> .Map </mutexes>
-          <glocks color="yellow"> .Bag </glocks>
+          <glocks color="yellow"> .MSet </glocks>
      </thread-info>
      <compound-lit-map> .Map </compound-lit-map>
      <threads color="yellow">
@@ -81,7 +81,7 @@ module C-CONFIGURATION
                <thread-local>
                     // stack of "control" cells
                     <call-stack color="violet"> .List </call-stack>
-                    <locks> .Bag </locks>
+                    <locks> .MSet </locks>
                     <control>
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
@@ -168,7 +168,7 @@ module C-CONFIGURATION
                                    .List
                               </loop-stack>
                               <locs-written color="lightgray">
-                                   .Bag
+                                   .MSet
                               </locs-written>
                               // used for typing expressions
                               <type multiplicity="?" color="cyan"> .K </type>
