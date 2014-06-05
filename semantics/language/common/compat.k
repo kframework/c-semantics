@@ -30,6 +30,8 @@ module COMPAT-SYNTAX
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 	*/
 
+     syntax Bool ::= isEmptyBag(Bag) [function]
+
      //Do not need this and java backend does not support Bag function 
      //syntax Bag ::= toBag(List) [function]
 
@@ -180,7 +182,8 @@ module COMPAT
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
 */
-     
+     rule isEmptyBag(.Bag) => true    
+
      rule removeMSetItem(.MSet,K:K) => .MSet
      rule removeMSetItem(MSetItem(K:K) M:MSet,K) => M
      rule removeMSetItem(MSetItem(A:K) M:MSet,A':K) 

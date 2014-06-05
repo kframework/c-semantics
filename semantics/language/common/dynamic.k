@@ -112,7 +112,7 @@ module C-DYNAMIC
 
      rule <k> loadObj(bag2K(<global> G:Bag </global>)) => .K ...</k>
           <global> (_:Bag => G) </global>
-          when G =/=Bag .Bag
+          when (isEmptyBag(G) =/=K true)
           [structural]
 
      rule loadObj(bag2K(.Bag)) => .K
