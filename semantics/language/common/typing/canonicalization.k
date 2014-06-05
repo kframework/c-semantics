@@ -1,5 +1,5 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
-     syntax KItem ::= canonicalizeType(Bag)
+     syntax KItem ::= canonicalizeType(MSet)
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -12,21 +12,21 @@ module C-TYPING-CANONICALIZATION
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
      
-     syntax KItem ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
+     syntax KItem ::= "canonicalizeType-aux" "(" MSet "," K "," MSet "," MSet "," MSet ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
 
-     rule canonicalizeType(B:Bag)
-          => canonicalizeType-aux(B, .K, .Bag, .Bag, .Bag)
+     rule canonicalizeType(M:MSet)
+          => canonicalizeType-aux(M, .K, .MSet, .MSet, .MSet)
           [structural]
 
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux(_:Bag BagItem(TAtomic(K1:K, K2:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:MSet MSetItem(TAtomic(K1:K, K2:K)), _, _, _, _) 
           [structural]
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux(_:Bag BagItem(AlignasType(K1:K, K2:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:MSet MSetItem(AlignasType(K1:K, K2:K)), _, _, _, _) 
           [structural]
      rule (. => typeof(K))
-          ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:MSet MSetItem(AlignasExpression(K:K)), _, _, _, _) 
           [structural]
           
      syntax KItem ::= atomic(Type)
@@ -34,23 +34,23 @@ module C-TYPING-CANONICALIZATION
      
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(atomic(T)))), _, _) 
+               (_:MSet (MSetItem(TAtomic(_, _)) => .MSet)), _, 
+               (_ (.MSet => MSetItem(atomic(T)))), _, _) 
           [structural]
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T)))), _, _) 
+               (_:MSet (MSetItem(AlignasType(_, _)) => .MSet)), _, 
+               (_ (.MSet => MSetItem(alignas(T)))), _, _) 
           [structural]
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T)))), _, _) 
+               (_:MSet (MSetItem(AlignasExpression(_)) => .MSet)), _, 
+               (_ (.MSet => MSetItem(alignas(T)))), _, _) 
           [structural]
           
      // specifier, modifier, storage
-     rule canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, 
-               (_ (.Bag => BagItem(T))), _, _)
+     rule canonicalizeType-aux((_:MSet (MSetItem(T:K) => .MSet)), _, 
+               (_ (.MSet => MSetItem(T))), _, _)
           when false
                orBool (T ==K Void)
                orBool (T ==K Bool)
@@ -74,8 +74,8 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(T) ==KLabel 'Attribute)
           [structural]
 
-     rule canonicalizeType-aux(_:Bag (BagItem(T:K) => .Bag), _, _, _, 
-               (_ (.Bag => BagItem(T))))
+     rule canonicalizeType-aux(_:MSet (MSetItem(T:K) => .MSet), _, _, _, 
+               (_ (.MSet => MSetItem(T))))
           when (T ==K Extern)
                orBool (T ==K Static)
                orBool (T ==K Const)
@@ -87,9 +87,9 @@ module C-TYPING-CANONICALIZATION
                orBool (T ==K ThreadLocal)
           [structural]
           
-     rule canonicalizeType-aux(.Bag, 
+     rule canonicalizeType-aux(.MSet, 
                t((.Set => SetItem(Q)) _:Set, _),
-               .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
+               .MSet, .MSet, (_ (MSetItem(Q:K) => .MSet)))
           when (Q ==K Extern)
                orBool (Q ==K Static)
                orBool (Q ==K Volatile)
@@ -99,8 +99,8 @@ module C-TYPING-CANONICALIZATION
                orBool (Q ==K Register)
                orBool (Q ==K ThreadLocal)
           [structural]
-     rule canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)),
-               .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
+     rule canonicalizeType-aux(.MSet, (t((.Set => SetItem(Const)) _, _)),
+               .MSet, .MSet, (_ (MSetItem(Q:K) => .MSet)))
           when Q ==K Const
           [structural]
           
@@ -112,16 +112,16 @@ module C-TYPING-CANONICALIZATION
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      
-     syntax KItem ::= canonicalizeSpecifier(Bag)
+     syntax KItem ::= canonicalizeSpecifier(MSet)
 
-     rule <k> canonicalizeSpecifier(BagItem(Named(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(Named(X:CId)))
                => t(.Set, typedefType(X, T))
           ...</k>
           <types>... typedef(X) |-> T:Type ...</types>
           when X =/=K Identifier("")
           [structural]
           
-     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(StructRef(X:CId)))
                => t(.Set, structType(X, bitSizeofStruct(Info), Info))
           ...</k>
           <structs>...
@@ -129,7 +129,7 @@ module C-TYPING-CANONICALIZATION
           ...</structs>
           when X =/=K Identifier("")
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(StructRef(X:CId)))
                => t(.Set, incompleteStructType(X))
           ...</k>
           <structs> Structs:Map </structs>
@@ -140,7 +140,7 @@ module C-TYPING-CANONICALIZATION
           when (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(StructRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(StructRef(X:CId)))
                => t(.Set, incompleteStructType(X))
           ...</k>
           <structs> Structs:Map </structs>
@@ -149,11 +149,11 @@ module C-TYPING-CANONICALIZATION
                andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
-     rule canonicalizeSpecifier(BagItem(EnumRef(X:CId)))
+     rule canonicalizeSpecifier(MSetItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
           when X =/=K Identifier("")
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(UnionRef(X:CId)))
                => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
           ...</k>
           <structs>...
@@ -161,7 +161,7 @@ module C-TYPING-CANONICALIZATION
           ...</structs>
           when X =/=K Identifier("")
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(UnionRef(X:CId)))
                => t(.Set, incompleteUnionType(X))
           ...</k>
           <structs> Structs:Map </structs>
@@ -172,7 +172,7 @@ module C-TYPING-CANONICALIZATION
           when (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(UnionRef(X:CId)))
+     rule <k> canonicalizeSpecifier(MSetItem(UnionRef(X:CId)))
                => t(.Set, incompleteUnionType(X))
           ...</k>
           <structs> Structs:Map </structs>
@@ -182,26 +182,26 @@ module C-TYPING-CANONICALIZATION
                andBool (F =/=K file-scope)
           [structural]
           
-     rule canonicalizeSpecifier(BagItem(EnumDef(X:CId, L:K)))
+     rule canonicalizeSpecifier(MSetItem(EnumDef(X:CId, L:K)))
           => EnumDef(X, L) ~> t(.Set, enumType(X))
           when X =/=K Identifier("")
           [structural]
      
-     rule <k> canonicalizeSpecifier(BagItem(
+     rule <k> canonicalizeSpecifier(MSetItem(
                 StructDef((Identifier("") => unnamed(N, TU)), _)))
            ...</k>
            <curr-tu> TU:String </curr-tu>
            <tu-id> TU </tu-id>
            <next-unnamed> N:Int => N +Int 1 </next-unnamed>
            [structural]
-     rule <k> canonicalizeSpecifier(BagItem(
+     rule <k> canonicalizeSpecifier(MSetItem(
                EnumDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
-     rule <k> canonicalizeSpecifier(BagItem(
+     rule <k> canonicalizeSpecifier(MSetItem(
                UnionDef((Identifier("") => unnamed(N, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
@@ -210,104 +210,104 @@ module C-TYPING-CANONICALIZATION
           [structural]
      
      rule (.K => StructDef(X, L))
-          ~> canonicalizeSpecifier(BagItem(
+          ~> canonicalizeSpecifier(MSetItem(
                StructDef(X:CId, L:K) => StructRef(X)))
           when X =/=K Identifier("")
           [structural]
      rule (.K => UnionDef(X, L))
-          ~> canonicalizeSpecifier(BagItem(
+          ~> canonicalizeSpecifier(MSetItem(
                UnionDef(X:CId, L:K) => UnionRef(X)))
           when X =/=K Identifier("")
           [structural]
 
      // FIXME what good is this_
-     rule BagItem(SpecTypedef) => .Bag [structural, anywhere]
+     rule MSetItem(SpecTypedef) => .MSet [structural, anywhere]
      // FIXME ignoring inlines
-     rule [ignore-inline]: BagItem(Inline) => .Bag [structural, anywhere]
-     rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural, anywhere]
+     rule [ignore-inline]: MSetItem(Inline) => .MSet [structural, anywhere]
+     rule [ignore-noreturn]: MSetItem(Noreturn) => .MSet [structural, anywhere]
      // FIXME should save these for later use
-     rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
+     rule MSetItem(Attribute(_:String, _)) => .MSet [structural, anywhere]
 
-     rule canonicalizeType-aux(.Bag, (.K => canonicalizeSpecifier(B)),
-               (B:Bag => .Bag), _, _)
-          when B =/=Bag .Bag
+     rule canonicalizeType-aux(.MSet, (.K => canonicalizeSpecifier(B)),
+               (B:MSet => .MSet), _, _)
+          when B =/=MSet .MSet
           [structural]
           
-     rule canonicalizeType-aux(.Bag, T:Type, .Bag, .Bag, .Bag) => T
+     rule canonicalizeType-aux(.MSet, T:Type, .MSet, .MSet, .MSet) => T
           [structural]
           
      // C99 6.7.2:2
-     rule canonicalizeSpecifier(BagItem(Void)) => t(.Set, void)
-     rule canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool)
-     rule canonicalizeSpecifier(BagItem(Char)) => t(.Set, char)
-     rule canonicalizeSpecifier(BagItem(Signed) BagItem(Char))
+     rule canonicalizeSpecifier(MSetItem(Void)) => t(.Set, void)
+     rule canonicalizeSpecifier(MSetItem(Bool)) => t(.Set, bool)
+     rule canonicalizeSpecifier(MSetItem(Char)) => t(.Set, char)
+     rule canonicalizeSpecifier(MSetItem(Signed) MSetItem(Char))
           => t(.Set, signed-char)
-     rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char))
+     rule canonicalizeSpecifier(MSetItem(Unsigned) MSetItem(Char))
           => t(.Set, unsigned-char)
      
-     rule BagItem(atomic(_)) => .Bag [structural, anywhere]
-     rule BagItem(alignas(_)) => .Bag [structural, anywhere]
+     rule MSetItem(atomic(_)) => .MSetItem [structural, anywhere]
+     rule MSetItem(alignas(_)) => .MSetItem [structural, anywhere]
      
-     rule canonicalizeSpecifier(BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Double))
           => t(.Set, double)
-     rule canonicalizeSpecifier(BagItem(Float))
+     rule canonicalizeSpecifier(MSetItem(Float))
           => t(.Set, float)
-     rule canonicalizeSpecifier(BagItem(Long) BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Long) MSetItem(Double))
           => t(.Set, long-double)
 
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Complex) MSetItem(Double))
           => t(SetItem(Complex), double)
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Float))
+     rule canonicalizeSpecifier(MSetItem(Complex) MSetItem(Float))
           => t(SetItem(Complex), float)
-     rule canonicalizeSpecifier(BagItem(Complex) BagItem(Long) BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Complex) MSetItem(Long) MSetItem(Double))
           => t(SetItem(Complex), long-double)
 
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Imaginary) MSetItem(Double))
           => t(SetItem(Imaginary), double)
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Float))
+     rule canonicalizeSpecifier(MSetItem(Imaginary) MSetItem(Float))
           => t(SetItem(Imaginary), float)
-     rule canonicalizeSpecifier(BagItem(Imaginary) BagItem(Long) BagItem(Double))
+     rule canonicalizeSpecifier(MSetItem(Imaginary) MSetItem(Long) MSetItem(Double))
           => t(SetItem(Imaginary), long-double)
 
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, short-int)
-          when (B ==Bag BagItem(Short))
-               orBool (B ==Bag BagItem(Signed) BagItem(Short))
-               orBool (B ==Bag BagItem(Short) BagItem(Int))
-               orBool (B ==Bag BagItem(Signed) BagItem(Short) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, short-int)
+          when (B ==MSet MSetItem(Short))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Short))
+               orBool (B ==MSet MSetItem(Short) MSetItem(Int))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Short) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-short-int)
-          when (B ==Bag BagItem(Unsigned) BagItem(Short))
-               orBool (B ==Bag BagItem(Unsigned) BagItem(Short) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, unsigned-short-int)
+          when (B ==MSet MSetItem(Unsigned) MSetItem(Short))
+               orBool (B ==MSet MSetItem(Unsigned) MSetItem(Short) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, int)
-          when (B ==Bag BagItem(Int))
-               orBool (B ==Bag BagItem(Signed))
-               orBool (B ==Bag BagItem(Signed) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, int)
+          when (B ==MSet MSetItem(Int))
+               orBool (B ==MSet MSetItem(Signed))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-int)
-          when (B ==Bag BagItem(Unsigned))
-               orBool (B ==Bag BagItem(Unsigned) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, unsigned-int)
+          when (B ==MSet MSetItem(Unsigned))
+               orBool (B ==MSet MSetItem(Unsigned) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, long-int)
-          when (B ==Bag BagItem(Long))
-               orBool (B ==Bag BagItem(Signed) BagItem(Long))
-               orBool (B ==Bag BagItem(Long) BagItem(Int))
-               orBool (B ==Bag BagItem(Signed) BagItem(Long) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, long-int)
+          when (B ==MSet MSetItem(Long))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Long))
+               orBool (B ==MSet MSetItem(Long) MSetItem(Int))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Long) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-int)
-          when (B ==Bag BagItem(Unsigned) BagItem(Long))
-               orBool (B ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, unsigned-long-int)
+          when (B ==MSet MSetItem(Unsigned) MSetItem(Long))
+               orBool (B ==MSet MSetItem(Unsigned) MSetItem(Long) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, long-long-int)
-          when (B ==Bag BagItem(Long) BagItem(Long))
-               orBool (B ==Bag BagItem(Signed) BagItem(Long) BagItem(Long))
-               orBool (B ==Bag BagItem(Long) BagItem(Long) BagItem(Int))
-               orBool (B ==Bag
-                    BagItem(Signed) BagItem(Long) BagItem(Long) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, long-long-int)
+          when (B ==MSet MSetItem(Long) MSetItem(Long))
+               orBool (B ==MSet MSetItem(Signed) MSetItem(Long) MSetItem(Long))
+               orBool (B ==MSet MSetItem(Long) MSetItem(Long) MSetItem(Int))
+               orBool (B ==MSet
+                    MSetItem(Signed) MSetItem(Long) MSetItem(Long) MSetItem(Int))
           [structural]
-     rule canonicalizeSpecifier(B:Bag) => t(.Set, unsigned-long-long-int)
-          when (B ==Bag BagItem(Unsigned) BagItem(Long) BagItem(Long))
-               orBool (B ==Bag
-                    BagItem(Unsigned) BagItem(Long) BagItem(Long) BagItem(Int))
+     rule canonicalizeSpecifier(B:MSet) => t(.Set, unsigned-long-long-int)
+          when (B ==MSet MSetItem(Unsigned) MSetItem(Long) MSetItem(Long))
+               orBool (B ==MSet
+                    MSetItem(Unsigned) MSetItem(Long) MSetItem(Long) MSetItem(Int))
           [structural]
 endmodule

@@ -16,7 +16,13 @@ module C-TYPING-INTERPRETATION
 
      syntax KItem ::= BitFieldType(K, K) [strict] 
      
-     rule Specifier(list(L:List)) => canonicalizeType(toBag(L))
+     syntax KItem ::= toBagOfType(List,Bag) [function]
+
+     rule toBagOfType(.List,B:Bag) => canonicalizeType(B)
+     rule toBagOfType(ListItem(K:K) L:List,B:Bag)
+		=> toBagOfType(L,BagItem(K) B)
+
+     rule Specifier(list(L:List)) => toBagOfType(L,.Bag)
           [structural]
           
      rule BitFieldType(T:Type, tv(N:CSize, _))
