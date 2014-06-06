@@ -678,9 +678,9 @@ module C-DECL-GLOBAL
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax KItem ::= completeTagInExtDecls(CId, FieldInfo, Set)
-		    | midCompleteTagInExtDecls(CId,FieldInfo,CId)
+		    | completeTagInExtDecl(CId,FieldInfo,CId)
 
-     rule <k> ( . => midCompleteTagInExtDecls(Tag,Info,X)) 
+     rule <k> ( . => completeTagInExtDecl(Tag,Info,X)) 
 		~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _) ...</k>
 	  <curr-tu> Tu:String </curr-tu>
@@ -690,7 +690,7 @@ module C-DECL-GLOBAL
      rule completeTagInExtDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> midCompleteTagInExtDecls(Tag:CId,Info:FieldInfo,X:CId) 
+     rule <k> completeTagInExtDecl(Tag:CId,Info:FieldInfo,X:CId) 
 		=> declare(
                     typedDeclaration(completeTag(Tag, Info, T), X), NoInit)
 	   ...</k>
@@ -702,7 +702,7 @@ module C-DECL-GLOBAL
                andBool isCompleteType(completeTag(Tag, Info, T))
 	  [structural]
 
-     rule <k> (midCompleteTagInExtDecls(Tag:CId, Info:FieldInfo, X:CId) => . )
+     rule <k> (completeTagInExtDecl(Tag:CId, Info:FieldInfo, X:CId) => . )
           ...</k>
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
@@ -713,9 +713,9 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, Set)
-		| midCompleteTagInIntDecls(CId,FieldInfo,CId)
+		| completeTagInIntDecl(CId,FieldInfo,CId)
 
-     rule <k> ( . => midCompleteTagInIntDecls(Tag,Info,X)) 
+     rule <k> ( . => completeTagInIntDecl(Tag,Info,X)) 
 		~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _) ...</k>
 	  <curr-tu> Tu:String </curr-tu>
@@ -725,7 +725,7 @@ module C-DECL-GLOBAL
      rule completeTagInIntDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> (midCompleteTagInIntDecls(Tag:CId,Info:FieldInfo,X:CId) => declare(
+     rule <k> (completeTagInIntDecl(Tag:CId,Info:FieldInfo,X:CId) => declare(
                typedDeclaration(
                     completeTag(Tag, Info, addStorage(Static, T)), X),
                          NoInit))
@@ -738,7 +738,7 @@ module C-DECL-GLOBAL
                andBool isCompleteType(completeTag(Tag, Info, T))
           [structural]
 
-     rule <k> (midCompleteTagInIntDecls(Tag:CId, Info:FieldInfo, X:CId) => . )
+     rule <k> (completeTagInIntDecl(Tag:CId, Info:FieldInfo, X:CId) => . )
           ...</k>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
@@ -749,9 +749,9 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax K ::= completeTagInTags(CId, FieldInfo, Set)
-		| midCompleteTagInTags(CId,FieldInfo,CId)
+		| completeTagInTag(CId,FieldInfo,CId)
 
-     rule <k> ( . => midCompleteTagInTags(S,Info,S2))
+     rule <k> ( . => completeTagInTag(S,Info,S2))
 		~> completeTagInTags(S:CId, Info:FieldInfo, (SetItem(S2:CId) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -761,9 +761,9 @@ module C-DECL-GLOBAL
      rule completeTagInTags(_, _, .Set) => .K
           [structural]
 
-     rule midCompleteTagInTags(S:CId,_,S:CId) => .K
+     rule completeTagInTag(S:CId,_,S:CId) => .K
 
-     rule <k> (midCompleteTagInTags(S:CId,Info:FieldInfo,S2:CId) => . ) ...</k>
+     rule <k> (completeTagInTag(S:CId,Info:FieldInfo,S2:CId) => . ) ...</k>
           <gstructs>...
                S2 |-> fieldInfo(
                     (Decls:List => completeTagsInList(S |-> Info, Decls)),

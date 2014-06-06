@@ -26,7 +26,7 @@ module C-TRANSLATION-INIT
      rule <k> link
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
-               ~> resolveReference
+               ~> resolveReferences
                ~> printSuccess
           ...</k>
           <options> Opts:Set </options>
@@ -46,7 +46,7 @@ module C-TRANSLATION-INIT
      rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
                => preDeclareStrings(Strings)
                ~> listToK(Decls)
-               ~> allocateIncompleteTentative
+               ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...

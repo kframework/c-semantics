@@ -268,6 +268,8 @@ module C-SYMLOC
      rule #isBases(basedOn(_)) => true
 
      rule hasUnionMarker(loc(_,_,.Set)) => false
+     rule hasUnionMarker(loc(_,_)) => false
+     rule hasUnionMarker(NullPointer) => false
      rule hasUnionMarker(loc(_,_,SetItem(K:K) S:Set)) => #hasUnionMarker(K,S) ==K true
 
      syntax Bool ::= #hasUnionMarker(K,Set) [function]
@@ -279,6 +281,8 @@ module C-SYMLOC
 
      rule isFromArray(loc(_,_,SetItem(K:K) S:Set)) => #isFromArray(K,S) ==K true
      rule isFromArray(loc(_,_,.Set)) => false
+     rule isFromArray(loc(_,_)) => false
+     rule isFromArray(NullPointer) => false
 
      syntax Bool ::= #isFromArray(K, Set) [function]
      rule #isFromArray(fromArray(_, _),_:Set) => true

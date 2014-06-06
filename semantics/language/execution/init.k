@@ -100,11 +100,11 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     syntax KItem ::= midInitMainThread(String)
+     syntax KItem ::= initMainThread'(String)
 
      rule <threads>
 	     <thread>...
- 		<k> initMainThread => midInitMainThread(MainTU) ...</k>
+ 		<k> initMainThread => initMainThread'(MainTU) ...</k>
 	     ...</thread>
 	  </threads>
 	  <main-tu> SetItem(MainTU:String) </main-tu>
@@ -112,7 +112,7 @@ module C-EXECUTION-INIT
 
      rule <threads>
                <thread>...
-                    <k> midInitMainThread(MainTU:String) => populateFromGlobal ...</k>
+                    <k> initMainThread'(MainTU:String) => populateFromGlobal ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...
