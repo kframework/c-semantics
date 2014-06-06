@@ -342,7 +342,7 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T) orBool hasCharType(T')
+          when notBool isNoType(T) orBool hasCharType(T':Type)
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
           ...</k>
@@ -350,7 +350,7 @@ module C-IO-BUFFERED
           <effective-types>...
                .Map => loc(Base, Offset) |-> T'
           ...</effective-types>
-          when isNoType(T) andBool notBool hasCharType(T')
+          when isNoType(T) andBool notBool hasCharType(T':Type)
           [structural]
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
@@ -393,7 +393,7 @@ module C-IO-BUFFERED
           when isAggregateType(Eff)
                andBool notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                     andBool getQualifiers(Eff) <=Set getQualifiers(L))
-               andBool notBool hasCharType(L)
+               andBool notBool hasCharType(L:Type)
      // TODO(chathhorn): this is where things get sketchy. Very unclear
      // about the implications of strict aliasing w/r/t unions. As it is, we
      // let it pass if we're compatible with one of the union members of the
@@ -406,10 +406,10 @@ module C-IO-BUFFERED
                          stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
-               andBool notBool hasCharType(L)
+               andBool notBool hasCharType(L:Type)
      // - a character type.
      rule #effectivelyCompat(L:Type, _) => true
-          when hasCharType(L)
+          when hasCharType(L:Type)
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
      rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)

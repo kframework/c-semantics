@@ -149,8 +149,8 @@ module C-COMMON-EXPR-EVAL
           when isTypedValue(V:KResult) =/=K true
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          when (isSymLoc(V) =/=K true)
-               andBool (isTrap(V) =/=K true)
+          when (isSymLoc(V:CValue) =/=K true)
+               andBool (isTrap(V:CValue) =/=K true)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]

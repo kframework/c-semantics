@@ -246,7 +246,7 @@ module C-MEMORY-WRITING
      // this general rule is useful for unknowns, abstracts, etc
      rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
-          when hasCharType(T) andBool (isInt(N) =/=K true)
+          when hasCharType(T:Type) andBool (isInt(N:Bits) =/=K true)
      rule splitBytes(tv(unknown, T:Type))
           => dataList(splitUnknown(bitSizeofType(T)))
      rule splitBytes(tv(I:Int, T:Type)) 
