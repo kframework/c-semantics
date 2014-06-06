@@ -1,15 +1,15 @@
 module C-MEMORY-WRITING-SYNTAX
      // location, value
-     syntax K ::= write(SymLoc, CValue, Type)
+     syntax KItem ::= write(SymLoc, CValue, Type)
 
      // Either buffered or unbuffered depending on whether we're executing.
-     syntax K ::= writeBytes(SymLoc, K, Type) [strict(2)]
+     syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2)]
 
      syntax List ::= explodeToBits(List) [function]
 
      // TODO(chathhorn): For trans/symbolic-value.k
      syntax DataList ::= splitBytes(Value) [function]
-     syntax K ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
+     syntax KItem ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
 endmodule
 
 module C-MEMORY-WRITING
@@ -127,7 +127,7 @@ module C-MEMORY-WRITING
 	  [structural]
      rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId,
 		 Fields:FieldInfo),S:Set) 
-	  => allowInit(makeUnknown(UnionLoc, F, Fields)) ~> makeUnionUnKnown(K,S)
+	  => allowInit(makeUnknown(UnionLoc, F, Fields)) ~> makeUnionUnKnown(.K,S)
 	  [structural]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
@@ -183,7 +183,7 @@ module C-MEMORY-WRITING
                andBool (V >=Int 0)
           [structural]
 
-     syntax K ::= calculateNewBytes(Bits, K)
+     syntax KItem ::= calculateNewBytes(Bits, K)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)] 
 
      rule calculateNewBytes(N:Bits, dataList(L:List)) 
@@ -191,7 +191,7 @@ module C-MEMORY-WRITING
                dataList(explodeToBits(L)), .List)
           [structural]
 
-     syntax K ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
+     syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
      rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List), 
                dataList(ListItem(piece(_, 1)) L':List), Result:List) 
           => calculateNewBytes-aux(dataList(L), 
@@ -201,11 +201,11 @@ module C-MEMORY-WRITING
           => joinBitsToBytes(Result L) 
           [structural]
 
-     syntax K ::= joinBitsToBytes(List) [function]
+     syntax KItem ::= joinBitsToBytes(List) [function]
      rule joinBitsToBytes(L:List)
           => joinBitsToBytes-aux(dataList(L), dataList(.List))
 
-     syntax K ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
+     syntax KItem ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
      rule joinBitsToBytes-aux(
                dataList(ListItem(piece(N:Bits, Len:Int)) ListItem(piece(M:Bits, 1)) L:List),
                dataList(R:List))

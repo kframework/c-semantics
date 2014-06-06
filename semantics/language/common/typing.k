@@ -126,6 +126,7 @@ module C-TYPING-SYNTAX
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]
      syntax Bool ::= inRange(CValue, Type) [function]
+
      syntax Modifier ::= Storage | CVSpecifier
 
      // Returns both type qualifiers, storage class specifiers, and any the
@@ -133,10 +134,6 @@ module C-TYPING-SYNTAX
      syntax Set ::= getModifiers(Type) [function]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
-
-     // Special restrict modifier tagged with a block num.
-     syntax Modifier ::= RestrictBlock(RestrictTag)
-     syntax RestrictTag ::= Int | CId | "global"
 
      syntax Set ::= getQualifiers(Type) [function]
      syntax Set ::= getStorageSpecifiers(Type) [function]
@@ -157,7 +154,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax KItem ::= completeTags(K) [strict]
+     syntax KItem ::= #completeTags(K) [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]

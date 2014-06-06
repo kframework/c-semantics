@@ -55,7 +55,7 @@ module C-DECL-DEFINITION
           [structural]
 
      rule declare(T:Type, K:K)
-          => declare'(completeTags(elideDeclParams(T)), K)
+          => declare'(#completeTags(elideDeclParams(T)), K)
           [structural]
 
      syntax List ::= elideParams(List) [function]

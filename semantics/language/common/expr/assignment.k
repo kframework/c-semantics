@@ -8,6 +8,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
@@ -135,34 +136,34 @@ module C-COMMON-EXPR-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax KItem ::= compoundAssignment(KLabel, K, K) [strict(2,3)]
+     syntax KItem ::= compoundAssignment(KItem, K, K) [strict(2,3)]
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
 
-     rule E1:K *= E2:K => compoundAssignment('_*_, E1, E2)
+     rule E1:K *= E2:K => compoundAssignment(l('_*_), E1, E2)
           [structural]
-     rule E1:K /= E2:K => compoundAssignment('_/_, E1, E2)
+     rule E1:K /= E2:K => compoundAssignment(l('_/_), E1, E2)
           [structural]
-     rule E1:K %= E2:K => compoundAssignment('_%_, E1, E2)
+     rule E1:K %= E2:K => compoundAssignment(l('_%_), E1, E2)
           [structural]
-     rule E1:K += E2:K => compoundAssignment('_+_, E1, E2)
+     rule E1:K += E2:K => compoundAssignment(l('_+_), E1, E2)
           [structural]
-     rule E1:K -= E2:K => compoundAssignment('_-_, E1, E2)
+     rule E1:K -= E2:K => compoundAssignment(l('_-_), E1, E2)
           [structural]
-     rule E1:K <<= E2:K => compoundAssignment('_<<_, E1, E2)
+     rule E1:K <<= E2:K => compoundAssignment(l('_<<_), E1, E2)
           [structural]
-     rule E1:K >>= E2:K => compoundAssignment('_>>_, E1, E2)
+     rule E1:K >>= E2:K => compoundAssignment(l('_>>_), E1, E2)
           [structural]
-     rule E1:K &= E2:K => compoundAssignment('_&_, E1, E2)
+     rule E1:K &= E2:K => compoundAssignment(l('_&_), E1, E2)
           [structural]
-     rule E1:K ^= E2:K => compoundAssignment('_^_, E1, E2)
+     rule E1:K ^= E2:K => compoundAssignment(l('_^_), E1, E2)
           [structural]
-     rule E1:K |= E2:K => compoundAssignment('_|_, E1, E2)
+     rule E1:K |= E2:K => compoundAssignment(l('_|_), E1, E2)
           [structural]
 
-     rule compoundAssignment(L:KLabel, V:Value, V':Value)
-          => pkludge(V) := L(rkludge(V),, rkludge(V'))
+     rule compoundAssignment(l(L:KLabel), V:Value, V':Value)
+          => pkludge(V:Value) := L(rkludge(V:Value),, rkludge(V':Value))
           [structural]
 
 endmodule

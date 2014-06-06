@@ -241,13 +241,13 @@ module C-SYMLOC
           => tv(addProv(prov(From), To), T)
           [structural]
      rule transferProv(_:SymLoc, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V) =/=K true
+          when isSymLoc(V:CValue) =/=K true
           [structural]
      rule transferProv(Prov:Set, tv(Loc:SymLoc, T:Type))
           => tv(addProv(Prov, Loc), T)
           [structural]
      rule transferProv(_:Set, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V) =/=K true
+          when isSymLoc(V:CValue) =/=K true
           [structural]
 
      rule transferProv(From:SymLoc, lv(To:SymLoc, T:Type))
