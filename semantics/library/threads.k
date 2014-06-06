@@ -115,8 +115,8 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
-          <glocks> B:MSet (.MSet => MSetItem(Loc)) </glocks>
-          <locks> .MSet => MSetItem(Loc) ...</locks>
+          <glocks> B:List (.List => ListItem(Loc)) </glocks>
+          <locks> .List => ListItem(Loc) ...</locks>
           when (notBool (Loc in B))
                andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
@@ -128,8 +128,8 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
-          <glocks> M:MSet => removeMSetItem(M,Loc) </glocks>
-          <locks> M':MSet => removeMSetItem(M',Loc) </locks>
+          <glocks> M:List => removeListItem(M,Loc) </glocks>
+          <locks> M':List => removeListItem(M',Loc) </locks>
           when Type:Int ==Int cfg:mtxPlain
           [ndthread]
 

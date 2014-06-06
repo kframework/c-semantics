@@ -34,7 +34,7 @@ module C-DECL-RESOLUTION
           <tu-id> Tu </tu-id>
           (<tu-linking-state>...
                <externals> .Map </externals>
-          ...</tu-linking-state> => .Bag)
+          ...</tu-linking-state> => .)
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]

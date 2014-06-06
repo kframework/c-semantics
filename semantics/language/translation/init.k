@@ -38,7 +38,7 @@ module C-TRANSLATION-INIT
      rule (<T>...
                <k> cleanup </k>
                <options> Opts:Set </options>
-          ...</T> => .Bag)
+          ...</T> => .)
           when notBool (DEBUG in Opts)
           [structural]
           
@@ -50,7 +50,7 @@ module C-TRANSLATION-INIT
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
-               (.Bag => <tu>...
+               (. => <tu>...
                     <tu-id> TU </tu-id>
                     <next-link-loc> 0 @ link(TU) </next-link-loc>
                     <next-static-loc> 0 @ static(TU) </next-static-loc>

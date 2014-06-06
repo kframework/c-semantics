@@ -76,7 +76,7 @@ module C-SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, Int)
+     syntax Provenance ::= fromArray(Int, Int) [klabel('fromArray)]
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase)
@@ -267,19 +267,42 @@ module C-SYMLOC
      syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
      rule #isBases(basedOn(_)) => true
 
-     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(Loc) ==K true
+     rule hasUnionMarker(loc(_,_,.Set)) => false
+     rule hasUnionMarker(loc(_,_,SetItem(K:K) S:Set)) => #hasUnionMarker(K,S) ==K true
 
-     syntax Bool ::= #hasUnionMarker(SymLoc) [function]
-     rule #hasUnionMarker(loc(_, _, SetItem(fromUnion(_, _, _)) _)) => true
+     syntax Bool ::= #hasUnionMarker(K,Set) [function]
+     rule #hasUnionMarker(fromUnion(_, _, _), _:Set) => true
+     rule #hasUnionMarker(K:K, .Set) => false
+	  when getKLabel(K) =/=KLabel 'fromUnion
+     rule #hasUnionMarker(K:K, SetItem(K':K) S:Set) => #hasUnionMarker(K', S)
+	  when getKLabel(K) =/=KLabel 'fromUnion
 
-     rule isFromArray(Loc:SymLoc) => #isFromArray(Loc) ==K true
+     rule isFromArray(loc(_,_,SetItem(K:K) S:Set)) => #isFromArray(K,S) ==K true
+     rule isFromArray(loc(_,_,.Set)) => false
 
-     syntax Bool ::= "#isFromArray" "(" SymLoc ")" [function]
-     rule #isFromArray(loc(_, _, SetItem(fromArray(_, _)) _)) => true
+     syntax Bool ::= #isFromArray(K, Set) [function]
+     rule #isFromArray(fromArray(_, _),_:Set) => true
+     rule #isFromArray(K:K,.Set) => false
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #isFromArray(K:K,SetItem(K':K) S:Set) => #isFromArray(K', S)
+	  when getKLabel(K) =/=KLabel 'fromArray
 
-     rule stripFromArray(loc(_, _, (SetItem(fromArray(_, _)) => .Set) _))
-     rule stripFromArray(Loc:SymLoc) => Loc
-          when notBool isFromArray(Loc)
+     syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
+	  => loc(SB,I,SetItem(K) S)
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
+	  => loc(SB,I,S)
+	  when getKLabel(K) ==KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
+	  => #stripFromArray(SB, I,K',S':Set,SetItem(K) S:Set)
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
+	  => #stripFromArray(SB, I,K',S':Set,S:Set)
+	  when getKLabel(K) ==KLabel 'fromArray
+
+     rule stripFromArray(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
+		=> #stripFromArray(SB,I,K,S,.Set)
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)

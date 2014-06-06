@@ -104,27 +104,51 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
-     rule newFromArray(
-               loc(Base:SymBase, Offset:Int, SetItem(
-                    fromArray(ArrOffset:Int, Len:Int)) Prov:Set), T:Type, I:Int)
-          => loc(Base, Offset, SetItem(
+		     | #newFromArray(SymBase,Int,K,Set,Set,Type,Int) [function]
+
+     rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
+		 Len:Int),.Set,Prov:Set,T:Type,I:Int)
+	  => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,T:Type,I:Int)
+	  => loc(Base, Offset, SetItem(K) Prov)
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
+		 Len:Int),SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
+	  => #newFromArray(Base,Offset,K',S,SetItem(fromArray(ArrOffset +Int 
+		I *Int byteSizeofType(innerType(T)), Len)) Prov,T,I)
+     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,T:Type,I:Int)
+	  => #newFromArray(Base,Offset,K',S,SetItem(K) Prov,T,I)
+	  when getKLabel(K) =/=KLabel 'fromArray
+
+     rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _:Type, _:Int)
+          => loc(Base, Offset, .Set)
+     rule newFromArray(
+               loc(Base:SymBase, Offset:Int, SetItem(K:K) Prov:Set), T:Type, I:Int)
+          => #newFromArray(Base,Offset,K,Prov,.Set,T,I)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
           when notBool isFromArray(Loc)
 
      syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
+		   | #ifFromArrayInBounds(K,Set,Type,Int)
+
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),Prov:Set,T:Type,I:Int)
+	  => true
+	  when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),Prov:Set,T:Type,I:Int)
+	  => false
+	  when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+     rule #ifFromArrayInBounds(K:K,.Set,T:Type,I:Int)
+	  => true
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #ifFromArrayInBounds(K:K,SetItem(K':K) S:Set,T:Type,I:Int)
+	  => #ifFromArrayInBounds(K',S,T,I)
+	  when getKLabel(K) =/=KLabel 'fromArray
+
      rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               loc(_, _, SetItem(K:K) S:Set),
                T:Type, I:Int)
-          => true
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
-               T:Type, I:Int)
-          => false
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
-     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
-          when notBool isFromArray(Loc)
+          => #ifFromArrayInBounds(K,S,T,I)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same

@@ -128,7 +128,7 @@ module C-EXECUTION-INIT
                ...</thread>
           </threads>
           <files>...
-               ( .Bag =>
+               ( . =>
                <file>...
                     <fid> 0 </fid>
                     <uri> stdinStr </uri>
@@ -219,7 +219,7 @@ module C-EXECUTION-INIT
                     <thread-id> 0 </thread-id>
                     <k> V:KResult </k>
                ...</thread>
-          ...</exec> => .Bag)
+          ...</exec> => .)
           <status> _ => mainExited </status>
           <result-value> .K => V </result-value>
           <files>...

@@ -36,7 +36,7 @@ module C-STMT-BLOCK
      rule <k> popBlock => . ...</k>
           <local>
                (_ => C)
-               (<local-addresses> .Set </local-addresses> => .Bag)
+               (<local-addresses> .Set </local-addresses> => .)
           </local>
           <block-stack> 
                ListItem(bag2K(C:Bag)) => .List 

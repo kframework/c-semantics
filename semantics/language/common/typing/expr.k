@@ -48,10 +48,10 @@ module C-TYPING-EXPR
           SetItem(l('++_))
      
      rule <k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
-          (.Bag => <type> K:K </type>)
+          (. => <type> K:K </type>)
           [structural]
      rule <k> evalToType ~> typeof(MYHOLE) => T ...</k>
-          (<type> T:Type </type> => .Bag)
+          (<type> T:Type </type> => .)
           [structural]
 
      // these are sort of artifacts of other things

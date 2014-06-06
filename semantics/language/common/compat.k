@@ -15,22 +15,16 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= all(List, KLabel) [function]
    
-     syntax MSet ::= List{MSetItem,""}
-     syntax MSetItem ::= MSetItem(K)
-
-     syntax Bool ::= MSet "==MSet" MSet [function]
-		   | MSet "=/=MSet" MSet [function]
-		   | K "in" MSet [function]
-
-     syntax MSet ::= toMSet(List) [function]
-     syntax MSet ::= removeMSetItem(MSet,K) [function]
-
      /*TODO: Bag does not work in Java backend
 	syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
 	*/
 
      syntax Bool ::= isEmptyBag(Bag) [function]
+		   | List "==MSet" List [function]
+		   | List "=/=MSet" List [function]
+
+     syntax List ::= removeListItem(List,K) [function]
 
      //Do not need this and java backend does not support Bag function 
      //syntax Bag ::= toBag(List) [function]
@@ -184,22 +178,19 @@ module COMPAT
 */
      rule isEmptyBag(.Bag) => true    
 
-     rule removeMSetItem(.MSet,K:K) => .MSet
-     rule removeMSetItem(MSetItem(K:K) M:MSet,K) => M
-     rule removeMSetItem(MSetItem(A:K) M:MSet,A':K) 
-	=> MSetItem(A) removeMSetItem(M,A')
+     rule removeListItem(.List,K:K) => .List
+     rule removeListItem(ListItem(K:K) M:List,K) => M
+     rule removeListItem(ListItem(A:K) M:List,A':K) 
+	=> ListItem(A) removeListItem(M,A')
 	when A =/=K A'
 
-     rule .MSet ==MSet .Mset => true
-     rule .MSet ==MSet MI:MSetItem M:MSet => false
-     rule MI:MSetItem M:MSet ==MSet .Mset => false
-     rule MSetItem(K:K) M:MSet ==MSet M':MSet 
-		=> M ==MSet removeMSetItem(M',K)
+     rule '_==MSet_(.List ,, .List) => true
+     rule '_==MSet_(.List ,, ListItem(_) M:List) => false
+     rule '_==MSet_(ListItem(_) M:List ,, .List) => false
+     rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
+		=> '_==MSet_(M ,, removeListItem(M',K))
 
-     rule M:MSet =/=MSet M':MSet => notBool (M ==MSet M')
-
-     rule toMSet(ListItem(K:K) L:List) => MSetItem(K) toMSet(L)
-     rule toMSet(.List) => .MSet
+     rule M:List =/=MSet M':List => notBool '_==MSet_(M ,, M')
 
      rule list(L:List) => toKRList(L) 
           [structural]
@@ -248,13 +239,23 @@ module COMPAT
      rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
      rule values(.Map) => .List
 
-     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => SetItem(K) filterSet(S, Pred)
-          when Pred(K) ==K true
-     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => filterSet(S, Pred)
+     syntax Set ::= #filterSet(K,Set,KLabel) [function]
+
+     rule #filterSet(K:K,.Set,Pred:KLabel)
+	  => SetItem(K)
+	  when Pred(K) ==K true
+     rule #filterSet(K:K,.Set,Pred:KLabel)
+	  => .Set 
           when Pred(K) =/=K true
-     rule filterSet(.Set, _) => .Set
+     rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
+	  => SetItem(K) #filterSet(K',S,Pred)
+	  when Pred(K) ==K true
+     rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
+	  => #filterSet(K',S,Pred)
+          when Pred(K) =/=K true
+
+     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
+          => #filterSet(K,S,Pred)
 
 endmodule
 

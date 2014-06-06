@@ -6,6 +6,6 @@ module C-SEQUENCE-POINT
      imports C-SEQUENCE-POINT-SYNTAX
      rule [sequencePoint]:
           <k> sequencePoint => . ...</k>
-          <locs-written> _ => .Bag </locs-written>
+          <locs-written> _ => .List </locs-written>
           [structural]
 endmodule
