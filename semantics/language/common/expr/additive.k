@@ -98,7 +98,7 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           when ifFromArrayInBounds(Loc, T, I)
           [structural]
-     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
+     rule (. => ERROR("CEA1", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           when notBool ifFromArrayInBounds(Loc, T, I)
           [structural]
@@ -147,18 +147,25 @@ module C-COMMON-EXPR-ADDITIVE
      array object.
      }*/
 
-     // ptr1, ptr2, size of ptr type
-     syntax K ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
-          [strict(3)]
      rule tv(L1:SymLoc, t(_, pointerType(T:Type)))
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
-          => computePointerDifference(L1, L2, sizeofType(T))
+          => computePointerDifference(offset(L1) -Int offset(L2),
+               byteSizeofType(T))
+          when base(L1) ==K base(L2)
           [structural]
-     rule computePointerDifference(Loc1:SymLoc,
-               Loc2:SymLoc, tv(Size:Int, _))
-          => tv((offset(Loc1) -Int offset(Loc2)) /Int Size, cfg:ptrdiffut)
-          when (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
-               andBool base(Loc1) ==K base(Loc2)
+     // ptr1, ptr2, size of ptr type
+     syntax K ::= computePointerDifference(Int, Int)
+     rule computePointerDifference(Diff:Int, Size:Int)
+          => tv(Diff /Int Size, cfg:ptrdiffut)
+          when (Diff %Int Size ==Int 0)
+               andBool (Diff /Int Size) <=Int max(cfg:ptrdiffut)
+               andBool (Diff /Int Size) >=Int min(cfg:ptrdiffut)
+          [structural]
+     rule (. => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
+               "6.5.6"))
+          ~> computePointerDifference(Diff:Int, Size:Int)
+          when (Diff /Int Size) >Int max(cfg:ptrdiffut)
+               orBool (Diff /Int Size) <Int min(cfg:ptrdiffut)
           [structural]
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
