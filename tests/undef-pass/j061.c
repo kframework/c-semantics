@@ -9,7 +9,7 @@ union u {
       int x;
       struct {
             int y;
-      }
+      };
 } u;
 
 int main(void) {
