@@ -51,7 +51,7 @@ module C-CONFIGURATION
      <rand-nat color="black"> 0 </rand-nat>
      // stdlib
      <malloced color="lightgray"> .Map </malloced>
-     <next-malloced> 0 @ allocated </next-malloced>
+     <next-malloced> 0 @ alloc </next-malloced>
 
      <next-thread-id color="black"> 1 </next-thread-id>
 

@@ -3,7 +3,7 @@ module C-SYMLOC-SYNTAX
      syntax Int ::= offset(SymLoc) [function]
 
      // Allocated duration.
-     syntax Duration ::= "allocated" [avoid,klabel(allocated)]
+     syntax Duration ::= "alloc"
      // Static duration.
      syntax Duration ::= static(String)
      syntax Duration ::= link(String)
@@ -137,8 +137,8 @@ module C-SYMLOC
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
-     rule #isAllocatedDuration(loc(_ @ allocated, _)) => true
-     rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
+     rule #isAllocatedDuration(loc(_ @ alloc, _)) => true
+     rule #isAllocatedDuration(loc(_ @ alloc, _, _)) => true
 
      rule #isStaticDuration(loc(_ @ static(_), _)) => true
      rule #isStaticDuration(loc(_ @ static(_), _, _)) => true

@@ -59,7 +59,7 @@ module LIBC-STDIO
           +String "thread(" +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
-          symBaseToString(B:Int @ allocated)
+          symBaseToString(B:Int @ alloc)
           => Int2String(B) +String " @ "
           +String "allocated"
           [structural]

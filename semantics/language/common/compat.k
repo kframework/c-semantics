@@ -1,5 +1,5 @@
 module COMPAT-SYNTAX
-     syntax KItem ::= l(KLabel) [avoid]
+     syntax KItem ::= l(KLabel) [avoid] | ls(KLabel,KLabel)
      syntax KItem ::= klist(KList) [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
@@ -242,17 +242,17 @@ module COMPAT
      syntax Set ::= #filterSet(K,Set,KLabel) [function]
 
      rule #filterSet(K:K,.Set,Pred:KLabel)
-	  => SetItem(K)
-	  when Pred(K) ==K true
+	  => SetItem(K:K)
+	  when Pred(K:K) ==K true
      rule #filterSet(K:K,.Set,Pred:KLabel)
 	  => .Set 
-          when Pred(K) =/=K true
+          when Pred(K:K) =/=K true
      rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
 	  => SetItem(K) #filterSet(K',S,Pred)
-	  when Pred(K) ==K true
+	  when Pred(K:K) ==K true
      rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
 	  => #filterSet(K',S,Pred)
-          when Pred(K) =/=K true
+          when Pred(K:K) =/=K true
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K,S,Pred)

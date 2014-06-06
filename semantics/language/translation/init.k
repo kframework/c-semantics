@@ -25,7 +25,7 @@ module C-TRANSLATION-INIT
 
      rule <k> link
                => TranslationUnit("builtin", list(.List),
-                    list(ListItem(addBuiltin(builtins))))
+                    list(ListItem(addBuiltins(builtins))))
                ~> resolveReference
                ~> printSuccess
           ...</k>
@@ -67,20 +67,20 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(.List) => .K
           [structural]
      
-     syntax KItem ::= addBuiltin(Map)
-		    | midOfAddBuiltin(CId,Type)
+     syntax KItem ::= addBuiltins(Map)
+		    | addBuiltin(CId,Type)
           
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
 
-     rule <k> (. => midOfAddBuiltin(Identifier(B),T))
-		~> addBuiltin((B:String |-> T:Type => .Map) _) ...</k>
+     rule <k> (. => addBuiltin(Identifier(B),T))
+		~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
 
-     rule addBuiltin(.Map) => .K
+     rule addBuiltins(.Map) => .K
   
-     rule <k> (midOfAddBuiltin(B:CId,T:Type) => declare(
+     rule <k> (addBuiltin(B:CId,T:Type) => declare(
                typedDeclaration(T, B), 
                initializer(initFunction(
                     &(B),
@@ -90,7 +90,7 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           when notBool B in keys(Defs)
           
-     rule <k> (midOfAddBuiltin(B:CId,_:Type) => . ) ...</k>
+     rule <k> (addBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           when (B in keys(Defs))
