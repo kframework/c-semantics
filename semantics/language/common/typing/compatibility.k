@@ -117,12 +117,14 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args')
+               andBool notBool (variadic in Args')
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, Args:List)),
                t(Mods':Set, functionType(T':Type, .List)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args)
+               andBool notBool (variadic in Args)
      rule #areCompat(
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))

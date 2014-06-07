@@ -29,6 +29,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
 
      // The last two parameters are for convenience and should be the same.
+     // TODO(chathhorn): anonymous structs/unions.
      syntax K ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
           [function]
 

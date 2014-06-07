@@ -21,9 +21,9 @@ module C-FUNCTION-DEF
 
      imports COMPAT-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K) 
+     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K)
           => declare(
-               typedDeclaration(toPrototype(T), X), 
+               typedDeclaration(elideDeclParams(emptyToVoid(T)), X),
                initializer(initFunction(
                     &(X),
                     functionObject(X,
@@ -42,7 +42,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (. => ERROR("FD1", "duplicate parameters in "
                +String "function definition."))
-          ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
+          ~> FunctionDefinition(typedDeclaration(T:Type, _), _)
           when hasDupParams(T)
 
      // TODO(chathhorn): possibly check that old-style declarations are
@@ -126,11 +126,11 @@ module C-FUNCTION-DEF
           when T =/=K int
           [structural]
      rule (. => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
-          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _))) 
+          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
           when T =/=K int andBool T =/=K void
           [structural]
      rule (. => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
-          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type)))) 
+          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
           when #isArgvType(T) =/=K true
           [structural]
      rule (. => ERROR("FD8", "main must have zero or two parameters.") )
@@ -160,10 +160,10 @@ module C-FUNCTION-DEF
 
      syntax K ::= safeBody(CId, K) [function]
 
-     rule safeBody(X:CId, Blk:K) 
+     rule safeBody(X:CId, Blk:K)
           => Blk ~> Return(NothingExpression)
           when X =/=K Identifier("main")
-     rule safeBody(Identifier("main"), Blk:K) 
+     rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, t(.Set, int)))
 
      syntax K ::= "returnToFileScope"
@@ -212,5 +212,5 @@ module C-FUNCTION-DEF
           ~> giveType(X, T)
           ~> dummyBind(Params)
           when notBool isVoidType(T)
-          [structural] 
+          [structural]
 endmodule
