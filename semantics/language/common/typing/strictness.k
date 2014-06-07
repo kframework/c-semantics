@@ -100,7 +100,7 @@ module C-TYPING-STRICTNESS
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
-               R:Type ~> Lbl:KLabel(THOLE) => Lbl(R)
+               R:Type ~> Lbl:KLabel(THOLE) => Lbl:KLabel(R:Type)
           ...</type>
           when l(Lbl) in typeStrictUnaryOps
           [structural]

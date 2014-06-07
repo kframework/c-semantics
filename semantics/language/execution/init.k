@@ -100,7 +100,7 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     syntax KItem ::= initMainThread'(String)
+     syntax KItem ::= "initMainThread'" "(" String ")"
 
      rule <threads>
 	     <thread>...

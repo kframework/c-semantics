@@ -68,7 +68,7 @@ module C-IO-BUFFERED
           <thread-id> ThreadId:Int </thread-id>
           <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
           <locs-written>
-               Locs:MSet (.MSet => MSetItem(loc(Base, Offset)))
+               Locs:List (.List => ListItem(loc(Base, Offset)))
           </locs-written>
           when // Sequencing.
                (notBool loc(Base, Offset) in Locs)
@@ -87,8 +87,8 @@ module C-IO-BUFFERED
      rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
-          <locs-written> Locs:MSet </locs-written>
-          when Loc in Locs:MSet
+          <locs-written> Locs:List </locs-written>
+          when Loc in Locs:List
           [structural] 
      // TODO(chathhorn): probably redundant.
      rule <k> (. => UNDEF("EIO2", "Trying to write outside the bounds of an object.", "6.2.4"))
@@ -178,7 +178,7 @@ module C-IO-BUFFERED
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
-               => (assert(notBool loc(Base, Offset) in Locs),
+               => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
@@ -189,11 +189,11 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locs-written> Locs:MSet </locs-written>
+          <locs-written> Locs:List </locs-written>
           <buffer> .List </buffer>
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
-               => assert(notBool loc(Base, Offset) in Locs),
+               => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
@@ -204,7 +204,7 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locs-written> Locs:MSet </locs-written>
+          <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset) in locations(Mem)
           [structural]
