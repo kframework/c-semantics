@@ -141,6 +141,13 @@ module C-TYPING-MISC
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
 
+     rule getFunctionSpecifiers(T:Type)
+          => intersectSet(getModifiers(T), functionSpecifiers)
+
+     rule getSpecifiers(T:Type)
+          => getStorageSpecifiers(T) getFunctionSpecifiers(T)
+
+
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
           SetItem(Const)
@@ -156,6 +163,11 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
+     syntax Set ::= "functionSpecifiers"
+     rule functionSpecifiers =>
+          SetItem(Noreturn)
+          SetItem(Inline)
+
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
@@ -170,6 +182,14 @@ module C-TYPING-MISC
           => t(Mods -Set storageSpecifiers, T)
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
+
+     rule stripFunctionSpecifiers(t(Mods:Set, T:SimpleType))
+          => t(Mods -Set functionSpecifiers, T)
+     rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(stripFunctionSpecifiers(T), X)
+
+     rule stripSpecifiers(T:Type)
+          => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)

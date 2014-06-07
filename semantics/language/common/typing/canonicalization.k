@@ -11,7 +11,7 @@ module C-TYPING-CANONICALIZATION
      imports C-BITSIZE-SYNTAX
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
-     
+
      syntax K ::= "canonicalizeType-aux" "(" Bag "," K "," Bag "," Bag "," Bag ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
 
@@ -20,36 +20,36 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux(_:Bag BagItem(TAtomic(K1:K, K2:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(TAtomic(K1:K, K2:K)), _, _, _, _)
           [structural]
      rule (. => DeclType(K1, K2))
-          ~> canonicalizeType-aux(_:Bag BagItem(AlignasType(K1:K, K2:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(AlignasType(K1:K, K2:K)), _, _, _, _)
           [structural]
      rule (. => typeof(K))
-          ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _) 
+          ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _)
           [structural]
-          
+
      syntax K ::= atomic(Type)
      syntax K ::= alignas(Type)
-     
+
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(atomic(T)))), _, _) 
+               (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _,
+               (_ (.Bag => BagItem(atomic(T)))), _, _)
           [structural]
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T)))), _, _) 
+               (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _,
+               (_ (.Bag => BagItem(alignas(T)))), _, _)
           [structural]
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _, 
-               (_ (.Bag => BagItem(alignas(T)))), _, _) 
+               (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _,
+               (_ (.Bag => BagItem(alignas(T)))), _, _)
           [structural]
-          
+
      // specifier, modifier, storage
-     rule canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _, 
+     rule canonicalizeType-aux((_:Bag (BagItem(T:K) => .Bag)), _,
                (_ (.Bag => BagItem(T))), _, _)
           when false
                orBool (T ==K Void)
@@ -74,36 +74,40 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(T) ==KLabel 'Attribute)
           [structural]
 
-     rule canonicalizeType-aux(_:Bag (BagItem(T:K) => .Bag), _, _, _, 
+     rule canonicalizeType-aux(_:Bag (BagItem(T:K) => .Bag), _, _, _,
                (_ (.Bag => BagItem(T))))
           when (T ==K Extern)
-               orBool (T ==K Static)
-               orBool (T ==K Const)
-               orBool (T ==K Volatile)
                orBool (T ==K Atomic)
-               orBool (T ==K Restrict)
                orBool (T ==K Auto)
+               orBool (T ==K Const)
+               orBool (T ==K Inline)
+               orBool (T ==K Noreturn)
                orBool (T ==K Register)
+               orBool (T ==K Restrict)
+               orBool (T ==K Static)
                orBool (T ==K ThreadLocal)
+               orBool (T ==K Volatile)
           [structural]
-          
-     rule canonicalizeType-aux(.Bag, 
+
+     rule canonicalizeType-aux(.Bag,
                t((.Set => SetItem(Q)) _:Set, _),
                .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
           when (Q ==K Extern)
-               orBool (Q ==K Static)
-               orBool (Q ==K Volatile)
                orBool (Q ==K Atomic)
-               orBool (Q ==K Restrict)
                orBool (Q ==K Auto)
+               orBool (Q ==K Inline)
+               orBool (Q ==K Noreturn)
                orBool (Q ==K Register)
+               orBool (Q ==K Restrict)
+               orBool (Q ==K Static)
                orBool (Q ==K ThreadLocal)
+               orBool (Q ==K Volatile)
           [structural]
      rule canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)),
                .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
           when Q ==K Const
           [structural]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
      If the specification of an array type includes any type qualifiers, the
      element type is so-qualified, not the array type. \ldots
@@ -111,7 +115,7 @@ module C-TYPING-CANONICALIZATION
      rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
-     
+
      syntax K ::= canonicalizeSpecifier(Bag)
 
      rule <k> canonicalizeSpecifier(BagItem(Named(X:CId)))
@@ -120,7 +124,7 @@ module C-TYPING-CANONICALIZATION
           <types>... typedef(X) |-> T:Type ...</types>
           when X =/=K Identifier("")
           [structural]
-          
+
      rule <k> canonicalizeSpecifier(BagItem(StructRef(X:CId)))
                => t(.Set, structType(X, bitSizeofStruct(Info), Info))
           ...</k>
@@ -181,12 +185,12 @@ module C-TYPING-CANONICALIZATION
                andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
-          
+
      rule canonicalizeSpecifier(BagItem(EnumDef(X:CId, L:K)))
           => EnumDef(X, L) ~> t(.Set, enumType(X))
           when X =/=K Identifier("")
           [structural]
-     
+
      rule <k> canonicalizeSpecifier(BagItem(
                 StructDef((Identifier("") => unnamed(N, TU)), _)))
            ...</k>
@@ -208,7 +212,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> TU </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
-     
+
      rule (.K => StructDef(X, L))
           ~> canonicalizeSpecifier(BagItem(
                StructDef(X:CId, L:K) => StructRef(X)))
@@ -222,9 +226,6 @@ module C-TYPING-CANONICALIZATION
 
      // FIXME what good is this_
      rule BagItem(SpecTypedef) => .Bag [structural, anywhere]
-     // FIXME ignoring inlines
-     rule [ignore-inline]: BagItem(Inline) => .Bag [structural, anywhere]
-     rule [ignore-noreturn]: BagItem(Noreturn) => .Bag [structural, anywhere]
      // FIXME should save these for later use
      rule BagItem(Attribute(_:String, _)) => .Bag [structural, anywhere]
 
@@ -232,10 +233,10 @@ module C-TYPING-CANONICALIZATION
                (B:Bag => .Bag), _, _)
           when B =/=Bag .Bag
           [structural]
-          
+
      rule canonicalizeType-aux(.Bag, T:Type, .Bag, .Bag, .Bag) => T
           [structural]
-          
+
      // C99 6.7.2:2
      rule canonicalizeSpecifier(BagItem(Void)) => t(.Set, void)
      rule canonicalizeSpecifier(BagItem(Bool)) => t(.Set, bool)
@@ -244,10 +245,7 @@ module C-TYPING-CANONICALIZATION
           => t(.Set, signed-char)
      rule canonicalizeSpecifier(BagItem(Unsigned) BagItem(Char))
           => t(.Set, unsigned-char)
-     
-     rule BagItem(atomic(_)) => .Bag [structural, anywhere]
-     rule BagItem(alignas(_)) => .Bag [structural, anywhere]
-     
+
      rule canonicalizeSpecifier(BagItem(Double))
           => t(.Set, double)
      rule canonicalizeSpecifier(BagItem(Float))

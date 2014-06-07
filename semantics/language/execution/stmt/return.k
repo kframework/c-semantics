@@ -1,10 +1,12 @@
 module C-STMT-RETURN
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
@@ -12,7 +14,7 @@ module C-STMT-RETURN
      and returns control to its caller. A function may have any number of
      \cinline{return} statements.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.8.6.4}{3}}}{
      If a \cinline{return} statement with an expression is executed, the value
      of the expression is returned to the caller as the value of the function
@@ -20,43 +22,37 @@ module C-STMT-RETURN
      type of the function in which it appears, the value is converted as if by
      assignment to an object having the return type of the function.
      }*/
-     
-     rule [return-clean-local]:
-          <k> (.K => deleteObject(Base)) ~> Return(_:KResult) ...</k>
-          <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>     
-          [structural] 
-          
-     rule [fetch-all-locals]:
-          <k> Return(_:KResult) ...</k>
+
+     rule <k> (. => deleteObject(Base)) ~> Return(_:KResult) ...</k>
+          <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
+          [structural]
+
+     rule <k> Return(_:KResult) ...</k>
           <local-addresses> .Set => Addresses </local-addresses>
-          <block-stack> 
+          <block-stack>
                ListItem(_ <local-addresses> Addresses:Set </local-addresses>)
                => .List
           ...</block-stack>
-          [structural] 
+          [structural]
 
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule [return]: 
-          <k> Return(V:KResult) ~> _
-               => sequencePoint 
-               ~> cast(T, V) 
+     rule <k> Return(V:KResult) ~> _
+               => sequencePoint
+               ~> cast(T, V)
                ~> K
           </k>
-          // We look up the function type in the caller's TU because this might
-          // be a builtin (i.e., we're in a fake TU with no type env).
-          <tu-id> OldTu </tu-id>
-          <gtypes>... 
-              F:CId |-> t(_, functionType(T:Type, _))
-          ...</gtypes>
+          <types>...
+              F:CId |-> t(Mods:Set, functionType(T:Type, _))
+          ...</types>
           <control>
                <curr-tu> _ => OldTu </curr-tu>
                <curr-function> (F:CId => CurrFun) </curr-function>
                <curr-function-params> _ => CurrFunParams </curr-function-params>
                <curr-program-loc> _ => CurrLoc </curr-program-loc>
-               (<control-details>... 
-                    <local>... <local-addresses> .Set </local-addresses> ...</local> 
-                    <block-stack> .List </block-stack> 
+               (<control-details>...
+                    <local>... <local-addresses> .Set </local-addresses> ...</local>
+                    <block-stack> .List </block-stack>
                ...</control-details>  => C)
           </control>
           <call-stack>
@@ -73,11 +69,23 @@ module C-STMT-RETURN
                          <stack-curr-function-params>
                               CurrFunParams:List
                          </stack-curr-function-params>
-                         <stack-curr-program-loc> 
+                         <stack-curr-program-loc>
                               CurrLoc:K
                          </stack-curr-program-loc>
                     ...</call-stack-frame>
                ) => .List
           ...</call-stack>
-          [structural] 
+          when notBool (Noreturn in Mods)
+          [structural]
+
+     rule <k> (. => UNDEF("ESR1", "Return from a function declared _Noreturn.",
+                    "6.7.4"))
+               ~> Return(_)
+          ...</k>
+          <curr-function> F:CId </curr-function>
+          <types>...
+              F:CId |-> t(Mods:Set, functionType(_, _))
+          ...</types>
+          when Noreturn in Mods
+          [structural]
 endmodule

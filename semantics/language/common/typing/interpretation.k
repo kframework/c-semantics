@@ -17,20 +17,20 @@ module C-TYPING-INTERPRETATION
      syntax Type ::= extractActualType(Type) [function] 
 
      syntax K ::= BitFieldType(K, K) [strict] 
-     
+
      rule Specifier(list(L:List)) => canonicalizeType(toBag(L))
           [structural]
-          
+
      rule BitFieldType(T:Type, tv(N:CSize, _))
           => t(.Set, bitfieldType(T, N)) [structural]
-     
+
      syntax KLabel ::= makeFunctionType(List)
      syntax KLabel ::= makeOldStyleFunctionType(List)
      syntax KLabel ::= makePointerType(Set)
      syntax KLabel ::= "makeIncompleteArrayType"
      syntax KLabel ::= makeArrayType(CSize)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
-     
+
      rule ArrayType(T:Type, tv(N:Int, _), _) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
@@ -49,7 +49,7 @@ module C-TYPING-INTERPRETATION
           ~> ArrayType(_, tv(Len:Int, _), _)
           when Len <=Int 0
           [structural]
-     
+
      rule PointerType(Specifier(list(Quals:List)), T:Type)
           => pushTypeDown(T, makePointerType(listToSet(Quals)))
           [structural]
@@ -75,7 +75,7 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, 
                makeOldStyleFunctionType(L)) 
           [structural]
-     
+
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
@@ -94,32 +94,32 @@ module C-TYPING-INTERPRETATION
           => Lbl(t(S, incompleteUnionType(X)))
      rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:KLabel) 
           => Lbl(t(S, enumType(X)))
-     
+
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:KLabel) 
           => Lbl(t(S S', T))
-     
+
      rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
           when isBasicType(T)
-     
+
      rule makeArrayType(N:CSize)(T:Type)
-          => t(getStorageSpecifiers(T),
-               arrayType(stripStorageSpecifiers(T), N)) 
+          => t(getSpecifiers(T),
+               arrayType(stripSpecifiers(T), N)) 
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
-          => t(getStorageSpecifiers(T),
-               functionType(stripStorageSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
+          => t(getSpecifiers(T),
+               functionType(stripSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
           [structural, anywhere]
      rule makeOldStyleFunctionType(L:List)(T:Type)
-          => t(getStorageSpecifiers(T) SetItem(oldStyle),
-               functionType(stripStorageSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
+          => t(getSpecifiers(T) SetItem(oldStyle),
+               functionType(stripSpecifiers(T), adjustParams(giveNamesToArgs(L)))) 
           [structural, anywhere]
      rule makePointerType(Quals:Set)(T:Type)
-          => t(Quals getStorageSpecifiers(T),
-               pointerType(stripStorageSpecifiers(T)))
+          => t(Quals getSpecifiers(T),
+               pointerType(stripSpecifiers(T)))
           [structural, anywhere]
      rule makeIncompleteArrayType(T:Type)
-          => t(getStorageSpecifiers(T),
-               incompleteArrayType(stripStorageSpecifiers(T)))
+          => t(getSpecifiers(T),
+               incompleteArrayType(stripSpecifiers(T)))
           [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
