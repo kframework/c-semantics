@@ -267,29 +267,21 @@ module C-SYMLOC
      syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
      rule #isBases(basedOn(_)) => true
 
-     rule hasUnionMarker(loc(_,_,.Set)) => false
-     rule hasUnionMarker(loc(_,_)) => false
-     rule hasUnionMarker(NullPointer) => false
-     rule hasUnionMarker(loc(_,_,SetItem(K:K) S:Set)) => #hasUnionMarker(K,S) ==K true
+     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K,Loc) ==K true
 
-     syntax Bool ::= #hasUnionMarker(K,Set) [function]
-     rule #hasUnionMarker(fromUnion(_, _, _), _:Set) => true
-     rule #hasUnionMarker(K:K, .Set) => false
-	  when getKLabel(K) =/=KLabel 'fromUnion
-     rule #hasUnionMarker(K:K, SetItem(K':K) S:Set) => #hasUnionMarker(K', S)
-	  when getKLabel(K) =/=KLabel 'fromUnion
+     syntax Bool ::= #hasUnionMarker(K,SymLoc) [function]
+     rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
+     rule #hasUnionMarker(K:K, loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
+	  => #hasUnionMarker(K', loc(SB,I,S))
+	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
 
-     rule isFromArray(loc(_,_,SetItem(K:K) S:Set)) => #isFromArray(K,S) ==K true
-     rule isFromArray(loc(_,_,.Set)) => false
-     rule isFromArray(loc(_,_)) => false
-     rule isFromArray(NullPointer) => false
+     rule isFromArray(Loc:SymLoc) => #isFromArray(.K,Loc) ==K true
 
-     syntax Bool ::= #isFromArray(K, Set) [function]
-     rule #isFromArray(fromArray(_, _),_:Set) => true
-     rule #isFromArray(K:K,.Set) => false
-	  when getKLabel(K) =/=KLabel 'fromArray
-     rule #isFromArray(K:K,SetItem(K':K) S:Set) => #isFromArray(K', S)
-	  when getKLabel(K) =/=KLabel 'fromArray
+     syntax Bool ::= #isFromArray(K, SymLoc) [function]
+     rule #isFromArray(fromArray(_, _), _:SymLoc) => true
+     rule #isFromArray(K:K,loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
+	  => #isFromArray(K', loc(SB,I,S))
+	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
      syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
      rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
@@ -305,6 +297,8 @@ module C-SYMLOC
 	  => #stripFromArray(SB, I,K',S':Set,S:Set)
 	  when getKLabel(K) ==KLabel 'fromArray
 
+     rule stripFromArray(loc(SB:SymBase, I:Int)) => loc(SB,I)
+     rule stripFromArray(NullPointer) => NullPointer
      rule stripFromArray(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
 		=> #stripFromArray(SB,I,K,S,.Set)
 
