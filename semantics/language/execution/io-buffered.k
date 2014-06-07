@@ -285,7 +285,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>... 
                Old |-> object(_, _, M:Map)
-               New |-> object(_, _, _ (.Map => (N' -Int 1) |-> M[N' -Int 1]))
+               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
           when ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   

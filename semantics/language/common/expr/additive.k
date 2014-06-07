@@ -117,7 +117,7 @@ module C-COMMON-EXPR-ADDITIVE
 		 Len:Int),SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
 	  => #newFromArray(Base,Offset,K',S,SetItem(fromArray(ArrOffset +Int 
 		I *Int byteSizeofType(innerType(T)), Len)) Prov,T,I)
-     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,T:Type,I:Int)
+     rule #newFromArray(Base:SymBase, Offset:Int,K:K,SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
 	  => #newFromArray(Base,Offset,K',S,SetItem(K) Prov,T,I)
 	  when getKLabel(K) =/=KLabel 'fromArray
 

@@ -83,12 +83,28 @@ module C-CHECK-LOC
           [structural]
 
      syntax KItem ::= checkRestrict(Set, Set, Set)
+     syntax Set ::= #checkRestrict(Set,K,Set,Set) [function]
+
+     rule #checkRestrict(Bases:Set,.K,.Set,S:Set) => S
+     rule #checkRestrict(Bases:Set,.K,SetItem(K:K) S:Set,S':Set) 
+	  => #checkRestrict(Bases,K,S,S') 
+     rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set) 
+	  => #checkRestrict(Bases,.K,S,S') 
+	  when Bases <=Set Bases'  
+     rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set)
+	  => #checkRestrict(Bases,.K,S,set(Bases') S')
+	  when notBool (Bases <=Set Bases')  
+
+
+     rule #checkRestrict(Bases:Set,set(Bases':Set),.Set,S:Set)
+	  => (set(Bases':Set) S)
+	  when notBool (Bases <=Set Bases')  
 
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]
-     rule checkRestrict(.Set, Bases:Set, (SetItem(set(Bases':Set)) => .Set) _)
-          when Bases <=Set Bases'
+     rule checkRestrict(.Set, Bases:Set, (SetItem(K:K) S:Set 
+		=> #checkRestrict(Bases,K,S,.Set)))
           [structural]
      rule checkRestrict(.Set, _, .Set) => .
           [structural]

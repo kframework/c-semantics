@@ -100,13 +100,13 @@ module C-LTLMC
      // "strictness"
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
 	 	=> ltlRVal(B, L(ltlRVal(B, P)))
-          when notBool (isValueProp(P) ==K true)
+          when notBool (isValueProp(P:CProp) ==K true)
      rule ltlRVal(B:Bag, M:KLabel(L:CProp,, KL:KList))
 		=> ltlRVal(B, M(ltlRVal(B, L),, KL))
-          when notBool (isValueProp(L) ==K true)
+          when notBool (isValueProp(L:CProp) ==K true)
      rule ltlRVal(B:Bag, Lbl:KLabel(KL:KList,, R:CProp))
 		=> ltlRVal(B, Lbl(KL,, ltlRVal(B, R)))
-          when notBool (isValueProp(R) ==K true)
+          when notBool (isValueProp(R:CProp) ==K true)
                // Don't try resolving the field specifier.
                andBool (Lbl =/=KLabel '_._)
                andBool (Lbl =/=KLabel '_->_)
@@ -202,7 +202,7 @@ module C-LTLMC
           => union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)
-          when hasIntegerType(T)
+          when hasIntegerType(T:Type)
 
      rule joinBytes'(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), 

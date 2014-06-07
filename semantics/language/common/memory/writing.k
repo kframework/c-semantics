@@ -77,8 +77,6 @@ module C-MEMORY-WRITING
                andBool (notBool hasUnionMarker(Loc))
           [structural]
 
-     rule (. => allowInit(makeUnknown(UnionLoc, F, Fields)))
-
      syntax Set ::= keepUnion(Set) [function]
 		  | stripUnion(Set) [function]
 		  | #keepUnion(K,Set,Set) [function]
