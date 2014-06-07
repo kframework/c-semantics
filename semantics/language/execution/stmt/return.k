@@ -42,16 +42,18 @@ module C-STMT-RETURN
                ~> cast(T, V)
                ~> K
           </k>
-          <types>...
-              F:CId |-> t(Mods:Set, functionType(T:Type, _))
-          ...</types>
           <control>
                <curr-tu> _ => OldTu </curr-tu>
-               <curr-function> (F:CId => CurrFun) </curr-function>
+               <curr-function> F:CId => CurrFun </curr-function>
                <curr-function-params> _ => CurrFunParams </curr-function-params>
                <curr-program-loc> _ => CurrLoc </curr-program-loc>
                (<control-details>...
-                    <local>... <local-addresses> .Set </local-addresses> ...</local>
+                    <local>...
+                         <types>...
+                              F:CId |-> t(Mods:Set, functionType(T:Type, _))
+                         ...</types>
+                         <local-addresses> .Set </local-addresses>
+                    ...</local>
                     <block-stack> .List </block-stack>
                ...</control-details>  => C)
           </control>
@@ -64,7 +66,7 @@ module C-STMT-RETURN
                               C:Bag
                          </stack-control>
                          <stack-curr-function>
-                              CurrFun:K
+                              CurrFun:CId
                          </stack-curr-function>
                          <stack-curr-function-params>
                               CurrFunParams:List
