@@ -81,6 +81,7 @@ module COMPAT-SYNTAX
 
      syntax KList ::= Int "to" Int [function]
      //TODO: make sure this is in current including List syntax Bool ::= K "in" List [function]
+     //TODO: change it back to K in Set later
      syntax Bool ::= inSet(K,Set) [function]
      syntax "in" -/- [a-zA-Z]
 
