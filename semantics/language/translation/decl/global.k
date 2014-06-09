@@ -409,7 +409,7 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax K ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," K ")"
+     syntax K ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," Storage ")"
           [strict(1)]
 
      // *** Incomplete ***
@@ -420,13 +420,22 @@ module C-DECL-GLOBAL
           ~> updateDecl(X, Lnk, State)
           when notBool isCompleteType(T)
           [structural]
+     // Tentative definition (with incomplete type).
      rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk)
           when notBool isCompleteType(T)
-               andBool Sto =/=K Extern
+               andBool (Sto ==K Naked
+                    orBool (Sto ==K Static andBool Lnk =/=K internal))
+          [structural]
+     rule ( . => UNDEF("TDG12",
+               "Declaration for an object is a tentative definition with internal linkage.",
+               "6.9.2:3"))
+          ~> declareExternalVariable'(initValue(_, T:Type, .K),
+               _, internal, _)
+          when notBool isCompleteType(T)
           [structural]
 
      // *** Extern, already completed.  ***
@@ -522,7 +531,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // already initialized
-     rule (. => ERROR("TDG12", "Redefinition of symbol: "
+     rule (. => ERROR("TDG13", "Redefinition of symbol: "
                +String idToString(X)))
           ~> declareExternalVariable'(initValue(X:CId, _, K:K),
                initialized, _, _)
@@ -591,7 +600,7 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Base' ...</external-defs>
           [structural]
 
-     rule <k> (.K => ERROR("TDG13",
+     rule <k> (.K => ERROR("TDG14",
                     "Redefinition of symbol with external linkage: "
                     +String idToString(X)))
                ~> updateLinkState(X:CId, _, Base':SymBase)
@@ -669,7 +678,7 @@ module C-DECL-GLOBAL
           when notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
           [structural]
-     rule <k> (. => ERROR("TDG14", "Redefinition of a struct, union, or enum: "
+     rule <k> (. => ERROR("TDG15", "Redefinition of a struct, union, or enum: "
                     +String idToString(X)))
                ~> addGlobalTag(X:CId, _)
           ...</k>
@@ -778,7 +787,7 @@ module C-DECL-GLOBAL
           when notBool X in keys(Types)
           [structural]
 
-     rule <k> (.K => ERROR("TDG15", "Incompatible redeclaration of symbol "
+     rule <k> (.K => ERROR("TDG16", "Incompatible redeclaration of symbol "
                     +String "with internal or external linkage: "
                     +String idToString(X)))
                ~> giveCompositeType(X:CId, T':Type)
