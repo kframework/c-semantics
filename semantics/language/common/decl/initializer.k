@@ -68,7 +68,7 @@ module C-DECL-INITIALIZER
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
           )
-          when hasCharType(T) andBool (lengthString(S) <=Int Len)
+          when hasCharType(T:Type) andBool (lengthString(S) <=Int Len)
           [structural]
 
      rule figureInit(
@@ -84,7 +84,7 @@ module C-DECL-INITIALIZER
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
           => arrayType(T, lengthString(S) +Int 1))),
                SingleInit(stringLiteral(S:String)))
-          when hasCharType(T)
+          when hasCharType(T:Type)
           [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
@@ -457,7 +457,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when hasCharType(T) andBool lengthString(S) ==Int Len
+          when hasCharType(T:Type) andBool lengthString(S) ==Int Len
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(wstringLiteral(S)))
@@ -475,7 +475,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
           ...</curr-subobject>
-          when hasCharType(T) andBool lengthString(S) <Int Len
+          when hasCharType(T:Type) andBool lengthString(S) <Int Len
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit(SingleInit(wstringLiteral(S ListItem(0))))
@@ -493,7 +493,7 @@ module C-DECL-INITIALIZER
                ListItem(te(_:K, T:Type))
                ListItem(te(_, t(_, incompleteArrayType(T:Type))))
           ...</curr-subobject>
-          when hasCharType(T)
+          when hasCharType(T:Type)
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(
@@ -510,7 +510,7 @@ module C-DECL-INITIALIZER
                ~> fillInit-aux(initTail(S))
           ...</k>
           <curr-subobject> ListItem(te(_, T:Type)) ...</curr-subobject>
-          when (S =/=String "") andBool hasCharType(T)
+          when (S =/=String "") andBool hasCharType(T:Type)
           [structural]
 
      syntax KItem ::= initHead(String) [function]
@@ -544,7 +544,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                ListItem(te(_, T:Type))
           ...</curr-subobject>
-          when notBool hasCharType(T)
+          when notBool hasCharType(T:Type)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]

@@ -116,20 +116,21 @@ module C-STMT-GOTO
      rule #isFunLabel(funLabel(_)) => true
           
      // - first case, when we're in the same block
-     rule <k> L:KLabel(gotoObject(Depth:Int, 
+     rule <k> (L:KLabel(gotoObject(Depth:Int, 
                     (ListItem(CurrentBlock:Int) BlockHistory:List), 
                     K:K, LoopStack:List, DeclStack:List)) 
-                    ~> _ 
-               => addVariablesForBlock(CurrentBlock, DeclStack)
-                    ~> K
+                    ~> _:K) 
+               => (addVariablesForBlock(CurrentBlock, DeclStack)
+                    ~> K)
           </k>
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> 
-               ListItem(CurrentBlock:Int) BlockHistory:List
+               ListItem(CurrentBlock:Int) BlockHistory':List
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          when (L ==KLabel 'processGoto)
-               orBool (L ==KLabel 'processGotoDown)
+          when ((L ==KLabel 'processGoto)
+               orBool (L ==KLabel 'processGotoDown))
+		andBool (BlockHistory ==List BlockHistory')
           [structural] 
           
      // - second case, we're in a different block

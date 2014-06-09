@@ -154,7 +154,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax KItem ::= completeTags(K) [strict]
+     syntax KItem ::= #completeTags(K) [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]

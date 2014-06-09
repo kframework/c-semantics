@@ -202,10 +202,10 @@ module C-TYPING-MISC
      rule innerType(t(_, functionType(T:Type, _))) => T
      rule innerType(typedDeclaration(T:Type, _)) => T
 
-     rule <k> completeTags(T:Type) => completeTags(Tags, T) ...</k>
+     rule <k> #completeTags(T:Type) => completeTags(Tags, T) ...</k>
           <structs> Tags:Map </structs>
           when Tags =/=Map .Map
-     rule <k> completeTags(T:Type) => T ...</k>
+     rule <k> #completeTags(T:Type) => T ...</k>
           <structs> .Map </structs>
 
      // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
@@ -323,4 +323,3 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
 endmodule
-

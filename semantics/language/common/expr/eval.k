@@ -32,12 +32,12 @@ module C-COMMON-EXPR-EVAL
      rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
      rule rkludge(K:K) => K
-          when isKResult(K) =/=K true
+          when isKResult(K:K) =/=K true
 
      rule peval(K:K) => K ~> peval(HOLE) [heat]
      rule K:K ~> peval(HOLE) => peval(pkludge(K)) [cool, ndlocal]
      rule pkludge(K:K) => K
-          when isKResult(K) =/=K true
+          when isKResult(K:K) =/=K true
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
@@ -146,11 +146,11 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= checkUse(K) [strict]
 
      rule checkUse(V:KResult) => V
-          when isTypedValue(V) =/=K true
+          when isTypedValue(V:KResult) =/=K true
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          when (isSymLoc(V) =/=K true)
-               andBool (isTrap(V) =/=K true)
+          when (isSymLoc(V:CValue) =/=K true)
+               andBool (isTrap(V:CValue) =/=K true)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]

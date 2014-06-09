@@ -3,7 +3,7 @@ module C-SYMLOC-SYNTAX
      syntax Int ::= offset(SymLoc) [function]
 
      // Allocated duration.
-     syntax Duration ::= "allocated" [avoid]
+     syntax Duration ::= "alloc"
      // Static duration.
      syntax Duration ::= static(String)
      syntax Duration ::= link(String)
@@ -76,7 +76,7 @@ module C-SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, Int)
+     syntax Provenance ::= fromArray(Int, Int) [klabel('fromArray)]
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase)
@@ -137,8 +137,8 @@ module C-SYMLOC
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
-     rule #isAllocatedDuration(loc(_ @ allocated, _)) => true
-     rule #isAllocatedDuration(loc(_ @ allocated, _, _)) => true
+     rule #isAllocatedDuration(loc(_ @ alloc, _)) => true
+     rule #isAllocatedDuration(loc(_ @ alloc, _, _)) => true
 
      rule #isStaticDuration(loc(_ @ static(_), _)) => true
      rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
@@ -241,13 +241,13 @@ module C-SYMLOC
           => tv(addProv(prov(From), To), T)
           [structural]
      rule transferProv(_:SymLoc, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V) =/=K true
+          when isSymLoc(V:CValue) =/=K true
           [structural]
      rule transferProv(Prov:Set, tv(Loc:SymLoc, T:Type))
           => tv(addProv(Prov, Loc), T)
           [structural]
      rule transferProv(_:Set, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V) =/=K true
+          when isSymLoc(V:CValue) =/=K true
           [structural]
 
      rule transferProv(From:SymLoc, lv(To:SymLoc, T:Type))
@@ -267,19 +267,40 @@ module C-SYMLOC
      syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
      rule #isBases(basedOn(_)) => true
 
-     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(Loc) ==K true
+     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K,Loc) ==K true
 
-     syntax Bool ::= #hasUnionMarker(SymLoc) [function]
-     rule #hasUnionMarker(loc(_, _, SetItem(fromUnion(_, _, _)) _)) => true
+     syntax Bool ::= #hasUnionMarker(K,SymLoc) [function]
+     rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
+     rule #hasUnionMarker(K:K, loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
+	  => #hasUnionMarker(K', loc(SB,I,S))
+	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
 
-     rule isFromArray(Loc:SymLoc) => #isFromArray(Loc) ==K true
+     rule isFromArray(Loc:SymLoc) => #isFromArray(.K,Loc) ==K true
 
-     syntax Bool ::= "#isFromArray" "(" SymLoc ")" [function]
-     rule #isFromArray(loc(_, _, SetItem(fromArray(_, _)) _)) => true
+     syntax Bool ::= #isFromArray(K, SymLoc) [function]
+     rule #isFromArray(fromArray(_, _), _:SymLoc) => true
+     rule #isFromArray(K:K,loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
+	  => #isFromArray(K', loc(SB,I,S))
+	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
-     rule stripFromArray(loc(_, _, (SetItem(fromArray(_, _)) => .Set) _))
-     rule stripFromArray(Loc:SymLoc) => Loc
-          when notBool isFromArray(Loc)
+     syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
+	  => loc(SB,I,SetItem(K) S)
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
+	  => loc(SB,I,S)
+	  when getKLabel(K) ==KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
+	  => #stripFromArray(SB, I,K',S':Set,SetItem(K) S:Set)
+	  when getKLabel(K) =/=KLabel 'fromArray
+     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
+	  => #stripFromArray(SB, I,K',S':Set,S:Set)
+	  when getKLabel(K) ==KLabel 'fromArray
+
+     rule stripFromArray(loc(SB:SymBase, I:Int)) => loc(SB,I)
+     rule stripFromArray(NullPointer) => NullPointer
+     rule stripFromArray(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
+		=> #stripFromArray(SB,I,K,S,.Set)
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)

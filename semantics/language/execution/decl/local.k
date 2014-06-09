@@ -83,7 +83,7 @@ module C-DECL-LOCAL
      // Same as above, but for the case where the variable has already been
      // declared. This is seen if we goto earlier in the same block.
      rule <k> declareOnly(X:CId, T:Type) => . ...</k>
-          <local-vars> Vars </local-vars>
+          <local-vars> Vars:List </local-vars>
           when isCompleteType(T) andBool X in Vars
           [structural] 
 
@@ -109,7 +109,7 @@ module C-DECL-LOCAL
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
                => justInit(figureInit(X, T, K))
           ...</k>
-          <local-vars> Vars </local-vars>
+          <local-vars> Vars:List </local-vars>
 		when X in Vars
           [structural] 
 

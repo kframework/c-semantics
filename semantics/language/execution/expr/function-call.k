@@ -119,7 +119,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
                // TODO(chathhorn): better way to initialize?
-               (C:Bag => <control-details>... .Bag ...</control-details>)
+               (C:Bag => <control-details>... . ...</control-details>)
           </control>
           [structural]
 

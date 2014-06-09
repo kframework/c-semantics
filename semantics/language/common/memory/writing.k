@@ -76,13 +76,58 @@ module C-MEMORY-WRITING
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(Loc))
           [structural]
-     rule (. => allowInit(makeUnknown(UnionLoc, F, Fields)))
+
+     syntax Set ::= keepUnion(Set) [function]
+		  | stripUnion(Set) [function]
+		  | #keepUnion(K,Set,Set) [function]
+		  | #stripUnion(K,Set,Set) [function]
+
+     rule keepUnion(.Set) => .Set
+     rule keepUnion(SetItem(K:K) S:Set) => #keepUnion(K,S,.Set)
+
+     rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
+		.Set,S':Set) => SetItem(fromUnion(UnionLoc, F, Fields)) S'
+     rule #keepUnion(K:K,.Set,S':Set) => S'
+	  when getKLabel(K) =/=KLabel 'fromUnion 
+     rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
+		SetItem(K':K) S:Set,S':Set) 
+	  => #keepUnion(K',S:Set,SetItem(fromUnion(UnionLoc, F, Fields)) S') 
+     rule #keepUnion(K:K,SetItem(K':K) S:Set,S':Set) 
+	  => #keepUnion(K',S,S') 
+	  when getKLabel(K) =/=KLabel 'fromUnion 
+
+     rule stripUnion(.Set) => .Set
+     rule stripUnion(SetItem(K:K) S:Set) => #stripUnion(K,S,.Set)
+
+     rule #stripUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
+		.Set,S':Set) => S'
+     rule #keepUnion(K:K,.Set,S':Set) => SetItem(K) S'
+	  when getKLabel(K) =/=KLabel 'fromUnion 
+     rule #keepUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
+		SetItem(K':K) S:Set,S':Set) 
+	  => #keepUnion(K',S:Set,S') 
+     rule #keepUnion(K:K,SetItem(K':K) S:Set,S':Set) 
+	  => #keepUnion(K',S,SetItem(K) S') 
+	  when getKLabel(K) =/=KLabel 'fromUnion 
+
+
+     rule (. => makeUnionUnKnown(.K,keepUnion(S)))
           ~> write-specific(
-               loc(_, _, (SetItem(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo))
-                    => .Set) _), _, _)
+               loc(_, _, S:Set => stripUnion(S)), _, _)
           [structural]
 
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
+		| makeUnionUnKnown(K,Set)
+
+     rule makeUnionUnKnown(.K,.Set) => . [structural]
+     rule makeUnionUnKnown(.K,SetItem(K) S:Set) 
+	  => makeUnionUnKnown(K,S)
+	  [structural]
+     rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId,
+		 Fields:FieldInfo),S:Set) 
+	  => allowInit(makeUnknown(UnionLoc, F, Fields)) ~> makeUnionUnKnown(.K,S)
+	  [structural]
+
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
@@ -199,7 +244,7 @@ module C-MEMORY-WRITING
      // this general rule is useful for unknowns, abstracts, etc
      rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
-          when hasCharType(T) andBool (isInt(N) =/=K true)
+          when hasCharType(T:Type) andBool (isInt(N:Bits) =/=K true)
      rule splitBytes(tv(unknown, T:Type))
           => dataList(splitUnknown(bitSizeofType(T)))
      rule splitBytes(tv(I:Int, T:Type)) 

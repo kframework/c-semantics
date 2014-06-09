@@ -17,8 +17,8 @@ module C-TYPING-INTERPRETATION
      syntax Type ::= extractActualType(Type) [function] 
 
      syntax KItem ::= BitFieldType(K, K) [strict] 
-     
-     rule Specifier(list(L:List)) => canonicalizeType(toBag(L))
+
+     rule Specifier(list(L:List)) => L
           [structural]
           
      rule BitFieldType(T:Type, tv(N:CSize, _))
@@ -31,22 +31,22 @@ module C-TYPING-INTERPRETATION
      syntax KLabel ::= makeArrayType(CSize)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
      
-     rule ArrayType(T:Type, tv(N:Int, _), _) 
+     rule ArrayType(T:Type, tv(N:Int, _:Type), _:K) 
           => pushTypeDown(T, makeArrayType(N)) 
           when N >Int 0
           [structural]
-     rule ArrayType(T:Type, tv(N:CSize, _), _) 
+     rule ArrayType(T:Type, tv(N:CSize, _), _:K) 
           => pushTypeDown(T, makeArrayType(N)) 
-          when isInt(N) =/=K true // For possible symbolic values.
+          when isInt(N:CSize) =/=K true // For possible symbolic values.
           [structural]
-     rule ArrayType(T:Type, emptyValue, _)
+     rule ArrayType(T:Type, emptyValue, _:K)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
      rule (. => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
-          ~> ArrayType(_, tv(_:Float, _), _)
+          ~> ArrayType(_:K, tv(_:Float, _), _:K)
           [structural]
      rule (. => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_, tv(Len:Int, _), _)
+          ~> ArrayType(_:K, tv(Len:Int, _), _:K)
           when Len <=Int 0
           [structural]
      
@@ -98,8 +98,8 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:KLabel) 
           => Lbl(t(S S', T))
      
-     rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T) 
-          when isBasicType(T)
+     rule pushTypeDown(T:Type, Lbl:KLabel) => Lbl(T:Type) 
+          when isBasicType(T:Type)
      
      rule makeArrayType(N:CSize)(T:Type)
           => t(getStorageSpecifiers(T),

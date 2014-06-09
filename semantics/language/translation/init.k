@@ -1,5 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax KItem ::= loadMergeObj(K, K) [function]
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -38,7 +38,7 @@ module C-TRANSLATION-INIT
      rule (<T>...
                <k> cleanup </k>
                <options> Opts:Set </options>
-          ...</T> => .Bag)
+          ...</T> => .)
           when notBool (DEBUG in Opts)
           [structural]
           
@@ -50,7 +50,7 @@ module C-TRANSLATION-INIT
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
-               (.Bag => <tu>...
+               (. => <tu>...
                     <tu-id> TU </tu-id>
                     <next-link-loc> 0 @ link(TU) </next-link-loc>
                     <next-static-loc> 0 @ static(TU) </next-static-loc>
@@ -68,42 +68,47 @@ module C-TRANSLATION-INIT
           [structural]
      
      syntax KItem ::= addBuiltins(Map)
+		    | addBuiltin(CId,Type)
           
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
-    /*TODO: Unsupported map pattern in the rule left-hand side
-     rule <k> (.K => declare(
-               typedDeclaration(T, Identifier(B)), 
+
+     rule <k> (. => addBuiltin(Identifier(B),T))
+		~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
+
+     rule addBuiltins(.Map) => .K
+  
+     rule <k> (addBuiltin(B:CId,T:Type) => declare(
+               typedDeclaration(T, B), 
                initializer(initFunction(
-                    &(Identifier(B)),
-                    functionObject(Identifier(B), .List, T, handleBuiltin)
-               ))))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _)
-          ...</k>
-          <external-types>... Identifier(B) |-> _ ...</external-types>
+                    &(B),
+                    functionObject(B, .List, T, handleBuiltin)
+               )))) ...</k>
+          <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool Identifier(B) in keys(Defs)
+          when notBool B in keys(Defs)
           
-     rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
+     rule <k> (addBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (Identifier(B) in keys(Defs))
-               orBool (notBool Identifier(B) in keys(Types))
-     */
-     rule addBuiltins(.Map) => .K
+          when (B in keys(Defs))
+               orBool (notBool B in keys(Types))
+
+     
 
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.
 
-     rule mergeObj(B:Bag, .Bag) => B
-     rule mergeObj(.Bag, B:Bag) => B
+     rule loadMergeObj(bag2K(B:Bag), bag2K(.Bag)) => loadObj(bag2K(B))
+     rule loadMergeObj(bag2K(.Bag), bag2K(B:Bag)) => loadObj(bag2K(B))
 
      // TODO(chathhorn): Check compatibility of decls instead of dumbly
      // merging.
-     rule mergeObj(
-          (<global>
+     /*TODO: java backend cannot merge two Bag variables
+     rule loadMergeObj(
+          bag2K(<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
 
@@ -121,7 +126,7 @@ module C-TRANSLATION-INIT
 
                <translation-units> TUs1:Bag </translation-units>
           </global>),
-          (<global>
+	  bag2K(<global>
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
 
@@ -140,6 +145,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs2:Bag </translation-units>
           </global>))
           =>
+          loadObj(bag2K(
           <global>
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
@@ -157,8 +163,8 @@ module C-TRANSLATION-INIT
                <main-tu> Main1 Main2 </main-tu>
 
                <translation-units> TUs1 TUs2 </translation-units>
-          </global>
-
+          </global>))
+*/
      syntax KItem ::= "printSuccess"
      rule printSuccess => #write(#stdout, "Translation successful!\n")
 

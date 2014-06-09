@@ -68,10 +68,10 @@ module C-IO-BUFFERED
           <thread-id> ThreadId:Int </thread-id>
           <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
           <locs-written>
-               Locs:Bag (.Bag => BagItem(loc(Base, Offset)))
+               Locs:List (.List => ListItem(loc(Base, Offset)))
           </locs-written>
           when // Sequencing.
-               (notBool BagItem(loc(Base, Offset)) in Locs)
+               (notBool loc(Base, Offset) in Locs)
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
@@ -87,8 +87,8 @@ module C-IO-BUFFERED
      rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
-          <locs-written> Locs:Bag </locs-written>
-          when BagItem(Loc) in Locs:Bag
+          <locs-written> Locs:List </locs-written>
+          when Loc in Locs:List
           [structural] 
      // TODO(chathhorn): probably redundant.
      rule <k> (. => UNDEF("EIO2", "Trying to write outside the bounds of an object.", "6.2.4"))
@@ -178,7 +178,7 @@ module C-IO-BUFFERED
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
-               => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
+               => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
@@ -189,11 +189,11 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locs-written> Locs:Bag </locs-written>
+          <locs-written> Locs:List </locs-written>
           <buffer> .List </buffer>
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
-               => assert(notBool (BagItem(loc(Base, Offset)) in Locs),
+               => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
                ~> assert((notBool Volatile in getQualsAtOffset(ObjT, Offset))
@@ -204,7 +204,7 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
-          <locs-written> Locs:Bag </locs-written>
+          <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
           when notBool loc(Base, Offset) in locations(Mem)
           [structural]
@@ -251,10 +251,10 @@ module C-IO-BUFFERED
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc) 
-//                  => assert(notBool BagItem(Loc) in Locs:Bag, errorUnseqEffects)
+//                  => assert(notBool ListItem(Loc) in Locs:List, errorUnseqEffects)
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
-//             <locs-written> Locs:Bag </locs-written>
+//             <locs-written> Locs:List </locs-written>
 //             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
 //             when notBool Loc in locations(Mem:List)
 //             [structural]
@@ -284,10 +284,10 @@ module C-IO-BUFFERED
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>... 
-               Old |-> object(_, _, _ N:Int |-> K:K)
-               New |-> object(_, _, _ (.Map => (N' -Int 1) |-> K))
+               Old |-> object(_, _, M:Map)
+               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
-          when (N' ==Int N +Int 1) andBool (N' >Int 0)
+          when ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
@@ -342,7 +342,7 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T) orBool hasCharType(T')
+          when notBool isNoType(T) orBool hasCharType(T':Type)
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
           ...</k>
@@ -350,7 +350,7 @@ module C-IO-BUFFERED
           <effective-types>...
                .Map => loc(Base, Offset) |-> T'
           ...</effective-types>
-          when isNoType(T) andBool notBool hasCharType(T')
+          when isNoType(T) andBool notBool hasCharType(T':Type)
           [structural]
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
@@ -393,7 +393,7 @@ module C-IO-BUFFERED
           when isAggregateType(Eff)
                andBool notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                     andBool getQualifiers(Eff) <=Set getQualifiers(L))
-               andBool notBool hasCharType(L)
+               andBool notBool hasCharType(L:Type)
      // TODO(chathhorn): this is where things get sketchy. Very unclear
      // about the implications of strict aliasing w/r/t unions. As it is, we
      // let it pass if we're compatible with one of the union members of the
@@ -406,10 +406,10 @@ module C-IO-BUFFERED
                          stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
-               andBool notBool hasCharType(L)
+               andBool notBool hasCharType(L:Type)
      // - a character type.
      rule #effectivelyCompat(L:Type, _) => true
-          when hasCharType(L)
+          when hasCharType(L:Type)
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
      rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)

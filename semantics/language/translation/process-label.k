@@ -33,7 +33,7 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map> M:Map => M[map(.Map) <- F] </goto-map>
           <goto-map-calc>
-               .Bag => (<goto-calc>... 
+               . => (<goto-calc>... 
                          <computation> 
                               K ~> Return(NothingExpression)
                          </computation>
@@ -43,18 +43,18 @@ module C-PROCESS-LABEL
           
      rule (<goto-calc>
                <computation> .K </computation>
-          ...</goto-calc>) => .Bag
+          ...</goto-calc>) => .
           [structural] 
 
      rule <k> waitingOnGotoMap => . ...</k>
-          <goto-map-calc> .Bag </goto-map-calc>
+          <goto-map-calc> . </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural] 
      rule <k> waitingOnGotoMap => . ...</k>
-          <goto-map-calc> .Bag </goto-map-calc>
+          <goto-map-calc> . </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
@@ -157,7 +157,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (.Bag =>
+          (. =>
                <goto-calc> 
                     <computation> S </computation>
                     <computation-tail>
@@ -196,7 +196,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (.Bag =>
+          (. =>
                <goto-calc> 
                     <computation> S </computation>
                     <computation-tail>
@@ -244,14 +244,14 @@ module C-PROCESS-LABEL
                <computation-tail> Tail:K </computation-tail>
                B:Bag
           </goto-calc>
-          (.Bag =>
+          (. =>
                <goto-calc> 
                     <computation> S1 </computation> 
                     <computation-tail> K ~> Tail </computation-tail>
                     B
                </goto-calc>
           )
-          (.Bag =>
+          (. =>
                <goto-calc> 
                     <computation> S2 </computation>
                     <computation-tail> K ~> Tail </computation-tail>

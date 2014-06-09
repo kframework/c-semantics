@@ -1,5 +1,5 @@
 module COMPAT-SYNTAX
-     syntax KItem ::= l(KLabel) [avoid]
+     syntax KItem ::= l(KLabel) [avoid] | ls(KLabel,KLabel)
      syntax KItem ::= klist(KList) [klabel('klist)]
 
      syntax String ::= firstChar(String) [function]
@@ -14,14 +14,25 @@ module COMPAT-SYNTAX
      syntax String ::= toUpperCase(String) [function]
 
      syntax Bool ::= all(List, KLabel) [function]
-
-     syntax Bool ::= Bag "==Bag" Bag [function]
+   
+     /*TODO: Bag does not work in Java backend
+	syntax Bool ::= Bag "==Bag" Bag [function]
      syntax Bool ::= Bag "=/=Bag" Bag [function]
+	*/
 
-     syntax Bag ::= toBag(List) [function]
+     syntax Bool ::= isEmptyBag(Bag) [function]
+		   | List "==MSet" List [function]
+		   | List "=/=MSet" List [function]
 
+     syntax List ::= removeListItem(List,K) [function]
+
+     //Do not need this and java backend does not support Bag function 
+     //syntax Bag ::= toBag(List) [function]
+
+    /*TODO: Bag
      syntax Bool ::= BagItem "in" Bag [function]
                    | K "#inBag" Bag [function]
+    */
 
      syntax Int ::= string2Base(String, Int)
           [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
@@ -69,7 +80,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     syntax Bool ::= K "in" List [function]
+     //TODO: make sure this is in current including List syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
@@ -111,7 +122,7 @@ module COMPAT
           => substrString(S:String, 1, lengthString(S:String))
 
      rule all(ListItem(K:K) L:List, Lbl:KLabel) 
-          => Lbl(K) andBool all(L, Lbl)
+          => Lbl(K:K) andBool all(L, Lbl)
      rule all(.List, _) => true 
           
      rule toUpperCase(S:String)
@@ -132,34 +143,58 @@ module COMPAT
                     andBool ordChar(C) <=Int ordChar("z"))
           
      // this should probably go in the k prelude
-     rule K:K in (ListItem(K:K) _:List) => true
-     rule _:K in .List => false
-     rule K:K in (ListItem(K':K) L:List) => K:K in L:List
-          when K:K =/=K K':K
+     //rule K:K in (ListItem(K:K) _:List) => true
+     //rule _:K in .List => false
+     //rule K:K in (ListItem(K':K) L:List) => K:K in L:List
+         // when K:K =/=K K':K
 
-     //TODO Support ==Bag: Might need to support multiset equivalence
-     syntax Bag ::= removeBagItem(Bag, K) [function]
-     rule removeBagItem(.Bag, _:K) => .Bag
-     rule removeBagItem(BagItem(A:K) B:Bag,A) => B
-     rule removeBagItem(BagItem(A:K) B:Bag,A':K) => BagItem(A:K) removeBagItem(B,A')
+/*TODO: runtime exception TODO Support ==Bag: Might need to support multiset equivalence
+     syntax Bool ::= midMakeEqual(Bag,Bag,Bag, K) [function]
+
+
+     rule midMakeEqual(B:Bag,B':Bag,.Bag,_:K) => B ==Bag B'
+     rule midMakeEqual(B:Bag,B':Bag,BagItem(A:K) B'':Bag,A) => B ==Bag (B' B'')
+     rule midMakeEqual(B:Bag,B':Bag,BagItem(A:K) B'':Bag,A':K) 
+		=> midMakeEqual(B,BagItem(A:K) B',B'',A') 
 	 when A =/=K A'
-
+ 
      rule .Bag ==Bag .Bag => true 
      rule _:BagItem _:Bag ==Bag .Bag => false
      rule .Bag ==Bag _:BagItem _:Bag => false
-     rule BagItem(K:K) B:Bag ==Bag B':Bag => B ==Bag removeBagItem(B',K)
+     rule BagItem(K:K) B:Bag ==Bag B':Bag => midMakeEqual(B,.Bag,B',K)
 	 when BagItem(K) in B':Bag
      rule BagItem(K:K) _:Bag ==Bag B':Bag => false
 	 when notBool (BagItem(K) in B':Bag)
 
+
      rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
-     // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
+      rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
 
      rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
      rule toBag(.List) => .Bag
 
      rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
      rule K:K #inBag BagItem(K) _:Bag => true
+*/
+     rule isEmptyBag(.Bag) => true    
+
+     rule removeListItem(.List,K:K) => .List
+     rule removeListItem(ListItem(K:K) M:List,K) => M
+     rule removeListItem(ListItem(A:K) M:List,A':K) 
+	=> ListItem(A) removeListItem(M,A')
+	when A =/=K A'
+
+     rule '_==MSet_(.List ,, .List) => true
+     rule '_==MSet_(.List ,, ListItem(_) M:List) => false
+     rule '_==MSet_(ListItem(_) M:List ,, .List) => false
+     rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
+		=> '_==MSet_(M:List ,, removeListItem(M',K))
+	  when K:K in M':List
+     rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
+		=> false
+	  when notBool (K:K in M':List)
+
+     rule M:List =/=MSet M':List => notBool '_==MSet_(M ,, M')
 
      rule list(L:List) => toKRList(L) 
           [structural]
@@ -208,13 +243,23 @@ module COMPAT
      rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
      rule values(.Map) => .List
 
+     syntax Set ::= #filterSet(K,Set,KLabel) [function]
+
+     rule #filterSet(K:K,.Set,Pred:KLabel)
+	  => SetItem(K:K)
+	  when Pred(K:K) ==K true
+     rule #filterSet(K:K,.Set,Pred:KLabel)
+	  => .Set 
+          when Pred(K:K) =/=K true
+     rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
+	  => SetItem(K) #filterSet(K',S,Pred)
+	  when Pred(K:K) ==K true
+     rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
+	  => #filterSet(K',S,Pred)
+          when Pred(K:K) =/=K true
+
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => SetItem(K) filterSet(S, Pred)
-          when Pred(K) ==K true
-     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => filterSet(S, Pred)
-          when Pred(K) =/=K true
-     rule filterSet(.Set, _) => .Set
+          => #filterSet(K,S,Pred)
 
 endmodule
 

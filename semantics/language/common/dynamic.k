@@ -50,8 +50,8 @@ module C-DYNAMIC-SYNTAX
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
 
-     syntax KItem ::= loadObj(Bag)
-     syntax Bag ::= unwrapObj(Bag) [function]
+     syntax KItem ::= loadObj(K)
+     syntax KItem ::= unwrapObj(Bag) [function]
 
 endmodule
 
@@ -106,16 +106,16 @@ module C-DYNAMIC
      rule unwrapObj(<generatedTop>... 
                <global> G:Bag </global> 
           ...</generatedTop>) 
-          => (<global> G </global>)
+          => bag2K(<global> G </global>)
 
-     rule unwrapObj(.Bag) => .Bag
+     rule unwrapObj(.Bag) => bag2K(.Bag)
 
-     rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
+     rule <k> loadObj(bag2K(<global> G:Bag </global>)) => .K ...</k>
           <global> (_:Bag => G) </global>
-          when G =/=Bag .Bag
+          when (isEmptyBag(G) =/=K true)
           [structural]
 
-     rule loadObj(.Bag) => .K
+     rule loadObj(bag2K(.Bag)) => .K
           [structural]
 
      rule N:Int => tv(N, cfg:largestUnsigned)

@@ -19,42 +19,58 @@ module C-DECL-RESOLUTION
 
      imports C-ERROR-SYNTAX
 
+     syntax KItem ::= allocateIncompleteTentative(CId,K)
+
+     rule <k> ( . => allocateIncompleteTentative(X,DE))
+		~> allocateIncompleteTentatives ...</k>
+          <externals>...
+               (X:CId |-> DE:K => .Map)
+          ...</externals>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          [structural]
      rule <k> allocateIncompleteTentatives => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           (<tu-linking-state>...
                <externals> .Map </externals>
-          ...</tu-linking-state> => .Bag)
+          ...</tu-linking-state> => .)
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
-    /*TODO: map problem rule <k> (.K => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
-               ~> allocateIncompleteTentatives
+
+    rule <k> (allocateIncompleteTentative(X:CId,declState(SB:SymBase,
+                    t(S:Set, incompleteArrayType(T:Type)), declared, true) )
+		 => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
           ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
           <externals>...
-               X:CId |-> declState(_,
-                    t(S:Set, incompleteArrayType(T:Type)), declared, true) 
+               (.Map => X:CId |-> declState(SB,t(S,
+			 incompleteArrayType(T)), declared, true))
           ...</externals>
           [structural]
-     rule <k> allocateIncompleteTentatives ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <externals>...
-               (_ |-> declState(_, _, State:DeclState, Tentative:Bool) => .Map)
-          ...</externals>
+
+     rule allocateIncompleteTentative(_:CId,
+	     declState(_, _, State:DeclState, Tentative:Bool)) => .
           when notBool Tentative
                orBool (State =/=K declared)
           [structural]
-*/
+
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
-    /*TODO: map problem
-	rule <k> resolveReferences ...</k>
-          <external-uses>...
-               SetItem(X:CId)
-          ...</external-uses>
+
+     syntax KItem ::= resolveReference(CId)
+
+     rule <k> ( . => resolveReference(X))~> resolveReferences ...</k>
+          <external-uses> (SetItem(X:CId) => .Set) ...</external-uses>
+  	  [structural]
+     // Now everything left in <external-uses> should be an unresolved
+     // reference.
+     rule <k> resolveReferences => .K ...</k>
+          (<linking-state>...
+               <external-uses> .Set </external-uses>
+          ...</linking-state> => .Bag)
+
+     rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
@@ -69,10 +85,8 @@ module C-DECL-RESOLUTION
                (.Map => Base |-> Base')
           ...</linkings>
           when isLinkerLoc(Base)
-     rule <k> resolveReferences ...</k>
-          <external-uses>...
-               SetItem(X:CId)
-          ...</external-uses>
+
+     rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
@@ -84,11 +98,8 @@ module C-DECL-RESOLUTION
                X |-> Base
           ...</genv>
           when notBool isLinkerLoc(Base)
-*/
-     rule <k> resolveReferences ...</k>
-          <external-uses>...
-               (SetItem(X:CId) => .Set)
-          ...</external-uses>
+
+     rule <k> (resolveReference(X:CId) => . ) ...</k>
           <external-decls>...
                (X:CId |-> set(.Set) => .Map)
           ...</external-decls>
@@ -100,13 +111,12 @@ module C-DECL-RESOLUTION
           ...</external-types>
           when X =/=K Identifier("main")
 
-     rule <k> (.K => ERROR("DR1", 
+     rule <k> (resolveReference(X:CId) => ERROR("DR1", 
                     "no definition for symbol with external linkage: " 
-                    +String idToString(X))) 
-               ~> resolveReferences
+                    +String idToString(X)) )
           ...</k>
           <external-uses>...
-               SetItem(X:CId)
+               (.Set => SetItem(X))
           ...</external-uses>
           <external-defs>
                Defs:Map
@@ -118,11 +128,8 @@ module C-DECL-RESOLUTION
                orBool notBool (X in keys(Types))
 
      // Remember which TU has the definition of main.
-     rule <k> resolveReferences ...</k>
+     rule <k> (resolveReference(Identifier("main")) => .) ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
-          <external-uses>...
-               (SetItem(Identifier("main")) => .Set)
-          ...</external-uses>
           <external-decls>...
                (Identifier("main") |-> set(.Set) => .Map)
           ...</external-decls>
@@ -132,13 +139,5 @@ module C-DECL-RESOLUTION
           <external-types>...
                Identifier("main") |-> _
           ...</external-types>
-
-     // Now everything left in <external-uses> should be an unresolved
-     // reference.
-     
-     rule <k> resolveReferences => .K ...</k>
-          (<linking-state>...
-               <external-uses> .Set </external-uses>
-          ...</linking-state> => .Bag)
 
 endmodule

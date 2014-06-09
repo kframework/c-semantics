@@ -52,7 +52,7 @@ module LIBC-THREADS
                Status:Map => Status[threadRunning <- ThId:Int]
           </thread-status>
           <br/>
-          (.Bag =>
+          (. =>
           <thread>...
                <next-loc> 0 @ thread(ThId:Int) </next-loc>
                <thread-id> ThId:Int </thread-id>
@@ -115,9 +115,9 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
-          <glocks> B:Bag (.Bag => BagItem(Loc)) </glocks>
-          <locks>... .Bag => BagItem(Loc) ...</locks>
-          when (notBool (Loc #inBag B))
+          <glocks> B:List (.List => ListItem(Loc)) </glocks>
+          <locks> .List => ListItem(Loc) ...</locks>
+          when (notBool (Loc in B))
                andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
 
@@ -128,8 +128,8 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
-          <glocks>... BagItem(Loc:Int) => .Bag ...</glocks>
-          <locks>... BagItem(Loc:Int) => .Bag ...</locks>
+          <glocks> M:List => removeListItem(M,Loc) </glocks>
+          <locks> M':List => removeListItem(M',Loc) </locks>
           when Type:Int ==Int cfg:mtxPlain
           [ndthread]
 

@@ -27,7 +27,7 @@ module C-EXECUTION-ERROR
 
      rule (<k> EXIT(Msg:String) ~> K:K </k> 
           => <final-computation> K </final-computation>)
-          (.Bag => <error-cell> Msg </error-cell>)
+          (. => <error-cell> Msg </error-cell>)
 
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>

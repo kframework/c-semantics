@@ -49,27 +49,39 @@ module C-STMT-SWITCH
      // K to be evaluated, val it should be, casehelper
      syntax KItem ::= tryCase(K, Value, K)
      context tryCase((HOLE => reval(HOLE)), _, _)
-     rule (. => tryCase(Exp, V, CaseHelper)) 
-          ~> handleSwitch-aux(SN:Int, V:Value,
-               map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
-          when Exp =/=K l('Default)
-          [structural] 
-          
-     //  if all that's left is a default, do it
-     rule handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _))) 
-          => Goto(genLabel(SN, l('Default)))
-          [structural] 
+
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," Value "," K "," K "," Map ")"
+
+     rule #handleSwitch-aux(SN:Int,V:Value,.K,K:K,.Map) => .Map
+	  [structural] 
+
+     rule #handleSwitch-aux(SN:Int,V:Value,.K,K:K,
+		(Key:K |-> CaseHelper:K) M:Map) 
+	  => #handleSwitch-aux(SN,V,Key,CaseHelper,M)
+	  [structural] 
+
+     rule #handleSwitch-aux(SN:Int,V:Value,genLabel(SN, Exp:K),
+		CaseHelper:K,M:Map) 
+	  => (tryCase(Exp, V, CaseHelper)
+	     ~> #handleSwitch-aux(SN,V,.K,.K,M))
+	  when Exp =/=K l('Default) 
+	  [structural]  
      
-     //  if there's nothing left, no case matches
-     rule handleSwitch-aux(_, _, map(.Map)) => .
-          [structural] 
-          
-     rule handleSwitch-aux(SN:Int, _,
-               map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
+     //  if all that's left is a default, do it
+     rule #handleSwitch-aux(SN:Int,V:Value,genLabel(SN:Int, l('Default)),
+		CaseHelper:K,M:Map) 
+	  => (#handleSwitch-aux(SN,V,.K,.K,M) 
+		~> Goto(genLabel(SN, l('Default))))
+	  [structural]  
+
+     rule #handleSwitch-aux(SN:Int,_:Value,(genLabel(SN:Int, _:K) => .K),
+		(_:K => .K),_:Map) 
           when SN =/=Int SN'
           [structural] 
-     rule handleSwitch-aux(_:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
-          when L =/=KLabel 'genLabel
+
+     rule #handleSwitch-aux(_:Int,_:Value,(K:K => .K),
+		(_:K => .K),_:Map) 
+          when getKLabel(K) =/=KLabel 'genLabel
           [structural] 
 
      rule tryCase(

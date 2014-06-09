@@ -57,10 +57,10 @@ module C-PROMOTION
                SetItem(l('_^_))
 
      rule isArithBinOp(Lbl:KLabel)
-          => #if l(Lbl) in arithBinOps #then true #else false #fi
+          => #if l(Lbl:KLabel) in arithBinOps #then true #else false #fi
           [structural]
      rule isArithBinConversionOp(Lbl:KLabel)
-          => #if l(Lbl) in arithBinConversionOps #then true #else false #fi
+          => #if l(Lbl:KLabel) in arithBinConversionOps #then true #else false #fi
           [structural]
 
      syntax Set ::= "arithUnaryOps" [function]// [memo]
@@ -70,7 +70,7 @@ module C-PROMOTION
           SetItem(l('~_))
 
      rule isArithUnaryOp(Lbl:KLabel)
-          => #if l(Lbl) in arithUnaryOps #then true #else false #fi
+          => #if l(Lbl:KLabel) in arithUnaryOps #then true #else false #fi
           [structural]
 
      // \csection{6}{3}{1}{0}{Arithmetic operands}
