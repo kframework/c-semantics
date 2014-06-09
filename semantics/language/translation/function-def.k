@@ -78,7 +78,8 @@ module C-FUNCTION-DEF
 
      syntax K ::= checkFunDefType(CId, Type)
      rule checkFunDefType(X:CId, T:Type) => .
-          when isVoidOrComplete(getReturn(T))
+          when notBool isFunctionType(getReturn(T))
+               andBool notBool isArrayType(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X =/=K Identifier("main"))
           [structural]
@@ -87,13 +88,13 @@ module C-FUNCTION-DEF
                andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
           [structural]
-     rule (. => ERROR("FD2", "incomplete return type in "
-               +String "function definition (6.7.6.3p4)."))
+     rule (. => UNDEF("FD2", "invalid return type in function definition.",
+               "6.7.6.3:1"))
           ~> checkFunDefType(_, T:Type)
-          when notBool isVoidOrComplete(getReturn(T))
+          when isFunctionType(getReturn(T)) orBool isArrayType(getReturn(T))
           [structural]
-     rule (. => ERROR("FD3", "incomplete parameter type in "
-               +String "function definition (6.7.6.3p4)."))
+     rule (. => UNDEF("FD3", "incomplete parameter type in "
+               +String "function definition.", "6.7.6.3:4"))
           ~> checkFunDefType(_, T:Type)
           when notBool areVoidOrComplete(getParams(T))
           [structural]
