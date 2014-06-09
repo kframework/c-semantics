@@ -196,7 +196,7 @@ module C-TYPING-EXPR
                L:KLabel(K:K,, _)
                => K:K
           ...</type>
-          when l(L) in assignmentLabels
+          when inSet(l(L), assignmentLabels)
           [structural]
 
      rule <type>
@@ -247,11 +247,11 @@ module C-TYPING-EXPR
      
      rule <type> L:KLabel(T:Type,, _:KList) => T ...</type>
           when hasFloatType(T)
-               andBool l(L) in typeStrictLeftBinaryOperators
+               andBool inSet(l(L), typeStrictLeftBinaryOperators)
           [structural]
      rule <type> L:KLabel(T:Type,, _:KList) => promote(T) ...</type>
           when hasIntegerType(T)
-               andBool l(L) in typeStrictLeftBinaryOperators
+               andBool inSet(l(L), typeStrictLeftBinaryOperators)
           [structural]
           
      rule <type> L:KLabel(T:Type) => T ...</type>

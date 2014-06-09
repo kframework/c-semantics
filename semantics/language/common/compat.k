@@ -81,6 +81,7 @@ module COMPAT-SYNTAX
 
      syntax KList ::= Int "to" Int [function]
      //TODO: make sure this is in current including List syntax Bool ::= K "in" List [function]
+     syntax Bool ::= inSet(K,Set) [function]
      syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
@@ -147,6 +148,16 @@ module COMPAT
      //rule _:K in .List => false
      //rule K:K in (ListItem(K':K) L:List) => K:K in L:List
          // when K:K =/=K K':K
+
+     syntax List ::= toTheList(Set) [function]
+
+     rule toTheList(.Set) => .List
+     rule toTheList(SetItem(K:K) S:Set) => ListItem(K) toTheList(S)
+ 
+     syntax Bool ::= #inSet(K,List)
+     rule inSet(K:K, S:Set) => #inSet(K,toTheList(S))
+     rule #inSet(K:K,L:List) => K in L
+
 
 /*TODO: runtime exception TODO Support ==Bag: Might need to support multiset equivalence
      syntax Bool ::= midMakeEqual(Bag,Bag,Bag, K) [function]

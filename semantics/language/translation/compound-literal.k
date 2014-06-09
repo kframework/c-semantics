@@ -92,7 +92,7 @@ module C-COMPOUND-LITERAL
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
-          when notBool (string(S) in keys(Mem))
+          when notBool inSet(string(S), keys(Mem))
           [structural]
           
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
@@ -101,7 +101,7 @@ module C-COMPOUND-LITERAL
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>
-          when notBool (wstring(S) in keys(Mem))
+          when notBool inSet(wstring(S), keys(Mem))
           [structural]
           
      rule <k> stringLiteral(S:String)
