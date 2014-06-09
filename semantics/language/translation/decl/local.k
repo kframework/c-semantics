@@ -155,14 +155,21 @@ module C-DECL-LOCAL
                // TODO(chathhorn): local-types is just a flag in this case.
                LocalTypes:Map => LocalTypes[.K <- kpair(X, BlockNum)]
           </local-types>
+          when isCompleteType(T)
+          [structural]
+     rule (. => UNDEF("TDL4",
+               "declaration of an identifier for an object with no linkage and incomplete type.",
+               "6.7:7"))
+          ~> defineAndInit(_, _, initValue(_, T:Type, _))
+          when notBool isCompleteType(T)
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[Info <- X] </structs>
           when notBool (X in keys(Structs))
           [structural]
-     rule <k> (. => ERROR("TDL4", "redefinition of a struct, union, or enum: "
-               +String idToString(X)))
+     rule <k> (. => CV("TDL5", "redefinition of a struct, union, or enum: "
+               +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
           <structs>... X |-> _ ...</structs>

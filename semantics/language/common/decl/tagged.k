@@ -27,14 +27,14 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           when L =/=List .List
           [structural]
-     rule (. => UNDEF("CDT1", "Structs cannot be empty.", "6.7.2.1") )
+     rule (. => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           when L =/=List .List
           [structural]
-     rule (. => UNDEF("CDT2", "Unions cannot be empty.", "6.7.2.1") )
+     rule (. => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
           [structural]
 
@@ -93,13 +93,13 @@ module C-DECL-TAGGED
                => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> file-scope </curr-function>
-          [structural]        
+          [structural]
      rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
                => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> F:CId </curr-function>
           when F =/=K file-scope
-          [structural]        
+          [structural]
 
 endmodule
 
