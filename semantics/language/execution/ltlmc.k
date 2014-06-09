@@ -7,9 +7,9 @@ module C-LTLMC-SYNTAX
 
      // Ltl atomic propositions.
      syntax ValueProp ::= Int  
-                        | ptr(SymLoc, Type)
-                        | struct(List, FieldInfo)
-                        | union(List, FieldInfo)
+                        | #ptr(SymLoc, Type)
+                        | #struct(List, FieldInfo)
+                        | #union(List, FieldInfo)
 
      syntax CProp ::= ValueProp | CId 
                     | "-" CProp
@@ -111,14 +111,14 @@ module C-LTLMC
                andBool (Lbl =/=KLabel '_._)
                andBool (Lbl =/=KLabel '_->_)
 
-     rule ltlRVal(B:Bag, * ptr(L:SymLoc, T:Type))
+     rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
      rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
 
      rule ltlRVal(_,
-          struct(V:List,
+          #struct(V:List,
                fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:CId)
           => joinBytes(T, 
@@ -129,7 +129,7 @@ module C-LTLMC
                          bitSizeofType(T), .List),
                     .List))
      rule ltlRVal(_,
-          union(V:List,
+          #union(V:List,
                fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:CId)
           => joinBytes(T, 
@@ -195,11 +195,11 @@ module C-LTLMC
 
      rule joinBytes(t(_, pointerType(T:Type)), 
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))
-          => ptr(L, T)
+          => #ptr(L, T)
      rule joinBytes(t(_, structType(_, _, Info:FieldInfo)), dataList(V:List))
-          => struct(V, Info)
+          => #struct(V, Info)
      rule joinBytes(t(_, unionType(_, _, Info:FieldInfo)), dataList(V:List))
-          => union(V, Info)
+          => #union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)
           when hasIntegerType(T:Type)
@@ -227,5 +227,5 @@ module C-LTLMC
                ...</gtypes>
           ...</T> ...</generatedTop>, 
           S:String)
-          => ptr(lnew(Base), T)
+          => #ptr(lnew(Base), T)
 endmodule

@@ -278,44 +278,44 @@ module C-TYPING-CANONICALIZATION
           => t(SetItem(Imaginary), long-double)
 
      rule canonicalizeSpecifier(B:List) => t(.Set, short-int)
-          when ('_==MSet_(B ,, ListItem(Short)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Short)))
-               orBool ('_==MSet_(B ,, ListItem(Short) ListItem(Int)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Short) ListItem(Int)))
+          when ('_==MSet_(B:List ,, ListItem(Short)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Short)))
+               orBool ('_==MSet_(B:List ,, ListItem(Short) ListItem(Int)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Short) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-short-int)
           when ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Short)))
                orBool ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Short) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, int)
-          when ('_==MSet_(B ,, ListItem(Int)))
-               orBool ('_==MSet_(B ,, ListItem(Signed)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Int)))
+          when ('_==MSet_(B:List ,, ListItem(Int)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-int)
-          when ('_==MSet_(B ,, ListItem(Unsigned)))
-               orBool ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Int)))
+          when ('_==MSet_(B:List ,, ListItem(Unsigned)))
+               orBool ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, long-int)
-          when ('_==MSet_(B ,, ListItem(Long)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Long)))
-               orBool ('_==MSet_(B ,, ListItem(Long) ListItem(Int)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Long) ListItem(Int)))
+          when ('_==MSet_(B:List ,, ListItem(Long)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long)))
+               orBool ('_==MSet_(B:List ,, ListItem(Long) ListItem(Int)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-long-int)
-          when ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Long)))
-               orBool ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Long) ListItem(Int)))
+          when ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long)))
+               orBool ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, long-long-int)
-          when ('_==MSet_(B ,, ListItem(Long) ListItem(Long)))
-               orBool ('_==MSet_(B ,, ListItem(Signed) ListItem(Long) ListItem(Long)))
-               orBool ('_==MSet_(B ,, ListItem(Long) ListItem(Long) ListItem(Int)))
-               orBool ('_==MSet_(B ,,
+          when ('_==MSet_(B:List ,, ListItem(Long) ListItem(Long)))
+               orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long) ListItem(Long)))
+               orBool ('_==MSet_(B:List ,, ListItem(Long) ListItem(Long) ListItem(Int)))
+               orBool ('_==MSet_(B:List ,,
                     ListItem(Signed) ListItem(Long) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-long-long-int)
-          when ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Long) ListItem(Long)))
-               orBool ('_==MSet_(B ,,
+          when ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long) ListItem(Long)))
+               orBool ('_==MSet_(B:List ,,
                     ListItem(Unsigned) ListItem(Long) ListItem(Long) ListItem(Int)))
           [structural]
 endmodule

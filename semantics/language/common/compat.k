@@ -188,7 +188,11 @@ module COMPAT
      rule '_==MSet_(.List ,, ListItem(_) M:List) => false
      rule '_==MSet_(ListItem(_) M:List ,, .List) => false
      rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
-		=> '_==MSet_(M ,, removeListItem(M',K))
+		=> '_==MSet_(M:List ,, removeListItem(M',K))
+	  when K:K in M':List
+     rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
+		=> false
+	  when notBool (K:K in M':List)
 
      rule M:List =/=MSet M':List => notBool '_==MSet_(M ,, M')
 
