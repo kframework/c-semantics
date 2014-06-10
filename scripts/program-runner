@@ -290,6 +290,10 @@ sub parseResult {
       /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = $1;
       };
+
+      /<result-value>\s*tv\s*\(\s*NullPointer\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+            $parsed->{exitCode} = 0;
+      };
 }
 
 sub unindent {
