@@ -39,11 +39,12 @@ module C-IO-BUFFERED
                ~> setModified(Loc, T)
                ~> writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
 
      syntax K ::= setModified(SymLoc, Type)
      rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>

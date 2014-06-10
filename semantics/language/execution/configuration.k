@@ -72,7 +72,7 @@ module C-CONFIGURATION
                     ~> pgmArgs($ARGV:List) 
                     ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                </k>
-               <initializing> false </initializing>
+               <initializing> 0 </initializing>
 
                <next-loc color="black"> 0 @ auto(0) </next-loc>
                <final-computation multiplicity="?" color="lightgray">

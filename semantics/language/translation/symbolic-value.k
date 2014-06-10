@@ -41,7 +41,8 @@ module C-SYMBOLIC-VALUE
           when notBool isConstType(T)
           [structural]
      rule <k> write(symVal, _, _) => . ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
           [structural]
 
      rule bitSizeofType(T:Type) => symVal
@@ -49,7 +50,7 @@ module C-SYMBOLIC-VALUE
                andBool notBool isFlexibleArrayType(T)
      rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal
 
-     rule splitBytes(tv(symVal, T:Type)) 
+     rule splitBytes(tv(symVal, T:Type))
           => dataList(
                times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
 

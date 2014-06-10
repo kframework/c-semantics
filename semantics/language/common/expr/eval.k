@@ -130,16 +130,17 @@ module C-COMMON-EXPR-EVAL
 
      syntax K ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => . ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
           [structural]
      rule <k> checkRegister(Loc:SymLoc) => . ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           when notBool isRegisterLoc(Loc)
           [structural]
      rule <k> checkRegister(Loc:SymLoc)
                => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           when isRegisterLoc(Loc)
           [structural]
 

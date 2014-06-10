@@ -105,7 +105,7 @@ module C-CONFIGURATION
 
           // Toggle to allow writes and other special treatment for
           // initializers.
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
 
           <control-details> // TODO(chathhorn): dumb name
                <local>
