@@ -1,3 +1,5 @@
+require "cil-common.k"
+
 // vim: set ts=2 sw=2:
 module CIL-LIB
   imports CIL-SYNTAX

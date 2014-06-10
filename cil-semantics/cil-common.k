@@ -4,6 +4,7 @@ require "builtins/map.k"
 require "builtins/mint.k"
 
 require "cil-syntax.k"
+require "cil-typing.k" // for typing syntax
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX

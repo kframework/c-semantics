@@ -4,6 +4,7 @@ require "builtins/map.k"
 require "builtins/set.k"
 
 require "cil-common.k"
+require "cil-implementation.k"
 
 /* CId variable conventions:
      X variable
