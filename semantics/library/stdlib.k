@@ -49,7 +49,8 @@ module LIBC-STDLIB
      rule <k> prepareBuiltin(Identifier("malloc"),
                     ListItem(tv(Len:Int, _:KResult)))
                => alloc(Base, t(.Set, no-type), Len:Int)
-               ~> tv(lnew(Base), t(.Set, pointerType(t(.Set, void))))
+               ~> tv(loc(Base, 0, SetItem(fromArray(0, Len))),
+                    t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => Base |-> Len:Int ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
@@ -82,7 +83,8 @@ module LIBC-STDLIB
                     ListItem(tv(loc(OldBase:SymBase, 0), _))
                     ListItem(tv(NewLen:Int, _)))
                => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(lnew(NewBase), t(.Set, pointerType(t(.Set, void))))
+               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
+                    t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
                (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
