@@ -124,8 +124,8 @@ module C-DECL-RESOLUTION
           <external-types>
                Types:Map
           </external-types>
-          when notBool (X in keys(Defs))
-               orBool notBool (X in keys(Types))
+          when notBool inSet(X, keys(Defs))
+               orBool notBool inSet(X, keys(Types))
 
      // Remember which TU has the definition of main.
      rule <k> (resolveReference(Identifier("main")) => .) ...</k>

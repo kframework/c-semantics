@@ -37,7 +37,7 @@ $(DIST_DIR): $(FILES_TO_DIST) semantics | check-vars
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 	@mv $(DIST_DIR)/*.h $(DIST_DIR)/includes
 	@echo "Translating the standard library..."
-	@$(DIST_DIR)/kcc -clib -o $(DIST_DIR)/lib/libc.o $(wildcard $(LIBC_DIR)/src/*.c)
+	$(DIST_DIR)/kcc -clib -o $(DIST_DIR)/lib/libc.o $(wildcard $(LIBC_DIR)/src/*.c)
 	@echo "Done."
 	@echo "Testing kcc..."
 	@perl $(SCRIPTS_DIR)/testInstall.pl $(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c $(DIST_DIR)/testProgram.compiled

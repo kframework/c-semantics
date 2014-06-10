@@ -74,8 +74,8 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          when (notBool Identifier(S) in keys(Env))
-               andBool (notBool Identifier(S) in keys(Types))
+          when (notBool inSet(Identifier(S:String), keys(Env)))
+               andBool (notBool inSet(Identifier(S:String), keys(Types)))
           [structural]
      rule <k> (. => ERROR("00021b", "No definition found for identifier " 
                +String S +String ".") ) ~>
@@ -83,7 +83,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
-          when (notBool Identifier(S) in keys(Env))
+          when (notBool inSet(Identifier(S), keys(Env)))
                andBool (notBool isFunctionType(T))
           [structural]
 

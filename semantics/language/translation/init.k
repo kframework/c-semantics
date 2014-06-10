@@ -30,7 +30,7 @@ module C-TRANSLATION-INIT
                ~> printSuccess
           ...</k>
           <options> Opts:Set </options>
-          when notBool (NOLINK in Opts)
+          when notBool inSet(NOLINK, Opts)
 
      rule <k> link => printSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
@@ -39,7 +39,7 @@ module C-TRANSLATION-INIT
                <k> cleanup </k>
                <options> Opts:Set </options>
           ...</T> => .)
-          when notBool (DEBUG in Opts)
+          when notBool inSet(DEBUG, Opts)
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
@@ -88,13 +88,13 @@ module C-TRANSLATION-INIT
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool B in keys(Defs)
+          when notBool inSet(B, keys(Defs))
           
      rule <k> (addBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (B in keys(Defs))
-               orBool (notBool B in keys(Types))
+          when inSet(B, keys(Defs))
+               orBool (notBool inSet(B, keys(Types)))
 
      
 

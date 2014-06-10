@@ -86,7 +86,7 @@ module C-IO-DIRECT
                Base |-> object(_, _, 
                     M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
-          when notBool Offset in (keys(M))
+          when notBool inSet(Offset, (keys(M)))
           [structural]
 
 endmodule

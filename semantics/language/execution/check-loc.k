@@ -29,9 +29,9 @@ module C-CHECK-LOC
           <mem> Mem:Map </mem>
           <functions> Funs:Map </functions>
           <linkings> Links:Map </linkings>
-          when notBool Base in keys(Mem)
-               andBool notBool Base in keys(Funs)
-               andBool notBool Base in keys(Links)
+          when notBool inSet(Base, keys(Mem))
+               andBool notBool inSet(Base, keys(Funs))
+               andBool notBool inSet(Base, keys(Links))
           [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
@@ -65,27 +65,27 @@ module C-CHECK-LOC
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
           </restrict>
-          when notBool (stripProv(Loc) in keys(Restricts))
+          when notBool inSet(stripProv(Loc), keys(Restricts))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
                => checkRestrict(getBases(Prov), getBases(Prov), Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when loc(Base, Offset) in keys(Modified)
+          when inSet(loc(Base, Offset), keys(Modified))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int), _)
                => checkRestrict(.Set, .Set, Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when loc(Base, Offset) in keys(Modified)
+          when inSet(loc(Base, Offset), keys(Modified))
           [structural]
 
      syntax KItem ::= checkRestrict(Set, Set, Set)
      syntax Set ::= #checkRestrict(Set,K,Set,Set) [function]
 
-     rule #checkRestrict(Bases:Set,.K,.Set,S:Set) => S
+     rule #checkRestrict(_:Set,.K,.Set,S:Set) => S
      rule #checkRestrict(Bases:Set,.K,SetItem(K:K) S:Set,S':Set) 
 	  => #checkRestrict(Bases,K,S,S') 
      rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set) 

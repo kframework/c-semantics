@@ -292,7 +292,7 @@ module C-PROCESS-LABEL
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
                     <- Target]))
           ...</goto-map>
-          when notBool Target in keys(M)
+          when notBool inSet(Target, keys(M))
           [structural]
           
      rule <computation> 
@@ -313,7 +313,7 @@ module C-PROCESS-LABEL
                               (S ~> K ~> Tail), LoopStack, DeclStack)
                               <- case(CaseNum)])) 
           ...</goto-map>
-          when notBool genLabel(SwitchNum, Val) in keys(M)
+          when notBool inSet(genLabel(SwitchNum, Val), keys(M))
           [structural] 
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
@@ -333,7 +333,7 @@ module C-PROCESS-LABEL
                          (S ~> K ~> Tail), LoopStack, DeclStack) 
                     <- genLabel(SwitchNum, l('Default))])) 
           ...</goto-map>
-          when notBool genLabel(SwitchNum, l('Default)) in keys(M)
+          when notBool inSet(genLabel(SwitchNum, l('Default)), keys(M))
           [structural]
 endmodule
  

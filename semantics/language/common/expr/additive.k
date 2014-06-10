@@ -110,7 +110,7 @@ module C-COMMON-EXPR-ADDITIVE
 		 Len:Int),.Set,Prov:Set,T:Type,I:Int)
 	  => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
-     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,T:Type,I:Int)
+     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,_:Type,_:Int)
 	  => loc(Base, Offset, SetItem(K) Prov)
 	  when getKLabel(K) =/=KLabel 'fromArray
      rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
@@ -132,13 +132,13 @@ module C-COMMON-EXPR-ADDITIVE
      syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
 		   | #ifFromArrayInBounds(K,Set,Type,Int)
 
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),Prov:Set,T:Type,I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
 	  => true
 	  when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),Prov:Set,T:Type,I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
 	  => false
 	  when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
-     rule #ifFromArrayInBounds(K:K,.Set,T:Type,I:Int)
+     rule #ifFromArrayInBounds(K:K,.Set,_:Type,_:Int)
 	  => true
 	  when getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K,SetItem(K':K) S:Set,T:Type,I:Int)

@@ -156,7 +156,7 @@ module C-FUNCTION-DEF
                => .
           ...</k>
           <functions> M:Map => M[Fun <- base(Loc)] </functions>
-          when isFunctionType(T) andBool (notBool base(Loc) in keys(M))
+          when isFunctionType(T) andBool (notBool inSet(base(Loc), keys(M)))
           [structural]
 
      syntax KItem ::= safeBody(CId, K) [function]

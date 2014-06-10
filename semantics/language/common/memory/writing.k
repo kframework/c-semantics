@@ -120,7 +120,7 @@ module C-MEMORY-WRITING
 		| makeUnionUnKnown(K,Set)
 
      rule makeUnionUnKnown(.K,.Set) => . [structural]
-     rule makeUnionUnKnown(.K,SetItem(K) S:Set) 
+     rule makeUnionUnKnown(.K,SetItem(K:K) S:Set) 
 	  => makeUnionUnKnown(K,S)
 	  [structural]
      rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId,

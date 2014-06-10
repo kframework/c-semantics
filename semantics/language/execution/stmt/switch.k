@@ -52,10 +52,10 @@ module C-STMT-SWITCH
 
      syntax KItem ::= "#handleSwitch-aux" "(" Int "," Value "," K "," K "," Map ")"
 
-     rule #handleSwitch-aux(SN:Int,V:Value,.K,K:K,.Map) => .Map
+     rule #handleSwitch-aux(_:Int,_:Value,.K,_:K,.Map) => .Map
 	  [structural] 
 
-     rule #handleSwitch-aux(SN:Int,V:Value,.K,K:K,
+     rule #handleSwitch-aux(SN:Int,V:Value,.K,_:K,
 		(Key:K |-> CaseHelper:K) M:Map) 
 	  => #handleSwitch-aux(SN,V,Key,CaseHelper,M)
 	  [structural] 
@@ -69,12 +69,12 @@ module C-STMT-SWITCH
      
      //  if all that's left is a default, do it
      rule #handleSwitch-aux(SN:Int,V:Value,genLabel(SN:Int, l('Default)),
-		CaseHelper:K,M:Map) 
+		_:K,M:Map) 
 	  => (#handleSwitch-aux(SN,V,.K,.K,M) 
 		~> Goto(genLabel(SN, l('Default))))
 	  [structural]  
 
-     rule #handleSwitch-aux(SN:Int,_:Value,(genLabel(SN:Int, _:K) => .K),
+     rule #handleSwitch-aux(SN:Int,_:Value,(genLabel(SN':Int, _:K) => .K),
 		(_:K => .K),_:Map) 
           when SN =/=Int SN'
           [structural] 

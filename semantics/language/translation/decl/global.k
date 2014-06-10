@@ -180,16 +180,16 @@ module C-DECL-GLOBAL
                // the function's return type. AFAIK, the only time qualifiers
                // should be applied to the declared function type is when the
                // function type is actually a typedef.
-               (Static in Specs andBool Extern in Specs)
-               orBool (Auto in Specs andBool Static in Specs)
-               orBool (Auto in Specs andBool Extern in Specs)
-               orBool (Auto in Specs andBool ThreadLocal in Specs)
-               orBool (Register in Specs andBool Static in Specs)
-               orBool (Register in Specs andBool Extern in Specs)
-               orBool (Register in Specs andBool ThreadLocal in Specs)
-               orBool (isFunctionType(T) andBool ThreadLocal in Specs)
-               orBool (isFunctionType(T) andBool Auto in Specs)
-               orBool (isFunctionType(T) andBool Register in Specs)
+               (inSet(Static, Specs) andBool inSet(Extern, Specs))
+               orBool (inSet(Auto, Specs) andBool inSet(Static, Specs))
+               orBool (inSet(Auto, Specs) andBool inSet(Extern, Specs))
+               orBool (inSet(Auto, Specs) andBool inSet(ThreadLocal, Specs))
+               orBool (inSet(Register, Specs) andBool inSet(Static, Specs))
+               orBool (inSet(Register, Specs) andBool inSet(Extern, Specs))
+               orBool (inSet(Register, Specs) andBool inSet(ThreadLocal, Specs))
+               orBool (isFunctionType(T) andBool inSet(ThreadLocal, Specs))
+               orBool (isFunctionType(T) andBool inSet(Auto, Specs))
+               orBool (isFunctionType(T) andBool inSet(Register, Specs))
           )
 
      rule validGlobalStorageClass(T:Type)
@@ -197,8 +197,8 @@ module C-DECL-GLOBAL
      rule validGlobalStorageClass'(T:Type, Specs:Set) =>
           validStorageClass'(T, Specs)
           andBool notBool (
-               (Auto in Specs)
-               orBool (Register in Specs)
+               (inSet(Auto, Specs))
+               orBool (inSet(Register, Specs))
           )
 
      rule validLocalStorageClass(T:Type)
@@ -206,7 +206,7 @@ module C-DECL-GLOBAL
      rule validLocalStorageClass'(T:Type, Specs:Set) =>
           validStorageClass'(T, Specs)
           andBool notBool (
-               (isFunctionType(T) andBool Static in Specs)
+               (isFunctionType(T) andBool inSet(Static, Specs))
           )
 
      // *** External variables ***
@@ -273,7 +273,7 @@ module C-DECL-GLOBAL
                X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</internals>
           when notBool isNaked(T)
-               andBool notBool (X in keys(Exts))
+               andBool notBool inSet(X, keys(Exts))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -304,7 +304,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           when isNaked(T)
-               andBool notBool (X in keys(Ints))
+               andBool notBool inSet(X, keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -323,7 +323,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           when isExtern(T)
-               andBool notBool (X in keys(Ints))
+               andBool notBool inSet(X, keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -357,8 +357,8 @@ module C-DECL-GLOBAL
           </externals>
           <internals> Ints:Map </internals>
           when notBool isStaticType(T)
-               andBool notBool (X in keys(Exts))
-               andBool notBool (X in keys(Ints))
+               andBool notBool inSet(X, keys(Exts))
+               andBool notBool inSet(X, keys(Ints))
           [structural]
 
      // Static, not previously declared.
@@ -378,8 +378,8 @@ module C-DECL-GLOBAL
                (.Map => X |-> declState(Base, T, declared, false))
           </internals>
           when isStaticType(T)
-               andBool notBool (X in keys(Exts))
-               andBool notBool (X in keys(Ints))
+               andBool notBool inSet(X, keys(Exts))
+               andBool notBool inSet(X, keys(Ints))
           [structural]
 
      // Static, previously extern.
@@ -392,7 +392,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
           when isStaticType(T)
-               andBool (X in keys(Exts))
+               andBool inSet(X, keys(Exts))
           [structural]
 
      // Now we just need to handle allocation, initialization, and updating the
@@ -555,7 +555,7 @@ module C-DECL-GLOBAL
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
           when isLinkerLoc(Base')
-               andBool notBool X in keys(Decls)
+               andBool notBool inSet(X, keys(Decls))
           [structural]
      // No previous decl, this is a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
@@ -564,7 +564,7 @@ module C-DECL-GLOBAL
           <external-types>... (.Map => X |-> T') ...</external-types>
           <external-defs>... (.Map => X |-> Base') ...</external-defs>
           when notBool isLinkerLoc(Base')
-               andBool notBool X in keys(Decls)
+               andBool notBool inSet(X, keys(Decls))
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
@@ -578,7 +578,7 @@ module C-DECL-GLOBAL
           <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs> Defs:Map (.Map => X |-> Base') </external-defs>
           when notBool isLinkerLoc(Base')
-               andBool (notBool X in keys(Defs))
+               andBool (notBool inSet(X, keys(Defs)))
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
@@ -653,7 +653,7 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          when notBool (X in keys(GStructs))
+          when notBool inSet(X, keys(GStructs))
           [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -661,8 +661,8 @@ module C-DECL-GLOBAL
           <structs> Structs:Map => Structs[Info <- X] </structs>
           <gstructs> GStructs:Map => GStructs[Info <- X] </gstructs>
           <incomplete-tags> Incs:Set </incomplete-tags>
-          when notBool (X in Incs)
-               andBool notBool (X in keys(GStructs))
+          when notBool inSet(X, Incs)
+               andBool notBool inSet(X, keys(GStructs))
           [structural]
      rule <k> (. => ERROR("DG13", "redefinition of a struct, union, or enum: "
                     +String idToString(X)))
@@ -671,7 +671,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs> GStructs:Map </gstructs>
-          when X in keys(GStructs)
+          when inSet(X, keys(GStructs))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -788,7 +788,7 @@ module C-DECL-GLOBAL
                => giveType(X, T')
           ...</k>
           <types> Types:Map </types>
-          when notBool X in keys(Types)
+          when notBool inSet(X, keys(Types))
           [structural]
 
      rule <k> (.K => ERROR("DG14", "incompatible redeclaration of symbol "
