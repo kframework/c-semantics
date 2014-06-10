@@ -1,4 +1,5 @@
 module C-EXPR-ASSIGNMENT
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -11,14 +12,31 @@ module C-EXPR-ASSIGNMENT
           ~> transferProv(Loc, tv(V, T'))
           when T' ==Type T
                andBool notBool isRestrictType(T')
+               andBool (#fromArrayStatic(T') =/=K true)
+          [structural]
+     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => checkArrayStaticAssign(T', tv(V, T))
+          ~> write(Loc, V, T')
+          ~> transferProv(Loc, tv(V, T'))
+          when T' ==Type T
+               andBool notBool isRestrictType(T')
+               andBool (#fromArrayStatic(T') ==K true)
           [structural]
      rule lval(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
-          => checkRestrictAssign(
-               getRestrictBlock(T'), getRelevantTags(Loc, V))
+          => checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T'))
           when T' ==Type T
                andBool isRestrictType(T')
+          [structural]
+     rule lval(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+          => checkArrayStaticAssign(T', tv(V, T))
+          ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
+          ~> write(Loc, V, T')
+          ~> transferProv(Loc, tv(V, T'))
+          when T' ==Type T
+               andBool isRestrictType(T')
+               andBool (#fromArrayStatic(T') ==K true)
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
@@ -46,6 +64,22 @@ module C-EXPR-ASSIGNMENT
      //      => UNDEF("CEA5", "Attempt to alias restrict qualified pointers associated with the incompatible blocks.", "")
      //      when Tag =/=K global
      rule checkRestrictAssign(_, .Set) => .
+
+     syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
+     rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
+
+     syntax K ::= checkArrayStaticAssign(Type, TypedValue)
+     rule checkArrayStaticAssign(
+               t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
+               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int))), _)) => .
+          when (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
+     rule (. => UNDEF("CEA5",
+               "passing a pointer to an array object of fewer elements than required to a function with a static-qualified size.",
+               "6.7.6.3"))
+          ~> checkArrayStaticAssign(
+               t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
+               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int))), _))
+          when (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
 endmodule
 

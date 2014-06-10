@@ -137,6 +137,8 @@ module C-TYPING-SYNTAX
      syntax Set ::= getModifiers(Type) [function]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
+     // For function array parameters with a static-qualified size.
+     syntax Modifier ::= arrayStatic(CSize)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
