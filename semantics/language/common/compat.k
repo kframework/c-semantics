@@ -40,27 +40,27 @@ module COMPAT-SYNTAX
           [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
      syntax Float ::= sqrtFloat(Float)
-          [function, hook(#FLOAT:sqrtFloat)]
+          [function, hook(#FLOAT:sqrt)]
      syntax Float ::= logFloat(Float)
-          [function, hook(#FLOAT:logFloat)]
+          [function, hook(#FLOAT:log)]
      syntax Float ::= expFloat(Float)
-          [function, hook(#FLOAT:expFloat)]
+          [function, hook(#FLOAT:exp)]
      syntax Float ::= atanFloat(Float)
-          [function, hook(#FLOAT:atanFloat)]
+          [function, hook(#FLOAT:atan)]
      syntax Float ::= acosFloat(Float)
-          [function, hook(#FLOAT:acosFloat)]
+          [function, hook(#FLOAT:acos)]
      syntax Float ::= asinFloat(Float)
-          [function, hook(#FLOAT:asinFloat)]
+          [function, hook(#FLOAT:asin)]
      syntax Float ::= tanFloat(Float)
-          [function, hook(#FLOAT:tanFloat)]
+          [function, hook(#FLOAT:tan)]
      syntax Float ::= cosFloat(Float)
-          [function, hook(#FLOAT:cosFloat)]
+          [function, hook(#FLOAT:cos)]
      syntax Float ::= sinFloat(Float)
-          [function, hook(#FLOAT:sinFloat)]
+          [function, hook(#FLOAT:sin)]
      syntax Float ::= atan2Float(Float, Float)
-          [function, hook(#FLOAT:atanFloat)]
+          [function, hook(#FLOAT:atan)]
      syntax Float ::= floorFloat(Float)
-          [function, hook(#FLOAT:floorFloat)]
+          [function, hook(#FLOAT:floor)]
 
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
@@ -190,19 +190,19 @@ module COMPAT
 */
      rule isEmptyBag(.Bag) => true    
 
-     rule removeListItem(.List,K:K) => .List
-     rule removeListItem(ListItem(K:K) M:List,K) => M
+     rule removeListItem(.List,_:K) => .List
+     rule removeListItem(ListItem(A:K) M:List,A) => M
      rule removeListItem(ListItem(A:K) M:List,A':K) 
 	=> ListItem(A) removeListItem(M,A')
 	when A =/=K A'
 
      rule '_==MSet_(.List ,, .List) => true
-     rule '_==MSet_(.List ,, ListItem(_) M:List) => false
-     rule '_==MSet_(ListItem(_) M:List ,, .List) => false
+     rule '_==MSet_(.List ,, ListItem(_) _:List) => false
+     rule '_==MSet_(ListItem(_) _:List ,, .List) => false
      rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
 		=> '_==MSet_(M:List ,, removeListItem(M',K))
 	  when K:K in M':List
-     rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
+     rule '_==MSet_(ListItem(K:K) _:List ,, M':List) 
 		=> false
 	  when notBool (K:K in M':List)
 

@@ -85,19 +85,23 @@ module C-LTLMC
      // TODO(chathhorn): Very basic rewrite of C expression semantics. It'd be
      // nice to be able to re-use more of the actual semantics for this...
      rule ltlRVal(_, V:ValueProp) => V
-
+    /*TODO: may be crashed
      rule ltlRVal(B:Bag, - P:CProp) 
           => ltlRVal(B, 0 - ltlRVal(B, P))
+    */
      rule ltlRVal(B:Bag, + P:CProp) 
           => ltlRVal(B, P)
+     /*TODO: cannot handle this
      rule ltlRVal(B:Bag, L:CProp[R:CProp])
           => ltlRVal(B, * (L + R))
+     */
      
      // I don't really think & is necessary.
      // rule ltlRVal(B:Bag, & P:CProp) 
      //      => ltlLVal(B, P)
 
      // "strictness"
+     /*TODO: cannot handle this cases
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
 	 	=> ltlRVal(B, L(ltlRVal(B, P)))
           when notBool (isValueProp(P:CProp) ==K true)
@@ -110,12 +114,14 @@ module C-LTLMC
                // Don't try resolving the field specifier.
                andBool (Lbl =/=KLabel '_._)
                andBool (Lbl =/=KLabel '_->_)
-
+     */
      rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
+     /*TODO: cannot handle this
      rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
+     */
 
      rule ltlRVal(_,
           #struct(V:List,
@@ -138,7 +144,7 @@ module C-LTLMC
                          dataList(explodeToBits(V)), 
                          Offset, bitSizeofType(T), .List),
                     .List))
-
+     
      rule ltlRVal(_, L:Int * R:Int) => L *Int R
      rule ltlRVal(_, L:Int / R:Int) => L /Int R
      rule ltlRVal(_, L:Int + R:Int) => L +Int R
@@ -155,9 +161,9 @@ module C-LTLMC
      syntax Int ::= dumbRead(Bag, SymLoc, Type) [function]
      syntax Int ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")" 
           [function]
-
+     /*TODO: cannot handle this cases
      rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))
-
+     */
      rule dumbRead(
                <generatedTop>... <T>... 
                     <mem> Mem:Map </mem> 

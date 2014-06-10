@@ -145,7 +145,7 @@ module C-STMT-GOTO
 		   | resultInGotoObjectList(List,List,List)
 
      rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
-			Postfix:List,Actual:List,Store:List)
+			_:List,_:List,Store:List)
 			=> resultInGotoObjectList(.List,.List,Store) 
 			when notBool BlockNum in BH
      rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
@@ -154,12 +154,12 @@ module C-STMT-GOTO
 			Postfix,Actual,Store)
 			when BlockNum in BH
 
-     rule searchInGotoObjectList(.List,Postfix:List,
+     rule searchInGotoObjectList(.List,_:List,
 		Actual:List,Store:List) 
 		=> resultInGotoObjectList(.List,.List,Store)
 		when Actual =/=List .List
-     rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int)
-		,Postfix:List,Actual:List ListItem(Current:Int),Store:List) 
+     rule searchInGotoObjectList(_:List ListItem(BlockNum:Int)
+		,_:List,_:List ListItem(Current:Int),Store:List) 
 		=> resultInGotoObjectList(.List,.List,Store)
 		when BlockNum =/=Int Current
      rule searchInGotoObjectList(BH:List ListItem(Current:Int)
@@ -167,10 +167,10 @@ module C-STMT-GOTO
 		=> searchInGotoObjectList(BH,
 		ListItem(Current) Postfix,Actual,Store) 
      rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int)
-		,Postfix:List,.List,Store:List) 
+		,Postfix:List,.List,_:List) 
 		=> resultInGotoObjectList(ListItem(BlockNum),BH,Postfix)
      rule searchInGotoObjectList(BH:List
-		,Postfix:List,.List,Store:List) 
+		,Postfix:List,.List,_:List) 
 		=> resultInGotoObjectList(.List,BH,Postfix)
 
      rule <k> processGoto(gotoObject(SIntDepth:Int, 
@@ -235,7 +235,7 @@ module C-STMT-GOTO
                ~> addVariablesForBlock(TargetBlk, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
                     resultInGotoObjectList(ListItem(TargetBlk:Int),
-			Prefix:List, ActualHist:List), _, _,
+			_:List, ActualHist:List), _, _,
                     DeclStk:List))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>

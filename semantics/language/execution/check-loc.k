@@ -85,7 +85,7 @@ module C-CHECK-LOC
      syntax KItem ::= checkRestrict(Set, Set, Set)
      syntax Set ::= #checkRestrict(Set,K,Set,Set) [function]
 
-     rule #checkRestrict(Bases:Set,.K,.Set,S:Set) => S
+     rule #checkRestrict(_:Set,.K,.Set,S:Set) => S
      rule #checkRestrict(Bases:Set,.K,SetItem(K:K) S:Set,S':Set) 
 	  => #checkRestrict(Bases,K,S,S') 
      rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set) 
