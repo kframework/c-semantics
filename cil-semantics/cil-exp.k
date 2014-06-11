@@ -12,6 +12,7 @@ require "cil-common.k"
 
 module CIL-LITERAL
   imports SET
+  imports CIL-COMMON // for Int2Double
 
   syntax String ::= carStr(String) [function]
                   | racStr(String) [function]
@@ -78,10 +79,10 @@ module CIL-LITERAL
       (2.0 ^Float hexToFloat'(getHexFloatExponent(S)))
 
   rule hexToFloat'(S:String)
-    => Int2Float(conv(beforeDot(S), 16)) 
+    => Int2Double(conv(beforeDot(S), 16)) 
       +Float 
-      (Int2Float(conv(afterDot(S), 16)) 
-        /Float Int2Float(16 ^Int lengthString(afterDot(S))))
+      (Int2Double(conv(afterDot(S), 16)) 
+        /Float Int2Double (16 ^Int lengthString(afterDot(S))))
         
   rule beforeDot(S:String)
     => #if findChar(S, ".", 0) ==Int -1 

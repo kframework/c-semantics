@@ -150,7 +150,10 @@ module CIL-COMMON-TYPED-VALUE
   rule norm(T:Type, I:Int) => tv(T, mi(width(T), I))
   when isPtrType(T) ==K true
 
-  rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
+  syntax Float ::= Int2Double(Int) [function]
+  rule Int2Double(I:Int) => Int2Float(I, 53, 11)
+
+  rule norm(T:FloatingType, I:Int) => norm(T, Int2Double(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
 
   // TODO(chathhorn): rather hackish.
