@@ -269,21 +269,19 @@ module CIL-DECL
   rule normLabelsVisitor(default : S:Stmt , I:Int) => $defaultLabel(I): S
   rule normLabelsVisitor(while(E:Exp) S:Stmt, _)
     => {
-          $continueLabel(I): 
-            while(E) normLabelsStmt(S, I)
-          $breakLabel(I): ;
+          $continueLabel(?I:Int): 
+            while(E) normLabelsStmt(S, ?I)
+          $breakLabel(?I): ;
         }
-    when fresh(I:Int)
   rule normLabelsVisitor(switch(E:Exp) { Ss:Stmts }, _)
     =>
       {
-          goto $caseLabel(I, E);
+          goto $caseLabel(?I:Int, E);
           @Stmts
-          normLabelsStmts(Ss, I)
+          normLabelsStmts(Ss, ?I)
           @Stmts
-          $breakLabel(I): ;
+          $breakLabel(?I): ;
       }
-    when fresh(I:Int)
 
   rule normLabelsStmt(S:Stmt, I:Int)
     => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
