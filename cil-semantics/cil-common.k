@@ -170,9 +170,9 @@ module CIL-COMMON-MMU
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
 
-  syntax MyList ::= #rangeList(Int, Int, Int)                     [function]
-                | #rangeList(Int, Int)                            [function]
-                | #rangeList(Int)                                 [function]
+  syntax List ::= #rangeList(Int, Int, Int)     [klabel(#rangeList3), function]
+                | #rangeList(Int, Int)          [klabel(#rangeList2), function]
+                | #rangeList(Int)               [klabel(#rangeList1), function]
                 | "$rangeList" "(" Int "," Int "," Int ")"        [function]
                 | "$downrangeList" "(" Int "," Int "," Int ")"    [function]
   rule #rangeList(I:Int) => #rangeList(0, I, 1)

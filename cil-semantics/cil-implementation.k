@@ -66,8 +66,8 @@ module CIL-IMPLEMENTATION
   /*
    * Floats.
    */
-  syntax MyList ::= padBytes(Int) [function]
-                  | padBytes(Int, ByteValue) [function]
+  syntax List ::= padBytes(Int) [klabel(padBytes1), function]
+                  | padBytes(Int, ByteValue) [klabel(padBytes2), function]
   
   rule padBytes(N:Int) => padBytes(N, used)
 
