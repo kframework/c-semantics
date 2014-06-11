@@ -9,6 +9,7 @@ module C-TYPING-CANONICALIZATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-COMMON-EXPR-ALIGNOF-SYNTAX
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
@@ -25,27 +26,24 @@ module C-TYPING-CANONICALIZATION
      rule (. => DeclType(K1, K2))
           ~> canonicalizeType-aux(_:Bag BagItem(AlignasType(K1:K, K2:K)), _, _, _, _)
           [structural]
-     rule (. => typeof(K))
+     rule (. => K)
           ~> canonicalizeType-aux(_:Bag BagItem(AlignasExpression(K:K)), _, _, _, _)
           [structural]
 
-     syntax K ::= atomic(Type)
-     syntax K ::= alignas(Type)
-
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(TAtomic(_, _)) => .Bag)), _,
-               (_ (.Bag => BagItem(atomic(T)))), _, _)
+               _ (BagItem(TAtomic(_, _)) => .Bag), _, _, _,
+               _ (.Bag => BagItem(atomic(T))))
           [structural]
      rule (T:Type => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasType(_, _)) => .Bag)), _,
-               (_ (.Bag => BagItem(alignas(T)))), _, _)
+               _ (BagItem(AlignasType(_, _)) => .Bag), _, _, _,
+               _ (.Bag => BagItem(alignas(byteAlignofType(T)))))
           [structural]
-     rule (T:Type => .)
+     rule (tv(A:Int, _) => .)
           ~> canonicalizeType-aux(
-               (_:Bag (BagItem(AlignasExpression(_)) => .Bag)), _,
-               (_ (.Bag => BagItem(alignas(T)))), _, _)
+               _ (BagItem(AlignasExpression(_)) => .Bag), _, _, _,
+               _ (.Bag => BagItem(alignas(A))))
           [structural]
 
      // specifier, modifier, storage
@@ -95,6 +93,7 @@ module C-TYPING-CANONICALIZATION
           when (Q ==K Extern)
                orBool (Q ==K Atomic)
                orBool (Q ==K Auto)
+               orBool (Q ==K Const)
                orBool (Q ==K Inline)
                orBool (Q ==K Noreturn)
                orBool (Q ==K Register)
@@ -102,10 +101,8 @@ module C-TYPING-CANONICALIZATION
                orBool (Q ==K Static)
                orBool (Q ==K ThreadLocal)
                orBool (Q ==K Volatile)
-          [structural]
-     rule canonicalizeType-aux(.Bag, (t((.Set => SetItem(Const)) _, _)),
-               .Bag, .Bag, (_ (BagItem(Q:K) => .Bag)))
-          when Q ==K Const
+               orBool (getKLabel(Q) ==KLabel 'alignas)
+               orBool (getKLabel(Q) ==KLabel 'atomic)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
@@ -117,7 +114,6 @@ module C-TYPING-CANONICALIZATION
           [structural, anywhere]
 
      syntax K ::= canonicalizeSpecifier(Bag)
-
      rule <k> canonicalizeSpecifier(BagItem(Named(X:CId)))
                => t(.Set, typedefType(X, T))
           ...</k>

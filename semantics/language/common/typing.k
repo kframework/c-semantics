@@ -138,7 +138,9 @@ module C-TYPING-SYNTAX
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
      // For function array parameters with a static-qualified size.
-     syntax Modifier ::= arrayStatic(CSize)
+     syntax Modifier ::= arrayStatic(CSize) [klabel('arrayStatic)]
+     syntax Modifier ::= atomic(Type) [klabel('atomic)]
+     syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)

@@ -62,8 +62,12 @@ module C-CONFIGURATION
      <effective-types> .Map </effective-types>
 
      <k color="green" multiplicity="?"> 
-          loadObj(mergeObj(
-               unwrapObj($OBJ1:Bag), 
+          // TODO(chathhorn)
+          checkMerge(
+               unwrapObj($OBJ1:Bag),
+               unwrapObj($OBJ2:Bag))
+          ~> loadObj(mergeObj(
+               unwrapObj($OBJ1:Bag),
                unwrapObj($OBJ2:Bag)))
           ~> $PGM:K 
           ~> link

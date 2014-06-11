@@ -24,6 +24,7 @@ require "decl/typedef.k"
 require "decl/zero.k"
 
 require "expr/additive.k"
+require "expr/alignof.k"
 require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
@@ -66,6 +67,7 @@ module C-COMMON
      imports C-DECL-ZERO
 
      imports C-COMMON-EXPR-ADDITIVE
+     imports C-COMMON-EXPR-ALIGNOF
      imports C-COMMON-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST

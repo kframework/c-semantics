@@ -145,8 +145,21 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(.List, .List) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)
-          => intersectSet(Mods, typeQualifiers)
-               ==Set intersectSet(Mods', typeQualifiers)
+          => (intersectSet(Mods, typeQualifiers)
+               ==Set intersectSet(Mods', typeQualifiers))
+               // TODO(chathhorn): treating alignas like a qualifier for now.
+               // It's more complicated than this, too, I think -- e.g.,
+               // alignas on a definition implies no alignas should be on any
+               // declaration.
+               andBool ((#hasAlignas(Mods) =/=K true
+                    orBool #hasAlignas(Mods') =/=K true)
+                    orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
+
+     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
+     rule #hasAlignas(SetItem(alignas(_)) _) => true
+
+     syntax Int ::= getAlignas(Set) [function]
+     rule getAlignas(SetItem(alignas(A:Int)) _) => A
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T

@@ -584,14 +584,14 @@ module C-SYNTAX
      | EXPR_ALIGNOF of expression
      | TYPE_ALIGNOF of specifier * decl_type
      */
-     syntax Expression ::= "SizeofExpression" "(" K ")"
+     syntax Expression ::= SizeofExpression(K)
           [klabel('SizeofExpression)]
-     syntax Expression ::= "SizeofType" "(" K "," K ")"
+     syntax Expression ::= SizeofType(K, K)
           [klabel('SizeofType), strict(1)]
-     syntax Expression ::= "AlignofExpression" "(" K ")"
+     syntax Expression ::= AlignofExpression(K)
           [klabel('AlignofExpression)]
-     syntax Expression ::= "AlignofType" "(" K "," K ")"
-          [klabel('AlignofType)]
+     syntax Expression ::= AlignofType(K, K)
+          [klabel('AlignofType), strict(1)]
      /*
      | INDEX of expression * expression
      */

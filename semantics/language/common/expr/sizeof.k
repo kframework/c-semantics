@@ -5,7 +5,7 @@ module C-COMMON-EXPR-SIZEOF
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,
      which may be an expression or the parenthesized name of a type. The size
@@ -14,7 +14,7 @@ module C-COMMON-EXPR-SIZEOF
      evaluated; otherwise, the operand is not evaluated and the result is an
      integer constant.
      }*/
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{5}}}{
      The value of the result of both operators is implementation-defined, and
      its type (an unsigned integer type) is \cinline{size_t}, defined in
