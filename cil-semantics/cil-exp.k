@@ -32,45 +32,45 @@ module CIL-LITERAL
                   | getHexFloatExponent(String) [function]
                   | beforeDot(String) [function]
                   | afterDot(String) [function]
-                  | getNumericPart(String, MySet, MySet) [function]
-                  | "getNumericPart'" "(" String "," String "," MySet ")" 
+                  | getNumericPart(String, Set, Set) [function]
+                  | "getNumericPart'" "(" String "," String "," Set ")" 
                     [function]
 
   syntax Float ::= hexToFloat(String) [function]
                  | "hexToFloat'" "("String")" [function]
 
 
-  syntax MySet ::= "prefixChars" [function]
+  syntax Set ::= "prefixChars" [function]
                | "intSuffixChars" [function]
                | "floatHexPrefixChars" [function]
                | "floatSuffixChars" [function]
                | "floatHexSepChars" [function]
 
   rule prefixChars =>
-    MySetItem("0"),
-    MySetItem("x"),
-    MySetItem("X"),
-    MySetItem("\\")
+    SetItem("0")
+    SetItem("x")
+    SetItem("X")
+    SetItem("\\")
 
   rule intSuffixChars =>
-    MySetItem("u"),
-    MySetItem("U"),
-    MySetItem("l"),
-    MySetItem("L")
+    SetItem("u")
+    SetItem("U")
+    SetItem("l")
+    SetItem("L")
 
   rule floatHexPrefixChars =>
-    MySetItem("x"),
-    MySetItem("X")
+    SetItem("x")
+    SetItem("X")
 
   rule floatSuffixChars =>
-    MySetItem("f"),
-    MySetItem("F"),
-    MySetItem("l"),
-    MySetItem("L")
+    SetItem("f")
+    SetItem("F")
+    SetItem("l")
+    SetItem("L")
 
   rule floatHexSepChars =>
-    MySetItem("p"),
-    MySetItem("P")
+    SetItem("p")
+    SetItem("P")
 
   rule hexToFloat(S:String)
     => hexToFloat'(getHexFloatMantissa(S))
@@ -98,13 +98,13 @@ module CIL-LITERAL
     => getNumericPart(S, prefixChars, intSuffixChars)
 
   rule getDecFloatNumericPart(S:String)
-    => getNumericPart(S, .MySet, floatSuffixChars)
+    => getNumericPart(S, .Set, floatSuffixChars)
 
   rule getHexFloatNumericPart(S:String)
     => getNumericPart(cdrStr(S), floatHexPrefixChars, floatSuffixChars)
 
   rule getHexFloatMantissa(S:String)
-    => getNumericPart(getHexFloatNumericPart(S), .MySet, floatHexSepChars)
+    => getNumericPart(getHexFloatNumericPart(S), .Set, floatHexSepChars)
 
   rule getHexFloatExponent(S:String)
     => getNumericPart(
@@ -112,43 +112,43 @@ module CIL-LITERAL
           findString(S, getHexFloatMantissa(S), 0) +Int lengthString(getHexFloatMantissa(S)),
           lengthString(S)), floatHexSepChars, floatSuffixChars)
 
-  rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
+  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
     => getNumericPart(cdrStr(S), Pre, Suf)
     when (S =/=String "") andBool (carStr(S) in Pre)
-  rule getNumericPart(S:String, Pre:MySet, Suf:MySet) 
+  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
     => getNumericPart'(S, "", Suf)
     when (S =/=String "") andBool (notBool (carStr(S) in Pre))
-  rule getNumericPart("", _:MySet, _:MySet) => "0"
+  rule getNumericPart("", _:Set, _:Set) => "0"
   
-  rule getNumericPart'(S:String, Num:String, Suf:MySet)
+  rule getNumericPart'(S:String, Num:String, Suf:Set)
     => getNumericPart'(cdrStr(S), Num +String carStr(S), Suf)
     when (S =/=String "") andBool (notBool (carStr(S) in Suf))
-  rule getNumericPart'(S:String, Num:String, Suf:MySet) => Num
+  rule getNumericPart'(S:String, Num:String, Suf:Set) => Num
     when (S =/=String "") andBool (carStr(S) in Suf) andBool (Num =/=String "")
-  rule getNumericPart'("", Num:String, _:MySet) => Num
+  rule getNumericPart'("", Num:String, _:Set) => Num
     when Num =/=String ""
-  rule getNumericPart'(S:String, "", Suf:MySet) => "0"
+  rule getNumericPart'(S:String, "", Suf:Set) => "0"
     when (carStr(S) in Suf)
-  rule getNumericPart'("", "", _:MySet) => "0"
+  rule getNumericPart'("", "", _:Set) => "0"
 
   syntax String ::= getSuffix(String) [function]
                   | getFloatSuffix(String) [function]
-                  | getSuffix(String, MySet) [function]
-                  | "getSuffix'" "(" String "," String "," MySet ")" [function]
+                  | getSuffix(String, Set) [function]
+                  | "getSuffix'" "(" String "," String "," Set ")" [function]
 
   rule getSuffix(S:String) => getSuffix(S, intSuffixChars)
 
   rule getFloatSuffix(S:String) => getSuffix(S, floatSuffixChars)
 
-  rule getSuffix(S:String, Sufs:MySet) => getSuffix'(S, "", Sufs)
+  rule getSuffix(S:String, Sufs:Set) => getSuffix'(S, "", Sufs)
 
-  rule getSuffix'(S:String, Suf:String, Sufs:MySet) 
+  rule getSuffix'(S:String, Suf:String, Sufs:Set) 
     => getSuffix'(rdcStr(S), racStr(S) +String Suf, Sufs)
     when (racStr(S) in Sufs) andBool (S =/=String "")
-  rule getSuffix'(S:String, Suf:String, Sufs:MySet)
+  rule getSuffix'(S:String, Suf:String, Sufs:Set)
     => normSuffix(Suf)
     when notBool (racStr(S) in Sufs)
-  rule getSuffix'("", Suf:String, _:MySet) => normSuffix(Suf)
+  rule getSuffix'("", Suf:String, _:Set) => normSuffix(Suf)
 
   syntax String ::= normSuffix(String) [function]
 
@@ -381,20 +381,20 @@ module CIL-EXP
   /* Lookup. */
   rule
     <k> X:CId => lv(expandTypedefs(T, E), P) ...</k>
-    <env> E:MyMap, X |-> lv(T:Type, P:Ptr) </env>
+    <env> E:Map (X |-> lv(T:Type, P:Ptr)) </env>
     [structural]
 
   // Typedefs.
   rule
     <k> X:CId => nt(expandTypedefs(T, E)) ...</k>
-    <env> E:MyMap, X |-> T:Type </env>
+    <env> E:Map (X |-> T:Type) </env>
     [structural]
 
   rule 
     <k> S:String 
       => newString(S, newObject(normType(char [lengthString(S) +Int 1])))
     ...</k>
-    <strings> Ss:MyMap </strings>
+    <strings> Ss:Map </strings>
     when notBool (S in keys(Ss))
 
   rule 
@@ -405,7 +405,7 @@ module CIL-EXP
   rule <k> newString(S:String, tv(T:Type, P:Ptr))
     => store(downPtr(T), P, S) ~> lv(downPtr(T), P)
     ...</k>
-    <strings>... .MyMap => S |-> P </strings>
+    <strings>... .Map => S |-> P </strings>
 
   // Doesn't work as a macro because it will mangle array declarations.
   rule E1:Exp[E2:Exp] => *(E1 + E2) 
@@ -575,7 +575,7 @@ module CIL-EXP
    */
   rule
     <k> T:Type => nt(expandTypedefs(normType(T), E)) ...</k>
-    <env> E:MyMap </env>
+    <env> E:Map </env>
     when (isNormType(T) =/=K true)
       // If it's a CId then we look it up in the env until we get an unambiguous
       // type.
@@ -584,8 +584,8 @@ module CIL-EXP
       andBool ($isConstArrayDeref(T, E) =/=K true)
 
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
-  syntax Bool ::= "$isConstArrayDeref" "(" K "," MyMap ")" [function]
-  rule $isConstArrayDeref(X:CId[_:Constant], (_:MyMap, X |-> lv(_,_))) => true
+  syntax Bool ::= "$isConstArrayDeref" "(" K "," Map ")" [function]
+  rule $isConstArrayDeref(X:CId[_:Constant], (_:Map (X |-> lv(_,_)))) => true
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
   // that has been misparsed as a Type into an Exp.

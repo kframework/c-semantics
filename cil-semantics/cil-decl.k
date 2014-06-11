@@ -39,8 +39,8 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB))
     ...</k>
-    <env> E:MyMap </env>
-    <external> ExtLnk:MySet </external>
+    <env> E:Map </env>
+    <external> ExtLnk:Set </external>
     <phase> Tu:TransUnit </phase>
     when getId(D) in ExtLnk
   rule 
@@ -50,10 +50,10 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:MyMap </env>
-    <external> ExtLnk:MySet </external>
+    <env> E:Map </env>
+    <external> ExtLnk:Set </external>
     <tu-id> Tu </tu-id>
-    <internal> IntLnk:MySet </internal>
+    <internal> IntLnk:Set </internal>
     <phase> Tu:TransUnit </phase>
     when notBool (getId(D) in IntLnk)
       andBool notBool (getId(D) in ExtLnk)
@@ -66,8 +66,8 @@ module CIL-DECL
       getParams(D), FB)
     ...</k>
     <tu-id> Tu </tu-id>
-    <env> E:MyMap </env>
-    <internal> IntLnk:MySet </internal>
+    <env> E:Map </env>
+    <internal> IntLnk:Set </internal>
     <phase> Tu:TransUnit </phase>
     when getId(D) in IntLnk
 
@@ -78,7 +78,7 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:MyMap </env>
+    <env> E:Map </env>
     <phase> Tu:TransUnit </phase>
 
   rule 
@@ -88,36 +88,36 @@ module CIL-DECL
       expandTypedefs(downFun(normType(TS D)), E), 
       getParams(D), FB)
     ...</k>
-    <env> E:MyMap </env>
+    <env> E:Map </env>
     <phase> Tu:TransUnit </phase>
   
   rule 
     <k> declInternal(X:CId, nt(T:Type)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:MyMap => Env[X <- T] </env>
-    <tu-env> TuEnv:MyMap => TuEnv[X <- T] </tu-env>
+    <env> Env:Map => Env[X <- T] </env>
+    <tu-env> TuEnv:Map => TuEnv[X <- T] </tu-env>
     <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:MyMap => Env[X <- lv(T, P)] </env>
-    <tu-env> TuEnv:MyMap => TuEnv[X <- lv(T, P)] </tu-env>
+    <env> Env:Map => Env[X <- lv(T, P)] </env>
+    <tu-env> TuEnv:Map => TuEnv[X <- lv(T, P)] </tu-env>
     <phase> Tu:TransUnit </phase>
   rule 
     <k> declInternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
     <tu-id> Tu </tu-id>
-    <env> Env:MyMap => Env[X <- lv(downPtr(T), P)] </env>
-    <tu-env> TuEnv:MyMap => TuEnv[X <- lv(downPtr(T), P)] </tu-env>
+    <env> Env:Map => Env[X <- lv(downPtr(T), P)] </env>
+    <tu-env> TuEnv:Map => TuEnv[X <- lv(downPtr(T), P)] </tu-env>
     <phase> Tu:TransUnit </phase>
 
   rule 
     <k> declExternal(X:CId, nclv(T:Type, P:Ptr)) => . ...</k>
-    <env> Env:MyMap => Env[X <- lv(T, P)] </env>
-    <global-env> GEnv:MyMap => GEnv[X <- lv(T, P)] </global-env>
+    <env> Env:Map => Env[X <- lv(T, P)] </env>
+    <global-env> GEnv:Map => GEnv[X <- lv(T, P)] </global-env>
   rule 
     <k> declExternal(X:CId, tv(T:Type, P:Ptr)) => . ...</k>
-    <env> Env:MyMap => Env[X <- lv(downPtr(T), P)] </env>
-    <global-env> GEnv:MyMap => GEnv[X <- lv(downPtr(T), P)] </global-env>
+    <env> Env:Map => Env[X <- lv(downPtr(T), P)] </env>
+    <global-env> GEnv:Map => GEnv[X <- lv(downPtr(T), P)] </global-env>
 
   rule
     <k>
@@ -143,12 +143,12 @@ module CIL-DECL
     <k> extern TS:TypeSpec D:Declarator ; 
     => declExternal(getId(D), 
       nclv(normType(TS D), ExtFun(#tokenToString(getId(D))))) ...</k>
-    <external>... (.MySet => MySetItem(getId(D))) ...</external>
+    <external>... (.Set => SetItem(getId(D))) ...</external>
     <phase> _:TransUnit </phase>
     when isFunType(normType(TS D)) ==K true
   rule
     <k> static TS:TypeSpec D:Declarator ; => . ...</k>
-    <internal>... (.MySet => MySetItem(getId(D))) ...</internal>
+    <internal>... (.Set => SetItem(getId(D))) ...</internal>
     <tu-id> Tu </tu-id>
     <phase> Tu:TransUnit </phase>
     when isFunType(normType(TS D)) ==K true
@@ -307,8 +307,8 @@ module CIL-DECL
   syntax KItem ::= bindLocal(CId, K) [strict(2)]
   rule
     <k> bindLocal(X:CId, tv(T:Type, P:Ptr)) => .K ...</k>
-    <env> M:MyMap => M[X <- lv(downPtr(T), P)] </env>
-    <locals>... .MySet => MySetItem(P) ...</locals>
+    <env> M:Map => M[X <- lv(downPtr(T), P)] </env>
+    <locals>... .Set => SetItem(P) ...</locals>
   [structural]
 
   syntax KItem ::= declStruct(CId, VarDecls, Exp, Int) [strict(3)]
