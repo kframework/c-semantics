@@ -101,8 +101,8 @@ module C-TRANSLATION-INIT
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.
 
-     rule loadMergeObj(bag2K(B:Bag), bag2K(.Bag)) => loadObj(bag2K(B))
-     rule loadMergeObj(bag2K(.Bag), bag2K(B:Bag)) => loadObj(bag2K(B))
+     rule loadMergeObj(bag2K(A:Bag) , bag2K(.Bag)) => loadObj(bag2K(A))
+     rule loadMergeObj(bag2K(.Bag) , bag2K(A:Bag)) => loadObj(bag2K(A))
 
      // TODO(chathhorn): Check compatibility of decls instead of dumbly
      // merging.

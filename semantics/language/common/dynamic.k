@@ -110,8 +110,8 @@ module C-DYNAMIC
 
      rule unwrapObj(.Bag) => bag2K(.Bag)
 
-     rule <k> loadObj(bag2K(<global> G:Bag </global>)) => .K ...</k>
-          <global> (_:Bag => G) </global>
+     rule <k> loadObj(bag2K(<global> G </global>)) => .K ...</k>
+          <global> (_ => G) </global>
           when (isEmptyBag(G) =/=K true)
           [structural]
 
