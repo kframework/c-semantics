@@ -28,24 +28,46 @@ module C-DECL-RESOLUTION
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
-     rule <k> (.K => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
+     rule <k> (.K => declare(typedDeclaration(t(Mods, arrayType(T, 1)), X), NoInit))
                ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>...
                X:CId |-> declState(_,
-                    t(S:Set, incompleteArrayType(T:Type)), declared, true) 
+                    t(Mods:Set, incompleteArrayType(T:Type)), declared, true)
           ...</externals>
           [structural]
      rule <k> allocateIncompleteTentatives ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>...
-               (_ |-> declState(_, _, State:DeclState, Tentative:Bool) => .Map)
+               _ |-> declState(_, t(Mods:Set, _), State:DeclState, _) => .Map
           ...</externals>
-          when notBool Tentative
-               orBool (State =/=K declared)
+          when State =/=K declared
+               // TODO(chathhorn): ... and we do this inline function check in
+               // addition to completing tentatives.
+               andBool notBool (State ==K completed andBool Inline in Mods)
+          [structural]
+     rule <k> allocateIncompleteTentatives ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               _ |-> declState(_, t(Mods:Set, _), _, false) => .Map
+          ...</externals>
+          when notBool Inline in Mods
+          [structural]
+     rule <k> (. => UNDEF("TDR1",
+               "declaration for inline function not defined in the same translation unit.",
+               "6.7.4"))
+               ~> allocateIncompleteTentatives
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               _ |-> declState(_, t(Mods:Set, _), completed, _)
+          ...</externals>
+          when Inline in Mods
           [structural]
 
      // Add the real location at which an external reference is defined to the
@@ -68,6 +90,7 @@ module C-DECL-RESOLUTION
                (. => Base |-> Base')
           ...</linkings>
           when isLinkerLoc(Base)
+          [structural]
      rule <k> resolveReferences ...</k>
           <external-uses>...
                SetItem(X:CId)
@@ -83,6 +106,7 @@ module C-DECL-RESOLUTION
                X |-> Base
           ...</genv>
           when notBool isLinkerLoc(Base)
+          [structural]
 
      rule <k> resolveReferences ...</k>
           <external-uses>...
@@ -98,10 +122,12 @@ module C-DECL-RESOLUTION
                X |-> _
           ...</external-types>
           when X =/=K Identifier("main")
+          [structural]
 
-     rule <k> (.K => ERROR("DR1", 
-                    "no definition for symbol with external linkage: " 
-                    +String idToString(X))) 
+     rule <k> (. => UNDEF("TDR2",
+                    "no definition for symbol with external linkage: "
+                    +String idToString(X),
+                    "6.9:5"))
                ~> resolveReferences
           ...</k>
           <external-uses>...
@@ -115,6 +141,7 @@ module C-DECL-RESOLUTION
           </external-types>
           when notBool (X in keys(Defs))
                orBool notBool (X in keys(Types))
+          [structural]
 
      // Remember which TU has the definition of main.
      rule <k> resolveReferences ...</k>
@@ -131,13 +158,15 @@ module C-DECL-RESOLUTION
           <external-types>...
                Identifier("main") |-> _
           ...</external-types>
+          [structural]
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     
+
      rule <k> resolveReferences => .K ...</k>
           (<linking-state>...
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)
+          [structural]
 
 endmodule
