@@ -14,6 +14,9 @@ module COMPAT-SYNTAX
      syntax String ::= toUpperCase(String) [function]
 
      syntax Bool ::= all(List, KLabel) [function]
+
+     //TODO: this might be able to remove
+     syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
    
      /*TODO: Bag does not work in Java backend
 	syntax Bool ::= Bag "==Bag" Bag [function]
@@ -273,6 +276,14 @@ module COMPAT
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K,S,Pred)
+
+     //TODO: might be able to remove later
+     rule isAllKResultInHeatList(.HeatList) => true
+     rule isAllKResultInHeatList(hItem(K:K) hs:: HL:HeatList) => false
+	   when isKResult(K:K) =/=K true
+     rule isAllKResultInHeatList(hItem(K:K) hs:: HL:HeatList) 
+	   => isAllKResultInHeatList(HL) 
+	   when isKResult(K:K) ==K true
 
 endmodule
 

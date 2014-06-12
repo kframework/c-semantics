@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      syntax KItem ::= varg(K) [hybrid, strict]
-     syntax KItem ::= prepareBuiltin(CId, List) 
+     syntax KItem ::= prepareBuiltin(CId, HeatList) 
      syntax KItem ::= incSymbolic(K)
 endmodule
 
@@ -28,13 +28,14 @@ module LIBC-BOOTSTRAP
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
      //TODO: context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
-     rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
+     //use HeatList temporally
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(makeVarArgs(P)))) ...</k>
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           when variadic in getParams(T)
           [structural]
-     rule <k> handleBuiltin => Return(prepareBuiltin(F, P)) ...</k>
+     rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(P))) ...</k>
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>

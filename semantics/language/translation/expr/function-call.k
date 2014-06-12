@@ -12,12 +12,20 @@ module C-EXPR-FUNCTION-CALL
      syntax KResult ::= rvlist(List)
 
      syntax KItem ::= revalParams(K)
+		    | #revalParams(HeatList) [strict]
      //TODO: overcome the context associative matching
      //context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _))
+
+     rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
      
+     rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
+          when isAllKResultInHeatList(HL:HeatList)
+          [structural]     
+     /*TODO: might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
+     */
      
      context Call(_, (HOLE => revalParams(HOLE)))
 
