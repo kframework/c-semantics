@@ -117,12 +117,12 @@ module C-COMMON-EXPR-ADDITIVE
                loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
                T:Type, I:Int)
           => true
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
                T:Type, I:Int)
           => false
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
      rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
           when notBool isFromArray(Loc)
 

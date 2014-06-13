@@ -11,6 +11,7 @@ module C-COMMON-EXPR-REFERENCE
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
@@ -29,7 +30,8 @@ module C-COMMON-EXPR-REFERENCE
      }
      */
      rule &(lval(Loc:SymLoc, T:Type))
-          => tv(addProv(fromArray(0, 2 *Int byteSizeofType(T)), Loc),
+          => tv(addProv(align(getAlignas(T)),
+               addProv(fromArray(0, byteSizeofType(T)), Loc)),
                t(.Set, pointerType(T)))
           when notBool isRegisterLoc(Loc)
           [structural]

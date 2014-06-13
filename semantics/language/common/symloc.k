@@ -63,6 +63,7 @@ module C-SYMLOC-SYNTAX
 
      syntax String ::= getTU(SymLoc) [function]
      syntax Int ::= getThreadId(SymLoc) [function]
+     syntax Int ::= getAlign(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
      syntax Set ::= getBases(SymLoc) [function]
@@ -83,6 +84,7 @@ module C-SYMLOC-SYNTAX
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
+     syntax Provenance ::= align(Int) [klabel('align)]
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
 
@@ -285,6 +287,14 @@ module C-SYMLOC
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(NullPointer) => NullPointer
+
+     rule getAlign(loc(_, _, SetItem(align(A:Int)) _)) => A
+     rule getAlign(loc(_, _, Prov:Set)) => 1
+          when #hasAlign(Prov) =/=K true
+     rule getAlign(loc(_, _)) => 1
+
+     syntax Bool ::= "#hasAlign" "(" Set ")" [function]
+     rule #hasAlign(SetItem(align(_)) _) => true
 
 endmodule
 

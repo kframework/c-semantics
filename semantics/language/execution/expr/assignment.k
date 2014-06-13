@@ -7,36 +7,32 @@ module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
-               andBool notBool isRestrictType(T')
-               andBool (#fromArrayStatic(T') =/=K true)
+     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
+          => write(Loc, V, T)
+          ~> transferProv(Loc, tv(V, T))
+          when notBool isRestrictType(T)
+               andBool (#fromArrayStatic(T) =/=K true)
           [structural]
-     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => checkArrayStaticAssign(T', tv(V, T))
-          ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
-               andBool notBool isRestrictType(T')
-               andBool (#fromArrayStatic(T') ==K true)
+     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
+          => checkArrayStaticAssign(T, tv(V, T))
+          ~> write(Loc, V, T)
+          ~> transferProv(Loc, tv(V, T))
+          when notBool isRestrictType(T)
+               andBool (#fromArrayStatic(T) ==K true)
           [structural]
-     rule lval(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
-          => checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
-               andBool isRestrictType(T')
+     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
+          => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+          ~> write(Loc, V, T)
+          ~> transferProv(Loc, tv(V, T))
+          when isRestrictType(T)
           [structural]
-     rule lval(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
-          => checkArrayStaticAssign(T', tv(V, T))
-          ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
-               andBool isRestrictType(T')
-               andBool (#fromArrayStatic(T') ==K true)
+     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
+          => checkArrayStaticAssign(T, tv(V, T))
+          ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+          ~> write(Loc, V, T)
+          ~> transferProv(Loc, tv(V, T))
+          when isRestrictType(T)
+               andBool (#fromArrayStatic(T) ==K true)
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]

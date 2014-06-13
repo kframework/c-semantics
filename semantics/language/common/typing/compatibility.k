@@ -1,6 +1,7 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Bool ::= "#areCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
+     syntax Int ::= getAlignas(Type) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -155,11 +156,16 @@ module C-TYPING-COMPATIBILITY
                     orBool #hasAlignas(Mods') =/=K true)
                     orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
 
-     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
-     rule #hasAlignas(SetItem(alignas(_)) _) => true
+     rule getAlignas(T:Type) => getAlignas(getModifiers(T))
+          when #hasAlignas(getModifiers(T)) ==K true
+     rule getAlignas(T:Type) => 1
+          when #hasAlignas(getModifiers(T)) =/=K true
 
      syntax Int ::= getAlignas(Set) [function]
      rule getAlignas(SetItem(alignas(A:Int)) _) => A
+
+     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
+     rule #hasAlignas(SetItem(alignas(_)) _) => true
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T

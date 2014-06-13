@@ -1,9 +1,11 @@
 module C-TYPING-PREDICATES
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      // Equality modulo provenance, storage specifiers, and struct/union
@@ -16,7 +18,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
-          when (getQualifiers(T) ==Set getQualifiers(T'))
+          when sameQualifiers(getModifiers(T), getModifiers(T'))
                andBool (simpleType(T) ==K simpleType(T'))
      rule #typesEq(
                typedDeclaration(T:Type, X:CId),
@@ -290,4 +292,19 @@ module C-TYPING-PREDICATES
           => #isFunctionPointer(T)
 
      rule #isRestrict(t(SetItem(Restrict) _, _)) => true
+
+     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
+
+     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+     rule #isNPC(tv(0, T:Type)) => true
+          when hasIntegerType(T)
+               andBool fromConstantExpr(T)
+     rule #isNPC(tv(NullPointer, T:Type)) => true
+          when isPointerType(T)
+               andBool (simpleType(innerType(T)) ==K void)
+               andBool fromConstantExpr(T)
+
+     // TODO(chathhorn)
+     rule fromConstantExpr(_) => true
+
 endmodule

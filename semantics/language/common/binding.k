@@ -4,7 +4,6 @@ module C-BINDING-SYNTAX
      syntax K ::= bindParam(CId, Type, K)
      syntax K ::= bindParam(CId)
      syntax Type ::= argPromoteType(Type) [function]
-     syntax Bool ::= isArgPromoted(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
 endmodule
 
@@ -109,7 +108,7 @@ module C-BINDING
      // function is defined with a type that does not include a prototype, and
      // the types of the arguments after promotion are not compatible with
      // those of the parameters after promotion, the behavior is undefined,
-     // except for the following cases: 
+     // except for the following cases:
      //
      // -- one promoted type is a signed integer type, the other promoted type
      // is the corresponding unsigned integer type, and the value is
@@ -117,7 +116,7 @@ module C-BINDING
      //
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
-     
+
      syntax Bool ::= "#arePromotedTypesCompat" "(" CValue "," Type "," Type ")"
           [function]
 
@@ -156,7 +155,7 @@ module C-BINDING
      // binary arithmetic on numbers, and are used to find a common type there
      // is another set of promotions called "default argument promotions" used
      // when calling functions where the type information is not complete. This
-     // is equivalent to integer promotions + (float => double) 
+     // is equivalent to integer promotions + (float => double)
      rule argPromoteType(t(Mods:Set, float))
           => t(Mods, double)
      rule argPromoteType(t(Mods:Set, double))
@@ -172,7 +171,8 @@ module C-BINDING
 
      // "are argument-promoted".
      rule areArgPromoted(L:List) => all(L, 'isArgPromoted) ==K true
-     
+
+     syntax Bool ::= isArgPromoted(Type) [function]
      rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))
 
 endmodule

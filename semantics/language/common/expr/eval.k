@@ -19,15 +19,6 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax Int ::= arrayLength(Type) [function]
-     rule arrayLength(t(_, arrayType(_, N:CSize))) => N
-     /*@ these large numbers are used instead of an infinity---the result of
-     these rules shouldn't be used later anyway */
-     rule arrayLength(t(_, flexibleArrayType(_)))
-          => 36893488147419103232
-     rule arrayLength(t(_, incompleteArrayType(_)))
-          => 36893488147419103232
-
      // chathhorn: to work around the new semantics for contexts.
      rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
@@ -105,12 +96,12 @@ module C-COMMON-EXPR-EVAL
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
                addProv(fromArray(0,
-                    byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
+                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc))
           when isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(fromArray(0,
-               byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
+               byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc)
           when notBool isRestrictType(T)
 
@@ -138,7 +129,9 @@ module C-COMMON-EXPR-EVAL
           when notBool isRegisterLoc(Loc)
           [structural]
      rule <k> checkRegister(Loc:SymLoc)
-               => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
+               => UNDEF("CEE1",
+                    "Address of an array declared with register storage class used in an expression.",
+                    "6.3.2.1")
           ...</k>
           <initializing> 0 </initializing>
           when isRegisterLoc(Loc)
@@ -155,7 +148,8 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
      rule checkUse(tv(trap, T:Type))
-          => UNDEF("CEE2", "Indeterminate value used in an expression.", "")
+          => UNDEF("CEE2", "Indeterminate value used in an expression.",
+               "6.2.4, 6.7.9, 6.8")
           ~> tv(trap, T)
           [structural]
 

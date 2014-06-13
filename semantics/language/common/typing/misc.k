@@ -319,22 +319,6 @@ module C-TYPING-MISC
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
-     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
-
-     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
-
-     rule #isNPC(tv(0, T:Type)) => true
-          when hasIntegerType(T)
-               andBool fromConstantExpr(T)
-
-     rule #isNPC(tv(NullPointer, T:Type)) => true
-          when isPointerType(T)
-               andBool (simpleType(innerType(T)) ==K void)
-               andBool fromConstantExpr(T)
-
-     // TODO(chathhorn)
-     rule fromConstantExpr(_) => true
-
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
@@ -395,6 +379,17 @@ module C-TYPING-MISC
 
      rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
           => Tag
+
+     rule arrayLength(t(_, arrayType(_, N:Int))) => N
+     /*@ these large numbers are used instead of an infinity---the result of
+     these rules shouldn't be used later anyway */
+     rule arrayLength(t(_, flexibleArrayType(_)))
+          => 36893488147419103232
+     rule arrayLength(t(_, incompleteArrayType(_)))
+          => 36893488147419103232
+     rule arrayLength(t(_, arrayType(_, N:CSize)))
+          => 36893488147419103232
+          when isInt(N) =/=K true
 
 endmodule
 

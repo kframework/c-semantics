@@ -183,6 +183,8 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= tagRestrict(RestrictTag, Type) [function]
      syntax RestrictTag ::= getRestrictBlock(Type) [function]
+
+     syntax Int ::= arrayLength(Type) [function]
 endmodule
 
 module C-TYPING

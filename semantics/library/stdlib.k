@@ -47,7 +47,7 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> prepareBuiltin(Identifier("malloc"),
-                    ListItem(tv(Len:Int, _:KResult)))
+                    ListItem(tv(Len:Int, _)))
                => alloc(Base, t(.Set, no-type), Len:Int)
                ~> tv(loc(Base, 0, SetItem(fromArray(0, Len))),
                     t(.Set, pointerType(t(.Set, void))))
