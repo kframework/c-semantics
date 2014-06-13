@@ -42,16 +42,17 @@ module C-STMT-RETURN
                ~> cast(T, V)
                ~> K
           </k>
+          <tu-id> TU </tu-id>
+          <gtypes>...
+               F:CId |-> t(Mods:Set, functionType(T:Type, _))
+          ...</gtypes>
           <control>
-               <curr-tu> _ => OldTu </curr-tu>
+               <curr-tu> TU:String => OldTU </curr-tu>
                <curr-function> F:CId => CurrFun </curr-function>
                <curr-function-params> _ => CurrFunParams </curr-function-params>
                <curr-program-loc> _ => CurrLoc </curr-program-loc>
                (<control-details>...
                     <local>...
-                         <types>...
-                              F:CId |-> t(Mods:Set, functionType(T:Type, _))
-                         ...</types>
                          <local-addresses> .Set </local-addresses>
                     ...</local>
                     <block-stack> .List </block-stack>
@@ -62,7 +63,7 @@ module C-STMT-RETURN
                     <call-stack-frame>...
                          <continuation> K:K </continuation>
                          <stack-control>
-                              <curr-tu> OldTu:String </curr-tu>
+                              <curr-tu> OldTU:String </curr-tu>
                               C:Bag
                          </stack-control>
                          <stack-curr-function>
@@ -85,9 +86,11 @@ module C-STMT-RETURN
                ~> Return(_)
           ...</k>
           <curr-function> F:CId </curr-function>
-          <types>...
-              F:CId |-> t(Mods:Set, functionType(_, _))
-          ...</types>
+          <curr-tu> TU:String </curr-tu>
+          <tu-id> TU </tu-id>
+          <gtypes>...
+               F:CId |-> t(Mods:Set, _)
+          ...</gtypes>
           when Noreturn in Mods
           [structural]
 endmodule

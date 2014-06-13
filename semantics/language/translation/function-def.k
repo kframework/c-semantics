@@ -23,7 +23,7 @@ module C-FUNCTION-DEF
 
      rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K)
           => declare(
-               typedDeclaration(elideDeclParams(emptyToVoid(T)), X),
+               typedDeclaration(toPrototype(T), X),
                initializer(initFunction(
                     &(X),
                     functionObject(X,
