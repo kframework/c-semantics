@@ -1,4 +1,5 @@
 module COMPAT-SYNTAX
+     //TODO: must not need the second one
      syntax KItem ::= l(KLabel) [avoid] | ls(KLabel,KLabel)
      syntax KItem ::= klist(KList) [klabel('klist)]
 
