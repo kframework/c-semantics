@@ -32,16 +32,16 @@ module CIL
     <final-computation multiplicity="?"> .K </final-computation>
     <result-value multiplicity="?"> .K </result-value>
     <error-cell multiplicity="?"> .K </error-cell>
-    <strings> .MyMap </strings> // Map{String, Ptr}
-    <external> .MySet </external> // Set{CId}. Symbols with external linkage.
+    <strings> .Map </strings> // Map{String, Ptr}
+    <external> .Set </external> // Set{CId}. Symbols with external linkage.
     //<frame multiplicity="*">
     <frame multiplicity="?">
       <k> $PGM:File ~> callMain </k>
       //<k> $PGM:File </k>
       <frame-fun-id> Null </frame-fun-id> // Ptr
       <frame-fun-va-args> .K </frame-fun-va-args>
-      <env> .MyMap </env> // Map{CId, lv(Type, Ptr)|Type}
-      <locals> .MySet </locals> // Set{Ptr}
+      <env> .Map </env> // Map{CId, lv(Type, Ptr)|Type}
+      <locals> .Set </locals> // Set{Ptr}
     </frame>
     <frame-stack list="">  // List{<frame> ... </frame>}
        <stacked-frame>
@@ -54,19 +54,19 @@ module CIL
         <fun-type> void </fun-type> // Type
         <formals> .Params </formals>
         <body> .K </body> // FunBody
-        <labels> .MyMap </labels> // Map{Label, Stmt}
+        <labels> .Map </labels> // Map{Label, Stmt}
         // For lazy label generation.
         <labels-generated> false </labels-generated>
       </fun>
     </funs>
-    <global-env> .MyMap </global-env> // Map{CId, Ptr}
+    <global-env> .Map </global-env> // Map{CId, Ptr}
 //    //<phase> initializing </phase> // Phase
     <phase> tu("unknown")::K </phase> // Phase
     <tus map="">
       <tu multiplicity="+">
         <tu-id key=""> tu("unknown") </tu-id> // TransUnit
-        <tu-env> .MyMap </tu-env> // Map{CId, Ptr}
-        <internal> .MySet </internal> // Set{CId}. Symbols with internal linkage.
+        <tu-env> .Map </tu-env> // Map{CId, Ptr}
+        <internal> .Set </internal> // Set{CId}. Symbols with internal linkage.
       </tu>
     </tus>
     <aggregates map=""> // structs and unions
@@ -87,7 +87,7 @@ module CIL
       <object multiplicity="*">
         <base-ptr key=""> Null </base-ptr>
         //<object-type> void </object-type>
-        <bytes> .MyMap </bytes> // Map{Nat, ByteValue}
+        <bytes> .Map </bytes> // Map{Nat, ByteValue}
       </object>
     </heap>
     <make-goto-table>
@@ -99,7 +99,7 @@ module CIL
         </make-goto-table-task>
       </make-goto-table-tasks>
     </make-goto-table>
-    <make-case-labels> .MyMap </make-case-labels>
+    <make-case-labels> .Map </make-case-labels>
 
   syntax KResult ::= TypedValue
                    | NoConversionLeftValue

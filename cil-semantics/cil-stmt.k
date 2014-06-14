@@ -39,7 +39,7 @@ module CIL-STMT
     => goto $defaultLabel(I) ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:MyMap </labels>
+    <labels> Lbls:Map </labels>
     <labels-generated> true </labels-generated>
     when notBool ($caseLabel(I, V) in keys(Lbls))
   [structural]
@@ -81,7 +81,7 @@ module CIL-STMT
   rule
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels>... .MyMap => L |-> (S Ss1) @Stmts Cont ...</labels>
+    <labels>... .Map => L |-> (S Ss1) @Stmts Cont ...</labels>
     <make-goto-table-task>
       <make-goto-table-stmts>
         L:Label : S:Stmt Ss1:Stmts => S Ss1
@@ -159,21 +159,21 @@ module CIL-STMT
   rule <k> eval-case-labels => eval-case-labels0 ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:MyMap => .MyMap </labels>
-    <make-case-labels> .MyMap => Lbls </make-case-labels>
+    <labels> Lbls:Map => .Map </labels>
+    <make-case-labels> .Map => Lbls </make-case-labels>
   rule <k> eval-case-labels0 => .K ...</k>
-    <make-case-labels> .MyMap </make-case-labels>
+    <make-case-labels> .Map </make-case-labels>
     [structural]
 
   // TODO(AndreiS): eval-case-labels mentioned for better indexing
   rule
     <k> (.K => eval-case-label(L, Ss)) ~> eval-case-labels0 ...</k>
-    <make-case-labels>... L:Label |-> Ss:Stmts => .MyMap ...</make-case-labels>
+    <make-case-labels>... L:Label |-> Ss:Stmts => .Map ...</make-case-labels>
   rule
     <k> eval-case-label(L:Label, Ss:Stmts) => .K ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels>... .MyMap => L |-> Ss ...</labels>
+    <labels>... .Map => L |-> Ss ...</labels>
     when getKLabel(L) =/=KLabel '$caseLabel
     [structural]
   context eval-case-label($caseLabel(_:Int, HOLE:Exp), _:Stmts)
@@ -181,7 +181,7 @@ module CIL-STMT
     <k> eval-case-label($caseLabel(I:Int, E:KResult), Ss:Stmts) => .K ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels>... .MyMap => $caseLabel(I, E) |-> Ss ...</labels>
+    <labels>... .Map => $caseLabel(I, E) |-> Ss ...</labels>
     [structural]
 
 
@@ -214,7 +214,7 @@ module CIL-STMT
   rule 
      <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
-     <global-env> GEnv:MyMap </global-env>
+     <global-env> GEnv:Map </global-env>
      <phase> _ => executing </phase>
      [structural]
 
@@ -229,7 +229,7 @@ module CIL-STMT
       <frame>...
         <k> initializeParams(Ps, TVs) ~> FB </k>
         <frame-fun-id> FunPtr(F, Tu) </frame-fun-id>
-        <env> GEnv, TuEnv </env>
+        <env> GEnv TuEnv </env>
       ...</frame>
     )
     // TODO(AndreiS): rename k cell to prevent failed attempts at rewriting
@@ -242,17 +242,17 @@ module CIL-STMT
       <formals> Ps:Params </formals>
       <body> FB:FunBody </body>
     ...</fun>
-    <global-env> GEnv:MyMap </global-env>
+    <global-env> GEnv:Map </global-env>
     <tu>...
       <tu-id> Tu </tu-id>
-      <tu-env> TuEnv:MyMap </tu-env>
+      <tu-env> TuEnv:Map </tu-env>
     ...</tu>
   [computational]
   rule
     (
       <frame>...
         <k> return (tv(T:Type, V:Value)); ...</k>
-        <locals> S:MySet </locals>
+        <locals> S:Set </locals>
         <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
@@ -303,7 +303,7 @@ module CIL-STMT
   [structural]
 
   syntax KItem ::= initializeParams(Params, TypedValues)
-                 | deleteLocals(MySet)
+                 | deleteLocals(Set)
   rule
     initializeParams(
         ((DS:DeclSpecs D:Declarator), Ps:Params),
@@ -325,11 +325,11 @@ module CIL-STMT
   rule initializeParams((void, .Params), _:TypedValues) => .    [structural]
 
   rule
-    deleteLocals(MySetItem(P:Ptr), S:MySet)
+    deleteLocals(SetItem(P:Ptr) S:Set)
   =>
     deleteObject(P) ~> deleteLocals(S)
   [structural]
-  rule deleteLocals(.MySet) => .K   [structural] 
+  rule deleteLocals(.Set) => .K   [structural] 
 
   rule 
     <k> # pragma KCIL_TU Filename:String => . ...</k>

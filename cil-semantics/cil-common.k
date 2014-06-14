@@ -4,6 +4,7 @@ require "builtins/map.k"
 require "builtins/mint.k"
 
 require "cil-syntax.k"
+require "cil-typing.k" // for typing syntax
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
@@ -90,7 +91,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   syntax Int ::= width(Type)        [function]
                | byteWidth(Type)    [function]
 
-  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(MyList) | String
+  syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
 
   syntax ByteValue ::= Int | Float | Ptr | MInt | "undef" | "used"
 
@@ -101,14 +102,14 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
    * Ptr   ::= bytes2Value(PtrType, List)
    * byteWidth(T:Type) =Int #lenList(L:List)
    */
-  syntax Value ::= bytes2Value(Type, MyList) [function]
+  syntax Value ::= bytes2Value(Type, List) [function]
   /*
    * @invariant:
    * value2Bytes(T:IntType, MI:MInt)
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
-  syntax MyList ::= value2Bytes(Type, Value) [function] 
+  syntax List ::= value2Bytes(Type, Value) [function] 
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
@@ -150,7 +151,10 @@ module CIL-COMMON-TYPED-VALUE
   rule norm(T:Type, I:Int) => tv(T, mi(width(T), I))
   when isPtrType(T) ==K true
 
-  rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
+  syntax Float ::= Int2Double(Int) [function]
+  rule Int2Double(I:Int) => Int2Float(I, 53, 11)
+
+  rule norm(T:FloatingType, I:Int) => norm(T, Int2Double(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
 
   // TODO(chathhorn): rather hackish.
@@ -167,9 +171,9 @@ module CIL-COMMON-MMU
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
 
-  syntax MyList ::= #rangeList(Int, Int, Int)                     [function]
-                | #rangeList(Int, Int)                            [function]
-                | #rangeList(Int)                                 [function]
+  syntax List ::= #rangeList(Int, Int, Int)     [klabel(#rangeList3), function]
+                | #rangeList(Int, Int)          [klabel(#rangeList2), function]
+                | #rangeList(Int)               [klabel(#rangeList1), function]
                 | "$rangeList" "(" Int "," Int "," Int ")"        [function]
                 | "$downrangeList" "(" Int "," Int "," Int ")"    [function]
   rule #rangeList(I:Int) => #rangeList(0, I, 1)
@@ -181,21 +185,21 @@ module CIL-COMMON-MMU
   rule
     $rangeList(I:Int, J:Int, K:Int)
   =>
-    MyListItem(I), $rangeList(I +Int K, J:Int, K:Int)
+    ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
   when I <Int J 
-  rule $rangeList(I:Int, J:Int, _) => .MyList
+  rule $rangeList(I:Int, J:Int, _) => .List
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
-    MyListItem(I), $downrangeList(I -Int K, J:Int, K:Int)
+    ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
   when I >Int J 
-  rule $downrangeList(I:Int, J:Int, _) => .MyList
+  rule $downrangeList(I:Int, J:Int, _) => .List
   when I <=Int J
 
-  syntax MyMap ::= #initMap(MyList, K) [function]
-  rule #initMap((MyListItem(K1:K), L:MyList), K2:K) => K1 |-> K2, #initMap(L, K2)
-  rule #initMap(.MyList, _) => .MyMap
+  syntax Map ::= #initMap(List, K) [function]
+  rule #initMap((ListItem(K1:K) L:List), K2:K) => (K1 |-> K2) #initMap(L, K2)
+  rule #initMap(.List, _) => .Map
 
   /*
    * Memory management.
@@ -211,18 +215,17 @@ module CIL-COMMON-MMU
   [structural]
   rule
     <k> $newObject(T:Type, Sz:TypedValue, V:ByteValue)
-      => tv(upPtr(T), Ptr(BasePtr(Base, mival(Sz)), 0))
+      => tv(upPtr(T), Ptr(BasePtr(?Base:Int, mival(Sz)), 0))
     ...</k>
     <heap>...
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(Base, (mival(Sz))) </base-ptr>
+        <base-ptr> BasePtr(?Base, (mival(Sz))) </base-ptr>
         //<object-type> T </object-type>
         <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>
     ...</heap>
-  when fresh(Base:Int)
   [structural]
   rule
     <k> deleteObject(Ptr(BP:BasePtr, (0))) => .K ...</k>
@@ -230,7 +233,7 @@ module CIL-COMMON-MMU
       //<object>...
       <object>
         <base-ptr> BP </base-ptr>
-        <bytes> _:MyMap </bytes>
+        <bytes> _:Map </bytes>
       //...</object>
       </object>
     =>
@@ -244,9 +247,9 @@ module CIL-COMMON-MMU
    */
   syntax KItem ::= "load" "(" Type "," Ptr ")"
                  | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
-                 | "$load" "(" Type "," Ptr "," Int "," MyList ")"
+                 | "$load" "(" Type "," Ptr "," Int "," List ")"
                  | "store" "(" Type "," Ptr "," Value ")"
-                 | "$store" "(" Ptr "," MyList ")"
+                 | "$store" "(" Ptr "," List ")"
 
   rule 
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
@@ -255,7 +258,7 @@ module CIL-COMMON-MMU
     <k>
       $store(
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
-          (MyListItem(V:ByteValue) => .MyList), _:MyList)
+          (ListItem(V:ByteValue) => .List) _:List)
     ...</k>
     <heap>...
       //<object>...
@@ -266,13 +269,13 @@ module CIL-COMMON-MMU
       </object>
     ...</heap>
   [structural]
-  rule $store(_:Ptr, .MyList) => .K   [structural]
+  rule $store(_:Ptr, .List) => .K   [structural]
 
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
   rule $load(T:Type, P:Ptr, Sz:TypedValue) 
-    => $load(T, P, mival(Sz), .MyList)
+    => $load(T, P, mival(Sz), .List)
   [structural]
   rule
     <k>
@@ -280,7 +283,7 @@ module CIL-COMMON-MMU
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (M:Int => M -Int 1),
-          (_:MyList, (.MyList => MyListItem(V:ByteValue))))
+          (_:List (.List => ListItem(V:ByteValue))))
     ...</k>
     <base-ptr> BP </base-ptr>
     <bytes>... Offset |-> V ...</bytes>
@@ -291,15 +294,15 @@ module CIL-COMMON-MMU
   // This is probably too crude.
   rule
     <k>
-      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _:MyList)
+      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _:List)
       => tv(T, undef)
     ...</k>
     <base-ptr> BP </base-ptr>
-    <bytes> Bytes:MyMap </bytes>
+    <bytes> Bytes:Map </bytes>
     when (M >Int 0) andBool notBool (Offset in keys(Bytes))
     [structural]
   rule
-    $load(T:Type, _:Ptr, 0, L:MyList) => tv(T, bytes2Value(T, L))
+    $load(T:Type, _:Ptr, 0, L:List) => tv(T, bytes2Value(T, L))
     [structural]
 endmodule
 
