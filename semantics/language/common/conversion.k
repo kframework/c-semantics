@@ -20,6 +20,7 @@ module C-CONVERSION
      imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
 
+     // TODO(chathhorn): get rid of this?
      rule arithInterpret(T:Type, N:Int) => tv(N, T)
           when (min(T) <=Int N)
                andBool (max(T) >=Int N)
@@ -39,7 +40,7 @@ module C-CONVERSION
           // will work, but not sure why
           when hasUnsignedIntegerType(T)
                andBool (N <Int min(T))
-     rule (. => UNSPEC("CCV1", "signed overflow.", "6.3.1.3:3"))
+     rule (. => UNDEF("CCV1", "signed overflow.", "6.3.1.3:3"))
           ~> arithInterpret(T:Type, I:Int)
           when hasSignedIntegerType(T)
                andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
@@ -228,7 +229,7 @@ module C-CONVERSION
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
      //      [structural, anywhere]
-     rule (. => UNSPEC("CCV2",
+     rule (. => UNDEF("CCV2",
                "conversion to signed integer outside the range that can be represented.",
                "6.3.1.3:3"))
           ~> cast(T':Type, tv(I:Int, T:Type))

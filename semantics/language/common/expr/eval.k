@@ -138,6 +138,8 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax K ::= checkUse(K) [strict]
+     syntax K ::= checkTrap(K) [strict]
+
      rule checkUse(V:KResult) => V
           when isTypedValue(V) =/=K true
           [structural]

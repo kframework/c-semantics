@@ -9,6 +9,20 @@ module C-COMMON-EXPR-BITWISE
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
+     /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{4}}}{
+     The result of the \cinline{\~} operator is the bitwise complement of its
+     (promoted) operand (that is, each bit in the result is set if and only if
+     the corresponding bit in the converted operand is not set). The integer
+     promotions are performed on the operand, and the result has the promoted
+     type. If the promoted type is an unsigned type, the expression
+     \cinline{\~E} is equivalent to the maximum value representable in that
+     type minus \cinline{E}.
+     }*/
+     rule ~ tv(I:Int, T:Type)
+          => bitwiseInterpret(T, ~Int I)
+          when isPromoted(T)
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
      The integer promotions are performed on each of the operands. The type of
      the result is that of the promoted left operand. If the value of the right
@@ -26,26 +40,34 @@ module C-COMMON-EXPR-BITWISE
      otherwise, the behavior is undefined.
      }*/
      rule tv(E1:Int, T1:Type) << tv(E2:Int, T2:Type)
-          => cast(T1, tv(E1 <<Int E2, cfg:largestUnsigned))
+          => bitwiseInterpret(T1, E1 <<Int E2)
           when isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
-     rule (. => CV("CEB1", "Both bitwise shift operands must have integer type.", "6.5.7:2"))
+     rule (. => CV("CEB1",
+               "both bitwise shift operands must have integer type.",
+               "6.5.7:2"))
           ~> tv(_, T1:Type) << tv(_, T2:Type)
           when notBool hasIntegerType(T1) 
                orBool notBool hasIntegerType(T2)
           [structural]
-     rule (. => UNDEF("CEB2", "The right operand in a bitwise shift is negative.", "6.5.7:3"))
+     rule (. => UNDEF("CEB2",
+               "the right operand in a bitwise shift is negative.",
+               "6.5.7:3"))
           ~> tv(_, _) << tv(E2:Int, _)
           when E2 <Int 0
           [structural]
-     rule (. => UNDEF("CEB3", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
+     rule (. => UNDEF("CEB3",
+               "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
+               "6.5.7:3"))
           ~> tv(_, T1:Type) << tv(E2:Int, _)
           when E2 >=Int bitSizeofType(T1)
           [structural]
-     rule (. => UNDEF("CEB4", "The left operand in a bitwise left-shift is negative.", "6.5.7:4"))
+     rule (. => UNDEF("CEB4",
+               "the left operand in a bitwise left-shift is negative.",
+               "6.5.7:4"))
           ~> tv(E1:Int, _) << tv(_, _)
           when E1 <Int 0
           [structural]
@@ -59,26 +81,34 @@ module C-COMMON-EXPR-BITWISE
      value, the resulting value is implementation-defined.
      }*/
      rule tv(E1:Int, T1:Type) >> tv(E2:Int, T2:Type) 
-          => cast(T1, tv(E1 >>Int E2, cfg:largestUnsigned))
+          => bitwiseInterpret(T1, E1 >>Int E2)
           when isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
-     rule (. => CV("CEB5", "Both bitwise shift operands must have integer type.", "6.5.7:2"))
+     rule (. => CV("CEB5",
+               "both bitwise shift operands must have integer type.",
+               "6.5.7:2"))
           ~> tv(_, T1:Type) >> tv(_, T2:Type)
           when notBool hasIntegerType(T1) 
                orBool notBool hasIntegerType(T2)
           [structural]
-     rule (. => UNDEF("CEB6", "The right operand in a bitwise shift is negative.", "6.5.7:3"))
+     rule (. => UNDEF("CEB6",
+               "the right operand in a bitwise shift is negative.",
+               "6.5.7:3"))
           ~> tv(_, _) >> tv(E2:Int, _)
           when E2 <Int 0
           [structural]
-     rule (. => UNDEF("CEB7", "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.", "6.5.7:3"))
+     rule (. => UNDEF("CEB7",
+               "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
+               "6.5.7:3"))
           ~> tv(_, T1:Type) >> tv(E2:Int, _)
           when E2 >=Int bitSizeofType(T1)
           [structural]
-     rule (. => UNSPEC("CEB8", "The left operand in a bitwise right-shift is negative.", "6.5.7:5"))
+     rule (. => UNSPEC("CEB8",
+               "the left operand in a bitwise right-shift is negative.",
+               "6.5.7:5"))
           ~> tv(E1:Int, _) >> tv(_, _)
           when E1 <Int 0
           [structural]
@@ -90,12 +120,14 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if each of
      the corresponding bits in the converted operands is set).
      }*/
-     rule tv(E1:Bits, T:Type) & tv(E2:Bits, T':Type)
-          => arithInterpret(T, E1 &Bits E2)
+     rule tv(E1:Int, T:Type) & tv(E2:Int, T':Type)
+          => bitwiseInterpret(T, E1 &Int E2)
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB9", "Both bitwise AND operands must have integer type.", "6.5.10:2"))
+     rule (. => CV("CEB9",
+               "both bitwise AND operands must have integer type.",
+               "6.5.10:2"))
           ~> tv(_, T1:Type) & tv(_, T2:Type)
           when notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
@@ -108,12 +140,14 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if exactly
      one of the corresponding bits in the converted operands is set).     
      }*/
-     rule tv(E1:Bits, T:Type) ^ tv(E2:Bits, T':Type)
-          => arithInterpret(T, E1 xorBits E2)
+     rule tv(E1:Int, T:Type) ^ tv(E2:Int, T':Type)
+          => bitwiseInterpret(T, E1 xorInt E2)
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB10", "Both bitwise exclusive OR operands must have integer type.", "6.5.11:2"))
+     rule (. => CV("CEB10",
+               "both bitwise exclusive OR operands must have integer type.",
+               "6.5.11:2"))
           ~> tv(_, T1:Type) ^ tv(_, T2:Type)
           when notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
@@ -126,14 +160,42 @@ module C-COMMON-EXPR-BITWISE
      operands (that is, each bit in the result is set if and only if at least
      one of the corresponding bits in the converted operands is set).
      }*/
-     rule tv(E1:Bits, T:Type) | tv(E2:Bits, T':Type)
-          => arithInterpret(T, E1 |Bits E2)
+     rule tv(E1:Int, T:Type) | tv(E2:Int, T':Type)
+          => bitwiseInterpret(T, E1 |Int E2)
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB11", "Both bitwise inclusive OR operands must have integer type.", "6.5.12:2"))
+     rule (. => CV("CEB11",
+               "both bitwise inclusive OR operands must have integer type.",
+               "6.5.12:2"))
           ~> tv(_, T1:Type) | tv(_, T2:Type)
           when notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
           [structural]
+
+     syntax K ::= bitwiseInterpret(Type, Int)
+                | bitwiseInterpret(K) [strict]
+     rule bitwiseInterpret(T:Type, X:Int)
+          => cast(T, tv(X, cfg:largestUnsigned))
+          when hasUnsignedIntegerType(T)
+     rule bitwiseInterpret(T:Type, X:Int)
+          => bitwiseInterpret(cast(T, tv(X, cfg:largestUnsigned)))
+          when hasSignedIntegerType(T)
+     rule bitwiseInterpret(tv(X:Int, T:Type)) => tv(X, T)
+          when notBool isNegZero(X, T)
+     rule (. => UNDEF("CEB12",
+               "potential negative zero produced via bitwise operations.",
+               "6.2.6.2:4"))
+          ~> bitwiseInterpret(tv(X:Int, T:Type))
+          when isNegZero(X, T)
+
+     syntax Bool ::= isNegZero(Int, Type) [function]
+     rule isNegZero(X:Int, T:Type) => true
+          when X ==Int min(T) // Two's complement, sign and magnitude.
+     rule isNegZero(X:Int, _) => true
+          when X ==Int -1 // Ones' complement.
+     rule isNegZero(X:Int, T:Type) => false
+          when X =/=Int min(T)
+               andBool X =/=Int -1
+
 endmodule
