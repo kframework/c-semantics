@@ -92,7 +92,7 @@ module LIBC-SETJMP
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
           <k> (prepareBuiltin(Identifier("setjmp"),
-               ListItem(tv(Loc:SymLoc, t(_, pointerType(t(_, 
+               hItem(tv(Loc:SymLoc, t(_, pointerType(t(_, 
                     structType(Identifier("jmp_buf_"), _, _)))))))
                => ignoreLocals
                     ~> writeByte(Loc, bag(
@@ -112,8 +112,8 @@ module LIBC-SETJMP
      context longjmp-aux(HOLE => reval(HOLE), _)
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"),
-               ListItem(V:KResult)
-               ListItem(V':KResult))
+               hItem(V:KResult) hs::
+               hItem(V':KResult))
           => longjmp-aux(*(V), V')
           [structural]
      

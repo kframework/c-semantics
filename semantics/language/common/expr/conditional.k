@@ -1,6 +1,18 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
-     syntax KItem ::= types(List)
+     //TODO: might not need TypeList
+     syntax KItem ::= types(TypeList)
+     //TODO: might not need this list in the future. 
+     syntax TypeItem ::= tItem(K) [strict]
+     syntax TypeList ::= List{TypeItem,"ts::"} [strict]
+     syntax TypeList ::= toTypeList(List) [function]
+     syntax List ::= tListToList(TypeList) [function]
+
+     rule toTypeList(.List) => .TypeList
+     rule toTypeList(ListItem(K:K) L:List) => tItem(K) ts:: toTypeList(L)
+
+     rule tListToList(.TypeList) => .List
+     rule tListToList(tItem(K:K) ts:: HL:TypeList) => ListItem(K) tListToList(HL)
 endmodule
 
 module C-COMMON-EXPR-CONDITIONAL
@@ -17,7 +29,7 @@ module C-COMMON-EXPR-CONDITIONAL
      //context types(_:List ListItem(HOLE) _:List)
      syntax KItem ::= convertedType(K) [strict]
 
-     rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]
+     rule getTypes(L:List) => types(toTypeList(wrapWithTypeOf(L))) [structural]
 
      syntax List ::=  wrapWithTypeOf(List) [function]
      rule wrapWithTypeOf(ListItem(K:K) L:List)
@@ -54,7 +66,7 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(ListItem(T1:Type) ListItem(T2:Type))
+     rule (types(tItem(T1:Type) ts:: tItem(T2:Type))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           when T1 =/=K T2
@@ -77,26 +89,26 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
+     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
           when hasIntegerType(T1)
                andBool isPointerType(T2)
           [structural]
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
+     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
           when hasIntegerType(T2)
                andBool isPointerType(T1)
           [structural]
 
      // fixme, this is wrong
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
+     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T1))
           ~> _? _ : _
           when isPointerType(T1)
                andBool isPointerType(T2)
           [structural]
 
      // this should take care of the void/struct cases
-     rule (types(ListItem(T:Type) ListItem(T':Type)) => convertedType(T))
+     rule (types(tItem(T:Type) ts:: tItem(T':Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
                andBool T ==Type T'

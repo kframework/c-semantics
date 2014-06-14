@@ -1,7 +1,20 @@
 module C-SYNTAX
      // these are semantic
-     syntax KItem ::= reval(K) [semantic]
+     syntax KItem ::= reval(K) [semantic,context(result(KResult)),klabel('reval)]
      syntax KItem ::= peval(K) [semantic]
+
+     //TODO: might not need this list in the future. 
+     syntax HeatItem ::= hItem(K) [strict(1(context('reval)))]
+     syntax HeatList ::= List{HeatItem,"hs::"} [strict]
+     syntax KItem ::= hlist(HeatList) [strict]
+     syntax HeatList ::= toHeatList(List) [function]
+     syntax List ::= hListToList(HeatList) [function]
+
+     rule toHeatList(.List) => .HeatList
+     rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
+
+     rule hListToList(.HeatList) => .List
+     rule hListToList(hItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
 
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]

@@ -1,4 +1,5 @@
 module COMPAT-SYNTAX
+     //TODO: must not need the second one
      syntax KItem ::= l(KLabel) [avoid] | ls(KLabel,KLabel)
      syntax KItem ::= klist(KList) [klabel('klist)]
 
@@ -14,6 +15,9 @@ module COMPAT-SYNTAX
      syntax String ::= toUpperCase(String) [function]
 
      syntax Bool ::= all(List, KLabel) [function]
+
+     //TODO: this might be able to remove
+     syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
    
      /*TODO: Bag does not work in Java backend
 	syntax Bool ::= Bag "==Bag" Bag [function]
@@ -39,8 +43,7 @@ module COMPAT-SYNTAX
      syntax String ::= base2String(Int, Int)
           [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
-     syntax Float ::= sqrtFloat(Float)
-          [function, hook(#FLOAT:sqrt)]
+     syntax Float ::= sqrtFloat(Float) [function]
      syntax Float ::= logFloat(Float)
           [function, hook(#FLOAT:log)]
      syntax Float ::= expFloat(Float)
@@ -92,7 +95,7 @@ module COMPAT-SYNTAX
      //syntax Map ::= Map "[" K "<-" K "]"
      //rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
 
-     syntax List ::= values(Map) [function]
+     //syntax List ::= values(Map) [function]
 
      syntax Set ::= filterSet(Set, KLabel) [function]
 endmodule
@@ -100,6 +103,8 @@ endmodule
 module COMPAT
      imports COMPAT-SYNTAX
      imports C-SYNTAX // Would like to get rid of this.
+
+     rule sqrtFloat(F:Float) => rootFloat(F,2)
 
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -252,8 +257,8 @@ module COMPAT
 
      // rule lengthList(L:List) => size(L)
 
-     rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
-     rule values(.Map) => .List
+     //rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
+     //rule values(.Map) => .List
 
      syntax Set ::= #filterSet(K,Set,KLabel) [function]
 
@@ -272,6 +277,14 @@ module COMPAT
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K,S,Pred)
+
+     //TODO: might be able to remove later
+     rule isAllKResultInHeatList(.HeatList) => true
+     rule isAllKResultInHeatList(hItem(K:K) hs:: _:HeatList) => false
+	   when isKResult(K:K) =/=K true
+     rule isAllKResultInHeatList(hItem(K:K) hs:: HL:HeatList) 
+	   => isAllKResultInHeatList(HL) 
+	   when isKResult(K:K) ==K true
 
 endmodule
 
