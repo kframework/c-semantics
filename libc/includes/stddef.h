@@ -8,6 +8,6 @@ typedef char max_align_t;
 typedef _KCC_WCHAR_T wchar_t;
 
 #define NULL _KCC_NULL
-#define offsetof(t, m) ((__kcc_offsetof((t), (m))))
+#define offsetof(t, m) __kcc_offsetof(t, m)
 
 #endif

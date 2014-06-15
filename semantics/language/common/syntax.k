@@ -198,7 +198,7 @@ module C-SYNTAX
           [klabel('PointerType), strict(2)]
      // K, List, Bool
      syntax DeclType ::= Prototype(K, K, Bool)
-          [klabel('Prototype), strict(1, 2)]
+          [klabel('Prototype), strict(1)]
      syntax DeclType ::= NoPrototype(K, K, Bool)
           [klabel('NoPrototype), strict(1, 2)]
 
@@ -600,10 +600,10 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      | MEMBEROFPTR of expression * string
      */
-     syntax Expression ::= K "." CId
-     context (HOLE => peval(HOLE)) . _:CId
-     syntax Expression ::= K "->" CId
-     context (HOLE => reval(HOLE)) -> _:CId
+     syntax Expression ::= K "." CId [left]
+     context (HOLE => peval(HOLE)) . _
+     syntax Expression ::= K "->" CId [left]
+     context (HOLE => reval(HOLE)) -> _
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

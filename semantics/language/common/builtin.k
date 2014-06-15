@@ -7,6 +7,7 @@ module C-BUILTIN
      imports C-BITS-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -73,19 +74,23 @@ module C-BUILTIN
      rule jmp_buf => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
 
      // Used by stddef.h.
+     rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)
+          [structural]
+
      syntax K ::= offsetOf(K, K) [strict(1)]
-     rule OffsetOf(T:KResult, K:K, F:CId)
-          => offsetOf(DeclType(T:KResult, K:K), F:CId)
+     syntax SymBase ::= "accum"
+     rule offsetOf(T:Type, Mem:K)
+          => toOffset(& ( offsetOf'(lval(loc(accum, 0), T), Mem) ))
           [structural]
 
-     // fixme should check for bitfield offset
-     rule offsetOf(t(_, structType(_, _, 
-               fieldInfo(_, _, (_ F:CId |-> Offset:Int))
-          )), F:CId)
-          => tv(Offset:Int, cfg:sizeut)
-          [structural]
+     // Rejigger the AST.
+     // TODO(chathhorn): array indexing?
+     syntax K ::= "offsetOf'" "(" K "," K ")" [function]
+     rule offsetOf'(K:K, K':K . F:CId) => offsetOf'(K, K') . F
+     rule offsetOf'(K:K, F:CId) => K . F
 
-     rule offsetOf(t(_, unionType(_, _, _)), _) => tv(0, cfg:sizeut)
+     syntax K ::= toOffset(K) [strict]
+     rule toOffset(tv(Loc:SymLoc, _)) => tv(offset(Loc), cfg:sizeut)
           [structural]
 
 endmodule

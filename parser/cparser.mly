@@ -519,11 +519,8 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
 		        { CAST($2, COMPOUND_INIT $5), $1 }
-|		OFFSETOF LPAREN LPAREN type_name RPAREN COMMA LPAREN IDENT RPAREN RPAREN
-		        { OffsetOf ($4, 
-				fst $8, 
-				$1), 
-				$1 }
+|		OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
+		        { OffsetOf ($3, $5, $1), $1 }
 ;
 
 offsetof_member_designator:	/* GCC extension for __builtin_offsetof */
