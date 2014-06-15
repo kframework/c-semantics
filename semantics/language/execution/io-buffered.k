@@ -11,19 +11,21 @@ module C-IO-BUFFERED-SYNTAX
 endmodule
 
 module C-IO-BUFFERED
-     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      syntax ListItem ::= bwrite(SymLoc, K)
 
@@ -187,7 +189,7 @@ module C-IO-BUFFERED
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
-          <mem>... 
+          <mem>...
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
           <locs-written> Locs:Bag </locs-written>

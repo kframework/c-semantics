@@ -1,5 +1,6 @@
 module C-DECL-DEFINITION-SYNTAX
      syntax K ::= declare(K, K) [strict(1)]
+     syntax K ::= declareInternalVariable(CId, Type, K)
 
      // The declare "backend" implemented in the trans or exec semantics.
      syntax K ::= "declare'" "(" K "," K ")" [strict(1)]
@@ -69,13 +70,14 @@ module C-DECL-DEFINITION
           => t(Mods, incompleteArrayType(elideDeclParams(T)))
      rule elideDeclParams(t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods, flexibleArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type)))
+          => t(Mods, variableLengthArrayType(elideDeclParams(T)))
      rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
           => t(Mods, pointerType(elideDeclParams(T)))
      rule elideDeclParams(T:Type) => T
           when notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
-               andBool notBool isIncompleteArrayType(T)
                andBool notBool isPointerType(T)
 
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
@@ -92,6 +94,5 @@ module C-DECL-DEFINITION
      rule elideMap(K:K |-> T:Type M:Map)
           => K |-> elideDeclParams(T) elideMap(M)
      rule elideMap(.Map) => .Map
-       
 endmodule
 

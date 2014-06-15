@@ -15,13 +15,12 @@ module C-DECL-GLOBAL-SYNTAX
 endmodule
 
 module C-DECL-GLOBAL
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-LOCAL-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
 
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -29,6 +28,7 @@ module C-DECL-GLOBAL
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -79,22 +79,27 @@ module C-DECL-GLOBAL
                andBool validGlobalStorageClass(T)
           [structural]
 
-     rule (. => UNDEF("TDG1", "Declaration for the function " +String idToString(X)
-               +String " appears with type qualifiers.", "6.7.3"))
+     rule (. => UNDEF("TDG1",
+               "declaration for the function " +String idToString(X) +String
+               " appears with type qualifiers.",
+               "6.7.3"))
           ~> declare''(typedDeclaration(T:Type, X:CId), _)
           when isFunctionType(T)
                andBool getQualifiers(T) =/=Set .Set
           [structural]
 
-     rule (. => CV("TDG2", "Declaration for " +String idToString(X)
-               +String " appears with multiple storage class specifiers.",
+     rule (. => CV("TDG2",
+               "declaration for " +String idToString(X) +String
+               " appears with multiple storage class specifiers.",
                "6.7.1:2"))
           ~> declare(typedDeclaration(T:Type, X:CId), _)
           when notBool validStorageClass(T)
           [structural]
 
-     rule <k> (. => ERROR("TDG3", "Declaration for " +String idToString(X)
-               +String " appears with invalid storage class specifiers.", 8))
+     rule <k> (. => ERROR("TDG3",
+               "declaration for " +String idToString(X) +String
+               " appears with invalid storage class specifiers.",
+               8))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> F:K </curr-function>
@@ -103,8 +108,10 @@ module C-DECL-GLOBAL
                andBool notBool validLocalStorageClass(T)
           [structural]
 
-     rule <k> (. => ERROR("TDG4", "Declaration for " +String idToString(X)
-               +String " appears with invalid storage class specifiers.", 8))
+     rule <k> (. => ERROR("TDG4",
+               "declaration for " +String idToString(X) +String
+               " appears with invalid storage class specifiers.",
+               8))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> file-scope </curr-function>
@@ -138,20 +145,23 @@ module C-DECL-GLOBAL
                     andBool isVoidType(T))
                andBool notBool (getQualifiers(T) =/=Set .Set
                     andBool isVoidType(T))
-     rule (. => CV("TDG5", "Function parameter appears with storage "
-               +String "class other than register.", "6.7.6.3:2"))
+     rule (. => CV("TDG5",
+               "function parameter appears with storage class other than register.",
+               "6.7.6.3:2"))
           ~> checkParam(T:Type)
           when (getStorageSpecifiers(T) =/=Set .Set)
                andBool (getStorageSpecifiers(T) =/=Set SetItem(Register))
                andBool notBool isVoidType(T)
           [structural]
-     rule (. => UNDEF("TDG6", "Void parameter appears with a storage class specifier.",
+     rule (. => UNDEF("TDG6",
+               "void parameter appears with a storage class specifier.",
                "6.7.6.3:10"))
           ~> checkParam(T:Type)
           when (getStorageSpecifiers(T) =/=Set .Set)
                andBool isVoidType(T)
           [structural]
-     rule (. => UNDEF("TDG7", "Void parameter appears with qualifiers.",
+     rule (. => UNDEF("TDG7",
+               "void parameter appears with qualifiers.",
                "6.7.6.3:10"))
           ~> checkParam(T:Type)
           when (getQualifiers(T) =/=Set .Set)
@@ -161,7 +171,8 @@ module C-DECL-GLOBAL
      rule checkComplete(_, NoInit) => .
      rule checkComplete(T:Type, _) => .
           when isCompleteType(T) orBool isArrayType(T)
-     rule (. => CV("TDG8", "Declaration has initializer but incomplete type.",
+     rule (. => CV("TDG8",
+               "declaration has initializer but incomplete type.",
                "6.7.9:3"))
           ~> checkComplete(T:Type, K:K)
           when (K =/=K NoInit)
@@ -282,8 +293,8 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("TDG9", "Conflicting types for "
-                    +String idToString(X) +String "."))
+     rule <k> (. => ERROR("TDG9",
+               "conflicting types for " +String idToString(X)))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -332,8 +343,8 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("TDG10", "Conflicting types for "
-                    +String idToString(X) +String "."))
+     rule <k> (. => ERROR("TDG10",
+               "conflicting types for " +String idToString(X)))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -347,7 +358,6 @@ module C-DECL-GLOBAL
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, T, K)),
                     declared, external,
@@ -369,7 +379,6 @@ module C-DECL-GLOBAL
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, T, K)),
                     declared, internal, Static)
@@ -389,7 +398,7 @@ module C-DECL-GLOBAL
 
      // Static, previously extern.
      rule <k> (. => ERROR("TDG11",
-               "Static declaration of " +String idToString(X)
+               "static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
@@ -431,7 +440,7 @@ module C-DECL-GLOBAL
                     orBool (Sto ==K Static andBool Lnk =/=K internal))
           [structural]
      rule ( . => UNDEF("TDG12",
-               "Declaration for an object is a tentative definition with internal linkage.",
+               "declaration for an object is a tentative definition with internal linkage.",
                "6.9.2:3"))
           ~> declareExternalVariable'(initValue(_, T:Type, .K),
                _, internal, _)
@@ -601,8 +610,7 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> (.K => ERROR("TDG14",
-                    "Redefinition of symbol with external linkage: "
-                    +String idToString(X)))
+               "redefinition of symbol with external linkage: " +String idToString(X)))
                ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
@@ -678,8 +686,8 @@ module C-DECL-GLOBAL
           when notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
           [structural]
-     rule <k> (. => ERROR("TDG15", "Redefinition of a struct, union, or enum: "
-                    +String idToString(X)))
+     rule <k> (. => ERROR("TDG15",
+               "redefinition of a struct, union, or enum: " +String idToString(X)))
                ~> addGlobalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -692,7 +700,7 @@ module C-DECL-GLOBAL
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax K ::= completeTagInExtDecls(CId, FieldInfo, Set)
-     rule <k> (.K => declare(
+     rule <k> (. => declare(
                     typedDeclaration(completeTag(Tag, Info, T), X), NoInit))
                ~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _)
@@ -774,8 +782,9 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax K ::= giveCompositeType(CId, Type)
+     syntax K ::= "giveCompositeType'" "(" CId "," K ")"
      rule <k> giveCompositeType(X:CId, T':Type)
-               => giveType(X, compositeType(T, T'))
+               => giveCompositeType'(X, compositeType(T, T'))
           ...</k>
           <types>... X |-> T:Type ...</types>
           when areCompatible(T, T')
@@ -786,14 +795,21 @@ module C-DECL-GLOBAL
           <types> Types:Map </types>
           when notBool X in keys(Types)
           [structural]
-
-     rule <k> (.K => ERROR("TDG16", "Incompatible redeclaration of symbol "
-                    +String "with internal or external linkage: "
-                    +String idToString(X)))
+     rule <k> (. => ERROR("TDG16",
+               "incompatible redeclaration of symbol with internal or external linkage: "
+               +String idToString(X)))
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
           when notBool areCompatible(T, T')
           [structural]
 
+     rule giveCompositeType'(X:CId, T:Type) => giveType(X, T)
+          [structural]
+     rule (. => UNDEF("TDG17",
+               "could not form composite type from declaration.",
+               "6.2.7:3")) // Likely because of VLA params.
+          ~> giveCompositeType'(_, T:K)
+          when isType(T) =/=K true
+          [structural]
 endmodule

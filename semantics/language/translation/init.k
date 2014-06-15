@@ -21,6 +21,7 @@ module C-TRANSLATION-INIT
      imports C-FUNCTION-DEF-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX

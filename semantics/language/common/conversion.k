@@ -20,7 +20,6 @@ module C-CONVERSION
      imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): get rid of this?
      rule arithInterpret(T:Type, N:Int) => tv(N, T)
           when (min(T) <=Int N)
                andBool (max(T) >=Int N)

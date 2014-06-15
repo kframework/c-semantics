@@ -67,15 +67,20 @@ module C-EXPR-ASSIGNMENT
      syntax K ::= checkArrayStaticAssign(Type, TypedValue)
      rule checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
-               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int))), _)) => .
+               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
           when (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (. => UNDEF("CEA5",
-               "passing a pointer to an array object of fewer elements than required to a function with a static-qualified size.",
-               "6.7.6.3"))
+               "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
+               "6.7.6.3:7"))
           ~> checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
-               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int))), _))
+               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
           when (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+     rule (. => UNDEF("CEA6",
+               "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
+               "6.7.6.3:7"))
+          ~> checkArrayStaticAssign(_, tv(Loc:SymLoc, _))
+          when notBool isFromArray(Loc)
 
 endmodule
 

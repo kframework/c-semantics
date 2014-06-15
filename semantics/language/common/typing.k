@@ -25,9 +25,6 @@ module C-TYPING-SYNTAX
      // is "Int", second arg is "PointerType(JustBase)"
      syntax K ::= DeclType(K, K) [avoid, strict(1)]
 
-     syntax Bool ::= areCompatible(Type, Type) [function]
-     syntax Type ::= compositeType(Type, Type) [function]
-
      syntax Bool ::= hasArithmeticType(Type) [function]
      syntax Bool ::= hasCharType(Type) [function]
      syntax Bool ::= isUCharType(Type) [function]
@@ -83,6 +80,8 @@ module C-TYPING-SYNTAX
           [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
+     syntax SimpleType ::= variableLengthArrayType(Type)
+          [klabel('variableLengthArrayType)]
 
      syntax SimpleType ::= structType(CId, Int, FieldInfo)
           [klabel('structType)]

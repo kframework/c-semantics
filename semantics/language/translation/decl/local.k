@@ -1,21 +1,17 @@
-module C-DECL-LOCAL-SYNTAX
-     syntax K ::= declareInternalVariable(CId, Type, K)
-endmodule
-
 module C-DECL-LOCAL
-     imports C-DECL-LOCAL-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
-
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      // TODO(chathhorn): Totally not sure what to do about these first cases.
@@ -155,6 +151,13 @@ module C-DECL-LOCAL
                // TODO(chathhorn): local-types is just a flag in this case.
                LocalTypes:Map => LocalTypes[.K <- kpair(X, BlockNum)]
           </local-types>
+          when isCompleteType(T)
+          [structural]
+     // Only function prototype scope?
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
+               => giveType(X, T)
+          ...</k>
+          <block-history> .List </block-history>
           when isCompleteType(T)
           [structural]
      rule (. => UNDEF("TDL4",

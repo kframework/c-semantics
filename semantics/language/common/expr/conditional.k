@@ -6,11 +6,12 @@ endmodule
 module C-COMMON-EXPR-CONDITIONAL
      imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax K ::= getTypes(List)
      context types(_:List ListItem(HOLE) _:List)
@@ -90,15 +91,14 @@ module C-COMMON-EXPR-CONDITIONAL
      // fixme, this is wrong
      rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : _
-          when isPointerType(T1)
-               andBool isPointerType(T2)
+          when isPointerType(T1) andBool isPointerType(T2)
           [structural]
 
      // this should take care of the void/struct cases
      rule (types(ListItem(T:Type) ListItem(T':Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
-               andBool T ==Type T'
+               andBool areCompatible(T, T')
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))

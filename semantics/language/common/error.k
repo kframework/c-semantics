@@ -66,7 +66,7 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
      // See C-COMMON-EXPR-IDENTIFIER.
-     rule <k> (. => ERROR("00021a", "Trying to look up identifier " 
+     rule <k> (. => ERROR("00021a", "trying to look up identifier " 
                +String S +String 
                ", but no such identifier is in scope.", 
                (305,, 332)) ) ~>
@@ -77,7 +77,7 @@ module C-ERROR
           when (notBool Identifier(S) in keys(Env))
                andBool (notBool Identifier(S) in keys(Types))
           [structural]
-     rule <k> (. => ERROR("00021b", "No definition found for identifier " 
+     rule <k> (. => ERROR("00021b", "no definition found for identifier " 
                +String S +String ".") ) ~>
                Identifier(S:String)
           ...</k>

@@ -2,6 +2,9 @@ module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Bool ::= "#areCompat" "(" Type "," Type ")" [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
      syntax Int ::= getAlignas(Type) [function]
+
+     syntax Bool ::= areCompatible(Type, Type) [function]
+     syntax K ::= compositeType(Type, Type) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -12,7 +15,9 @@ module C-TYPING-COMPATIBILITY
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-BINDING-SYNTAX
+
      imports COMPAT-SYNTAX
+     imports DEBUG-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -93,6 +98,26 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T':Type, _)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, arrayType(T:Type, _)),
+               t(Mods':Set, variableLengthArrayType(T':Type)))
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods':Set, arrayType(T':Type, _)))
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, variableLengthArrayType(T':Type)))
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
+          => #areCompat(T, T')
+          when sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
@@ -169,6 +194,11 @@ module C-TYPING-COMPATIBILITY
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T
+          when isBasicType(T)
+               orBool isStructType(T)
+               orBool isUnionType(T)
+               orBool isBitfieldType(T)
+          [structural, anywhere]
      rule compositeType(
                t(Mods:Set, T:SimpleType),
                t(Mods':Set, T:SimpleType))
@@ -176,52 +206,89 @@ module C-TYPING-COMPATIBILITY
           // specifiers and qualifiers, it's probably best to keep it all
           // around for now.
           => t(Mods Mods', T)
+          when isBasicType(t(.Set, T))
+               orBool isStructType(t(.Set, T))
+               orBool isUnionType(t(.Set, T))
+               orBool isBitfieldType(t(.Set, T))
+          [structural, anywhere]
 
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),
                t(Mods':Set, functionType(T':Type, P':List)))
-          => t(Mods Mods',
-               functionType(compositeType(T, T'), compositeParams(P, P')))
+          => compositeFunctionType(compositeType(T, T'), Mods Mods', .K, P, P', .List)
+          [structural, anywhere]
 
      rule compositeType(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
           => t(Mods Mods', pointerType(compositeType(T, T')))
+          [structural, anywhere]
 
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          [structural, anywhere]
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, incompleteArrayType(T':Type)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          [structural, anywhere]
      rule compositeType(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          [structural, anywhere]
+     rule compositeType(
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, variableLengthArrayType(T':Type)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          [structural, anywhere]
+     rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods':Set, arrayType(T':Type, N:CSize)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          [structural, anywhere]
 
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
           => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
+          [structural, anywhere]
 
      rule compositeType(
                typedDeclaration(T:Type, X:CId),
                typedDeclaration(T':Type, X:CId))
           => typedDeclaration(compositeType(T, T'), X)
+          [structural, anywhere]
 
-     // We replace all ids in non-def param lists with #NoName, so we can get
-     // away with this.
-     syntax List ::= compositeParams(List, List) [function]
-     rule compositeParams(.List, P:List) => P
-     rule compositeParams(P:List, .List) => P
-     rule compositeParams(ListItem(variadic), ListItem(variadic))
-          => ListItem(variadic)
-     rule compositeParams(
-               ListItem(T:Type) P:List,
-               ListItem(T':Type) P':List)
-          => ListItem(compositeType(T, T')) compositeParams(P, P')
+     // TODO(chathhorn): huge hack. Done like this just so things will "break"
+     // when we can't form a composite type. Really need a better way to
+     // propagate errors up through layers of function calls like this (or
+     // maybe just a better mechanism for crawling ASTs...)
+     syntax K ::= compositeFunctionType(K, Set, K, List, List, List)
+     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, .List, P':List)
+          => t(Mods, functionType(T, P'))
+          [structural, anywhere]
+     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, P:List, _)
+          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+          [structural, anywhere]
+     rule compositeFunctionType(T:Type, Mods:Set, .K, P:List, .List, _)
+          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+          [structural, anywhere]
+     rule compositeFunctionType(T:Type, Mods:Set, .K,
+          ListItem(variadic), ListItem(variadic), P:List)
+          => compositeFunctionType(T, Mods, .K, .List, .List,
+               P ListItem(variadic))
+          [structural, anywhere]
+     rule compositeFunctionType(T:Type, Mods:Set, .K,
+               ListItem(PT:Type) P:List,
+               ListItem(PT':Type) P':List, P'':List)
+          => compositeFunctionType(T, Mods, compositeType(PT, PT'), P, P', P'')
+          [structural, anywhere]
+     rule compositeFunctionType(T:Type, Mods:Set, T':Type, P:List, P':List, P'':List)
+          => compositeFunctionType(T, Mods, .K, P, P', P'' ListItem(T'))
+          [structural, anywhere]
 
 endmodule
 

@@ -134,6 +134,8 @@ module C-TYPING-MISC
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
           when notBool isArrayType(T)
@@ -174,6 +176,8 @@ module C-TYPING-MISC
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type)))
+          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T)))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           when notBool isArrayType(T)
@@ -203,6 +207,9 @@ module C-TYPING-MISC
      rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                flexibleArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               variableLengthArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           when notBool isArrayType(T)
 
@@ -217,6 +224,7 @@ module C-TYPING-MISC
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
+     rule innerType(t(_, variableLengthArrayType(T:Type))) => T
      rule innerType(t(_, pointerType(T:Type))) => T
      rule innerType(t(_, bitfieldType(T:Type, _))) => T
      rule innerType(t(_, functionType(T:Type, _))) => T
@@ -246,6 +254,8 @@ module C-TYPING-MISC
           => t(S, incompleteArrayType(completeTags(Tags, T)))
      rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
           => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
+     rule completeTags(Tags:Map, t(S:Set, variableLengthArrayType(T:Type)))
+          => t(S, variableLengthArrayType(completeTags(Tags:Map, T)))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:CId)))
@@ -304,6 +314,7 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'arrayType )
                andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
+               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType )
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
      // Function parameters.
@@ -345,6 +356,8 @@ module C-TYPING-MISC
           => incompleteArrayType(tagRestrict(Tag, T))
      rule tagRestrict(Tag:RestrictTag, flexibleArrayType(T:Type))
           => flexibleArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, variableLengthArrayType(T:Type))
+          => variableLengthArrayType(tagRestrict(Tag, T))
      rule tagRestrict(_, incompleteStructType(X:CId))
           => incompleteStructType(X)
      rule tagRestrict(Tag:RestrictTag, structType(X:CId, NBits:Int,
@@ -385,9 +398,12 @@ module C-TYPING-MISC
      these rules shouldn't be used later anyway */
      rule arrayLength(t(_, flexibleArrayType(_)))
           => 36893488147419103232
+     // Probably should never come up.
+     rule arrayLength(t(_, variableLengthArrayType(_)))
+          => 36893488147419103232
      rule arrayLength(t(_, incompleteArrayType(_)))
           => 36893488147419103232
-     rule arrayLength(t(_, arrayType(_, N:CSize)))
+     rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
           => 36893488147419103232
           when isInt(N) =/=K true
 

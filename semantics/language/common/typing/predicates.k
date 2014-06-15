@@ -45,6 +45,11 @@ module C-TYPING-PREDICATES
           => #typesEq(T, T')
           when sameQualifiers(Mods, Mods')
      rule #typesEq(
+               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods':Set, variableLengthArrayType(T':Type)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
+     rule #typesEq(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, structType(X:CId, _, _)))
           => true
@@ -229,29 +234,30 @@ module C-TYPING-PREDICATES
                    | "#isRestrict" "(" Type ")" [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
-          when T in floatTypes 
-     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
+          when T in floatTypes
+     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T)
 
      rule #hasChar(t(_, T:SimpleType)) => true
           when T in charTypes 
-     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
+     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T)
 
      rule #isUChar(t(_, unsigned-char)) => true
-     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T) 
+     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T)
 
-     rule #isPointer(t(_, pointerType(_))) => true 
-     rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T) 
+     rule #isPointer(t(_, pointerType(_))) => true
+     rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T)
 
-     rule #isBoolT(t(_, bool)) => true 
-     rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T) 
+     rule #isBoolT(t(_, bool)) => true
+     rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T)
 
-     rule #isArray(t(_, arrayType(_, _))) => true 
-     rule #isArray(t(_, incompleteArrayType(_))) => true 
-     rule #isArray(t(_, flexibleArrayType(_))) => true 
-     rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T) 
+     rule #isArray(t(_, arrayType(_, _))) => true
+     rule #isArray(t(_, incompleteArrayType(_))) => true
+     rule #isArray(t(_, flexibleArrayType(_))) => true
+     rule #isArray(t(_, variableLengthArrayType(_))) => true
+     rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T)
 
-     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true 
-     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T) 
+     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true
+     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T)
 
      rule #isVoid(t(_, void)) => true
      rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)

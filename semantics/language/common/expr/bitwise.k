@@ -18,8 +18,7 @@ module C-COMMON-EXPR-BITWISE
      \cinline{\~E} is equivalent to the maximum value representable in that
      type minus \cinline{E}.
      }*/
-     rule ~ tv(I:Int, T:Type)
-          => bitwiseInterpret(T, ~Int I)
+     rule ~ tv(I:Int, T:Type) => bitwiseInterpret(T, ~Int I)
           when isPromoted(T)
           [structural]
 
@@ -174,28 +173,29 @@ module C-COMMON-EXPR-BITWISE
           [structural]
 
      syntax K ::= bitwiseInterpret(Type, Int)
-                | bitwiseInterpret(K) [strict]
-     rule bitwiseInterpret(T:Type, X:Int)
-          => cast(T, tv(X, cfg:largestUnsigned))
+     rule bitwiseInterpret(T:Type, N:Int)
+          => arithInterpret(T, N)
           when hasUnsignedIntegerType(T)
-     rule bitwiseInterpret(T:Type, X:Int)
-          => bitwiseInterpret(cast(T, tv(X, cfg:largestUnsigned)))
+     rule bitwiseInterpret(T:Type, N:Int)
+          => bitwiseInterpret(arithInterpret(T, N))
           when hasSignedIntegerType(T)
-     rule bitwiseInterpret(tv(X:Int, T:Type)) => tv(X, T)
-          when notBool isNegZero(X, T)
+
+     syntax K ::= bitwiseInterpret(K) [strict]
+     rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
+          when notBool isNegZero(N, T)
      rule (. => UNDEF("CEB12",
                "potential negative zero produced via bitwise operations.",
                "6.2.6.2:4"))
-          ~> bitwiseInterpret(tv(X:Int, T:Type))
-          when isNegZero(X, T)
+          ~> bitwiseInterpret(tv(N:Int, T:Type))
+          when isNegZero(N, T)
 
      syntax Bool ::= isNegZero(Int, Type) [function]
-     rule isNegZero(X:Int, T:Type) => true
-          when X ==Int min(T) // Two's complement, sign and magnitude.
-     rule isNegZero(X:Int, _) => true
-          when X ==Int -1 // Ones' complement.
-     rule isNegZero(X:Int, T:Type) => false
-          when X =/=Int min(T)
-               andBool X =/=Int -1
+     rule isNegZero(N:Int, T:Type) => true
+          when N ==Int min(T) // Two's complement, sign and magnitude.
+     rule isNegZero(N:Int, _) => true
+          when N ==Int -1 // Ones' complement.
+     rule isNegZero(N:Int, T:Type) => false
+          when N =/=Int min(T)
+               andBool N =/=Int -1
 
 endmodule

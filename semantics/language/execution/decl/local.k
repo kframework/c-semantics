@@ -16,8 +16,7 @@ module C-DECL-LOCAL
      rule declare'(typedDeclaration(T:Type, X:CId), K:K) 
           => declareInternalVariable(X, T, K)
           [structural] 
-          
-     syntax K ::= declareInternalVariable(CId, Type, K)
+
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
                => addToEnv(X, Base) 
                ~> giveType(X, T')

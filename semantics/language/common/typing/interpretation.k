@@ -1,14 +1,20 @@
+module C-TYPING-INTERPRETATION-SYNTAX
+     syntax List ::= adjustParams(List) [function]
+endmodule
+
 module C-TYPING-INTERPRETATION
-     imports C-TYPING-SYNTAX
-     imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-INTERPRETATION-SYNTAX
 
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+     imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -37,7 +43,7 @@ module C-TYPING-INTERPRETATION
           [structural]
      rule ArrayType(T:Type, tv(N:CSize, _), Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
-          when isInt(N) =/=K true // For possible symbolic values.
+          when isInt(N) =/=K true // VLAs.
           [structural]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
@@ -58,17 +64,53 @@ module C-TYPING-INTERPRETATION
      rule listToSet(ListItem(K:K) L:List) => SetItem(K) listToSet(L)
      rule listToSet(.List) => .Set
 
-     // FIXME: I'm assuming functiontype is always below a prototype in the
-     // AST.
      rule FunctionType(T:Type) => T
           [structural]
-     rule Prototype(T:Type, krlist(L:List), false)
-          => pushTypeDown(T,
-               makeFunctionType(L))
+
+     syntax CId ::= prototype(CId)
+     // "Prototype scope."
+     rule <k> Prototype(T:Type, list(L:List), Var:Bool)
+               => pushBlock ~> Prototype'(T, L, .List, Var)
+          ...</k>
+          <curr-function> X:CId => prototype(X) </curr-function>
           [structural]
-     rule Prototype(T:Type, krlist(L:List), true)
-          => pushTypeDown(T,
-               makeFunctionType(L ListItem(variadic)))
+
+     // We "declare" function prototype parameters in the order they appear,
+     // from left to right. This is mostly to (somewhat) handle VLA parameters.
+     syntax K ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
+     rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
+          => K ~> Prototype'(T, L1, L2, Var)
+          [structural]
+     rule t(Mods:Set, ST:SimpleType)
+          ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
+          => Prototype'(T, L1, L2 ListItem(adjustParam(t(Mods, ST))), Var)
+          [structural]
+     syntax SymBase ::= vla(CId)
+     rule typedDeclaration(DT:Type, X:CId)
+          ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
+          => declareInternalVariable(X, adjustParam(DT), NoInit)
+          ~> Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
+          when X =/=K #NoName
+          [structural]
+     rule typedDeclaration(DT:Type, X:CId)
+          ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
+          => Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
+          when X ==K #NoName
+          [structural]
+     rule Prototype'(T:Type, .List, L2:List, Var:Bool)
+          => Prototype''(T, L2, Var)
+          [structural]
+
+     syntax K ::= "Prototype''" "(" Type "," List "," Bool ")"
+     rule <k> Prototype''(T:Type, L:List, false)
+               => popBlock ~> pushTypeDown(T, makeFunctionType(L))
+          ...</k>
+          <curr-function> prototype(X:CId) => X </curr-function>
+          [structural]
+     rule <k> Prototype''(T:Type, L:List, true)
+               => popBlock ~> pushTypeDown(T, makeFunctionType(L ListItem(variadic)))
+          ...</k>
+          <curr-function> prototype(X:CId) => X </curr-function>
           [structural]
 
      rule NoPrototype(T:Type, krlist(L:List), false)
@@ -105,16 +147,24 @@ module C-TYPING-INTERPRETATION
           => t(getSpecifiers(T) SetItem(arrayStatic(N)),
                arrayType(stripSpecifiers(T), N))
           [structural, anywhere]
+     // TODO(chathhorn): Other qualifiers?
      rule makeArrayType(N:CSize, Specifier(list(.List)))(T:Type)
           => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+          when isInt(N) ==K true
+          [structural, anywhere]
+     // TODO(chathhorn): better VLA support (need to keep around the
+     // un-evaluated size expression).
+     rule makeArrayType(N:CSize, Specifier(list(.List)))(T:Type)
+          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T)))
+          when isInt(N) =/=K true
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
           => t(getSpecifiers(T),
-               functionType(stripSpecifiers(T), adjustParams(giveNamesToArgs(L))))
+               functionType(stripSpecifiers(T), giveNamesToArgs(L)))
           [structural, anywhere]
      rule makeOldStyleFunctionType(L:List)(T:Type)
           => t(getSpecifiers(T) SetItem(oldStyle),
-               functionType(stripSpecifiers(T), adjustParams(giveNamesToArgs(L))))
+               functionType(stripSpecifiers(T), giveNamesToArgs(L)))
           [structural, anywhere]
      rule makePointerType(Quals:Set)(T:Type)
           => t(Quals getSpecifiers(T),
@@ -182,6 +232,8 @@ module C-TYPING-INTERPRETATION
           => t(S, incompleteUnionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))
           => t(S, arrayType(extractActualType(T), N))
+     rule extractActualType(t(S:Set, variableLengthArrayType(T:Type)))
+          => t(S, variableLengthArrayType(extractActualType(T)))
      rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
           => t(S, incompleteArrayType(extractActualType(T)))
      rule extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize)))
@@ -210,5 +262,22 @@ module C-TYPING-INTERPRETATION
      rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K), Size:K))))
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural]
-endmodule
 
+     rule adjustParams(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam(T)) adjustParams(Params)
+     rule adjustParams(.List) => .List
+
+     syntax Type ::= adjustParam(Type) [function]
+     rule adjustParam(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(adjustParam(T), X)
+     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
+     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(T:Type) => T
+          when notBool isTypedDeclaration(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isArrayType(T)
+endmodule
