@@ -34,25 +34,32 @@ module C-TYPING-INTERPRETATION
      syntax KLabel ::= makeOldStyleFunctionType(List)
      syntax KLabel ::= makePointerType(Set)
      syntax KLabel ::= "makeIncompleteArrayType"
-     syntax KLabel ::= makeArrayType(CSize, K)
+     syntax KLabel ::= makeArrayType(K, K)
      syntax Type ::= pushTypeDown(Type, KLabel) [function]
 
-     rule ArrayType(T:Type, tv(N:Int, _), Spec:K)
+     rule ArrayType(T:Type, K:K, Spec:K)
+          => ArrayType'(T, K, K, Spec)
+
+     // We need to keep the unevaluated size expression around in the case of
+     // VLA function parameters.
+     syntax K ::= "ArrayType'" "(" Type "," K "," K "," K ")"
+     context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat]
+     rule ArrayType'(T:Type, tv(N:Int, _), _, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
           when N >Int 0
           [structural]
-     rule ArrayType(T:Type, tv(N:CSize, _), Spec:K)
-          => pushTypeDown(T, makeArrayType(N, Spec))
+     rule ArrayType'(T:Type, tv(N:CSize, _), K:K, Spec:K)
+          => pushTypeDown(T, makeArrayType(K, Spec))
           when isInt(N) =/=K true // VLAs.
           [structural]
-     rule ArrayType(T:Type, emptyValue, _)
+     rule ArrayType'(T:Type, emptyValue, _, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
      rule (. => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
-          ~> ArrayType(_, tv(_:Float, _), _)
+          ~> ArrayType'(_, tv(_:Float, _), _, _)
           [structural]
      rule (. => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_, tv(Len:Int, _), _)
+          ~> ArrayType'(_, tv(Len:Int, _), _, _)
           when Len <=Int 0
           [structural]
 
@@ -148,14 +155,14 @@ module C-TYPING-INTERPRETATION
                arrayType(stripSpecifiers(T), N))
           [structural, anywhere]
      // TODO(chathhorn): Other qualifiers?
-     rule makeArrayType(N:CSize, Specifier(list(.List)))(T:Type)
+     rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
           => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
           when isInt(N) ==K true
           [structural, anywhere]
      // TODO(chathhorn): better VLA support (need to keep around the
      // un-evaluated size expression).
-     rule makeArrayType(N:CSize, Specifier(list(.List)))(T:Type)
-          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T)))
+     rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
+          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           when isInt(N) =/=K true
           [structural, anywhere]
      rule makeFunctionType(L:List)(T:Type)
@@ -232,8 +239,8 @@ module C-TYPING-INTERPRETATION
           => t(S, incompleteUnionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))
           => t(S, arrayType(extractActualType(T), N))
-     rule extractActualType(t(S:Set, variableLengthArrayType(T:Type)))
-          => t(S, variableLengthArrayType(extractActualType(T)))
+     rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(S, variableLengthArrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
           => t(S, incompleteArrayType(extractActualType(T)))
      rule extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize)))

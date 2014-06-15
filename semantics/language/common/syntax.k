@@ -193,7 +193,6 @@ module C-SYNTAX
      // [strict 5] yet
      syntax DeclType ::= ArrayType(K, K, K)
           [klabel('ArrayType), strict(1)]
-     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
      syntax DeclType ::= PointerType(Specifier, K)
           [klabel('PointerType), strict(2)]
      // K, List, Bool

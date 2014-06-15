@@ -80,7 +80,7 @@ module C-TYPING-SYNTAX
           [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
           [klabel('flexibleArrayType)]
-     syntax SimpleType ::= variableLengthArrayType(Type)
+     syntax SimpleType ::= variableLengthArrayType(Type, K)
           [klabel('variableLengthArrayType)]
 
      syntax SimpleType ::= structType(CId, Int, FieldInfo)

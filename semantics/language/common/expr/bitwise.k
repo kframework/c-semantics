@@ -18,7 +18,7 @@ module C-COMMON-EXPR-BITWISE
      \cinline{\~E} is equivalent to the maximum value representable in that
      type minus \cinline{E}.
      }*/
-     rule ~ tv(I:Int, T:Type) => bitwiseInterpret(T, ~Int I)
+     rule ~ tv(I:Int, T:Type) => bitwiseInterpret(T, ~Int I, isNegZero(I, T))
           when isPromoted(T)
           [structural]
 
@@ -39,7 +39,8 @@ module C-COMMON-EXPR-BITWISE
      otherwise, the behavior is undefined.
      }*/
      rule tv(E1:Int, T1:Type) << tv(E2:Int, T2:Type)
-          => bitwiseInterpret(T1, E1 <<Int E2)
+          => bitwiseInterpret(T1, E1 <<Int E2,
+               isNegZero(E1, T1) orBool isNegZero(E2, T2))
           when isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
@@ -80,7 +81,8 @@ module C-COMMON-EXPR-BITWISE
      value, the resulting value is implementation-defined.
      }*/
      rule tv(E1:Int, T1:Type) >> tv(E2:Int, T2:Type) 
-          => bitwiseInterpret(T1, E1 >>Int E2)
+          => bitwiseInterpret(T1, E1 >>Int E2,
+               isNegZero(E1, T1) orBool isNegZero(E2, T2))
           when isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
@@ -120,7 +122,8 @@ module C-COMMON-EXPR-BITWISE
      the corresponding bits in the converted operands is set).
      }*/
      rule tv(E1:Int, T:Type) & tv(E2:Int, T':Type)
-          => bitwiseInterpret(T, E1 &Int E2)
+          => bitwiseInterpret(T, E1 &Int E2,
+               isNegZero(E1, T) orBool isNegZero(E2, T'))
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
@@ -140,7 +143,8 @@ module C-COMMON-EXPR-BITWISE
      one of the corresponding bits in the converted operands is set).     
      }*/
      rule tv(E1:Int, T:Type) ^ tv(E2:Int, T':Type)
-          => bitwiseInterpret(T, E1 xorInt E2)
+          => bitwiseInterpret(T, E1 xorInt E2,
+               isNegZero(E1, T) orBool isNegZero(E2, T'))
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
@@ -160,7 +164,8 @@ module C-COMMON-EXPR-BITWISE
      one of the corresponding bits in the converted operands is set).
      }*/
      rule tv(E1:Int, T:Type) | tv(E2:Int, T':Type)
-          => bitwiseInterpret(T, E1 |Int E2)
+          => bitwiseInterpret(T, E1 |Int E2,
+               isNegZero(E1, T) orBool isNegZero(E2, T'))
           when isPromoted(T)
                andBool T ==Type T'
           [structural]
@@ -172,11 +177,12 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool hasIntegerType(T2)
           [structural]
 
-     syntax K ::= bitwiseInterpret(Type, Int)
-     rule bitwiseInterpret(T:Type, N:Int)
-          => arithInterpret(T, N)
+     syntax K ::= bitwiseInterpret(Type, Int, Bool)
+     rule bitwiseInterpret(T:Type, N:Int, _) => arithInterpret(T, N)
           when hasUnsignedIntegerType(T)
-     rule bitwiseInterpret(T:Type, N:Int)
+     rule bitwiseInterpret(T:Type, N:Int, true) => arithInterpret(T, N)
+          when hasSignedIntegerType(T)
+     rule bitwiseInterpret(T:Type, N:Int, false)
           => bitwiseInterpret(arithInterpret(T, N))
           when hasSignedIntegerType(T)
 

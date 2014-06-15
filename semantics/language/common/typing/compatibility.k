@@ -100,21 +100,21 @@ module C-TYPING-COMPATIBILITY
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, _)),
-               t(Mods':Set, variableLengthArrayType(T':Type)))
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, arrayType(T':Type, _)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, variableLengthArrayType(T':Type)))
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, incompleteArrayType(T':Type)))
           => #areCompat(T, T')
           when sameQualifiers(Mods, Mods')
@@ -241,11 +241,11 @@ module C-TYPING-COMPATIBILITY
           [structural, anywhere]
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
-               t(Mods':Set, variableLengthArrayType(T':Type)))
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
           [structural, anywhere]
      rule compositeType(
-               t(Mods:Set, variableLengthArrayType(T:Type)),
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
           [structural, anywhere]

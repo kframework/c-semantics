@@ -45,8 +45,8 @@ module C-TYPING-PREDICATES
           => #typesEq(T, T')
           when sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, variableLengthArrayType(T:Type)),
-               t(Mods':Set, variableLengthArrayType(T':Type)))
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => #typesEq(T, T')
           when sameQualifiers(Mods, Mods')
      rule #typesEq(
@@ -253,7 +253,7 @@ module C-TYPING-PREDICATES
      rule #isArray(t(_, arrayType(_, _))) => true
      rule #isArray(t(_, incompleteArrayType(_))) => true
      rule #isArray(t(_, flexibleArrayType(_))) => true
-     rule #isArray(t(_, variableLengthArrayType(_))) => true
+     rule #isArray(t(_, variableLengthArrayType(_, _))) => true
      rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T)
 
      rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true

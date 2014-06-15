@@ -19,7 +19,7 @@ module C-STMT-BLOCK
 
      rule <k> popBlock => . ...</k>
           <local>
-               (_ => C)
+               (_:Bag => C)
           </local>
           <block-stack>
                ListItem(C:Bag) => .List

@@ -70,8 +70,8 @@ module C-DECL-DEFINITION
           => t(Mods, incompleteArrayType(elideDeclParams(T)))
      rule elideDeclParams(t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods, flexibleArrayType(elideDeclParams(T)))
-     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type)))
-          => t(Mods, variableLengthArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods, variableLengthArrayType(elideDeclParams(T), N))
      rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
           => t(Mods, pointerType(elideDeclParams(T)))
      rule elideDeclParams(T:Type) => T

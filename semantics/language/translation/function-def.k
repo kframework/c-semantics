@@ -171,9 +171,10 @@ module C-FUNCTION-DEF
 
      syntax K ::= staticEval(CId, List, K)
      rule <k> staticEval(X:CId, Params:List, Blk:K)
-               => populateFromGlobal
+               => pushBlock
                ~> dummyBind(Params)
                ~> Blk
+               ~> popBlock
                ~> returnToFileScope
           ...</k>
           <curr-function> _ => X </curr-function>
@@ -200,7 +201,6 @@ module C-FUNCTION-DEF
           ) => true
 
      syntax K ::= dummyBind(List)
-
      rule dummyBind(.List) => .
           [structural]
      rule dummyBind(ListItem(variadic)) => .

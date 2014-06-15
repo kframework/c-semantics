@@ -134,7 +134,7 @@ module C-TYPING-MISC
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type)))
+     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
@@ -176,8 +176,8 @@ module C-TYPING-MISC
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type)))
-          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           when notBool isArrayType(T)
@@ -207,9 +207,9 @@ module C-TYPING-MISC
      rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                flexibleArrayType(addQualifiers(Quals, T)))
-     rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
           => t(Mods intersectSet(Quals, typeQualifiers),
-               variableLengthArrayType(addQualifiers(Quals, T)))
+               variableLengthArrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           when notBool isArrayType(T)
 
@@ -224,7 +224,7 @@ module C-TYPING-MISC
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
-     rule innerType(t(_, variableLengthArrayType(T:Type))) => T
+     rule innerType(t(_, variableLengthArrayType(T:Type, _))) => T
      rule innerType(t(_, pointerType(T:Type))) => T
      rule innerType(t(_, bitfieldType(T:Type, _))) => T
      rule innerType(t(_, functionType(T:Type, _))) => T
@@ -254,8 +254,8 @@ module C-TYPING-MISC
           => t(S, incompleteArrayType(completeTags(Tags, T)))
      rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
           => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
-     rule completeTags(Tags:Map, t(S:Set, variableLengthArrayType(T:Type)))
-          => t(S, variableLengthArrayType(completeTags(Tags:Map, T)))
+     rule completeTags(Tags:Map, t(S:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(S, variableLengthArrayType(completeTags(Tags:Map, T), N))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:CId)))
@@ -309,12 +309,12 @@ module C-TYPING-MISC
      rule completeTags(_, t(S:Set, T:SimpleType))
           => t(S, T)
           when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool (getKLabel(T) =/=KLabel 'functionType )
-               andBool (getKLabel(T) =/=KLabel 'pointerType )
-               andBool (getKLabel(T) =/=KLabel 'arrayType )
-               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
-               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
-               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType )
+               andBool (getKLabel(T) =/=KLabel 'functionType)
+               andBool (getKLabel(T) =/=KLabel 'pointerType)
+               andBool (getKLabel(T) =/=KLabel 'arrayType)
+               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
+               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
+               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType)
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
      // Function parameters.
@@ -356,8 +356,8 @@ module C-TYPING-MISC
           => incompleteArrayType(tagRestrict(Tag, T))
      rule tagRestrict(Tag:RestrictTag, flexibleArrayType(T:Type))
           => flexibleArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, variableLengthArrayType(T:Type))
-          => variableLengthArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, variableLengthArrayType(T:Type, N:K))
+          => variableLengthArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(_, incompleteStructType(X:CId))
           => incompleteStructType(X)
      rule tagRestrict(Tag:RestrictTag, structType(X:CId, NBits:Int,
@@ -399,7 +399,7 @@ module C-TYPING-MISC
      rule arrayLength(t(_, flexibleArrayType(_)))
           => 36893488147419103232
      // Probably should never come up.
-     rule arrayLength(t(_, variableLengthArrayType(_)))
+     rule arrayLength(t(_, variableLengthArrayType(_, _)))
           => 36893488147419103232
      rule arrayLength(t(_, incompleteArrayType(_)))
           => 36893488147419103232
