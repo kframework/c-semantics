@@ -227,11 +227,12 @@ sub main {
 
      if (!checkTransSuccess($linkStdout)) {
           print "Error during translation.\n";
-          if ($args->{'-d'}) {
-               die "Final configuration saved to $confOutPrettyTmp.\n";
-          } else {
+          if (!$args->{'-d'}) {
                die "Use \"kcc -d\" to get the final configuration.\n";
           }
+     }
+     if ($args->{'-d'}) {
+          die "Final configuration saved to $confOutPrettyTmp.\n";
      }
 
      $programRunner = performSpecializations($programRunner);
@@ -417,11 +418,12 @@ sub compile {
 
      if (!checkTransSuccess($compileStdout)) {
           print "Error during translation: $localOval\n";
-          if ($args->{'-d'}) {
-               die "Final configuration saved to $localOvalPretty.\n";
-          } else {
+          if (!$args->{'-d'}) {
                die "Use \"kcc -d\" to get the final configuration.\n";
           }
+     }
+     if ($args->{'-d'}) {
+          die "Final configuration saved to $localOvalPretty.\n";
      }
 }
 
