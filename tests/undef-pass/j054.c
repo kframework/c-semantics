@@ -5,7 +5,7 @@ struct big_type {
 };
 union u {
       struct s1 { long long c; struct big_type bt1; } sub1;
-      struct s1 { long long x; struct big_type bt2; } sub1;
+      struct s2 { long long x; struct big_type bt2; } sub2;
 } obj;
 
 int main(void) {

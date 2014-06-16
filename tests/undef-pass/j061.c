@@ -1,17 +1,17 @@
-struct s {
+struct {
       int x;
       union {
             int y;
-      };
+      } u;
 } s;
 
-union u {
+union {
       int x;
       struct {
             int y;
-      };
+      } s;
 } u;
 
 int main(void) {
-      return s.y + u.y;
+      return s.u.y + u.s.y;
 }
