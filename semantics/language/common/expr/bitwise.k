@@ -195,6 +195,11 @@ module C-COMMON-EXPR-BITWISE
           ~> bitwiseInterpret(tv(N:Int, T:Type))
           when isNegZero(N, T)
 
+     // Because of the undefinedness of bit shifting negative numbers, the
+     // bitwise operations behave the same regardless of the encoding of
+     // negative numbers. Detecting the negative zeros that might result under
+     // different encodings, then, is just a matter of detecting the two
+     // negative zero bit patterns in the result (100... and 111...).
      syntax Bool ::= isNegZero(Int, Type) [function]
      rule isNegZero(N:Int, T:Type) => true
           when N ==Int min(T) // Two's complement, sign and magnitude.
