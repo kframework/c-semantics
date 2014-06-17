@@ -61,56 +61,56 @@ module CIL-IMPLEMENTATION
     value2Bytes(T:IntType, MI:MInt)
   =>
     digitsOfMInt(MI, byteWidthMacro, byteWidth(T))
-  rule bytes2Value(_:IntType, L:MyList) => mIntOfDigits(L)
+  rule bytes2Value(_:IntType, L:List) => mIntOfDigits(L)
 
   /*
    * Floats.
    */
-  syntax MyList ::= padBytes(Int) [function]
-                  | padBytes(Int, ByteValue) [function]
+  syntax List ::= padBytes(Int) [klabel(padBytes1), function]
+                  | padBytes(Int, ByteValue) [klabel(padBytes2), function]
   
   rule padBytes(N:Int) => padBytes(N, used)
 
   rule padBytes(N:Int, V:ByteValue) 
-    => MyListItem(V), padBytes(N -Int 1, V)
+    => ListItem(V) padBytes(N -Int 1, V)
     when N >Int 0
-  rule padBytes(0, _) => .MyList
+  rule padBytes(0, _) => .List
 
   rule value2Bytes(T:FloatingType, F:Float) 
-    => MyListItem(F), padBytes(byteWidth(T) -Int 1)
+    => ListItem(F) padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_:FloatingType, (MyListItem(F:Float), _:MyList)) => F
-  rule bytes2Value(_:FloatingType, (MyListItem(0), _:MyList)) => 0.0
+  rule bytes2Value(_:FloatingType, (ListItem(F:Float) _:List)) => F
+  rule bytes2Value(_:FloatingType, (ListItem(0) _:List)) => 0.0
 
   /*
    * Strings.
    */
   rule value2Bytes(T:Type, S:String)
-    => MyListItem(mi(width(char), ordChar(substrString(S, 0, 1)))),
+    => ListItem(mi(width(char), ordChar(substrString(S, 0, 1))))
        value2Bytes(T, substrString(S, 1, lengthString(S)))
     when lengthString(S) >Int 0
-  rule value2Bytes(_, "") => MyListItem(mi(width(char), 0))
+  rule value2Bytes(_, "") => ListItem(mi(width(char), 0))
 
   /*
    * Pointers.
    */
   rule value2Bytes(T:Type, P:Ptr) 
-    => MyListItem(P), padBytes(byteWidth(T) -Int 1)
+    => ListItem(P) padBytes(byteWidth(T) -Int 1)
 
-  rule bytes2Value(_:Type, (MyListItem(P:Ptr), _:MyList))
+  rule bytes2Value(_:Type, (ListItem(P:Ptr) _:List))
     => P
 
   // TODO(chathhorn): width might be greater than the pointer type allows.
   // TODO(AndreiS): this rules conflicts with the one above
-  //rule bytes2Value(T:Type, L:MyList) 
+  //rule bytes2Value(T:Type, L:List) 
   //  => bytes2UnsignedMInt(L)
   //  when isPtrType(T)
 
   /*
    * Aggregates and arrays.
    */
-  rule value2Bytes(_, agg(L:MyList)) => L
-  rule bytes2Value(T:Type, L:MyList) => agg(L)
+  rule value2Bytes(_, agg(L:List)) => L
+  rule bytes2Value(T:Type, L:List) => agg(L)
     when (isArrayType(T) ==K true) orBool (isAggType(T) ==K true)
 
   /*

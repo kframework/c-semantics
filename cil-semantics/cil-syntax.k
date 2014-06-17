@@ -23,7 +23,7 @@ module CIL-SYNTAX
                    | "enum" CId ";"
 
   syntax EnumInit ::= CId "=" Constant
-  syntax EnumInits ::= List{EnumInit, ","} [right]
+  syntax EnumInits ::= List{EnumInit, ","}
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
@@ -192,7 +192,7 @@ module CIL-SYNTAX
 
   rule if (E:Exp) S:Stmt => if (E) S else ;   [macro]
 
-  syntax Stmts ::= List{Stmt, ""}   [right]
+  syntax Stmts ::= List{Stmt, ""}
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
                  | Exp "=" FunCall ";"   [strict(2), prefer]
                  | FunCall ";"            [strict]
@@ -254,7 +254,7 @@ module CIL-SYNTAX
   // Elide bitfields for now.
   rule DS:DeclSpecs D:Declarator : _:Constant ; => DS D ; [macro]
 
-  syntax VarDecls ::= List{VarDecl, ""}    [right]
+  syntax VarDecls ::= List{VarDecl, ""}
   
   syntax InitVarDecl ::= 
       DeclSpecs Declarator "=" Initializer ";"
@@ -393,7 +393,7 @@ module CIL-SYNTAX
   //     parameter-declaration
   //     parameter-list , parameter-declaration
   syntax Params ::=
-      List{ParamDecl, ","} [right]
+      List{ParamDecl, ","}
   
   // parameter-declaration
   //     declaration-specifiers declarator
