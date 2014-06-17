@@ -1,24 +1,27 @@
-unsigned a[5];
-unsigned a[5];
+unsigned a1[5];
+unsigned a1[5];
 
-double b[5];
-double b[5];
+double a2[5];
+double a2[5];
 
-int * restrict c[5];
-int * restrict c[5];
+int * restrict a3[5];
+int * restrict a3[5];
 
-const int d[5];
-const int d[5];
+const int a4[5];
+const int a4[5];
 
-int (*e[5])(int, int);
-int (*e[5])(int, int);
+int (*a5[5])(int, int);
+int (*a5[5])(int, int);
 
-int f[5 + 2];
-int f[5 + 2];
+int a6[5 + 2];
+int a6[5 + 2];
 
-int g[];
-int g[5];
+int a7[];
+int a7[5];
+
+int f(int n) { return n; }
 
 int main(void) {
+      1 ? (int(*)[f(3)]) 0 : (int (*)[3]) 0;
       return 0;
 }
