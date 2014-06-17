@@ -215,13 +215,13 @@ module CIL-COMMON-MMU
   [structural]
   rule
     <k> $newObject(T:Type, Sz:TypedValue, V:ByteValue)
-      => tv(upPtr(T), Ptr(BasePtr(?Base:Int, mival(Sz)), 0))
+      => tv(upPtr(T), Ptr(BasePtr(!Base:Int, mival(Sz)), 0))
     ...</k>
     <heap>...
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(?Base, (mival(Sz))) </base-ptr>
+        <base-ptr> BasePtr(!Base, (mival(Sz))) </base-ptr>
         //<object-type> T </object-type>
         <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>
