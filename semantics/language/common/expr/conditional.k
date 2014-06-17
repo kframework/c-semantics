@@ -70,7 +70,7 @@ module C-COMMON-EXPR-CONDITIONAL
      compatible types or to differently qualified versions of compatible types,
      the result type is a pointer to an appropriately qualified version of the
      composite type}; if one operand is a null pointer constant, the result has
-     the type of the other operand; \broken{otherwise, one operand is a pointer
+     the type of the other operand; otherwise, one operand is a pointer
      to void or a qualified version of \cinline{void}, in which case the result
      type is a pointer to an appropriately qualified version of
      \cinline{void}.}
@@ -79,19 +79,32 @@ module C-COMMON-EXPR-CONDITIONAL
      // semantics to handle this properly
      rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
-          when hasIntegerType(T1)
-               andBool isPointerType(T2)
+          when hasIntegerType(T1) andBool isPointerType(T2)
           [structural]
      rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
-          when hasIntegerType(T2)
-               andBool isPointerType(T1)
+          when hasIntegerType(T2) andBool isPointerType(T1)
           [structural]
 
-     // fixme, this is wrong
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
+     rule (types(
+               ListItem(t(Mods:Set, pointerType(T:Type)))
+               ListItem(t(Mods':Set, pointerType(T':Type)))
+          ) => convertedType(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
-          when isPointerType(T1) andBool isPointerType(T2)
+          when areCompatible(stripQualifiers(T), stripQualifiers(T'))
+          [structural]
+
+     rule (types(
+               ListItem(t(Mods1:Set, pointerType(t(Mods1':Set, void))))
+               ListItem(t(Mods2:Set, pointerType(t(Mods2':Set, _))))
+          ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
+          ~> _? _ : _
+          [structural]
+     rule (types(
+               ListItem(t(Mods1:Set, pointerType(t(Mods1':Set, _))))
+               ListItem(t(Mods2:Set, pointerType(t(Mods2':Set, void))))
+          ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
+          ~> _? _ : _
           [structural]
 
      // this should take care of the void/struct cases
