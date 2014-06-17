@@ -1,5 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax KItem ::= loadMergeObj(K, K) [function]
+     syntax KItem ::= loadMergeObj(Bag , Bag) [function]
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -43,10 +43,10 @@ module C-TRANSLATION-INIT
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
-               => preDeclareStrings(Strings)
+     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
+               => (preDeclareStrings(Strings)
                ~> listToK(Decls)
-               ~> allocateIncompleteTentatives
+               ~> allocateIncompleteTentatives))
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
@@ -101,14 +101,12 @@ module C-TRANSLATION-INIT
      // TODO(chathhorn): it'd be nice to remove the unused builtins from
      // <functions />.
 
-     rule loadMergeObj(bag2K(A:Bag) , bag2K(.Bag)) => loadObj(bag2K(A))
-     rule loadMergeObj(bag2K(.Bag) , bag2K(A:Bag)) => loadObj(bag2K(A))
+     rule loadMergeObj(A:Bag , .Bag) => loadObj(A)
+     rule loadMergeObj(.Bag , A:Bag) => loadObj(A)
 
      // TODO(chathhorn): Check compatibility of decls instead of dumbly
      // merging.
-     /*TODO: java backend cannot merge two Bag variables
-     rule loadMergeObj(
-          bag2K(<global>
+     rule loadMergeObj(<global>
                <mem> M1:Map </mem>
                <functions> F1:Map </functions>
 
@@ -125,8 +123,8 @@ module C-TRANSLATION-INIT
                <main-tu> Main1:Set </main-tu>
 
                <translation-units> TUs1:Bag </translation-units>
-          </global>),
-	  bag2K(<global>
+          </global>,
+	  <global>
                <mem> M2:Map </mem>
                <functions> F2:Map </functions>
 
@@ -143,9 +141,9 @@ module C-TRANSLATION-INIT
                <main-tu> Main2:Set </main-tu>
 
                <translation-units> TUs2:Bag </translation-units>
-          </global>))
+          </global>)
           =>
-          loadObj(bag2K(
+          loadObj(
           <global>
                <mem> M1 M2 </mem>
                <functions> F1 F2 </functions>
@@ -163,8 +161,7 @@ module C-TRANSLATION-INIT
                <main-tu> Main1 Main2 </main-tu>
 
                <translation-units> TUs1 TUs2 </translation-units>
-          </global>))
-*/
+          </global>)
      syntax KItem ::= "printSuccess"
      rule printSuccess => #write(#stdout, "Translation successful!\n")
 
