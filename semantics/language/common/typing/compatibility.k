@@ -53,6 +53,21 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
           when sameQualifiers(Mods, Mods')
 
+     // TODO(chathhorn): should be a setting.
+     // Each enumerated type shall be compatible with char, a signed integer
+     // type, or an unsigned integer type. The choice of type is
+     // implementation-defined. (6.7.2.2:4)
+     rule #areCompat(
+               t(Mods:Set, enumType(_)),
+               t(Mods':Set, int))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, int),
+               t(Mods':Set, enumType(_)))
+          => true
+          when sameQualifiers(Mods, Mods')
+
      rule #areCompat(
                t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, structType(X:CId, _, fieldInfo(Fs':List, _, _))))
@@ -210,6 +225,19 @@ module C-TYPING-COMPATIBILITY
                orBool isStructType(t(.Set, T))
                orBool isUnionType(t(.Set, T))
                orBool isBitfieldType(t(.Set, T))
+          [structural, anywhere]
+
+     // TODO(chathhorn): surely implementation defined, although I don't see
+     // composite types for enums explicitly addressed in the standard.
+     rule compositeType(
+               t(Mods:Set, enumType(_)),
+               t(Mods':Set, int))
+          => t(Mods Mods', int)
+          [structural, anywhere]
+     rule compositeType(
+               t(Mods:Set, int),
+               t(Mods':Set, enumType(_)))
+          => t(Mods Mods', int)
           [structural, anywhere]
 
      rule compositeType(
