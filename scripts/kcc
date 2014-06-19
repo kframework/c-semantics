@@ -382,7 +382,7 @@ sub compile {
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
-          '--parser="cat"', 
+          '--parser "kast --parser ground"', 
           "-d $TRANS_DEF",
           $ppResult
           );
@@ -393,7 +393,7 @@ sub compile {
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
-          '--parser="cat"', 
+          '--parser "kast --parser ground"', 
           "-d $TRANS_DEF",
           $ppResult
           );
