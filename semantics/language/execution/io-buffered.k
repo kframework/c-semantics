@@ -453,8 +453,8 @@ module C-IO-BUFFERED
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
           when (Offset =/=Int 0)
                andBool (Offset1 <=Int Offset)
-
-     syntax Set ::= getQualsAtOffset(Type, Int) [function]
+     //TODO: why it is nessary here
+     syntax Set ::= getQualsAtOffset(Type, Int) [function,klabel(getQualsAtOffset)]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))
 

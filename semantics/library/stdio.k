@@ -94,32 +94,32 @@ module LIBC-STDIO
 
      rule [putchar]:
           prepareBuiltin(Identifier("putchar"),
-               ListItem(tv(N:Int, _)))
+               hItem(tv(N:Int, _)))
           => writeToFD(1, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [fslPutc]:
           prepareBuiltin(Identifier("__fslPutc"),
-               ListItem(tv(N:Int, _))
-               ListItem(tv(H:Int, _)))
+               hItem(tv(N:Int, _)) hs::
+               hItem(tv(H:Int, _)))
           => writeToFD(H, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [getchar]:
-          prepareBuiltin(Identifier("getchar"), .List)
+          prepareBuiltin(Identifier("getchar"), .HeatList)
           => flush(1) ~> readFromFD(0)
           [structural]
 
      rule [fslFGetC]:
           prepareBuiltin(Identifier("__fslFGetC"),
-               ListItem(tv(FD:Int, _))
-               ListItem(tv(_:Int, _)))
+               hItem(tv(FD:Int, _)) hs::
+               hItem(tv(_:Int, _)))
           => readFromFD(FD)
           [structural]
 
      rule [fslCloseFile]:
           <k> prepareBuiltin(Identifier("__fslCloseFile"),
-                    ListItem(tv(FD:Int, t(_, int))))
+                    hItem(tv(FD:Int, t(_, int))))
                => tv(0, t(.Set, int))
           ...</k>
           (<file>... <fid> FD:Int </fid> ...</file> => .)
@@ -127,8 +127,8 @@ module LIBC-STDIO
 
      rule [fslOpenFile-pre]:
           prepareBuiltin(Identifier("__fslOpenFile"),
-               ListItem(Filename:KResult)
-               ListItem(Mode:KResult))
+               hItem(Filename:KResult) hs::
+               hItem(Mode:KResult))
           => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
 
@@ -172,8 +172,8 @@ module LIBC-STDIO
      // to do this
      rule [printf]:
           prepareBuiltin(Identifier("printf"),
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hItem(Format:KResult) hs::
+               hItem(VarArgs:KResult))
           => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
 
@@ -187,9 +187,9 @@ module LIBC-STDIO
      syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
           prepareBuiltin(Identifier("sprintf"),
-               ListItem(tv(Dest:SymLoc, _))
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hItem(tv(Dest:SymLoc, _)) hs::
+               hItem(Format:KResult) hs::
+               hItem(VarArgs:KResult))
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
@@ -201,10 +201,10 @@ module LIBC-STDIO
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           prepareBuiltin(Identifier("snprintf"),
-               ListItem(tv(Dest:SymLoc, _))
-               ListItem(tv(Len:Int, _))
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hItem(tv(Dest:SymLoc, _)) hs::
+               hItem(tv(Len:Int, _)) hs::
+               hItem(Format:KResult) hs::
+               hItem(VarArgs:KResult))
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
