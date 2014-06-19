@@ -213,7 +213,6 @@ module CIL-SYNTAX
   // rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
   // rule X:Exp -- ; => X = X - (typeof(X)) 1 ; [macro]
   rule X:Exp ++ ; => X = X + 1 ; [macro]
-  rule X:Exp ++ ; => X = X + 1 ; [macro]
   rule X:Exp += E:Exp ; => X = X + E ; [macro]
   rule X:Exp -= E:Exp ; => X = X - E ; [macro]
   rule X:Exp *= E:Exp ; => X = X * E ; [macro]

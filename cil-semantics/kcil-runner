@@ -50,7 +50,6 @@ sub main {
       my $argv = join(',,', map {qq|"$_"|} ($0, @ARGV));
 
       my %krun_args = (
-                  '--backend' => 'java', 
                   '--output' => 'raw', 
                   '--output-file' => $fileOutput, 
                   '--parser' => 'kast', 
@@ -220,7 +219,7 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< result-value > # (-?\d+)\(\.KList\) <\/ result-value >/ && do {
+      /< result-value > '###result-value`\(_`\)\(# (-?\d+)\(\.KList\)\) <\/ result-value >/ && do {
             $parsed->{exitCode} = $1;
       };
 
