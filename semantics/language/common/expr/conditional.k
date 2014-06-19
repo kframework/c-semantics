@@ -8,6 +8,7 @@ module C-COMMON-EXPR-CONDITIONAL
 
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -115,6 +116,21 @@ module C-COMMON-EXPR-CONDITIONAL
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))
+          [structural]
+
+     rule (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
+          types(ListItem(t(_, void)) ListItem(t(_, T:SimpleType)))
+          when T =/=K void
+          [structural]
+     rule (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
+          types(ListItem(t(_, T:SimpleType)) ListItem(t(_, void)))
+          when T =/=K void
+          [structural]
+     rule (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
+          types(ListItem(T:Type) ListItem(T':Type))
+          when (T =/=K T')
+               andBool (isStructType(T) orBool isUnionType(T))
+               andBool (isStructType(T') orBool isUnionType(T'))
           [structural]
 endmodule
 

@@ -317,6 +317,15 @@ module C-CONVERSION
      rule cast(t(_, void), _) => skipval
           [structural, anywhere]
 
+     rule (. => ERROR("CCV5", "casting empty value to type other than void.", 89)) ~>
+          cast(t(_, T:SimpleType), emptyValue)
+          when T =/=K void
+          [structural]
+     rule (. => UNDEF("CCV6", "casting void type to non-void type.", "6.3.2.2") )
+          ~> cast(t(_, T:SimpleType), skipval)
+          when (T =/=K void)
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object
      type. A pointer to any object type may be converted to a pointer to void
@@ -374,7 +383,7 @@ module C-CONVERSION
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
                     orBool (V ==K NullPointer))
           [structural, anywhere]
-     rule (. => UNDEF("CCV5",
+     rule (. => UNDEF("CCV7",
                "conversion from pointer to integer of a value possibly unrepresentable in the integer type.",
                "6.3.2.3:6"))
           ~> cast(T':Type, tv(V:CValue, T:Type))
@@ -406,7 +415,7 @@ module C-CONVERSION
           => tv(Loc, t(Mods, pointerType(T')))
           when getAlignas(T') <=Int getAlign(Loc)
           [structural, anywhere]
-     rule (. => UNDEF("CCV6",
+     rule (. => UNDEF("CCV8",
                "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
                "6.3.2.3:7"))
           ~> cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))

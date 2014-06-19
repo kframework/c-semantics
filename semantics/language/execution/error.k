@@ -28,12 +28,6 @@ module C-EXECUTION-ERROR
      rule (<k> EXIT(Msg:String) ~> K:K </k> 
           => <final-computation> K </final-computation>)
           (.Bag => <error-cell> Msg </error-cell>)
-
-     rule [err00001]: 
-          (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
-          cast(t(_, T:SimpleType), emptyValue)
-          when T =/=K void
-          [structural]
          
     //  rule [err00005]:
     //       <k> 
@@ -65,33 +59,9 @@ module C-EXECUTION-ERROR
      //      when hasFloatType(T)
      //      [structural]
           
-     rule [err00034]:
-          (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
-          cast(t(_, T:SimpleType), skipval)
-          when (T =/=K void)
-          [structural]
-          
      rule [err00037]:
           (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
           read(NullPointer, _)
-          [structural]
-          
-     rule [err00041]:
-          (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(ListItem(t(_, void)) ListItem(t(_, T:SimpleType)))
-          when T =/=K void
-          [structural]
-     rule [err00042]:
-          (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types(ListItem(t(_, T:SimpleType)) ListItem(t(_, void)))
-          when T =/=K void
-          [structural]
-     rule [err00043]:
-          (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(ListItem(T:Type) ListItem(T':Type))
-          when (T =/=K T')
-               andBool (isStructType(T) orBool isUnionType(T))
-               andBool (isStructType(T') orBool isUnionType(T'))
           [structural]
           
      rule [err00046]:

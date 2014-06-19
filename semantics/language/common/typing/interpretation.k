@@ -127,6 +127,8 @@ module C-TYPING-INTERPRETATION
 
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
+     rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:KLabel)
+          => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel)
           => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel)
