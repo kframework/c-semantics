@@ -38,6 +38,7 @@ module COMPAT-SYNTAX
                    | K "#inBag" Bag [function]
     */
 
+
      syntax Float ::= sqrtFloat(Float) [function]
      syntax Float ::= logFloat(Float)
           [function, hook(#FLOAT:log)]
