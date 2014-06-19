@@ -30,7 +30,7 @@ module C-SYMBOLIC-VALUE
      rule symVal +bytes _:Int => symVal
 
      rule base(symVal) => symVal
-     rule offset(symVal) => symVal
+     rule offset(symVal::SymVal) => symVal::SymVal
      rule prov(symVal) => .Set
 
      rule addProv(_:Set, symVal) => symVal
