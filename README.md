@@ -15,9 +15,9 @@ understand this project:
 - `kcc` is meant to to act a lot like `gcc`. You use it and run programs the
   same way.
 - The programs `kcc` generates act like normal programs. Both the output to
-  stdio (e.g., `printf`), as well as the return value of the program should be
-  what you expect. In terms of operational behavior, a correct program
-  compiled with kcc should act the same as one compiled with `gcc`.
+  stdout (e.g., `printf`), as well as the return value of the program should be
+  what you expect. In terms of operational behavior, a correct program compiled
+  with kcc should act the same as one compiled with `gcc`.
 - Take a look at `kcc -h` for some compile-time options. For most programs,
   you only need to run `kcc program.c` and everything will work.
 - After compiling a program and generating an output file `a.out`, running
@@ -30,7 +30,9 @@ understand this project:
   missing semantics), the program will get stuck. The message should tell you
   where it got stuck and may give a hint as to why. If you want help
   deciphering the output, or help understanding why the program is undefined,
-  please send your `.kdump` file to us.
+  please send your final configuration to us. This can be generated using
+  either the `DUMPALL` flag on `kcc`-generated executables (e.g., `DUMPALL=1
+  ./a.out`) or via `kcc -d` in the case of "compile-time" errors.
 
 ## Runtime features
 
@@ -97,11 +99,12 @@ Directories:
 
 - [parser][]: the lightly modified OCaml CIL C parser.
 
-- [scripts][]: e.g., the `kcc` script and the script that becomes `a.out`.
+- [scripts][]: e.g., the `kcc` script and `program-runner`, the script that
+  becomes `a.out`.
 
 - [semantics][]: the K C semantics.
 
-- [tests][]: gcc-torture, juliet, llvm, etc.
+- [tests][]: undefinedness, gcc-torture, juliet, llvm, etc.
 
 - `dist`: created during the build process, this is where the final products
   go. For convenience, consider adding this directory to your `$PATH`.
@@ -122,15 +125,8 @@ through, consecutively:
 2. the CIL C parser (cparser), resulting in an XML AST;
 3. and finally the `xml-to-k` script, resulting in a K-ified AST.
 
-The root of this AST is a single `TranslationUnit` term. `kcc` then joins
-together all these `TranslationUnit` terms -- one for `myprogram.c` and one for
-each of the standard library files -- into a `Program` term. This giant
-`Program` term, then, is appended to the end of a copy of the
-[scripts/program-runner][] script renamed to `a.out`.
-
-Now, when we invoke `a.out`, it sends this `Program` term to `krun` with the
-parser set to `cat`. Our semantics, then, begins by giving meaning to this
-`Program` term (see [semantics/language/dynamic.k][]).
+The root of this AST is a single `TranslationUnit` term, which is then
+interpreted by our "translation" semantics.
 
 See [semantics/README.md][] for more details.
 
