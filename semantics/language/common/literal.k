@@ -31,10 +31,10 @@ module C-LITERAL
 
      syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Int(String2Base(simplifyForHex(S),16)))
+          => hexOrOctalConstant(String2Base(simplifyForHex(S),16))
           [structural, anywhere]
      rule OctalConstant(N:Int)
-          => hexOrOctalConstant(String2Int(String2Base(Base2String(N, 10), 8)))
+          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8))
           [structural, anywhere]
           
      // Included for symmetry.
