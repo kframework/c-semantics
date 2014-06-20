@@ -22,6 +22,12 @@ int a7[5];
 int f(int n) { return n; }
 
 int main(void) {
+      int n = 3;
+      int a[n][6];
+      int (*p)[6];
+
+      p = a;
+
       1 ? (int(*)[f(3)]) 0 : (int (*)[3]) 0;
       return 0;
 }

@@ -1,4 +1,3 @@
-// kcc-assert-error(00043)
 struct S1 {
 	int x;
 } s1;

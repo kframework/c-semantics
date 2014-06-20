@@ -8,6 +8,8 @@ union u {
       struct s2 { long long x; struct big_type bt2; } sub2;
 } obj;
 
+union { int i; int c; } ic;
+
 int main(void) {
       obj.sub2.bt2 = obj.sub1.bt1;
 
@@ -16,6 +18,8 @@ int main(void) {
       *p = 5;
 
       *p = *(long long*)p;
+
+      ic.c = ic.i;
 
       return 0;
 }

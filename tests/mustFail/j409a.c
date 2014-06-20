@@ -1,4 +1,3 @@
-// kcc-assert-error(00500)
 #include <stdio.h>
 
 int main(void){
