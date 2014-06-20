@@ -43,10 +43,14 @@ module C-CHECK-LOC
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"
      rule errorLocInvalid
-          => UNDEF("ECL1", "Referring to an object outside of its lifetime.", "6.2.4")
+          => UNDEF("ECL1",
+               "Referring to an object outside of its lifetime.",
+               "6.2.4")
           [structural]
      rule errorLocBounds
-          => UNDEF("ECL2", "Found pointer that refers outside the bounds of an object + 1.", "6.2.4")
+          => UNDEF("ECL2",
+               "Found pointer that refers outside the bounds of an object + 1.",
+               "6.2.4")
           [structural]
 
      rule checkRestrict(loc(Base:SymBase, Offset:Int), T:Type)
@@ -60,7 +64,9 @@ module C-CHECK-LOC
           ...</restrict>
           when notBool loc(Base, Offset) in keys(Modified)
           [structural]
-     rule <k> checkRestrict(Loc:SymLoc, _) => . ...</k>
+     rule <k> checkRestrict(Loc:SymLoc, _)
+               => checkRestrict(getBases(Loc), getBases(Loc), SetItem(set(getBases(Loc))))
+          ...</k>
           <restrict>
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
@@ -94,7 +100,9 @@ module C-CHECK-LOC
           [structural]
      rule checkRestrict(.Set, _, .Set) => .
           [structural]
-     rule (. => UNDEF("ECL3", "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.", "6.7.3.1:4"))
+     rule (. => UNDEF("ECL3",
+               "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.",
+               "6.7.3.1:4"))
           ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
           when PrevBases =/=Set SetItem(set(Bases))
           [structural]
@@ -104,7 +112,9 @@ module C-CHECK-LOC
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           when notBool isConstType(innerType(T))
           [structural]
-     rule <k> (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type.", "6.7.3.1:4"))
+     rule <k> (. => UNDEF("ECL4",
+               "An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type.",
+               "6.7.3.1:4"))
                ~> checkRestrict'(basedOn(Base:SymBase, _))
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>

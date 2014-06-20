@@ -87,7 +87,9 @@ module C-IO-BUFFERED
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
-     rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
+     rule <k> (. => UNDEF("EIO1",
+                    "Unsequenced side effect on scalar object with side effect of same object.",
+                    "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
           <locs-written> Locs:Bag </locs-written>
@@ -266,13 +268,19 @@ module C-IO-BUFFERED
 //             //[interpRule] 
 
      rule errorReadOutOfBounds
-          => UNDEF("EIO7", "Reading outside the bounds of an object.", "6.2.4")
+          => UNDEF("EIO7",
+               "Reading outside the bounds of an object.",
+               "6.2.4")
           [structural]
      rule errorUnseqEffects
-          => UNDEF("EIO8", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
+          => UNDEF("EIO8",
+               "Unsequenced side effect on scalar object with value computation of same object.",
+               "6.5")
           [structural]
      rule errorNonVolatileLVal
-          => UNDEF("EIO9", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
+          => UNDEF("EIO9",
+               "Trying to access an object declared with volatile type through a non-volatile lvalue.",
+               "6.7.3")
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)
