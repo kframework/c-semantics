@@ -88,34 +88,42 @@ module C-IO-BUFFERED
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
      rule <k> (. => UNDEF("EIO1",
-                    "Unsequenced side effect on scalar object with side effect of same object.",
-                    "6.5") )
+               "unsequenced side effect on scalar object with side effect of same object.",
+               "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
           <locs-written> Locs:Bag </locs-written>
           when BagItem(Loc) in Locs:Bag
           [structural] 
      // TODO(chathhorn): probably redundant.
-     rule <k> (. => UNDEF("EIO2", "Trying to write outside the bounds of an object.", "6.2.4"))
+     rule <k> (. => UNDEF("EIO2",
+               "trying to write outside the bounds of an object.",
+               "6.2.4"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _) 
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           when Offset >=Int Len orBool Offset <Int 0
           [structural] 
-     rule <k> (. => UNDEF("EIO3", "Trying to modify an object declared with const type.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO3",
+               "trying to modify an object declared with const type.",
+               "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO4",
+               "trying to modify an object declared with volatile type through a non-volatile lvalue.",
+               "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when notBool isVolatileType(T)
                andBool Volatile in getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (. => UNSPEC("EIO5", "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+     rule <k> (. => UNSPEC("EIO5",
+               "trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
+               "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
@@ -269,17 +277,17 @@ module C-IO-BUFFERED
 
      rule errorReadOutOfBounds
           => UNDEF("EIO7",
-               "Reading outside the bounds of an object.",
+               "reading outside the bounds of an object.",
                "6.2.4")
           [structural]
      rule errorUnseqEffects
           => UNDEF("EIO8",
-               "Unsequenced side effect on scalar object with value computation of same object.",
+               "unsequenced side effect on scalar object with value computation of same object.",
                "6.5")
           [structural]
      rule errorNonVolatileLVal
           => UNDEF("EIO9",
-               "Trying to access an object declared with volatile type through a non-volatile lvalue.",
+               "trying to access an object declared with volatile type through a non-volatile lvalue.",
                "6.7.3")
           [structural]
 

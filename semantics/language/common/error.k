@@ -36,18 +36,29 @@ module C-ERROR
           when A =/=K true
 
      syntax String ::= ErrorMsg(String, String, String, KList) [function]
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)  => 
-          "Error: " 
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
+          => "Error: "
           +String Title
           +String "\n"
-          +String "Description: " 
+          +String "Description: "
           +String Msg
           +String "\n"
-          +String "Type: " 
+          +String "Type: "
           +String ErrType
           +String "\n"
-          +String "Citation: " 
+          +String "See also (C11): Sec. "
           +String Citation
+          when Citation =/=String ""
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
+          => "Error: "
+          +String Title
+          +String "\n"
+          +String "Description: "
+          +String Msg
+          +String "\n"
+          +String "Type: "
+          +String ErrType
+          when Citation ==String ""
 
      syntax ErrorRef ::= Int
 
@@ -65,21 +76,20 @@ module C-ERROR
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
-     // See C-COMMON-EXPR-IDENTIFIER.
-     rule <k> (. => ERROR("00021a", "trying to look up identifier " 
-               +String S +String 
+     rule <k> (. => ERROR("CID1",
+               "Trying to look up identifier " +String S +String 
                ", but no such identifier is in scope.", 
-               (305,, 332)) ) ~>
-               Identifier(S:String)
+               (305,, 332)) )
+               ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
           when (notBool Identifier(S) in keys(Env))
                andBool (notBool Identifier(S) in keys(Types))
           [structural]
-     rule <k> (. => ERROR("00021b", "no definition found for identifier " 
-               +String S +String ".") ) ~>
-               Identifier(S:String)
+     rule <k> (. => ERROR("CID2",
+               "No definition found for identifier " +String S +String ".") )
+               ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
