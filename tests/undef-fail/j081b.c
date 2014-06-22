@@ -1,4 +1,4 @@
 int main(void){
-	int x = (0; 1);
-	return x;
+      int x = {{0, 1}};
+      return x;
 }
