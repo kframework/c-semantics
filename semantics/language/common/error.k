@@ -46,7 +46,7 @@ module C-ERROR
           +String "Type: "
           +String ErrType
           +String "\n"
-          +String "See also (C11): Sec. "
+          +String "See also: C11 sec. "
           +String Citation
           when Citation =/=String ""
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
