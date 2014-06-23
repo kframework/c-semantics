@@ -20,6 +20,9 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
+# Set heap size of krun
+$ENV{K_OPTS} = '-Xmx2048m';
+
 # These are compile-time settings and are set by the compile script using this
 # file as a template.
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
