@@ -20,6 +20,9 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
+# Set heap size of krun
+$ENV{K_OPTS} = '-Xmx2048m';
+
 $::VERSION="0.1";
 
 my $KRUN = "krun";
