@@ -38,10 +38,6 @@ module COMPAT-SYNTAX
                    | K "#inBag" Bag [function]
     */
 
-     syntax Int ::= string2Base(String, Int)
-          [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
-     syntax String ::= base2String(Int, Int)
-          [function, klabel('base2String), hook(#CONVERSION:base2String)]
 
      syntax Float ::= sqrtFloat(Float) [function]
      syntax Float ::= logFloat(Float)

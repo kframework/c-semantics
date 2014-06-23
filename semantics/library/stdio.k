@@ -571,7 +571,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(base2String(D:Int, 8))
+               .List => ListItem(Base2String(D:Int, 8))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
           [structural]
@@ -601,7 +601,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(base2String(D:Int, 16))
+               .List => ListItem(Base2String(D:Int, 16))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
@@ -616,7 +616,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(toUpperCase(base2String(D:Int, 16)))
+               .List => ListItem(toUpperCase(Base2String(D:Int, 16)))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]

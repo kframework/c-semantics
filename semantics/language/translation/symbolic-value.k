@@ -30,7 +30,7 @@ module C-SYMBOLIC-VALUE
      rule symVal +bytes _:Int => symVal
 
      rule base(symVal) => symVal
-     rule offset(symVal) => symVal
+     rule offset(symVal) => symVal::CSize
      rule prov(symVal) => .Set
 
      rule addProv(_:Set, symVal) => symVal
@@ -44,10 +44,10 @@ module C-SYMBOLIC-VALUE
           <initializing> true </initializing>
           [structural]
 
-     rule bitSizeofType(T:Type) => symVal
+     rule bitSizeofType(T:Type) => symVal::CSize
           when notBool isCompleteType(T)
                andBool notBool isFlexibleArrayType(T)
-     rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal
+     rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal::CSize
 
      rule splitBytes(tv(symVal, T:Type)) 
           => dataList(
