@@ -191,9 +191,7 @@ module CIL-LITERAL
       orBool (S ==String "llU")
       orBool (S ==String "LLU")
 
-  syntax Int ::= String2Base(String, Int)
-    [function, hook(#CONVERSION:string2Base)]
-               | conv(String, Int) [function]
+  syntax Int ::= conv(String, Int) [function]
 
   rule conv(S:String, Base:Int) => String2Base(S, Base)
     when S =/=String ""
