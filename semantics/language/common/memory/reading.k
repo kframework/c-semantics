@@ -56,13 +56,13 @@ module C-MEMORY-READING
 
      rule concretize(T:Type, dataList(L:List)) 
           => joinIntegerBytes(T, L)
-          when hasIntegerType(T) 
-               andBool notBool isBitfieldType(T) 
+          when hasIntegerType(T)
+               andBool notBool isBitfieldType(T)
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:Type, Len:CSize)), dataList(L:List)) 
-          => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L)) 
+     rule concretize(t(S:Set, bitfieldType(T:Type, Len:CSize)), dataList(L:List))
+          => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L))
           when (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
@@ -150,16 +150,16 @@ module C-MEMORY-READING
      syntax TypedValue ::= joinIntegerBytes(Type, List) [function]
      syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinIntegerBytes(T:Type, L:List)
-          => joinIntegerBytes-aux(T, L, piece(0, 0)) 
-     rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0)) 
+          => joinIntegerBytes-aux(T, L, piece(0, 0))
+     rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0))
           => tv(unknown, stripQualifiers(T))
           when isUCharType(T)
-     rule joinIntegerBytes-aux(T:Type, 
+     rule joinIntegerBytes-aux(T:Type,
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
-          => joinIntegerBytes-aux(T, 
+          => joinIntegerBytes-aux(T,
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-     rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int)) 
-          => interpret(stripQualifiers(T), piece(N, Len)) 
+     rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int))
+          => interpret(stripQualifiers(T), piece(N, Len))
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory

@@ -61,15 +61,9 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
-     <k color="green" multiplicity="?"> 
-          // TODO(chathhorn)
-          checkMerge(
-               unwrapObj($OBJ1:Bag),
-               unwrapObj($OBJ2:Bag))
-          ~> loadObj(mergeObj(
-               unwrapObj($OBJ1:Bag),
-               unwrapObj($OBJ2:Bag)))
-          ~> $PGM:K 
+     <k color="green" multiplicity="?">
+          $PGM:K
+          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag))
           ~> link
           ~> cleanup
      </k>

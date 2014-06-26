@@ -1,6 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax K ::= checkMerge(Bag, Bag)
-     syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax K ::= load(Bag, Bag)
      syntax K ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -34,6 +33,17 @@ module C-TRANSLATION-INIT
           ...</k>
           <options> Opts:Set </options>
           when notBool (NOLINK in Opts)
+
+     rule load(Obj1:Bag, Obj2:Bag)
+               => checkMerge(Obj1, Obj2)
+               ~> load'(mergeObj(Obj1, Obj2))
+
+     syntax K ::= "load'" "(" Bag ")"
+     rule <k> load'(Merged:Bag)
+               => checkMerge(Merged, <global> ThisObj </global>)
+               ~> loadObj(mergeObj(Merged, <global> ThisObj </global>))
+          ...</k>
+          <global> ThisObj:Bag </global>
 
      rule <k> link => printSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
@@ -95,6 +105,7 @@ module C-TRANSLATION-INIT
                orBool (notBool Identifier(B) in keys(Types))
      rule addBuiltins(.Map) => .
 
+     syntax K ::= checkMerge(Bag, Bag)
      rule checkMerge(_, .Bag) => .
      rule checkMerge(.Bag, _) => .
      rule checkMerge(
@@ -140,6 +151,7 @@ module C-TRANSLATION-INIT
           ...</global>))
           when notBool areCompatible(T, T')
 
+     syntax Bag ::= mergeObj(Bag, Bag) [function]
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
      rule mergeObj(

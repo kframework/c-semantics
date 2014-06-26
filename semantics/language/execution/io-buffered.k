@@ -88,7 +88,7 @@ module C-IO-BUFFERED
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
      rule <k> (. => UNDEF("EIO1",
-               "unsequenced side effect on scalar object with side effect of same object.",
+               "Unsequenced side effect on scalar object with side effect of same object.",
                "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
@@ -97,15 +97,15 @@ module C-IO-BUFFERED
           [structural] 
      // TODO(chathhorn): probably redundant.
      rule <k> (. => UNDEF("EIO2",
-               "trying to write outside the bounds of an object.",
-               "6.2.4"))
+               "Trying to write outside the bounds of an object.",
+               "6.5.6:8"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _) 
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           when Offset >=Int Len orBool Offset <Int 0
           [structural] 
      rule <k> (. => UNDEF("EIO3",
-               "trying to modify an object declared with const type.",
+               "Trying to modify an object declared with const type.",
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
@@ -113,7 +113,7 @@ module C-IO-BUFFERED
           when Const in getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (. => UNDEF("EIO4",
-               "trying to modify an object declared with volatile type through a non-volatile lvalue.",
+               "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
@@ -122,7 +122,7 @@ module C-IO-BUFFERED
                andBool Volatile in getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (. => UNSPEC("EIO5",
-               "trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
+               "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
                "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
           ...</k>

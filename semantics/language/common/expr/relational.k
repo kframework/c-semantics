@@ -1,4 +1,5 @@
 module C-COMMON-EXPR-RELATIONAL
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -84,8 +85,6 @@ module C-COMMON-EXPR-RELATIONAL
           [structural]
 
      //- comparison of pointers
-     // fixme could check 6.5.8:2
-     // fixme there are further restrictions on pointers
      rule tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) <Int offset(Loc'))
           when isPointerType(T) andBool isPointerType(T')
@@ -181,6 +180,17 @@ module C-COMMON-EXPR-RELATIONAL
      rule tv(F1:Float, T:Type) != tv(F2:Float, T':Type) 
           => makeTruth(F1 =/=Float F2)
           when T ==Type T'
+          [structural]
+
+     rule tv(V:CValue, T:Type) == tv(V':CValue, T':Type) 
+          => makeTruth(false)
+          when T ==Type T'
+               andBool (V ==K unknown orBool V' ==K unknown)
+          [structural]
+     rule tv(V:CValue, T:Type) != tv(V':CValue, T':Type) 
+          => makeTruth(true)
+          when T ==Type T'
+               andBool (V ==K unknown orBool V' ==K unknown)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{5--7}}}{

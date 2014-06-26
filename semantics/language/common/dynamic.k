@@ -7,7 +7,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax CValue ::= Bits | SymLoc | Float | Agg
 
-     syntax TypedValue ::= tv(CValue, Type) 
+     syntax TypedValue ::= tv(CValue, Type)
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
@@ -18,7 +18,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax K ::= "discard"
      syntax Value ::= "emptyValue"
-     
+
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax Value ::= TypedValue
@@ -68,7 +68,7 @@ module C-DYNAMIC
      rule type(lv(_, T:Type)) => T
      rule type(lval(_, T:Type)) => T
 
-     rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
+     rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc
           [structural, anywhere]
 
      rule ExpressionLoc(K:K, _) => K
@@ -96,16 +96,16 @@ module C-DYNAMIC
      }*/
      rule Pragma(_:K) => .
           [structural]
-          
+
      rule AttributeWrapper(K:K, _) => K [structural, anywhere]
-     
+
      rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
 
      rule NothingExpression => emptyValue
 
-     rule unwrapObj(<generatedTop>... 
-               <global> G:Bag </global> 
-          ...</generatedTop>) 
+     rule unwrapObj(<generatedTop>...
+               <global> G:Bag </global>
+          ...</generatedTop>)
           => (<global> G </global>)
 
      rule unwrapObj(.Bag) => .Bag
@@ -120,8 +120,8 @@ module C-DYNAMIC
 
      rule N:Int => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
-     
+
      rule N:CSize => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
-     
+
 endmodule
