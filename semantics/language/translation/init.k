@@ -23,23 +23,25 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
+     //TODO: write to stdout does not work
      rule <k> link
-               => TranslationUnit("builtin", list(.List),
+               => (TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
                ~> resolveReferences
-               ~> printSuccess
+               ~> printSuccess("Translation successful!\n"))
           ...</k>
           <options> Opts:Set </options>
-          when notBool inSet(NOLINK, Opts)
+          when notBool (NOLINK in Opts)
 
-     rule <k> link => printSuccess ...</k>
+     //TODO: write to stdout does not work
+     rule <k> link => printSuccess("Translation successful!\n") ...</k>
           <options> SetItem(NOLINK) ...</options>
 
      rule (<T>...
                <k> cleanup </k>
                <options> Opts:Set </options>
-          ...</T> => .)
-          when notBool inSet(DEBUG, Opts)
+          ...</T> => .Bag)
+          when notBool (DEBUG in Opts)
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
@@ -88,13 +90,13 @@ module C-TRANSLATION-INIT
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool inSet(B, keys(Defs))
+          when notBool (B in keys(Defs))
           
      rule <k> (addBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when inSet(B, keys(Defs))
-               orBool (notBool inSet(B, keys(Types)))
+          when (B in keys(Defs))
+               orBool (notBool (B in keys(Types)))
 
      
 
@@ -162,7 +164,11 @@ module C-TRANSLATION-INIT
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>)
-     syntax KItem ::= "printSuccess"
-     rule printSuccess => #write(#stdout, "Translation successful!\n")
+     //TODO: write to stdout not work currently
+     //syntax KItem ::= "printSuccess"
+     //rule printSuccess => #write(#stdout, "Translation successful!\n")
+     syntax KItem ::= printSuccess(String)
+     rule printSuccess(S:String) => #write(1,S)
+
 
 endmodule

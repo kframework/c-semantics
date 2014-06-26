@@ -78,7 +78,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= "#isBasic" "(" Type ")" [function]
 
      rule #isBasic(t(_, T:SimpleType)) => true
-          when inSet(T, basicTypes)
+          when T in basicTypes
      rule #isBasic(t(_, enumType(_))) => true
 
      syntax Set ::= "basicTypes" [function]
@@ -138,12 +138,12 @@ module C-TYPING-PREDICATES
      rule #hasUnsignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasUnsignedInteger(T)
      rule #hasUnsignedInteger(t(_, T:SimpleType)) => true
-          when inSet(T, unsignedIntegerTypes)
+          when T in unsignedIntegerTypes
      rule #hasUnsignedInteger(typedDeclaration(T:Type, _))
           => #hasUnsignedInteger(T)
 
      rule #hasSignedInteger(t(_, T:SimpleType)) => true
-          when inSet(T, signedIntegerTypes)
+          when T in signedIntegerTypes
      rule #hasSignedInteger(t(_, enumType(_))) => true
      rule #hasSignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasSignedInteger(T)
@@ -183,7 +183,7 @@ module C-TYPING-PREDICATES
      rule isBitfieldType(T:Type) => #isBitfield(T) ==K true
      rule isFunctionType(T:Type) => #isFunction(T) ==K true
      rule isOldStyleFunctionType(T:Type)
-          => isFunctionType(T) andBool inSet(oldStyle, getModifiers(T))
+          => isFunctionType(T) andBool (oldStyle in getModifiers(T))
      rule isFunctionPointerType(T:Type) => #isFunctionPointer(T) ==K true
 
      rule isTypedDeclaration(typedDeclaration(_, _)) => true
@@ -199,13 +199,13 @@ module C-TYPING-PREDICATES
      rule hasArithmeticType(T:Type)
           => hasIntegerType(T) orBool hasFloatType(T)
 
-     rule isExternType(T:Type) => inSet(Extern, getStorageSpecifiers(T))
-     rule isStaticType(T:Type) => inSet(Static, getStorageSpecifiers(T))
-     rule isRegisterType(T:Type) => inSet(Register, getStorageSpecifiers(T))
+     rule isExternType(T:Type) => (Extern in getStorageSpecifiers(T))
+     rule isStaticType(T:Type) => (Static in getStorageSpecifiers(T))
+     rule isRegisterType(T:Type) => (Register in getStorageSpecifiers(T))
 
-     rule isConstType(T:Type) => inSet(Const, getQualifiers(T))
-     rule isVolatileType(T:Type) => inSet(Volatile, getQualifiers(T))
-     rule isRestrictType(T:Type) => inSet(Restrict, getQualifiers(T))
+     rule isConstType(T:Type) => (Const in getQualifiers(T))
+     rule isVolatileType(T:Type) => (Volatile in getQualifiers(T))
+     rule isRestrictType(T:Type) => (Restrict in getQualifiers(T))
 
      syntax Bool ::= "#hasFloat" "(" Type ")" [function]
                    | "#hasChar" "(" Type ")" [function]
@@ -226,11 +226,11 @@ module C-TYPING-PREDICATES
                    | "#isFunctionPointer" "(" Type ")" [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
-          when inSet(T:SimpleType,floatTypes) 
+          when T:SimpleType in floatTypes 
      rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
 
      rule #hasChar(t(_, T:SimpleType)) => true
-          when inSet(T:SimpleType, charTypes)
+          when T:SimpleType in charTypes
      rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
 
      rule #isUChar(t(_, unsigned-char)) => true

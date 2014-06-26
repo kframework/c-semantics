@@ -87,7 +87,7 @@ module LIBC-IO
           ...</file-commands>
           <options> Opts:Set </options>
           when (S =/=String "")
-               andBool notBool inSet(NOIO, Opts)
+               andBool notBool (NOIO  in Opts)
           [structural]
      rule <file-commands> 
                f-sendString(_, _) => .

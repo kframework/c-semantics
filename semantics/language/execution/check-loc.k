@@ -29,9 +29,9 @@ module C-CHECK-LOC
           <mem> Mem:Map </mem>
           <functions> Funs:Map </functions>
           <linkings> Links:Map </linkings>
-          when notBool inSet(Base, keys(Mem))
-               andBool notBool inSet(Base, keys(Funs))
-               andBool notBool inSet(Base, keys(Links))
+          when notBool (Base in keys(Mem))
+               andBool notBool (Base in keys(Funs))
+               andBool notBool (Base in keys(Links))
           [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
@@ -65,21 +65,21 @@ module C-CHECK-LOC
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
           </restrict>
-          when notBool inSet(stripProv(Loc), keys(Restricts))
+          when notBool (stripProv(Loc) in keys(Restricts))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
                => checkRestrict(getBases(Prov), getBases(Prov), Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when inSet(loc(Base, Offset), keys(Modified))
+          when (loc(Base, Offset) in keys(Modified))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int), _)
                => checkRestrict(.Set, .Set, Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when inSet(loc(Base, Offset), keys(Modified))
+          when loc(Base, Offset) in keys(Modified)
           [structural]
 
      syntax KItem ::= checkRestrict(Set, Set, Set)

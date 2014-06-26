@@ -232,7 +232,7 @@ module C-TYPING-MISC
           => t(S, structType(X, bitSizeofStruct(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
-          when notBool inSet(X, keys(Tags))
+          when notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                structType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -250,14 +250,14 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool inSet(X, keys(Tags))
+          when notBool (X in keys(Tags))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:CId)))
           => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
-          when notBool inSet(X, keys(Tags))
+          when notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                unionType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -274,7 +274,7 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool inSet(X, keys(Tags))
+          when notBool (X in keys(Tags))
 
      rule completeTags(_, t(S:Set, T:SimpleType))
           => t(S, T)

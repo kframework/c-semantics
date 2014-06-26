@@ -85,13 +85,14 @@ module C-LTLMC
      // TODO(chathhorn): Very basic rewrite of C expression semantics. It'd be
      // nice to be able to re-use more of the actual semantics for this...
      rule ltlRVal(_, V:ValueProp) => V
-    /*TODO: may be crashed
+
      rule ltlRVal(B:Bag, - P:CProp) 
           => ltlRVal(B, 0 - ltlRVal(B, P))
-    */
+    
      rule ltlRVal(B:Bag, + P:CProp) 
           => ltlRVal(B, P)
-     /*TODO: cannot handle this
+
+     /*TODO: cannot handle this, maybe this is not needed
      rule ltlRVal(B:Bag, L:CProp[R:CProp])
           => ltlRVal(B, * (L + R))
      */
