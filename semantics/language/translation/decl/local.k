@@ -94,10 +94,19 @@ module C-DECL-LOCAL
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
           when isExternType(T) andBool notBool isStaticType(T)
           [structural]
-     rule (. => ERROR("TDL2", "extern declaration of " +String idToString(X)
+     rule (. => ERROR("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer."))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
           when isExternType(T) andBool K =/=K NoInit
+          [structural]
+     rule <k> (. => ERROR("TDL3", "Extern declaration of " +String idToString(X)
+                    +String " with incompatible type."))
+               ~> declareInternalVariable(X:CId, T':Type, NoInit)
+          ...</k>
+          <external-types>... X |-> T:Type ...</external-types>
+          when (isFunctionType(T') orBool isExternType(T'))
+               andBool notBool isStaticType(T')
+               andBool notBool areCompatible(T, T')
           [structural]
 
      syntax K ::= initLocalStatic(CId, K) [strict(2)]
@@ -120,7 +129,7 @@ module C-DECL-LOCAL
           when notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
-     rule <k> (.K => ERROR("TDL3","redeclaration of " +String idToString(X)
+     rule <k> (.K => ERROR("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
                ~> initLocalStatic(X:CId, _)
           ...</k>
@@ -160,7 +169,7 @@ module C-DECL-LOCAL
           <block-history> .List </block-history>
           when isCompleteType(T)
           [structural]
-     rule (. => UNDEF("TDL4",
+     rule (. => UNDEF("TDL5",
                "declaration of an identifier for an object with no linkage and incomplete type.",
                "6.7:7"))
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
@@ -171,7 +180,7 @@ module C-DECL-LOCAL
           <structs> Structs:Map => Structs[Info <- X] </structs>
           when notBool (X in keys(Structs))
           [structural]
-     rule <k> (. => CV("TDL5", "redefinition of a struct, union, or enum: "
+     rule <k> (. => CV("TDL6", "redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
