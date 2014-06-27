@@ -5,4 +5,5 @@ struct {
 
 int main(void) {
       &(s.a[0]);
+      return 0;
 }

@@ -14,8 +14,8 @@ int main(void) {
       int x = 0;
       x;
 
-      float x = 0;
-      x;
+      float y = 0;
+      y;
 
       int* p = 0;
       p;
