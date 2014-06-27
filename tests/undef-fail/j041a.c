@@ -17,6 +17,6 @@ int (**pf)(int);
 int main(void) {
       x.f2 = g;
       pf = &x.f1;
-      pf = (int (**)(int))((char*)pf + offsetof(struct s, f2));
+      pf = (int (**)(int))((char*)&x + offsetof(struct s, f2));
       (**pf)(2);
 }
