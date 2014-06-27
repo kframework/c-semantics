@@ -1,6 +1,6 @@
-int f(){
-}
+int f(int x){ }
 
-int main(void){
-	return f();
+int main(void) {
+      f(f(1));
+      return 0;
 }

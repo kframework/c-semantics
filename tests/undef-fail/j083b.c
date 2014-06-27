@@ -1,6 +1,4 @@
-int f(void) { }
-
 int main(void) {
-      f() + 0;
+      struct {int x; } s = 0;
       return 0;
 }

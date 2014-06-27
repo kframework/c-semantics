@@ -1,6 +1,6 @@
-int main(void){
-	const int x = 0;
-	int* p = &x;
-	*p = 5;
-	return x;
+int main(void) {
+      const int x = 0;
+      unsigned char* p = (unsigned char*)&x;
+      *p = 5;
+      return 0;
 }
