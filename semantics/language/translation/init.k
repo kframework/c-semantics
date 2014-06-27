@@ -118,12 +118,28 @@ module C-TRANSLATION-INIT
           when notBool (X in keys Types)
      rule checkMerge(
           (<global>...
+               <external-defs>... X:CId |-> _ => .Map </external-defs>
+          ...</global>),
+          (<global>...
+               <external-defs> Defs:Map </external-defs>
+          ...</global>))
+          when notBool (X in keys Defs)
+     rule checkMerge(
+          (<global>...
                <external-types> Types:Map </external-types>
           ...</global>),
           (<global>...
                <external-types>... X:CId |-> _ => .Map </external-types>
           ...</global>))
           when notBool (X in keys Types)
+     rule checkMerge(
+          (<global>...
+               <external-defs> Defs:Map </external-defs>
+          ...</global>),
+          (<global>...
+               <external-defs>... X:CId |-> _ => .Map </external-defs>
+          ...</global>))
+          when notBool (X in keys Defs)
      rule checkMerge(
           (<global>...
                <external-types>... X:CId |-> T:Type => .Map </external-types>
@@ -135,22 +151,40 @@ module C-TRANSLATION-INIT
      rule checkMerge(
           (<global>...
                <external-types> .Map </external-types>
+               <external-defs> .Map </external-defs>
           ...</global>),
           (<global>...
                <external-types> .Map </external-types>
+               <external-defs> .Map </external-defs>
           ...</global>)) => .
-     rule (. => UNDEF("TIN1", "identifier " +String idToString(X) +String
-               " declared with incompatble types in different translation units.",
-               "6.2.7:2, "))
+     rule (. => UNDEF("TIN1",
+               "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
+               "6.2.7:2"))
           ~> checkMerge(
           (<global>...
-               <external-types>... X:CId |-> T:Type => .Map </external-types>
+               <external-types>... X:CId |-> T:Type  ...</external-types>
           ...</global>),
           (<global>...
-               <external-types>... X |-> T':Type => .Map </external-types>
+               <external-types>... X |-> T':Type  ...</external-types>
           ...</global>))
           when notBool areCompatible(T, T')
+     rule (. => UNDEF("TIN2",
+               "Multiple external definitions for " +String idToString(X) +String ".",
+               "6.9"))
+          ~> checkMerge(
+          (<global>...
+               <external-defs>... X:CId |-> _ ...</external-defs>
+          ...</global>),
+          (<global>...
+               <external-defs>... X |-> _  ...</external-defs>
+          ...</global>))
 
+     // TODO(chathhorn): should fix this so it doesn't create duplicates keys
+     // in the external-types cell. I'm not entirely sure what the right fix
+     // is, though -- I suppose it must be to take the composite type. It's not
+     // terribly important, though, this is just to catch incompatible
+     // declarations across TUs, so duplicates vs. composite types probably
+     // doesn't change too much.
      syntax Bag ::= mergeObj(Bag, Bag) [function]
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B

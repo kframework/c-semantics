@@ -89,15 +89,19 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
 
      syntax Bool ::= isFromArray(SymLoc) [function]
+
+     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
      syntax SymLoc ::= stripFromArray(SymLoc) [function]
 
      syntax SymLoc ::= stripProv(SymLoc) [function]
 endmodule
 
 module C-SYMLOC
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -295,6 +299,19 @@ module C-SYMLOC
 
      syntax Bool ::= "#hasAlign" "(" Set ")" [function]
      rule #hasAlign(SetItem(align(_)) _) => true
+
+     rule ifFromArrayInBounds(
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
+          => true
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
+     rule ifFromArrayInBounds(
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
+          => false
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
+     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
+          when notBool isFromArray(Loc)
 
 endmodule
 

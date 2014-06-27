@@ -98,7 +98,9 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           when ifFromArrayInBounds(Loc, T, I)
           [structural]
-     rule (. => ERROR("CEA1", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
+     rule (. => ERROR("CEA1",
+               "A pointer (or array subscript) outside the bounds of an object.",
+               (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           when notBool ifFromArrayInBounds(Loc, T, I)
           [structural]
@@ -110,20 +112,6 @@ module C-COMMON-EXPR-ADDITIVE
           => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
-          when notBool isFromArray(Loc)
-
-     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
-               T:Type, I:Int)
-          => true
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
-               T:Type, I:Int)
-          => false
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
-     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
           when notBool isFromArray(Loc)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
