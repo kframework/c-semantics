@@ -1,5 +1,5 @@
-int main(void){
-	float x;
-	x;
-	return 0;
+int main(void) {
+      float x;
+      x;
+      return 0;
 }

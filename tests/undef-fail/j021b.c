@@ -1,5 +1,9 @@
+int f(int x) {
+      return x;
+}
+
 int main(void) {
       int x;
-      x;
+      f(x);
       return 0;
 }

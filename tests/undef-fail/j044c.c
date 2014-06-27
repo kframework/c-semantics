@@ -1,5 +1,7 @@
+struct str {int *x;};
+
 int main(void) {
       int x = 5;
       int *p = &x;
-      (double)p;
+      (struct str)p;
 }

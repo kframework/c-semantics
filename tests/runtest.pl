@@ -136,9 +136,9 @@ sub performTest {
                   if ($lookForError && !($kccCompileOutput =~ /Error $lookForError/m)) {
                         return reportFailure($testName, $timer, "Failure---Was expecting particular error message but failed to compile");
                   }
-                  return reportSuccess($testName, $timer, "Success---didn't compile with kcc");
+                  return reportSuccess($testName, $timer, "Success---didn't compile with kcc. \n\n$kccCompileOutput\n");
             } else {
-                  return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$kccCompileOutput");
+                  return reportFailure($testName, $timer, "Failure---kcc failed to compile $testName.\n\n$kccCompileOutput\n");
             }
       }
 
@@ -147,7 +147,7 @@ sub performTest {
       #$encodedOut = HTML::Entities::encode_entities($gccCompileOutput);
       if ($gccCompileRetval) {
             if (!$shouldFail && !$shouldRun) {
-                  return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$gccCompileOutput");
+                  return reportError($testName, $timer, "gcc failed to compile $testName.\n\n$gccCompileOutput\n");
             }
       }
 
@@ -158,7 +158,7 @@ sub performTest {
             # if ($kccRunRetval == 0) {
             if (!($kccRunOutput =~ /^ERROR!/m)) {
                   # my $encodedOut = HTML::Entities::encode_entities($kccRunOutput);
-                  return reportFailure($testName, $timer, "Failure---Program seemed to run to completion\n$kccRunOutput\n");
+                  return reportFailure($testName, $timer, "Failure---Program seemed to run to completion. \n\n$kccRunOutput\n");
             } else {
                   if ($lookForError) {
                         if ($kccRunOutput =~ /^Error: $lookForError$/m) {
@@ -167,7 +167,7 @@ sub performTest {
                               return reportFailure($testName, $timer, "Failure---Program failed, but didn't give expected error message $lookForError");
                         }
                   }
-                  return reportSuccess($testName, $timer, "Success---Core dumped");
+                  return reportSuccess($testName, $timer, "Success---Core dumped. \n\n$kccRunOutput\n");
             }
       }
 
