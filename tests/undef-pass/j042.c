@@ -1,4 +1,3 @@
-
 _Atomic struct s {
       int x;
 } s = { 0 };

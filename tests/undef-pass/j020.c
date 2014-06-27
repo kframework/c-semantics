@@ -4,9 +4,8 @@ struct s {
       int x;
 };
 
-enum e;
-enum e e0;
 enum e {x, y, z};
+enum e e0;
 
 int a[];
 

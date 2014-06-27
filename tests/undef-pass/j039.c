@@ -11,9 +11,6 @@ int main(void) {
 
       ((int (*)())g)(0.0);
 
-      int foo();
-      foo(5, 7);
-
       int bar();
       bar(5.0);
 
@@ -23,10 +20,6 @@ int main(void) {
       int bah();
       bah(5);
 
-      return 0;
-}
-
-int foo(int a, int b, ...){
       return 0;
 }
 

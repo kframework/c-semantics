@@ -1,10 +1,10 @@
-int f(p) 
-int* p;
+int f(p)
+      int* p;
 {
-	return *p;
+      return *p;
 }
-int main(void){
-	long long int x = 5;
-	return f(&x);
+int main(void) {
+      long long int x = 5;
+      return f(&x);
 }
 

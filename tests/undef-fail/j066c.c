@@ -1,6 +1,6 @@
 typedef int fun();
 volatile fun f;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }

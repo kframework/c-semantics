@@ -6,4 +6,5 @@ int main(void) {
       a = &x;
       b = (long*)a;
       *b;
+      return 0;
 }

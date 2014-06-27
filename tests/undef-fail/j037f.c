@@ -8,4 +8,5 @@ int main(void) {
       p = a;
       b = p;
       *b;
+      return 0;
 }

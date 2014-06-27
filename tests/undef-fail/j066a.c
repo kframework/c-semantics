@@ -1,6 +1,6 @@
 typedef int fun();
 const fun f;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }
