@@ -1,8 +1,10 @@
-_Noreturn void f(void){
-      return;
+_Noreturn void f(int x){
+      if (x) {
+            return;
+      } else while (1);
 }
 
 int main(void){
-      f();
+      f(1);
       return 0;
 }

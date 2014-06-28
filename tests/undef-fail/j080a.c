@@ -1,6 +1,6 @@
-struct s {
-      unsigned:32;
-      int x;
+struct {
+      unsigned:sizeof(unsigned);
+      unsigned x;
 } s;
 
 int main(void) {
