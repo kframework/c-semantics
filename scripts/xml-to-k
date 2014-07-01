@@ -217,7 +217,7 @@ sub elementToK {
 sub rawdataToK {
 	my ($reader) = (@_);
 	my $data = getRawData($reader);
-	return $data;
+	return paren($data);
 }
 sub getRawData {
 	my ($reader) = (@_);

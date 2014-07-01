@@ -18,9 +18,10 @@ module C-TRANSLATION-ERROR
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
+    //TODO: write to stderr has problem, use 2 instead
      rule <k> EXIT(Msg:String) 
-          => #write(#stderr, Msg +String "\n")
-          ~> #write(#stderr, "Location: " 
+          => #write(2, Msg +String "\n")
+          ~> #write(2, "Location: " 
                +String File +String ":" 
                +String Int2String(Line)
                +String "\n")
@@ -29,7 +30,7 @@ module C-TRANSLATION-ERROR
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
      rule <k> EXIT(Msg:String) 
-          => #write(#stderr, Msg +String "\n")
+          => #write(2, Msg +String "\n")
           ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
 

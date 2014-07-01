@@ -65,9 +65,9 @@ module C-CONFIGURATION
           loadMergeObj(
                unwrapObj($OBJ1:Bag), 
                unwrapObj($OBJ2:Bag))
-          ~> $PGM:K 
-          ~> link
-          ~> cleanup
+          ~> ($PGM:K 
+          ~> (link
+          ~> cleanup))
      </k>
 
      <final-computation multiplicity="?" color="lightgray">

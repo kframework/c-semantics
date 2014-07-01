@@ -95,64 +95,64 @@ module C-TYPING-STRICTNESS
      rule <type>
                Lbl:KLabel(K:K) => K ~> Lbl(THOLE)
           ...</type>
-          when inSet(l(Lbl), typeStrictUnaryOps)
+          when (l(Lbl) in typeStrictUnaryOps)
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(THOLE) => Lbl:KLabel(R:Type)
           ...</type>
-          when inSet(l(Lbl), typeStrictUnaryOps)
+          when (l(Lbl) in typeStrictUnaryOps)
           [structural]
 
      rule <type>
                Lbl:KLabel(K:K,, X:K) => K ~> Lbl(THOLE,, X)
           ...</type>
-          when inSet(l(Lbl), typeStrictBinaryOpsFirst)
+          when (l(Lbl) in typeStrictBinaryOpsFirst)
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
                Lbl:KLabel(X:K,, K:K) => K ~>  Lbl(X,, THOLE)
           ...</type>
-          when inSet(l(Lbl), typeStrictBinaryOpsSecond)
+          when (l(Lbl) in typeStrictBinaryOpsSecond)
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(THOLE,, X:K) => Lbl(R,, X)
           ...</type>
-          when inSet(l(Lbl), typeStrictBinaryOpsFirst)
+          when (l(Lbl) in typeStrictBinaryOpsFirst)
           [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(X:K,, THOLE) => Lbl(X,, R)
           ...</type>
-          when inSet(l(Lbl), typeStrictBinaryOpsSecond)
+          when (l(Lbl) in typeStrictBinaryOpsSecond)
           [structural]
 
      rule <type>
                Lbl:KLabel(X:K,, K:K,, Y:K) => K ~> Lbl(X,, THOLE,, Y)
           ...</type>
-          when inSet(l(Lbl), typeStrictTernaryOpsSecond)
+          when (l(Lbl) in typeStrictTernaryOpsSecond)
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
                Lbl:KLabel(X:K,, Y:K,, K:K) => K ~> Lbl(X,, Y,, THOLE)
           ...</type>
-          when inSet(l(Lbl), typeStrictTernaryOpsThird)
+          when (l(Lbl) in typeStrictTernaryOpsThird)
                andBool (getKLabel(K) =/=KLabel 't)
                andBool (K =/=K THOLE)
           [structural]
      rule <type>
                R:Type ~> Lbl:KLabel(X:K,, THOLE,, Y:K) => Lbl(X,, R,, Y)
           ...</type>
-          when inSet(l(Lbl), typeStrictTernaryOpsSecond)
+          when l(Lbl) in typeStrictTernaryOpsSecond
           [structural]
      rule <type> 
                R:Type ~> Lbl:KLabel(X:K,, Y:K,, THOLE) => Lbl(X,, Y,, R)
           ...</type>
-          when inSet(l(Lbl), typeStrictTernaryOpsThird)
+          when l(Lbl) in typeStrictTernaryOpsThird
           [structural]
 
 endmodule

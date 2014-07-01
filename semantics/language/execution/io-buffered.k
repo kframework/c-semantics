@@ -54,7 +54,7 @@ module C-IO-BUFFERED
           <modified>
                Modified:Map (.Map => Loc |-> byteSizeofType(T))
           </modified>
-          when notBool inSet(Loc, keys(Modified))
+          when notBool (Loc in keys(Modified))
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -75,9 +75,9 @@ module C-IO-BUFFERED
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
-               andBool (notBool inSet(Const, getQualsAtOffset(ObjT, Offset)))
+               andBool (notBool (Const in getQualsAtOffset(ObjT, Offset)))
                // Volatile.
-               andBool ((notBool inSet(Volatile, getQualsAtOffset(ObjT, Offset)))
+               andBool ((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T))
                // Cross-thread writes.
                andBool notBool ((isThreadDuration(loc(Base, Offset))
@@ -101,14 +101,14 @@ module C-IO-BUFFERED
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when inSet(Const, getQualsAtOffset(ObjT, Offset))
+          when (Const in getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           when notBool isVolatileType(T)
-               andBool inSet(Volatile, getQualsAtOffset(ObjT, Offset))
+               andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (. => UNSPEC("EIO5", "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
@@ -181,7 +181,7 @@ module C-IO-BUFFERED
                => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert((notBool inSet(Volatile, getQualsAtOffset(ObjT, Offset)))
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
@@ -196,7 +196,7 @@ module C-IO-BUFFERED
                => assert(notBool (loc(Base, Offset) in Locs),
                     errorUnseqEffects)
                ~> assert(Offset <Int Len, errorReadOutOfBounds)
-               ~> assert((notBool inSet(Volatile, getQualsAtOffset(ObjT, Offset)))
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
@@ -206,11 +206,11 @@ module C-IO-BUFFERED
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
-          when notBool inSet(loc(Base, Offset), locations(Mem))
+          when notBool (loc(Base, Offset) in locations(Mem))
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert((notBool inSet(Volatile, getQualsAtOffset(ObjT, Offset)))
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T), 
                     errorNonVolatileLVal)
                ~> tv(piece(trap, cfg:bitsPerByte), t(.Set, no-type))
@@ -221,13 +221,13 @@ module C-IO-BUFFERED
                     piece(trap, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool inSet(loc(Base, Offset), locations(Mem)))
-               andBool (notBool inSet(Offset, (keys(M))))
+          when (notBool (loc(Base, Offset) in locations(Mem)))
+               andBool (notBool (Offset in (keys(M))))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
-               ~> assert((notBool inSet(Volatile, getQualsAtOffset(ObjT, Offset)))
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T), 
                     errorNonVolatileLVal)
                ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
@@ -237,8 +237,8 @@ module C-IO-BUFFERED
                M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool inSet(loc(Base, Offset), locations(Mem)))
-               andBool (notBool inSet(Offset, (keys(M))))
+          when (notBool (loc(Base, Offset) in locations(Mem)))
+               andBool (notBool (Offset in (keys(M))))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
           [structural]
@@ -256,7 +256,7 @@ module C-IO-BUFFERED
 //             ...</k>
 //             <locs-written> Locs:List </locs-written>
 //             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
-//             when notBool inSet(Loc, locations(Mem:List))
+//             when notBool (Loc in locations(Mem:List))
 //             [structural]
 //             // for speed in interpretation; forces local buffer to be flushed
 //             // before a read
@@ -287,12 +287,12 @@ module C-IO-BUFFERED
                Old |-> object(_, _, M:Map)
                New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
-          when (inSet((N' -Int 1), keys(M))) andBool (N' >Int 0)
+          when ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
           <mem>... Old |-> object(_, _, M:Map) ...</mem>
-          when (notBool inSet((N' -Int 1), keys(M))) andBool (N' >Int 0)
+          when (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .
           [structural]   
@@ -335,7 +335,7 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           <effective-types> EffTypes:Map </effective-types>
           when isNoType(T)
-               andBool notBool inSet(loc(Base, Offset), keys(EffTypes))
+               andBool notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)

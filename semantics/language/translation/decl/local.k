@@ -37,7 +37,7 @@ module C-DECL-LOCAL
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool inSet(kpair(X, BlockNum), keys(LocalTypes))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      // Extern, external type exists but no def.
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
@@ -53,8 +53,8 @@ module C-DECL-LOCAL
           when (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool inSet(X, keys(Defs))
-               andBool notBool inSet(kpair(X, BlockNum), keys(LocalTypes))
+               andBool notBool (X in keys(Defs))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit) 
@@ -68,8 +68,8 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           when (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
-               andBool notBool inSet(X, keys(Types))
-               andBool notBool inSet(kpair(X, BlockNum), keys(LocalTypes))
+               andBool notBool (X in keys(Types))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
@@ -121,8 +121,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
           </local-types>
-          when notBool inSet(kpair(X, BlockNum), keys(LocalStatics))
-               andBool notBool inSet(kpair(X, BlockNum), keys(LocalTypes))
+          when notBool (kpair(X, BlockNum) in keys(LocalStatics))
+               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
@@ -137,8 +137,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map
           </local-types>
-          when inSet(kpair(X, BlockNum), keys(LocalStatics))
-               orBool inSet(kpair(X, BlockNum), keys(LocalTypes))
+          when (kpair(X, BlockNum) in keys(LocalStatics))
+               orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
           
      syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)] 
@@ -159,7 +159,7 @@ module C-DECL-LOCAL
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[Info <- X] </structs>
-          when notBool inSet(X, keys(Structs))
+          when notBool (X in keys(Structs))
           [structural]
      rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
                +String idToString(X)))
