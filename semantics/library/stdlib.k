@@ -22,7 +22,7 @@ module LIBC-STDLIB
           [structural]
 
      rule [debug]:
-          prepareBuiltin(Identifier("__debug"), _) => skipval
+          prepareBuiltin(Identifier("__debug"), _) => voidVal
           [interpRule]
 
      rule [exit]:
@@ -119,7 +119,7 @@ module LIBC-STDLIB
           <k> prepareBuiltin(Identifier("free"),
                     ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
                => deleteSizedObject(Base, Len:Int) 
-               ~> skipval
+               ~> voidVal
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
@@ -137,7 +137,7 @@ module LIBC-STDLIB
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
                     ListItem(tv(N:Int, t(.Set, unsigned-int))))
-               => skipval
+               => voidVal
           ...</k>
           <rand-nat> _ => N:Int </rand-nat>
           [structural]

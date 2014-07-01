@@ -314,7 +314,7 @@ module C-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/
-     rule cast(t(_, void), _) => skipval
+     rule cast(t(_, void), _) => voidVal
           [structural, anywhere]
 
      rule (. => ERROR("CCV5", "casting empty value to type other than void.", 89)) ~>
@@ -322,7 +322,7 @@ module C-CONVERSION
           when T =/=K void
           [structural]
      rule (. => UNDEF("CCV6", "casting void type to non-void type.", "6.3.2.2") )
-          ~> cast(t(_, T:SimpleType), skipval)
+          ~> cast(t(_, T:SimpleType), voidVal)
           when (T =/=K void)
           [structural]
 

@@ -57,7 +57,7 @@ module LIBC-STDARG
                ListItem(ApLoc:KResult)
                ListItem(ArgLoc:KResult))
           => Computation(*(ApLoc) := incSymbolic(ArgLoc))
-               ~> skipval
+               ~> voidVal
           [structural]
      
      rule [va-inc-start]:
@@ -81,12 +81,12 @@ module LIBC-STDARG
           prepareBuiltin(Identifier("__va_copy"), 
                ListItem(ApLoc:KResult) 
                ListItem(Other:KResult))
-          => Computation(*(ApLoc) := Other) ~> skipval
+          => Computation(*(ApLoc) := Other) ~> voidVal
           [structural]
           
      // fixme can do lots of checks here too
      rule [va-end]:
           prepareBuiltin(Identifier("__va_end"),
-               ListItem(_:KResult)) => skipval
+               ListItem(_:KResult)) => voidVal
           [structural]
 endmodule

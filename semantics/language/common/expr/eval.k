@@ -40,7 +40,7 @@ module C-COMMON-EXPR-EVAL
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
 
-     rule rkludge(skipval) => skipval
+     rule rkludge(voidVal) => voidVal
      rule rkludge(emptyValue) => emptyValue
      rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
 

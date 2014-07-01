@@ -1,7 +1,7 @@
 module C-DYNAMIC-SYNTAX
      syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
-     syntax Value ::= "skipval"
+     syntax Value ::= "voidVal"
 
      syntax Agg ::= agg(List)
 
