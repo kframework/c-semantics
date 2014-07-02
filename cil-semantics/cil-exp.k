@@ -463,6 +463,8 @@ module CIL-EXP
   /* FIXME standard is unclear about the semantics of unary minus. */
   rule -tv(T:Type, I:MInt) => norm(T, 0) - tv(T, I)
 
+  rule -tv(T:Type, F:Float) => norm(T, 0.0) - tv(T, F)
+
   /* Addition */
   rule tv(T:SignedIntType, MI1:MInt) + tv(T, MI2:MInt) 
     => tv(T, miMInt(saddMInt(MI1, MI2)))
