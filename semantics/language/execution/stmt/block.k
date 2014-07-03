@@ -11,38 +11,40 @@ module C-STMT-BLOCK
      rule BlockStatement(B:K)
           => pushBlock ~> B ~> popBlock
           [structural]
-          
+
      rule <k> pushBlock => . ...</k>
           <local>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
                <local-addresses> Addresses:Set => .Set </local-addresses>
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
+               <modified> Modified:Map => .Map </modified>
           </local>
-          <block-stack> .List 
+          <block-stack> .List
                => ListItem(C
-               <nesting-depth> N </nesting-depth> 
                <local-vars> Vars </local-vars>
-               <local-addresses> Addresses </local-addresses>)
+               <local-addresses> Addresses </local-addresses>
+               <nesting-depth> N </nesting-depth>
+               <modified> Modified:Map </modified>)
           ...</block-stack>
-          [structural] 
-          
+          [structural]
+
      rule <k> (.K => deleteObject(Base)) ~> popBlock ...</k>
           <local-addresses>...
                (SetItem(Base:SymBase) => .Set)
           ...</local-addresses>
-          [structural] 
-          
+          [structural]
+
      rule <k> popBlock => . ...</k>
           <local>
                (_ => C)
                (<local-addresses> .Set </local-addresses> => .Bag)
           </local>
-          <block-stack> 
-               ListItem(C:Bag) => .List 
+          <block-stack>
+               ListItem(C:Bag) => .List
           ...</block-stack>
-          [structural] 
-          
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
      The expression in an expression statement is evaluated as a void expression
      for its side effects.
@@ -55,7 +57,7 @@ module C-STMT-BLOCK
      }*/
      rule Nop => .
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
      A block allows a set of declarations and statements to be grouped into one
      syntactic unit.  The initializers of objects that have automatic storage

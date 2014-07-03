@@ -64,26 +64,30 @@ module C-CHECK-LOC
           ...</restrict>
           when notBool loc(Base, Offset) in keys(Modified)
           [structural]
-     rule <k> checkRestrict(Loc:SymLoc, _)
-               => checkRestrict(getBases(Loc), getBases(Loc), SetItem(set(getBases(Loc))))
-          ...</k>
+     rule <k> checkRestrict(Loc:SymLoc, _) => . ...</k>
+          <modified> Modified:Map </modified>
           <restrict>
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
           </restrict>
           when notBool (stripProv(Loc) in keys(Restricts))
+               andBool notBool stripProv(Loc) in keys(Modified)
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, _)
+               => checkRestrict(getBases(Loc), getBases(Loc), SetItem(set(getBases(Loc))))
+          ...</k>
+          <modified> Modified:Map </modified>
+          <restrict>
+               Restricts:Map
+               (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
+          </restrict>
+          when notBool (stripProv(Loc) in keys(Restricts))
+               andBool stripProv(Loc) in keys(Modified)
           [structural]
      // TODO(chathhorn): finer-grain modified detection. This can fail for the
      // case of aggregates.
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
                => checkRestrict(getBases(Prov), getBases(Prov), Bases)
-          ...</k>
-          <modified> Modified:Map </modified>
-          <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when loc(Base, Offset) in keys(Modified)
-          [structural]
-     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int), _)
-               => checkRestrict(.Set, .Set, Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
@@ -101,7 +105,7 @@ module C-CHECK-LOC
      rule checkRestrict(.Set, _, .Set) => .
           [structural]
      rule (. => UNDEF("ECL3",
-               "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.",
+               "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
                "6.7.3.1:4"))
           ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
           when PrevBases =/=Set SetItem(set(Bases))
@@ -113,7 +117,7 @@ module C-CHECK-LOC
           when notBool isConstType(innerType(T))
           [structural]
      rule <k> (. => UNDEF("ECL4",
-               "An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type.",
+               "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.",
                "6.7.3.1:4"))
                ~> checkRestrict'(basedOn(Base:SymBase, _))
           ...</k>
