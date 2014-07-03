@@ -276,9 +276,11 @@ module C-TYPING-EXPR
 
      rule <type> & T:Type => t(.Set, pointerType(T)) ...</type>
           [structural]
-          
+    
+     /*TODO:may be an error
      rule <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
           <curr-program-loc> _ => L:CabsLoc </curr-program-loc>
           [structural]
+	*/
 endmodule
 
