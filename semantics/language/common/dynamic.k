@@ -72,7 +72,6 @@ module C-DYNAMIC
           [structural, anywhere]
 
      rule ExpressionLoc(K:K, _) => K
-          [structural, anywhere]
 
      rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>

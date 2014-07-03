@@ -436,8 +436,7 @@ module C-SYNTAX
      */
      syntax Expression ::= "OffsetOf" "(" K "," K "," K ")"
           [klabel('OffsetOf), strict(1)]
-     syntax Expression ::= "ExpressionLoc" "(" K "," K ")"
-          [klabel('ExpressionLoc)]
+     syntax Expression ::= ExpressionLoc(K,K) [function]
 
      syntax Expression ::= "NothingExpression" [function]
 
