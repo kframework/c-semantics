@@ -28,42 +28,13 @@ module C-EXECUTION-ERROR
      rule (<k> EXIT(Msg:String) ~> K:K </k> 
           => <final-computation> K </final-computation>)
           (.Bag => <error-cell> Msg </error-cell>)
-         
-    //  rule [err00005]:
-    //       <k> 
-    //            (. => ICE("00005", "Referring to an object outside of its lifetime.") ) ~>
-    //            readByte(loc(B:SymBase, _)) 
-    //       ...</k>
-    //       <mem> M:Map </mem>
-    //       when notBool SetItem(B) in keys(M:Map)
-    //       [structural]
-     
-     // rule [err00006]:
-     //      (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
-     //           21) ) ~>
-     //      joinIntegerBytes-aux(t(_, T:SimpleType), _ ListItem(piece(trap(Len:Int), Len)), _)
-     //      when T =/=K unsigned-char
-     //      [structural]
-          
-     // rule [err00008]:
-     //      (. => ERROR("00008", "Reading uninitialized memory.") ) ~>
-     //      concretize(t(_, pointerType(_)),
-     //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
-     //      [structural]
-     // 
-     // rule [err00009]:
-     //      (. => ERROR("00009", "Reading uninitialized memory.",
-     //           21) ) ~>
-     //      concretize(T:Type,
-     //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
-     //      when hasFloatType(T)
-     //      [structural]
-          
+
+
      rule [err00037]:
           (. => ERROR("00037", "Trying to read through a null pointer.") ) ~>
           read(NullPointer, _)
           [structural]
-          
+
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
           concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
@@ -77,7 +48,7 @@ module C-EXECUTION-ERROR
           nextvarg-aux(_, _, A:TypedValue, B:TypedValue)
           when value(A) =/=Int value(B)
           [structural]
-     
+
      // TODO(chathhorn): Silly way to do things. Probably need to allow
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
@@ -94,7 +65,7 @@ module C-EXECUTION-ERROR
                orBool (Loc >bytes Loc' 
                     andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
           [computational]
-           
+
       rule [write-write-race]:
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
                write(Loc:SymLoc, _, T:Type) 

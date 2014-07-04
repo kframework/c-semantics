@@ -190,7 +190,10 @@ module C-COMMON-EXPR-BITWISE
      rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
           when notBool isNegZero(N, T)
      rule (. => UNDEF("CEB12",
-               "potential negative zero produced via bitwise operations.",
+               // TODO(chathhorn): this can result in false positives in cases
+               // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
+               // clearly INT_MIN can't be trap representation.
+               "potential negative zero produced via bitwise operations (this could be a false positive).",
                "6.2.6.2:4"))
           ~> bitwiseInterpret(tv(N:Int, T:Type))
           when isNegZero(N, T)
@@ -202,6 +205,8 @@ module C-COMMON-EXPR-BITWISE
      // negative zero bit patterns in the result (100... and 111...).
      syntax Bool ::= isNegZero(Int, Type) [function]
      rule isNegZero(N:Int, T:Type) => true
+          // TODO(chathhorn): Technically we shouldn't use min(T) for this
+          // case, because clearly min(T) won't be a trap representation.
           when N ==Int min(T) // Two's complement, sign and magnitude.
      rule isNegZero(N:Int, _) => true
           when N ==Int -1 // Ones' complement.

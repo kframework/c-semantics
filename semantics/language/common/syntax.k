@@ -300,7 +300,7 @@ module C-SYNTAX
      syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
           [klabel('ExpressionTransformer)]
 
-     syntax PureDefinition ::= StaticAssert(Expression, Constant)
+     syntax PureDefinition ::= StaticAssert(K, K)
           [klabel('StaticAssert)]
 
      // name
