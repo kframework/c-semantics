@@ -151,8 +151,9 @@ module C-MEMORY-READING
      syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinIntegerBytes(T:Type, L:List)
           => joinIntegerBytes-aux(T, L, piece(0, 0))
-     rule joinIntegerBytes-aux(T:Type, ListItem(piece(subObject(_, _, _), _)), piece(0, 0))
-          => tv(unknown, stripQualifiers(T))
+     rule joinIntegerBytes-aux(T:Type,
+               ListItem(piece(subObject(Loc:SymLoc, Start:Int, End:Int), _)), piece(0, 0))
+          => tv(subObject(Loc, Start, End), stripQualifiers(T))
           when isUCharType(T)
      rule joinIntegerBytes-aux(T:Type,
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
