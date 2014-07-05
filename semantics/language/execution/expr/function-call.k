@@ -102,6 +102,7 @@ module C-EXPR-FUNCTION-CALL
                ~> sequencePoint
                ~> Blk
           </k>
+          <modified>... .Map => X |-> map(.Map) </modified>
           <call-stack> .List => ListItem(
                <call-stack-frame>...
                     <stack-control>

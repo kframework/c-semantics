@@ -100,7 +100,8 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     rule <threads>
+     rule <modified> _ => global |-> map(.Map) </modified>
+          <threads>
                <thread>...
                     <k> initMainThread => populateFromGlobal ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>

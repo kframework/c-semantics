@@ -18,14 +18,12 @@ module C-STMT-BLOCK
                <local-vars> Vars:List => .List </local-vars>
                <local-addresses> Addresses:Set => .Set </local-addresses>
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
-               <modified> Modified:Map => .Map </modified>
           </local>
           <block-stack> .List
                => ListItem(C
                <local-vars> Vars </local-vars>
                <local-addresses> Addresses </local-addresses>
-               <nesting-depth> N </nesting-depth>
-               <modified> Modified:Map </modified>)
+               <nesting-depth> N </nesting-depth>)
           ...</block-stack>
           [structural]
 
@@ -69,8 +67,14 @@ module C-STMT-BLOCK
      appear.
      }*/
      rule <k> Block(BlockNum:Int, _, list(Statements:List))
-               => listToK(Statements)
+               => listToK(Statements) ~> doneBlock(BlockNum)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
+          <modified>... (.Map => BlockNum |-> map(.Map)) </modified>
           [structural]
+
+     syntax K ::= doneBlock(Int)
+     rule <k> doneBlock(BlockNum:Int) => . ...</k>
+          <modified> BlockNum |-> _ => .Map ...</modified>
+
 endmodule

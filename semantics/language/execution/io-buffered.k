@@ -49,15 +49,28 @@ module C-IO-BUFFERED
           when I >Int 0
 
      syntax K ::= setModified(SymLoc, Type)
-     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+     syntax K ::= setModified(SymLoc, Type, Set)
+     rule <k> setModified(Loc:SymLoc, T:Type)
+               => setModified(Loc, T, keys(Modified))
+          ...</k>
+          <modified> Modified:Map </modified>
+
+     rule <k> setModified(Loc:SymLoc, T:Type,
+               (SetItem(Tag:RestrictTag) => .Set) _)
+          ...</k>
           <modified>...
-               Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T)))
+               Tag |-> map(_
+                    Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
           ...</modified>
-     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
-          <modified>
-               Modified:Map (.Map => Loc |-> byteSizeofType(T))
-          </modified>
+     rule <k> setModified(Loc:SymLoc, T:Type,
+               (SetItem(Tag:RestrictTag) => .Set) _)
+          ...</k>
+          <modified>...
+               Tag |-> map(Modified:Map
+                    (.Map => Loc |-> byteSizeofType(T)))
+          ...</modified>
           when notBool Loc in keys(Modified)
+     rule setModified(_, _, .Set) => .
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)

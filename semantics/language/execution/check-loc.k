@@ -55,47 +55,49 @@ module C-CHECK-LOC
 
      rule checkRestrict(loc(Base:SymBase, Offset:Int), T:Type)
           => checkRestrict(loc(Base, Offset, .Set), T)
-     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
-               => .
-          ...</k>
-          <modified> Modified:Map </modified>
-          <restrict>...
-               loc(Base, Offset) |-> set((.Set => SetItem(set(getBases(Prov)))) _)
-          ...</restrict>
-          when notBool loc(Base, Offset) in keys(Modified)
-          [structural]
-     rule <k> checkRestrict(Loc:SymLoc, _) => . ...</k>
-          <modified> Modified:Map </modified>
-          <restrict>
-               Restricts:Map
-               (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
-          </restrict>
-          when notBool (stripProv(Loc) in keys(Restricts))
-               andBool notBool stripProv(Loc) in keys(Modified)
-          [structural]
      rule <k> checkRestrict(Loc:SymLoc, _)
-               => checkRestrict(getBases(Loc), getBases(Loc), SetItem(set(getBases(Loc))))
+               => checkRestrict(stripProv(Loc), getBases(Loc), .Set,
+                    SetItem(set(getBases(Loc))))
           ...</k>
-          <modified> Modified:Map </modified>
           <restrict>
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
           </restrict>
           when notBool (stripProv(Loc) in keys(Restricts))
-               andBool stripProv(Loc) in keys(Modified)
           [structural]
      // TODO(chathhorn): finer-grain modified detection. This can fail for the
      // case of aggregates.
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
-               => checkRestrict(getBases(Prov), getBases(Prov), Bases)
+               => checkRestrict(loc(Base, Offset), getBases(Prov), .Set,
+                    Bases SetItem(set(getBases(Prov))))
           ...</k>
-          <modified> Modified:Map </modified>
-          <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when loc(Base, Offset) in keys(Modified)
+          <restrict>...
+               loc(Base, Offset) |-> set(Bases:Set
+                    (.Set => SetItem(set(getBases(Prov)))))
+          ...</restrict>
+          [structural]
+
+     // Filter out the restrict pointers where the object has been unmodified
+     // in the associated block.
+     syntax K ::= checkRestrict(SymLoc, Set, Set, Set)
+     rule <k> checkRestrict(Loc:SymLoc,
+                    (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
+                    _ (.Set => SetItem(basedOn(Base, Tag))), _)
+          ...</k>
+          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          when Loc in keys(Modified)
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc,
+                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _ , _)
+          ...</k>
+          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          when notBool (Loc in keys(Modified))
+          [structural]
+     rule checkRestrict(_, .Set, Bases:Set, Bases':Set)
+               => checkRestrict(Bases, Bases, Bases')
           [structural]
 
      syntax K ::= checkRestrict(Set, Set, Set)
-
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]
@@ -107,8 +109,8 @@ module C-CHECK-LOC
      rule (. => UNDEF("ECL3",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
                "6.7.3.1:4"))
-          ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
-          when PrevBases =/=Set SetItem(set(Bases))
+          ~> checkRestrict(.Set, Bases:Set, SetItem(set(Bases':Set)) _)
+          when notBool (Bases <=Set Bases')
           [structural]
 
      syntax K ::= "checkRestrict'" "(" Provenance ")"

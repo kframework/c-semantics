@@ -47,6 +47,9 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
+     // RestrictTag |-> (SymLoc |-> Int)
+     <modified> .Map </modified>
+
      // stdlib
      <rand-nat color="black"> 0 </rand-nat>
      // stdlib
@@ -144,8 +147,6 @@ module C-CONFIGURATION
                                    // pointers.
                                    // SymLoc |-> set(set(basedOns))
                                    <restrict> .Map </restrict>
-                                   // SymLoc |-> Int (nbytes modified)
-                                   <modified> .Map </modified>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">
