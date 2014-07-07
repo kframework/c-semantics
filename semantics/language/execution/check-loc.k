@@ -53,64 +53,93 @@ module C-CHECK-LOC
                "6.2.4")
           [structural]
 
+     // First, associate the restrict-qual'd pointer of this access with the
+     // object.
      rule checkRestrict(loc(Base:SymBase, Offset:Int), T:Type)
           => checkRestrict(loc(Base, Offset, .Set), T)
      rule <k> checkRestrict(Loc:SymLoc, _)
-               => checkRestrict(stripProv(Loc), getBases(Loc), .Set,
-                    SetItem(set(getBases(Loc))))
+               // If no accesses have occured previously, we should still check
+               // for const violations.
+               => checkRestrict(stripProv(Loc),
+                    getBases(Loc), .Set,
+                    getBases(Loc), .Set)
           ...</k>
           <restrict>
                Restricts:Map
-               (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
+               (.Map => stripProv(Loc) |-> set(getBases(Loc)))
           </restrict>
           when notBool (stripProv(Loc) in keys(Restricts))
           [structural]
      // TODO(chathhorn): finer-grain modified detection. This can fail for the
      // case of aggregates.
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
-               => checkRestrict(loc(Base, Offset), getBases(Prov), .Set,
-                    Bases SetItem(set(getBases(Prov))))
+               => checkRestrict(loc(Base, Offset),
+                    getBases(Prov), .Set,
+                    Bases, .Set)
           ...</k>
           <restrict>...
-               loc(Base, Offset) |-> set(Bases:Set
-                    (.Set => SetItem(set(getBases(Prov)))))
+               loc(Base, Offset) |-> set(Bases:Set (.Set => getBases(Prov)))
           ...</restrict>
           [structural]
 
-     // Filter out the restrict pointers where the object has been unmodified
-     // in the associated block.
-     syntax K ::= checkRestrict(SymLoc, Set, Set, Set)
+     // Next, filter out the restrict pointers where the object has been
+     // unmodified in the associated block.
+     syntax K ::= checkRestrict(SymLoc, Set, Set, Set, Set)
      rule <k> checkRestrict(Loc:SymLoc,
                     (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
-                    _ (.Set => SetItem(basedOn(Base, Tag))), _)
+                    (.Set => SetItem(basedOn(Base, Tag))) _, _, _)
           ...</k>
           <modified>... Tag |-> map(Modified:Map) ...</modified>
           when Loc in keys(Modified)
           [structural]
      rule <k> checkRestrict(Loc:SymLoc,
-                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _ , _)
+                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
           ...</k>
           <modified>... Tag |-> map(Modified:Map) ...</modified>
           when notBool (Loc in keys(Modified))
           [structural]
-     rule checkRestrict(_, .Set, Bases:Set, Bases':Set)
-               => checkRestrict(Bases, Bases, Bases')
+     rule <k> checkRestrict(Loc:SymLoc,
+                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
+          ...</k>
+          <modified> Modified:Map </modified>
+          when notBool (Tag in keys(Modified))
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, _, _,
+                    (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
+                    (.Set => SetItem(basedOn(Base, Tag))) _)
+          ...</k>
+          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          when Loc in keys(Modified)
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, _, _,
+                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
+          ...</k>
+          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          when notBool (Loc in keys(Modified))
+          [structural]
+     rule <k> checkRestrict(Loc:SymLoc, _, _,
+                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
+          ...</k>
+          <modified> Modified:Map </modified>
+          when notBool (Tag in keys(Modified))
+          [structural]
+     rule checkRestrict(_, .Set, Bases:Set, .Set, Bases':Set)
+               => checkRestrict(Bases Bases', Bases, Bases')
           [structural]
 
+     // Finally, do the actual checks.
      syntax K ::= checkRestrict(Set, Set, Set)
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]
-     rule checkRestrict(.Set, Bases:Set, (SetItem(set(Bases':Set)) => .Set) _)
-          when Bases <=Set Bases'
-          [structural]
-     rule checkRestrict(.Set, _, .Set) => .
+     rule checkRestrict(.Set, Bases:Set, Bases':Set) => .
+          when Bases ==Set Bases'
           [structural]
      rule (. => UNDEF("ECL3",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
                "6.7.3.1:4"))
-          ~> checkRestrict(.Set, Bases:Set, SetItem(set(Bases':Set)) _)
-          when notBool (Bases <=Set Bases')
+          ~> checkRestrict(.Set, Bases:Set, Bases':Set)
+          when Bases =/=Set Bases'
           [structural]
 
      syntax K ::= "checkRestrict'" "(" Provenance ")"

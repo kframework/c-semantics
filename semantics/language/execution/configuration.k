@@ -47,6 +47,10 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
+     // These are used for verifying the aliasing restrictions on
+     // restrict-qualified pointers.
+     // SymLoc |-> set(basedOns)
+     <restrict> .Map </restrict>
      // RestrictTag |-> (SymLoc |-> Int)
      <modified> .Map </modified>
 
@@ -142,11 +146,6 @@ module C-CONFIGURATION
                                         .Set
                                    </local-addresses>
 
-                                   // These are used for verifying the aliasing
-                                   // restrictions on restrict-qualified
-                                   // pointers.
-                                   // SymLoc |-> set(set(basedOns))
-                                   <restrict> .Map </restrict>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">
