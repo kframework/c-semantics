@@ -98,7 +98,7 @@ module C-CHECK-LOC
           <modified>... Tag |-> map(Modified:Map) ...</modified>
           when notBool (Loc in keys(Modified))
           [structural]
-     rule <k> checkRestrict(Loc:SymLoc,
+     rule <k> checkRestrict(_,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
           ...</k>
           <modified> Modified:Map </modified>
@@ -117,7 +117,7 @@ module C-CHECK-LOC
           <modified>... Tag |-> map(Modified:Map) ...</modified>
           when notBool (Loc in keys(Modified))
           [structural]
-     rule <k> checkRestrict(Loc:SymLoc, _, _,
+     rule <k> checkRestrict(_, _, _,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
           ...</k>
           <modified> Modified:Map </modified>
