@@ -86,6 +86,10 @@ torture test suite, use the following command from the [tests][] directory:
 ```
 $ make torture
 ```
+And to run the undefinedness test suite:
+```
+$ make undef
+```
 
 ## Project structure
 

@@ -18,24 +18,26 @@ See:
 This is a formal semantics of C as described in the ISO/IEC 9899:2011 standard
 ("C11"). Some highlights:
 
-- [language][]: the core language features.
+- [language/translation][]: semantics specific to the translation phase.
+
+- [language/execution][]: semantics specific to the execution phase.
+
+- [language/common][]: semantics shared between the translation and execution
+  phases.
 
 - [library][]: the definition of various functions from the C standard library
   described in the standard.
 
-- [c11.k][]: the main syntax/semantics language modules for the "C11" language.
-  This is the module to which we point `kompile`.
+- [c11.k][]: the main syntax/semantics language modules for the execution phase.
 
-- [configuration.k][]: the initial configuration.
+- [c11-translation.k][]: the main syntax/semantics language modules for the
+  translation phase.
 
-- [ltlmc.k][]: LTL model checking support.
-
-- [language/syntax.k][]: the main C language syntax module. 
+- [language/common/syntax.k][]: the main C language syntax module. 
 
 ### Style notes
 
-Here's some stylistic conventions I've adopted during the course of various
-refactorings:
+Various stylistic conventions:
 
 1. 80 character lines.
 
@@ -46,7 +48,7 @@ refactorings:
 
 3. I avoid plurals in module names, unless there might be confusion otherwise.
    E.g., `C-EXPRESSION-FUNCTION-CALL` instead of
-   `C-EXPRESSIONS-FUNCTION-CALLS`, but `C-EXPRESSION-MEMBERS` might be ok.
+   `C-EXPRESSIONS-FUNCTION-CALLS`.
 
 4. I think of syntax modules somewhat like C header files. `MYMODULE-SYNTAX`
    should contain the interface of a module (i.e., only "public" syntax
@@ -83,10 +85,11 @@ refactorings:
 
 11. I prefix "#" to predicates that aren't total functions. 
 
-[language]: language
+[language/translation]: language/translation
+[language/execution]: language/execution
+[language/common]: language/common
 [library]: library
 [c11.k]: c11.k
-[configuration.k]: configuration.k
-[ltlmc.k]: ltlmc.k
-[language/syntax.k]: language/syntax.k
-[language/expression/function-call.k]: language/expression/function-call.k
+[c11-translation.k]: c11-translation.k
+[language/common/syntax.k]: language/common/syntax.k
+[language/execution/expr/function-call.k]: language/execution/expr/function-call.k
