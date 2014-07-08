@@ -144,9 +144,9 @@ sub main {
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
             $krun_args{'-d'} = $EXEC_ND_DEF;
-            $krun_args{'--output-mode'} = 'pretty';
+            $krun_args{'--output'} = 'pretty';
             push @options, 'NOIO';
-            delete $krun_args{'--output'};
+            delete $krun_args{'--output-file'};
             print 'LTL model checking... ';
             print "(with non-deterministic expression sequencing)\n";
       }
