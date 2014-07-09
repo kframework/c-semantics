@@ -53,7 +53,7 @@ module C-DECL-GLOBAL
           when F =/=K file-scope
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
-               andBool ('_==Set_(getQualifiers(T) ,, .Set))
+               andBool (getQualifiers(T) ==K .Set)
           [structural] 
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
@@ -65,7 +65,7 @@ module C-DECL-GLOBAL
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           when isFunctionType(T)
                andBool validGlobalStorageClass(T)
-               andBool '_==Set_(getQualifiers(T) ,, .Set)
+               andBool (getQualifiers(T) ==K .Set)
           [structural] 
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
@@ -83,7 +83,7 @@ module C-DECL-GLOBAL
                +String " appears with type qualifiers."))
           ~> declare''(typedDeclaration(T:Type, X:CId), _)
           when isFunctionType(T)
-               andBool getQualifiers(T) =/=Set .Set
+               andBool getQualifiers(T) =/=K .Set
           [structural] 
 
      rule (. => ERROR("DG2", "declaration for " +String idToString(X)
@@ -130,21 +130,21 @@ module C-DECL-GLOBAL
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 
      rule checkParam(T:Type) => .
-          when '_==Set_(getStorageSpecifiers(T) ,, .Set)
+          when (getStorageSpecifiers(T) ==K .Set)
                orBool (notBool isVoidType(T)
-                    andBool '_==Set_(getStorageSpecifiers(T) ,, SetItem(Register)))
+                    andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
 
      rule (. => ERROR("DG5", "function parameter appears with storage "
                +String "class other than register."))
           ~> checkParam(T:Type)
-          when getStorageSpecifiers(T) =/=Set .Set
-               andBool getStorageSpecifiers(T) =/=Set SetItem(Register)
+          when getStorageSpecifiers(T) =/=K .Set
+               andBool getStorageSpecifiers(T) =/=K SetItem(Register)
                andBool notBool isVoidType(T)
           [structural] 
 
      rule (. => ERROR("DG6", "void parameter appears with a storage class."))
           ~> checkParam(T:Type)
-          when getStorageSpecifiers(T) =/=Set .Set
+          when getStorageSpecifiers(T) =/=K .Set
                andBool isVoidType(T)
           [structural] 
 

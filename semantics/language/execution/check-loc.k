@@ -110,7 +110,7 @@ module C-CHECK-LOC
           [structural]
      rule (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.", "6.7.3.1:4"))
           ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
-          when PrevBases =/=Set SetItem(set(Bases))
+          when PrevBases =/=K SetItem(set(Bases))
           [structural]
 
      syntax KItem ::= "checkRestrict'" "(" Provenance ")"

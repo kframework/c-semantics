@@ -16,7 +16,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
-          when (getQualifiers(T) ==Set getQualifiers(T'))
+          when (getQualifiers(T) ==K getQualifiers(T'))
                andBool (simpleType(T) ==K simpleType(T'))
      rule #typesEq(
                typedDeclaration(T:Type, X:CId),
