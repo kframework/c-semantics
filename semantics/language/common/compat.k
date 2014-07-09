@@ -21,6 +21,7 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= List "==MSet" List [function]
 		   | List "=/=MSet" List [function]
+		   | K "in" List [function]
 
      syntax List ::= removeListItem(List,K) [function]
 
@@ -139,6 +140,10 @@ module COMPAT
      rule removeListItem(ListItem(A:K) M:List,A':K) 
 	=> ListItem(A) removeListItem(M,A')
 	when A =/=K A'
+
+     rule K:K in .List => false
+     rule K:K in ListItem(K:K) _:List => true
+     rule K:K in ListItem(K1:K) L:List => K in L when K =/=K K1
 
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
