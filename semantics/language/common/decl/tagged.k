@@ -25,14 +25,14 @@ module C-DECL-TAGGED
      // note that struct defs might appear buried in a type.
      rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
-          when L =/=List .List
+          when L =/=K .List
           [structural]
      rule (. => UNDEF("CDT1", "Structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
-          when L =/=List .List
+          when L =/=K .List
           [structural]
      rule (. => UNDEF("CDT2", "Unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
@@ -43,7 +43,7 @@ module C-DECL-TAGGED
                incompleteToFlexibleArrayMember(L),
                0, .Map, .Map,
                incompleteToFlexibleArrayMember(L))
-          when L =/=List .List
+          when L =/=K .List
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
@@ -72,7 +72,7 @@ module C-DECL-TAGGED
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
-          when L =/=List .List
+          when L =/=K .List
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]

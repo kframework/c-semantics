@@ -638,7 +638,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff *** 
-
+/*
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys(Exts))
                ~> completeTagInIntDecls(X, Info, keys(Ints))
@@ -654,7 +654,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
           when notBool (X in keys(GStructs))
-          [structural]
+          [structural]*/
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -748,8 +748,9 @@ module C-DECL-GLOBAL
                orBool DS =/=K declared
           [structural]
 
-     syntax K ::= completeTagInTags(CId, FieldInfo, Set)
-		| completeTagInTag(CId,FieldInfo,CId)
+     syntax KItem ::= completeTagInTags(CId, FieldInfo, Set)
+	            | completeTagInTag(CId,FieldInfo,CId)
+
 
      rule <k> ( . => completeTagInTag(S,Info,S2))
 		~> completeTagInTags(S:CId, Info:FieldInfo, (SetItem(S2:CId) => .Set)  _)
@@ -761,7 +762,9 @@ module C-DECL-GLOBAL
      rule completeTagInTags(_, _, .Set) => .K
           [structural]
 
+
      rule completeTagInTag(S:CId,_,S:CId) => .K
+	  [structural]
 
      rule <k> (completeTagInTag(S:CId,Info:FieldInfo,S2:CId) => . ) ...</k>
           <gstructs>...

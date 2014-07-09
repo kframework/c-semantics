@@ -18,7 +18,7 @@ module C-TYPING-INTERPRETATION
 
      syntax KItem ::= BitFieldType(K, K) [strict] 
 
-     rule Specifier(list(L:List)) => L
+     rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
           
      rule BitFieldType(T:Type, tv(N:CSize, _))
