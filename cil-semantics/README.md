@@ -33,7 +33,7 @@ to tell one translation unit from another.
 
 1. Make sure `kompile` and `krun` are in your `$PATH`.
 
-2. Kompile the semantics: `kompile cil` from this directory.
+2. Kompile the semantics: `kompile cil.k` from this directory.
 
 3. Make sure `kcil` and `kcil-pp` are in your `$PATH`.
 
