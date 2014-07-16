@@ -50,7 +50,9 @@ module COMPAT-SYNTAX
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
 
-     syntax KResult ::= krlist(List)
+     //TODO: add sort for krlist
+     syntax KRList ::= krlist(List)
+     syntax KResult ::= KRList
 
      syntax List ::= reverseList(List) [function]
 
