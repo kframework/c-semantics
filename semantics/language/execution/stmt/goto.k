@@ -198,7 +198,7 @@ module C-STMT-GOTO
           <block-history> ActualHist:List </block-history>
           when (TargetDepth =/=Int ActualDepth 
 		  orBool BlockHist
-			=/=List ActualHist)
+			=/=K ActualHist)
 		andBool (TargetDepth =/=Int ActualDepth +Int 1 
 		  orBool ActualHist =/=K (ListItem(BlockNum) BlockHist))
           [structural] 

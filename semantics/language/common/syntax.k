@@ -211,9 +211,9 @@ module C-SYNTAX
           [klabel('PointerType), strict(2)]
      // K, List, Bool
      syntax DeclType ::= Prototype(K, K, Bool)
-          [klabel('Prototype), strict(1, 2)]
+          [strict(1, 2)]
      syntax DeclType ::= NoPrototype(K, K, Bool)
-          [klabel('NoPrototype), strict(1, 2)]
+          [strict(1, 2)]
 
      syntax KItem ::= "NotVariadic"
      syntax KItem ::= "Variadic"

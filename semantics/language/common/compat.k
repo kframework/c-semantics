@@ -50,7 +50,7 @@ module COMPAT-SYNTAX
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
 
-     syntax KResult ::= krlist(List) [klabel('krlist)]
+     syntax KResult ::= krlist(List)
 
      syntax List ::= reverseList(List) [function]
 
@@ -167,19 +167,26 @@ module COMPAT
      syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]
 
+     syntax SubResult ::= srItem(K)
+     syntax SubKRItem ::= SubResult
+     syntax KResult ::= SubResult
+
      rule toSubKRList(.List) => .SubKRList
      rule toSubKRList(ListItem(K:K) L:List) => sItem(K) ss:: toSubKRList(L)
 
      //TODO: overcome the context associative matching
      //context toKRList'(_:List ListItem(HOLE) _:List)
+     rule sItem(V:KResult) => srItem(V) [structural]
+
      rule toKRList(L:List) => toKRList'(toSubKRList(L)) ~> krlist(.List)
           [structural]
-     rule toKRList'((sItem(V:KResult) ss:: S:SubKRList) => S) 
+
+     rule toKRList'((srItem(V:KResult) ss:: S:SubKRList) => S) 
           ~> krlist(_:List (.List => ListItem(V))) 
           when getKLabel(V) =/=KLabel 'krlist
           [structural]
      // Somewhat contrived feature: nested lists are flattened.
-     rule toKRList'((sItem(krlist(L:List)) ss:: S:SubKRList) => S) 
+     rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S) 
           ~> krlist( _:List (.List => L)) 
           [structural]
      rule toKRList'(.SubKRList) => .
