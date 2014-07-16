@@ -224,7 +224,7 @@ module C-MEMORY-WRITING
      
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
-          when L =/=K .List
+          when L =/=MSet .List
      rule explodeToBits(ListItem(piece(N:Bits, Len:Int))) 
           => splinter(N, Len)
           when Len >Int 0

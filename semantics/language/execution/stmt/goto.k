@@ -130,7 +130,7 @@ module C-STMT-GOTO
           <loop-stack> _ => LoopStack </loop-stack>
           when ((L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown))
-		andBool (BlockHistory ==K BlockHistory')
+		andBool (listEqual(BlockHistory,BlockHistory'))
           [structural] 
           
      // - second case, we're in a different block
@@ -183,10 +183,9 @@ module C-STMT-GOTO
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> ListItem(BlockNum:Int) ActualHistory:List </block-history>
           when (SIntDepth =/=Int Depth 
-		  orBool (ListItem(CurrentBlock) BlockHistory) 
-			=/=K (ListItem(BlockNum) ActualHistory))
+		  orBool listEqual(ListItem(CurrentBlock) BlockHistory, ListItem(BlockNum) ActualHistory))
 		andBool (SIntDepth =/=Int Depth +Int 1 
-		  orBool BlockHistory =/=K (ListItem(BlockNum) ActualHistory))
+		  orBool listEqual(BlockHistory, (ListItem(BlockNum) ActualHistory)))
           [structural] 
 
      rule <k> processGotoDown(gotoObject(TargetDepth:Int, 
