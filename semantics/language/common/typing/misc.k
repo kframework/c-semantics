@@ -204,7 +204,7 @@ module C-TYPING-MISC
 
      rule <k> #completeTags(T:Type) => completeTags(Tags, T) ...</k>
           <structs> Tags:Map </structs>
-          when Tags =/=Map .Map
+          when Tags =/=K .Map
      rule <k> #completeTags(T:Type) => T ...</k>
           <structs> .Map </structs>
 

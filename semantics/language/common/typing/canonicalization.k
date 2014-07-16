@@ -230,7 +230,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)
-          when B =/=List .List
+          when B =/=K .List
           [structural]
           
      rule canonicalizeType-aux(.List, T:Type, .List, .List, .List) => T

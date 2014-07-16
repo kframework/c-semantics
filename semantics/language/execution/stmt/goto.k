@@ -130,7 +130,7 @@ module C-STMT-GOTO
           <loop-stack> _ => LoopStack </loop-stack>
           when ((L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown))
-		andBool (BlockHistory ==List BlockHistory')
+		andBool (BlockHistory ==K BlockHistory')
           [structural] 
           
      // - second case, we're in a different block
@@ -157,7 +157,7 @@ module C-STMT-GOTO
      rule searchInGotoObjectList(.List,_:List,
 		Actual:List,Store:List) 
 		=> resultInGotoObjectList(.List,.List,Store)
-		when Actual =/=List .List
+		when Actual =/=K .List
      rule searchInGotoObjectList(_:List ListItem(BlockNum:Int)
 		,_:List,_:List ListItem(Current:Int),Store:List) 
 		=> resultInGotoObjectList(.List,.List,Store)
@@ -184,9 +184,9 @@ module C-STMT-GOTO
           <block-history> ListItem(BlockNum:Int) ActualHistory:List </block-history>
           when (SIntDepth =/=Int Depth 
 		  orBool (ListItem(CurrentBlock) BlockHistory) 
-			=/=List (ListItem(BlockNum) ActualHistory))
+			=/=K (ListItem(BlockNum) ActualHistory))
 		andBool (SIntDepth =/=Int Depth +Int 1 
-		  orBool BlockHistory =/=List (ListItem(BlockNum) ActualHistory))
+		  orBool BlockHistory =/=K (ListItem(BlockNum) ActualHistory))
           [structural] 
 
      rule <k> processGotoDown(gotoObject(TargetDepth:Int, 
@@ -200,7 +200,7 @@ module C-STMT-GOTO
 		  orBool BlockHist
 			=/=List ActualHist)
 		andBool (TargetDepth =/=Int ActualDepth +Int 1 
-		  orBool ActualHist =/=List (ListItem(BlockNum) BlockHist))
+		  orBool ActualHist =/=K (ListItem(BlockNum) BlockHist))
           [structural] 
      
      //  as long as there are entries in the actual block history that differ
@@ -211,7 +211,7 @@ module C-STMT-GOTO
                     (resultInGotoObjectList(.List,.List, Store:List)
 			=> Store), _, _, _))
           ...</k>
-	  when Store =/=List .List
+	  when Store =/=K .List
           [structural] 
                
      //  once we share a history, we start to push

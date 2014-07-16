@@ -11,7 +11,7 @@ module C-EXPR-SEQUENCING
 
      rule Comma(list(ListItem(K:K) L:List)) 
           => commaEval(K) ~> discard ~> Comma(list(L))
-          when L =/=List .List
+          when L =/=K .List
           [structural]
      rule Comma(list(ListItem(K:K))) => commaEval(K)
           [structural]

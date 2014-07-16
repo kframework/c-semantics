@@ -60,10 +60,10 @@ module C-FUNCTION-DEF
      rule emptyToVoid(T:Type)
           => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
           when isFunctionType(T)
-               andBool (getParams(T) ==List .List)
+               andBool (getParams(T) ==K .List)
      rule emptyToVoid(T:Type) => T
           when notBool isFunctionType(T)
-               orBool (getParams(T) =/=List .List)
+               orBool (getParams(T) =/=K .List)
 
      syntax KItem ::= processFunDef(CId, K)
 

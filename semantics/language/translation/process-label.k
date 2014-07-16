@@ -59,7 +59,7 @@ module C-PROCESS-LABEL
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
-          when M =/=Map .Map
+          when M =/=K .Map
           [structural] 
 
      syntax KItem ::= endBlockForGoto(Int)
