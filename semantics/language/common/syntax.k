@@ -586,7 +586,7 @@ module C-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= Constant(K) [klabel('Constant)]
+     syntax Expression ::= Constant(K) [function]
      // String constants aren't revals
      // for paren, just putting parentheses
      syntax Expression ::= CId
@@ -633,30 +633,30 @@ module C-SYNTAX
      | CONST_STRING of string
      | CONST_WSTRING of int64 list
      */
-     syntax IntConstant ::= DecimalConstant(K) [klabel('DecimalConstant)]
-     syntax IntConstant ::= OctalConstant(K) [klabel('OctalConstant)]
-     syntax IntConstant ::= HexConstant(K) [klabel('HexConstant)]
+     syntax IntConstant ::= DecimalConstant(K) [function]
+     syntax IntConstant ::= OctalConstant(K) [function]
+     syntax IntConstant ::= HexConstant(K) [function]
 
      // significand, exponent, approx
      syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)
-          [klabel('DecimalFloatConstant)]
+          [function]
      // significand, exponent, approx
      syntax IntConstant ::= HexFloatConstant(String, Int, Float)
-          [klabel('HexFloatConstant)]
+          [function]
 
-     syntax Constant ::= LitU(K) [klabel('LitU)]
-     syntax Constant ::= LitL(K) [klabel('LitL)]
-     syntax Constant ::= LitF(K) [klabel('LitF)]
-     syntax Constant ::= LitLL(K) [klabel('LitLL)]
-     syntax Constant ::= LitUL(K) [klabel('LitUL)]
-     syntax Constant ::= LitULL(K) [klabel('LitULL)]
+     syntax Constant ::= LitU(K) [function]
+     syntax Constant ::= LitL(K) [function]
+     syntax Constant ::= LitF(K) [function]
+     syntax Constant ::= LitLL(K) [function]
+     syntax Constant ::= LitUL(K) [function]
+     syntax Constant ::= LitULL(K) [function]
 
-     syntax Constant ::= NoSuffix(K) [klabel('NoSuffix)]
+     syntax Constant ::= NoSuffix(K) [function]
 
-     syntax Constant ::= CharLiteral(Int) [klabel('CharLiteral)]
-     syntax Constant ::= WCharLiteral(Int) [klabel('WCharLiteral)]
-     syntax Constant ::= StringLiteral(String) [klabel('StringLiteral)]
-     syntax Constant ::= WStringLiteral(K) [klabel('WStringLiteral)]
+     syntax Constant ::= CharLiteral(Int) [function]
+     syntax Constant ::= WCharLiteral(Int) [function]
+     syntax Constant ::= StringLiteral(String) [function]
+     syntax Constant ::= WStringLiteral(K) [function]
 
      /*
      and init_expression =
