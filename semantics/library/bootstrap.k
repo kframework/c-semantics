@@ -17,7 +17,7 @@ module LIBC-BOOTSTRAP
 
      imports COMPAT-SYNTAX
 
-     rule rkludge(varg(K:K)) => varg(K) [structural, anywhere]
+     rule rkludge(varg(K:K)) => varg(K)
 
      context incSymbolic(HOLE => reval(HOLE))
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
