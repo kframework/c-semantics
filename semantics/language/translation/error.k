@@ -36,7 +36,7 @@ module C-TRANSLATION-ERROR
 
      // TODO(chathhorn): clean up.
      // dynamic exp
-     rule cast(t(N, T:SimpleType), emptyValue)
+     rule cast(t(N:Set, T:SimpleType), emptyValue)
 	   => castHold(t(N,T),emptyValue)
           when T =/=K void
 
@@ -46,7 +46,7 @@ module C-TRANSLATION-ERROR
           when T =/=K void
           [structural]
           
-     rule cast(t(N, T:K), skipval)
+     rule cast(t(N:Set, T:K), skipval)
 	   => castHold(t(N,T),skipval)
           when (T:K =/=K void)
 

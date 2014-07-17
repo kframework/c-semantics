@@ -7,7 +7,8 @@ module C-TRANSLATION-CONVERSION
                tv(V:CValue, t(S, incompleteStructType(X))))
 	  => castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
-          castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
+
+     rule castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
 	  => tv(V, t(S, structType(X, NBits, Info)))
 endmodule

@@ -238,7 +238,7 @@ module C-CONVERSION
           => tv(unknown, T')
           when bitSizeofType(T') >=Int bitSizeofType(T)
 
-     rule cast(T':Type, tv(unknown, T:Type))
+     rule cast(T':Type, tv(unknown, _:Type))
           => tv(trap, T')
 
 

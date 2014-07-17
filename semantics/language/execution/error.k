@@ -29,7 +29,7 @@ module C-EXECUTION-ERROR
           => <final-computation> K </final-computation>)
           (. => <error-cell> Msg </error-cell>)
 
-     rule cast(t(N, T:SimpleType), emptyValue)
+     rule cast(t(N:Set, T:SimpleType), emptyValue)
 	  => castHold(t(N, T:SimpleType), emptyValue)
           when T =/=K void
 
@@ -70,7 +70,7 @@ module C-EXECUTION-ERROR
      //      [structural]
           
 
-     rule cast(t(N, T:SimpleType), skipval)
+     rule cast(t(N:Set, T:SimpleType), skipval)
 	  => castHold(t(N, T:SimpleType), skipval)
           when (T =/=K void)
 
