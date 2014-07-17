@@ -29,9 +29,13 @@ module C-EXECUTION-ERROR
           => <final-computation> K </final-computation>)
           (. => <error-cell> Msg </error-cell>)
 
+     rule cast(t(N, T:SimpleType), emptyValue)
+	  => castHold(t(N, T:SimpleType), emptyValue)
+          when T =/=K void
+
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
-          cast(t(_, T:SimpleType), emptyValue)
+          castHold(t(_, T:SimpleType), emptyValue)
           when T =/=K void
           [structural]
          
@@ -65,9 +69,14 @@ module C-EXECUTION-ERROR
      //      when hasFloatType(T)
      //      [structural]
           
+
+     rule cast(t(N, T:SimpleType), skipval)
+	  => castHold(t(N, T:SimpleType), skipval)
+          when (T =/=K void)
+
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
-          cast(t(_, T:SimpleType), skipval)
+          castHold(t(_, T:SimpleType), skipval)
           when (T =/=K void)
           [structural]
           

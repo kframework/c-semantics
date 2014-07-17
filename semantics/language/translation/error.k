@@ -36,12 +36,20 @@ module C-TRANSLATION-ERROR
 
      // TODO(chathhorn): clean up.
      // dynamic exp
+     rule cast(t(N, T:SimpleType), emptyValue)
+	   => castHold(t(N,T),emptyValue)
+          when T =/=K void
+
      rule [err00001]: 
           (. => UNDEF("00001", "Casting empty value to type other than void.", "6.3.2.2:1"))
-          ~> cast(t(_, T:SimpleType), emptyValue)
+          ~> castHold(t(_, T:SimpleType), emptyValue)
           when T =/=K void
           [structural]
           
+     rule cast(t(N, T:K), skipval)
+	   => castHold(t(N,T),skipval)
+          when (T:K =/=K void)
+
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
           cast(t(_, T:K), skipval)
