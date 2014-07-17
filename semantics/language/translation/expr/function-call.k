@@ -9,9 +9,7 @@ module C-EXPR-FUNCTION-CALL
 
      imports COMPAT-SYNTAX
 
-     //TODO: keep kresult sort
-     syntax RVList ::= rvlist(List)
-     syntax KResult ::= RVList
+     syntax KResult ::= rvlist(List)
 
      syntax KItem ::= revalParams(K)
 		    | #revalParams(HeatList) [strict]

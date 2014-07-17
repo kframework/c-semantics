@@ -664,9 +664,8 @@ module C-SYNTAX
      | SINGLE_INIT of expression
      | COMPOUND_INIT of (initwhat * init_expression) list
      */
-     //TODO: keep kresult in sort
-     syntax NoInitExpr ::= "NoInit"
-     syntax KResult ::= NoInitExpr
+     
+     syntax KResult ::= "NoInit"
      syntax InitExpression ::= SingleInit(K)
           [klabel('SingleInit), hybrid, strict]
      // List
@@ -683,10 +682,8 @@ module C-SYNTAX
      | ATINDEX_INIT of expression * initwhat
      | ATINDEXRANGE_INIT of expression * expression
      */
-     //TODO: kepp kresult in sort
-     syntax InitWhat ::= "NextInit" | InFieldInit(CId, K)
+     syntax KResult ::= "NextInit" | InFieldInit(CId, K)
 				 | AtIndexInit(K, K) | AtIndexRangeInit(K, K)
-     syntax KResult ::= InitWhat
 
      /*
      and attribute = String * expression list
