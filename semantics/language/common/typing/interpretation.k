@@ -24,14 +24,14 @@ module C-TYPING-INTERPRETATION
      rule BitFieldType(T:Type, tv(N:CSize, _))
           => t(.Set, bitfieldType(T, N)) [structural]
      
-     syntax KLabel ::= makeFunctionType(List)
-     syntax KLabel ::= makeOldStyleFunctionType(List)
-     syntax KLabel ::= makePointerType(Set)
-     syntax KLabel ::= "makeIncompleteArrayType"
-     syntax KLabel ::= makeArrayType(CSize)
-     syntax Type ::= pushTypeDown(Type, KLabel) [function]
+     syntax KItem ::= makeFunctionType(List)
+     syntax KItem ::= makeOldStyleFunctionType(List)
+     syntax KItem ::= makePointerType(Set)
+     syntax KItem ::= "makeIncompleteArrayType"
+     syntax KItem ::= makeArrayType(CSize)
+     syntax Type ::= pushTypeDown(Type, K) [function]
 
-     syntax Type ::= applyTypeFunction(KLabel,Type) [function]
+     syntax Type ::= applyTypeFunction(K,Type) [function]
      
      rule ArrayType(T:Type, tv(N:Int, _:Type), _:K) 
           => pushTypeDown(T, makeArrayType(N)) 
@@ -78,29 +78,29 @@ module C-TYPING-INTERPRETATION
                makeOldStyleFunctionType(L)) 
           [structural]
      
-     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:K) 
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
-     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:K) 
           => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:K) 
           => t(S, pointerType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K) 
           => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K) 
           => applyTypeFunction(Lbl,t(S, structType(X, NBits, Info)))
-     rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:K) 
           => applyTypeFunction(Lbl,t(S, incompleteStructType(X)))
-     rule pushTypeDown(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K) 
           => applyTypeFunction(Lbl,t(S, unionType(X, NBits, Info)))
-     rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:K) 
           => applyTypeFunction(Lbl,t(S, incompleteUnionType(X)))
-     rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:K) 
           => applyTypeFunction(Lbl,t(S, enumType(X)))
      
-     rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:KLabel) 
+     rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:K) 
           => applyTypeFunction(Lbl,t(S S', T))
      
-     rule pushTypeDown(T:Type, Lbl:KLabel) => applyTypeFunction(Lbl,T) 
+     rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl,T) 
           when isBasicType(T)
      
      rule applyTypeFunction(makeArrayType(N:CSize), T:Type)
