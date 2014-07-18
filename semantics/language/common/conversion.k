@@ -175,37 +175,37 @@ module C-CONVERSION
      //           andBool (absInt(I) >Int (2 ^Int absInt(bitSizeofType(T'))))
      //           andBool hasIntegerType(T)
      //           andBool hasSignedIntegerType(innerType(T'))
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(t(Mods:Set, signed-char), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, signed-char),
      //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, signed-char)))), T)) 
      //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, signed-char)))))
      //           andBool hasIntegerType(T)
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(t(Mods:Set, short-int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, short-int), 
      //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, short-int)))), T)) 
      //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, short-int)))))
      //           andBool hasIntegerType(T)
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(t(Mods:Set, int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, int), 
      //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, int)))), T)) 
      //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, int)))))
      //           andBool hasIntegerType(T)
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(t(Mods:Set, long-int), tv(I:Int, T:Type)) 
      //      => cast(t(Mods, long-int), 
      //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, long-int)))), T)) 
      //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, long-int)))))
      //           andBool hasIntegerType(T)
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(t(Mods:Set, long-long-int), tv(I:Int, T:Type))
      //      => cast(t(Mods, long-long-int), 
      //           tv(I %Int (2 ^Int absInt(bitSizeofType(t(Mods, long-long-int)))), T)) 
      //      when (absInt(I) >Int (2 ^Int absInt(bitSizeofType(t(Mods, long-long-int)))))
      //           andBool hasIntegerType(T)
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(T':Type, tv(I:Int, T:Type))
      //      => tv(I +Int (2 ^Int absInt(bitSizeofType(T'))), T')
      //      when (I <Int min(T'))
@@ -213,7 +213,7 @@ module C-CONVERSION
      //           andBool hasSignedIntegerType(T')
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
-     //      [structural, anywhere]
+     //      [structural]
      // rule cast(T':Type, tv(I:Int, T:Type)) 
      //      => tv(I -Int (2 ^Int absInt(bitSizeofType(T'))), T')
      //      when (I >Int max(T'))
@@ -221,7 +221,7 @@ module C-CONVERSION
      //           andBool hasSignedIntegerType(T')
      //           andBool hasIntegerType(T)
      //           andBool notBool isBoolType (T')
-     //      [structural, anywhere]
+     //      [structural]
 
      rule cast(T':Type, tv(I:Int, T:Type)) => castHold(T':Type, tv(I:Int, T:Type))
           when hasSignedIntegerType(T') andBool hasIntegerType(T)

@@ -17,7 +17,7 @@ module C-SYNTAX
      rule hListToList(hItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
 
      // the rest are syntactic
-     syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
+     syntax C ::= AttributeWrapper(K, K) [function]
 
      syntax C ::= CId
 
@@ -64,6 +64,8 @@ module C-SYNTAX
      */
      syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
           [klabel('CabsLoc)]
+	  
+     syntax CabsLoc ::= filterCabsLoc(CabsLoc)
 
      /*
      type typeSpecifier = (* Merge all specifiers into one type *)

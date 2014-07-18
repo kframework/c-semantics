@@ -85,7 +85,7 @@ module C-PROCESS-LABEL
           
      rule [DefinitionLoc-computation]:
           <computation> CodeLoc(K:K, L:CabsLoc) => K ...</computation>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural] 
 
      // this rule is different than the dynamic one because we don't enforce T

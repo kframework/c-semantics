@@ -68,13 +68,17 @@ module C-DYNAMIC
      rule type(lv(_, T:Type)) => T
      rule type(lval(_, T:Type)) => T
 
-     rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc 
-          [structural, anywhere]
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0)) => UnknownCabsLoc 
+     rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int)) => CabsLoc(S,I1,I2,I3)
+		when S =/=String "cabs loc unknown"
+			orBool I1 =/=Int -10
+			orBool I2 =/=Int -10
+			orBool I3 =/=Int 0
 
      rule ExpressionLoc(K:K, _) => K
 
      rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural]
 
      rule _:KResult ~> discard => .
@@ -96,7 +100,7 @@ module C-DYNAMIC
      rule Pragma(_:K) => .
           [structural]
           
-     rule AttributeWrapper(K:K, _) => K [structural, anywhere]
+     rule AttributeWrapper(K:K, _) => K
      
      rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
 
