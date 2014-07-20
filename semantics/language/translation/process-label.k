@@ -31,7 +31,7 @@ module C-PROCESS-LABEL
           <curr-function> _ => F </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map> M:Map => M[map(.Map) <- F] </goto-map>
+          <goto-map> M:Map => M[F <- map(.Map)] </goto-map>
           <goto-map-calc>
                . => (<goto-calc>... 
                          <computation> 
@@ -287,10 +287,9 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>...
                F |-> map(
-                    (M:Map => M[
-                    gotoObject(Depth, BlockHistory, 
-                         (S ~> K ~> Tail), LoopStack, DeclStack) 
-                    <- Target]))
+                    (M:Map => M[Target  
+                    <- gotoObject(Depth, BlockHistory, 
+                         (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
           when notBool (Target in keys(M))
           [structural]
@@ -308,10 +307,9 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:CId |-> map(
-                    (M:Map => (M[case(CaseNum) <- genLabel(SwitchNum, Val)])[
-                         gotoObject(Depth, BlockHistory,
-                              (S ~> K ~> Tail), LoopStack, DeclStack)
-                              <- case(CaseNum)])) 
+                    (M:Map => (M[genLabel(SwitchNum, Val) <- case(CaseNum)])[
+                         case(CaseNum) <- gotoObject(Depth, BlockHistory,
+                              (S ~> K ~> Tail), LoopStack, DeclStack)])) 
           ...</goto-map>
           when notBool (genLabel(SwitchNum, Val) in keys(M))
           [structural] 
@@ -328,10 +326,9 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map>... 
                F:CId |-> map(
-                    (M:Map => M[
-                    gotoObject(Depth, BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack) 
-                    <- genLabel(SwitchNum, l('Default))])) 
+                    (M:Map => M[genLabel(SwitchNum, l('Default))
+                     <- gotoObject(Depth, BlockHistory,
+                         (S ~> K ~> Tail), LoopStack, DeclStack)])) 
           ...</goto-map>
           when notBool (genLabel(SwitchNum, l('Default)) in keys(M))
           [structural]

@@ -49,7 +49,7 @@ module LIBC-THREADS
           ...</thread>
           <genv> Env:Map </genv>
           <thread-status> 
-               Status:Map => Status[threadRunning <- ThId:Int]
+               Status:Map => Status[ThId:Int <- threadRunning]
           </thread-status>
           <br/>
           (. =>

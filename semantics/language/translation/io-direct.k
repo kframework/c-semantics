@@ -36,7 +36,7 @@ module C-IO-DIRECT
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
           <mem>... 
-               Base |-> object(_, Len:Int, (M:Map => M:Map[V <- Offset]))
+               Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]))
           ...</mem>
           when (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
@@ -84,7 +84,7 @@ module C-IO-DIRECT
           ...</k>
           <mem>... 
                Base |-> object(_, _, 
-                    M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
+                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
           ...</mem>
           when notBool (Offset in (keys(M)))
           [structural]

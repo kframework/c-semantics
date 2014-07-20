@@ -161,15 +161,15 @@ sub main {
      # should be empty.
 
      my @krun_args = (
-          '--output="binary"', 
-          "--output-file=\"$confOutTmp\"",
+          '--output "binary"', 
+          "--output-file \"$confOutTmp\"",
           "-d $TRANS_DEF",
           '-cOPTIONS="(.Set)"', 
      );
 
      my @krun_args_pretty = (
-          '--output="pretty"', 
-          "--output-file=\"$confOutPrettyTmp\"",
+          '--output "pretty"', 
+          "--output-file \"$confOutPrettyTmp\"",
           "-d $TRANS_DEF",
           '-cOPTIONS="(SetItem(DEBUG) .Set)"', 
      );
@@ -200,8 +200,8 @@ sub main {
      push (@krun_args, @file_args);
      push (@krun_args_pretty, @file_args);
 
-     my $cmd = "$KRUN --smt=none " . (join ' ', (@krun_args)) . " > $linkStdout 2>&1";
-     my $cmd_pretty = "$KRUN --smt=none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
+     my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $linkStdout 2>&1";
+     my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
 
      print $cmd . "\n" if ($args->{'-d'});
      system($cmd);
@@ -313,8 +313,8 @@ sub mergeObjs {
           my $obj2 = shift @objFiles;
 
           my @krun_args = (
-               '--output="binary"',
-               "--output-file=\"$obj1\"",
+               '--output "binary"',
+               "--output-file \"$obj1\"",
                '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
                '-cPGM=".K"',
                '--config-var-parser="kast --parser binary"',
@@ -323,7 +323,7 @@ sub mergeObjs {
                "-d $TRANS_DEF",
                );
 
-          my $cmd = "$KRUN --smt=none " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
+          my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
 
           print $cmd . "\n" if ($args->{'-d'});
           system($cmd);
@@ -377,8 +377,8 @@ sub compile {
      push(@tempFiles, $compileStdout);
 
      my @krun_args = (
-          '--output="binary"', 
-          "--output-file=\"$localOval\"",
+          '--output "binary"', 
+          "--output-file \"$localOval\"",
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
@@ -388,8 +388,8 @@ sub compile {
           );
 
      my @krun_args_pretty = (
-          '--output="pretty"', 
-          "--output-file=\"$localOvalPretty\"",
+          '--output "pretty"', 
+          "--output-file \"$localOvalPretty\"",
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
@@ -398,8 +398,8 @@ sub compile {
           $ppResult
           );
 
-     my $cmd = "$KRUN --smt=none " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
-     my $cmd_pretty = "$KRUN --smt=none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
+     my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
+     my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
 
      print $cmd . "\n" if ($args->{'-d'});
      system($cmd);

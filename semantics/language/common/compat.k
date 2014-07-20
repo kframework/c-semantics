@@ -151,6 +151,9 @@ module COMPAT
      rule listEqual(ListItem(A1:K) _:List,ListItem(A2:K) _:List) 
 	 => false
 	  when A1 =/=K A2
+ 
+     //TODO: might need to add it in the builtins
+     rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
 
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false

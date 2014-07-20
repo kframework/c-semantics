@@ -44,13 +44,13 @@ module C-ENV
      rule <k> addToGlobalEnv(X:CId, Base:SymBase) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id> 
-          <genv> G:Map => G[Base <- X] </genv>
-          <env> E:Map => E[Base <- X] </env>
+          <genv> G:Map => G[X <- Base] </genv>
+          <env> E:Map => E[X <- Base] </env>
           [structural] 
 
      syntax KItem ::= addToLocalEnv(K, SymBase)
      rule <k> addToLocalEnv(X:CId, Base:SymBase) => . ...</k>
-          <env> E:Map => E[Base <- X] </env>
+          <env> E:Map => E[X <- Base] </env>
           [structural] 
 
      rule <k> giveType(X:CId, T:Type) => 
@@ -64,7 +64,7 @@ module C-ENV
           
      syntax KItem ::= giveGlobalType(K, Type)
      rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[T <- X] </types>
+          <types> L:Map => L[X <- T] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
@@ -74,7 +74,7 @@ module C-ENV
 
      syntax KItem ::= giveLocalType(K, Type)
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[T <- X] </types>
+          <types> L:Map => L[X <- T] </types>
           [structural]   
 
 endmodule

@@ -113,7 +113,9 @@ module C-DECL-GLOBAL
           
      syntax KItem ::= checkDeclType(Type, K) [function]
                | checkParams(Type) [function]
-               | checkParam(Type) [function]
+	       | checkParamInList(List) [function]
+	       | checkParam(Type)
+               //TODO: might need this| checkParam(Type) [function]
      // Checks if the type is complete if there's an initializer.
                | checkComplete(Type, K) [function]
 
@@ -124,25 +126,27 @@ module C-DECL-GLOBAL
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
           when notBool isFunctionType(T)
 
-     rule (. => checkParam(T))
-          ~> checkParams(t(_, functionType(_, (ListItem(T:Type) => .List)  _)))
-     rule checkParams(t(_, functionType(_, .List))) => .
+     //TODO: might not need checkParamInList when we have K rewrite implemented properly 
+     rule checkParams(t(_, functionType(_, L:List))) => checkParamInList(L)
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 
-     rule checkParam(T:Type) => .
+     rule checkParamInList(.List) => .
+     rule checkParamInList(ListItem(T:Type) L:List) => checkParamInList(L)
           when (getStorageSpecifiers(T) ==K .Set)
                orBool (notBool isVoidType(T)
                     andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
 
-     rule (. => ERROR("DG5", "function parameter appears with storage "
-               +String "class other than register."))
+     rule checkParamInList(ListItem(T:Type) L:List) =>
+	  ERROR("DG5", "function parameter appears with storage "
+               +String "class other than register.")
           ~> checkParam(T:Type)
           when getStorageSpecifiers(T) =/=K .Set
                andBool getStorageSpecifiers(T) =/=K SetItem(Register)
                andBool notBool isVoidType(T)
           [structural] 
 
-     rule (. => ERROR("DG6", "void parameter appears with a storage class."))
+     rule checkParamInList(ListItem(T:Type) L:List) =>
+          ERROR("DG6", "void parameter appears with a storage class.")
           ~> checkParam(T:Type)
           when getStorageSpecifiers(T) =/=K .Set
                andBool isVoidType(T)
@@ -648,8 +652,8 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <gtypes> GTypes:Map => completeTagsInMap(X |-> Info, GTypes) </gtypes>
           <types> Types:Map => completeTagsInMap(X |-> Info, Types) </types>
-          <structs> Structs:Map => Structs[Info <- X] </structs>
-          <gstructs> GStructs:Map => GStructs[Info <- X] </gstructs>
+          <structs> Structs:Map => Structs[X <- Info] </structs>
+          <gstructs> GStructs:Map => GStructs[X <- Info] </gstructs>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
@@ -658,8 +662,8 @@ module C-DECL-GLOBAL
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs[Info <- X] </structs>
-          <gstructs> GStructs:Map => GStructs[Info <- X] </gstructs>
+          <structs> Structs:Map => Structs[X <- Info] </structs>
+          <gstructs> GStructs:Map => GStructs[X <- Info] </gstructs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           when notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
