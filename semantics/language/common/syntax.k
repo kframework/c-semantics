@@ -256,8 +256,9 @@ module C-SYNTAX
      syntax Name ::= Name(K, K) [avoid, klabel('Name)]
      syntax CId ::= "#NoName" // new
      syntax CId ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
-     syntax CId ::= Identifier(String) [klabel('Identifier)] // new
-
+     syntax CId ::= Identifier(String) // new
+     //might not need this
+     syntax CId ::= ToIdentifier(String) [function]
      /*
      (* A variable declarator ("name") with an initializer *)
      and init_name = name * init_expression

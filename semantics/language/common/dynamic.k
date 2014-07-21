@@ -102,7 +102,9 @@ module C-DYNAMIC
           
      rule AttributeWrapper(K:K, _) => K
      
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+     rule ToIdentifier("___missing_field_name") => #NoName
+     rule ToIdentifier(S:String) => Identifier(S) 
+	  when S =/=String "___missing_field_name"
 
      rule NothingExpression => emptyValue
 
