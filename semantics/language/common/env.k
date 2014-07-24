@@ -68,7 +68,7 @@ module C-ENV
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
-               G:Map => G[T <- X]
+               G:Map => G[X <- T]
           </gtypes>
           [structural]
 

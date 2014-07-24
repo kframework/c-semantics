@@ -61,7 +61,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)
 
-     syntax KItem ::= listToK(List)
+     syntax KItem ::= listToK(List) [function]
      
      syntax KItem ::= kpair(K, K)
 
@@ -206,8 +206,8 @@ module COMPAT
      rule reverseList(ListItem(K:K) L:List)
           => reverseList(L:List) ListItem(K:K)
 
-     rule listToK(ListItem(K:K) L:List) => K ~> listToK(L) [structural]
-     rule listToK(.List) => .K [structural]
+     rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
+     rule listToK(.List) => .K
 
      rule N:Int to N => .KList
      rule N:Int to N':Int => (N,, ((N +Int 1) to N'))
