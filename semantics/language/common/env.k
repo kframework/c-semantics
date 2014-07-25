@@ -37,7 +37,7 @@ module C-ENV
           [structural] 
      rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
           <curr-function> F:CId </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
           [structural] 
           
      syntax KItem ::= addToGlobalEnv(K, SymBase)

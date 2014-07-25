@@ -26,7 +26,7 @@ module C-EXPR-LOGICAL
           => sequencePoint ~> simplifyTruth(E)
           [structural]
      rule (V:TypedValue => simplifyTruth(V)) && _ 
-          when notBool isTruthValue(V)
+          requires notBool isTruthValue(V)
           [structural]   
                     
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
@@ -45,7 +45,7 @@ module C-EXPR-LOGICAL
      rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
           [structural]
      rule (V:TypedValue => simplifyTruth(V)) || _
-          when notBool isTruthValue(V)
+          requires notBool isTruthValue(V)
           [structural]
 
 endmodule

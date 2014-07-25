@@ -57,7 +57,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map> M:Map => M[X <- Base] </compound-lit-map>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
-          when notBool (X in keys(M))
+          requires notBool (X in keys(M))
           [structural]
 
      // This and the compound-lit-map is apparently needed to properly handle

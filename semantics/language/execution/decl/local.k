@@ -30,7 +30,7 @@ module C-DECL-LOCAL
           <external-types>...
                X |-> T':Type
           ...</external-types>
-          when isExternType(T) orBool isFunctionType(T)
+          requires isExternType(T) orBool isFunctionType(T)
           [structural] 
      rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Base)
@@ -45,17 +45,17 @@ module C-DECL-LOCAL
           <local-types>... 
                kpair(X, BlockNum) |-> T':Type
           ...</local-types>
-          when isStaticType(T)
+          requires isStaticType(T)
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, NoInit)
           => declareOnly(X, T)
-          when notBool isStaticType(T) 
+          requires notBool isStaticType(T) 
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => declareAndDefine(X, T, K)
-          when notBool isStaticType(T) 
+          requires notBool isStaticType(T) 
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
                andBool (K =/=K NoInit)
@@ -67,7 +67,7 @@ module C-DECL-LOCAL
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool notBool isRegisterType(T)
                andBool (notBool X in Vars)
           [structural]
@@ -76,7 +76,7 @@ module C-DECL-LOCAL
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool isRegisterType(T)
                andBool (notBool X in Vars)
           [structural]
@@ -84,7 +84,7 @@ module C-DECL-LOCAL
      // declared. This is seen if we goto earlier in the same block.
      rule <k> declareOnly(X:CId, T:Type) => . ...</k>
           <local-vars> Vars:List </local-vars>
-          when isCompleteType(T) andBool X in Vars
+          requires isCompleteType(T) andBool X in Vars
           [structural] 
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
@@ -93,7 +93,7 @@ module C-DECL-LOCAL
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          when notBool X in Vars
+          requires notBool X in Vars
                andBool notBool isRegisterType(T)
           [structural] 
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
@@ -101,7 +101,7 @@ module C-DECL-LOCAL
           ...</k>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          when notBool X in Vars
+          requires notBool X in Vars
                andBool isRegisterType(T)
           [structural] 
      // This happens when we jump before a variable declaration with an
@@ -110,7 +110,7 @@ module C-DECL-LOCAL
                => justInit(figureInit(X, T, K))
           ...</k>
           <local-vars> Vars:List </local-vars>
-		when X in Vars
+		requires X in Vars
           [structural] 
 
      syntax KItem ::= defineAndInit(CId, Type, K, SymBase) [strict(3)] 

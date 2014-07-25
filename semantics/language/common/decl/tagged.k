@@ -25,14 +25,14 @@ module C-DECL-TAGGED
      // note that struct defs might appear buried in a type.
      rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
-          when L =/=K .List
+          requires L =/=K .List
           [structural]
      rule (. => UNDEF("CDT1", "Structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
-          when L =/=K .List
+          requires L =/=K .List
           [structural]
      rule (. => UNDEF("CDT2", "Unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
@@ -43,7 +43,7 @@ module C-DECL-TAGGED
                incompleteToFlexibleArrayMember(L),
                0, .Map, .Map,
                incompleteToFlexibleArrayMember(L))
-          when L =/=K .List
+          requires L =/=K .List
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
@@ -65,14 +65,14 @@ module C-DECL-TAGGED
           ListItem(typedDeclaration(T:Type, X:CId)) 
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
-          when isCompleteType(T)
+          requires isCompleteType(T)
      rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(Mods:Set, incompleteArrayType(T:Type)), X:CId)))
           => ListItem(typedDeclaration(t(Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
-          when L =/=K .List
+          requires L =/=K .List
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
@@ -98,7 +98,7 @@ module C-DECL-TAGGED
                => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> F:CId </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
           [structural]        
 
 endmodule

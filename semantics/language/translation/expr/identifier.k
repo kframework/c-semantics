@@ -9,7 +9,7 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => lv(lnew(Base), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
-          when notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
                andBool Base =/=K symVal
           [structural]
      rule <k> X:CId => lv(symVal, T) ...</k>
@@ -23,7 +23,7 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals>... X |-> _ ...</internals>
-          when isLinkerLoc(Base)
+          requires isLinkerLoc(Base)
           [structural]
 
      // We need to record uses of external symbols because if an external
@@ -35,15 +35,15 @@ module C-EXPR-IDENTIFIER
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
           <external-uses>... (.Set => SetItem(X)) </external-uses>
-          when isLinkerLoc(Base)
+          requires isLinkerLoc(Base)
           [structural]
 
      rule <k> instantiate(Loc:SymLoc, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
-          when notBool isConstType(T)
+          requires notBool isConstType(T)
                orBool notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)
      rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
-          when isConstType(T)
+          requires isConstType(T)
                andBool isStaticDuration(Loc) 
                andBool notBool isLinkerLoc(Loc)
 endmodule

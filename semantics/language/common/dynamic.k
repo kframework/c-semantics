@@ -70,7 +70,7 @@ module C-DYNAMIC
 
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0)) => UnknownCabsLoc 
      rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int)) => CabsLoc(S,I1,I2,I3)
-		when S =/=String "cabs loc unknown"
+		requires S =/=String "cabs loc unknown"
 			orBool I1 =/=Int -10
 			orBool I2 =/=Int -10
 			orBool I3 =/=Int 0
@@ -104,7 +104,7 @@ module C-DYNAMIC
      
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S) 
-	  when S =/=String "___missing_field_name"
+	  requires S =/=String "___missing_field_name"
 
      rule NothingExpression => emptyValue
 
@@ -117,7 +117,7 @@ module C-DYNAMIC
 
      rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
           <global> (_:Bag => G) </global>
-          when (G =/=Bag .Bag)
+          requires (G =/=Bag .Bag)
           [structural]
 
      rule loadObj(.Bag) => .K

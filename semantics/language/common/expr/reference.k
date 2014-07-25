@@ -31,14 +31,14 @@ module C-COMMON-EXPR-REFERENCE
      rule &(lval(Loc:SymLoc, T:Type))
           => tv(addProv(fromArray(0, 2 *Int byteSizeofType(T)), Loc),
                t(.Set, pointerType(T)))
-          when notBool isRegisterLoc(Loc)
+          requires notBool isRegisterLoc(Loc)
           [structural]
      rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(tv(_, _))
           [structural]
      rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
           ~> &(lval(Loc:SymLoc, _))
-          when isRegisterLoc(Loc)
+          requires isRegisterLoc(Loc)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
@@ -52,13 +52,13 @@ module C-COMMON-EXPR-REFERENCE
      rule *(tv(Loc:SymLoc, T:Type))
           => checkRestrict(Loc, T)
           ~> lv(stripFromArray(Loc), innerType(T))
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
           [structural]
      rule (. => UNDEF("CER3", "Dereferencing a null pointer.", "6.5.3.2:4"))
           ~> *(tv(Loc:SymLoc, _))
-          when Loc ==K NullPointer
+          requires Loc ==K NullPointer
           [structural]
 endmodule
 

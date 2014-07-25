@@ -104,7 +104,7 @@ module LIBC-THREADS
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
-          when notBool (Loc in keys(M))
+          requires notBool (Loc in keys(M))
                andBool (Type ==Int cfg:mtxPlain) 
           [structural]
 
@@ -117,7 +117,7 @@ module LIBC-THREADS
           <mutexes>... Loc |-> Type:Int ...</mutexes>
           <glocks> B:List (.List => ListItem(Loc)) </glocks>
           <locks> .List => ListItem(Loc) ...</locks>
-          when (notBool (Loc in B))
+          requires (notBool (Loc in B))
                andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
 
@@ -130,7 +130,7 @@ module LIBC-THREADS
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
           <glocks> M:List => removeListItem(M,Loc) </glocks>
           <locks> M':List => removeListItem(M',Loc) </locks>
-          when Type:Int ==Int cfg:mtxPlain
+          requires Type:Int ==Int cfg:mtxPlain
           [ndthread]
 
 endmodule

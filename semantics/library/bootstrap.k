@@ -33,13 +33,13 @@ module LIBC-BOOTSTRAP
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
-          when variadic in getParams(T)
+          requires variadic in getParams(T)
           [structural]
      rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(P))) ...</k>
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
-          when notBool variadic in getParams(T)
+          requires notBool variadic in getParams(T)
           [structural]
 
      syntax List ::= makeVarArgs(List) [function]
@@ -48,10 +48,10 @@ module LIBC-BOOTSTRAP
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
      rule makeVarArgsAux(L:List ListItem(X:CId)) 
 		=> makeVarArgsAux(L)
-		when X =/=K vararg(0)
+		requires X =/=K vararg(0)
      rule makeVarArgs(L:List) => makeVarArgsAux(L)
-		when vararg(0) in L
+		requires vararg(0) in L
      rule makeVarArgs(L:List ListItem(X:CId))
           => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
-          when notBool vararg(0) in (L ListItem(X))
+          requires notBool vararg(0) in (L ListItem(X))
 endmodule

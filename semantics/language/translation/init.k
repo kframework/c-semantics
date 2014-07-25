@@ -31,7 +31,7 @@ module C-TRANSLATION-INIT
                ~> printSuccess("Translation successful!\n"))
           ...</k>
           <options> Opts:Set </options>
-          when notBool (NOLINK in Opts)
+          requires notBool (NOLINK in Opts)
 
      //TODO: write to stdout does not work
      rule <k> link => printSuccess("Translation successful!\n") ...</k>
@@ -41,7 +41,7 @@ module C-TRANSLATION-INIT
                <k> cleanup </k>
                <options> Opts:Set </options>
           ...</T> => .Bag)
-          when notBool (DEBUG in Opts)
+          requires notBool (DEBUG in Opts)
           [structural]
           
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
@@ -90,12 +90,12 @@ module C-TRANSLATION-INIT
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          when notBool (B in keys(Defs))
+          requires notBool (B in keys(Defs))
           
      rule <k> (addBuiltin(B:CId,_:Type) => . ) ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (B in keys(Defs))
+          requires (B in keys(Defs))
                orBool (notBool (B in keys(Types)))
 
      

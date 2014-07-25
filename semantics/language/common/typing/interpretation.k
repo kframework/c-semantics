@@ -35,11 +35,11 @@ module C-TYPING-INTERPRETATION
      
      rule ArrayType(T:Type, tv(N:Int, _:Type), _:K) 
           => pushTypeDown(T, makeArrayType(N)) 
-          when N >Int 0
+          requires N >Int 0
           [structural]
      rule ArrayType(T:Type, tv(N:CSize, _), _:K) 
           => pushTypeDown(T, makeArrayType(N)) 
-          when isInt(N:CSize) =/=K true // For possible symbolic values.
+          requires isInt(N:CSize) =/=K true // For possible symbolic values.
           [structural]
      rule ArrayType(T:Type, emptyValue, _:K)
           => pushTypeDown(T, makeIncompleteArrayType)
@@ -49,7 +49,7 @@ module C-TYPING-INTERPRETATION
           [structural]
      rule (. => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
           ~> ArrayType(_:K, tv(Len:Int, _), _:K)
-          when Len <=Int 0
+          requires Len <=Int 0
           [structural]
      
      rule PointerType(Specifier(list(Quals:List)), T:Type)
@@ -101,7 +101,7 @@ module C-TYPING-INTERPRETATION
           => applyTypeFunction(Lbl,t(S S', T))
      
      rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl,T) 
-          when isBasicType(T)
+          requires isBasicType(T)
      
      rule applyTypeFunction(makeArrayType(N:CSize), T:Type)
           => t(getStorageSpecifiers(T),
@@ -131,13 +131,13 @@ module C-TYPING-INTERPRETATION
                (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
           => ListItem(typedDeclaration(T, X))
                giveNamesToArgs-aux(N, L)
-          when X =/=K #NoName
+          requires X =/=K #NoName
           [structural]
      rule giveNamesToArgs-aux(N:Int, 
                (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
           => ListItem(typedDeclaration(T, #NoName(N))) 
                giveNamesToArgs-aux(N +Int 1, L)
-          when X ==K #NoName
+          requires X ==K #NoName
           [structural]
      rule giveNamesToArgs-aux(_, ListItem(variadic))
           => ListItem(variadic)
@@ -167,7 +167,7 @@ module C-TYPING-INTERPRETATION
           [structural] 
      
      rule extractActualType(T:Type) => T
-          when isBasicType(T)
+          requires isBasicType(T)
      rule extractActualType(t(S:Set, enumType(X:CId))) 
           => t(S, enumType(X))
      rule extractActualType(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo))) 

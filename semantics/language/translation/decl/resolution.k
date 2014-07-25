@@ -51,7 +51,7 @@ module C-DECL-RESOLUTION
 
      rule allocateIncompleteTentative(_:CId,
 	     declState(_, _, State:DeclState, Tentative:Bool)) => .
-          when notBool Tentative
+          requires notBool Tentative
                orBool (State =/=K declared)
           [structural]
 
@@ -84,7 +84,7 @@ module C-DECL-RESOLUTION
           <linkings>...
                (.Map => Base |-> Base')
           ...</linkings>
-          when isLinkerLoc(Base)
+          requires isLinkerLoc(Base)
 
      rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
@@ -97,7 +97,7 @@ module C-DECL-RESOLUTION
           <genv>...
                X |-> Base
           ...</genv>
-          when notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
 
      rule <k> (resolveReference(X:CId) => . ) ...</k>
           <external-decls>...
@@ -109,7 +109,7 @@ module C-DECL-RESOLUTION
           <external-types>...
                X |-> _
           ...</external-types>
-          when X =/=K Identifier("main")
+          requires X =/=K Identifier("main")
 
      rule <k> (resolveReference(X:CId) => ERROR("DR1", 
                     "no definition for symbol with external linkage: " 
@@ -124,7 +124,7 @@ module C-DECL-RESOLUTION
           <external-types>
                Types:Map
           </external-types>
-          when notBool (X in keys(Defs))
+          requires notBool (X in keys(Defs))
                orBool notBool (X in keys(Types))
 
      // Remember which TU has the definition of main.

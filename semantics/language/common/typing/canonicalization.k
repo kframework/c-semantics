@@ -51,7 +51,7 @@ module C-TYPING-CANONICALIZATION
      // specifier, modifier, storage
      rule canonicalizeType-aux((_:List (ListItem(T:K) => .List)), _:K, 
                (_:List (.List => ListItem(T))), _:List, _:List)
-          when false
+          requires false
                orBool (T ==K Void)
                orBool (T ==K Bool)
                orBool (T ==K Char)
@@ -76,7 +76,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(_:List (ListItem(T:K) => .List), _:K, _:List, _:List, 
                (_:List (.List => ListItem(T))))
-          when (T ==K Extern)
+          requires (T ==K Extern)
                orBool (T ==K Static)
                orBool (T ==K Const)
                orBool (T ==K Volatile)
@@ -90,7 +90,7 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeType-aux(.List, 
                t((.Set => SetItem(Q)) _:Set, _:SimpleType),
                .List, .List, (_:List (ListItem(Q:K) => .List)))
-          when (Q ==K Extern)
+          requires (Q ==K Extern)
                orBool (Q ==K Static)
                orBool (Q ==K Volatile)
                orBool (Q ==K Atomic)
@@ -101,7 +101,7 @@ module C-TYPING-CANONICALIZATION
           [structural]
      rule canonicalizeType-aux(.List, (t((.Set => SetItem(Const)) _:Set, _:SimpleType)),
                .List, .List, (_:List (ListItem(Q:K) => .List)))
-          when Q ==K Const
+          requires Q ==K Const
           [structural]
           
      /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
@@ -118,7 +118,7 @@ module C-TYPING-CANONICALIZATION
                => t(.Set, typedefType(X, T))
           ...</k>
           <types>... typedef(X) |-> T:Type ...</types>
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
           
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
@@ -127,7 +127,7 @@ module C-TYPING-CANONICALIZATION
           <structs>...
                X |-> Info:FieldInfo
           ...</structs>
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
                => t(.Set, incompleteStructType(X))
@@ -137,7 +137,7 @@ module C-TYPING-CANONICALIZATION
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
-          when (X =/=K Identifier(""))
+          requires (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
@@ -145,13 +145,13 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
-          when (X =/=K Identifier(""))
+          requires (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
      rule canonicalizeSpecifier(ListItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
                => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
@@ -159,7 +159,7 @@ module C-TYPING-CANONICALIZATION
           <structs>...
                X |-> Info:FieldInfo
           ...</structs>
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
                => t(.Set, incompleteUnionType(X))
@@ -169,7 +169,7 @@ module C-TYPING-CANONICALIZATION
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
-          when (X =/=K Identifier(""))
+          requires (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
@@ -177,14 +177,14 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
-          when (X =/=K Identifier(""))
+          requires (X =/=K Identifier(""))
                andBool notBool (X in keys(Structs))
                andBool (F =/=K file-scope)
           [structural]
           
      rule canonicalizeSpecifier(ListItem(EnumDef(X:CId, L:K)))
           => EnumDef(X, L) ~> t(.Set, enumType(X))
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
      
      rule <k> canonicalizeSpecifier(ListItem(
@@ -212,12 +212,12 @@ module C-TYPING-CANONICALIZATION
      rule (.K => StructDef(X, L))
           ~> canonicalizeSpecifier(ListItem(
                StructDef(X:CId, L:K) => StructRef(X)))
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
      rule (.K => UnionDef(X, L))
           ~> canonicalizeSpecifier(ListItem(
                UnionDef(X:CId, L:K) => UnionRef(X)))
-          when X =/=K Identifier("")
+          requires X =/=K Identifier("")
           [structural]
 
      // FIXME what good is this_
@@ -230,7 +230,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)
-          when B =/=K .List
+          requires B =/=K .List
           [structural]
           
      rule canonicalizeType-aux(.List, T:Type, .List, .List, .List) => T
@@ -242,10 +242,10 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Char)) => t(.Set, char)
      rule canonicalizeSpecifier(L:List)
           => t(.Set, signed-char)
-	  when '_==MSet_(L ,, ListItem(Signed) ListItem(Char))
+	  requires '_==MSet_(L ,, ListItem(Signed) ListItem(Char))
      rule canonicalizeSpecifier(L:List )
           => t(.Set, unsigned-char)
-	  when '_==MSet_(L ,, ListItem(Unsigned) ListItem(Char))
+	  requires '_==MSet_(L ,, ListItem(Unsigned) ListItem(Char))
      
      rule ListItem(atomic(_)) => .List [structural, anywhere]
      rule ListItem(alignas(_)) => .List [structural, anywhere]
@@ -256,19 +256,19 @@ module C-TYPING-CANONICALIZATION
           => t(.Set, float)
      rule canonicalizeSpecifier(L:List)
           => t(.Set, long-double)
-	  when '_==MSet_(L ,, ListItem(Long) ListItem(Double))
+	  requires '_==MSet_(L ,, ListItem(Long) ListItem(Double))
 
      rule canonicalizeSpecifier(L:List)
           => t(SetItem(Complex), double)
-	  when '_==MSet_(L ,, ListItem(Complex) ListItem(Double))
+	  requires '_==MSet_(L ,, ListItem(Complex) ListItem(Double))
 
      rule canonicalizeSpecifier(L:List)
           => t(SetItem(Complex), float)
-	  when '_==MSet_(L ,, ListItem(Complex) ListItem(Float))
+	  requires '_==MSet_(L ,, ListItem(Complex) ListItem(Float))
 
      rule canonicalizeSpecifier(L:List)
           => t(SetItem(Complex), long-double)
-	  when '_==MSet_(L ,, ListItem(Complex) ListItem(Long) ListItem(Double))
+	  requires '_==MSet_(L ,, ListItem(Complex) ListItem(Long) ListItem(Double))
 
      rule canonicalizeSpecifier(ListItem(Imaginary) ListItem(Double))
           => t(SetItem(Imaginary), double)
@@ -278,43 +278,43 @@ module C-TYPING-CANONICALIZATION
           => t(SetItem(Imaginary), long-double)
 
      rule canonicalizeSpecifier(B:List) => t(.Set, short-int)
-          when ('_==MSet_(B:List ,, ListItem(Short)))
+          requires ('_==MSet_(B:List ,, ListItem(Short)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Short)))
                orBool ('_==MSet_(B:List ,, ListItem(Short) ListItem(Int)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Short) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-short-int)
-          when ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Short)))
+          requires ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Short)))
                orBool ('_==MSet_(B ,, ListItem(Unsigned) ListItem(Short) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, int)
-          when ('_==MSet_(B:List ,, ListItem(Int)))
+          requires ('_==MSet_(B:List ,, ListItem(Int)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-int)
-          when ('_==MSet_(B:List ,, ListItem(Unsigned)))
+          requires ('_==MSet_(B:List ,, ListItem(Unsigned)))
                orBool ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, long-int)
-          when ('_==MSet_(B:List ,, ListItem(Long)))
+          requires ('_==MSet_(B:List ,, ListItem(Long)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long)))
                orBool ('_==MSet_(B:List ,, ListItem(Long) ListItem(Int)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-long-int)
-          when ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long)))
+          requires ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long)))
                orBool ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, long-long-int)
-          when ('_==MSet_(B:List ,, ListItem(Long) ListItem(Long)))
+          requires ('_==MSet_(B:List ,, ListItem(Long) ListItem(Long)))
                orBool ('_==MSet_(B:List ,, ListItem(Signed) ListItem(Long) ListItem(Long)))
                orBool ('_==MSet_(B:List ,, ListItem(Long) ListItem(Long) ListItem(Int)))
                orBool ('_==MSet_(B:List ,,
                     ListItem(Signed) ListItem(Long) ListItem(Long) ListItem(Int)))
           [structural]
      rule canonicalizeSpecifier(B:List) => t(.Set, unsigned-long-long-int)
-          when ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long) ListItem(Long)))
+          requires ('_==MSet_(B:List ,, ListItem(Unsigned) ListItem(Long) ListItem(Long)))
                orBool ('_==MSet_(B:List ,,
                     ListItem(Unsigned) ListItem(Long) ListItem(Long) ListItem(Int)))
           [structural]

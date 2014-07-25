@@ -59,7 +59,7 @@ module C-PROCESS-LABEL
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
-          when M =/=K .Map
+          requires M =/=K .Map
           [structural] 
 
      syntax KItem ::= endBlockForGoto(Int)
@@ -80,7 +80,7 @@ module C-PROCESS-LABEL
           <goto-block-history>
                (ListItem(_:Int) => .List) ListItem(_:Int)
           ...</goto-block-history>
-          when I:Int >Int 0
+          requires I:Int >Int 0
           [structural] 
           
      rule [DefinitionLoc-computation]:
@@ -132,7 +132,7 @@ module C-PROCESS-LABEL
           
      rule [compute-label-ignore-non-statement]:
           <computation> L:KLabel(_:KList) => .K ...</computation>
-          when false
+          requires false
                orBool (L ==KLabel 'Nop)
                orBool (L ==KLabel 'Computation)
                orBool (L ==KLabel 'Break)
@@ -291,7 +291,7 @@ module C-PROCESS-LABEL
                     <- gotoObject(Depth, BlockHistory, 
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
-          when notBool (Target in keys(M))
+          requires notBool (Target in keys(M))
           [structural]
           
      rule <computation> 
@@ -311,7 +311,7 @@ module C-PROCESS-LABEL
                          case(CaseNum) <- gotoObject(Depth, BlockHistory,
                               (S ~> K ~> Tail), LoopStack, DeclStack)])) 
           ...</goto-map>
-          when notBool (genLabel(SwitchNum, Val) in keys(M))
+          requires notBool (genLabel(SwitchNum, Val) in keys(M))
           [structural] 
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
@@ -330,7 +330,7 @@ module C-PROCESS-LABEL
                      <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)])) 
           ...</goto-map>
-          when notBool (genLabel(SwitchNum, l('Default)) in keys(M))
+          requires notBool (genLabel(SwitchNum, l('Default)) in keys(M))
           [structural]
 endmodule
  

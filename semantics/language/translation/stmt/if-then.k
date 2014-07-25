@@ -13,7 +13,7 @@ module C-STMT-IF-THEN
           => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
 
      rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
-          when notBool isTruthValue(V)
+          requires notBool isTruthValue(V)
           [structural]
 
      // IfThenElse might also be handling the ternary operator (?:) and so
@@ -32,6 +32,7 @@ module C-STMT-IF-THEN
           => maybeSymVal(checkResultInK(S1), checkResultInK(S2))
           [structural]
 
+     //add checkResultInK in order to aovid putting K Sequence in strict position
      syntax KItem ::= maybeSymVal(K, K) [strict]
                 | "checkResult"
 		| checkResultInK(K)

@@ -86,7 +86,7 @@ module C-BITSIZE
      rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
           => N
      rule bitSizeofType(T:Type) => numBytes(T) *Int cfg:bitsPerByte
-          when isBasicType(T)
+          requires isBasicType(T)
      rule bitSizeofType(typedDeclaration(T:Type, _)) 
           => bitSizeofType(T)
 
@@ -103,10 +103,10 @@ module C-BITSIZE
      //- derived
      syntax Int ::= bitsToBytes(CSize) [function]
      rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
-          when cfg:bitsPerByte dividesInt N
+          requires cfg:bitsPerByte dividesInt N
      rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1) 
-          when notBool cfg:bitsPerByte dividesInt N
+          requires notBool cfg:bitsPerByte dividesInt N
      rule bitsToBytes(N:CSize) => N // Pass through sym values.
-          when isInt(N:CSize) =/=K true
+          requires isInt(N:CSize) =/=K true
 
 endmodule

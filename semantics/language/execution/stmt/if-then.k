@@ -33,7 +33,7 @@ module C-STMT-IF-THEN
           IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
      rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
-          when notBool isTruthValue(V)
+          requires notBool isTruthValue(V)
           [structural]
 endmodule
 

@@ -23,7 +23,7 @@ module LIBC-STRING
      
      rule (tv(I:Int, T:Type) => write(Dest, I, T))
           ~> strcpy((Dest:SymLoc => Dest +bytes 1), _, _)
-          when I =/=Int 0
+          requires I =/=Int 0
           [structural]
      rule tv(0, T:Type) 
           ~> strcpy(Dest:SymLoc, _, Orig:SymLoc)

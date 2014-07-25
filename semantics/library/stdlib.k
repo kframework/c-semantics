@@ -16,7 +16,7 @@ module LIBC-STDLIB
      rule printString(S:String)
           => writeToFD(1, ordChar(firstChar(S:String)))
                ~> printString(butFirstChar(S:String))
-          when lengthString(S:String) >Int 0
+          requires lengthString(S:String) >Int 0
           [structural]
      rule printString("") => writeToFD(1, 10)
           [structural]

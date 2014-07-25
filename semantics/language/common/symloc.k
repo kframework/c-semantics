@@ -242,13 +242,13 @@ module C-SYMLOC
           => tv(addProv(prov(From), To), T)
           [structural]
      rule transferProv(_:SymLoc, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V:CValue) =/=K true
+          requires isSymLoc(V:CValue) =/=K true
           [structural]
      rule transferProv(Prov:Set, tv(Loc:SymLoc, T:Type))
           => tv(addProv(Prov, Loc), T)
           [structural]
      rule transferProv(_:Set, tv(V:CValue, T:Type)) => tv(V, T)
-          when isSymLoc(V:CValue) =/=K true
+          requires isSymLoc(V:CValue) =/=K true
           [structural]
 
      rule transferProv(From:SymLoc, lv(To:SymLoc, T:Type))
@@ -274,7 +274,7 @@ module C-SYMLOC
      rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
      rule #hasUnionMarker(K:K, loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
 	  => #hasUnionMarker(K', loc(SB,I,S))
-	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
+	  requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
 
      rule isFromArray(Loc:SymLoc) => #isFromArray(.K,Loc) ==K true
 
@@ -282,21 +282,21 @@ module C-SYMLOC
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
      rule #isFromArray(K:K,loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
 	  => #isFromArray(K', loc(SB,I,S))
-	  when (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
+	  requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
      syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
      rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
 	  => loc(SB,I,SetItem(K) S)
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
      rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
 	  => loc(SB,I,S)
-	  when getKLabel(K) ==KLabel 'fromArray
+	  requires getKLabel(K) ==KLabel 'fromArray
      rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
 	  => #stripFromArray(SB, I,K',S':Set,SetItem(K) S:Set)
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
      rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
 	  => #stripFromArray(SB, I,K',S':Set,S:Set)
-	  when getKLabel(K) ==KLabel 'fromArray
+	  requires getKLabel(K) ==KLabel 'fromArray
 
      rule stripFromArray(loc(SB:SymBase, I:Int)) => loc(SB,I)
      rule stripFromArray(NullPointer) => NullPointer

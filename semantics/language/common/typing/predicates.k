@@ -16,7 +16,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
-          when (getQualifiers(T) ==K getQualifiers(T'))
+          requires (getQualifiers(T) ==K getQualifiers(T'))
                andBool (simpleType(T) ==K simpleType(T'))
      rule #typesEq(
                typedDeclaration(T:Type, X:CId),
@@ -26,59 +26,59 @@ module C-TYPING-PREDICATES
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
           => #typesEq(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, arrayType(T:Type, Len:Int)),
                t(Mods':Set, arrayType(T':Type, Len)))
           => #typesEq(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, incompleteArrayType(T':Type)))
           => #typesEq(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
           => #typesEq(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, structType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, incompleteStructType(X:CId)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, incompleteStructType(X:CId)),
                t(Mods':Set, structType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, unionType(X:CId, _, _)),
                t(Mods':Set, unionType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, unionType(X:CId, _, _)),
                t(Mods':Set, incompleteUnionType(X:CId)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, incompleteUnionType(X:CId)),
                t(Mods':Set, unionType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
 
      rule isBasicType(T:Type) => #isBasic(T) ==K true
 
      syntax Bool ::= "#isBasic" "(" Type ")" [function]
 
      rule #isBasic(t(_, T:SimpleType)) => true
-          when T in basicTypes
+          requires T in basicTypes
      rule #isBasic(t(_, enumType(_))) => true
 
      syntax Set ::= "basicTypes" [function]
@@ -138,12 +138,12 @@ module C-TYPING-PREDICATES
      rule #hasUnsignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasUnsignedInteger(T)
      rule #hasUnsignedInteger(t(_, T:SimpleType)) => true
-          when T in unsignedIntegerTypes
+          requires T in unsignedIntegerTypes
      rule #hasUnsignedInteger(typedDeclaration(T:Type, _))
           => #hasUnsignedInteger(T)
 
      rule #hasSignedInteger(t(_, T:SimpleType)) => true
-          when T in signedIntegerTypes
+          requires T in signedIntegerTypes
      rule #hasSignedInteger(t(_, enumType(_))) => true
      rule #hasSignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasSignedInteger(T)
@@ -188,7 +188,7 @@ module C-TYPING-PREDICATES
 
      rule isTypedDeclaration(typedDeclaration(_, _)) => true
      rule isTypedDeclaration(T:Type) => false
-          when getKLabel(T) =/=KLabel 'typedDeclaration
+          requires getKLabel(T) =/=KLabel 'typedDeclaration
 
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.
@@ -226,11 +226,11 @@ module C-TYPING-PREDICATES
                    | "#isFunctionPointer" "(" Type ")" [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
-          when T:SimpleType in floatTypes 
+          requires T:SimpleType in floatTypes 
      rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
 
      rule #hasChar(t(_, T:SimpleType)) => true
-          when T:SimpleType in charTypes
+          requires T:SimpleType in charTypes
      rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
 
      rule #isUChar(t(_, unsigned-char)) => true

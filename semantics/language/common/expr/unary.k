@@ -14,7 +14,7 @@ module C-COMMON-EXPR-UNARY
      }*/       
      rule [unaryPlus-int]: 
           + tv(I:Int, T:Type) => arithInterpret(T, I)
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
      rule [unaryPlus-float]: 
           + tv(F:Float, T:Type) => tv(F, T)
@@ -27,7 +27,7 @@ module C-COMMON-EXPR-UNARY
      }*/
      rule [unaryMinus-int]: 
           - tv(I:Int, T:Type) => arithInterpret(T, 0 -Int I)
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
      rule [unaryMinus-float]: 
           - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F)
@@ -43,7 +43,7 @@ module C-COMMON-EXPR-UNARY
      type minus \cinline{E}.
      }*/
      rule ~ tv(I:Bits, T:Type) => arithInterpret(T, ~Bits I)
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{

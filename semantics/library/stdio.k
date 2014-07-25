@@ -38,7 +38,7 @@ module LIBC-STDIO
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
           => getString-aux(Loc, S +String chrChar(N))
-          when N =/=Int 0
+          requires N =/=Int 0
           [structural]
      rule [getString-done]:
           tv(0, _) ~> getString-aux(_, S:String)
@@ -87,7 +87,7 @@ module LIBC-STDIO
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T),
                varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
-          when value(Len) ==Int value(Len')
+          requires value(Len) ==Int value(Len')
           [structural]
 
      rule [putchar]:
@@ -209,7 +209,7 @@ module LIBC-STDIO
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, Len -Int 1))
                ~> tv(lengthString(S), t(.Set, int))
-          when Len >Int 0
+          requires Len >Int 0
           [structural]
      rule [snprintf-done-0]:
           snprintf(formattedResult(S:String), _, 0)
@@ -264,7 +264,7 @@ module LIBC-STDIO
           <format> ListItem(S:String) => .List ...</format>
           <format-result>... .List => ListItem(S:String) </format-result>
           <format-state> "normal" </format-state>
-          when S:String =/=String "%"
+          requires S:String =/=String "%"
           [structural]
 
      rule [format-reset]:
@@ -379,7 +379,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-state> "%" </format-state>
-          when ordChar(C:String) >Int ordChar("0")
+          requires ordChar(C:String) >Int ordChar("0")
                andBool ordChar(C:String) <=Int ordChar("9")
           [structural]
 
@@ -533,7 +533,7 @@ module LIBC-STDIO
           ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-state> "%" => "%d" </format-state>
-          when S:String ==String "d" orBool S:String ==String "i"
+          requires S:String ==String "d" orBool S:String ==String "i"
           [structural]
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>

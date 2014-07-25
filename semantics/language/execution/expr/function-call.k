@@ -56,12 +56,12 @@ module C-EXPR-FUNCTION-CALL
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
 
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
-          when isAllKResultInHeatList(HL:HeatList)
+          requires isAllKResultInHeatList(HL:HeatList)
           [structural]     
      
      /*TODO: might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          when all(L, isKResult)
+          requires all(L, isKResult)
           [structural]
      */
 
@@ -76,7 +76,7 @@ module C-EXPR-FUNCTION-CALL
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
           <functions>... Base |-> Fun:KResult ...</functions>
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
      // Resolve a linker loc to a real loc.
      rule <k> Call'(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
@@ -93,12 +93,12 @@ module C-EXPR-FUNCTION-CALL
                     CallT:Type, L:List) 
                => application'(Tu, functionObject(X, Params, DefT, Blk), L)
           ...</k>
-          when areCompatible(CallT, DefT)
+          requires areCompatible(CallT, DefT)
           [structural]
      rule (. => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
-          when notBool areCompatible(CallT, DefT)
+          requires notBool areCompatible(CallT, DefT)
           [structural]
 
      syntax KItem ::= "application'" "(" String "," K "," List ")"

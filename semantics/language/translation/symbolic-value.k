@@ -38,14 +38,14 @@ module C-SYMBOLIC-VALUE
      rule stripProv(symVal) => symVal
 
      rule write(symVal, _, T:Type) => .
-          when notBool isConstType(T)
+          requires notBool isConstType(T)
           [structural]
      rule <k> write(symVal, _, _) => . ...</k>
           <initializing> true </initializing>
           [structural]
 
      rule bitSizeofType(T:Type) => symVal::CSize
-          when notBool isCompleteType(T)
+          requires notBool isCompleteType(T)
                andBool notBool isFlexibleArrayType(T)
      rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal::CSize
 
@@ -55,7 +55,7 @@ module C-SYMBOLIC-VALUE
 
      rule write-specific(Loc:SymLoc, symVal, T:Type)
           => writeBytes(Loc, dataList(ListItem(symVal)), T)
-          when (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
           [structural]
 
@@ -78,7 +78,7 @@ module C-SYMBOLIC-VALUE
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N':CSize)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
 
 endmodule

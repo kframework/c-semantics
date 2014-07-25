@@ -34,7 +34,7 @@ module C-STMT-SWITCH
      rule Switch(SN:Int, tv(V:K, T:Type), _)
           => sequencePoint 
                ~> handleSwitch(SN, cast(promote(T), tv(V, T))) 
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
           [structural] 
           
      rule <k> handleSwitch(SN:Int, V:KResult) 
@@ -64,7 +64,7 @@ module C-STMT-SWITCH
 		CaseHelper:K,M:Map) 
 	  => (tryCase(Exp, V, CaseHelper)
 	     ~> #handleSwitch-aux(SN,V,.K,.K,M))
-	  when Exp =/=K l('Default) 
+	  requires Exp =/=K l('Default) 
 	  [structural]  
      
      //  if all that's left is a default, do it
@@ -76,21 +76,21 @@ module C-STMT-SWITCH
 
      rule #handleSwitch-aux(SN:Int,_:Value,(genLabel(SN':Int, _:K) => .K),
 		(_:K => .K),_:Map) 
-          when SN =/=Int SN'
+          requires SN =/=Int SN'
           [structural] 
 
      rule #handleSwitch-aux(_:Int,_:Value,(K:K => .K),
 		(_:K => .K),_:Map) 
-          when getKLabel(K) =/=KLabel 'genLabel
+          requires getKLabel(K) =/=KLabel 'genLabel
           [structural] 
 
      rule tryCase(
                (tv(V:K, T':Type) => cast(T, tv(V, T'))), 
                tv(_, T:Type), _)
-          when T =/=K T'
+          requires T =/=K T'
           [structural]
      rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .
-          when V =/=K V'
+          requires V =/=K V'
           [structural] 
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing

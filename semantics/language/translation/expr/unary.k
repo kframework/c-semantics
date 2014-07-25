@@ -6,15 +6,15 @@ module C-EXPR-UNARY
      imports C-TYPING-SYNTAX
 
      rule + tv(symVal, T:Type) => tv(symVal, T)
-          when isPromoted(T) orBool hasFloatType(T)
+          requires isPromoted(T) orBool hasFloatType(T)
           [structural]
 
      rule - tv(symVal, T:Type) => tv(symVal, T)
-          when isPromoted(T) orBool hasFloatType(T)
+          requires isPromoted(T) orBool hasFloatType(T)
           [structural]
           
      rule ~ tv(symVal, T:Type) => tv(symVal, T)
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
 
 endmodule

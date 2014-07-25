@@ -32,7 +32,7 @@ module C-DECL-ENUM
                initializer(enumInit(E, Exp)))
           ~> fillEnums-aux(
                EnumDef(X, list(L)), Exp + tv(1, t(.Set, int)))
-          when Exp =/=K NothingExpression
+          requires Exp =/=K NothingExpression
           [structural] 
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => . 
           [structural] 
@@ -41,10 +41,10 @@ module C-DECL-ENUM
      syntax KItem ::= enumInit(CId, K) [strict(2)]
      rule enumInit(X:CId, V:TypedValue)
           => Computation(X := V)
-          when hasIntegerType(type(V))
+          requires hasIntegerType(type(V))
      rule (. => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
           ~> enumInit(_, tv(_, T:Type))
-          when notBool hasIntegerType(T)
+          requires notBool hasIntegerType(T)
 
 endmodule
 

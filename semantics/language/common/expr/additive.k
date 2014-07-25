@@ -78,17 +78,17 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
           => addToPointer(Loc, T', I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
      rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
           => addToPointer(Loc, T', I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
      rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
           => addToPointer(Loc, T', 0 -Int I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
 
@@ -96,11 +96,11 @@ module C-COMMON-EXPR-ADDITIVE
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => tv(newFromArray(Loc, T, I)
                +bytes (I *Int byteSizeofType(innerType(T))), T)
-          when ifFromArrayInBounds(Loc, T, I)
+          requires ifFromArrayInBounds(Loc, T, I)
           [structural]
      rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
-          when notBool ifFromArrayInBounds(Loc, T, I)
+          requires notBool ifFromArrayInBounds(Loc, T, I)
           [structural]
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
@@ -112,14 +112,14 @@ module C-COMMON-EXPR-ADDITIVE
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,_:Type,_:Int)
 	  => loc(Base, Offset, SetItem(K) Prov)
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
      rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
 		 Len:Int),SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
 	  => #newFromArray(Base,Offset,K',S,SetItem(fromArray(ArrOffset +Int 
 		I *Int byteSizeofType(innerType(T)), Len)) Prov,T,I)
      rule #newFromArray(Base:SymBase, Offset:Int,K:K,SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
 	  => #newFromArray(Base,Offset,K',S,SetItem(K) Prov,T,I)
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
 
      rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _:Type, _:Int)
           => loc(Base, Offset, .Set)
@@ -127,23 +127,23 @@ module C-COMMON-EXPR-ADDITIVE
                loc(Base:SymBase, Offset:Int, SetItem(K:K) Prov:Set), T:Type, I:Int)
           => #newFromArray(Base,Offset,K,Prov,.Set,T,I)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
-          when notBool isFromArray(Loc)
+          requires notBool isFromArray(Loc)
 
      syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
 		   | #ifFromArrayInBounds(K,Set,Type,Int)
 
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
 	  => true
-	  when Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
+	  requires Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
 	  => false
-	  when Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+	  requires Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
      rule #ifFromArrayInBounds(K:K,.Set,_:Type,_:Int)
 	  => true
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K,SetItem(K':K) S:Set,T:Type,I:Int)
 	  => #ifFromArrayInBounds(K',S,T,I)
-	  when getKLabel(K) =/=KLabel 'fromArray
+	  requires getKLabel(K) =/=KLabel 'fromArray
 
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(K:K) S:Set),
@@ -181,24 +181,24 @@ module C-COMMON-EXPR-ADDITIVE
      rule computePointerDifference(Loc1:SymLoc,
                Loc2:SymLoc, tv(Size:Int, _))
           => tv((offset(Loc1) -Int offset(Loc2)) /Int Size, cfg:ptrdiffut)
-          when (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
+          requires (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
                andBool base(Loc1) ==K base(Loc2)
           [structural]
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))
-          when isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 -Int I2))
-          when isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
           => arithInterpret(T, F1 +Float F2)
-          when T ==Type T'
+          requires T ==Type T'
           [structural]
      rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
           => arithInterpret(T, (F1 -Float F2))
-          when T ==Type T'
+          requires T ==Type T'
           [structural]
 endmodule
