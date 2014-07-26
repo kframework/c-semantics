@@ -87,17 +87,17 @@ module C-EXECUTION-ERROR
           
      rule [err00041]:
           (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(tItem(t(_, void)) ts:: tItem(t(_, T:SimpleType)))
+          types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
           requires T =/=K void
           [structural]
      rule [err00042]:
           (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types(tItem(t(_, T:SimpleType)) ts:: tItem(t(_, void)))
+          types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
           requires T =/=K void
           [structural]
      rule [err00043]:
           (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(tItem(T:Type) ts:: tItem(T':Type))
+          types(trItem(T:Type) ts:: trItem(T':Type))
           requires (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))

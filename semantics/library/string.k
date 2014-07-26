@@ -12,8 +12,8 @@ module LIBC-STRING
      // fixme should detect overlaps
      syntax KItem ::= strcpy(SymLoc, SymLoc, SymLoc)
      rule prepareBuiltin(Identifier("strcpy"),
-               hItem(tv(Dest:SymLoc, t(_, pointerType(_)))) hs::
-               hItem(tv(Src:SymLoc, t(_, pointerType(_)))))
+               hrItem(tv(Dest:SymLoc, t(_, pointerType(_)))) hs::
+               hrItem(tv(Src:SymLoc, t(_, pointerType(_)))))
           => strcpy(Dest, Src, Dest)
           [structural]
           

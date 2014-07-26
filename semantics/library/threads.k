@@ -25,9 +25,9 @@ module LIBC-THREADS
      syntax KItem ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
           <k> prepareBuiltin(Identifier("thrd_create"), 
-                    hItem(ThIdPointer:KResult) hs::
-                    hItem(ThFuncPointer:KResult) hs::
-                    hItem(ThArg:KResult))
+                    hrItem(ThIdPointer:KResult) hs::
+                    hrItem(ThFuncPointer:KResult) hs::
+                    hrItem(ThArg:KResult))
                => Computation(
                     (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                     ~> spawn-aux(
@@ -74,8 +74,8 @@ module LIBC-THREADS
           
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
-               hItem(tv(ThId:Int, t(_, int))) hs::
-               hItem(ResultPointer:KResult))
+               hrItem(tv(ThId:Int, t(_, int))) hs::
+               hrItem(ResultPointer:KResult))
           => join-aux(ThId:Int, ResultPointer:KResult)
           [structural]
      
@@ -98,8 +98,8 @@ module LIBC-THREADS
 
      rule [mtx-init]:
           <k> prepareBuiltin(Identifier("mtx_init"),
-                    hItem(tv(Loc:Int, _)) hs::
-                    hItem(tv(Type:Int, _)))
+                    hrItem(tv(Loc:Int, _)) hs::
+                    hrItem(tv(Type:Int, _)))
                => thrd-success
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
@@ -110,7 +110,7 @@ module LIBC-THREADS
 
      rule [mtx-lock]:
           <k> prepareBuiltin(Identifier("mtx_lock"), 
-                    hItem(tv(Loc:Int, _)))
+                    hrItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
@@ -123,7 +123,7 @@ module LIBC-THREADS
 
      rule [mtx-unlock]:
           <k> prepareBuiltin(Identifier("mtx_unlock"),
-                    hItem(tv(Loc:Int, _)))
+                    hrItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>

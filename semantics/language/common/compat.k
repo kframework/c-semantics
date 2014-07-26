@@ -170,7 +170,7 @@ module COMPAT
      rule list(L:List) => toKRList(L) 
           [structural]
 
-     syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
+     syntax KItem ::= toKRList'(SubKRList) [strict]
 
      //might not need this after accosicate matching 
      syntax SubKRItem ::= sItem(K) [strict]

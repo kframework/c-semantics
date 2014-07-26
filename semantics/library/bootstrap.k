@@ -1,6 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      syntax KItem ::= varg(K) [hybrid, strict]
-     syntax KItem ::= prepareBuiltin(CId, HeatList) 
+     syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
      syntax KItem ::= incSymbolic(K)
 endmodule
 

@@ -8,7 +8,7 @@ module LIBC-TIME
      // fixme, just a placeholder
      rule [time]:
           prepareBuiltin(Identifier("time"), 
-               hItem(_:KResult))
+               hrItem(_:KResult))
           => tv(0, t(.Set, long-long-int))
           [structural]
 endmodule

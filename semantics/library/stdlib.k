@@ -27,7 +27,7 @@ module LIBC-STDLIB
 
      rule [exit]:
           <k> prepareBuiltin(Identifier("exit"), 
-                    hItem(tv(I:Int, t(_, int))))
+                    hrItem(tv(I:Int, t(_, int))))
                ~> _
                => tv(I:Int, t(.Set, int)) 
           </k>
@@ -47,7 +47,7 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> prepareBuiltin(Identifier("malloc"),
-                    hItem(tv(Len:Int, _:KResult)))
+                    hrItem(tv(Len:Int, _:KResult)))
                => alloc(Base, t(.Set, no-type), Len:Int)
                ~> tv(lnew(Base), t(.Set, pointerType(t(.Set, void))))
           ...</k>
@@ -76,11 +76,11 @@ module LIBC-STDLIB
      if the new object could not be allocated.
      }*/
      rule prepareBuiltin(Identifier("realloc"),
-          hItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) hs:: _)
+          hrItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) hs:: _)
      rule [realloc]:
           <k> prepareBuiltin(Identifier("realloc"),
-                    hItem(tv(loc(OldBase:SymBase, 0), _)) hs::
-                    hItem(tv(NewLen:Int, _)))
+                    hrItem(tv(loc(OldBase:SymBase, 0), _)) hs::
+                    hrItem(tv(NewLen:Int, _)))
                => realloc(OldBase, NewBase, OldLen, NewLen)
                ~> tv(lnew(NewBase), t(.Set, pointerType(t(.Set, void))))
           ...</k>
@@ -92,18 +92,18 @@ module LIBC-STDLIB
 
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
-               hItem(tv(NullPointer, _)) hs::
-               hItem(Len:KResult))
-          => prepareBuiltin(Identifier("malloc"), hItem(Len:KResult))
+               hrItem(tv(NullPointer, _)) hs::
+               hrItem(Len:KResult))
+          => prepareBuiltin(Identifier("malloc"), hrItem(Len:KResult))
           [structural]
 
      syntax KItem ::= "calloc-aux"
      rule [calloc]:
           prepareBuiltin(Identifier("calloc"),
-               hItem(tv(N:Int, _)) hs::
-               hItem(tv(Size:Int, _)))
+               hrItem(tv(N:Int, _)) hs::
+               hrItem(tv(Size:Int, _)))
           => prepareBuiltin(Identifier("malloc"),
-               hItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
+               hrItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
      rule (. => zeroObject(base(Loc)) ) 
@@ -112,10 +112,10 @@ module LIBC-STDLIB
           [structural]
 
      rule prepareBuiltin(Identifier("free"),
-          hItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
+          hrItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
-                    hItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
+                    hrItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
                => deleteSizedObject(Base, Len:Int) 
                ~> skipval
           ...</k>
@@ -134,7 +134,7 @@ module LIBC-STDLIB
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
-                    hItem(tv(N:Int, t(.Set, unsigned-int))))
+                    hrItem(tv(N:Int, t(.Set, unsigned-int))))
                => skipval
           ...</k>
           <rand-nat> _ => N:Int </rand-nat>
