@@ -44,7 +44,7 @@ module C-MEMORY-READING
                andBool Loc =/=K NullPointer
           [ndtrans]
 
-     syntax KItem ::= readActual(SymLoc, Type) [klabel('readActual)]
+     syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc:SymLoc, T:Type)
           => concretize(T, readBytes(stripProv(Loc), byteSizeofType(T), T))
           requires notBool isBitfieldType(T)

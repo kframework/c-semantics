@@ -1,7 +1,7 @@
 module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= pgmArgs(List) [function]
-     syntax KItem ::= incomingArguments(List) [klabel('incomingArguments)]
-     syntax KItem ::= callMain(Int, K) [klabel('callMain)]
+     syntax KItem ::= incomingArguments(List)
+     syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
 
 endmodule

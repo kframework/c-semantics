@@ -454,7 +454,7 @@ module C-IO-BUFFERED
           requires (Offset =/=Int 0)
                andBool (Offset1 <=Int Offset)
      //TODO: why it is nessary here
-     syntax Set ::= getQualsAtOffset(Type, Int) [function,klabel(getQualsAtOffset)]
+     syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))
 

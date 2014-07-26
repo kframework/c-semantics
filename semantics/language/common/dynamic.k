@@ -1,5 +1,5 @@
 module C-DYNAMIC-SYNTAX
-     syntax Type ::= t(Set, SimpleType) [klabel('t)]
+     syntax Type ::= t(Set, SimpleType)
 
      syntax Value ::= "skipval"
 
@@ -8,10 +8,10 @@ module C-DYNAMIC-SYNTAX
      syntax CValue ::= Bits | SymLoc | Float | Agg
 
      syntax TypedValue ::= tv(CValue, Type) 
-          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+          [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
-     syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
-     syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
+     syntax LValue ::= lv(SymLoc, Type)
+     syntax Value ::= lval(SymLoc, Type)
 
      syntax Type ::= type(K) [function]
      syntax KItem ::= value(TypedValue) [function]
@@ -33,7 +33,7 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= "file-scope"
 
      //  switchid, value (tv or 'Default)
-     syntax CId ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax CId ::= genLabel(Int, K)
      syntax CId ::= funLabel(CId)
      syntax CId ::= case(Int)
 

@@ -77,13 +77,13 @@ module C-SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, Int) [klabel('fromArray)]
+     syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase)
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
-     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo) [klabel('fromUnion)]
+     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
 
@@ -265,7 +265,7 @@ module C-SYMLOC
           => lval(addProv(Prov, Loc), T)
           [structural]
 
-     syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
+     syntax Bool ::= #isBases(Provenance) [function]
      rule #isBases(basedOn(_)) => true
 
      rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K,Loc) ==K true

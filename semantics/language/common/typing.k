@@ -69,30 +69,19 @@ module C-TYPING-SYNTAX
 
      // Composite types
      syntax SimpleType ::= enumType(CId)
-          [klabel('enumType)]
      syntax SimpleType ::= bitfieldType(Type, CSize)
-          [klabel('bitfieldType)]
      syntax SimpleType ::= functionType(Type, List)
-          [klabel('functionType)]
      syntax SimpleType ::= pointerType(Type)
-          [klabel('pointerType)]
 
      syntax SimpleType ::= arrayType(Type, CSize) 
-          [klabel('arrayType)]
      syntax SimpleType ::= incompleteArrayType(Type) 
-          [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
-          [klabel('flexibleArrayType)]
 
      syntax SimpleType ::= structType(CId, Int, FieldInfo)
-          [klabel('structType)]
      syntax SimpleType ::= incompleteStructType(CId)
-          [klabel('incompleteStructType)]
 
      syntax SimpleType ::= unionType(CId, Int, FieldInfo)
-          [klabel('unionType)]
      syntax SimpleType ::= incompleteUnionType(CId)
-          [klabel('incompleteUnionType)]
 
      // Basic types
      syntax SimpleType ::= "char" [function]
@@ -147,7 +136,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= addModifiers(Set, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId) 
-          [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
+          [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
 
      syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]

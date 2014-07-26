@@ -89,8 +89,8 @@ module C-STMT-GOTO
                     
      */
 
-     syntax KItem ::= processGoto(K) [klabel('processGoto)]
-     syntax KItem ::= processGotoDown(K) [klabel('processGotoDown)] 
+     syntax KItem ::= processGoto(K)
+     syntax KItem ::= processGotoDown(K)
 
      // declaration stack, actual local variables
      syntax KItem ::= processGotoSameBlock(List, List)

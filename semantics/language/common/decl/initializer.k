@@ -135,7 +135,7 @@ module C-DECL-INITIALIZER
           <incomplete-length> N:Int </incomplete-length>
           [structural]
 
-     syntax KItem ::= te(K, Type) [klabel('te)]
+     syntax KItem ::= te(K, Type)
 
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.

@@ -64,7 +64,7 @@ module C-IO-DIRECT
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
           [structural]        
      //TODO: why it is nessary here
-     syntax List ::= values(List) [function, klabel(values)]
+     syntax List ::= values(List) [function]
      rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K:K) values(L:List)
      rule values(.List) => .List
 
