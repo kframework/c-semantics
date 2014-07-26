@@ -15,8 +15,36 @@ module C-TYPING-CANONICALIZATION
      syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
 
+     /* might not need this, because no anywhere rule current, 
+       so we just use a function deleteUnuseType
+     // FIXME what good is this_
+     rule ListItem(SpecTypedef) => .List [structural, anywhere]
+     // FIXME ignoring inlines
+     rule [ignore-inline]: ListItem(Inline) => .List [structural, anywhere]
+     rule [ignore-noreturn]: ListItem(Noreturn) => .List [structural, anywhere]
+     // FIXME should save these for later use
+     rule ListItem(Attribute(_:String, _)) => .List [structural, anywhere]
+     rule ListItem(atomic(_)) => .List [structural, anywhere]
+     rule ListItem(alignas(_)) => .List [structural, anywhere]
+     
+     */
+     
+     syntax List ::= deleteUnuseType(List) [function]
+
+     rule deleteUnuseType(.List) => .List
+     rule deleteUnuseType(ListItem(K:K) L:List) => deleteUnuseType(L)
+	  requires K ==K SpecTypedef orBool K ==K Inline
+		   orBool K ==K Noreturn
+     rule deleteUnuseType(ListItem(Attribute(_:String, _)) L:List) 
+	  => deleteUnuseType(L)
+     rule deleteUnuseType(ListItem(K:K) L:List)
+	  => ListItem(K) deleteUnuseType(L)
+	  requires K =/=K SpecTypedef andBool K =/=K Inline
+		   andBool K =/=K Noreturn
+		   andBool getKLabel(K) =/=KLabel 'Attribute
+
      rule canonicalizeType(M:List)
-          => canonicalizeType-aux(M, .K, .List, .List, .List)
+          => canonicalizeType-aux(deleteUnuseType(M), .K, .List, .List, .List)
           [structural]
 
      rule (. => DeclType(K1, K2))
@@ -35,17 +63,20 @@ module C-TYPING-CANONICALIZATION
      rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:List (ListItem(TAtomic(_, _)) => .List)), _:K, 
-               (_:List (.List => ListItem(atomic(T)))), _:List, _:List) 
+               _:List, _:List, _:List) 
           [structural]
+
+     //might need to change this later
      rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:List (ListItem(AlignasType(_, _)) => .List)), _:K, 
-               (_:List (.List => ListItem(alignas(T)))), _:List, _:List) 
+               _:List, _:List, _:List) 
           [structural]
+     //might need to change this later
      rule (T:Type => .)
           ~> canonicalizeType-aux(
                (_:List (ListItem(AlignasExpression(_)) => .List)), _:K, 
-               (_:List (.List => ListItem(alignas(T)))), _:List, _:List) 
+               _:List, _:List, _:List) 
           [structural]
           
      // specifier, modifier, storage
@@ -220,14 +251,6 @@ module C-TYPING-CANONICALIZATION
           requires X =/=K Identifier("")
           [structural]
 
-     // FIXME what good is this_
-     rule ListItem(SpecTypedef) => .List [structural, anywhere]
-     // FIXME ignoring inlines
-     rule [ignore-inline]: ListItem(Inline) => .List [structural, anywhere]
-     rule [ignore-noreturn]: ListItem(Noreturn) => .List [structural, anywhere]
-     // FIXME should save these for later use
-     rule ListItem(Attribute(_:String, _)) => .List [structural, anywhere]
-
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)
           requires B =/=K .List
@@ -246,10 +269,7 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(L:List )
           => t(.Set, unsigned-char)
 	  requires '_==MSet_(L ,, ListItem(Unsigned) ListItem(Char))
-     
-     rule ListItem(atomic(_)) => .List [structural, anywhere]
-     rule ListItem(alignas(_)) => .List [structural, anywhere]
-     
+    
      rule canonicalizeSpecifier(ListItem(Double))
           => t(.Set, double)
      rule canonicalizeSpecifier(ListItem(Float))

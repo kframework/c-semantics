@@ -2,6 +2,8 @@ module C-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
      syntax KItem ::= arithInterpret(Type, BaseValue) [function]
      // as described in 6.3 // totype, fromvalue
+     // change it to function in order
+     // to solve anywhere rule
      syntax KItem ::= cast(Type, Value) [function]
      //Might not need this if we have anywhere rule
      syntax KItem ::= castHold(Type, Value)

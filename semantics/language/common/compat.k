@@ -250,9 +250,7 @@ module COMPAT
      //TODO: might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true
      rule isAllKResultInHeatList(hItem(K:K) hs:: _:HeatList) => false
-	   requires isKResult(K:K) =/=K true
-     rule isAllKResultInHeatList(hItem(K:K) hs:: HL:HeatList) 
-	   => isAllKResultInHeatList(HL) 
-	   requires isKResult(K:K) ==K true
+     rule isAllKResultInHeatList(hrItem(K:K) hs:: HL:HeatList) 
+	   => isAllKResultInHeatList(HL)
 
 endmodule
