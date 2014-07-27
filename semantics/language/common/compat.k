@@ -240,7 +240,7 @@ module COMPAT
      //rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
      //rule values(.Map) => .List
 
-     syntax Set ::= #filterSet(K,Set,KLabel) [function]
+     syntax Set ::= "#filterSet" "(" K "," Set "," KLabel ")" [function]
 
      rule #filterSet(K:K,.Set,Pred:KLabel)
 	  => SetItem(K:K)

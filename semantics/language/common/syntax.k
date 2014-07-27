@@ -254,7 +254,7 @@ module C-SYNTAX
      // first argument is id, second is basetype
      syntax Name ::= Name(K, K) [avoid]
      syntax CId ::= "#NoName" // new
-     syntax CId ::= #NoName(Int) // new
+     syntax CId ::= "#NoName" "(" Int ")" // new
      syntax CId ::= Identifier(String) // new
      //might not need this
      syntax CId ::= ToIdentifier(String) [function]
