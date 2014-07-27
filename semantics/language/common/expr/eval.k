@@ -89,12 +89,10 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
+          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
           requires isArrayType(T)
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
+          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
           requires isArrayType(T)
 
      syntax Type ::= arrayToPtrType(Type) [function]
@@ -129,16 +127,19 @@ module C-COMMON-EXPR-EVAL
           => tv(Loc, t(.Set, pointerType(T)))
           requires isFunctionType(T) 
 
-     syntax KItem ::= checkRegister(SymLoc)
-     rule <k> checkRegister(_) => . ...</k>
+     //Solve the checkRegister constructor block
+     //due to heat K Sequence originally.
+     syntax KItem ::= checkRegister(SymLoc,K)
+     rule <k> checkRegister(_,K:K) => K ...</k>
           <initializing> true </initializing>
           [structural]
-     rule <k> checkRegister(Loc:SymLoc) => . ...</k>
+     rule <k> checkRegister(Loc:SymLoc,K:K) => K ...</k>
           <initializing> false </initializing>
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> checkRegister(Loc:SymLoc)
+     rule <k> checkRegister(Loc:SymLoc,K:K)
                => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
+		   ~> K
           ...</k>
           <initializing> false </initializing>
           requires isRegisterLoc(Loc)

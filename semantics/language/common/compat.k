@@ -155,6 +155,17 @@ module COMPAT
      //TODO: might need to add it in the builtins
      rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
 
+     syntax Bool ::= subset(K,Set,Set) [function]
+
+     rule subset(K:K,S1:Set,S2:Set) => S1 <=Set (S2 -Set SetItem(K))
+          requires K in S2
+     rule subset(K:K,_:Set,S2:Set) => false
+          requires notBool (K in S2)
+
+     rule .Set <=Set _:Set => true
+     rule (SetItem(K:K) S1:Set) <=Set S2:Set 
+	   => subset(K,S1,S2)
+
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
      rule '_==MSet_(ListItem(_) _:List ,, .List) => false

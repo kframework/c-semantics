@@ -98,14 +98,14 @@ module C-TYPING-INTERPRETATION
           => applyTypeFunction(Lbl,t(S, enumType(X)))
      
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:K) 
-          => applyTypeFunction(Lbl,t(S S', T))
+          => applyTypeFunction(Lbl,canonicalizeArrayType(t(S S', T)))
      
      rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl,T) 
           requires isBasicType(T)
      
      rule applyTypeFunction(makeArrayType(N:CSize), T:Type)
-          => t(getStorageSpecifiers(T),
-               arrayType(stripStorageSpecifiers(T), N)) 
+          => canonicalizeArrayType(t(getStorageSpecifiers(T),
+               arrayType(stripStorageSpecifiers(T), N))) 
 
      rule applyTypeFunction(makeFunctionType(L:List),T:Type)
           => t(getStorageSpecifiers(T),
@@ -168,8 +168,6 @@ module C-TYPING-INTERPRETATION
      
      rule extractActualType(T:Type) => T
           requires isBasicType(T)
-     rule extractActualType(t(S:Set, enumType(X:CId))) 
-          => t(S, enumType(X))
      rule extractActualType(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo))) 
           => t(S, structType(X, NBits, Info))
      rule extractActualType(t(S:Set, incompleteStructType(X:CId))) 

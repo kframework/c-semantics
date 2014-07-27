@@ -153,6 +153,11 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
+     //need this to solve array type anywhere rule
+     syntax Type ::= canonicalizeArrayType(Type) [function]
+     syntax List ::= canonicalizeArrayTypeInList(List) [function]
+     syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
+
 endmodule
 
 module C-TYPING
