@@ -118,7 +118,7 @@ module C-BINDING
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
      
-     syntax Bool ::= "#arePromotedTypesCompat" "(" CValue "," Type "," Type ")"
+     syntax Bool ::= #arePromotedTypesCompat(CValue, Type, Type)
           [function]
 
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true

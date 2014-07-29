@@ -66,14 +66,14 @@ module C-LTLMC
      rule intify(false) => 0
      rule intify(true) => 1
 
-     syntax Bool ::= "#running" "(" Bag ")" [function]
+     syntax Bool ::= #running(Bag) [function]
      rule #running(
           <generatedTop>... 
                <status> mainCalled </status> 
           ...</generatedTop>)
           => true
 
-     syntax Bool ::= "#error" "(" Bag ")" [function]
+     syntax Bool ::= #error(Bag) [function]
      rule #error(
           <generatedTop>... <T>...
                <error-cell> _ </error-cell> 

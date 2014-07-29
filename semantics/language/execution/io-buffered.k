@@ -366,7 +366,7 @@ module C-IO-BUFFERED
 
      // An  object shall have its stored value accessed only by an lvalue
      // expression that has one of
-     syntax Bool ::= "#effectivelyCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= #effectivelyCompat(Type, Type) [function]
      // - a type compatible with the effective type of the object,
      // - a qualified version of a type compatible with the effective type of
      // the object,

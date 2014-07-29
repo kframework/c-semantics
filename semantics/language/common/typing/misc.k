@@ -301,7 +301,7 @@ module C-TYPING-MISC
 
      rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
 
-     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+     syntax Bool ::= #isNPC(TypedValue) [function]
 
      rule #isNPC(tv(0, T:Type)) => true
           requires hasIntegerType(T)

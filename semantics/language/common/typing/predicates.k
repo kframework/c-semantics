@@ -13,7 +13,7 @@ module C-TYPING-PREDICATES
      rule T:Type ==Type T':Type => #typesEq(T, T') ==K true
      rule T:Type =/=Type T':Type => #typesEq(T, T') =/=K true
 
-     syntax Bool ::= "#typesEq" "(" Type "," Type ")" [function]
+     syntax Bool ::= #typesEq(Type, Type) [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
           requires (getQualifiers(T) ==K getQualifiers(T'))
@@ -75,7 +75,7 @@ module C-TYPING-PREDICATES
 
      rule isBasicType(T:Type) => #isBasic(T) ==K true
 
-     syntax Bool ::= "#isBasic" "(" Type ")" [function]
+     syntax Bool ::= #isBasic(Type) [function]
 
      rule #isBasic(t(_, T:SimpleType)) => true
           requires T in basicTypes
@@ -132,8 +132,8 @@ module C-TYPING-PREDICATES
      rule hasSignedIntegerType(T:Type)
           => #hasSignedInteger(T) ==K true
 
-     syntax Bool ::= "#hasUnsignedInteger" "(" Type ")" [function]
-                   | "#hasSignedInteger" "(" Type ")" [function]
+     syntax Bool ::= #hasUnsignedInteger(Type) [function]
+                   | #hasSignedInteger(Type) [function]
 
      rule #hasUnsignedInteger(t(_, bitfieldType(T:Type, _)))
           => #hasUnsignedInteger(T)
@@ -207,23 +207,23 @@ module C-TYPING-PREDICATES
      rule isVolatileType(T:Type) => (Volatile in getQualifiers(T))
      rule isRestrictType(T:Type) => (Restrict in getQualifiers(T))
 
-     syntax Bool ::= "#hasFloat" "(" Type ")" [function]
-                   | "#hasChar" "(" Type ")" [function]
-                   | "#isUChar" "(" Type ")" [function]
-                   | "#isPointer" "(" Type ")" [function]
-                   | "#isBoolT" "(" Type ")" [function]
-                   | "#isArray" "(" Type ")" [function]
-                   | "#isFlexibleArray" "(" Type ")" [function]
-                   | "#isVoid" "(" Type ")" [function]
-                   | "#isNoT" "(" Type ")" [function]
-                   | "#isStruct" "(" Type ")" [function]
-                   | "#isUnion" "(" Type ")" [function]
-                   | "#isIncompleteArray" "(" Type ")"  [function]
-                   | "#isIncompleteStruct" "(" Type ")" [function]
-                   | "#isIncompleteUnion" "(" Type ")"  [function]
-                   | "#isBitfield" "(" Type ")" [function]
-                   | "#isFunction" "(" Type ")" [function]
-                   | "#isFunctionPointer" "(" Type ")" [function]
+     syntax Bool ::= #hasFloat(Type) [function]
+                   | #hasChar(Type) [function]
+                   | #isUChar(Type) [function]
+                   | #isPointer(Type) [function]
+                   | #isBoolT(Type) [function]
+                   | #isArray(Type) [function]
+                   | #isFlexibleArray(Type) [function]
+                   | #isVoid(Type) [function]
+                   | #isNoT(Type) [function]
+                   | #isStruct(Type) [function]
+                   | #isUnion(Type) [function]
+                   | #isIncompleteArray(Type)  [function]
+                   | #isIncompleteStruct(Type) [function]
+                   | #isIncompleteUnion(Type)  [function]
+                   | #isBitfield(Type) [function]
+                   | #isFunction(Type) [function]
+                   | #isFunctionPointer(Type) [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
           requires T:SimpleType in floatTypes 

@@ -100,15 +100,15 @@ module C-SYMLOC
 
      imports COMPAT-SYNTAX
 
-     syntax Bool ::= "#isAllocatedDuration" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isStaticDuration" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isThreadDuration" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isAutoDuration" "(" SymLoc ")" [function]
+     syntax Bool ::= #isAllocatedDuration(SymLoc) [function]
+     syntax Bool ::= #isStaticDuration(SymLoc) [function]
+     syntax Bool ::= #isThreadDuration(SymLoc) [function]
+     syntax Bool ::= #isAutoDuration(SymLoc) [function]
 
-     syntax Bool ::= "#isStringLoc" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isLinkerLoc" "(" SymBase ")" [function]
-     syntax Bool ::= "#isArgvLoc" "(" SymLoc ")" [function]
-     syntax Bool ::= "#isRegisterLoc" "(" SymLoc ")" [function]
+     syntax Bool ::= #isStringLoc(SymLoc) [function]
+     syntax Bool ::= #isLinkerLoc(SymBase) [function]
+     syntax Bool ::= #isArgvLoc(SymLoc) [function]
+     syntax Bool ::= #isRegisterLoc(SymLoc) [function]
 
      rule isPhysicalLoc(Loc:SymLoc)
           => (isAllocatedDuration(Loc)
@@ -265,12 +265,12 @@ module C-SYMLOC
           => lval(addProv(Prov, Loc), T)
           [structural]
 
-     syntax Bool ::= "#isBases" "(" Provenance ")" [function]
+     syntax Bool ::= #isBases(Provenance) [function]
      rule #isBases(basedOn(_)) => true
 
      rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K,Loc) ==K true
 
-     syntax Bool ::= "#hasUnionMarker" "(" K "," SymLoc ")" [function]
+     syntax Bool ::= #hasUnionMarker(K,SymLoc) [function]
      rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
      rule #hasUnionMarker(K:K, loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
 	  => #hasUnionMarker(K', loc(SB,I,S))
@@ -278,13 +278,13 @@ module C-SYMLOC
 
      rule isFromArray(Loc:SymLoc) => #isFromArray(.K,Loc) ==K true
 
-     syntax Bool ::= "#isFromArray" "(" K "," SymLoc ")" [function]
+     syntax Bool ::= #isFromArray(K, SymLoc) [function]
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
      rule #isFromArray(K:K,loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
 	  => #isFromArray(K', loc(SB,I,S))
 	  requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
-     syntax SymLoc ::= "#stripFromArray" "(" SymBase "," Int "," K "," Set "," Set ")" [function]
+     syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
      rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
 	  => loc(SB,I,SetItem(K) S)
 	  requires getKLabel(K) =/=KLabel 'fromArray

@@ -1,5 +1,5 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
-     syntax Bool ::= "#areCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= #areCompat(Type, Type) [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
 endmodule
 
@@ -39,7 +39,7 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
+     syntax Bool ::= #areCompat(List, List) [function]
 
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
@@ -130,7 +130,7 @@ module C-TYPING-COMPATIBILITY
           requires (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
 
-     syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]
+     syntax Bool ::= #areParamsCompat(List, List) [function]
      rule #areParamsCompat(
                ListItem(T:Type) L:List,
                ListItem(T':Type) L':List)

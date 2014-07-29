@@ -143,7 +143,7 @@ module C-FUNCTION-DEF
           requires T =/=K void
           [structural]
 
-     syntax Bool ::= "#isArgvType" "(" Type ")" [function]
+     syntax Bool ::= #isArgvType(Type) [function]
      rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
           requires T ==K char // char is an alias.

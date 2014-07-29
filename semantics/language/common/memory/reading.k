@@ -102,8 +102,8 @@ module C-MEMORY-READING
           requires isStructType(T) orBool isUnionType(T)
           [structural]
 
-     syntax Bool ::= "#hasUnknown" "(" List ")" [function]
-     syntax Bool ::= "#hasTrap" "(" List ")" [function]
+     syntax Bool ::= #hasUnknown(List) [function]
+     syntax Bool ::= #hasTrap(List) [function]
 
      rule #hasUnknown(.List) => false
      rule #hasUnknown(ListItem(piece(unknown, _)) _:List) => true

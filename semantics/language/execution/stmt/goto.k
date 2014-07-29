@@ -112,7 +112,7 @@ module C-STMT-GOTO
           ...</goto-map>
           requires #isFunLabel(Lbl) ==K true
 
-     syntax Bool ::= "#isFunLabel" "(" CId ")" [function]
+     syntax Bool ::= #isFunLabel(CId) [function]
      rule #isFunLabel(funLabel(_)) => true
           
      // - first case, when we're in the same block

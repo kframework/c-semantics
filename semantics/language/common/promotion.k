@@ -154,7 +154,7 @@ module C-PROMOTION
      implementation-defined.
      }*/
 
-     syntax Bool ::= "#isPromoted" "(" Type ")" [function]
+     syntax Bool ::= #isPromoted(Type) [function]
 
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.

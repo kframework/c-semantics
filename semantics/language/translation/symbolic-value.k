@@ -65,8 +65,8 @@ module C-SYMBOLIC-VALUE
 
      rule isSymbolic(V:CValue) => #isSymbolic(V) ==K true
 
-     syntax Bool ::= "#isSymbolic" "(" CValue ")" [function]
-                   | "#areSymbolic" "(" List ")" [function]
+     syntax Bool ::= #isSymbolic(CValue) [function]
+                   | #areSymbolic(List) [function]
 
      rule #isSymbolic(symVal) => true
      rule #isSymbolic(piece(symVal, _)) => true
