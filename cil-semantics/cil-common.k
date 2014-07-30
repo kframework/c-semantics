@@ -221,7 +221,7 @@ module CIL-COMMON-MMU
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(!Base, (mival(Sz))) </base-ptr>
+        <base-ptr> BasePtr(!Base, (mival(Sz))):>Ptr </base-ptr>
         //<object-type> T </object-type>
         <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>

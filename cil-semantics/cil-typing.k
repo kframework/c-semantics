@@ -249,10 +249,10 @@ module CIL-TYPING
   rule expandTypedefs(T:ParamDecl, E:Map) => normType(expandParamDecl(T, E))
 
   rule expandParamDecl(X:CId, (E:Map (X |-> T:Type)))
-    => expandTypedefs(T, (E (X |-> T)))
+    => expandTypedefs(T, (E (X |-> T))):>ParamDecl
   rule expandParamDecl(X:CId D:Declarator, (E:Map (X |-> T:Type)))
     => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
-        (E (X |-> T)))
+        (E (X |-> T))):>ParamDecl
   rule expandParamDecl(TS:TypeSpec, _) => TS
     when isCId(TS) =/=K true
   rule expandParamDecl(TS:TypeSpec D:Declarator, E:Map) => TS expandDecl(D, E)
@@ -360,17 +360,17 @@ module CIL-TYPING
   syntax KItem ::= "normParens'" "(" K ")" [function]
   syntax KList ::= "normParens''" "(" KList ")" [function]
 
-  rule $needsParensNorm('`(_`)('`(_`)(_))::DirectDecl) => true
-  rule $needsParensNorm('`(_`)(_:SymId)::DirectDecl) => true
-  rule $needsParensNorm('`(_`)(_:SymId[_])::DirectDecl) => true
+  rule $needsParensNorm('`(_`)('`(_`)(_)):>DirectDecl) => true
+  rule $needsParensNorm('`(_`)(_:SymId):>DirectDecl) => true
+  rule $needsParensNorm('`(_`)(_:SymId[_]):>DirectDecl) => true
 
   rule $hasParens('`(_`)(_)) => true
 
   // Remove all top-level parens.
   rule normParens(TS:TypeSpec) => TS
-  rule normParens(TS:TypeSpec D:Declarator) => TS normParens'(D)::Declarator
+  rule normParens(TS:TypeSpec D:Declarator) => TS normParens'(D):>Declarator
     when $hasParens(D) =/=K true
-  rule normParens(TS:TypeSpec '`(_`)(D:Declarator)::Declarator)
+  rule normParens(TS:TypeSpec '`(_`)(D:Declarator):>Declarator)
     => normParens(TS D)
 
   // Remove other parens.
@@ -398,11 +398,11 @@ module CIL-TYPING
   syntax KList ::= "normPtrs''" "(" KList ")" [function]
 
   rule normPtrs(TS:TypeSpec) => TS
-  rule normPtrs(TS:TypeSpec D:Declarator) => TS normPtrs'(D)::Declarator
+  rule normPtrs(TS:TypeSpec D:Declarator) => TS normPtrs'(D):>Declarator
 
-  rule $needsPtrsNorm(_:Pointer '`(_`)(_:Pointer _:DirectDecl)::DirectDecl) 
+  rule $needsPtrsNorm(_:Pointer '`(_`)(_:Pointer _:DirectDecl):>DirectDecl) 
     => true
-  rule normPtrs'(P1:Pointer '`(_`)(P2:Pointer D:DirectDecl)::DirectDecl) 
+  rule normPtrs'(P1:Pointer '`(_`)(P2:Pointer D:DirectDecl):>DirectDecl) 
     => normPtrs'(concatPtrs(P1, P2) D)
 
   rule normPtrs'(Lbl:KLabel(L:KList)) => Lbl(normPtrs''(L))
