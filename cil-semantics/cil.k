@@ -62,7 +62,7 @@ module CIL-SEMANTICS
     </funs>
     <global-env> .Map </global-env> // Map{CId, Ptr}
 //    //<phase> initializing </phase> // Phase
-    <phase> tu("unknown")::K </phase> // Phase
+    <phase> tu("unknown"):>K </phase> // Phase
     <tus map="">
       <tu multiplicity="+">
         <tu-id key=""> tu("unknown") </tu-id> // TransUnit
