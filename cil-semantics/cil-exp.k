@@ -591,7 +591,7 @@ module CIL-EXP
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
   // that has been misparsed as a Type into an Exp.
-  rule <k> X:CId[C:Constant] => '_`[_`](X,, C)::Exp ...</k>
+  rule <k> X:CId[C:Constant] => '_`[_`](X,, C):>Exp ...</k>
     <env>... X |-> lv(_,_) ...</env>
 
   /* the rule for signed integer types is implementation defined */

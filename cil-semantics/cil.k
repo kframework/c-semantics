@@ -61,7 +61,7 @@ module CIL
     </funs>
     <global-env> .Map </global-env> // Map{CId, Ptr}
 //    //<phase> initializing </phase> // Phase
-    <phase> tu("unknown")::K </phase> // Phase
+    <phase> tu("unknown"):>K </phase> // Phase
     <tus map="">
       <tu multiplicity="+">
         <tu-id key=""> tu("unknown") </tu-id> // TransUnit
@@ -85,7 +85,7 @@ module CIL
     </aggregates>
     <heap map="">
       <object multiplicity="*">
-        <base-ptr key=""> Null </base-ptr>
+        <base-ptr key=""> .K:>BasePtr </base-ptr>
         //<object-type> void </object-type>
         <bytes> .Map </bytes> // Map{Nat, ByteValue}
       </object>
