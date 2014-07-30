@@ -85,7 +85,7 @@ module CIL
     </aggregates>
     <heap map="">
       <object multiplicity="*">
-        <base-ptr key=""> Null </base-ptr>
+        <base-ptr key=""> .K:>BasePtr </base-ptr>
         //<object-type> void </object-type>
         <bytes> .Map </bytes> // Map{Nat, ByteValue}
       </object>
