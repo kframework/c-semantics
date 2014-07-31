@@ -1,5 +1,8 @@
 module C-DECL-INITIALIZER-SYNTAX
-     syntax KResult ::= initializer(K)
+
+     //TODO: keep kresult in sort
+     syntax Initializer ::= initializer(K)
+     syntax KResult ::= Initializer
 
      // Function id, param ids, prototype, body.
      syntax Value ::= functionObject(CId, List, Type, K)
@@ -8,7 +11,9 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KItem ::= figureInit(CId, K, K) [strict(2)] 
 
      // These are also used by compound literals.
-     syntax KResult ::= initValue(CId, Type, K)
+     //TODO: keep kresult in sort
+     syntax InitValue ::= initValue(CId, Type, K) 
+     syntax KResult ::= InitValue
 
      syntax KItem ::= singleIntInit(K) [strict]
 

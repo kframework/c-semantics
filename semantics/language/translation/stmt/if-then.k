@@ -35,7 +35,9 @@ module C-STMT-IF-THEN
      syntax KItem ::= maybeSymVal(K, K) [strict]
                 | "checkResult"
 
-     syntax KResult ::= "noResult"
+     //TODO: keep kresult without sort
+     syntax NoResult ::= "noResult"
+     syntax KResult ::= NoResult
 
      rule R:KResult ~> checkResult => R
      rule checkResult => noResult

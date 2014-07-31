@@ -21,6 +21,9 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= List "==MSet" List [function]
 		   | List "=/=MSet" List [function]
+		   | K "in" List [function]
+		//TODO: might not need this later
+		   | listEqual(List,List) [function]
 
      syntax List ::= removeListItem(List,K) [function]
 
@@ -49,7 +52,9 @@ module COMPAT-SYNTAX
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
 
-     syntax KResult ::= krlist(List) [klabel('krlist)]
+     //TODO: add sort for krlist
+     syntax KRList ::= krlist(List)
+     syntax KResult ::= KRList
 
      syntax List ::= reverseList(List) [function]
 
@@ -140,6 +145,20 @@ module COMPAT
 	=> ListItem(A) removeListItem(M,A')
 	when A =/=K A'
 
+     rule K:K in .List => false
+     rule K:K in ListItem(K:K) _:List => true
+     rule K:K in ListItem(K1:K) L:List => K in L when K =/=K K1
+
+     //TODO: might not need this later
+     rule listEqual(.List,.List) => true
+     rule listEqual(L:List,.List) => false when L =/=K .List
+     rule listEqual(.List,L:List) => false when L =/=K .List
+     rule listEqual(ListItem(A:K) L1:List,ListItem(A:K) L2:List) 
+	 => listEqual(L1,L2)
+     rule listEqual(ListItem(A1:K) L1:List,ListItem(A2:K) L2:List) 
+	 => false
+	  when A1 =/=K A2
+
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
      rule '_==MSet_(ListItem(_) _:List ,, .List) => false
@@ -162,19 +181,26 @@ module COMPAT
      syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]
 
+     syntax SubResult ::= srItem(K)
+     syntax SubKRItem ::= SubResult
+     syntax KResult ::= SubResult
+
      rule toSubKRList(.List) => .SubKRList
      rule toSubKRList(ListItem(K:K) L:List) => sItem(K) ss:: toSubKRList(L)
 
      //TODO: overcome the context associative matching
      //context toKRList'(_:List ListItem(HOLE) _:List)
+     rule sItem(V:KResult) => srItem(V) [structural]
+
      rule toKRList(L:List) => toKRList'(toSubKRList(L)) ~> krlist(.List)
           [structural]
-     rule toKRList'((sItem(V:KResult) ss:: S:SubKRList) => S) 
+
+     rule toKRList'((srItem(V:KResult) ss:: S:SubKRList) => S) 
           ~> krlist(_:List (.List => ListItem(V))) 
           when getKLabel(V) =/=KLabel 'krlist
           [structural]
      // Somewhat contrived feature: nested lists are flattened.
-     rule toKRList'((sItem(krlist(L:List)) ss:: S:SubKRList) => S) 
+     rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S) 
           ~> krlist( _:List (.List => L)) 
           [structural]
      rule toKRList'(.SubKRList) => .
