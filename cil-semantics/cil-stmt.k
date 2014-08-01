@@ -176,7 +176,7 @@ module CIL-STMT
     <labels>... .Map => L |-> Ss ...</labels>
     when getKLabel(L) =/=KLabel '$caseLabel
     [structural]
-  context eval-case-label($caseLabel(_:Int, HOLE:>Exp), _:Stmts)
+  context eval-case-label($caseLabel(_:Int, HOLE:Exp), _:Stmts)
   rule
     <k> eval-case-label($caseLabel(I:Int, E:KResult), Ss:Stmts) => .K ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>

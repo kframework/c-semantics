@@ -284,11 +284,11 @@ module CIL-DECL
       }
 
   rule normLabelsStmt(S:Stmt, I:Int)
-    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm):>Stmt
+    => #visit(S, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmt
   rule normLabelsStmts(Ss:Stmts, I:Int)
-    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm):>Stmts
+    => #visit(Ss, 'normLabelsVisitor, I, 'needsLabelNorm)::Stmts
   rule normLabels(FB:FunBody)
-    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm):>FunBody
+    => #visit(FB, 'normLabelsVisitor, 0, 'needsLabelNorm)::FunBody
 
   /*
    * Local variable declarations (without initializers).
