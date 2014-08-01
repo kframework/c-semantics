@@ -86,7 +86,7 @@ module CIL-SEMANTICS
     </aggregates>
     <heap map="">
       <object multiplicity="*">
-        <base-ptr key=""> .K:>BasePtr </base-ptr>
+        <base-ptr key=""> Null </base-ptr>
         //<object-type> void </object-type>
         <bytes> .Map </bytes> // Map{Nat, ByteValue}
       </object>
