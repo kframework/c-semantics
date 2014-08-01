@@ -12,8 +12,9 @@ require "cil-typing.k"
 require "cil-implementation.k"
 require "cil-lib.k"
 
+require "verification/list_pattern.k"
 
-module CIL
+module CIL-SEMANTICS
   imports LIST
   imports MAP
   imports SET
@@ -111,5 +112,10 @@ module CIL
   when isBuiltin(KI)
   rule normPtrs'(KI:KItem) => KI
   when isBuiltin(KI)
+endmodule
+
+module CIL
+  imports CIL-SEMANTICS
+  imports LIST-PATTERN
 endmodule
 
