@@ -6,6 +6,7 @@ struct treeNode {
   struct treeNode *right;
 };
 
+struct treeNode* new_node(int v);
 int find_min(struct treeNode *t);
 
 struct treeNode* delete(int v, struct treeNode *t)
@@ -73,6 +74,15 @@ struct treeNode* insert(int v, struct treeNode *t)
     t->right = insert(v, t->right);
 
   return t;
+}
+
+struct treeNode* new_node(int v)
+{
+  struct treeNode *node;
+  node = (struct treeNode *) malloc(sizeof(struct treeNode));
+  node->val = v;
+  node->left = node->right = NULL;
+  return node;
 }
 
 int find_min(struct treeNode *t)
