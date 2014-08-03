@@ -1,6 +1,6 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
-     syntax KItem ::= rkludge(K) [function, klabel('rkludge)]
+     syntax KItem ::= rkludge(K) [function]
      syntax KItem ::= pkludge(K) [function, klabel('pkludge)]
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkLoc(SymLoc)

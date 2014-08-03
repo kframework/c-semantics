@@ -155,7 +155,7 @@ module C-FUNCTION-DEF
                tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
                => .
           ...</k>
-          <functions> M:Map => M[Fun <- base(Loc)] </functions>
+          <functions> M:Map => M[base(Loc) <- Fun] </functions>
           when isFunctionType(T) andBool (notBool (base(Loc) in keys(M)))
           [structural]
 

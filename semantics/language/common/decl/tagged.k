@@ -55,7 +55,7 @@ module C-DECL-TAGGED
                , L':List
           )
           => makeStructFieldInfo'(L, V +Int byteSizeofType(T),
-               Types[T <- Field], Offsets[V <- Field], L')
+               Types[Field <- T], Offsets[Field <- V], L')
      rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
 
@@ -83,7 +83,7 @@ module C-DECL-TAGGED
                , L':List
           )
           => makeUnionFieldInfo'(L,
-               Types[T <- Field], Offsets[0 <- Field], L')
+               Types[Field <- T], Offsets[Field <- 0], L')
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
           => fieldInfo(L, Types, Offsets)
 

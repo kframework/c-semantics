@@ -145,7 +145,7 @@ module C-DECL-LOCAL
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
-          <structs> Structs:Map => Structs[Info <- X] </structs>
+          <structs> Structs:Map => Structs[X <- Info] </structs>
           [structural]
 endmodule
 

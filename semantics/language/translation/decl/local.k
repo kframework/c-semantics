@@ -27,7 +27,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, Base)
           ...</k>
-          <types> M:Map => M[T <- X] </types>
+          <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -43,7 +43,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
-          <types> M:Map => M[T <- X] </types>
+          <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -60,7 +60,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit) 
                => addToEnv(X, symVal)
           ...</k>
-          <types> M:Map => M[T <- X] </types>
+          <types> M:Map => M[X <- T] </types>
           <external-types> Types:Map </external-types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -153,12 +153,12 @@ module C-DECL-LOCAL
           <tu-id> Tu </tu-id>
           <local-types>
                // TODO(chathhorn): local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes[.K <- kpair(X, BlockNum)]
+               LocalTypes:Map => LocalTypes[kpair(X, BlockNum) <- .K]
           </local-types>
           [structural] 
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
-          <structs> Structs:Map => Structs[Info <- X] </structs>
+          <structs> Structs:Map => Structs[X <- Info] </structs>
           when notBool (X in keys(Structs))
           [structural]
      rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "

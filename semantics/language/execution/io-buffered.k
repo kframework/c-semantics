@@ -126,7 +126,7 @@ module C-IO-BUFFERED
                (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
           <mem>...
-               Base |-> object(_, Len:Int, M:Map => M[V <- Offset])
+               Base |-> object(_, Len:Int, M:Map => M[Offset <- V])
           ...</mem>
           when Offset <Int Len
           [structural]
@@ -218,7 +218,7 @@ module C-IO-BUFFERED
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int,
                M:Map => M[
-                    piece(trap, cfg:bitsPerByte) <- Offset]) 
+                     Offset <- piece(trap, cfg:bitsPerByte)]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool (loc(Base, Offset) in locations(Mem)))
@@ -234,7 +234,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>... 
                Base |-> object(ObjT:Type, Len:Int, 
-               M:Map => M[piece(0, cfg:bitsPerByte) <- Offset]) 
+               M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
           ...</mem>
           <buffer> Mem:List </buffer>
           when (notBool (loc(Base, Offset) in locations(Mem)))

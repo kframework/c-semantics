@@ -24,12 +24,10 @@ module LIBC-STDIO
      syntax String ::= symBaseToString(SymBase) [function]
 
      // getString returns the string without the null terminator
-     syntax KItem ::= getString(K)
+     syntax KItem ::= getString(K) [function]
      syntax KItem ::= "getString-aux" "(" SymLoc "," String ")"
      rule getString(Loc:SymLoc) => getString-aux(Loc, "")
-          [structural, anywhere]
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
-          [structural, anywhere]
 
      rule [getString-pre]:
           (. => read(Loc, t(.Set, char)))

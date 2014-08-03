@@ -279,7 +279,7 @@ module C-TYPING-EXPR
     
      /*TODO:may be an error
      rule <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
-          <curr-program-loc> _ => L:CabsLoc </curr-program-loc>
+          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural]
 	*/
 endmodule
