@@ -86,19 +86,19 @@ module C-TYPING-EXPR
                t(S:Set, pointerType(T:Type)) + T':Type
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
      rule <type>
                T':Type + t(S:Set, pointerType(T:Type))
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
      rule <type>
                t(S:Set, pointerType(T:Type)) - T':Type
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
      rule <type>
                t(_, pointerType(_:Type)) - t(_, pointerType(_:Type))
@@ -109,19 +109,19 @@ module C-TYPING-EXPR
                t(S:Set, arrayType(T:Type, _)) + T':Type
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
      rule <type>
                T':Type + t(S:Set, arrayType(T:Type, _))
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
      rule <type>
                t(S:Set, arrayType(T:Type, _)) - T':Type
                => t(S, pointerType(T))
           ...</type>
-          when hasIntegerType(T')
+          requires hasIntegerType(T')
           [structural]
 
      // c99 6.4.5
@@ -196,14 +196,14 @@ module C-TYPING-EXPR
                L:KLabel(K:K,, _)
                => K:K
           ...</type>
-          when (l(L) in assignmentLabels)
+          requires (l(L) in assignmentLabels)
           [structural]
 
      rule <type>
                L:KLabel(T:Type,, T':Type) 
                => usualArithmeticConversion(T, T')
           ...</type>
-          when isArithBinConversionOp(L)
+          requires isArithBinConversionOp(L)
                andBool (hasIntegerType(T) orBool hasFloatType(T))
                andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
@@ -212,11 +212,11 @@ module C-TYPING-EXPR
                _:K ? T:Type : T':Type 
                => usualArithmeticConversion(T, T')
           ...</type>
-          when (hasIntegerType(T) orBool hasFloatType(T))
+          requires (hasIntegerType(T) orBool hasFloatType(T))
                andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
      rule <type> _:K ? T:Type : T:Type => T:Type ...</type>
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
           [structural]
           
      rule <type>
@@ -238,24 +238,24 @@ module C-TYPING-EXPR
           [structural]
 
      rule <type> L:KLabel(T:Type) => T ...</type> 
-          when isArithUnaryOp(L)
+          requires isArithUnaryOp(L)
                andBool hasFloatType(T)
           [structural]
      rule <type> L:KLabel(T:Type) => promote(T) ...</type> 
-          when isArithUnaryOp(L) andBool hasIntegerType(T)
+          requires isArithUnaryOp(L) andBool hasIntegerType(T)
           [structural]
      
      rule <type> L:KLabel(T:Type,, _:KList) => T ...</type>
-          when hasFloatType(T)
+          requires hasFloatType(T)
                andBool (l(L) in typeStrictLeftBinaryOperators)
           [structural]
      rule <type> L:KLabel(T:Type,, _:KList) => promote(T) ...</type>
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
                andBool (l(L) in typeStrictLeftBinaryOperators)
           [structural]
           
      rule <type> L:KLabel(T:Type) => T ...</type>
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool (
                     (L ==KLabel ('_++))
                     orBool (L:KLabel ==KLabel ('_--))
@@ -268,7 +268,7 @@ module C-TYPING-EXPR
           [structural]
           
      rule <type> L:KLabel(_:K,, _:K) => t(.Set, int) ...</type>
-          when (L:KLabel ==KLabel '_==_)
+          requires (L:KLabel ==KLabel '_==_)
                orBool (L:KLabel ==KLabel '_!=_)
                orBool (L:KLabel ==KLabel '_&&_)
                orBool (L:KLabel ==KLabel '_||_)

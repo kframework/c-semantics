@@ -42,7 +42,7 @@ module C-DECL-GLOBAL
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural] 
@@ -50,7 +50,7 @@ module C-DECL-GLOBAL
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
@@ -63,7 +63,7 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
-          when isFunctionType(T)
+          requires isFunctionType(T)
                andBool validGlobalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural] 
@@ -75,21 +75,21 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
-          when notBool isFunctionType(T)
+          requires notBool isFunctionType(T)
                andBool validGlobalStorageClass(T)
           [structural] 
 
      rule (. => ERROR("DG1", "declaration for the function " +String idToString(X)
                +String " appears with type qualifiers."))
           ~> declare''(typedDeclaration(T:Type, X:CId), _)
-          when isFunctionType(T)
+          requires isFunctionType(T)
                andBool getQualifiers(T) =/=K .Set
           [structural] 
 
      rule (. => ERROR("DG2", "declaration for " +String idToString(X)
                +String " appears with multiple storage class specifiers.", 8))
           ~> declare(typedDeclaration(T:Type, X:CId), _)
-          when notBool validStorageClass(T)
+          requires notBool validStorageClass(T)
           [structural] 
 
      rule <k> (. => ERROR("DG3", "declaration for " +String idToString(X)
@@ -97,7 +97,7 @@ module C-DECL-GLOBAL
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> F:K </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
           [structural] 
@@ -107,7 +107,7 @@ module C-DECL-GLOBAL
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> file-scope </curr-function>
-          when validStorageClass(T)
+          requires validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
           [structural] 
           
@@ -122,9 +122,9 @@ module C-DECL-GLOBAL
      // TODO(chathhorn): consider checking function init list here (disallowed
      // in the case of a prototype).
      rule checkDeclType(T:Type, _) => checkParams(T)
-          when isFunctionType(T)
+          requires isFunctionType(T)
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
-          when notBool isFunctionType(T)
+          requires notBool isFunctionType(T)
 
      //TODO: might not need checkParamInList when we have K rewrite implemented properly 
      rule checkParams(t(_, functionType(_, L:List))) => checkParamInList(L)
@@ -132,7 +132,7 @@ module C-DECL-GLOBAL
 
      rule checkParamInList(.List) => .
      rule checkParamInList(ListItem(T:Type) L:List) => checkParamInList(L)
-          when (getStorageSpecifiers(T) ==K .Set)
+          requires (getStorageSpecifiers(T) ==K .Set)
                orBool (notBool isVoidType(T)
                     andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
 
@@ -140,7 +140,7 @@ module C-DECL-GLOBAL
 	  ERROR("DG5", "function parameter appears with storage "
                +String "class other than register.")
           ~> checkParam(T:Type)
-          when getStorageSpecifiers(T) =/=K .Set
+          requires getStorageSpecifiers(T) =/=K .Set
                andBool getStorageSpecifiers(T) =/=K SetItem(Register)
                andBool notBool isVoidType(T)
           [structural] 
@@ -148,16 +148,16 @@ module C-DECL-GLOBAL
      rule checkParamInList(ListItem(T:Type) L:List) =>
           ERROR("DG6", "void parameter appears with a storage class.")
           ~> checkParam(T:Type)
-          when getStorageSpecifiers(T) =/=K .Set
+          requires getStorageSpecifiers(T) =/=K .Set
                andBool isVoidType(T)
           [structural] 
 
      rule checkComplete(_, NoInit) => .
      rule checkComplete(T:Type, _) => .
-          when isCompleteType(T) orBool isArrayType(T)
+          requires isCompleteType(T) orBool isArrayType(T)
      rule (.K => ERROR("DG7", "declaration has initializer but incomplete type."))
           ~> checkComplete(T:Type, K:K)
-          when (K =/=K NoInit)
+          requires (K =/=K NoInit)
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
 
      syntax KItem ::= declareExternalVariable(CId, Type, K)
@@ -276,7 +276,7 @@ module C-DECL-GLOBAL
           <internals>...
                X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</internals>
-          when notBool isNaked(T)
+          requires notBool isNaked(T)
                andBool notBool (X in keys(Exts))
                andBool areCompatible(T, OldT)
           [structural]
@@ -290,7 +290,7 @@ module C-DECL-GLOBAL
           <internals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</internals>
-          when notBool areCompatible(T, OldT)
+          requires notBool areCompatible(T, OldT)
           [structural]
 
      // Naked, previously declared extern.
@@ -307,7 +307,7 @@ module C-DECL-GLOBAL
                X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
           ...</externals>
           <internals> Ints:Map </internals>
-          when isNaked(T)
+          requires isNaked(T)
                andBool notBool (X in keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
@@ -326,7 +326,7 @@ module C-DECL-GLOBAL
                X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
           ...</externals>
           <internals> Ints:Map </internals>
-          when isExtern(T)
+          requires isExtern(T)
                andBool notBool (X in keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
@@ -340,7 +340,7 @@ module C-DECL-GLOBAL
           <externals>... 
                X |-> declState(_, OldT:Type, _, _) 
           ...</externals>
-          when notBool areCompatible(T, OldT)
+          requires notBool areCompatible(T, OldT)
           [structural]
 
      // Naked or extern, not previously declared.
@@ -360,7 +360,7 @@ module C-DECL-GLOBAL
                (.Map => X |-> declState(Base, T, declared, false))
           </externals>
           <internals> Ints:Map </internals>
-          when notBool isStaticType(T)
+          requires notBool isStaticType(T)
                andBool notBool (X in keys(Exts))
                andBool notBool (X in keys(Ints))
           [structural]
@@ -381,7 +381,7 @@ module C-DECL-GLOBAL
                Ints:Map
                (.Map => X |-> declState(Base, T, declared, false))
           </internals>
-          when isStaticType(T)
+          requires isStaticType(T)
                andBool notBool (X in keys(Exts))
                andBool notBool (X in keys(Ints))
           [structural]
@@ -395,7 +395,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
-          when isStaticType(T)
+          requires isStaticType(T)
                andBool (X in keys(Exts))
           [structural]
 
@@ -417,14 +417,14 @@ module C-DECL-GLOBAL
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
-          when notBool isCompleteType(T)
+          requires notBool isCompleteType(T)
           [structural]
      rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk)
-          when notBool isCompleteType(T)
+          requires notBool isCompleteType(T)
                andBool Sto =/=K Extern
           [structural]
 
@@ -434,7 +434,7 @@ module C-DECL-GLOBAL
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool State =/=K declared
           [structural]
 
@@ -451,7 +451,7 @@ module C-DECL-GLOBAL
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, allocated)
           ~> recordTentDef(X, Lnk)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool Sto =/=K Extern
           [structural]
 
@@ -460,7 +460,7 @@ module C-DECL-GLOBAL
                declared, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, completed)
-          when isCompleteType(T)
+          requires isCompleteType(T)
           [structural]
 
      // Already encountered a completed decl, no init.
@@ -471,7 +471,7 @@ module C-DECL-GLOBAL
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, allocated)
           ~> recordTentDef(X, Lnk)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool Sto =/=K Extern
           [structural]
 
@@ -481,7 +481,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk) // Don't really need this.
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool (State ==K allocated orBool State ==K initialized)
                andBool Sto =/=K Extern
           [structural]
@@ -495,7 +495,7 @@ module C-DECL-GLOBAL
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
           ~> allowInit(K)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
 
@@ -506,7 +506,7 @@ module C-DECL-GLOBAL
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
           ~> allowInit(K)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
 
@@ -516,7 +516,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
           ~> allowInit(K)
-          when isCompleteType(T)
+          requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
 
@@ -525,7 +525,7 @@ module C-DECL-GLOBAL
                +String idToString(X)))
           ~> declareExternalVariable'(initValue(X:CId, _, K:K), 
                initialized, _, _)
-          when  K =/=K .K
+          requires  K =/=K .K
           [structural]
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)
@@ -558,7 +558,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
-          when isLinkerLoc(Base')
+          requires isLinkerLoc(Base')
                andBool notBool (X in keys(Decls))
           [structural]
      // No previous decl, this is a def.
@@ -567,7 +567,7 @@ module C-DECL-GLOBAL
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
           <external-defs>... (.Map => X |-> Base') ...</external-defs>
-          when notBool isLinkerLoc(Base')
+          requires notBool isLinkerLoc(Base')
                andBool notBool (X in keys(Decls))
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
@@ -575,13 +575,13 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <external-decls>... X |-> set(_:Set (.Set => SetItem(Tu))) ...</external-decls>
           <external-types>... X |-> (_ => T') ...</external-types>
-          when isLinkerLoc(Base')
+          requires isLinkerLoc(Base')
           [structural]
      // New def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => . ...</k>
           <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs> Defs:Map (.Map => X |-> Base') </external-defs>
-          when notBool isLinkerLoc(Base')
+          requires notBool isLinkerLoc(Base')
                andBool (notBool (X in keys(Defs)))
           [structural]
      // Def already encountered.
@@ -598,7 +598,7 @@ module C-DECL-GLOBAL
           <external-defs>...
                X |-> Base:SymBase
           ...</external-defs>
-          when notBool isLinkerLoc(Base')
+          requires notBool isLinkerLoc(Base')
                andBool (Base =/=K Base')
           [structural]
      
@@ -626,7 +626,7 @@ module C-DECL-GLOBAL
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Base:SymBase ...</env>
-          when notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
           [structural]
      rule <k> allocateDecl(X:CId) 
                => addToEnv(X, Base')
@@ -638,7 +638,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <next-static-loc> Base':SymBase => linc(Base') </next-static-loc>
           <linkings>... (.Map => Base |-> Base') </linkings>
-          when isLinkerLoc(Base)
+          requires isLinkerLoc(Base)
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff *** 
@@ -657,7 +657,7 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          when notBool (X in keys(GStructs))
+          requires notBool (X in keys(GStructs))
           [structural]*/
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => . ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -665,7 +665,7 @@ module C-DECL-GLOBAL
           <structs> Structs:Map => Structs[X <- Info] </structs>
           <gstructs> GStructs:Map => GStructs[X <- Info] </gstructs>
           <incomplete-tags> Incs:Set </incomplete-tags>
-          when notBool (X in Incs)
+          requires notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
           [structural]
      rule <k> (. => ERROR("DG13", "redefinition of a struct, union, or enum: "
@@ -675,7 +675,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gstructs> GStructs:Map </gstructs>
-          when (X in keys(GStructs))
+          requires (X in keys(GStructs))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -702,7 +702,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
                          declared, _)
           ...</externals>
-          when notBool isFunctionType(T)
+          requires notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
 	  [structural]
 
@@ -711,7 +711,7 @@ module C-DECL-GLOBAL
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>     
-          when isFunctionType(T)
+          requires isFunctionType(T)
                orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
@@ -738,7 +738,7 @@ module C-DECL-GLOBAL
                X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
                     declared, _)
           ...</internals>
-          when notBool isFunctionType(T)
+          requires notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
           [structural]
 
@@ -747,7 +747,7 @@ module C-DECL-GLOBAL
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>     
-          when isFunctionType(T)
+          requires isFunctionType(T)
                orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
@@ -781,7 +781,7 @@ module C-DECL-GLOBAL
                     (Decls:List => completeTagsInList(S |-> Info, Decls)),
                     (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
           ...</structs>
-          when S =/=K S2
+          requires S =/=K S2
           [structural]
 
      syntax KItem ::= giveCompositeType(CId, Type)
@@ -789,13 +789,13 @@ module C-DECL-GLOBAL
                => giveType(X, compositeType(T, T'))
           ...</k>
           <types>... X |-> T:Type ...</types>
-          when areCompatible(T, T')
+          requires areCompatible(T, T')
           [structural]
      rule <k> giveCompositeType(X:CId, T':Type)
                => giveType(X, T')
           ...</k>
           <types> Types:Map </types>
-          when notBool (X in keys(Types))
+          requires notBool (X in keys(Types))
           [structural]
 
      rule <k> (.K => ERROR("DG14", "incompatible redeclaration of symbol "
@@ -804,7 +804,7 @@ module C-DECL-GLOBAL
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
-          when notBool areCompatible(T, T')
+          requires notBool areCompatible(T, T')
           [structural]
 
 endmodule

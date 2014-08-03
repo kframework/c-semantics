@@ -54,16 +54,16 @@ module LIBC-STDARG
      // tool fixme, change Value to K and unquote error
      rule [va-start]:
           prepareBuiltin(Identifier("__va_start"), 
-               hItem(ApLoc:KResult) hs::
-               hItem(ArgLoc:KResult))
+               hrItem(ApLoc:KResult) hs::
+               hrItem(ArgLoc:KResult))
           => Computation(*(ApLoc) := incSymbolic(ArgLoc))
                ~> skipval
           [structural]
      
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"), 
-               hItem(ApLoc:TypedValue) hs::
-               hItem(Size:TypedValue))
+               hrItem(ApLoc:TypedValue) hs::
+               hrItem(Size:TypedValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
@@ -79,14 +79,14 @@ module LIBC-STDARG
      // fixme can do lots of checks here too
      rule [va-copy]:
           prepareBuiltin(Identifier("__va_copy"), 
-               hItem(ApLoc:KResult) hs::
-               hItem(Other:KResult))
+               hrItem(ApLoc:KResult) hs::
+               hrItem(Other:KResult))
           => Computation(*(ApLoc) := Other) ~> skipval
           [structural]
           
      // fixme can do lots of checks here too
      rule [va-end]:
           prepareBuiltin(Identifier("__va_end"),
-               hItem(_:KResult)) => skipval
+               hrItem(_:KResult)) => skipval
           [structural]
 endmodule

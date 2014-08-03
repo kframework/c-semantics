@@ -66,14 +66,14 @@ module C-LTLMC
      rule intify(false) => 0
      rule intify(true) => 1
 
-     syntax Bool ::= "#running" "(" Bag ")" [function]
+     syntax Bool ::= #running(Bag) [function]
      rule #running(
           <generatedTop>... 
                <status> mainCalled </status> 
           ...</generatedTop>)
           => true
 
-     syntax Bool ::= "#error" "(" Bag ")" [function]
+     syntax Bool ::= #error(Bag) [function]
      rule #error(
           <generatedTop>... <T>...
                <error-cell> _ </error-cell> 
@@ -105,13 +105,13 @@ module C-LTLMC
      /*TODO: cannot handle this cases
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
 	 	=> ltlRVal(B, L(ltlRVal(B, P)))
-          when notBool (isValueProp(P:CProp) ==K true)
+          requires notBool (isValueProp(P:CProp) ==K true)
      rule ltlRVal(B:Bag, M:KLabel(L:CProp,, KL:KList))
 		=> ltlRVal(B, M(ltlRVal(B, L),, KL))
-          when notBool (isValueProp(L:CProp) ==K true)
+          requires notBool (isValueProp(L:CProp) ==K true)
      rule ltlRVal(B:Bag, Lbl:KLabel(KL:KList,, R:CProp))
 		=> ltlRVal(B, Lbl(KL,, ltlRVal(B, R)))
-          when notBool (isValueProp(R:CProp) ==K true)
+          requires notBool (isValueProp(R:CProp) ==K true)
                // Don't try resolving the field specifier.
                andBool (Lbl =/=KLabel '_._)
                andBool (Lbl =/=KLabel '_->_)
@@ -185,7 +185,7 @@ module C-LTLMC
           TT, 
           (NBytes -Int 1), 
           VL ListItem(V))
-          when NBytes >Int 0
+          requires NBytes >Int 0
 
      syntax ValueProp ::= joinBytes(Type, K) [function]
      syntax ValueProp ::= "joinBytes'" "(" Type "," List "," List ")" [function]
@@ -209,7 +209,7 @@ module C-LTLMC
           => #union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)
-          when hasIntegerType(T:Type)
+          requires hasIntegerType(T:Type)
 
      rule joinBytes'(T:Type, 
                L:List ListItem(piece(N:Int, Len:Int)), 

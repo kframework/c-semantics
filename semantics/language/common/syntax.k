@@ -1,6 +1,6 @@
 module C-SYNTAX
      // these are semantic
-     syntax KItem ::= reval(K) [semantic,context(result(KResult)),klabel('reval)]
+     syntax KItem ::= reval(K) [semantic,context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
      //TODO: might not need this list in the future. 
@@ -10,11 +10,17 @@ module C-SYNTAX
      syntax HeatList ::= toHeatList(List) [function]
      syntax List ::= hListToList(HeatList) [function]
 
+     syntax HeatResult ::= hrItem(K)
+     syntax HeatItem ::= HeatResult
+     syntax KResult ::= HeatResult
+
+     rule hItem(V:KResult) => hrItem(V)
+
      rule toHeatList(.List) => .HeatList
      rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
 
      rule hListToList(.HeatList) => .List
-     rule hListToList(hItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
+     rule hListToList(hrItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
 
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [function]
@@ -63,7 +69,6 @@ module C-SYNTAX
      }
      */
      syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
-          [klabel('CabsLoc)]
 	  
      syntax CabsLoc ::= filterCabsLoc(CabsLoc)
 
@@ -93,7 +98,7 @@ module C-SYNTAX
      syntax TypeSpecifier ::= "Signed"
      syntax TypeSpecifier ::= "Unsigned"
      syntax Float ::= "inf"
-     syntax TypeSpecifier ::= Named(CId) [klabel('Named)]
+     syntax TypeSpecifier ::= Named(CId)
      /*
      (* each of the following three kinds of specifiers contains a field
      * or item list iff it corresponds to a definition (as opposed to
@@ -110,30 +115,24 @@ module C-SYNTAX
           [klabel('StructRef)] // new
      // new // CId, List
      syntax C ::= StructDef(CId, K)
-          [strict(2), klabel('StructDef)]
-     syntax TypeSpecifier ::= UnionRef(CId)
-          [klabel('UnionRef)] // new
+          [strict(2)]
+     syntax TypeSpecifier ::= UnionRef(CId) // new
      // new // CId, List
      syntax C ::= UnionDef(CId, K)
-          [strict(2), klabel('UnionDef)]
-     syntax TypeSpecifier ::= EnumRef(CId)
-          [klabel('EnumRef)] // new
+          [strict(2)]
+     syntax TypeSpecifier ::= EnumRef(CId) // new
      // new // CId, List
      syntax C ::= EnumDef(CId, K)
-          [klabel('EnumDef)]
+     
      syntax TypeSpecifier ::= TypeofExpression(K)
-          [klabel('TypeofExpression)]
+     
      syntax TypeSpecifier ::= TypeofType(K, K)
-          [klabel('TypeofType)]
 
      syntax TypeSpecifier ::= "Complex"
      syntax TypeSpecifier ::= "Imaginary"
      syntax TypeSpecifier ::= TAtomic(K, K)
-          [klabel('TAtomic)]
      syntax TypeSpecifier ::= AlignasExpression(K)
-          [klabel('AlignasExpression)]
      syntax TypeSpecifier ::= AlignasType(K, K)
-          [klabel('AlignasType)]
 
      /*
      and storage =
@@ -253,16 +252,17 @@ module C-SYNTAX
      */
      // TODO(chathhorn): better solution?
      // first argument is id, second is basetype
-     syntax Name ::= Name(K, K) [avoid, klabel('Name)]
+     syntax Name ::= Name(K, K) [avoid]
      syntax CId ::= "#NoName" // new
-     syntax CId ::= "#NoName" "(" Int ")" [klabel('#NoName)] // new
-     syntax CId ::= Identifier(String) [klabel('Identifier)] // new
-
+     syntax CId ::= #NoName(Int) // new
+     syntax CId ::= Identifier(String) // new
+     //might not need this
+     syntax CId ::= ToIdentifier(String) [function]
      /*
      (* A variable declarator ("name") with an initializer *)
      and init_name = name * init_expression
      */
-     syntax InitName ::= "InitName" "(" K "," K ")" [klabel('InitName)]
+     syntax InitName ::= InitName(K, K)
      context InitName(_, (HOLE => reval(HOLE))) [ndheat]
 
      /*
@@ -270,18 +270,16 @@ module C-SYNTAX
       * function parameters and functions *)
      and single_name = specifier * name
      */
-     syntax SingleName ::= "SingleName" "(" K "," K ")"
-          [klabel('SingleName), strict(1)]
+     syntax SingleName ::= SingleName(K, K)
+          [strict(1)]
 
      /*
      and enum_item = String * expression * cabsloc
      */
      // this one has no init
-     syntax PureEnumItem ::= "EnumItem" "(" CId ")"
-          [klabel('EnumItem)]
+     syntax PureEnumItem ::= EnumItem(CId)
      // this one has an init
-     syntax PureEnumItem ::= "EnumItemInit" "(" CId "," K ")"
-          [klabel('EnumItemInit)]
+     syntax PureEnumItem ::= EnumItemInit(CId, K)
 
      /*
      (*
@@ -301,27 +299,20 @@ module C-SYNTAX
       (* expression transformer: source and destination *)
       | EXPRTRANSFORMER of expression * expression * cabsloc
      */
-     syntax PureDefinition ::= "FunctionDefinition" "(" K "," K ")"
-          [klabel('FunctionDefinition), strict(1)]
-     syntax PureDefinition ::= "DeclarationDefinition" "(" K ")"
-          [klabel('DeclarationDefinition)]
-     syntax PureDefinition ::= "Typedef" "(" K ")" [klabel('Typedef)]
-     syntax PureDefinition ::= "OnlyTypedef" "(" K ")" [klabel('OnlyTypedef)]
-     syntax PureDefinition ::= "GlobAsm" "(" String ")" [klabel('GlobAsm)]
-     syntax PureDefinition ::= "Pragma" "(" K ")" [klabel('Pragma)]
-     syntax PureDefinition ::= "Linkage" "(" String "," K ")"
-          [klabel('Linkage)]
-     syntax PureDefinition ::= "Transformer" "(" K "," K ")"
-          [klabel('Transformer)]
-     syntax PureDefinition ::= "ExpressionTransformer" "(" K "," K ")"
-          [klabel('ExpressionTransformer)]
+     syntax PureDefinition ::= FunctionDefinition(K, K) [strict(1)]
+     syntax PureDefinition ::= DeclarationDefinition(K)
+     syntax PureDefinition ::= Typedef(K)
+     syntax PureDefinition ::= OnlyTypedef(K)
+     syntax PureDefinition ::= GlobAsm(String) 
+     syntax PureDefinition ::= Pragma(K)
+     syntax PureDefinition ::= Linkage(String, K)
+     syntax PureDefinition ::= Transformer(K, K )
+     syntax PureDefinition ::= ExpressionTransformer(K, K)
 
      syntax PureDefinition ::= StaticAssert(Expression, Constant)
-          [klabel('StaticAssert)]
 
      // name
-     syntax PureDefinition ::= "LTLAnnotation" "(" CId "," K ")"
-          [klabel('LTLAnnotation)]
+     syntax PureDefinition ::= LTLAnnotation(CId, K)
 
      /*
      (* the String is a file name, and then the list of toplevel forms *)
@@ -330,7 +321,6 @@ module C-SYNTAX
      // name, code, source
      // new: Filename, strings, ast, code
      syntax TranslationUnit ::= TranslationUnit(String, K, K)
-          [klabel('TranslationUnit)]
 
      /*
      (* A block contains a list of local label declarations ( GCC's ({ __label__
@@ -342,7 +332,7 @@ module C-SYNTAX
      }
      */
      // Int, list, list
-     syntax Block ::= "Block" "(" Int "," K "," K ")" [avoid, klabel('Block)]
+     syntax Block ::= Block(Int, K, K) [avoid]
 
      /*
      and statement =
@@ -352,13 +342,10 @@ module C-SYNTAX
      | SEQUENCE of statement * statement * cabsloc
      */
      syntax PureStatement ::= "Nop"
-     syntax PureStatement ::= "Computation" "(" K ")"
-          [klabel('Computation), latex({{#1}};)]
+     syntax PureStatement ::= Computation(K) [latex({{#1}};)]
      context Computation((HOLE => reval(HOLE)))
-     syntax PureStatement ::= "BlockStatement" "(" K ")"
-          [klabel('BlockStatement)]
-     syntax PureStatement ::= "Sequence" "(" K "," K ")"
-          [klabel('Sequence)]
+     syntax PureStatement ::= BlockStatement(K)
+     syntax PureStatement ::= Sequence(K, K)
 
      /*
      | IF of expression * statement * statement * cabsloc
@@ -366,16 +353,12 @@ module C-SYNTAX
      | DOWHILE of expression * statement * cabsloc
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax PureStatement ::= "IfThenElse" "(" K "," K "," K ")"
-          [klabel('IfThenElse)]
+     syntax PureStatement ::= IfThenElse(K, K, K)
      context IfThenElse((HOLE => reval(HOLE)), _, _)
-     syntax PureStatement ::= "While" "(" K "," K ")"
-          [klabel('While)]
-     syntax PureStatement ::= "DoWhile" "(" K "," K ")"
-          [klabel('DoWhile)]
+     syntax PureStatement ::= While(K, K)
+     syntax PureStatement ::= DoWhile(K, K)
      // id, ...
-     syntax PureStatement ::= "For" "(" Int "," K "," K "," K "," K ")"
-          [klabel('For)]
+     syntax PureStatement ::= For(Int, K, K, K, K)
 
      /*
      | BREAK of cabsloc
@@ -384,7 +367,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
-     syntax PureStatement ::= "Return" "(" K ")" [klabel('Return)]
+     syntax PureStatement ::= Return(K)
      context Return((HOLE => reval(HOLE)))
 
      /*
@@ -394,16 +377,14 @@ module C-SYNTAX
      | DEFAULT of statement * cabsloc
      */
      // unique switch id
-     syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [klabel('Switch)]
+     syntax PureStatement ::= Switch(K, K, K)
      context Switch(_, (HOLE => reval(HOLE)), _)
      // unique switch id, unique case id, exp, statement
-     syntax PureStatement ::= "Case" "(" Int "," Int "," K "," K ")"
-          [klabel('Case)]
+     syntax PureStatement ::= Case(Int, Int, K, K)
      // gcc extension
-     syntax PureStatement ::= "CaseRange" "(" K "," K "," K ")"
-          [klabel('CaseRange)]
+     syntax PureStatement ::= CaseRange(K, K, K)
      // unique switch id, statement
-     syntax PureStatement ::= "Default" "(" Int "," K ")" [klabel('Default)]
+     syntax PureStatement ::= Default(Int, K)
 
      /*
      | LABEL of String * statement * cabsloc
@@ -411,17 +392,16 @@ module C-SYNTAX
      | COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
      | DEFINITION of definition (*definition or declaration of a variable or type*)
      */
-     syntax PureStatement ::= "Label" "(" CId "," K ")" [avoid, klabel('Label)]
-     syntax PureStatement ::= "Goto" "(" K ")" [klabel('Goto)] // CId
-     syntax PureStatement ::= "CompGoto" "(" K ")" [klabel('CompGoto)]
+     syntax PureStatement ::= Label(CId, K) [avoid]
+     syntax PureStatement ::= Goto(K) // CId
+     syntax PureStatement ::= CompGoto(K)
 
      /*
      and for_clause =
      FC_EXP of expression
      | FC_DECL of definition
      */
-     syntax ForClause ::= "ForClauseExpression" "(" K ")"
-          [klabel('ForClauseExpression)]
+     syntax ForClause ::= ForClauseExpression(K)
 
      /*
      and binary_operator =
@@ -436,8 +416,7 @@ module C-SYNTAX
      and expression =
      NOTHING
      */
-     syntax Expression ::= "OffsetOf" "(" K "," K "," K ")"
-          [klabel('OffsetOf), strict(1)]
+     syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= ExpressionLoc(K,K) [function]
 
      syntax Expression ::= "NothingExpression" [function]
@@ -557,17 +536,14 @@ module C-SYNTAX
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= "Cast" "(" K "," K "," K ")"
-          [klabel('Cast), strict(1)]
+     syntax Expression ::= Cast(K, K, K) [strict(1)]
      context Cast(_, _, (HOLE => reval(HOLE)))
 
-     syntax Expression ::= "Cast" "(" K "," K ")"
-          [klabel('Cast), strict(1)]
+     syntax Expression ::= Cast(K, K) [strict(1)]
      context Cast(_, (HOLE => reval(HOLE)))
 
      // new // comp-lit id, spec, decl, init
-     syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")"
-          [klabel('CompoundLiteral), strict(2)]
+     syntax Expression ::= CompoundLiteral(K, K, K, K) [strict(2)]
      /*
      (* There is a special form of CALL in which the function called
         __builtin_va_arg and the second argument is sizeof(T). This
@@ -575,14 +551,13 @@ module C-SYNTAX
      | CALL of expression * expression list
      */
 
-     syntax Expression ::= "Call" "(" K "," K ")"
-          [klabel('Call)] // K, List
+     syntax Expression ::= Call(K, K) // K, List
      context Call((HOLE => reval(HOLE)), _) [ndheat]
      /*
      | COMMA of expression list
      */
      // List
-     syntax Expression ::= "Comma" "(" K ")" [klabel('Comma)]
+     syntax Expression ::= Comma(K)
      /*
      | CONSTANT of constant
      | PAREN of expression
@@ -598,14 +573,10 @@ module C-SYNTAX
      | EXPR_ALIGNOF of expression
      | TYPE_ALIGNOF of specifier * decl_type
      */
-     syntax Expression ::= "SizeofExpression" "(" K ")"
-          [klabel('SizeofExpression)]
-     syntax Expression ::= "SizeofType" "(" K "," K ")"
-          [klabel('SizeofType), strict(1)]
-     syntax Expression ::= "AlignofExpression" "(" K ")"
-          [klabel('AlignofExpression)]
-     syntax Expression ::= "AlignofType" "(" K "," K ")"
-          [klabel('AlignofType)]
+     syntax Expression ::= SizeofExpression(K)
+     syntax Expression ::= SizeofType(K, K) [strict(1)]
+     syntax Expression ::= AlignofExpression(K)
+     syntax Expression ::= AlignofType(K, K)
      /*
      | INDEX of expression * expression
      */
@@ -622,9 +593,8 @@ module C-SYNTAX
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
-     syntax Expression ::= GnuBody(K) [klabel('GnuBody)]
+     syntax Expression ::= GnuBody(K) 
      syntax Expression ::= ExpressionPattern(String)
-          [klabel('ExpressionPattern)]
 
      /*
      and constant =
@@ -668,14 +638,11 @@ module C-SYNTAX
      */
      
      syntax KResult ::= "NoInit"
-     syntax InitExpression ::= SingleInit(K)
-          [klabel('SingleInit), hybrid, strict]
+     syntax InitExpression ::= SingleInit(K) [hybrid, strict]
      // List
-     syntax InitExpression ::= CompoundInit(K)
-          [klabel('CompoundInit), hybrid, strict]
+     syntax InitExpression ::= CompoundInit(K) [hybrid, strict]
      // new; (initwhat * init_expression)
      syntax InitFragment ::= InitFragment(K, K)
-          [klabel('InitFragment)]
 
      /*
      and initwhat =
@@ -691,8 +658,8 @@ module C-SYNTAX
      and attribute = String * expression list
      */
      // String, List
-     syntax C ::= Attribute(String, K) [klabel('Attribute)]
+     syntax C ::= Attribute(String, K)
 
-     syntax KItem ::= CodeLoc(K, K) [klabel('CodeLoc)]
+     syntax KItem ::= CodeLoc(K, K)
 
 endmodule

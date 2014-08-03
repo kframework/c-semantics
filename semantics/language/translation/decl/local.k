@@ -34,7 +34,7 @@ module C-DECL-LOCAL
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
-          when (isFunctionType(T') orBool isExternType(T'))
+          requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
@@ -50,7 +50,7 @@ module C-DECL-LOCAL
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
-          when (isFunctionType(T') orBool isExternType(T'))
+          requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
                andBool notBool (X in keys(Defs))
@@ -66,7 +66,7 @@ module C-DECL-LOCAL
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
-          when (isFunctionType(T) orBool isExternType(T))
+          requires (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
                andBool notBool (X in keys(Types))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
@@ -77,14 +77,14 @@ module C-DECL-LOCAL
                // and again below to enable storing the value of this declared
                // variable into the actual static memory.
                allowInit(figureInit(X, T, K)))
-          when isStaticType(T)
+          requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural] 
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, T, figureInit(X, T, K))
-          when isNaked(T)
+          requires isNaked(T)
           [structural] 
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
@@ -96,12 +96,12 @@ module C-DECL-LOCAL
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
-          when isExternType(T) andBool notBool isStaticType(T)
+          requires isExternType(T) andBool notBool isStaticType(T)
           [structural] 
      rule (. => ERROR("DL2", "extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer."))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
-          when isExternType(T) andBool K =/=K NoInit
+          requires isExternType(T) andBool K =/=K NoInit
           [structural] 
 
      syntax KItem ::= initLocalStatic(CId, K) [strict(2)] 
@@ -121,7 +121,7 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
           </local-types>
-          when notBool (kpair(X, BlockNum) in keys(LocalStatics))
+          requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
      rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
@@ -137,7 +137,7 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map
           </local-types>
-          when (kpair(X, BlockNum) in keys(LocalStatics))
+          requires (kpair(X, BlockNum) in keys(LocalStatics))
                orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural] 
           
@@ -159,7 +159,7 @@ module C-DECL-LOCAL
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[X <- Info] </structs>
-          when notBool (X in keys(Structs))
+          requires notBool (X in keys(Structs))
           [structural]
      rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
                +String idToString(X)))

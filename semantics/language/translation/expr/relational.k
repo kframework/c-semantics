@@ -8,7 +8,7 @@ module C-EXPR-RELATIONAL
 
      rule tv(V:CValue, T:Type) < tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))
@@ -17,7 +17,7 @@ module C-EXPR-RELATIONAL
           [structural]
      rule tv(V:CValue, T:Type) <= tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))
@@ -26,7 +26,7 @@ module C-EXPR-RELATIONAL
           [structural]
      rule tv(V:CValue, T:Type) > tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))
@@ -35,7 +35,7 @@ module C-EXPR-RELATIONAL
           [structural]
      rule tv(V:CValue, T:Type) >= tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))
@@ -44,7 +44,7 @@ module C-EXPR-RELATIONAL
           [structural]
      rule tv(V:CValue, T:Type) == tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))
@@ -53,7 +53,7 @@ module C-EXPR-RELATIONAL
           [structural]
      rule tv(V:CValue, T:Type) != tv(V':CValue, T':Type) 
           => tv(symVal, t(.Set, int))
-          when ((V ==K symVal) orBool (V' ==K symVal))
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool (
                     (isPointerType(T) andBool isPointerType(T'))
                     orBool ((T ==Type T') andBool isPromoted(T))

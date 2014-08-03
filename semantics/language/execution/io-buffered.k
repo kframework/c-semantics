@@ -54,7 +54,7 @@ module C-IO-BUFFERED
           <modified>
                Modified:Map (.Map => Loc |-> byteSizeofType(T))
           </modified>
-          when notBool (Loc in keys(Modified))
+          requires notBool (Loc in keys(Modified))
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -70,7 +70,7 @@ module C-IO-BUFFERED
           <locs-written>
                Locs:List (.List => ListItem(loc(Base, Offset)))
           </locs-written>
-          when // Sequencing.
+          requires // Sequencing.
                (notBool loc(Base, Offset) in Locs)
                // Bounds.
                andBool (Offset <Int Len)
@@ -88,33 +88,33 @@ module C-IO-BUFFERED
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
           <locs-written> Locs:List </locs-written>
-          when Loc in Locs:List
+          requires Loc in Locs:List
           [structural] 
      // TODO(chathhorn): probably redundant.
      rule <k> (. => UNDEF("EIO2", "Trying to write outside the bounds of an object.", "6.2.4"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _) 
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
-          when Offset >=Int Len orBool Offset <Int 0
+          requires Offset >=Int Len orBool Offset <Int 0
           [structural] 
      rule <k> (. => UNDEF("EIO3", "Trying to modify an object declared with const type.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when (Const in getQualsAtOffset(ObjT, Offset))
+          requires (Const in getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
-          when notBool isVolatileType(T)
+          requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (. => UNSPEC("EIO5", "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
-          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+          requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
@@ -128,7 +128,7 @@ module C-IO-BUFFERED
           <mem>...
                Base |-> object(_, Len:Int, M:Map => M[Offset <- V])
           ...</mem>
-          when Offset <Int Len
+          requires Offset <Int Len
           [structural]
 
      syntax Set ::= locations(List) [function]
@@ -141,14 +141,14 @@ module C-IO-BUFFERED
                ~> readBytes-aux(Loc, Size, .List, T) 
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
-          when notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
+          requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural] 
      rule <k> (. => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
                ~> readBytes(Loc:SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
-          when (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+          requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
@@ -157,7 +157,7 @@ module C-IO-BUFFERED
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List, T:Type)
           => readByte(Loc, T)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
-          when Size >Int 0
+          requires Size >Int 0
           [structural]
      rule readBytes-aux(_, 0, Aux:List, _) => dataList(bvalues(Aux)) 
           [structural]
@@ -206,7 +206,7 @@ module C-IO-BUFFERED
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
-          when notBool (loc(Base, Offset) in locations(Mem))
+          requires notBool (loc(Base, Offset) in locations(Mem))
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
@@ -221,7 +221,7 @@ module C-IO-BUFFERED
                      Offset <- piece(trap, cfg:bitsPerByte)]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool (loc(Base, Offset) in locations(Mem)))
+          requires (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in (keys(M))))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
@@ -237,7 +237,7 @@ module C-IO-BUFFERED
                M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
           ...</mem>
           <buffer> Mem:List </buffer>
-          when (notBool (loc(Base, Offset) in locations(Mem)))
+          requires (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in (keys(M))))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
@@ -256,7 +256,7 @@ module C-IO-BUFFERED
 //             ...</k>
 //             <locs-written> Locs:List </locs-written>
 //             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
-//             when notBool (Loc in locations(Mem:List))
+//             requires notBool (Loc in locations(Mem:List))
 //             [structural]
 //             // for speed in interpretation; forces local buffer to be flushed
 //             // before a read
@@ -287,12 +287,12 @@ module C-IO-BUFFERED
                Old |-> object(_, _, M:Map)
                New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
-          when ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
+          requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
           <mem>... Old |-> object(_, _, M:Map) ...</mem>
-          when (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
+          requires (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .
           [structural]   
@@ -322,19 +322,19 @@ module C-IO-BUFFERED
                => getTypeAtOffset(T, Offset)
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T)
+          requires notBool isNoType(T)
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T' ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           <effective-types>...
                loc(Base, Offset) |-> T':Type
           ...</effective-types>
-          when isNoType(T)
+          requires isNoType(T)
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           <effective-types> EffTypes:Map </effective-types>
-          when isNoType(T)
+          requires isNoType(T)
                andBool notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
 
@@ -342,7 +342,7 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isNoType(T) orBool hasCharType(T':Type)
+          requires notBool isNoType(T) orBool hasCharType(T':Type)
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
           ...</k>
@@ -350,39 +350,39 @@ module C-IO-BUFFERED
           <effective-types>...
                .Map => loc(Base, Offset) |-> T'
           ...</effective-types>
-          when isNoType(T) andBool notBool hasCharType(T':Type)
+          requires isNoType(T) andBool notBool hasCharType(T':Type)
           [structural]
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L:Type, Eff:Type) => .
-          when (#effectivelyCompat(L, Eff) ==K true)
+          requires (#effectivelyCompat(L, Eff) ==K true)
                orBool isNoType(Eff)
           [structural]
      rule (. => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
-          when (#effectivelyCompat(L, Eff) =/=K true)
+          requires (#effectivelyCompat(L, Eff) =/=K true)
                andBool notBool isNoType(Eff)
           [structural]
 
      // An  object shall have its stored value accessed only by an lvalue
      // expression that has one of
-     syntax Bool ::= "#effectivelyCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= #effectivelyCompat(Type, Type) [function]
      // - a type compatible with the effective type of the object,
      // - a qualified version of a type compatible with the effective type of
      // the object,
      rule #effectivelyCompat(L:Type, Eff:Type) => true
-          when areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      // - a type that is the signed or unsigned type corresponding to the
      // effective type of the object,
      // - a type that is the signed or unsigned type corresponding to a
      // qualified version of the effective type of the object,
      rule #effectivelyCompat(L:Type, Eff:Type) => true
-          when areCompatible(correspondingUnsignedType(stripQualifiers(L)),
+          requires areCompatible(correspondingUnsignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      rule #effectivelyCompat(L:Type, Eff:Type) => true
-          when areCompatible(correspondingSignedType(stripQualifiers(L)),
+          requires areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      // - an aggregate or union type that includes one of the aforementioned
@@ -390,7 +390,7 @@ module C-IO-BUFFERED
      // subaggregate or contained union), or
      rule #effectivelyCompat(L:Type, Eff:Type)
           => #effectivelyCompat(L, effInnerType(Eff))
-          when isAggregateType(Eff)
+          requires isAggregateType(Eff)
                andBool notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                     andBool getQualifiers(Eff) <=Set getQualifiers(L))
                andBool notBool hasCharType(L:Type)
@@ -402,14 +402,14 @@ module C-IO-BUFFERED
      // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
                t(Mods:Set, unionType(X:CId, Sz:Int, fieldInfo(Decls:List, Types:Map, Offs:Map))))
           => effectivelyCompatWithUnion(L, values(Types))
-          when notBool (areCompatible(stripQualifiers(L),
+          requires notBool (areCompatible(stripQualifiers(L),
                          stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
                andBool notBool hasCharType(L:Type)
      // - a character type.
      rule #effectivelyCompat(L:Type, _) => true
-          when hasCharType(L:Type)
+          requires hasCharType(L:Type)
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
      rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)
@@ -425,13 +425,13 @@ module C-IO-BUFFERED
      rule getTypeAtOffset(T:Type, 0) => T
      // Preserve the qualifiers.
      rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
-          when (Offset =/=Int 0)
+          requires (Offset =/=Int 0)
                andBool notBool isAggregateType(T)
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
                Offset %Int byteSizeofType(T))
-          when Offset =/=Int 0 // We assume the offset must be in range.
+          requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, SI:Int, fieldInfo(
                F1List:List (ListItem(typedDeclaration(_, F1:CId))),
@@ -443,7 +443,7 @@ module C-IO-BUFFERED
                F2Map (F1 |-> T),
                F3Map (F1 |-> Offset1)
           ))), Offset)
-          when (Offset =/=Int 0)
+          requires (Offset =/=Int 0)
                andBool (Offset1 >Int Offset)
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
                _ ListItem(typedDeclaration(_, F1:CId)),
@@ -451,25 +451,25 @@ module C-IO-BUFFERED
                _ F1 |-> Offset1:Int
           ))), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
-          when (Offset =/=Int 0)
+          requires (Offset =/=Int 0)
                andBool (Offset1 <=Int Offset)
      //TODO: why it is nessary here
-     syntax Set ::= getQualsAtOffset(Type, Int) [function,klabel(getQualsAtOffset)]
+     syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))
 
      syntax Set ::= getQualsAtOffset(Type) [function]
      rule getQualsAtOffset(T:Type) => getQualifiers(T)
-          when notBool isAggregateType(T)
+          requires notBool isAggregateType(T)
      rule getQualsAtOffset(T:Type)
           => getQualifiers(T) getQualsAtOffset(effInnerType(T))
-          when isAggregateType(T)
+          requires isAggregateType(T)
      // TODO(chathhorn): absolutely no idea what to do about qualifiers on
      // union members -- do we need to get the effective type of the object?
 
      syntax Type ::= effInnerType(K) [function]
      rule effInnerType(T:Type) => innerType(T)
-          when isArrayType(T)
+          requires isArrayType(T)
      rule effInnerType(t(_, structType(_, _, fieldInfo(
                ListItem(typedDeclaration(T:Type, _)) _, _, _))))
           => T

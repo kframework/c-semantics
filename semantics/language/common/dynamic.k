@@ -1,5 +1,5 @@
 module C-DYNAMIC-SYNTAX
-     syntax Type ::= t(Set, SimpleType) [klabel('t)]
+     syntax Type ::= t(Set, SimpleType)
 
      syntax Value ::= "skipval"
 
@@ -8,10 +8,10 @@ module C-DYNAMIC-SYNTAX
      syntax CValue ::= Bits | SymLoc | Float | Agg
 
      syntax TypedValue ::= tv(CValue, Type) 
-          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+          [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
-     syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
-     syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
+     syntax LValue ::= lv(SymLoc, Type)
+     syntax Value ::= lval(SymLoc, Type)
 
      syntax Type ::= type(K) [function]
      syntax KItem ::= value(TypedValue) [function]
@@ -33,7 +33,7 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= "file-scope"
 
      //  switchid, value (tv or 'Default)
-     syntax CId ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax CId ::= genLabel(Int, K)
      syntax CId ::= funLabel(CId)
      syntax CId ::= case(Int)
 
@@ -70,7 +70,7 @@ module C-DYNAMIC
 
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0)) => UnknownCabsLoc 
      rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int)) => CabsLoc(S,I1,I2,I3)
-		when S =/=String "cabs loc unknown"
+		requires S =/=String "cabs loc unknown"
 			orBool I1 =/=Int -10
 			orBool I2 =/=Int -10
 			orBool I3 =/=Int 0
@@ -102,7 +102,9 @@ module C-DYNAMIC
           
      rule AttributeWrapper(K:K, _) => K
      
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+     rule ToIdentifier("___missing_field_name") => #NoName
+     rule ToIdentifier(S:String) => Identifier(S) 
+	  requires S =/=String "___missing_field_name"
 
      rule NothingExpression => emptyValue
 
@@ -115,7 +117,7 @@ module C-DYNAMIC
 
      rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
           <global> (_:Bag => G) </global>
-          when (G =/=Bag .Bag)
+          requires (G =/=Bag .Bag)
           [structural]
 
      rule loadObj(.Bag) => .K

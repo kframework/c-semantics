@@ -50,13 +50,13 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      }*/
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when hasArithmeticType(T') andBool hasArithmeticType(T)
+          requires hasArithmeticType(T') andBool hasArithmeticType(T)
                andBool (getQualifiers(T) ==K .Set)
                andBool (T' =/=Type T)
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when (isStructType(T') orBool isUnionType(T'))
+          requires (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
                andBool (T' =/=Type T)
           [structural]
@@ -64,7 +64,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          when areCompatible(stripQualifiers(T'), stripQualifiers(T))
+          requires areCompatible(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
                andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
@@ -72,30 +72,30 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          when (isVoidType(T') orBool isVoidType(T))
+          requires (isVoidType(T') orBool isVoidType(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
                andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
 
      rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
-          when isPointerType(T')
+          requires isPointerType(T')
                andBool isNullPointerConstant(V)
                andBool (T' =/=Type type(V))
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when isBoolType(T') andBool isPointerType(T)
+          requires isBoolType(T') andBool isPointerType(T)
           [structural]
 
      rule (. => ERROR("EA1", "Incompatible types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
-          when (isPointerType(T') andBool notBool isPointerType(T)
+          requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
 
      rule (. => ERROR("EA2", "Incompatible pointer types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(_, T:Type)
-          when isPointerType(T') andBool isPointerType(T)
+          requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
                andBool notBool
@@ -124,7 +124,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
           => write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T'))
-          when T' ==Type T
+          requires T' ==Type T
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{

@@ -61,7 +61,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)
 
-     syntax KItem ::= listToK(List)
+     syntax KItem ::= listToK(List) [function]
      
      syntax KItem ::= kpair(K, K)
 
@@ -91,7 +91,7 @@ module COMPAT
      rule stringToList(S:String)
                => ListItem(firstChar(S:String)) 
                     stringToList(butFirstChar(S:String))
-          when S:String =/=String ""
+          requires S:String =/=String ""
           
      rule listToString(.List) => ""
      rule listToString((ListItem(S:String) L:List))
@@ -116,17 +116,17 @@ module COMPAT
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))
                +String toUpperCase(butFirstChar(S:String))
-          when lengthString(S) >Int 1
+          requires lengthString(S) >Int 1
 
      rule toUpperCase(C:String)
           => C:String
-          when (lengthString(C) ==Int 1)
+          requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) <Int ordChar("a")
                     orBool ordChar(C) >Int ordChar("z"))
      rule toUpperCase(C:String)
           => chrChar(absInt(ordChar(C) 
                -Int (ordChar("a") -Int ordChar("A"))))
-          when (lengthString(C) ==Int 1)
+          requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) >=Int ordChar("a")
                     andBool ordChar(C) <=Int ordChar("z"))
           
@@ -134,36 +134,47 @@ module COMPAT
      rule K:K in (ListItem(K:K) _:List) => true
      rule _:K in .List => false
      rule K:K in (ListItem(K':K) L:List) => K:K in L:List
-          when K:K =/=K K':K
+          requires K:K =/=K K':K
 
      rule removeListItem(.List,_:K) => .List
      rule removeListItem(ListItem(A:K) M:List,A) => M
      rule removeListItem(ListItem(A:K) M:List,A':K) 
 	=> ListItem(A) removeListItem(M,A')
-	when A =/=K A'
+	requires A =/=K A'
 
      //TODO: might not need this later
      rule listEqual(.List,.List) => true
-     rule listEqual(L:List,.List) => false when L =/=K .List
-     rule listEqual(.List,L:List) => false when L =/=K .List
+     rule listEqual(L:List,.List) => false requires L =/=K .List
+     rule listEqual(.List,L:List) => false requires L =/=K .List
      rule listEqual(ListItem(A:K) L1:List,ListItem(A:K) L2:List) 
 	 => listEqual(L1,L2)
      rule listEqual(ListItem(A1:K) _:List,ListItem(A2:K) _:List) 
 	 => false
-	  when A1 =/=K A2
+	  requires A1 =/=K A2
  
      //TODO: might need to add it in the builtins
      rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
+
+     syntax Bool ::= subset(K,Set,Set) [function]
+
+     rule subset(K:K,S1:Set,S2:Set) => S1 <=Set (S2 -Set SetItem(K))
+          requires K in S2
+     rule subset(K:K,_:Set,S2:Set) => false
+          requires notBool (K in S2)
+
+     rule .Set <=Set _:Set => true
+     rule (SetItem(K:K) S1:Set) <=Set S2:Set 
+	   => subset(K,S1,S2)
 
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
      rule '_==MSet_(ListItem(_) _:List ,, .List) => false
      rule '_==MSet_(ListItem(K:K) M:List ,, M':List) 
 		=> '_==MSet_(M:List ,, removeListItem(M',K))
-	  when K:K in M':List
+	  requires K:K in M':List
      rule '_==MSet_(ListItem(K:K) _:List ,, M':List) 
 		=> false
-	  when notBool (K:K in M':List)
+	  requires notBool (K:K in M':List)
 
      rule M:List =/=MSet M':List => notBool '_==MSet_(M ,, M')
 
@@ -193,7 +204,7 @@ module COMPAT
 
      rule toKRList'((srItem(V:KResult) ss:: S:SubKRList) => S) 
           ~> krlist(_:List (.List => ListItem(V))) 
-          when getKLabel(V) =/=KLabel 'krlist
+          requires getKLabel(V) =/=KLabel 'krlist
           [structural]
      // Somewhat contrived feature: nested lists are flattened.
      rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S) 
@@ -206,16 +217,16 @@ module COMPAT
      rule reverseList(ListItem(K:K) L:List)
           => reverseList(L:List) ListItem(K:K)
 
-     rule listToK(ListItem(K:K) L:List) => K ~> listToK(L) [structural]
-     rule listToK(.List) => .K [structural]
+     rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
+     rule listToK(.List) => .K
 
      rule N:Int to N => .KList
      rule N:Int to N':Int => (N,, ((N +Int 1) to N'))
-          when N <Int N'
+          requires N <Int N'
 
      rule times(0, _) => .List
      rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
-          when N >Int 0
+          requires N >Int 0
 
      syntax List ::= klistToList(KList) [function]
 
@@ -233,16 +244,16 @@ module COMPAT
 
      rule #filterSet(K:K,.Set,Pred:KLabel)
 	  => SetItem(K:K)
-	  when Pred(K:K) ==K true
+	  requires Pred(K:K) ==K true
      rule #filterSet(K:K,.Set,Pred:KLabel)
 	  => .Set 
-          when Pred(K:K) =/=K true
+          requires Pred(K:K) =/=K true
      rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
 	  => SetItem(K) #filterSet(K',S,Pred)
-	  when Pred(K:K) ==K true
+	  requires Pred(K:K) ==K true
      rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
 	  => #filterSet(K',S,Pred)
-          when Pred(K:K) =/=K true
+          requires Pred(K:K) =/=K true
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K,S,Pred)
@@ -250,9 +261,7 @@ module COMPAT
      //TODO: might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true
      rule isAllKResultInHeatList(hItem(K:K) hs:: _:HeatList) => false
-	   when isKResult(K:K) =/=K true
-     rule isAllKResultInHeatList(hItem(K:K) hs:: HL:HeatList) 
-	   => isAllKResultInHeatList(HL) 
-	   when isKResult(K:K) ==K true
+     rule isAllKResultInHeatList(hrItem(K:K) hs:: HL:HeatList) 
+	   => isAllKResultInHeatList(HL)
 
 endmodule

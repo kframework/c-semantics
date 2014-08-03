@@ -34,17 +34,17 @@ module C-TYPING-MISC
           => t(S, long-long-int)
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int))) 
           => (2 ^Int absInt(N)) -Int 1
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
 
      rule min(t(_, bitfieldType(T:Type, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int)))
           => (2 ^Int absInt(N -Int 1)) -Int 1
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
@@ -91,10 +91,10 @@ module C-TYPING-MISC
 
      rule inRange(V:Int, T:Type)
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
      rule inRange(V:Float, T:Type)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
-          when hasFloatType(T)
+          requires hasFloatType(T)
      
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
@@ -136,7 +136,7 @@ module C-TYPING-MISC
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
@@ -164,7 +164,7 @@ module C-TYPING-MISC
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
@@ -184,7 +184,7 @@ module C-TYPING-MISC
           => t(Mods intersectSet(Quals, typeQualifiers),
                flexibleArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
@@ -204,7 +204,7 @@ module C-TYPING-MISC
 
      rule <k> #completeTags(T:Type) => completeTags(Tags, T) ...</k>
           <structs> Tags:Map </structs>
-          when Tags =/=K .Map
+          requires Tags =/=K .Map
      rule <k> #completeTags(T:Type) => T ...</k>
           <structs> .Map </structs>
 
@@ -232,7 +232,7 @@ module C-TYPING-MISC
           => t(S, structType(X, bitSizeofStruct(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                structType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -250,14 +250,14 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:CId)))
           => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                unionType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -274,11 +274,11 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
 
      rule completeTags(_, t(S:Set, T:SimpleType))
           => t(S, T)
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
+          requires (getKLabel(T) =/=KLabel 'bitfieldType)
                andBool (getKLabel(T) =/=KLabel 'functionType )
                andBool (getKLabel(T) =/=KLabel 'pointerType )
                andBool (getKLabel(T) =/=KLabel 'arrayType )
@@ -301,14 +301,14 @@ module C-TYPING-MISC
 
      rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
 
-     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+     syntax Bool ::= #isNPC(TypedValue) [function]
 
      rule #isNPC(tv(0, T:Type)) => true
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
                andBool fromConstantExpr(T)
 
      rule #isNPC(tv(NullPointer, T:Type)) => true
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
 
@@ -318,7 +318,7 @@ module C-TYPING-MISC
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
-          when T =/=K void
+          requires T =/=K void
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List

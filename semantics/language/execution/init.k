@@ -1,7 +1,7 @@
 module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= pgmArgs(List) [function]
-     syntax KItem ::= incomingArguments(List) [klabel('incomingArguments)]
-     syntax KItem ::= callMain(Int, K) [klabel('callMain)]
+     syntax KItem ::= incomingArguments(List)
+     syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
 
 endmodule
@@ -146,7 +146,7 @@ module C-EXECUTION-INIT
                     <mode> "w" </mode>
                ...</file>)
           ...</files>
-          when MainTU =/=K .K
+          requires MainTU =/=K .K
           [structural]
 
      
@@ -199,7 +199,7 @@ module C-EXECUTION-INIT
                ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))), 
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          when T ==K t(.Set, char)
+          requires T ==K t(.Set, char)
           [structural]
      // int main(int argc, char** argv)
      rule callMain-aux(t(.Set,
@@ -208,7 +208,7 @@ module C-EXECUTION-INIT
                ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))), 
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          when T ==K t(.Set, char)
+          requires T ==K t(.Set, char)
           [structural]
 
      // fixme I'm not sure threads clean up their memory

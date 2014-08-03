@@ -29,16 +29,16 @@ module C-CHECK-LOC
           <mem> Mem:Map </mem>
           <functions> Funs:Map </functions>
           <linkings> Links:Map </linkings>
-          when notBool (Base in keys(Mem))
+          requires notBool (Base in keys(Mem))
                andBool notBool (Base in keys(Funs))
                andBool notBool (Base in keys(Links))
           [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
      rule checkOffsets(Offset:Int, Len:Int) => .
-          when (Offset <=Int Len) andBool (Offset >=Int 0)
+          requires (Offset <=Int Len) andBool (Offset >=Int 0)
      rule checkOffsets(Offset:Int, Len:Int) => errorLocBounds
-          when (Offset >Int Len) orBool (Offset <Int 0)
+          requires (Offset >Int Len) orBool (Offset <Int 0)
 
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"
@@ -58,28 +58,28 @@ module C-CHECK-LOC
           <restrict>...
                loc(Base, Offset) |-> set((.Set => SetItem(set(getBases(Prov)))) _)
           ...</restrict>
-          when notBool loc(Base, Offset) in keys(Modified)
+          requires notBool loc(Base, Offset) in keys(Modified)
           [structural]
      rule <k> checkRestrict(Loc:SymLoc, _) => . ...</k>
           <restrict>
                Restricts:Map
                (.Map => stripProv(Loc) |-> set(SetItem(set(getBases(Loc)))))
           </restrict>
-          when notBool (stripProv(Loc) in keys(Restricts))
+          requires notBool (stripProv(Loc) in keys(Restricts))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
                => checkRestrict(getBases(Prov), getBases(Prov), Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when (loc(Base, Offset) in keys(Modified))
+          requires (loc(Base, Offset) in keys(Modified))
           [structural]
      rule <k> checkRestrict(loc(Base:SymBase, Offset:Int), _)
                => checkRestrict(.Set, .Set, Bases)
           ...</k>
           <modified> Modified:Map </modified>
           <restrict>... loc(Base, Offset) |-> set(Bases:Set) ...</restrict>
-          when loc(Base, Offset) in keys(Modified)
+          requires loc(Base, Offset) in keys(Modified)
           [structural]
 
      syntax KItem ::= checkRestrict(Set, Set, Set)
@@ -90,15 +90,15 @@ module C-CHECK-LOC
 	  => #checkRestrict(Bases,K,S,S') 
      rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set) 
 	  => #checkRestrict(Bases,.K,S,S') 
-	  when Bases <=Set Bases'  
+	  requires Bases <=Set Bases'  
      rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set)
 	  => #checkRestrict(Bases,.K,S,set(Bases') S')
-	  when notBool (Bases <=Set Bases')  
+	  requires notBool (Bases <=Set Bases')  
 
 
      rule #checkRestrict(Bases:Set,set(Bases':Set),.Set,S:Set)
 	  => (set(Bases':Set) S)
-	  when notBool (Bases <=Set Bases')  
+	  requires notBool (Bases <=Set Bases')  
 
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
@@ -110,18 +110,18 @@ module C-CHECK-LOC
           [structural]
      rule (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer and another lvalue not also based on said pointer.", "6.7.3.1:4"))
           ~> checkRestrict(.Set, Bases:Set, PrevBases:Set)
-          when PrevBases =/=K SetItem(set(Bases))
+          requires PrevBases =/=K SetItem(set(Bases))
           [structural]
 
      syntax KItem ::= "checkRestrict'" "(" Provenance ")"
      rule <k> checkRestrict'(basedOn(Base:SymBase)) => . ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when notBool isConstType(innerType(T))
+          requires notBool isConstType(innerType(T))
           [structural]
      rule <k> (. => UNDEF("ECL4", "An object which has been modified is accessed through a restrict-qualified pointer to a const-qualified type.", "6.7.3.1:4"))
                ~> checkRestrict'(basedOn(Base:SymBase))
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          when isConstType(innerType(T))
+          requires isConstType(innerType(T))
           [structural]
 endmodule

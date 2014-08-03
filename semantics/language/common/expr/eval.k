@@ -1,7 +1,8 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
+     //TODO: change it to function in order to solve anywhere problem
      syntax KItem ::= rkludge(K) [function]
-     syntax KItem ::= pkludge(K) [function, klabel('pkludge)]
+     syntax KItem ::= pkludge(K) [function]
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkLoc(SymLoc)
 endmodule
@@ -32,12 +33,12 @@ module C-COMMON-EXPR-EVAL
      rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
      rule rkludge(K:K) => K
-          when isKResult(K:K) =/=K true
+          requires isKResult(K:K) =/=K true
 
      rule peval(K:K) => K ~> peval(HOLE) [heat]
      rule K:K ~> peval(HOLE) => peval(pkludge(K)) [cool, ndlocal]
      rule pkludge(K:K) => K
-          when isKResult(K:K) =/=K true
+          requires isKResult(K:K) =/=K true
 
      rule lv(L:SymLoc, T:Type) => lval(L, T)
           [structural]
@@ -71,11 +72,11 @@ module C-COMMON-EXPR-EVAL
      // Lvalue conversion.
      rule rkludge(lval(Loc:SymLoc, T:Type)) 
           => instantiate(Loc, T)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
                andBool notBool isFunctionType(T) 
 
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
-          when notBool isArrayType(T) 
+          requires notBool isArrayType(T) 
                andBool notBool isFunctionType(T) 
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
@@ -88,13 +89,11 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
-          when isArrayType(T)
+          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
+          requires isArrayType(T)
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
-          when isArrayType(T)
+          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
+          requires isArrayType(T)
 
      syntax Type ::= arrayToPtrType(Type) [function]
      rule arrayToPtrType(T:Type)
@@ -107,12 +106,12 @@ module C-COMMON-EXPR-EVAL
                addProv(fromArray(0,
                     byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
                Loc))
-          when isRestrictType(T)
+          requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(fromArray(0,
                byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
                Loc)
-          when notBool isRestrictType(T)
+          requires notBool isRestrictType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
      A function designator is an expression that has function type.  Except
@@ -123,33 +122,36 @@ module C-COMMON-EXPR-EVAL
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
-          when isFunctionType(T) 
+          requires isFunctionType(T) 
      rule pkludge(lval(Loc:SymLoc, T:Type)) 
           => tv(Loc, t(.Set, pointerType(T)))
-          when isFunctionType(T) 
+          requires isFunctionType(T) 
 
-     syntax KItem ::= checkRegister(SymLoc)
-     rule <k> checkRegister(_) => . ...</k>
+     //Solve the checkRegister constructor block
+     //due to heat K Sequence originally.
+     syntax KItem ::= checkRegister(SymLoc,K)
+     rule <k> checkRegister(_,K:K) => K ...</k>
           <initializing> true </initializing>
           [structural]
-     rule <k> checkRegister(Loc:SymLoc) => . ...</k>
+     rule <k> checkRegister(Loc:SymLoc,K:K) => K ...</k>
           <initializing> false </initializing>
-          when notBool isRegisterLoc(Loc)
+          requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> checkRegister(Loc:SymLoc)
+     rule <k> checkRegister(Loc:SymLoc,K:K)
                => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
+		   ~> K
           ...</k>
           <initializing> false </initializing>
-          when isRegisterLoc(Loc)
+          requires isRegisterLoc(Loc)
           [structural]
 
      syntax KItem ::= checkUse(K) [strict]
 
      rule checkUse(V:KResult) => V
-          when isTypedValue(V:KResult) =/=K true
+          requires isTypedValue(V:KResult) =/=K true
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          when (isSymLoc(V:CValue) =/=K true)
+          requires (isSymLoc(V:CValue) =/=K true)
                andBool (isTrap(V:CValue) =/=K true)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)

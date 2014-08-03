@@ -1,18 +1,24 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
      //TODO: might not need TypeList
-     syntax KItem ::= types(TypeList)
+     syntax KItem ::= types(TypeList) [strict]
      //TODO: might not need this list in the future. 
      syntax TypeItem ::= tItem(K) [strict]
      syntax TypeList ::= List{TypeItem,"ts::"} [strict]
      syntax TypeList ::= toTypeList(List) [function]
      syntax List ::= tListToList(TypeList) [function]
 
+     syntax TypeResult ::= trItem(K)
+     syntax TypeItem ::= TypeResult
+     syntax KResult ::= TypeResult
+
+     rule tItem(V:KResult) => trItem(V)
+
      rule toTypeList(.List) => .TypeList
      rule toTypeList(ListItem(K:K) L:List) => tItem(K) ts:: toTypeList(L)
 
      rule tListToList(.TypeList) => .List
-     rule tListToList(tItem(K:K) ts:: HL:TypeList) => ListItem(K) tListToList(HL)
+     rule tListToList(trItem(K:K) ts:: HL:TypeList) => ListItem(K) tListToList(HL)
 endmodule
 
 module C-COMMON-EXPR-CONDITIONAL
@@ -40,13 +46,13 @@ module C-COMMON-EXPR-CONDITIONAL
 
      // fixme, not handling qualifiers correctly
      rule retype(T:Type) => t(.Set, pointerType(innerType(T)))
-          when isArrayType(T)
+          requires isArrayType(T)
           [structural]
      rule retype(T:Type) => t(.Set, pointerType(T))
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
      rule retype(T:Type) => T
-          when notBool (isArrayType(T) orBool isFunctionType(T))
+          requires notBool (isArrayType(T) orBool isFunctionType(T))
           [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
@@ -66,10 +72,10 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(tItem(T1:Type) ts:: tItem(T2:Type))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
-          when T1 =/=K T2
+          requires T1 =/=K T2
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
@@ -89,28 +95,28 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T2))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
-          when hasIntegerType(T1)
+          requires hasIntegerType(T1)
                andBool isPointerType(T2)
           [structural]
-     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T1))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
-          when hasIntegerType(T2)
+          requires hasIntegerType(T2)
                andBool isPointerType(T1)
           [structural]
 
      // fixme, this is wrong
-     rule (types(tItem(T1:Type) ts:: tItem(T2:Type)) => convertedType(T1))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T1))
           ~> _? _ : _
-          when isPointerType(T1)
+          requires isPointerType(T1)
                andBool isPointerType(T2)
           [structural]
 
      // this should take care of the void/struct cases
-     rule (types(tItem(T:Type) ts:: tItem(T':Type)) => convertedType(T))
+     rule (types(trItem(T:Type) ts:: trItem(T':Type)) => convertedType(T))
           ~> _ ? _ : _
-          when notBool isPointerType(T)
+          requires notBool isPointerType(T)
                andBool T ==Type T'
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K

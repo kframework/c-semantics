@@ -31,12 +31,12 @@ module C-EXECUTION-ERROR
 
      rule cast(t(N:Set, T:SimpleType), emptyValue)
 	  => castHold(t(N, T:SimpleType), emptyValue)
-          when T =/=K void
+          requires T =/=K void
 
      rule [err00001]: 
           (. => ERROR("00001", "Casting empty value to type other than void.", 89)) ~>
           castHold(t(_, T:SimpleType), emptyValue)
-          when T =/=K void
+          requires T =/=K void
           [structural]
          
     //  rule [err00005]:
@@ -45,14 +45,14 @@ module C-EXECUTION-ERROR
     //            readByte(loc(B:SymBase, _)) 
     //       ...</k>
     //       <mem> M:Map </mem>
-    //       when notBool SetItem(B) in keys(M:Map)
+    //       requires notBool SetItem(B) in keys(M:Map)
     //       [structural]
      
      // rule [err00006]:
      //      (. => ERROR("00006", "Reading unspecified (possibly uninitialized) memory, or trying to read a pointer or float through an integer type.", 
      //           21) ) ~>
      //      joinIntegerBytes-aux(t(_, T:SimpleType), _ ListItem(piece(trap(Len:Int), Len)), _)
-     //      when T =/=K unsigned-char
+     //      requires T =/=K unsigned-char
      //      [structural]
           
      // rule [err00008]:
@@ -66,18 +66,18 @@ module C-EXECUTION-ERROR
      //           21) ) ~>
      //      concretize(T:Type,
      //           dataList(ListItem(piece(trap(Len:Int), Len:Int)) _:List))
-     //      when hasFloatType(T)
+     //      requires hasFloatType(T)
      //      [structural]
           
 
      rule cast(t(N:Set, T:SimpleType), skipval)
 	  => castHold(t(N, T:SimpleType), skipval)
-          when (T =/=K void)
+          requires (T =/=K void)
 
      rule [err00034]:
           (. => ERROR("00034", "Casting void type to non-void type.", 308) ) ~>
           castHold(t(_, T:SimpleType), skipval)
-          when (T =/=K void)
+          requires (T =/=K void)
           [structural]
           
      rule [err00037]:
@@ -87,18 +87,18 @@ module C-EXECUTION-ERROR
           
      rule [err00041]:
           (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(tItem(t(_, void)) ts:: tItem(t(_, T:SimpleType)))
-          when T =/=K void
+          types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
+          requires T =/=K void
           [structural]
      rule [err00042]:
           (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types(tItem(t(_, T:SimpleType)) ts:: tItem(t(_, void)))
-          when T =/=K void
+          types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
+          requires T =/=K void
           [structural]
      rule [err00043]:
           (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(tItem(T:Type) ts:: tItem(T':Type))
-          when (T =/=K T')
+          types(trItem(T:Type) ts:: trItem(T':Type))
+          requires (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))
           [structural]
@@ -106,7 +106,7 @@ module C-EXECUTION-ERROR
      rule [err00046]:
           (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
           concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
-          when hasFloatType(T) andBool (N >Int 0)
+          requires hasFloatType(T) andBool (N >Int 0)
           [structural]
 
      rule (. => ERROR("00500", 
@@ -114,7 +114,7 @@ module C-EXECUTION-ERROR
                Int2String(value(A)) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", 409) ) ~>
           nextvarg-aux(_, _, A:TypedValue, B:TypedValue)
-          when value(A) =/=Int value(B)
+          requires value(A) =/=Int value(B)
           [structural]
      
      // TODO(chathhorn): Silly way to do things. Probably need to allow
@@ -127,7 +127,7 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
                write(Loc':SymLoc, _, T':Type) 
           ...</k>
-          when sameBase(Loc, Loc') andBool
+          requires sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc' 
                     andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
                orBool (Loc >bytes Loc' 
@@ -141,7 +141,7 @@ module C-EXECUTION-ERROR
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
                write(Loc':SymLoc, _, T':Type) 
           ...</k>
-          when sameBase(Loc, Loc') andBool
+          requires sameBase(Loc, Loc') andBool
                ((Loc <=bytes Loc' 
                     andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
                orBool (Loc >bytes Loc' 

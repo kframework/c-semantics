@@ -37,7 +37,7 @@ module C-MEMORY-ALLOC
                * tv(Loc, t(.Set, pointerType(t(.Set, char))))
                := tv(ordChar(firstChar(S:String)), t(.Set, char)))
                ~> writeString(Loc +bytes 1, butFirstChar(S:String))
-          when S:String =/=String ""
+          requires S:String =/=String ""
           [structural]
      // TODO this bare 4 needs to be updated to handle different size wchar_ts
      rule writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
@@ -64,7 +64,7 @@ module C-MEMORY-ALLOC
                => alloc(Base, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
-          when notBool (Base in (keys(M)))
+          requires notBool (Base in (keys(M)))
           [structural] 
      rule <k> allocObjectIfAbsent(Base:SymBase, _) => . 
           ...</k>
@@ -75,7 +75,7 @@ module C-MEMORY-ALLOC
           <mem>...
                .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
           ...</mem>
-          when notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
           [structural]
      
      // Used by calloc.

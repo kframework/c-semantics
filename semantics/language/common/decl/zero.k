@@ -35,13 +35,13 @@ module C-DECL-ZERO
      
      rule zeroType(X:K, T:Type)
           => Computation(X := tv(getZero(T), stripQualifiers(T)))
-          when isPointerType(T) orBool hasArithmeticType(T)
+          requires isPointerType(T) orBool hasArithmeticType(T)
           [structural] 
 
      rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int))) 
           => zeroType(X[Len -Int 1], T)
                ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1))) 
-          when Len >Int 0
+          requires Len >Int 0
           [structural] 
      rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
           [structural] 
@@ -59,7 +59,7 @@ module C-DECL-ZERO
           [structural] 
 
      rule zeroType(_, T:Type) => .
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
           
      rule zeroType(_, t(_, flexibleArrayType(_))) => .
@@ -74,11 +74,11 @@ module C-DECL-ZERO
 
      syntax KItem ::= getZero(Type) [function]
      rule getZero(T:Type) => 0
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
      rule getZero(T:Type) => 0.0
-          when hasFloatType(T)
+          requires hasFloatType(T)
      rule getZero(T:Type) => NullPointer
-          when isPointerType(T)
+          requires isPointerType(T)
      
 endmodule
 

@@ -37,7 +37,7 @@ module LIBC-IO
           <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
           // don't compare with "" in order to only treat string sort
-          when lengthString(S:String) >Int 0
+          requires lengthString(S:String) >Int 0
           [observable]
 
      rule [readFromFD-empty-buff]:
@@ -86,7 +86,7 @@ module LIBC-IO
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</file-commands>
           <options> Opts:Set </options>
-          when (S =/=String "")
+          requires (S =/=String "")
                andBool notBool (NOIO  in Opts)
           [structural]
      rule <file-commands> 

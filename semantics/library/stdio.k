@@ -38,7 +38,7 @@ module LIBC-STDIO
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
           => getString-aux(Loc, S +String chrChar(N))
-          when N =/=Int 0
+          requires N =/=Int 0
           [structural]
      rule [getString-done]:
           tv(0, _) ~> getString-aux(_, S:String)
@@ -87,19 +87,19 @@ module LIBC-STDIO
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T),
                varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
-          when value(Len) ==Int value(Len')
+          requires value(Len) ==Int value(Len')
           [structural]
 
      rule [putchar]:
           prepareBuiltin(Identifier("putchar"),
-               hItem(tv(N:Int, _)))
+               hrItem(tv(N:Int, _)))
           => writeToFD(1, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [fslPutc]:
           prepareBuiltin(Identifier("__fslPutc"),
-               hItem(tv(N:Int, _)) hs::
-               hItem(tv(H:Int, _)))
+               hrItem(tv(N:Int, _)) hs::
+               hrItem(tv(H:Int, _)))
           => writeToFD(H, N) ~> tv(N, t(.Set, int))
           [structural]
 
@@ -110,14 +110,14 @@ module LIBC-STDIO
 
      rule [fslFGetC]:
           prepareBuiltin(Identifier("__fslFGetC"),
-               hItem(tv(FD:Int, _)) hs::
-               hItem(tv(_:Int, _)))
+               hrItem(tv(FD:Int, _)) hs::
+               hrItem(tv(_:Int, _)))
           => readFromFD(FD)
           [structural]
 
      rule [fslCloseFile]:
           <k> prepareBuiltin(Identifier("__fslCloseFile"),
-                    hItem(tv(FD:Int, t(_, int))))
+                    hrItem(tv(FD:Int, t(_, int))))
                => tv(0, t(.Set, int))
           ...</k>
           (<file>... <fid> FD:Int </fid> ...</file> => .)
@@ -125,8 +125,8 @@ module LIBC-STDIO
 
      rule [fslOpenFile-pre]:
           prepareBuiltin(Identifier("__fslOpenFile"),
-               hItem(Filename:KResult) hs::
-               hItem(Mode:KResult))
+               hrItem(Filename:KResult) hs::
+               hrItem(Mode:KResult))
           => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
 
@@ -170,8 +170,8 @@ module LIBC-STDIO
      // to do this
      rule [printf]:
           prepareBuiltin(Identifier("printf"),
-               hItem(Format:KResult) hs::
-               hItem(VarArgs:KResult))
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
 
@@ -185,9 +185,9 @@ module LIBC-STDIO
      syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
           prepareBuiltin(Identifier("sprintf"),
-               hItem(tv(Dest:SymLoc, _)) hs::
-               hItem(Format:KResult) hs::
-               hItem(VarArgs:KResult))
+               hrItem(tv(Dest:SymLoc, _)) hs::
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
@@ -199,17 +199,17 @@ module LIBC-STDIO
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           prepareBuiltin(Identifier("snprintf"),
-               hItem(tv(Dest:SymLoc, _)) hs::
-               hItem(tv(Len:Int, _)) hs::
-               hItem(Format:KResult) hs::
-               hItem(VarArgs:KResult))
+               hrItem(tv(Dest:SymLoc, _)) hs::
+               hrItem(tv(Len:Int, _)) hs::
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, Len -Int 1))
                ~> tv(lengthString(S), t(.Set, int))
-          when Len >Int 0
+          requires Len >Int 0
           [structural]
      rule [snprintf-done-0]:
           snprintf(formattedResult(S:String), _, 0)
@@ -264,7 +264,7 @@ module LIBC-STDIO
           <format> ListItem(S:String) => .List ...</format>
           <format-result>... .List => ListItem(S:String) </format-result>
           <format-state> "normal" </format-state>
-          when S:String =/=String "%"
+          requires S:String =/=String "%"
           [structural]
 
      rule [format-reset]:
@@ -379,7 +379,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-state> "%" </format-state>
-          when ordChar(C:String) >Int ordChar("0")
+          requires ordChar(C:String) >Int ordChar("0")
                andBool ordChar(C:String) <=Int ordChar("9")
           [structural]
 
@@ -533,7 +533,7 @@ module LIBC-STDIO
           ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-state> "%" => "%d" </format-state>
-          when S:String ==String "d" orBool S:String ==String "i"
+          requires S:String ==String "d" orBool S:String ==String "i"
           [structural]
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>

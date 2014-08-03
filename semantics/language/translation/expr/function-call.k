@@ -18,12 +18,13 @@ module C-EXPR-FUNCTION-CALL
 
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
      
+     //the original rule to write to revalParams(rvlist...) might be wrong
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
-          when isAllKResultInHeatList(HL:HeatList)
+          requires isAllKResultInHeatList(HL)
           [structural]     
-     /*TODO: might need this later
+     /*TODO: might not need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          when all(L, isKResult)
+          requires all(L, isKResult)
           [structural]
      */
      
@@ -33,13 +34,13 @@ module C-EXPR-FUNCTION-CALL
           // Only attempt to bind if we have a prototype.
           => #if (P =/=K .List) #then bind(.List, P, L) #else .K #fi
           ~> tv(symVal, T)
-          when (isCompleteType(T) orBool isVoidType(T))
+          requires (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
           [structural]
      rule (. => ERROR("EFC1", "function call with incomplete or invalid return type.",
                "6.5.2.2p2"))
           ~> Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, _))))), rvlist(_))
-          when notBool (isCompleteType(T) orBool isVoidType(T))
+          requires notBool (isCompleteType(T) orBool isVoidType(T))
                orBool isArrayType(T) // Don't think this is possible.
           [structural]
 

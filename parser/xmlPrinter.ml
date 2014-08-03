@@ -210,7 +210,7 @@ and printNameLoc s l =
 	(* if (hasInformation l) then (wrap (s :: (printCabsLoc l) :: []) "NameLoc") else (s) *)
 	s
 and printIdentifier a =
-	printCell "Identifier" [] (printRawString a)
+	printCell "ToIdentifier" [] (printRawString a)
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
 	if a = "" then 
 		(* printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c *)

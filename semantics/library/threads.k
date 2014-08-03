@@ -25,9 +25,9 @@ module LIBC-THREADS
      syntax KItem ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
           <k> prepareBuiltin(Identifier("thrd_create"), 
-                    hItem(ThIdPointer:KResult) hs::
-                    hItem(ThFuncPointer:KResult) hs::
-                    hItem(ThArg:KResult))
+                    hrItem(ThIdPointer:KResult) hs::
+                    hrItem(ThFuncPointer:KResult) hs::
+                    hrItem(ThArg:KResult))
                => Computation(
                     (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                     ~> spawn-aux(
@@ -74,8 +74,8 @@ module LIBC-THREADS
           
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
-               hItem(tv(ThId:Int, t(_, int))) hs::
-               hItem(ResultPointer:KResult))
+               hrItem(tv(ThId:Int, t(_, int))) hs::
+               hrItem(ResultPointer:KResult))
           => join-aux(ThId:Int, ResultPointer:KResult)
           [structural]
      
@@ -98,39 +98,39 @@ module LIBC-THREADS
 
      rule [mtx-init]:
           <k> prepareBuiltin(Identifier("mtx_init"),
-                    hItem(tv(Loc:Int, _)) hs::
-                    hItem(tv(Type:Int, _)))
+                    hrItem(tv(Loc:Int, _)) hs::
+                    hrItem(tv(Type:Int, _)))
                => thrd-success
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
-          when notBool (Loc in keys(M))
+          requires notBool (Loc in keys(M))
                andBool (Type ==Int cfg:mtxPlain) 
           [structural]
 
      rule [mtx-lock]:
           <k> prepareBuiltin(Identifier("mtx_lock"), 
-                    hItem(tv(Loc:Int, _)))
+                    hrItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
           <glocks> B:List (.List => ListItem(Loc)) </glocks>
           <locks> .List => ListItem(Loc) ...</locks>
-          when (notBool (Loc in B))
+          requires (notBool (Loc in B))
                andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
 
      rule [mtx-unlock]:
           <k> prepareBuiltin(Identifier("mtx_unlock"),
-                    hItem(tv(Loc:Int, _)))
+                    hrItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
           <glocks> M:List => removeListItem(M,Loc) </glocks>
           <locks> M':List => removeListItem(M',Loc) </locks>
-          when Type:Int ==Int cfg:mtxPlain
+          requires Type:Int ==Int cfg:mtxPlain
           [ndthread]
 
 endmodule

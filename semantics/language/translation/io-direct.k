@@ -38,12 +38,12 @@ module C-IO-DIRECT
           <mem>... 
                Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]))
           ...</mem>
-          when (Offset <Int Len) andBool notBool isSymbolic(V)
+          requires (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
 
      rule (. => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
-          when isSymbolic(V)
+          requires isSymbolic(V)
           [structural]
 
      syntax KItem ::= readByte(SymLoc) 
@@ -58,13 +58,13 @@ module C-IO-DIRECT
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
           => readByte(Loc)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
-          when Size:Int >Int 0
+          requires Size:Int >Int 0
           [structural]
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
           [structural]        
      //TODO: why it is nessary here
-     syntax List ::= values(List) [function, klabel(values)]
+     syntax List ::= values(List) [function]
      rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K:K) values(L:List)
      rule values(.List) => .List
 
@@ -86,7 +86,7 @@ module C-IO-DIRECT
                Base |-> object(_, _, 
                     M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
           ...</mem>
-          when notBool (Offset in (keys(M)))
+          requires notBool (Offset in (keys(M)))
           [structural]
 
 endmodule

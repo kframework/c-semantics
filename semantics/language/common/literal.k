@@ -23,10 +23,10 @@ module C-LITERAL
      
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
-          when (firstChar(S) ==String "0")
+          requires (firstChar(S) ==String "0")
                andBool (lengthString(S) >Int 1)
      rule simplifyForHex(S:String) => S
-          when (firstChar(S) =/=String "0")
+          requires (firstChar(S) =/=String "0")
                orBool (lengthString(S) ==Int 1)
 
      syntax Constant ::= hexOrOctalConstant(Int)

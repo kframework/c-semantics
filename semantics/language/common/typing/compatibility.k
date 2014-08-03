@@ -1,5 +1,5 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
-     syntax Bool ::= "#areCompat" "(" Type "," Type ")" [function]
+     syntax Bool ::= #areCompat(Type, Type) [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
 endmodule
 
@@ -39,65 +39,65 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= "#areCompat" "(" List "," List ")" [function]
+     syntax Bool ::= #areCompat(List, List) [function]
 
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
      rule #areCompat(T:Type, T) => true
      rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, structType(X:CId, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, incompleteStructType(X:CId)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteStructType(X:CId)),
                t(Mods':Set, structType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, unionType(X:CId, _, fieldInfo(Fs:List, _, _))),
                t(Mods':Set, unionType(X:CId, _, fieldInfo(Fs':List, _, _))))
           => #areCompat(Fs, Fs')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, unionType(X:CId, _, _)),
                t(Mods':Set, incompleteUnionType(X:CId)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteUnionType(X:CId)),
                t(Mods':Set, unionType(X:CId, _, _)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, _)),
                t(Mods':Set, incompleteArrayType(T':Type)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, _)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
 
      // Struct and union fields.
      rule #areCompat(
@@ -115,22 +115,22 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, functionType(T:Type, .List)),
                t(Mods':Set, functionType(T':Type, Args':List)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args')
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, Args:List)),
                t(Mods':Set, functionType(T':Type, .List)))
           => #areCompat(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args)
      rule #areCompat(
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))
           => #areCompat(T, T') andBool #areParamsCompat(L, L')
-          when (size(L) ==Int size(L'))
+          requires (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
 
-     syntax Bool ::= "#areParamsCompat" "(" List "," List ")" [function]
+     syntax Bool ::= #areParamsCompat(List, List) [function]
      rule #areParamsCompat(
                ListItem(T:Type) L:List,
                ListItem(T':Type) L':List)
@@ -146,6 +146,7 @@ module C-TYPING-COMPATIBILITY
           => (intersectSet(Mods, typeQualifiers) ==K intersectSet(Mods', typeQualifiers))
 
      // We can assume the types are compatible.
+     //TODO: might not need canonicalizeArrayType later
      rule compositeType(T:Type, T:Type) => T
      rule compositeType(
                t(Mods:Set, T:SimpleType),
@@ -153,36 +154,41 @@ module C-TYPING-COMPATIBILITY
           // The modifiers might include extra information besides just
           // specifiers and qualifiers, it's probably best to keep it all
           // around for now.
-          => t(Mods Mods', T)
+          => canonicalizeArrayType(t(Mods Mods', T))
 
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),
                t(Mods':Set, functionType(T':Type, P':List)))
-          => t(Mods Mods',
-               functionType(compositeType(T, T'), compositeParams(P, P')))
+          => canonicalizeArrayType(t(Mods Mods',
+               functionType(compositeType(T, T'), compositeParams(P, P'))))
 
      rule compositeType(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
-          => t(Mods Mods', pointerType(compositeType(T, T')))
+          => canonicalizeArrayType(
+	  t(Mods Mods', pointerType(compositeType(T, T'))))
 
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          => canonicalizeArrayType(
+		t(Mods Mods', arrayType(compositeType(T, T'), N)))
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, incompleteArrayType(T':Type)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          => canonicalizeArrayType(
+		t(Mods Mods', arrayType(compositeType(T, T'), N)))
      rule compositeType(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          => canonicalizeArrayType(
+	       t(Mods Mods', arrayType(compositeType(T, T'), N)))
 
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
-          => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
+          => canonicalizeArrayType(
+	       t(Mods Mods', flexibleArrayType(compositeType(T, T'))))
 
      rule compositeType(
                typedDeclaration(T:Type, X:CId),

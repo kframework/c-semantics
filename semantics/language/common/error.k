@@ -33,7 +33,7 @@ module C-ERROR
 
      rule assert(true, _) => .
      rule assert(A:KResult, K:K) => K
-          when A =/=K true
+          requires A =/=K true
 
      syntax String ::= ErrorMsg(String, String, String, KList) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)  => 
@@ -74,7 +74,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          when (notBool (Identifier(S:String) in keys(Env)))
+          requires (notBool (Identifier(S:String) in keys(Env)))
                andBool (notBool (Identifier(S:String) in keys(Types)))
           [structural]
      rule <k> (. => ERROR("00021b", "No definition found for identifier " 
@@ -83,7 +83,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
-          when (notBool (Identifier(S) in keys(Env)))
+          requires (notBool (Identifier(S) in keys(Env)))
                andBool (notBool isFunctionType(T))
           [structural]
 

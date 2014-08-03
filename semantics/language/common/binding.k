@@ -45,7 +45,7 @@ module C-BINDING
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:TypedValue) => .List) _)
-          when #arePromotedTypesCompat(value(V), T, type(V)) ==K true
+          requires #arePromotedTypesCompat(value(V), T, type(V)) ==K true
           [structural]
      rule (. => ERROR("B1", "types of function call arguments aren't "
                +String "compatible with declared types after promotions."))
@@ -53,7 +53,7 @@ module C-BINDING
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
                ListItem(V:TypedValue) _)
-          when #arePromotedTypesCompat(value(V), T, type(V)) =/=K true
+          requires #arePromotedTypesCompat(value(V), T, type(V)) =/=K true
           [structural]
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
@@ -75,7 +75,7 @@ module C-BINDING
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
-          when T =/=K variadic
+          requires T =/=K variadic
           [structural]
      // Builtins, variadic.
      rule bind(.List, ListItem(variadic), Vs:List)
@@ -118,26 +118,26 @@ module C-BINDING
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
      
-     syntax Bool ::= "#arePromotedTypesCompat" "(" CValue "," Type "," Type ")"
+     syntax Bool ::= #arePromotedTypesCompat(CValue, Type, Type)
           [function]
 
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
-          when areCompatible(argPromoteType(T), argPromoteType(T'))
+          requires areCompatible(argPromoteType(T), argPromoteType(T'))
 
      rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
-          when (argPromoteType(T)
+          requires (argPromoteType(T)
                     ==K correspondingUnsignedType(argPromoteType(T')))
                andBool representable(V, argPromoteType(T))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T')))
      rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
-          when (argPromoteType(T')
+          requires (argPromoteType(T')
                     ==K correspondingUnsignedType(argPromoteType(T)))
                andBool representable(V, argPromoteType(T'))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T)))
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
-          when isPointerType(T) andBool isPointerType(T')
+          requires isPointerType(T) andBool isPointerType(T')
                andBool (hasCharType(innerType(argPromoteType(T)))
                     orBool isVoidType(innerType(argPromoteType(T))))
                andBool (hasCharType(innerType(argPromoteType(T')))

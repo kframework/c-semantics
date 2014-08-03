@@ -90,7 +90,7 @@ module C-TYPE-BUILDER
      rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, pointerType(T))
      rule adjustParam(T:Type) => T
-          when notBool isTypedDeclaration(T)
+          requires notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
 endmodule
