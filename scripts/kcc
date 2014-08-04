@@ -181,10 +181,10 @@ sub main {
           push(@file_args, '-cOBJ2=".Bag"');
      } elsif (scalar @objFiles == 1) {
           push(@file_args, '-cOBJ1=".Bag"');
-          push(@file_args, '--config-var-parser="kast --parser binary"');
+          push(@file_args, '-pOBJ2="kast --parser binary"');
           push(@file_args, "-cOBJ2=\"$objFiles[0]\"");
      } elsif (scalar @objFiles == 2) {
-          push(@file_args, '--config-var-parser="kast --parser binary"');
+          push(@file_args, '-pOBJ1="kast --parser binary" -pOBJ2="kast --parser binary"');
           push(@file_args, "-cOBJ1=\"$objFiles[0]\"");
           push(@file_args, "-cOBJ2=\"$objFiles[1]\"");
      }
@@ -193,7 +193,7 @@ sub main {
           push(@file_args, '--parser "kast --parser ground"');
           push(@file_args, $sourceFile);
      } else {
-          push(@file_args, '--config-var-parser="kast --parser ground -e"');
+          push(@file_args, '-pOBJ1="kast --parser ground -e" -pOBJ2="kast --parser ground -e"');
           push(@file_args, '-cPGM=".K"');
      }
 
@@ -317,7 +317,7 @@ sub mergeObjs {
                "--output-file \"$obj1\"",
                '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
                '-cPGM=".K"',
-               '--config-var-parser="kast --parser binary"',
+               '-pOBJ1="kast --parser binary" -pOBJ2="kast --parser binary"',
                "-cOBJ1=\"$obj1\"",
                "-cOBJ2=\"$obj2\"",
                "-d $TRANS_DEF",
