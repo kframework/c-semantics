@@ -1,5 +1,5 @@
 module C-SETTINGS-SYNTAX
-     syntax Type ::= "cfg:charAlias" [function]
+     syntax SimpleType ::= "cfg:charAlias" [function]
      syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]
      syntax Int ::= "cfg:sizeofSignedChar" [function]
