@@ -21,6 +21,7 @@ module CIL-IMPLEMENTATION
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
   /* These are also defined in a standard library header. */
+  // TODO(AndreiS): define size_t here or in the header files?
   rule size_t => unsigned long
   rule size_ptr => unsigned long
   rule ptrdiff_t => long
