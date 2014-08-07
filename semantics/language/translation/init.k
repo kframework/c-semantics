@@ -115,7 +115,7 @@ module C-TRANSLATION-INIT
 //                orBool (notBool Identifier(B) in keys(Types))
 //      rule addBuiltins(.Map) => .
 
-     syntax K ::= checkMerge(Bag, Bag)
+     syntax KItem ::= checkMerge(Bag, Bag)
      rule checkMerge(_, .Bag) => .
      rule checkMerge(.Bag, _) => .
      rule checkMerge(

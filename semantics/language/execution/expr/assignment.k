@@ -49,7 +49,7 @@ module C-EXPR-ASSIGNMENT
           requires Base =/=K Base'
      rule getRelevantTags'(_, .Set) => .Set
 
-     syntax K ::= checkRestrictAssign(RestrictTag, Set)
+     syntax KItem ::= checkRestrictAssign(RestrictTag, Set)
      rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag':RestrictTag) S:Set)
           => checkRestrictAssign(Tag, S)
           requires Tag =/=K Tag'
@@ -64,7 +64,7 @@ module C-EXPR-ASSIGNMENT
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
      rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
 
-     syntax K ::= checkArrayStaticAssign(Type, TypedValue)
+     syntax KItem ::= checkArrayStaticAssign(Type, TypedValue)
      rule checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .

@@ -177,7 +177,7 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool hasIntegerType(T2)
           [structural]
 
-     syntax K ::= bitwiseInterpret(Type, Int, Bool)
+     syntax KItem ::= bitwiseInterpret(Type, Int, Bool)
      rule bitwiseInterpret(T:Type, N:Int, _) => arithInterpret(T, N)
           requires hasUnsignedIntegerType(T)
      rule bitwiseInterpret(T:Type, N:Int, true) => arithInterpret(T, N)
@@ -186,7 +186,7 @@ module C-COMMON-EXPR-BITWISE
           => bitwiseInterpret(arithInterpret(T, N))
           requires hasSignedIntegerType(T)
 
-     syntax K ::= bitwiseInterpret(K) [strict]
+     syntax KItem ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
           requires notBool isNegZero(N, T)
      rule (. => UNDEF("CEB12",

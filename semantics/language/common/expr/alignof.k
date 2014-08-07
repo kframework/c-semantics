@@ -2,7 +2,7 @@ module C-COMMON-EXPR-ALIGNOF-SYNTAX
      // Match the sizeof pattern, but it's pretty contrived.
      syntax Int ::= byteAlignofType(Type) [function]
 
-     syntax K ::= alignofType(K) [strict]
+     syntax KItem ::= alignofType(K) [strict]
 endmodule
 
 module C-COMMON-EXPR-ALIGNOF

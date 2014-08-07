@@ -42,7 +42,7 @@ module C-TYPING-INTERPRETATION
 
      // We need to keep the unevaluated size expression around in the case of
      // VLA function parameters.
-     syntax K ::= "ArrayType'" "(" Type "," K "," K "," K ")"
+     syntax KItem ::= "ArrayType'" "(" Type "," K "," K "," K ")"
      context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat]
      rule ArrayType'(T:Type, tv(N:Int, _), _, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
@@ -86,7 +86,7 @@ module C-TYPING-INTERPRETATION
 
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.
-     syntax K ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
+     syntax KItem ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
      rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
           => K ~> Prototype'(T, L1, L2, Var)
           [structural]
@@ -110,7 +110,7 @@ module C-TYPING-INTERPRETATION
           => Prototype''(T, L2, Var)
           [structural]
 
-     syntax K ::= "Prototype''" "(" Type "," List "," Bool ")"
+     syntax KItem ::= "Prototype''" "(" Type "," List "," Bool ")"
      rule <k> Prototype''(T:Type, L:List, false)
                => popBlock ~> pushTypeDown(T, makeFunctionType(L))
           ...</k>

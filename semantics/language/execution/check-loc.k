@@ -84,7 +84,7 @@ module C-CHECK-LOC
 
      // Next, filter out the restrict pointers where the object has been
      // unmodified in the associated block.
-     syntax K ::= checkRestrict(SymLoc, Set, Set, Set, Set)
+     syntax KItem ::= checkRestrict(SymLoc, Set, Set, Set, Set)
      rule <k> checkRestrict(Loc:SymLoc,
                     (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
                     (.Set => SetItem(basedOn(Base, Tag))) _, _, _)
@@ -129,7 +129,7 @@ module C-CHECK-LOC
           [structural]
 
      // Finally, do the actual checks.
-     syntax K ::= checkRestrict(Set, Set, Set)
+     syntax KItem ::= checkRestrict(Set, Set, Set)
      rule (. => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]
@@ -143,7 +143,7 @@ module C-CHECK-LOC
           requires Bases =/=Set Bases'
           [structural]
 
-     syntax K ::= "checkRestrict'" "(" Provenance ")"
+     syntax KItem ::= "checkRestrict'" "(" Provenance ")"
      rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => . ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           requires notBool isConstType(innerType(T))
