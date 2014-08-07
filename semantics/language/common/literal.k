@@ -29,16 +29,18 @@ module C-LITERAL
           requires (firstChar(S) =/=String "0")
                orBool (lengthString(S) ==Int 1)
 
-     syntax Constant ::= hexOrOctalConstant(Int)
+syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Base(simplifyForHex(S),16))
+          => hexOrOctalConstant(String2Base(simplifyForHex(S),16)) [anywhere]
 
      rule OctalConstant(N:Int)
-          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8))
+          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8)) [anywhere]
           
      // Included for symmetry.
+     //TODO: type checking to set Constant = StringLiteral
+     syntax Constant ::= StringLiteral
      syntax Constant ::= decimalConstant(Int)
-     rule DecimalConstant(N:Int) => decimalConstant(N)
+     rule DecimalConstant(N:Int) => decimalConstant(N) [anywhere]
      rule StringLiteral(S:String) => stringLiteral(S)
      rule WStringLiteral(list(S:List)) => wstringLiteral(S)
 
@@ -205,9 +207,11 @@ module C-LITERAL
      \cinline{long double}.
      }*/
      syntax Constant ::= reducedFloat(Float)
-     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)
-     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
+     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)  [anywhere]
+     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F) [anywhere]
      
+     //TODO: type checking requires Constant to be supersort of TypedValue
+     syntax Constant ::= TypedValue
      rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
      
      rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double))

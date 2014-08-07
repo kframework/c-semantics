@@ -24,6 +24,8 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= TypedValue
      syntax KResult ::= Value | Type
 
+     //TODO: Type checking requirement
+     syntax Expression ::= Value
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
