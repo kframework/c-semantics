@@ -1,6 +1,5 @@
-int f(){
-}
+static int a[];
 
-int main(void){
-	return f();
+int main(void) {
+      return 0;
 }

@@ -1,6 +1,10 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Bool ::= #areCompat(Type, Type) [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
+     syntax Int ::= getAlignas(Type) [function]
+
+     syntax Bool ::= areCompatible(Type, Type) [function]
+     syntax K ::= compositeType(Type, Type) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -11,7 +15,9 @@ module C-TYPING-COMPATIBILITY
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-BINDING-SYNTAX
+
      imports COMPAT-SYNTAX
+     imports DEBUG-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -46,6 +52,21 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(T:Type, T) => true
      rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
           requires sameQualifiers(Mods, Mods')
+
+     // TODO(chathhorn): should be a setting.
+     // Each enumerated type shall be compatible with char, a signed integer
+     // type, or an unsigned integer type. The choice of type is
+     // implementation-defined. (6.7.2.2:4)
+     rule #areCompat(
+               t(Mods:Set, enumType(_)),
+               t(Mods':Set, int))
+          => true
+          when sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, int),
+               t(Mods':Set, enumType(_)))
+          => true
+          when sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
@@ -92,6 +113,26 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T':Type, _)))
           => #areCompat(T, T')
           requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, arrayType(T:Type, _)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => #areCompat(T, T')
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, arrayType(T':Type, _)))
+          => #areCompat(T, T')
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => #areCompat(T, T')
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, incompleteArrayType(T':Type)))
+          => #areCompat(T, T')
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
@@ -117,12 +158,14 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(T, T')
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args')
+               andBool notBool (variadic in Args')
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, Args:List)),
                t(Mods':Set, functionType(T':Type, .List)))
           => #areCompat(T, T')
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args)
+               andBool notBool (variadic in Args)
      rule #areCompat(
                t(Mods:Set, functionType(T:Type,  L:List)),
                t(Mods':Set, functionType(T':Type, L':List)))
@@ -143,69 +186,145 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(.List, .List) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)
-          => (intersectSet(Mods, typeQualifiers) ==K intersectSet(Mods', typeQualifiers))
+          => (intersectSet(Mods, typeQualifiers)
+               ==K intersectSet(Mods', typeQualifiers))
+               // TODO(chathhorn): treating alignas like a qualifier for now.
+               // It's more complicated than this, too, I think -- e.g.,
+               // alignas on a definition implies no alignas should be on any
+               // declaration.
+               andBool ((#hasAlignas(Mods) =/=K true
+                    orBool #hasAlignas(Mods') =/=K true)
+                    orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
+
+     rule getAlignas(T:Type) => getAlignas(getModifiers(T))
+          when #hasAlignas(getModifiers(T)) ==K true
+     rule getAlignas(T:Type) => 1
+          when #hasAlignas(getModifiers(T)) =/=K true
+
+     syntax Int ::= getAlignas(Set) [function]
+     rule getAlignas(SetItem(alignas(A:Int)) _) => A
+
+     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
+     rule #hasAlignas(SetItem(alignas(_)) _) => true
 
      // We can assume the types are compatible.
      //TODO: might not need canonicalizeArrayType later
      rule compositeType(T:Type, T:Type) => T
+          requires isBasicType(T)
+               orBool isStructType(T)
+               orBool isUnionType(T)
+               orBool isBitfieldType(T)
      rule compositeType(
                t(Mods:Set, T:SimpleType),
                t(Mods':Set, T:SimpleType))
           // The modifiers might include extra information besides just
           // specifiers and qualifiers, it's probably best to keep it all
           // around for now.
-          => canonicalizeArrayType(t(Mods Mods', T))
+          // TODO(chathhorn): merging; this really shouldn't be done here.
+          // => canonicalizeArrayType(t(Mods Mods', T))
+          => t(Mods Mods', T)
+          requires isBasicType(t(.Set, T))
+               orBool isStructType(t(.Set, T))
+               orBool isUnionType(t(.Set, T))
+               orBool isBitfieldType(t(.Set, T))
+
+     // TODO(chathhorn): surely implementation defined, although I don't see
+     // composite types for enums explicitly addressed in the standard.
+     rule compositeType(
+               t(Mods:Set, enumType(_)),
+               t(Mods':Set, int))
+          => t(Mods Mods', int)
+     rule compositeType(
+               t(Mods:Set, int),
+               t(Mods':Set, enumType(_)))
+          => t(Mods Mods', int)
 
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),
                t(Mods':Set, functionType(T':Type, P':List)))
-          => canonicalizeArrayType(t(Mods Mods',
-               functionType(compositeType(T, T'), compositeParams(P, P'))))
+          // TODO(chathhorn): merging
+          // => canonicalizeArrayType(t(Mods Mods',
+          //      functionType(compositeType(T, T'), compositeParams(P, P'))))
+          => compositeFunctionType(compositeType(T, T'), Mods Mods', .K, P, P', .List)
 
      rule compositeType(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
-          => canonicalizeArrayType(
-	  t(Mods Mods', pointerType(compositeType(T, T'))))
+          // TODO(chathhorn): merging
+          // => canonicalizeArrayType(
+          //      t(Mods Mods', pointerType(compositeType(T, T'))))
+          => t(Mods Mods', pointerType(compositeType(T, T')))
 
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => canonicalizeArrayType(
-		t(Mods Mods', arrayType(compositeType(T, T'), N)))
+     // TODO(chathhorn): merging
+     //      => canonicalizeArrayType(
+     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
+     // rule compositeType(
+     //           t(Mods:Set, arrayType(T:Type, N:CSize)),
+     //           t(Mods':Set, incompleteArrayType(T':Type)))
+     //      => canonicalizeArrayType(
+     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
+     // rule compositeType(
+     //           t(Mods:Set, incompleteArrayType(T:Type)),
+     //           t(Mods':Set, arrayType(T':Type, N:CSize)))
+     //      => canonicalizeArrayType(
+     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, incompleteArrayType(T':Type)))
-          => canonicalizeArrayType(
-		t(Mods Mods', arrayType(compositeType(T, T'), N)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => canonicalizeArrayType(
-	       t(Mods Mods', arrayType(compositeType(T, T'), N)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, arrayType(T':Type, N:CSize)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
 
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
-          => canonicalizeArrayType(
-	       t(Mods Mods', flexibleArrayType(compositeType(T, T'))))
+          // TODO(chathhorn): merging
+          // => canonicalizeArrayType(
+          //      t(Mods Mods', flexibleArrayType(compositeType(T, T'))))
+          => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
                typedDeclaration(T:Type, X:CId),
                typedDeclaration(T':Type, X:CId))
           => typedDeclaration(compositeType(T, T'), X)
 
-     // We replace all ids in non-def param lists with #NoName, so we can get
-     // away with this.
-     syntax List ::= compositeParams(List, List) [function]
-     rule compositeParams(.List, P:List) => P
-     rule compositeParams(P:List, .List) => P
-     rule compositeParams(ListItem(variadic), ListItem(variadic))
-          => ListItem(variadic)
-     rule compositeParams(
-               ListItem(T:Type) P:List,
-               ListItem(T':Type) P':List)
-          => ListItem(compositeType(T, T')) compositeParams(P, P')
+     // TODO(chathhorn): huge hack. Done like this just so things will "break"
+     // when we can't form a composite type. Really need a better way to
+     // propagate errors up through layers of function calls like this (or
+     // maybe just a better mechanism for crawling ASTs...)
+     // TODO(chathhorn): merging; these were anywhere.
+     syntax KItem ::= compositeFunctionType(K, Set, K, List, List, List)
+          [function]
+     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, .List, P':List)
+          => t(Mods, functionType(T, P'))
+     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, P:List, _)
+          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+     rule compositeFunctionType(T:Type, Mods:Set, .K, P:List, .List, _)
+          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+     rule compositeFunctionType(T:Type, Mods:Set, .K,
+          ListItem(variadic), ListItem(variadic), P:List)
+          => compositeFunctionType(T, Mods, .K, .List, .List,
+               P ListItem(variadic))
+     rule compositeFunctionType(T:Type, Mods:Set, .K,
+               ListItem(PT:Type) P:List,
+               ListItem(PT':Type) P':List, P'':List)
+          => compositeFunctionType(T, Mods, compositeType(PT, PT'), P, P', P'')
+     rule compositeFunctionType(T:Type, Mods:Set, T':Type, P:List, P':List, P'':List)
+          => compositeFunctionType(T, Mods, .K, P, P', P'' ListItem(T'))
 
 endmodule
 

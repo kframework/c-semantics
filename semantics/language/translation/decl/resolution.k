@@ -22,7 +22,7 @@ module C-DECL-RESOLUTION
      syntax KItem ::= allocateIncompleteTentative(CId,K)
 
      rule <k> ( . => allocateIncompleteTentative(X,DE))
-		~> allocateIncompleteTentatives ...</k>
+               ~> allocateIncompleteTentatives ...</k>
           <externals>...
                (X:CId |-> DE:K => .Map)
           ...</externals>
@@ -39,20 +39,58 @@ module C-DECL-RESOLUTION
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
 
-    rule <k> (allocateIncompleteTentative(X:CId,declState(SB:SymBase,
-                    t(S:Set, incompleteArrayType(T:Type)), declared, true) )
-		 => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
+// TODO(chathhorn): merging; needs further effort to integrate.
+//      rule <k> (allocateIncompleteTentative(X:CId,declState(SB:SymBase,
+//                     t(S:Set, incompleteArrayType(T:Type)), declared, true) )
+//                => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
+     rule <k> (.K => declare(typedDeclaration(t(Mods, arrayType(T, 1)), X), NoInit))
+               ~> allocateIncompleteTentatives
           ...</k>
           <externals>...
-               (.Map => X:CId |-> declState(SB,t(S,
-			 incompleteArrayType(T)), declared, true))
+// TODO(chathhorn): merging; further effort.
+//                (.Map => X:CId |-> declState(SB,t(S,
+//                incompleteArrayType(T)), declared, true))
+//           ...</externals>
+//           [structural]
+// 
+//      rule allocateIncompleteTentative(_:CId,
+//           declState(_, _, State:DeclState, Tentative:Bool)) => .
+//           requires notBool Tentative
+//                orBool (State =/=K declared)
+               X:CId |-> declState(_,
+                    t(Mods:Set, incompleteArrayType(T:Type)), declared, true)
           ...</externals>
           [structural]
-
-     rule allocateIncompleteTentative(_:CId,
-	     declState(_, _, State:DeclState, Tentative:Bool)) => .
-          requires notBool Tentative
-               orBool (State =/=K declared)
+     rule <k> allocateIncompleteTentatives ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               _ |-> declState(_, t(Mods:Set, _), State:DeclState, _) => .Map
+          ...</externals>
+          when State =/=K declared
+               // TODO(chathhorn): ... and we do this inline function check in
+               // addition to completing tentatives.
+               andBool notBool (State ==K completed andBool Inline in Mods)
+          [structural]
+     rule <k> allocateIncompleteTentatives ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               _ |-> declState(_, t(Mods:Set, _), _, false) => .Map
+          ...</externals>
+          when notBool Inline in Mods
+          [structural]
+     rule <k> (. => UNDEF("TDR1",
+               "declaration for inline function not defined in the same translation unit.",
+               "6.7.4"))
+               ~> allocateIncompleteTentatives
+          ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>...
+               _ |-> declState(_, t(Mods:Set, _), completed, _)
+          ...</externals>
+          when Inline in Mods
           [structural]
 
      // Add the real location at which an external reference is defined to the
@@ -62,7 +100,7 @@ module C-DECL-RESOLUTION
 
      rule <k> ( . => resolveReference(X))~> resolveReferences ...</k>
           <external-uses> (SetItem(X:CId) => .Set) ...</external-uses>
-  	  [structural]
+          [structural]
      // Now everything left in <external-uses> should be an unresolved
      // reference.
      rule <k> resolveReferences => .K ...</k>
@@ -85,6 +123,7 @@ module C-DECL-RESOLUTION
                (.Map => Base |-> Base')
           ...</linkings>
           requires isLinkerLoc(Base)
+          [structural]
 
      rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
@@ -98,6 +137,7 @@ module C-DECL-RESOLUTION
                X |-> Base
           ...</genv>
           requires notBool isLinkerLoc(Base)
+          [structural]
 
      rule <k> (resolveReference(X:CId) => . ) ...</k>
           <external-decls>...
@@ -110,10 +150,17 @@ module C-DECL-RESOLUTION
                X |-> _
           ...</external-types>
           requires X =/=K Identifier("main")
+          [structural]
+// TODO(chathhorn): merging; integrate.
+//      rule <k> (resolveReference(X:CId) => ERROR("DR1", 
+//                     "no definition for symbol with external linkage: " 
+//                     +String idToString(X)) )
 
-     rule <k> (resolveReference(X:CId) => ERROR("DR1", 
-                    "no definition for symbol with external linkage: " 
-                    +String idToString(X)) )
+     rule <k> (. => UNDEF("TDR2",
+                    "no definition for symbol with external linkage: "
+                    +String idToString(X),
+                    "6.9:5"))
+               ~> resolveReferences
           ...</k>
           <external-uses>...
                (.Set => SetItem(X))
@@ -126,9 +173,10 @@ module C-DECL-RESOLUTION
           </external-types>
           requires notBool (X in keys(Defs))
                orBool notBool (X in keys(Types))
+          [structural]
 
      // Remember which TU has the definition of main.
-     rule <k> (resolveReference(Identifier("main")) => .) ...</k>
+     rule <k> resolveReference(Identifier("main")) => . ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           <external-decls>...
                (Identifier("main") |-> set(.Set) => .Map)
@@ -139,5 +187,16 @@ module C-DECL-RESOLUTION
           <external-types>...
                Identifier("main") |-> _
           ...</external-types>
+          [structural]
+
+// TODO(chathhorn): merging; probably to be removed.
+//      // Now everything left in <external-uses> should be an unresolved
+//      // reference.
+// 
+//      rule <k> resolveReferences => . ...</k>
+//           (<linking-state>...
+//                <external-uses> .Set </external-uses>
+//           ...</linking-state> => .Bag)
+//           [structural]
 
 endmodule

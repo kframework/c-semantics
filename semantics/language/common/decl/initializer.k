@@ -31,21 +31,16 @@ module C-DECL-INITIALIZER
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= "initDone"
-     rule allowInit(K:K)
-          => setInitializing(true)
-          ~> K
-          ~> initDone
-          [structural]
-     rule R:KResult ~> initDone
-          => setInitializing(false) ~> R
-          [structural]
-     rule initDone => setInitializing(false)
+     rule <k> allowInit(K:K) => K ~> initDone ...</k>
+          <initializing> I:Int => I +Int 1 </initializing>
           [structural]
 
-     syntax KItem ::= setInitializing(Bool)
-     rule <k> setInitializing(I:Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
+     syntax KItem ::= "initDone"
+     rule <k> R:KResult ~> initDone => R ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
+          [structural]
+     rule <k> initDone => . ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
           [structural]
 
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K))

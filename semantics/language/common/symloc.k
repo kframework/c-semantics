@@ -49,7 +49,7 @@ module C-SYMLOC-SYNTAX
 
      syntax SymBase ::= linc(SymBase) [function]
      syntax SymLoc ::= lnew(SymBase) [function]
-     syntax SymLoc ::= restrictedNew(SymBase) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, RestrictTag) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -63,6 +63,7 @@ module C-SYMLOC-SYNTAX
 
      syntax String ::= getTU(SymLoc) [function]
      syntax Int ::= getThreadId(SymLoc) [function]
+     syntax Int ::= getAlign(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
      //TODO: why it is nessary here
@@ -80,23 +81,28 @@ module C-SYMLOC-SYNTAX
      syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
-     syntax Provenance ::= basedOn(SymBase)
+     syntax Provenance ::= basedOn(SymBase, RestrictTag)
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
+     syntax Provenance ::= align(Int)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
 
      syntax Bool ::= isFromArray(SymLoc) [function]
-     syntax SymLoc ::= stripFromArray(SymLoc) [function]
+
+     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
+     syntax SymLoc ::= stripAllButFromUnion(SymLoc) [function]
 
      syntax SymLoc ::= stripProv(SymLoc) [function]
 endmodule
 
 module C-SYMLOC
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -182,7 +188,8 @@ module C-SYMLOC
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
      rule lnew(Base:SymBase) => loc(Base, 0)
-     rule restrictedNew(Base:SymBase) => loc(Base, 0, SetItem(basedOn(Base)))
+     rule restrictedNew(Base:SymBase, Tag:RestrictTag)
+          => loc(Base, 0, SetItem(basedOn(Base, Tag)))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
@@ -268,44 +275,65 @@ module C-SYMLOC
      syntax Bool ::= #isBases(Provenance) [function]
      rule #isBases(basedOn(_)) => true
 
-     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K,Loc) ==K true
+     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K, Loc) ==K true
 
-     syntax Bool ::= #hasUnionMarker(K,SymLoc) [function]
+     syntax Bool ::= #hasUnionMarker(K, SymLoc) [function]
      rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
-     rule #hasUnionMarker(K:K, loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
-	  => #hasUnionMarker(K', loc(SB,I,S))
-	  requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
+     rule #hasUnionMarker(K:K, loc(SB:SymBase, I:Int, SetItem(K':K) S:Set))
+          => #hasUnionMarker(K', loc(SB,I,S))
+          requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
 
-     rule isFromArray(Loc:SymLoc) => #isFromArray(.K,Loc) ==K true
+     rule isFromArray(Loc:SymLoc) => #isFromArray(.K, Loc) ==K true
 
      syntax Bool ::= #isFromArray(K, SymLoc) [function]
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
-     rule #isFromArray(K:K,loc(SB:SymBase,I:Int,SetItem(K':K) S:Set)) 
-	  => #isFromArray(K', loc(SB,I,S))
-	  requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
+     rule #isFromArray(K:K, loc(SB:SymBase, I:Int, SetItem(K':K) S:Set)) 
+          => #isFromArray(K', loc(SB, I, S))
+          requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
-     syntax SymLoc ::= #stripFromArray(SymBase,Int,K,Set,Set) [function]
-     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
-	  => loc(SB,I,SetItem(K) S)
-	  requires getKLabel(K) =/=KLabel 'fromArray
-     rule #stripFromArray(SB:SymBase, I:Int,K:K,.Set,S:Set)
-	  => loc(SB,I,S)
-	  requires getKLabel(K) ==KLabel 'fromArray
-     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
-	  => #stripFromArray(SB, I,K',S':Set,SetItem(K) S:Set)
-	  requires getKLabel(K) =/=KLabel 'fromArray
-     rule #stripFromArray(SB:SymBase, I:Int,K:K,SetItem(K':K) S':Set,S:Set)
-	  => #stripFromArray(SB, I,K',S':Set,S:Set)
-	  requires getKLabel(K) ==KLabel 'fromArray
+     rule stripAllButFromUnion(loc(SB:SymBase, I:Int)) => loc(SB, I)
+     rule stripAllButFromUnion(NullPointer) => NullPointer
+     rule stripAllButFromUnion(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
+          => #stripAllButFromUnion(SB, I, K, S, .Set)
 
-     rule stripFromArray(loc(SB:SymBase, I:Int)) => loc(SB,I)
-     rule stripFromArray(NullPointer) => NullPointer
-     rule stripFromArray(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
-		=> #stripFromArray(SB,I,K,S,.Set)
+     syntax SymLoc ::= #stripAllButFromUnion(SymBase, Int, K, Set, Set) [function]
+     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, .Set, S:Set)
+          => loc(SB, I, SetItem(K) S)
+          requires getKLabel(K) ==KLabel 'fromUnion
+     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, .Set, S:Set)
+          => loc(SB, I, S)
+          requires getKLabel(K) =/=KLabel 'fromUnion
+     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, SetItem(K':K) S':Set, S:Set)
+          => #stripAllButFromUnion(SB, I, K', S', SetItem(K) S)
+          requires getKLabel(K) ==KLabel 'fromUnion
+     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, SetItem(K':K) S':Set, S:Set)
+          => #stripAllButFromUnion(SB, I, K', S', S)
+          requires getKLabel(K) =/=KLabel 'fromUnion
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(NullPointer) => NullPointer
+
+     rule getAlign(loc(_, _, SetItem(align(A:Int)) _)) => A
+     rule getAlign(loc(_, _, Prov:Set)) => 1
+          when #hasAlign(Prov) =/=K true
+     rule getAlign(loc(_, _)) => 1
+
+     syntax Bool ::= "#hasAlign" "(" Set ")" [function]
+     rule #hasAlign(SetItem(align(_)) _) => true
+
+     rule ifFromArrayInBounds(
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
+          => true
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
+     rule ifFromArrayInBounds(
+               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               T:Type, I:Int)
+          => false
+          when Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
+     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
+          when notBool isFromArray(Loc)
 
 endmodule
 

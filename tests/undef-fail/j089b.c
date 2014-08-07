@@ -1,5 +1,9 @@
-int f(void) {
-}
-int main(void){
-	f() + 0;
+struct s;
+
+static struct s a;
+
+struct s { int x; };
+
+int main(void) {
+      return 0;
 }

@@ -48,7 +48,7 @@ module LIBC-STDARG
      a corresponding invocation of the \cinline{va_end} macro in the same
      function.
      }*/
-          
+
      // va_list __va_start(va_list* ap, void* pN);
      // fixme can add lots of checks here
      // tool fixme, change Value to K and unquote error
@@ -57,16 +57,16 @@ module LIBC-STDARG
                hrItem(ApLoc:KResult) hs::
                hrItem(ArgLoc:KResult))
           => Computation(*(ApLoc) := incSymbolic(ArgLoc))
-               ~> skipval
+               ~> voidVal
           [structural]
-     
+
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"), 
                hrItem(ApLoc:TypedValue) hs::
                hrItem(Size:TypedValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
-                    
+
      syntax KItem ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
      context va-inc-aux(_, _, (HOLE => reval(HOLE)))
      // fixme can do lots of checks here too
@@ -74,19 +74,19 @@ module LIBC-STDARG
           va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
-          [structural]                  
-          
+          [structural]
+
      // fixme can do lots of checks here too
      rule [va-copy]:
           prepareBuiltin(Identifier("__va_copy"), 
                hrItem(ApLoc:KResult) hs::
                hrItem(Other:KResult))
-          => Computation(*(ApLoc) := Other) ~> skipval
+          => Computation(*(ApLoc) := Other) ~> voidVal
           [structural]
-          
+
      // fixme can do lots of checks here too
      rule [va-end]:
           prepareBuiltin(Identifier("__va_end"),
-               hrItem(_:KResult)) => skipval
+               hrItem(_:KResult)) => voidVal
           [structural]
 endmodule

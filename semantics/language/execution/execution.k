@@ -7,15 +7,17 @@ require "ltlmc.k"
 require "init.k"
 require "sequence-point.k"
 
+
 require "stmt/block.k"
 require "stmt/break.k"
-require "stmt/loop.k"
 require "stmt/goto.k"
 require "stmt/if-then.k"
 require "stmt/labeled.k"
+require "stmt/loop.k"
 require "stmt/return.k"
+require "stmt/static-assert.k"
 require "stmt/switch.k"
-
+require "expr/assignment.k"
 require "expr/function-call.k"
 require "expr/identifier.k"
 require "expr/inc-and-dec.k"
@@ -35,15 +37,17 @@ module C-EXECUTION
      imports C-IO-BUFFERED
      imports C-SEQUENCE-POINT
 
-     imports C-STMT-LABELED
-     imports C-STMT-IF-THEN 
-     imports C-STMT-LOOP 
-     imports C-STMT-SWITCH 
-     imports C-STMT-GOTO 
-     imports C-STMT-RETURN 
      imports C-STMT-BLOCK
      imports C-STMT-BREAK
+     imports C-STMT-GOTO
+     imports C-STMT-IF-THEN
+     imports C-STMT-LABELED
+     imports C-STMT-LOOP
+     imports C-STMT-RETURN
+     imports C-STMT-STATIC-ASSERT
+     imports C-STMT-SWITCH
 
+     imports C-EXPR-ASSIGNMENT
      imports C-EXPR-FUNCTION-CALL
      imports C-EXPR-INC-AND-DEC
      imports C-EXPR-IDENTIFIER

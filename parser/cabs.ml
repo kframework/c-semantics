@@ -266,7 +266,7 @@ and unary_operator =
 
 and expression =
     NOTHING
-  | OffsetOf of type_name * string * cabsloc	
+  | OffsetOf of type_name * expression * cabsloc
   | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
   | LABELADDR of string  (* GCC's && Label *)

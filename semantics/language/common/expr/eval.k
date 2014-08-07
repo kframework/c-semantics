@@ -20,15 +20,6 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax Int ::= arrayLength(Type) [function]
-     rule arrayLength(t(_, arrayType(_, N:CSize))) => N
-     /*@ these large numbers are used instead of an infinity---the result of
-     these rules shouldn't be used later anyway */
-     rule arrayLength(t(_, flexibleArrayType(_)))
-          => 36893488147419103232
-     rule arrayLength(t(_, incompleteArrayType(_)))
-          => 36893488147419103232
-
      // chathhorn: to work around the new semantics for contexts.
      rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
      rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
@@ -50,7 +41,7 @@ module C-COMMON-EXPR-EVAL
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
 
-     rule rkludge(skipval) => skipval
+     rule rkludge(voidVal) => voidVal
      rule rkludge(emptyValue) => emptyValue
      rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
 
@@ -102,14 +93,14 @@ module C-COMMON-EXPR-EVAL
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(basedOn(base(Loc)),
+          => addProv(basedOn(base(Loc), getRestrictBlock(T)),
                addProv(fromArray(0,
-                    byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
+                    byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(fromArray(0,
-               byteSizeofType(innerType(T)) *Int (1 +Int arrayLength(T))),
+               byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc)
           requires notBool isRestrictType(T)
 
@@ -129,21 +120,23 @@ module C-COMMON-EXPR-EVAL
 
      //Solve the checkRegister constructor block
      //due to heat K Sequence originally.
-     syntax KItem ::= checkRegister(SymLoc,K)
-     rule <k> checkRegister(_,K:K) => K ...</k>
-          <initializing> true </initializing>
+     syntax KItem ::= checkRegister(SymLoc, K)
+     rule <k> checkRegister(_, K:K) => K ...</k>
+          <initializing> I:Int </initializing>
+          when I >Int 0
           [structural]
-     rule <k> checkRegister(Loc:SymLoc,K:K) => K ...</k>
-          <initializing> false </initializing>
+     rule <k> checkRegister(Loc:SymLoc, K:K) => K ...</k>
+          <initializing> 0 </initializing>
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> checkRegister(Loc:SymLoc,K:K)
-               => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression.", "6.3.2.1")
-		   ~> K
+     rule <k> checkRegister(Loc:SymLoc, K:K)
+               => UNDEF("CEE1",
+                    "Address of an array declared with register storage class used in an expression.",
+                    "6.3.2.1")
+               ~> K
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           requires isRegisterLoc(Loc)
-          [structural]
 
      syntax KItem ::= checkUse(K) [strict]
 
@@ -157,7 +150,8 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
      rule checkUse(tv(trap, T:Type))
-          => UNDEF("CEE2", "Indeterminate value used in an expression.", "")
+          => UNDEF("CEE2", "Indeterminate value used in an expression.",
+               "6.2.4, 6.7.9, 6.8")
           ~> tv(trap, T)
           [structural]
 

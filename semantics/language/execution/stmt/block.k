@@ -11,7 +11,7 @@ module C-STMT-BLOCK
      rule BlockStatement(B:K)
           => pushBlock ~> B ~> popBlock
           [structural]
-          
+
      rule <k> pushBlock => . ...</k>
           <local>
                C:Bag
@@ -19,30 +19,30 @@ module C-STMT-BLOCK
                <local-addresses> Addresses:Set => .Set </local-addresses>
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
           </local>
-          <block-stack> .List 
-               => ListItem(bag2K(C
-               <nesting-depth> N </nesting-depth> 
+          <block-stack> .List
+               => ListItem(bag2k(C
                <local-vars> Vars </local-vars>
-               <local-addresses> Addresses </local-addresses>))
+               <local-addresses> Addresses </local-addresses>
+               <nesting-depth> N </nesting-depth>))
           ...</block-stack>
-          [structural] 
-          
+          [structural]
+
      rule <k> (.K => deleteObject(Base)) ~> popBlock ...</k>
           <local-addresses>...
                (SetItem(Base:SymBase) => .Set)
           ...</local-addresses>
-          [structural] 
-          
+          [structural]
+
      rule <k> popBlock => . ...</k>
           <local>
                (_ => C)
                (<local-addresses> .Set </local-addresses> => .)
           </local>
-          <block-stack> 
-               ListItem(bag2K(C:Bag)) => .List 
+          <block-stack>
+               ListItem(bag2K(C:Bag)) => .List
           ...</block-stack>
-          [structural] 
-          
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
      The expression in an expression statement is evaluated as a void expression
      for its side effects.
@@ -55,7 +55,7 @@ module C-STMT-BLOCK
      }*/
      rule Nop => .
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
      A block allows a set of declarations and statements to be grouped into one
      syntactic unit.  The initializers of objects that have automatic storage
@@ -67,8 +67,14 @@ module C-STMT-BLOCK
      appear.
      }*/
      rule <k> Block(BlockNum:Int, _, list(Statements:List))
-               => listToK(Statements)
+               => listToK(Statements) ~> doneBlock(BlockNum)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
+          <modified>... (.Map => BlockNum |-> map(.Map)) </modified>
           [structural]
+
+     syntax KItem ::= doneBlock(Int)
+     rule <k> doneBlock(BlockNum:Int) => . ...</k>
+          <modified> BlockNum |-> _ => .Map ...</modified>
+
 endmodule

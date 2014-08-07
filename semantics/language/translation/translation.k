@@ -15,6 +15,7 @@ require "decl/global.k"
 require "decl/local.k"
 
 require "expr/additive.k"
+require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/conversion.k"
 require "expr/function-call.k"
@@ -36,6 +37,7 @@ require "stmt/if-then.k"
 require "stmt/labeled.k"
 require "stmt/loop.k"
 require "stmt/return.k"
+require "stmt/static-assert.k"
 require "stmt/switch.k"
 
 module C-TRANSLATION
@@ -55,6 +57,7 @@ module C-TRANSLATION
      imports C-DECL-LOCAL
 
      imports C-EXPR-ADDITIVE
+     imports C-EXPR-ASSIGNMENT
      imports C-EXPR-BITWISE
      imports C-EXPR-CONVERSION
      imports C-EXPR-FUNCTION-CALL
@@ -76,5 +79,6 @@ module C-TRANSLATION
      imports C-STMT-LABELED
      imports C-STMT-LOOP
      imports C-STMT-RETURN
+     imports C-STMT-STATIC-ASSERT
      imports C-STMT-SWITCH
 endmodule

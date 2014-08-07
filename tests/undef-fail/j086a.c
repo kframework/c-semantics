@@ -1,7 +1,11 @@
-int f(a){
-	return a;
+struct s;
+
+int f(struct s s) {
+      return 0;
 }
 
-int main(void){
-	return 0;
+struct s { int x; } s;
+
+int main(void) {
+      return f(s);
 }

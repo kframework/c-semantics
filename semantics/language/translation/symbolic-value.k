@@ -43,15 +43,17 @@ module C-SYMBOLIC-VALUE
           requires notBool isConstType(T)
           [structural]
      rule <k> write(symVal, _, _) => . ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
           [structural]
 
      rule bitSizeofType(T:Type) => symVal::CSize
           requires notBool isCompleteType(T)
                andBool notBool isFlexibleArrayType(T)
      rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal::CSize
+     rule bitSizeofType(t(_, variableLengthArrayType(_, _))) => symVal::CSize
 
-     rule splitBytes(tv(symVal, T:Type)) 
+     rule splitBytes(tv(symVal, T:Type))
           => dataList(
                times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
 

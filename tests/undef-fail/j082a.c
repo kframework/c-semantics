@@ -1,4 +1,9 @@
+struct s {
+	int x;
+	int y;
+};
+
 int main(void){
-	int x = {0, 1};
-	return x;
+	struct s s0 = 1;
+	return s0.x;
 }

@@ -22,7 +22,7 @@ module LIBC-STDLIB
           [structural]
 
      rule [debug]:
-          prepareBuiltin(Identifier("__debug"), _) => skipval
+          prepareBuiltin(Identifier("__debug"), _) => voidVal
           [interpRule]
 
      rule [exit]:
@@ -47,9 +47,10 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> prepareBuiltin(Identifier("malloc"),
-                    hrItem(tv(Len:Int, _:KResult)))
+                    hrItem(tv(Len:Int, _)))
                => alloc(Base, t(.Set, no-type), Len:Int)
-               ~> tv(lnew(Base), t(.Set, pointerType(t(.Set, void))))
+               ~> tv(loc(Base, 0, SetItem(fromArray(0, Len))),
+                    t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => Base |-> Len:Int ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
@@ -82,7 +83,8 @@ module LIBC-STDLIB
                     hrItem(tv(loc(OldBase:SymBase, 0), _)) hs::
                     hrItem(tv(NewLen:Int, _)))
                => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(lnew(NewBase), t(.Set, pointerType(t(.Set, void))))
+               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
+                    t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... 
                (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
@@ -117,7 +119,7 @@ module LIBC-STDLIB
           <k> prepareBuiltin(Identifier("free"),
                     hrItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
                => deleteSizedObject(Base, Len:Int) 
-               ~> skipval
+               ~> voidVal
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
@@ -135,7 +137,7 @@ module LIBC-STDLIB
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
                     hrItem(tv(N:Int, t(.Set, unsigned-int))))
-               => skipval
+               => voidVal
           ...</k>
           <rand-nat> _ => N:Int </rand-nat>
           [structural]

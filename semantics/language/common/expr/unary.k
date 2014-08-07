@@ -33,19 +33,6 @@ module C-COMMON-EXPR-UNARY
           - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F)
           [structural]
 
-     /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{4}}}{
-     The result of the \cinline{\~} operator is the bitwise complement of its
-     (promoted) operand (that is, each bit in the result is set if and only if
-     the corresponding bit in the converted operand is not set). The integer
-     promotions are performed on the operand, and the result has the promoted
-     type. If the promoted type is an unsigned type, the expression
-     \cinline{\~E} is equivalent to the maximum value representable in that
-     type minus \cinline{E}.
-     }*/
-     rule ~ tv(I:Bits, T:Type) => arithInterpret(T, ~Bits I)
-          requires isPromoted(T)
-          [structural]
-
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{
      The result of the logical negation operator \cinline{!} is 0 if the value
      of its operand compares unequal to 0, 1 if the value of its operand

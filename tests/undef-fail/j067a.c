@@ -1,6 +1,7 @@
-typedef int fun();
-const fun f;
+int x;
+const int x;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }
+

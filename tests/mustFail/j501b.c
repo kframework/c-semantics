@@ -1,4 +1,3 @@
-// kcc-assert-error(00035)
 #include <stdio.h>
 
 int bad(void){

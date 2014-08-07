@@ -12,10 +12,5 @@ module C-EXPR-UNARY
      rule - tv(symVal, T:Type) => tv(symVal, T)
           requires isPromoted(T) orBool hasFloatType(T)
           [structural]
-          
-     rule ~ tv(symVal, T:Type) => tv(symVal, T)
-          requires isPromoted(T)
-          [structural]
 
 endmodule
-     

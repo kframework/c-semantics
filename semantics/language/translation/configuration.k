@@ -61,13 +61,11 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
-     <k color="green" multiplicity="?"> 
-          loadMergeObj(
-               unwrapObj($OBJ1:Bag), 
-               unwrapObj($OBJ2:Bag))
-          ~> ($PGM:K 
-          ~> (link
-          ~> cleanup))
+     <k color="green" multiplicity="?">
+          $PGM:K
+          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag))
+          ~> link
+          ~> cleanup
      </k>
 
      <final-computation multiplicity="?" color="lightgray">
@@ -105,7 +103,7 @@ module C-CONFIGURATION
 
           // Toggle to allow writes and other special treatment for
           // initializers.
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
 
           <control-details> // TODO(chathhorn): dumb name
                <local>

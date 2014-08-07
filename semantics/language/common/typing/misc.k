@@ -69,7 +69,7 @@ module C-TYPING-MISC
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int)) 
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
-     
+
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char)) 
           => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
@@ -95,7 +95,7 @@ module C-TYPING-MISC
      rule inRange(V:Float, T:Type)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           requires hasFloatType(T)
-     
+
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
 
@@ -134,12 +134,21 @@ module C-TYPING-MISC
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, _)))
+          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
           requires notBool isArrayType(T)
 
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
+
+     rule getFunctionSpecifiers(T:Type)
+          => intersectSet(getModifiers(T), functionSpecifiers)
+
+     rule getSpecifiers(T:Type)
+          => getStorageSpecifiers(T) getFunctionSpecifiers(T)
+
 
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
@@ -156,12 +165,19 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
+     syntax Set ::= "functionSpecifiers"
+     rule functionSpecifiers =>
+          SetItem(Noreturn)
+          SetItem(Inline)
+
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
           requires notBool isArrayType(T)
@@ -170,6 +186,14 @@ module C-TYPING-MISC
           => t(Mods -Set storageSpecifiers, T)
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
+
+     rule stripFunctionSpecifiers(t(Mods:Set, T:SimpleType))
+          => t(Mods -Set functionSpecifiers, T)
+     rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(stripFunctionSpecifiers(T), X)
+
+     rule stripSpecifiers(T:Type)
+          => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
@@ -183,6 +207,9 @@ module C-TYPING-MISC
      rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                flexibleArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               variableLengthArrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           requires notBool isArrayType(T)
 
@@ -197,6 +224,7 @@ module C-TYPING-MISC
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
+     rule innerType(t(_, variableLengthArrayType(T:Type, _))) => T
      rule innerType(t(_, pointerType(T:Type))) => T
      rule innerType(t(_, bitfieldType(T:Type, _))) => T
      rule innerType(t(_, functionType(T:Type, _))) => T
@@ -226,10 +254,12 @@ module C-TYPING-MISC
           => t(S, incompleteArrayType(completeTags(Tags, T)))
      rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
           => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
+     rule completeTags(Tags:Map, t(S:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(S, variableLengthArrayType(completeTags(Tags:Map, T), N))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:CId)))
-          => t(S, structType(X, bitSizeofStruct(Info), Info)) 
+          => t(S, structType(X, bitSizeofStruct(Info), Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
           requires notBool (X in keys(Tags))
@@ -284,6 +314,7 @@ module C-TYPING-MISC
                andBool (getKLabel(T) =/=KLabel 'arrayType )
                andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
                andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
+               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType )
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
      // Function parameters.
@@ -299,22 +330,6 @@ module C-TYPING-MISC
           => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
      rule completeTagsInMap(_, .Map) => .Map
 
-     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
-
-     syntax Bool ::= #isNPC(TypedValue) [function]
-
-     rule #isNPC(tv(0, T:Type)) => true
-          requires hasIntegerType(T)
-               andBool fromConstantExpr(T)
-
-     rule #isNPC(tv(NullPointer, T:Type)) => true
-          requires isPointerType(T)
-               andBool (simpleType(innerType(T)) ==K void)
-               andBool fromConstantExpr(T)
-
-     // TODO(chathhorn)
-     rule fromConstantExpr(_) => true
-
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
@@ -322,4 +337,74 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
+
+     rule tagRestrict(Tag:RestrictTag, t(Mods:Set, T:SimpleType))
+          => t(tagRestrict(Tag, Mods), tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(tagRestrict(Tag, T), X)
+     rule tagRestrict(_, variadic) => variadic
+
+     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType) [function]
+     rule tagRestrict(_, T:BaseType) => T
+     rule tagRestrict(_, enumType(X:CId)) => enumType(X)
+     rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
+     rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
+          => pointerType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, arrayType(T:Type, Sz:CSize))
+          => arrayType(tagRestrict(Tag, T), Sz)
+     rule tagRestrict(Tag:RestrictTag, incompleteArrayType(T:Type))
+          => incompleteArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, flexibleArrayType(T:Type))
+          => flexibleArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:RestrictTag, variableLengthArrayType(T:Type, N:K))
+          => variableLengthArrayType(tagRestrict(Tag, T), N)
+     rule tagRestrict(_, incompleteStructType(X:CId))
+          => incompleteStructType(X)
+     rule tagRestrict(Tag:RestrictTag, structType(X:CId, NBits:Int,
+               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
+          => structType(X, NBits,
+               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(_, incompleteUnionType(X:CId))
+          => incompleteUnionType(X)
+     rule tagRestrict(Tag:RestrictTag, unionType(X:CId, NBits:Int,
+               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
+          => unionType(X, NBits,
+               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(_, functionType(T:Type, Params:List))
+          => functionType(T, Params)
+
+     syntax List ::= tagRestrict(RestrictTag, List) [function]
+     rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
+          => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
+     rule tagRestrict(_, .List) => .List
+
+     syntax Map ::= tagRestrict(RestrictTag, Map) [function]
+     rule tagRestrict(Tag:RestrictTag, X:CId |-> T:Type M:Map)
+          => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
+     rule tagRestrict(_, .Map) => .Map
+
+     syntax Set ::= tagRestrict(RestrictTag, Set) [function]
+     rule tagRestrict(Tag:RestrictTag, S:Set)
+          => SetItem(RestrictBlock(Tag)) S
+          when Restrict in S
+     rule tagRestrict(_, S:Set) => S
+          when notBool (Restrict in S)
+
+     rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
+          => Tag
+
+     rule arrayLength(t(_, arrayType(_, N:Int))) => N
+     /*@ these large numbers are used instead of an infinity---the result of
+     these rules shouldn't be used later anyway */
+     rule arrayLength(t(_, flexibleArrayType(_)))
+          => 36893488147419103232
+     // Probably should never come up.
+     rule arrayLength(t(_, variableLengthArrayType(_, _)))
+          => 36893488147419103232
+     rule arrayLength(t(_, incompleteArrayType(_)))
+          => 36893488147419103232
+     rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
+          => 36893488147419103232
+          when isInt(N) =/=K true
+
 endmodule

@@ -1,3 +1,4 @@
+export K_OPTS := -Xmx2048m
 KOMPILE = kompile
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \

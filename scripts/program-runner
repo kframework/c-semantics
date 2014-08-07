@@ -20,6 +20,9 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
+# Set heap size of krun
+$ENV{K_OPTS} = '-Xmx2048m';
+
 # These are compile-time settings and are set by the compile script using this
 # file as a template.
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
@@ -141,9 +144,9 @@ sub main {
       if (defined $ENV{LTLMC}) {
             $krun_args{'--ltlmc'} = $ENV{LTLMC};
             $krun_args{'-d'} = $EXEC_ND_DEF;
-            $krun_args{'--output-mode'} = 'pretty';
+            $krun_args{'--output'} = 'pretty';
             push @options, 'NOIO';
-            delete $krun_args{'--output'};
+            delete $krun_args{'--output-file'};
             print 'LTL model checking... ';
             print "(with non-deterministic expression sequencing)\n";
       }
@@ -289,6 +292,10 @@ sub parseResult {
 
       /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = $1;
+      };
+
+      /<result-value>\s*tv\s*\(\s*NullPointer\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+            $parsed->{exitCode} = 0;
       };
 }
 

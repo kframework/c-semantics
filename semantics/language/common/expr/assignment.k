@@ -1,12 +1,12 @@
 module C-COMMON-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-EVAL-SYNTAX
-
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
@@ -58,7 +58,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           requires (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
-               andBool (T' =/=Type T)
+               andBool (T' =/=K T)
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
@@ -66,7 +66,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           requires areCompatible(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
      rule lval(_, t(Mods':Set, pointerType(T':Type)))
@@ -74,26 +74,25 @@ module C-COMMON-EXPR-ASSIGNMENT
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           requires (isVoidType(T') orBool isVoidType(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
      rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
           requires isPointerType(T')
                andBool isNullPointerConstant(V)
-               andBool (T' =/=Type type(V))
+               andBool (T' =/=K type(V))
           [structural]
 
      rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           requires isBoolType(T') andBool isPointerType(T)
           [structural]
 
-     rule (. => ERROR("EA1", "Incompatible types in assignment or function call arguments."))
+     rule (. => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
           requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
-
-     rule (. => ERROR("EA2", "Incompatible pointer types in assignment or function call arguments."))
+     rule (. => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(_, T:Type)
           requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
@@ -101,8 +100,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool notBool
                     ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
                     andBool areCompatible(innerType(T'), innerType(T)))
-
-     rule (. => CV("EA3", "Lvalue required as left operand in assignment.", ""))
+     rule (. => CV("CEA3", "lvalue required as left operand in assignment.", ""))
           ~> tv(_, _) := tv(_, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
@@ -120,12 +118,6 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      // *** TODO(chathhorn) *** Does this only happen with unions? But if so,
      // why doesn't the standard just say that?
-
-     rule lval(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T'))
-          requires T' ==Type T
-          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
      Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the
@@ -167,4 +159,3 @@ module C-COMMON-EXPR-ASSIGNMENT
           [structural]
 
 endmodule
-

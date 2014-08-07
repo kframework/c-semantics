@@ -32,21 +32,22 @@ module C-MEMORY-WRITING
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
+               andBool I >Int 0
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
@@ -54,19 +55,20 @@ module C-MEMORY-WRITING
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
+               andBool I >Int 0
           [ndtrans]
      rule <k> (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
                ~> write(_, _, T:Type)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           requires isConstType(T)
           [structural]
      rule <k> (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
                ~> write(Loc:SymLoc, _, _)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           requires isStringLoc(Loc)
           [structural]
 

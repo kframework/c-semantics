@@ -1,30 +1,26 @@
-module C-DECL-LOCAL-SYNTAX
-     syntax KItem ::= declareInternalVariable(CId, Type, K)
-endmodule
-
 module C-DECL-LOCAL
-     imports C-DECL-LOCAL-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
-
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      // TODO(chathhorn): Totally not sure what to do about these first cases.
      // Should the external types be updated/completed? That appears to be the
-     // case according to 6.2.7p4, but does that update only last for the
-     // scope of the current block?
-     // 
+     // case according to 6.2.7p4, but does that update only last for the scope
+     // of the current block?
+     //
      // Extern, external type and def exist.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
                => addToEnv(X, Base)
           ...</k>
           <types> M:Map => M[X <- T] </types>
@@ -38,9 +34,9 @@ module C-DECL-LOCAL
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural] 
+          [structural]
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
                => addToEnv(X, symVal)
           ...</k>
           <types> M:Map => M[X <- T] </types>
@@ -55,9 +51,9 @@ module C-DECL-LOCAL
                andBool areCompatible(T, T')
                andBool notBool (X in keys(Defs))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural] 
+          [structural]
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit) 
+     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
                => addToEnv(X, symVal)
           ...</k>
           <types> M:Map => M[X <- T] </types>
@@ -70,7 +66,7 @@ module C-DECL-LOCAL
                andBool notBool isStaticType(T)
                andBool notBool (X in keys(Types))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural] 
+          [structural]
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => initLocalStatic(X,
                // Need the allowInit here to enable storing compound literals
@@ -80,31 +76,40 @@ module C-DECL-LOCAL
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
-          [structural] 
+          [structural]
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, T, figureInit(X, T, K))
           requires isNaked(T)
-          [structural] 
+          [structural]
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
-     rule <k> (.K => ERROR("DL1", "Extern declaration of "
+     rule <k> (.K => ERROR("TDL1", "Extern declaration of "
                     +String idToString(X) +String " follows one with no linkage."))
-               ~> declareInternalVariable(X:CId, T:Type, NoInit) 
+               ~> declareInternalVariable(X:CId, T:Type, NoInit)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
-          [structural] 
-     rule (. => ERROR("DL2", "extern declaration of " +String idToString(X)
+          [structural]
+     rule (. => ERROR("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer."))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
           requires isExternType(T) andBool K =/=K NoInit
-          [structural] 
+          [structural]
+     rule <k> (. => ERROR("TDL3", "Extern declaration of " +String idToString(X)
+                    +String " with incompatible type."))
+               ~> declareInternalVariable(X:CId, T':Type, NoInit)
+          ...</k>
+          <external-types>... X |-> T:Type ...</external-types>
+          requires (isFunctionType(T') orBool isExternType(T'))
+               andBool notBool isStaticType(T')
+               andBool notBool areCompatible(T, T')
+          [structural]
 
-     syntax KItem ::= initLocalStatic(CId, K) [strict(2)] 
+     syntax KItem ::= initLocalStatic(CId, K) [strict(2)]
      rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
@@ -123,8 +128,8 @@ module C-DECL-LOCAL
           </local-types>
           requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural] 
-     rule <k> (.K => ERROR("DL3","redeclaration of " +String idToString(X)
+          [structural]
+     rule <k> (.K => ERROR("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage."))
                ~> initLocalStatic(X:CId, _)
           ...</k>
@@ -139,9 +144,9 @@ module C-DECL-LOCAL
           </local-types>
           requires (kpair(X, BlockNum) in keys(LocalStatics))
                orBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural] 
-          
-     syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)] 
+          [structural]
+
+     syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)]
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
                => giveType(X, T)
                // Needed because we still need to process the initializers and
@@ -155,14 +160,28 @@ module C-DECL-LOCAL
                // TODO(chathhorn): local-types is just a flag in this case.
                LocalTypes:Map => LocalTypes[kpair(X, BlockNum) <- .K]
           </local-types>
-          [structural] 
+          requires isCompleteType(T)
+          [structural]
+     // Only function prototype scope?
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
+               => giveType(X, T)
+          ...</k>
+          <block-history> .List </block-history>
+          when isCompleteType(T)
+          [structural]
+     rule (. => UNDEF("TDL5",
+               "declaration of an identifier for an object with no linkage and incomplete type.",
+               "6.7:7"))
+          ~> defineAndInit(_, _, initValue(_, T:Type, _))
+          when notBool isCompleteType(T)
+          [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
           <structs> Structs:Map => Structs[X <- Info] </structs>
           requires notBool (X in keys(Structs))
           [structural]
-     rule <k> (. => ERROR("DL4", "redefinition of a struct, union, or enum: "
-               +String idToString(X)))
+     rule <k> (. => CV("TDL6", "redefinition of a struct, union, or enum: "
+               +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
           <structs>... X |-> _ ...</structs>

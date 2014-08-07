@@ -3,7 +3,7 @@ module C-DECL-GLOBAL-SYNTAX
 
      syntax Bool ::= isNaked(Type) [function]
 
-     syntax DeclState ::= "declared" | "completed" 
+     syntax DeclState ::= "declared" | "completed"
                         | "allocated" | "initialized"
 
      // The last bool argument indicates whether a tentative def has been
@@ -15,13 +15,12 @@ module C-DECL-GLOBAL-SYNTAX
 endmodule
 
 module C-DECL-GLOBAL
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-LOCAL-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
 
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -29,24 +28,25 @@ module C-DECL-GLOBAL
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
      rule declare'(T:Type, K:K)
-          => checkDeclType(T, K) 
+          => checkDeclType(T, K)
           ~> declare''(T, K)
 
      syntax KItem ::= "declare''" "(" Type "," K ")"
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K) 
+     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
-          [structural] 
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K) 
+          [structural]
+     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
@@ -54,11 +54,11 @@ module C-DECL-GLOBAL
                andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
-          [structural] 
+          [structural]
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
-                    #if K ==K NoInit 
-                    #then NoInit 
+                    #if K ==K NoInit
+                    #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
           <curr-function> file-scope </curr-function>
@@ -66,58 +66,66 @@ module C-DECL-GLOBAL
           requires isFunctionType(T)
                andBool validGlobalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
-          [structural] 
+          [structural]
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
                => declareExternalVariable(X, T,
-                    #if K ==K NoInit 
-                    #then NoInit 
+                    #if K ==K NoInit
+                    #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires notBool isFunctionType(T)
                andBool validGlobalStorageClass(T)
-          [structural] 
+          [structural]
 
-     rule (. => ERROR("DG1", "declaration for the function " +String idToString(X)
-               +String " appears with type qualifiers."))
+     rule (. => UNDEF("TDG1",
+               "declaration for the function " +String idToString(X) +String
+               " appears with type qualifiers.",
+               "6.7.3"))
           ~> declare''(typedDeclaration(T:Type, X:CId), _)
           requires isFunctionType(T)
                andBool getQualifiers(T) =/=K .Set
-          [structural] 
+          [structural]
 
-     rule (. => ERROR("DG2", "declaration for " +String idToString(X)
-               +String " appears with multiple storage class specifiers.", 8))
+     rule (. => CV("TDG2",
+               "declaration for " +String idToString(X) +String
+               " appears with multiple storage class specifiers.",
+               "6.7.1:2"))
           ~> declare(typedDeclaration(T:Type, X:CId), _)
           requires notBool validStorageClass(T)
-          [structural] 
+          [structural]
 
-     rule <k> (. => ERROR("DG3", "declaration for " +String idToString(X)
-               +String " appears with invalid storage class specifiers.", 8))
+     rule <k> (. => ERROR("TDG3",
+               "declaration for " +String idToString(X) +String
+               " appears with invalid storage class specifiers.",
+               8))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
-          [structural] 
+          [structural]
 
-     rule <k> (. => ERROR("DG4", "declaration for " +String idToString(X)
-               +String " appears with invalid storage class specifiers.", 8))
+     rule <k> (. => ERROR("TDG4",
+               "declaration for " +String idToString(X) +String
+               " appears with invalid storage class specifiers.",
+               8))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> file-scope </curr-function>
           requires validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
           [structural] 
-          
+
      syntax KItem ::= checkDeclType(Type, K) [function]
-               | checkParams(Type) [function]
-	       | checkParamInList(List) [function]
-	       | checkParam(Type)
-               //TODO: might need this| checkParam(Type) [function]
-     // Checks if the type is complete if there's an initializer.
-               | checkComplete(Type, K) [function]
+                    | checkParams(Type) [function]
+                    | checkParamInList(List) [function]
+                    | checkParam(Type)
+                    //TODO: might need this| checkParam(Type) [function]
+          // Checks if the type is complete if there's an initializer.
+                    | checkComplete(Type, K) [function]
 
      // TODO(chathhorn): consider checking function init list here (disallowed
      // in the case of a prototype).
@@ -126,36 +134,70 @@ module C-DECL-GLOBAL
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
           requires notBool isFunctionType(T)
 
-     //TODO: might not need checkParamInList when we have K rewrite implemented properly 
+     // TODO: might not need checkParamInList when we have K rewrite implemented
+     // properly
+     // TODO(chathhorn): merging; yes, checkParamInList.
      rule checkParams(t(_, functionType(_, L:List))) => checkParamInList(L)
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 
-     rule checkParamInList(.List) => .
-     rule checkParamInList(ListItem(T:Type) L:List) => checkParamInList(L)
-          requires (getStorageSpecifiers(T) ==K .Set)
-               orBool (notBool isVoidType(T)
-                    andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
+// TODO(chathhorn): merging; this stuff needs to be redone or removed.
+//      rule checkParamInList(.List) => .
+//      rule checkParamInList(ListItem(T:Type) L:List) => checkParamInList(L)
+//           requires (getStorageSpecifiers(T) ==K .Set)
+//                orBool (notBool isVoidType(T)
+//                     andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
+// 
+//      rule checkParamInList(ListItem(T:Type) L:List) =>
+// 	  ERROR("DG5", "function parameter appears with storage "
+//                +String "class other than register.")
+//           ~> checkParam(T:Type)
+//           requires getStorageSpecifiers(T) =/=K .Set
+//                andBool getStorageSpecifiers(T) =/=K SetItem(Register)
+//                andBool notBool isVoidType(T)
+//           [structural] 
+// 
+//      rule checkParamInList(ListItem(T:Type) L:List) =>
+//           ERROR("DG6", "void parameter appears with a storage class.")
+//           ~> checkParam(T:Type)
+//           requires getStorageSpecifiers(T) =/=K .Set
 
-     rule checkParamInList(ListItem(T:Type) L:List) =>
-	  ERROR("DG5", "function parameter appears with storage "
-               +String "class other than register.")
+     rule checkParam(T:Type) => .
+          requires notBool (getStorageSpecifiers(T) =/=Set .Set
+                    andBool getStorageSpecifiers(T) =/=Set SetItem(Register)
+                    andBool notBool isVoidType(T))
+               andBool notBool (getStorageSpecifiers(T) =/=Set .Set
+                    andBool isVoidType(T))
+               andBool notBool (getQualifiers(T) =/=Set .Set
+                    andBool isVoidType(T))
+     rule (. => CV("TDG5",
+               "function parameter appears with storage class other than register.",
+               "6.7.6.3:2"))
           ~> checkParam(T:Type)
-          requires getStorageSpecifiers(T) =/=K .Set
-               andBool getStorageSpecifiers(T) =/=K SetItem(Register)
+          requires (getStorageSpecifiers(T) =/=Set .Set)
+               andBool (getStorageSpecifiers(T) =/=Set SetItem(Register))
                andBool notBool isVoidType(T)
-          [structural] 
-
-     rule checkParamInList(ListItem(T:Type) L:List) =>
-          ERROR("DG6", "void parameter appears with a storage class.")
+          [structural]
+     rule (. => UNDEF("TDG6",
+               "void parameter appears with a storage class specifier.",
+               "6.7.6.3:10"))
           ~> checkParam(T:Type)
-          requires getStorageSpecifiers(T) =/=K .Set
+          requires (getStorageSpecifiers(T) =/=Set .Set)
                andBool isVoidType(T)
-          [structural] 
+          [structural]
+     rule (. => UNDEF("TDG7",
+               "void parameter appears with qualifiers.",
+               "6.7.6.3:10"))
+          ~> checkParam(T:Type)
+          requires (getQualifiers(T) =/=Set .Set)
+               andBool isVoidType(T)
+          [structural]
 
      rule checkComplete(_, NoInit) => .
      rule checkComplete(T:Type, _) => .
           requires isCompleteType(T) orBool isArrayType(T)
-     rule (.K => ERROR("DG7", "declaration has initializer but incomplete type."))
+     rule (. => CV("TDG8",
+               "declaration has initializer but incomplete type.",
+               "6.7.9:3"))
           ~> checkComplete(T:Type, K:K)
           requires (K =/=K NoInit)
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
@@ -178,12 +220,6 @@ module C-DECL-GLOBAL
      // Also, consider moving this to type canonicalization.
      rule validStorageClass(T:Type) => validStorageClass'(T, getStorageSpecifiers(T))
      rule validStorageClass'(T:Type, Specs:Set) => notBool (
-               // TODO(chathhorn): type canonicalization doesn't work right so
-               // we can't do this. Qualifiers on function decls appear to
-               // always be applied to the declared function type, and not to
-               // the function's return type. AFAIK, the only time qualifiers
-               // should be applied to the declared function type is when the
-               // function type is actually a typedef.
                ((Static in Specs) andBool (Extern in Specs))
                orBool ((Auto in Specs) andBool (Static in Specs))
                orBool ((Auto in Specs) andBool (Extern in Specs))
@@ -201,7 +237,7 @@ module C-DECL-GLOBAL
      rule validGlobalStorageClass'(T:Type, Specs:Set) =>
           validStorageClass'(T, Specs)
           andBool notBool (
-               (Auto  in Specs)
+               (Auto in Specs)
                orBool (Register in Specs)
           )
 
@@ -236,12 +272,12 @@ module C-DECL-GLOBAL
      // also need to keep track of the initialzed status in order to prevent
      // multiple initiaizations of the same symbol.
      //
-     
+
      // That is, no storage class specifier (and not a function).
-     rule isNaked(T:Type) 
+     rule isNaked(T:Type)
           => notBool (isExternType(T) orBool isStaticType(T))
                andBool notBool isFunctionType(T)
-     
+
      // Naked function declarations are treated as though they were qualified
      // extern.
      syntax KItem ::= isExtern(Type) [function]
@@ -256,7 +292,7 @@ module C-DECL-GLOBAL
      external linkage, the linkage of the identifier at the later declaration
      is the same as the linkage specified at the prior declaration. If no prior
      declaration is visible, or if the prior declaration specifies no linkage,
-     then the identifier has external linkage. 
+     then the identifier has external linkage.
      }*/
 
      syntax Storage ::= "Naked"
@@ -267,7 +303,7 @@ module C-DECL-GLOBAL
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, T, K)),
-                    State, internal, 
+                    State, internal,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -281,14 +317,14 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG8", "conflicting types for "
-                    +String idToString(X) +String "."))
+     rule <k> (. => ERROR("TDG9",
+               "conflicting types for " +String idToString(X)))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <internals>... 
-               X |-> declState(_, OldT:Type, _, _) 
+          <internals>...
+               X |-> declState(_, OldT:Type, _, _)
           ...</internals>
           requires notBool areCompatible(T, OldT)
           [structural]
@@ -303,8 +339,8 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... 
-               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
+          <externals>...
+               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</externals>
           <internals> Ints:Map </internals>
           requires isNaked(T)
@@ -322,8 +358,8 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... 
-               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _) 
+          <externals>...
+               X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</externals>
           <internals> Ints:Map </internals>
           requires isExtern(T)
@@ -331,14 +367,14 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (. => ERROR("DG9", "conflicting types for "
-                    +String idToString(X) +String "."))
+     rule <k> (. => ERROR("TDG10",
+               "conflicting types for " +String idToString(X)))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... 
-               X |-> declState(_, OldT:Type, _, _) 
+          <externals>...
+               X |-> declState(_, OldT:Type, _, _)
           ...</externals>
           requires notBool areCompatible(T, OldT)
           [structural]
@@ -346,7 +382,6 @@ module C-DECL-GLOBAL
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, T, K)),
                     declared, external,
@@ -368,7 +403,6 @@ module C-DECL-GLOBAL
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> giveType(X, T) // Tentative type.
                ~> declareExternalVariable'(
                     allowInit(figureInit(X, T, K)),
                     declared, internal, Static)
@@ -387,7 +421,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // Static, previously extern.
-     rule <k> (. => ERROR("DG10",
+     rule <k> (. => ERROR("TDG11",
                "static declaration of " +String idToString(X)
                +String " follows non-static declaration.", 8))
                ~> declareExternalVariable(X:CId, T:Type, _)
@@ -408,29 +442,38 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax KItem ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," K ")"
+     syntax KItem ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," Storage ")"
           [strict(1)]
 
      // *** Incomplete ***
 
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           requires notBool isCompleteType(T)
           [structural]
+     // Tentative definition (with incomplete type).
      rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           ~> recordTentDef(X, Lnk)
           requires notBool isCompleteType(T)
-               andBool Sto =/=K Extern
+               andBool (Sto ==K Naked
+                    orBool (Sto ==K Static andBool Lnk =/=K internal))
+          [structural]
+     rule ( . => UNDEF("TDG12",
+               "declaration for an object is a tentative definition with internal linkage.",
+               "6.9.2:3"))
+          ~> declareExternalVariable'(initValue(_, T:Type, .K),
+               _, internal, _)
+          requires notBool isCompleteType(T)
           [structural]
 
      // *** Extern, already completed.  ***
 
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
@@ -445,7 +488,7 @@ module C-DECL-GLOBAL
 
      // Completed type, no init.
      // declared => allocated
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                declared, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -456,7 +499,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // declared => completed
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                declared, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, completed)
@@ -465,7 +508,7 @@ module C-DECL-GLOBAL
 
      // Already encountered a completed decl, no init.
      // completed => allocated
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                completed, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -476,7 +519,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // Already encountered a allocated or initialized decl, no init.
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
@@ -489,7 +532,7 @@ module C-DECL-GLOBAL
      // *** Initializer ***
 
      // declared => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
                declared, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -500,7 +543,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // completed => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
                completed, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -511,7 +554,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // allocated => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K), 
+     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
@@ -521,22 +564,22 @@ module C-DECL-GLOBAL
           [structural]
 
      // already initialized
-     rule (. => ERROR("DG11", "redefinition of symbol: "
+     rule (. => ERROR("TDG13", "Redefinition of symbol: "
                +String idToString(X)))
-          ~> declareExternalVariable'(initValue(X:CId, _, K:K), 
+          ~> declareExternalVariable'(initValue(X:CId, _, K:K),
                initialized, _, _)
           requires  K =/=K .K
           [structural]
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)
-     rule <k> updateDecl(X:CId, external, S':DeclState) 
-               => updateLinkState(X, T', Base') 
+     rule <k> updateDecl(X:CId, external, S':DeclState)
+               => updateLinkState(X, T', Base')
           ...</k>
           <env>... X |-> Base':SymBase ...</env>
           <types>... X |-> T':Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... 
+          <externals>...
                X |-> declState((_ => Base'), (_ => T'), (_ => S'), _)
           ...</externals>
           [structural]
@@ -589,10 +632,9 @@ module C-DECL-GLOBAL
           <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs>... X |-> Base' ...</external-defs>
           [structural]
-   
-     rule <k> (.K => ERROR("DG12",
-                    "redefinition of symbol with external linkage: "
-                    +String idToString(X)))
+
+     rule <k> (.K => ERROR("TDG14",
+               "redefinition of symbol with external linkage: " +String idToString(X)))
                ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
@@ -601,7 +643,7 @@ module C-DECL-GLOBAL
           requires notBool isLinkerLoc(Base')
                andBool (Base =/=K Base')
           [structural]
-     
+
      syntax KItem ::= recordTentDef(CId, Linkage)
      rule <k> recordTentDef(X:CId, internal) => . ...</k>
           <internals>...
@@ -621,16 +663,16 @@ module C-DECL-GLOBAL
      // multiple initializers, but it should work out as long as the symbolic
      // linker locs are transparent enough.
      syntax KItem ::= allocateDecl(CId)
-     rule <k> allocateDecl(X:CId) 
-               => allocObject(Base, T) 
+     rule <k> allocateDecl(X:CId)
+               => allocObject(Base, T)
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Base:SymBase ...</env>
           requires notBool isLinkerLoc(Base)
           [structural]
-     rule <k> allocateDecl(X:CId) 
+     rule <k> allocateDecl(X:CId)
                => addToEnv(X, Base')
-               ~> allocObject(Base', T) 
+               ~> allocObject(Base', T)
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Base:SymBase ...</env>
@@ -641,8 +683,9 @@ module C-DECL-GLOBAL
           requires isLinkerLoc(Base)
           [structural]
 
-     // *** TODO(chathhorn) struct/union stuff *** 
+     // *** TODO(chathhorn) struct/union stuff ***
 /*
+
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys(Exts))
                ~> completeTagInIntDecls(X, Info, keys(Ints))
@@ -668,8 +711,8 @@ module C-DECL-GLOBAL
           requires notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
           [structural]
-     rule <k> (. => ERROR("DG13", "redefinition of a struct, union, or enum: "
-                    +String idToString(X)))
+     rule <k> (. => ERROR("TDG15",
+               "redefinition of a struct, union, or enum: " +String idToString(X)))
                ~> addGlobalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -682,54 +725,54 @@ module C-DECL-GLOBAL
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
      syntax KItem ::= completeTagInExtDecls(CId, FieldInfo, Set)
-		    | completeTagInExtDecl(CId,FieldInfo,CId)
+                    | completeTagInExtDecl(CId, FieldInfo, CId)
 
-     rule <k> ( . => completeTagInExtDecl(Tag,Info,X)) 
-		~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
+     rule <k> ( . => completeTagInExtDecl(Tag, Info, X))
+               ~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _) ...</k>
-	  <curr-tu> Tu:String </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
-	  [structural]
+          [structural]
 
      rule completeTagInExtDecls(_, _, .Set) => .K
           [structural]
 
      rule <k> completeTagInExtDecl(Tag:CId,Info:FieldInfo,X:CId) 
-		=> declare(
+               => declare(
                     typedDeclaration(completeTag(Tag, Info, T), X), NoInit)
-	   ...</k>
-	  <externals>...
+          ...</k>
+          <externals>...
                X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
                          declared, _)
           ...</externals>
           requires notBool isFunctionType(T)
                andBool isCompleteType(completeTag(Tag, Info, T))
-	  [structural]
+          [structural]
 
      rule <k> (completeTagInExtDecl(Tag:CId, Info:FieldInfo, X:CId) => . )
           ...</k>
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
-          ...</externals>     
+          ...</externals>
           requires isFunctionType(T)
                orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
 
      syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, Set)
-		| completeTagInIntDecl(CId,FieldInfo,CId)
+                    | completeTagInIntDecl(CId,FieldInfo,CId)
 
      rule <k> ( . => completeTagInIntDecl(Tag,Info,X)) 
-		~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
+               ~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _) ...</k>
-	  <curr-tu> Tu:String </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu:String </tu-id>
-	  [structural]
+          [structural]
 
      rule completeTagInIntDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> (completeTagInIntDecl(Tag:CId,Info:FieldInfo,X:CId) => declare(
+     rule <k> (completeTagInIntDecl(Tag:CId, Info:FieldInfo, X:CId) => declare(
                typedDeclaration(
                     completeTag(Tag, Info, addStorage(Static, T)), X),
                          NoInit))
@@ -746,29 +789,29 @@ module C-DECL-GLOBAL
           ...</k>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
-          ...</internals>     
+          ...</internals>
           requires isFunctionType(T)
                orBool notBool isCompleteType(completeTag(Tag, Info, T))
                orBool DS =/=K declared
           [structural]
 
      syntax KItem ::= completeTagInTags(CId, FieldInfo, Set)
-	            | completeTagInTag(CId,FieldInfo,CId)
+                    | completeTagInTag(CId,FieldInfo,CId)
 
 
-     rule <k> ( . => completeTagInTag(S,Info,S2))
-		~> completeTagInTags(S:CId, Info:FieldInfo, (SetItem(S2:CId) => .Set)  _)
+     rule <k> ( . => completeTagInTag(S, Info, S2))
+               ~> completeTagInTags(S:CId, Info:FieldInfo, (SetItem(S2:CId) => .Set)  _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-	  [structural]
+          [structural]
 
      rule completeTagInTags(_, _, .Set) => .K
           [structural]
 
 
      rule completeTagInTag(S:CId,_,S:CId) => .K
-	  [structural]
+          [structural]
 
      rule <k> (completeTagInTag(S:CId,Info:FieldInfo,S2:CId) => . ) ...</k>
           <gstructs>...
@@ -785,8 +828,9 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= giveCompositeType(CId, Type)
+     syntax KItem ::= "giveCompositeType'" "(" CId "," K ")"
      rule <k> giveCompositeType(X:CId, T':Type)
-               => giveType(X, compositeType(T, T'))
+               => giveCompositeType'(X, compositeType(T, T'))
           ...</k>
           <types>... X |-> T:Type ...</types>
           requires areCompatible(T, T')
@@ -797,14 +841,21 @@ module C-DECL-GLOBAL
           <types> Types:Map </types>
           requires notBool (X in keys(Types))
           [structural]
-
-     rule <k> (.K => ERROR("DG14", "incompatible redeclaration of symbol "
-                    +String "with internal or external linkage: "
-                    +String idToString(X)))
+     rule <k> (. => ERROR("TDG16",
+               "incompatible redeclaration of symbol with internal or external linkage: "
+               +String idToString(X)))
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
           requires notBool areCompatible(T, T')
           [structural]
 
+     rule giveCompositeType'(X:CId, T:Type) => giveType(X, T)
+          [structural]
+     rule (. => UNDEF("TDG17",
+               "could not form composite type from declaration.",
+               "6.2.7:3")) // Likely because of VLA params.
+          ~> giveCompositeType'(_, T:K)
+          when isType(T) =/=K true
+          [structural]
 endmodule

@@ -1,3 +1,4 @@
 int main(void){
-	int f();
+      int f();
+      return 0;
 }

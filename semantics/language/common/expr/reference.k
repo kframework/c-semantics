@@ -11,6 +11,7 @@ module C-COMMON-EXPR-REFERENCE
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
@@ -29,7 +30,8 @@ module C-COMMON-EXPR-REFERENCE
      }
      */
      rule &(lval(Loc:SymLoc, T:Type))
-          => tv(addProv(fromArray(0, 2 *Int byteSizeofType(T)), Loc),
+          => tv(addProv(align(getAlignas(T)),
+               addProv(fromArray(0, byteSizeofType(T)), Loc)),
                t(.Set, pointerType(T)))
           requires notBool isRegisterLoc(Loc)
           [structural]
@@ -51,14 +53,25 @@ module C-COMMON-EXPR-REFERENCE
      }*/
      rule *(tv(Loc:SymLoc, T:Type))
           => checkRestrict(Loc, T)
-          ~> lv(stripFromArray(Loc), innerType(T))
+          ~> lv(stripAllButFromUnion(Loc), innerType(T))
           requires isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
+               andBool ifFromArrayInBounds(Loc,
+                    t(.Set, pointerType(t(.Set, char))), 1)
           [structural]
-     rule (. => UNDEF("CER3", "Dereferencing a null pointer.", "6.5.3.2:4"))
+     rule (. => UNDEF("CER3",
+               "Dereferencing a null pointer.",
+               "6.5.3.2:4"))
           ~> *(tv(Loc:SymLoc, _))
           requires Loc ==K NullPointer
+          [structural]
+     rule (. => UNDEF("CER4",
+               "Dereferencing a pointer past the end of an array.",
+               "6.5.6:8"))
+          ~> *(tv(Loc:SymLoc, _))
+          when notBool ifFromArrayInBounds(Loc,
+               t(.Set, pointerType(t(.Set, char))), 1)
           [structural]
 endmodule
 

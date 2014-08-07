@@ -1,8 +1,9 @@
 struct _s {
-	int x;
-	int a[];
+      int x;
+      int a[];
 } s;
 
-int main(void){
-	&(s.a[1]);
+int main(void) {
+      &(s.a[1]);
+      return 0;
 }

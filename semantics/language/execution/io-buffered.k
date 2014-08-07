@@ -11,19 +11,21 @@ module C-IO-BUFFERED-SYNTAX
 endmodule
 
 module C-IO-BUFFERED
-     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      syntax KItem ::= bwrite(SymLoc, K)
 
@@ -39,22 +41,36 @@ module C-IO-BUFFERED
                ~> setModified(Loc, T)
                ~> writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
 
      syntax KItem ::= setModified(SymLoc, Type)
-     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
+     syntax KItem ::= setModified(SymLoc, Type, Set)
+     rule <k> setModified(Loc:SymLoc, T:Type)
+               => setModified(Loc, T, keys(Modified))
+          ...</k>
+          <modified> Modified:Map </modified>
+
+     rule <k> setModified(Loc:SymLoc, T:Type,
+               (SetItem(Tag:RestrictTag) => .Set) _)
+          ...</k>
           <modified>...
-               Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T)))
+               Tag |-> map(_
+                    Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
           ...</modified>
-     rule <k> setModified(Loc:SymLoc, T:Type) => . ...</k>
-          <modified>
-               Modified:Map (.Map => Loc |-> byteSizeofType(T))
-          </modified>
-          requires notBool (Loc in keys(Modified))
+     rule <k> setModified(Loc:SymLoc, T:Type,
+               (SetItem(Tag:RestrictTag) => .Set) _)
+          ...</k>
+          <modified>...
+               Tag |-> map(Modified:Map
+                    (.Map => Loc |-> byteSizeofType(T)))
+          ...</modified>
+          requires notBool Loc in keys(Modified)
+     rule setModified(_, _, .Set) => .
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -84,33 +100,43 @@ module C-IO-BUFFERED
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
-     rule <k> (. => UNDEF("EIO1", "Unsequenced side effect on scalar object with side effect of same object.", "6.5") )
+     rule <k> (. => UNDEF("EIO1",
+               "Unsequenced side effect on scalar object with side effect of same object.",
+               "6.5") )
                ~> checkWrite(Loc:SymLoc, _) 
           ...</k>
           <locs-written> Locs:List </locs-written>
           requires Loc in Locs:List
           [structural] 
      // TODO(chathhorn): probably redundant.
-     rule <k> (. => UNDEF("EIO2", "Trying to write outside the bounds of an object.", "6.2.4"))
+     rule <k> (. => UNDEF("EIO2",
+               "Trying to write outside the bounds of an object.",
+               "6.5.6:8"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _) 
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           requires Offset >=Int Len orBool Offset <Int 0
           [structural] 
-     rule <k> (. => UNDEF("EIO3", "Trying to modify an object declared with const type.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO3",
+               "Trying to modify an object declared with const type.",
+               "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           requires (Const in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (. => UNDEF("EIO4", "Trying to modify an object declared with volatile type through a non-volatile lvalue.", "6.7.3"))
+     rule <k> (. => UNDEF("EIO4",
+               "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
+               "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (. => UNSPEC("EIO5", "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+     rule <k> (. => UNSPEC("EIO5",
+               "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
+               "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
@@ -186,7 +212,7 @@ module C-IO-BUFFERED
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
-          <mem>... 
+          <mem>...
                Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
           ...</mem>
           <locs-written> Locs:List </locs-written>
@@ -263,13 +289,19 @@ module C-IO-BUFFERED
 //             //[interpRule] 
 
      rule errorReadOutOfBounds
-          => UNDEF("EIO7", "Reading outside the bounds of an object.", "6.2.4")
+          => UNDEF("EIO7",
+               "reading outside the bounds of an object.",
+               "6.2.4")
           [structural]
      rule errorUnseqEffects
-          => UNDEF("EIO8", "Unsequenced side effect on scalar object with value computation of same object.", "6.5") 
+          => UNDEF("EIO8",
+               "unsequenced side effect on scalar object with value computation of same object.",
+               "6.5")
           [structural]
      rule errorNonVolatileLVal
-          => UNDEF("EIO9", "Trying to access an object declared with volatile type through a non-volatile lvalue.", "6.7.3")
+          => UNDEF("EIO9",
+               "trying to access an object declared with volatile type through a non-volatile lvalue.",
+               "6.7.3")
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)

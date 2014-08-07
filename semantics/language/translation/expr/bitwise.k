@@ -6,6 +6,10 @@ module C-EXPR-BITWISE
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
+     rule ~ tv(symVal, T:Type) => tv(symVal, T)
+          when isPromoted(T)
+          [structural]
+
      rule tv(symVal, T1:Type) << tv(E2:Int, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0

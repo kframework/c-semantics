@@ -4,7 +4,7 @@ module C-CONFIGURATION
      imports COMPAT-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     configuration 
+     configuration
 <global>
      <mem> .Map </mem>
      <functions color="lightgray"> .Map </functions>
@@ -17,7 +17,7 @@ module C-CONFIGURATION
      <external-defs> .Map </external-defs>
 
      // dummy link base |-> real base
-     <linkings> .Map </linkings> 
+     <linkings> .Map </linkings>
 
      <translation-units>
           <tu multiplicity="*">
@@ -47,6 +47,13 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
+     // These are used for verifying the aliasing restrictions on
+     // restrict-qualified pointers.
+     // SymLoc |-> set(basedOns)
+     <restrict> .Map </restrict>
+     // RestrictTag |-> (SymLoc |-> Int)
+     <modified> .Map </modified>
+
      // stdlib
      <rand-nat color="black"> 0 </rand-nat>
      // stdlib
@@ -66,13 +73,13 @@ module C-CONFIGURATION
                <thread-id color="yellow"> 0 </thread-id>
                <buffer color="lightgray"> .List </buffer>
 
-               <k color="green" multiplicity="?"> 
+               <k color="green" multiplicity="?">
                     loadObj(unwrapObj($PGM:Bag))
-                    ~> (initMainThread
-                    ~> (pgmArgs($ARGV:List) 
-                    ~> callMain($ARGC:Int, incomingArguments($ARGV:List))))
+                    ~> initMainThread
+                    ~> pgmArgs($ARGV:List)
+                    ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                </k>
-               <initializing> false </initializing>
+               <initializing> 0 </initializing>
 
                <next-loc color="black"> 0 @ auto(0) </next-loc>
                <final-computation multiplicity="?" color="lightgray">
@@ -97,7 +104,7 @@ module C-CONFIGURATION
 
                          <control-details> // TODO(chathhorn): dumb name
                               // stack of "local" cells
-                              <block-stack color="violet"> 
+                              <block-stack color="violet">
                                    .List
                               </block-stack>
                               <local>
@@ -110,10 +117,10 @@ module C-CONFIGURATION
                                    <formatting multiplicity="?">
                                         <format> .List </format>
                                         <format-arg> .K </format-arg>
-                                        <format-result> 
+                                        <format-result>
                                              .List
                                         </format-result>
-                                        <format-state> 
+                                        <format-state>
                                              "normal"
                                         </format-state>
                                         <format-mods>
@@ -132,20 +139,13 @@ module C-CONFIGURATION
                                    // variable twice in the same scope
                                    <local-vars color="lightgray">
                                         .List
-                                   </local-vars> 
+                                   </local-vars>
                                    // used to deallocate memory on leaving a
                                    // block
                                    <local-addresses color="lightgray">
                                         .Set
-                                   </local-addresses> 
+                                   </local-addresses>
 
-                                   // These are used for verifying the aliasing
-                                   // restrictions on restrict-qualified
-                                   // pointers.
-                                   // SymLoc |-> set(set(basedOns))
-                                   <restrict> .Map </restrict>
-                                   // SymLoc |-> Int (nbytes modified)
-                                   <modified> .Map </modified>
                               </local>
                               // used to control initialization when gotoing
                               <should-init color="lightgray">
@@ -177,7 +177,7 @@ module C-CONFIGURATION
                               <decl-type-holder color="cyan">
                                    .K
                               </decl-type-holder>
-                         </control-details>        
+                         </control-details>
                     </control>
                </thread-local>
           </thread>
@@ -211,7 +211,7 @@ module C-CONFIGURATION
           <sending> .List </sending>
           <done> ListItem("") </done>
      </file>
-</files> 
+</files>
 <input color="lightgray"> .List </input>
 <output color="lightgray"> .List </output>
 <result-value color="red"> .K </result-value>
@@ -223,5 +223,5 @@ module C-CONFIGURATION
 <options> $OPTIONS:Set </options>
 
 </T>
-          
+
 endmodule

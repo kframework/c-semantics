@@ -19,23 +19,24 @@ module C-IO-DIRECT
      rule <k> writeBytes(Loc:SymLoc, D:DataList, _)
                => writeBytes(Loc, D)
           ...</k>
-          <initializing> true </initializing>
+          <initializing> I:Int </initializing>
+          when I >Int 0
           [structural]
 
      rule <k> writeBytes(_, _, _) => . ...</k>
-          <initializing> false </initializing>
+          <initializing> 0 </initializing>
           [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
-          => writeByte(Loc, V) ~> 
+          => writeByte(Loc, V) ~>
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
 
      rule writeBytes(_, dataList(.List)) => .
-          [structural] 
+          [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
-          <mem>... 
+          <mem>...
                Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]))
           ...</mem>
           requires (Offset <Int Len) andBool notBool isSymbolic(V)
@@ -46,14 +47,14 @@ module C-IO-DIRECT
           requires isSymbolic(V)
           [structural]
 
-     syntax KItem ::= readByte(SymLoc) 
+     syntax KItem ::= readByte(SymLoc)
      // loc, size in bytes, aux list
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
-     
-     rule readBytes(Loc:SymLoc, Size:Int, _) 
-          => readBytes-aux(Loc, Size, .List) 
-          [structural] 
-          
+
+     rule readBytes(Loc:SymLoc, Size:Int, _)
+          => readBytes-aux(Loc, Size, .List)
+          [structural]
+
      // fixme sNat
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
           => readByte(Loc)
@@ -62,29 +63,29 @@ module C-IO-DIRECT
           [structural]
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
-          [structural]        
-     //TODO: why it is nessary here
+          [structural]
+
      syntax List ::= values(List) [function]
      rule values(ListItem(tv(K:K, _)) L:List) => ListItem(K:K) values(L:List)
      rule values(.List) => .List
 
-     rule readBytes-aux(_, 0, Aux:List) 
-          => dataList(values(Aux:List)) 
-          [structural] 
-     
+     rule readBytes-aux(_, 0, Aux:List)
+          => dataList(values(Aux:List))
+          [structural]
+
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
                => tv(V, t(.Set, no-type))
           ...</k>
-          <mem>... 
-               Base |-> object(_, _, (_ Offset:Int |-> V:K)) 
+          <mem>...
+               Base |-> object(_, _, (_ Offset:Int |-> V:K))
           ...</mem>
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int)) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int))
                => tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
-          <mem>... 
-               Base |-> object(_, _, 
-                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
+          <mem>...
+               Base |-> object(_, _,
+                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
           requires notBool (Offset in (keys(M)))
           [structural]

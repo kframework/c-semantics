@@ -1,4 +1,5 @@
-int main(void){
-	int a[] = 1;
-	return a[0];
+extern int a;
+
+int main(void) {
+      return a;
 }

@@ -102,15 +102,12 @@ module C-EXECUTION-INIT
 
      syntax KItem ::= "initMainThread'" "(" String ")"
 
-     rule <threads>
-	     <thread>...
- 		<k> initMainThread => initMainThread'(MainTU) ...</k>
-	     ...</thread>
-	  </threads>
-	  <main-tu> SetItem(MainTU:String) </main-tu>
-	 [structural]
+     rule <k> initMainThread => initMainThread'(MainTU) ...</k>
+          <main-tu> SetItem(MainTU:String) </main-tu>
+          [structural]
 
-     rule <threads>
+     rule <modified> _ => global |-> map(.Map) </modified>
+          <threads>
                <thread>...
                     <k> initMainThread'(MainTU:String) => populateFromGlobal ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>

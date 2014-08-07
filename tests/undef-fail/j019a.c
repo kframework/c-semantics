@@ -1,3 +1,4 @@
 int main(void){
-	*(char*)10;
+      *(char*)10;
+      return 0;
 }

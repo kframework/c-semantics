@@ -207,14 +207,11 @@ module C-SYNTAX
      // [strict 5] yet
      syntax DeclType ::= ArrayType(K, K, K)
           [klabel('ArrayType), strict(1)]
-     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat]
      syntax DeclType ::= PointerType(Specifier, K)
           [klabel('PointerType), strict(2)]
      // K, List, Bool
-     syntax DeclType ::= Prototype(K, K, Bool)
-          [strict(1, 2)]
-     syntax DeclType ::= NoPrototype(K, K, Bool)
-          [strict(1, 2)]
+     syntax DeclType ::= Prototype(K, K, Bool) [strict(1)]
+     syntax DeclType ::= NoPrototype(K, K, Bool) [strict(1, 2)]
 
      syntax KItem ::= "NotVariadic"
      syntax KItem ::= "Variadic"
@@ -309,7 +306,7 @@ module C-SYNTAX
      syntax PureDefinition ::= Transformer(K, K )
      syntax PureDefinition ::= ExpressionTransformer(K, K)
 
-     syntax PureDefinition ::= StaticAssert(Expression, Constant)
+     syntax PureDefinition ::= StaticAssert(K, K)
 
      // name
      syntax PureDefinition ::= LTLAnnotation(CId, K)
@@ -576,7 +573,7 @@ module C-SYNTAX
      syntax Expression ::= SizeofExpression(K)
      syntax Expression ::= SizeofType(K, K) [strict(1)]
      syntax Expression ::= AlignofExpression(K)
-     syntax Expression ::= AlignofType(K, K)
+     syntax Expression ::= AlignofType(K, K) [strict(1)]
      /*
      | INDEX of expression * expression
      */
@@ -585,10 +582,10 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      | MEMBEROFPTR of expression * string
      */
-     syntax Expression ::= K "." CId
-     context (HOLE => peval(HOLE)) . _:CId
-     syntax Expression ::= K "->" CId
-     context (HOLE => reval(HOLE)) -> _:CId
+     syntax Expression ::= K "." CId [left]
+     context (HOLE => peval(HOLE)) . _
+     syntax Expression ::= K "->" CId [left]
+     context (HOLE => reval(HOLE)) -> _
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

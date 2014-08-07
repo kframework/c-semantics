@@ -23,10 +23,7 @@ module C-TYPING-SYNTAX
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax KItem ::= DeclType(K, K) [avoid, strict(1)] 
-
-     syntax Bool ::= areCompatible(Type, Type) [function]
-     syntax Type ::= compositeType(Type, Type) [function]
+     syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
 
      syntax Bool ::= hasArithmeticType(Type) [function]
      syntax Bool ::= hasCharType(Type) [function]
@@ -73,9 +70,10 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= functionType(Type, List)
      syntax SimpleType ::= pointerType(Type)
 
-     syntax SimpleType ::= arrayType(Type, CSize) 
-     syntax SimpleType ::= incompleteArrayType(Type) 
+     syntax SimpleType ::= arrayType(Type, CSize)
+     syntax SimpleType ::= incompleteArrayType(Type)
      syntax SimpleType ::= flexibleArrayType(Type)
+     syntax SimpleType ::= variableLengthArrayType(Type, K)
 
      syntax SimpleType ::= structType(CId, Int, FieldInfo)
      syntax SimpleType ::= incompleteStructType(CId)
@@ -84,14 +82,17 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= incompleteUnionType(CId)
 
      // Basic types
-     syntax SimpleType ::= "char" [function]
-     syntax SimpleType ::= "void" | "bool" | "short-int" | "int" 
-                         | "long-int" | "long-long-int"
-     syntax SimpleType ::= "float" | "double" | "long-double"
-     syntax SimpleType ::= "signed-char" | "unsigned-char"
-     syntax SimpleType ::= "unsigned-short-int" | "unsigned-int" 
-                         | "unsigned-long-int" | "unsigned-long-long-int"
-     syntax SimpleType ::= "no-type"
+     // TODO(chathhorn): probably should create subsorts for
+     // Unsigned/SignedIntTYpe, etc.
+     syntax SimpleType ::= BaseType
+     syntax BaseType ::= "char" [function]
+     syntax BaseType ::= "void" | "bool" | "short-int" | "int"
+                        | "long-int" | "long-long-int"
+     syntax BaseType ::= "float" | "double" | "long-double"
+     syntax BaseType ::= "signed-char" | "unsigned-char"
+     syntax BaseType ::= "unsigned-short-int" | "unsigned-int"
+                        | "unsigned-long-int" | "unsigned-long-long-int"
+     syntax BaseType ::= "no-type"
 
      // These aren't real types, but are values that can appear in type
      // contexts.
@@ -105,8 +106,8 @@ module C-TYPING-SYNTAX
      syntax Type ::= getReturn(Type) [function]
 
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
-     syntax Type ::= correspondingUnsignedType(Type) [function] 
-     syntax Type ::= correspondingSignedType(Type) [function] 
+     syntax Type ::= correspondingUnsignedType(Type) [function]
+     syntax Type ::= correspondingSignedType(Type) [function]
      syntax Bool ::= hasIntegerType(Type) [function]
      syntax Bool ::= hasUnsignedIntegerType(Type) [function]
      syntax Bool ::= hasSignedIntegerType(Type) [function]
@@ -123,11 +124,25 @@ module C-TYPING-SYNTAX
      syntax Set ::= getModifiers(Type) [function]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
+     // For function array parameters with a static-qualified size.
+     syntax Modifier ::= arrayStatic(CSize) [klabel('arrayStatic)]
+     syntax Modifier ::= atomic(Type) [klabel('atomic)]
+     syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
-     syntax Set ::= getQualifiers(Type) [function]
+     // Special restrict modifier tagged with a block num.
+     syntax Modifier ::= RestrictBlock(RestrictTag)
+     syntax RestrictTag ::= Int | CId | "global"
+
      syntax Set ::= getStorageSpecifiers(Type) [function]
+     syntax Set ::= getFunctionSpecifiers(Type) [function]
+     // Gets function and storage specifiers.
+     syntax Set ::= getSpecifiers(Type) [function]
+     syntax Set ::= getQualifiers(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
+     syntax Type ::= stripFunctionSpecifiers(Type) [function]
+     // Strips function and storage specifiers.
+     syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
@@ -135,8 +150,8 @@ module C-TYPING-SYNTAX
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addModifiers(Set, Type) [function]
 
-     syntax Type ::= typedDeclaration(Type, CId) 
-          [latex(\terminal{typedDecl}\!({#1},{#2}\!))] 
+     syntax Type ::= typedDeclaration(Type, CId)
+          [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
      syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
@@ -152,6 +167,11 @@ module C-TYPING-SYNTAX
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
+
+     syntax Type ::= tagRestrict(RestrictTag, Type) [function]
+     syntax RestrictTag ::= getRestrictBlock(Type) [function]
+
+     syntax Int ::= arrayLength(Type) [function]
 
      //need this to solve array type anywhere rule
      syntax Type ::= canonicalizeArrayType(Type) [function]

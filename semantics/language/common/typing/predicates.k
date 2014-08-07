@@ -1,9 +1,11 @@
 module C-TYPING-PREDICATES
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      // Equality modulo provenance, storage specifiers, and struct/union
@@ -16,7 +18,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= #typesEq(Type, Type) [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
-          requires (getQualifiers(T) ==K getQualifiers(T'))
+          requires sameQualifiers(getModifiers(T), getModifiers(T'))
                andBool (simpleType(T) ==K simpleType(T'))
      rule #typesEq(
                typedDeclaration(T:Type, X:CId),
@@ -42,6 +44,11 @@ module C-TYPING-PREDICATES
                t(Mods':Set, flexibleArrayType(T':Type)))
           => #typesEq(T, T')
           requires sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => #typesEq(T, T')
+          when sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, structType(X:CId, _, _)))
@@ -82,7 +89,7 @@ module C-TYPING-PREDICATES
      rule #isBasic(t(_, enumType(_))) => true
 
      syntax Set ::= "basicTypes" [function]
-     rule basicTypes => 
+     rule basicTypes =>
           unsignedIntegerTypes
           signedIntegerTypes
           floatTypes
@@ -90,7 +97,7 @@ module C-TYPING-PREDICATES
           SetItem(no-type)
 
      syntax Set ::= "floatTypes" [function]
-     rule floatTypes => 
+     rule floatTypes =>
           SetItem(float)
           SetItem(double)
           SetItem(long-double)
@@ -205,7 +212,7 @@ module C-TYPING-PREDICATES
 
      rule isConstType(T:Type) => (Const in getQualifiers(T))
      rule isVolatileType(T:Type) => (Volatile in getQualifiers(T))
-     rule isRestrictType(T:Type) => (Restrict in getQualifiers(T))
+     rule isRestrictType(T:Type) => #isRestrict(T) ==K true
 
      syntax Bool ::= #hasFloat(Type) [function]
                    | #hasChar(Type) [function]
@@ -224,31 +231,33 @@ module C-TYPING-PREDICATES
                    | #isBitfield(Type) [function]
                    | #isFunction(Type) [function]
                    | #isFunctionPointer(Type) [function]
+                   | #isRestrict(Type) [function]
 
      rule #hasFloat(t(_, T:SimpleType)) => true
-          requires T:SimpleType in floatTypes 
-     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T) 
+          requires T in floatTypes
+     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T)
 
      rule #hasChar(t(_, T:SimpleType)) => true
-          requires T:SimpleType in charTypes
-     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T) 
+          requires T in charTypes
+     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T)
 
      rule #isUChar(t(_, unsigned-char)) => true
-     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T) 
+     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T)
 
-     rule #isPointer(t(_, pointerType(_))) => true 
-     rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T) 
+     rule #isPointer(t(_, pointerType(_))) => true
+     rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T)
 
-     rule #isBoolT(t(_, bool)) => true 
-     rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T) 
+     rule #isBoolT(t(_, bool)) => true
+     rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T)
 
-     rule #isArray(t(_, arrayType(_, _))) => true 
-     rule #isArray(t(_, incompleteArrayType(_))) => true 
-     rule #isArray(t(_, flexibleArrayType(_))) => true 
-     rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T) 
+     rule #isArray(t(_, arrayType(_, _))) => true
+     rule #isArray(t(_, incompleteArrayType(_))) => true
+     rule #isArray(t(_, flexibleArrayType(_))) => true
+     rule #isArray(t(_, variableLengthArrayType(_, _))) => true
+     rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T)
 
-     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true 
-     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T) 
+     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true
+     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T)
 
      rule #isVoid(t(_, void)) => true
      rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)
@@ -287,4 +296,21 @@ module C-TYPING-PREDICATES
           => true 
      rule #isFunctionPointer(typedDeclaration(T:Type, _))
           => #isFunctionPointer(T)
+
+     rule #isRestrict(t(SetItem(Restrict) _, _)) => true
+
+     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
+
+     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+     rule #isNPC(tv(0, T:Type)) => true
+          when hasIntegerType(T)
+               andBool fromConstantExpr(T)
+     rule #isNPC(tv(NullPointer, T:Type)) => true
+          when isPointerType(T)
+               andBool (simpleType(innerType(T)) ==K void)
+               andBool fromConstantExpr(T)
+
+     // TODO(chathhorn)
+     rule fromConstantExpr(_) => true
+
 endmodule

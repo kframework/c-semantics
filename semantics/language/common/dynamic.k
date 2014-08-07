@@ -1,13 +1,13 @@
 module C-DYNAMIC-SYNTAX
      syntax Type ::= t(Set, SimpleType)
 
-     syntax Value ::= "skipval"
+     syntax Value ::= "voidVal"
 
      syntax Agg ::= agg(List)
 
      syntax CValue ::= Bits | SymLoc | Float | Agg
 
-     syntax TypedValue ::= tv(CValue, Type) 
+     syntax TypedValue ::= tv(CValue, Type)
           [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax LValue ::= lv(SymLoc, Type)
@@ -18,7 +18,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "discard"
      syntax Value ::= "emptyValue"
-     
+
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax Value ::= TypedValue
@@ -70,10 +70,10 @@ module C-DYNAMIC
 
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0)) => UnknownCabsLoc 
      rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int)) => CabsLoc(S,I1,I2,I3)
-		requires S =/=String "cabs loc unknown"
-			orBool I1 =/=Int -10
-			orBool I2 =/=Int -10
-			orBool I3 =/=Int 0
+          requires S =/=String "cabs loc unknown"
+               orBool I1 =/=Int -10
+               orBool I2 =/=Int -10
+               orBool I3 =/=Int 0
 
      rule ExpressionLoc(K:K, _) => K
 
@@ -99,18 +99,18 @@ module C-DYNAMIC
      }*/
      rule Pragma(_:K) => .
           [structural]
-          
+
      rule AttributeWrapper(K:K, _) => K
-     
+
      rule ToIdentifier("___missing_field_name") => #NoName
-     rule ToIdentifier(S:String) => Identifier(S) 
-	  requires S =/=String "___missing_field_name"
+     rule ToIdentifier(S:String) => Identifier(S)
+          requires S =/=String "___missing_field_name"
 
      rule NothingExpression => emptyValue
 
-     rule unwrapObj(<generatedTop>... 
-               <global> G:Bag </global> 
-          ...</generatedTop>) 
+     rule unwrapObj(<generatedTop>...
+               <global> G:Bag </global>
+          ...</generatedTop>)
           => <global> G </global>
 
      rule unwrapObj(.Bag) => .Bag
@@ -125,8 +125,8 @@ module C-DYNAMIC
 
      rule N:Int => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
-     
+
      rule N:CSize => tv(N, cfg:largestUnsigned)
           [structural] // for internal computations
-     
+
 endmodule

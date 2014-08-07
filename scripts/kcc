@@ -20,6 +20,9 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
+# Set heap size of krun
+$ENV{K_OPTS} = '-Xmx2048m';
+
 $::VERSION="0.1";
 
 my $KRUN = "krun";
@@ -225,12 +228,15 @@ sub main {
 
      $programConf = encode_base64($gzippedConf);
 
+     if ($args->{'-d'}) {
+          print "Final configuration saved to $confOutPrettyTmp.\n";
+     }
      if (!checkTransSuccess($linkStdout)) {
           print "Error during translation.\n";
-          if ($args->{'-d'}) {
-               die "Final configuration saved to $confOutPrettyTmp.\n";
-          } else {
+          if (!$args->{'-d'}) {
                die "Use \"kcc -d\" to get the final configuration.\n";
+          } else {
+               die "See the final configuration for details.\n";
           }
      }
 
@@ -415,12 +421,15 @@ sub compile {
           push(@tempFiles, $localOvalPretty);
      }
 
+     if ($args->{'-d'}) {
+          print "Final configuration saved to $localOvalPretty.\n";
+     }
      if (!checkTransSuccess($compileStdout)) {
           print "Error during translation: $localOval\n";
-          if ($args->{'-d'}) {
-               die "Final configuration saved to $localOvalPretty.\n";
-          } else {
+          if (!$args->{'-d'}) {
                die "Use \"kcc -d\" to get the final configuration.\n";
+          } else {
+               die "See the final configuration for details.\n";
           }
      }
 }

@@ -98,7 +98,9 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           requires ifFromArrayInBounds(Loc, T, I)
           [structural]
-     rule (. => ERROR("00044", "A pointer (or array subscript) outside the bounds of an object.", (46,, 49)) )
+     rule (. => ERROR("CEA1",
+               "A pointer (or array subscript) outside the bounds of an object.",
+               (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
           [structural]
@@ -130,20 +132,20 @@ module C-COMMON-EXPR-ADDITIVE
           requires notBool isFromArray(Loc)
 
      syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
-		   | #ifFromArrayInBounds(K,Set,Type,Int)
+                   | #ifFromArrayInBounds(K,Set,Type,Int)
 
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
-	  => true
-	  requires Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
+          => true
+          requires Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
-	  => false
-	  requires Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
+          => false
+          requires Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
      rule #ifFromArrayInBounds(K:K,.Set,_:Type,_:Int)
-	  => true
-	  requires getKLabel(K) =/=KLabel 'fromArray
+          => true
+          requires getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K,SetItem(K':K) S:Set,T:Type,I:Int)
-	  => #ifFromArrayInBounds(K',S,T,I)
-	  requires getKLabel(K) =/=KLabel 'fromArray
+          => #ifFromArrayInBounds(K',S,T,I)
+          requires getKLabel(K) =/=KLabel 'fromArray
 
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(K:K) S:Set),
@@ -171,18 +173,25 @@ module C-COMMON-EXPR-ADDITIVE
      array object.
      }*/
 
-     // ptr1, ptr2, size of ptr type
-     syntax KItem ::= "computePointerDifference" "(" SymLoc "," SymLoc "," K ")"
-          [strict(3)]
      rule tv(L1:SymLoc, t(_, pointerType(T:Type)))
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
-          => computePointerDifference(L1, L2, sizeofType(T))
+          => computePointerDifference(offset(L1) -Int offset(L2),
+               byteSizeofType(T))
+          requires base(L1) ==K base(L2)
           [structural]
-     rule computePointerDifference(Loc1:SymLoc,
-               Loc2:SymLoc, tv(Size:Int, _))
-          => tv((offset(Loc1) -Int offset(Loc2)) /Int Size, cfg:ptrdiffut)
-          requires (offset(Loc1) -Int offset(Loc2)) %Int Size ==Int 0
-               andBool base(Loc1) ==K base(Loc2)
+     // ptr1, ptr2, size of ptr type
+     syntax KItem ::= computePointerDifference(Int, Int)
+     rule computePointerDifference(Diff:Int, Size:Int)
+          => tv(Diff /Int Size, cfg:ptrdiffut)
+          requires (Diff %Int Size ==Int 0)
+               andBool (Diff /Int Size) <=Int max(cfg:ptrdiffut)
+               andBool (Diff /Int Size) >=Int min(cfg:ptrdiffut)
+          [structural]
+     rule (. => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
+               "6.5.6"))
+          ~> computePointerDifference(Diff:Int, Size:Int)
+          requires (Diff /Int Size) >Int max(cfg:ptrdiffut)
+               orBool (Diff /Int Size) <Int min(cfg:ptrdiffut)
           [structural]
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)

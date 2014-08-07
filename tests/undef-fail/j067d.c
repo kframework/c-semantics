@@ -1,6 +1,6 @@
-typedef int fun();
-_Atomic fun f;
+int x;
+_Atomic int x;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }

@@ -119,6 +119,8 @@ behavior, but if it exists, it will always be identified using search.
 
 ## LTL model checking
 
+NOTE: LTL model checking seems to be broken in recent versions of K.
+
 We currently support LTL model checking over possible expression sequencings.
 
 ### Syntax

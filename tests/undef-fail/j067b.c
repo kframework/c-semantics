@@ -1,6 +1,6 @@
-typedef int fun();
-restrict fun f;
+int *p;
+int * restrict p;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }

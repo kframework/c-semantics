@@ -453,7 +453,7 @@ and printIntLiteral i =
 	
 and printExpression exp =
 	match exp with
-	| OffsetOf ((spec, declType), id, loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: (printIdentifier id) :: []) "OffsetOf") loc
+	| OffsetOf ((spec, declType), exp, loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: (printExpression exp) :: []) "OffsetOf") loc
 	| LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
 	| BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2

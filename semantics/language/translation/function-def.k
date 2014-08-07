@@ -21,9 +21,9 @@ module C-FUNCTION-DEF
 
      imports COMPAT-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K) 
+     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K)
           => declare(
-               typedDeclaration(toPrototype(T), X), 
+               typedDeclaration(toPrototype(T), X),
                initializer(initFunction(
                     &(X),
                     functionObject(X,
@@ -42,7 +42,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (. => ERROR("FD1", "duplicate parameters in "
                +String "function definition."))
-          ~> FunctionDefinition(typedDeclaration(T:Type, _), _) 
+          ~> FunctionDefinition(typedDeclaration(T:Type, _), _)
           requires hasDupParams(T)
 
      // TODO(chathhorn): possibly check that old-style declarations are
@@ -66,7 +66,6 @@ module C-FUNCTION-DEF
                orBool (getParams(T) =/=K .List)
 
      syntax KItem ::= processFunDef(CId, K)
-
      rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
@@ -79,7 +78,8 @@ module C-FUNCTION-DEF
 
      syntax KItem ::= checkFunDefType(CId, Type)
      rule checkFunDefType(X:CId, T:Type) => .
-          requires isVoidOrComplete(getReturn(T))
+          requires notBool isFunctionType(getReturn(T))
+               andBool notBool isArrayType(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X =/=K Identifier("main"))
           [structural]
@@ -88,13 +88,13 @@ module C-FUNCTION-DEF
                andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
           [structural]
-     rule (. => ERROR("FD2", "incomplete return type in "
-               +String "function definition (6.7.6.3p4)."))
+     rule (. => UNDEF("FD2", "invalid return type in function definition.",
+               "6.7.6.3:1"))
           ~> checkFunDefType(_, T:Type)
-          requires notBool isVoidOrComplete(getReturn(T))
+          requires isFunctionType(getReturn(T)) orBool isArrayType(getReturn(T))
           [structural]
-     rule (. => ERROR("FD3", "incomplete parameter type in "
-               +String "function definition (6.7.6.3p4)."))
+     rule (. => UNDEF("FD3", "incomplete parameter type in "
+               +String "function definition.", "6.7.6.3:4"))
           ~> checkFunDefType(_, T:Type)
           requires notBool areVoidOrComplete(getParams(T))
           [structural]
@@ -127,11 +127,11 @@ module C-FUNCTION-DEF
           requires T =/=K int
           [structural]
      rule (. => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
-          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _))) 
+          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
      rule (. => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
-          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type)))) 
+          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
           requires #isArgvType(T) =/=K true
           [structural]
      rule (. => ERROR("FD8", "main must have zero or two parameters.") )
@@ -161,19 +161,20 @@ module C-FUNCTION-DEF
 
      syntax KItem ::= safeBody(CId, K) [function]
 
-     rule safeBody(X:CId, Blk:K) 
+     rule safeBody(X:CId, Blk:K)
           => Blk ~> Return(NothingExpression)
           requires X =/=K Identifier("main")
-     rule safeBody(Identifier("main"), Blk:K) 
+     rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, t(.Set, int)))
 
      syntax KItem ::= "returnToFileScope"
 
      syntax KItem ::= staticEval(CId, List, K)
      rule <k> staticEval(X:CId, Params:List, Blk:K)
-               => populateFromGlobal
+               => pushBlock
                ~> dummyBind(Params)
                ~> Blk
+               ~> popBlock
                ~> returnToFileScope
           ...</k>
           <curr-function> _ => X </curr-function>
@@ -217,7 +218,6 @@ module C-FUNCTION-DEF
           requires cIdIsInList(X, Tail) ==K false
 
      syntax KItem ::= dummyBind(List)
-
      rule dummyBind(.List) => .
           [structural]
      rule dummyBind(ListItem(variadic)) => .
@@ -230,5 +230,5 @@ module C-FUNCTION-DEF
           ~> giveType(X, T)
           ~> dummyBind(Params)
           requires notBool isVoidType(T)
-          [structural] 
+          [structural]
 endmodule

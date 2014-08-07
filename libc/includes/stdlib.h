@@ -5,6 +5,7 @@
 
 // stdlib.h
 #define EXIT_FAILURE 1
+#define EXIT_SUCCESS 0
 #define RAND_MAX 2147483647
 typedef struct div_t_ {int quot; int rem;} div_t;
 typedef struct ldiv_t_ {long int quot; long int rem;} ldiv_t;

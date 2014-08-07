@@ -1,6 +1,6 @@
-typedef int fun();
-volatile fun f;
+int x;
+volatile int x;
 
-int main(void){
-
+int main(void) {
+      return 0;
 }

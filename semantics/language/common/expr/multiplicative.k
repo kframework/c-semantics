@@ -36,8 +36,8 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(I1:Bits, T:Type) / tv(I2:Int, T':Type)
-          => arithInterpret(T, I1 /Bits I2)
+     rule tv(I1:Int, T:Type) / tv(I2:Int, T':Type)
+          => arithInterpret(T, I1 /Int I2)
           requires isPromoted(T:Type) andBool I2 =/=Int 0
                andBool T ==Type T'
           [structural]

@@ -1,4 +1,5 @@
-int main(void){
-	int a;
-	&a+2;
+int main(void) {
+      int a;
+      &a+2;
+      return 0;
 }
