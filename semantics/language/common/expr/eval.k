@@ -123,7 +123,7 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= checkRegister(SymLoc, K)
      rule <k> checkRegister(_, K:K) => K ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
      rule <k> checkRegister(Loc:SymLoc, K:K) => K ...</k>
           <initializing> 0 </initializing>

@@ -856,6 +856,6 @@ module C-DECL-GLOBAL
                "could not form composite type from declaration.",
                "6.2.7:3")) // Likely because of VLA params.
           ~> giveCompositeType'(_, T:K)
-          when isType(T) =/=K true
+          requires isType(T) =/=K true
           [structural]
 endmodule

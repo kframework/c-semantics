@@ -306,7 +306,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)
-          when B =/=K .List
+          requires B =/=K .List
           [structural]
 
      rule canonicalizeType-aux(.List, T:Type, .List, .List, .List) => T
@@ -318,7 +318,7 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Char)) => t(.Set, char)
      rule canonicalizeSpecifier(L:List)
           => t(.Set, signed-char)
-	  requires '_==MSet_(L ,, ListItem(Signed) ListItem(Char))
+          requires '_==MSet_(L ,, ListItem(Signed) ListItem(Char))
      rule canonicalizeSpecifier(L:List )
           => t(.Set, unsigned-char)
           requires '_==MSet_(L ,, ListItem(Unsigned) ListItem(Char))

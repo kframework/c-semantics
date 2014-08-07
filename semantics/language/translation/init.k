@@ -111,7 +111,7 @@ module C-TRANSLATION-INIT
 //      rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
 //           <external-types> Types:Map </external-types>
 //           <external-defs> Defs:Map </external-defs>
-//           when (Identifier(B) in keys(Defs))
+//           requires (Identifier(B) in keys(Defs))
 //                orBool (notBool Identifier(B) in keys(Types))
 //      rule addBuiltins(.Map) => .
 
@@ -125,7 +125,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-types> Types:Map </external-types>
           ...</global>))
-          when notBool (X in keys Types)
+          requires notBool (X in keys Types)
      rule checkMerge(
           (<global>...
                <external-defs>... X:CId |-> _ => .Map </external-defs>
@@ -133,7 +133,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-defs> Defs:Map </external-defs>
           ...</global>))
-          when notBool (X in keys Defs)
+          requires notBool (X in keys Defs)
      rule checkMerge(
           (<global>...
                <external-types> Types:Map </external-types>
@@ -141,7 +141,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-types>... X:CId |-> _ => .Map </external-types>
           ...</global>))
-          when notBool (X in keys Types)
+          requires notBool (X in keys Types)
      rule checkMerge(
           (<global>...
                <external-defs> Defs:Map </external-defs>
@@ -149,7 +149,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-defs>... X:CId |-> _ => .Map </external-defs>
           ...</global>))
-          when notBool (X in keys Defs)
+          requires notBool (X in keys Defs)
      rule checkMerge(
           (<global>...
                <external-types>... X:CId |-> T:Type => .Map </external-types>
@@ -157,7 +157,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-types>... X |-> T':Type => .Map </external-types>
           ...</global>))
-          when areCompatible(T, T')
+          requires areCompatible(T, T')
      rule checkMerge(
           (<global>...
                <external-types> .Map </external-types>
@@ -177,7 +177,7 @@ module C-TRANSLATION-INIT
           (<global>...
                <external-types>... X |-> T':Type  ...</external-types>
           ...</global>))
-          when notBool areCompatible(T, T')
+          requires notBool areCompatible(T, T')
      rule (. => UNDEF("TIN2",
                "Multiple external definitions for " +String idToString(X) +String ".",
                "6.9"))

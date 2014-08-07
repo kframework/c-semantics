@@ -46,7 +46,7 @@ module C-IO-BUFFERED
                => writeBytes(Loc, Bytes)
           ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
 
      syntax KItem ::= setModified(SymLoc, Type)
      syntax KItem ::= setModified(SymLoc, Type, Set)

@@ -386,9 +386,9 @@ module C-TYPING-MISC
      syntax Set ::= tagRestrict(RestrictTag, Set) [function]
      rule tagRestrict(Tag:RestrictTag, S:Set)
           => SetItem(RestrictBlock(Tag)) S
-          when Restrict in S
+          requires Restrict in S
      rule tagRestrict(_, S:Set) => S
-          when notBool (Restrict in S)
+          requires notBool (Restrict in S)
 
      rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
           => Tag
@@ -405,6 +405,6 @@ module C-TYPING-MISC
           => 36893488147419103232
      rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
           => 36893488147419103232
-          when isInt(N) =/=K true
+          requires isInt(N) =/=K true
 
 endmodule

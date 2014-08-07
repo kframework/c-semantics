@@ -184,12 +184,12 @@ module C-COMMON-EXPR-RELATIONAL
 
      rule tv(V:CValue, T:Type) == tv(V':CValue, T':Type) 
           => makeTruth(false)
-          when T ==Type T'
+          requires T ==Type T'
                andBool (V ==K unknown orBool V' ==K unknown)
           [structural]
      rule tv(V:CValue, T:Type) != tv(V':CValue, T':Type) 
           => makeTruth(true)
-          when T ==Type T'
+          requires T ==Type T'
                andBool (V ==K unknown orBool V' ==K unknown)
           [structural]
 

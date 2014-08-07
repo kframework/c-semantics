@@ -7,7 +7,7 @@ module C-EXPR-BITWISE
      imports C-TYPING-SYNTAX
 
      rule ~ tv(symVal, T:Type) => tv(symVal, T)
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
 
      rule tv(symVal, T1:Type) << tv(E2:Int, T2:Type) => tv(symVal, T1)

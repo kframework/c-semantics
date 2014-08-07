@@ -44,7 +44,7 @@ module C-SYMBOLIC-VALUE
           [structural]
      rule <k> write(symVal, _, _) => . ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
 
      rule bitSizeofType(T:Type) => symVal::CSize

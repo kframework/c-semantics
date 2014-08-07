@@ -367,7 +367,7 @@ module C-CONVERSION
      of that type. Any two null pointers shall compare equal.
      }*/
      rule cast(T':Type, tv(NullPointer, T:Type)) => tv(NullPointer, T')
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool isPointerType(T')
           [structural, anywhere]
 

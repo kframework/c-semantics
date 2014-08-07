@@ -164,9 +164,9 @@ module C-BINDING
           => t(Mods, long-double)
      rule argPromoteType(T:Type)
           => promote(T)
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
      rule argPromoteType(T:Type) => T
-          when notBool hasIntegerType(T)
+          requires notBool hasIntegerType(T)
                andBool notBool hasFloatType(T)
 
      // "are argument-promoted".

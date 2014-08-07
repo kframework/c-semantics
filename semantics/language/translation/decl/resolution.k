@@ -67,7 +67,7 @@ module C-DECL-RESOLUTION
           <externals>...
                _ |-> declState(_, t(Mods:Set, _), State:DeclState, _) => .Map
           ...</externals>
-          when State =/=K declared
+          requires State =/=K declared
                // TODO(chathhorn): ... and we do this inline function check in
                // addition to completing tentatives.
                andBool notBool (State ==K completed andBool Inline in Mods)
@@ -78,7 +78,7 @@ module C-DECL-RESOLUTION
           <externals>...
                _ |-> declState(_, t(Mods:Set, _), _, false) => .Map
           ...</externals>
-          when notBool Inline in Mods
+          requires notBool Inline in Mods
           [structural]
      rule <k> (. => UNDEF("TDR1",
                "declaration for inline function not defined in the same translation unit.",
@@ -90,7 +90,7 @@ module C-DECL-RESOLUTION
           <externals>...
                _ |-> declState(_, t(Mods:Set, _), completed, _)
           ...</externals>
-          when Inline in Mods
+          requires Inline in Mods
           [structural]
 
      // Add the real location at which an external reference is defined to the

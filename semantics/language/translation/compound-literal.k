@@ -65,7 +65,7 @@ module C-COMPOUND-LITERAL
           <tu-id> Tu </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)

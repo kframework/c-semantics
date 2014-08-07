@@ -24,10 +24,10 @@ module C-EXPR-IDENTIFIER
 
      rule instantiate(Loc:SymLoc, T:Type)
           => transferProv(getBases(Loc), read(Loc, T))
-          when isRestrictType(T)
+          requires isRestrictType(T)
           [structural]
      rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
-          when notBool isRestrictType(T)
+          requires notBool isRestrictType(T)
           [structural]
 endmodule
 

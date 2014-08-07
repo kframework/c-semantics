@@ -10,28 +10,28 @@ module C-EXPR-ASSIGNMENT
      rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
-          when notBool isRestrictType(T)
+          requires notBool isRestrictType(T)
                andBool (#fromArrayStatic(T) =/=K true)
           [structural]
      rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => checkArrayStaticAssign(T, tv(V, T))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
-          when notBool isRestrictType(T)
+          requires notBool isRestrictType(T)
                andBool (#fromArrayStatic(T) ==K true)
           [structural]
      rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
           => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
-          when isRestrictType(T)
+          requires isRestrictType(T)
           [structural]
      rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
           => checkArrayStaticAssign(T, tv(V, T))
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
-          when isRestrictType(T)
+          requires isRestrictType(T)
                andBool (#fromArrayStatic(T) ==K true)
           [structural]
 
@@ -46,19 +46,19 @@ module C-EXPR-ASSIGNMENT
      rule getRelevantTags'(loc(Base:SymBase, Offset:Int),
                SetItem(basedOn(Base':SymBase, Tag:RestrictTag)) S:Set)
           => SetItem(Tag) getRelevantTags'(loc(Base, Offset), S)
-          when Base =/=K Base'
+          requires Base =/=K Base'
      rule getRelevantTags'(_, .Set) => .Set
 
      syntax K ::= checkRestrictAssign(RestrictTag, Set)
      rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag':RestrictTag) S:Set)
           => checkRestrictAssign(Tag, S)
-          when Tag =/=K Tag'
+          requires Tag =/=K Tag'
      rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag) _)
           => UNDEF("CEA4", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
      // TODO(chathhorn): more cases here we don't catch.
      // rule checkRestrictAssign(global, SetItem(Tag:RestrictTag) _)
      //      => UNDEF("CEA5", "Attempt to alias restrict qualified pointers associated with the incompatible blocks.", "")
-     //      when Tag =/=K global
+     //      requires Tag =/=K global
      rule checkRestrictAssign(_, .Set) => .
 
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
@@ -68,19 +68,19 @@ module C-EXPR-ASSIGNMENT
      rule checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
-          when (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (. => UNDEF("CEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
-          when (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
      rule (. => UNDEF("CEA6",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(_, tv(Loc:SymLoc, _))
-          when notBool isFromArray(Loc)
+          requires notBool isFromArray(Loc)
 
 endmodule
 

@@ -316,7 +316,7 @@ module C-SYMLOC
 
      rule getAlign(loc(_, _, SetItem(align(A:Int)) _)) => A
      rule getAlign(loc(_, _, Prov:Set)) => 1
-          when #hasAlign(Prov) =/=K true
+          requires #hasAlign(Prov) =/=K true
      rule getAlign(loc(_, _)) => 1
 
      syntax Bool ::= "#hasAlign" "(" Set ")" [function]
@@ -326,14 +326,14 @@ module C-SYMLOC
                loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
                T:Type, I:Int)
           => true
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
+          requires Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
                T:Type, I:Int)
           => false
-          when Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
+          requires Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
      rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
-          when notBool isFromArray(Loc)
+          requires notBool isFromArray(Loc)
 
 endmodule
 

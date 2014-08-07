@@ -24,7 +24,7 @@ module C-COMMON-EXPR-MEMBERS
                => lookupField(F, Loc, Mods, S, Fields, Fields)
           ...</k>
           <initializing> I:Int </initializing>
-          when notBool (Atomic in Mods)
+          requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
      rule <k> lval(Loc:SymLoc, t(Mods:Set,
@@ -33,7 +33,7 @@ module C-COMMON-EXPR-MEMBERS
                     Mods, S, Fields, Fields)
           ...</k>
           <initializing> I:Int </initializing>
-          when notBool (Atomic in Mods)
+          requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
      rule <k> (. => UNDEF("CEM1",
@@ -42,7 +42,7 @@ module C-COMMON-EXPR-MEMBERS
                ~> lval(_, t(Mods:Set, structType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
-          when Atomic in Mods
+          requires Atomic in Mods
           [structural]
      rule <k> (. => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
@@ -50,7 +50,7 @@ module C-COMMON-EXPR-MEMBERS
                ~> lval(_, t(Mods:Set, unionType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
-          when Atomic in Mods
+          requires Atomic in Mods
           [structural]
 
      // The last two parameters are for convenience and should be the same.

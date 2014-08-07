@@ -48,7 +48,7 @@ module C-ERROR
           +String "\n"
           +String "See also: C11 sec. "
           +String Citation
-          when Citation =/=String ""
+          requires Citation =/=String ""
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
           => "Error: "
           +String Title
@@ -58,7 +58,7 @@ module C-ERROR
           +String "\n"
           +String "Type: "
           +String ErrType
-          when Citation ==String ""
+          requires Citation ==String ""
 
      syntax ErrorRef ::= Int
 

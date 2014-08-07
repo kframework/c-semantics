@@ -61,12 +61,12 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, enumType(_)),
                t(Mods':Set, int))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, int),
                t(Mods':Set, enumType(_)))
           => true
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
@@ -197,9 +197,9 @@ module C-TYPING-COMPATIBILITY
                     orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
 
      rule getAlignas(T:Type) => getAlignas(getModifiers(T))
-          when #hasAlignas(getModifiers(T)) ==K true
+          requires #hasAlignas(getModifiers(T)) ==K true
      rule getAlignas(T:Type) => 1
-          when #hasAlignas(getModifiers(T)) =/=K true
+          requires #hasAlignas(getModifiers(T)) =/=K true
 
      syntax Int ::= getAlignas(Set) [function]
      rule getAlignas(SetItem(alignas(A:Int)) _) => A

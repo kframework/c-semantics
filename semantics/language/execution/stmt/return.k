@@ -79,7 +79,7 @@ module C-STMT-RETURN
                     ...</call-stack-frame>
                )) => .List
           ...</call-stack>
-          when notBool (Noreturn in Mods)
+          requires notBool (Noreturn in Mods)
           [structural]
 
      rule <k> (. => UNDEF("ESR1", "Return from a function declared _Noreturn.",
@@ -92,6 +92,6 @@ module C-STMT-RETURN
           <gtypes>...
                F:CId |-> t(Mods:Set, _)
           ...</gtypes>
-          when Noreturn in Mods
+          requires Noreturn in Mods
           [structural]
 endmodule

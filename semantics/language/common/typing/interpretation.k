@@ -99,12 +99,12 @@ module C-TYPING-INTERPRETATION
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => declareInternalVariable(X, adjustParam(DT), NoInit)
           ~> Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
-          when X =/=K #NoName
+          requires X =/=K #NoName
           [structural]
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
-          when X ==K #NoName
+          requires X ==K #NoName
           [structural]
      rule Prototype'(T:Type, .List, L2:List, Var:Bool)
           => Prototype''(T, L2, Var)
@@ -185,13 +185,13 @@ module C-TYPING-INTERPRETATION
 //      // TODO(chathhorn): Other qualifiers?
 //      rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
 //           => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-//           when isInt(N) ==K true
+//           requires isInt(N) ==K true
 //           [structural, anywhere]
 //      // TODO(chathhorn): better VLA support (need to keep around the
 //      // un-evaluated size expression).
 //      rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
 //           => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
-//           when isInt(N) =/=K true
+//           requires isInt(N) =/=K true
 //           [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
@@ -296,7 +296,7 @@ module C-TYPING-INTERPRETATION
      rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, pointerType(T))
      rule adjustParam(T:Type) => T
-          when notBool isTypedDeclaration(T)
+          requires notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
 endmodule

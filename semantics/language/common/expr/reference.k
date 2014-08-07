@@ -70,7 +70,7 @@ module C-COMMON-EXPR-REFERENCE
                "Dereferencing a pointer past the end of an array.",
                "6.5.6:8"))
           ~> *(tv(Loc:SymLoc, _))
-          when notBool ifFromArrayInBounds(Loc,
+          requires notBool ifFromArrayInBounds(Loc,
                t(.Set, pointerType(t(.Set, char))), 1)
           [structural]
 endmodule

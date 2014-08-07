@@ -48,7 +48,7 @@ module C-TYPING-PREDICATES
                t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => #typesEq(T, T')
-          when sameQualifiers(Mods, Mods')
+          requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, structType(X:CId, _, _)),
                t(Mods':Set, structType(X:CId, _, _)))
@@ -303,10 +303,10 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
      rule #isNPC(tv(0, T:Type)) => true
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
                andBool fromConstantExpr(T)
      rule #isNPC(tv(NullPointer, T:Type)) => true
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
 

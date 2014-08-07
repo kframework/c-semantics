@@ -167,13 +167,13 @@ module C-DECL-LOCAL
                => giveType(X, T)
           ...</k>
           <block-history> .List </block-history>
-          when isCompleteType(T)
+          requires isCompleteType(T)
           [structural]
      rule (. => UNDEF("TDL5",
                "declaration of an identifier for an object with no linkage and incomplete type.",
                "6.7:7"))
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
-          when notBool isCompleteType(T)
+          requires notBool isCompleteType(T)
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>

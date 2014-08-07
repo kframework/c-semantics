@@ -19,7 +19,7 @@ module C-COMMON-EXPR-BITWISE
      type minus \cinline{E}.
      }*/
      rule ~ tv(I:Int, T:Type) => bitwiseInterpret(T, ~Int I, isNegZero(I, T))
-          when isPromoted(T)
+          requires isPromoted(T)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
@@ -179,16 +179,16 @@ module C-COMMON-EXPR-BITWISE
 
      syntax K ::= bitwiseInterpret(Type, Int, Bool)
      rule bitwiseInterpret(T:Type, N:Int, _) => arithInterpret(T, N)
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
      rule bitwiseInterpret(T:Type, N:Int, true) => arithInterpret(T, N)
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
      rule bitwiseInterpret(T:Type, N:Int, false)
           => bitwiseInterpret(arithInterpret(T, N))
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
 
      syntax K ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
-          when notBool isNegZero(N, T)
+          requires notBool isNegZero(N, T)
      rule (. => UNDEF("CEB12",
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
@@ -196,7 +196,7 @@ module C-COMMON-EXPR-BITWISE
                "potential negative zero produced via bitwise operations (this could be a false positive).",
                "6.2.6.2:4"))
           ~> bitwiseInterpret(tv(N:Int, T:Type))
-          when isNegZero(N, T)
+          requires isNegZero(N, T)
 
      // Because of the undefinedness of bit shifting negative numbers, the
      // bitwise operations behave the same regardless of the encoding of
@@ -207,11 +207,11 @@ module C-COMMON-EXPR-BITWISE
      rule isNegZero(N:Int, T:Type) => true
           // TODO(chathhorn): Technically we shouldn't use min(T) for this
           // case, because clearly min(T) won't be a trap representation.
-          when N ==Int min(T) // Two's complement, sign and magnitude.
+          requires N ==Int min(T) // Two's complement, sign and magnitude.
      rule isNegZero(N:Int, _) => true
-          when N ==Int -1 // Ones' complement.
+          requires N ==Int -1 // Ones' complement.
      rule isNegZero(N:Int, T:Type) => false
-          when N =/=Int min(T)
+          requires N =/=Int min(T)
                andBool N =/=Int -1
 
 endmodule

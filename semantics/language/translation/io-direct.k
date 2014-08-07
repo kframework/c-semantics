@@ -20,7 +20,7 @@ module C-IO-DIRECT
                => writeBytes(Loc, D)
           ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
 
      rule <k> writeBytes(_, _, _) => . ...</k>
