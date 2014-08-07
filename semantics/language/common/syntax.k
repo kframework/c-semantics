@@ -605,16 +605,14 @@ module C-SYNTAX
      | CONST_STRING of string
      | CONST_WSTRING of int64 list
      */
-     //Turn these two into anywhere rules in order to avoid type checking
-     syntax IntConstant ::= DecimalConstant(K)
-     syntax IntConstant ::= OctalConstant(K)
-     syntax IntConstant ::= HexConstant(K)
+     syntax IntConstant ::= DecimalConstant(K) [function]
+     syntax IntConstant ::= OctalConstant(K) [function]
+     syntax IntConstant ::= HexConstant(K) [function]
 
-     //Turn these two into anywhere rules in order to avoid type checking
      // significand, exponent, approx
-     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)
+     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)  [function]
      // significand, exponent, approx
-     syntax IntConstant ::= HexFloatConstant(String, Int, Float)
+     syntax IntConstant ::= HexFloatConstant(String, Int, Float)  [function]
 
      syntax Constant ::= LitU(K) [function]
      syntax Constant ::= LitL(K) [function]

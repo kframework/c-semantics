@@ -24,8 +24,6 @@ module C-DYNAMIC-SYNTAX
      syntax Value ::= TypedValue
      syntax KResult ::= Value | Type
 
-     //TODO: Type checking requirement
-     syntax Expression ::= Value
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
@@ -108,7 +106,8 @@ module C-DYNAMIC
      rule ToIdentifier(S:String) => Identifier(S) 
 	  requires S =/=String "___missing_field_name"
 
-     rule NothingExpression => emptyValue
+     //Add :>Expression to cast the target into a Expression 
+     rule NothingExpression => emptyValue:>Expression
 
      rule unwrapObj(<generatedTop>... 
                <global> G:Bag </global> 

@@ -31,18 +31,16 @@ module C-LITERAL
 
 syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Base(simplifyForHex(S),16)) [anywhere]
+          => hexOrOctalConstant(String2Base(simplifyForHex(S),16)):>IntConstant
 
      rule OctalConstant(N:Int)
-          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8)) [anywhere]
+          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8)):>IntConstant
           
      // Included for symmetry.
-     //TODO: type checking to set Constant = StringLiteral
-     syntax Constant ::= StringLiteral
      syntax Constant ::= decimalConstant(Int)
-     rule DecimalConstant(N:Int) => decimalConstant(N) [anywhere]
-     rule StringLiteral(S:String) => stringLiteral(S)
-     rule WStringLiteral(list(S:List)) => wstringLiteral(S)
+     rule DecimalConstant(N:Int) => decimalConstant(N):>IntConstant
+     rule StringLiteral(S:String) => stringLiteral(S):>Constant
+     rule WStringLiteral(list(S:List)) => wstringLiteral(S):>Constant
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
      
@@ -207,16 +205,16 @@ syntax Constant ::= hexOrOctalConstant(Int)
      \cinline{long double}.
      }*/
      syntax Constant ::= reducedFloat(Float)
-     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)  [anywhere]
-     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F) [anywhere]
+     //Add :>Constant to cast the target into a IntConstant 
+     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F):>IntConstant
+     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F):>IntConstant
      
-     //TODO: type checking requires Constant to be supersort of TypedValue
-     syntax Constant ::= TypedValue
-     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
+     //Add :>Constant to cast the target into a Constant 
+     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double)):>Constant
      
-     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double)):>Constant
      
-     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float))
+     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float)):>Constant
           
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
      An integer character constant has type \cinline{int}. The value of an
@@ -237,7 +235,8 @@ syntax Constant ::= hexOrOctalConstant(Int)
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
           => cast(t(.Set, int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))))
-     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut) 
+     //Add :>Constant to cast the target into a Constant 
+     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut):>Constant
      rule Constant(V:Value) => V 
      rule Constant(S:StringLiteral) => S 
 
