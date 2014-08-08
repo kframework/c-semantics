@@ -115,7 +115,7 @@ module C-DECL-GLOBAL
                | checkParams(Type) [function]
 	       | checkParamInList(List) [function]
 	       | checkParam(Type)
-               //TODO: might need this| checkParam(Type) [function]
+               //TODO(LiyiLi): might need this| checkParam(Type) [function]
      // Checks if the type is complete if there's an initializer.
                | checkComplete(Type, K) [function]
 
@@ -126,7 +126,7 @@ module C-DECL-GLOBAL
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
           requires notBool isFunctionType(T)
 
-     //TODO: might not need checkParamInList when we have K rewrite implemented properly 
+     //TODO(LiyiLi): might not need checkParamInList when we have K rewrite implemented properly 
      rule checkParams(t(_, functionType(_, L:List))) => checkParamInList(L)
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
 

@@ -3,7 +3,7 @@ module C-SYNTAX
      syntax KItem ::= reval(K) [semantic,context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
-     //TODO: might not need this list in the future. 
+     //TODO(LiyiLi): might not need this list in the future. 
      syntax HeatItem ::= hItem(K) [strict(1(context('reval)))]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]
@@ -610,11 +610,9 @@ module C-SYNTAX
      syntax IntConstant ::= HexConstant(K) [function]
 
      // significand, exponent, approx
-     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)
-          [function]
+     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)  [function]
      // significand, exponent, approx
-     syntax IntConstant ::= HexFloatConstant(String, Int, Float)
-          [function]
+     syntax IntConstant ::= HexFloatConstant(String, Int, Float)  [function]
 
      syntax Constant ::= LitU(K) [function]
      syntax Constant ::= LitL(K) [function]
@@ -623,7 +621,7 @@ module C-SYNTAX
      syntax Constant ::= LitUL(K) [function]
      syntax Constant ::= LitULL(K) [function]
 
-     syntax Constant ::= NoSuffix(K) [function]
+     syntax Constant ::= NoSuffix(K)
 
      syntax Constant ::= CharLiteral(Int) [function]
      syntax Constant ::= WCharLiteral(Int) [function]

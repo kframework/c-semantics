@@ -188,7 +188,7 @@ module C-FUNCTION-DEF
      rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
      rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
 
-     // TODO: no associative matching in Java currently, we will do it once we
+     // TODO(LiyiLi): no associative matching in Java currently, we will do it once we
      // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]

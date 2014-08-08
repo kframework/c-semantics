@@ -146,7 +146,7 @@ module C-TYPING-COMPATIBILITY
           => (intersectSet(Mods, typeQualifiers) ==K intersectSet(Mods', typeQualifiers))
 
      // We can assume the types are compatible.
-     //TODO: might not need canonicalizeArrayType later
+     //TODO(LiyiLi): might not need canonicalizeArrayType later
      rule compositeType(T:Type, T:Type) => T
      rule compositeType(
                t(Mods:Set, T:SimpleType),

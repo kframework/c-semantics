@@ -13,7 +13,7 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KItem ::= revalParams(K)
 		    | #revalParams(HeatList) [strict]
-     //TODO: overcome the context associative matching
+     //TODO(LiyiLi): overcome the context associative matching
      //context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _))
 
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
@@ -22,7 +22,7 @@ module C-EXPR-FUNCTION-CALL
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
           requires isAllKResultInHeatList(HL)
           [structural]     
-     /*TODO: might not need this later
+     /*TODO(LiyiLi): might not need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           requires all(L, isKResult)
           [structural]

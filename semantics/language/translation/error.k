@@ -18,7 +18,7 @@ module C-TRANSLATION-ERROR
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-    //TODO: write to stderr has problem, use 2 instead
+    //TODO(LiyiLi): write to stderr has problem, use 2 instead
      rule <k> EXIT(Msg:String) 
           => #write(2, Msg +String "\n")
           ~> #write(2, "Location: " 

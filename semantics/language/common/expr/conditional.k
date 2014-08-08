@@ -1,8 +1,8 @@
 module C-COMMON-EXPR-CONDITIONAL-SYNTAX
      // TODO(chathhorn): error check
-     //TODO: might not need TypeList
+     //TODO(LiyiLi): might not need TypeList
      syntax KItem ::= types(TypeList) [strict]
-     //TODO: might not need this list in the future. 
+     //TODO(LiyiLi): might not need this list in the future. 
      syntax TypeItem ::= tItem(K) [strict]
      syntax TypeList ::= List{TypeItem,"ts::"} [strict]
      syntax TypeList ::= toTypeList(List) [function]
@@ -31,7 +31,7 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-CONVERSION-SYNTAX
 
      syntax KItem ::= getTypes(List)
-     //TODO: overcome the context associative matching
+     //TODO(LiyiLi): overcome the context associative matching
      //context types(_:List ListItem(HOLE) _:List)
      syntax KItem ::= convertedType(K) [strict]
 

@@ -453,7 +453,7 @@ module C-IO-BUFFERED
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
           requires (Offset =/=Int 0)
                andBool (Offset1 <=Int Offset)
-     //TODO: why it is nessary here
+     //TODO(LiyiLi): why it is nessary here
      syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))

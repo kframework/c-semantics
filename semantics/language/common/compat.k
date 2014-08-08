@@ -1,5 +1,4 @@
 module COMPAT-SYNTAX
-     //TODO: must not need the second one
      syntax KItem ::= l(KLabel) [avoid]
      syntax KItem ::= klist(KList) [function]
 
@@ -16,12 +15,12 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= all(List, KLabel) [function]
 
-     //TODO: this might be able to remove
+     //TODO(LiyiLi): this might be able to remove
      syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
 
      syntax Bool ::= List "==MSet" List [function]
 		   | List "=/=MSet" List [function]
-		//TODO: might not need this later
+		//TODO(LiyiLi): might not need this later
 		   | listEqual(List,List) [function]
 
      syntax List ::= removeListItem(List,K) [function]
@@ -55,7 +54,7 @@ module COMPAT-SYNTAX
 
      syntax List ::= reverseList(List) [function]
 
-     //TODO: syntax List ::= ListItem(Bag)
+     //TODO(LiyiLi): syntax List ::= ListItem(Bag)
      syntax KItem ::= bag2K(Bag)
      syntax KItem ::= list(List)
      syntax KItem ::= map(Map)
@@ -66,7 +65,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     //TODO: make sure this is in current including List syntax Bool ::= K "in" List [function]
+     //TODO(LiyiLi): make sure this is in current including List syntax Bool ::= K "in" List [function]
      syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
@@ -142,7 +141,7 @@ module COMPAT
 	=> ListItem(A) removeListItem(M,A')
 	requires A =/=K A'
 
-     //TODO: might not need this later
+     //TODO(LiyiLi): might not need this later
      rule listEqual(.List,.List) => true
      rule listEqual(L:List,.List) => false requires L =/=K .List
      rule listEqual(.List,L:List) => false requires L =/=K .List
@@ -152,7 +151,7 @@ module COMPAT
 	 => false
 	  requires A1 =/=K A2
  
-     //TODO: might need to add it in the builtins
+     //TODO(LiyiLi): might need to add it in the builtins
      rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
 
      syntax Bool ::= subset(K,Set,Set) [function]
@@ -195,7 +194,7 @@ module COMPAT
      rule toSubKRList(.List) => .SubKRList
      rule toSubKRList(ListItem(K:K) L:List) => sItem(K) ss:: toSubKRList(L)
 
-     //TODO: overcome the context associative matching
+     //TODO(LiyiLi): overcome the context associative matching
      //context toKRList'(_:List ListItem(HOLE) _:List)
      rule sItem(V:KResult) => srItem(V) [structural]
 
@@ -258,7 +257,7 @@ module COMPAT
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K,S,Pred)
 
-     //TODO: might be able to remove later
+     //TODO(LiyiLi): might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true
      rule isAllKResultInHeatList(hItem(K:K) hs:: _:HeatList) => false
      rule isAllKResultInHeatList(hrItem(K:K) hs:: HL:HeatList) 

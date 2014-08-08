@@ -1,6 +1,6 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
      // TODO(chathhorn): hackish, rename at least
-     //TODO: change it to function in order to solve anywhere problem
+     //TODO(LiyiLi): change it to function in order to solve anywhere problem
      syntax KItem ::= rkludge(K) [function]
      syntax KItem ::= pkludge(K) [function]
      syntax KItem ::= instantiate(SymLoc, Type)

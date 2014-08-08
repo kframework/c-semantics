@@ -31,16 +31,16 @@ module C-LITERAL
 
      syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Base(simplifyForHex(S),16))
+          => hexOrOctalConstant(String2Base(simplifyForHex(S),16)):>IntConstant
 
      rule OctalConstant(N:Int)
-          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8))
+          => hexOrOctalConstant(String2Base(Base2String(N, 10), 8)):>IntConstant
           
      // Included for symmetry.
      syntax Constant ::= decimalConstant(Int)
-     rule DecimalConstant(N:Int) => decimalConstant(N)
-     rule StringLiteral(S:String) => stringLiteral(S)
-     rule WStringLiteral(list(S:List)) => wstringLiteral(S)
+     rule DecimalConstant(N:Int) => decimalConstant(N):>IntConstant
+     rule StringLiteral(S:String) => stringLiteral(S):>Constant
+     rule WStringLiteral(list(S:List)) => wstringLiteral(S):>Constant
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
      
@@ -205,14 +205,16 @@ module C-LITERAL
      \cinline{long double}.
      }*/
      syntax Constant ::= reducedFloat(Float)
-     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)
-     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
+     //Add :>Constant to cast the target into a IntConstant 
+     rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F):>IntConstant
+     rule HexFloatConstant(_, _, F:Float) => reducedFloat(F):>IntConstant
      
-     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
+     //Add :>Constant to cast the target into a Constant 
+     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double)):>Constant
      
-     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double)):>Constant
      
-     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float))
+     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float)):>Constant
           
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
      An integer character constant has type \cinline{int}. The value of an
@@ -233,7 +235,8 @@ module C-LITERAL
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
           => cast(t(.Set, int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))))
-     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut) 
+     //Add :>Constant to cast the target into a Constant 
+     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut):>Constant
      rule Constant(V:Value) => V 
      rule Constant(S:StringLiteral) => S 
 

@@ -23,7 +23,7 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     //TODO: write to stdout does not work
+     //TODO(LiyiLi): write to stdout does not work
      rule <k> link
                => (TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
@@ -33,7 +33,7 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
 
-     //TODO: write to stdout does not work
+     //TODO(LiyiLi): write to stdout does not work
      rule <k> link => printSuccess("Translation successful!\n") ...</k>
           <options> SetItem(NOLINK) ...</options>
 
@@ -164,7 +164,7 @@ module C-TRANSLATION-INIT
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>)
-     //TODO: write to stdout not work currently
+     //TODO(LiyiLi): write to stdout not work currently
      //syntax KItem ::= "printSuccess"
      //rule printSuccess => #write(#stdout, "Translation successful!\n")
      syntax KItem ::= printSuccess(String)
