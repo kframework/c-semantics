@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 struct listNode {
-  int val;
+  int value;
   struct listNode *next;
 };
 
@@ -32,7 +32,7 @@ int main() {
   while (n) {
     struct listNode *y = x;
     x = (struct listNode*) malloc(sizeof(struct listNode));
-    x->val = n;
+    x->value = n;
     x->next = y;
     n -= 1;
   }

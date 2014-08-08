@@ -444,7 +444,11 @@ module CIL-SYNTAX
   syntax KItem ::= "###result-value" "(" K ")"
 
   // TODO(AndrieS): handle this
-  syntax CId ::= "sum" | "s" | "n" | "tmp"
+  syntax CId ::= "sum" | "reverse"
+  syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
+  syntax CId ::= "listNode" | "value" | "next"
+  syntax CId ::= "malloc"
   syntax DecimalFloatConstant ::= "0U"
+  syntax Stmt ::= "breakpoint"
 endmodule
 

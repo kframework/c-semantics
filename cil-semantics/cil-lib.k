@@ -5,12 +5,21 @@ module CIL-LIB
   imports CIL-SYNTAX
   imports CIL-COMMON
   imports CIL-COMMON-TYPED-VALUE
+  imports CIL-TYPING
 
 /*
  * *** stdlib.h ***
  */
 
   // Exit.
+  rule 
+    <k>
+      nclv(_:Type, ExtFun("malloc"))(TV:TypedValue)
+    =>
+      $newObject(void #__id__, TV, undef)
+    ...</k>
+    [computational]
+
   rule 
     (<frame>... <k> 
       nclv(_, ExtFun("exit"))(V:TypedValue)

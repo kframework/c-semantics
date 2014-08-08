@@ -319,6 +319,10 @@ module CIL-COMMON
   syntax KItem ::= "callMain"
 
   /* These are also defined in a standard library header. */
+  // TODO(AndreiS): check if this more specific type works 
+  //syntax IntType ::= "size_t" [function]
+  // TODO(AndreiS): define size_t here or in the header files?
+  //syntax Type ::= "size_t"
   syntax Type ::= "size_t" [function]
                 | "size_ptr" [function]
                 | "ptrdiff_t" [function]
