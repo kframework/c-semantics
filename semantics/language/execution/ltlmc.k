@@ -92,7 +92,7 @@ module C-LTLMC
      rule ltlRVal(B:Bag, + P:CProp) 
           => ltlRVal(B, P)
 
-     /*TODO: cannot handle this, maybe this is not needed
+     /*TODO(LiyiLi): cannot handle this, maybe this is not needed
      rule ltlRVal(B:Bag, L:CProp[R:CProp])
           => ltlRVal(B, * (L + R))
      */
@@ -102,7 +102,7 @@ module C-LTLMC
      //      => ltlLVal(B, P)
 
      // "strictness"
-     /*TODO: cannot handle this cases
+     /*TODO(LiyiLi): cannot handle this cases
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
 	 	=> ltlRVal(B, L(ltlRVal(B, P)))
           requires notBool (isValueProp(P:CProp) ==K true)
@@ -119,7 +119,7 @@ module C-LTLMC
      rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
-     /*TODO: cannot handle this
+     /*TODO(LiyiLi): cannot handle this
      rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
      */
@@ -162,7 +162,7 @@ module C-LTLMC
      syntax Int ::= dumbRead(Bag, SymLoc, Type) [function]
      syntax Int ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")" 
           [function]
-     /*TODO: cannot handle this cases
+     /*TODO(LiyiLi): cannot handle this cases
      rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))
      */
      rule dumbRead(

@@ -134,7 +134,7 @@ module C-STMT-GOTO
           [structural] 
           
      // - second case, we're in a different block
-     //TODO: make sure Chris will like this
+     //TODO(LiyiLi): make sure Chris will like this
      //assume that BlockNum will be unique in BlockHistory
      //will delete the second rule in processGoto-pop-differing
      // in the first list of resultInGotoObjectList, if it is

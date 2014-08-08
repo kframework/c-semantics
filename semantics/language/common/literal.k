@@ -29,7 +29,7 @@ module C-LITERAL
           requires (firstChar(S) =/=String "0")
                orBool (lengthString(S) ==Int 1)
 
-syntax Constant ::= hexOrOctalConstant(Int)
+     syntax Constant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
           => hexOrOctalConstant(String2Base(simplifyForHex(S),16)):>IntConstant
 

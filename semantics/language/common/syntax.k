@@ -3,7 +3,7 @@ module C-SYNTAX
      syntax KItem ::= reval(K) [semantic,context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
-     //TODO: might not need this list in the future. 
+     //TODO(LiyiLi): might not need this list in the future. 
      syntax HeatItem ::= hItem(K) [strict(1(context('reval)))]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]

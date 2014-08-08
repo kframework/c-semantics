@@ -9,7 +9,7 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KItem ::= figureInit(CId, K, K) [strict(2)] 
 
      // These are also used by compound literals.
-     //TODO: keep kresult in sort
+     //TODO(LiyiLi): keep kresult in sort
      syntax KResult ::= initValue(CId, Type, K) 
 
      syntax KItem ::= singleIntInit(K) [strict]
@@ -230,7 +230,7 @@ module C-DECL-INITIALIZER
 
      //define a extra constructor in List to get the 
      //information of next T' and F' if we have next operator
-     //TODO: no associative matching. increase speed
+     //TODO(LiyiLi): no associative matching. increase speed
      syntax Type ::= "noResultOfSearchType" | "matchResultOfSearchType"
 
      syntax KItem ::= searchInFieldInfoList(Type,CId,List) [function]

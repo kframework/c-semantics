@@ -65,7 +65,7 @@ module C-SYMLOC-SYNTAX
      syntax Int ::= getThreadId(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
-     //TODO: why it is nessary here
+     //TODO(LiyiLi): why it is nessary here
      syntax Set ::= getBases(SymLoc) [function,klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]

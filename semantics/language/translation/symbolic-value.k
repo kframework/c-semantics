@@ -30,14 +30,14 @@ module C-SYMBOLIC-VALUE
      rule symVal +bytes _:Int => symVal
 
      rule base(symVal) => symVal
-     //TODO: symVal cast requirement
+     //TODO(LiyiLi): symVal cast requirement
      rule offset(symVal) => symVal:>Int
      rule prov(symVal) => .Set
 
      rule addProv(_:Set, symVal) => symVal
      rule addProv(_:Provenance, symVal) => symVal
      rule stripProv(symVal) => symVal
-     //TODO:Do not know if it should be heres
+     //TODO(LiyiLi):Do not know if it should be heres
      rule stripFromArray(symVal) => symVal
 
      rule write(symVal, _, T:Type) => .
@@ -47,11 +47,11 @@ module C-SYMBOLIC-VALUE
           <initializing> true </initializing>
           [structural]
 
-     //TODO: symVal cast requirement
+     //TODO(LiyiLi): symVal cast requirement
      rule bitSizeofType(T:Type) => symVal:>Int
           requires notBool isCompleteType(T)
                andBool notBool isFlexibleArrayType(T)
-     //TODO: symVal cast requirement
+     //TODO(LiyiLi): symVal cast requirement
      rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal:>Int
 
      rule splitBytes(tv(symVal, T:Type)) 

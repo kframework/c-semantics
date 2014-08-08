@@ -27,7 +27,7 @@ module LIBC-BOOTSTRAP
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
-     //TODO: context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
+     //TODO(LiyiLi): context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
      //use HeatList temporally
      rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(makeVarArgs(P)))) ...</k>
           <curr-function> F:CId </curr-function>
