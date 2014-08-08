@@ -67,7 +67,7 @@ module C-SYMLOC-SYNTAX
 
      syntax Set ::= prov(SymLoc) [function]
      //TODO: why it is nessary here
-     syntax Set ::= getBases(SymLoc) [function,klabel(getBases)]
+     syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
      syntax SymLoc ::= addProv(Set, SymLoc) [function]
@@ -273,67 +273,76 @@ module C-SYMLOC
           [structural]
 
      syntax Bool ::= #isBases(Provenance) [function]
-     rule #isBases(basedOn(_)) => true
+     rule #isBases(basedOn(_, _)) => true
 
      rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K, Loc) ==K true
 
      syntax Bool ::= #hasUnionMarker(K, SymLoc) [function]
      rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
-     rule #hasUnionMarker(K:K, loc(SB:SymBase, I:Int, SetItem(K':K) S:Set))
-          => #hasUnionMarker(K', loc(SB,I,S))
+     rule #hasUnionMarker(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
+          => #hasUnionMarker(K', loc(Base, Offset, S))
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
 
      rule isFromArray(Loc:SymLoc) => #isFromArray(.K, Loc) ==K true
 
      syntax Bool ::= #isFromArray(K, SymLoc) [function]
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
-     rule #isFromArray(K:K, loc(SB:SymBase, I:Int, SetItem(K':K) S:Set)) 
-          => #isFromArray(K', loc(SB, I, S))
+     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set)) 
+          => #isFromArray(K', loc(Base, Offset, S))
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 
-     rule stripAllButFromUnion(loc(SB:SymBase, I:Int)) => loc(SB, I)
+     rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int))
+          => loc(Base, Offset)
      rule stripAllButFromUnion(NullPointer) => NullPointer
-     rule stripAllButFromUnion(loc(SB:SymBase, I:Int, SetItem(K:K) S:Set))
-          => #stripAllButFromUnion(SB, I, K, S, .Set)
+     rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
+          => #stripAllButFromUnion(Base, Offset, K, S, .Set)
 
      syntax SymLoc ::= #stripAllButFromUnion(SymBase, Int, K, Set, Set) [function]
-     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, .Set, S:Set)
-          => loc(SB, I, SetItem(K) S)
+     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, .Set, S:Set)
+          => loc(Base, Offset, SetItem(K) S)
           requires getKLabel(K) ==KLabel 'fromUnion
-     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, .Set, S:Set)
-          => loc(SB, I, S)
+     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, .Set, S:Set)
+          => loc(Base, Offset, S)
           requires getKLabel(K) =/=KLabel 'fromUnion
-     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, SetItem(K':K) S':Set, S:Set)
-          => #stripAllButFromUnion(SB, I, K', S', SetItem(K) S)
+     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S':Set, S:Set)
+          => #stripAllButFromUnion(Base, Offset, K', S', SetItem(K) S)
           requires getKLabel(K) ==KLabel 'fromUnion
-     rule #stripAllButFromUnion(SB:SymBase, I:Int, K:K, SetItem(K':K) S':Set, S:Set)
-          => #stripAllButFromUnion(SB, I, K', S', S)
+     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S':Set, S:Set)
+          => #stripAllButFromUnion(Base, Offset, K', S', S)
           requires getKLabel(K) =/=KLabel 'fromUnion
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(NullPointer) => NullPointer
 
-     rule getAlign(loc(_, _, SetItem(align(A:Int)) _)) => A
-     rule getAlign(loc(_, _, Prov:Set)) => 1
-          requires #hasAlign(Prov) =/=K true
+     rule getAlign(loc(_, _, Provs:Set)) => getAlign'(.K, Provs)
      rule getAlign(loc(_, _)) => 1
 
-     syntax Bool ::= "#hasAlign" "(" Set ")" [function]
-     rule #hasAlign(SetItem(align(_)) _) => true
+     // TODO(chathhorn): "unsupported map pattern" -- so ugly.
+     syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
+     rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
+     rule getAlign'(align(I:Int), _) => I
+     rule getAlign'(K:K, S:Set) => getAlign'(.K, S)
+          requires getKLabel(K) =/=KLabel 'align
+               andBool (K =/=K .K)
 
      rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
+               loc(_, _, SetItem(K:K) S:Set),
                T:Type, I:Int)
+          => #ifFromArrayInBounds(K, S, T, I)
+
+     syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => true
           requires Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(fromArray(Offset:Int, Len:Int)) _),
-               T:Type, I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => false
           requires Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
-     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
-          requires notBool isFromArray(Loc)
+     rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
+          requires getKLabel(K) =/=KLabel 'fromArray
+     rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)
+          => #ifFromArrayInBounds(K', S, T, I)
+          requires getKLabel(K) =/=KLabel 'fromArray
 
 endmodule
 

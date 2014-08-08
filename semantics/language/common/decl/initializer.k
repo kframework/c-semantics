@@ -223,42 +223,45 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     //define a extra constructor in List to get the 
-     //information of next T' and F' if we have next operator
-     //TODO: no associative matching. increase speed
+     // define a extra constructor in List to get the 
+     // information of next T' and F' if we have next operator
+     // TODO(liyi): no associative matching. increase speed
      syntax Type ::= "noResultOfSearchType" | "matchResultOfSearchType"
 
      syntax KItem ::= searchInFieldInfoList(Type,CId,List) [function]
-		   | continueInFieldInfoList(List) [function]
+                    | continueInFieldInfoList(List) [function]
 
      syntax KItem ::= resultInFieldInfoList(Type)
-     
+
      rule searchInFieldInfoList(T:Type,F:CId,
-		ListItem(typedDeclaration(T, F)) L:List)
+               ListItem(typedDeclaration(T, F)) L:List)
           => continueInFieldInfoList(L)
-     rule searchInFieldInfoList(_:Type,_:CId,.List) 
-	  => resultInFieldInfoList(noResultOfSearchType)
-     rule searchInFieldInfoList(T:Type,F:CId,ListItem(K:K) L:List) 
-	  => searchInFieldInfoList(T:Type,F:CId,L:List)
-	  requires getKLabel(K) =/=KLabel 'typedDeclaration
-     rule searchInFieldInfoList(T:Type,F:CId,
-		ListItem(typedDeclaration(T', F')) L:List) 
-	  => searchInFieldInfoList(T:Type,F:CId,L:List)
-	  requires T =/=K T' orBool F =/=K F'
+     rule searchInFieldInfoList(_:Type, _:CId, .List) 
+          => resultInFieldInfoList(noResultOfSearchType)
+     rule searchInFieldInfoList(T:Type, F:CId, ListItem(K:K) L:List)
+          => searchInFieldInfoList(T, F, L)
+          requires getKLabel(K) =/=KLabel 'typedDeclaration
+     rule searchInFieldInfoList(T:Type, F:CId,
+               ListItem(typedDeclaration(T':Type, F':CId)) L:List)
+          => searchInFieldInfoList(T, F, L)
+          requires T =/=K T' orBool F =/=K F'
 
-     rule continueInFieldInfoList(.List) 
-	  => resultInFieldInfoList(matchResultOfSearchType)
-     rule continueInFieldInfoList(ListItem(typedDeclaration(T, F)) _:List)
-	  => resultInFieldInfoList(typedDeclaration(T, F))
+     rule continueInFieldInfoList(.List)
+          => resultInFieldInfoList(matchResultOfSearchType)
+     rule continueInFieldInfoList(
+               ListItem(typedDeclaration(T:Type, F:CId)) _)
+          => resultInFieldInfoList(typedDeclaration(T, F))
           requires F =/=K #NoName
-     rule continueInFieldInfoList(ListItem(typedDeclaration(_, #NoName)) 
-				ListItem(typedDeclaration(T':Type, F':CId)) L:List)
-	  => resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
-     rule continueInFieldInfoList(ListItem(typedDeclaration(_, #NoName)))
-	  => resultInFieldInfoList(matchResultOfSearchType)
+     rule continueInFieldInfoList(
+               ListItem(typedDeclaration(_, #NoName))
+               ListItem(typedDeclaration(T':Type, F':CId)) _)
+          => resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
+     rule continueInFieldInfoList(
+               ListItem(typedDeclaration(_, #NoName)))
+          => resultInFieldInfoList(matchResultOfSearchType)
 
-     rule <k> (.K => searchInFieldInfoList(T,F,L)) ~> _ </k>
-	  <curr-subobject>
+     rule <k> (. => searchInFieldInfoList(T, F, L)) ...</k>
+          <curr-subobject>
                (ListItem(next) (.List => ListItem(block)) ListItem(te(K:K . F:CId, T:Type)))
                ListItem(te(K:K, t(_, structType(_, _,
                     fieldInfo(L:List, _, _)
@@ -266,22 +269,20 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     rule <k> (resultInFieldInfoList(typedDeclaration(T':Type,F':CId)) => .K) ...</k>
-	  <curr-subobject>
-               (ListItem(next) ListItem(block) ListItem(te(K:K . F:CId, T:Type))
+     rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
+               => .
+          ...</k>
+          <curr-subobject>
+               (ListItem(next) ListItem(block) ListItem(te(K:K . _, _))
                     => ListItem(te(K . F', T')))
-               ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(L:List, _, _)
-               ))))
+               ListItem(te(K:K, t(_, structType(_, _, _))))
           ...</curr-subobject>
           [structural]
 
-     rule <k> (resultInFieldInfoList(matchResultOfSearchType) => .K) ...</k>
-	  <curr-subobject>
-               ListItem(next) (ListItem(block) ListItem(te(K:K . F:CId, T:Type)) => .List)
-               ListItem(te(K:K, t(_, structType(_, _,
-                    fieldInfo(L:List, _, _)
-               ))))
+     rule <k> resultInFieldInfoList(matchResultOfSearchType) => . ...</k>
+          <curr-subobject>
+               ListItem(next) (ListItem(block) ListItem(te(K:K . _, _)) => .List)
+               ListItem(te(K:K, t(_, structType(_, _, _))))
           ...</curr-subobject>
           [structural]
 

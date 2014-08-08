@@ -123,19 +123,18 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      rule NoPrototype(T:Type, krlist(L:List), false)
-          => pushTypeDown(T,
-               makeOldStyleFunctionType(L))
+          => pushTypeDown(T, makeOldStyleFunctionType(L))
           [structural]
 
-     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:KLabel)
+     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:K)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
-     rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:KLabel)
+     rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
           => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
-     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:KLabel)
+     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:K)
           => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:KLabel)
+     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:K)
           => t(S, pointerType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:KLabel)
+     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K)
           => t(S, functionType(pushTypeDown(T, Lbl), L))
      rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K)
           => applyTypeFunction(Lbl,t(S, structType(X, NBits, Info)))
@@ -148,18 +147,11 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:K)
           => applyTypeFunction(Lbl,t(S, enumType(X)))
 
-     // TODO(chathhorn): merging; probably get rid of this
-     // canonicalizeArrayType thing.
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:K)
-          => applyTypeFunction(Lbl, canonicalizeArrayType(t(S S', T)))
+          => applyTypeFunction(Lbl, t(S S', T))
 
      rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl, T)
           requires isBasicType(T)
-
-     // TODO(chathhorn): merging; needs to be reworked (makeArrayType).
-     // rule applyTypeFunction(makeArrayType(N:CSize), T:Type)
-     //      => canonicalizeArrayType(t(getSpecifiers(T),
-     //           arrayType(stripSpecifiers(T), N)))
 
      rule applyTypeFunction(makeFunctionType(L:List),T:Type)
           => t(getSpecifiers(T),
@@ -177,22 +169,21 @@ module C-TYPING-INTERPRETATION
           => t(getSpecifiers(T),
                incompleteArrayType(stripSpecifiers(T)))
 
-// TODO(chathhorn): merging; these need to be incorporated into the above.
-//      rule makeArrayType(N:CSize, Specifier(list(ListItem(Static))))(T:Type)
-//           => t(getSpecifiers(T) SetItem(arrayStatic(N)),
-//                arrayType(stripSpecifiers(T), N))
-//           [structural, anywhere]
-//      // TODO(chathhorn): Other qualifiers?
-//      rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
-//           => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-//           requires isInt(N) ==K true
-//           [structural, anywhere]
-//      // TODO(chathhorn): better VLA support (need to keep around the
-//      // un-evaluated size expression).
-//      rule makeArrayType(N:K, Specifier(list(.List)))(T:Type)
-//           => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
-//           requires isInt(N) =/=K true
-//           [structural, anywhere]
+     rule applyTypeFunction(makeArrayType(N:CSize, Specifier(list(ListItem(Static)))), T:Type)
+          => t(getSpecifiers(T) SetItem(arrayStatic(N)),
+               arrayType(stripSpecifiers(T), N))
+          [structural, anywhere]
+     // TODO(chathhorn): Other qualifiers?
+     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+          requires isInt(N) ==K true
+          [structural, anywhere]
+     // TODO(chathhorn): better VLA support (need to keep around the
+     // un-evaluated size expression).
+     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
+          requires isInt(N) =/=K true
+          [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
@@ -299,4 +290,5 @@ module C-TYPING-INTERPRETATION
           requires notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
+
 endmodule

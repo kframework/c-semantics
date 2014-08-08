@@ -36,8 +36,6 @@ module C-SYMBOLIC-VALUE
      rule addProv(_:Set, symVal) => symVal
      rule addProv(_:Provenance, symVal) => symVal
      rule stripProv(symVal) => symVal
-     //TODO:Do not know if it should be heres
-     rule stripFromArray(symVal) => symVal
 
      rule write(symVal, _, T:Type) => .
           requires notBool isConstType(T)

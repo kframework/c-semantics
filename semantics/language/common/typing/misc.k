@@ -390,8 +390,15 @@ module C-TYPING-MISC
      rule tagRestrict(_, S:Set) => S
           requires notBool (Restrict in S)
 
-     rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
-          => Tag
+     rule getRestrictBlock(t(Mods:Set, _)) => getRestrictBlock'(.K, Mods)
+
+     // TODO(chathhorn): more map pattern ugliness.
+     syntax RestrictTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
+     rule getRestrictBlock'(.K, SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
+     rule getRestrictBlock'(RestrictBlock(Tag:RestrictTag), _) => Tag
+     rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
+          requires getKLabel(K) =/=KLabel 'RestrictBlock
+               andBool (K =/=K .K)
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of

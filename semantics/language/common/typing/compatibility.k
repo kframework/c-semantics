@@ -202,13 +202,37 @@ module C-TYPING-COMPATIBILITY
           requires #hasAlignas(getModifiers(T)) =/=K true
 
      syntax Int ::= getAlignas(Set) [function]
-     rule getAlignas(SetItem(alignas(A:Int)) _) => A
+     rule getAlignas(Mods:Set) => getAlignas'(.K, Mods)
+
+     // TODO(chathhorn): obnoxious unsupported map patterns thing.
+     syntax Int ::= "getAlignas'" "(" K "," Set ")" [function]
+     rule getAlignas'(.K, SetItem(K:K) Mods:Set) => getAlignas'(K, Mods)
+     rule getAlignas'(alignas(A:Int), _) => A
+     rule getAlignas'(K:K, Mods:Set) => getAlignas'(.K, Mods)
+          requires getKLabel(K) =/=KLabel 'alignas
+               andBool (K =/=K .K)
 
      syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
-     rule #hasAlignas(SetItem(alignas(_)) _) => true
+     rule #hasAlignas(Mods:Set) => some(Mods, '#isAlignas)
+
+     syntax Bool ::= "#isAlignas" "(" K ")" [function]
+     rule #isAlignas(alignas(_)) => true
+
+     // TODO(chathhorn): move this to compat.k
+     syntax Bool ::= some(Set, KLabel) [function]
+     rule some(S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
+
+     syntax Bool ::= "some'" "(" K "," Set "," KLabel ")" [function]
+     rule some'(.K, SetItem(K:K) S:Set, Lbl:KLabel) => some'(K, S, Lbl)
+     rule some'(K:K, _, Lbl:KLabel) => true
+          when Lbl(K) ==K true
+     rule some'(K:K, S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
+          when Lbl(K) =/=K true
+               andBool (K =/=K .K)
+     rule some'(.K, .Set, _) => false
 
      // We can assume the types are compatible.
-     //TODO: might not need canonicalizeArrayType later
+     //TODO(liyi): might not need canonicalizeArrayType later
      rule compositeType(T:Type, T:Type) => T
           requires isBasicType(T)
                orBool isStructType(T)

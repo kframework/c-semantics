@@ -34,17 +34,18 @@ module C-STMT-IF-THEN
 
      //add checkResultInK in order to aovid putting K Sequence in strict position
      syntax KItem ::= maybeSymVal(K, K) [strict]
-                | "checkResult"
-		| checkResultInK(K)
+                    | "checkResult"
+                    | checkResultInK(K)
 
      syntax KResult ::= "noResult"
 
-     rule checkResultInK(K) => K ~> checkResult [structural]
+     rule checkResultInK(K:K) => K ~> checkResult
+          [structural]
 
      rule R:KResult ~> checkResult => R
      rule checkResult => noResult
 
-     rule maybeSymVal(noResult, noResult) => .K
+     rule maybeSymVal(noResult, noResult) => .
      rule maybeSymVal(tv(_, T:Type), tv(_, T:Type)) => tv(symVal, T)
      rule maybeSymVal(voidVal, voidVal) => voidVal
 

@@ -119,88 +119,73 @@ module C-DECL-GLOBAL
                andBool notBool validGlobalStorageClass(T)
           [structural] 
 
-     syntax KItem ::= checkDeclType(Type, K) [function]
-                    | checkParams(Type) [function]
-                    | checkParamInList(List) [function]
+     syntax KItem ::= checkDeclType(Type, K)
+                    | checkParams(Type)
                     | checkParam(Type)
-                    //TODO: might need this| checkParam(Type) [function]
           // Checks if the type is complete if there's an initializer.
-                    | checkComplete(Type, K) [function]
+                    | checkComplete(Type, K)
 
      // TODO(chathhorn): consider checking function init list here (disallowed
      // in the case of a prototype).
      rule checkDeclType(T:Type, _) => checkParams(T)
           requires isFunctionType(T)
+          [structural]
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
           requires notBool isFunctionType(T)
+          [structural]
 
-     // TODO: might not need checkParamInList when we have K rewrite implemented
-     // properly
-     // TODO(chathhorn): merging; yes, checkParamInList.
-     rule checkParams(t(_, functionType(_, L:List))) => checkParamInList(L)
+     rule (. => checkParam(T))
+          ~> checkParams(t(_, functionType(_, (ListItem(T:Type) => .List)  _)))
+          [structural]
+     rule checkParams(t(_, functionType(_, .List))) => .
+          [structural]
      rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
-
-// TODO(chathhorn): merging; this stuff needs to be redone or removed.
-//      rule checkParamInList(.List) => .
-//      rule checkParamInList(ListItem(T:Type) L:List) => checkParamInList(L)
-//           requires (getStorageSpecifiers(T) ==K .Set)
-//                orBool (notBool isVoidType(T)
-//                     andBool (getStorageSpecifiers(T) ==K SetItem(Register)))
-// 
-//      rule checkParamInList(ListItem(T:Type) L:List) =>
-// 	  ERROR("DG5", "function parameter appears with storage "
-//                +String "class other than register.")
-//           ~> checkParam(T:Type)
-//           requires getStorageSpecifiers(T) =/=K .Set
-//                andBool getStorageSpecifiers(T) =/=K SetItem(Register)
-//                andBool notBool isVoidType(T)
-//           [structural] 
-// 
-//      rule checkParamInList(ListItem(T:Type) L:List) =>
-//           ERROR("DG6", "void parameter appears with a storage class.")
-//           ~> checkParam(T:Type)
-//           requires getStorageSpecifiers(T) =/=K .Set
+          [structural]
 
      rule checkParam(T:Type) => .
-          requires notBool (getStorageSpecifiers(T) =/=Set .Set
-                    andBool getStorageSpecifiers(T) =/=Set SetItem(Register)
+          requires notBool (getStorageSpecifiers(T) =/=K .Set
+                    andBool getStorageSpecifiers(T) =/=K SetItem(Register)
                     andBool notBool isVoidType(T))
-               andBool notBool (getStorageSpecifiers(T) =/=Set .Set
+               andBool notBool (getStorageSpecifiers(T) =/=K .Set
                     andBool isVoidType(T))
-               andBool notBool (getQualifiers(T) =/=Set .Set
+               andBool notBool (getQualifiers(T) =/=K .Set
                     andBool isVoidType(T))
+          [structural]
      rule (. => CV("TDG5",
                "function parameter appears with storage class other than register.",
                "6.7.6.3:2"))
           ~> checkParam(T:Type)
-          requires (getStorageSpecifiers(T) =/=Set .Set)
-               andBool (getStorageSpecifiers(T) =/=Set SetItem(Register))
+          requires (getStorageSpecifiers(T) =/=K .Set)
+               andBool (getStorageSpecifiers(T) =/=K SetItem(Register))
                andBool notBool isVoidType(T)
           [structural]
      rule (. => UNDEF("TDG6",
                "void parameter appears with a storage class specifier.",
                "6.7.6.3:10"))
           ~> checkParam(T:Type)
-          requires (getStorageSpecifiers(T) =/=Set .Set)
+          requires (getStorageSpecifiers(T) =/=K .Set)
                andBool isVoidType(T)
           [structural]
      rule (. => UNDEF("TDG7",
                "void parameter appears with qualifiers.",
                "6.7.6.3:10"))
           ~> checkParam(T:Type)
-          requires (getQualifiers(T) =/=Set .Set)
+          requires (getQualifiers(T) =/=K .Set)
                andBool isVoidType(T)
           [structural]
 
      rule checkComplete(_, NoInit) => .
+          [structural]
      rule checkComplete(T:Type, _) => .
           requires isCompleteType(T) orBool isArrayType(T)
+          [structural]
      rule (. => CV("TDG8",
                "declaration has initializer but incomplete type.",
                "6.7.9:3"))
           ~> checkComplete(T:Type, K:K)
           requires (K =/=K NoInit)
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
+          [structural]
 
      syntax KItem ::= declareExternalVariable(CId, Type, K)
 

@@ -2,7 +2,6 @@ module C-TRANSLATION-ERROR
      imports C-ERROR-SYNTAX
 
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX

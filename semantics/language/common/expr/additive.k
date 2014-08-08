@@ -131,27 +131,6 @@ module C-COMMON-EXPR-ADDITIVE
      rule newFromArray(Loc:SymLoc, _, _) => Loc
           requires notBool isFromArray(Loc)
 
-     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
-                   | #ifFromArrayInBounds(K,Set,Type,Int)
-
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
-          => true
-          requires Offset +Int (I *Int byteSizeofType(innerType(T))) <Int Len
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int),_:Set,T:Type,I:Int)
-          => false
-          requires Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int Len
-     rule #ifFromArrayInBounds(K:K,.Set,_:Type,_:Int)
-          => true
-          requires getKLabel(K) =/=KLabel 'fromArray
-     rule #ifFromArrayInBounds(K:K,SetItem(K':K) S:Set,T:Type,I:Int)
-          => #ifFromArrayInBounds(K',S,T,I)
-          requires getKLabel(K) =/=KLabel 'fromArray
-
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(K:K) S:Set),
-               T:Type, I:Int)
-          => #ifFromArrayInBounds(K,S,T,I)
-
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same
      array object, or one past the last element of the array object; the result

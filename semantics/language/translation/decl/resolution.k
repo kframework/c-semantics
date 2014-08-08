@@ -21,14 +21,16 @@ module C-DECL-RESOLUTION
 
      syntax KItem ::= allocateIncompleteTentative(CId,K)
 
-     rule <k> ( . => allocateIncompleteTentative(X,DE))
-               ~> allocateIncompleteTentatives ...</k>
+     rule <k> (. => allocateIncompleteTentative(X, Decl))
+               ~> allocateIncompleteTentatives
+          ...</k>
           <externals>...
-               (X:CId |-> DE:K => .Map)
+               (X:CId |-> Decl:K => .Map)
           ...</externals>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           [structural]
+
      rule <k> allocateIncompleteTentatives => . ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -39,57 +41,30 @@ module C-DECL-RESOLUTION
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
 
-// TODO(chathhorn): merging; needs further effort to integrate.
-//      rule <k> (allocateIncompleteTentative(X:CId,declState(SB:SymBase,
-//                     t(S:Set, incompleteArrayType(T:Type)), declared, true) )
-//                => declare(typedDeclaration(t(S, arrayType(T, 1)), X), NoInit))
-     rule <k> (.K => declare(typedDeclaration(t(Mods, arrayType(T, 1)), X), NoInit))
-               ~> allocateIncompleteTentatives
-          ...</k>
-          <externals>...
-// TODO(chathhorn): merging; further effort.
-//                (.Map => X:CId |-> declState(SB,t(S,
-//                incompleteArrayType(T)), declared, true))
-//           ...</externals>
-//           [structural]
-// 
-//      rule allocateIncompleteTentative(_:CId,
-//           declState(_, _, State:DeclState, Tentative:Bool)) => .
-//           requires notBool Tentative
-//                orBool (State =/=K declared)
-               X:CId |-> declState(_,
-                    t(Mods:Set, incompleteArrayType(T:Type)), declared, true)
-          ...</externals>
+     rule allocateIncompleteTentative(X:CId,
+               declState(_,
+                    t(Mods:Set, incompleteArrayType(T:Type)), declared, true))
+          => declare(typedDeclaration(t(Mods, arrayType(T, 1)), X), NoInit)
           [structural]
-     rule <k> allocateIncompleteTentatives ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <externals>...
-               _ |-> declState(_, t(Mods:Set, _), State:DeclState, _) => .Map
-          ...</externals>
+     rule allocateIncompleteTentative(_,
+               declState(_, t(Mods:Set, _), State:DeclState, _))
+          => .
           requires State =/=K declared
                // TODO(chathhorn): ... and we do this inline function check in
                // addition to completing tentatives.
                andBool notBool (State ==K completed andBool Inline in Mods)
           [structural]
-     rule <k> allocateIncompleteTentatives ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <externals>...
-               _ |-> declState(_, t(Mods:Set, _), _, false) => .Map
-          ...</externals>
-          requires notBool Inline in Mods
+     rule allocateIncompleteTentative(_,
+               declState(_, t(Mods:Set, _), _, false))
+          => .
+          requires notBool (Inline in Mods)
           [structural]
-     rule <k> (. => UNDEF("TDR1",
-               "declaration for inline function not defined in the same translation unit.",
-               "6.7.4"))
-               ~> allocateIncompleteTentatives
-          ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <externals>...
-               _ |-> declState(_, t(Mods:Set, _), completed, _)
-          ...</externals>
+     rule allocateIncompleteTentative(X:CId,
+               declState(_, t(Mods:Set, _), completed, _))
+          => UNDEF("TDR1",
+               "declaration for inline function not defined in the same translation unit: "
+               +String idToString(X),
+               "6.7.4")
           requires Inline in Mods
           [structural]
 
@@ -98,15 +73,9 @@ module C-DECL-RESOLUTION
 
      syntax KItem ::= resolveReference(CId)
 
-     rule <k> ( . => resolveReference(X))~> resolveReferences ...</k>
+     rule <k> (. => resolveReference(X)) ~> resolveReferences ...</k>
           <external-uses> (SetItem(X:CId) => .Set) ...</external-uses>
           [structural]
-     // Now everything left in <external-uses> should be an unresolved
-     // reference.
-     rule <k> resolveReferences => .K ...</k>
-          (<linking-state>...
-               <external-uses> .Set </external-uses>
-          ...</linking-state> => .Bag)
 
      rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
@@ -139,7 +108,7 @@ module C-DECL-RESOLUTION
           requires notBool isLinkerLoc(Base)
           [structural]
 
-     rule <k> (resolveReference(X:CId) => . ) ...</k>
+     rule <k> resolveReference(X:CId) => .  ...</k>
           <external-decls>...
                (X:CId |-> set(.Set) => .Map)
           ...</external-decls>
@@ -151,16 +120,12 @@ module C-DECL-RESOLUTION
           ...</external-types>
           requires X =/=K Identifier("main")
           [structural]
-// TODO(chathhorn): merging; integrate.
-//      rule <k> (resolveReference(X:CId) => ERROR("DR1", 
-//                     "no definition for symbol with external linkage: " 
-//                     +String idToString(X)) )
 
-     rule <k> (. => UNDEF("TDR2",
+     rule <k> resolveReference(X:CId)
+               => UNDEF("TDR2",
                     "no definition for symbol with external linkage: "
-                    +String idToString(X),
-                    "6.9:5"))
-               ~> resolveReferences
+                     +String idToString(X),
+                    "6.9:5")
           ...</k>
           <external-uses>...
                (.Set => SetItem(X))
@@ -189,14 +154,12 @@ module C-DECL-RESOLUTION
           ...</external-types>
           [structural]
 
-// TODO(chathhorn): merging; probably to be removed.
-//      // Now everything left in <external-uses> should be an unresolved
-//      // reference.
-// 
-//      rule <k> resolveReferences => . ...</k>
-//           (<linking-state>...
-//                <external-uses> .Set </external-uses>
-//           ...</linking-state> => .Bag)
-//           [structural]
+     // Now everything left in <external-uses> should be an unresolved
+     // reference.
+     rule <k> resolveReferences => . ...</k>
+          (<linking-state>...
+               <external-uses> .Set </external-uses>
+          ...</linking-state> => .Bag)
+          [structural]
 
 endmodule

@@ -117,8 +117,8 @@ module C-TYPING-CANONICALIZATION
                orBool (T ==K Volatile)
           [structural]
 
-     rule canonicalizeType-aux(.Bag,
-               t((.Set => SetItem(Q)) _:Set, _),
+     rule canonicalizeType-aux(.List,
+               t((.Set => SetItem(Q)) _, _),
                .List, .List, (_ (ListItem(Q:K) => .List)))
           requires (Q ==K Extern)
                orBool (Q ==K Atomic)
