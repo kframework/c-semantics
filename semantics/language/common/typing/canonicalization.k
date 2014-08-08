@@ -16,7 +16,7 @@ module C-TYPING-CANONICALIZATION
      syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
 
-     /* might not need this, because no anywhere rule current, 
+     /* TODO(liyi): might not need this, because no anywhere rule current, 
        so we just use a function deleteUnuseType
      // FIXME what good is this_
      rule ListItem(SpecTypedef) => .List [structural, anywhere]

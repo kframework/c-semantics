@@ -53,107 +53,112 @@ module C-CHECK-LOC
                "6.2.4")
           [structural]
 
-     // First, associate the restrict-qual'd pointer of this access with the
-     // object.
-     rule checkRestrict(loc(Base:SymBase, Offset:Int), T:Type)
-          => checkRestrict(loc(Base, Offset, .Set), T)
-     rule <k> checkRestrict(Loc:SymLoc, _)
-               // If no accesses have occured previously, we should still check
-               // for const violations.
-               => checkRestrict(stripProv(Loc),
-                    getBases(Loc), .Set,
-                    getBases(Loc), .Set)
-          ...</k>
-          <restrict>
-               Restricts:Map
-               (.Map => stripProv(Loc) |-> set(getBases(Loc)))
-          </restrict>
-          requires notBool (stripProv(Loc) in keys(Restricts))
-          [structural]
-     // TODO(chathhorn): finer-grain modified detection. This can fail for the
-     // case of aggregates.
-     rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
-               => checkRestrict(loc(Base, Offset),
-                    getBases(Prov), .Set,
-                    Bases, .Set)
-          ...</k>
-          <restrict>...
-               loc(Base, Offset) |-> set(Bases:Set (.Set => getBases(Prov)))
-          ...</restrict>
+     // TODO(chathhorn): JRE: checkRestrict needs to be reworked in light of the
+     // limitations of the java rewrite engine.
+     rule checkRestrict(_, _) => .
           [structural]
 
-     // Next, filter out the restrict pointers where the object has been
-     // unmodified in the associated block.
-     syntax KItem ::= checkRestrict(SymLoc, Set, Set, Set, Set)
-     rule <k> checkRestrict(Loc:SymLoc,
-                    (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
-                    (.Set => SetItem(basedOn(Base, Tag))) _, _, _)
-          ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
-          requires Loc in keys(Modified)
-          [structural]
-     rule <k> checkRestrict(Loc:SymLoc,
-                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
-          ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
-          requires notBool (Loc in keys(Modified))
-          [structural]
-     rule <k> checkRestrict(_,
-                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
-          ...</k>
-          <modified> Modified:Map </modified>
-          requires notBool (Tag in keys(Modified))
-          [structural]
-     rule <k> checkRestrict(Loc:SymLoc, _, _,
-                    (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
-                    (.Set => SetItem(basedOn(Base, Tag))) _)
-          ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
-          requires Loc in keys(Modified)
-          [structural]
-     // TODO(chathhorn): merging; might need work.
-     rule <k> checkRestrict(Loc:SymLoc, _, _,
-                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
-          ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
-          requires notBool (Loc in keys(Modified))
-          [structural]
-     rule <k> checkRestrict(_, _, _,
-                    (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
-          ...</k>
-          <modified> Modified:Map </modified>
-          requires notBool (Tag in keys(Modified))
-          [structural]
-     rule checkRestrict(_, .Set, Bases:Set, .Set, Bases':Set)
-               => checkRestrict(Bases Bases', Bases, Bases')
-          [structural]
+     // // First, associate the restrict-qual'd pointer of this access with the
+     // // object.
+     // rule checkRestrict(loc(Base:SymBase, Offset:Int), T:Type)
+     //      => checkRestrict(loc(Base, Offset, .Set), T)
+     // rule <k> checkRestrict(Loc:SymLoc, _)
+     //           // If no accesses have occured previously, we should still check
+     //           // for const violations.
+     //           => checkRestrict(stripProv(Loc),
+     //                getBases(Loc), .Set,
+     //                getBases(Loc), .Set)
+     //      ...</k>
+     //      <restrict>
+     //           Restricts:Map
+     //           (.Map => stripProv(Loc) |-> set(getBases(Loc)))
+     //      </restrict>
+     //      requires notBool (stripProv(Loc) in keys(Restricts))
+     //      [structural]
+     // // TODO(chathhorn): finer-grain modified detection. This can fail for the
+     // // case of aggregates.
+     // rule <k> checkRestrict(loc(Base:SymBase, Offset:Int, Prov:Set), _)
+     //           => checkRestrict(loc(Base, Offset),
+     //                getBases(Prov), .Set,
+     //                Bases, .Set)
+     //      ...</k>
+     //      <restrict>...
+     //           loc(Base, Offset) |-> set(Bases:Set (.Set => getBases(Prov)))
+     //      ...</restrict>
+     //      [structural]
 
-     // Finally, do the actual checks.
-     syntax KItem ::= checkRestrict(Set, Set, Set)
-     rule (. => checkRestrict'(B))
-          ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
-          [structural]
-     rule checkRestrict(.Set, Bases:Set, Bases':Set) => .
-          requires Bases ==Set Bases'
-          [structural]
-     rule (. => UNDEF("ECL3",
-               "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
-               "6.7.3.1:4"))
-          ~> checkRestrict(.Set, Bases:Set, Bases':Set)
-          requires Bases =/=Set Bases'
-          [structural]
+     // // Next, filter out the restrict pointers where the object has been
+     // // unmodified in the associated block.
+     // syntax KItem ::= checkRestrict(SymLoc, Set, Set, Set, Set)
+     // rule <k> checkRestrict(Loc:SymLoc,
+     //                (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
+     //                (.Set => SetItem(basedOn(Base, Tag))) _, _, _)
+     //      ...</k>
+     //      <modified>... Tag |-> map(Modified:Map) ...</modified>
+     //      requires Loc in keys(Modified)
+     //      [structural]
+     // rule <k> checkRestrict(Loc:SymLoc,
+     //                (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
+     //      ...</k>
+     //      <modified>... Tag |-> map(Modified:Map) ...</modified>
+     //      requires notBool (Loc in keys(Modified))
+     //      [structural]
+     // rule <k> checkRestrict(_,
+     //                (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
+     //      ...</k>
+     //      <modified> Modified:Map </modified>
+     //      requires notBool (Tag in keys(Modified))
+     //      [structural]
+     // rule <k> checkRestrict(Loc:SymLoc, _, _,
+     //                (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
+     //                (.Set => SetItem(basedOn(Base, Tag))) _)
+     //      ...</k>
+     //      <modified>... Tag |-> map(Modified:Map) ...</modified>
+     //      requires Loc in keys(Modified)
+     //      [structural]
+     // // TODO(chathhorn): merging; might need work.
+     // rule <k> checkRestrict(Loc:SymLoc, _, _,
+     //                (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
+     //      ...</k>
+     //      <modified>... Tag |-> map(Modified:Map) ...</modified>
+     //      requires notBool (Loc in keys(Modified))
+     //      [structural]
+     // rule <k> checkRestrict(_, _, _,
+     //                (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
+     //      ...</k>
+     //      <modified> Modified:Map </modified>
+     //      requires notBool (Tag in keys(Modified))
+     //      [structural]
+     // rule checkRestrict(_, .Set, Bases:Set, .Set, Bases':Set)
+     //           => checkRestrict(Bases Bases', Bases, Bases')
+     //      [structural]
 
-     syntax KItem ::= "checkRestrict'" "(" Provenance ")"
-     rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => . ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          requires notBool isConstType(innerType(T))
-          [structural]
-     rule <k> (. => UNDEF("ECL4",
-               "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.",
-               "6.7.3.1:4"))
-               ~> checkRestrict'(basedOn(Base:SymBase, _))
-          ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          requires isConstType(innerType(T))
-          [structural]
+     // // Finally, do the actual checks.
+     // syntax KItem ::= checkRestrict(Set, Set, Set)
+     // rule (. => checkRestrict'(B))
+     //      ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
+     //      [structural]
+     // rule checkRestrict(.Set, Bases:Set, Bases':Set) => .
+     //      requires Bases ==Set Bases'
+     //      [structural]
+     // rule (. => UNDEF("ECL3",
+     //           "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
+     //           "6.7.3.1:4"))
+     //      ~> checkRestrict(.Set, Bases:Set, Bases':Set)
+     //      requires Bases =/=Set Bases'
+     //      [structural]
+
+     // syntax KItem ::= "checkRestrict'" "(" Provenance ")"
+     // rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => . ...</k>
+     //      <mem>... Base |-> object(T:Type, _, _) ...</mem>
+     //      requires notBool isConstType(innerType(T))
+     //      [structural]
+     // rule <k> (. => UNDEF("ECL4",
+     //           "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.",
+     //           "6.7.3.1:4"))
+     //           ~> checkRestrict'(basedOn(Base:SymBase, _))
+     //      ...</k>
+     //      <mem>... Base |-> object(T:Type, _, _) ...</mem>
+     //      requires isConstType(innerType(T))
+     //      [structural]
 endmodule
