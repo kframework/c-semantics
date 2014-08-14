@@ -13,10 +13,10 @@ rule
 <frame>
     <k>
         'call(
-            nclv ( unsigned int #__id__ ( unsigned int, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) ),,
-            ('tv('unsignedint(.KList),, I32N:MInt{bitwidth(32)}), .Exps))
+            nclv ( unsigned short #__id__ ( unsigned short, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) ),,
+            ('tv('unsignedshort(.KList),, I16N:MInt{bitwidth(16)}), .Exps))
     =>
-        'tv('unsignedint(.KList),, udivMInt(mulMInt(I32N, addMInt(I32N, mi(32, 1))), mi(32, 2)))
+        'tv('unsignedshort(.KList),, udivMInt(mulMInt(I16N, addMInt(I16N, mi(16, 1))), mi(16, 2)))
     ...</k>
     <frame-fun-id>
         _:KItem
@@ -25,7 +25,7 @@ rule
         .K
     </frame-fun-va-args>
     <env>...
-        sum |-> lv ( unsigned int #__id__ ( unsigned int, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) )
+        sum |-> lv ( unsigned short #__id__ ( unsigned short, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) )
     ...</env>
     <locals> _:Set </locals>
 </frame>
@@ -39,14 +39,14 @@ rule
       FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) )
     </fun-id>
     <fun-type>
-        unsigned int
+        unsigned short
     </fun-type>
     <formals>
-        (unsigned int n), .Params
+        (unsigned short n), .Params
     </formals>
     <body>
-        { unsigned int tmp ; { if ( n ) { tmp = sum ( ((n - ((unsigned int) 1)), .Exps) ) ;
-          return ( '_+_(n ,, tmp) ) ; } else { return ( (unsigned int) 0 ) ; } } }
+        { unsigned short tmp ; { if ( n ) { tmp = sum ( ((n - ((unsigned short) 1)), .Exps) ) ;
+          return ( '_+_(n ,, tmp) ) ; } else { return ( (unsigned short) 0 ) ; } } }
     </body>
     <labels>
         .Map
@@ -57,7 +57,7 @@ rule
   </fun>
 </funs>
 <global-env>
-    sum |-> lv ( unsigned int #__id__ ( unsigned int, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) )
+    sum |-> lv ( unsigned short #__id__ ( unsigned short, .Params ) , FunPtr ( sum , tu ( "/Users/andrei/c-semantics/cil-semantics/verification/sum.c" ) ) )
 </global-env>
 <phase>
    executing 
@@ -105,8 +105,8 @@ rule
 <make-case-labels>
     .Map
 </make-case-labels>
-//requires ultMInt(I32N, umaxMInt(width(unsigned int) /Int 2))
-requires ultMInt(I32N, mi(32, 65536))
+//requires ultMInt(I16N, umaxMInt(width(unsigned short) /Int 2))
+requires ultMInt(I16N, mi(16, 256))
 
 endmodule
 

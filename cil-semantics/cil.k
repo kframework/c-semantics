@@ -52,7 +52,7 @@ module CIL-SEMANTICS
     <funs map="">
       <fun multiplicity="*">
         <fun-id key=""> .K </fun-id> // Ptr
-        <fun-type> void </fun-type> // Type
+        <fun-type> void:>Type </fun-type> // Type
         <formals> .Params </formals>
         <body> .K </body> // FunBody
         <labels> .Map </labels> // Map{Label, Stmt}
