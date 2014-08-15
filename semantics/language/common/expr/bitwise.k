@@ -43,14 +43,14 @@ module C-COMMON-EXPR-BITWISE
                isNegZero(E1, T1) orBool isNegZero(E2, T2))
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)
+               andBool E2 <Int bitSizeofType(T1)::Int
                andBool E1 >=Int 0
           [structural]
      rule (. => CV("CEB1",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) << tv(_, T2:Type)
-          requires notBool hasIntegerType(T1) 
+          requires notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
           [structural]
      rule (. => UNDEF("CEB2",
@@ -63,7 +63,7 @@ module C-COMMON-EXPR-BITWISE
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) << tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)
+          requires E2 >=Int bitSizeofType(T1)::Int
           [structural]
      rule (. => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
@@ -80,19 +80,19 @@ module C-COMMON-EXPR-BITWISE
      2^\text{\cinline{E2}}$. If \cinline{E1} has a signed type and a negative
      value, the resulting value is implementation-defined.
      }*/
-     rule tv(E1:Int, T1:Type) >> tv(E2:Int, T2:Type) 
+     rule tv(E1:Int, T1:Type) >> tv(E2:Int, T2:Type)
           => bitwiseInterpret(T1, E1 >>Int E2,
                isNegZero(E1, T1) orBool isNegZero(E2, T2))
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)
+               andBool E2 <Int bitSizeofType(T1)::Int
                andBool E1 >=Int 0
           [structural]
      rule (. => CV("CEB5",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) >> tv(_, T2:Type)
-          requires notBool hasIntegerType(T1) 
+          requires notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
           [structural]
      rule (. => UNDEF("CEB6",
@@ -105,7 +105,7 @@ module C-COMMON-EXPR-BITWISE
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) >> tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)
+          requires E2 >=Int bitSizeofType(T1)::Int
           [structural]
      rule (. => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
@@ -140,7 +140,7 @@ module C-COMMON-EXPR-BITWISE
 
      The result of the \cinline{^} operator is the bitwise exclusive OR of the
      operands (that is, each bit in the result is set if and only if exactly
-     one of the corresponding bits in the converted operands is set).     
+     one of the corresponding bits in the converted operands is set).
      }*/
      rule tv(E1:Int, T:Type) ^ tv(E2:Int, T':Type)
           => bitwiseInterpret(T, E1 xorInt E2,

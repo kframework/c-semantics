@@ -80,55 +80,57 @@ module C-MEMORY-WRITING
           [structural]
 
      syntax Set ::= keepUnion(Set) [function]
-		  | stripUnion(Set) [function]
-		  | #keepUnion(K,Set,Set) [function]
-		  | #stripUnion(K,Set,Set) [function]
+                  | stripUnion(Set) [function]
+                  | #keepUnion(K, Set, Set) [function]
+                  | #stripUnion(K, Set, Set) [function]
 
      rule keepUnion(.Set) => .Set
-     rule keepUnion(SetItem(K:K) S:Set) => #keepUnion(K,S,.Set)
+     rule keepUnion(SetItem(K:K) S:Set) => #keepUnion(K, S, .Set)
 
      rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
-		.Set,S':Set) => SetItem(fromUnion(UnionLoc, F, Fields)) S'
-     rule #keepUnion(K:K,.Set,S':Set) => S'
-	  requires getKLabel(K) =/=KLabel 'fromUnion 
+               .Set,S':Set)
+          => SetItem(fromUnion(UnionLoc, F, Fields)) S'
+     rule #keepUnion(K:K, .Set, S':Set) => S'
+          requires getKLabel(K) =/=KLabel 'fromUnion
      rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
-		SetItem(K':K) S:Set,S':Set) 
-	  => #keepUnion(K',S:Set,SetItem(fromUnion(UnionLoc, F, Fields)) S') 
-     rule #keepUnion(K:K,SetItem(K':K) S:Set,S':Set) 
-	  => #keepUnion(K',S,S') 
-	  requires getKLabel(K) =/=KLabel 'fromUnion 
+          SetItem(K':K) S:Set, S':Set)
+          => #keepUnion(K', S:Set, SetItem(fromUnion(UnionLoc, F, Fields)) S')
+     rule #keepUnion(K:K, SetItem(K':K) S:Set, S':Set)
+          => #keepUnion(K', S, S')
+          requires getKLabel(K) =/=KLabel 'fromUnion
 
      rule stripUnion(.Set) => .Set
-     rule stripUnion(SetItem(K:K) S:Set) => #stripUnion(K,S,.Set)
+     rule stripUnion(SetItem(K:K) S:Set) => #stripUnion(K, S, .Set)
 
-     rule #stripUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
-		.Set,S':Set) => S'
-     rule #keepUnion(K:K,.Set,S':Set) => SetItem(K) S'
-	  requires getKLabel(K) =/=KLabel 'fromUnion 
+     rule #stripUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo), .Set, S':Set)
+          => S'
+     rule #keepUnion(K:K, .Set, S':Set) => SetItem(K) S'
+          requires getKLabel(K) =/=KLabel 'fromUnion
      rule #keepUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
-		SetItem(K':K) S:Set,S':Set) 
-	  => #keepUnion(K',S:Set,S') 
-     rule #keepUnion(K:K,SetItem(K':K) S:Set,S':Set) 
-	  => #keepUnion(K',S,SetItem(K) S') 
-	  requires getKLabel(K) =/=KLabel 'fromUnion 
+          SetItem(K':K) S:Set, S':Set)
+          => #keepUnion(K', S:Set, S')
+     rule #keepUnion(K:K,SetItem(K':K) S:Set, S':Set)
+          => #keepUnion(K', S, SetItem(K) S')
+          requires getKLabel(K) =/=KLabel 'fromUnion
 
-
-     rule (. => makeUnionUnKnown(.K,keepUnion(S)))
+     rule (. => makeUnionUnKnown(.K, keepUnion(S)))
           ~> write-specific(
                loc(_, _, S:Set => stripUnion(S)), _, _)
           [structural]
 
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-		| makeUnionUnKnown(K,Set)
+                    | makeUnionUnKnown(K,Set)
 
-     rule makeUnionUnKnown(.K,.Set) => . [structural]
-     rule makeUnionUnKnown(.K,SetItem(K:K) S:Set) 
-	  => makeUnionUnKnown(K,S)
-	  [structural]
-     rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId,
-		 Fields:FieldInfo),S:Set) 
-	  => allowInit(makeUnknown(UnionLoc, F, Fields)) ~> makeUnionUnKnown(.K,S)
-	  [structural]
+     rule makeUnionUnKnown(.K, .Set) => .
+          [structural]
+     rule makeUnionUnKnown(.K, SetItem(K:K) S:Set)
+          => makeUnionUnKnown(K, S)
+          [structural]
+     rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
+               S:Set)
+          => allowInit(makeUnknown(UnionLoc, F, Fields))
+          ~> makeUnionUnKnown(.K,S)
+          [structural]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
@@ -136,7 +138,7 @@ module C-MEMORY-WRITING
                F |-> T:Type _, _))
           => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
-                    maxByteSizeofList(L) -Int byteSizeofType(T), 
+                    maxByteSizeofList(L) -Int byteSizeofType(T),
                     piece(unknown, cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
@@ -155,15 +157,15 @@ module C-MEMORY-WRITING
      syntax Int ::= justBits(Int, Type) [function]
      syntax Int ::= "justBits-aux" "(" Int "," Type ")" [function]
      rule justBits(I:Int, _) => I
-          requires I >=Int 0 
+          requires I >=Int 0
 
      rule justBits(I:Int, T:Type) => justBits-aux(I, T)
-          requires I <Int 0 
+          requires I <Int 0
      rule justBits-aux(I:Int, T:Type)
           => justBits-aux(I +Int max(T) +Int 1, T)
-          requires I <Int 0 
+          requires I <Int 0
      // fixme sNat
-     rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int))) 
+     rule justBits-aux(N:Int, t(_, bitfieldType(_:Type, Len:Int)))
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
 
@@ -184,21 +186,21 @@ module C-MEMORY-WRITING
           [structural]
 
      syntax KItem ::= calculateNewBytes(Bits, K)
-          [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)] 
+          [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]
 
-     rule calculateNewBytes(N:Bits, dataList(L:List)) 
+     rule calculateNewBytes(N:Bits, dataList(L:List))
           => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
                dataList(explodeToBits(L)), .List)
           [structural]
 
      syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
-     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List), 
-               dataList(ListItem(piece(_, 1)) L':List), Result:List) 
-          => calculateNewBytes-aux(dataList(L), 
+     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List),
+               dataList(ListItem(piece(_, 1)) L':List), Result:List)
+          => calculateNewBytes-aux(dataList(L),
                dataList(L'), Result ListItem(piece(N, 1)))
           [structural]
-     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List) 
-          => joinBitsToBytes(Result L) 
+     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List)
+          => joinBitsToBytes(Result L)
           [structural]
 
      syntax KItem ::= joinBitsToBytes(List) [function]
@@ -210,61 +212,61 @@ module C-MEMORY-WRITING
                dataList(ListItem(piece(N:Bits, Len:Int)) ListItem(piece(M:Bits, 1)) L:List),
                dataList(R:List))
           => joinBitsToBytes-aux(
-               dataList(ListItem(piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1)) L), 
+               dataList(ListItem(piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1)) L),
                dataList(R))
-          requires Len <Int cfg:bitsPerByte 
+          requires Len <Int cfg:bitsPerByte
           [structural]
      rule joinBitsToBytes-aux(
                dataList(ListItem(piece(N:Bits, Len:Int)) L:List), dataList(R:List))
           => joinBitsToBytes-aux(
                dataList(L), dataList(R ListItem(piece(N, Len))))
-          requires Len ==Int cfg:bitsPerByte 
+          requires Len ==Int cfg:bitsPerByte
           [structural]
      rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
-          => dataList(R) 
+          => dataList(R)
           [structural]
-     
+
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
           requires L =/=MSet .List
-     rule explodeToBits(ListItem(piece(N:Bits, Len:Int))) 
+     rule explodeToBits(ListItem(piece(N:Bits, Len:Int)))
           => splinter(N, Len)
           requires Len >Int 0
           [structural]
      rule explodeToBits(ListItem(piece(_:Bits, 0))) => .List
      rule explodeToBits(.List) => .List
-     
-     syntax List ::= splinter(Bits, Int) [function] 
+
+     syntax List ::= splinter(Bits, Int) [function]
      syntax List ::= "splinter-aux" "(" Bits "," Int "," Int ")" [function]
      rule splinter(N:Bits, Len:Int) => splinter-aux(N, Len, 0)
      rule splinter-aux(_, Len:Int, Len:Int) => .List
      rule splinter-aux(N:Bits, Len:Int, Pos:Int)
-          => splinter-aux(N, Len, Pos +Int 1) 
+          => splinter-aux(N, Len, Pos +Int 1)
                ListItem(piece(bitRange(N, Pos, Pos), 1))
           requires Pos <Int Len
-          
+
      // this general rule is useful for unknowns, abstracts, etc
      rule splitBytes(tv(N:Bits, T:Type))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
           requires hasCharType(T:Type) andBool (isInt(N:Bits) =/=K true)
      rule splitBytes(tv(unknown, T:Type))
           => dataList(splitUnknown(bitSizeofType(T)))
-     rule splitBytes(tv(I:Int, T:Type)) 
+     rule splitBytes(tv(I:Int, T:Type))
           => splitIntegerBytes(I, T, byteSizeofType(T))
           requires hasIntegerType(T)
-     rule splitBytes(tv(F:Float, T:Type)) 
+     rule splitBytes(tv(F:Float, T:Type))
           => splitFloatBytes(F, T, byteSizeofType(T))
           requires hasFloatType(T)
      rule splitBytes(tv(Loc:SymLoc, T:Type))
           => splitPointerBytes(Loc, T, byteSizeofType(T))
           requires isPointerType(T)
-     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))) 
-          => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)), 
+     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo))))
+          => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)),
                byteSizeofType(t(S, structType(X, NBits, Info))))
-     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)))) 
-          => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)), 
+     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo))))
+          => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)),
                byteSizeofType(t(S, unionType(X, NBits, Info))))
-     
+
      syntax List ::= splitUnknown(Int) [function]
      rule splitUnknown(N:Int)
           => ListItem(piece(unknown, cfg:bitsPerByte))
@@ -276,19 +278,19 @@ module C-MEMORY-WRITING
      syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
      syntax DataList ::= splitIntegerBytes(Int, Type, Int, List) [function]
 
-     rule splitIntegerBytes(I:Int, T:Type, Len:Int) 
+     rule splitIntegerBytes(I:Int, T:Type, Len:Int)
           => splitIntegerBytes(I, T, Len, .List)
      rule splitIntegerBytes(I:Int, T:Type, Len:Int, L:List)
-          => splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1, 
+          => splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1,
                L ListItem(lowestByte(I, T)))
           requires Len >Int 0
-     rule splitIntegerBytes(_, _, 0, L:List) => dataList(L) 
-          
+     rule splitIntegerBytes(_, _, 0, L:List) => dataList(L)
+
      syntax DataList ::= splitStructBytes(K, Type, Int) [function]
      syntax DataList ::= splitStructBytes(K, Type, Int, List)  [function]
 
-     rule splitStructBytes(dataList(L:List), T:Type, Len:Int) 
-          => splitStructBytes(dataList(L), T, Len, .List) 
+     rule splitStructBytes(dataList(L:List), T:Type, Len:Int)
+          => splitStructBytes(dataList(L), T, Len, .List)
      rule splitStructBytes(
           dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
                T:Type, Len:Int, L:List)
@@ -296,41 +298,41 @@ module C-MEMORY-WRITING
                L ListItem(piece(N, PieceLen)))
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
-     rule splitStructBytes(_, _, 0, L:List) => dataList(L) 
-          
+     rule splitStructBytes(_, _, 0, L:List) => dataList(L)
+
      syntax DataList ::= splitPointerBytes(SymLoc, Type, Int) [function]
      syntax DataList ::= splitPointerBytes(SymLoc, Type, Int, K, List) [function]
 
      rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int)
-          => splitPointerBytes(Loc, T, Len, 0, .List) 
+          => splitPointerBytes(Loc, T, Len, 0, .List)
      rule splitPointerBytes(Loc:SymLoc, T:Type, Len:Int, N:Int, L:List)
           => splitPointerBytes(Loc, T, Len -Int 1, N +Int 1,
                L ListItem(piece(subObject(Loc, N, N), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitPointerBytes(_, _, 0, _, L:List) => dataList(L:List)
-          
+
      syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
      syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
 
-     rule splitFloatBytes(F:Float, T:Type, Len:Int) 
-          => splitFloatBytes(F, T, Len -Int 1, 
+     rule splitFloatBytes(F:Float, T:Type, Len:Int)
+          => splitFloatBytes(F, T, Len -Int 1,
                ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
           requires Len >Int 0
-     rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List) 
+     rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List)
           => splitFloatBytes(F, T, Len -Int 1,
-               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte))) 
+               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
           requires Len >Int 0
-     rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L) 
-          
+     rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L)
+
      syntax Bits ::= lowestByte(Int, Type) [function]
 
-     rule lowestByte(I:Int, T:Type) 
+     rule lowestByte(I:Int, T:Type)
           => piece(I &Int byteMaskSet, cfg:bitsPerByte)
-          requires hasIntegerType(T) 
+          requires hasIntegerType(T)
           [structural]
-     
+
      syntax Int ::= "byteMaskSet" [function]
 
      rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
-          
+
 endmodule

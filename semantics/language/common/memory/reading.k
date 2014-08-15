@@ -5,7 +5,7 @@ module C-MEMORY-READING-SYNTAX
      // Returns the bytes in the order in which they are in memory.
      syntax KItem ::= readBytes(SymLoc, Int, Type)
 
-     syntax KItem ::= concretize(Type, K) [strict(2)] 
+     syntax KItem ::= concretize(Type, K) [strict(2)]
 
      // data, offset, size in bits
      syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
@@ -50,11 +50,11 @@ module C-MEMORY-READING
           requires notBool isBitfieldType(T)
           [structural]
      rule readActual(Loc:SymLoc, T:Type)
-          => concretize(T, fillToBytes(extractBitsFromMem(Loc, T))) 
+          => concretize(T, fillToBytes(extractBitsFromMem(Loc, T)))
           requires isBitfieldType(T)
           [structural]
 
-     rule concretize(T:Type, dataList(L:List)) 
+     rule concretize(T:Type, dataList(L:List))
           => joinIntegerBytes(T, L)
           requires hasIntegerType(T)
                andBool notBool isBitfieldType(T)
@@ -74,7 +74,7 @@ module C-MEMORY-READING
           [structural]
 
      // fixme should also check sizes are appropriate
-     rule concretize(T:Type, dataList(L:List)) 
+     rule concretize(T:Type, dataList(L:List))
           => joinPointerBytes(T, L)
           requires isPointerType(T)
                andBool (#hasUnknown(L) =/=K true)
@@ -97,7 +97,7 @@ module C-MEMORY-READING
           requires (#hasTrap(L) ==K true)
                andBool isUCharType(T)
           [structural]
-     rule concretize(T:Type, dataList(L:List)) 
+     rule concretize(T:Type, dataList(L:List))
           => tv(agg(L), stripQualifiers(T))
           requires isStructType(T) orBool isUnionType(T)
           [structural]
@@ -139,7 +139,7 @@ module C-MEMORY-READING
      rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           requires Len ==Int cfg:bitsPerByte
-     rule joinPointerBytes-aux(T:Type, 
+     rule joinPointerBytes-aux(T:Type,
                ListItem(piece(subObject(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
                L:List, subObject(Loc, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(Loc, 0, End +Int 1))
@@ -147,7 +147,7 @@ module C-MEMORY-READING
                andBool (SNatEnd ==Int End +Int 1)
      rule joinPointerBytes-aux(T:Type, .List, subObject(Loc:SymLoc, 0, _))
           => tv(Loc, stripQualifiers(T))
-     rule joinPointerBytes-aux(T:Type, 
+     rule joinPointerBytes-aux(T:Type,
                ListItem(piece(0, Len:Int)) L:List, 0)
           => joinPointerBytes-aux(T, L, 0)
           requires (Len ==Int cfg:bitsPerByte)
@@ -178,14 +178,14 @@ module C-MEMORY-READING
      syntax TypedValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
      rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
-          requires (min(T) <=Int I) 
+          requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
                andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int) 
+     rule interpret-aux(T:Type, I:Int)
           => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int >Int max(T))
                andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int) 
+     rule interpret-aux(T:Type, I:Int)
           => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int <Int min(T))
                andBool hasIntegerType(T)
@@ -196,32 +196,32 @@ module C-MEMORY-READING
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
                readBytes(stripProv(Loc), byteSizeofType(T), T), 0, bitSizeofType(T))
-          [structural] 
+          [structural]
 
-     rule extractBitsFromList(dataList(L:List), N:Int, M:Int) 
+     rule extractBitsFromList(dataList(L:List), N:Int, M:Int)
           => extractBitsFromList-aux(
                dataList(explodeToBits(L:List)), N:Int, M:Int, .List)
           [structural]
      // fixme snat
      rule extractBitsFromList-aux(
-               dataList(ListItem(piece(_, 1)) L:List), 
+               dataList(ListItem(piece(_, 1)) L:List),
                Offset:Int, NumBits:Int, .List)
           => extractBitsFromList-aux(
-               dataList(L:List), 
+               dataList(L:List),
                Offset:Int -Int 1, NumBits:Int, .List)
           requires Offset:Int >Int 0
-          [structural] 
+          [structural]
      rule extractBitsFromList-aux(
-               dataList(ListItem(piece(N:Bits, 1)) L:List), 
+               dataList(ListItem(piece(N:Bits, 1)) L:List),
                0, NumBits:Int, Done:List)
           => extractBitsFromList-aux(
-               dataList(L:List), 
+               dataList(L:List),
                0, NumBits:Int -Int 1, Done:List ListItem(piece(N, 1)))
           requires NumBits >Int 0
-          [structural] 
+          [structural]
 
      rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done:List)
-          [structural] 
+          [structural]
 
 endmodule
 

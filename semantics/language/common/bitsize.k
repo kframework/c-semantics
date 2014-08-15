@@ -31,7 +31,7 @@ module C-BITSIZE
           => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
           [structural]
      rule byteSizeofType(T:Type)
-          => bitsToBytes(bitSizeofType(T)) 
+          => bitsToBytes(bitSizeofType(T))
 
      syntax Int ::= numBytes(Type) [function]
      rule numBytes(t(_, bool)) => cfg:sizeofBool
@@ -40,7 +40,7 @@ module C-BITSIZE
      rule numBytes(t(_, int)) => cfg:sizeofInt
      rule numBytes(t(_, long-int)) => cfg:sizeofLongInt
      rule numBytes(t(_, long-long-int)) => cfg:sizeofLongLongInt
-     
+
      rule numBytes(t(_, float)) => cfg:sizeofFloat
      rule numBytes(t(_, double)) => cfg:sizeofDouble
      rule numBytes(t(_, long-double)) => cfg:sizeofLongDouble
@@ -49,7 +49,7 @@ module C-BITSIZE
      rule numBytes(t(_, unsigned-short-int)) => numBytes(t(.Set, short-int))
      rule numBytes(t(_, unsigned-int)) => numBytes(t(.Set, int))
      rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
-     rule numBytes(t(_, unsigned-long-long-int)) 
+     rule numBytes(t(_, unsigned-long-long-int))
           => numBytes(t(.Set, long-long-int))
      rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
 
@@ -57,40 +57,34 @@ module C-BITSIZE
      syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]
 
      rule byteSizeofList(L:List) => byteSizeofList'(0, L)
-     rule byteSizeofList'(
-          Sz:Int, ListItem(T:Type) LL:List)
-	   =>
-	  byteSizeofList'(
-          (Sz +Int byteSizeofType(T)), LL)
+     rule byteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
+          => byteSizeofList'((Sz +Int byteSizeofType(T)), LL)
      rule byteSizeofList'(Sz:Int, .List) => Sz
-          
+
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
-     rule maxByteSizeofList'(
-          Sz:Int, ListItem(T:Type) LL:List)
-	   =>
-	  maxByteSizeofList'(
-          maxInt(Sz, byteSizeofType(T)), LL)
+     rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
+          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(T)), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
-     
-     rule bitSizeofType(t(_, no-type)) 
+
+     rule bitSizeofType(t(_, no-type))
           => 0
-     rule bitSizeofType(t(_, arrayType(T:Type, N:Int))) 
+     rule bitSizeofType(t(_, arrayType(T:Type, N:Int)))
           => bitSizeofType(T) *Int N
-     rule bitSizeofType(t(_, flexibleArrayType(_))) 
+     rule bitSizeofType(t(_, flexibleArrayType(_)))
           => 0
-     rule bitSizeofType(t(_, functionType(_, _))) 
+     rule bitSizeofType(t(_, functionType(_, _)))
           => cfg:bitsPerByte
-     rule bitSizeofType(t(_, pointerType(_))) 
+     rule bitSizeofType(t(_, pointerType(_)))
           => cfg:ptrsize *Int cfg:bitsPerByte
-     rule bitSizeofType(t(_, bitfieldType(_, N:Int))) 
+     rule bitSizeofType(t(_, bitfieldType(_, N:Int)))
           => N
      rule bitSizeofType(T:Type) => numBytes(T) *Int cfg:bitsPerByte
           requires isBasicType(T)
-     rule bitSizeofType(typedDeclaration(T:Type, _)) 
+     rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 
-     rule bitSizeofType(t(_, structType(_, NBits:Int, _))) 
+     rule bitSizeofType(t(_, structType(_, NBits:Int, _)))
           => NBits
      rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
           => NBits
@@ -104,7 +98,7 @@ module C-BITSIZE
      syntax Int ::= bitsToBytes(CSize) [function]
      rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
           requires cfg:bitsPerByte dividesInt N
-     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1) 
+     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1)
           requires notBool cfg:bitsPerByte dividesInt N
      rule bitsToBytes(N:CSize) => N // Pass through sym values.
           requires isInt(N:CSize) =/=K true

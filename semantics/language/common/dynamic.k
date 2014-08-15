@@ -107,6 +107,7 @@ module C-DYNAMIC
           requires S =/=String "___missing_field_name"
 
      rule NothingExpression => emptyValue
+          [structural]
 
      rule unwrapObj(<generatedTop>...
                <global> G:Bag </global>

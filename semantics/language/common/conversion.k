@@ -69,7 +69,7 @@ module C-CONVERSION
 
      rule cast(t(Mods:Set, bool), tv(F:Float, T:Type))
           => #if F ==Float Int2Float(0, 53, 11)
-               #then tv(0, t(Mods, bool)) 
+               #then tv(0, t(Mods, bool))
                #else tv(1, t(Mods, bool)) #fi
           requires hasFloatType(T)
 
@@ -103,7 +103,7 @@ module C-CONVERSION
                andBool hasUnsignedIntegerType(innerType(T'))
 
      rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:Type))
-          => cast(t(Mods, unsigned-char), 
+          => cast(t(Mods, unsigned-char),
                tv(I +Int max(t(Mods, unsigned-char)) +Int 1, T))
           requires (I <Int min(t(Mods, unsigned-char)))
                andBool hasIntegerType(T)
@@ -243,7 +243,7 @@ module C-CONVERSION
      // TODO(chathhorn): not sure about this.
      rule cast(T':Type, tv(unknown, T:Type))
           => tv(unknown, T')
-          requires bitSizeofType(T') >=Int bitSizeofType(T)
+          requires bitSizeofType(T')::Int >=Int bitSizeofType(T)::Int
 
      rule cast(T':Type, tv(unknown, _:Type))
           => tv(trap, T')

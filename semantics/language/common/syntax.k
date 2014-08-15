@@ -3,7 +3,7 @@ module C-SYNTAX
      syntax KItem ::= reval(K) [semantic,context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
-     //TODO: might not need this list in the future. 
+     //TODO: might not need this list in the future.
      syntax HeatItem ::= hItem(K) [strict(1(context('reval)))]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]
@@ -52,9 +52,13 @@ module C-SYNTAX
      syntax C ::= InitExpression
      syntax C ::= TranslationUnit
      syntax C ::= IntConstant
+     syntax C ::= FloatConstant
      syntax C ::= InitFragment
      syntax C ::= FieldName
      syntax C ::= PureDefinition
+
+     syntax Constant ::= IntConstant
+     syntax Constant ::= FloatConstant
 
      // -------------------------------------------------
      // Below, I give the declaration as found in cabs.ml first, followed by
@@ -69,7 +73,7 @@ module C-SYNTAX
      }
      */
      syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
-	  
+
      syntax CabsLoc ::= filterCabsLoc(CabsLoc)
 
      /*
@@ -123,9 +127,9 @@ module C-SYNTAX
      syntax TypeSpecifier ::= EnumRef(CId) // new
      // new // CId, List
      syntax C ::= EnumDef(CId, K)
-     
+
      syntax TypeSpecifier ::= TypeofExpression(K)
-     
+
      syntax TypeSpecifier ::= TypeofType(K, K)
 
      syntax TypeSpecifier ::= "Complex"
@@ -300,7 +304,7 @@ module C-SYNTAX
      syntax PureDefinition ::= DeclarationDefinition(K)
      syntax PureDefinition ::= Typedef(K)
      syntax PureDefinition ::= OnlyTypedef(K)
-     syntax PureDefinition ::= GlobAsm(String) 
+     syntax PureDefinition ::= GlobAsm(String)
      syntax PureDefinition ::= Pragma(K)
      syntax PureDefinition ::= Linkage(String, K)
      syntax PureDefinition ::= Transformer(K, K )
@@ -416,7 +420,7 @@ module C-SYNTAX
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= ExpressionLoc(K,K) [function]
 
-     syntax Expression ::= "NothingExpression" [function]
+     syntax Expression ::= "NothingExpression"
 
      /*
      | UNARY of unary_operator * expression
@@ -560,7 +564,7 @@ module C-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= Constant(K) [function]
+     syntax Expression ::= Constant(K)
      // String constants aren't revals
      // for paren, just putting parentheses
      syntax Expression ::= CId
@@ -590,7 +594,7 @@ module C-SYNTAX
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
-     syntax Expression ::= GnuBody(K) 
+     syntax Expression ::= GnuBody(K)
      syntax Expression ::= ExpressionPattern(String)
 
      /*
@@ -607,25 +611,25 @@ module C-SYNTAX
      syntax IntConstant ::= HexConstant(K) [function]
 
      // significand, exponent, approx
-     syntax IntConstant ::= DecimalFloatConstant(String, Int, Float)
+     syntax FloatConstant ::= DecimalFloatConstant(String, Int, Float)
           [function]
      // significand, exponent, approx
-     syntax IntConstant ::= HexFloatConstant(String, Int, Float)
+     syntax FloatConstant ::= HexFloatConstant(String, Int, Float)
           [function]
 
-     syntax Constant ::= LitU(K) [function]
-     syntax Constant ::= LitL(K) [function]
-     syntax Constant ::= LitF(K) [function]
-     syntax Constant ::= LitLL(K) [function]
-     syntax Constant ::= LitUL(K) [function]
-     syntax Constant ::= LitULL(K) [function]
+     syntax Constant ::= LitU(Constant)
+     syntax Constant ::= LitL(Constant)
+     syntax Constant ::= LitLL(Constant)
+     syntax Constant ::= LitUL(Constant)
+     syntax Constant ::= LitULL(Constant)
+     syntax Constant ::= LitF(Constant)
 
-     syntax Constant ::= NoSuffix(K) [function]
+     syntax Constant ::= NoSuffix(K)
 
-     syntax Constant ::= CharLiteral(Int) [function]
-     syntax Constant ::= WCharLiteral(Int) [function]
-     syntax Constant ::= StringLiteral(String) [function]
-     syntax Constant ::= WStringLiteral(K) [function]
+     syntax Constant ::= CharLiteral(Int)
+     syntax Constant ::= WCharLiteral(Int)
+     syntax Constant ::= StringLiteral(String)
+     syntax Constant ::= WStringLiteral(K)
 
      /*
      and init_expression =
@@ -633,7 +637,7 @@ module C-SYNTAX
      | SINGLE_INIT of expression
      | COMPOUND_INIT of (initwhat * init_expression) list
      */
-     
+
      syntax KResult ::= "NoInit"
      syntax InitExpression ::= SingleInit(K) [hybrid, strict]
      // List
@@ -648,8 +652,10 @@ module C-SYNTAX
      | ATINDEX_INIT of expression * initwhat
      | ATINDEXRANGE_INIT of expression * expression
      */
-     syntax KResult ::= "NextInit" | InFieldInit(CId, K)
-				 | AtIndexInit(K, K) | AtIndexRangeInit(K, K)
+     syntax KResult ::= "NextInit"
+                      | InFieldInit(CId, K)
+                      | AtIndexInit(K, K)
+                      | AtIndexRangeInit(K, K)
 
      /*
      and attribute = String * expression list
