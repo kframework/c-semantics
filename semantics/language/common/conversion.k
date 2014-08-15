@@ -243,7 +243,7 @@ module C-CONVERSION
      // TODO(chathhorn): not sure about this.
      rule cast(T':Type, tv(unknown, T:Type))
           => tv(unknown, T')
-          requires bitSizeofType(T')::Int >=Int bitSizeofType(T)::Int
+          requires bitSizeofType(T') >=Int bitSizeofType(T)
 
      rule cast(T':Type, tv(unknown, _:Type))
           => tv(trap, T')

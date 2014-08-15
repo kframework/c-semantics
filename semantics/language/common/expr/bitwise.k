@@ -43,7 +43,7 @@ module C-COMMON-EXPR-BITWISE
                isNegZero(E1, T1) orBool isNegZero(E2, T2))
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)::Int
+               andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
      rule (. => CV("CEB1",
@@ -63,7 +63,7 @@ module C-COMMON-EXPR-BITWISE
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) << tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)::Int
+          requires E2 >=Int bitSizeofType(T1)
           [structural]
      rule (. => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
@@ -85,7 +85,7 @@ module C-COMMON-EXPR-BITWISE
                isNegZero(E1, T1) orBool isNegZero(E2, T2))
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)::Int
+               andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
      rule (. => CV("CEB5",
@@ -105,7 +105,7 @@ module C-COMMON-EXPR-BITWISE
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) >> tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)::Int
+          requires E2 >=Int bitSizeofType(T1)
           [structural]
      rule (. => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
