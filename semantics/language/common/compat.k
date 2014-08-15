@@ -27,26 +27,6 @@ module COMPAT-SYNTAX
      syntax List ::= removeListItem(List,K) [function]
 
      syntax Float ::= sqrtFloat(Float) [function]
-     syntax Float ::= logFloat(Float)
-          [function, hook(#FLOAT:log)]
-     syntax Float ::= expFloat(Float)
-          [function, hook(#FLOAT:exp)]
-     syntax Float ::= atanFloat(Float)
-          [function, hook(#FLOAT:atan)]
-     syntax Float ::= acosFloat(Float)
-          [function, hook(#FLOAT:acos)]
-     syntax Float ::= asinFloat(Float)
-          [function, hook(#FLOAT:asin)]
-     syntax Float ::= tanFloat(Float)
-          [function, hook(#FLOAT:tan)]
-     syntax Float ::= cosFloat(Float)
-          [function, hook(#FLOAT:cos)]
-     syntax Float ::= sinFloat(Float)
-          [function, hook(#FLOAT:sin)]
-     syntax Float ::= atan2Float(Float, Float)
-          [function, hook(#FLOAT:atan)]
-     syntax Float ::= floorFloat(Float)
-          [function, hook(#FLOAT:floor)]
 
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
