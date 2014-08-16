@@ -4,7 +4,7 @@ module C-CONFIGURATION
      imports C-TRANSLATION-INIT-SYNTAX
      imports COMPAT-SYNTAX
 
-     configuration 
+     configuration
 <global>
      <mem> .Map </mem>
      <functions color="lightgray"> .Map </functions>
@@ -136,7 +136,7 @@ module C-CONFIGURATION
                <decl-type-holder color="cyan">
                     .K
                </decl-type-holder>
-          </control-details>        
+          </control-details>
      </control>
 
 </exec>
@@ -148,5 +148,5 @@ module C-CONFIGURATION
 <options> $OPTIONS:Set </options>
 
 </T>
-          
+
 endmodule

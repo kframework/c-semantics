@@ -14,13 +14,14 @@ module C-LIBRARY
      //- C standard library
      imports LIBC-BOOTSTRAP
      imports LIBC-IO
-     
+
      imports LIBC-MATH
      imports LIBC-SETJMP
      imports LIBC-STDARG
-     imports LIBC-STDIO 
+     imports LIBC-STDIO
      imports LIBC-STDLIB
      imports LIBC-STRING
      imports LIBC-THREADS
      imports LIBC-TIME
+
 endmodule

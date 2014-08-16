@@ -6,11 +6,11 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax Value ::= functionObject(CId, List, Type, K)
 
      // CId, type, initializer.
-     syntax KItem ::= figureInit(CId, K, K) [strict(2)] 
+     syntax KItem ::= figureInit(CId, K, K) [strict(2)]
 
      // These are also used by compound literals.
      //TODO: keep kresult in sort
-     syntax KResult ::= initValue(CId, Type, K) 
+     syntax KResult ::= initValue(CId, Type, K)
 
      syntax KItem ::= singleIntInit(K) [strict]
 
@@ -76,7 +76,7 @@ module C-DECL-INITIALIZER
                     SingleInit(wstringLiteral(S)))))))
           )
           requires isWCharType(T) andBool (size(S) <=Int Len)
-          [structural] 
+          [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
           => arrayType(T, lengthString(S) +Int 1))),
@@ -146,7 +146,7 @@ module C-DECL-INITIALIZER
           <saved-init> K:K => . </saved-init>
           <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
-          [structural] 
+          [structural]
 
      syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:Type, X:CId, CompoundInit(list(L:List)))
@@ -223,20 +223,20 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     // define a extra constructor in List to get the 
+     // define a extra constructor in List to get the
      // information of next T' and F' if we have next operator
      // TODO(liyi): no associative matching. increase speed
      syntax Type ::= "noResultOfSearchType" | "matchResultOfSearchType"
 
-     syntax KItem ::= searchInFieldInfoList(Type,CId,List) [function]
+     syntax KItem ::= searchInFieldInfoList(Type, CId, List) [function]
                     | continueInFieldInfoList(List) [function]
 
      syntax KItem ::= resultInFieldInfoList(Type)
 
-     rule searchInFieldInfoList(T:Type,F:CId,
+     rule searchInFieldInfoList(T:Type, F:CId,
                ListItem(typedDeclaration(T, F)) L:List)
           => continueInFieldInfoList(L)
-     rule searchInFieldInfoList(_:Type, _:CId, .List) 
+     rule searchInFieldInfoList(_, _, .List)
           => resultInFieldInfoList(noResultOfSearchType)
      rule searchInFieldInfoList(T:Type, F:CId, ListItem(K:K) L:List)
           => searchInFieldInfoList(T, F, L)

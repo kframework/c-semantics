@@ -8,23 +8,23 @@ module LIBC-THREADS
      imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
-     
+
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout" 
-                | "thrd-busy" | "thrd-nomem"
+     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout"
+                    | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, t(.Set, int)) [macro, structural]
      rule thrd-error => tv(1, t(.Set, int)) [macro, structural]
      rule thrd-timeout => tv(2, t(.Set, int)) [macro, structural]
      rule thrd-busy => tv(3, t(.Set, int)) [macro, structural]
      rule thrd-nomem => tv(4, t(.Set, int)) [macro, structural]
-     
+
      syntax KItem ::= "threadRunning"
-     
+
      syntax KItem ::= "spawn-aux" "(" Int "," Value "," Value ")"
      rule [thrd-create-start]:
-          <k> prepareBuiltin(Identifier("thrd_create"), 
+          <k> prepareBuiltin(Identifier("thrd_create"),
                     hrItem(ThIdPointer:KResult) hs::
                     hrItem(ThFuncPointer:KResult) hs::
                     hrItem(ThArg:KResult))
@@ -41,14 +41,14 @@ module LIBC-THREADS
      rule [thrd-create]:
           <thread>...
                <k> spawn-aux(
-                         ThId:Int, ThFuncPointer:KResult, ThArg:KResult) 
-                    => thrd-success 
+                         ThId:Int, ThFuncPointer:KResult, ThArg:KResult)
+                    => thrd-success
                ...</k>
                <curr-tu> Tu:K </curr-tu>
                <buffer> .List </buffer>
           ...</thread>
           <genv> Env:Map </genv>
-          <thread-status> 
+          <thread-status>
                Status:Map => Status[ThId:Int <- threadRunning]
           </thread-status>
           <br/>
@@ -62,28 +62,28 @@ module LIBC-THREADS
                <curr-tu> Tu:K </curr-tu>
           ...</thread>)
           [large, ndthread]
-          
+
      rule [thrd-current]:
           <k> prepareBuiltin(Identifier("thrd_current"), .HeatList)
                => tv(ThId:Int, t(.Set, int))
           ...</k>
           <thread-id> ThId:Int </thread-id>
           [structural]
-          
+
      syntax KItem ::= "join-aux" "(" Int "," Value ")"
-          
+
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
                hrItem(tv(ThId:Int, t(_, int))) hs::
                hrItem(ResultPointer:KResult))
           => join-aux(ThId:Int, ResultPointer:KResult)
           [structural]
-     
+
      rule [thrd-join]:
           <thread>...
                <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
-                    => #if (Loc =/=K NullPointer) 
-                         #then Computation((* Loc) := V:KResult) 
+                    => #if (Loc =/=K NullPointer)
+                         #then Computation((* Loc) := V:KResult)
                          #else .K
                          #fi
                          ~> thrd-success
@@ -105,11 +105,11 @@ module LIBC-THREADS
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
           requires notBool (Loc in keys(M))
-               andBool (Type ==Int cfg:mtxPlain) 
+               andBool (Type ==Int cfg:mtxPlain)
           [structural]
 
      rule [mtx-lock]:
-          <k> prepareBuiltin(Identifier("mtx_lock"), 
+          <k> prepareBuiltin(Identifier("mtx_lock"),
                     hrItem(tv(Loc:Int, _)))
                => thrd-success
           ...</k>
@@ -128,8 +128,8 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
-          <glocks> M:List => removeListItem(M,Loc) </glocks>
-          <locks> M':List => removeListItem(M',Loc) </locks>
+          <glocks> M:List => removeListItem(M, Loc) </glocks>
+          <locks> M':List => removeListItem(M', Loc) </locks>
           requires Type:Int ==Int cfg:mtxPlain
           [ndthread]
 

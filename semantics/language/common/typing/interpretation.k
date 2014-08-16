@@ -137,15 +137,15 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K)
           => t(S, functionType(pushTypeDown(T, Lbl), L))
      rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl,t(S, structType(X, NBits, Info)))
+          => applyTypeFunction(Lbl, t(S, structType(X, NBits, Info)))
      rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:K)
-          => applyTypeFunction(Lbl,t(S, incompleteStructType(X)))
+          => applyTypeFunction(Lbl, t(S, incompleteStructType(X)))
      rule pushTypeDown(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl,t(S, unionType(X, NBits, Info)))
+          => applyTypeFunction(Lbl, t(S, unionType(X, NBits, Info)))
      rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:K)
-          => applyTypeFunction(Lbl,t(S, incompleteUnionType(X)))
+          => applyTypeFunction(Lbl, t(S, incompleteUnionType(X)))
      rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:K)
-          => applyTypeFunction(Lbl,t(S, enumType(X)))
+          => applyTypeFunction(Lbl, t(S, enumType(X)))
 
      rule pushTypeDown(t(S:Set, typedefType(_, t(S':Set, T:K))), Lbl:K)
           => applyTypeFunction(Lbl, t(S S', T))
@@ -153,19 +153,19 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl, T)
           requires isBasicType(T)
 
-     rule applyTypeFunction(makeFunctionType(L:List),T:Type)
+     rule applyTypeFunction(makeFunctionType(L:List), T:Type)
           => t(getSpecifiers(T),
                functionType(stripSpecifiers(T), giveNamesToArgs(L)))
 
-     rule applyTypeFunction(makeOldStyleFunctionType(L:List),T:Type)
+     rule applyTypeFunction(makeOldStyleFunctionType(L:List), T:Type)
           => t(getSpecifiers(T) SetItem(oldStyle),
                functionType(stripSpecifiers(T), giveNamesToArgs(L)))
 
-     rule applyTypeFunction(makePointerType(Quals:Set),T:Type)
+     rule applyTypeFunction(makePointerType(Quals:Set), T:Type)
           => t(Quals getSpecifiers(T),
                pointerType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeIncompleteArrayType,T:Type)
+     rule applyTypeFunction(makeIncompleteArrayType, T:Type)
           => t(getSpecifiers(T),
                incompleteArrayType(stripSpecifiers(T)))
 

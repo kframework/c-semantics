@@ -56,7 +56,7 @@ module C-TRANSLATION-INIT
           [structural]
 
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
+     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
                => (preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives))
@@ -86,13 +86,13 @@ module C-TRANSLATION-INIT
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
 
-     rule <k> (. => addBuiltin(Identifier(B),T))
+     rule <k> (. => addBuiltin(Identifier(B), T))
                ~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
 
      rule addBuiltins(.Map) => .K
 
      rule <k> addBuiltin(B:CId, T:Type) => declare(
-               typedDeclaration(T, B), 
+               typedDeclaration(T, B),
                initializer(initFunction(
                     &(B),
                     functionObject(B, .List, T, handleBuiltin)

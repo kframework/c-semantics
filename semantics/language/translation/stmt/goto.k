@@ -6,9 +6,9 @@ module C-STMT-GOTO
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... 
-               F |-> map((_ (Lbl |-> _))) 
+          <goto-map>...
+               F |-> map((_ (Lbl |-> _)))
           ...</goto-map>
           [structural]
-          
+
 endmodule

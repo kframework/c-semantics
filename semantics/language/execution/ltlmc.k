@@ -197,7 +197,7 @@ module C-LTLMC
           => joinBytes(T, dataList(Bytes))
 
      rule joinBytes(T:Type, dataList(L:List))
-          => joinBytes'(T, L, ListItem(piece(0,0)))
+          => joinBytes'(T, L, ListItem(piece(0, 0)))
 
      rule joinBytes(t(_, pointerType(T:Type)),
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))

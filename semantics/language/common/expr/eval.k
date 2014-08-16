@@ -61,14 +61,14 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      // Lvalue conversion.
-     rule rkludge(lval(Loc:SymLoc, T:Type)) 
+     rule rkludge(lval(Loc:SymLoc, T:Type))
           => instantiate(Loc, T)
           requires notBool isArrayType(T)
-               andBool notBool isFunctionType(T) 
+               andBool notBool isFunctionType(T)
 
      rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
-          requires notBool isArrayType(T) 
-               andBool notBool isFunctionType(T) 
+          requires notBool isArrayType(T)
+               andBool notBool isFunctionType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -80,10 +80,10 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
      rule rkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
+          => checkRegister(Loc, tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
           requires isArrayType(T)
      rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc,tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
+          => checkRegister(Loc, tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
           requires isArrayType(T)
 
      syntax Type ::= arrayToPtrType(Type) [function]
@@ -111,12 +111,12 @@ module C-COMMON-EXPR-EVAL
      designator with type ``function returning T'' is converted to an
      expression that has type ``pointer to a function returning T''.
      }*/
-     rule rkludge(lval(Loc:SymLoc, T:Type)) 
+     rule rkludge(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(.Set, pointerType(T)))
-          requires isFunctionType(T) 
-     rule pkludge(lval(Loc:SymLoc, T:Type)) 
+          requires isFunctionType(T)
+     rule pkludge(lval(Loc:SymLoc, T:Type))
           => tv(Loc, t(.Set, pointerType(T)))
-          requires isFunctionType(T) 
+          requires isFunctionType(T)
 
      //Solve the checkRegister constructor block
      //due to heat K Sequence originally.

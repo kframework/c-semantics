@@ -35,7 +35,7 @@ module C-TYPING-MISC
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
           requires hasUnsignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int))) 
+     rule max(t(_, bitfieldType(T:Type, N:Int)))
           => (2 ^Int absInt(N)) -Int 1
           requires hasUnsignedIntegerType(T)
 
@@ -49,41 +49,41 @@ module C-TYPING-MISC
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
 
-     rule min(t(_, signed-char)) 
+     rule min(t(_, signed-char))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
-     rule max(t(_, signed-char)) 
+     rule max(t(_, signed-char))
           => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
-     rule min(t(_, short-int)) 
+     rule min(t(_, short-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
-     rule max(t(_, short-int)) 
+     rule max(t(_, short-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
-     rule min(t(_, int)) 
+     rule min(t(_, int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
-     rule max(t(_, int)) 
+     rule max(t(_, int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
-     rule min(t(_, long-int)) 
+     rule min(t(_, long-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
-     rule max(t(_, long-int)) 
+     rule max(t(_, long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
-     rule min(t(_, long-long-int)) 
+     rule min(t(_, long-long-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
-     rule max(t(_, long-long-int)) 
+     rule max(t(_, long-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
-     rule max(t(_, unsigned-char)) 
+     rule max(t(_, unsigned-char))
           => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
-     rule max(t(_, unsigned-short-int)) 
+     rule max(t(_, unsigned-short-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
-     rule max(t(_, unsigned-int)) 
+     rule max(t(_, unsigned-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
-     rule max(t(_, unsigned-long-int)) 
+     rule max(t(_, unsigned-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
-     rule max(t(_, unsigned-long-long-int)) 
+     rule max(t(_, unsigned-long-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
@@ -284,7 +284,7 @@ module C-TYPING-MISC
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
+          => t(S, unionType(X, bitSizeofUnion(Info), Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
           requires notBool (X in keys(Tags))

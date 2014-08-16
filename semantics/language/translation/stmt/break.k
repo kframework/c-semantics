@@ -3,6 +3,6 @@ module C-STMT-BREAK
 
      rule [break]:
           Break => .
-          [structural] 
+          [structural]
 
 endmodule

@@ -9,7 +9,7 @@ module C-STMT-IF-THEN
      imports C-TYPING-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 
-     rule isTruthValue(tv(V:CValue, t(_, T:SimpleType))) 
+     rule isTruthValue(tv(V:CValue, t(_, T:SimpleType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
 
      rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)

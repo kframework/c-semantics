@@ -68,8 +68,10 @@ module C-DYNAMIC
      rule type(lv(_, T:Type)) => T
      rule type(lval(_, T:Type)) => T
 
-     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0)) => UnknownCabsLoc 
-     rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int)) => CabsLoc(S,I1,I2,I3)
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
+          => UnknownCabsLoc
+     rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int))
+          => CabsLoc(S, I1, I2, I3)
           requires S =/=String "cabs loc unknown"
                orBool I1 =/=Int -10
                orBool I2 =/=Int -10

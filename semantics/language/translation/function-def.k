@@ -193,7 +193,7 @@ module C-FUNCTION-DEF
      // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
-     syntax Bool ::= cIdIsInList(CId,List) [function]
+     syntax Bool ::= cIdIsInList(CId, List) [function]
 
      rule cIdIsInList(_:CId, .List) => false
      rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List))

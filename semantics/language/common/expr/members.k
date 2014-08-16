@@ -120,7 +120,7 @@ module C-COMMON-EXPR-MEMBERS
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule E1:K[E2:K] => *(E1 + E2) 
+     rule E1:K[E2:K] => *(E1 + E2)
           [macro, structural]
 
 endmodule

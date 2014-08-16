@@ -44,6 +44,7 @@ module C-EXPR-IDENTIFIER
                orBool isLinkerLoc(Loc)
      rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
           requires isConstType(T)
-               andBool isStaticDuration(Loc) 
+               andBool isStaticDuration(Loc)
                andBool notBool isLinkerLoc(Loc)
+
 endmodule

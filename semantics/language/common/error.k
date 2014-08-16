@@ -77,8 +77,8 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
      rule <k> (. => ERROR("CID1",
-               "Trying to look up identifier " +String S +String 
-               ", but no such identifier is in scope.", 
+               "Trying to look up identifier " +String S +String
+               ", but no such identifier is in scope.",
                (305,, 332)) )
                ~> Identifier(S:String)
           ...</k>

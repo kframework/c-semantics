@@ -5,7 +5,7 @@ module C-STMT-LOOP
      imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
-     The statement 
+     The statement
      \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ;
      $\textit{expression-3}$ ) $\textit{statement}$ } behaves as follows: The
      expression $\textit{expression-2}$ is the controlling expression that is
@@ -18,23 +18,23 @@ module C-STMT-LOOP
      expression. If $\textit{clause-1}$ is an expression, it is evaluated as a
      void expression before the first evaluation of the controlling expression.
      }
-     
+
      \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      Both $\textit{clause-1}$ and $\textit{expression-3}$ can be omitted. An
      omitted $\textit{expression-2}$ is replaced by a nonzero constant.
      }*/
-     
+
      rule ForClauseExpression(K:K) => Computation(K) [structural]
-     
+
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
           <k> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
-               => pushBlock 
-               ~> addToHistory(ForNum) 
+               => pushBlock
+               ~> addToHistory(ForNum)
                ~> Pre
-               ~> loopMarked 
-               ~> For(ForNum, Pre, 
-                    (#if Control =/=K emptyValue 
+               ~> loopMarked
+               ~> For(ForNum, Pre,
+                    (#if Control =/=K emptyValue
                     #then Control
                     #else tv(1, t(.Set, int)) #fi),
                     Post, S)
@@ -42,52 +42,52 @@ module C-STMT-LOOP
           </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
-          [structural] 
-          
+          [structural]
+
      rule [for]:
           <k> loopMarked ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)
-               => IfThenElse(Control:K, 
-                    (S:K ~> Computation(Post:K) ~> loopMarked 
+               => IfThenElse(Control:K,
+                    (S:K ~> Computation(Post:K) ~> loopMarked
                     ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)), Nop)
           ...</k>
           <block-history> ListItem(_:Int) ...</block-history>
-          [structural] // rule so that looping programs see repetition 
+          [structural] // rule so that looping programs see repetition
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.1}{1}}}{
      The evaluation of the controlling expression takes place before each
      execution of the loop body.
      }*/
-     
+
      rule [while-mark]:
-          <k> 
+          <k>
                While(B:K, S:K) ~> K:K
-               => loopMarked 
-                    ~> While(B, S) 
+               => loopMarked
+                    ~> While(B, S)
                     ~> popLoop
           </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
-          [structural] 
+          [structural]
      rule [while]:
           loopMarked ~> While(B:K, S:K)
           => IfThenElse(B, (S ~> loopMarked ~> While(B, S)), Nop)
           [structural]  // rule so that looping programs see repetition
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The evaluation of the controlling expression takes place after each
      execution of the loop body.
      }*/
-     
+
      rule [do-while-mark]:
           <k>
                DoWhile(B:K, S:K) ~> K:K
-               => loopMarked 
-                    ~> DoWhile(B, S) 
+               => loopMarked
+                    ~> DoWhile(B, S)
                     ~> popLoop
           </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> .List => ListItem(kpair(Num, K)) ...</loop-stack>
-          [structural] 
+          [structural]
      rule [do-while]:
           loopMarked ~> DoWhile(B:K, S:K)
           => S ~> IfThenElse(B, (loopMarked ~> DoWhile(B, S)), Nop)
@@ -138,30 +138,31 @@ module C-STMT-LOOP
                andBool (L =/=KLabel 'popLoop)
           [structural]
      rule [continue-through-pop]:
-          Continue ~> popBlock 
+          Continue ~> popBlock
           => popBlock ~> Continue
           [structural]
 
      rule [continue-done-for]:
-          (Continue => Computation(Post)) 
-          ~> loopMarked 
+          (Continue => Computation(Post))
+          ~> loopMarked
           ~> For(_:Int, _, _, Post:K, _)
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)
           requires L =/=KLabel 'For
           [structural]
-          
+
      rule [popLoop]:
           <k> popLoop ~> _ => K </k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num:Int, K:K)) => .List ...</loop-stack>
-          [structural] 
+          [structural]
 
      rule [popLoop-popBlock]:
           <k> (. => popBlock) ~> popLoop ...</k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num':Int, _)) ...</loop-stack>
           requires Num' =/=Int Num
-          [structural] 
+          [structural]
+
 endmodule

@@ -25,12 +25,12 @@ module C-EXECUTION-ERROR
 
      imports DEBUG-SYNTAX
 
-     rule (<k> EXIT(Msg:String) ~> K:K </k> 
+     rule (<k> EXIT(Msg:String) ~> K:K </k>
           => <final-computation> K </final-computation>)
           (. => <error-cell> Msg </error-cell>)
 
      rule cast(t(N:Set, T:SimpleType), emptyValue)
-	  => castHold(t(N, T:SimpleType), emptyValue)
+          => castHold(t(N, T:SimpleType), emptyValue)
           requires T =/=K void
 
      rule [err00037]:
@@ -43,7 +43,7 @@ module C-EXECUTION-ERROR
           requires hasFloatType(T) andBool (N >Int 0)
           [structural]
 
-     rule (. => ERROR("00500", 
+     rule (. => ERROR("00500",
                "printf: Format string expects type of size " +String
                Int2String(value(A)) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", 409) ) ~>
@@ -55,30 +55,30 @@ module C-EXECUTION-ERROR
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
-               read(Loc:SymLoc, T:Type) 
+          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~>
+               read(Loc:SymLoc, T:Type)
           ...</k>
-          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~> 
-               write(Loc':SymLoc, _, T':Type) 
+          <k> (. => ERROR("00048", "Have a read-write datarace.")) ~>
+               write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc' 
+               ((Loc <=bytes Loc'
                     andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc' 
+               orBool (Loc >bytes Loc'
                     andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
           [computational]
 
       rule [write-write-race]:
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
-               write(Loc:SymLoc, _, T:Type) 
+               write(Loc:SymLoc, _, T:Type)
           ...</k>
           <k> (. => ERROR("00049", "Have a write-write datarace.")) ~>
-               write(Loc':SymLoc, _, T':Type) 
+               write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc' 
+               ((Loc <=bytes Loc'
                     andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc' 
+               orBool (Loc >bytes Loc'
                     andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
           [computational]
 endmodule

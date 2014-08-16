@@ -43,7 +43,7 @@ module C-DECL-DEFINITION
      // -- if it is a union, the first named member is initialized
      // (recursively) according to these rules
 
-     context DeclarationDefinition(InitNameGroup(HOLE, _)) 
+     context DeclarationDefinition(InitNameGroup(HOLE, _))
 
      rule DeclarationDefinition(
                InitNameGroup(T:Type, list(ListItem(K:K) ListItem(K':K) L:List)))

@@ -26,17 +26,17 @@ module LIBC-STDLIB
           [interpRule]
 
      rule [exit]:
-          <k> prepareBuiltin(Identifier("exit"), 
+          <k> prepareBuiltin(Identifier("exit"),
                     hrItem(tv(I:Int, t(_, int))))
                ~> _
-               => tv(I:Int, t(.Set, int)) 
+               => tv(I:Int, t(.Set, int))
           </k>
           [structural]
 
      rule [abort]:
-          <k> prepareBuiltin(Identifier("abort"), .HeatList) 
-               ~> _ 
-               => printString("Aborted") ~> tv(134, t(.Set, int)) 
+          <k> prepareBuiltin(Identifier("abort"), .HeatList)
+               ~> _
+               => printString("Aborted") ~> tv(134, t(.Set, int))
           </k>
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
@@ -86,8 +86,8 @@ module LIBC-STDLIB
                ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... 
-               (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
+          <malloced>...
+               (OldBase => NewBase) |-> (OldLen:Int => NewLen)
           ...</malloced>
           <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
@@ -108,7 +108,7 @@ module LIBC-STDLIB
                hrItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
-     rule (. => zeroObject(base(Loc)) ) 
+     rule (. => zeroObject(base(Loc)) )
           ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
           ~> (calloc-aux => .)
           [structural]
@@ -118,7 +118,7 @@ module LIBC-STDLIB
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
                     hrItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
-               => deleteSizedObject(Base, Len:Int) 
+               => deleteSizedObject(Base, Len:Int)
                ~> voidVal
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
@@ -128,7 +128,7 @@ module LIBC-STDLIB
      // fixme should use RAND_MAX
      rule [rand]:
           <k> prepareBuiltin((Identifier("rand")), .HeatList)
-               => tv(absInt(randomRandom(Seed:Int)) 
+               => tv(absInt(randomRandom(Seed:Int))
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
           <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>

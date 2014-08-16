@@ -117,7 +117,7 @@ module C-DECL-GLOBAL
           <curr-function> file-scope </curr-function>
           requires validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
-          [structural] 
+          [structural]
 
      syntax KItem ::= checkDeclType(Type, K)
                     | checkParams(Type)
@@ -722,7 +722,7 @@ module C-DECL-GLOBAL
      rule completeTagInExtDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> completeTagInExtDecl(Tag:CId,Info:FieldInfo,X:CId) 
+     rule <k> completeTagInExtDecl(Tag:CId, Info:FieldInfo, X:CId)
                => declare(
                     typedDeclaration(completeTag(Tag, Info, T), X), NoInit)
           ...</k>
@@ -745,9 +745,9 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, Set)
-                    | completeTagInIntDecl(CId,FieldInfo,CId)
+                    | completeTagInIntDecl(CId, FieldInfo, CId)
 
-     rule <k> ( . => completeTagInIntDecl(Tag,Info,X)) 
+     rule <k> ( . => completeTagInIntDecl(Tag, Info, X))
                ~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
                     (SetItem(X:CId) => .Set) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -781,7 +781,7 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= completeTagInTags(CId, FieldInfo, Set)
-                    | completeTagInTag(CId,FieldInfo,CId)
+                    | completeTagInTag(CId, FieldInfo, CId)
 
 
      rule <k> ( . => completeTagInTag(S, Info, S2))
@@ -795,10 +795,10 @@ module C-DECL-GLOBAL
           [structural]
 
 
-     rule completeTagInTag(S:CId,_,S:CId) => .K
+     rule completeTagInTag(S:CId, _, S:CId) => .K
           [structural]
 
-     rule <k> (completeTagInTag(S:CId,Info:FieldInfo,S2:CId) => . ) ...</k>
+     rule <k> (completeTagInTag(S:CId, Info:FieldInfo, S2:CId) => . ) ...</k>
           <gstructs>...
                S2 |-> fieldInfo(
                     (Decls:List => completeTagsInList(S |-> Info, Decls)),

@@ -1,6 +1,6 @@
 module C-SYNTAX
      // these are semantic
-     syntax KItem ::= reval(K) [semantic,context(result(KResult))]
+     syntax KItem ::= reval(K) [semantic, context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
      //TODO: might not need this list in the future.
@@ -418,7 +418,7 @@ module C-SYNTAX
      NOTHING
      */
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
-     syntax Expression ::= ExpressionLoc(K,K) [function]
+     syntax Expression ::= ExpressionLoc(K, K) [function]
 
      syntax Expression ::= "NothingExpression"
 

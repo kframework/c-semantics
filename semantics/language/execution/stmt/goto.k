@@ -19,9 +19,9 @@ module C-STMT-GOTO
      A \cinline{goto} statement causes an unconditional jump to the statement
      prefixed by the named label in the enclosing function.
      }*/
-     
+
      //  fixme CONFIRM It seems there are no sequence points for a goto
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.2.4}{6}}}{
      For such an object that does not have a variable length array type, its
      lifetime extends from entry into the block with which it is associated
@@ -42,16 +42,16 @@ module C-STMT-GOTO
                ...
           in blocks:
                which variables i've allocated so far
-     
-     I need to adjust the block stack, 
-          
+
+     I need to adjust the block stack,
+
      When we goto, we need to take the variables on the goto path and subtract
      the variables we've already allocated in the real history.  Then we need
      to declare the remaining variables
-          
+
 */
 
-     /* 
+     /*
           To do the actual goto:
                - Case 1: We are in the same block as the target
                     1. We might be jumping forwards or backwards, across
@@ -82,11 +82,11 @@ module C-STMT-GOTO
                          b. once we're at the right place, we enter the block
                          and then proceed similarly to case 1, except all the
                          cases will be to allocate and not initialize
-          
+
           The variables mentioned above are meant to be those with automatic
           storage duration.  Variables with external or static storage duration
           have their own rules
-                    
+
      */
 
      syntax KItem ::= processGoto(K)
@@ -98,8 +98,8 @@ module C-STMT-GOTO
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... 
-               F |-> map((_ (Lbl |-> GotoInfo:K))) 
+          <goto-map>...
+               F |-> map((_ (Lbl |-> GotoInfo:K)))
           ...</goto-map>
           requires #isFunLabel(Lbl) =/=K true
           [structural]  // rule so that looping programs see repetition
@@ -107,32 +107,32 @@ module C-STMT-GOTO
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... 
+          <goto-map>...
                F |-> map(_ Lbl |-> gotoObject(_, _, Blk:K, _, _))
           ...</goto-map>
           requires #isFunLabel(Lbl) ==K true
 
      syntax Bool ::= #isFunLabel(CId) [function]
      rule #isFunLabel(funLabel(_)) => true
-          
+
      // - first case, when we're in the same block
-     rule <k> (L:KLabel(gotoObject(Depth:Int, 
-                    (ListItem(CurrentBlock:Int) BlockHistory:List), 
-                    K:K, LoopStack:List, DeclStack:List)) 
-                    ~> _:K) 
+     rule <k> (L:KLabel(gotoObject(Depth:Int,
+                    (ListItem(CurrentBlock:Int) BlockHistory:List),
+                    K:K, LoopStack:List, DeclStack:List))
+                    ~> _:K)
                => (addVariablesForBlock(CurrentBlock, DeclStack)
                     ~> K)
           </k>
           <nesting-depth> Depth:Int </nesting-depth>
-          <block-history> 
+          <block-history>
                ListItem(CurrentBlock:Int) BlockHistory':List
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
           requires ((L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown))
-		andBool (listEqual(BlockHistory,BlockHistory'))
-          [structural] 
-          
+               andBool (listEqual(BlockHistory, BlockHistory'))
+          [structural]
+
      // - second case, we're in a different block
      //TODO: make sure Chris will like this
      //assume that BlockNum will be unique in BlockHistory
@@ -140,85 +140,80 @@ module C-STMT-GOTO
      // in the first list of resultInGotoObjectList, if it is
      //.List, it means that we need to popBlock
      //otherwise, follow the sharing history rule
-     syntax List ::= searchInGotoObjectList(List,List,List,List) [function]
-		   | preSearchInGotoObjectList(Int,List,List,List,List) [function]
-		   | resultInGotoObjectList(List,List,List)
+     syntax List ::= searchInGotoObjectList(List, List, List, List) [function]
+                   | preSearchInGotoObjectList(Int, List, List, List, List) [function]
+                   | resultInGotoObjectList(List, List, List)
 
-     rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
-			_:List,_:List,Store:List)
-			=> resultInGotoObjectList(.List,.List,Store) 
-			requires notBool BlockNum in BH
-     rule preSearchInGotoObjectList(BlockNum:Int,BH:List,
-			Postfix:List,Actual:List,Store:List)
-			=> searchInGotoObjectList(BH,
-			Postfix,Actual,Store)
-			requires BlockNum in BH
+     rule preSearchInGotoObjectList(BlockNum:Int, BH:List, _, _, Store:List)
+          => resultInGotoObjectList(.List, .List, Store)
+          requires notBool BlockNum in BH
+     rule preSearchInGotoObjectList(BlockNum:Int, BH:List,
+               Postfix:List, Actual:List, Store:List)
+          => searchInGotoObjectList(BH, Postfix, Actual, Store)
+          requires BlockNum in BH
 
-     rule searchInGotoObjectList(.List,_:List,
-		Actual:List,Store:List) 
-		=> resultInGotoObjectList(.List,.List,Store)
-		requires Actual =/=K .List
-     rule searchInGotoObjectList(_:List ListItem(BlockNum:Int)
-		,_:List,_:List ListItem(Current:Int),Store:List) 
-		=> resultInGotoObjectList(.List,.List,Store)
-		requires BlockNum =/=Int Current
-     rule searchInGotoObjectList(BH:List ListItem(Current:Int)
-		,Postfix:List,Actual:List ListItem(Current),Store:List) 
-		=> searchInGotoObjectList(BH,
-		ListItem(Current) Postfix,Actual,Store) 
-     rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int)
-		,Postfix:List,.List,_:List) 
-		=> resultInGotoObjectList(ListItem(BlockNum),BH,Postfix)
-     rule searchInGotoObjectList(BH:List
-		,Postfix:List,.List,_:List) 
-		=> resultInGotoObjectList(.List,BH,Postfix)
+     rule searchInGotoObjectList(.List, _, Actual:List, Store:List)
+          => resultInGotoObjectList(.List, .List, Store)
+          requires Actual =/=K .List
+     rule searchInGotoObjectList(_:List ListItem(BlockNum:Int), _,
+               _ ListItem(Current:Int), Store:List)
+          => resultInGotoObjectList(.List, .List, Store)
+          requires BlockNum =/=Int Current
+     rule searchInGotoObjectList(BH:List ListItem(Current:Int), Postfix:List,
+               Actual:List ListItem(Current), Store:List)
+          => searchInGotoObjectList(BH,
+               ListItem(Current) Postfix, Actual, Store)
+     rule searchInGotoObjectList(BH:List ListItem(BlockNum:Int), Postfix:List,
+               .List, _)
+          => resultInGotoObjectList(ListItem(BlockNum), BH, Postfix)
+     rule searchInGotoObjectList(BH:List, Postfix:List, .List, _)
+          => resultInGotoObjectList(.List, BH, Postfix)
 
-     rule <k> processGoto(gotoObject(SIntDepth:Int, 
-                    ((ListItem(CurrentBlock:Int) BlockHistory:List) 
-			=>  preSearchInGotoObjectList(BlockNum,
-			ListItem(CurrentBlock) BlockHistory,.List,
-			ActualHistory,ListItem(CurrentBlock) BlockHistory)), 
-                    _, _, _)) 
+     rule <k> processGoto(gotoObject(SIntDepth:Int,
+               ((ListItem(CurrentBlock:Int) BlockHistory:List)
+               => preSearchInGotoObjectList(BlockNum,
+                    ListItem(CurrentBlock) BlockHistory, .List,
+                    ActualHistory, ListItem(CurrentBlock) BlockHistory)),
+                    _, _, _))
           ...</k>
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> ListItem(BlockNum:Int) ActualHistory:List </block-history>
-          requires (SIntDepth =/=Int Depth 
-		  orBool listEqual(ListItem(CurrentBlock) BlockHistory, ListItem(BlockNum) ActualHistory))
-		andBool (SIntDepth =/=Int Depth +Int 1 
-		  orBool listEqual(BlockHistory, (ListItem(BlockNum) ActualHistory)))
-          [structural] 
+          requires (SIntDepth =/=Int Depth
+               orBool listEqual(ListItem(CurrentBlock) BlockHistory, ListItem(BlockNum) ActualHistory))
+               andBool (SIntDepth =/=Int Depth +Int 1
+               orBool listEqual(BlockHistory, (ListItem(BlockNum) ActualHistory)))
+          [structural]
 
-     rule <k> processGotoDown(gotoObject(TargetDepth:Int, 
-                    (ListItem(BlockNum:Int) BlockHist:List 
-			=> searchInGotoObjectList(BlockHist,.List,
-			ActualHist,BlockHist) ), _, _,_))
+     rule <k> processGotoDown(gotoObject(TargetDepth:Int,
+                    (ListItem(BlockNum:Int) BlockHist:List
+               => searchInGotoObjectList(BlockHist, .List,
+                    ActualHist, BlockHist)), _, _, _))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
-          requires (TargetDepth =/=Int ActualDepth 
-		  orBool BlockHist
-			=/=K ActualHist)
-		andBool (TargetDepth =/=Int ActualDepth +Int 1 
-		  orBool ActualHist =/=K (ListItem(BlockNum) BlockHist))
-          [structural] 
-     
+          requires (TargetDepth =/=Int ActualDepth
+               orBool BlockHist =/=K ActualHist)
+               andBool (TargetDepth =/=Int ActualDepth +Int 1
+               orBool ActualHist =/=K (ListItem(BlockNum) BlockHist))
+          [structural]
+
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
      rule [processGoto-pop-differing]:
-          <k> (. => popBlock) 
+          <k> (. => popBlock)
                ~> processGoto(gotoObject(_,
-                    (resultInGotoObjectList(.List,.List, Store:List)
-			=> Store), _, _, _))
+                    (resultInGotoObjectList(.List, .List, Store:List)
+               => Store), _, _, _))
           ...</k>
-	  requires Store =/=K .List
-          [structural] 
-               
+          requires Store =/=K .List
+          [structural]
+
      //  once we share a history, we start to push
-     rule <k> processGoto(gotoObject(TargetDepth:Int, 
-                    resultInGotoObjectList(ListItem(_:Int),Prefix:List,ActualHistory:List),
+     rule <k> processGoto(gotoObject(TargetDepth:Int,
+                    resultInGotoObjectList(ListItem(_:Int), Prefix:List, ActualHistory:List),
                     K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
-                    ~> processGotoDown(gotoObject(TargetDepth, 
+                    ~> processGotoDown(gotoObject(TargetDepth,
                          (Prefix ListItem(CurrentBlock) ActualHistory),
                          K, LoopStack, DeclStack))
           ...</k>
@@ -227,28 +222,28 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-          [structural] 
-          
+          [structural]
+
      rule <k> ( . => pushBlock
                ~> addToHistory(TargetBlk)
                ~> addVariablesForBlock(TargetBlk, DeclStk)
-               ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
+               ) ~> processGotoDown(gotoObject(TargetDepth:Int,
                     resultInGotoObjectList(ListItem(TargetBlk:Int),
-			_:List, ActualHist:List), _, _,
+                    _:List, ActualHist:List), _, _,
                     DeclStk:List))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-          [structural] 
-     
+          [structural]
+
      //  We've made it to the block above the target
-     rule <k> L:KLabel(gotoObject(SIntDepth:Int, 
+     rule <k> L:KLabel(gotoObject(SIntDepth:Int,
                     (ListItem(TargetBlock:Int) BlockHistory:List),
-                    K:K, 
-                    LoopStack:List, 
+                    K:K,
+                    LoopStack:List,
                     DeclStack:List)
-               ) 
+               )
                     ~> _
                => pushBlock
                     ~> addToHistory(TargetBlock)
@@ -261,21 +256,21 @@ module C-STMT-GOTO
           requires ((L ==KLabel 'processGoto)
                orBool (L ==KLabel 'processGotoDown))
                andBool (SIntDepth ==Int Depth +Int 1)
-          [structural] 
-          
+          [structural]
+
      syntax KItem ::= addVariablesForBlock(Int, List)
-          [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))] 
-     
+          [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))]
+
      //  skip variables from other blocks
-     rule <k> addVariablesForBlock(TargetBlock:Int, 
+     rule <k> addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .List)
                     _:List)
                )
           ...</k>
           <block-history> ListItem(TargetBlock:Int) ...</block-history>
           requires BlockNum =/=Int TargetBlock
-          [structural] 
-          
+          [structural]
+
      //  skip variables in the real history
      rule <k> addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(
@@ -287,17 +282,17 @@ module C-STMT-GOTO
           <block-history> ListItem(TargetBlock:Int) ...</block-history>
           requires getIdOfDeclaration(Decl) in Vars
           [structural]
-     
+
      syntax KItem ::= "enableInits"
-     
+
      rule <k> enableInits => . ...</k>
           <should-init> _ => true </should-init>
-          [structural] 
-     
+          [structural]
+
      rule <k> (. => Decl:K
                     ~> enableInits
                )
-               ~> addVariablesForBlock(TargetBlock:Int, 
+               ~> addVariablesForBlock(TargetBlock:Int,
                     ((ListItem(frozenDeclaration(
                          _:Int, TargetBlock:Int, Decl:K)) => .List) _)
                )
@@ -307,9 +302,9 @@ module C-STMT-GOTO
           <should-init> _ => false </should-init>
           requires notBool getIdOfDeclaration(Decl) in Vars
           [structural]
-          
+
      //  fixme this is wrong
      rule addVariablesForBlock(_:Int, .List) => .
-          [structural] 
+          [structural]
 
 endmodule

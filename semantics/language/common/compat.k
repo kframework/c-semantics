@@ -20,11 +20,11 @@ module COMPAT-SYNTAX
      syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
 
      syntax Bool ::= List "==MSet" List [function]
-                    | List "=/=MSet" List [function]
-                    //TODO(liyi): might not need this later
-                    | listEqual(List,List) [function]
+                   | List "=/=MSet" List [function]
+                   //TODO(liyi): might not need this later
+                   | listEqual(List, List) [function]
 
-     syntax List ::= removeListItem(List,K) [function]
+     syntax List ::= removeListItem(List, K) [function]
 
      syntax Float ::= sqrtFloat(Float) [function]
 
@@ -58,7 +58,7 @@ module COMPAT
      imports COMPAT-SYNTAX
      imports C-SYNTAX // Would like to get rid of this.
 
-     rule sqrtFloat(F:Float) => rootFloat(F,2)
+     rule sqrtFloat(F:Float) => rootFloat(F, 2)
 
      rule stringToList("") => .List
      rule stringToList(S:String)
@@ -130,22 +130,22 @@ module COMPAT
      //TODO(liyi): might need to add it in the builtins
      rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
 
-     syntax Bool ::= subset(K,Set,Set) [function]
+     syntax Bool ::= subset(K, Set, Set) [function]
 
-     rule subset(K:K,S1:Set,S2:Set) => S1 <=Set (S2 -Set SetItem(K))
+     rule subset(K:K, S1:Set, S2:Set) => S1 <=Set (S2 -Set SetItem(K))
           requires K in S2
-     rule subset(K:K,_:Set,S2:Set) => false
+     rule subset(K:K, _, S2:Set) => false
           requires notBool (K in S2)
 
      rule .Set <=Set _:Set => true
      rule (SetItem(K:K) S1:Set) <=Set S2:Set
-          => subset(K,S1,S2)
+          => subset(K, S1, S2)
 
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
      rule '_==MSet_(ListItem(_) _:List ,, .List) => false
      rule '_==MSet_(ListItem(K:K) M:List ,, M':List)
-          => '_==MSet_(M:List ,, removeListItem(M',K))
+          => '_==MSet_(M:List ,, removeListItem(M', K))
           requires K:K in M':List
      rule '_==MSet_(ListItem(K:K) _:List ,, M':List)
           => false
@@ -212,13 +212,13 @@ module COMPAT
 
      syntax Set ::= #filterSet(K, Set, KLabel) [function]
 
-     rule #filterSet(K:K,.Set,Pred:KLabel)
+     rule #filterSet(K:K, .Set, Pred:KLabel)
           => SetItem(K)
           requires Pred(K) ==K true
      rule #filterSet(K:K, .Set, Pred:KLabel)
           => .Set
           requires Pred(K) =/=K true
-     rule #filterSet(K:K,SetItem(K':K) S:Set,Pred:KLabel)
+     rule #filterSet(K:K, SetItem(K':K) S:Set, Pred:KLabel)
           => SetItem(K) #filterSet(K', S, Pred)
           requires Pred(K) ==K true
      rule #filterSet(K:K, SetItem(K':K) S:Set, Pred:KLabel)
@@ -226,7 +226,7 @@ module COMPAT
           requires Pred(K) =/=K true
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => #filterSet(K,S,Pred)
+          => #filterSet(K, S, Pred)
 
      // TODO(liyi): might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true

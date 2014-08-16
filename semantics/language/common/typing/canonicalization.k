@@ -14,9 +14,9 @@ module C-TYPING-CANONICALIZATION
      imports DEBUG-SYNTAX
 
      syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
-     context canonicalizeType-aux(_, HOLE,_ ,_ ,_)
+     context canonicalizeType-aux(_, HOLE, _, _, _)
 
-     /* TODO(liyi): might not need this, because no anywhere rule current, 
+     /* TODO(liyi): might not need this, because no anywhere rule current,
        so we just use a function deleteUnuseType
      // FIXME what good is this_
      rule ListItem(SpecTypedef) => .List [structural, anywhere]
@@ -36,7 +36,7 @@ module C-TYPING-CANONICALIZATION
      rule deleteUnuseType(ListItem(K:K) L:List) => deleteUnuseType(L)
           requires K ==K SpecTypedef orBool K ==K Inline
                orBool K ==K Noreturn
-     rule deleteUnuseType(ListItem(Attribute(_:String, _)) L:List) 
+     rule deleteUnuseType(ListItem(Attribute(_:String, _)) L:List)
           => deleteUnuseType(L)
      rule deleteUnuseType(ListItem(K:K) L:List)
           => ListItem(K) deleteUnuseType(L)
@@ -136,8 +136,8 @@ module C-TYPING-CANONICALIZATION
           [structural]
 // TODO(chathhorn): merging; doesn't make sense to me.
 //     //change this because of anywhere rule
-//     rule canonicalizeType-aux(.List, (t(S:Set,T:SimpleType) 
-//          => canonicalizeArrayType(t(SetItem(Const) S,T))),
+//     rule canonicalizeType-aux(.List, (t(S:Set, T:SimpleType)
+//          => canonicalizeArrayType(t(SetItem(Const) S, T))),
 //               .List, .List, (_:List (ListItem(Const) => .List)))
 //          [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
@@ -152,44 +152,44 @@ module C-TYPING-CANONICALIZATION
 // TODO(chathhorn): merging; rework.
 //      rule canonicalizeArrayTypeInList(.List) => .List
 //      rule canonicalizeArrayTypeInList(ListItem(T:Type) L:List)
-// 	  => ListItem(canonicalizeArrayType(T)) canonicalizeArrayTypeInList(L)
-// 
+//      => ListItem(canonicalizeArrayType(T)) canonicalizeArrayTypeInList(L)
+//
 //      rule canonicalizeArrayTypeInMap(.Map) => .Map
 //      rule canonicalizeArrayTypeInMap((K:K |-> T:Type) M:Map)
-// 	  => (K |-> canonicalizeArrayType(T)) canonicalizeArrayTypeInMap(M)
-// 
+//      => (K |-> canonicalizeArrayType(T)) canonicalizeArrayTypeInMap(M)
+//
 //      rule canonicalizeArrayType(T:Type) => T
-// 	  requires getKLabel(T) =/=KLabel 't
-// 		   andBool getKLabel(T) =/=KLabel 'typedDeclaration
-//      rule canonicalizeArrayType(typedDeclaration(T:Type,C:CId)) 
-// 	  => typedDeclaration(canonicalizeArrayType(T),C)
+//      requires getKLabel(T) =/=KLabel 't
+//          andBool getKLabel(T) =/=KLabel 'typedDeclaration
+//      rule canonicalizeArrayType(typedDeclaration(T:Type, C:CId))
+//      => typedDeclaration(canonicalizeArrayType(T), C)
 //      rule canonicalizeArrayType(t(SetItem(Const) S:Set,
-// 		 arrayType(t(S':Set, T:K), N:CSize)))
-// 	  => t(S, arrayType(canonicalizeArrayType(t(SetItem(Const) S', T)), N))
-//      rule canonicalizeArrayType(t(S:Set,bitfieldType(T:Type, N:CSize)))
-// 	  => t(S,bitfieldType(canonicalizeArrayType(T), N))
-//      rule canonicalizeArrayType(t(S:Set,functionType(T:Type, L:List)))
-// 	  => t(S,functionType(canonicalizeArrayType(T), canonicalizeArrayTypeInList(L)))
-//      rule canonicalizeArrayType(t(S:Set,pointerType(T:Type)))
-// 	  => t(S,pointerType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set,incompleteArrayType(T:Type)))
-// 	  => t(S,incompleteArrayType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set,flexibleArrayType(T:Type)))
-// 	  => t(S,flexibleArrayType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set,structType(C:CId,N:Int,fieldInfo(L:List, M1:Map, M2:Map))))
-// 	  => t(S,structType(C,N,fieldInfo(canonicalizeArrayTypeInList(L),
-// 					canonicalizeArrayTypeInMap(M1),M2)))
-//      rule canonicalizeArrayType(t(S:Set,incompleteStructType(C:CId)))
-// 	  => t(S,incompleteStructType(C))
-//      rule canonicalizeArrayType(t(S:Set,unionType(C:CId,N:Int,fieldInfo(L:List, M1:Map, M2:Map))))
-// 	  => t(S,unionType(C,N,fieldInfo(canonicalizeArrayTypeInList(L),
-// 					canonicalizeArrayTypeInMap(M1),M2)))
-//      rule canonicalizeArrayType(t(S:Set,incompleteUnionType(C:CId)))
-// 	  => t(S,incompleteUnionType(C))
-//      rule canonicalizeArrayType(t(S:Set,typedefType(C:CId,T:Type)))
-// 	  => t(S,typedefType(C,canonicalizeArrayType(T)))
+//        arrayType(t(S':Set, T:K), N:CSize)))
+//      => t(S, arrayType(canonicalizeArrayType(t(SetItem(Const) S', T)), N))
+//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T:Type, N:CSize)))
+//      => t(S, bitfieldType(canonicalizeArrayType(T), N))
+//      rule canonicalizeArrayType(t(S:Set, functionType(T:Type, L:List)))
+//      => t(S, functionType(canonicalizeArrayType(T), canonicalizeArrayTypeInList(L)))
+//      rule canonicalizeArrayType(t(S:Set, pointerType(T:Type)))
+//      => t(S, pointerType(canonicalizeArrayType(T)))
+//      rule canonicalizeArrayType(t(S:Set, incompleteArrayType(T:Type)))
+//      => t(S, incompleteArrayType(canonicalizeArrayType(T)))
+//      rule canonicalizeArrayType(t(S:Set, flexibleArrayType(T:Type)))
+//      => t(S, flexibleArrayType(canonicalizeArrayType(T)))
+//      rule canonicalizeArrayType(t(S:Set, structType(C:CId, N:Int, fieldInfo(L:List, M1:Map, M2:Map))))
+//      => t(S, structType(C, N, fieldInfo(canonicalizeArrayTypeInList(L),
+//                canonicalizeArrayTypeInMap(M1), M2)))
+//      rule canonicalizeArrayType(t(S:Set, incompleteStructType(C:CId)))
+//      => t(S, incompleteStructType(C))
+//      rule canonicalizeArrayType(t(S:Set, unionType(C:CId, N:Int, fieldInfo(L:List, M1:Map, M2:Map))))
+//      => t(S, unionType(C, N, fieldInfo(canonicalizeArrayTypeInList(L),
+//                canonicalizeArrayTypeInMap(M1), M2)))
+//      rule canonicalizeArrayType(t(S:Set, incompleteUnionType(C:CId)))
+//      => t(S, incompleteUnionType(C))
+//      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
+//      => t(S, typedefType(C, canonicalizeArrayType(T)))
 //      rule canonicalizeArrayType(T:Type) => T
-// 	  requires isBasicType(T)
+//      requires isBasicType(T)
 
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))

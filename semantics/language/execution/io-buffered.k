@@ -31,7 +31,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::=  writeBytes(SymLoc, List)
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), T:Type)
-               => checkWrite(Loc, T)  
+               => checkWrite(Loc, T)
                // TODO(chathhorn): this is pretty inefficient -- setEff does
                // nothing if the object has a declared type and checkEff is
                // only meaningful in the case of a declared type being present.
@@ -77,7 +77,7 @@ module C-IO-BUFFERED
           ~> writeBytes(Loc +bytes 1, L)
           [structural]
      rule writeBytes(_, .List) => .
-          [structural] 
+          [structural]
 
      syntax KItem ::= checkWrite(SymLoc, Type)
      rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => . ...</k>
@@ -103,20 +103,20 @@ module C-IO-BUFFERED
      rule <k> (. => UNDEF("EIO1",
                "Unsequenced side effect on scalar object with side effect of same object.",
                "6.5") )
-               ~> checkWrite(Loc:SymLoc, _) 
+               ~> checkWrite(Loc:SymLoc, _)
           ...</k>
           <locs-written> Locs:List </locs-written>
           requires Loc in Locs:List
-          [structural] 
+          [structural]
      // TODO(chathhorn): probably redundant.
      rule <k> (. => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
                "6.5.6:8"))
-               ~> checkWrite(loc(Base:SymBase, Offset:Int), _) 
+               ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           requires Offset >=Int Len orBool Offset <Int 0
-          [structural] 
+          [structural]
      rule <k> (. => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
                "6.7.3"))
@@ -164,12 +164,12 @@ module C-IO-BUFFERED
 
      rule <k> readBytes(Loc:SymLoc, Size:Int, T:Type)
                => checkEffectiveType(T, getEffectiveType(Loc))
-               ~> readBytes-aux(Loc, Size, .List, T) 
+               ~> readBytes-aux(Loc, Size, .List, T)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
-          [structural] 
+          [structural]
      rule <k> (. => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
                ~> readBytes(Loc:SymLoc, _, _)
           ...</k>
@@ -185,10 +185,10 @@ module C-IO-BUFFERED
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux, T)
           requires Size >Int 0
           [structural]
-     rule readBytes-aux(_, 0, Aux:List, _) => dataList(bvalues(Aux)) 
+     rule readBytes-aux(_, 0, Aux:List, _) => dataList(bvalues(Aux))
           [structural]
      rule (tv(V:CValue, T:Type) => .K)
-          ~> readBytes-aux(_, _, 
+          ~> readBytes-aux(_, _,
                (Aux:List => Aux ListItem(tv(V, T))), _)
           [structural]
 
@@ -213,7 +213,7 @@ module C-IO-BUFFERED
                ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>...
-               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
+               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K))
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> .List </buffer>
@@ -227,40 +227,40 @@ module C-IO-BUFFERED
                     errorNonVolatileLVal)
                ~> tv(V, t(.Set, no-type))
           ...</k>
-          <mem>... 
-               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K)) 
+          <mem>...
+               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K))
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
           requires notBool (loc(Base, Offset) in locations(Mem))
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T), 
+                    orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(piece(trap, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
-          <mem>... 
+          <mem>...
                Base |-> object(ObjT:Type, Len:Int,
                M:Map => M[
-                     Offset <- piece(trap, cfg:bitsPerByte)]) 
+                     Offset <- piece(trap, cfg:bitsPerByte)])
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in (keys(M))))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
-     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type) 
+     rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
                => assert(Offset:Int <Int Len:Int, errorReadOutOfBounds)
                ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T), 
+                    orBool isVolatileType(T),
                     errorNonVolatileLVal)
                ~> tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
           ...</k>
-          <mem>... 
-               Base |-> object(ObjT:Type, Len:Int, 
-               M:Map => M[Offset <- piece(0, cfg:bitsPerByte)]) 
+          <mem>...
+               Base |-> object(ObjT:Type, Len:Int,
+               M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
@@ -276,7 +276,7 @@ module C-IO-BUFFERED
 
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
-//             <k> readByte(Loc:SymLoc) 
+//             <k> readByte(Loc:SymLoc)
 //                  => assert(notBool ListItem(Loc) in Locs:List, errorUnseqEffects)
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
@@ -286,7 +286,7 @@ module C-IO-BUFFERED
 //             [structural]
 //             // for speed in interpretation; forces local buffer to be flushed
 //             // before a read
-//             //[interpRule] 
+//             //[interpRule]
 
      rule errorReadOutOfBounds
           => UNDEF("EIO7",
@@ -315,39 +315,39 @@ module C-IO-BUFFERED
      syntax KItem ::= copyBytes(Int, SymBase, SymBase)
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
-          <mem>... 
+          <mem>...
                Old |-> object(_, _, M:Map)
                New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
           ...</mem>
           requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
-          [structural]   
+          [structural]
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
           <mem>... Old |-> object(_, _, M:Map) ...</mem>
           requires (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .
-          [structural]   
+          [structural]
 
      syntax KItem ::= copyObjectType(SymBase, SymBase)
      rule <k> copyObjectType(Old:SymBase, New:SymBase) => . ...</k>
-          <mem>... 
+          <mem>...
                Old |-> object(T:Type, _, _)
                New |-> object((_ => T), _, _)
           ...</mem>
 
-     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => . 
+     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .
           ...</k>
           <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
           // buffer, not just empty
           <buffer> .List </buffer>
-          [structural] 
+          [structural]
 
      rule <k> deleteObject(Base:SymBase) => .K ...</k>
           <mem>... Base |-> object(_, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
-          [structural] 
+          [structural]
 
      syntax KItem ::= getEffectiveType(SymLoc)
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int))

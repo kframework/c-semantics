@@ -11,25 +11,25 @@ module C-COMMON-EXPR-UNARY
      The result of the unary \cinline{+} operator is the value of its
      (promoted) operand. The integer promotions are performed on the operand,
      and the result has the promoted type.
-     }*/       
-     rule [unaryPlus-int]: 
+     }*/
+     rule [unaryPlus-int]:
           + tv(I:Int, T:Type) => arithInterpret(T, I)
           requires isPromoted(T)
           [structural]
-     rule [unaryPlus-float]: 
+     rule [unaryPlus-float]:
           + tv(F:Float, T:Type) => tv(F, T)
-          [structural]   
-          
+          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{3}}}{
      The result of the unary \cinline{-} operator is the negative of its
      (promoted) operand. The integer promotions are performed on the operand,
      and the result has the promoted type.
      }*/
-     rule [unaryMinus-int]: 
+     rule [unaryMinus-int]:
           - tv(I:Int, T:Type) => arithInterpret(T, 0 -Int I)
           requires isPromoted(T)
           [structural]
-     rule [unaryMinus-float]: 
+     rule [unaryMinus-float]:
           - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F)
           [structural]
 
@@ -42,4 +42,4 @@ module C-COMMON-EXPR-UNARY
      rule !(E:K) => tv(0, t(.Set, int)) == E
           [structural]
 endmodule
-     
+

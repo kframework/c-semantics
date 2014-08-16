@@ -5,10 +5,11 @@ module C-TRANSLATION-CONVERSION
 
      rule cast(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
-	  => castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
+          => castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
 
      rule castHold(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)),
                tv(V:CValue, t(S, incompleteStructType(X))))
-	  => tv(V, t(S, structType(X, NBits, Info)))
+          => tv(V, t(S, structType(X, NBits, Info)))
+
 endmodule

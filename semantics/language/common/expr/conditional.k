@@ -27,7 +27,7 @@ module C-COMMON-EXPR-CONDITIONAL
 
      syntax TypeResult ::= trItem(K)
 
-     //TODO: might not need this list in the future. 
+     //TODO: might not need this list in the future.
      syntax TypeList ::= List{TypeItem,"ts::"} [strict]
      syntax List ::= tListToList(TypeList) [function]
 
@@ -60,7 +60,7 @@ module C-COMMON-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/
-     rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K 
+     rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{

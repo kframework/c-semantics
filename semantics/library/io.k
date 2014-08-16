@@ -21,7 +21,7 @@ module LIBC-IO
      rule [writeToFD-char]:
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
           <fid> FD </fid>
-          <buff> 
+          <buff>
                S:String => S:String +String chrChar(N:Int %Int 256)
           </buff>
           [observable]
@@ -31,8 +31,8 @@ module LIBC-IO
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
-          <k> readFromFD(FD:Int) 
-               => tv(ordChar(firstChar(S:String)), t(.Set, int))  
+          <k> readFromFD(FD:Int)
+               => tv(ordChar(firstChar(S:String)), t(.Set, int))
           ...</k>
           <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
@@ -59,10 +59,10 @@ module LIBC-IO
 
      syntax KItem ::= "f-sent" "(" Int "," String ")"
      syntax KItem ::= "f-sendString" "(" Int "," String ")"
-     
+
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
-          <file-commands>... 
+          <file-commands>...
                . => f-flush(FD)
           </file-commands>
           [structural]
@@ -80,8 +80,8 @@ module LIBC-IO
           [structural]
 
      rule [sendString-one]:
-          <file-commands> 
-               f-sendString(FD:Int, S:String) 
+          <file-commands>
+               f-sendString(FD:Int, S:String)
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</file-commands>
@@ -89,7 +89,7 @@ module LIBC-IO
           requires (S =/=String "")
                andBool notBool (NOIO  in Opts)
           [structural]
-     rule <file-commands> 
+     rule <file-commands>
                f-sendString(_, _) => .
           ...</file-commands>
           <options> SetItem(NOIO) ...</options>
@@ -106,11 +106,11 @@ module LIBC-IO
                <done>... .List => ListItem(S) </done>
           ...</file>
           [structural]
-          
+
      rule [combine-done]:
-          <done> 
-               ListItem(S:String) ListItem(S':String) 
-               => ListItem(S +String S') 
+          <done>
+               ListItem(S:String) ListItem(S':String)
+               => ListItem(S +String S')
           ...</done>
           [structural]
 endmodule

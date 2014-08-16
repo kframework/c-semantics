@@ -16,10 +16,10 @@ module C-DECL-ZERO
 
      rule <k> zero(X:CId) => zeroType(X, T) ...</k>
           <types>... X |-> T:Type ...</types>
-          [structural] 
-          
+          [structural]
+
      syntax KItem ::= zeroType(K, Type)
-          
+
      // c1x 6.7.9:10 If an object that has automatic storage duration is not
      // initialized explicitly, its value is indeterminate. If an object that
      // has static or thread storage duration is not initialized explicitly,
@@ -32,45 +32,45 @@ module C-DECL-ZERO
      // -- if it is a union, the first named member is initialized
      // (recursively) according to these rules, and any padding is initialized
      // to zero bits;
-     
+
      rule zeroType(X:K, T:Type)
           => Computation(X := tv(getZero(T), stripQualifiers(T)))
           requires isPointerType(T) orBool hasArithmeticType(T)
-          [structural] 
+          [structural]
 
-     rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int))) 
+     rule zeroType(X:K, t(S:Set, arrayType(T:Type, Len:Int)))
           => zeroType(X[Len -Int 1], T)
-               ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1))) 
+               ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1)))
           requires Len >Int 0
-          [structural] 
+          [structural]
      rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
-          [structural] 
+          [structural]
 
-     rule zeroType(X:K, t(_, structType(_, _, 
+     rule zeroType(X:K, t(_, structType(_, _,
                fieldInfo(Fields:List, _, _)
           )))
           => zeroStruct(X, Fields)
-          [structural] 
-          
+          [structural]
+
      rule zeroType(X:K, t(_, unionType(_, _,
-               fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _) 
+               fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _)
           )))
           => zeroType(X . F, T)
-          [structural] 
+          [structural]
 
      rule zeroType(_, T:Type) => .
           requires isFunctionType(T)
           [structural]
-          
+
      rule zeroType(_, t(_, flexibleArrayType(_))) => .
           [structural]
-          
+
      syntax KItem ::= zeroStruct(K, List)
-     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List) 
-          => zeroType(X . F, T) ~> zeroStruct(X, L) 
-          [structural] 
+     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List)
+          => zeroType(X . F, T) ~> zeroStruct(X, L)
+          [structural]
      rule zeroStruct(_, .List) => .
-          [structural] 
+          [structural]
 
      syntax KItem ::= getZero(Type) [function]
      rule getZero(T:Type) => 0
@@ -79,6 +79,6 @@ module C-DECL-ZERO
           requires hasFloatType(T)
      rule getZero(T:Type) => NullPointer
           requires isPointerType(T)
-     
+
 endmodule
 

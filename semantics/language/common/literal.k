@@ -32,7 +32,7 @@ module C-LITERAL
 
      syntax IntConstant ::= hexOrOctalConstant(Int)
      rule HexConstant(S:String)
-          => hexOrOctalConstant(String2Base(simplifyForHex(S),16))
+          => hexOrOctalConstant(String2Base(simplifyForHex(S), 16))
 
      rule OctalConstant(N:Int)
           => hexOrOctalConstant(String2Base(Base2String(N, 10), 8))

@@ -48,18 +48,18 @@ module C-EXPR-FUNCTION-CALL
      }}*/
 
      syntax KItem ::= "Call'" "(" K "," K ")"
-     
+
      syntax KResult ::= rvlist(List)
 
-     syntax KItem ::= revalParams(K) 
-		    | #revalParams(HeatList) [strict]
+     syntax KItem ::= revalParams(K)
+                    | #revalParams(HeatList) [strict]
      //TODO: context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
 
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
-	  requires isAllKResultInHeatList(HL)
-          [structural]     
-     
+          requires isAllKResultInHeatList(HL)
+          [structural]
+
      /*TODO: might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           requires all(L, isKResult)

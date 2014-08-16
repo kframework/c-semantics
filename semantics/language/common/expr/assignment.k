@@ -128,7 +128,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax KItem ::= compoundAssignment(KItem, K, K) [strict(2,3)]
+     syntax KItem ::= compoundAssignment(KItem, K, K) [strict(2, 3)]
      // these should not be nd, in order to keep the operations together
      //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
      //context compoundAssignment(_, _, (HOLE => reval(HOLE)))

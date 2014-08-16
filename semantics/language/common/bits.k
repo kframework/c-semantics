@@ -18,7 +18,7 @@ module C-BITS-SYNTAX
      // object, start piece, end piece
      syntax Bits ::= subObject(SymLoc, Int, Int)
 
-     syntax KItem ::= fillToBytes(K) [strict] 
+     syntax KItem ::= fillToBytes(K) [strict]
      syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
 
      syntax DataList ::= dataList(List)
@@ -32,11 +32,11 @@ module C-BITS
      imports C-SETTINGS-SYNTAX
 
      // this maintains byte order
-     rule fillToBytes(dataList(L:List)) 
-          => fillToBytes-aux(dataList(L), .List) 
+     rule fillToBytes(dataList(L:List))
+          => fillToBytes-aux(dataList(L), .List)
           [structural]
      rule fillToBytes-aux(dataList(
-               L:List ListItem(piece(N:Bits, Len:Int))), 
+               L:List ListItem(piece(N:Bits, Len:Int))),
                L':List)
           => fillToBytes-aux(dataList(L), ListItem(piece(N, Len)) L')
           requires Len ==Int cfg:bitsPerByte
@@ -52,7 +52,7 @@ module C-BITS
      rule fillToBytes-aux(dataList(
                L:List ListItem(piece(N:Bits, Len:Int))
                ListItem(piece(N':Bits, Len':Int))), L':List)
-          => fillToBytes-aux(dataList(L ListItem(piece(piece(N, Len) 
+          => fillToBytes-aux(dataList(L ListItem(piece(piece(N, Len)
                bit:: piece(N', Len'), Len +Int Len'))), L')
           requires Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
@@ -61,7 +61,7 @@ module C-BITS
           [structural]
 
      // coallesce bitranges that are adjacent
-     rule piece(bitRange(N:Bits, SuccTo:Int, To':Int), Len:Int) 
+     rule piece(bitRange(N:Bits, SuccTo:Int, To':Int), Len:Int)
                bit:: piece(bitRange(N, From:Int, To:Int), Len':Int)
           => piece(bitRange(N, From, To'), Len +Int Len')
           requires (Len +Int Len' <=Int cfg:bitsPerByte)
@@ -76,7 +76,7 @@ module C-BITS
           [structural, anywhere]
      rule piece(0, 0) bit:: N:Bits => N
           [structural, anywhere]
-     rule piece(piece(N:Bits, Len:Int), Len:Int) => piece(N, Len) 
+     rule piece(piece(N:Bits, Len:Int), Len:Int) => piece(N, Len)
           [structural, anywhere]
 
      rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos)
@@ -119,7 +119,7 @@ module C-BITS
           requires SuccEnd ==Int End +Int 1
           [structural, anywhere]
 
-     rule bitRange(piece(N:Int, _), Pos:Int, Pos:Int) 
+     rule bitRange(piece(N:Int, _), Pos:Int, Pos:Int)
           => (N >>Int Pos) &Int 1
           requires N >=Int 0
           [structural, anywhere]

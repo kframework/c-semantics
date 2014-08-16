@@ -54,7 +54,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
           => arithInterpret(T, I1 %Int I2)
           requires isPromoted(T)
-               andBool (min(T) <=Int I1 /Int I2) 
+               andBool (min(T) <=Int I1 /Int I2)
                andBool (max(T) >=Int I1 /Int I2)
                andBool (I2 =/=Int 0)
                andBool T ==Type T'

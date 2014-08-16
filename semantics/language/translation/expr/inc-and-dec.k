@@ -6,14 +6,14 @@ module C-EXPR-INC-AND-DEC
 
      rule lval(_:SymLoc, T:Type) ++ => tv(symVal, stripQualifiers(T))
           [structural]
-          
+
      rule lval(_:SymLoc, T:Type) -- => tv(symVal, stripQualifiers(T))
           [structural]
-     
+
      context ++ (HOLE => peval(HOLE))
      rule ++ lval(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
           [structural]
-     
+
      context -- (HOLE => peval(HOLE))
      rule -- lval(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
           [structural]

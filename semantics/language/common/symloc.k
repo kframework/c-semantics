@@ -122,7 +122,7 @@ module C-SYMLOC
                orBool isThreadDuration(Loc)
                orBool isAutoDuration(Loc))
 
-     rule isAllocatedDuration(Loc:SymLoc) 
+     rule isAllocatedDuration(Loc:SymLoc)
           => #isAllocatedDuration(Loc) ==K true
      rule isStaticDuration(Loc:SymLoc)
           => #isStaticDuration(Loc) ==K true
@@ -137,9 +137,9 @@ module C-SYMLOC
           => #isLinkerLoc(Base) ==K true
      rule isLinkerLoc(Loc:SymLoc)
           => #isLinkerLoc(base(Loc)) ==K true
-     rule isArgvLoc(Loc:SymLoc) 
+     rule isArgvLoc(Loc:SymLoc)
           => #isArgvLoc(Loc) ==K true
-     rule isRegisterLoc(Loc:SymLoc) 
+     rule isRegisterLoc(Loc:SymLoc)
           => #isRegisterLoc(Loc) ==K true
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
@@ -287,7 +287,7 @@ module C-SYMLOC
 
      syntax Bool ::= #isFromArray(K, SymLoc) [function]
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
-     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set)) 
+     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
           => #isFromArray(K', loc(Base, Offset, S))
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
 

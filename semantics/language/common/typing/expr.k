@@ -15,7 +15,7 @@ module C-TYPING-EXPR
      syntax KItem ::= "MYHOLE"
 
      syntax Set ::= "assignmentLabels" [function]
-     rule assignmentLabels => 
+     rule assignmentLabels =>
           SetItem(l('_:=_))
           SetItem(l('_*=_))
           SetItem(l('_/=_))
@@ -28,8 +28,8 @@ module C-TYPING-EXPR
           SetItem(l('_^=_))
           SetItem(l('_|=_))
 
-     syntax Set ::= "typeStrictLeftBinaryOperators" [function] // [memo] 
-     rule typeStrictLeftBinaryOperators => 
+     syntax Set ::= "typeStrictLeftBinaryOperators" [function]
+     rule typeStrictLeftBinaryOperators =>
           SetItem(l('_<<_))
           SetItem(l('_>>_))
           SetItem(l('_*=_))
@@ -46,7 +46,7 @@ module C-TYPING-EXPR
           SetItem(l('_--))
           SetItem(l('--_))
           SetItem(l('++_))
-     
+
      rule <k> typeof(K:K) => evalToType ~> typeof(MYHOLE) ...</k>
           (. => <type> K:K </type>)
           [structural]
@@ -55,30 +55,30 @@ module C-TYPING-EXPR
           [structural]
 
      // these are sort of artifacts of other things
-     rule <type> emptyValue => t(.Set, void) ...</type> 
+     rule <type> emptyValue => t(.Set, void) ...</type>
           [structural]
      rule <type> tv(_, T:Type) => T ...</type>
           [structural]
-     rule <type> E1:K[E2:K] => *(E1 + E2) ...</type> 
+     rule <type> E1:K[E2:K] => *(E1 + E2) ...</type>
           [structural]
-     
+
      //! \begin{rulesGroup}
      /*@  \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{
      The integer promotions are performed on each of the operands. The type of
      the result is that of the promoted left operand. \ldots
-     }*/  
+     }*/
      rule <type> T:Type << _ => promote(T) ...</type>
           [structural]
      rule <type> T:Type >> _ => promote(T) ...</type>
           [structural]
      //! \end{rulesGroup}
-     
+
      /*@ %\begin{rulesGroup}
      \fromStandard{\source[n1570]{\para{6.5.3.4}{5}}}{
      The value of the result of both operators is implementation-defined, and
      its type (an unsigned integer type) is \cinline{size_t}, defined in
      \header{<stddef.h>} (and other headers).
-     }*/  
+     }*/
      rule <type> SizeofExpression(_) => cfg:sizeut ...</type>
           [structural]
 
@@ -127,19 +127,19 @@ module C-TYPING-EXPR
      // c99 6.4.5
      rule <type>
                stringLiteral(S:String)
-               => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)) 
+               => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
           ...</type>
           [structural]
      rule <type>
                wstringLiteral(L:List)
-               => t(.Set, arrayType(cfg:wcharut, size(L) +Int 1)) 
+               => t(.Set, arrayType(cfg:wcharut, size(L) +Int 1))
           ...</type>
           [structural]
-          
+
      rule <type> X:CId => T ...</type>
           <types>... X |-> T:Type ...</types>
           [structural]
-     
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
      The left operand of a comma operator is evaluated as a void expression;
      there is a sequence point between its evaluation and that of the right
@@ -157,7 +157,7 @@ module C-TYPING-EXPR
      }*/
      rule <type> Call(T:Type, _) => innerType(T) ...</type>
           [structural]
-          
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
      identifier designates a member of a structure or union object. The value
@@ -165,7 +165,7 @@ module C-TYPING-EXPR
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <type> 
+     rule <type>
                t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:CId
                => T
           ...</type>
@@ -185,14 +185,14 @@ module C-TYPING-EXPR
      rule <type> * T:Type => innerType(T) ...</type>
           [structural]
 
-     rule <type> 
+     rule <type>
                CompoundLiteral(_, Spec:K, Decl:K, _)
                // sort of hackish, assumes cast will evaluate to type
                => Cast(Spec, Decl, emptyValue)
           ...</type>
           [structural]
-     
-     rule <type> 
+
+     rule <type>
                L:KLabel(K:K,, _)
                => K:K
           ...</type>
@@ -200,16 +200,16 @@ module C-TYPING-EXPR
           [structural]
 
      rule <type>
-               L:KLabel(T:Type,, T':Type) 
+               L:KLabel(T:Type,, T':Type)
                => usualArithmeticConversion(T, T')
           ...</type>
           requires isArithBinConversionOp(L)
                andBool (hasIntegerType(T) orBool hasFloatType(T))
                andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
-          
+
      rule <type>
-               _:K ? T:Type : T':Type 
+               _:K ? T:Type : T':Type
                => usualArithmeticConversion(T, T')
           ...</type>
           requires (hasIntegerType(T) orBool hasFloatType(T))
@@ -218,18 +218,18 @@ module C-TYPING-EXPR
      rule <type> _:K ? T:Type : T:Type => T:Type ...</type>
           requires notBool isArrayType(T)
           [structural]
-          
+
      rule <type>
                _:K ? (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T))) : _
-          ...</type> 
+          ...</type>
           [structural]
      rule <type>
                _:K ? _:K : (t(S:Set, arrayType(T:Type, _))
                => t(S:Set, pointerType(T)))
           ...</type>
           [structural]
-          
+
      // not safe, could be incompatible types
      rule <type>
                _ ? t(S:Set, pointerType(T:Type)) : t(_, pointerType(_:Type))
@@ -237,14 +237,14 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
 
-     rule <type> L:KLabel(T:Type) => T ...</type> 
+     rule <type> L:KLabel(T:Type) => T ...</type>
           requires isArithUnaryOp(L)
                andBool hasFloatType(T)
           [structural]
-     rule <type> L:KLabel(T:Type) => promote(T) ...</type> 
+     rule <type> L:KLabel(T:Type) => promote(T) ...</type>
           requires isArithUnaryOp(L) andBool hasIntegerType(T)
           [structural]
-     
+
      rule <type> L:KLabel(T:Type,, _:KList) => T ...</type>
           requires hasFloatType(T)
                andBool (l(L) in typeStrictLeftBinaryOperators)
@@ -253,7 +253,7 @@ module C-TYPING-EXPR
           requires hasIntegerType(T)
                andBool (l(L) in typeStrictLeftBinaryOperators)
           [structural]
-          
+
      rule <type> L:KLabel(T:Type) => T ...</type>
           requires isPointerType(T)
                andBool (
@@ -263,10 +263,10 @@ module C-TYPING-EXPR
                     orBool (L:KLabel ==KLabel ('++_))
                )
           [structural]
-     
+
      rule <type> !(_:K) => t(.Set, int) ...</type>
           [structural]
-          
+
      rule <type> L:KLabel(_:K,, _:K) => t(.Set, int) ...</type>
           requires (L:KLabel ==KLabel '_==_)
                orBool (L:KLabel ==KLabel '_!=_)
@@ -276,11 +276,11 @@ module C-TYPING-EXPR
 
      rule <type> & T:Type => t(.Set, pointerType(T)) ...</type>
           [structural]
-    
-     /*TODO:may be an error
+
+     /*TODO(liyi): may be an error
      rule <type> ExpressionLoc(K:K, L:CabsLoc) => K:K ...</type>
           <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural]
-	*/
+     */
 endmodule
 

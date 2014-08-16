@@ -106,28 +106,28 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
-		     | #newFromArray(SymBase,Int,K,Set,Set,Type,Int) [function]
+                     | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]
 
-     rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
-		 Len:Int),.Set,Prov:Set,T:Type,I:Int)
-	  => loc(Base, Offset, SetItem(
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
+               Len:Int), .Set, Prov:Set, T:Type, I:Int)
+          => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
-     rule #newFromArray(Base:SymBase, Offset:Int,K:K,.Set,Prov:Set,_:Type,_:Int)
-	  => loc(Base, Offset, SetItem(K) Prov)
-	  requires getKLabel(K) =/=KLabel 'fromArray
-     rule #newFromArray(Base:SymBase, Offset:Int,fromArray(ArrOffset:Int,
-		 Len:Int),SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
-	  => #newFromArray(Base,Offset,K',S,SetItem(fromArray(ArrOffset +Int 
-		I *Int byteSizeofType(innerType(T)), Len)) Prov,T,I)
-     rule #newFromArray(Base:SymBase, Offset:Int,K:K,SetItem(K':K) S:Set,Prov:Set,T:Type,I:Int)
-	  => #newFromArray(Base,Offset,K',S,SetItem(K) Prov,T,I)
-	  requires getKLabel(K) =/=KLabel 'fromArray
+     rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
+          => loc(Base, Offset, SetItem(K) Prov)
+          requires getKLabel(K) =/=KLabel 'fromArray
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
+               Len:Int), SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
+          => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
+               I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
+          => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
+          requires getKLabel(K) =/=KLabel 'fromArray
 
      rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _:Type, _:Int)
           => loc(Base, Offset, .Set)
      rule newFromArray(
                loc(Base:SymBase, Offset:Int, SetItem(K:K) Prov:Set), T:Type, I:Int)
-          => #newFromArray(Base,Offset,K,Prov,.Set,T,I)
+          => #newFromArray(Base, Offset, K, Prov, .Set, T, I)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
           requires notBool isFromArray(Loc)
 

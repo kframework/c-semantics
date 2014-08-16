@@ -88,7 +88,7 @@ module C-MEMORY-WRITING
      rule keepUnion(SetItem(K:K) S:Set) => #keepUnion(K, S, .Set)
 
      rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
-               .Set,S':Set)
+               .Set, S':Set)
           => SetItem(fromUnion(UnionLoc, F, Fields)) S'
      rule #keepUnion(K:K, .Set, S':Set) => S'
           requires getKLabel(K) =/=KLabel 'fromUnion
@@ -109,7 +109,7 @@ module C-MEMORY-WRITING
      rule #keepUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
           SetItem(K':K) S:Set, S':Set)
           => #keepUnion(K', S:Set, S')
-     rule #keepUnion(K:K,SetItem(K':K) S:Set, S':Set)
+     rule #keepUnion(K:K, SetItem(K':K) S:Set, S':Set)
           => #keepUnion(K', S, SetItem(K) S')
           requires getKLabel(K) =/=KLabel 'fromUnion
 
@@ -119,7 +119,7 @@ module C-MEMORY-WRITING
           [structural]
 
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-                    | makeUnionUnKnown(K,Set)
+                    | makeUnionUnKnown(K, Set)
 
      rule makeUnionUnKnown(.K, .Set) => .
           [structural]
@@ -129,7 +129,7 @@ module C-MEMORY-WRITING
      rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
                S:Set)
           => allowInit(makeUnknown(UnionLoc, F, Fields))
-          ~> makeUnionUnKnown(.K,S)
+          ~> makeUnionUnKnown(.K, S)
           [structural]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).

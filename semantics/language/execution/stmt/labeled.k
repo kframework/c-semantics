@@ -5,13 +5,15 @@ module C-STMT-LABELED
      label name. Labels in themselves do not alter the flow of control, which
      continues unimpeded across them.
      }*/
-     rule [skip-label]: 
+     rule [skip-label]:
           Label(_, K:K) => K
           [structural]
      rule [case-fall-through]:
           Case(_, _, _, K:K) => K
-          [structural] 
+          [structural]
      rule [default-fall-through]:
           Default(_, K:K) => K
-          [structural] 
+          [structural]
+
 endmodule
+

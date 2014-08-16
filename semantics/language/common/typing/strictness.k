@@ -13,11 +13,11 @@ module C-TYPING-STRICTNESS
      syntax KItem ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
           <k> (. => DeclType(Spec, Decl)) ~> evalToType ...</k>
-          <type> 
+          <type>
                Cast(Spec:K, Decl:K, _) => waitingOnDeclType
           ...</type>
           [structural]
-          
+
      rule [type-Cast-cool]:
           <k> (T:KResult => .) ~> evalToType ...</k>
           <type> waitingOnDeclType => T:KResult ...</type>
@@ -149,7 +149,7 @@ module C-TYPING-STRICTNESS
           ...</type>
           requires l(Lbl) in typeStrictTernaryOpsSecond
           [structural]
-     rule <type> 
+     rule <type>
                R:Type ~> Lbl:KLabel(X:K,, Y:K,, THOLE) => Lbl(X,, Y,, R)
           ...</type>
           requires l(Lbl) in typeStrictTernaryOpsThird

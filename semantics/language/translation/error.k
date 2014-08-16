@@ -24,10 +24,10 @@ module C-TRANSLATION-ERROR
                +String "\nLine: " +String Int2String(Line)
                +String "\n")
           ~> HALT ...</k>
-          <curr-program-loc> 
+          <curr-program-loc>
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
-     rule <k> EXIT(Msg:String) 
+     rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")
           ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
@@ -40,9 +40,9 @@ module C-TRANSLATION-ERROR
 
 // TODO(chathhorn): add this back.
 //      rule <k> (. => ERROR("00215",
-//                "Found multiple declarations of " +String S 
+//                "Found multiple declarations of " +String S
 //                +String " with incompatible types.", 15)) ~>
-//                verifyCompat(T:Type, Identifier(S:String)) 
+//                verifyCompat(T:Type, Identifier(S:String))
 //           ...</k>
 //           <curr-tu> Tu:String </curr-tu>
 //           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>

@@ -19,7 +19,7 @@ module C-DECL-RESOLUTION
 
      imports C-ERROR-SYNTAX
 
-     syntax KItem ::= allocateIncompleteTentative(CId,K)
+     syntax KItem ::= allocateIncompleteTentative(CId, K)
 
      rule <k> (. => allocateIncompleteTentative(X, Decl))
                ~> allocateIncompleteTentatives

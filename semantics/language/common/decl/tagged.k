@@ -38,7 +38,7 @@ module C-DECL-TAGGED
           ~> UnionDef(_, krlist(.List))
           [structural]
 
-     rule makeStructFieldInfo(L:List) 
+     rule makeStructFieldInfo(L:List)
           => makeStructFieldInfo'(
                incompleteToFlexibleArrayMember(L),
                0, .Map, .Map,
@@ -56,13 +56,13 @@ module C-DECL-TAGGED
           )
           => makeStructFieldInfo'(L, V +Int byteSizeofType(T),
                Types[Field <- T], Offsets[Field <- V], L')
-     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
+     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, Types, Offsets)
 
      // FIXME: chould check for some struct contraints here.
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T:Type, X:CId)) 
+          ListItem(typedDeclaration(T:Type, X:CId))
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
           requires isCompleteType(T)
@@ -84,7 +84,7 @@ module C-DECL-TAGGED
           )
           => makeUnionFieldInfo'(L,
                Types[Field <- T], Offsets[Field <- 0], L')
-     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
+     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, Types, Offsets)
 
      syntax KItem ::= addTag(CId, FieldInfo)
