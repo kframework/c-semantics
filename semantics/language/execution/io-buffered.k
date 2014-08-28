@@ -55,21 +55,22 @@ module C-IO-BUFFERED
           ...</k>
           <modified> Modified:Map </modified>
 
-     rule <k> setModified(Loc:SymLoc, T:Type,
-               (SetItem(Tag:RestrictTag) => .Set) _)
-          ...</k>
-          <modified>...
-               Tag |-> map(_
-                    Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
-          ...</modified>
-     rule <k> setModified(Loc:SymLoc, T:Type,
-               (SetItem(Tag:RestrictTag) => .Set) _)
-          ...</k>
-          <modified>...
-               Tag |-> map(Modified:Map
-                    (.Map => Loc |-> byteSizeofType(T)))
-          ...</modified>
-          requires notBool Loc in keys(Modified)
+     // TODO(chathhorn): java port.
+     // rule <k> setModified(Loc:SymLoc, T:Type,
+     //           (SetItem(Tag:RestrictTag) => .Set) _)
+     //      ...</k>
+     //      <modified>...
+     //           Tag |-> map(_
+     //                Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
+     //      ...</modified>
+     // rule <k> setModified(Loc:SymLoc, T:Type,
+     //           (SetItem(Tag:RestrictTag) => .Set) _)
+     //      ...</k>
+     //      <modified>...
+     //           Tag |-> map(Modified:Map
+     //                (.Map => Loc |-> byteSizeofType(T)))
+     //      ...</modified>
+     //      requires notBool Loc in keys(Modified)
      rule setModified(_, _, .Set) => .
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)

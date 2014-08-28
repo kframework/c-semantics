@@ -40,19 +40,21 @@ module C-EXPR-ASSIGNMENT
           => getRelevantTags'(stripProv(Loc'), getBases(Loc))
 
      syntax Set ::= "getRelevantTags'" "(" SymLoc "," Set ")" [function]
-     rule getRelevantTags'(loc(Base:SymBase, Offset:Int),
-               SetItem(basedOn(Base, _)) S:Set)
-          => getRelevantTags'(loc(Base, Offset), S)
-     rule getRelevantTags'(loc(Base:SymBase, Offset:Int),
-               SetItem(basedOn(Base':SymBase, Tag:RestrictTag)) S:Set)
-          => SetItem(Tag) getRelevantTags'(loc(Base, Offset), S)
-          requires Base =/=K Base'
+     // TODO(chathhorn): java port (keys).
+     // rule getRelevantTags'(loc(Base:SymBase, Offset:Int),
+     //           SetItem(basedOn(Base, _)) S:Set)
+     //      => getRelevantTags'(loc(Base, Offset), S)
+     // rule getRelevantTags'(loc(Base:SymBase, Offset:Int),
+     //           SetItem(basedOn(Base':SymBase, Tag:RestrictTag)) S:Set)
+     //      => SetItem(Tag) getRelevantTags'(loc(Base, Offset), S)
+     //      requires Base =/=K Base'
      rule getRelevantTags'(_, .Set) => .Set
 
      syntax KItem ::= checkRestrictAssign(RestrictTag, Set)
-     rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag':RestrictTag) S:Set)
-          => checkRestrictAssign(Tag, S)
-          requires Tag =/=K Tag'
+     // TODO(chathhorn): java port (keys).
+     // rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag':RestrictTag) S:Set)
+     //      => checkRestrictAssign(Tag, S)
+     //      requires Tag =/=K Tag'
      rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag) _)
           => UNDEF("CEA4", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
      // TODO(chathhorn): more cases here we don't catch.
@@ -62,20 +64,22 @@ module C-EXPR-ASSIGNMENT
      rule checkRestrictAssign(_, .Set) => .
 
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
-     rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
+     // TODO(chathhorn): java port (keys).
+     //rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
 
      syntax KItem ::= checkArrayStaticAssign(Type, TypedValue)
-     rule checkArrayStaticAssign(
-               t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
-               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
-          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
-     rule (. => UNDEF("CEA5",
-               "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
-               "6.7.6.3:7"))
-          ~> checkArrayStaticAssign(
-               t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
-               tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
-          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+     // TODO(chathhorn): java port (keys).
+     // rule checkArrayStaticAssign(
+     //           t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
+     //           tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
+     //      requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
+     // rule (. => UNDEF("CEA5",
+     //           "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
+     //           "6.7.6.3:7"))
+     //      ~> checkArrayStaticAssign(
+     //           t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
+     //           tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
+     //      requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
      rule (. => UNDEF("CEA6",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))

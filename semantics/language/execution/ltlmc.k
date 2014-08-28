@@ -159,8 +159,8 @@ module C-LTLMC
      rule ltlRVal(_, L:Int == R:Int) => intify(L ==Int R)
      rule ltlRVal(_, L:Int != R:Int) => intify(L ==Int R)
 
-     syntax Int ::= dumbRead(Bag, SymLoc, Type) [function]
-     syntax Int ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")"
+     syntax ValueProp ::= dumbRead(Bag, SymLoc, Type) [function]
+     syntax ValueProp ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")"
           [function]
      /*TODO: cannot handle this cases
      rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))

@@ -53,9 +53,9 @@ module LIBC-IO
           <fid> FD </fid>
           <next-byte> #EOF </next-byte>
           [observable]
-
-     rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
-          [structural, simplification]
+// TODO(chathhorn): java port.
+//      rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
+//           [structural, simplification]
 
      syntax KItem ::= "f-sent" "(" Int "," String ")"
      syntax KItem ::= "f-sendString" "(" Int "," String ")"
