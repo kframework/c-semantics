@@ -189,13 +189,14 @@ module C-LTLMC
 
      syntax ValueProp ::= joinBytes(Type, K) [function]
      syntax ValueProp ::= "joinBytes'" "(" Type "," List "," List ")" [function]
+     //add type checking
      rule dumbRead'(
           _,
           _,
           T:Type,
           0,
           Bytes:List)
-          => joinBytes(T, dataList(Bytes))
+          => joinBytes(T, dataList(Bytes)):>Int
 
      rule joinBytes(T:Type, dataList(L:List)) 
           => joinBytes'(T, L, ListItem(piece(0,0)))

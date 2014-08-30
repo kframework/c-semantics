@@ -17,9 +17,9 @@ sub aTest {
 	print $fh $testProgram;
 	close($fh);
 	print "Running: $kcc -o $compiled $filename...\n";
-	system("$kcc -o $compiled $filename") == 0
+	system("$kcc -d -o $compiled $filename") == 0
 		or die "There was a problem compiling the test program.  The return value from kcc was: $?";
-
+        print "start loading results in $compiled...\n";
 	open P,"$compiled |" or die "Error running compiled program!";
 	my @data=<P>;
 	close P;

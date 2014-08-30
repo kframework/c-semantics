@@ -77,7 +77,12 @@ module LIBC-STDIO
           [structural]
 
      syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
+
+     //TODO(liyili): might not need this if we have hybrid label
      syntax C ::= vpair(K, K) [hybrid, strict]
+     syntax KResult ::= vpairResult(K, K)
+
+     rule vpair(K:KResult,K':KResult) => vpairResult(K,K')
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
@@ -224,7 +229,7 @@ module LIBC-STDIO
      rule formatter-next(varg(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
-     rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
+     rule <k> formatter-arg(vpairResult(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
           <format-arg> _ => K:K </format-arg>

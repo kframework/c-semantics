@@ -62,15 +62,15 @@ sub main {
 
       my $argc = $#ARGV + 2;
       my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
-
       my %krun_args = (
                   '--output' => 'pretty', 
+                  '--smt' => 'none' ,
                   '--output-file' => $fileOutput, 
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
-                  '--load-cfg' => $fileInput
+                  '--parser "kast --parser binary"' => $fileInput
                   );
 
       my @options = ();

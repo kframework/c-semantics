@@ -621,7 +621,7 @@ module C-SYNTAX
      syntax Constant ::= LitUL(K) [function]
      syntax Constant ::= LitULL(K) [function]
 
-     syntax Constant ::= NoSuffix(K)
+     syntax Constant ::= NoSuffix(K) [function]
 
      syntax Constant ::= CharLiteral(Int) [function]
      syntax Constant ::= WCharLiteral(Int) [function]

@@ -281,11 +281,14 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= copyBytes(Int, SymBase, SymBase)
+ 
+     //use KLabel notation for map lookup
+     syntax priority Map:lookup > '_|->_
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>... 
                Old |-> object(_, _, M:Map)
-               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
+               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M [ N' -Int 1]<:K))
           ...</mem>
           requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]   

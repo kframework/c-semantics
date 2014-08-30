@@ -34,12 +34,14 @@ module C-CHECK-LOC
                andBool notBool (Base in keys(Links))
           [structural]
 
-     syntax KItem ::= checkOffsets(Int, Int) [function]
-     rule checkOffsets(Offset:Int, Len:Int) => .
+     syntax KItem ::= checkOffsets(Int, Int)
+     rule checkOffsets(Offset:Int, Len:Int) => .K
           requires (Offset <=Int Len) andBool (Offset >=Int 0)
+	  [structural]
      rule checkOffsets(Offset:Int, Len:Int) => errorLocBounds
           requires (Offset >Int Len) orBool (Offset <Int 0)
-
+          [structural]
+	  
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"
      rule errorLocInvalid
@@ -92,12 +94,12 @@ module C-CHECK-LOC
 	  => #checkRestrict(Bases,.K,S,S') 
 	  requires Bases <=Set Bases'  
      rule #checkRestrict(Bases:Set,set(Bases':Set),S:Set,S':Set)
-	  => #checkRestrict(Bases,.K,S,set(Bases') S')
+	  => #checkRestrict(Bases,.K,S,SetItem(set(Bases')) S')
 	  requires notBool (Bases <=Set Bases')  
 
 
      rule #checkRestrict(Bases:Set,set(Bases':Set),.Set,S:Set)
-	  => (set(Bases':Set) S)
+	  => (SetItem(set(Bases':Set)) S)
 	  requires notBool (Bases <=Set Bases')  
 
      rule (. => checkRestrict'(B))

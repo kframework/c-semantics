@@ -112,7 +112,7 @@ sub performTest {
 	my $allFiles = join(' ',@allFilenames);
 	my $timer = [gettimeofday];
 	
-	my $kccCompileOutput = `$kcc -o $kccFilename $allFiles 2>&1`;
+	my $kccCompileOutput = `$kcc -o -d $kccFilename $allFiles 2>&1`;
 	my $kccCompileRetval = $?;
 	# my $encodedOut = HTML::Entities::encode_entities($kccCompileOutput);
 	
