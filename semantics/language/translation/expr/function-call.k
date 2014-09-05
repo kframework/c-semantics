@@ -37,7 +37,7 @@ module C-EXPR-FUNCTION-CALL
           requires (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
           [structural]
-     rule (. => ERROR("EFC1", "function call with incomplete or invalid return type.",
+     rule (.K => ERROR("EFC1", "function call with incomplete or invalid return type.",
                "6.5.2.2p2"))
           ~> Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, _))))), rvlist(_))
           requires notBool (isCompleteType(T) orBool isVoidType(T))
@@ -46,7 +46,7 @@ module C-EXPR-FUNCTION-CALL
 
      rule bindParam(_, T:Type, V:TypedValue)
           => allowInit(Computation(lv(symVal, T) := V))
-     rule bindParam(_) => .
+     rule bindParam(_) => .K
 
 endmodule
 

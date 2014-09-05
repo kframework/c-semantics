@@ -73,7 +73,7 @@ sub main {
                   '--io' => 'on', 
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
-                  '--load-cfg' => $fileInput
+                  '--parser "kast --parser binary"' => $fileInput
                   );
 
       my @options = ();

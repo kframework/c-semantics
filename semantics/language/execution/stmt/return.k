@@ -23,7 +23,7 @@ module C-STMT-RETURN
      assignment to an object having the return type of the function.
      }*/
 
-     rule <k> (. => deleteObject(Base)) ~> Return(_:KResult) ...</k>
+     rule <k> (.K => deleteObject(Base)) ~> Return(_:KResult) ...</k>
           <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
           [structural]
 
@@ -82,7 +82,7 @@ module C-STMT-RETURN
           requires notBool (Noreturn in Mods)
           [structural]
 
-     rule <k> (. => UNDEF("ESR1", "Return from a function declared _Noreturn.",
+     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
                     "6.7.4"))
                ~> Return(_)
           ...</k>

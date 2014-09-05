@@ -87,12 +87,12 @@ module C-COMMON-EXPR-ASSIGNMENT
           requires isBoolType(T') andBool isPointerType(T)
           [structural]
 
-     rule (. => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
+     rule (.K => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
           requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
-     rule (. => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
+     rule (.K => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(_, T:Type)
           requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
@@ -100,7 +100,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool notBool
                     ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
                     andBool areCompatible(innerType(T'), innerType(T)))
-     rule (. => CV("CEA3", "lvalue required as left operand in assignment.", ""))
+     rule (.K => CV("CEA3", "lvalue required as left operand in assignment.", ""))
           ~> tv(_, _) := tv(_, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{

@@ -43,7 +43,7 @@ module C-DECL-ZERO
                ~> zeroType(X, t(S:Set, arrayType(T, Len -Int 1)))
           requires Len >Int 0
           [structural]
-     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .
+     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .K
           [structural]
 
      rule zeroType(X:K, t(_, structType(_, _,
@@ -58,18 +58,18 @@ module C-DECL-ZERO
           => zeroType(X . F, T)
           [structural]
 
-     rule zeroType(_, T:Type) => .
+     rule zeroType(_, T:Type) => .K
           requires isFunctionType(T)
           [structural]
 
-     rule zeroType(_, t(_, flexibleArrayType(_))) => .
+     rule zeroType(_, t(_, flexibleArrayType(_))) => .K
           [structural]
 
      syntax KItem ::= zeroStruct(K, List)
      rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List)
           => zeroType(X . F, T) ~> zeroStruct(X, L)
           [structural]
-     rule zeroStruct(_, .List) => .
+     rule zeroStruct(_, .List) => .K
           [structural]
 
      syntax KItem ::= getZero(Type) [function]

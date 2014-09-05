@@ -30,7 +30,7 @@ module LIBC-STDIO
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
 
      rule [getString-pre]:
-          (. => read(Loc, t(.Set, char)))
+          (.K => read(Loc, t(.Set, char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 
@@ -120,7 +120,7 @@ module LIBC-STDIO
                     hrItem(tv(FD:Int, t(_, int))))
                => tv(0, t(.Set, int))
           ...</k>
-          (<file>... <fid> FD:Int </fid> ...</file> => .)
+          (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
           [structural]
 
      rule [fslOpenFile-pre]:
@@ -144,7 +144,7 @@ module LIBC-STDIO
                => tv(FD, t(.Set, int))
           ...</k>
           <files>...
-               (. =>
+               (.Bag =>
                     <file>...
                          <fid> FD </fid>
                          <uri> FileName </uri>
@@ -234,7 +234,7 @@ module LIBC-STDIO
           <k> formatter(str(S:String), VarArgs:KResult)
                => formatter-aux(VarArgs:KResult)
           ...</k>
-          (. =>
+          (.Bag =>
                <formatting>...
                     <format> stringToList(S:String) </format>
                ...</formatting>
@@ -255,7 +255,7 @@ module LIBC-STDIO
                     <format-state> "normal" </format-state>
                     <format-mods> .Map </format-mods>
                ...</formatting>
-               => .
+               => .Bag
           )
           [structural]
 

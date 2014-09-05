@@ -12,14 +12,14 @@ module C-CHECK-LOC
           [structural]
 
      syntax KItem ::= "checkLoc'" "(" SymLoc ")"
-     rule checkLoc'(NullPointer) => .
+     rule checkLoc'(NullPointer) => .K
           [structural]
      rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
                => checkOffsets(Offset, Len)
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, 0)) => . ...</k>
+     rule <k> checkLoc'(loc(Base:SymBase, 0)) => .K ...</k>
           <functions>... Base |-> _ ...</functions>
           [structural]
      rule <k> checkLoc'(loc((Base:SymBase => Base'), _)) ...</k>
@@ -35,7 +35,7 @@ module C-CHECK-LOC
           [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
-     rule checkOffsets(Offset:Int, Len:Int) => .
+     rule checkOffsets(Offset:Int, Len:Int) => .K
           requires (Offset <=Int Len) andBool (Offset >=Int 0)
      rule checkOffsets(Offset:Int, Len:Int) => errorLocBounds
           requires (Offset >Int Len) orBool (Offset <Int 0)
@@ -55,7 +55,7 @@ module C-CHECK-LOC
 
      // TODO(chathhorn): JRE: checkRestrict needs to be reworked in light of the
      // limitations of the java rewrite engine.
-     rule checkRestrict(_, _) => .
+     rule checkRestrict(_, _) => .K
           [structural]
 
      // // First, associate the restrict-qual'd pointer of this access with the
@@ -135,13 +135,13 @@ module C-CHECK-LOC
 
      // // Finally, do the actual checks.
      // syntax KItem ::= checkRestrict(Set, Set, Set)
-     // rule (. => checkRestrict'(B))
+     // rule (.K => checkRestrict'(B))
      //      ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
      //      [structural]
      // rule checkRestrict(.Set, Bases:Set, Bases':Set) => .
      //      requires Bases ==Set Bases'
      //      [structural]
-     // rule (. => UNDEF("ECL3",
+     // rule (.K => UNDEF("ECL3",
      //           "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
      //           "6.7.3.1:4"))
      //      ~> checkRestrict(.Set, Bases:Set, Bases':Set)
@@ -149,11 +149,11 @@ module C-CHECK-LOC
      //      [structural]
 
      // syntax KItem ::= "checkRestrict'" "(" Provenance ")"
-     // rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => . ...</k>
+     // rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => .K ...</k>
      //      <mem>... Base |-> object(T:Type, _, _) ...</mem>
      //      requires notBool isConstType(innerType(T))
      //      [structural]
-     // rule <k> (. => UNDEF("ECL4",
+     // rule <k> (.K => UNDEF("ECL4",
      //           "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.",
      //           "6.7.3.1:4"))
      //           ~> checkRestrict'(basedOn(Base:SymBase, _))

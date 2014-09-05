@@ -21,7 +21,7 @@ module C-DECL-RESOLUTION
 
      syntax KItem ::= allocateIncompleteTentative(CId, K)
 
-     rule <k> (. => allocateIncompleteTentative(X, Decl))
+     rule <k> (.K => allocateIncompleteTentative(X, Decl))
                ~> allocateIncompleteTentatives
           ...</k>
           <externals>...
@@ -31,12 +31,12 @@ module C-DECL-RESOLUTION
           <tu-id> Tu </tu-id>
           [structural]
 
-     rule <k> allocateIncompleteTentatives => . ...</k>
+     rule <k> allocateIncompleteTentatives => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           (<tu-linking-state>...
                <externals> .Map </externals>
-          ...</tu-linking-state> => .)
+          ...</tu-linking-state> => .Bag)
           // TODO(chathhorn): move
           <incomplete-tags> .Set </incomplete-tags>
           [structural]
@@ -48,7 +48,7 @@ module C-DECL-RESOLUTION
           [structural]
      rule allocateIncompleteTentative(_,
                declState(_, t(Mods:Set, _), State:DeclState, _))
-          => .
+          => .K
           requires State =/=K declared
                // TODO(chathhorn): ... and we do this inline function check in
                // addition to completing tentatives.
@@ -56,7 +56,7 @@ module C-DECL-RESOLUTION
           [structural]
      rule allocateIncompleteTentative(_,
                declState(_, t(Mods:Set, _), _, false))
-          => .
+          => .K
           requires notBool (Inline in Mods)
           [structural]
      rule allocateIncompleteTentative(X:CId,
@@ -73,7 +73,7 @@ module C-DECL-RESOLUTION
 
      syntax KItem ::= resolveReference(CId)
 
-     rule <k> (. => resolveReference(X)) ~> resolveReferences ...</k>
+     rule <k> (.K => resolveReference(X)) ~> resolveReferences ...</k>
           <external-uses> (SetItem(X:CId) => .Set) ...</external-uses>
           [structural]
 
@@ -108,7 +108,7 @@ module C-DECL-RESOLUTION
           requires notBool isLinkerLoc(Base)
           [structural]
 
-     rule <k> resolveReference(X:CId) => .  ...</k>
+     rule <k> resolveReference(X:CId) => .K  ...</k>
           <external-decls>...
                (X:CId |-> set(.Set) => .Map)
           ...</external-decls>
@@ -141,7 +141,7 @@ module C-DECL-RESOLUTION
           [structural]
 
      // Remember which TU has the definition of main.
-     rule <k> resolveReference(Identifier("main")) => . ...</k>
+     rule <k> resolveReference(Identifier("main")) => .K ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           <external-decls>...
                (Identifier("main") |-> set(.Set) => .Map)
@@ -156,7 +156,7 @@ module C-DECL-RESOLUTION
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     rule <k> resolveReferences => . ...</k>
+     rule <k> resolveReferences => .K ...</k>
           (<linking-state>...
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)

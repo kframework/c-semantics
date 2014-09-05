@@ -61,7 +61,7 @@ module C-EXPR-ASSIGNMENT
      // rule checkRestrictAssign(global, SetItem(Tag:RestrictTag) _)
      //      => UNDEF("CEA5", "Attempt to alias restrict qualified pointers associated with the incompatible blocks.", "")
      //      requires Tag =/=K global
-     rule checkRestrictAssign(_, .Set) => .
+     rule checkRestrictAssign(_, .Set) => .K
 
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
      // TODO(chathhorn): java port (keys).
@@ -73,14 +73,14 @@ module C-EXPR-ASSIGNMENT
      //           t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
      //           tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
      //      requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
-     // rule (. => UNDEF("CEA5",
+     // rule (.K => UNDEF("CEA5",
      //           "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
      //           "6.7.6.3:7"))
      //      ~> checkArrayStaticAssign(
      //           t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
      //           tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
      //      requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
-     rule (. => UNDEF("CEA6",
+     rule (.K => UNDEF("CEA6",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(_, tv(Loc:SymLoc, _))

@@ -89,7 +89,7 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (. => allocString(string(S), S))
+     rule <k> (.K => allocString(string(S), S))
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
@@ -98,7 +98,7 @@ module C-COMPOUND-LITERAL
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (. => allocWString(wstring(S), S))
+     rule <k> (.K => allocWString(wstring(S), S))
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>

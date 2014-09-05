@@ -36,7 +36,7 @@ module C-COMMON-EXPR-MEMBERS
           requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
-     rule <k> (. => UNDEF("CEM1",
+     rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
                ~> lval(_, t(Mods:Set, structType(_, _, _))) . _:CId
@@ -44,7 +44,7 @@ module C-COMMON-EXPR-MEMBERS
           <initializing> 0 </initializing>
           requires Atomic in Mods
           [structural]
-     rule <k> (. => UNDEF("CEM2",
+     rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
                "6.5.2.3:5"))
                ~> lval(_, t(Mods:Set, unionType(_, _, _))) . _:CId

@@ -45,7 +45,7 @@ module C-STMT-IF-THEN
      rule R:KResult ~> checkResult => R
      rule checkResult => noResult
 
-     rule maybeSymVal(noResult, noResult) => .
+     rule maybeSymVal(noResult, noResult) => .K
      rule maybeSymVal(tv(_, T:Type), tv(_, T:Type)) => tv(symVal, T)
      rule maybeSymVal(voidVal, voidVal) => voidVal
 

@@ -48,29 +48,29 @@ module C-TYPING-CANONICALIZATION
           => canonicalizeType-aux(deleteUnuseType(M), .K, .List, .List, .List)
           [structural]
 
-     rule (. => DeclType(K1, K2))
+     rule (.K => DeclType(K1, K2))
           ~> canonicalizeType-aux(_:List ListItem(TAtomic(K1:K, K2:K)), _, _, _, _)
           [structural]
-     rule (. => DeclType(K1, K2))
+     rule (.K => DeclType(K1, K2))
           ~> canonicalizeType-aux(_:List ListItem(AlignasType(K1:K, K2:K)), _, _, _, _)
           [structural]
-     rule (. => K)
+     rule (.K => K)
           ~> canonicalizeType-aux(_:List ListItem(AlignasExpression(K:K)), _, _, _, _)
           [structural]
 
-     rule (T:Type => .)
+     rule (T:Type => .K)
           ~> canonicalizeType-aux(
                _ (ListItem(TAtomic(_, _)) => .List), _, _, _,
                _ (.List => ListItem(atomic(T))))
           [structural]
 
      //might need to change this later
-     rule (T:Type => .)
+     rule (T:Type => .K)
           ~> canonicalizeType-aux(
                _ (ListItem(AlignasType(_, _)) => .List), _, _, _,
                _ (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
-     rule (tv(A:Int, _) => .)
+     rule (tv(A:Int, _) => .K)
           ~> canonicalizeType-aux(
                _ (ListItem(AlignasExpression(_)) => .List), _, _, _,
                _ (.List => ListItem(alignas(A))))
@@ -144,7 +144,7 @@ module C-TYPING-CANONICALIZATION
      If the specification of an array type includes any type qualifiers, the
      element type is so-qualified, not the array type. \ldots
      }*/
-     /*TODO: anywhere rule refactor
+     /*TODO(liyili2): anywhere rule refactor
      rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]

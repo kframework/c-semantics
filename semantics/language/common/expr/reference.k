@@ -35,10 +35,10 @@ module C-COMMON-EXPR-REFERENCE
                t(.Set, pointerType(T)))
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
+     rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(tv(_, _))
           [structural]
-     rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
+     rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
           ~> &(lval(Loc:SymLoc, _))
           requires isRegisterLoc(Loc)
           [structural]
@@ -60,13 +60,13 @@ module C-COMMON-EXPR-REFERENCE
                andBool ifFromArrayInBounds(Loc,
                     t(.Set, pointerType(t(.Set, char))), 1)
           [structural]
-     rule (. => UNDEF("CER3",
+     rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
                "6.5.3.2:4"))
           ~> *(tv(Loc:SymLoc, _))
           requires Loc ==K NullPointer
           [structural]
-     rule (. => UNDEF("CER4",
+     rule (.K => UNDEF("CER4",
                "Dereferencing a pointer past the end of an array.",
                "6.5.6:8"))
           ~> *(tv(Loc:SymLoc, _))

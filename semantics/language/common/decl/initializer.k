@@ -9,7 +9,7 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KItem ::= figureInit(CId, K, K) [strict(2)]
 
      // These are also used by compound literals.
-     //TODO: keep kresult in sort
+     //TODO(liyili2): keep kresult in sort
      syntax KResult ::= initValue(CId, Type, K)
 
      syntax KItem ::= singleIntInit(K) [strict]
@@ -39,7 +39,7 @@ module C-DECL-INITIALIZER
      rule <k> R:KResult ~> initDone => R ...</k>
           <initializing> I:Int => I -Int 1 </initializing>
           [structural]
-     rule <k> initDone => . ...</k>
+     rule <k> initDone => .K ...</k>
           <initializing> I:Int => I -Int 1 </initializing>
           [structural]
 
@@ -143,7 +143,7 @@ module C-DECL-INITIALIZER
                 | "fillInit-aux" "(" K ")"
 
      rule <k> getInit => initializer(K:K) ...</k>
-          <saved-init> K:K => . </saved-init>
+          <saved-init> K:K => .K </saved-init>
           <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
           [structural]
@@ -260,7 +260,7 @@ module C-DECL-INITIALIZER
                ListItem(typedDeclaration(_, #NoName)))
           => resultInFieldInfoList(matchResultOfSearchType)
 
-     rule <k> (. => searchInFieldInfoList(T, F, L)) ...</k>
+     rule <k> (.K => searchInFieldInfoList(T, F, L)) ...</k>
           <curr-subobject>
                (ListItem(next) (.List => ListItem(block)) ListItem(te(K:K . F:CId, T:Type)))
                ListItem(te(K:K, t(_, structType(_, _,
@@ -270,7 +270,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
-               => .
+               => .K
           ...</k>
           <curr-subobject>
                (ListItem(next) ListItem(block) ListItem(te(K:K . _, _))
@@ -279,7 +279,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     rule <k> resultInFieldInfoList(matchResultOfSearchType) => . ...</k>
+     rule <k> resultInFieldInfoList(matchResultOfSearchType) => .K ...</k>
           <curr-subobject>
                ListItem(next) (ListItem(block) ListItem(te(K:K . _, _)) => .List)
                ListItem(te(K:K, t(_, structType(_, _, _))))
@@ -310,7 +310,7 @@ module C-DECL-INITIALIZER
           ...</curr-object>
           requires isAggregateType(T) orBool isUnionType(T)
           [structural]
-     rule <k> finishCompoundInit(L:List) => . ...</k>
+     rule <k> finishCompoundInit(L:List) => .K ...</k>
           <curr-object>
                (ListItem(te(_:K, _:Type)) => .List)
           ...</curr-object>
@@ -384,11 +384,11 @@ module C-DECL-INITIALIZER
 
      syntax KItem ::= initializeSingleInit(K)
 
-     rule (. => typeof(K)) ~> initializeSingleInit(K:K)
+     rule (.K => typeof(K)) ~> initializeSingleInit(K:K)
           [structural]
 
      // fixme want to exclude strings, but not normal arrays
-     rule <k> T':Type ~> initializeSingleInit(K':K) => . ...</k>
+     rule <k> T':Type ~> initializeSingleInit(K':K) => .K ...</k>
           <curr-subobject>
                (.List => ListItem(next)) ListItem(te(K:K, T:Type))
           ...</curr-subobject>
@@ -396,7 +396,7 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               . => Computation(K := K')
+               .K => Computation(K := K')
           </saved-init>
           requires (isBasicType(T)
                     orBool isPointerType(T)
@@ -432,7 +432,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      // fixme unsafe, might have started to initialize other things
-     rule <k> initFromStructRHS(K':K, t(_, structType(S:CId, _, _))) => . ...</k>
+     rule <k> initFromStructRHS(K':K, t(_, structType(S:CId, _, _))) => .K ...</k>
           <curr-subobject>
                ListItem(findStruct(t(_, structType(S:CId, _, _))))
                     ListItem(te(K:K, t(_, structType(S:CId, _, _)))) => ListItem(next)
@@ -530,9 +530,9 @@ module C-DECL-INITIALIZER
           requires isWCharType(T)
           [structural]
      // fixme not sure what happens in the case of   char *x = "";
-     rule fillInit-aux(SingleInit(stringLiteral(""))) => .
+     rule fillInit-aux(SingleInit(stringLiteral(""))) => .K
           [structural]
-     rule fillInit-aux(SingleInit(wstringLiteral(.List))) => .
+     rule fillInit-aux(SingleInit(wstringLiteral(.List))) => .K
           [structural]
 
      // This rule assumes all unrollings have already occurred, so it needs to

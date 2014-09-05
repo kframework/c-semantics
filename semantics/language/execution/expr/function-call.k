@@ -53,14 +53,14 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KItem ::= revalParams(K)
                     | #revalParams(HeatList) [strict]
-     //TODO: context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     //TODO(liyili2): context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
 
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
           requires isAllKResultInHeatList(HL)
           [structural]
 
-     /*TODO: might need this later
+     /*TODO(liyili2): might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           requires all(L, isKResult)
           [structural]
@@ -96,7 +96,7 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           requires areCompatible(CallT, DefT)
           [structural]
-     rule (. => ERROR("FC1", "attempt to call the function " +String
+     rule (.K => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
           requires notBool areCompatible(CallT, DefT)
@@ -130,7 +130,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-function> CurrFun:K => X </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
-               (C:Bag => <control-details>... . ...</control-details>)
+               (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
 

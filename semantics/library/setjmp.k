@@ -40,7 +40,7 @@ module LIBC-SETJMP
      // there seems to be a problem here related to locals.  what if longjmp is
      // never called?
      rule [ignoreLocals]:
-          <k> ignoreLocals => . ...</k>
+          <k> ignoreLocals => .K ...</k>
           <local-addresses> _ => .Set </local-addresses>
           [structural]
 

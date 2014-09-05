@@ -63,7 +63,7 @@ module LIBC-IO
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
           <file-commands>...
-               . => f-flush(FD)
+               .K => f-flush(FD)
           </file-commands>
           [structural]
      rule [f-flush]:
@@ -90,16 +90,16 @@ module LIBC-IO
                andBool notBool (NOIO  in Opts)
           [structural]
      rule <file-commands>
-               f-sendString(_, _) => .
+               f-sendString(_, _) => .K
           ...</file-commands>
           <options> SetItem(NOIO) ...</options>
           [structural]
      rule [sendString-done]:
-          <file-commands> f-sendString(_, "") => . ...</file-commands>
+          <file-commands> f-sendString(_, "") => .K ...</file-commands>
           [structural]
 
      rule [f-sent]:
-          <file-commands> f-sent(FD:Int, S:String) => . ...</file-commands>
+          <file-commands> f-sent(FD:Int, S:String) => .K ...</file-commands>
           <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>

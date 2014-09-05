@@ -89,7 +89,7 @@ module C-STMT-SWITCH
                tv(_, T:Type), _)
           requires T =/=K T'
           [structural]
-     rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .
+     rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .K
           requires V =/=K V'
           [structural]
      //  match found in value and type, goto it

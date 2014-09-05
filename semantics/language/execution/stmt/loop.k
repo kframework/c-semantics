@@ -131,7 +131,7 @@ module C-STMT-LOOP
      }
      */
      rule [continue]:
-          Continue ~> ((L:KLabel)(_) => .)
+          Continue ~> ((L:KLabel)(_) => .K)
           requires (L =/=KLabel 'loopMarked)
                andBool (L =/=KLabel 'popBlock)
                andBool (L =/=KLabel 'pushBlock)
@@ -159,7 +159,7 @@ module C-STMT-LOOP
           [structural]
 
      rule [popLoop-popBlock]:
-          <k> (. => popBlock) ~> popLoop ...</k>
+          <k> (.K => popBlock) ~> popLoop ...</k>
           <block-history> ListItem(Num:Int) ...</block-history>
           <loop-stack> ListItem(kpair(Num':Int, _)) ...</loop-stack>
           requires Num' =/=Int Num

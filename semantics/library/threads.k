@@ -52,7 +52,7 @@ module LIBC-THREADS
                Status:Map => Status[ThId:Int <- threadRunning]
           </thread-status>
           <br/>
-          (. =>
+          (.Bag =>
           <thread>...
                <next-loc> 0 @ thread(ThId:Int) </next-loc>
                <thread-id> ThId:Int </thread-id>
