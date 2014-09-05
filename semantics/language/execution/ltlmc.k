@@ -194,7 +194,7 @@ module C-LTLMC
           T:Type,
           0,
           Bytes:List)
-          => joinBytes(T, dataList(Bytes)):>Int
+          => joinBytes(T, dataList(Bytes))
 
      rule joinBytes(T:Type, dataList(L:List))
           => joinBytes'(T, L, ListItem(piece(0, 0)))
