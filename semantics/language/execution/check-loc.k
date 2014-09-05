@@ -55,7 +55,7 @@ module C-CHECK-LOC
 
      // TODO(chathhorn): JRE: checkRestrict needs to be reworked in light of the
      // limitations of the java rewrite engine.
-     rule checkRestrict(_, _) => .
+     rule checkRestrict(_, _) => .K
           [structural]
 
      // // First, associate the restrict-qual'd pointer of this access with the

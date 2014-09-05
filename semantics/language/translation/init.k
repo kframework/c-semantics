@@ -24,7 +24,7 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     //TODO: write to stdout does not work
+     //TODO(liyili2): write to stdout does not work
      rule <k> link
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
@@ -250,7 +250,7 @@ module C-TRANSLATION-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     //TODO: write to stdout not work currently
+     //TODO(liyili2): write to stdout not work currently
      syntax KItem ::= "printSuccess"
      rule printSuccess => #write(1, "Translation successful!\n")
 

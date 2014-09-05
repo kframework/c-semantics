@@ -318,7 +318,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>...
                Old |-> object(_, _, M:Map)
-               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]))
+               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]<:K))
           ...</mem>
           requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]
@@ -486,7 +486,7 @@ module C-IO-BUFFERED
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
           requires (Offset =/=Int 0)
                andBool (Offset1 <=Int Offset)
-     //TODO: why it is nessary here
+     //TODO(liyili2): why it is nessary here
      syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))

@@ -6,7 +6,7 @@ module LIBC-MATH
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     //TODO: HeatList might be temporal
+     //TODO(liyili2): HeatList might be temporal
      rule [sqrt]:
           prepareBuiltin(Identifier("sqrt"),
                hrItem(tv(F:Float, t(_, double))))

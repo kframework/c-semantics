@@ -8,7 +8,7 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-TYPING-SYNTAX
 
      syntax KItem ::= getTypes(List)
-     //TODO: overcome the context associative matching
+     //TODO(liyili2): overcome the context associative matching
      //context types(_:List ListItem(HOLE) _:List)
      syntax KItem ::= convertedType(K) [strict]
 
@@ -27,7 +27,7 @@ module C-COMMON-EXPR-CONDITIONAL
 
      syntax TypeResult ::= trItem(K)
 
-     //TODO: might not need this list in the future.
+     //TODO(liyili2): might not need this list in the future.
      syntax TypeList ::= List{TypeItem,"ts::"} [strict]
      syntax List ::= tListToList(TypeList) [function]
 

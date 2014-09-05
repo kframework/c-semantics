@@ -144,7 +144,7 @@ module C-TYPING-CANONICALIZATION
      If the specification of an array type includes any type qualifiers, the
      element type is so-qualified, not the array type. \ldots
      }*/
-     /*TODO: anywhere rule refactor
+     /*TODO(liyili2): anywhere rule refactor
      rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]

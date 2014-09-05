@@ -9,7 +9,7 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KItem ::= figureInit(CId, K, K) [strict(2)]
 
      // These are also used by compound literals.
-     //TODO: keep kresult in sort
+     //TODO(liyili2): keep kresult in sort
      syntax KResult ::= initValue(CId, Type, K)
 
      syntax KItem ::= singleIntInit(K) [strict]

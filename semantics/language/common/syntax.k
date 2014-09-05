@@ -3,8 +3,9 @@ module C-SYNTAX
      syntax KItem ::= reval(K) [semantic, context(result(KResult))]
      syntax KItem ::= peval(K) [semantic]
 
-     //TODO: might not need this list in the future.
-     syntax HeatItem ::= hItem(K) [strict(1(context('reval)))]
+     //TODO(liyili2): might not need this list in the future.
+     syntax HeatItem ::= hItem(K)
+     context hItem(HOLE => reval(HOLE)) [ndheat]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]
      syntax HeatList ::= toHeatList(List) [function]
@@ -624,7 +625,7 @@ module C-SYNTAX
      syntax Constant ::= LitULL(Constant)
      syntax Constant ::= LitF(Constant)
 
-     syntax Constant ::= NoSuffix(K)
+     syntax Constant ::= NoSuffix(K) [function]
 
      syntax Constant ::= CharLiteral(Int)
      syntax Constant ::= WCharLiteral(Int)
