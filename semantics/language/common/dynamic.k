@@ -108,7 +108,6 @@ module C-DYNAMIC
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"
 
-     //Add :>Expression to cast the target into a Expression 
      rule NothingExpression => emptyValue
           [structural]
 
