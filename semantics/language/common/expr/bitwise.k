@@ -46,26 +46,26 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
-     rule (. => CV("CEB1",
+     rule (.K => CV("CEB1",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) << tv(_, T2:Type)
           requires notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
           [structural]
-     rule (. => UNDEF("CEB2",
+     rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
           ~> tv(_, _) << tv(E2:Int, _)
           requires E2 <Int 0
           [structural]
-     rule (. => UNDEF("CEB3",
+     rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) << tv(E2:Int, _)
           requires E2 >=Int bitSizeofType(T1)
           [structural]
-     rule (. => UNDEF("CEB4",
+     rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
                "6.5.7:4"))
           ~> tv(E1:Int, _) << tv(_, _)
@@ -88,26 +88,26 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
-     rule (. => CV("CEB5",
+     rule (.K => CV("CEB5",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) >> tv(_, T2:Type)
           requires notBool hasIntegerType(T1)
                orBool notBool hasIntegerType(T2)
           [structural]
-     rule (. => UNDEF("CEB6",
+     rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
           ~> tv(_, _) >> tv(E2:Int, _)
           requires E2 <Int 0
           [structural]
-     rule (. => UNDEF("CEB7",
+     rule (.K => UNDEF("CEB7",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
           ~> tv(_, T1:Type) >> tv(E2:Int, _)
           requires E2 >=Int bitSizeofType(T1)
           [structural]
-     rule (. => UNSPEC("CEB8",
+     rule (.K => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
                "6.5.7:5"))
           ~> tv(E1:Int, _) >> tv(_, _)
@@ -127,7 +127,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB9",
+     rule (.K => CV("CEB9",
                "both bitwise AND operands must have integer type.",
                "6.5.10:2"))
           ~> tv(_, T1:Type) & tv(_, T2:Type)
@@ -148,7 +148,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB10",
+     rule (.K => CV("CEB10",
                "both bitwise exclusive OR operands must have integer type.",
                "6.5.11:2"))
           ~> tv(_, T1:Type) ^ tv(_, T2:Type)
@@ -169,7 +169,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule (. => CV("CEB11",
+     rule (.K => CV("CEB11",
                "both bitwise inclusive OR operands must have integer type.",
                "6.5.12:2"))
           ~> tv(_, T1:Type) | tv(_, T2:Type)
@@ -189,7 +189,7 @@ module C-COMMON-EXPR-BITWISE
      syntax KItem ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
           requires notBool isNegZero(N, T)
-     rule (. => UNDEF("CEB12",
+     rule (.K => UNDEF("CEB12",
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be trap representation.

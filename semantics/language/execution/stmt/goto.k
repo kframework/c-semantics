@@ -200,7 +200,7 @@ module C-STMT-GOTO
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
      rule [processGoto-pop-differing]:
-          <k> (. => popBlock)
+          <k> (.K => popBlock)
                ~> processGoto(gotoObject(_,
                     (resultInGotoObjectList(.List, .List, Store:List)
                => Store), _, _, _))
@@ -224,7 +224,7 @@ module C-STMT-GOTO
           requires ActualDepth +Int 1 =/=Int TargetDepth
           [structural]
 
-     rule <k> ( . => pushBlock
+     rule <k> ( .K => pushBlock
                ~> addToHistory(TargetBlk)
                ~> addVariablesForBlock(TargetBlk, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int,
@@ -285,11 +285,11 @@ module C-STMT-GOTO
 
      syntax KItem ::= "enableInits"
 
-     rule <k> enableInits => . ...</k>
+     rule <k> enableInits => .K ...</k>
           <should-init> _ => true </should-init>
           [structural]
 
-     rule <k> (. => Decl:K
+     rule <k> (.K => Decl:K
                     ~> enableInits
                )
                ~> addVariablesForBlock(TargetBlock:Int,
@@ -304,7 +304,7 @@ module C-STMT-GOTO
           [structural]
 
      //  fixme this is wrong
-     rule addVariablesForBlock(_:Int, .List) => .
+     rule addVariablesForBlock(_:Int, .List) => .K
           [structural]
 
 endmodule

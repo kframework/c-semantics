@@ -5,7 +5,7 @@ endmodule
 module C-SEQUENCE-POINT
      imports C-SEQUENCE-POINT-SYNTAX
      rule [sequencePoint]:
-          <k> sequencePoint => . ...</k>
+          <k> sequencePoint => .K ...</k>
           <locs-written> _ => .List </locs-written>
           [structural]
 endmodule

@@ -96,7 +96,7 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           requires areCompatible(CallT, DefT)
           [structural]
-     rule (. => ERROR("FC1", "attempt to call the function " +String
+     rule (.K => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
           requires notBool areCompatible(CallT, DefT)
@@ -130,7 +130,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-function> CurrFun:K => X </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
-               (C:Bag => <control-details>... . ...</control-details>)
+               (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
 

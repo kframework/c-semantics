@@ -33,21 +33,21 @@ module C-BINDING
      // builtin, so we need to make up identifiers.
 
      // Prototype.
-     rule (. => bindParam(X, T, V))
+     rule (.K => bindParam(X, T, V))
           ~> bind(
                (ListItem(typedDeclaration(_, X:CId)) => .List) _,
                (ListItem(T:Type) => .List) _,
                (ListItem(V:TypedValue) => .List) _)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
-     rule (. => bindParam(X, T, argPromote(V)))
+     rule (.K => bindParam(X, T, argPromote(V)))
           ~> bind(
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:TypedValue) => .List) _)
           requires #arePromotedTypesCompat(value(V), T, type(V)) ==K true
           [structural]
-     rule (. => ERROR("B1", "types of function call arguments aren't "
+     rule (.K => ERROR("B1", "types of function call arguments aren't "
                +String "compatible with declared types after promotions."))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
@@ -63,10 +63,10 @@ module C-BINDING
      rule bind(ListItem(typedDeclaration(t(_, void), _)),
                ListItem(t(_, void)),
                .List)
-          => .
+          => .K
           [structural]
      // Builtins -- they have a prototype but no def.
-     rule <k> (. => bindParam(unnamed(N, Tu), T, V))
+     rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
           ~> bind(
                .List,
                (ListItem(T:Type) => .List) _,
@@ -82,13 +82,13 @@ module C-BINDING
           => bindVariadics(Vs, 0)
           [structural]
      // Builtins, no params.
-     rule bind(.List, ListItem(t(_, void)), _) => .
+     rule bind(.List, ListItem(t(_, void)), _) => .K
           [structural]
-     rule bind(.List, .List, .List) => .
+     rule bind(.List, .List, .List) => .K
           [structural]
 
      syntax KItem ::= bindVariadics(List, Int)
-     rule (. => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
+     rule (.K => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
           ~> bindVariadics(
                (ListItem(V:TypedValue) => .List) _,
                (N:Int => N +Int 1))

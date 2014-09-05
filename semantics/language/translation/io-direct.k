@@ -23,7 +23,7 @@ module C-IO-DIRECT
           requires I >Int 0
           [structural]
 
-     rule <k> writeBytes(_, _, _) => . ...</k>
+     rule <k> writeBytes(_, _, _) => .K ...</k>
           <initializing> 0 </initializing>
           [structural]
 
@@ -32,17 +32,17 @@ module C-IO-DIRECT
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
 
-     rule writeBytes(_, dataList(.List)) => .
+     rule writeBytes(_, dataList(.List)) => .K
           [structural]
 
-     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]))
           ...</mem>
           requires (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
 
-     rule (. => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
+     rule (.K => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
           requires isSymbolic(V)
           [structural]

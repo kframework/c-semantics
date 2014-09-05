@@ -2,7 +2,7 @@ module C-STMT-GOTO
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule <k> Goto(Lbl:CId) => . ...</k>
+     rule <k> Goto(Lbl:CId) => .K ...</k>
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

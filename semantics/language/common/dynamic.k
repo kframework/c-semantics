@@ -83,10 +83,10 @@ module C-DYNAMIC
           <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural]
 
-     rule _:KResult ~> discard => .
+     rule _:KResult ~> discard => .K
           [structural]
 
-     rule discard => .
+     rule discard => .K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
@@ -99,7 +99,7 @@ module C-DYNAMIC
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule Pragma(_:K) => .
+     rule Pragma(_:K) => .K
           [structural]
 
      rule AttributeWrapper(K:K, _) => K

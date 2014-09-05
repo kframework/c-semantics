@@ -80,7 +80,7 @@ module C-DECL-LOCAL
           [structural]
      // Same as above, but for the case where the variable has already been
      // declared. This is seen if we goto earlier in the same block.
-     rule <k> declareOnly(X:CId, T:Type) => . ...</k>
+     rule <k> declareOnly(X:CId, T:Type) => .K ...</k>
           <local-vars> Vars:List </local-vars>
           requires isCompleteType(T) andBool X in Vars
           [structural]
@@ -142,7 +142,7 @@ module C-DECL-LOCAL
      rule justInit(initValue(_, _, K:K)) => allowInit(K) ~> sequencePoint
           [structural]
 
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
+     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs> Structs:Map => Structs[X <- Info] </structs>
           [structural]
 endmodule

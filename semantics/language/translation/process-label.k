@@ -33,7 +33,7 @@ module C-PROCESS-LABEL
           <tu-id> Tu </tu-id>
           <goto-map> M:Map => M[F <- map(.Map)] </goto-map>
           <goto-map-calc>
-               . => (<goto-calc>...
+               .Bag => (<goto-calc>...
                          <computation>
                               K ~> Return(NothingExpression)
                          </computation>
@@ -43,18 +43,18 @@ module C-PROCESS-LABEL
 
      rule (<goto-calc>
                <computation> .K </computation>
-          ...</goto-calc>) => .
+          ...</goto-calc>) => .Bag
           [structural]
 
-     rule <k> waitingOnGotoMap => . ...</k>
-          <goto-map-calc> . </goto-map-calc>
+     rule <k> waitingOnGotoMap => .K ...</k>
+          <goto-map-calc> .Bag </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural]
-     rule <k> waitingOnGotoMap => . ...</k>
-          <goto-map-calc> . </goto-map-calc>
+     rule <k> waitingOnGotoMap => .K ...</k>
+          <goto-map-calc> .Bag </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
@@ -157,7 +157,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc>
                     <computation> S </computation>
                     <computation-tail>
@@ -196,7 +196,7 @@ module C-PROCESS-LABEL
                </goto-block-history>
                <goto-loop-stack> OldLoopStack:List </goto-loop-stack>
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc>
                     <computation> S </computation>
                     <computation-tail>
@@ -219,9 +219,9 @@ module C-PROCESS-LABEL
 
      rule [compute-label-while-mark]:
           <computation>
-               (. => S ~> loopMarked)
+               (.K => S ~> loopMarked)
                ~> While(_:K, S:K)
-               ~> (. => popLoop)
+               ~> (.K => popLoop)
                ~> K:K
           </computation>
           <computation-tail> Tail:K </computation-tail>
@@ -244,14 +244,14 @@ module C-PROCESS-LABEL
                <computation-tail> Tail:K </computation-tail>
                B:Bag
           </goto-calc>
-          (. =>
+          (.Bag =>
                <goto-calc>
                     <computation> S1 </computation>
                     <computation-tail> K ~> Tail </computation-tail>
                     B
                </goto-calc>
           )
-          (. =>
+          (.Bag =>
                <goto-calc>
                     <computation> S2 </computation>
                     <computation-tail> K ~> Tail </computation-tail>

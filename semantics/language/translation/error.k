@@ -33,13 +33,13 @@ module C-TRANSLATION-ERROR
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
 
      // rule [err00046]:
-     //      (. => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
+     //      (.K => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
      //      concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
      //      requires hasFloatType(T) andBool (N >=Int 0)
      //      [structural]
 
 // TODO(chathhorn): add this back.
-//      rule <k> (. => ERROR("00215",
+//      rule <k> (.K => ERROR("00215",
 //                "Found multiple declarations of " +String S
 //                +String " with incompatible types.", 15)) ~>
 //                verifyCompat(T:Type, Identifier(S:String))

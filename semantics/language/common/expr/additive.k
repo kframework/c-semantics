@@ -98,7 +98,7 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           requires ifFromArrayInBounds(Loc, T, I)
           [structural]
-     rule (. => ERROR("CEA1",
+     rule (.K => ERROR("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
                (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
@@ -166,7 +166,7 @@ module C-COMMON-EXPR-ADDITIVE
                andBool (Diff /Int Size) <=Int max(cfg:ptrdiffut)
                andBool (Diff /Int Size) >=Int min(cfg:ptrdiffut)
           [structural]
-     rule (. => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
+     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
                "6.5.6"))
           ~> computePointerDifference(Diff:Int, Size:Int)
           requires (Diff /Int Size) >Int max(cfg:ptrdiffut)

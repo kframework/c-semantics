@@ -185,7 +185,7 @@ module COMPAT
      rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S)
           ~> krlist( _:List (.List => L))
           [structural]
-     rule toKRList'(.SubKRList) => .
+     rule toKRList'(.SubKRList) => .K
           [structural]
 
      rule reverseList(.List) => .List

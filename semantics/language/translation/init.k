@@ -63,7 +63,7 @@ module C-TRANSLATION-INIT
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
-               (. => <tu>...
+               (.Bag => <tu>...
                     <tu-id> TU </tu-id>
                     <next-link-loc> 0 @ link(TU) </next-link-loc>
                     <next-static-loc> 0 @ static(TU) </next-static-loc>
@@ -86,7 +86,7 @@ module C-TRANSLATION-INIT
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
 
-     rule <k> (. => addBuiltin(Identifier(B), T))
+     rule <k> (.K => addBuiltin(Identifier(B), T))
                ~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
 
      rule addBuiltins(.Map) => .K
@@ -101,21 +101,21 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs))
 
-     rule <k> addBuiltin(B:CId, _) => . ...</k>
+     rule <k> addBuiltin(B:CId, _) => .K ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
           requires (B in keys(Defs))
                orBool (notBool (B in keys(Types)))
 
      syntax KItem ::= checkMerge(Bag, Bag)
-     rule checkMerge(_, _) => .
+     rule checkMerge(_, _) => .K
      // TODO(chathhorn): need to rework in light of the silly limitations on
      // matching keys.
      // rule checkMerge(_, .Bag) => .
      // rule checkMerge(.Bag, _) => .
      // rule checkMerge(
      //      (<global>...
-     //           <external-types> X:CId |-> _ => . ...</external-types>
+     //           <external-types> X:CId |-> _ => .Map ...</external-types>
      //      ...</global>),
      //      (<global>...
      //           <external-types> Types':Map </external-types>
@@ -123,7 +123,7 @@ module C-TRANSLATION-INIT
      //      requires notBool (X in keys(Types'))
      // rule checkMerge(
      //      (<global>...
-     //           <external-defs> X:CId |-> _ => . ...</external-defs>
+     //           <external-defs> X:CId |-> _ => .Map ...</external-defs>
      //      ...</global>),
      //      (<global>...
      //           <external-defs> Defs':Map </external-defs>
@@ -134,7 +134,7 @@ module C-TRANSLATION-INIT
      //           <external-types> Types:Map </external-types>
      //      ...</global>),
      //      (<global>...
-     //           <external-types> X:CId |-> _ => . ...</external-types>
+     //           <external-types> X:CId |-> _ => .Map ...</external-types>
      //      ...</global>))
      //      requires notBool (X in keys(Types))
      // rule checkMerge(
@@ -142,15 +142,15 @@ module C-TRANSLATION-INIT
      //           <external-defs> Defs:Map </external-defs>
      //      ...</global>),
      //      (<global>...
-     //           <external-defs> X:CId |-> _ => . ...</external-defs>
+     //           <external-defs> X:CId |-> _ => .Map ...</external-defs>
      //      ...</global>))
      //      requires notBool (X in keys(Defs))
      // rule checkMerge(
      //      (<global>...
-     //           <external-types> X:CId |-> T:Type => . ...</external-types>
+     //           <external-types> X:CId |-> T:Type => .Map ...</external-types>
      //      ...</global>),
      //      (<global>...
-     //           <external-types> X |-> T':Type => . ...</external-types>
+     //           <external-types> X |-> T':Type => .Map ...</external-types>
      //      ...</global>))
      //      requires areCompatible(T, T')
      // rule checkMerge(
@@ -162,7 +162,7 @@ module C-TRANSLATION-INIT
      //           <external-types> .Map </external-types>
      //           <external-defs> .Map </external-defs>
      //      ...</global>)) => .
-     // rule (. => UNDEF("TIN1",
+     // rule (.K => UNDEF("TIN1",
      //           "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
      //           "6.2.7:2"))
      //      ~> checkMerge(
@@ -173,7 +173,7 @@ module C-TRANSLATION-INIT
      //           <external-types>... X |-> T':Type ...</external-types>
      //      ...</global>))
      //      requires notBool areCompatible(T, T')
-     // rule (. => UNDEF("TIN2",
+     // rule (.K => UNDEF("TIN2",
      //           "Multiple external definitions for " +String idToString(X) +String ".",
      //           "6.9"))
      //      ~> checkMerge(

@@ -37,10 +37,10 @@ module C-SYMBOLIC-VALUE
      rule addProv(_:Provenance, symVal) => symVal
      rule stripProv(symVal) => symVal
 
-     rule write(symVal, _, T:Type) => .
+     rule write(symVal, _, T:Type) => .K
           requires notBool isConstType(T)
           [structural]
-     rule <k> write(symVal, _, _) => . ...</k>
+     rule <k> write(symVal, _, _) => .K ...</k>
           <initializing> I:Int </initializing>
           requires I >Int 0
           [structural]

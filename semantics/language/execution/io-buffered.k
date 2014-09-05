@@ -71,17 +71,17 @@ module C-IO-BUFFERED
      //                (.Map => Loc |-> byteSizeofType(T)))
      //      ...</modified>
      //      requires notBool Loc in keys(Modified)
-     rule setModified(_, _, .Set) => .
+     rule setModified(_, _, .Set) => .K
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
           ~> writeBytes(Loc +bytes 1, L)
           [structural]
-     rule writeBytes(_, .List) => .
+     rule writeBytes(_, .List) => .K
           [structural]
 
      syntax KItem ::= checkWrite(SymLoc, Type)
-     rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => . ...</k>
+     rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => .K ...</k>
           <thread-id> ThreadId:Int </thread-id>
           <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
           <locs-written>
@@ -101,7 +101,7 @@ module C-IO-BUFFERED
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
-     rule <k> (. => UNDEF("EIO1",
+     rule <k> (.K => UNDEF("EIO1",
                "Unsequenced side effect on scalar object with side effect of same object.",
                "6.5") )
                ~> checkWrite(Loc:SymLoc, _)
@@ -110,7 +110,7 @@ module C-IO-BUFFERED
           requires Loc in Locs:List
           [structural]
      // TODO(chathhorn): probably redundant.
-     rule <k> (. => UNDEF("EIO2",
+     rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
                "6.5.6:8"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
@@ -118,7 +118,7 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           requires Offset >=Int Len orBool Offset <Int 0
           [structural]
-     rule <k> (. => UNDEF("EIO3",
+     rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
@@ -126,7 +126,7 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
           requires (Const in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (. => UNDEF("EIO4",
+     rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
@@ -135,7 +135,7 @@ module C-IO-BUFFERED
           requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (. => UNSPEC("EIO5",
+     rule <k> (.K => UNSPEC("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
                "6.2.4:4-5"))
                ~> checkWrite(Loc:SymLoc, _)
@@ -145,7 +145,7 @@ module C-IO-BUFFERED
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
-     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
           [structural]
 
@@ -171,7 +171,7 @@ module C-IO-BUFFERED
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
-     rule <k> (. => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+     rule <k> (.K => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
                ~> readBytes(Loc:SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId:Int </thread-id>
@@ -318,7 +318,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>...
                Old |-> object(_, _, M:Map)
-               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M[N' -Int 1]<:K))
+               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> M [ N' -Int 1]<:K))
           ...</mem>
           requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]
@@ -327,17 +327,17 @@ module C-IO-BUFFERED
           <mem>... Old |-> object(_, _, M:Map) ...</mem>
           requires (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
           [structural]
-     rule copyBytes(0, _, _) => .
+     rule copyBytes(0, _, _) => .K
           [structural]
 
      syntax KItem ::= copyObjectType(SymBase, SymBase)
-     rule <k> copyObjectType(Old:SymBase, New:SymBase) => . ...</k>
+     rule <k> copyObjectType(Old:SymBase, New:SymBase) => .K ...</k>
           <mem>...
                Old |-> object(T:Type, _, _)
                New |-> object((_ => T), _, _)
           ...</mem>
 
-     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .
+     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .K
           ...</k>
           <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
@@ -372,12 +372,12 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
-     rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .
+     rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .K
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           requires notBool isNoType(T) orBool hasCharType(T':Type)
           [structural]
-     rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .
+     rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .K
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
           <effective-types>...
@@ -387,11 +387,11 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
-     rule checkEffectiveType(L:Type, Eff:Type) => .
+     rule checkEffectiveType(L:Type, Eff:Type) => .K
           requires (#effectivelyCompat(L, Eff) ==K true)
                orBool isNoType(Eff)
           [structural]
-     rule (. => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
+     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
           ~> checkEffectiveType(L:Type, Eff:Type)
           requires (#effectivelyCompat(L, Eff) =/=K true)
                andBool notBool isNoType(Eff)

@@ -125,7 +125,7 @@ module C-EXECUTION-INIT
                ...</thread>
           </threads>
           <files>...
-               ( . =>
+               ( .Bag =>
                <file>...
                     <fid> 0 </fid>
                     <uri> stdinStr </uri>
@@ -215,12 +215,12 @@ module C-EXECUTION-INIT
                     <thread-id> 0 </thread-id>
                     <k> V:KResult </k>
                ...</thread>
-          ...</exec> => .)
+          ...</exec> => .Bag)
           <status> _ => mainExited </status>
           <result-value> .K => V </result-value>
           <files>...
                // Flush stdout.
-               <file-commands>... (. => f-flush(1)) </file-commands>
+               <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
 endmodule

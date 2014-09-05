@@ -31,7 +31,7 @@ module C-ERROR
 
      imports COMPAT-SYNTAX
 
-     rule assert(true, _) => .
+     rule assert(true, _) => .K
      rule assert(A:KResult, K:K) => K
           requires A =/=K true
 
@@ -76,7 +76,7 @@ module C-ERROR
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
-     rule <k> (. => ERROR("CID1",
+     rule <k> (.K => ERROR("CID1",
                "Trying to look up identifier " +String S +String
                ", but no such identifier is in scope.",
                (305,, 332)) )
@@ -87,7 +87,7 @@ module C-ERROR
           requires (notBool (Identifier(S:String) in keys(Env)))
                andBool (notBool (Identifier(S:String) in keys(Types)))
           [structural]
-     rule <k> (. => ERROR("CID2",
+     rule <k> (.K => ERROR("CID2",
                "No definition found for identifier " +String S +String ".") )
                ~> Identifier(S:String)
           ...</k>
