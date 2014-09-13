@@ -16,7 +16,8 @@ module C-EXPR-FUNCTION-CALL
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
-     
+
+     context Call((HOLE => reval(HOLE)), _)
      context Call(_, (HOLE => revalParams(HOLE)))
 
      rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, P:List))))), rvlist(L:List))

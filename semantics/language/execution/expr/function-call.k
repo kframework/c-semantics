@@ -47,21 +47,17 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     syntax K ::= "Call'" "(" K "," K ")"
-     syntax KResult ::= rvlist(List)
+     context Call((HOLE => reval(HOLE)), _) [ndheat]
+     context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
-     syntax K ::= revalParams(K)
-     context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
-     rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          when all(L, isKResult)
+     // Strip prov.
+     rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _), _)
           [structural]
-
-     rule Call(tv(Loc:SymLoc, T:Type), K:K)
-          => sequencePoint ~> Call'(tv(stripProv(Loc), T), K)
-
-     context Call'(_, (HOLE => revalParams(HOLE)))
-
-     rule <k> Call'(
+     // Resolve a linker loc to a real loc.
+     rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
+     rule <k> Call(
                tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
                rvlist(L:List))
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
@@ -69,9 +65,12 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:KResult ...</functions>
           when isFunctionType(T)
           [structural]
-     // Resolve a linker loc to a real loc.
-     rule <k> Call'(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
-          <linkings>... Base |-> Base':SymBase ...</linkings>
+
+     syntax K ::= revalParams(K)
+     syntax KResult ::= rvlist(List)
+     context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     rule revalParams(list(L:List)) => revalParams(rvlist(L))
+          when all(L, isKResult)
           [structural]
 
      syntax K ::= application(String, K, Type, List) [strict(2)]

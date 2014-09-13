@@ -562,7 +562,6 @@ module C-SYNTAX
 
      syntax Expression ::= "Call" "(" K "," K ")"
           [klabel('Call)] // K, List
-     context Call((HOLE => reval(HOLE)), _) [ndheat]
      /*
      | COMMA of expression list
      */
