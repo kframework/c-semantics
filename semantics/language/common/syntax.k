@@ -640,9 +640,9 @@ module C-SYNTAX
      */
 
      syntax KResult ::= "NoInit"
-     syntax InitExpression ::= SingleInit(K) [hybrid, strict]
+     syntax InitExpression ::= SingleInit(K) [strict]
      // List
-     syntax InitExpression ::= CompoundInit(K) [hybrid, strict]
+     syntax InitExpression ::= CompoundInit(K) [strict]
      // new; (initwhat * init_expression)
      syntax InitFragment ::= InitFragment(K, K)
 

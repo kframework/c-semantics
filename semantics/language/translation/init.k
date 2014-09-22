@@ -29,7 +29,7 @@ module C-TRANSLATION-INIT
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
                ~> resolveReferences
-               ~> printSuccess
+               ~> printSuccess("Translation successful!\n")
           ...</k>
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
@@ -45,7 +45,7 @@ module C-TRANSLATION-INIT
           ...</k>
           <global> ThisObj:Bag </global>
 
-     rule <k> link => printSuccess ...</k>
+     rule <k> link => printSuccess("Translation successful!\n") ...</k>
           <options> SetItem(NOLINK) ...</options>
 
      rule (<T>...
@@ -251,7 +251,9 @@ module C-TRANSLATION-INIT
           </global>
 
      //TODO(liyili2): write to stdout not work currently
-     syntax KItem ::= "printSuccess"
-     rule printSuccess => #write(1, "Translation successful!\n")
+     //syntax KItem ::= "printSuccess"
+     //rule printSuccess => #write(1, "Translation successful!\n")
+     syntax KItem ::= printSuccess(String)
+     rule printSuccess(S:String) => #write(1,S)
 
 endmodule

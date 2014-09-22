@@ -50,7 +50,7 @@ module C-TYPING-COMPATIBILITY
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
      rule #areCompat(T:Type, T) => true
-     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
+     rule #areCompat(t(Mods:Set, T:BaseType), t(Mods':Set, T)) => true
           requires sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should be a setting.
@@ -206,6 +206,7 @@ module C-TYPING-COMPATIBILITY
 
      // TODO(chathhorn): obnoxious unsupported map patterns thing.
      syntax Int ::= "getAlignas'" "(" K "," Set ")" [function]
+     rule getAlignas'(.K, .Set) => 1
      rule getAlignas'(.K, SetItem(K:K) Mods:Set) => getAlignas'(K, Mods)
      rule getAlignas'(alignas(A:Int), _) => A
      rule getAlignas'(K:K, Mods:Set) => getAlignas'(.K, Mods)

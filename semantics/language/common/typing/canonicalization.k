@@ -67,18 +67,18 @@ module C-TYPING-CANONICALIZATION
      //might need to change this later
      rule (T:Type => .K)
           ~> canonicalizeType-aux(
-               _ (ListItem(AlignasType(_, _)) => .List), _, _, _,
-               _ (.List => ListItem(alignas(byteAlignofType(T)))))
+               _:List (ListItem(AlignasType(_, _)) => .List), _, _, _,
+               _:List (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
      rule (tv(A:Int, _) => .K)
           ~> canonicalizeType-aux(
-               _ (ListItem(AlignasExpression(_)) => .List), _, _, _,
-               _ (.List => ListItem(alignas(A))))
+               _:List (ListItem(AlignasExpression(_)) => .List), _, _, _,
+               _:List (.List => ListItem(alignas(A))))
           [structural]
 
      // specifier, modifier, storage
-     rule canonicalizeType-aux((_:List (ListItem(T:K) => .List)), _,
-               (_ (.List => ListItem(T))), _, _)
+     rule canonicalizeType-aux((_:List (ListItem(T:K) => .List)), _:K,
+               (_:List (.List => ListItem(T))), _:List, _:List)
           requires false
                orBool (T ==K Void)
                orBool (T ==K Bool)
@@ -102,8 +102,8 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(T) ==KLabel 'Attribute)
           [structural]
 
-     rule canonicalizeType-aux(_:List (ListItem(T:K) => .List), _, _, _,
-               (_ (.List => ListItem(T))))
+     rule canonicalizeType-aux(_:List (ListItem(T:K) => .List), _:K, _:List, _:List,
+               (_:List (.List => ListItem(T))))
           requires (T ==K Extern)
                orBool (T ==K Atomic)
                orBool (T ==K Auto)
@@ -119,7 +119,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List,
                t((.Set => SetItem(Q)) _, _),
-               .List, .List, (_ (ListItem(Q:K) => .List)))
+               .List, .List, (_:List (ListItem(Q:K) => .List)))
           requires (Q ==K Extern)
                orBool (Q ==K Atomic)
                orBool (Q ==K Auto)

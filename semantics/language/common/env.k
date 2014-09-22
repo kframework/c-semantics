@@ -43,8 +43,8 @@ module C-ENV
      rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <genv> G:Map => G[Base <- X] </genv>
-          <env> E:Map => E[Base <- X] </env>
+          <genv> G:Map => G[X <- Base] </genv>
+          <env> E:Map => E[X <- Base] </env>
           [structural]
 
      syntax KItem ::= addToLocalEnv(K, SymBase)
@@ -74,12 +74,12 @@ module C-ENV
 
      syntax KItem ::= giveLocalType(K, Type)
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[tagRestrict(BlockNum, T) <- X] </types>
+          <types> L:Map => L[X <- tagRestrict(BlockNum, T)] </types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           [structural]
      // Function parameters.
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[tagRestrict(Fun, T) <- X] </types>
+          <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
           <block-history> .List </block-history>
           <curr-function> Fun:CId </curr-function>
           [structural]
