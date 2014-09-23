@@ -11,6 +11,7 @@
     <kompile-option name="--backend" value="java" />
     <all-programs>
       <krun-option name="--smt" value="none" />
+      <krun-option name="--pattern-matching" />
       <krun-option name="--pattern" value="&lt;result-value&gt; ###result-value(I:Int) &lt;/result-value&gt;" />
     </all-programs>
   </test>
