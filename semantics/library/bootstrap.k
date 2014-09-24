@@ -1,5 +1,5 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax KItem ::= varg(K) [hybrid, strict]
+     syntax KItem ::= varg(K) [strict]
      //TODO(liyili): might not need this if we have hybrid label
      syntax KResult ::= vargResult(K)
      syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
@@ -19,7 +19,7 @@ module LIBC-BOOTSTRAP
 
      imports COMPAT-SYNTAX
 
-     rule rkludge(varg(K:K)) => varg(K)
+     rule rkludge(vargResult(K:K)) => vargResult(K)
      //TODO(liyili): might not need this if we have hybrid label
      rule varg(K:KResult) => vargResult(K)
 
@@ -49,13 +49,13 @@ module LIBC-BOOTSTRAP
      syntax List ::= makeVarArgs(List) [function]
                    | makeVarArgsAux(List) [function]
      rule makeVarArgsAux(L:List ListItem(X:CId) ListItem(vararg(0)))
-          => L ListItem(X) ListItem(vargResult(incSymbolic(&(X))))
+          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
      rule makeVarArgsAux(L:List ListItem(X:CId))
           => makeVarArgsAux(L)
           requires X =/=K vararg(0)
      rule makeVarArgs(L:List) => makeVarArgsAux(L)
           requires vararg(0) in L
      rule makeVarArgs(L:List ListItem(X:CId))
-          => L ListItem(X) ListItem(vargResult(incSymbolic(&(X))))
+          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
           requires notBool vararg(0) in (L ListItem(X))
 endmodule

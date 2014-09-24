@@ -50,7 +50,7 @@ module C-TYPING-COMPATIBILITY
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
 
      rule #areCompat(T:Type, T) => true
-     rule #areCompat(t(Mods:Set, T:BaseType), t(Mods':Set, T)) => true
+     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
           requires sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should be a setting.

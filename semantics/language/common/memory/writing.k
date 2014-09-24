@@ -205,7 +205,7 @@ module C-MEMORY-WRITING
 
      syntax KItem ::= joinBitsToBytes(List) [function]
      rule joinBitsToBytes(L:List)
-          => joinBitsToBytes-aux(dataList(L), dataList(.List))
+          => joinBitsToBytes-aux(dataList(L), dataList(.List)) [structural]
 
      syntax KItem ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
      rule joinBitsToBytes-aux(
