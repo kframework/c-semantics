@@ -205,7 +205,7 @@ module C-MEMORY-WRITING
 
      syntax KItem ::= joinBitsToBytes(List) [function]
      rule joinBitsToBytes(L:List)
-          => joinBitsToBytes-aux(dataList(L), dataList(.List)) [structural]
+          => joinBitsToBytes-aux(dataList(L), dataList(.List))
 
      syntax KItem ::= "joinBitsToBytes-aux" "(" K "," K ")" [function]
      rule joinBitsToBytes-aux(
@@ -215,16 +215,13 @@ module C-MEMORY-WRITING
                dataList(ListItem(piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1)) L),
                dataList(R))
           requires Len <Int cfg:bitsPerByte
-          [structural]
      rule joinBitsToBytes-aux(
                dataList(ListItem(piece(N:Bits, Len:Int)) L:List), dataList(R:List))
           => joinBitsToBytes-aux(
                dataList(L), dataList(R ListItem(piece(N, Len))))
           requires Len ==Int cfg:bitsPerByte
-          [structural]
      rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
           => dataList(R)
-          [structural]
 
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
