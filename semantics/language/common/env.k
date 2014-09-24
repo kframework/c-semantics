@@ -16,11 +16,11 @@ module C-ENV
 
      imports COMPAT-SYNTAX
 
-     rule <k> addToHistory(Num:Int) => . ...</k>
+     rule <k> addToHistory(Num:Int) => .K ...</k>
           <block-history> .List => ListItem(Num) ...</block-history>
           [structural]
 
-     rule <k> populateFromGlobal => . ...</k>
+     rule <k> populateFromGlobal => .K ...</k>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>
@@ -40,15 +40,15 @@ module C-ENV
           [structural]
 
      syntax KItem ::= addToGlobalEnv(K, SymBase)
-     rule <k> addToGlobalEnv(X:CId, Base:SymBase) => . ...</k>
+     rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <genv> G:Map => G[Base <- X] </genv>
-          <env> E:Map => E[Base <- X] </env>
+          <genv> G:Map => G[X <- Base] </genv>
+          <env> E:Map => E[X <- Base] </env>
           [structural]
 
      syntax KItem ::= addToLocalEnv(K, SymBase)
-     rule <k> addToLocalEnv(X:CId, Base:SymBase) => . ...</k>
+     rule <k> addToLocalEnv(X:CId, Base:SymBase) => .K ...</k>
           <env> E:Map => E[X <- Base] </env>
           [structural]
 
@@ -63,7 +63,7 @@ module C-ENV
           [structural]
 
      syntax KItem ::= giveGlobalType(K, Type)
-     rule <k> giveGlobalType(X:CId, T:Type) => . ...</k>
+     rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
           <types> L:Map => L[X <- T] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -73,13 +73,13 @@ module C-ENV
           [structural]
 
      syntax KItem ::= giveLocalType(K, Type)
-     rule <k> giveLocalType(X:CId, T:Type) => . ...</k>
-          <types> L:Map => L[tagRestrict(BlockNum, T) <- X] </types>
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <types> L:Map => L[X <- tagRestrict(BlockNum, T)] </types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           [structural]
      // Function parameters.
-     rule <k> giveLocalType(X:CId, T:Type) => . ...</k>
-          <types> L:Map => L[tagRestrict(Fun, T) <- X] </types>
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
           <block-history> .List </block-history>
           <curr-function> Fun:CId </curr-function>
           [structural]

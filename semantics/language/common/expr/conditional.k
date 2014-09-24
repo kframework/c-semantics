@@ -8,7 +8,7 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-TYPING-SYNTAX
 
      syntax KItem ::= getTypes(List)
-     //TODO: overcome the context associative matching
+     //TODO(liyili2): overcome the context associative matching
      //context types(_:List ListItem(HOLE) _:List)
      syntax KItem ::= convertedType(K) [strict]
 
@@ -27,7 +27,7 @@ module C-COMMON-EXPR-CONDITIONAL
 
      syntax TypeResult ::= trItem(K)
 
-     //TODO: might not need this list in the future.
+     //TODO(liyili2): might not need this list in the future.
      syntax TypeList ::= List{TypeItem,"ts::"} [strict]
      syntax List ::= tListToList(TypeList) [function]
 
@@ -60,7 +60,7 @@ module C-COMMON-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/
-     rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K
+     rule (.K => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -77,6 +77,16 @@ module C-COMMON-EXPR-CONDITIONAL
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
+	/*
+     //(liyili2):add this following rule for checking T1 ==K T2
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
+          => convertedType(T1))
+               ~> _ ? _ : _
+          requires T1 ==K T2
+               andBool hasArithmeticType(T1)
+               andBool hasArithmeticType(T2)
+          [structural]
+	*/
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      \broken{If both the second and third operands are pointers or one is a
@@ -93,6 +103,15 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T2))
+          ~> _ ? tv(0, T1) : _
+          when hasIntegerType(T1) andBool isPointerType(T2)
+          [structural]
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T1))
+          ~> _? _ : tv(0, T2)
+          when hasIntegerType(T2) andBool isPointerType(T1)
+          [structural]
+
      rule (types(
                trItem(t(Mods:Set, pointerType(T:Type)))
                ts:: trItem(t(Mods':Set, pointerType(T':Type)))
@@ -114,19 +133,25 @@ module C-COMMON-EXPR-CONDITIONAL
           ~> _? _ : _
           [structural]
 
+     // this should take care of the void/struct cases
+     rule (types(trItem(T:Type) ts:: trItem(T':Type)) => convertedType(T))
+          ~> _ ? _ : _
+          when notBool isPointerType(T)
+               andBool areCompatible(T, T')
+          [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))
           [structural]
 
-     rule (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
+     rule (.K => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
           requires T =/=K void
           [structural]
-     rule (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
+     rule (.K => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
           types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
           requires T =/=K void
           [structural]
-     rule (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
+     rule (.K => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
           types(trItem(T:Type) ts:: trItem(T':Type))
           requires (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))

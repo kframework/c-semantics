@@ -55,10 +55,10 @@ module C-TYPING-INTERPRETATION
      rule ArrayType'(T:Type, emptyValue, _, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
-     rule (. => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
+     rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
           ~> ArrayType'(_, tv(_:Float, _), _, _)
           [structural]
-     rule (. => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
+     rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
           ~> ArrayType'(_, tv(Len:Int, _), _, _)
           requires Len <=Int 0
           [structural]
@@ -209,12 +209,12 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      rule <k> JustBase => T ...</k>
-          <decl-type-holder> T:Type => . ...</decl-type-holder>
+          <decl-type-holder> T:Type => .K ...</decl-type-holder>
           [structural]
 
      syntax KItem ::= "extractActualTypeFreezer"
      rule <k> DeclType(T:Type, K:K) => K:K ~> extractActualTypeFreezer ...</k>
-          <decl-type-holder> (. => T) ...</decl-type-holder>
+          <decl-type-holder> (.K => T) ...</decl-type-holder>
           [structural]
 
      rule T:Type ~> extractActualTypeFreezer

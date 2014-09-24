@@ -94,12 +94,12 @@ module C-DECL-LOCAL
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
           [structural]
-     rule (. => ERROR("TDL2", "Extern declaration of " +String idToString(X)
+     rule (.K => ERROR("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer."))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
           requires isExternType(T) andBool K =/=K NoInit
           [structural]
-     rule <k> (. => ERROR("TDL3", "Extern declaration of " +String idToString(X)
+     rule <k> (.K => ERROR("TDL3", "Extern declaration of " +String idToString(X)
                     +String " with incompatible type."))
                ~> declareInternalVariable(X:CId, T':Type, NoInit)
           ...</k>
@@ -169,18 +169,18 @@ module C-DECL-LOCAL
           <block-history> .List </block-history>
           requires isCompleteType(T)
           [structural]
-     rule (. => UNDEF("TDL5",
+     rule (.K => UNDEF("TDL5",
                "declaration of an identifier for an object with no linkage and incomplete type.",
                "6.7:7"))
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)
           [structural]
 
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => . ...</k>
+     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs> Structs:Map => Structs[X <- Info] </structs>
           requires notBool (X in keys(Structs))
           [structural]
-     rule <k> (. => CV("TDL6", "redefinition of a struct, union, or enum: "
+     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>

@@ -12,14 +12,14 @@ module C-TYPING-STRICTNESS
 
      syntax KItem ::= "waitingOnDeclType"
      rule [type-Cast-heat]:
-          <k> (. => DeclType(Spec, Decl)) ~> evalToType ...</k>
+          <k> (.K => DeclType(Spec, Decl)) ~> evalToType ...</k>
           <type>
                Cast(Spec:K, Decl:K, _) => waitingOnDeclType
           ...</type>
           [structural]
 
      rule [type-Cast-cool]:
-          <k> (T:KResult => .) ~> evalToType ...</k>
+          <k> (T:KResult => .K) ~> evalToType ...</k>
           <type> waitingOnDeclType => T:KResult ...</type>
           [structural]
 

@@ -1,5 +1,7 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax KItem ::= varg(K) [hybrid, strict]
+     syntax KItem ::= varg(K) [strict]
+     //TODO(liyili): might not need this if we have hybrid label
+     syntax KResult ::= vargResult(K)
      syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
      syntax KItem ::= incSymbolic(K)
 endmodule
@@ -17,7 +19,9 @@ module LIBC-BOOTSTRAP
 
      imports COMPAT-SYNTAX
 
-     rule rkludge(varg(K:K)) => varg(K)
+     rule rkludge(vargResult(K:K)) => vargResult(K)
+     //TODO(liyili): might not need this if we have hybrid label
+     rule varg(K:KResult) => vargResult(K)
 
      context incSymbolic(HOLE => reval(HOLE))
      rule incSymbolic(tv(Loc:SymLoc, T:Type))

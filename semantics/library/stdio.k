@@ -30,7 +30,7 @@ module LIBC-STDIO
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
 
      rule [getString-pre]:
-          (. => read(Loc, t(.Set, char)))
+          (.K => read(Loc, t(.Set, char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 
@@ -77,7 +77,11 @@ module LIBC-STDIO
           [structural]
 
      syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
-     syntax C ::= vpair(K, K) [hybrid, strict]
+     //TODO(liyili): might not need this if we have hybrid label
+     syntax C ::= vpair(K, K) [strict]
+     syntax KResult ::= vpairResult(K, K)
+
+     rule vpair(K:KResult,K':KResult) => vpairResult(K,K')
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
@@ -86,7 +90,7 @@ module LIBC-STDIO
      rule [nextvarg]:
           nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T),
-               varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
+               vargResult(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
           requires value(Len) ==Int value(Len')
           [structural]
 
@@ -120,7 +124,7 @@ module LIBC-STDIO
                     hrItem(tv(FD:Int, t(_, int))))
                => tv(0, t(.Set, int))
           ...</k>
-          (<file>... <fid> FD:Int </fid> ...</file> => .)
+          (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
           [structural]
 
      rule [fslOpenFile-pre]:
@@ -144,7 +148,7 @@ module LIBC-STDIO
                => tv(FD, t(.Set, int))
           ...</k>
           <files>...
-               (. =>
+               (.Bag =>
                     <file>...
                          <fid> FD </fid>
                          <uri> FileName </uri>
@@ -221,10 +225,10 @@ module LIBC-STDIO
      syntax KItem ::= "formatter-aux" "(" K ")" [strict]
      syntax KItem ::= "formatter-next" "(" K ")"
      syntax KItem ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule formatter-next(varg(tv(Loc:SymLoc, _)))
+     rule formatter-next(vargResult(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
-     rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
+     rule <k> formatter-arg(vpairResult(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
           <format-arg> _ => K:K </format-arg>
@@ -234,7 +238,7 @@ module LIBC-STDIO
           <k> formatter(str(S:String), VarArgs:KResult)
                => formatter-aux(VarArgs:KResult)
           ...</k>
-          (. =>
+          (.Bag =>
                <formatting>...
                     <format> stringToList(S:String) </format>
                ...</formatting>
@@ -255,7 +259,7 @@ module LIBC-STDIO
                     <format-state> "normal" </format-state>
                     <format-mods> .Map </format-mods>
                ...</formatting>
-               => .
+               => .Bag
           )
           [structural]
 

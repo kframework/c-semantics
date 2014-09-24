@@ -12,7 +12,7 @@ module C-STMT-BLOCK
           => pushBlock ~> B ~> popBlock
           [structural]
 
-     rule <k> pushBlock => . ...</k>
+     rule <k> pushBlock => .K ...</k>
           <local>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
@@ -33,10 +33,10 @@ module C-STMT-BLOCK
           ...</local-addresses>
           [structural]
 
-     rule <k> popBlock => . ...</k>
+     rule <k> popBlock => .K ...</k>
           <local>
                (_ => C)
-               (<local-addresses> .Set </local-addresses> => .)
+               (<local-addresses> .Set </local-addresses> => .Bag)
           </local>
           <block-stack>
                ListItem(bag2K(C:Bag)) => .List
@@ -53,7 +53,7 @@ module C-STMT-BLOCK
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
      A null statement (consisting of just a semicolon) performs no operations.
      }*/
-     rule Nop => .
+     rule Nop => .K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
@@ -74,7 +74,7 @@ module C-STMT-BLOCK
           [structural]
 
      syntax KItem ::= doneBlock(Int)
-     rule <k> doneBlock(BlockNum:Int) => . ...</k>
+     rule <k> doneBlock(BlockNum:Int) => .K ...</k>
           <modified> BlockNum |-> _ => .Map ...</modified>
 
 endmodule

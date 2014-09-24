@@ -310,6 +310,8 @@ module C-SYMLOC
      rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S':Set, S:Set)
           => #stripAllButFromUnion(Base, Offset, K', S', S)
           requires getKLabel(K) =/=KLabel 'fromUnion
+     rule stripAllButFromUnion(Loc:SymLoc) => stripProv(Loc)
+          when notBool hasUnionMarker(Loc)
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
@@ -320,6 +322,7 @@ module C-SYMLOC
 
      // TODO(chathhorn): "unsupported map pattern" -- so ugly.
      syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
+     rule getAlign'(.K,.Set) => 1
      rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
      rule getAlign'(align(I:Int), _) => I
      rule getAlign'(K:K, S:Set) => getAlign'(.K, S)
@@ -330,6 +333,10 @@ module C-SYMLOC
                loc(_, _, SetItem(K:K) S:Set),
                T:Type, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
+     rule ifFromArrayInBounds(
+               Loc:SymLoc,
+               T:Type, I:Int) => true
+          when notBool isFromArray(Loc)
 
      syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)

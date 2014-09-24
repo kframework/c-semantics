@@ -66,12 +66,12 @@ module C-MEMORY-ALLOC
           <mem> M:Map </mem>
           requires notBool (Base in (keys(M)))
           [structural]
-     rule <k> allocObjectIfAbsent(Base:SymBase, _) => .
+     rule <k> allocObjectIfAbsent(Base:SymBase, _) => .K
           ...</k>
           <mem>... Base |-> object(_, _, _) ...</mem>
           [structural]
 
-     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => . ...</k>
+     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
           ...</mem>
@@ -83,7 +83,7 @@ module C-MEMORY-ALLOC
      rule createMap(.KList, _:Bits) => .Map
      rule createMap((I:K,, KL:KList), B:Bits) => (I |-> B) createMap(KL, B)
 
-     rule <k> zeroObject(Base:SymBase) => . ...</k>
+     rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int,
                     _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))

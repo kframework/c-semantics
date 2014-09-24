@@ -206,6 +206,7 @@ module C-TYPING-COMPATIBILITY
 
      // TODO(chathhorn): obnoxious unsupported map patterns thing.
      syntax Int ::= "getAlignas'" "(" K "," Set ")" [function]
+     rule getAlignas'(.K, .Set) => 1
      rule getAlignas'(.K, SetItem(K:K) Mods:Set) => getAlignas'(K, Mods)
      rule getAlignas'(alignas(A:Int), _) => A
      rule getAlignas'(K:K, Mods:Set) => getAlignas'(.K, Mods)

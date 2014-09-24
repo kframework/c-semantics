@@ -59,13 +59,13 @@ module C-MEMORY-WRITING
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool I >Int 0
           [ndtrans]
-     rule <k> (. => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
+     rule <k> (.K => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
                ~> write(_, _, T:Type)
           ...</k>
           <initializing> 0 </initializing>
           requires isConstType(T)
           [structural]
-     rule <k> (. => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
+     rule <k> (.K => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
                ~> write(Loc:SymLoc, _, _)
           ...</k>
           <initializing> 0 </initializing>
@@ -113,7 +113,7 @@ module C-MEMORY-WRITING
           => #keepUnion(K', S, SetItem(K) S')
           requires getKLabel(K) =/=KLabel 'fromUnion
 
-     rule (. => makeUnionUnKnown(.K, keepUnion(S)))
+     rule (.K => makeUnionUnKnown(.K, keepUnion(S)))
           ~> write-specific(
                loc(_, _, S:Set => stripUnion(S)), _, _)
           [structural]
@@ -121,7 +121,7 @@ module C-MEMORY-WRITING
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
                     | makeUnionUnKnown(K, Set)
 
-     rule makeUnionUnKnown(.K, .Set) => .
+     rule makeUnionUnKnown(.K, .Set) => .K
           [structural]
      rule makeUnionUnKnown(.K, SetItem(K:K) S:Set)
           => makeUnionUnKnown(K, S)
@@ -142,7 +142,7 @@ module C-MEMORY-WRITING
                     piece(unknown, cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
-     rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .
+     rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .K
           requires maxByteSizeofList(L) <=Int byteSizeofType(T)
           [structural]
 
@@ -215,16 +215,13 @@ module C-MEMORY-WRITING
                dataList(ListItem(piece(piece(N, Len) bit:: piece(M, 1), Len +Int 1)) L),
                dataList(R))
           requires Len <Int cfg:bitsPerByte
-          [structural]
      rule joinBitsToBytes-aux(
                dataList(ListItem(piece(N:Bits, Len:Int)) L:List), dataList(R:List))
           => joinBitsToBytes-aux(
                dataList(L), dataList(R ListItem(piece(N, Len))))
           requires Len ==Int cfg:bitsPerByte
-          [structural]
      rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
           => dataList(R)
-          [structural]
 
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)

@@ -17,7 +17,7 @@ module LIBC-STRING
           => strcpy(Dest, Src, Dest)
           [structural]
 
-     rule (. => read(Src:SymLoc, t(.Set, char)))
+     rule (.K => read(Src:SymLoc, t(.Set, char)))
           ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]
 

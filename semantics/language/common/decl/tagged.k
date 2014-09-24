@@ -27,14 +27,14 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           requires L =/=K .List
           [structural]
-     rule (. => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           requires L =/=K .List
           [structural]
-     rule (. => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
           [structural]
 

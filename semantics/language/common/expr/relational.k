@@ -90,7 +90,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires isPointerType(T) andBool isPointerType(T')
                andBool base(Loc) ==K base(Loc')
           [structural]
-     rule (. => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
+     rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
           requires base(Loc) =/=K base(Loc')
                andBool T ==Type T'
@@ -100,7 +100,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires isPointerType(T) andBool isPointerType(T')
                andBool base(Loc) ==K base(Loc')
           [structural]
-     rule (. => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
+     rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
           requires base(Loc) =/=K base(Loc')
                andBool T ==Type T'
@@ -110,7 +110,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires isPointerType(T) andBool isPointerType(T')
                andBool (base(Loc) ==K base(Loc'))
           [structural]
-     rule (. => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
+     rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
           requires (base(Loc) =/=K base(Loc'))
                andBool (T ==Type T')
@@ -120,28 +120,28 @@ module C-COMMON-EXPR-RELATIONAL
           requires isPointerType(T) andBool isPointerType(T')
                andBool (base(Loc) ==K base(Loc'))
           [structural]
-     rule (. => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
+     rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
           requires (base(Loc) =/=K base(Loc'))
                andBool (T ==Type T')
           [structural]
 
-     rule (. => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) < tv(_, T':Type)
           requires (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural]
-     rule (. => CV("CER6", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CER6", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) <= tv(_, T':Type)
           requires (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural]
-     rule (. => CV("CER7", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CER7", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) > tv(_, T':Type)
           requires (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))
           [structural]
-     rule (. => CV("CER8", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CER8", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) >= tv(_, T':Type)
           requires (hasIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool hasIntegerType(T'))

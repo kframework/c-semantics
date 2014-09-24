@@ -108,9 +108,9 @@ module LIBC-STDLIB
                hrItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
-     rule (. => zeroObject(base(Loc)) )
+     rule (.K => zeroObject(base(Loc)) )
           ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
-          ~> (calloc-aux => .)
+          ~> (calloc-aux => .K)
           [structural]
 
      rule prepareBuiltin(Identifier("free"),

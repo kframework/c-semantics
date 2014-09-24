@@ -48,37 +48,37 @@ module C-TYPING-CANONICALIZATION
           => canonicalizeType-aux(deleteUnuseType(M), .K, .List, .List, .List)
           [structural]
 
-     rule (. => DeclType(K1, K2))
+     rule (.K => DeclType(K1, K2))
           ~> canonicalizeType-aux(_:List ListItem(TAtomic(K1:K, K2:K)), _, _, _, _)
           [structural]
-     rule (. => DeclType(K1, K2))
+     rule (.K => DeclType(K1, K2))
           ~> canonicalizeType-aux(_:List ListItem(AlignasType(K1:K, K2:K)), _, _, _, _)
           [structural]
-     rule (. => K)
+     rule (.K => K)
           ~> canonicalizeType-aux(_:List ListItem(AlignasExpression(K:K)), _, _, _, _)
           [structural]
 
-     rule (T:Type => .)
+     rule (T:Type => .K)
           ~> canonicalizeType-aux(
                _ (ListItem(TAtomic(_, _)) => .List), _, _, _,
                _ (.List => ListItem(atomic(T))))
           [structural]
 
      //might need to change this later
-     rule (T:Type => .)
+     rule (T:Type => .K)
           ~> canonicalizeType-aux(
-               _ (ListItem(AlignasType(_, _)) => .List), _, _, _,
-               _ (.List => ListItem(alignas(byteAlignofType(T)))))
+               _:List (ListItem(AlignasType(_, _)) => .List), _, _, _,
+               _:List (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
-     rule (tv(A:Int, _) => .)
+     rule (tv(A:Int, _) => .K)
           ~> canonicalizeType-aux(
-               _ (ListItem(AlignasExpression(_)) => .List), _, _, _,
-               _ (.List => ListItem(alignas(A))))
+               _:List (ListItem(AlignasExpression(_)) => .List), _, _, _,
+               _:List (.List => ListItem(alignas(A))))
           [structural]
 
      // specifier, modifier, storage
-     rule canonicalizeType-aux((_:List (ListItem(T:K) => .List)), _,
-               (_ (.List => ListItem(T))), _, _)
+     rule canonicalizeType-aux((_:List (ListItem(T:K) => .List)), _:K,
+               (_:List (.List => ListItem(T))), _:List, _:List)
           requires false
                orBool (T ==K Void)
                orBool (T ==K Bool)
@@ -102,8 +102,8 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(T) ==KLabel 'Attribute)
           [structural]
 
-     rule canonicalizeType-aux(_:List (ListItem(T:K) => .List), _, _, _,
-               (_ (.List => ListItem(T))))
+     rule canonicalizeType-aux(_:List (ListItem(T:K) => .List), _:K, _:List, _:List,
+               (_:List (.List => ListItem(T))))
           requires (T ==K Extern)
                orBool (T ==K Atomic)
                orBool (T ==K Auto)
@@ -119,7 +119,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List,
                t((.Set => SetItem(Q)) _, _),
-               .List, .List, (_ (ListItem(Q:K) => .List)))
+               .List, .List, (_:List (ListItem(Q:K) => .List)))
           requires (Q ==K Extern)
                orBool (Q ==K Atomic)
                orBool (Q ==K Auto)
@@ -144,7 +144,7 @@ module C-TYPING-CANONICALIZATION
      If the specification of an array type includes any type qualifiers, the
      element type is so-qualified, not the array type. \ldots
      }*/
-     /*TODO: anywhere rule refactor
+     /*TODO(liyili2): anywhere rule refactor
      rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]

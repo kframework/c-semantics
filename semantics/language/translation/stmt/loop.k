@@ -29,7 +29,7 @@ module C-STMT-LOOP
           [structural]
 
      rule [continue]:
-          Continue => .
+          Continue => .K
           [structural]
 
 endmodule

@@ -43,7 +43,7 @@ module C-CONVERSION
           // will work, but not sure why
           requires hasUnsignedIntegerType(T)
                andBool (N <Int min(T))
-     rule (. => UNDEF("CCV1", "signed overflow.", "6.3.1.3:3"))
+     rule (.K => UNDEF("CCV1", "signed overflow.", "6.3.1.3:3"))
           ~> arithInterpret(T:Type, I:Int)
           requires hasSignedIntegerType(T)
                andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
@@ -232,7 +232,7 @@ module C-CONVERSION
           requires hasSignedIntegerType(T') andBool hasIntegerType(T)
                andBool notBool inRange(I, T')
 
-     rule (. => UNSPEC("CCV2",
+     rule (.K => UNSPEC("CCV2",
                "conversion to signed integer outside the range that can be represented.",
                "6.3.1.3:3"))
           ~> castHold(T':Type, tv(I:Int, T:Type))
@@ -264,7 +264,7 @@ module C-CONVERSION
           requires hasIntegerType(T') andBool hasFloatType(T)
                andBool notBool inRange(Float2Int(V), T')
 
-     rule (. => UNDEF("CCV3",
+     rule (.K => UNDEF("CCV3",
                "conversion to integer from float outside the range that can be represented.",
                "6.3.1.4:1"))
           ~> castHold(T':Type, tv(V:Float, T:Type))
@@ -308,7 +308,7 @@ module C-CONVERSION
           requires hasFloatType(T') andBool hasFloatType(T)
                andBool notBool inRange(V, T')
 
-     rule (. => UNDEF("CCV4",
+     rule (.K => UNDEF("CCV4",
                "floating-point value outside the range of values that can be represented after conversion.",
                "6.3.1.5:1"))
           ~> castHold(T':Type, tv(V:Float, T:Type))
@@ -331,11 +331,11 @@ module C-CONVERSION
      rule cast(t(_, T:SimpleType), voidVal) => castHold(t(.Set, T), voidVal)
           requires (T =/=K void)
 
-     rule (. => ERROR("CCV5", "casting empty value to type other than void.", 89))
+     rule (.K => ERROR("CCV5", "casting empty value to type other than void.", 89))
           ~> castHold(t(_, T:SimpleType), emptyValue)
           requires T =/=K void
           [structural]
-     rule (. => UNDEF("CCV6", "casting void type to non-void type.", "6.3.2.2") )
+     rule (.K => UNDEF("CCV6", "casting void type to non-void type.", "6.3.2.2") )
           ~> castHold(t(_, T:SimpleType), voidVal)
           requires (T =/=K void)
           [structural]
@@ -400,7 +400,7 @@ module C-CONVERSION
                andBool (V =/=K NullPointer)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
-     rule (. => UNDEF("CCV7",
+     rule (.K => UNDEF("CCV7",
                "conversion from pointer to integer of a value possibly unrepresentable in the integer type.",
                "6.3.2.3:6"))
           ~> castHold(T':Type, tv(V:CValue, T:Type))
@@ -434,7 +434,7 @@ module C-CONVERSION
      rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
           => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
           requires getAlignas(T') >Int getAlign(Loc)
-     rule (. => UNDEF("CCV8",
+     rule (.K => UNDEF("CCV8",
                "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
                "6.3.2.3:7"))
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))

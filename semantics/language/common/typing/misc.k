@@ -165,7 +165,7 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
-     syntax Set ::= "functionSpecifiers"
+     syntax Set ::= "functionSpecifiers" [function]
      rule functionSpecifiers =>
           SetItem(Noreturn)
           SetItem(Inline)
