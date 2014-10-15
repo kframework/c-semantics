@@ -42,7 +42,6 @@ module C-STMT-RETURN
                ~> cast(T, V)
                ~> K
           </k>
-          <modified>... F |-> _ => .Map </modified>
           <tu-id> TU </tu-id>
           <gtypes>...
                F:CId |-> t(Mods:Set, functionType(T:Type, _))

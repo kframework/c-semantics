@@ -1,4 +1,5 @@
 module C-STMT-BLOCK
+     imports C-CHECK-LOC-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -67,14 +68,10 @@ module C-STMT-BLOCK
      appear.
      }*/
      rule <k> Block(BlockNum:Int, _, list(Statements:List))
-               => listToK(Statements) ~> doneBlock(BlockNum)
+               => enterRestrictScope(BlockNum)
+               ~> listToK(Statements)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
-          <modified>... (.Map => BlockNum |-> map(.Map)) </modified>
           [structural]
-
-     syntax KItem ::= doneBlock(Int)
-     rule <k> doneBlock(BlockNum:Int) => .K ...</k>
-          <modified> BlockNum |-> _ => .Map ...</modified>
 
 endmodule

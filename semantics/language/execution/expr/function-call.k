@@ -1,6 +1,7 @@
 module C-EXPR-FUNCTION-CALL
      imports C-BINDING-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
@@ -47,9 +48,24 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     syntax KItem ::= "Call'" "(" K "," K ")"
+     context Call((HOLE => reval(HOLE)), _) [ndheat]
+     context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
-     syntax KResult ::= rvlist(List)
+     // Strip prov.
+     rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _), _)
+          [structural]
+     // Resolve a linker loc to a real loc.
+     rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+
+     rule <k> Call(
+               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
+               rvlist(L:List))
+               => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
+          ...</k>
+          <functions>... Base |-> Fun:KResult ...</functions>
+          requires isFunctionType(T)
+          [structural]
 
      syntax KItem ::= revalParams(K)
                     | #revalParams(HeatList) [strict]
@@ -60,29 +76,13 @@ module C-EXPR-FUNCTION-CALL
           requires isAllKResultInHeatList(HL)
           [structural]
 
+     syntax KResult ::= rvlist(List)
+
      /*TODO(liyili2): might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          requires all(L, isKResult)
+          when all(L, isKResult)
           [structural]
      */
-
-     rule Call(tv(Loc:SymLoc, T:Type), K:K)
-          => sequencePoint ~> Call'(tv(stripProv(Loc), T), K)
-
-     context Call'(_, (HOLE => revalParams(HOLE)))
-
-     rule <k> Call'(
-               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
-               rvlist(L:List))
-               => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
-          ...</k>
-          <functions>... Base |-> Fun:KResult ...</functions>
-          requires isFunctionType(T)
-          [structural]
-     // Resolve a linker loc to a real loc.
-     rule <k> Call'(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
-          <linkings>... Base |-> Base':SymBase ...</linkings>
-          [structural]
 
      syntax KItem ::= application(String, K, Type, List) [strict(2)]
      context application(_, HOLE, _, _)
@@ -107,12 +107,12 @@ module C-EXPR-FUNCTION-CALL
      rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
                ~> K:K
                => sequencePoint
+               ~> enterRestrictScope(X)
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
                ~> sequencePoint
                ~> Blk
           </k>
-          <modified>... .Map => X |-> map(.Map) </modified>
           <call-stack> .List => ListItem(
                bag2K(<call-stack-frame>...
                     <stack-control>
