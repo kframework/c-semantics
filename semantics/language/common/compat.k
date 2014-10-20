@@ -52,6 +52,10 @@ module COMPAT-SYNTAX
      syntax List ::= times(Int, K) [function]
 
      syntax Set ::= filterSet(Set, KLabel) [function]
+
+     //TODO(liyi): might not need this later
+     syntax KItem ::= "dotK"
+                    | theMapLookup(Map,K) [function]
 endmodule
 
 module COMPAT
@@ -227,6 +231,8 @@ module COMPAT
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
           => #filterSet(K, S, Pred)
+     rule filterSet(.Set, Pred:KLabel)
+          => .Set
 
      // TODO(liyi): might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true
@@ -235,10 +241,7 @@ module COMPAT
           => isAllKResultInHeatList(HL)
      
      //TODO(liyi): might not need this
-     rule true orElseBool _ => true
-     rule _ orElseBool true => true
-     rule false orElseBool K:K => K
-     rule K:K orElseBool false => K
-
+     rule dotK => .K [structural]
+     rule theMapLookup(K1:K |-> K2:K _:Map,K1) => K2
 
 endmodule

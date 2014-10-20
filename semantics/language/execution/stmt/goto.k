@@ -94,26 +94,22 @@ module C-STMT-GOTO
 
      // declaration stack, actual local variables
      syntax KItem ::= processGotoSameBlock(List, List)
-     rule <k> Goto(Lbl:CId) ~> _ => processGoto(GotoInfo) </k>
-          <curr-function> F:CId </curr-function>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F |-> map((_ (Lbl |-> GotoInfo:K)))
-          ...</goto-map>
-          requires #isFunLabel(Lbl) =/=K true
-          [structural]  // rule so that looping programs see repetition
-     rule <k> Goto(Lbl:CId) ~> _ => Blk </k>
-          <curr-function> F:CId </curr-function>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <goto-map>...
-               F |-> map(_ Lbl |-> gotoObject(_, _, Blk:K, _, _))
-          ...</goto-map>
-          requires #isFunLabel(Lbl) ==K true
+		    | preprocessGoto(K,CId)
 
-     syntax Bool ::= #isFunLabel(CId) [function]
-     rule #isFunLabel(funLabel(_)) => true
+     rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K,Lbl) </k>
+          <curr-function> F:CId </curr-function>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <goto-map>...
+               F |-> K:K
+          ...</goto-map>
+     rule preprocessGoto(map(M:Map),Lbl) => preprocessGoto(theMapLookup(M,Lbl),Lbl)
+     rule preprocessGoto(GotoInfo:K,Lbl) => processGoto(GotoInfo) 
+	  requires getKLabel(GotoInfo) =/=KLabel 'map 
+		   andBool getKLabel(Lbl) =/=KLabel 'funLabel
+     rule preprocessGoto(gotoObject(_, _, Blk:K, _, _),Lbl) 
+		=> Blk
+	  requires getKLabel(Lbl) ==KLabel 'funLabel
 
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth:Int,

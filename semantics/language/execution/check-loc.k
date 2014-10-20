@@ -1,4 +1,9 @@
+module C-CHECK-LOC-SYNTAX
+     syntax KItem ::= enterRestrictScope(RestrictTag)
+endmodule
+
 module C-CHECK-LOC
+     imports C-CHECK-LOC-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-ERROR-SYNTAX
@@ -7,6 +12,14 @@ module C-CHECK-LOC
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
+
+     rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
+          <modified>... Tag |-> _ ...</modified>
+          [structural]
+     rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
+          <modified> Tags:Map .Map => Tag |-> map(.Map) </modified>
+          when notBool (Tag in keys(Tags))
+          [structural]
 
      rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
           [structural]

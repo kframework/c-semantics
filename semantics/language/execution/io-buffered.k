@@ -56,21 +56,30 @@ module C-IO-BUFFERED
           <modified> Modified:Map </modified>
 
      // TODO(chathhorn): java port.
+     //updateMap by an indicator 0/1 to decide which kind of update we should perform
+     syntax KItem ::= updateMapInKItem(K,SymLoc,Int,Int) [function]
+		    | #isInMap(K,SymLoc) [function]
+     rule updateMapInKItem(map(M:Map),Loc:SymLoc,I:Int,0) 
+		=> map(M[Loc <- maxInt(theMapLookup(M,Loc),I)])  
+     rule updateMapInKItem(map(M:Map),Loc:SymLoc,I:Int,1) 
+		=> map(M[Loc <- I])  
+     rule #isInMap(map(M:Map),Loc:SymLoc) => true
+          requires Loc in keys(M)
+
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:RestrictTag => .K), _)
            ...</k>
            <modified>...
-                Tag |-> map(_
-                     Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
+                Tag |-> (MK:K => updateMapInKItem(MK,Loc,byteSizeofType(T),0))
            ...</modified>
+	  requires #isInMap(MK,Loc) ==K true
      rule <k> setModified(Loc:SymLoc, T:Type,
                (Tag:RestrictTag => .K), _)
            ...</k>
            <modified>...
-                Tag |-> map(Modified:Map
-                     (.Map => Loc |-> byteSizeofType(T)))
+                Tag |-> (MK:K => updateMapInKItem(MK,Loc,byteSizeofType(T),1))
            ...</modified>
-           requires notBool Loc in keys(Modified)
+	  requires #isInMap(MK,Loc) =/=K true
      rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set) 
 		=> setModified(Loc, T, K, S)
      rule setModified(_, _, .K, .Set) => .K

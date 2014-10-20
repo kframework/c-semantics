@@ -1,6 +1,7 @@
 module C-EXPR-FUNCTION-CALL
      imports C-BINDING-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
@@ -107,12 +108,12 @@ module C-EXPR-FUNCTION-CALL
      rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
                ~> K:K
                => sequencePoint
+               ~> enterRestrictScope(X)
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
                ~> sequencePoint
                ~> Blk
           </k>
-          <modified>... .Map => X |-> map(.Map) </modified>
           <call-stack> .List => ListItem(
                bag2K(<call-stack-frame>...
                     <stack-control>
