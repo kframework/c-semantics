@@ -26,8 +26,6 @@ module COMPAT-SYNTAX
 
      syntax List ::= removeListItem(List, K) [function]
 
-     syntax Float ::= sqrtFloat(Float) [function]
-
      // TODO(chathhorn): ugly
      syntax KItem ::= toKRList(List)
 
@@ -57,8 +55,6 @@ endmodule
 module COMPAT
      imports COMPAT-SYNTAX
      imports C-SYNTAX // Would like to get rid of this.
-
-     rule sqrtFloat(F:Float) => rootFloat(F, 2)
 
      rule stringToList("") => .List
      rule stringToList(S:String)
