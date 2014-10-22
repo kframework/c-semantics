@@ -333,9 +333,7 @@ module C-SYMLOC
                loc(_, _, SetItem(K:K) S:Set),
                T:Type, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
-     rule ifFromArrayInBounds(
-               Loc:SymLoc,
-               T:Type, I:Int) => true
+     rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
           when notBool isFromArray(Loc)
 
      syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
