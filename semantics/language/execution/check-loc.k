@@ -1,5 +1,5 @@
 module C-CHECK-LOC-SYNTAX
-     syntax K ::= enterRestrictScope(RestrictTag)
+     syntax KItem ::= enterRestrictScope(RestrictTag)
 endmodule
 
 module C-CHECK-LOC
