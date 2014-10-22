@@ -44,8 +44,6 @@ module COMPAT-SYNTAX
      syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     //TODO(liyi): make sure this is in current including List syntax Bool ::= K "in" List [function]
-     syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
 
@@ -99,12 +97,6 @@ module COMPAT
                andBool (ordChar(C) >=Int ordChar("a")
                     andBool ordChar(C) <=Int ordChar("z"))
 
-     // this should probably go in the k prelude
-     rule K:K in (ListItem(K:K) _) => true
-     rule _:K in .List => false
-     rule K:K in (ListItem(K':K) L:List) => K in L
-          requires K =/=K K'
-
      rule removeListItem(.List, _) => .List
      rule removeListItem(ListItem(A:K) M:List, A) => M
      rule removeListItem(ListItem(A:K) M:List, A':K)
@@ -123,19 +115,12 @@ module COMPAT
           => false
           requires A1 =/=K A2
 
-     //TODO(liyi): might need to add it in the builtins
-     rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
-
      syntax Bool ::= subset(K, Set, Set) [function]
 
      rule subset(K:K, S1:Set, S2:Set) => S1 <=Set (S2 -Set SetItem(K))
           requires K in S2
      rule subset(K:K, _, S2:Set) => false
           requires notBool (K in S2)
-
-     rule .Set <=Set _:Set => true
-     rule (SetItem(K:K) S1:Set) <=Set S2:Set
-          => subset(K, S1, S2)
 
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
@@ -154,7 +139,7 @@ module COMPAT
 
      syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
 
-     // TODO(liyi): might not need this after accosicate matching
+     // TODO(liyi): might not need this after associative matching
      syntax SubKRItem ::= sItem(K) [strict]
      syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]
@@ -229,12 +214,5 @@ module COMPAT
      rule isAllKResultInHeatList(hItem(_) hs:: _) => false
      rule isAllKResultInHeatList(hrItem(_) hs:: HL:HeatList)
           => isAllKResultInHeatList(HL)
-     
-     //TODO(liyi): might not need this
-     rule true orElseBool _ => true
-     rule _ orElseBool true => true
-     rule false orElseBool K:K => K
-     rule K:K orElseBool false => K
-
 
 endmodule
