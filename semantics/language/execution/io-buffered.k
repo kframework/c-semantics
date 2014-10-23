@@ -457,7 +457,7 @@ module C-IO-BUFFERED
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
      rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)
-          => #effectivelyCompat(T, T')
+          => #effectivelyCompat(T, T') ==K true
                orElseBool effectivelyCompatWithUnion(T, L)
      rule effectivelyCompatWithUnion(_, .List) => false
 

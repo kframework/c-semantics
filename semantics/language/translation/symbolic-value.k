@@ -74,6 +74,7 @@ module C-SYMBOLIC-VALUE
 
      rule #areSymbolic(ListItem(V:CValue) L:List)
           => isSymbolic(V) orElseBool #areSymbolic(L)
+     rule #areSymbolic(.List) => false
 
      // Not sure about this -- makes all VLAs compat with non-VLAs.
      rule #areCompat(

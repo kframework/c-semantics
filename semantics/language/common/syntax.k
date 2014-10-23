@@ -421,7 +421,9 @@ module C-SYNTAX
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= ExpressionLoc(K, K) [function]
 
-     syntax Expression ::= "NothingExpression"
+     //must be declared as function, 
+     //otherwise, if then else rule failed in for(;;) cases
+     syntax Expression ::= "NothingExpression" [function]
 
      /*
      | UNARY of unary_operator * expression
