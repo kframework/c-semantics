@@ -88,16 +88,16 @@ module CIL-TYPING
   rule #leftVisit(K:K, Trans:KLabel, Arg:KList, Pred:KLabel, _)
     => Trans(K,, Arg)
     when Pred(K) ==K true
-  rule 
+  rule
     #leftVisit(
-      Lbl:KLabel(P:K,, K:K,, L:KList), 
+      Lbl:KLabel(P:K,, K:K,, L:KList),
       Trans:KLabel, Arg:KList, Pred:KLabel, Except:KLabel)
     => Lbl(P:K,, #leftVisit(K, Trans, Arg, Pred, Except),, L)
-    when (Pred(Lbl(P,, K,, L)) =/=K true) 
+    when (Pred(Lbl(P,, K,, L)) =/=K true)
       andBool (Except(P) ==K true)
-  rule 
+  rule
     #leftVisit(
-      Lbl:KLabel(K:K,, L:KList), 
+      Lbl:KLabel(K:K,, L:KList),
       Trans:KLabel, Arg:KList, Pred:KLabel, Except:KLabel)
     => Lbl(#leftVisit(K, Trans, Arg, Pred, Except),, L)
     when (Pred(Lbl(K,, L)) =/=K true)
@@ -143,24 +143,27 @@ module CIL-TYPING
 
   syntax Bool ::= "$isPtrType" "(" K ")" [function, klabel('$isPtrType)]
   rule isPtrType(_:TypeSpec) => false
-  rule isPtrType(_:TypeSpec D:Declarator) 
+  rule isPtrType(_:TypeSpec D:Declarator)
     => leftSearch(D, '$isPtrType, isPointer) =/=K .K
   rule $isPtrType(_:Pointer #__id__) => true
   // TODO(chathhorn): not entirely sure how to treat this case.
   rule $isPtrType(#__id__[]) => true
+  rule $isPtrType(_) => false [owise]
 
   syntax Bool ::= "$isArrayType" "(" K ")" [function, klabel('$isArrayType)]
   rule isArrayType(_:TypeSpec) => false
-  rule isArrayType(_:TypeSpec D:Declarator) 
+  rule isArrayType(_:TypeSpec D:Declarator)
     => leftSearch(D, '$isArrayType, isPointer) =/=K .K
   rule $isArrayType(#__id__[_]) => true
+  rule $isArrayType(_) => false [owise]
 
   syntax Bool ::= "$isFunType" "(" K ")" [function, klabel('$isFunType)]
   rule isFunType(_:TypeSpec) => false
-  rule isFunType(_:TypeSpec D:Declarator) 
+  rule isFunType(_:TypeSpec D:Declarator)
     => leftSearch(D, '$isFunType, isPointer) =/=K .K
   rule $isFunType(#__id__(_:Params)) => true
   rule $isFunType(#__id__()) => true
+  rule $isFunType(_) => false [owise]
 
   rule isAggType(_:AggTypeSpec) => true
   rule isAggType(_:TypeSpec _:Declarator) => false
@@ -169,41 +172,44 @@ module CIL-TYPING
 
   syntax DirectDecl ::= upPtrConv(DirectDecl) [function]
   rule upPtr(TS:TypeSpec) => normType(TS upPtrConv(#__id__))
-  rule upPtr(TS:TypeSpec D:Declarator) 
+  rule upPtr(TS:TypeSpec D:Declarator)
     => normType(TS visitDecl(D, 'upPtrConv, isSymId))
   rule upPtrConv(X:SymId) => '`(_`)(*X)
 
-  syntax Bool ::= "$needsDownPtrConv" "(" K ")" 
+  syntax Bool ::= "$needsDownPtrConv" "(" K ")"
     [function, klabel('$needsDownPtrConv)]
   syntax Declarator ::= downPtrConv(Declarator) [function]
-  rule downPtr(TS:TypeSpec D:Declarator) 
+  rule downPtr(TS:TypeSpec D:Declarator)
     => normType(TS visitDecl(D, 'downPtrConv, '$needsDownPtrConv))
   rule $needsDownPtrConv(_:Pointer _:SymId) => true
+  rule $needsDownPtrConv(_) => false [owise]
   rule downPtrConv(* X:SymId) => X
   rule downPtrConv(* P:Pointer X:SymId) => P X
 
-  syntax Bool ::= "$needsDownArrayConv" "(" K ")" 
+  syntax Bool ::= "$needsDownArrayConv" "(" K ")"
     [function, klabel('$needsDownArrayConv)]
   syntax Declarator ::= downArrayConv(Declarator) [function]
-  rule downArray(TS:TypeSpec D:Declarator) 
+  rule downArray(TS:TypeSpec D:Declarator)
     => normType(TS visitDecl(D, 'downArrayConv, '$needsDownArrayConv))
   rule $needsDownArrayConv(_:SymId[]) => true
   rule $needsDownArrayConv(_:SymId[_]) => true
+  rule $needsDownArrayConv(_) => false [owise]
   rule downArrayConv(X:SymId[]) => X
   rule downArrayConv(X:SymId[_]) => X
 
-  syntax Bool ::= "$needsDownFunConv" "(" K ")" 
+  syntax Bool ::= "$needsDownFunConv" "(" K ")"
     [function, klabel('$needsDownFunConv)]
   syntax Declarator ::= downFunConv(Declarator) [function]
-  rule downFun(TS:TypeSpec D:Declarator) 
+  rule downFun(TS:TypeSpec D:Declarator)
     => normType(TS visitDecl(D, 'downFunConv, '$needsDownFunConv))
   rule $needsDownFunConv(_:SymId()) => true
   rule $needsDownFunConv(_:SymId(_:Params)) => true
+  rule $needsDownFunConv(_) => false [owise]
   rule downFunConv(X:SymId()) => X
   rule downFunConv(X:SymId(_:Params)) => X
 
   syntax Int ::= "getArraySize'" "(" K ")" [function]
-  rule getArraySize(_:TypeSpec D:Declarator) 
+  rule getArraySize(_:TypeSpec D:Declarator)
     => getArraySize'(leftSearch(D, '$isArrayType, isPointer))
   rule getArraySize'(#__id__[C:Constant]) => C
 
@@ -228,17 +234,17 @@ module CIL-TYPING
   //
   // typedef int arr[5];
   // arr x;
-  // 
+  //
   // If we just replace arr with its normalized type we get something like:
-  // 
+  //
   // int #__id__[5] x;
-  // 
+  //
   // which isn't valid declaration or type syntax. What we actually have to do
   // is substitute the designator to the right with the top-level identifier in
   // the typedef to get:
-  // 
+  //
   // int x[5];
-  // 
+  //
   syntax ParamDecl ::= expandParamDecl(ParamDecl, Map) [function]
   syntax Declarator ::= expandDecl(Declarator, Map) [function]
   syntax DirectDecl ::= expandDirectDecl(DirectDecl, Map) [function]
@@ -251,7 +257,7 @@ module CIL-TYPING
   rule expandParamDecl(X:CId, (E:Map (X |-> T:Type)))
     => expandTypedefs(T, (E (X |-> T))):>ParamDecl
   rule expandParamDecl(X:CId D:Declarator, (E:Map (X |-> T:Type)))
-    => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))), 
+    => expandTypedefs(normPtrs(normParens(replaceTopId(T, '`(_`)(D)))),
         (E (X |-> T))):>ParamDecl
   rule expandParamDecl(TS:TypeSpec, _) => TS
     when isCId(TS) =/=K true
@@ -262,16 +268,16 @@ module CIL-TYPING
   rule expandDecl(P:Pointer D:DirectDecl, E:Map) => P expandDirectDecl(D, E)
 
   rule expandDirectDecl(X:SymId, _) => X
-  rule expandDirectDecl('`(_`)(D:Declarator), E:Map) 
+  rule expandDirectDecl('`(_`)(D:Declarator), E:Map)
     => '`(_`)(expandDecl(D, E))
   rule expandDirectDecl(D:DirectDecl(), E:Map) => expandDirectDecl(D, E)()
   rule expandDirectDecl(D:DirectDecl[], E:Map) => expandDirectDecl(D, E)[]
-  rule expandDirectDecl(D:DirectDecl(Ps:Params), E:Map) 
+  rule expandDirectDecl(D:DirectDecl(Ps:Params), E:Map)
     => expandDirectDecl(D, E)(expandParams(Ps, E))
-  rule expandDirectDecl(D:DirectDecl[C:Constant], E:Map) 
+  rule expandDirectDecl(D:DirectDecl[C:Constant], E:Map)
     => expandDirectDecl(D, E)[C]
 
-  rule expandParams(P:ParamDecl, Ps:Params, E:Map) 
+  rule expandParams(P:ParamDecl, Ps:Params, E:Map)
     => expandParamDecl(P, E), expandParams(Ps, E)
   rule expandParams(.Params, _) => .Params
 
@@ -283,11 +289,11 @@ module CIL-TYPING
   //    (except that we leave out the identifier if it would be undecorated),
   // 3. replacing all identifiers with a special symbolic identifier,
   // 4. and normalizing parens.
-  // 
+  //
   // The resulting types are basically inside-out and a pain to work with, but
   // they at least maintain the conciseness of basic types (i.e., "unsigned
   // int" is in normal form -- but "int*" is not).
-  rule normType(T:Type) 
+  rule normType(T:Type)
     => normPtrs(normParens(convDecls(T)))
 
   // This is kinda subtle. Both abstract and non-abstract declarators might
@@ -325,18 +331,18 @@ module CIL-TYPING
   rule convDirectDecl('`(_`)(D:Declarator)) => '`(_`)(convDecl(D))
   rule convDirectDecl(D:DirectDecl()) => convDirectDecl(D)()
   rule convDirectDecl(D:DirectDecl[]) => convDirectDecl(D)[]
-  rule convDirectDecl(D:DirectDecl(Ps:Params)) 
+  rule convDirectDecl(D:DirectDecl(Ps:Params))
     => convDirectDecl(D)(convParams(Ps))
   rule convDirectDecl(D:DirectDecl[C:Constant]) => convDirectDecl(D)[C]
 
-  rule convParams(P:ParamDecl, Ps:Params) 
+  rule convParams(P:ParamDecl, Ps:Params)
     => convParamDecl(P), convParams(Ps)
   rule convParams(.Params) => .Params
 
   rule convAbsDecl(P:Pointer) => P #__id__
-  rule convAbsDecl(D:DirectAbsDecl) 
+  rule convAbsDecl(D:DirectAbsDecl)
     => convDirectAbsDecl(D)
-  rule convAbsDecl(P:Pointer D:DirectAbsDecl) 
+  rule convAbsDecl(P:Pointer D:DirectAbsDecl)
     => P convDirectAbsDecl(D)
 
   rule convDirectAbsDecl( () ) => #__id__()
@@ -346,12 +352,12 @@ module CIL-TYPING
   rule convDirectAbsDecl( [C:Constant] ) => #__id__[C]
   rule convDirectAbsDecl( D:DirectAbsDecl() ) => convDirectAbsDecl(D)()
   rule convDirectAbsDecl( D:DirectAbsDecl[] ) => convDirectAbsDecl(D)[]
-  rule convDirectAbsDecl( D:DirectAbsDecl(Ps:Params) ) 
+  rule convDirectAbsDecl( D:DirectAbsDecl(Ps:Params) )
     => convDirectAbsDecl(D)(convParams(Ps))
-  rule convDirectAbsDecl( D:DirectAbsDecl[C:Constant] ) 
+  rule convDirectAbsDecl( D:DirectAbsDecl[C:Constant] )
     => convDirectAbsDecl(D)[C]
 
-  // TODO(chathhorn): probably more to do here. 
+  // TODO(chathhorn): probably more to do here.
   syntax Bool ::= "$needsParensNorm" "(" K ")" [function]
   syntax Bool ::= "$hasParens" "(" Declarator ")" [function]
   syntax Type ::= normParens(Type) [function]
@@ -363,8 +369,10 @@ module CIL-TYPING
   rule $needsParensNorm('`(_`)('`(_`)(_)):>DirectDecl) => true
   rule $needsParensNorm('`(_`)(_:SymId):>DirectDecl) => true
   rule $needsParensNorm('`(_`)(_:SymId[_]):>DirectDecl) => true
+  rule $needsParensNorm(_) => false [owise]
 
   rule $hasParens('`(_`)(_)) => true
+  rule $hasParens(_) => false [owise]
 
   // Remove all top-level parens.
   rule normParens(TS:TypeSpec) => TS
@@ -384,12 +392,12 @@ module CIL-TYPING
 
   // Turns things like "*(* #__id__)" into "** #__id__"
   syntax Pointer ::= concatPtrs(Pointer, Pointer) [function]
-  syntax Bool ::= "$isFinalPointer" "(" Pointer ")" 
+  syntax Bool ::= "$isFinalPointer" "(" Pointer ")"
     [klabel('$isFinalPointer), function]
   syntax Pointer ::= finalPointerTrans(Pointer, Pointer) [function]
   rule $isFinalPointer(*) => true
   rule finalPointerTrans(*, P:Pointer) => '*_(P)
-  rule concatPtrs(P1:Pointer, P2:Pointer) 
+  rule concatPtrs(P1:Pointer, P2:Pointer)
     => #visit(P1, 'finalPointerTrans, P2, '$isFinalPointer)
 
   syntax Bool ::= "$needsPtrsNorm" "(" K ")" [function]
@@ -400,9 +408,10 @@ module CIL-TYPING
   rule normPtrs(TS:TypeSpec) => TS
   rule normPtrs(TS:TypeSpec D:Declarator) => TS normPtrs'(D):>Declarator
 
-  rule $needsPtrsNorm(_:Pointer '`(_`)(_:Pointer _:DirectDecl):>DirectDecl) 
+  rule $needsPtrsNorm(_:Pointer '`(_`)(_:Pointer _:DirectDecl):>DirectDecl)
     => true
-  rule normPtrs'(P1:Pointer '`(_`)(P2:Pointer D:DirectDecl):>DirectDecl) 
+  rule $needsPtrsNorm(_) => false [owise]
+  rule normPtrs'(P1:Pointer '`(_`)(P2:Pointer D:DirectDecl):>DirectDecl)
     => normPtrs'(concatPtrs(P1, P2) D)
 
   rule normPtrs'(Lbl:KLabel(L:KList)) => Lbl(normPtrs''(L))
@@ -411,4 +420,3 @@ module CIL-TYPING
   rule normPtrs''(K:K,, L:KList) => normPtrs'(K),, normPtrs''(L)
   rule normPtrs''(.KList) => .KList
 endmodule
-
