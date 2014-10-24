@@ -181,6 +181,7 @@ module CIL-TYPING
   syntax Declarator ::= downPtrConv(Declarator) [function]
   rule downPtr(TS:TypeSpec D:Declarator)
     => normType(TS visitDecl(D, 'downPtrConv, '$needsDownPtrConv))
+  rule downPtr(_) => false [owise]
   rule $needsDownPtrConv(_:Pointer _:SymId) => true
   rule $needsDownPtrConv(_) => false [owise]
   rule downPtrConv(* X:SymId) => X
