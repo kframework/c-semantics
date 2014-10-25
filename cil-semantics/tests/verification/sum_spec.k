@@ -6,11 +6,11 @@ module SUM-SPEC
 rule
 <frame>
     <k>
-        'call(
-            nclv(unsigned int #__id__ ( unsigned int ) , FunPtr(sum, tu("unknown"))),,
-            (tv(unsigned int, I32N:MInt{bitwidth(32)}), .Exps)) // TODO(YilongL): get rid of .Exps
+        nclv(unsigned int #__id__ ( unsigned int ), FunPtr(sum, tu("unknown"))) (
+            tv(unsigned int, I32N:MInt{bitwidth(32)})
+        )
     =>
-        'tv(unsigned int,, udivMInt(mulMInt(I32N, addMInt(I32N, mi(32, 1))), mi(32, 2)))
+        tv(unsigned int, udivMInt(mulMInt(I32N, addMInt(I32N, mi(32, 1))), mi(32, 2)))
     ...</k>
     <frame-fun-va-args>
         .K
