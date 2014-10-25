@@ -588,6 +588,8 @@ module CIL-EXP
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
   syntax Bool ::= "$isConstArrayDeref" "(" K "," Map ")" [function]
   rule $isConstArrayDeref(X:CId[_:Constant], (_:Map (X |-> lv(_,_)))) => true
+  rule $isConstArrayDeref(Lbl:KLabel(_), _) => false
+    when Lbl =/=KLabel '_`[_`]
   rule $isConstArrayDeref(_, _) => false [owise]
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
