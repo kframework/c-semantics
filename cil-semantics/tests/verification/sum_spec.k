@@ -1,4 +1,4 @@
-require "../cil.k"
+require "../../cil.k"
 
 module SUM-SPEC
   imports CIL
