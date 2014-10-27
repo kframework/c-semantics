@@ -48,19 +48,19 @@ module C-COMMON-EXPR-ASSIGNMENT
      the right is a pointer.
 
      }*/
-     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when hasArithmeticType(T') andBool hasArithmeticType(T)
                andBool (getQualifiers(T) ==Set .Set)
                andBool (T' =/=K T)
           [structural]
 
-     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
                andBool (T' =/=K T)
           [structural]
 
-     rule lval(_, t(Mods':Set, pointerType(T':Type)))
+     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when areCompatible(stripQualifiers(T'), stripQualifiers(T))
@@ -68,7 +68,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
-     rule lval(_, t(Mods':Set, pointerType(T':Type)))
+     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           when (isVoidType(T') orBool isVoidType(T))
@@ -76,23 +76,23 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
-     rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
+     rule nclv(_, T':Type) := (V:TypedValue => cast(T', V))
           when isPointerType(T')
                andBool isNullPointerConstant(V)
                andBool (T' =/=K type(V))
           [structural]
 
-     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           when isBoolType(T') andBool isPointerType(T)
           [structural]
 
      rule (. => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
-          ~> lval(_, T':Type) := tv(V:CValue, T:Type)
+          ~> nclv(_, T':Type) := tv(V:CValue, T:Type)
           when (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
      rule (. => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
-          ~> lval(_, T':Type) := tv(_, T:Type)
+          ~> nclv(_, T':Type) := tv(_, T:Type)
           when isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
@@ -127,34 +127,32 @@ module C-COMMON-EXPR-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     syntax K ::= compoundAssignment(KLabel, K, K) [strict(2,3)]
-     // these should not be nd, in order to keep the operations together
-     //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
-     //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
 
-     rule E1:K *= E2:K => compoundAssignment('_*_, E1, E2)
+     rule E1:KResult *= E2:KResult => E1 := toRVal(E1) * E2
           [structural]
-     rule E1:K /= E2:K => compoundAssignment('_/_, E1, E2)
+     rule E1:KResult /= E2:KResult => E1 := toRVal(E1) / E2
           [structural]
-     rule E1:K %= E2:K => compoundAssignment('_%_, E1, E2)
+     rule E1:KResult %= E2:KResult => E1 := toRVal(E1) % E2
           [structural]
-     rule E1:K += E2:K => compoundAssignment('_+_, E1, E2)
+     rule E1:KResult += E2:KResult => E1 := toRVal(E1) + E2
           [structural]
-     rule E1:K -= E2:K => compoundAssignment('_-_, E1, E2)
+     rule E1:KResult -= E2:KResult => E1 := toRVal(E1) - E2
           [structural]
-     rule E1:K <<= E2:K => compoundAssignment('_<<_, E1, E2)
+     rule E1:KResult <<= E2:KResult => E1 := toRVal(E1) << E2
           [structural]
-     rule E1:K >>= E2:K => compoundAssignment('_>>_, E1, E2)
+     rule E1:KResult >>= E2:KResult => E1 := toRVal(E1) >> E2
           [structural]
-     rule E1:K &= E2:K => compoundAssignment('_&_, E1, E2)
+     rule E1:KResult &= E2:KResult => E1 := toRVal(E1) & E2
           [structural]
-     rule E1:K ^= E2:K => compoundAssignment('_^_, E1, E2)
+     rule E1:KResult ^= E2:KResult => E1 := toRVal(E1) ^ E2
           [structural]
-     rule E1:K |= E2:K => compoundAssignment('_|_, E1, E2)
+     rule E1:KResult |= E2:KResult => E1 := toRVal(E1) | E2
           [structural]
 
-     rule compoundAssignment(L:KLabel, V:Value, V':Value)
-          => pkludge(V) := L(rkludge(V),, rkludge(V'))
+     syntax K ::= toRVal(K)
+          [strict(all(context('reval), result(Value)))]
+
+     rule toRVal(V:Value) => V
           [structural]
 
 endmodule

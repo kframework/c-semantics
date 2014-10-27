@@ -138,6 +138,7 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= "oldStyle"
      // For function array parameters with a static-qualified size.
      syntax Modifier ::= arrayStatic(CSize) [klabel('arrayStatic)]
+     // For recording the location from which a value was retrieved.
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
 

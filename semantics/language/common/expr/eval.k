@@ -1,7 +1,4 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
-     // TODO(chathhorn): hackish, rename at least
-     syntax K ::= rkludge(K) [function, klabel('rkludge)]
-     syntax K ::= pkludge(K) [function, klabel('pkludge)]
      syntax K ::= instantiate(SymLoc, Type)
      syntax K ::= checkLoc(SymLoc)
 endmodule
@@ -19,32 +16,17 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     // chathhorn: to work around the new semantics for contexts.
-     rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
-     rule K:K ~> reval(HOLE) => reval(rkludge(K)) [cool, ndlocal]
-     rule rkludge(K:K) => K
-          when isKResult(K) =/=K true
+     // rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
+     // rule K:K ~> reval(HOLE) => reval(K) [cool, ndlocal]
 
-     rule peval(K:K) => K ~> peval(HOLE) [heat]
-     rule K:K ~> peval(HOLE) => peval(pkludge(K)) [cool, ndlocal]
-     rule pkludge(K:K) => K
-          when isKResult(K) =/=K true
+     // rule peval(K:K) => K ~> peval(HOLE) [heat]
+     // rule K:K ~> peval(HOLE) => peval(K) [cool, ndlocal]
 
-     rule lv(L:SymLoc, T:Type) => lval(L, T)
-          [structural]
-
-     // FIXME Whoah!  What about char types?  What is this about?
      // If the lvalue designates an object of automatic storage duration that
      // could have been declared with the register storage class (never had its
      // address taken), and that object is uninitialized (not declared with an
      // initializer and no assignment to it has been performed prior to use),
      // the behavior is undefined.
-
-     rule rkludge(voidVal) => voidVal
-     rule rkludge(emptyValue) => emptyValue
-     rule rkludge(tv(V:CValue, T:Type)) => tv(V, T)
-
-     rule pkludge(tv(V:CValue, T:Type)) => tv(V, T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{2}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -60,14 +42,13 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      // Lvalue conversion.
-     rule rkludge(lval(Loc:SymLoc, T:Type)) 
-          => instantiate(Loc, T)
+     rule reval(nclv(Loc:SymLoc, T:Type) => instantiate(Loc, T))
           when notBool isArrayType(T)
-               andBool notBool isFunctionType(T) 
+               andBool notBool isFunctionType(T)
+          [structural]
 
-     rule pkludge(lval(Loc:SymLoc, T:Type)) => lval(Loc, T)
-          when notBool isArrayType(T) 
-               andBool notBool isFunctionType(T) 
+     rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
+          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -78,19 +59,16 @@ module C-COMMON-EXPR-EVAL
      an lvalue. If the array object has register storage class, the behavior is
      undefined.
      }*/
-     rule rkludge(lval(Loc:SymLoc, T:Type))
+
+     rule reval(nclv(Loc:SymLoc, T:Type)
           => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
+          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T)))
           when isArrayType(T)
-     rule pkludge(lval(Loc:SymLoc, T:Type))
-          => checkRegister(Loc)
-          ~> tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))
-          when isArrayType(T)
+          [structural]
 
      syntax Type ::= arrayToPtrType(Type) [function]
      rule arrayToPtrType(T:Type)
-          => stripQualifiers(
-               t(getModifiers(T), pointerType(innerType(T))))
+          => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
@@ -112,12 +90,10 @@ module C-COMMON-EXPR-EVAL
      designator with type ``function returning T'' is converted to an
      expression that has type ``pointer to a function returning T''.
      }*/
-     rule rkludge(lval(Loc:SymLoc, T:Type)) 
-          => tv(Loc, t(.Set, pointerType(T)))
-          when isFunctionType(T) 
-     rule pkludge(lval(Loc:SymLoc, T:Type)) 
-          => tv(Loc, t(.Set, pointerType(T)))
-          when isFunctionType(T) 
+
+     rule reval(nclv(Loc:SymLoc, T:Type) => tv(Loc, t(.Set, pointerType(T))))
+          when isFunctionType(T)
+          [structural]
 
      syntax K ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => . ...</k>

@@ -1,7 +1,8 @@
 module C-SYNTAX
-     // these are semantic
-     syntax K ::= reval(K) [semantic]
-     syntax K ::= peval(K) [semantic]
+     // TODO(chathhorn): context attr required to work around weird bug in 3.4.
+     syntax K ::= reval(K) [strict, klabel('reval), context(reval)]
+     syntax K ::= "reval'" "(" K ")"
+          [strict(all(context('reval), result(Value))), klabel('reval')]
 
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
@@ -247,7 +248,7 @@ module C-SYNTAX
      and init_name = name * init_expression
      */
      syntax InitName ::= "InitName" "(" K "," K ")" [klabel('InitName)]
-     context InitName(_, (HOLE => reval(HOLE))) [ndheat]
+     context InitName(_, (HOLE => reval'(HOLE))) [ndheat]
 
      /*
      (* Single names are for declarations that cannot come in groups, like
@@ -337,8 +338,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Nop"
      syntax PureStatement ::= "Computation" "(" K ")"
-          [klabel('Computation), latex({{#1}};)]
-     context Computation((HOLE => reval(HOLE)))
+          [strict(all(context('reval), result(Value))), klabel('Computation), latex({{#1}};)]
      syntax PureStatement ::= "BlockStatement" "(" K ")"
           [klabel('BlockStatement)]
      syntax PureStatement ::= "Sequence" "(" K "," K ")"
@@ -351,8 +351,7 @@ module C-SYNTAX
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
      syntax PureStatement ::= "IfThenElse" "(" K "," K "," K ")"
-          [klabel('IfThenElse)]
-     context IfThenElse((HOLE => reval(HOLE)), _, _)
+          [strict(1(context('reval), result(Value))), klabel('IfThenElse)]
      syntax PureStatement ::= "While" "(" K "," K ")"
           [klabel('While)]
      syntax PureStatement ::= "DoWhile" "(" K "," K ")"
@@ -368,8 +367,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
-     syntax PureStatement ::= "Return" "(" K ")" [klabel('Return)]
-     context Return((HOLE => reval(HOLE)))
+     syntax PureStatement ::= "Return" "(" K ")" [strict(all(context('reval), result(Value))), klabel('Return)]
 
      /*
      | SWITCH of expression * statement * cabsloc
@@ -378,8 +376,7 @@ module C-SYNTAX
      | DEFAULT of statement * cabsloc
      */
      // unique switch id
-     syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [klabel('Switch)]
-     context Switch(_, (HOLE => reval(HOLE)), _)
+     syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [strict(2(context('reval), result(Value))), klabel('Switch)]
      // unique switch id, unique case id, exp, statement
      syntax PureStatement ::= "Case" "(" Int "," Int "," K "," K ")"
           [klabel('Case)]
@@ -434,24 +431,24 @@ module C-SYNTAX
      MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
      | PREINCR | PREDECR | POSINCR | POSDECR
      */
-     syntax Expression ::= "-" K [prec(22)]
-                         | "+" K [prec(22)]
-                         | "!" K [prec(22)]
-                         | "~" K [prec(22)]
-                         | "*" K [prec(22)]
-                         | "&" K [strict, prec(22)]
-                         | "++" K [prefer, prec(22)]
-                         | "--" K [prefer, latex(\terminal{-{}-}{#1}), prec(22)]
-                         | K "++" [prefer]
-                         | K "--" [prefer, latex({#1}\terminal{-{}-})]
+     syntax Expression ::= "-" K [prec(22), strict(all(context('reval), result(Value)))]
+                         | "+" K [prec(22), strict(all(context('reval), result(Value)))]
+                         | "!" K [prec(22), strict(all(context('reval), result(Value)))]
+                         | "~" K [prec(22), strict(all(context('reval), result(Value)))]
+                         | "*" K [prec(22), strict(all(context('reval), result(Value)))]
+                         | "&" K [prec(22), strict]
+                         | "++" K [prec(22), prefer, strict]
+                         | "--" K [prec(22), prefer, strict, latex(\terminal{-{}-}{#1})]
+                         | K "++" [prefer, strict]
+                         | K "--" [prefer, strict, latex({#1}\terminal{-{}-})]
      /* | BINARY of binary_operator * expression * expression */
                          > K "*" K [prec(31), left]
                          | K "/" K [prec(31), left]
                          | K "%" K [prec(31), left]
                          > K "+" K [prec(33), left]
                          | K "-" K [prec(33), left]
-                         > K "<<" K [latex({{#1}}\ll{{#2}}), prec(35), left]
-                         | K ">>" K [latex({{#1}}\gg{{#2}}), prec(35), left]
+                         > K "<<" K [prec(35), left, latex({{#1}}\ll{{#2}})]
+                         | K ">>" K [prec(35), left, latex({{#1}}\gg{{#2}})]
                          > K "<" K [prec(37), left]
                          | K "<=" K [prec(37), left]
                          | K ">" K [prec(37), left]
@@ -461,94 +458,93 @@ module C-SYNTAX
                          > K "&" K [prec(41), left]
                          > K "^" K [prec(43), left]
                          > K "|" K [prec(45), left]
-                         > K "&&" K [prefer, prec(47), left]
+                         > K "&&" K [prec(47), prefer, left]
                          > K "||" K [prec(49), left]
      /* | QUESTION of expression * expression * expression */
                          // Ternary operator is right-associative.
-                         > K "?" K ":" K [prec(51), right, gather(e & E)]
-                         > K "*=" K [prec(53)]
-                         | K "/=" K [prec(53)]
-                         | K "%=" K [prec(53)]
-                         | K "+=" K [prec(53)]
-                         | K "-=" K [prec(53)]
+                         > K "?" K ":" K
+                              [prec(51), right, gather(e & E), strict(1(context('reval), result(Value)))]
+                         > K "*=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "/=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "%=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "+=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "-=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
                          | K "<<=" K
-                              [latex({{#1}}\terminal{$\gg$=}{{#2}}), prec(53)]
-                         | K "&=" K [prec(53)]
-                         | K "^=" K [prec(53)]
-                         | K "|=" K [prec(53)]
+                              [prec(53), strict(1, 2(context('reval), result(Value))), latex({{#1}}\terminal{$\gg$=}{{#2}})]
+                         | K "&=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "^=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                         | K "|=" K
+                              [prec(53), strict(1, 2(context('reval), result(Value)))]
                          | K ">>=" K
-                              [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)]
+                              [prec(53), strict(1, 2(context('reval), result(Value))), latex({{#1}}\terminal{$\ll$=}{{#2}})]
                          | K ":=" K [prec(53)]
 
-     context - (HOLE => reval(HOLE))
-     context + (HOLE => reval(HOLE))
-     context ! (HOLE => reval(HOLE))
-     context ~ (HOLE => reval(HOLE))
-     context * (HOLE => reval(HOLE))
-     context (HOLE => peval(HOLE)) ++
-     context (HOLE => peval(HOLE)) --
-     context (HOLE => reval(HOLE)) * _ [ndheat]
-     context _ * (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) / _ [ndheat]
-     context _ / (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) % _ [ndheat]
-     context _ % (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) * _ [ndheat]
+     context _ * (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) / _ [ndheat]
+     context _ / (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) % _ [ndheat]
+     context _ % (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) + _ [ndheat]
-     context _ + (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) - _ [ndheat]
-     context _ - (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) + _ [ndheat]
+     context _ + (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) - _ [ndheat]
+     context _ - (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) << _ [ndheat]
-     context _ << (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) << _ [ndheat]
+     context _ << (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) >> _ [ndheat]
-     context _ >> (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) >> _ [ndheat]
+     context _ >> (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) < _ [ndheat]
-     context _ < (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) <= _ [ndheat]
-     context _ <= (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) < _ [ndheat]
+     context _ < (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) <= _ [ndheat]
+     context _ <= (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) > _ [ndheat]
-     context _ > (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) >= _ [ndheat]
-     context _ >= (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) > _ [ndheat]
+     context _ > (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) >= _ [ndheat]
+     context _ >= (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) == _ [ndheat]
-     context _ == (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) != _ [ndheat]
-     context _ != (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) == _ [ndheat]
+     context _ == (HOLE => reval'(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) != _ [ndheat]
+     context _ != (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) & _ [ndheat]
-     context _ & (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) & _ [ndheat]
+     context _ & (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) ^ _ [ndheat]
-     context _ ^ (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) ^ _ [ndheat]
+     context _ ^ (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) | _ [ndheat]
-     context _ | (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval'(HOLE)) | _ [ndheat]
+     context _ | (HOLE => reval'(HOLE)) [ndheat]
 
-     context (HOLE => reval(HOLE)) && _ [ndheat]
+     context (HOLE => reval'(HOLE)) && _ [ndheat]
 
-     context (HOLE => reval(HOLE)) || _ [ndheat]
+     context (HOLE => reval'(HOLE)) || _ [ndheat]
 
-     context (HOLE => peval(HOLE)) := _ [ndheat]
-     context _ := (HOLE => reval(HOLE)) [ndheat]
-
-     context (HOLE => reval(HOLE)) ? _ : _
+     context HOLE := _ [ndheat]
+     context _ := (HOLE => reval'(HOLE)) [ndheat]
 
      /*
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= "Cast" "(" K "," K "," K ")"
-          [klabel('Cast), strict(1)]
-     context Cast(_, _, (HOLE => reval(HOLE)))
 
+     // TODO(chathhorn): dupe klabel??
+     syntax Expression ::= "Cast" "(" K "," K "," K ")"
+          [strict(1), klabel('Cast)]
      syntax Expression ::= "Cast" "(" K "," K ")"
-          [klabel('Cast), strict(1)]
-     context Cast(_, (HOLE => reval(HOLE)))
+          [strict(1, 2(context('reval), result(Value)))]
 
      // new // comp-lit id, spec, decl, init
      syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")"
@@ -560,8 +556,8 @@ module C-SYNTAX
      | CALL of expression * expression list
      */
 
-     syntax Expression ::= "Call" "(" K "," K ")"
-          [klabel('Call)] // K, List
+     syntax Expression ::= "Call" "(" K "," K ")" [klabel('Call)]
+     context Call((HOLE => reval'(HOLE)), _) [ndheat]
      /*
      | COMMA of expression list
      */
@@ -598,10 +594,9 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      | MEMBEROFPTR of expression * string
      */
-     syntax Expression ::= K "." CId [left]
-     context (HOLE => peval(HOLE)) . _
-     syntax Expression ::= K "->" CId [left]
-     context (HOLE => reval(HOLE)) -> _
+     syntax Expression ::= K "." CId [left, strict(1)]
+     syntax Expression ::= K "->" CId
+          [left, strict(1(context('reval), result(Value)))]
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

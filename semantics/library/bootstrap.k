@@ -1,7 +1,8 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax K ::= varg(K) [hybrid, strict]
+     syntax K ::= varg(K) [strict]
+     syntax Value ::= "varg'" "(" K ")"
      syntax K ::= prepareBuiltin(CId, List) 
-     syntax K ::= incSymbolic(K)
+     syntax K ::= incSymbolic(K) [strict(all(context('reval), result(Value)))]
 endmodule
 
 module LIBC-BOOTSTRAP
@@ -17,9 +18,9 @@ module LIBC-BOOTSTRAP
 
      imports COMPAT-SYNTAX
 
-     rule rkludge(varg(K:K)) => varg(K) [structural, anywhere]
+     rule varg(V:KResult) => varg'(V)
+          [structural]
 
-     context incSymbolic(HOLE => reval(HOLE))
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
           => tv(loc(linc(base(Loc)), offset(Loc)), T)
           [structural]
@@ -27,7 +28,7 @@ module LIBC-BOOTSTRAP
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
-     context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
+     context prepareBuiltin(_, _ ListItem(HOLE => reval'(HOLE)) _)
      rule <k> handleBuiltin => Return(prepareBuiltin(F, makeVarArgs(P))) ...</k>
           <curr-function> F:CId </curr-function>
           <curr-function-params> P:List </curr-function-params>

@@ -2,6 +2,7 @@ module C-DYNAMIC-SYNTAX
      syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
      syntax Value ::= "voidVal"
+     syntax Value ::= "emptyValue"
 
      syntax Agg ::= agg(List)
 
@@ -10,19 +11,17 @@ module C-DYNAMIC-SYNTAX
      syntax TypedValue ::= tv(CValue, Type)
           [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
-     syntax LValue ::= lv(SymLoc, Type) [klabel('lv)]
-     syntax Value ::= lval(SymLoc, Type) [klabel('lval)]
+     syntax LValue ::= lv(SymLoc, Type)
 
      syntax Type ::= type(K) [function]
      syntax K ::= value(TypedValue) [function]
 
      syntax K ::= "discard"
-     syntax Value ::= "emptyValue"
 
      syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
      syntax C ::= BaseValue | Type | Value
      syntax Value ::= TypedValue
-     syntax KResult ::= Value | Type
+     syntax KResult ::= Value | Type | nclv(SymLoc, Type)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -66,7 +65,7 @@ module C-DYNAMIC
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
-     rule type(lval(_, T:Type)) => T
+     rule type(nclv(_, T:Type)) => T
 
      rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc
           [structural, anywhere]

@@ -336,7 +336,7 @@ module C-DECL-INITIALIZER
           <curr-subobject> (block => .List) ...</curr-subobject>
           [structural]
 
-     context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _))
+     context buildDesignator(AtIndexInit(HOLE => reval'(HOLE), _))
      rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K))
                => buildDesignator(More)
           ...</k>

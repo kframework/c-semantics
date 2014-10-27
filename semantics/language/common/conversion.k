@@ -46,8 +46,7 @@ module C-CONVERSION
           [structural]
 
      // TODO(chathhorn): the rules for cast are a bit of a mess because we've
-     // assumed they apply apply anywhere but they still need to raise some
-     // errors.
+     // assumed they apply anywhere but they still need to raise some errors.
 
      rule cast(T':Type, tv(V:CValue, T:Type))
           => tv(V, T')

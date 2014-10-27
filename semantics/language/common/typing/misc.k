@@ -149,7 +149,6 @@ module C-TYPING-MISC
      rule getSpecifiers(T:Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
 
-
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
           SetItem(Const)

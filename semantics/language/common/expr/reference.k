@@ -29,7 +29,7 @@ module C-COMMON-EXPR-REFERENCE
      its operand.
      }
      */
-     rule &(lval(Loc:SymLoc, T:Type))
+     rule &(nclv(Loc:SymLoc, T:Type))
           => tv(addProv(align(getAlignas(T)),
                addProv(fromArray(0, byteSizeofType(T)), Loc)),
                t(.Set, pointerType(T)))
@@ -39,7 +39,7 @@ module C-COMMON-EXPR-REFERENCE
           ~> &(tv(_, _))
           [structural]
      rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
-          ~> &(lval(Loc:SymLoc, _))
+          ~> &(nclv(Loc:SymLoc, _))
           when isRegisterLoc(Loc)
           [structural]
 

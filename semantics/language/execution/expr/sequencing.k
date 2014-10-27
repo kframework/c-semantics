@@ -13,15 +13,14 @@ module C-EXPR-SEQUENCING
      value.
      }*/
 
-     syntax K ::= commaEval(K) [strict]
-
-     rule commaEval(R:KResult) => rkludge(R)
-          [structural]
-
      rule Comma(list(ListItem(K:K) L:List))
           => commaEval(K) ~> discard ~> sequencePoint ~> Comma(list(L))
           when L =/=List .List
           [structural]
      rule Comma(list(ListItem(K:K))) => commaEval(K)
           [structural]
+
+     syntax K ::= commaEval(K) [strict(all(context('reval), result(Value)))]
+     rule commaEval(V:Value) => V
+
 endmodule

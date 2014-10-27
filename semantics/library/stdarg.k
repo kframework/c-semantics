@@ -68,7 +68,7 @@ module LIBC-STDARG
           [structural]
                     
      syntax K ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
-     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
+          [strict(3(context('reval), result(Value)))]
      // fixme can do lots of checks here too
      rule [va-inc]:
           va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)

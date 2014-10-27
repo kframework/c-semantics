@@ -19,7 +19,7 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> lval(Loc:SymLoc, t(Mods:Set,
+     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
                     structType(S:CId, _, Fields:FieldInfo))) . F:CId
                => lookupField(F, Loc, Mods, S, Fields, Fields)
           ...</k>
@@ -27,7 +27,7 @@ module C-COMMON-EXPR-MEMBERS
           when notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
-     rule <k> lval(Loc:SymLoc, t(Mods:Set,
+     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
                     unionType(S:CId, _, Fields:FieldInfo))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
                     Mods, S, Fields, Fields)
@@ -39,7 +39,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (. => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, structType(_, _, _))) . _:CId
+               ~> nclv(_, t(Mods:Set, structType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           when Atomic in Mods
@@ -47,7 +47,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (. => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, unionType(_, _, _))) . _:CId
+               ~> nclv(_, t(Mods:Set, unionType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           when Atomic in Mods

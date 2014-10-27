@@ -46,11 +46,13 @@ module C-MEMORY-READING
 
      syntax K ::= readActual(SymLoc, Type) [klabel('readActual)]
      rule readActual(Loc:SymLoc, T:Type)
-          => concretize(T, readBytes(stripProv(Loc), byteSizeofType(T), T))
+          => concretize(T,
+               readBytes(stripProv(Loc), byteSizeofType(T), T))
           when notBool isBitfieldType(T)
           [structural]
      rule readActual(Loc:SymLoc, T:Type)
-          => concretize(T, fillToBytes(extractBitsFromMem(Loc, T))) 
+          => concretize(T,
+               fillToBytes(extractBitsFromMem(Loc, T)))
           when isBitfieldType(T)
           [structural]
 
@@ -132,7 +134,7 @@ module C-MEMORY-READING
      rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
-     rule joinPointerBytes-aux(T:Type, 
+     rule joinPointerBytes-aux(T:Type,
                ListItem(piece(subObject(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
                L:List, subObject(Loc, 0, End:Int))
           => joinPointerBytes-aux(T, L, subObject(Loc, 0, End +Int 1))

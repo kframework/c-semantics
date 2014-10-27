@@ -108,8 +108,8 @@ module LIBC-SETJMP
           <thread-local> C:Bag </thread-local>
           [structural]
 
-     syntax K ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
-     context longjmp-aux(HOLE => reval(HOLE), _)
+     syntax K ::= "longjmp-aux" "(" K "," K ")"
+          [strict(1(context('reval), result(Value)), 2)]
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"),
                ListItem(V:KResult)

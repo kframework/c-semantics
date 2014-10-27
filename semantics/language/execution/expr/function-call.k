@@ -48,7 +48,6 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     context Call((HOLE => reval(HOLE)), _) [ndheat]
      context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
@@ -69,7 +68,9 @@ module C-EXPR-FUNCTION-CALL
 
      syntax K ::= revalParams(K)
      syntax KResult ::= rvlist(List)
-     context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     context revalParams(list(_ ListItem(HOLE => reval'(HOLE)) _))
+          [ndheat]
+
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]

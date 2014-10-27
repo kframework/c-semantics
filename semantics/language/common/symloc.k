@@ -257,18 +257,11 @@ module C-SYMLOC
           when isSymLoc(V) =/=K true
           [structural]
 
-     rule transferProv(From:SymLoc, lv(To:SymLoc, T:Type))
+     rule transferProv(From:SymLoc, nclv(To:SymLoc, T:Type))
           => lv(addProv(prov(From), To), T)
           [structural]
-     rule transferProv(Prov:Set, lv(Loc:SymLoc, T:Type))
+     rule transferProv(Prov:Set, nclv(Loc:SymLoc, T:Type))
           => lv(addProv(Prov, Loc), T)
-          [structural]
-
-     rule transferProv(From:SymLoc, lval(To:SymLoc, T:Type))
-          => lval(addProv(prov(From), To), T)
-          [structural]
-     rule transferProv(Prov:Set, lval(Loc:SymLoc, T:Type))
-          => lval(addProv(Prov, Loc), T)
           [structural]
 
      syntax Bool ::= "#isBases" "(" Provenance ")" [function, klabel('#isBases)]
