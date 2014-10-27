@@ -1,23 +1,13 @@
+// Copyright (c) 2014 K Team. All Rights Reserved.
+
 module LIST-PATTERN
   imports CIL-SEMANTICS
 
-  syntax Seq ::= Value "::" Seq   [klabel(seq-cons)]
-               | "[]"             [klabel(seq-nil)]
-  syntax Seq ::= Seq "@" Seq      [function, klabel(seq-append)]
-               | rev(Seq)         [function]
-  rule (E::L1) @ L2 => E::(L1 @ L2)
-  rule [] @ L => L
-  rule rev(E::L) => rev(L) @ E::[]
-  rule rev([]) => []
-
-  /* lemmas */
-  rule L @ [] => L                                [lemma]
-  rule (L1 @ (E :: [])) @ L2 => L1 @ (E :: L2)    [lemma]
-
-  syntax Bag ::= "list" "(" Ptr ")" "(" Seq ")"   [pattern(1)]
+  /* list pattern */
+  syntax Bag ::= "list" "(" Ptr ")" "(" List ")"   [pattern(1)]
   rule
     <heap>...
-      list(Ptr(BP:BasePtr, 0))(E:Value :: L:Seq)
+      list(Ptr(BP:BasePtr, 0))(ListItem(MI:MInt) L:List)
     =>
       <object>
         <base-ptr> BP </base-ptr>
@@ -30,19 +20,18 @@ module LIST-PATTERN
           //5 |-> ?B5:MInt
           //6 |-> ?B6:MInt
           //7 |-> ?B7:MInt
-          4 |-> ?P:Ptr 
-          5 |-> used 
-          6 |-> used 
-          7 |-> used 
+          4 |-> ?P:Ptr
+          5 |-> used
+          6 |-> used
+          7 |-> used
         </bytes>
       </object>
       list(?P:Ptr)(L)
     ...</heap>
   //ensures (E ==K mIntOfDigits(ListItem(?B0) ListItem(?B1) ListItem(?B2) ListItem(?B3))) andBool (?P ==K bytes2Value(void*, ListItem(?B4) ListItem(?B5) ListItem(?B6) ListItem(?B7)))
-  ensures E ==K mIntOfDigits(ListItem(?B0) ListItem(?B1) ListItem(?B2) ListItem(?B3))
-  [pattern]
-  rule <heap>... (list(Null)([]) => .Bag) ...</heap>
-  [pattern]
+    ensures MI ==K mIntOfDigits(ListItem(?B0) ListItem(?B1) ListItem(?B2) ListItem(?B3))
+    [pattern]
+  rule <heap>... list(Null)(.List) => .Bag ...</heap>
+    [pattern]
 
 endmodule
-
