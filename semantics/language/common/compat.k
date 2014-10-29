@@ -44,8 +44,6 @@ module COMPAT-SYNTAX
      syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     //TODO(liyi): make sure this is in current including List syntax Bool ::= K "in" List [function]
-     syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
 
@@ -103,12 +101,6 @@ module COMPAT
                andBool (ordChar(C) >=Int ordChar("a")
                     andBool ordChar(C) <=Int ordChar("z"))
 
-     // this should probably go in the k prelude
-     rule K:K in (ListItem(K:K) _) => true
-     rule _:K in .List => false
-     rule K:K in (ListItem(K':K) L:List) => K in L
-          requires K =/=K K'
-
      rule removeListItem(.List, _) => .List
      rule removeListItem(ListItem(A:K) M:List, A) => M
      rule removeListItem(ListItem(A:K) M:List, A':K)
@@ -126,9 +118,6 @@ module COMPAT
      rule listEqual(ListItem(A1:K) _, ListItem(A2:K) _)
           => false
           requires A1 =/=K A2
-
-     //TODO(liyi): might need to add it in the builtins
-     rule intersectSet(S1:Set, S2:Set) => S1 -Set (S1 -Set S2)
 
      syntax Bool ::= subset(K, Set, Set) [function]
 
