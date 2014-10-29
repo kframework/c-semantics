@@ -22,7 +22,7 @@ module CIL-COMMON-PTR
 
   /*
    * BasePtr of Base * Size
-   * @immutable: Base, Size 
+   * @immutable: Base, Size
    */
   syntax BasePtr ::= "BasePtr" "(" Int "," Int ")"
 
@@ -109,7 +109,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
-  syntax List ::= value2Bytes(Type, Value) [function] 
+  syntax List ::= value2Bytes(Type, Value) [function]
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
@@ -143,8 +143,8 @@ module CIL-COMMON-TYPED-VALUE
 
   rule norm(T:IntType, MI:MInt) => tv(T, MI)
   rule norm(T:IntType, I:Int)   => tv(T, mi(width(T), I))
-  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1)) 
-  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0)) 
+  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1))
+  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0))
   rule norm(T:IntType, F:Float) => tv(T, mi(width(T), Float2Int(F)))
 
   // TODO(chathhorn): not sure about the best way to handle this.
@@ -186,14 +186,14 @@ module CIL-COMMON-MMU
     $rangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
-  when I <Int J 
+  when I <Int J
   rule $rangeList(I:Int, J:Int, _) => .List
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
-  when I >Int J 
+  when I >Int J
   rule $downrangeList(I:Int, J:Int, _) => .List
   when I <=Int J
 
@@ -251,7 +251,7 @@ module CIL-COMMON-MMU
                  | "store" "(" Type "," Ptr "," Value ")"
                  | "$store" "(" Ptr "," List ")"
 
-  rule 
+  rule
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
   rule
@@ -274,7 +274,7 @@ module CIL-COMMON-MMU
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
-  rule $load(T:Type, P:Ptr, Sz:TypedValue) 
+  rule $load(T:Type, P:Ptr, Sz:TypedValue)
     => $load(T, P, mival(Sz), .List)
   [structural]
   rule
@@ -307,7 +307,7 @@ module CIL-COMMON-MMU
 endmodule
 
 module CIL-COMMON
-  imports MINT 
+  imports MINT
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
@@ -319,12 +319,8 @@ module CIL-COMMON
   syntax KItem ::= "callMain"
 
   /* These are also defined in a standard library header. */
-  // TODO(AndreiS): check if this more specific type works 
-  //syntax IntType ::= "size_t" [function]
-  // TODO(AndreiS): define size_t here or in the header files?
-  //syntax Type ::= "size_t"
-  syntax Type ::= "size_t" [function]
-                | "size_ptr" [function]
+  // TODO(AndreiS): check if this more specific type works
+  syntax Type ::= "size_ptr" [function]
                 | "ptrdiff_t" [function]
 
   /*
@@ -344,4 +340,3 @@ module CIL-COMMON
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
 endmodule
-

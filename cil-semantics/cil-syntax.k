@@ -235,7 +235,8 @@ module CIL-SYNTAX
   /* C identifiers */
   /* regular expression for tokens representing C identifiers */
   syntax CId ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
-               | Token{"main"}
+               | "main"
+               | "size_t"
   syntax CIds ::= List{CId, ","}
 
 
