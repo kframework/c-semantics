@@ -28,7 +28,7 @@ module CIL-STMT
     <labels>... L |-> Ss:Stmts ...</labels>
   [computational]
 
-  rule 
+  rule
     <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
@@ -56,7 +56,7 @@ module CIL-STMT
     <body> { _:VarDecls { Ss:Stmts } } </body>
     <make-goto-table-enabled> false => true </make-goto-table-enabled>
     <make-goto-table-tasks>
-      (.Bag => 
+      (.Bag =>
         <make-goto-table-task>
           <make-goto-table-stmts> Ss </make-goto-table-stmts>
           <make-goto-table-cont> .Stmts </make-goto-table-cont>
@@ -98,7 +98,7 @@ module CIL-STMT
         <make-goto-table-stmts>
           (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
         </make-goto-table-stmts>
-        <make-goto-table-cont> 
+        <make-goto-table-cont>
           Cont:Stmts
         </make-goto-table-cont>
       </make-goto-table-task>
@@ -143,9 +143,9 @@ module CIL-STMT
     <make-goto-table-stmts>
       S:Stmt Ss:Stmts => Ss
     </make-goto-table-stmts>
-  when getKLabel(S) =/=KLabel '_:_ 
-    andBool getKLabel(S) =/=KLabel 'if`(_`)_else_ 
-    andBool getKLabel(S) =/=KLabel 'while`(_`)_ 
+  when getKLabel(S) =/=KLabel '_:_
+    andBool getKLabel(S) =/=KLabel 'if`(_`)_else_
+    andBool getKLabel(S) =/=KLabel 'while`(_`)_
     andBool getKLabel(S) =/=KLabel '`{_`}
   [structural]
 
@@ -198,7 +198,7 @@ module CIL-STMT
   rule if (tv(_, MI:MInt)) _:Stmt else S:Stmt => S
   when uvalueMInt(MI) ==K 0
   [computational]
-  
+
   rule while(E:Exp) S:Stmt => if (E) { S while(E) S }   [structural]
 
   rule { Stmts:Stmts } => Stmts   [structural]
@@ -211,14 +211,14 @@ module CIL-STMT
   /*
    * Function call/return
    */
-  rule 
+  rule
      <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
      <global-env> GEnv:Map </global-env>
      <phase> _ => executing </phase>
      [structural]
 
-  context (HOLE => HOLE ~> noLeftValueConversion)(_:Exps)
+  context (HOLE => HOLE ~> noLeftValueConversion)(_:TypedValues)
   rule
     (
       <frame>
@@ -263,7 +263,7 @@ module CIL-STMT
     )
     <frame-stack>...
       <stacked-frame> <k> K:K </k> Cells:Bag </stacked-frame> => .
-    </frame-stack>   
+    </frame-stack>
     <fun>...
       <fun-id> F </fun-id>
       <fun-type> T </fun-type>
@@ -283,7 +283,7 @@ module CIL-STMT
     )
     <frame-stack>...
       <stacked-frame> <k> K </k> Cells </stacked-frame> => .
-    </frame-stack>   
+    </frame-stack>
     <fun>...
       <fun-id> F </fun-id>
       <fun-type> void </fun-type>
@@ -293,11 +293,11 @@ module CIL-STMT
   syntax Stmt ::= TypedValue ";"
   rule tv(_, _) ; => .
 
-  rule 
+  rule
     (<frame>...
     <k> tv(int, I:MInt) </k>
     <frame-fun-id> Null </frame-fun-id>
-    ...</frame> 
+    ...</frame>
     => <result-value> ###result-value(uvalueMInt(I)) </result-value>)
     <phase> _ => terminated </phase>
   [structural]
@@ -315,7 +315,7 @@ module CIL-STMT
   //rule initializeParams(.Params, .TypedValues) => .   [structural]
   rule initializeParams(.Params, _:TypedValues) => .   [structural]
 
-  rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>   
+  rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>
     <frame-fun-va-args> _ => TVs </frame-fun-va-args>
     [structural]
 
@@ -329,9 +329,9 @@ module CIL-STMT
   =>
     deleteObject(P) ~> deleteLocals(S)
   [structural]
-  rule deleteLocals(.Set) => .K   [structural] 
+  rule deleteLocals(.Set) => .K   [structural]
 
-  rule 
+  rule
     <k> # pragma KCIL_TU Filename:String => . ...</k>
     <tus>...
       (. => <tu>... <tu-id> tu(Filename) </tu-id> ...</tu>)
@@ -340,4 +340,3 @@ module CIL-STMT
     [structural]
 
 endmodule
-
