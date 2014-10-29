@@ -191,6 +191,21 @@ module C-TRANSLATION-INIT
      // declarations across TUs, so duplicates vs. composite types probably
      // doesn't change too much.
      syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax Map ::= mergeInExternalDecls(Map,Map) [function]
+                  | mergeInExternalDecl(K,K,K,K,Map) [function]
+
+     rule mergeInExternalDecls(.Map,M:Map) => M
+     rule mergeInExternalDecls((A:K |-> B:K) M:Map,M':Map) 
+          => mergeInExternalDecls(M,mergeInExternalDecl(A,B,.K,.K,M'))
+     rule mergeInExternalDecl(A:K,B:K,.K,.K,.Map) => A |-> B
+     rule mergeInExternalDecl(A:K,B:K,.K,.K,(A':K |-> B':K) M:Map) 
+          => mergeInExternalDecl(A,B,A':K,B':K,M)
+     rule mergeInExternalDecl(A:K,B:K,A':K,B':K, M:Map) 
+          => (A':K |-> B':K) mergeInExternalDecl(A,B,.K,.K,M)
+          requires (A =/=K A') andBool (A' =/=K .K)
+     rule mergeInExternalDecl(A:K, set(S:Set), A:K, set(S':Set), M:Map) 
+          => (A:K |-> set(S S')) M
+ 
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
      rule mergeObj(
@@ -239,7 +254,7 @@ module C-TRANSLATION-INIT
                <external-defs> ExtDefs1 ExtDefs2 </external-defs>
 
                <linking-state>
-                    <external-decls> ExtDecls1 ExtDecls2 </external-decls>
+                    <external-decls> mergeInExternalDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 
