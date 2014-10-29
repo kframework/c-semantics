@@ -218,7 +218,7 @@ module CIL-EXP
 
   syntax KItem ::= "noLeftValueConversion"
 
-  syntax KItem ::= Type [avoid]
+  //syntax KItem ::= Type [avoid]
 
   rule I:Int => norm(int, I)
 
