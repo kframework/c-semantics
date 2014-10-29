@@ -3,69 +3,52 @@
 
 //#line 212 "/usr/lib/gcc/x86_64-linux-gnu/4.6/include/stddef.h"
 typedef unsigned long size_t;
-//#line 3 "list_reverse.c"
+
 struct listNode {
-   int val ;
+   int value ;
    struct listNode *next ;
 };
+
 //#line 471 "/usr/include/stdlib.h"
 extern void * malloc(size_t __size);
-//#line 9 "list_reverse.c"
-struct listNode *reverse(struct listNode *x ) 
-{ 
+
+struct listNode *reverse(struct listNode *x )
+{
   struct listNode *p ;
   struct listNode *y ;
 
   {
-//#line 15
   p = (struct listNode *)((void *)0);
-//#line 17
-  //breakpoint
+  //breakpoint;
   while ((unsigned long )x != (unsigned long )((void *)0)) {
-//#line 20
     y = x->next;
-//#line 21
     x->next = p;
-//#line 22
     p = x;
-//#line 23
     x = y;
   }
-//#line 26
   return (p);
 }
 }
-//#line 29 "list_reverse.c"
-int main(void) 
-{ 
+/*
+int main(void)
+{
   struct listNode *x ;
   int n ;
   struct listNode *y ;
   void *tmp ;
 
   {
-//#line 30
   x = (struct listNode *)((void *)0);
-//#line 31
   n = 5;
-//#line 32
   while (n) {
-//#line 33
     y = x;
-//#line 34
     tmp = malloc(sizeof(struct listNode ));
-//#line 34
     x = (struct listNode *)tmp;
-//#line 35
-    x->val = n;
-//#line 36
+    x->value = n;
     x->next = y;
-//#line 37
     n --;
   }
-//#line 40
   x = reverse(x);
-//#line 42
   return (0);
 }
-}
+}*/
