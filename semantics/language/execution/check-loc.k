@@ -17,7 +17,7 @@ module C-CHECK-LOC
           <modified>... Tag |-> _ ...</modified>
           [structural]
      rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
-          <modified> Tags:Map .Map => Tag |-> map(.Map) </modified>
+          <modified> Tags:Map (.Map => Tag |-> map(.Map)) </modified>
           when notBool (Tag in keys(Tags))
           [structural]
 

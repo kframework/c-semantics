@@ -1,6 +1,6 @@
 module C-SYNTAX
      // TODO(chathhorn): context attr required to work around weird bug in 3.4.
-     syntax K ::= reval(K) [strict, klabel('reval), context(reval)]
+     syntax K ::= reval(K) [klabel('reval), context(reval)]
      syntax K ::= "reval'" "(" K ")"
           [strict(all(context('reval), result(Value))), klabel('reval')]
 

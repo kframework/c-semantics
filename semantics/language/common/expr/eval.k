@@ -16,8 +16,8 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     // rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
-     // rule K:K ~> reval(HOLE) => reval(K) [cool, ndlocal]
+     rule reval(K:K) => checkUse(K) ~> reval(HOLE) [heat]
+     rule K:K ~> reval(HOLE) => reval(K) [cool, ndlocal]
 
      // rule peval(K:K) => K ~> peval(HOLE) [heat]
      // rule K:K ~> peval(HOLE) => peval(K) [cool, ndlocal]
