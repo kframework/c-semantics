@@ -1,5 +1,7 @@
 module C-CHECK-LOC-SYNTAX
      syntax K ::= enterRestrictScope(RestrictTag)
+     syntax K ::= exitRestrictScope(RestrictTag)
+     syntax K ::= activity(Int, Map)
 endmodule
 
 module C-CHECK-LOC
@@ -14,11 +16,19 @@ module C-CHECK-LOC
      imports COMPAT-SYNTAX
 
      rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
-          <modified>... Tag |-> _ ...</modified>
+          <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>
           [structural]
      rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
-          <modified> Tags:Map (.Map => Tag |-> map(.Map)) </modified>
+          <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
           when notBool (Tag in keys(Tags))
+          [structural]
+
+     rule <k> exitRestrictScope(Tag:RestrictTag) => . ...</k>
+          <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
+          when N >Int 1
+          [structural]
+     rule <k> exitRestrictScope(Tag:RestrictTag) => . ...</k>
+          <activeBlocks> _ (Tag |-> activity(1, _) => .Map) </activeBlocks>
           [structural]
 
      rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
@@ -102,38 +112,38 @@ module C-CHECK-LOC
                     (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
                     (.Set => SetItem(basedOn(Base, Tag))) _, _, _)
           ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           when Loc in keys(Modified)
           [structural]
      rule <k> checkRestrict(Loc:SymLoc,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
           ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           when notBool (Loc in keys(Modified))
           [structural]
      rule <k> checkRestrict(_,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _, _, _)
           ...</k>
-          <modified> Modified:Map </modified>
+          <activeBlocks> Modified:Map </activeBlocks>
           when notBool (Tag in keys(Modified))
           [structural]
      rule <k> checkRestrict(Loc:SymLoc, _, _,
                     (SetItem(basedOn(Base:SymBase, Tag:RestrictTag)) => .Set) _,
                     (.Set => SetItem(basedOn(Base, Tag))) _)
           ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           when Loc in keys(Modified)
           [structural]
      rule <k> checkRestrict(Loc:SymLoc, _, _,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
           ...</k>
-          <modified>... Tag |-> map(Modified:Map) ...</modified>
+          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           when notBool (Loc in keys(Modified))
           [structural]
      rule <k> checkRestrict(_, _, _,
                     (SetItem(basedOn(_, Tag:RestrictTag)) => .Set) _, _)
           ...</k>
-          <modified> Modified:Map </modified>
+          <activeBlocks> Modified:Map </activeBlocks>
           when notBool (Tag in keys(Modified))
           [structural]
      rule checkRestrict(_, .Set, Bases:Set, .Set, Bases':Set)

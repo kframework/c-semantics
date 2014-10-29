@@ -1,4 +1,5 @@
 module C-STMT-RETURN
+     imports C-CHECK-LOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -38,7 +39,8 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> Return(V:KResult) ~> _
-               => sequencePoint
+               => exitRestrictScope(F)
+               ~> sequencePoint
                ~> cast(T, V)
                ~> K
           </k>

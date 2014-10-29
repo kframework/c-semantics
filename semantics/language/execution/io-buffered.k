@@ -13,6 +13,7 @@ endmodule
 module C-IO-BUFFERED
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -53,22 +54,22 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc:SymLoc, T:Type)
                => setModified(Loc, T, keys(Modified))
           ...</k>
-          <modified> Modified:Map </modified>
+          <activeBlocks> Modified:Map </activeBlocks>
 
      rule <k> setModified(Loc:SymLoc, T:Type,
                (SetItem(Tag:RestrictTag) => .Set) _)
           ...</k>
-          <modified>...
-               Tag |-> map(_
+          <activeBlocks>...
+               Tag |-> activity(_, _
                     Loc |-> (NBytes:Int => maxInt(NBytes, byteSizeofType(T))))
-          ...</modified>
+          ...</activeBlocks>
      rule <k> setModified(Loc:SymLoc, T:Type,
                (SetItem(Tag:RestrictTag) => .Set) _)
           ...</k>
-          <modified>...
-               Tag |-> map(Modified:Map
+          <activeBlocks>...
+               Tag |-> activity(_, Modified:Map
                     (.Map => Loc |-> byteSizeofType(T)))
-          ...</modified>
+          ...</activeBlocks>
           when notBool Loc in keys(Modified)
      rule setModified(_, _, .Set) => .
 

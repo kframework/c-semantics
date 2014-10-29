@@ -10,6 +10,7 @@ module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -100,10 +101,12 @@ module C-EXECUTION-INIT
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     rule <modified> _ => global |-> map(.Map) </modified>
-          <threads>
+     rule <threads>
                <thread>...
-                    <k> initMainThread => populateFromGlobal ...</k>
+                    <k> initMainThread
+                         => enterRestrictScope(global)
+                         ~> populateFromGlobal
+                    ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...
