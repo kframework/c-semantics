@@ -637,8 +637,9 @@ module CIL-EXP
     => norm(To, symToInt(Base) +Int Offset)
 
   // Ints to pointers.
-  rule (nt(To:Type)) tv(_:IntType, I:MInt) => norm(To, I)
-    when isPtrType(To) ==K true
+  // TODO(AndreiS): this rule causes prover to fail due to non-confluence
+//  rule (nt(To:Type)) tv(_:IntType, I:MInt) => norm(To, I)
+//    when isPtrType(To) ==K true
 
   syntax Int ::= symToInt(K) [function]
   // TODO(AndreiS): pointers now have concrete bases
