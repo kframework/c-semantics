@@ -19,7 +19,6 @@ struct listNode *reverse(struct listNode *x )
 
   {
   p = (struct listNode *)((void *)0);
-  //breakpoint;
   while ((unsigned long )x != (unsigned long )((void *)0)) {
     y = x->next;
     x->next = p;
@@ -29,7 +28,7 @@ struct listNode *reverse(struct listNode *x )
   return (p);
 }
 }
-/*
+
 int main(void)
 {
   struct listNode *x ;
@@ -51,4 +50,4 @@ int main(void)
   x = reverse(x);
   return (0);
 }
-}*/
+}

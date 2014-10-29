@@ -21,8 +21,6 @@ module CIL-IMPLEMENTATION
   rule width(T:Type) => byteWidth(T:Type) *Int byteWidthMacro
 
   /* These are also defined in a standard library header. */
-  // TODO(AndreiS): define size_t here or in the header files?
-  rule size_t => unsigned long
   rule size_ptr => unsigned long
   rule ptrdiff_t => long
 
@@ -69,15 +67,15 @@ module CIL-IMPLEMENTATION
    */
   syntax List ::= padBytes(Int) [klabel(padBytes1), function]
                   | padBytes(Int, ByteValue) [klabel(padBytes2), function]
-  
+
   rule padBytes(N:Int) => padBytes(N, used)
 
-  rule padBytes(N:Int, V:ByteValue) 
+  rule padBytes(N:Int, V:ByteValue)
     => ListItem(V) padBytes(N -Int 1, V)
     when N >Int 0
   rule padBytes(0, _) => .List
 
-  rule value2Bytes(T:FloatingType, F:Float) 
+  rule value2Bytes(T:FloatingType, F:Float)
     => ListItem(F) padBytes(byteWidth(T) -Int 1)
 
   rule bytes2Value(_:FloatingType, (ListItem(F:Float) _:List)) => F
@@ -95,7 +93,7 @@ module CIL-IMPLEMENTATION
   /*
    * Pointers.
    */
-  rule value2Bytes(T:Type, P:Ptr) 
+  rule value2Bytes(T:Type, P:Ptr)
     => ListItem(P) padBytes(byteWidth(T) -Int 1)
 
   rule bytes2Value(_:Type, (ListItem(P:Ptr) _:List))
@@ -103,7 +101,7 @@ module CIL-IMPLEMENTATION
 
   // TODO(chathhorn): width might be greater than the pointer type allows.
   // TODO(AndreiS): this rules conflicts with the one above
-  //rule bytes2Value(T:Type, L:List) 
+  //rule bytes2Value(T:Type, L:List)
   //  => bytes2UnsignedMInt(L)
   //  when isPtrType(T)
 
@@ -121,4 +119,3 @@ module CIL-IMPLEMENTATION
     => padBytes(byteWidth(T), undef)
 
 endmodule
-

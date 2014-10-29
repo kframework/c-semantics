@@ -2,20 +2,21 @@
 
 module LIST-PATTERN
   imports CIL-SEMANTICS
+  imports MINT-LIST
 
   /* list pattern */
   syntax Bag ::= "list" "(" Ptr ")" "(" List ")"   [pattern(1)]
   rule
     <heap>...
-      list(Ptr(BP:BasePtr, 0))(ListItem(MI:MInt) L:List)
+      list(Ptr(BP:BasePtr, 0))(ListItem(MI:MInt{bitwidth(32)}) L:List)
     =>
       <object>
         <base-ptr> BP </base-ptr>
         <bytes>
-          0 |-> ?B0:MInt
-          1 |-> ?B1:MInt
-          2 |-> ?B2:MInt
-          3 |-> ?B3:MInt
+          0 |-> ?B0:MInt{bitwidth(8)}
+          1 |-> ?B1:MInt{bitwidth(8)}
+          2 |-> ?B2:MInt{bitwidth(8)}
+          3 |-> ?B3:MInt{bitwidth(8)}
           //4 |-> ?B4:MInt
           //5 |-> ?B5:MInt
           //6 |-> ?B6:MInt
