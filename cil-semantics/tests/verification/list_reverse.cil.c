@@ -29,7 +29,7 @@ struct listNode *reverse(struct listNode *x )
   return (p);
 }
 }
-/*
+
 int main(void)
 {
   struct listNode *x ;
@@ -51,4 +51,4 @@ int main(void)
   x = reverse(x);
   return (0);
 }
-}*/
+}
