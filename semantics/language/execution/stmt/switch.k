@@ -9,7 +9,7 @@ module C-STMT-SWITCH
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax K ::= handleSwitch(Int, K) [strict(2)]
-     syntax K ::= "handleSwitch-aux" "(" K "," Value "," K ")"
+     syntax K ::= "handleSwitch-aux" "(" K "," RValue "," K ")"
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the
@@ -37,7 +37,7 @@ module C-STMT-SWITCH
           when hasIntegerType(T)
           [structural]
 
-     rule <k> handleSwitch(SN:Int, V:KResult)
+     rule <k> handleSwitch(SN:Int, V:RValue)
                => handleSwitch-aux(SN, V, map(M))
           ...</k>
           <curr-function> F:CId </curr-function>
@@ -47,10 +47,10 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax K ::= tryCase(K, Value, K) [strict(1(context('reval), result(Value)))]
+     syntax K ::= tryCase(K, RValue, K) [strict(1(context('reval), result(RValue)))]
 
      rule (. => tryCase(Exp, V, CaseHelper))
-          ~> handleSwitch-aux(SN:Int, V:Value,
+          ~> handleSwitch-aux(SN:Int, V:RValue,
                map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
           when Exp =/=K l('Default)
           [structural]
@@ -82,6 +82,6 @@ module C-STMT-SWITCH
           [structural]
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper)
+     rule tryCase(V:RValue, V:RValue, CaseHelper:K) => Goto(CaseHelper)
           [structural]
 endmodule

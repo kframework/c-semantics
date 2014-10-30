@@ -1,8 +1,8 @@
 module C-CONVERSION-SYNTAX
      // interpret the result of arithmetic as in 6.5.4
-     syntax K ::= arithInterpret(Type, BaseValue) [function]
+     syntax K ::= arithInterpret(Type, NumValue) [function]
      // as described in 6.3 // totype, fromvalue
-     syntax K ::= cast(Type, Value)
+     syntax K ::= cast(Type, RValue)
 endmodule
 
 module C-CONVERSION
@@ -343,7 +343,7 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(T':Type, V:TypedValue) => tv(NullPointer, T')
+     rule cast(T':Type, V:RValue) => tv(NullPointer, T')
           when isNullPointerConstant(V)
                andBool isPointerType(T')
           [structural, anywhere]

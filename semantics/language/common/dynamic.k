@@ -1,27 +1,32 @@
 module C-DYNAMIC-SYNTAX
      syntax Type ::= t(Set, SimpleType) [klabel('t)]
 
-     syntax Value ::= "voidVal"
-     syntax Value ::= "emptyValue"
-
      syntax Agg ::= agg(List)
-
-     syntax CValue ::= Bits | SymLoc | Float | Agg
-
-     syntax TypedValue ::= tv(CValue, Type)
-          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax LValue ::= lv(SymLoc, Type)
 
+     // TODO(chathhorn): possibly remove these extra RValues. There's also a
+     // "varg" in the library/bootstrap which should probably be refactored
+     // away.
+     syntax RValue ::= "voidVal"
+     syntax RValue ::= "emptyValue"
+
+     syntax RValue ::= tv(CValue, Type)
+          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+
+     syntax K ::= toRVal(K)
+          [strict(all(context('reval), result(RValue)))]
+
      syntax Type ::= type(K) [function]
-     syntax K ::= value(TypedValue) [function]
+     syntax K ::= value(RValue) [function]
 
      syntax K ::= "discard"
 
-     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
-     syntax C ::= BaseValue | Type | Value
-     syntax Value ::= TypedValue
-     syntax KResult ::= Value | Type | nclv(SymLoc, Type)
+     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
+     syntax CValue ::= NumValue | SymLoc | Agg
+     syntax C ::= NumValue | Type | RValue
+
+     syntax KResult ::= RValue | Type | nclv(SymLoc, Type)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -48,7 +53,6 @@ module C-DYNAMIC-SYNTAX
      syntax K ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-
      syntax K ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
 
@@ -59,6 +63,9 @@ module C-DYNAMIC
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports COMPAT-SYNTAX
+
+     rule toRVal(V:RValue) => V
+          [structural]
 
      rule value(tv(V:CValue, _)) => V
 

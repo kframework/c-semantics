@@ -36,7 +36,7 @@ module LIBC-STDIO
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 
-     syntax Value ::= str(String)
+     syntax KResult ::= str(String)
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
           => getString-aux(Loc, S +String chrChar(N))
@@ -86,7 +86,7 @@ module LIBC-STDIO
           => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofObject(base(Loc)))
           [structural]
      rule [nextvarg]:
-          nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:RValue, Len':RValue)
           => vpair(read(Loc, T),
                varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
           when value(Len) ==Int value(Len')
@@ -243,7 +243,7 @@ module LIBC-STDIO
           )
           [structural]
 
-     syntax Value ::= "formattedResult" "(" K ")"
+     syntax KResult ::= "formattedResult" "(" K ")"
 
      rule [format-done]:
           <k>

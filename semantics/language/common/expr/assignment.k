@@ -76,7 +76,7 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
-     rule nclv(_, T':Type) := (V:TypedValue => cast(T', V))
+     rule nclv(_, T':Type) := (V:RValue => cast(T', V))
           when isPointerType(T')
                andBool isNullPointerConstant(V)
                andBool (T' =/=K type(V))
@@ -147,12 +147,6 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule E1:KResult ^= E2:KResult => E1 := toRVal(E1) ^ E2
           [structural]
      rule E1:KResult |= E2:KResult => E1 := toRVal(E1) | E2
-          [structural]
-
-     syntax K ::= toRVal(K)
-          [strict(all(context('reval), result(Value)))]
-
-     rule toRVal(V:Value) => V
           [structural]
 
 endmodule

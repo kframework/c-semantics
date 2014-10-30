@@ -1,5 +1,5 @@
 module C-BINDING-SYNTAX
-     // TypedValues, Types, CIds
+     // RValues, Types, CIds
      syntax K ::= bind(List, List, List)
      syntax K ::= bindParam(CId, Type, K)
      syntax K ::= bindParam(CId)
@@ -37,14 +37,14 @@ module C-BINDING
           ~> bind(
                (ListItem(typedDeclaration(_, X:CId)) => .List) _,
                (ListItem(T:Type) => .List) _,
-               (ListItem(V:TypedValue) => .List) _)
+               (ListItem(V:RValue) => .List) _)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (. => bindParam(X, T, argPromote(V)))
           ~> bind(
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
-               (ListItem(V:TypedValue) => .List) _)
+               (ListItem(V:RValue) => .List) _)
           when #arePromotedTypesCompat(value(V), T, type(V)) ==K true
           [structural]
      rule (. => ERROR("B1", "types of function call arguments aren't "
@@ -52,7 +52,7 @@ module C-BINDING
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
-               ListItem(V:TypedValue) _)
+               ListItem(V:RValue) _)
           when #arePromotedTypesCompat(value(V), T, type(V)) =/=K true
           [structural]
      // Variadic.
@@ -70,7 +70,7 @@ module C-BINDING
           ~> bind(
                .List,
                (ListItem(T:Type) => .List) _,
-               (ListItem(V:TypedValue) => .List) _)
+               (ListItem(V:RValue) => .List) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -90,7 +90,7 @@ module C-BINDING
      syntax K ::= bindVariadics(List, Int)
      rule (. => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
           ~> bindVariadics(
-               (ListItem(V:TypedValue) => .List) _,
+               (ListItem(V:RValue) => .List) _,
                (N:Int => N +Int 1))
           [structural]
      // Make one past the last variadic a legal address.
@@ -147,7 +147,7 @@ module C-BINDING
      rule representable(V:Int, T:Type)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
-     syntax TypedValue ::= argPromote(K) [function]
+     syntax RValue ::= argPromote(K) [function]
      rule argPromote(tv(V:CValue, T:Type))
           => cast(argPromoteType(T), tv(V, T))
 

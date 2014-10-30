@@ -114,10 +114,9 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax K ::= checkUse(K) [strict]
-     syntax K ::= checkTrap(K) [strict]
 
      rule checkUse(V:KResult) => V
-          when isTypedValue(V) =/=K true
+          when getKLabel(V) =/=KLabel 'tv
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
           when (isSymLoc(V) =/=K true)

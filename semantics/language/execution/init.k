@@ -53,7 +53,7 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
 
-     syntax TypedValue ::= "NullPointerConstant" [function]
+     syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, t(.Set, pointerType(t(.Set, void))))
 

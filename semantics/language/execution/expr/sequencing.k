@@ -14,13 +14,10 @@ module C-EXPR-SEQUENCING
      }*/
 
      rule Comma(list(ListItem(K:K) L:List))
-          => commaEval(K) ~> discard ~> sequencePoint ~> Comma(list(L))
+          => toRVal(K) ~> discard ~> sequencePoint ~> Comma(list(L))
           when L =/=List .List
           [structural]
-     rule Comma(list(ListItem(K:K))) => commaEval(K)
+     rule Comma(list(ListItem(K:K))) => toRVal(K)
           [structural]
-
-     syntax K ::= commaEval(K) [strict(all(context('reval), result(Value)))]
-     rule commaEval(V:Value) => V
 
 endmodule

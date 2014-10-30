@@ -62,16 +62,16 @@ module LIBC-STDARG
      
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"), 
-               ListItem(ApLoc:TypedValue) 
-               ListItem(Size:TypedValue))
+               ListItem(ApLoc:RValue) 
+               ListItem(Size:RValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
                     
-     syntax K ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
-          [strict(3(context('reval), result(Value)))]
+     syntax K ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
+          [strict(3(context('reval), result(RValue)))]
      // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
+          va-inc-aux(ApLoc:RValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
           [structural]                  

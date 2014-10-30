@@ -33,7 +33,7 @@ module C-EXPR-FUNCTION-CALL
                orBool isArrayType(T) // Don't think this is possible.
           [structural]
 
-     rule bindParam(_, T:Type, V:TypedValue)
+     rule bindParam(_, T:Type, V:RValue)
           => allowInit(Computation(lv(symVal, T) := V))
      rule bindParam(_) => .
 

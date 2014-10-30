@@ -25,7 +25,7 @@ module C-EXPR-LOGICAL
      rule tv(1, t(_, int)) && E:K
           => sequencePoint ~> simplifyTruth(E)
           [structural]
-     rule (V:TypedValue => simplifyTruth(V)) && _ 
+     rule (V:RValue => simplifyTruth(V)) && _ 
           when notBool isTruthValue(V)
           [structural]   
                     
@@ -44,7 +44,7 @@ module C-EXPR-LOGICAL
           [structural]
      rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
           [structural]
-     rule (V:TypedValue => simplifyTruth(V)) || _
+     rule (V:RValue => simplifyTruth(V)) || _
           when notBool isTruthValue(V)
           [structural]
 

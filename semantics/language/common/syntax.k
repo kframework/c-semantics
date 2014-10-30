@@ -2,7 +2,7 @@ module C-SYNTAX
      // TODO(chathhorn): context attr required to work around weird bug in 3.4.
      syntax K ::= reval(K) [klabel('reval), context(reval)]
      syntax K ::= "reval'" "(" K ")"
-          [strict(all(context('reval), result(Value))), klabel('reval')]
+          [strict(all(context('reval), result(RValue))), klabel('reval')]
 
      // the rest are syntactic
      syntax C ::= AttributeWrapper(K, K) [klabel('AttributeWrapper)]
@@ -338,7 +338,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Nop"
      syntax PureStatement ::= "Computation" "(" K ")"
-          [strict(all(context('reval), result(Value))), klabel('Computation), latex({{#1}};)]
+          [strict(all(context('reval), result(RValue))), klabel('Computation), latex({{#1}};)]
      syntax PureStatement ::= "BlockStatement" "(" K ")"
           [klabel('BlockStatement)]
      syntax PureStatement ::= "Sequence" "(" K "," K ")"
@@ -351,7 +351,7 @@ module C-SYNTAX
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
      syntax PureStatement ::= "IfThenElse" "(" K "," K "," K ")"
-          [strict(1(context('reval), result(Value))), klabel('IfThenElse)]
+          [strict(1(context('reval), result(RValue))), klabel('IfThenElse)]
      syntax PureStatement ::= "While" "(" K "," K ")"
           [klabel('While)]
      syntax PureStatement ::= "DoWhile" "(" K "," K ")"
@@ -367,7 +367,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
-     syntax PureStatement ::= "Return" "(" K ")" [strict(all(context('reval), result(Value))), klabel('Return)]
+     syntax PureStatement ::= "Return" "(" K ")" [strict(all(context('reval), result(RValue))), klabel('Return)]
 
      /*
      | SWITCH of expression * statement * cabsloc
@@ -376,7 +376,7 @@ module C-SYNTAX
      | DEFAULT of statement * cabsloc
      */
      // unique switch id
-     syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [strict(2(context('reval), result(Value))), klabel('Switch)]
+     syntax PureStatement ::= "Switch" "(" K "," K "," K ")" [strict(2(context('reval), result(RValue))), klabel('Switch)]
      // unique switch id, unique case id, exp, statement
      syntax PureStatement ::= "Case" "(" Int "," Int "," K "," K ")"
           [klabel('Case)]
@@ -431,11 +431,11 @@ module C-SYNTAX
      MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
      | PREINCR | PREDECR | POSINCR | POSDECR
      */
-     syntax Expression ::= "-" K [prec(22), strict(all(context('reval), result(Value)))]
-                         | "+" K [prec(22), strict(all(context('reval), result(Value)))]
-                         | "!" K [prec(22), strict(all(context('reval), result(Value)))]
-                         | "~" K [prec(22), strict(all(context('reval), result(Value)))]
-                         | "*" K [prec(22), strict(all(context('reval), result(Value)))]
+     syntax Expression ::= "-" K [prec(22), strict(all(context('reval), result(RValue)))]
+                         | "+" K [prec(22), strict(all(context('reval), result(RValue)))]
+                         | "!" K [prec(22), strict(all(context('reval), result(RValue)))]
+                         | "~" K [prec(22), strict(all(context('reval), result(RValue)))]
+                         | "*" K [prec(22), strict(all(context('reval), result(RValue)))]
                          | "&" K [prec(22), strict]
                          | "++" K [prec(22), prefer, strict]
                          | "--" K [prec(22), prefer, strict, latex(\terminal{-{}-}{#1})]
@@ -463,27 +463,27 @@ module C-SYNTAX
      /* | QUESTION of expression * expression * expression */
                          // Ternary operator is right-associative.
                          > K "?" K ":" K
-                              [prec(51), right, gather(e & E), strict(1(context('reval), result(Value)))]
+                              [prec(51), right, gather(e & E), strict(1(context('reval), result(RValue)))]
                          > K "*=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "/=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "%=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "+=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "-=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "<<=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value))), latex({{#1}}\terminal{$\gg$=}{{#2}})]
+                              [prec(53), strict(1, 2(context('reval), result(RValue))), latex({{#1}}\terminal{$\gg$=}{{#2}})]
                          | K "&=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "^=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K "|=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value)))]
+                              [prec(53), strict(1, 2(context('reval), result(RValue)))]
                          | K ">>=" K
-                              [prec(53), strict(1, 2(context('reval), result(Value))), latex({{#1}}\terminal{$\ll$=}{{#2}})]
+                              [prec(53), strict(1, 2(context('reval), result(RValue))), latex({{#1}}\terminal{$\ll$=}{{#2}})]
                          | K ":=" K [prec(53)]
 
      context (HOLE => reval'(HOLE)) * _ [ndheat]
@@ -544,7 +544,7 @@ module C-SYNTAX
      syntax Expression ::= "Cast" "(" K "," K "," K ")"
           [strict(1), klabel('Cast)]
      syntax Expression ::= "Cast" "(" K "," K ")"
-          [strict(1, 2(context('reval), result(Value)))]
+          [strict(1, 2(context('reval), result(RValue)))]
 
      // new // comp-lit id, spec, decl, init
      syntax Expression ::= "CompoundLiteral" "(" K "," K "," K "," K ")"
@@ -596,7 +596,7 @@ module C-SYNTAX
      */
      syntax Expression ::= K "." CId [left, strict(1)]
      syntax Expression ::= K "->" CId
-          [left, strict(1(context('reval), result(Value)))]
+          [left, strict(1(context('reval), result(RValue)))]
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

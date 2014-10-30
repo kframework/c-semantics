@@ -22,16 +22,14 @@ module LIBC-THREADS
      
      syntax K ::= "threadRunning"
      
-     syntax K ::= "spawn-aux" "(" Int "," Value "," Value ")"
+     syntax K ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
      rule [thrd-create-start]:
-          <k> prepareBuiltin(Identifier("thrd_create"), 
-                    ListItem(ThIdPointer:KResult)
-                    ListItem(ThFuncPointer:KResult)
-                    ListItem(ThArg:KResult))
-               => Computation(
-                    (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
-                    ~> spawn-aux(
-                    Fresh:Int, ThFuncPointer:KResult, ThArg:KResult)
+          <k> prepareBuiltin(Identifier("thrd_create"),
+                    ListItem(ThIdPointer:RValue)
+                    ListItem(ThFuncPointer:RValue)
+                    ListItem(ThArg:RValue))
+               => Computation((* ThIdPointer) := tv(Fresh, t(.Set, int)))
+               ~> spawn-aux(Fresh, ThFuncPointer, ThArg)
           ...</k>
           <next-thread-id> Fresh:Int => Fresh:Int +Int 1 </next-thread-id>
           [structural]
@@ -41,7 +39,7 @@ module LIBC-THREADS
      rule [thrd-create]:
           <thread>...
                <k> spawn-aux(
-                         ThId:Int, ThFuncPointer:KResult, ThArg:KResult) 
+                         ThId:Int, ThFuncPointer:RValue, ThArg:RValue) 
                     => thrd-success 
                ...</k>
                <curr-tu> Tu:K </curr-tu>
@@ -56,7 +54,7 @@ module LIBC-THREADS
           <thread>...
                <next-loc> 0 @ thread(ThId:Int) </next-loc>
                <thread-id> ThId:Int </thread-id>
-               <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
+               <k> Call(ThFuncPointer:RValue, list(ListItem(ThArg:RValue)))
                </k>
                <env> Env:Map </env>
                <curr-tu> Tu:K </curr-tu>
@@ -70,20 +68,20 @@ module LIBC-THREADS
           <thread-id> ThId:Int </thread-id>
           [structural]
           
-     syntax K ::= "join-aux" "(" Int "," Value ")"
+     syntax K ::= "join-aux" "(" Int "," RValue ")"
           
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
                ListItem(tv(ThId:Int, t(_, int)))
-               ListItem(ResultPointer:KResult))
-          => join-aux(ThId:Int, ResultPointer:KResult)
+               ListItem(ResultPointer:RValue))
+          => join-aux(ThId, ResultPointer)
           [structural]
      
      rule [thrd-join]:
           <thread>...
                <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
                     => #if (Loc =/=K NullPointer) 
-                         #then Computation((* Loc) := V:KResult) 
+                         #then Computation((* Loc) := V) 
                          #else .K
                          #fi
                          ~> thrd-success
@@ -91,7 +89,7 @@ module LIBC-THREADS
                <buffer> .List </buffer>
           ...</thread>
           <thread>...
-               <k> V:KResult </k>
+               <k> V:RValue </k>
                <thread-id> ThId:Int </thread-id>
           ...</thread>
           [ndthread]

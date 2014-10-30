@@ -1,8 +1,8 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     syntax K ::= varg(K) [strict]
-     syntax Value ::= "varg'" "(" K ")"
+     syntax K ::= varg(K) [strict(all(context('reval), result(RValue)))]
+     syntax RValue ::= "varg'" "(" K ")"
      syntax K ::= prepareBuiltin(CId, List) 
-     syntax K ::= incSymbolic(K) [strict(all(context('reval), result(Value)))]
+     syntax K ::= incSymbolic(K) [strict(all(context('reval), result(RValue)))]
 endmodule
 
 module LIBC-BOOTSTRAP

@@ -64,7 +64,7 @@ module C-EXPR-ASSIGNMENT
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
      rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
 
-     syntax K ::= checkArrayStaticAssign(Type, TypedValue)
+     syntax K ::= checkArrayStaticAssign(Type, RValue)
      rule checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .

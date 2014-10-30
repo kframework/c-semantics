@@ -8,7 +8,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax List ::= explodeToBits(List) [function]
 
      // TODO(chathhorn): For trans/symbolic-value.k
-     syntax DataList ::= splitBytes(Value) [function]
+     syntax DataList ::= splitBytes(RValue) [function]
      syntax K ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
 endmodule
 

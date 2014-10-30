@@ -111,8 +111,8 @@ module C-MEMORY-READING
      rule #hasTrap(_ ListItem(piece(trap, _)) _) => true
 
      // TODO(chathhorn): half-assed floating point support.
-     syntax TypedValue ::= joinFloatBytes(Type, List) [function]
-     syntax TypedValue ::= joinFloatBytes(Type, Float, Int, List) [function]
+     syntax RValue ::= joinFloatBytes(Type, List) [function]
+     syntax RValue ::= joinFloatBytes(Type, Float, Int, List) [function]
      rule joinFloatBytes(T:Type,
                ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
           => joinFloatBytes(T, F, NBits, L)
@@ -129,8 +129,8 @@ module C-MEMORY-READING
           => tv(F, stripQualifiers(T))
           when Len ==Int bitSizeofType(T)
 
-     syntax TypedValue ::= joinPointerBytes(Type, List) [function]
-     syntax TypedValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
+     syntax RValue ::= joinPointerBytes(Type, List) [function]
+     syntax RValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinPointerBytes(T:Type, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           when Len ==Int cfg:bitsPerByte
@@ -149,8 +149,8 @@ module C-MEMORY-READING
      rule joinPointerBytes-aux(T:Type, .List, 0)
           => tv(NullPointer, stripQualifiers(T))
 
-     syntax TypedValue ::= joinIntegerBytes(Type, List) [function]
-     syntax TypedValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
+     syntax RValue ::= joinIntegerBytes(Type, List) [function]
+     syntax RValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
      rule joinIntegerBytes(T:Type, L:List)
           => joinIntegerBytes-aux(T, L, piece(0, 0))
      rule joinIntegerBytes-aux(T:Type,
@@ -169,8 +169,8 @@ module C-MEMORY-READING
      // shouldn't need to do the < min one since values start positive
 
      // interpret the values of reading from mem
-     syntax TypedValue ::= interpret(Type, K) [function]
-     syntax TypedValue ::= "interpret-aux" "(" Type "," K ")" [function]
+     syntax RValue ::= interpret(Type, K) [function]
+     syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
      rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
           when (min(T) <=Int I) 

@@ -299,9 +299,9 @@ module C-TYPING-PREDICATES
 
      rule #isRestrict(t(SetItem(Restrict) _, _)) => true
 
-     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
+     rule isNullPointerConstant(TV:RValue) => #isNPC(TV) ==K true
 
-     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
+     syntax Bool ::= "#isNPC" "(" RValue ")" [function]
      rule #isNPC(tv(0, T:Type)) => true
           when hasIntegerType(T)
                andBool fromConstantExpr(T)

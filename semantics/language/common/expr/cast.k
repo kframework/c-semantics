@@ -18,7 +18,7 @@ module C-COMMON-EXPR-CAST
      rule Cast(T:Type, K:K, V:K) => Cast(DeclType(T, K), V)
           [structural]
 
-     rule Cast(T:Type, V:Value) => cast(elideDeclParams(T), V)
+     rule Cast(T:Type, V:RValue) => cast(elideDeclParams(T), V)
           [structural]
 
 endmodule

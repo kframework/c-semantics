@@ -109,7 +109,7 @@ module LIBC-SETJMP
           [structural]
 
      syntax K ::= "longjmp-aux" "(" K "," K ")"
-          [strict(1(context('reval), result(Value)), 2)]
+          [strict(1(context('reval), result(RValue)), 2)]
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"),
                ListItem(V:KResult)

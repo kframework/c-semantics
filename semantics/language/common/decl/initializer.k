@@ -2,7 +2,7 @@ module C-DECL-INITIALIZER-SYNTAX
      syntax KResult ::= initializer(K)
 
      // Function id, param ids, prototype, body.
-     syntax Value ::= functionObject(CId, List, Type, K)
+     syntax RValue ::= functionObject(CId, List, Type, K)
 
      // CId, type, initializer.
      syntax K ::= figureInit(CId, K, K) [strict(2)]
