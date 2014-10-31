@@ -13,7 +13,9 @@ require "cil-implementation.k"
 require "cil-lib.k"
 
 require "patterns/mint_list.k"
+require "patterns/mint_set.k"
 require "patterns/list_pattern.k"
+require "patterns/tree_pattern.k"
 
 module CIL-SEMANTICS
   imports LIST
@@ -118,4 +120,5 @@ endmodule
 module CIL
   imports CIL-SEMANTICS
   imports LIST-PATTERN
+  imports TREE-PATTERN
 endmodule

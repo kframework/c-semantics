@@ -5,7 +5,7 @@
 typedef unsigned long size_t;
 
 struct treeNode {
-   int val ;
+   int value ;
    struct treeNode *left ;
    struct treeNode *right ;
 };
@@ -28,7 +28,7 @@ struct treeNode *delete(int v , struct treeNode *t )
   if (t == (void *)0) {
     return ((struct treeNode *)((void *)0));
   }
-  if (v == t->val) {
+  if (v == t->value) {
     if (t->left == (void *)0) {
       tmp = t->right;
       free((void *)t);
@@ -41,11 +41,11 @@ struct treeNode *delete(int v , struct treeNode *t )
       } else {
         min = find_min(t->right);
         t->right = delete(min, t->right);
-        t->val = min;
+        t->value = min;
       }
     }
   } else {
-    if (v < t->val) {
+    if (v < t->value) {
       t->left = delete(v, t->left);
     } else {
       t->right = delete(v, t->right);
@@ -63,10 +63,10 @@ int find(int v , struct treeNode *t )
   if (t == (void *)0) {
     return (0);
   }
-  if (v == t->val) {
+  if (v == t->value) {
     return (1);
   }
-  if (v < t->val) {
+  if (v < t->value) {
     tmp = find(v, t->left);
     return (tmp);
   }
@@ -83,7 +83,7 @@ struct treeNode *insert(int v , struct treeNode *t )
     tmp = new_node(v);
     return (tmp);
   }
-  if (v < t->val) {
+  if (v < t->value) {
     t->left = insert(v, t->left);
   } else {
     t->right = insert(v, t->right);
@@ -100,7 +100,7 @@ struct treeNode *new_node(int v )
   {
   tmp = malloc(sizeof(struct treeNode ));
   node = (struct treeNode *)tmp;
-  node->val = v;
+  node->value = v;
   tmp___0 = (struct treeNode *)((void *)0);
   node->right = tmp___0;
   node->left = tmp___0;
@@ -113,7 +113,7 @@ int find_min(struct treeNode *t )
 
   {
   if (t->left == (void *)0) {
-    return (t->val);
+    return (t->value);
   }
   tmp = find_min(t->left);
   return (tmp);
