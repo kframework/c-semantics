@@ -22,11 +22,9 @@ rule [find-spec]:
    executing
 </phase>
 <tus> TUS:Bag </tus>
-<heap>...
-  tree(TP)(T:Tree)
-...</heap>
+<heap>... tree(TP)(T:Tree) ...</heap>
 <make-goto-table> MAKEGOTOTABLE </make-goto-table>
 requires bst(T)
-ensures svalueMInt(?MI:MInt{bitwidth(32)}) ==K bool2Int(V inMIntSet tree_keys(T))
+ensures uvalueMInt(?MI:MInt{bitwidth(32)}) ==K bool2Int(V inMIntSet tree_keys(T))
 
 endmodule
