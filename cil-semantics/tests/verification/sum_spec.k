@@ -6,9 +6,7 @@ module SUM-SPEC
 rule
 <frame>
     <k>
-        nclv(unsigned int #__id__ ( unsigned int ), FunPtr(sum, tu("unknown"))) (
-            tv(unsigned int, I32N:MInt{bitwidth(32)})
-        )
+        sum(tv(unsigned int, I32N:MInt{bitwidth(32)}))
     =>
         tv(unsigned int, udivMInt(mulMInt(I32N, addMInt(I32N, mi(32, 1))), mi(32, 2)))
     ...</k>

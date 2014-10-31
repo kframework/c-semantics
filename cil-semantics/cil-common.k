@@ -16,7 +16,7 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
-               | "Null"
+               | "Null"             [smtlib(smt_pointer_null)]
 
   syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 
@@ -28,9 +28,7 @@ module CIL-COMMON-PTR
 
   syntax Ptr ::= "PtrAdd" "(" Ptr "," Int "," Exp ")"   [function]
   syntax Int ::= "PtrSub" "(" Ptr "," Ptr "," Exp ")"   [function]
-  syntax Bool ::= Ptr "==Ptr" Ptr              [function]
-                | Ptr "=/=Ptr" Ptr             [function]
-                | "PtrLt" "(" Ptr "," Ptr ")"  [function]
+  syntax Bool ::= "PtrLt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrLeq" "(" Ptr "," Ptr ")" [function]
                 | "PtrGt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrGeq" "(" Ptr "," Ptr ")" [function]
@@ -46,15 +44,6 @@ module CIL-COMMON-PTR
   rule PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
     => (Offset1 -Int Offset2) /Int mival(V)
     when (Offset1 -Int Offset2) %Int mival(V) ==Int 0
-
-  /* Structural equality of addresses */
-  rule Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
-    ==Ptr Ptr(BasePtr(Base2:Int, Size2:Int), Offset2:Int)
-    => Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
-  rule Null ==Ptr Null => true
-  rule Ptr(_, _) ==Ptr Null => false
-  rule Null ==Ptr Ptr(_, _) => false
-  rule P1:Ptr =/=Ptr P2:Ptr => notBool(P1:Ptr ==Ptr P2:Ptr)
 
   /* Relational operations on pointers are defined only for the same BasePtr. */
   rule
