@@ -12,7 +12,7 @@ module CIL-LIB
  */
 
   // Exit.
-  rule 
+  rule
     <k>
       nclv(_:Type, ExtFun("malloc"))(TV:TypedValue)
     =>
@@ -20,8 +20,23 @@ module CIL-LIB
     ...</k>
     [computational]
 
-  rule 
-    (<frame>... <k> 
+  rule
+    <k>
+      nclv(_:Type, ExtFun("free")) ( tv(void * #__id__, Ptr(BP:BasePtr, 0)) )
+    =>
+      tv(void, undef)
+    ...</k>
+    <heap>...
+      <object>...
+        <base-ptr> BP </base-ptr>
+      ...</object>
+    =>
+      .Bag
+    ...</heap>
+    [computational]
+
+  rule
+    (<frame>... <k>
       nclv(_, ExtFun("exit"))(V:TypedValue)
     ...</k> ...</frame>
     => <result-value> ###result-value(mival(V)) </result-value>)
@@ -29,14 +44,14 @@ module CIL-LIB
     [computational]
 
   // Abort.
-  rule 
-    (<frame> <k> 
-      nclv(T:Type, ExtFun("abort"))( .Exps ) ~> K:K 
-    </k> Cells:Bag </frame> 
+  rule
+    (<frame> <k>
+      nclv(T:Type, ExtFun("abort"))( .Exps ) ~> K:K
+    </k> Cells:Bag </frame>
     => <frame> Cells </frame>)
     (. => <result-value> ###result-value(134) </result-value>)
-    (. => <final-computation> 
-      nclv(T, ExtFun("abort"))( .Exps ) ~> K 
+    (. => <final-computation>
+      nclv(T, ExtFun("abort"))( .Exps ) ~> K
     </final-computation>)
     (. => <error-cell> "Aborted." </error-cell>)
     <phase> _ => terminated </phase>
@@ -46,8 +61,8 @@ module CIL-LIB
   * *** stdarg.h ***
   */
 
-  rule 
-    <k> nclv(_, ExtFun("__va_start"))( Ap:TypedValue ,  _) 
+  rule
+    <k> nclv(_, ExtFun("__va_start"))( Ap:TypedValue ,  _)
     => * Ap = tv(__builtin_va_list, va_list(VaArgs)) ;
     ~> tv(void, undef)
     ...</k>
@@ -57,7 +72,7 @@ module CIL-LIB
   rule nclv(_, ExtFun("__va_end"))( _ ) => tv(void, undef)
     [computational]
 
-  rule nclv(_, ExtFun("__va_copy"))( DstAp:TypedValue ,  SrcAp:TypedValue ) 
+  rule nclv(_, ExtFun("__va_copy"))( DstAp:TypedValue ,  SrcAp:TypedValue )
     => *DstAp = SrcAp ;
     ~> tv(void, undef)
     [computational]
@@ -68,7 +83,7 @@ module CIL-LIB
 
   syntax Exp ::= vaArgAux(Exp, Exp) [strict]
 
-  rule vaArgAux(Ap:TypedValue, 
+  rule vaArgAux(Ap:TypedValue,
       tv(__builtin_va_list, va_list(TV:TypedValue, TVs:TypedValues)))
     => *Ap = tv(__builtin_va_list, va_list(TVs)) ;
     ~> tv(normType(void*), va_list(TV))

@@ -445,9 +445,9 @@ module CIL-SYNTAX
   syntax KItem ::= "###result-value" "(" K ")"
 
   // TODO(AndrieS): handle this
-  syntax CId ::= "sum" | "reverse"
+  syntax CId ::= "sum" | "reverse" | "new_node" | "find_min" | "find" | "insert" | "delete"
   syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
   syntax CId ::= "listNode" | "value" | "next"
-  syntax CId ::= "malloc"
+  syntax CId ::= "malloc" | "free"
   syntax Stmt ::= "breakpoint"
 endmodule
