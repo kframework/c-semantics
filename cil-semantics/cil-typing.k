@@ -387,6 +387,7 @@ module CIL-TYPING
     when $needsParensNorm(Lbl(KI)) ==K true
   rule normParens'(Lbl:KLabel(L:KList)) => Lbl(normParens''(L))
     when $needsParensNorm(Lbl(L)) =/=K true
+  rule normParens'(X:CId) => X
 
   rule normParens''(KI:KItem,, L:KList) => normParens'(KI),, normParens''(L)
   rule normParens''(.KList) => .KList
@@ -417,6 +418,8 @@ module CIL-TYPING
 
   rule normPtrs'(Lbl:KLabel(L:KList)) => Lbl(normPtrs''(L))
     when $needsPtrsNorm(Lbl(L)) =/=K true
+
+  rule normPtrs'(X:CId) => X
 
   rule normPtrs''(K:K,, L:KList) => normPtrs'(K),, normPtrs''(L)
   rule normPtrs''(.KList) => .KList
