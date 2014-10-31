@@ -10,9 +10,6 @@ struct treeNode* new_node(int v);
 int find_min(struct treeNode *t);
 
 struct treeNode* delete(int v, struct treeNode *t)
-/*@ rule <k> $ => return ?t; ...</k>
-         <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
-    if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = diff(tree2mset(T), {v}) */
 {
   int min;
 
@@ -51,8 +48,6 @@ struct treeNode* delete(int v, struct treeNode *t)
 }
 
 int find(int v, struct treeNode *t)
-/*@ rule <k> $ => return r; ...</k> <heap>... tree(t)(T) ...</heap>
-    if isBst(T) /\ (~(r = 0) <==> in(v, tree2mset(T))) */
 {
   if (t == NULL) return 0;
   if (v == t->val) return 1;
@@ -61,9 +56,6 @@ int find(int v, struct treeNode *t)
 }
 
 struct treeNode* insert(int v, struct treeNode *t)
-/*@ rule <k> $ => return ?t; ...</k>
-         <heap>... tree(t)(T) => tree(?t)(?T) ...</heap>
-    if isBst(T) /\ isBst(?T) /\ tree2mset(?T) = tree2mset(T) U {v} */
 {
   if (t == NULL)
     return new_node(v);
@@ -86,12 +78,20 @@ struct treeNode* new_node(int v)
 }
 
 int find_min(struct treeNode *t)
-/*@ rule <k> $ => return m; ...</k> <heap>... tree(t)(T) ...</heap>
-    if ~(t = 0) /\ isBst(T) /\ in(m, tree2mset(T)) /\ leq({m}, tree2mset(T)) */
 {
   if (t->left == NULL) return t->val;
   return find_min(t->left);
 }
 
-int main() { return 0; }
+int main()
+{
+  struct treeNode *t = NULL;
+  for (int v = 0; i < 5; i++) {
+    t = insert(v, t);
+  }
+  for (int v = 0; i < 5; i++) {
+    t = delete(v, t);
+  }
 
+  return t == NULL;
+}
