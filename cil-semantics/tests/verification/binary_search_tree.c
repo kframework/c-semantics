@@ -62,7 +62,7 @@ struct treeNode* insert(int v, struct treeNode *t)
 
   if (v < t->value)
     t->left = insert(v, t->left);
-  else
+  else if (v > t->value)
     t->right = insert(v, t->right);
 
   return t;
