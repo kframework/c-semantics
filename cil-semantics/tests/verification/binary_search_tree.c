@@ -86,10 +86,10 @@ int find_min(struct treeNode *t)
 int main()
 {
   struct treeNode *t = NULL;
-  for (int v = 0; i < 5; i++) {
+  for (int v = 0; v < 5; v++) {
     t = insert(v, t);
   }
-  for (int v = 0; i < 5; i++) {
+  for (int v = 0; v < 5; v++) {
     t = delete(v, t);
   }
 
