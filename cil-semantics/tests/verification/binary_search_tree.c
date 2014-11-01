@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 struct treeNode {
-  int val;
+  int value;
   struct treeNode *left;
   struct treeNode *right;
 };
@@ -16,7 +16,7 @@ struct treeNode* delete(int v, struct treeNode *t)
   if (t == NULL)
     return NULL;
 
-  if (v == t->val) {
+  if (v == t->value) {
     if (t->left == NULL) {
       struct treeNode *tmp;
 
@@ -36,10 +36,10 @@ struct treeNode* delete(int v, struct treeNode *t)
     else {
       min = find_min(t->right);
       t->right = delete(min, t->right);
-      t->val = min;
+      t->value = min;
     }
   }
-  else if (v < t->val)
+  else if (v < t->value)
     t->left = delete(v, t->left);
   else
     t->right = delete(v, t->right);
@@ -50,8 +50,8 @@ struct treeNode* delete(int v, struct treeNode *t)
 int find(int v, struct treeNode *t)
 {
   if (t == NULL) return 0;
-  if (v == t->val) return 1;
-  if (v < t->val) return find(v, t->left);
+  if (v == t->value) return 1;
+  if (v < t->value) return find(v, t->left);
   return find(v, t->right);
 }
 
@@ -60,7 +60,7 @@ struct treeNode* insert(int v, struct treeNode *t)
   if (t == NULL)
     return new_node(v);
 
-  if (v < t->val)
+  if (v < t->value)
     t->left = insert(v, t->left);
   else
     t->right = insert(v, t->right);
@@ -72,14 +72,14 @@ struct treeNode* new_node(int v)
 {
   struct treeNode *node;
   node = (struct treeNode *) malloc(sizeof(struct treeNode));
-  node->val = v;
+  node->value = v;
   node->left = node->right = NULL;
   return node;
 }
 
 int find_min(struct treeNode *t)
 {
-  if (t->left == NULL) return t->val;
+  if (t->left == NULL) return t->value;
   return find_min(t->left);
 }
 

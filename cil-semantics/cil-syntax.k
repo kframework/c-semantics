@@ -448,6 +448,7 @@ module CIL-SYNTAX
   syntax CId ::= "sum" | "reverse" | "new_node" | "find_min" | "find" | "insert" | "delete"
   syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
   syntax CId ::= "listNode" | "value" | "next"
+               | "treeNode" | "left" | "right"
   syntax CId ::= "malloc" | "free"
   syntax Stmt ::= "breakpoint"
 endmodule
