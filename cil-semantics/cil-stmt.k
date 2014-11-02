@@ -273,11 +273,12 @@ module CIL-STMT
     (
       <frame>...
         <k> return ; ...</k>
+        <locals> S:Set </locals>
         <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
       <frame>
-        <k> tv(void, undef) ~> K:K </k>
+        <k> deleteLocals(S) ~> tv(void, undef) ~> K:K </k>
         Cells:Bag
       </frame>
     )
