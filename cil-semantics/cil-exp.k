@@ -21,10 +21,10 @@ module CIL-LITERAL
                   | rdcStr(String) [function]
 
   rule carStr(S:String) => substrString(S, 0, 1)
-  rule racStr(S:String) 
+  rule racStr(S:String)
     => substrString(S, lengthString(S) -Int 1, lengthString(S))
   rule cdrStr(S:String) => substrString(S, 1, lengthString(S))
-  rule rdcStr(S:String) 
+  rule rdcStr(S:String)
     => substrString(S, 0, lengthString(S) -Int 1)
 
   syntax String ::= getNumericPart(String) [function]
@@ -35,7 +35,7 @@ module CIL-LITERAL
                   | beforeDot(String) [function]
                   | afterDot(String) [function]
                   | getNumericPart(String, Set, Set) [function]
-                  | "getNumericPart'" "(" String "," String "," Set ")" 
+                  | "getNumericPart'" "(" String "," String "," Set ")"
                     [function]
 
   syntax Float ::= hexToFloat(String) [function]
@@ -80,23 +80,23 @@ module CIL-LITERAL
       (2.0 ^Float hexToFloat'(getHexFloatExponent(S)))
 
   rule hexToFloat'(S:String)
-    => Int2Double(conv(beforeDot(S), 16)) 
-      +Float 
-      (Int2Double(conv(afterDot(S), 16)) 
+    => Int2Double(conv(beforeDot(S), 16))
+      +Float
+      (Int2Double(conv(afterDot(S), 16))
         /Float Int2Double (16 ^Int lengthString(afterDot(S))))
-        
+
   rule beforeDot(S:String)
-    => #if findChar(S, ".", 0) ==Int -1 
+    => #if findChar(S, ".", 0) ==Int -1
       #then S
       #else substrString(S, 0, findChar(S, ".", 0))
       #fi
   rule afterDot(S:String)
-    => #if findChar(S, ".", 0) ==Int -1 
+    => #if findChar(S, ".", 0) ==Int -1
       #then ""
       #else substrString(S, findChar(S, ".", 0) +Int 1, lengthString(S))
       #fi
 
-  rule getNumericPart(S:String) 
+  rule getNumericPart(S:String)
     => getNumericPart(S, prefixChars, intSuffixChars)
 
   rule getDecFloatNumericPart(S:String)
@@ -110,18 +110,18 @@ module CIL-LITERAL
 
   rule getHexFloatExponent(S:String)
     => getNumericPart(
-        substrString(S, 
+        substrString(S,
           findString(S, getHexFloatMantissa(S), 0) +Int lengthString(getHexFloatMantissa(S)),
           lengthString(S)), floatHexSepChars, floatSuffixChars)
 
-  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+  rule getNumericPart(S:String, Pre:Set, Suf:Set)
     => getNumericPart(cdrStr(S), Pre, Suf)
     when (S =/=String "") andBool (carStr(S) in Pre)
-  rule getNumericPart(S:String, Pre:Set, Suf:Set) 
+  rule getNumericPart(S:String, Pre:Set, Suf:Set)
     => getNumericPart'(S, "", Suf)
     when (S =/=String "") andBool (notBool (carStr(S) in Pre))
   rule getNumericPart("", _:Set, _:Set) => "0"
-  
+
   rule getNumericPart'(S:String, Num:String, Suf:Set)
     => getNumericPart'(cdrStr(S), Num +String carStr(S), Suf)
     when (S =/=String "") andBool (notBool (carStr(S) in Suf))
@@ -144,7 +144,7 @@ module CIL-LITERAL
 
   rule getSuffix(S:String, Sufs:Set) => getSuffix'(S, "", Sufs)
 
-  rule getSuffix'(S:String, Suf:String, Sufs:Set) 
+  rule getSuffix'(S:String, Suf:String, Sufs:Set)
     => getSuffix'(rdcStr(S), racStr(S) +String Suf, Sufs)
     when (racStr(S) in Sufs) andBool (S =/=String "")
   rule getSuffix'(S:String, Suf:String, Sufs:Set)
@@ -235,131 +235,131 @@ module CIL-EXP
   [structural]
 
   /* Constants. */
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(int, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(long, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(long long, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(unsigned int, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(unsigned long, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String "UL"
     [structural]
-  rule C:DecimalConstant 
+  rule C:DecimalConstant
     => norm(unsigned long long, String2Int(getNumericPart(#tokenToString(C))))
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
-  rule C:OctalConstant 
+  rule C:OctalConstant
     => norm(int, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:OctalConstant 
+  rule C:OctalConstant
     => norm(long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:OctalConstant 
+  rule C:OctalConstant
     => norm(long long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
-  rule C:OctalConstant 
+  rule C:OctalConstant
     => norm(unsigned int, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
-  rule C:OctalConstant 
+  rule C:OctalConstant
     => norm(unsigned long, conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "UL"
     [structural]
-  rule C:OctalConstant 
-    => norm(unsigned long long, 
+  rule C:OctalConstant
+    => norm(unsigned long long,
       conv(getNumericPart(#tokenToString(C)), 8))
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
-  rule C:HexConstant 
+  rule C:HexConstant
     => norm(int, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:HexConstant 
+  rule C:HexConstant
     => norm(long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:HexConstant 
+  rule C:HexConstant
     => norm(long long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "LL"
     [structural]
-  rule C:HexConstant 
+  rule C:HexConstant
     => norm(unsigned int, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "U"
     [structural]
-  rule C:HexConstant 
+  rule C:HexConstant
     => norm(unsigned long, conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "UL"
     [structural]
-  rule C:HexConstant 
-    => norm(unsigned long long, 
+  rule C:HexConstant
+    => norm(unsigned long long,
       conv(getNumericPart(#tokenToString(C)), 16))
     when getSuffix(#tokenToString(C)) ==String "ULL"
     [structural]
 
-  rule C:DecimalFloatConstant 
+  rule C:DecimalFloatConstant
     => norm(double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:DecimalFloatConstant 
+  rule C:DecimalFloatConstant
     => norm(long double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:DecimalFloatConstant 
+  rule C:DecimalFloatConstant
     => norm(float, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String "F"
     [structural]
 
-  rule C:NoDotDecimalFloatConstant 
+  rule C:NoDotDecimalFloatConstant
     => norm(double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:NoDotDecimalFloatConstant 
+  rule C:NoDotDecimalFloatConstant
     => norm(long double, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:NoDotDecimalFloatConstant 
+  rule C:NoDotDecimalFloatConstant
     => norm(float, String2Float(getDecFloatNumericPart(#tokenToString(C))))
     when getFloatSuffix(#tokenToString(C)) ==String "F"
     [structural]
 
-  rule C:HexFloatConstant 
+  rule C:HexFloatConstant
     => norm(double, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:HexFloatConstant 
+  rule C:HexFloatConstant
     => norm(long double, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:HexFloatConstant 
+  rule C:HexFloatConstant
     => norm(float, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String "F"
     [structural]
 
-  rule C:NoDotHexFloatConstant 
+  rule C:NoDotHexFloatConstant
     => norm(double, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String ""
     [structural]
-  rule C:NoDotHexFloatConstant 
+  rule C:NoDotHexFloatConstant
     => norm(long double, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String "L"
     [structural]
-  rule C:NoDotHexFloatConstant 
+  rule C:NoDotHexFloatConstant
     => norm(float, hexToFloat(#tokenToString(C)))
     when getFloatSuffix(#tokenToString(C)) ==String "F"
     [structural]
@@ -373,9 +373,9 @@ module CIL-EXP
   rule ' \b ' => norm(int, 8)
   rule ' \t ' => norm(int, 9)
   rule ' \v ' => norm(int, 11)
-  rule ' C:OctalStringEscape ' 
+  rule ' C:OctalStringEscape '
     => norm(int, conv(getNumericPart(#tokenToString(C)), 8))
-  rule ' C:HexStringEscape ' 
+  rule ' C:HexStringEscape '
     => norm(int, conv(getNumericPart(#tokenToString(C)), 16))
 
   /* Lookup. */
@@ -390,14 +390,14 @@ module CIL-EXP
     <env> E:Map (X |-> T:Type) </env>
     [structural]
 
-  rule 
-    <k> S:String 
+  rule
+    <k> S:String
       => newString(S, newObject(normType(char [lengthString(S) +Int 1])))
     ...</k>
     <strings> Ss:Map </strings>
     when notBool (S in keys(Ss))
 
-  rule 
+  rule
     <k> S:String => lv(normType(char [lengthString(S) +Int 1]), P) ...</k>
     <strings>... S |-> P:Ptr ...</strings>
 
@@ -408,12 +408,12 @@ module CIL-EXP
     <strings>... .Map => S |-> P </strings>
 
   // Doesn't work as a macro because it will mangle array declarations.
-  rule E1:Exp[E2:Exp] => *(E1 + E2) 
+  rule E1:Exp[E2:Exp] => *(E1 + E2)
 
   context (HOLE => HOLE ~> noLeftValueConversion) . _:CId
-  rule 
-    <k> 
-      nclv(Agg:AggTypeSpec, Ptr(Base:BasePtr, Offset:Int)) . M:CId 
+  rule
+    <k>
+      nclv(Agg:AggTypeSpec, Ptr(Base:BasePtr, Offset:Int)) . M:CId
       => lv(T, Ptr(Base, Offset +Int MOffset))
     ...</k>
     <agg-id> Agg </agg-id>
@@ -425,10 +425,10 @@ module CIL-EXP
   rule &nclv(T:Type, P:Ptr) => tv(upPtr(T), P)
     when isArrayType(T) =/=K true
     [structural]
-  
+
   /* Pointer dereference. */
-  rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P) 
-    when isVaList(P) =/=K true 
+  rule *tv(T:Type, P:Ptr) => lv(downPtr(T), P)
+    when isVaList(P) =/=K true
     [structural]
 
   /* Dereference of hacky VaLists, which should never be r-values. */
@@ -437,7 +437,7 @@ module CIL-EXP
 
   context '_=_;((HOLE => HOLE ~> noLeftValueConversion),, _:K)
   rule nclv(T:Type, P:Ptr) = tv(T, V:Value); => store(T, P, V)
-    
+
   rule (lv(T:Type, P:Ptr) => load(T, P)) ~> KI:KItem
     when (KI =/=K noLeftValueConversion) andBool ((isArrayType(T) =/=K true)
       orBool (KI ==K sizeofContext)) andBool (isFunType(T) =/=K true)
@@ -446,7 +446,7 @@ module CIL-EXP
     when (KI =/=K noLeftValueConversion) andBool (KI =/=K sizeofContext)
       andBool (isArrayType(T) ==K true)
   // Functions decay to a function pointer.
-  rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) ~> KI:KItem 
+  rule (lv(T:Type, P:Ptr) => tv(upPtr(T), P)) ~> KI:KItem
     when (KI =/=K noLeftValueConversion) andBool (isFunType(T) ==K true)
 
   // TODO
@@ -466,7 +466,7 @@ module CIL-EXP
   rule -tv(T:Type, F:Float) => norm(T, 0.0) - tv(T, F)
 
   /* Addition */
-  rule tv(T:SignedIntType, MI1:MInt) + tv(T, MI2:MInt) 
+  rule tv(T:SignedIntType, MI1:MInt) + tv(T, MI2:MInt)
     => tv(T, miMInt(saddMInt(MI1, MI2)))
   when notBool overflowMInt(saddMInt(MI1, MI2))
   rule tv(T:UnsignedIntType, MI1:MInt) + tv(T, MI2:MInt)
@@ -506,14 +506,14 @@ module CIL-EXP
 
   /* Shift */
   // TODO(AndreiS): use library shift
-  // TODO(AndreiS): negative shifts 
-  rule tv(T:Type, I:MInt) << tv(_:Type, N:MInt) 
+  // TODO(AndreiS): negative shifts
+  rule tv(T:Type, I:MInt) << tv(_:Type, N:MInt)
     => norm(T, uvalueMInt(I) <<Int uvalueMInt(N))
     when uvalueMInt(N) <Int width(T)
-  rule tv(T:SignedIntType, I:MInt) >> tv(_:Type, N:MInt) 
+  rule tv(T:SignedIntType, I:MInt) >> tv(_:Type, N:MInt)
     => norm(T, svalueMInt(I) >>Int uvalueMInt(N))
     when uvalueMInt(N) <Int width(T)
-  rule tv(T:UnsignedIntType, I:MInt) >> tv(_:Type, N:MInt) 
+  rule tv(T:UnsignedIntType, I:MInt) >> tv(_:Type, N:MInt)
     => norm(T, uvalueMInt(I) >>Int uvalueMInt(N))
     when uvalueMInt(N) <Int width(T)
 
@@ -563,7 +563,7 @@ module CIL-EXP
   rule sizeof'(T:Type) => (size_t) byteWidth(T)
     when (isBasicType(T) ==K true) orBool (isPtrType(T) ==K true)
     [structual]
-  rule sizeof'(T:Type) 
+  rule sizeof'(T:Type)
     => (size_t) sizeof'(downArray(T)) * (size_t) getArraySize(T)
     when isArrayType(T) ==K true
     [structual]
@@ -571,7 +571,7 @@ module CIL-EXP
     <agg-id> T </agg-id>
     <size> Size:Int </size>
     [structural]
-  
+
   /*
    * Casting
    */
@@ -588,6 +588,9 @@ module CIL-EXP
   // Disambiguate the typedef_name[Constant] case from the var[Constant] case.
   syntax Bool ::= "$isConstArrayDeref" "(" K "," Map ")" [function]
   rule $isConstArrayDeref(X:CId[_:Constant], (_:Map (X |-> lv(_,_)))) => true
+  rule $isConstArrayDeref(Lbl:KLabel(_), _) => false
+    when Lbl =/=KLabel '_`[_`]
+  rule $isConstArrayDeref(_, _) => false [owise]
 
   // TODO(chathhorn): should find a better way. I'm basically turning something
   // that has been misparsed as a Type into an Exp.
@@ -597,7 +600,7 @@ module CIL-EXP
   /* the rule for signed integer types is implementation defined */
   rule
     (nt(T:SignedIntType)) tv(_:Type, I:MInt)
-  => 
+  =>
     tv(T, mi(width(T), svalueMInt(I)))
   // TODO: unnecessary?
   //rule (nt(T:SignedIntType)) tv(_:Type, I:Int) => norm(T, I)
@@ -629,13 +632,14 @@ module CIL-EXP
   // TODO(chathhorn): Pointers may be converted to integers and the result is
   // implementation-defined (apparently except in the case of Null). But also
   // comparisons and such must still work for pointers with the same base, even
-  // after being cast to an IntType. 
-  rule (nt(To:IntType)) tv(_:Type, Ptr(BasePtr(Base:Int, _), Offset:Int)) 
+  // after being cast to an IntType.
+  rule (nt(To:IntType)) tv(_:Type, Ptr(BasePtr(Base:Int, _), Offset:Int))
     => norm(To, symToInt(Base) +Int Offset)
 
   // Ints to pointers.
-  rule (nt(To:Type)) tv(_:IntType, I:MInt) => norm(To, I)
-    when isPtrType(To) ==K true
+  // TODO(AndreiS): this rule causes prover to fail due to non-confluence
+//  rule (nt(To:Type)) tv(_:IntType, I:MInt) => norm(To, I)
+//    when isPtrType(To) ==K true
 
   syntax Int ::= symToInt(K) [function]
   // TODO(AndreiS): pointers now have concrete bases
@@ -653,7 +657,7 @@ module CIL-EXP
 
   rule tv(T:Type, F1:Float) + tv(T, F2:Float) => tv(T, F1 +Float F2)
   rule tv(T:Type, F1:Float) - tv(T, F2:Float) => tv(T, F1 -Float F2)
- 
+
   // pointer arithmetic
   rule tv(T:Type, P:Ptr) + tv(_:SignedIntType, MI:MInt)
     => PtrAddHelper(T, P, svalueMInt(MI), sizeof(downPtr(T)))
@@ -702,11 +706,10 @@ module CIL-EXP
   rule tv(T:Type, I1:Int) != tv(T, I2:Int) => norm(int, I1 =/=Int I2)
   rule tv(T:Type, F1:Float) == tv(T, F2:Float) => norm(int, F1 ==Float F2)
   rule tv(T:Type, F1:Float) != tv(T, F2:Float) => norm(int, F1 =/=Float F2)
-  rule tv(_:Type, P1:Ptr) == tv(_:Type, P2:Ptr) => norm(int, P1 ==Ptr P2)
-  rule tv(_:Type, P1:Ptr) != tv(_:Type, P2:Ptr) => norm(int, P1 =/=Ptr P2)
+  rule tv(_:Type, P1:Ptr) == tv(_:Type, P2:Ptr) => norm(int, P1 ==K P2)
+  rule tv(_:Type, P1:Ptr) != tv(_:Type, P2:Ptr) => norm(int, P1 =/=K P2)
 
   rule tv(T:Type, I1:MInt) & tv(T, I2:MInt) => tv(T, andMInt(I1, I2))
   rule tv(T:Type, I1:MInt) | tv(T, I2:MInt) => tv(T, orMInt(I1, I2))
   rule tv(T:Type, I1:MInt) ^ tv(T, I2:MInt) => tv(T, xorMInt(I1, I2))
 endmodule
-

@@ -12,7 +12,10 @@ require "cil-typing.k"
 require "cil-implementation.k"
 require "cil-lib.k"
 
-require "verification/list_pattern.k"
+require "patterns/mint_list.k"
+require "patterns/mint_set.k"
+require "patterns/list_pattern.k"
+require "patterns/tree_pattern.k"
 
 module CIL-SEMANTICS
   imports LIST
@@ -74,12 +77,12 @@ module CIL-SEMANTICS
       <aggregate multiplicity="*">
         <agg-id key=""> .K </agg-id> // TypeId
         <size> 0 </size>
-        <fields map="">
+        <fields>
           <field multiplicity="*">
-            <field-id key=""> .K </field-id> // CId
+            <field-id> .K </field-id> // CId
             <field-pos> 0 </field-pos> // The pos it appeared in the decl.
             <field-type> .K </field-type> // Type
-            <offset> 0 </offset> 
+            <offset> 0 </offset>
           </field>
         </fields>
       </aggregate>
@@ -117,5 +120,5 @@ endmodule
 module CIL
   imports CIL-SEMANTICS
   imports LIST-PATTERN
+  imports TREE-PATTERN
 endmodule
-

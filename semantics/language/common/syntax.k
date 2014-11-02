@@ -554,9 +554,9 @@ module C-SYNTAX
         should be printed as just T *)
      | CALL of expression * expression list
      */
+     syntax Expression ::= "Call" "(" K "," K ")"
+          [klabel('Call)] // K, List
 
-     syntax Expression ::= Call(K, K) // K, List
-     context Call((HOLE => reval(HOLE)), _) [ndheat]
      /*
      | COMMA of expression list
      */

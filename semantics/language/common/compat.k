@@ -126,10 +126,6 @@ module COMPAT
      rule subset(K:K, _, S2:Set) => false
           requires notBool (K in S2)
 
-     rule .Set <=Set _:Set => true
-     rule (SetItem(K:K) S1:Set) <=Set S2:Set
-          => subset(K, S1, S2)
-
      rule '_==MSet_(.List ,, .List) => true
      rule '_==MSet_(.List ,, ListItem(_) _:List) => false
      rule '_==MSet_(ListItem(_) _:List ,, .List) => false
@@ -147,7 +143,7 @@ module COMPAT
 
      syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
 
-     // TODO(liyi): might not need this after accosicate matching
+     // TODO(liyi): might not need this after associative matching
      syntax SubKRItem ::= sItem(K) [strict]
      syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]

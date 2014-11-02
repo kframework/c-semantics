@@ -16,21 +16,19 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
-               | "Null"
+               | "Null"             [smtlib(smt_pointer_null)]
 
   syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 
   /*
    * BasePtr of Base * Size
-   * @immutable: Base, Size 
+   * @immutable: Base, Size
    */
   syntax BasePtr ::= "BasePtr" "(" Int "," Int ")"
 
   syntax Ptr ::= "PtrAdd" "(" Ptr "," Int "," Exp ")"   [function]
   syntax Int ::= "PtrSub" "(" Ptr "," Ptr "," Exp ")"   [function]
-  syntax Bool ::= Ptr "==Ptr" Ptr              [function]
-                | Ptr "=/=Ptr" Ptr             [function]
-                | "PtrLt" "(" Ptr "," Ptr ")"  [function]
+  syntax Bool ::= "PtrLt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrLeq" "(" Ptr "," Ptr ")" [function]
                 | "PtrGt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrGeq" "(" Ptr "," Ptr ")" [function]
@@ -46,15 +44,6 @@ module CIL-COMMON-PTR
   rule PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
     => (Offset1 -Int Offset2) /Int mival(V)
     when (Offset1 -Int Offset2) %Int mival(V) ==Int 0
-
-  /* Structural equality of addresses */
-  rule Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
-    ==Ptr Ptr(BasePtr(Base2:Int, Size2:Int), Offset2:Int)
-    => Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
-  rule Null ==Ptr Null => true
-  rule Ptr(_, _) ==Ptr Null => false
-  rule Null ==Ptr Ptr(_, _) => false
-  rule P1:Ptr =/=Ptr P2:Ptr => notBool(P1:Ptr ==Ptr P2:Ptr)
 
   /* Relational operations on pointers are defined only for the same BasePtr. */
   rule
@@ -109,7 +98,7 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
-  syntax List ::= value2Bytes(Type, Value) [function] 
+  syntax List ::= value2Bytes(Type, Value) [function]
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
@@ -143,8 +132,8 @@ module CIL-COMMON-TYPED-VALUE
 
   rule norm(T:IntType, MI:MInt) => tv(T, MI)
   rule norm(T:IntType, I:Int)   => tv(T, mi(width(T), I))
-  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1)) 
-  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0)) 
+  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1))
+  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0))
   rule norm(T:IntType, F:Float) => tv(T, mi(width(T), Float2Int(F)))
 
   // TODO(chathhorn): not sure about the best way to handle this.
@@ -186,14 +175,14 @@ module CIL-COMMON-MMU
     $rangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
-  when I <Int J 
+  when I <Int J
   rule $rangeList(I:Int, J:Int, _) => .List
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
-  when I >Int J 
+  when I >Int J
   rule $downrangeList(I:Int, J:Int, _) => .List
   when I <=Int J
 
@@ -251,7 +240,7 @@ module CIL-COMMON-MMU
                  | "store" "(" Type "," Ptr "," Value ")"
                  | "$store" "(" Ptr "," List ")"
 
-  rule 
+  rule
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
   rule
@@ -274,7 +263,7 @@ module CIL-COMMON-MMU
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
-  rule $load(T:Type, P:Ptr, Sz:TypedValue) 
+  rule $load(T:Type, P:Ptr, Sz:TypedValue)
     => $load(T, P, mival(Sz), .List)
   [structural]
   rule
@@ -307,7 +296,7 @@ module CIL-COMMON-MMU
 endmodule
 
 module CIL-COMMON
-  imports MINT 
+  imports MINT
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
@@ -319,12 +308,8 @@ module CIL-COMMON
   syntax KItem ::= "callMain"
 
   /* These are also defined in a standard library header. */
-  // TODO(AndreiS): check if this more specific type works 
-  //syntax IntType ::= "size_t" [function]
-  // TODO(AndreiS): define size_t here or in the header files?
-  //syntax Type ::= "size_t"
-  syntax Type ::= "size_t" [function]
-                | "size_ptr" [function]
+  // TODO(AndreiS): check if this more specific type works
+  syntax Type ::= "size_ptr" [function]
                 | "ptrdiff_t" [function]
 
   /*
@@ -344,4 +329,3 @@ module CIL-COMMON
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
 endmodule
-

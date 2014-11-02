@@ -1,7 +1,7 @@
 // vim: set ts=2 sw=2:
 module CIL-SYNTAX
-  /* 
-   * A file is a list of global declarations and definitions. 
+  /*
+   * A file is a list of global declarations and definitions.
    */
   syntax File ::= Globals
 
@@ -12,7 +12,7 @@ module CIL-SYNTAX
 
   syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypedefDecl
 
-  /* 
+  /*
    * Global declarations.
    */
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
@@ -27,7 +27,7 @@ module CIL-SYNTAX
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
-  syntax FunDef ::= DeclSpecs Declarator FunBody 
+  syntax FunDef ::= DeclSpecs Declarator FunBody
 
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
@@ -44,7 +44,7 @@ module CIL-SYNTAX
   syntax Void ::= "void"
   syntax NvType ::= BasicType
   syntax BasicType ::= "char"
-                     | IntType 
+                     | IntType
                      | FloatingType
                      | "_Complex" // TODO
                      | "__builtin_va_list"
@@ -54,7 +54,7 @@ module CIL-SYNTAX
                          | "short"
                          | "int"
                          | "long"
-                         | "long" "long" 
+                         | "long" "long"
   syntax UnsignedIntType ::= "_Bool"
                            | "unsigned" "char"
                            | "unsigned" "short"
@@ -68,7 +68,7 @@ module CIL-SYNTAX
   /*
    * Expressions.
    */
-  syntax Exp ::= 
+  syntax Exp ::=
       Constant
     | Var
     | "(" Exp ")" [bracket]
@@ -133,12 +133,12 @@ module CIL-SYNTAX
   // TODO(chathhorn): char constant prefix. Especially L, which appears in the
   // torture tests.
   rule _:CharConstantPrefix ' C:CharConstant ' => ' C ' [macro]
-  
-  syntax DecimalConstant ::= 
+
+  syntax DecimalConstant ::=
     Token{[1-9][0-9]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
-  syntax OctalConstant ::= 
+  syntax OctalConstant ::=
     Token{[0][0-7]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
-  syntax HexConstant ::= 
+  syntax HexConstant ::=
     Token{[0][xX][0-9a-fA-F]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
 
   // Either the dot or the exponent part (preceded by e or p) is required for
@@ -148,7 +148,7 @@ module CIL-SYNTAX
   syntax NoDotDecimalFloatConstant ::=
     Token{[0-9]+[eE][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
   syntax HexFloatConstant ::=
-    Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?} 
+    Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?}
     [onlyLabel]
   syntax NoDotHexFloatConstant ::=
     Token{[0][xX][0-9a-fA-F]+[pP][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
@@ -157,12 +157,12 @@ module CIL-SYNTAX
 
   syntax CharConstantPrefix ::= Token{[LuU]} [onlyLabel]
 
-  syntax Char ::= 
-    Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]} 
+  syntax Char ::=
+    Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]}
     [onlyLabel]
   syntax CharConstant ::= Char | EscapeString
-  syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
-                        | "\\n" | "\\r" | "\\t" | "\\v" 
+  syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f"
+                        | "\\n" | "\\r" | "\\t" | "\\v"
                         | OctalStringEscape | HexStringEscape
   // TODO(chathhorn): Also \" but I can't get it to work.
 
@@ -176,7 +176,7 @@ module CIL-SYNTAX
   /*
    * Statements.
    */
-  syntax Stmt ::= Instr 
+  syntax Stmt ::= Instr
                 | "return" "(" Exp ")" ";"                    [strict]
                 | "return" ";"
                 | "goto" Label ";"
@@ -235,7 +235,8 @@ module CIL-SYNTAX
   /* C identifiers */
   /* regular expression for tokens representing C identifiers */
   syntax CId ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
-               | Token{"main"}
+               | "main"
+               | "size_t"
   syntax CIds ::= List{CId, ","}
 
 
@@ -247,7 +248,7 @@ module CIL-SYNTAX
   //     declaration-specifiers init-declarator-list? ;
   //     static_assert-declaration
   syntax VarDecl ::=
-      DeclSpecs Declarator ";" 
+      DeclSpecs Declarator ";"
     // Bitfields; really only allowed in structs/unions.
     | DeclSpecs Declarator ":" Constant ";"
 
@@ -255,8 +256,8 @@ module CIL-SYNTAX
   rule DS:DeclSpecs D:Declarator : _:Constant ; => DS D ; [macro]
 
   syntax VarDecls ::= List{VarDecl, ""}
-  
-  syntax InitVarDecl ::= 
+
+  syntax InitVarDecl ::=
       DeclSpecs Declarator "=" Initializer ";"
 
   // declaration-specifiers
@@ -313,10 +314,10 @@ module CIL-SYNTAX
   //     struct-or-union identifier? { struct-declaration-list }
   //     struct-or-union identifier
   syntax AggTypeSpec ::=
-      "struct" CId 
-    | "union" CId 
-    | "enum" CId 
-  
+      "struct" CId
+    | "union" CId
+    | "enum" CId
+
   // function-specifier
   //     inline
   //     _Noreturn
@@ -347,7 +348,7 @@ module CIL-SYNTAX
   // declarator
   //     pointer? direct-declarator
   syntax Declarator ::=
-      DirectDecl 
+      DirectDecl
     | Pointer DirectDecl
 
   // direct-declarator
@@ -366,7 +367,7 @@ module CIL-SYNTAX
     | DirectDecl "[" "]" [prefer]
     | DirectDecl "(" Params ")"
     | DirectDecl "[" Constant "]"
-  
+
   // TODO(chathhorn): type qualifiers.
   // pointer
   //      * type-qualifier-list?
@@ -394,7 +395,7 @@ module CIL-SYNTAX
   //     parameter-list , parameter-declaration
   syntax Params ::=
       List{ParamDecl, ","}
-  
+
   // parameter-declaration
   //     declaration-specifiers declarator
   //     declaration-specifiers abstract-declarator?
@@ -413,7 +414,7 @@ module CIL-SYNTAX
       Pointer
     | DirectAbsDecl
     | Pointer DirectAbsDecl
-  
+
   // direct-abstract-declarator
   //     ( abstract-declarator )
   //     direct-abstract-declarator? [ type-qualifier-list? assignment-expression? ]
@@ -431,7 +432,7 @@ module CIL-SYNTAX
     | DirectAbsDecl "[" "]" [prefer]
     | DirectAbsDecl "(" Params ")"
     | DirectAbsDecl "[" Constant "]"
-  
+
   // initializer
   //     assignment-expression
   //     { initializer-list }
@@ -444,11 +445,10 @@ module CIL-SYNTAX
   syntax KItem ::= "###result-value" "(" K ")"
 
   // TODO(AndrieS): handle this
-  syntax CId ::= "sum" | "reverse"
+  syntax CId ::= "sum" | "reverse" | "new_node" | "find_min" | "find" | "insert" | "delete"
   syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
   syntax CId ::= "listNode" | "value" | "next"
-  syntax CId ::= "malloc"
-  syntax DecimalFloatConstant ::= "0U"
+               | "treeNode" | "left" | "right"
+  syntax CId ::= "malloc" | "free"
   syntax Stmt ::= "breakpoint"
 endmodule
-
