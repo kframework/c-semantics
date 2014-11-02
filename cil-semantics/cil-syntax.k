@@ -449,6 +449,7 @@ module CIL-SYNTAX
   syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
   syntax CId ::= "listNode" | "value" | "next"
                | "treeNode" | "left" | "right"
+               | "node"
   syntax CId ::= "malloc" | "free"
   syntax Stmt ::= "breakpoint"
 endmodule
