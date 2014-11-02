@@ -1,18 +1,18 @@
 #include <stdlib.h>
 
 struct node {
-  int value;
-  int height;
+  unsigned value;
+  unsigned height;
   struct node *left;
   struct node *right;
 };
 
-int max(int a, int b)
+unsigned max(unsigned a, unsigned b)
 {
   return a > b ? a : b;
 }
 
-int height(struct node *t)
+unsigned height(struct node *t)
 {
   return t ? t->height : 0;
 }
@@ -52,12 +52,12 @@ struct node* right_rotate(struct node *x)
 
 struct node* balance(struct node *t)
 {
-  if (height(t->left) - height(t->right) > 1) {
+  if (height(t->left) > 1 + height(t->right)) {
     if (height(t->left->left) < height(t->left->right))
       t->left = left_rotate(t->left);
     t = right_rotate(t);
   }
-  else if (height(t->left) - height(t->right) < -1) {
+  else if (height(t->left) + 1 < height(t->right)) {
     if (height(t->right->left) > height(t->right->right))
       t->right = right_rotate(t->right);
     t = left_rotate(t);
@@ -66,7 +66,7 @@ struct node* balance(struct node *t)
   return t;
 }
 
-int find_min(struct node *t)
+unsigned find_min(struct node *t)
 {
   if (t->left == NULL)
     return t->value;
@@ -74,9 +74,9 @@ int find_min(struct node *t)
     return find_min(t->left);
 }
 
-struct node* delete(int v, struct node *t)
+struct node* delete(unsigned v, struct node *t)
 {
-  int min;
+  unsigned min;
 
   if (t == NULL)
     return NULL;
@@ -115,7 +115,7 @@ struct node* delete(int v, struct node *t)
   return t;
 }
 
-struct node* new_node(int v)
+struct node* new_node(unsigned v)
 {
   struct node *node;
   node = (struct node *) malloc(sizeof(struct node));
@@ -128,7 +128,7 @@ struct node* new_node(int v)
   return node;
 }
 
-struct node* insert(int v, struct node *t)
+struct node* insert(unsigned v, struct node *t)
 {
   if (t == NULL)
     return new_node(v);
@@ -146,7 +146,7 @@ struct node* insert(int v, struct node *t)
   return t;
 }
 
-int find(int v, struct node *t)
+unsigned find(unsigned v, struct node *t)
 {
   if (t == NULL)
     return 0;
@@ -161,10 +161,11 @@ int find(int v, struct node *t)
 int main()
 {
   struct node *t = NULL;
-  for (int v = 0; i < 5; i++) {
+  unsigned v;
+  for (v = 0; v < 5; v++) {
     t = insert(v, t);
   }
-  for (int v = 0; i < 5; i++) {
+  for (v = 0; v < 5; v++) {
     t = delete(v, t);
   }
 
