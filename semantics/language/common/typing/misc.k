@@ -214,7 +214,6 @@ module C-TYPING-MISC
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
-     syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
@@ -391,6 +390,8 @@ module C-TYPING-MISC
 
      rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
           => Tag
+
+     rule getReadFromLoc(t(_ SetItem(readFrom(Loc:SymLoc)), _)) => Loc
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of

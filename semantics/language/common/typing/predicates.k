@@ -313,4 +313,9 @@ module C-TYPING-PREDICATES
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true
 
+     rule hasReadFromLoc(t(Mods:Set, _)) => #hasReadFrom(Mods) ==K true
+
+     syntax Bool ::= "#hasReadFrom" "(" Set ")" [function]
+     rule #hasReadFrom(_ SetItem(readFrom(_))) => true
+
 endmodule

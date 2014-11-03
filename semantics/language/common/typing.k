@@ -142,6 +142,8 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
+     syntax Modifier ::= readFrom(SymLoc)
+
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
      syntax RestrictTag ::= Int | CId | "global"
@@ -161,6 +163,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
+     syntax Type ::= addModifier(Modifier, Type) [function]
      syntax Type ::= addModifiers(Set, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId)
@@ -178,6 +181,9 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isNullPointerConstant(RValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
+
+     syntax Bool ::= hasReadFromLoc(Type) [function]
+     syntax SymLoc ::= getReadFromLoc(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
 

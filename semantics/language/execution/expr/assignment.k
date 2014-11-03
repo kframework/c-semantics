@@ -7,32 +7,66 @@ module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-          => write(Loc, V, T)
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           when notBool isRestrictType(T)
                andBool (#fromArrayStatic(T) =/=K true)
+               andBool (T ==Type T')
           [structural]
-     rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-          => checkArrayStaticAssign(T, tv(V, T))
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> checkArrayStaticAssign(T, tv(V, T))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           when notBool isRestrictType(T)
                andBool (#fromArrayStatic(T) ==K true)
+               andBool (T ==Type T')
           [structural]
-     rule nclv(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
-          => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           when isRestrictType(T)
+               andBool (T ==Type T')
           [structural]
-     rule nclv(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
-          => checkArrayStaticAssign(T, tv(V, T))
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> checkArrayStaticAssign(T, tv(V, T))
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           when isRestrictType(T)
                andBool (#fromArrayStatic(T) ==K true)
+               andBool (T ==Type T')
+          [structural]
+
+     syntax K ::= checkOverlap(SymLoc, Type)
+     rule checkOverlap(_, T:Type) => .K
+          when notBool hasReadFromLoc(T)
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          when getReadFromLoc(T) ==K Loc
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          when notBool sameBase(getReadFromLoc(T), Loc)
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          when (getReadFromLoc(T) +bytes byteSizeofType(T)) <=bytes Loc
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          when (Loc +bytes byteSizeofType(T)) <=bytes getReadFromLoc(T)
+          [structural]
+     rule (. => UNDEF("EEA1",
+               "assignment from non-exactly-overlapping overlapping read.",
+               "6.5.16.2"))
+          ~> checkOverlap(Loc:SymLoc, T:Type)
+          when sameBase(getReadFromLoc(T), Loc)
+               andBool (getReadFromLoc(T) =/=K Loc)
+               andBool (((getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc)
+               orBool ((Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)))
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
@@ -54,10 +88,10 @@ module C-EXPR-ASSIGNMENT
           => checkRestrictAssign(Tag, S)
           when Tag =/=K Tag'
      rule checkRestrictAssign(Tag:RestrictTag, SetItem(Tag) _)
-          => UNDEF("CEA4", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
+          => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
      // TODO(chathhorn): more cases here we don't catch.
      // rule checkRestrictAssign(global, SetItem(Tag:RestrictTag) _)
-     //      => UNDEF("CEA5", "Attempt to alias restrict qualified pointers associated with the incompatible blocks.", "")
+     //      => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the incompatible blocks.", "")
      //      when Tag =/=K global
      rule checkRestrictAssign(_, .Set) => .
 
@@ -69,17 +103,20 @@ module C-EXPR-ASSIGNMENT
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _)) => .
           when (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
-     rule (. => UNDEF("CEA5",
+          [structural]
+     rule (. => UNDEF("EEA3",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(
                t(SetItem(arrayStatic(N:Int)) _, pointerType(T:Type)),
                tv(loc(_, _, SetItem(fromArray(Offset:Int, Sz:Int)) _), _))
           when (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
-     rule (. => UNDEF("CEA6",
+          [structural]
+     rule (. => UNDEF("EEA4",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(_, tv(Loc:SymLoc, _))
           when notBool isFromArray(Loc)
+          [structural]
 
 endmodule
