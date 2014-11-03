@@ -77,37 +77,37 @@ module CIL-SYNTAX
     | Exp "[" Exp "]"
     > "-" Exp [strict]
     | "+" Exp [strict]
-    | "!" Exp
+    | "!" Exp [strict]
     | "~" Exp [strict]
     | "*" Exp [strict]
     | "&" Exp [strict]
     | sizeof(TypeOrExp) [prefer]
-    > "(" Type ")" Exp [strict, prefer]
+    > "(" Type ")" Exp [seqstrict, prefer]
     > left:
-      Exp "*" Exp [strict]
-    | Exp "/" Exp [strict]
-    | Exp "%" Exp [strict]
+      Exp "*" Exp [seqstrict]
+    | Exp "/" Exp [seqstrict]
+    | Exp "%" Exp [seqstrict]
     > left:
-      Exp "+" Exp [strict]
-    | Exp "-" Exp [strict]
+      Exp "+" Exp [seqstrict]
+    | Exp "-" Exp [seqstrict]
     > left:
-      Exp "<<" Exp [strict]
-    | Exp ">>" Exp [strict]
+      Exp "<<" Exp [seqstrict]
+    | Exp ">>" Exp [seqstrict]
     > left:
-      Exp "<" Exp [strict]
-    | Exp "<=" Exp [strict]
-    | Exp ">" Exp [strict]
-    | Exp ">=" Exp [strict]
+      Exp "<" Exp  [seqstrict]
+    | Exp "<=" Exp [seqstrict]
+    | Exp ">" Exp  [seqstrict]
+    | Exp ">=" Exp [seqstrict]
     > left:
-      Exp "==" Exp [strict]
-    | Exp "!=" Exp [strict]
-    > left: Exp "&" Exp [strict]
-    > left: Exp "^" Exp [strict]
-    > left: Exp "|" Exp [strict]
+      Exp "==" Exp [seqstrict]
+    | Exp "!=" Exp [seqstrict]
+    > left: Exp "&" Exp [seqstrict]
+    > left: Exp "^" Exp [seqstrict]
+    > left: Exp "|" Exp [seqstrict]
 
   rule E:Exp -> F:Field => (*E).F [macro]
 
-  syntax Exps ::= List{Exp,","}   [strict]
+  syntax Exps ::= List{Exp,","}   [seqstrict]
 
   syntax TypeOrExp ::= Type | Exp
   syntax Var ::= CId
@@ -195,7 +195,7 @@ module CIL-SYNTAX
   syntax Stmts ::= List{Stmt, ""}
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
                  | Exp "=" FunCall ";"   [strict(2), prefer]
-                 | FunCall ";"            [strict]
+                 | FunCall ";"           [strict]
 
   // TODO(AndreiS): are these part of CIL?
   syntax Instr ::= Exp "++" ";"
@@ -449,6 +449,7 @@ module CIL-SYNTAX
   syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
   syntax CId ::= "listNode" | "value" | "next"
                | "treeNode" | "left" | "right"
+               | "node" | "update_height"
   syntax CId ::= "malloc" | "free"
   syntax Stmt ::= "breakpoint"
 endmodule

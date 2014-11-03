@@ -81,7 +81,7 @@ module CIL-LIB
     => vaArgAux(Ap, *Ap)
     [computational]
 
-  syntax Exp ::= vaArgAux(Exp, Exp) [strict]
+  syntax Exp ::= vaArgAux(Exp, Exp) [seqstrict]
 
   rule vaArgAux(Ap:TypedValue,
       tv(__builtin_va_list, va_list(TV:TypedValue, TVs:TypedValues)))
