@@ -5,8 +5,8 @@
 typedef unsigned long size_t;
 
 struct node {
-   int value ;
-   int height ;
+   unsigned int value ;
+   unsigned int height ;
    struct node *left ;
    struct node *right ;
 };
@@ -17,8 +17,8 @@ extern void * malloc(size_t __size);
 //#line 488
 extern void free(void *__ptr);
 
-int max(int a , int b )
-{ int tmp ;
+unsigned int max(unsigned int a , unsigned int b )
+{ unsigned int tmp ;
 
   {
   if (a > b) {
@@ -30,29 +30,30 @@ int max(int a , int b )
 }
 }
 
-int height(struct node *t )
-{ int tmp ;
+unsigned int height(struct node *t )
+{ unsigned int tmp ;
 
   {
   if (t) {
     tmp = t->height;
   } else {
-    tmp = 0;
+    tmp = 0U;
   }
   return (tmp);
 }
 }
 
 void update_height(struct node *t )
-{ int tmp ;
-  int tmp___0 ;
-  int tmp___1 ;
+{ unsigned int tmp ;
+  unsigned int tmp___0 ;
+  unsigned int tmp___1 ;
 
   {
   tmp = height(t->right);
   tmp___0 = height(t->left);
   tmp___1 = max(tmp___0, tmp);
-  t->height = tmp___1 + 1;
+  t->height = tmp___1 + 1U;
+  //t->height = tmp + 1U;
   return;
 }
 }
@@ -84,19 +85,19 @@ struct node *right_rotate(struct node *x )
 }
 
 struct node *balance(struct node *t )
-{ int tmp ;
-  int tmp___0 ;
-  int tmp___1 ;
-  int tmp___2 ;
-  int tmp___3 ;
-  int tmp___4 ;
-  int tmp___5 ;
-  int tmp___6 ;
+{ unsigned int tmp ;
+  unsigned int tmp___0 ;
+  unsigned int tmp___1 ;
+  unsigned int tmp___2 ;
+  unsigned int tmp___3 ;
+  unsigned int tmp___4 ;
+  unsigned int tmp___5 ;
+  unsigned int tmp___6 ;
 
   {
   tmp___5 = height(t->left);
   tmp___6 = height(t->right);
-  if (tmp___5 - tmp___6 > 1) {
+  if (tmp___5 > 1U + tmp___6) {
     tmp = height((t->left)->left);
     tmp___0 = height((t->left)->right);
     if (tmp < tmp___0) {
@@ -106,7 +107,7 @@ struct node *balance(struct node *t )
   } else {
     tmp___3 = height(t->left);
     tmp___4 = height(t->right);
-    if (tmp___3 - tmp___4 < -1) {
+    if (tmp___3 + 1U < tmp___4) {
       tmp___1 = height((t->right)->left);
       tmp___2 = height((t->right)->right);
       if (tmp___1 > tmp___2) {
@@ -119,8 +120,8 @@ struct node *balance(struct node *t )
 }
 }
 
-int find_min(struct node *t )
-{ int tmp ;
+unsigned int find_min(struct node *t )
+{ unsigned int tmp ;
 
   {
   if (t->left == (void *) 0) {
@@ -131,9 +132,9 @@ int find_min(struct node *t )
   }
 }
 }
-/*
-struct node *delete(int v , struct node *t )
-{ int min ;
+
+struct node *delete(unsigned int v , struct node *t )
+{ unsigned int min ;
   struct node *temp ;
   struct node *temp___0 ;
 
@@ -169,9 +170,8 @@ struct node *delete(int v , struct node *t )
   return (t);
 }
 }
-*/
 
-struct node *new_node(int v )
+struct node *new_node(unsigned int v )
 { struct node *node ;
   void *tmp ;
 
@@ -179,14 +179,14 @@ struct node *new_node(int v )
   tmp = malloc(sizeof(struct node ));
   node = (struct node *)tmp;
   node->value = v;
-  node->height = 1;
+  node->height = 1U;
   node->left = (struct node *)((void *)0);
   node->right = (struct node *)((void *)0);
   return (node);
 }
 }
 
-struct node *insert(int v , struct node *t )
+struct node *insert(unsigned int v , struct node *t )
 { struct node *tmp ;
 
   {
@@ -209,16 +209,16 @@ struct node *insert(int v , struct node *t )
 }
 }
 
-int find(int v , struct node *t )
-{ int tmp ;
-  int tmp___0 ;
+unsigned int find(unsigned int v , struct node *t )
+{ unsigned int tmp ;
+  unsigned int tmp___0 ;
 
   {
   if (t == (void *) 0) {
-    return (0);
+    return (0U);
   } else {
     if (v == t->value) {
-      return (1);
+      return (1U);
     } else {
       if (v < t->value) {
         tmp = find(v, t->left);
@@ -234,25 +234,23 @@ int find(int v , struct node *t )
 /*
 int main(void)
 { struct node *t ;
-  int v ;
-  struct node *tmp ;
-  int v___0 ;
-  struct node *tmp___0 ;
+  unsigned int v ;
 
   {
   t = (struct node *)((void *)0);
-  v = 0;
-  while (v < 5) {
-    tmp = insert(v, (struct node *)t);
-    t = (struct node *)tmp;
-    v ++;
+  v = 0U;
+  while (v < 5U) {
+    t = insert(v, t);
+    //v ++;
+    v = v + 1U;
   }
-  v___0 = 0;
-  while (v___0 < 5) {
-    tmp___0 = delete(v___0, (struct node *)t);
-    t = (struct node *)tmp___0;
-    v___0 ++;
+  v = 0U;
+  while (v < 5U) {
+    t = delete(v, t);
+    //v ++;
+    v = v + 1U;
   }
   return (t == (void *) 0);
 }
-}*/
+}
+*/
