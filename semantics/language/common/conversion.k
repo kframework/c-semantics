@@ -49,7 +49,7 @@ module C-CONVERSION
      // assumed they apply anywhere but they still need to raise some errors.
 
      rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, cast(T', T))
-          when stripQualifiers(T) ==K stripQualifiers(T')
+          when stripQualifiers(T) ==Type stripQualifiers(T')
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
