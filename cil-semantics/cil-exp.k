@@ -556,7 +556,7 @@ module CIL-EXP
   syntax KItem ::= "sizeofContext"
   context sizeof(HOLE => HOLE ~> sizeofContext)
 
-  syntax KItem ::= "sizeof'" "(" Type ")"
+  syntax Exp ::= "sizeof'" "(" Type ")"
   rule sizeof(nt(T:Type)) => sizeof'(T)
   rule sizeof(tv(T:Type, _:Value)) => sizeof'(T)
 
