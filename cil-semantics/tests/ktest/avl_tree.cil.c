@@ -240,12 +240,12 @@ int main(void)
   v = 0U;
   while (v < 5U) {
     t = insert(v, t);
-    v ++;
+    v = v + 1U;
   }
   v = 0U;
   while (v < 5U) {
     t = delete(v, t);
-    v ++;
+    v = v + 1U;
   }
   return (t == (void *) 0);
 }
