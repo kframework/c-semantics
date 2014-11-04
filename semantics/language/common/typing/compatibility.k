@@ -192,20 +192,17 @@ module C-TYPING-COMPATIBILITY
                // It's more complicated than this, too, I think -- e.g.,
                // alignas on a definition implies no alignas should be on any
                // declaration.
-               andBool ((#hasAlignas(Mods) =/=K true
-                    orBool #hasAlignas(Mods') =/=K true)
-                    orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
+               andBool (((notBool hasAlignasMod(Mods))
+                    andBool (notBool hasAlignasMod(Mods')))
+                    orElseBool getAlignasMod(Mods) ==Int getAlignasMod(Mods'))
 
-     rule getAlignas(T:Type) => getAlignas(getModifiers(T))
-          when #hasAlignas(getModifiers(T)) ==K true
+     rule getAlignas(T:Type) => getAlignasMod(getModifiers(T))
+          when hasAlignasMod(getModifiers(T))
      rule getAlignas(T:Type) => 1
-          when #hasAlignas(getModifiers(T)) =/=K true
+          when notBool hasAlignasMod(getModifiers(T))
 
-     syntax Int ::= getAlignas(Set) [function]
-     rule getAlignas(SetItem(alignas(A:Int)) _) => A
-
-     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
-     rule #hasAlignas(SetItem(alignas(_)) _) => true
+     syntax Int ::= getAlignasMod(Set) [function]
+     rule getAlignasMod(SetItem(alignas(A:Int)) _) => A
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T:Type) => T

@@ -313,7 +313,13 @@ module C-TYPING-PREDICATES
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true
 
-     rule hasReadFromLoc(t(Mods:Set, _)) => #hasReadFrom(Mods) ==K true
+     rule hasAlignas(t(Mods:Set, _)) => #hasAlignas(Mods) ==K true
+     rule hasAlignasMod(Mods:Set) => #hasAlignas(Mods) ==K true
+
+     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
+     rule #hasAlignas(SetItem(alignas(_)) _) => true
+
+     rule hasReadFrom(t(Mods:Set, _)) => #hasReadFrom(Mods) ==K true
 
      syntax Bool ::= "#hasReadFrom" "(" Set ")" [function]
      rule #hasReadFrom(_ SetItem(readFrom(_))) => true

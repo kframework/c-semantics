@@ -50,6 +50,7 @@ module C-CONVERSION
 
      rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, cast(T', T))
           when stripQualifiers(T) ==Type stripQualifiers(T')
+               andBool notBool isPointerType(T')
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -427,9 +428,9 @@ module C-CONVERSION
      syntax Type ::= cast(Type, Type) [function]
 
      rule cast(T':Type, T:Type) => T'
-          when notBool hasReadFromLoc(T)
+          when notBool hasReadFrom(T)
      rule cast(T':Type, T:Type)
-          => addModifier(readFrom(getReadFromLoc(T)), T')
-          when hasReadFromLoc(T)
+          => addModifier(readFrom(getReadFrom(T)), stripReadFrom(T'))
+          when hasReadFrom(T)
 endmodule
 

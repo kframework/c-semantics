@@ -194,6 +194,16 @@ module C-TYPING-MISC
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
+     rule stripAlignas(t(Mods:Set SetItem(alignas(_)), T:SimpleType))
+          => stripAlignas(t(Mods, T))
+     rule stripAlignas(T:Type) => T
+          when notBool hasAlignas(T)
+
+     rule stripReadFrom(t(Mods:Set SetItem(readFrom(_)), T:SimpleType))
+          => stripReadFrom(t(Mods, T))
+     rule stripReadFrom(T:Type) => T
+          when notBool hasReadFrom(T)
+
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
 
@@ -391,7 +401,7 @@ module C-TYPING-MISC
      rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
           => Tag
 
-     rule getReadFromLoc(t(_ SetItem(readFrom(Loc:SymLoc)), _)) => Loc
+     rule getReadFrom(t(_ SetItem(readFrom(Loc:SymLoc)), _)) => Loc
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of

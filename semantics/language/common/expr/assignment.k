@@ -63,9 +63,12 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule nclv(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          when areCompatible(stripQualifiers(T'), stripQualifiers(T))
-               andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
+          when areCompatible(
+                    stripQualifiers(stripAlignas(T')),
+                    stripQualifiers(stripAlignas(T)))
+               andBool getQualifiers(T) <=Set getQualifiers(T')
+               andBool t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T))
+               andBool getAlignas(T') <=Int getAlignas(T)
           [structural]
 
      rule nclv(_, t(Mods':Set, pointerType(T':Type)))
@@ -93,12 +96,17 @@ module C-COMMON-EXPR-ASSIGNMENT
                orBool (notBool isPointerType(T') andBool isPointerType(T))
      rule (. => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
           ~> nclv(_, T':Type) := tv(_, T:Type)
+          // TODO(chathhorn): split these out for better errors.
           when isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
-               andBool notBool
-                    ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
-                    andBool areCompatible(innerType(T'), innerType(T)))
+               andBool (
+                    notBool areCompatible(
+                         stripQualifiers(stripAlignas(innerType(T'))),
+                         stripQualifiers(stripAlignas(innerType(T))))
+                    orBool notBool (getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
+                    orBool getAlignas(innerType(T')) >Int getAlignas(innerType(T))
+               )
      rule (. => CV("CEA3", "lvalue required as left operand in assignment.", ""))
           ~> tv(_, _) := tv(_, _)
 

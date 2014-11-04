@@ -159,6 +159,7 @@ module C-TYPING-SYNTAX
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
+     syntax Type ::= stripAlignas(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
@@ -182,8 +183,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isNullPointerConstant(RValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
 
-     syntax Bool ::= hasReadFromLoc(Type) [function]
-     syntax SymLoc ::= getReadFromLoc(Type) [function]
+     syntax Bool ::= hasReadFrom(Type) [function]
+     syntax SymLoc ::= getReadFrom(Type) [function]
+     syntax Type ::= stripReadFrom(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
 
@@ -191,6 +193,9 @@ module C-TYPING-SYNTAX
      syntax RestrictTag ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]
+
+     syntax Bool ::= hasAlignas(Type) [function]
+     syntax Bool ::= hasAlignasMod(Set) [function]
 endmodule
 
 module C-TYPING
