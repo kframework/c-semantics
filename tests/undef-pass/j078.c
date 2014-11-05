@@ -2,11 +2,6 @@ int a(void) {
       return 0;
 }
 
-int b(void) {
-      _Thread_local int x;
-      return 0;
-}
-
 int c(void) {
       auto int x;
       return 0;
