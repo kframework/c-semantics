@@ -97,13 +97,11 @@ module C-COMMON-EXPR-ADDITIVE
           => tv(newFromArray(Loc, T, I)
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           requires ifFromArrayInBounds(Loc, T, I) ==K true
-          [structural]
      rule (.K => ERROR("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
                (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           requires ifFromArrayInBounds(Loc, T, I) =/=K true
-          [structural]
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
                      | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]

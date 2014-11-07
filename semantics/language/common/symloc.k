@@ -122,30 +122,40 @@ module C-SYMLOC
                orBool isThreadDuration(Loc)
                orBool isAutoDuration(Loc))
 
-     rule isAllocatedDuration(Loc:SymLoc)
-          => #isAllocatedDuration(Loc) ==K true
-     rule isStaticDuration(Loc:SymLoc)
-          => #isStaticDuration(Loc) ==K true
-     rule isThreadDuration(Loc:SymLoc)
-          => #isThreadDuration(Loc) ==K true
-     rule isAutoDuration(Loc:SymLoc)
-          => #isAutoDuration(Loc) ==K true
+     rule isAllocatedDuration(Loc:SymLoc) => true
+          requires #isAllocatedDuration(Loc) 
+     rule isAllocatedDuration(Loc:SymLoc) => false [owise]
+     rule isStaticDuration(Loc:SymLoc) => true
+          requires #isStaticDuration(Loc)
+     rule isStaticDuration(Loc:SymLoc) => false [owise]
+     rule isThreadDuration(Loc:SymLoc) => true
+          requires #isThreadDuration(Loc)
+     rule isThreadDuration(Loc:SymLoc) => false [owise]
+     rule isAutoDuration(Loc:SymLoc) => true
+          requires #isAutoDuration(Loc)
+     rule isAutoDuration(Loc:SymLoc) => false [owise]
 
-     rule isStringLoc(Loc:SymLoc)
-          => #isStringLoc(Loc) ==K true
-     rule isLinkerLoc(Base:SymBase)
-          => #isLinkerLoc(Base) ==K true
-     rule isLinkerLoc(Loc:SymLoc)
-          => #isLinkerLoc(base(Loc)) ==K true
-     rule isArgvLoc(Loc:SymLoc)
-          => #isArgvLoc(Loc) ==K true
-     rule isRegisterLoc(Loc:SymLoc)
-          => #isRegisterLoc(Loc) ==K true
+     rule isStringLoc(Loc:SymLoc) => true
+          requires #isStringLoc(Loc)
+     rule isStringLoc(Loc:SymLoc) => false [owise]
+     rule isLinkerLoc(Base:SymBase) => true
+          requires #isLinkerLoc(Base)
+     rule isLinkerLoc(Base:SymBase) => false [owise]
+     rule isLinkerLoc(Loc:SymLoc) => true
+          requires #isLinkerLoc(base(Loc))
+     rule isLinkerLoc(Loc:SymLoc) => false [owise]
+     rule isArgvLoc(Loc:SymLoc) => true
+          requires #isArgvLoc(Loc)
+     rule isArgvLoc(Loc:SymLoc) => false [owise]
+     rule isRegisterLoc(Loc:SymLoc) => true
+          requires #isRegisterLoc(Loc)
+      rule isRegisterLoc(Loc:SymLoc) => false [owise]
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
      rule #isAllocatedDuration(loc(_ @ alloc, _)) => true
      rule #isAllocatedDuration(loc(_ @ alloc, _, _)) => true
+     rule #isAllocatedDuration(_) => false [owise]
 
      rule #isStaticDuration(loc(_ @ static(_), _)) => true
      rule #isStaticDuration(loc(_ @ static(_), _, _)) => true
@@ -155,9 +165,11 @@ module C-SYMLOC
      rule #isStaticDuration(loc(string(_), _, _)) => true
      rule #isStaticDuration(loc(wstring(_), _)) => true
      rule #isStaticDuration(loc(wstring(_), _, _)) => true
+     rule #isStaticDuration(_) => false [owise]
 
      rule #isThreadDuration(loc(_ @ thread(_), _)) => true
      rule #isThreadDuration(loc(_ @ thread(_), _, _)) => true
+     rule #isThreadDuration(_) => false [owise]
 
      rule #isAutoDuration(loc(_ @ auto(_), _)) => true
      rule #isAutoDuration(loc(_ @ auto(_), _, _)) => true
@@ -165,19 +177,24 @@ module C-SYMLOC
      rule #isAutoDuration(loc(_ @ argv, _, _)) => true
      rule #isAutoDuration(loc(_ @ register(_), _)) => true
      rule #isAutoDuration(loc(_ @ register(_), _, _)) => true
+     rule #isAutoDuration(_) => false
 
      rule #isStringLoc(loc(string(_), _)) => true
      rule #isStringLoc(loc(string(_), _, _)) => true
      rule #isStringLoc(loc(wstring(_), _)) => true
      rule #isStringLoc(loc(wstring(_), _, _)) => true
+     rule #isStringLoc(_) => false [owise]
 
      rule #isLinkerLoc(_ @ link(_)) => true
+     rule #isLinkerLoc(_) => false [owise]
 
      rule #isArgvLoc(loc(_ @ argv, _)) => true
      rule #isArgvLoc(loc(_ @ argv, _, _)) => true
+     rule #isArgvLoc(_) => false [owise]
 
      rule #isRegisterLoc(loc(_ @ register(_), _)) => true
      rule #isRegisterLoc(loc(_ @ register(_), _, _)) => true
+     rule #isRegisterLoc(_) => false [owise]
 
      rule base(loc(Base:SymBase, _)) => Base
      rule base(loc(Base:SymBase, _, _)) => Base
@@ -274,22 +291,31 @@ module C-SYMLOC
 
      syntax Bool ::= #isBases(Provenance) [function]
      rule #isBases(basedOn(_, _)) => true
+     rule #isBases(_) => false [owise]
 
-     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K, Loc) ==K true
+     rule hasUnionMarker(Loc:SymLoc) => true
+          requires #hasUnionMarker(.K, Loc)
+     rule hasUnionMarker(Loc:SymLoc) => false [owise]
 
      syntax Bool ::= #hasUnionMarker(K, SymLoc) [function]
      rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
      rule #hasUnionMarker(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
           => #hasUnionMarker(K', loc(Base, Offset, S))
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
+     rule #hasUnionMarker(_, _) => false [owise] 
 
-     rule isFromArray(Loc:SymLoc) => #isFromArray(.K, Loc) ==K true
+     rule isFromArray(Loc:SymLoc) => true
+          requires #isFromArray(.K, Loc)
+     rule isFromArray(Loc:SymLoc) => false [owise]
 
      syntax Bool ::= #isFromArray(K, SymLoc) [function]
      rule #isFromArray(fromArray(_, _), _:SymLoc) => true
      rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
           => #isFromArray(K', loc(Base, Offset, S))
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
+     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, .Set))
+          => false 
+          requires (getKLabel(K) =/=KLabel 'fromArray)
 
      rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int))
           => loc(Base, Offset)

@@ -63,8 +63,9 @@ module C-IO-BUFFERED
 		=> map(M[Loc <- maxInt(theMapLookup(M,Loc),I)])  
      rule updateMapInKItem(map(M:Map),Loc:SymLoc,I:Int,1) 
 		=> map(M[Loc <- I])  
-     rule #isInMap(map(M:Map),Loc:SymLoc) => true
+     rule #isInMap(map(M:Map), Loc:SymLoc) => true
           requires Loc in keys(M)
+     rule #isInMap(_, _) => false [owise]
 
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:RestrictTag => .K), _)
@@ -454,6 +455,7 @@ module C-IO-BUFFERED
      // - a character type.
      rule #effectivelyCompat(L:Type, _) => true
           requires hasCharType(L:Type)
+     rule #effectivelyCompat(_, _) => false [owise]
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
      rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)

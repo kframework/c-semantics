@@ -45,7 +45,7 @@ module C-BINDING
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:TypedValue) => .List) _)
-          requires #arePromotedTypesCompat(value(V), T, type(V)) ==K true
+          requires #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
      rule (.K => ERROR("B1", "types of function call arguments aren't "
                +String "compatible with declared types after promotions."))
@@ -53,7 +53,7 @@ module C-BINDING
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
                ListItem(V:TypedValue) _)
-          requires #arePromotedTypesCompat(value(V), T, type(V)) =/=K true
+          requires notBool #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
@@ -141,6 +141,7 @@ module C-BINDING
                     orBool isVoidType(innerType(argPromoteType(T))))
                andBool (hasCharType(innerType(argPromoteType(T')))
                     orBool isVoidType(innerType(argPromoteType(T'))))
+     rule #arePromotedTypesCompat(_, _, _) => false [owise]
 
      syntax Bool ::= representable(Int, Type)  [function]
      rule representable(V:Int, T:Type)
@@ -165,12 +166,12 @@ module C-BINDING
      rule argPromoteType(T:Type)
           => promote(T)
           requires hasIntegerType(T)
-     rule argPromoteType(T:Type) => T
-          requires notBool hasIntegerType(T)
-               andBool notBool hasFloatType(T)
+     rule argPromoteType(T:Type) => T [owise]
 
      // "are argument-promoted".
-     rule areArgPromoted(L:List) => all(L, 'isArgPromoted) ==K true
+     rule areArgPromoted(L:List) => true
+          requires all(L, 'isArgPromoted)
+     rule areArgPromoted(L:List) => false [owise]
 
      syntax Bool ::= isArgPromoted(Type) [function]
      rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))

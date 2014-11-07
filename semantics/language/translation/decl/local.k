@@ -76,12 +76,11 @@ module C-DECL-LOCAL
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
-               andBool K =/=K NoInit
           [structural]
      rule declareInternalVariable(X:CId, T:Type, K:K)
           => addToEnv(X, symVal)
           ~> defineAndInit(X, T, figureInit(X, T, K))
-          requires isNaked(T) andBool K =/=K NoInit
+          requires isNaked(T)
           [structural]
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
