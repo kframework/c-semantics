@@ -45,9 +45,9 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= #areCompat(List, List) [function]
+     syntax Bool ::= #areCompat(List, List) [function,klabel(#areCompatList)]
 
-     rule areCompatible(T:Type, T':Type) => #areCompat(T, T') ==K true
+     rule areCompatible(T:Type, T':Type) => #areCompat(T, T')
 
      rule #areCompat(T:Type, T) => true
      rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
@@ -218,6 +218,7 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= "#isAlignas" "(" K ")" [function]
      rule #isAlignas(alignas(_)) => true
+     rule #isAlignas(_) => false [owise]
 
      // TODO(chathhorn): move this to compat.k
      syntax Bool ::= some(Set, KLabel) [function]
@@ -226,9 +227,9 @@ module C-TYPING-COMPATIBILITY
      syntax Bool ::= "some'" "(" K "," Set "," KLabel ")" [function]
      rule some'(.K, SetItem(K:K) S:Set, Lbl:KLabel) => some'(K, S, Lbl)
      rule some'(K:K, _, Lbl:KLabel) => true
-          when Lbl(K) ==K true
+          requires Lbl(K) ==K true
      rule some'(K:K, S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
-          when Lbl(K) =/=K true
+          requires Lbl(K) =/=K true
                andBool (K =/=K .K)
      rule some'(.K, .Set, _) => false
 

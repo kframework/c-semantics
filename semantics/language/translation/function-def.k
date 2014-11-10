@@ -106,7 +106,9 @@ module C-FUNCTION-DEF
           orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
-     rule areVoidOrComplete(L:List) => all(L, 'isVoidOrComplete) ==K true
+     rule areVoidOrComplete(L:List) => true
+          requires all(L, 'isVoidOrComplete)
+     rule areVoidOrComplete(_) => false [owise]
 
      syntax KItem ::= checkMainDef(Type)
      rule checkMainDef(t(_, functionType(t(_, int),
@@ -150,6 +152,7 @@ module C-FUNCTION-DEF
      rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
           requires T ==K char
+     rule #isArgvType(_) => false [owise]
 
      rule <k> initFunction(
                tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
@@ -188,6 +191,7 @@ module C-FUNCTION-DEF
      rule hasDupParams(T:Type) => #hasDupParams'(T) ==K true
      rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
      rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
+     rule #hasDupParams'(_) => false [owise]
 
      // TODO(liyili2): no associative matching in Java currently, we will do it once we
      // have the associative matching.
@@ -201,6 +205,8 @@ module C-FUNCTION-DEF
      rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List))
           => cIdIsInList(X, Tail)
           requires X =/=K Y
+     rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
+          => cIdIsInList(X, Tail) [owise]
 
      rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
 
@@ -209,13 +215,13 @@ module C-FUNCTION-DEF
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
           => true
-          requires cIdIsInList(X, Tail) ==K true
+          requires cIdIsInList(X, Tail)
 
      rule #hasDupIds'(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
           => #hasDupIds'(Tail)
-          requires cIdIsInList(X, Tail) ==K false
+          requires notBool cIdIsInList(X, Tail)
 
      syntax KItem ::= dummyBind(List)
      rule dummyBind(.List) => .K

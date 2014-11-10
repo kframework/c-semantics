@@ -12,8 +12,8 @@ module C-TYPING-PREDICATES
      // completeness. This is actually a looser notion of type equality than
      // "areCompatible()".
      // TODO(chathhorn): doesn't handle functions very gracefully.
-     rule T:Type ==Type T':Type => #typesEq(T, T') ==K true
-     rule T:Type =/=Type T':Type => #typesEq(T, T') =/=K true
+     rule T:Type ==Type T':Type => #typesEq(T, T')
+     rule T:Type =/=Type T':Type => notBool #typesEq(T, T')
 
      syntax Bool ::= #typesEq(Type, Type) [function]
      rule #typesEq(T:Type, T) => true
@@ -79,14 +79,16 @@ module C-TYPING-PREDICATES
                t(Mods':Set, unionType(X:CId, _, _)))
           => true
           requires sameQualifiers(Mods, Mods')
+     rule #typesEq(_, _) => false [owise]
 
-     rule isBasicType(T:Type) => #isBasic(T) ==K true
+     rule isBasicType(T:Type) => #isBasic(T)
 
      syntax Bool ::= #isBasic(Type) [function]
 
      rule #isBasic(t(_, T:SimpleType)) => true
           requires T in basicTypes
      rule #isBasic(t(_, enumType(_))) => true
+     rule #isBasic(_) => false [owise]
 
      syntax Set ::= "basicTypes" [function]
      rule basicTypes =>
@@ -134,10 +136,8 @@ module C-TYPING-PREDICATES
      rule hasIntegerType(T:Type)
           => hasUnsignedIntegerType(T) orBool hasSignedIntegerType(T)
 
-     rule hasUnsignedIntegerType(T:Type)
-          => #hasUnsignedInteger(T) ==K true
-     rule hasSignedIntegerType(T:Type)
-          => #hasSignedInteger(T) ==K true
+     rule hasUnsignedIntegerType(T:Type) => #hasUnsignedInteger(T)
+     rule hasSignedIntegerType(T:Type) => #hasSignedInteger(T)
 
      syntax Bool ::= #hasUnsignedInteger(Type) [function]
                    | #hasSignedInteger(Type) [function]
@@ -148,6 +148,7 @@ module C-TYPING-PREDICATES
           requires T in unsignedIntegerTypes
      rule #hasUnsignedInteger(typedDeclaration(T:Type, _))
           => #hasUnsignedInteger(T)
+     rule #hasUnsignedInteger(_) => false [owise]
 
      rule #hasSignedInteger(t(_, T:SimpleType)) => true
           requires T in signedIntegerTypes
@@ -156,23 +157,25 @@ module C-TYPING-PREDICATES
           => #hasSignedInteger(T)
      rule #hasSignedInteger(typedDeclaration(T:Type, _))
           => #hasSignedInteger(T)
+     rule #hasSignedInteger(_) => false [owise]
 
-     rule hasFloatType(T:Type) => #hasFloat(T) ==K true
-     rule hasCharType(T:Type) => #hasChar(T) ==K true
-     rule isUCharType(T:Type) => #isUChar(T) ==K true
-     rule isWCharType(t(_, T:SimpleType))
-          => T ==K simpleType(cfg:wcharut)
-     rule isPointerType(T:Type) => #isPointer(T) ==K true
-     rule isBoolType(T:Type) => #isBoolT(T) ==K true
-     rule isArrayType(T:Type) => #isArray(T) ==K true
-     rule isFlexibleArrayType(T:Type) => #isFlexibleArray(T) ==K true
-     rule isVoidType(T:Type) => #isVoid(T) ==K true
-     rule isNoType(T:Type) => #isNoT(T) ==K true
+     rule hasFloatType(T:Type) => #hasFloat(T)
+     rule hasCharType(T:Type) => #hasChar(T)
+     rule isUCharType(T:Type) => #isUChar(T)
+     rule isWCharType(t(_, T:SimpleType)) => true
+          requires T ==K simpleType(cfg:wcharut) 
+     rule isWCharType(_) => false [owise]
+     rule isPointerType(T:Type) => #isPointer(T)
+     rule isBoolType(T:Type) => #isBoolT(T)
+     rule isArrayType(T:Type) => #isArray(T)
+     rule isFlexibleArrayType(T:Type) => #isFlexibleArray(T)
+     rule isVoidType(T:Type) => #isVoid(T)
+     rule isNoType(T:Type) => #isNoT(T)
 
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T)
-     rule isStructType(T:Type) => #isStruct(T) ==K true
-     rule isUnionType(T:Type) => #isUnion(T) ==K true
+     rule isStructType(T:Type) => #isStruct(T)
+     rule isUnionType(T:Type) => #isUnion(T)
 
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
@@ -180,22 +183,18 @@ module C-TYPING-PREDICATES
                orBool isIncompleteUnionType(T)
                orBool isVoidType(T))
 
-     rule isIncompleteArrayType(T:Type)
-          => #isIncompleteArray(T) ==K true
-     rule isIncompleteStructType(T:Type)
-          => #isIncompleteStruct(T) ==K true
-     rule isIncompleteUnionType(T:Type)
-          => #isIncompleteUnion(T) ==K true
+     rule isIncompleteArrayType(T:Type) => #isIncompleteArray(T)
+     rule isIncompleteStructType(T:Type) => #isIncompleteStruct(T)
+     rule isIncompleteUnionType(T:Type) => #isIncompleteUnion(T)
 
-     rule isBitfieldType(T:Type) => #isBitfield(T) ==K true
-     rule isFunctionType(T:Type) => #isFunction(T) ==K true
+     rule isBitfieldType(T:Type) => #isBitfield(T)
+     rule isFunctionType(T:Type) =>  #isFunction(T)
      rule isOldStyleFunctionType(T:Type)
           => isFunctionType(T) andBool (oldStyle in getModifiers(T))
-     rule isFunctionPointerType(T:Type) => #isFunctionPointer(T) ==K true
+     rule isFunctionPointerType(T:Type) => #isFunctionPointer(T)
 
      rule isTypedDeclaration(typedDeclaration(_, _)) => true
-     rule isTypedDeclaration(T:Type) => false
-          requires getKLabel(T) =/=KLabel 'typedDeclaration
+     rule isTypedDeclaration(T:Type) => false [owise]
 
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.
@@ -212,7 +211,9 @@ module C-TYPING-PREDICATES
 
      rule isConstType(T:Type) => (Const in getQualifiers(T))
      rule isVolatileType(T:Type) => (Volatile in getQualifiers(T))
-     rule isRestrictType(T:Type) => #isRestrict(T) ==K true
+     rule isRestrictType(T:Type) => true
+          requires #isRestrict(T)
+     rule isRestrictType(T:Type) => false [owise]
 
      syntax Bool ::= #hasFloat(Type) [function]
                    | #hasChar(Type) [function]
@@ -236,47 +237,58 @@ module C-TYPING-PREDICATES
      rule #hasFloat(t(_, T:SimpleType)) => true
           requires T in floatTypes
      rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T)
+     rule #hasFloat(_) => false [owise]
 
      rule #hasChar(t(_, T:SimpleType)) => true
           requires T in charTypes
      rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T)
+     rule #hasChar(_) => false [owise]
 
      rule #isUChar(t(_, unsigned-char)) => true
      rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T)
 
      rule #isPointer(t(_, pointerType(_))) => true
      rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T)
+     rule #isPointer(_) => false [owise]
 
      rule #isBoolT(t(_, bool)) => true
      rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T)
+     rule #isBoolT(_) => false [owise]
 
      rule #isArray(t(_, arrayType(_, _))) => true
      rule #isArray(t(_, incompleteArrayType(_))) => true
      rule #isArray(t(_, flexibleArrayType(_))) => true
      rule #isArray(t(_, variableLengthArrayType(_, _))) => true
      rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T)
+     rule #isArray(_) => false [owise]
 
      rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true
      rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T)
+     rule #isFlexibleArray(_) => false [owise]
 
      rule #isVoid(t(_, void)) => true
      rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)
+     rule #isVoid(_) => false [owise]
 
      rule #isNoT(t(_, no-type)) => true
      rule #isNoT(typedDeclaration(T:Type, _)) => #isNoT(T)
+     rule #isNoT(_) => false [owise]
 
      rule #isStruct(t(_, structType(_, _, _))) => true
      rule #isStruct(t(_, incompleteStructType(_))) => true
      rule #isStruct(typedDeclaration(T:Type, _)) => #isStruct(T)
+     rule #isStruct(_) => false [owise]
 
      rule #isUnion(t(_, unionType(_, _, _))) => true
      rule #isUnion(t(_, incompleteUnionType(_))) => true
      rule #isUnion(typedDeclaration(T:Type, _)) => #isUnion(T)
+     rule #isUnion(_) => false [owise]
 
      rule #isIncompleteArray(t(_, incompleteArrayType(_))) => true
      rule #isIncompleteArray(t(_, flexibleArrayType(_))) => true
      rule #isIncompleteArray(typedDeclaration(T:Type, _))
           => #isIncompleteArray(T)
+     rule #isIncompleteArray(_) => false [owise]
 
      rule #isIncompleteStruct(t(_, incompleteStructType(_))) => true
      rule #isIncompleteStruct(typedDeclaration(T:Type, _))
@@ -285,21 +297,28 @@ module C-TYPING-PREDICATES
      rule #isIncompleteUnion(t(_, incompleteUnionType(_))) => true
      rule #isIncompleteUnion(typedDeclaration(T:Type, _))
           => #isIncompleteUnion(T)
+     rule #isIncompleteUnion(_) => false [owise]
 
      rule #isBitfield(t(_, bitfieldType(_, _))) => true
      rule #isBitfield(typedDeclaration(T:Type, _)) => #isBitfield(T)
+     rule #isBitfield(_) => false [owise]
 
      rule #isFunction(t(_, functionType(_, _))) => true
      rule #isFunction(typedDeclaration(T:Type, _)) => #isFunction(T)
+     rule #isFunction(_) => false [owise]
 
      rule #isFunctionPointer(t(_, pointerType(t(_, functionType(_, _)))))
           => true
      rule #isFunctionPointer(typedDeclaration(T:Type, _))
           => #isFunctionPointer(T)
+     rule #isFunctionPointer(_) => false [owise]
 
      rule #isRestrict(t(SetItem(Restrict) _, _)) => true
+     rule #isRestrict(_) => false [owise]
 
-     rule isNullPointerConstant(TV:TypedValue) => #isNPC(TV) ==K true
+     rule isNullPointerConstant(TV:TypedValue) => true
+          requires #isNPC(TV)
+     rule isNullPointerConstant(TV:TypedValue) => false [owise]
 
      syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
      rule #isNPC(tv(0, T:Type)) => true
@@ -309,6 +328,7 @@ module C-TYPING-PREDICATES
           requires isPointerType(T)
                andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
+     rule #isNPC(_) => false [owise]
 
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true

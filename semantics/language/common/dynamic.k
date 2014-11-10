@@ -108,8 +108,7 @@ module C-DYNAMIC
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"
 
-     rule NothingExpression => emptyValue
-          [structural]
+     rule NothingExpression => emptyValue:>Expression
 
      rule unwrapObj(<generatedTop>...
                <global> G:Bag </global>

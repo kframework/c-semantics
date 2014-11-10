@@ -247,7 +247,11 @@ sub escapeSingleCharacter {
 		return $char;
 	} else {
 		my $ord = ord($char);
-		return '\\' . sprintf("%03o", $ord) ;
+                if($ord < 16) {
+                    return '\\' . sprintf("x0%x", $ord);
+                } else {
+                    return '\\' . sprintf("x%x", $ord);
+                }
 	}
 }
 

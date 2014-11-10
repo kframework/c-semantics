@@ -71,9 +71,11 @@ module C-SYMBOLIC-VALUE
      rule #isSymbolic(symVal) => true
      rule #isSymbolic(piece(symVal, _)) => true
      rule #isSymbolic(agg(L:List)) => #areSymbolic(L)
+     rule #isSymbolic(_) => false [owise]
 
      rule #areSymbolic(ListItem(V:CValue) L:List)
           => isSymbolic(V) orElseBool #areSymbolic(L)
+     rule #areSymbolic(.List) => false
 
      // Not sure about this -- makes all VLAs compat with non-VLAs.
      rule #areCompat(
@@ -82,5 +84,6 @@ module C-SYMBOLIC-VALUE
           => #areCompat(T, T')
           requires sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
+     rule #areCompat(_,_) => false [owise]
 
 endmodule

@@ -59,8 +59,9 @@ module C-TYPING-EXPR
           [structural]
      rule <type> tv(_, T:Type) => T ...</type>
           [structural]
-     rule <type> E1:K[E2:K] => *(E1 + E2) ...</type>
-          [structural]
+     //TODO(liyili):has already had the macro for the rule
+     //rule <type> E1:K[E2:K] => *(E1 + E2) ...</type>
+          //[structural]
 
      //! \begin{rulesGroup}
      /*@  \fromStandard{\source[n1570]{\para{6.5.7}{3}}}{

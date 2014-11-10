@@ -158,7 +158,9 @@ module C-PROMOTION
 
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(T:Type) => #isPromoted(T) ==K true
+     rule isPromoted(T:Type) => true
+          requires #isPromoted(T)
+     rule isPromoted(T:Type) => false [owise]
 
      rule #isPromoted(t(_, enumType(_))) => true
      rule #isPromoted(t(_, int)) => true
@@ -167,6 +169,7 @@ module C-PROMOTION
      rule #isPromoted(t(_, unsigned-long-int)) => true
      rule #isPromoted(t(_, long-long-int)) => true
      rule #isPromoted(t(_, unsigned-long-long-int)) => true
+     rule #isPromoted(_) => false [owise]
 
      rule L:KLabel(
                (tv(V:CValue, T:Type) => tv(V, promote(T)))

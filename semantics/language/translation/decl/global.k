@@ -669,7 +669,6 @@ module C-DECL-GLOBAL
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff ***
-/*
 
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys(Exts))
@@ -686,7 +685,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
           requires notBool (X in keys(GStructs))
-          [structural]*/
+          [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
