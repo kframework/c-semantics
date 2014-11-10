@@ -130,16 +130,16 @@ module C-STMT-GOTO
           [structural]
 
      // - second case, we're in a different block
-     syntax Bool ::= subListEuqalBack(List,List) [function]     
+     syntax Bool ::= subListEqualBack(List,List) [function]     
      syntax List ::= getSubListBack(List,List) [function]
 		   | getTopOfList(List) [function]
      syntax KItem ::= getLastOfList(List) [function]
 
-     rule subListEuqalBack(.List,L:List) => true
-     rule subListEuqalBack(ListItem(K:K) L:List,.List) => false
-     rule subListEuqalBack(L:List ListItem(K:K),L':List ListItem(K:K)) 
-           => subListEuqalBack(L:List,L':List) 
-     rule subListEuqalBack(L:List ListItem(K:K),L':List ListItem(K':K)) 
+     rule subListEqualBack(.List,L:List) => true
+     rule subListEqualBack(ListItem(K:K) L:List,.List) => false
+     rule subListEqualBack(L:List ListItem(K:K),L':List ListItem(K:K)) 
+           => subListEqualBack(L:List,L':List) 
+     rule subListEqualBack(L:List ListItem(K:K),L':List ListItem(K':K)) 
            => false 
           requires K =/=K K'
 
@@ -177,7 +177,7 @@ module C-STMT-GOTO
                ListItem(BlockNum:Int) ActualHistory:List
           </block-history>
           requires BlockNum in TheList andBool
-               (notBool subListEuqalBack(ListItem(BlockNum) ActualHistory,TheList))
+               (notBool subListEqualBack(ListItem(BlockNum) ActualHistory,TheList))
           [structural] 
                
      //  once we share a history, we start to push
@@ -194,7 +194,7 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool subListEuqalBack(ActualHistory,TheList)
+               andBool subListEqualBack(ActualHistory,TheList)
           [structural] 
           
      rule <k> ( . => pushBlock
@@ -209,7 +209,7 @@ module C-STMT-GOTO
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-		andBool subListEuqalBack(ActualHist,TheList)
+		andBool subListEqualBack(ActualHist,TheList)
           [structural] 
 
      //  We've made it to the block above the target
