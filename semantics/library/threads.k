@@ -84,7 +84,7 @@ module LIBC-THREADS
                <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
                     => #if (Loc =/=K NullPointer)
                          #then Computation((* Loc) := V:KResult)
-                         #else .K
+                         #else dotK
                          #fi
                          ~> thrd-success
                ...</k>

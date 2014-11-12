@@ -9,7 +9,6 @@ module C-STMT-SWITCH
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax KItem ::= handleSwitch(Int, K) [strict(2)]
-     syntax KItem ::= "handleSwitch-aux" "(" K "," Value "," K ")"
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the
@@ -38,7 +37,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule <k> handleSwitch(SN:Int, V:KResult)
-               => handleSwitch-aux(SN, V, map(M))
+               => #handleSwitch-aux(SN, V,.K, .K, M)
           ...</k>
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
@@ -52,7 +51,7 @@ module C-STMT-SWITCH
 
      syntax KItem ::= "#handleSwitch-aux" "(" Int "," Value "," K "," K "," Map ")"
 
-     rule #handleSwitch-aux(_, _, .K, _, .Map) => .Map
+     rule #handleSwitch-aux(_, _, .K, _, .Map) => .K
           [structural]
 
      rule #handleSwitch-aux(SN:Int, V:Value, .K, _,

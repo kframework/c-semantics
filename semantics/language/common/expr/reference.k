@@ -58,7 +58,7 @@ module C-COMMON-EXPR-REFERENCE
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,
-                    t(.Set, pointerType(t(.Set, char))), 1)
+                    t(.Set, pointerType(t(.Set, char))), 1) ==K true
           [structural]
      rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
@@ -70,8 +70,8 @@ module C-COMMON-EXPR-REFERENCE
                "Dereferencing a pointer past the end of an array.",
                "6.5.6:8"))
           ~> *(tv(Loc:SymLoc, _))
-          requires notBool ifFromArrayInBounds(Loc,
-               t(.Set, pointerType(t(.Set, char))), 1)
+          requires ifFromArrayInBounds(Loc,
+               t(.Set, pointerType(t(.Set, char))), 1) =/=K true
           [structural]
 endmodule
 

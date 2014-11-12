@@ -33,7 +33,7 @@ module C-EXPR-FUNCTION-CALL
 
      rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, P:List))))), rvlist(L:List))
           // Only attempt to bind if we have a prototype.
-          => #if (P =/=K .List) #then bind(.List, P, L) #else .K #fi
+          => #if (P =/=K .List) #then bind(.List, P, L) #else dotK #fi
           ~> tv(symVal, T)
           requires (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.

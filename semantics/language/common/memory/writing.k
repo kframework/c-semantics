@@ -115,7 +115,8 @@ module C-MEMORY-WRITING
 
      rule (.K => makeUnionUnKnown(.K, keepUnion(S)))
           ~> write-specific(
-               loc(_, _, S:Set => stripUnion(S)), _, _)
+               loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
+	  requires hasUnionMarker(loc(Base,Offset,S))
           [structural]
 
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
