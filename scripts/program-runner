@@ -71,6 +71,7 @@ sub main {
                   '--output-file' => $fileOutput, 
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
+                  '--smt' => 'none',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '--parser "kast --parser binary"' => $fileInput
