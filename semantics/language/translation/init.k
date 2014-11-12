@@ -247,18 +247,18 @@ module C-TRANSLATION-INIT
           </global>))
           =>
           <global>
-               <mem> M1 M2 </mem>
-               <functions> F1 F2 </functions>
+               <mem> updateMap(M1, M2) </mem>
+               <functions> updateMap(F1, F2) </functions>
 
-               <external-types> ExtTypes1 ExtTypes2 </external-types>
-               <external-defs> ExtDefs1 ExtDefs2 </external-defs>
+               <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
+               <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
 
                <linking-state>
                     <external-decls> mergeInExternalDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 
-               <linkings> Links1 Links2 </linkings>
+               <linkings> updateMap(Links1, Links2) </linkings>
 
                <main-tu> Main1 Main2 </main-tu>
 

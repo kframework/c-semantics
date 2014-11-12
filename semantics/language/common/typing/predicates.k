@@ -293,6 +293,7 @@ module C-TYPING-PREDICATES
      rule #isIncompleteStruct(t(_, incompleteStructType(_))) => true
      rule #isIncompleteStruct(typedDeclaration(T:Type, _))
           => #isIncompleteStruct(T)
+     rule #isIncompleteStruct(_) => false [owise]
 
      rule #isIncompleteUnion(t(_, incompleteUnionType(_))) => true
      rule #isIncompleteUnion(typedDeclaration(T:Type, _))
