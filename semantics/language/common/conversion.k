@@ -97,8 +97,8 @@ module C-CONVERSION
      }*/
      rule cast(T':Type, tv(I:Int, T:Type))
           => cast(T', tv(I +Int max(T') +Int 1, T))
-          requires isBitfieldType(T')
-               andBool (I <Int min(T'))
+          requires (isBitfieldType(T')
+               andThenBool (I <Int min(T')))
                andBool hasIntegerType(T)
                andBool hasUnsignedIntegerType(innerType(T'))
 

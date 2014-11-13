@@ -167,6 +167,7 @@ sub main {
           '--output "binary"', 
           "--output-file \"$confOutTmp\"",
           "-d $TRANS_DEF",
+          '--pattern-matching',
           '-cOPTIONS="(.Set)"', 
      );
 
@@ -174,6 +175,7 @@ sub main {
           '--output "pretty"', 
           "--output-file \"$confOutPrettyTmp\"",
           "-d $TRANS_DEF",
+          '--pattern-matching',
           '-cOPTIONS="(SetItem(DEBUG) .Set)"', 
      );
 
@@ -327,6 +329,7 @@ sub mergeObjs {
                "-cOBJ1=\"$obj1\"",
                "-cOBJ2=\"$obj2\"",
                "-d $TRANS_DEF",
+               '--pattern-matching',
                );
 
           my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
@@ -390,6 +393,8 @@ sub compile {
           '-cOBJ2=".Bag"',
           '--parser "kast --parser ground"', 
           "-d $TRANS_DEF",
+          '--debug',
+          '--pattern-matching',
           $ppResult
           );
 
@@ -401,6 +406,7 @@ sub compile {
           '-cOBJ2=".Bag"',
           '--parser "kast --parser ground"', 
           "-d $TRANS_DEF",
+          '--pattern-matching',
           $ppResult
           );
 

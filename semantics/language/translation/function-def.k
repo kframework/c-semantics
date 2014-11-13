@@ -188,7 +188,7 @@ module C-FUNCTION-DEF
           [structural]
 
      syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
-     rule hasDupParams(T:Type) => #hasDupParams'(T) ==K true
+     rule hasDupParams(T:Type) => #hasDupParams'(T)
      rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
      rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
      rule #hasDupParams'(_) => false [owise]
@@ -208,7 +208,7 @@ module C-FUNCTION-DEF
      rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
           => cIdIsInList(X, Tail) [owise]
 
-     rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
+     rule hasDupIds(P:List) => #hasDupIds'(P)
 
      rule #hasDupIds'(.List) => false
      rule #hasDupIds'(
@@ -222,6 +222,7 @@ module C-FUNCTION-DEF
                Tail:List)
           => #hasDupIds'(Tail)
           requires notBool cIdIsInList(X, Tail)
+     rule #hasDupIds'(ListItem(_) Tail:List) => #hasDupIds'(Tail) [owise]
 
      syntax KItem ::= dummyBind(List)
      rule dummyBind(.List) => .K

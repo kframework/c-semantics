@@ -4,7 +4,7 @@ module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Int ::= getAlignas(Type) [function]
 
      syntax Bool ::= areCompatible(Type, Type) [function]
-     syntax KItem ::= compositeType(Type, Type) [function]
+     syntax Type ::= compositeType(Type, Type) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY

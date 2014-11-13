@@ -72,6 +72,7 @@ sub main {
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   '--smt' => 'none',
+                  '--pattern-matching' => '',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '--parser "kast --parser binary"' => $fileInput

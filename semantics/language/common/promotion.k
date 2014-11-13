@@ -158,9 +158,7 @@ module C-PROMOTION
 
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(T:Type) => true
-          requires #isPromoted(T)
-     rule isPromoted(T:Type) => false [owise]
+     rule isPromoted(T:Type) => #isPromoted(T)
 
      rule #isPromoted(t(_, enumType(_))) => true
      rule #isPromoted(t(_, int)) => true

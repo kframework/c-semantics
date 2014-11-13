@@ -304,18 +304,12 @@ module C-SYMLOC
           requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
      rule #hasUnionMarker(_, _) => false [owise] 
 
-     rule isFromArray(Loc:SymLoc) => true
-          requires #isFromArray(.K, Loc)
-     rule isFromArray(Loc:SymLoc) => false [owise]
+     rule isFromArray(Loc:SymLoc) => #isFromArray(Loc)
 
-     syntax Bool ::= #isFromArray(K, SymLoc) [function]
-     rule #isFromArray(fromArray(_, _), _:SymLoc) => true
-     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
-          => #isFromArray(K', loc(Base, Offset, S))
-          requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromArray)
-     rule #isFromArray(K:K, loc(Base:SymBase, Offset:Int, .Set))
-          => false 
-          requires (getKLabel(K) =/=KLabel 'fromArray)
+     syntax Bool ::= #isFromArray(SymLoc) [function]
+     rule #isFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
+          => getKLabel(K) ==KLabel 'fromArray orBool #isFromArray(loc(Base, Offset, S))
+     rule #isFromArray(_) => false [owise]
 
      rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int))
           => loc(Base, Offset)
