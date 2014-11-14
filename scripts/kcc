@@ -393,7 +393,6 @@ sub compile {
           '-cOBJ2=".Bag"',
           '--parser "kast --parser ground"', 
           "-d $TRANS_DEF",
-          '--debug',
           '--pattern-matching',
           $ppResult
           );
