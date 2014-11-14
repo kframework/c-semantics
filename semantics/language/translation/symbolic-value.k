@@ -84,6 +84,5 @@ module C-SYMBOLIC-VALUE
           => #areCompat(T, T')
           requires sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
-     rule #areCompat(_,_) => false [owise]
 
 endmodule

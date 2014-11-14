@@ -62,7 +62,8 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= sameBase(SymLoc, SymLoc) [function]
 
      syntax String ::= getTU(SymLoc) [function]
-     syntax Int ::= getThreadId(SymLoc) [function]
+     syntax ThreadId ::= getThreadId(SymLoc) [function]
+     syntax ThreadId ::= Int | "no-thread"
      syntax Int ::= getAlign(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
@@ -241,6 +242,7 @@ module C-SYMLOC
      rule getThreadId(loc(_ @ register(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ argv, _)) => 0
      rule getThreadId(loc(_ @ argv, _, _)) => 0
+     rule getThreadId(_) => no-thread [owise]
 
      rule addProv(P:Provenance, loc(Base:SymBase, Offset:Int, Prov:Set))
           => loc(Base, Offset, Prov SetItem(P))

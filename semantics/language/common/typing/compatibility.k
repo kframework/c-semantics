@@ -172,6 +172,7 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(T, T') andBool #areParamsCompat(L, L')
           requires (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
+     rule #areCompat(_:Type, _:Type) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List) [function]
      rule #areParamsCompat(

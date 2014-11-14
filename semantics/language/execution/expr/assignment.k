@@ -11,14 +11,14 @@ module C-EXPR-ASSIGNMENT
           => write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool (#fromArrayStatic(T) =/=K true)
+               andBool notBool #fromArrayStatic(T)
           [structural]
      rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => checkArrayStaticAssign(T, tv(V, T))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool (#fromArrayStatic(T) ==K true)
+               andBool #fromArrayStatic(T)
           [structural]
      rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
           => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
@@ -32,7 +32,7 @@ module C-EXPR-ASSIGNMENT
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires isRestrictType(T)
-               andBool (#fromArrayStatic(T) ==K true)
+               andBool #fromArrayStatic(T)
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
@@ -64,8 +64,8 @@ module C-EXPR-ASSIGNMENT
      rule checkRestrictAssign(_, .Set) => .K
 
      syntax Bool ::= "#fromArrayStatic" "(" Type ")" [function]
-     // TODO(chathhorn): java port (keys).
-     //rule #fromArrayStatic(t(SetItem(arrayStatic(_)) _, _)) => true
+     rule #fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType)) => getKLabel(K) ==KLabel 'arrayStatic orBool #fromArrayStatic(t(S, T))
+     rule #fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, TypedValue)
      // TODO(chathhorn): java port (keys).
