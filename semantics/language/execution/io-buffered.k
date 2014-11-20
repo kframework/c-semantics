@@ -392,9 +392,7 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .K
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          <effective-types>...
-               .Map => loc(Base, Offset) |-> T'
-          ...</effective-types>
+          <effective-types> M:Map => M [ loc(Base, Offset) <- T' ] </effective-types>
           requires isNoType(T) andBool notBool hasCharType(T':Type)
           [structural]
 

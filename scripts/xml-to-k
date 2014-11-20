@@ -18,15 +18,15 @@ my $RAT = '#';
 
 #########################################################
 # you may want to configure things inside this section
-use constant KLIST_IDENTITY => ".KList";
-use constant KLIST_SEPARATOR => ",, ";
+use constant KLIST_IDENTITY => ".::KList";
+use constant KLIST_SEPARATOR => ", ";
 
 my $ltl = "\n";
 
 # might want to return, say, "'$name"
 sub nameToLabel {
 	my ($name) = (@_);
-	return "'$name";
+	return "`'$name`";
 }
 #########################################################
 my %escapeMap = (
@@ -154,12 +154,12 @@ sub elementToK {
 		$reader->nextElement;
 		$reader->read;
 		my $str = escapeWString($reader->value);
-		my $ident = "'WStringLiteral" . paren($str);
+		my $ident = "`'WStringLiteral`" . paren($str);
 		return ($inNextState, $ident);
 	} elsif ($label eq 'Variadic') {
-		return ($inNextState, "true");
+		return ($inNextState, "#token(\"true\", \"Bool\")");
 	} elsif ($label eq 'NotVariadic') {
-		return ($inNextState, "false");
+		return ($inNextState, "#token(\"false\", \"Bool\")");
 	} elsif ($label eq 'U'
             || $label eq 'L'
             || $label eq 'F'
@@ -207,9 +207,9 @@ sub elementToK {
 	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
 	
 	if ($label eq 'LTLAnnotation') {
-		$ltl .= "'LTLAnnotation(";
+		$ltl .= "`'LTLAnnotation`(";
 		$ltl .= join(KLIST_SEPARATOR, @klist) . ") \n";
-		return ($inNextState, ".K");
+		return ($inNextState, ".::K");
 	}
 	return ($inNextState, nameToLabel($label) . $kterm);
 }
@@ -217,7 +217,7 @@ sub elementToK {
 sub rawdataToK {
 	my ($reader) = (@_);
 	my $data = getRawData($reader);
-	return paren($data);
+	return $data;
 }
 sub getRawData {
 	my ($reader) = (@_);
@@ -226,11 +226,11 @@ sub getRawData {
 	$reader->read;
 	
 	if ($sort eq 'String') {
-		$data = '"' . escapeString($reader->value) . '"';
+		$data = '#token("' . escapeString('"' . escapeString(decode_base64($reader->value)) . '"') . '", "String")';
 	} elsif ($sort eq 'Int') {
-		$data = $reader->value;
+		$data = '#token("' . $reader->value . '", "Int")';
 	}  elsif ($sort eq 'Float') {
-		$data = $reader->value;
+		$data = '#token("' . $reader->value . '", "Float")';
 	} else {
 		return "unknown raw data";
 	}
@@ -257,7 +257,7 @@ sub escapeSingleCharacter {
 
 sub escapeString {
 	my ($str) = (@_);
-	my $decoded = decode_base64($str);
+	my $decoded = $str;
 	my @charArray = split(//, $decoded);
 	my @newArray = map(escapeSingleCharacter($_), @charArray) ;
 	return join('', @newArray);
@@ -277,10 +277,10 @@ sub escapeWString {
 		for my $cp (@charPartArray) {
 			$single = ($single << 8) + ord($cp);
 		}
-		push @str, "$single";
+		push @str, "#token(\"" . $single . "\", \"Int\")";
 	}
 
-	return "'klist"
+	return "`'klist`"
             . paren(join(KLIST_SEPARATOR, @str));
 }
 

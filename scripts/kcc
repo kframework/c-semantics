@@ -20,8 +20,8 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
-# Set heap size of krun
-$ENV{K_OPTS} = '-Xmx2048m';
+# Set heap and stack size of krun
+$ENV{K_OPTS} = '-Xms64m -Xmx2048m -Xss32m -XX:+TieredCompilation';
 
 $::VERSION="0.1";
 
@@ -195,7 +195,7 @@ sub main {
      }
 
      if (defined $sourceFile) {
-          push(@file_args, '--parser "kast --parser ground"');
+          push(@file_args, '--parser "cat"');
           push(@file_args, $sourceFile);
      } else {
           push(@file_args, '-pOBJ1="kast --parser ground -e" -pOBJ2="kast --parser ground -e"');
@@ -391,8 +391,9 @@ sub compile {
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
-          '--parser "kast --parser ground"', 
+          '--parser "cat"', 
           "-d $TRANS_DEF",
+          "--debug",
           '--pattern-matching',
           $ppResult
           );
@@ -403,7 +404,7 @@ sub compile {
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',
           '-cOBJ2=".Bag"',
-          '--parser "kast --parser ground"', 
+          '--parser "cat"', 
           "-d $TRANS_DEF",
           '--pattern-matching',
           $ppResult
