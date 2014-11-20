@@ -3,6 +3,7 @@ GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
+TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 GCC = gcc -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c99
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; fi
@@ -13,6 +14,8 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 test: ${TEST_RESULTS}
 
 reference: ${REFERENCE_TEST_RESULTS}
+
+compare: ${TEST_COMPARISON}
 
 %.out: %.kcc
 	@echo -n "Running $<... "
@@ -29,6 +32,10 @@ reference: ${REFERENCE_TEST_RESULTS}
 %.ref: %.gcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
+
+%.cmp: %.out %.ref
+	@echo -n "Comparing $^... "
+	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *.ref
