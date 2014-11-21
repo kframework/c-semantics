@@ -38,4 +38,4 @@ compare: ${TEST_COMPARISON}
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
-	rm -rf *.out *.kcc *.tmp *.gcc *.ref
+	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
