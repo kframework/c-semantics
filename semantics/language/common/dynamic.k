@@ -1,32 +1,28 @@
 module C-DYNAMIC-SYNTAX
-     syntax Type ::= t(Set, SimpleType) [klabel('t)]
+     syntax Type ::= t(Set, SimpleType)
+
+     syntax Value ::= "voidVal"
 
      syntax Agg ::= agg(List)
 
+     syntax CValue ::= Bits | SymLoc | Float | Agg
+
+     syntax TypedValue ::= tv(CValue, Type)
+          [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
+
      syntax LValue ::= lv(SymLoc, Type)
-
-     // TODO(chathhorn): possibly remove these extra RValues. There's also a
-     // "varg" in the library/bootstrap which should probably be refactored
-     // away.
-     syntax RValue ::= "voidVal"
-     syntax RValue ::= "emptyValue"
-
-     syntax RValue ::= tv(CValue, Type)
-          [klabel('tv), latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
-
-     syntax K ::= toRVal(K)
-          [strict(all(context('reval), result(RValue)))]
+     syntax Value ::= lval(SymLoc, Type)
 
      syntax Type ::= type(K) [function]
-     syntax K ::= value(RValue) [function]
+     syntax KItem ::= value(TypedValue) [function]
 
-     syntax K ::= "discard"
+     syntax KItem ::= "discard"
+     syntax Value ::= "emptyValue"
 
-     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
-     syntax CValue ::= NumValue | SymLoc | Agg
-     syntax C ::= NumValue | Type | RValue
-
-     syntax KResult ::= RValue | Type | nclv(SymLoc, Type)
+     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
+     syntax C ::= BaseValue | Type | Value
+     syntax Value ::= TypedValue
+     syntax KResult ::= Value | Type
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -37,23 +33,24 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= "file-scope"
 
      //  switchid, value (tv or 'Default)
-     syntax CId ::= genLabel(Int, K) [klabel('genLabel)]
+     syntax CId ::= genLabel(Int, K)
      syntax CId ::= funLabel(CId)
      syntax CId ::= case(Int)
 
-     syntax K ::= "pushBlock"
-     syntax K ::= "popBlock"
+     syntax KItem ::= "pushBlock"
+     syntax KItem ::= "popBlock"
 
      syntax Statement ::= "loopMarked"
-     syntax K ::= "popLoop"
+     syntax KItem ::= "popLoop"
 
      //  nesting-depth, currentBlock, decl
-     syntax K ::= frozenDeclaration(Int, Int, K)
+     syntax KItem ::= frozenDeclaration(Int, Int, K)
      //  nesting-depth, block history, continuation, loop stack, decl stack
-     syntax K ::= gotoObject(Int, List, K, List, List)
+     syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-     syntax K ::= loadObj(Bag)
+
+     syntax KItem ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
 
 endmodule
@@ -64,30 +61,32 @@ module C-DYNAMIC
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule toRVal(V:RValue) => V
-          [structural]
-
      rule value(tv(V:CValue, _)) => V
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
-     rule type(nclv(_, T:Type)) => T
+     rule type(lval(_, T:Type)) => T
 
-     rule CabsLoc("cabs loc unknown", -10, -10, 0) => UnknownCabsLoc
-          [structural, anywhere]
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
+          => UnknownCabsLoc
+     rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int))
+          => CabsLoc(S, I1, I2, I3)
+          requires S =/=String "cabs loc unknown"
+               orBool I1 =/=Int -10
+               orBool I2 =/=Int -10
+               orBool I3 =/=Int 0
 
      rule ExpressionLoc(K:K, _) => K
-          [structural, anywhere]
 
      rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <curr-program-loc> _ => L </curr-program-loc>
+          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
           [structural]
 
-     rule _:KResult ~> discard => .
+     rule _:KResult ~> discard => .K
           [structural]
 
-     rule discard => .
+     rule discard => .K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
@@ -100,25 +99,27 @@ module C-DYNAMIC
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule Pragma(_:K) => .
+     rule Pragma(_:K) => .K
           [structural]
 
-     rule AttributeWrapper(K:K, _) => K [structural, anywhere]
+     rule AttributeWrapper(K:K, _) => K
 
-     rule Identifier("___missing_field_name") => #NoName [structural, anywhere]
+     rule ToIdentifier("___missing_field_name") => #NoName
+     rule ToIdentifier(S:String) => Identifier(S)
+          requires S =/=String "___missing_field_name"
 
-     rule NothingExpression => emptyValue
+     rule NothingExpression => emptyValue:>Expression
 
      rule unwrapObj(<generatedTop>...
                <global> G:Bag </global>
           ...</generatedTop>)
-          => (<global> G </global>)
+          => <global> G </global>
 
      rule unwrapObj(.Bag) => .Bag
 
      rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
           <global> (_:Bag => G) </global>
-          when G =/=Bag .Bag
+          requires (G =/=Bag .Bag)
           [structural]
 
      rule loadObj(.Bag) => .K

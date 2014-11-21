@@ -1,9 +1,9 @@
 module C-DECL-DEFINITION-SYNTAX
-     syntax K ::= declare(K, K) [strict(1)]
-     syntax K ::= declareInternalVariable(CId, Type, K)
+     syntax KItem ::= declare(K, K) [strict(1)]
+     syntax KItem ::= declareInternalVariable(CId, Type, K)
 
      // The declare "backend" implemented in the trans or exec semantics.
-     syntax K ::= "declare'" "(" K "," K ")" [strict(1)]
+     syntax KItem ::= "declare'" "(" K "," K ")" [strict(1)]
 
      // Turns typedDeclarations into Types in function params.
      syntax Type ::= elideDeclParams(Type) [function]
@@ -43,7 +43,7 @@ module C-DECL-DEFINITION
      // -- if it is a union, the first named member is initialized
      // (recursively) according to these rules
 
-     context DeclarationDefinition(InitNameGroup(HOLE, _)) 
+     context DeclarationDefinition(InitNameGroup(HOLE, _))
 
      rule DeclarationDefinition(
                InitNameGroup(T:Type, list(ListItem(K:K) ListItem(K':K) L:List)))
@@ -56,7 +56,7 @@ module C-DECL-DEFINITION
           [structural]
 
      rule declare(T:Type, K:K)
-          => declare'(completeTags(elideDeclParams(T)), K)
+          => declare'(#completeTags(elideDeclParams(T)), K)
           [structural]
 
      syntax List ::= elideParams(List) [function]
@@ -75,7 +75,7 @@ module C-DECL-DEFINITION
      rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
           => t(Mods, pointerType(elideDeclParams(T)))
      rule elideDeclParams(T:Type) => T
-          when notBool isTypedDeclaration(T)
+          requires notBool isTypedDeclaration(T)
                andBool notBool isFunctionType(T)
                andBool notBool isArrayType(T)
                andBool notBool isPointerType(T)

@@ -1,10 +1,10 @@
 module LIBC-IO-SYNTAX
-     syntax K ::= writeToFD(Int, Int)
-     syntax K ::= writeToFD(Int, String)
-     syntax K ::= readFromFD(Int)
-     syntax K ::= readFromFD(Int, Int)
-     syntax K ::= flush(Int)
-     syntax K ::= "f-flush" "(" Int ")"
+     syntax KItem ::= writeToFD(Int, Int)
+     syntax KItem ::= writeToFD(Int, String)
+     syntax KItem ::= readFromFD(Int)
+     syntax KItem ::= readFromFD(Int, Int)
+     syntax KItem ::= flush(Int)
+     syntax KItem ::= "f-flush" "(" Int ")"
 
      syntax ExecOpts ::= "NOIO"
 endmodule
@@ -21,7 +21,7 @@ module LIBC-IO
      rule [writeToFD-char]:
           <k> writeToFD(FD:Int, N:Int) => .K ...</k>
           <fid> FD </fid>
-          <buff> 
+          <buff>
                S:String => S:String +String chrChar(N:Int %Int 256)
           </buff>
           [observable]
@@ -31,13 +31,13 @@ module LIBC-IO
           <buff> S:String => S:String +String S':String </buff>
           [observable]
      rule [readFromFD-char]:
-          <k> readFromFD(FD:Int) 
-               => tv(ordChar(firstChar(S:String)), t(.Set, int))  
+          <k> readFromFD(FD:Int)
+               => tv(ordChar(firstChar(S:String)), t(.Set, int))
           ...</k>
           <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
           // don't compare with "" in order to only treat string sort
-          when lengthString(S:String) >Int 0
+          requires lengthString(S:String) >Int 0
           [observable]
 
      rule [readFromFD-empty-buff]:
@@ -53,17 +53,17 @@ module LIBC-IO
           <fid> FD </fid>
           <next-byte> #EOF </next-byte>
           [observable]
+// TODO(chathhorn): java port.
+//      rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
+//           [structural, simplification]
 
-     rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
-          [structural, simplification]
+     syntax KItem ::= "f-sent" "(" Int "," String ")"
+     syntax KItem ::= "f-sendString" "(" Int "," String ")"
 
-     syntax K ::= "f-sent" "(" Int "," String ")"
-     syntax K ::= "f-sendString" "(" Int "," String ")"
-     
      rule [flush]:
           <k> flush(FD:Int) => .K ...</k>
-          <file-commands>... 
-               . => f-flush(FD)
+          <file-commands>...
+               .K => f-flush(FD)
           </file-commands>
           [structural]
      rule [f-flush]:
@@ -80,37 +80,37 @@ module LIBC-IO
           [structural]
 
      rule [sendString-one]:
-          <file-commands> 
-               f-sendString(FD:Int, S:String) 
+          <file-commands>
+               f-sendString(FD:Int, S:String)
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</file-commands>
           <options> Opts:Set </options>
-          when (S =/=String "")
-               andBool notBool (NOIO in Opts)
+          requires (S =/=String "")
+               andBool notBool (NOIO  in Opts)
           [structural]
-     rule <file-commands> 
-               f-sendString(_, _) => .
+     rule <file-commands>
+               f-sendString(_, _) => .K
           ...</file-commands>
           <options> SetItem(NOIO) ...</options>
           [structural]
      rule [sendString-done]:
-          <file-commands> f-sendString(_, "") => . ...</file-commands>
+          <file-commands> f-sendString(_, "") => .K ...</file-commands>
           [structural]
 
      rule [f-sent]:
-          <file-commands> f-sent(FD:Int, S:String) => . ...</file-commands>
+          <file-commands> f-sent(FD:Int, S:String) => .K ...</file-commands>
           <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>
                <done>... .List => ListItem(S) </done>
           ...</file>
           [structural]
-          
+
      rule [combine-done]:
-          <done> 
-               ListItem(S:String) ListItem(S':String) 
-               => ListItem(S +String S') 
+          <done>
+               ListItem(S:String) ListItem(S':String)
+               => ListItem(S +String S')
           ...</done>
           [structural]
 endmodule

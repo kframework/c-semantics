@@ -78,41 +78,56 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
           => addToPointer(Loc, T', I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
      rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
           => addToPointer(Loc, T', I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
      rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
           => addToPointer(Loc, T', 0 -Int I)
-          when hasIntegerType(T) andBool isPointerType(T')
+          requires hasIntegerType(T) andBool isPointerType(T')
                andBool simpleType(innerType(T')) =/=K void
           [structural]
 
-     syntax K ::= addToPointer(SymLoc, Type, Int) [function]
+     syntax KItem ::= addToPointer(SymLoc, Type, Int) [function]
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => tv(newFromArray(Loc, T, I)
                +bytes (I *Int byteSizeofType(innerType(T))), T)
-          when ifFromArrayInBounds(Loc, T, I)
-          [structural]
-     rule (. => ERROR("CEA1",
+          requires ifFromArrayInBounds(Loc, T, I) ==K true
+     rule (.K => ERROR("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
                (46,, 49)) )
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
-          when notBool ifFromArrayInBounds(Loc, T, I)
-          [structural]
+          requires ifFromArrayInBounds(Loc, T, I) =/=K true
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
-     rule newFromArray(
-               loc(Base:SymBase, Offset:Int, SetItem(
-                    fromArray(ArrOffset:Int, Len:Int)) Prov:Set), T:Type, I:Int)
+                     | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]
+
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
+               Len:Int), .Set, Prov:Set, T:Type, I:Int)
           => loc(Base, Offset, SetItem(
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
+          => loc(Base, Offset, SetItem(K) Prov)
+          requires getKLabel(K) =/=KLabel 'fromArray
+     rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
+               Len:Int), SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
+          => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
+               I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
+     rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
+          => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
+          requires getKLabel(K) =/=KLabel 'fromArray
+
+     rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _:Type, _:Int)
+          => loc(Base, Offset, .Set)
+     rule newFromArray(
+               loc(Base:SymBase, Offset:Int, SetItem(K:K) Prov:Set), T:Type, I:Int)
+          => #newFromArray(Base, Offset, K, Prov, .Set, T, I)
      rule newFromArray(Loc:SymLoc, _, _) => Loc
-          when notBool isFromArray(Loc)
+          requires notBool isFromArray(Loc)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{9}}}{
      When two pointers are subtracted, both shall point to elements of the same
@@ -139,37 +154,37 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(offset(L1) -Int offset(L2),
                byteSizeofType(T))
-          when base(L1) ==K base(L2)
+          requires base(L1) ==K base(L2)
           [structural]
      // ptr1, ptr2, size of ptr type
-     syntax K ::= computePointerDifference(Int, Int)
+     syntax KItem ::= computePointerDifference(Int, Int)
      rule computePointerDifference(Diff:Int, Size:Int)
           => tv(Diff /Int Size, cfg:ptrdiffut)
-          when (Diff %Int Size ==Int 0)
+          requires (Diff %Int Size ==Int 0)
                andBool (Diff /Int Size) <=Int max(cfg:ptrdiffut)
                andBool (Diff /Int Size) >=Int min(cfg:ptrdiffut)
           [structural]
-     rule (. => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
+     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
                "6.5.6"))
           ~> computePointerDifference(Diff:Int, Size:Int)
-          when (Diff /Int Size) >Int max(cfg:ptrdiffut)
+          requires (Diff /Int Size) >Int max(cfg:ptrdiffut)
                orBool (Diff /Int Size) <Int min(cfg:ptrdiffut)
           [structural]
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))
-          when isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 -Int I2))
-          when isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
           => arithInterpret(T, F1 +Float F2)
-          when T ==Type T'
+          requires T ==Type T'
           [structural]
      rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
           => arithInterpret(T, (F1 -Float F2))
-          when T ==Type T'
+          requires T ==Type T'
           [structural]
 endmodule

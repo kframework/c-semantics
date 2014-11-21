@@ -1,6 +1,6 @@
 module C-BUILTIN-SYNTAX
      syntax Map ::= "builtins" [function]
-     syntax K ::= "handleBuiltin"
+     syntax KItem ::= "handleBuiltin"
 endmodule
 
 module C-BUILTIN
@@ -77,19 +77,19 @@ module C-BUILTIN
      rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)
           [structural]
 
-     syntax K ::= offsetOf(K, K) [strict(1)]
+     syntax KItem ::= offsetOf(K, K) [strict(1)]
      syntax SymBase ::= "accum"
      rule offsetOf(T:Type, Mem:K)
-          => toOffset(& ( offsetOf'(lv(loc(accum, 0), T), Mem) ))
+          => toOffset(& ( offsetOf'(lval(loc(accum, 0), T), Mem) ))
           [structural]
 
      // Rejigger the AST.
      // TODO(chathhorn): array indexing?
-     syntax K ::= "offsetOf'" "(" K "," K ")" [function]
+     syntax KItem ::= "offsetOf'" "(" K "," K ")" [function]
      rule offsetOf'(K:K, K':K . F:CId) => offsetOf'(K, K') . F
      rule offsetOf'(K:K, F:CId) => K . F
 
-     syntax K ::= toOffset(K) [strict]
+     syntax KItem ::= toOffset(K) [strict]
      rule toOffset(tv(Loc:SymLoc, _)) => tv(offset(Loc), cfg:sizeut)
           [structural]
 

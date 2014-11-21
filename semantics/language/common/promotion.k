@@ -57,10 +57,10 @@ module C-PROMOTION
                SetItem(l('_^_))
 
      rule isArithBinOp(Lbl:KLabel)
-          => #if l(Lbl) in arithBinOps #then true #else false #fi
+          => #if (l(Lbl:KLabel) in arithBinOps) #then true #else false #fi
           [structural]
      rule isArithBinConversionOp(Lbl:KLabel)
-          => #if l(Lbl) in arithBinConversionOps #then true #else false #fi
+          => #if (l(Lbl:KLabel) in arithBinConversionOps) #then true #else false #fi
           [structural]
 
      syntax Set ::= "arithUnaryOps" [function]// [memo]
@@ -70,7 +70,7 @@ module C-PROMOTION
           SetItem(l('~_))
 
      rule isArithUnaryOp(Lbl:KLabel)
-          => #if l(Lbl) in arithUnaryOps #then true #else false #fi
+          => #if (l(Lbl:KLabel) in arithUnaryOps) #then true #else false #fi
           [structural]
 
      // \csection{6}{3}{1}{0}{Arithmetic operands}
@@ -154,11 +154,11 @@ module C-PROMOTION
      implementation-defined.
      }*/
 
-     syntax Bool ::= "#isPromoted" "(" Type ")" [function]
+     syntax Bool ::= #isPromoted(Type) [function]
 
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(T:Type) => #isPromoted(T) ==K true
+     rule isPromoted(T:Type) => #isPromoted(T)
 
      rule #isPromoted(t(_, enumType(_))) => true
      rule #isPromoted(t(_, int)) => true
@@ -167,11 +167,12 @@ module C-PROMOTION
      rule #isPromoted(t(_, unsigned-long-int)) => true
      rule #isPromoted(t(_, long-long-int)) => true
      rule #isPromoted(t(_, unsigned-long-long-int)) => true
+     rule #isPromoted(_) => false [owise]
 
      rule L:KLabel(
                (tv(V:CValue, T:Type) => tv(V, promote(T)))
           )
-          when isArithUnaryOp(L)
+          requires isArithUnaryOp(L)
                andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
@@ -179,7 +180,7 @@ module C-PROMOTION
                (tv(V:CValue, T:Type) => tv(V, promote(T)))
                ,, _
           )
-          when isArithBinOp(L)
+          requires isArithBinOp(L)
                andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
@@ -187,23 +188,23 @@ module C-PROMOTION
                _,,
                (tv(V:CValue, T:Type) => tv(V, promote(T)))
           )
-          when isArithBinOp(L)
+          requires isArithBinOp(L)
                andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
 
      // <= so enums become ints
      rule promote(T:Type) => t(.Set, int)
-          when rank(T) <=Int rank(t(.Set, int))
+          requires rank(T) <=Int rank(t(.Set, int))
                andBool min(t(.Set, int)) <=Int min(T)
                andBool max(t(.Set, int)) >=Int max(T)
 
      rule promote(T:Type) => T
-          when rank(T) >Int rank(t(.Set, int))
+          requires rank(T) >Int rank(t(.Set, int))
 
      rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
           => t(.Set, int)
-          when ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
+          requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
                andBool min(t(.Set, int))
                     <=Int min(t(Mods, bitfieldType(t(Mods', T), Len)))
                andBool max(t(.Set, int))
@@ -211,7 +212,7 @@ module C-PROMOTION
      // fixme unclear what 6.3.1.1:3 means
 
      rule promote(T:Type) => t(.Set, unsigned-int)
-          when rank(T) <=Int rank(t(.Set, int))
+          requires rank(T) <=Int rank(t(.Set, int))
                andBool notBool (
                     min(t(.Set, int)) <=Int min(T)
                     andBool max(t(.Set, int)) >=Int max(T)
@@ -219,7 +220,7 @@ module C-PROMOTION
 
      rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
           => t(.Set, unsigned-int)
-          when (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
+          requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
                andBool notBool (
                     min(t(.Set, int))
                          <=Int min(t(Mods, bitfieldType(t(Mods', T), Len)))
@@ -244,7 +245,7 @@ module C-PROMOTION
           => Lbl(cast(
                usualArithmeticConversion(T, T'), tv(V, T)),,
                cast(usualArithmeticConversion(T, T'), tv(V', T')))
-          when isArithBinConversionOp(Lbl)
+          requires isArithBinConversionOp(Lbl)
                andBool (hasIntegerType(T) orBool hasFloatType(T))
                andBool (hasIntegerType(T') orBool hasFloatType(T'))
                andBool (T =/=Type T')
@@ -271,10 +272,10 @@ module C-PROMOTION
      */
      rule usualArithmeticConversion(t(_, double), t(_, T:SimpleType))
           => t(.Set, double)
-          when long-double =/=K T
+          requires long-double =/=K T
      rule usualArithmeticConversion(t(_, T:SimpleType), t(_, double))
           => t(.Set, double)
-          when long-double =/=K T
+          requires long-double =/=K T
 
      /*@
      \begin{itemize}
@@ -284,10 +285,10 @@ module C-PROMOTION
      \end{itemize}%
      */
      rule usualArithmeticConversion(t(_, float), t(_, T:SimpleType)) => t(.Set, float)
-          when long-double =/=K T
+          requires long-double =/=K T
                andBool double =/=K T
      rule usualArithmeticConversion(t(_, T:SimpleType), t(_, float)) => t(.Set, float)
-          when long-double =/=K T
+          requires long-double =/=K T
                andBool double =/=K T
 
      /*@
@@ -301,7 +302,7 @@ module C-PROMOTION
 
      rule usualArithmeticConversion(T:Type, T':Type)
           => usualArithmeticConversion-aux(promote(T), promote(T'))
-          when notBool hasFloatType(T)
+          requires notBool hasFloatType(T)
                andBool notBool hasFloatType(T')
 
      /*@
@@ -317,9 +318,9 @@ module C-PROMOTION
 
      syntax Type ::= maxType(Type, Type) [function]
      rule maxType(T:Type, T':Type) => T
-          when rank(T) >=Int rank(T')
+          requires rank(T) >=Int rank(T')
      rule maxType(T:Type, T':Type) => T'
-          when rank(T') >=Int rank(T)
+          requires rank(T') >=Int rank(T)
 
      /*@
      \begin{itemize}
@@ -332,7 +333,7 @@ module C-PROMOTION
      */
      rule usualArithmeticConversion-aux(T:Type, T':Type)
           => maxType(T, T')
-          when T =/=Type T' andBool hasSameSignedness(T, T')
+          requires T =/=Type T' andBool hasSameSignedness(T, T')
 
      /*@
      \begin{itemize}
@@ -345,11 +346,11 @@ module C-PROMOTION
      \end{itemize}\end{itemize}%
      */
      rule usualArithmeticConversion-aux(T:Type, T':Type) => T'
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
                andBool hasUnsignedIntegerType(T')
                andBool rank(T') >=Int rank(T)
      rule usualArithmeticConversion-aux(T:Type, T':Type) => T
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
                andBool hasSignedIntegerType(T')
                andBool rank(T) >=Int rank(T')
 
@@ -364,13 +365,13 @@ module C-PROMOTION
      \end{itemize}\end{itemize}%
      */
      rule usualArithmeticConversion-aux(T:Type, T':Type) => T
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
                andBool hasUnsignedIntegerType(T')
                andBool rank(T') <Int rank(T)
                andBool min(T) <=Int min(T')
                andBool max(T) >=Int max(T')
      rule usualArithmeticConversion-aux(T:Type, T':Type) => T'
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
                andBool hasSignedIntegerType(T')
                andBool rank(T) <Int rank(T')
                andBool min(T') <=Int min(T)
@@ -386,14 +387,14 @@ module C-PROMOTION
      */
      rule usualArithmeticConversion-aux(T:Type, T':Type)
           => correspondingUnsignedType(T)
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
                andBool hasUnsignedIntegerType(T')
                andBool rank(T') <Int rank(T)
                andBool (min(T) >Int min(T')
                     orBool max(T) <Int max(T'))
      rule usualArithmeticConversion-aux(T:Type, T':Type)
           => correspondingUnsignedType(T')
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
                andBool hasSignedIntegerType(T')
                andBool rank(T) <Int rank(T')
                andBool (min(T') >Int min(T)

@@ -7,7 +7,6 @@ module C-EXPR-CONVERSION
      imports C-SYMLOC-SYNTAX
 
      rule cast(T':Type, tv(symVal, _)) => tv(symVal, T')
-          [structural, anywhere]
 
 endmodule
 

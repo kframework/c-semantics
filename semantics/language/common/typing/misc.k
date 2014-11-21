@@ -34,56 +34,56 @@ module C-TYPING-MISC
           => t(S, long-long-int)
 
      rule min(t(_, bitfieldType(T:Type, _))) => 0
-          when hasUnsignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int))) 
+          requires hasUnsignedIntegerType(T)
+     rule max(t(_, bitfieldType(T:Type, N:Int)))
           => (2 ^Int absInt(N)) -Int 1
-          when hasUnsignedIntegerType(T)
+          requires hasUnsignedIntegerType(T)
 
      rule min(t(_, bitfieldType(T:Type, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
      rule max(t(_, bitfieldType(T:Type, N:Int)))
           => (2 ^Int absInt(N -Int 1)) -Int 1
-          when hasSignedIntegerType(T)
+          requires hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
 
-     rule min(t(_, signed-char)) 
+     rule min(t(_, signed-char))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
-     rule max(t(_, signed-char)) 
+     rule max(t(_, signed-char))
           => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
-     rule min(t(_, short-int)) 
+     rule min(t(_, short-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
-     rule max(t(_, short-int)) 
+     rule max(t(_, short-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
-     rule min(t(_, int)) 
+     rule min(t(_, int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
-     rule max(t(_, int)) 
+     rule max(t(_, int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
-     rule min(t(_, long-int)) 
+     rule min(t(_, long-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
-     rule max(t(_, long-int)) 
+     rule max(t(_, long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
-     rule min(t(_, long-long-int)) 
+     rule min(t(_, long-long-int))
           => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
-     rule max(t(_, long-long-int)) 
+     rule max(t(_, long-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
-     rule max(t(_, unsigned-char)) 
+     rule max(t(_, unsigned-char))
           => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
-     rule max(t(_, unsigned-short-int)) 
+     rule max(t(_, unsigned-short-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
-     rule max(t(_, unsigned-int)) 
+     rule max(t(_, unsigned-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
-     rule max(t(_, unsigned-long-int)) 
+     rule max(t(_, unsigned-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
-     rule max(t(_, unsigned-long-long-int)) 
+     rule max(t(_, unsigned-long-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
@@ -91,10 +91,10 @@ module C-TYPING-MISC
 
      rule inRange(V:Int, T:Type)
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
      rule inRange(V:Float, T:Type)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
-          when hasFloatType(T)
+          requires hasFloatType(T)
 
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
@@ -138,7 +138,7 @@ module C-TYPING-MISC
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
      rule getQualifiers(T:Type)
           => intersectSet(getModifiers(T), typeQualifiers)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
@@ -148,6 +148,7 @@ module C-TYPING-MISC
 
      rule getSpecifiers(T:Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
+
 
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
@@ -164,7 +165,7 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
-     syntax Set ::= "functionSpecifiers"
+     syntax Set ::= "functionSpecifiers" [function]
      rule functionSpecifiers =>
           SetItem(Noreturn)
           SetItem(Inline)
@@ -179,7 +180,7 @@ module C-TYPING-MISC
           => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
      rule stripQualifiers(T:Type)
           => setModifiers(T, getModifiers(T) -Set typeQualifiers)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)
@@ -193,16 +194,6 @@ module C-TYPING-MISC
 
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
-
-     rule stripAlignas(t(Mods:Set SetItem(alignas(_)), T:SimpleType))
-          => stripAlignas(t(Mods, T))
-     rule stripAlignas(T:Type) => T
-          when notBool hasAlignas(T)
-
-     rule stripReadFrom(t(Mods:Set SetItem(readFrom(_)), T:SimpleType))
-          => stripReadFrom(t(Mods, T))
-     rule stripReadFrom(T:Type) => T
-          when notBool hasReadFrom(T)
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
@@ -220,10 +211,11 @@ module C-TYPING-MISC
           => t(Mods intersectSet(Quals, typeQualifiers),
                variableLengthArrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
+     syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
@@ -238,10 +230,10 @@ module C-TYPING-MISC
      rule innerType(t(_, functionType(T:Type, _))) => T
      rule innerType(typedDeclaration(T:Type, _)) => T
 
-     rule <k> completeTags(T:Type) => completeTags(Tags, T) ...</k>
+     rule <k> #completeTags(T:Type) => completeTags(Tags, T) ...</k>
           <structs> Tags:Map </structs>
-          when Tags =/=Map .Map
-     rule <k> completeTags(T:Type) => T ...</k>
+          requires Tags =/=K .Map
+     rule <k> #completeTags(T:Type) => T ...</k>
           <structs> .Map </structs>
 
      // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
@@ -270,7 +262,7 @@ module C-TYPING-MISC
           => t(S, structType(X, bitSizeofStruct(Info), Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
-          when notBool X in keys(Tags)
+          requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                structType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -288,14 +280,14 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, unionType(X, bitSizeofUnion(Info), Info)) 
+          => t(S, unionType(X, bitSizeofUnion(Info), Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
-          when notBool X in keys(Tags)
+          requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
                unionType(X:CId, NBits:Int,
                     fieldInfo(Decls:List, Types:Map, Offsets:Map))))
@@ -312,17 +304,17 @@ module C-TYPING-MISC
                     completeTagsInList(Tags, Decls),
                     completeTagsInMap(Tags, Types),
                     Offsets)))
-          when notBool (X in keys(Tags))
+          requires notBool (X in keys(Tags))
 
      rule completeTags(_, t(S:Set, T:SimpleType))
           => t(S, T)
-          when (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool (getKLabel(T) =/=KLabel 'functionType)
-               andBool (getKLabel(T) =/=KLabel 'pointerType)
-               andBool (getKLabel(T) =/=KLabel 'arrayType)
-               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType)
-               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType)
-               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType)
+          requires (getKLabel(T) =/=KLabel 'bitfieldType)
+               andBool (getKLabel(T) =/=KLabel 'functionType )
+               andBool (getKLabel(T) =/=KLabel 'pointerType )
+               andBool (getKLabel(T) =/=KLabel 'arrayType )
+               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
+               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
+               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType )
                andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
                andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
      // Function parameters.
@@ -341,7 +333,7 @@ module C-TYPING-MISC
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
-          when T =/=K void
+          requires T =/=K void
      rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
@@ -352,7 +344,8 @@ module C-TYPING-MISC
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
-     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType) [function]
+     //TODO(liyili): might not need the klabel for all the tagRestrict functions in this file 
+     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType) [function,klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:BaseType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
@@ -381,27 +374,32 @@ module C-TYPING-MISC
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
 
-     syntax List ::= tagRestrict(RestrictTag, List) [function]
+     syntax List ::= tagRestrict(RestrictTag, List) [function,klabel('tagRestrictList)]
      rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
-     syntax Map ::= tagRestrict(RestrictTag, Map) [function]
+     syntax Map ::= tagRestrict(RestrictTag, Map) [function,klabel('tagRestrictMap)]
      rule tagRestrict(Tag:RestrictTag, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
-     syntax Set ::= tagRestrict(RestrictTag, Set) [function]
+     syntax Set ::= tagRestrict(RestrictTag, Set) [function,klabel('tagRestrictSet)]
      rule tagRestrict(Tag:RestrictTag, S:Set)
           => SetItem(RestrictBlock(Tag)) S
-          when Restrict in S
+          requires Restrict in S
      rule tagRestrict(_, S:Set) => S
-          when notBool (Restrict in S)
+          requires notBool (Restrict in S)
 
-     rule getRestrictBlock(t(SetItem(RestrictBlock(Tag:RestrictTag)) _, _))
-          => Tag
+     rule getRestrictBlock(t(Mods:Set, _)) => getRestrictBlock'(.K, Mods)
 
-     rule getReadFrom(t(_ SetItem(readFrom(Loc:SymLoc)), _)) => Loc
+     // TODO(chathhorn): more map pattern ugliness.
+     syntax RestrictTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
+     rule getRestrictBlock'(.K, SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
+     rule getRestrictBlock'(RestrictBlock(Tag:RestrictTag), _) => Tag
+     rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
+          requires getKLabel(K) =/=KLabel 'RestrictBlock
+               andBool (K =/=K .K)
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of
@@ -415,7 +413,6 @@ module C-TYPING-MISC
           => 36893488147419103232
      rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
           => 36893488147419103232
-          when isInt(N) =/=K true
+          requires isInt(N) =/=K true
 
 endmodule
-

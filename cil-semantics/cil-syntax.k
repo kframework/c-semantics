@@ -1,7 +1,7 @@
 // vim: set ts=2 sw=2:
 module CIL-SYNTAX
-  /* 
-   * A file is a list of global declarations and definitions. 
+  /*
+   * A file is a list of global declarations and definitions.
    */
   syntax File ::= Globals
 
@@ -12,7 +12,7 @@ module CIL-SYNTAX
 
   syntax Decl ::= VarDecl | InitVarDecl | AggDecl | TypedefDecl
 
-  /* 
+  /*
    * Global declarations.
    */
   syntax AggDecl ::= "struct" CId "{" VarDecls "}" ";"
@@ -23,15 +23,16 @@ module CIL-SYNTAX
                    | "enum" CId ";"
 
   syntax EnumInit ::= CId "=" Constant
-  syntax EnumInits ::= List{EnumInit, ","} [right]
+  syntax EnumInits ::= List{EnumInit, ","}
 
   syntax TypedefDecl ::= "typedef" DeclSpecs Declarator ";"
 
-  syntax FunDef ::= DeclSpecs Declarator FunBody 
+  syntax FunDef ::= DeclSpecs Declarator FunBody
 
   syntax FunBody ::= "{" VarDecls Block "}"   [avoid]
                    | Block
 
+  // TODO(AndreiS): macro does not work correctly; it can narrow the left-hand side of rule, instead of rewriting it
   rule S:DeclSpecs F:Declarator B:Block => S F { .VarDecls B } [macro]
 
   syntax TuPragma ::= "#" "pragma" "KCIL_TU" String
@@ -43,7 +44,7 @@ module CIL-SYNTAX
   syntax Void ::= "void"
   syntax NvType ::= BasicType
   syntax BasicType ::= "char"
-                     | IntType 
+                     | IntType
                      | FloatingType
                      | "_Complex" // TODO
                      | "__builtin_va_list"
@@ -53,7 +54,7 @@ module CIL-SYNTAX
                          | "short"
                          | "int"
                          | "long"
-                         | "long" "long" 
+                         | "long" "long"
   syntax UnsignedIntType ::= "_Bool"
                            | "unsigned" "char"
                            | "unsigned" "short"
@@ -67,7 +68,7 @@ module CIL-SYNTAX
   /*
    * Expressions.
    */
-  syntax Exp ::= 
+  syntax Exp ::=
       Constant
     | Var
     | "(" Exp ")" [bracket]
@@ -76,37 +77,37 @@ module CIL-SYNTAX
     | Exp "[" Exp "]"
     > "-" Exp [strict]
     | "+" Exp [strict]
-    | "!" Exp
+    | "!" Exp [strict]
     | "~" Exp [strict]
     | "*" Exp [strict]
     | "&" Exp [strict]
     | sizeof(TypeOrExp) [prefer]
-    > "(" Type ")" Exp [strict, prefer]
+    > "(" Type ")" Exp [seqstrict, prefer]
     > left:
-      Exp "*" Exp [strict]
-    | Exp "/" Exp [strict]
-    | Exp "%" Exp [strict]
+      Exp "*" Exp [seqstrict]
+    | Exp "/" Exp [seqstrict]
+    | Exp "%" Exp [seqstrict]
     > left:
-      Exp "+" Exp [strict]
-    | Exp "-" Exp [strict]
+      Exp "+" Exp [seqstrict]
+    | Exp "-" Exp [seqstrict]
     > left:
-      Exp "<<" Exp [strict]
-    | Exp ">>" Exp [strict]
+      Exp "<<" Exp [seqstrict]
+    | Exp ">>" Exp [seqstrict]
     > left:
-      Exp "<" Exp [strict]
-    | Exp "<=" Exp [strict]
-    | Exp ">" Exp [strict]
-    | Exp ">=" Exp [strict]
+      Exp "<" Exp  [seqstrict]
+    | Exp "<=" Exp [seqstrict]
+    | Exp ">" Exp  [seqstrict]
+    | Exp ">=" Exp [seqstrict]
     > left:
-      Exp "==" Exp [strict]
-    | Exp "!=" Exp [strict]
-    > left: Exp "&" Exp [strict]
-    > left: Exp "^" Exp [strict]
-    > left: Exp "|" Exp [strict]
+      Exp "==" Exp [seqstrict]
+    | Exp "!=" Exp [seqstrict]
+    > left: Exp "&" Exp [seqstrict]
+    > left: Exp "^" Exp [seqstrict]
+    > left: Exp "|" Exp [seqstrict]
 
   rule E:Exp -> F:Field => (*E).F [macro]
 
-  syntax Exps ::= List{Exp,","}   [strict]
+  syntax Exps ::= List{Exp,","}   [seqstrict]
 
   syntax TypeOrExp ::= Type | Exp
   syntax Var ::= CId
@@ -132,12 +133,12 @@ module CIL-SYNTAX
   // TODO(chathhorn): char constant prefix. Especially L, which appears in the
   // torture tests.
   rule _:CharConstantPrefix ' C:CharConstant ' => ' C ' [macro]
-  
-  syntax DecimalConstant ::= 
+
+  syntax DecimalConstant ::=
     Token{[1-9][0-9]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
-  syntax OctalConstant ::= 
+  syntax OctalConstant ::=
     Token{[0][0-7]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
-  syntax HexConstant ::= 
+  syntax HexConstant ::=
     Token{[0][xX][0-9a-fA-F]*[Uu]?[Ll]?[Ll]?[Uu]?} [onlyLabel]
 
   // Either the dot or the exponent part (preceded by e or p) is required for
@@ -147,7 +148,7 @@ module CIL-SYNTAX
   syntax NoDotDecimalFloatConstant ::=
     Token{[0-9]+[eE][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
   syntax HexFloatConstant ::=
-    Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?} 
+    Token{[0][xX][0-9a-fA-F]*[\.][0-9a-fA-F]*[pP]?[\+\-]?[0-9]*[FfLl]?}
     [onlyLabel]
   syntax NoDotHexFloatConstant ::=
     Token{[0][xX][0-9a-fA-F]+[pP][\+\-]?[0-9]+[FfLl]?} [onlyLabel]
@@ -156,12 +157,12 @@ module CIL-SYNTAX
 
   syntax CharConstantPrefix ::= Token{[LuU]} [onlyLabel]
 
-  syntax Char ::= 
-    Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]} 
+  syntax Char ::=
+    Token{[a-zA-Z0-9\~\!\@\#\$\%\^\&\(\)\-\_\+\=\:\;\?\/\|\`\{\}\[\]\<\>]}
     [onlyLabel]
   syntax CharConstant ::= Char | EscapeString
-  syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f" 
-                        | "\\n" | "\\r" | "\\t" | "\\v" 
+  syntax EscapeString ::= "\\'" | "\\\\" | "\\a" | "\\b" | "\\f"
+                        | "\\n" | "\\r" | "\\t" | "\\v"
                         | OctalStringEscape | HexStringEscape
   // TODO(chathhorn): Also \" but I can't get it to work.
 
@@ -175,7 +176,7 @@ module CIL-SYNTAX
   /*
    * Statements.
    */
-  syntax Stmt ::= Instr 
+  syntax Stmt ::= Instr
                 | "return" "(" Exp ")" ";"                    [strict]
                 | "return" ";"
                 | "goto" Label ";"
@@ -191,11 +192,13 @@ module CIL-SYNTAX
 
   rule if (E:Exp) S:Stmt => if (E) S else ;   [macro]
 
-  syntax Stmts ::= List{Stmt, ""}   [right]
+  syntax Stmts ::= List{Stmt, ""}
   syntax Instr ::= Exp "=" Exp ";"       [strict(2)]
                  | Exp "=" FunCall ";"   [strict(2), prefer]
-                 | FunCall ";"            [strict]
-                 | Exp "++" ";"
+                 | FunCall ";"           [strict]
+
+  // TODO(AndreiS): are these part of CIL?
+  syntax Instr ::= Exp "++" ";"
                  | Exp "--" ";"
                  | Exp "+=" Exp ";"
                  | Exp "-=" Exp ";"
@@ -206,6 +209,11 @@ module CIL-SYNTAX
                  | Exp "|=" Exp ";"
                  | Exp "^=" Exp ";"
 
+  // TODO(chathhorn): Doesn't quite make sense if X has a pointer type...
+  // rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
+  // rule X:Exp -- ; => X = X - (typeof(X)) 1 ; [macro]
+  rule X:Exp ++ ; => X = X + 1 ; [macro]
+  rule X:Exp -- ; => X = X - 1 ; [macro]
   rule X:Exp += E:Exp ; => X = X + E ; [macro]
   rule X:Exp -= E:Exp ; => X = X - E ; [macro]
   rule X:Exp *= E:Exp ; => X = X * E ; [macro]
@@ -215,7 +223,7 @@ module CIL-SYNTAX
   rule X:Exp |= E:Exp ; => X = X | E ; [macro]
   rule X:Exp ^= E:Exp ; => X = X ^ E ; [macro]
 
-  syntax FunCall ::= Exp "(" Exps ")"   [strict(2)]
+  syntax FunCall ::= Exp "(" Exps ")"   [klabel('call), strict(2)]
   syntax Block ::= "{" Stmts "}"
   syntax Label ::= CId
                  | "case" Exp
@@ -225,118 +233,12 @@ module CIL-SYNTAX
    * Lexical tokens.
    */
   /* C identifiers */
-  syntax CId ::= CIdToken
-               | "main"
-  syntax CIds ::= List{CId, ","}
   /* regular expression for tokens representing C identifiers */
-  syntax CIdToken ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
-  /* exclude predefined functions */
-  syntax CIdToken ::= "main"      [reject]
-  /* exclude keywords */
-  syntax CIdToken ::=
-      "auto"             [reject]
-    | "break"            [reject]
-    | "case"             [reject]
-    | "char"             [reject]
-    | "const"            [reject]
-    | "continue"         [reject]
-    | "default"          [reject]
-    | "do"               [reject]
-    | "double"           [reject]
-    | "else"             [reject]
-    | "enum"             [reject]
-    | "extern"           [reject]
-    | "float"            [reject]
-    | "for"              [reject]
-    | "goto"             [reject]
-    | "if"               [reject]
-    | "inline"           [reject]
-    | "int"              [reject]
-    | "long"             [reject]
-    | "register"         [reject]
-    | "restrict"         [reject]
-    | "return"           [reject]
-    | "short"            [reject]
-    | "signed"           [reject]
-    | "sizeof"           [reject]
-    | "static"           [reject]
-    | "struct"           [reject]
-    | "switch"           [reject]
-    | "typedef"          [reject]
-    | "union"            [reject]
-    | "unsigned"         [reject]
-    | "void"             [reject]
-    | "volatile"         [reject]
-    | "while"            [reject]
-    | "_Alignas"         [reject]
-    | "_Alignof"         [reject]
-    | "_Atomic"          [reject]
-    | "_Bool"            [reject]
-    | "_Complex"         [reject]
-    | "_Generic"         [reject]
-    | "_Imaginary"       [reject]
-    | "_Noreturn"        [reject]
-    | "_Static_assert"   [reject]
-    | "_Thread_local"    [reject]
-    // CIL versions.
-    | "__restrict"       [reject]
-    | "__inline"         [reject]
-    // Bonus.
-    | "__builtin_va_list" [reject]
+  syntax CId ::= Token{[\$A-Za-z\_][\$A-Za-z\_0-9]*}    [onlyLabel]
+               | "main"
+               | "size_t"
+  syntax CIds ::= List{CId, ","}
 
-  // Complete list of C11 reserved words plus some extras from CIL.
-  // TODO(chathhorn): This duplicate list allows us distinguish CIds from
-  // keywords. (Because, e.g., isCId(int) == true, despite the "reject.")
-  syntax Keyword ::=
-      "auto"             [reject]
-    | "break"            [reject]
-    | "case"             [reject]
-    | "char"             [reject]
-    | "const"            [reject]
-    | "continue"         [reject]
-    | "default"          [reject]
-    | "do"               [reject]
-    | "double"           [reject]
-    | "else"             [reject]
-    | "enum"             [reject]
-    | "extern"           [reject]
-    | "float"            [reject]
-    | "for"              [reject]
-    | "goto"             [reject]
-    | "if"               [reject]
-    | "inline"           [reject]
-    | "int"              [reject]
-    | "long"             [reject]
-    | "register"         [reject]
-    | "restrict"         [reject]
-    | "return"           [reject]
-    | "short"            [reject]
-    | "signed"           [reject]
-    | "sizeof"           [reject]
-    | "static"           [reject]
-    | "struct"           [reject]
-    | "switch"           [reject]
-    | "typedef"          [reject]
-    | "union"            [reject]
-    | "unsigned"         [reject]
-    | "void"             [reject]
-    | "volatile"         [reject]
-    | "while"            [reject]
-    | "_Alignas"         [reject]
-    | "_Alignof"         [reject]
-    | "_Atomic"          [reject]
-    | "_Bool"            [reject]
-    | "_Complex"         [reject]
-    | "_Generic"         [reject]
-    | "_Imaginary"       [reject]
-    | "_Noreturn"        [reject]
-    | "_Static_assert"   [reject]
-    | "_Thread_local"    [reject]
-    // CIL versions.
-    | "__restrict"       [reject]
-    | "__inline"         [reject]
-    // Bonus.
-    | "__builtin_va_list" [reject]
 
   /*
    * Declarations (variables, functions, and typedefs).
@@ -346,16 +248,16 @@ module CIL-SYNTAX
   //     declaration-specifiers init-declarator-list? ;
   //     static_assert-declaration
   syntax VarDecl ::=
-      DeclSpecs Declarator ";" 
+      DeclSpecs Declarator ";"
     // Bitfields; really only allowed in structs/unions.
     | DeclSpecs Declarator ":" Constant ";"
 
   // Elide bitfields for now.
   rule DS:DeclSpecs D:Declarator : _:Constant ; => DS D ; [macro]
 
-  syntax VarDecls ::= List{VarDecl, ""}    [right]
-  
-  syntax InitVarDecl ::= 
+  syntax VarDecls ::= List{VarDecl, ""}
+
+  syntax InitVarDecl ::=
       DeclSpecs Declarator "=" Initializer ";"
 
   // declaration-specifiers
@@ -412,10 +314,10 @@ module CIL-SYNTAX
   //     struct-or-union identifier? { struct-declaration-list }
   //     struct-or-union identifier
   syntax AggTypeSpec ::=
-      "struct" CId 
-    | "union" CId 
-    | "enum" CId 
-  
+      "struct" CId
+    | "union" CId
+    | "enum" CId
+
   // function-specifier
   //     inline
   //     _Noreturn
@@ -446,7 +348,7 @@ module CIL-SYNTAX
   // declarator
   //     pointer? direct-declarator
   syntax Declarator ::=
-      DirectDecl 
+      DirectDecl
     | Pointer DirectDecl
 
   // direct-declarator
@@ -465,7 +367,7 @@ module CIL-SYNTAX
     | DirectDecl "[" "]" [prefer]
     | DirectDecl "(" Params ")"
     | DirectDecl "[" Constant "]"
-  
+
   // TODO(chathhorn): type qualifiers.
   // pointer
   //      * type-qualifier-list?
@@ -492,8 +394,8 @@ module CIL-SYNTAX
   //     parameter-declaration
   //     parameter-list , parameter-declaration
   syntax Params ::=
-      List{ParamDecl, ","} [right]
-  
+      List{ParamDecl, ","}
+
   // parameter-declaration
   //     declaration-specifiers declarator
   //     declaration-specifiers abstract-declarator?
@@ -512,7 +414,7 @@ module CIL-SYNTAX
       Pointer
     | DirectAbsDecl
     | Pointer DirectAbsDecl
-  
+
   // direct-abstract-declarator
   //     ( abstract-declarator )
   //     direct-abstract-declarator? [ type-qualifier-list? assignment-expression? ]
@@ -530,7 +432,7 @@ module CIL-SYNTAX
     | DirectAbsDecl "[" "]" [prefer]
     | DirectAbsDecl "(" Params ")"
     | DirectAbsDecl "[" Constant "]"
-  
+
   // initializer
   //     assignment-expression
   //     { initializer-list }
@@ -539,5 +441,15 @@ module CIL-SYNTAX
   syntax Initializer ::= Exp | "{" Initializers "}"
   syntax Initializers ::= List{Initializer, ","}
 
-endmodule
+  // TODO(AndreiS): remove hask for getting the result
+  syntax KItem ::= "###result-value" "(" K ")"
 
+  // TODO(AndrieS): handle this
+  syntax CId ::= "sum" | "reverse" | "new_node" | "find_min" | "find" | "insert" | "delete"
+  syntax CId ::= "s" | "n" | "tmp" | "x" | "y" | "p"
+  syntax CId ::= "listNode" | "value" | "next"
+               | "treeNode" | "left" | "right"
+               | "node" | "update_height"
+  syntax CId ::= "malloc" | "free"
+  syntax Stmt ::= "breakpoint"
+endmodule

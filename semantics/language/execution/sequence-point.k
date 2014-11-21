@@ -1,11 +1,11 @@
 module C-SEQUENCE-POINT-SYNTAX
-     syntax K ::= "sequencePoint"
+     syntax KItem ::= "sequencePoint"
 endmodule
 
 module C-SEQUENCE-POINT
      imports C-SEQUENCE-POINT-SYNTAX
      rule [sequencePoint]:
-          <k> sequencePoint => . ...</k>
-          <locs-written> _ => .Bag </locs-written>
+          <k> sequencePoint => .K ...</k>
+          <locs-written> _ => .List </locs-written>
           [structural]
 endmodule

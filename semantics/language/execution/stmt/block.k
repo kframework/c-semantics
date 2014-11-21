@@ -13,7 +13,7 @@ module C-STMT-BLOCK
           => pushBlock ~> B ~> popBlock
           [structural]
 
-     rule <k> pushBlock => . ...</k>
+     rule <k> pushBlock => .K ...</k>
           <local>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
@@ -21,10 +21,10 @@ module C-STMT-BLOCK
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
           </local>
           <block-stack> .List
-               => ListItem(C
+               => ListItem(bag2K(C
                <local-vars> Vars </local-vars>
                <local-addresses> Addresses </local-addresses>
-               <nesting-depth> N </nesting-depth>)
+               <nesting-depth> N </nesting-depth>))
           ...</block-stack>
           [structural]
 
@@ -34,13 +34,13 @@ module C-STMT-BLOCK
           ...</local-addresses>
           [structural]
 
-     rule <k> popBlock => . ...</k>
+     rule <k> popBlock => .K ...</k>
           <local>
                (_ => C)
                (<local-addresses> .Set </local-addresses> => .Bag)
           </local>
           <block-stack>
-               ListItem(C:Bag) => .List
+               ListItem(bag2K(C:Bag)) => .List
           ...</block-stack>
           [structural]
 
@@ -54,7 +54,7 @@ module C-STMT-BLOCK
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
      A null statement (consisting of just a semicolon) performs no operations.
      }*/
-     rule Nop => .
+     rule Nop => .K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
@@ -70,7 +70,6 @@ module C-STMT-BLOCK
      rule <k> Block(BlockNum:Int, _, list(Statements:List))
                => enterRestrictScope(BlockNum)
                ~> listToK(Statements)
-               ~> exitRestrictScope(BlockNum)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]

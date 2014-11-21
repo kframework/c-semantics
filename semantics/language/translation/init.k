@@ -1,9 +1,8 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax K ::= load(Bag, Bag)
-     syntax K ::= "link" | "cleanup"
+     syntax KItem ::= load(Bag, Bag)
+     syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
-
 endmodule
 
 module C-TRANSLATION-INIT
@@ -25,41 +24,42 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
+     //TODO(liyili2): write to stdout does not work
      rule <k> link
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
                ~> resolveReferences
-               ~> printSuccess
+               ~> printSuccess("Translation successful!\n")
           ...</k>
           <options> Opts:Set </options>
-          when notBool (NOLINK in Opts)
+          requires notBool (NOLINK in Opts)
 
      rule load(Obj1:Bag, Obj2:Bag)
                => checkMerge(Obj1, Obj2)
                ~> load'(mergeObj(Obj1, Obj2))
 
-     syntax K ::= "load'" "(" Bag ")"
+     syntax KItem ::= "load'" "(" Bag ")"
      rule <k> load'(Merged:Bag)
                => checkMerge(Merged, <global> ThisObj </global>)
                ~> loadObj(mergeObj(Merged, <global> ThisObj </global>))
           ...</k>
           <global> ThisObj:Bag </global>
 
-     rule <k> link => printSuccess ...</k>
+     rule <k> link => printSuccess("Translation successful!\n") ...</k>
           <options> SetItem(NOLINK) ...</options>
 
      rule (<T>...
                <k> cleanup </k>
                <options> Opts:Set </options>
           ...</T> => .Bag)
-          when notBool (DEBUG in Opts)
+          requires notBool (DEBUG in Opts)
           [structural]
 
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List)) 
-               => preDeclareStrings(Strings)
+     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
+               => (preDeclareStrings(Strings)
                ~> listToK(Decls)
-               ~> allocateIncompleteTentatives
+               ~> allocateIncompleteTentatives))
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
@@ -71,7 +71,7 @@ module C-TRANSLATION-INIT
           ...</translation-units>
           [structural]
 
-     syntax K ::= preDeclareStrings(List)
+     syntax KItem ::= preDeclareStrings(List)
 
      rule preDeclareStrings(ListItem(K:K) L:List)
           => allowInit(K ~> discard)
@@ -79,105 +79,110 @@ module C-TRANSLATION-INIT
           [structural]
      rule preDeclareStrings(.List) => .K
           [structural]
-
-     syntax K ::= addBuiltins(Map)
-
+     syntax KItem ::= addBuiltins(Map)
+                    | addBuiltin(CId, Type)
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
      // redefining it should probably be an error).
-     rule <k> (.K => declare(
-               typedDeclaration(T, Identifier(B)), 
-               initializer(initFunction(
-                    &(Identifier(B)),
-                    functionObject(Identifier(B), .List, T, handleBuiltin)
-               ))))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _)
-          ...</k>
-          <external-types>... Identifier(B) |-> _ ...</external-types>
-          <external-defs> Defs:Map </external-defs>
-          when notBool Identifier(B) in keys(Defs)
 
-     rule <k> addBuiltins((B:String |-> _ => .Map) _) ...</k>
+     rule <k> (.K => addBuiltin(Identifier(B), T))
+               ~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
+
+     rule addBuiltins(.Map) => .K
+
+     rule <k> addBuiltin(B:CId, T:Type) => declare(
+               typedDeclaration(T, B),
+               initializer(initFunction(
+                    &(B),
+                    functionObject(B, .List, T, handleBuiltin)
+               ))) ...</k>
+          <external-types>... B |-> _ ...</external-types>
+          <external-defs> Defs:Map </external-defs>
+          requires notBool (B in keys(Defs))
+
+     rule <k> addBuiltin(B:CId, _) => .K ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          when (Identifier(B) in keys(Defs))
-               orBool (notBool Identifier(B) in keys(Types))
-     rule addBuiltins(.Map) => .
+          requires (B in keys(Defs))
+               orBool (notBool (B in keys(Types)))
 
-     syntax K ::= checkMerge(Bag, Bag)
-     rule checkMerge(_, .Bag) => .
-     rule checkMerge(.Bag, _) => .
-     rule checkMerge(
-          (<global>...
-               <external-types>... X:CId |-> _ => .Map </external-types>
-          ...</global>),
-          (<global>...
-               <external-types> Types:Map </external-types>
-          ...</global>))
-          when notBool (X in keys Types)
-     rule checkMerge(
-          (<global>...
-               <external-defs>... X:CId |-> _ => .Map </external-defs>
-          ...</global>),
-          (<global>...
-               <external-defs> Defs:Map </external-defs>
-          ...</global>))
-          when notBool (X in keys Defs)
-     rule checkMerge(
-          (<global>...
-               <external-types> Types:Map </external-types>
-          ...</global>),
-          (<global>...
-               <external-types>... X:CId |-> _ => .Map </external-types>
-          ...</global>))
-          when notBool (X in keys Types)
-     rule checkMerge(
-          (<global>...
-               <external-defs> Defs:Map </external-defs>
-          ...</global>),
-          (<global>...
-               <external-defs>... X:CId |-> _ => .Map </external-defs>
-          ...</global>))
-          when notBool (X in keys Defs)
-     rule checkMerge(
-          (<global>...
-               <external-types>... X:CId |-> T:Type => .Map </external-types>
-          ...</global>),
-          (<global>...
-               <external-types>... X |-> T':Type => .Map </external-types>
-          ...</global>))
-          when areCompatible(T, T')
-     rule checkMerge(
-          (<global>...
-               <external-types> .Map </external-types>
-               <external-defs> .Map </external-defs>
-          ...</global>),
-          (<global>...
-               <external-types> .Map </external-types>
-               <external-defs> .Map </external-defs>
-          ...</global>)) => .
-     rule (. => UNDEF("TIN1",
-               "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
-               "6.2.7:2"))
-          ~> checkMerge(
-          (<global>...
-               <external-types>... X:CId |-> T:Type  ...</external-types>
-          ...</global>),
-          (<global>...
-               <external-types>... X |-> T':Type  ...</external-types>
-          ...</global>))
-          when notBool areCompatible(T, T')
-     rule (. => UNDEF("TIN2",
-               "Multiple external definitions for " +String idToString(X) +String ".",
-               "6.9"))
-          ~> checkMerge(
-          (<global>...
-               <external-defs>... X:CId |-> _ ...</external-defs>
-          ...</global>),
-          (<global>...
-               <external-defs>... X |-> _  ...</external-defs>
-          ...</global>))
+     syntax KItem ::= checkMerge(Bag, Bag)
+     rule checkMerge(_, _) => .K
+     // TODO(chathhorn): need to rework in light of the silly limitations on
+     // matching keys.
+     // rule checkMerge(_, .Bag) => .
+     // rule checkMerge(.Bag, _) => .
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-types> X:CId |-> _ => .Map ...</external-types>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-types> Types':Map </external-types>
+     //      ...</global>))
+     //      requires notBool (X in keys(Types'))
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-defs> X:CId |-> _ => .Map ...</external-defs>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-defs> Defs':Map </external-defs>
+     //      ...</global>))
+     //      requires notBool (X in keys(Defs'))
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-types> Types:Map </external-types>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-types> X:CId |-> _ => .Map ...</external-types>
+     //      ...</global>))
+     //      requires notBool (X in keys(Types))
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-defs> Defs:Map </external-defs>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-defs> X:CId |-> _ => .Map ...</external-defs>
+     //      ...</global>))
+     //      requires notBool (X in keys(Defs))
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-types> X:CId |-> T:Type => .Map ...</external-types>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-types> X |-> T':Type => .Map ...</external-types>
+     //      ...</global>))
+     //      requires areCompatible(T, T')
+     // rule checkMerge(
+     //      (<global>...
+     //           <external-types> .Map </external-types>
+     //           <external-defs> .Map </external-defs>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-types> .Map </external-types>
+     //           <external-defs> .Map </external-defs>
+     //      ...</global>)) => .
+     // rule (.K => UNDEF("TIN1",
+     //           "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
+     //           "6.2.7:2"))
+     //      ~> checkMerge(
+     //      (<global>...
+     //           <external-types>... X:CId |-> T:Type ...</external-types>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-types>... X |-> T':Type ...</external-types>
+     //      ...</global>))
+     //      requires notBool areCompatible(T, T')
+     // rule (.K => UNDEF("TIN2",
+     //           "Multiple external definitions for " +String idToString(X) +String ".",
+     //           "6.9"))
+     //      ~> checkMerge(
+     //      (<global>...
+     //           <external-defs>... X:CId |-> _ ...</external-defs>
+     //      ...</global>),
+     //      (<global>...
+     //           <external-defs>... X |-> _  ...</external-defs>
+     //      ...</global>))
 
      // TODO(chathhorn): should fix this so it doesn't create duplicates keys
      // in the external-types cell. I'm not entirely sure what the right fix
@@ -186,6 +191,21 @@ module C-TRANSLATION-INIT
      // declarations across TUs, so duplicates vs. composite types probably
      // doesn't change too much.
      syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax Map ::= mergeInExternalDecls(Map,Map) [function]
+                  | mergeInExternalDecl(K,K,K,K,Map) [function]
+
+     rule mergeInExternalDecls(.Map,M:Map) => M
+     rule mergeInExternalDecls((A:K |-> B:K) M:Map,M':Map) 
+          => mergeInExternalDecls(M,mergeInExternalDecl(A,B,.K,.K,M'))
+     rule mergeInExternalDecl(A:K,B:K,.K,.K,.Map) => A |-> B
+     rule mergeInExternalDecl(A:K,B:K,.K,.K,(A':K |-> B':K) M:Map) 
+          => mergeInExternalDecl(A,B,A':K,B':K,M)
+     rule mergeInExternalDecl(A:K,B:K,A':K,B':K, M:Map) 
+          => (A':K |-> B':K) mergeInExternalDecl(A,B,.K,.K,M)
+          requires (A =/=K A') andBool (A' =/=K .K)
+     rule mergeInExternalDecl(A:K, set(S:Set), A:K, set(S':Set), M:Map) 
+          => (A:K |-> set(S S')) M
+ 
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
      rule mergeObj(
@@ -227,25 +247,28 @@ module C-TRANSLATION-INIT
           </global>))
           =>
           <global>
-               <mem> M1 M2 </mem>
-               <functions> F1 F2 </functions>
+               <mem> updateMap(M1, M2) </mem>
+               <functions> updateMap(F1, F2) </functions>
 
-               <external-types> ExtTypes1 ExtTypes2 </external-types>
-               <external-defs> ExtDefs1 ExtDefs2 </external-defs>
+               <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
+               <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
 
                <linking-state>
-                    <external-decls> ExtDecls1 ExtDecls2 </external-decls>
+                    <external-decls> mergeInExternalDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 
-               <linkings> Links1 Links2 </linkings>
+               <linkings> updateMap(Links1, Links2) </linkings>
 
                <main-tu> Main1 Main2 </main-tu>
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     syntax K ::= "printSuccess"
-     rule printSuccess => #write(#stdout, "Translation successful!\n")
+     //TODO(liyili2): write to stdout not work currently
+     //syntax KItem ::= "printSuccess"
+     //rule printSuccess => #write(1, "Translation successful!\n")
+     syntax KItem ::= printSuccess(String)
+     rule printSuccess(S:String) => #write(1,S)
 
 endmodule

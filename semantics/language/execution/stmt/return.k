@@ -1,5 +1,4 @@
 module C-STMT-RETURN
-     imports C-CHECK-LOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -24,14 +23,14 @@ module C-STMT-RETURN
      assignment to an object having the return type of the function.
      }*/
 
-     rule <k> (. => deleteObject(Base)) ~> Return(_:KResult) ...</k>
+     rule <k> (.K => deleteObject(Base)) ~> Return(_:KResult) ...</k>
           <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
           [structural]
 
      rule <k> Return(_:KResult) ...</k>
           <local-addresses> .Set => Addresses </local-addresses>
           <block-stack>
-               ListItem(_ <local-addresses> Addresses:Set </local-addresses>)
+               ListItem(bag2K(_ <local-addresses> Addresses:Set </local-addresses>))
                => .List
           ...</block-stack>
           [structural]
@@ -39,8 +38,7 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> Return(V:KResult) ~> _
-               => exitRestrictScope(F)
-               ~> sequencePoint
+               => sequencePoint
                ~> cast(T, V)
                ~> K
           </k>
@@ -61,7 +59,7 @@ module C-STMT-RETURN
                ...</control-details>  => C)
           </control>
           <call-stack>
-               ListItem(
+               ListItem(bag2K(
                     <call-stack-frame>...
                          <continuation> K:K </continuation>
                          <stack-control>
@@ -78,12 +76,12 @@ module C-STMT-RETURN
                               CurrLoc:K
                          </stack-curr-program-loc>
                     ...</call-stack-frame>
-               ) => .List
+               )) => .List
           ...</call-stack>
-          when notBool (Noreturn in Mods)
+          requires notBool (Noreturn in Mods)
           [structural]
 
-     rule <k> (. => UNDEF("ESR1", "Return from a function declared _Noreturn.",
+     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
                     "6.7.4"))
                ~> Return(_)
           ...</k>
@@ -93,6 +91,6 @@ module C-STMT-RETURN
           <gtypes>...
                F:CId |-> t(Mods:Set, _)
           ...</gtypes>
-          when Noreturn in Mods
+          requires Noreturn in Mods
           [structural]
 endmodule

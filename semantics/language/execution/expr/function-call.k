@@ -48,6 +48,7 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
+     context Call((HOLE => reval(HOLE)), _) [ndheat]
      context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
@@ -56,26 +57,34 @@ module C-EXPR-FUNCTION-CALL
      // Resolve a linker loc to a real loc.
      rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
-          [structural]
+
      rule <k> Call(
                tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
                rvlist(L:List))
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
           <functions>... Base |-> Fun:KResult ...</functions>
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
 
-     syntax K ::= revalParams(K)
-     syntax KResult ::= rvlist(List)
-     context revalParams(list(_ ListItem(HOLE => reval'(HOLE)) _))
-          [ndheat]
+     syntax KItem ::= revalParams(K)
+                    | #revalParams(HeatList) [strict]
+     //TODO(liyili2): context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
 
+     rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
+          requires isAllKResultInHeatList(HL)
+          [structural]
+
+     syntax KResult ::= rvlist(List)
+
+     /*TODO(liyili2): might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
           when all(L, isKResult)
           [structural]
+     */
 
-     syntax K ::= application(String, K, Type, List) [strict(2)]
+     syntax KItem ::= application(String, K, Type, List) [strict(2)]
      context application(_, HOLE, _, _)
 
      /*@ This extra step is useful for putting the function name in the
@@ -85,15 +94,15 @@ module C-EXPR-FUNCTION-CALL
                     CallT:Type, L:List)
                => application'(Tu, functionObject(X, Params, DefT, Blk), L)
           ...</k>
-          when areCompatible(CallT, DefT)
+          requires areCompatible(CallT, DefT)
           [structural]
-     rule (. => ERROR("FC1", "attempt to call the function " +String
+     rule (.K => ERROR("FC1", "attempt to call the function " +String
                idToString(X) +String " through a pointer with incompatible type."))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
-          when notBool areCompatible(CallT, DefT)
+          requires notBool areCompatible(CallT, DefT)
           [structural]
 
-     syntax K ::= "application'" "(" String "," K "," List ")"
+     syntax KItem ::= "application'" "(" String "," K "," List ")"
 
      rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
                ~> K:K
@@ -105,7 +114,7 @@ module C-EXPR-FUNCTION-CALL
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
-               <call-stack-frame>...
+               bag2K(<call-stack-frame>...
                     <stack-control>
                          <curr-tu> OldTu:K </curr-tu>
                          C:Bag
@@ -114,19 +123,18 @@ module C-EXPR-FUNCTION-CALL
                     <stack-curr-function> CurrFun:K </stack-curr-function>
                     <stack-curr-function-params> CurrFunParams:List </stack-curr-function-params>
                     <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
-               ...</call-stack-frame>
+               ...</call-stack-frame>)
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>
                <curr-function> CurrFun:K => X </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
-               // TODO(chathhorn): better way to initialize?
                (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
 
-     rule <k> bindParam(X:CId, T:Type, V:RValue)
+     rule <k> bindParam(X:CId, T:Type, V:TypedValue)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)

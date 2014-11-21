@@ -24,23 +24,21 @@ module LIBC-STDIO
      syntax String ::= symBaseToString(SymBase) [function]
 
      // getString returns the string without the null terminator
-     syntax K ::= getString(K)
-     syntax K ::= "getString-aux" "(" SymLoc "," String ")"
+     syntax KItem ::= getString(K) [function]
+     syntax KItem ::= "getString-aux" "(" SymLoc "," String ")"
      rule getString(Loc:SymLoc) => getString-aux(Loc, "")
-          [structural, anywhere]
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
-          [structural, anywhere]
 
      rule [getString-pre]:
-          (. => read(Loc, t(.Set, char)))
+          (.K => read(Loc, t(.Set, char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 
-     syntax KResult ::= str(String)
+     syntax Value ::= str(String)
      rule [getString]:
           tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
           => getString-aux(Loc, S +String chrChar(N))
-          when N =/=Int 0
+          requires N =/=Int 0
           [structural]
      rule [getString-done]:
           tv(0, _) ~> getString-aux(_, S:String)
@@ -59,7 +57,7 @@ module LIBC-STDIO
           +String "thread(" +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
-          symBaseToString(B:Int @ allocated)
+          symBaseToString(B:Int @ alloc)
           => Int2String(B) +String " @ "
           +String "allocated"
           [structural]
@@ -79,47 +77,51 @@ module LIBC-STDIO
           [structural]
 
      syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
-     syntax C ::= vpair(K, K) [hybrid, strict]
+     //TODO(liyili): might not need this if we have hybrid label
+     syntax C ::= vpair(K, K) [strict]
+     syntax KResult ::= vpairResult(K, K)
+
+     rule vpair(K:KResult,K':KResult) => vpairResult(K,K')
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)
           => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofObject(base(Loc)))
           [structural]
      rule [nextvarg]:
-          nextvarg-aux(Loc:SymLoc, T:Type, Len:RValue, Len':RValue)
+          nextvarg-aux(Loc:SymLoc, T:Type, Len:TypedValue, Len':TypedValue)
           => vpair(read(Loc, T),
-               varg(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
-          when value(Len) ==Int value(Len')
+               vargResult(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
+          requires value(Len) ==Int value(Len')
           [structural]
 
      rule [putchar]:
           prepareBuiltin(Identifier("putchar"),
-               ListItem(tv(N:Int, _)))
+               hrItem(tv(N:Int, _)))
           => writeToFD(1, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [fslPutc]:
           prepareBuiltin(Identifier("__fslPutc"),
-               ListItem(tv(N:Int, _))
-               ListItem(tv(H:Int, _)))
+               hrItem(tv(N:Int, _)) hs::
+               hrItem(tv(H:Int, _)))
           => writeToFD(H, N) ~> tv(N, t(.Set, int))
           [structural]
 
      rule [getchar]:
-          prepareBuiltin(Identifier("getchar"), .List)
+          prepareBuiltin(Identifier("getchar"), .HeatList)
           => flush(1) ~> readFromFD(0)
           [structural]
 
      rule [fslFGetC]:
           prepareBuiltin(Identifier("__fslFGetC"),
-               ListItem(tv(FD:Int, _))
-               ListItem(tv(_:Int, _)))
+               hrItem(tv(FD:Int, _)) hs::
+               hrItem(tv(_:Int, _)))
           => readFromFD(FD)
           [structural]
 
      rule [fslCloseFile]:
           <k> prepareBuiltin(Identifier("__fslCloseFile"),
-                    ListItem(tv(FD:Int, t(_, int))))
+                    hrItem(tv(FD:Int, t(_, int))))
                => tv(0, t(.Set, int))
           ...</k>
           (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
@@ -127,12 +129,12 @@ module LIBC-STDIO
 
      rule [fslOpenFile-pre]:
           prepareBuiltin(Identifier("__fslOpenFile"),
-               ListItem(Filename:KResult)
-               ListItem(Mode:KResult))
+               hrItem(Filename:KResult) hs::
+               hrItem(Mode:KResult))
           => fsl-open-file(getString(Filename), getString(Mode))
           [structural]
 
-     syntax K ::= "fsl-open-file-aux" "(" String "," String "," K ")"
+     syntax KItem ::= "fsl-open-file-aux" "(" String "," String "," K ")"
           [strict(3)]
 
      rule [fslOpenFile-aux]:
@@ -156,7 +158,7 @@ module LIBC-STDIO
           ...</files>
           [structural]
 
-     syntax K ::= "fsl-open-file" "(" K "," K ")" [strict]
+     syntax KItem ::= "fsl-open-file" "(" K "," K ")" [strict]
 
      //////////////////////////
 
@@ -172,8 +174,8 @@ module LIBC-STDIO
      // to do this
      rule [printf]:
           prepareBuiltin(Identifier("printf"),
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
 
@@ -184,12 +186,12 @@ module LIBC-STDIO
                ~> tv(lengthString(S), t(.Set, int))
           [structural]
 
-     syntax K ::= sprintf(K, SymLoc) [strict(1)]
+     syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
           prepareBuiltin(Identifier("sprintf"),
-               ListItem(tv(Dest:SymLoc, _))
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hrItem(tv(Dest:SymLoc, _)) hs::
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
@@ -198,35 +200,35 @@ module LIBC-STDIO
                ~> tv(lengthString(S), t(.Set, int))
           [structural]
 
-     syntax K ::= snprintf(K, SymLoc, Int) [strict(1)]
+     syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
           prepareBuiltin(Identifier("snprintf"),
-               ListItem(tv(Dest:SymLoc, _))
-               ListItem(tv(Len:Int, _))
-               ListItem(Format:KResult)
-               ListItem(VarArgs:KResult))
+               hrItem(tv(Dest:SymLoc, _)) hs::
+               hrItem(tv(Len:Int, _)) hs::
+               hrItem(Format:KResult) hs::
+               hrItem(VarArgs:KResult))
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, Len -Int 1))
                ~> tv(lengthString(S), t(.Set, int))
-          when Len >Int 0
+          requires Len >Int 0
           [structural]
      rule [snprintf-done-0]:
           snprintf(formattedResult(S:String), _, 0)
           => tv(lengthString(S), t(.Set, int))
           [structural]
 
-     syntax K ::= "new-printf-aux" "(" K ")" [strict]
-     syntax K ::= formatter(K, K) [strict(1)]
-     syntax K ::= "formatter-aux" "(" K ")" [strict]
-     syntax K ::= "formatter-next" "(" K ")"
-     syntax K ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule formatter-next(varg'(tv(Loc:SymLoc, _)))
+     syntax KItem ::= "new-printf-aux" "(" K ")" [strict]
+     syntax KItem ::= formatter(K, K) [strict(1)]
+     syntax KItem ::= "formatter-aux" "(" K ")" [strict]
+     syntax KItem ::= "formatter-next" "(" K ")"
+     syntax KItem ::= "formatter-arg" "(" K ")" [strict(1)]
+     rule formatter-next(vargResult(tv(Loc:SymLoc, _)))
           => formatter-arg(nextvarg(Loc, getFormatType))
           [structural]
-     rule <k> formatter-arg(vpair(tv(K:K, _), V':KResult))
+     rule <k> formatter-arg(vpairResult(tv(K:K, _), V':KResult))
                => formatter-aux(V':KResult)
           ...</k>
           <format-arg> _ => K:K </format-arg>
@@ -243,7 +245,7 @@ module LIBC-STDIO
           )
           [structural]
 
-     syntax KResult ::= "formattedResult" "(" K ")"
+     syntax Value ::= "formattedResult" "(" K ")"
 
      rule [format-done]:
           <k>
@@ -266,7 +268,7 @@ module LIBC-STDIO
           <format> ListItem(S:String) => .List ...</format>
           <format-result>... .List => ListItem(S:String) </format-result>
           <format-state> "normal" </format-state>
-          when S:String =/=String "%"
+          requires S:String =/=String "%"
           [structural]
 
      rule [format-reset]:
@@ -381,7 +383,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-state> "%" </format-state>
-          when ordChar(C:String) >Int ordChar("0")
+          requires ordChar(C:String) >Int ordChar("0")
                andBool ordChar(C:String) <=Int ordChar("9")
           [structural]
 
@@ -455,8 +457,8 @@ module LIBC-STDIO
      specified above, the behavior is undefined.
      */
 
-     syntax K ::= "getFormatType"
-     syntax K ::= "getFormatType-aux" "(" K "," K ")"
+     syntax KItem ::= "getFormatType"
+     syntax KItem ::= "getFormatType-aux" "(" K "," K ")"
      rule <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
           <format-length> Length:K </format-length>
           <format-state> State:K </format-state>
@@ -535,7 +537,7 @@ module LIBC-STDIO
           ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-state> "%" => "%d" </format-state>
-          when S:String ==String "d" orBool S:String ==String "i"
+          requires S:String ==String "d" orBool S:String ==String "i"
           [structural]
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>
@@ -571,7 +573,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(base2String(D:Int, 8))
+               .List => ListItem(Base2String(D:Int, 8))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
           [structural]
@@ -601,7 +603,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(base2String(D:Int, 16))
+               .List => ListItem(Base2String(D:Int, 16))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
@@ -616,7 +618,7 @@ module LIBC-STDIO
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
-               .List => ListItem(toUpperCase(base2String(D:Int, 16)))
+               .List => ListItem(toUpperCase(Base2String(D:Int, 16)))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]

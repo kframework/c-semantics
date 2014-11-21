@@ -11,8 +11,8 @@ module C-IO-DIRECT
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= writeBytes(SymLoc, DataList)
-     syntax K ::= writeByte(SymLoc, CValue)
+     syntax KItem ::= writeBytes(SymLoc, DataList)
+     syntax KItem ::= writeByte(SymLoc, CValue)
 
      // In the static semantics, we only allow writing to memory during
      // initialization (of statics).
@@ -20,10 +20,10 @@ module C-IO-DIRECT
                => writeBytes(Loc, D)
           ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
 
-     rule <k> writeBytes(_, _, _) => . ...</k>
+     rule <k> writeBytes(_, _, _) => .K ...</k>
           <initializing> 0 </initializing>
           [structural]
 
@@ -32,24 +32,24 @@ module C-IO-DIRECT
                writeBytes(Loc +bytes 1, dataList(L))
           [structural]
 
-     rule writeBytes(_, dataList(.List)) => .
+     rule writeBytes(_, dataList(.List)) => .K
           [structural]
 
-     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => . ...</k>
+     rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <mem>...
-               Base |-> object(_, Len:Int, (M:Map => M:Map[V <- Offset]))
+               Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]))
           ...</mem>
-          when (Offset <Int Len) andBool notBool isSymbolic(V)
+          requires (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
 
-     rule (. => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
+     rule (.K => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
           ~> writeByte(_, V:CValue)
-          when isSymbolic(V)
+          requires isSymbolic(V)
           [structural]
 
-     syntax K ::= readByte(SymLoc)
+     syntax KItem ::= readByte(SymLoc)
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
+     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"
 
      rule readBytes(Loc:SymLoc, Size:Int, _)
           => readBytes-aux(Loc, Size, .List)
@@ -59,7 +59,7 @@ module C-IO-DIRECT
      rule readBytes-aux(Loc:SymLoc, Size:Int, Aux:List)
           => readByte(Loc)
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
-          when Size:Int >Int 0
+          requires Size:Int >Int 0
           [structural]
      rule (tv(V:CValue, T:Type) => .K)
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
@@ -85,9 +85,9 @@ module C-IO-DIRECT
           ...</k>
           <mem>...
                Base |-> object(_, _,
-                    M:Map => M[piece(0, cfg:bitsPerByte) <- Offset])
+                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
-          when notBool Offset in (keys(M))
+          requires notBool (Offset in (keys(M)))
           [structural]
 
 endmodule

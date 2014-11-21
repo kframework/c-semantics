@@ -1,8 +1,16 @@
 // vim: set ts=2 sw=2:
+require "builtins/list.k"
+require "builtins/map.k"
+require "builtins/set.k"
+
 require "cil-common.k"
 require "cil-decl.k"
+require "cil-exp.k"
 
 module CIL-STMT
+  imports LIST
+  imports MAP
+  imports SET
   imports CIL-COMMON
   imports CIL-DECL
   imports CIL-EXP
@@ -12,10 +20,6 @@ module CIL-STMT
   syntax Type ::= typeof(Exp) [strict]
   rule typeof(tv(T:Type, _)) => T
 
-  // TODO(chathhorn): Doesn't quite make sense if X has a pointer type...
-  rule X:Exp ++ ; => X = X + (typeof(X)) 1 ; [macro]
-  rule X:Exp -- ; => X = X - (typeof(X)) 1 ; [macro]
-
   context goto $caseLabel(_, HOLE) ;
   rule
     <k> goto L:Label; ~> _ => Ss </k>
@@ -24,7 +28,7 @@ module CIL-STMT
     <labels>... L |-> Ss:Stmts ...</labels>
   [computational]
 
-  rule 
+  rule
     <k> (. => make-goto-table ~> eval-case-labels) ~> goto _:Label ; ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
@@ -37,14 +41,14 @@ module CIL-STMT
     <fun-id> F </fun-id>
     <labels> Lbls:Map </labels>
     <labels-generated> true </labels-generated>
-    when notBool ($caseLabel(I, V) in keys Lbls)
+    when notBool ($caseLabel(I, V) in keys(Lbls))
   [structural]
 
   /*
    * Compute the goto table (Map{Label, Stmt}). We do this at "runtime" to
    * improve the performance of the interpreter.
    */
-  syntax K ::= "make-goto-table"
+  syntax KItem ::= "make-goto-table"
   rule
     <k> make-goto-table ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
@@ -52,7 +56,7 @@ module CIL-STMT
     <body> { _:VarDecls { Ss:Stmts } } </body>
     <make-goto-table-enabled> false => true </make-goto-table-enabled>
     <make-goto-table-tasks>
-      (.Bag => 
+      (.Bag =>
         <make-goto-table-task>
           <make-goto-table-stmts> Ss </make-goto-table-stmts>
           <make-goto-table-cont> .Stmts </make-goto-table-cont>
@@ -94,7 +98,7 @@ module CIL-STMT
         <make-goto-table-stmts>
           (if ( _ ) S1:Stmt else S2:Stmt) Ss:Stmts => Ss
         </make-goto-table-stmts>
-        <make-goto-table-cont> 
+        <make-goto-table-cont>
           Cont:Stmts
         </make-goto-table-cont>
       </make-goto-table-task>
@@ -137,46 +141,49 @@ module CIL-STMT
   [structural]
   rule
     <make-goto-table-stmts>
-      KLabel:KLabel(KList:KList) Ss:Stmts => Ss
+      S:Stmt Ss:Stmts => Ss
     </make-goto-table-stmts>
-  when isStmt(KLabel:KLabel(KList:KList)) 
-    andBool KLabel =/=KLabel '_:_ 
-    andBool KLabel =/=KLabel 'if`(_`)_else_ 
-    andBool KLabel =/=KLabel 'while`(_`)_ 
-    andBool KLabel =/=KLabel '`{_`}
+  when getKLabel(S) =/=KLabel '_:_
+    andBool getKLabel(S) =/=KLabel 'if`(_`)_else_
+    andBool getKLabel(S) =/=KLabel 'while`(_`)_
+    andBool getKLabel(S) =/=KLabel '`{_`}
   [structural]
 
   // This is a somewhat hackish method for evaluating the constant expressions
   // in the case labels of switch statements. It seems to slow things down
   // quite a bit too.
-  syntax K ::= "eval-case-labels"
-             | "eval-case-labels" "(" Map "," Map ")"
-             | "case-label-freezer" "(" Int "," Stmts ")"
+  syntax KItem ::= "eval-case-labels"
+                 | "eval-case-labels0"
+                 | "eval-case-label" "(" Label "," Stmts ")"
 
-  rule <k> eval-case-labels => eval-case-labels(Lbls, .Map) ...</k>
+  rule <k> eval-case-labels => eval-case-labels0 ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> Lbls:Map </labels>
+    <labels> Lbls:Map => .Map </labels>
+    <make-case-labels> .Map => Lbls </make-case-labels>
+  rule <k> eval-case-labels0 => .K ...</k>
+    <make-case-labels> .Map </make-case-labels>
+    [structural]
 
-  rule eval-case-labels(
-    _:Map (L:Label |-> Ss:Stmts => .Map), 
-    _:Map (.Map => L |-> Ss)) 
+  // TODO(AndreiS): eval-case-labels mentioned for better indexing
+  rule
+    <k> (.K => eval-case-label(L, Ss)) ~> eval-case-labels0 ...</k>
+    <make-case-labels>... L:Label |-> Ss:Stmts => .Map ...</make-case-labels>
+  rule
+    <k> eval-case-label(L:Label, Ss:Stmts) => .K ...</k>
+    <frame-fun-id> F:Ptr </frame-fun-id>
+    <fun-id> F </fun-id>
+    <labels>... .Map => L |-> Ss ...</labels>
     when getKLabel(L) =/=KLabel '$caseLabel
     [structural]
-  rule (. => E ~> case-label-freezer(I, Ss)) 
-    ~> eval-case-labels(
-      _:Map ($caseLabel(I:Int, E:Exp) |-> Ss:Stmts => .Map), _:Map) 
-    [structural]
-  rule (E:KResult ~> case-label-freezer(I:Int, Ss:Stmts) => .)
-    ~> eval-case-labels(
-      _:Map, _:Map (.Map => $caseLabel(I, E) |-> Ss))
-    [structural]
-
-  rule <k> eval-case-labels(.Map, Lbls:Map) => . ...</k>
+  context eval-case-label($caseLabel(_:Int, HOLE:>Exp), _:Stmts)
+  rule
+    <k> eval-case-label($caseLabel(I:Int, E:KResult), Ss:Stmts) => .K ...</k>
     <frame-fun-id> F:Ptr </frame-fun-id>
     <fun-id> F </fun-id>
-    <labels> _ => Lbls </labels>
+    <labels>... .Map => $caseLabel(I, E) |-> Ss ...</labels>
     [structural]
+
 
   rule if (E:Exp) S1:Stmt else S2:Stmt
     => $exp2bool(E) ~> if (HOLE) S1 else S2
@@ -185,9 +192,13 @@ module CIL-STMT
     TV:TypedValue ~> if (HOLE) S1:Stmt else S2:Stmt => if (TV) S1 else S2
     [cool]
 
-  rule if (tv(_, mi(_, 1))) S:Stmt else _:Stmt => S   [computational]
-  rule if (tv(_, mi(_, 0))) _:Stmt else S:Stmt => S   [computational]
-  
+  rule if (tv(_, MI:MInt)) S:Stmt else _:Stmt => S
+  when uvalueMInt(MI) ==K 1
+  [computational]
+  rule if (tv(_, MI:MInt)) _:Stmt else S:Stmt => S
+  when uvalueMInt(MI) ==K 0
+  [computational]
+
   rule while(E:Exp) S:Stmt => if (E) { S while(E) S }   [structural]
 
   rule { Stmts:Stmts } => Stmts   [structural]
@@ -200,15 +211,14 @@ module CIL-STMT
   /*
    * Function call/return
    */
-  syntax K ::= "callMain"
-  rule 
+  rule
      <k> callMain => main(0, (char**) 0) </k>
      <env> _ => GEnv </env>
      <global-env> GEnv:Map </global-env>
      <phase> _ => executing </phase>
      [structural]
 
-  context (HOLE => HOLE ~> noLeftValueConversion)(_:Exps)
+  context (HOLE => HOLE ~> noLeftValueConversion)(_:TypedValues)
   rule
     (
       <frame>
@@ -222,8 +232,10 @@ module CIL-STMT
         <env> GEnv TuEnv </env>
       ...</frame>
     )
+    // TODO(AndreiS): rename k cell to prevent failed attempts at rewriting
+    // inside stacked k
     <frame-stack>...
-      .List => ListItem(<frame> <k> K </k> Cells </frame>)
+      . => <stacked-frame> <k> K </k> Cells </stacked-frame>
     </frame-stack>
     <fun>...
       <fun-id> FunPtr(F, Tu) </fun-id>
@@ -240,17 +252,18 @@ module CIL-STMT
     (
       <frame>...
         <k> return (tv(T:Type, V:Value)); ...</k>
+        <locals> S:Set </locals>
         <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
       <frame>
-        <k> tv(T, V) ~> K:K </k> // TODO: deleteLocals
-        Cells:Bag
+        <k> deleteLocals(S) ~> tv(T, V) ~> K </k>
+        Cells
       </frame>
     )
     <frame-stack>...
-       ListItem(<frame> <k> K </k> Cells </frame>) => .List
-    </frame-stack>   
+      <stacked-frame> <k> K:K </k> Cells:Bag </stacked-frame> => .
+    </frame-stack>
     <fun>...
       <fun-id> F </fun-id>
       <fun-type> T </fun-type>
@@ -260,17 +273,18 @@ module CIL-STMT
     (
       <frame>...
         <k> return ; ...</k>
+        <locals> S:Set </locals>
         <frame-fun-id> F:Ptr </frame-fun-id>
       ...</frame>
     =>
       <frame>
-        <k> tv(void, undef) ~> K:K </k>
+        <k> deleteLocals(S) ~> tv(void, undef) ~> K:K </k>
         Cells:Bag
       </frame>
     )
     <frame-stack>...
-       ListItem(<frame> <k> K </k> Cells </frame>) => .List
-    </frame-stack>   
+      <stacked-frame> <k> K </k> Cells </stacked-frame> => .
+    </frame-stack>
     <fun>...
       <fun-id> F </fun-id>
       <fun-type> void </fun-type>
@@ -280,41 +294,45 @@ module CIL-STMT
   syntax Stmt ::= TypedValue ";"
   rule tv(_, _) ; => .
 
-  rule 
+  rule
     (<frame>...
     <k> tv(int, I:MInt) </k>
     <frame-fun-id> Null </frame-fun-id>
-    ...</frame> 
-    => <result-value> iMInt(I) </result-value>)
+    ...</frame>
+    => <result-value> ###result-value(uvalueMInt(I)) </result-value>)
     <phase> _ => terminated </phase>
   [structural]
 
-  syntax K ::= initializeParams(Params, TypedValues)
-             | deleteLocals(Set)
+  syntax KItem ::= initializeParams(Params, TypedValues)
+                 | deleteLocals(Set)
   rule
     initializeParams(
         ((DS:DeclSpecs D:Declarator), Ps:Params),
         (TV:TypedValue, TVs:TypedValues))
   =>
-    DS D; ~> getId(D) = TV; ~> initializeParams(Ps, TVs)
+    (DS D;) ~> (getId(D) = TV;) ~> initializeParams(Ps, TVs)
   [structural]
 
-  rule initializeParams(.Params, TVs:TypedValues) => .
+  //rule initializeParams(.Params, .TypedValues) => .   [structural]
+  rule initializeParams(.Params, _:TypedValues) => .   [structural]
 
-  rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>   
+  rule <k> initializeParams(( ... ), TVs:TypedValues) => . ...</k>
     <frame-fun-va-args> _ => TVs </frame-fun-va-args>
     [structural]
 
   // TODO(chathhorn): could probably be handled better.
-  rule initializeParams((void, .Params), _:TypedValues) => .K   [structural]
+  //rule initializeParams(((void, .Params) => .Params), _:TypedValues)
+  //  [structural]
+  rule initializeParams((void, .Params), _:TypedValues) => .    [structural]
 
-  // TODO(chathhorn): delete stuff.
-  // rule
-  //   deleteLocals(SetItem(P:Ptr) S:Set) => deleteObject(P) ~> deleteLocals(S)
-  // [structural]
-  // rule deleteLocals(.Set) => .K   [structural] 
+  rule
+    deleteLocals(SetItem(P:Ptr) S:Set)
+  =>
+    deleteObject(P) ~> deleteLocals(S)
+  [structural]
+  rule deleteLocals(.Set) => .K   [structural]
 
-  rule 
+  rule
     <k> # pragma KCIL_TU Filename:String => . ...</k>
     <tus>...
       (. => <tu>... <tu-id> tu(Filename) </tu-id> ...</tu>)
@@ -323,4 +341,3 @@ module CIL-STMT
     [structural]
 
 endmodule
-

@@ -1,8 +1,8 @@
 module C-EXECUTION-INIT-SYNTAX
-     syntax K ::= pgmArgs(List) [function]
-     syntax K ::= incomingArguments(List) [klabel('incomingArguments)]
-     syntax K ::= callMain(Int, K) [klabel('callMain)]
-     syntax K ::= "initMainThread"
+     syntax KItem ::= pgmArgs(List) [function]
+     syntax KItem ::= incomingArguments(List)
+     syntax KItem ::= callMain(Int, K)
+     syntax KItem ::= "initMainThread"
 
 endmodule
 
@@ -10,7 +10,6 @@ module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -36,7 +35,7 @@ module C-EXECUTION-INIT
      elsewhere in the hosted environment. If the host environment is not
      capable of supplying strings with letters in both uppercase and lowercase,
      the implementation shall ensure that the strings are received in
-     lowercase. 
+     lowercase.
 
      \item If the value of argc is greater than zero, the string pointed to by
      \cinline{argv[0]} represents the program name; \cinline{argv[0][0]} shall
@@ -53,7 +52,7 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
 
-     syntax RValue ::= "NullPointerConstant" [function]
+     syntax TypedValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, t(.Set, pointerType(t(.Set, void))))
 
@@ -61,12 +60,12 @@ module C-EXECUTION-INIT
      rule strType(S:String)
           => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
 
-     syntax K ::= "incomingArguments-aux" "(" List "," Int ")"
+     syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
-     rule incomingArguments(L:List) 
-          => incomingArguments-aux(L, 0) 
+     rule incomingArguments(L:List)
+          => incomingArguments-aux(L, 0)
           [structural]
-     rule incomingArguments-aux(ListItem(S:String) L:List, N:Int) 
+     rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
           => allocObject(N +Int 1 @ argv, strType(S))
           ~> writeString(lnew(N +Int 1 @ argv), S)
           ~> allowInit(Computation(
@@ -74,7 +73,7 @@ module C-EXECUTION-INIT
                     := lv(lnew(N +Int 1 @ argv), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
-     rule incomingArguments-aux(.List, N:Int) 
+     rule incomingArguments-aux(.List, N:Int)
           => allowInit(Computation(
                Identifier("#incomingArgumentsArray")[N]
                     := NullPointerConstant))
@@ -82,13 +81,13 @@ module C-EXECUTION-INIT
 
      rule pgmArgs(L:List)
           => makeArgv(
-               Identifier("#incomingArgumentsArray"), 
+               Identifier("#incomingArgumentsArray"),
                t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
-               (lengthList L) +Int 1)))
+               (size(L)) +Int 1)))
           [structural]
 
-     syntax K ::= makeArgv(CId, Type)
-     rule makeArgv(X:CId, T:Type) 
+     syntax KItem ::= makeArgv(CId, Type)
+     rule makeArgv(X:CId, T:Type)
           => allocObject(0 @ argv, T)
           ~> addToEnv(X, 0 @ argv)
           ~> giveType(X, T)
@@ -96,21 +95,25 @@ module C-EXECUTION-INIT
 
      /*@ These helpers are used to get around a bug in \K related to successive
      ``/''s in strings. */
-     syntax K ::= "stdinStr" [function] | "stdoutStr" [function]
+     syntax KItem ::= "stdinStr" [function] | "stdoutStr" [function]
 
      rule stdinStr => "stdin:/" +String "/" +String "/"
      rule stdoutStr => "stdout:/" +String "/" +String "/"
 
-     rule <threads>
+     syntax KItem ::= "initMainThread'" "(" String ")"
+
+     rule <k> initMainThread => initMainThread'(MainTU) ...</k>
+          <main-tu> SetItem(MainTU:String) </main-tu>
+          [structural]
+
+     rule <modified> _ => global |-> map(.Map) </modified>
+          <threads>
                <thread>...
-                    <k> initMainThread
-                         => enterRestrictScope(global)
-                         ~> populateFromGlobal
-                    ...</k>
+                    <k> initMainThread'(MainTU:String) => populateFromGlobal ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...
-                              <curr-function> 
+                              <curr-function>
                                    _ => file-scope
                               </curr-function>
                               <curr-program-loc>
@@ -121,7 +124,6 @@ module C-EXECUTION-INIT
                     ...</thread-local>
                ...</thread>
           </threads>
-          <main-tu> SetItem(MainTU:String) </main-tu>
           <files>...
                ( .Bag =>
                <file>...
@@ -141,10 +143,10 @@ module C-EXECUTION-INIT
                     <mode> "w" </mode>
                ...</file>)
           ...</files>
-          when MainTU =/=K .K
+          requires MainTU =/=K .K
           [structural]
-     
-     /*@ 
+
+     /*@
      \begin{lrbox}{\LstBox}
      \begin{lstlisting}
      int main(void) { ... }
@@ -180,35 +182,35 @@ module C-EXECUTION-INIT
           ...</k>
           <status> _ => mainCalled </status>
           [ndtrans]
-     
+
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax K ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
+     syntax KItem ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
      rule callMain-aux(t(.Set,
-          functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _) 
+          functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _)
           => Call(Identifier("main"), list(.List))
           [structural]
      // int main(int argc, char* argv[])
      rule callMain-aux(t(.Set, functionType(t(.Set, int),
                ListItem(t(.Set, int))
-               ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))), 
+               ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          when T ==K t(.Set, char)
+          requires T ==K t(.Set, char)
           [structural]
      // int main(int argc, char** argv)
      rule callMain-aux(t(.Set,
                functionType(t(.Set, int),
-               ListItem(t(.Set, int)) 
-               ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))), 
+               ListItem(t(.Set, int))
+               ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          when T ==K t(.Set, char)
+          requires T ==K t(.Set, char)
           [structural]
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
           (<exec>...
-               <thread>... 
+               <thread>...
                     // main's thread, not the global "thread"
                     <thread-id> 0 </thread-id>
                     <k> V:KResult </k>
@@ -218,7 +220,7 @@ module C-EXECUTION-INIT
           <result-value> .K => V </result-value>
           <files>...
                // Flush stdout.
-               <file-commands>... (. => f-flush(1)) </file-commands>
+               <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
 endmodule

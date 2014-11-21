@@ -1,10 +1,10 @@
 _Atomic struct s {
       int x;
-} s;
+} s = { 0 };
 
 _Atomic union u {
       int x;
-} u;
+} u = { 0 };
 
 int main(void) {
       struct s t = s;

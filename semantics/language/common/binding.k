@@ -1,8 +1,8 @@
 module C-BINDING-SYNTAX
-     // RValues, Types, CIds
-     syntax K ::= bind(List, List, List)
-     syntax K ::= bindParam(CId, Type, K)
-     syntax K ::= bindParam(CId)
+     // TypedValues, Types, CIds
+     syntax KItem ::= bind(List, List, List)
+     syntax KItem ::= bindParam(CId, Type, K)
+     syntax KItem ::= bindParam(CId)
      syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
 endmodule
@@ -33,27 +33,27 @@ module C-BINDING
      // builtin, so we need to make up identifiers.
 
      // Prototype.
-     rule (. => bindParam(X, T, V))
+     rule (.K => bindParam(X, T, V))
           ~> bind(
                (ListItem(typedDeclaration(_, X:CId)) => .List) _,
                (ListItem(T:Type) => .List) _,
-               (ListItem(V:RValue) => .List) _)
+               (ListItem(V:TypedValue) => .List) _)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
-     rule (. => bindParam(X, T, argPromote(V)))
+     rule (.K => bindParam(X, T, argPromote(V)))
           ~> bind(
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
-               (ListItem(V:RValue) => .List) _)
-          when #arePromotedTypesCompat(value(V), T, type(V)) ==K true
+               (ListItem(V:TypedValue) => .List) _)
+          requires #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
-     rule (. => ERROR("B1", "types of function call arguments aren't "
+     rule (.K => ERROR("B1", "types of function call arguments aren't "
                +String "compatible with declared types after promotions."))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
-               ListItem(V:RValue) _)
-          when #arePromotedTypesCompat(value(V), T, type(V)) =/=K true
+               ListItem(V:TypedValue) _)
+          requires notBool #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
@@ -63,34 +63,34 @@ module C-BINDING
      rule bind(ListItem(typedDeclaration(t(_, void), _)),
                ListItem(t(_, void)),
                .List)
-          => .
+          => .K
           [structural]
      // Builtins -- they have a prototype but no def.
-     rule <k> (. => bindParam(unnamed(N, Tu), T, V))
+     rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
           ~> bind(
                .List,
                (ListItem(T:Type) => .List) _,
-               (ListItem(V:RValue) => .List) _)
+               (ListItem(V:TypedValue) => .List) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
-          when T =/=K variadic
+          requires T =/=K variadic
           [structural]
      // Builtins, variadic.
      rule bind(.List, ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
           [structural]
      // Builtins, no params.
-     rule bind(.List, ListItem(t(_, void)), _) => .
+     rule bind(.List, ListItem(t(_, void)), _) => .K
           [structural]
-     rule bind(.List, .List, .List) => .
+     rule bind(.List, .List, .List) => .K
           [structural]
 
-     syntax K ::= bindVariadics(List, Int)
-     rule (. => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
+     syntax KItem ::= bindVariadics(List, Int)
+     rule (.K => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
           ~> bindVariadics(
-               (ListItem(V:RValue) => .List) _,
+               (ListItem(V:TypedValue) => .List) _,
                (N:Int => N +Int 1))
           [structural]
      // Make one past the last variadic a legal address.
@@ -117,37 +117,37 @@ module C-BINDING
      //
      // -- both types are pointers to qualified or unqualified versions of a
      // character type or void
-
-     syntax Bool ::= "#arePromotedTypesCompat" "(" CValue "," Type "," Type ")"
+     syntax Bool ::= #arePromotedTypesCompat(CValue, Type, Type)
           [function]
 
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
-          when areCompatible(argPromoteType(T), argPromoteType(T'))
+          requires areCompatible(argPromoteType(T), argPromoteType(T'))
 
      rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
-          when (argPromoteType(T)
+          requires (argPromoteType(T)
                     ==K correspondingUnsignedType(argPromoteType(T')))
                andBool representable(V, argPromoteType(T))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T')))
      rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
-          when (argPromoteType(T')
+          requires (argPromoteType(T')
                     ==K correspondingUnsignedType(argPromoteType(T)))
                andBool representable(V, argPromoteType(T'))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T)))
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
-          when isPointerType(T) andBool isPointerType(T')
+          requires isPointerType(T) andBool isPointerType(T')
                andBool (hasCharType(innerType(argPromoteType(T)))
                     orBool isVoidType(innerType(argPromoteType(T))))
                andBool (hasCharType(innerType(argPromoteType(T')))
                     orBool isVoidType(innerType(argPromoteType(T'))))
+     rule #arePromotedTypesCompat(_, _, _) => false [owise]
 
      syntax Bool ::= representable(Int, Type)  [function]
      rule representable(V:Int, T:Type)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
-     syntax RValue ::= argPromote(K) [function]
+     syntax TypedValue ::= argPromote(K) [function]
      rule argPromote(tv(V:CValue, T:Type))
           => cast(argPromoteType(T), tv(V, T))
 
@@ -165,13 +165,13 @@ module C-BINDING
           => t(Mods, long-double)
      rule argPromoteType(T:Type)
           => promote(T)
-          when hasIntegerType(T)
-     rule argPromoteType(T:Type) => T
-          when notBool hasIntegerType(T)
-               andBool notBool hasFloatType(T)
+          requires hasIntegerType(T)
+     rule argPromoteType(T:Type) => T [owise]
 
      // "are argument-promoted".
-     rule areArgPromoted(L:List) => all(L, 'isArgPromoted) ==K true
+     rule areArgPromoted(L:List) => true
+          requires all(L, 'isArgPromoted)
+     rule areArgPromoted(L:List) => false [owise]
 
      syntax Bool ::= isArgPromoted(Type) [function]
      rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))

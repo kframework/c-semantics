@@ -8,8 +8,7 @@ module C-STMT-SWITCH
      imports COMPAT-SYNTAX
 
      // switch num, promoted value of controlling exp, int value of exp
-     syntax K ::= handleSwitch(Int, K) [strict(2)]
-     syntax K ::= "handleSwitch-aux" "(" K "," RValue "," K ")"
+     syntax KItem ::= handleSwitch(Int, K) [strict(2)]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the
@@ -34,11 +33,11 @@ module C-STMT-SWITCH
      rule Switch(SN:Int, tv(V:K, T:Type), _)
           => sequencePoint
                ~> handleSwitch(SN, cast(promote(T), tv(V, T)))
-          when hasIntegerType(T)
+          requires hasIntegerType(T)
           [structural]
 
-     rule <k> handleSwitch(SN:Int, V:RValue)
-               => handleSwitch-aux(SN, V, map(M))
+     rule <k> handleSwitch(SN:Int, V:KResult)
+               => #handleSwitch-aux(SN, V,.K, .K, M)
           ...</k>
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
@@ -47,43 +46,55 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax K ::= tryCase(K, RValue, K) [strict(1(context('reval), result(RValue)))]
+     syntax KItem ::= tryCase(K, Value, K)
+     context tryCase((HOLE => reval(HOLE)), _, _)
 
-     rule (. => tryCase(Exp, V, CaseHelper))
-          ~> handleSwitch-aux(SN:Int, V:RValue,
-               map((_ ((genLabel(SN:Int, Exp:K) |-> CaseHelper:K) => .Map))))
-          when Exp =/=K l('Default)
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," Value "," K "," K "," Map ")"
+
+     rule #handleSwitch-aux(_, _, .K, _, .Map) => .K
+          [structural]
+
+     rule #handleSwitch-aux(SN:Int, V:Value, .K, _,
+               (Key:K |-> CaseHelper:K) M:Map)
+          => #handleSwitch-aux(SN, V, Key, CaseHelper, M)
+          [structural]
+
+     rule #handleSwitch-aux(SN:Int, V:Value, genLabel(SN, Exp:K),
+               CaseHelper:K, M:Map)
+          => (tryCase(Exp, V, CaseHelper)
+          ~> #handleSwitch-aux(SN, V, .K, .K, M))
+          requires Exp =/=K l('Default)
           [structural]
 
      //  if all that's left is a default, do it
-     rule handleSwitch-aux(SN:Int, _, map((genLabel(SN:Int, l('Default)) |-> _)))
-          => Goto(genLabel(SN, l('Default)))
+     rule #handleSwitch-aux(SN:Int, V:Value, genLabel(SN:Int, l('Default)),
+               _:K, M:Map)
+          => (#handleSwitch-aux(SN, V, .K, .K, M)
+          ~> Goto(genLabel(SN, l('Default))))
           [structural]
 
-     //  if there's nothing left, no case matches
-     rule handleSwitch-aux(_, _, map(.Map)) => .
+     rule #handleSwitch-aux(SN:Int, _, (genLabel(SN':Int, _:K) => .K),
+               (_ => .K), _)
+          requires SN =/=Int SN'
           [structural]
 
-     rule handleSwitch-aux(SN:Int, _,
-               map((_ ((genLabel(SN':Int, _) |-> _) => .Map))))
-          when SN =/=Int SN'
-          [structural]
-     rule handleSwitch-aux(_:Int, _, map((_ ((L:KLabel(_) |-> _) => .Map))))
-          when L =/=KLabel 'genLabel
+     rule #handleSwitch-aux(_:Int, _:Value, (K:K => .K),
+               (_ => .K), _)
+          requires getKLabel(K) =/=KLabel 'genLabel
           [structural]
 
      rule tryCase(
                (tv(V:K, T':Type) => cast(T, tv(V, T'))),
                tv(_, T:Type), _)
-          when T =/=Type T'
+          requires T =/=K T'
           [structural]
-     rule tryCase(tv(V':K, T':Type), tv(V:K, T:Type), _) => .
-          when (V =/=K V') andBool (T ==Type T')
+     rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .K
+          requires V =/=K V'
           [structural]
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(tv(V:CValue, T':Type), tv(V:CValue, T:Type), CaseHelper:K)
-          => Goto(CaseHelper)
-          when T ==Type T'
+     rule tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper)
           [structural]
+
 endmodule
+

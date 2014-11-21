@@ -4,10 +4,9 @@ module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => write(Loc, V, T)
           ~> tv(V, T)
-          when T ==Type T'
           [structural]
 
 endmodule

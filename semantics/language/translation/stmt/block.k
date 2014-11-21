@@ -8,28 +8,28 @@ module C-STMT-BLOCK
           => pushBlock ~> B ~> popBlock
           [structural]
 
-     rule <k> pushBlock => . ...</k>
+     rule <k> pushBlock => .K ...</k>
           <local>
                C:Bag
           </local>
           <block-stack>
-               .List => ListItem(C)
+               .List => ListItem(bag2K(C))
           ...</block-stack>
           [structural]
 
-     rule <k> popBlock => . ...</k>
+     rule <k> popBlock => .K ...</k>
           <local>
                (_:Bag => C)
           </local>
           <block-stack>
-               ListItem(C:Bag) => .List
+               ListItem(bag2K(C:Bag)) => .List
           ...</block-stack>
           [structural]
 
-     rule Computation(_:KResult) => .
+     rule Computation(_:KResult) => .K
           [structural]
 
-     rule Nop => .
+     rule Nop => .K
           [structural]
 
      rule <k> Block(BlockNum:Int, _, list(Statements:List))

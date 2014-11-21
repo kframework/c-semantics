@@ -219,7 +219,11 @@ sub parseResultLine {
             $parsed->{output} = $1;
       };
 
-      /< result-value > # (-?\d+)\(\.KList\) <\/ result-value >/ && do {
+      /< result-value > '###result-value`\(_`\)\(# (-?\d+)\(\.KList\)\) <\/ result-value >/ && do {
+            $parsed->{exitCode} = $1;
+      };
+
+      /'###result-value`\(_`\)\((-?\d+)\)/ && do {
             $parsed->{exitCode} = $1;
       };
 }

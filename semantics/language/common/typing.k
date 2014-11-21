@@ -7,7 +7,7 @@ require "typing/predicates.k"
 require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
-     syntax K ::= typeof(K)
+     syntax KItem ::= typeof(K)
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
@@ -23,7 +23,7 @@ module C-TYPING-SYNTAX
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
-     syntax K ::= DeclType(K, K) [avoid, strict(1)]
+     syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
 
      syntax Bool ::= hasArithmeticType(Type) [function]
      syntax Bool ::= hasCharType(Type) [function]
@@ -66,32 +66,20 @@ module C-TYPING-SYNTAX
 
      // Composite types
      syntax SimpleType ::= enumType(CId)
-          [klabel('enumType)]
      syntax SimpleType ::= bitfieldType(Type, CSize)
-          [klabel('bitfieldType)]
      syntax SimpleType ::= functionType(Type, List)
-          [klabel('functionType)]
      syntax SimpleType ::= pointerType(Type)
-          [klabel('pointerType)]
 
      syntax SimpleType ::= arrayType(Type, CSize)
-          [klabel('arrayType)]
      syntax SimpleType ::= incompleteArrayType(Type)
-          [klabel('incompleteArrayType)]
      syntax SimpleType ::= flexibleArrayType(Type)
-          [klabel('flexibleArrayType)]
      syntax SimpleType ::= variableLengthArrayType(Type, K)
-          [klabel('variableLengthArrayType)]
 
      syntax SimpleType ::= structType(CId, Int, FieldInfo)
-          [klabel('structType)]
      syntax SimpleType ::= incompleteStructType(CId)
-          [klabel('incompleteStructType)]
 
      syntax SimpleType ::= unionType(CId, Int, FieldInfo)
-          [klabel('unionType)]
      syntax SimpleType ::= incompleteUnionType(CId)
-          [klabel('incompleteUnionType)]
 
      // Basic types
      // TODO(chathhorn): probably should create subsorts for
@@ -138,11 +126,8 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= "oldStyle"
      // For function array parameters with a static-qualified size.
      syntax Modifier ::= arrayStatic(CSize) [klabel('arrayStatic)]
-     // For recording the location from which a value was retrieved.
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
-
-     syntax Modifier ::= readFrom(SymLoc)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
@@ -159,33 +144,27 @@ module C-TYPING-SYNTAX
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
-     syntax Type ::= stripAlignas(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
-     syntax Type ::= addModifier(Modifier, Type) [function]
      syntax Type ::= addModifiers(Set, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId)
-          [klabel('typedDeclaration), latex(\terminal{typedDecl}\!({#1},{#2}\!))]
+          [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
-     syntax K ::= simplifyTruth(K) [function]
+     syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
      syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
                    | completeTags(Map, Type) [function]
-     syntax K ::= completeTags(K) [strict]
+     syntax KItem ::= #completeTags(K) [strict]
 
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
 
-     syntax Bool ::= isNullPointerConstant(RValue) [function]
+     syntax Bool ::= isNullPointerConstant(TypedValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
-
-     syntax Bool ::= hasReadFrom(Type) [function]
-     syntax SymLoc ::= getReadFrom(Type) [function]
-     syntax Type ::= stripReadFrom(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
 
@@ -194,8 +173,11 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
 
-     syntax Bool ::= hasAlignas(Type) [function]
-     syntax Bool ::= hasAlignasMod(Set) [function]
+     //need this to solve array type anywhere rule
+     syntax Type ::= canonicalizeArrayType(Type) [function]
+     syntax List ::= canonicalizeArrayTypeInList(List) [function]
+     syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
+
 endmodule
 
 module C-TYPING

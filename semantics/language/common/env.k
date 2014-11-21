@@ -1,8 +1,9 @@
 module C-ENV-SYNTAX
-     syntax K ::= addToEnv(CId, SymBase)
-     syntax K ::= giveType(CId, Type)
-     syntax K ::= "populateFromGlobal"
-     syntax K ::= addToHistory(Int) [latex(\terminal{addToHist}\!({#1}\!))]
+     syntax KItem ::= addToEnv(CId, SymBase)
+     syntax KItem ::= giveType(CId, Type)
+     syntax KItem ::= "populateFromGlobal"
+     syntax KItem ::= addToHistory(Int)
+
 endmodule
 
 module C-ENV
@@ -15,11 +16,11 @@ module C-ENV
 
      imports COMPAT-SYNTAX
 
-     rule <k> addToHistory(Num:Int) => . ...</k>
+     rule <k> addToHistory(Num:Int) => .K ...</k>
           <block-history> .List => ListItem(Num) ...</block-history>
           [structural]
 
-     rule <k> populateFromGlobal => . ...</k>
+     rule <k> populateFromGlobal => .K ...</k>
           <curr-tu> Tu:K </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>
@@ -35,20 +36,20 @@ module C-ENV
           [structural]
      rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
           <curr-function> F:CId </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
           [structural]
 
-     syntax K ::= addToGlobalEnv(K, SymBase)
-     rule <k> addToGlobalEnv(X:CId, Base:SymBase) => . ...</k>
+     syntax KItem ::= addToGlobalEnv(K, SymBase)
+     rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <genv> G:Map => G[Base <- X] </genv>
-          <env> E:Map => E[Base <- X] </env>
+          <genv> G:Map => G[X <- Base] </genv>
+          <env> E:Map => E[X <- Base] </env>
           [structural]
 
-     syntax K ::= addToLocalEnv(K, SymBase)
-     rule <k> addToLocalEnv(X:CId, Base:SymBase) => . ...</k>
-          <env> E:Map => E[Base <- X] </env>
+     syntax KItem ::= addToLocalEnv(K, SymBase)
+     rule <k> addToLocalEnv(X:CId, Base:SymBase) => .K ...</k>
+          <env> E:Map => E[X <- Base] </env>
           [structural]
 
      rule <k> giveType(X:CId, T:Type)
@@ -61,24 +62,24 @@ module C-ENV
           <curr-function> Fun:CId </curr-function>
           [structural]
 
-     syntax K ::= giveGlobalType(K, Type)
-     rule <k> giveGlobalType(X:CId, T:Type) => . ...</k>
-          <types> L:Map => L[T <- X] </types>
+     syntax KItem ::= giveGlobalType(K, Type)
+     rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
+          <types> L:Map => L[X <- T] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <gtypes>
-               G:Map => G[T <- X]
+               G:Map => G[X <- T]
           </gtypes>
           [structural]
 
-     syntax K ::= giveLocalType(K, Type)
-     rule <k> giveLocalType(X:CId, T:Type) => . ...</k>
-          <types> L:Map => L[tagRestrict(BlockNum, T) <- X] </types>
+     syntax KItem ::= giveLocalType(K, Type)
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <types> L:Map => L[X <- tagRestrict(BlockNum, T)] </types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           [structural]
      // Function parameters.
-     rule <k> giveLocalType(X:CId, T:Type) => . ...</k>
-          <types> L:Map => L[tagRestrict(Fun, T) <- X] </types>
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
           <block-history> .List </block-history>
           <curr-function> Fun:CId </curr-function>
           [structural]

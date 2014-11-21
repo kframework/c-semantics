@@ -4,16 +4,18 @@ module C-EXPR-INC-AND-DEC
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule nclv(_:SymLoc, T:Type) ++ => tv(symVal, stripQualifiers(T))
+     rule lval(_:SymLoc, T:Type) ++ => tv(symVal, stripQualifiers(T))
           [structural]
 
-     rule nclv(_:SymLoc, T:Type) -- => tv(symVal, stripQualifiers(T))
+     rule lval(_:SymLoc, T:Type) -- => tv(symVal, stripQualifiers(T))
           [structural]
 
-     rule ++ nclv(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
+     context ++ (HOLE => peval(HOLE))
+     rule ++ lval(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
           [structural]
 
-     rule -- nclv(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
+     context -- (HOLE => peval(HOLE))
+     rule -- lval(_:SymLoc, T:Type) => tv(symVal, stripQualifiers(T))
           [structural]
 
 endmodule

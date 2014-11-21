@@ -15,7 +15,7 @@ module C-COMPOUND-LITERAL
      imports COMPAT-SYNTAX
 
      syntax CId ::= compoundLiteral(Int)
-     syntax K ::= handleCompoundLiteral(K) [strict]
+     syntax KItem ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage
@@ -65,7 +65,7 @@ module C-COMPOUND-LITERAL
           <tu-id> Tu </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)
@@ -89,20 +89,20 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (. => allocString(string(S), S))
+     rule <k> (.K => allocString(string(S), S))
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
-          when notBool (string(S) in keys(Mem))
+          requires notBool (string(S) in keys(Mem))
           [structural]
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (. => allocWString(wstring(S), S))
+     rule <k> (.K => allocWString(wstring(S), S))
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>
-          when notBool (wstring(S) in keys(Mem))
+          requires notBool (wstring(S) in keys(Mem))
           [structural]
 
      rule <k> stringLiteral(S:String)
@@ -113,7 +113,7 @@ module C-COMPOUND-LITERAL
           [structural]
      rule <k> wstringLiteral(S:List)
                => lv(lnew(wstring(S)),
-                    t(.Set, arrayType(cfg:wcharut, lengthList(S) +Int 1)))
+                    t(.Set, arrayType(cfg:wcharut, size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
           [structural]

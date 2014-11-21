@@ -19,43 +19,43 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
+     rule <k> lval(Loc:SymLoc, t(Mods:Set,
                     structType(S:CId, _, Fields:FieldInfo))) . F:CId
                => lookupField(F, Loc, Mods, S, Fields, Fields)
           ...</k>
           <initializing> I:Int </initializing>
-          when notBool (Atomic in Mods)
+          requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
-     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
+     rule <k> lval(Loc:SymLoc, t(Mods:Set,
                     unionType(S:CId, _, Fields:FieldInfo))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
                     Mods, S, Fields, Fields)
           ...</k>
           <initializing> I:Int </initializing>
-          when notBool (Atomic in Mods)
+          requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
-     rule <k> (. => UNDEF("CEM1",
+     rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
-               ~> nclv(_, t(Mods:Set, structType(_, _, _))) . _:CId
+               ~> lval(_, t(Mods:Set, structType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
-          when Atomic in Mods
+          requires Atomic in Mods
           [structural]
-     rule <k> (. => UNDEF("CEM2",
+     rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
                "6.5.2.3:5"))
-               ~> nclv(_, t(Mods:Set, unionType(_, _, _))) . _:CId
+               ~> lval(_, t(Mods:Set, unionType(_, _, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
-          when Atomic in Mods
+          requires Atomic in Mods
           [structural]
 
      // The last two parameters are for convenience and should be the same.
      // TODO(chathhorn): anonymous structs/unions.
-     syntax K ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
+     syntax KItem ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
           [function]
 
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
@@ -76,7 +76,7 @@ module C-COMMON-EXPR-MEMBERS
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
 
-     syntax K ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
+     syntax KItem ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)
           [function]
 
      rule extractField(F:CId, L:List, Mods:Set, S:CId, Fields:FieldInfo,
@@ -120,7 +120,7 @@ module C-COMMON-EXPR-MEMBERS
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule E1:K[E2:K] => *(E1 + E2) 
+     rule E1:K[E2:K] => *(E1 + E2)
           [macro, structural]
 
 endmodule

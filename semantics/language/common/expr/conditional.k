@@ -1,11 +1,4 @@
-module C-COMMON-EXPR-CONDITIONAL-SYNTAX
-     // TODO(chathhorn): error check
-     syntax K ::= types(List)
-endmodule
-
 module C-COMMON-EXPR-CONDITIONAL
-     imports C-COMMON-EXPR-CONDITIONAL-SYNTAX
-
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -14,28 +7,50 @@ module C-COMMON-EXPR-CONDITIONAL
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax K ::= getTypes(List)
-     context types(_:List ListItem(HOLE) _:List)
-     syntax K ::= convertedType(K) [strict]
+     syntax KItem ::= getTypes(List)
+     //TODO(liyili2): overcome the context associative matching
+     //context types(_:List ListItem(HOLE) _:List)
+     syntax KItem ::= convertedType(K) [strict]
 
-     rule getTypes(L:List) => types(wrapWithTypeOf(L)) [structural]
+     rule getTypes(L:List) => types(toTypeList(wrapWithTypeOf(L))) [structural]
+
+     syntax KItem ::= types(TypeList) [strict]
+
+     syntax TypeList ::= toTypeList(List) [function]
+     rule toTypeList(.List) => .TypeList
+     rule toTypeList(ListItem(K:K) L:List) => tItem(K) ts:: toTypeList(L)
+
+     syntax KResult ::= TypeResult
+     syntax TypeItem ::= TypeResult
+     syntax TypeItem ::= tItem(K) [strict]
+     rule tItem(V:KResult) => trItem(V)
+
+     syntax TypeResult ::= trItem(K)
+
+     //TODO(liyili2): might not need this list in the future.
+     syntax TypeList ::= List{TypeItem,"ts::"} [strict]
+     syntax List ::= tListToList(TypeList) [function]
+
+     rule tListToList(.TypeList) => .List
+     rule tListToList(trItem(K:K) ts:: HL:TypeList)
+          => ListItem(K) tListToList(HL)
 
      syntax List ::=  wrapWithTypeOf(List) [function]
      rule wrapWithTypeOf(ListItem(K:K) L:List)
           => ListItem(retype(typeof(K))) wrapWithTypeOf(L)
      rule wrapWithTypeOf(.List) => .List
 
-     syntax K ::= retype(K) [strict]
+     syntax KItem ::= retype(K) [strict]
 
      // fixme, not handling qualifiers correctly
      rule retype(T:Type) => t(.Set, pointerType(innerType(T)))
-          when isArrayType(T)
+          requires isArrayType(T)
           [structural]
      rule retype(T:Type) => t(.Set, pointerType(T))
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
      rule retype(T:Type) => T
-          when notBool (isArrayType(T) orBool isFunctionType(T))
+          requires notBool (isArrayType(T) orBool isFunctionType(T))
           [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
@@ -45,7 +60,7 @@ module C-COMMON-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/
-     rule (. => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K 
+     rule (.K => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
@@ -55,13 +70,23 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(ListItem(T1:Type) ListItem(T2:Type))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
-          when T1 =/=K T2
+          requires T1 =/=K T2
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
+	/*
+     //(liyili2):add this following rule for checking T1 ==K T2
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
+          => convertedType(T1))
+               ~> _ ? _ : _
+          requires T1 ==K T2
+               andBool hasArithmeticType(T1)
+               andBool hasArithmeticType(T2)
+          [structural]
+	*/
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      \broken{If both the second and third operands are pointers or one is a
@@ -78,38 +103,38 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T2))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
           when hasIntegerType(T1) andBool isPointerType(T2)
           [structural]
-     rule (types(ListItem(T1:Type) ListItem(T2:Type)) => convertedType(T1))
+     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
           when hasIntegerType(T2) andBool isPointerType(T1)
           [structural]
 
      rule (types(
-               ListItem(t(Mods:Set, pointerType(T:Type)))
-               ListItem(t(Mods':Set, pointerType(T':Type)))
+               trItem(t(Mods:Set, pointerType(T:Type)))
+               ts:: trItem(t(Mods':Set, pointerType(T':Type)))
           ) => convertedType(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
-          when areCompatible(stripQualifiers(T), stripQualifiers(T'))
+          requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
           [structural]
 
      rule (types(
-               ListItem(t(Mods1:Set, pointerType(t(Mods1':Set, void))))
-               ListItem(t(Mods2:Set, pointerType(t(Mods2':Set, _))))
+               trItem(t(Mods1:Set, pointerType(t(Mods1':Set, void))))
+               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, _))))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           [structural]
      rule (types(
-               ListItem(t(Mods1:Set, pointerType(t(Mods1':Set, _))))
-               ListItem(t(Mods2:Set, pointerType(t(Mods2':Set, void))))
+               trItem (t(Mods1:Set, pointerType(t(Mods1':Set, _))))
+               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, void))))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           [structural]
 
      // this should take care of the void/struct cases
-     rule (types(ListItem(T:Type) ListItem(T':Type)) => convertedType(T))
+     rule (types(trItem(T:Type) ts:: trItem(T':Type)) => convertedType(T))
           ~> _ ? _ : _
           when notBool isPointerType(T)
                andBool areCompatible(T, T')
@@ -118,17 +143,17 @@ module C-COMMON-EXPR-CONDITIONAL
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))
           [structural]
 
-     rule (. => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(ListItem(t(_, void)) ListItem(t(_, T:SimpleType)))
-          when T =/=K void
+     rule (.K => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
+          types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
+          requires T =/=K void
           [structural]
-     rule (. => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
-          types(ListItem(t(_, T:SimpleType)) ListItem(t(_, void)))
-          when T =/=K void
+     rule (.K => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
+          types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
+          requires T =/=K void
           [structural]
-     rule (. => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(ListItem(T:Type) ListItem(T':Type))
-          when (T =/=K T')
+     rule (.K => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
+          types(trItem(T:Type) ts:: trItem(T':Type))
+          requires (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))
                andBool (isStructType(T') orBool isUnionType(T'))
           [structural]

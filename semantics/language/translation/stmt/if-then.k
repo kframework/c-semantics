@@ -1,5 +1,5 @@
 module C-STMT-IF-THEN-SYNTAX
-     syntax Bool ::= isTruthValue(RValue) [function]
+     syntax Bool ::= isTruthValue(TypedValue) [function]
 endmodule
 
 module C-STMT-IF-THEN
@@ -9,11 +9,11 @@ module C-STMT-IF-THEN
      imports C-TYPING-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 
-     rule isTruthValue(tv(V:CValue, t(_, T:SimpleType))) 
+     rule isTruthValue(tv(V:CValue, t(_, T:SimpleType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
 
-     rule IfThenElse((V:RValue => simplifyTruth(V)), _, _)
-          when notBool isTruthValue(V)
+     rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
+          requires notBool isTruthValue(V)
           [structural]
 
      // IfThenElse might also be handling the ternary operator (?:) and so
@@ -29,13 +29,18 @@ module C-STMT-IF-THEN
      // both branches also return a value (and therefore this is a ternary
      // expression).
      rule IfThenElse(tv(symVal, t(_, int)), S1:K, S2:K)
-          => maybeSymVal(S1 ~> checkResult, S2 ~> checkResult)
+          => maybeSymVal(checkResultInK(S1), checkResultInK(S2))
           [structural]
 
-     syntax K ::= maybeSymVal(K, K) [strict]
-                | "checkResult"
+     //add checkResultInK in order to aovid putting K Sequence in strict position
+     syntax KItem ::= maybeSymVal(K, K) [strict]
+                    | "checkResult"
+                    | checkResultInK(K)
 
      syntax KResult ::= "noResult"
+
+     rule checkResultInK(K:K) => K ~> checkResult
+          [structural]
 
      rule R:KResult ~> checkResult => R
      rule checkResult => noResult

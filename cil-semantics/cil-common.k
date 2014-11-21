@@ -1,11 +1,14 @@
 // vim: set ts=2 sw=2:
-require "cil-syntax.k"
+require "builtins/list.k"
+require "builtins/map.k"
 require "builtins/mint.k"
+
+require "cil-syntax.k"
+require "cil-typing.k" // for typing syntax
 
 module CIL-COMMON-PTR
   imports CIL-SYNTAX
   imports CIL-COMMON
-  imports CIL-COMMON-TYPED-VALUE
   /*
    * Ptr of BasePtr * Offset
    * @invariant: 0 <= Offset <= BasePtr.Size
@@ -13,25 +16,19 @@ module CIL-COMMON-PTR
    */
   syntax Ptr ::= Ptr(BasePtr, Int)
                | FunPtr
-               | "Null"
-               | VaList
-
-  // TODO(chathhorn): rather hackish.
-  syntax VaList ::= "va_list" "(" TypedValues ")"
+               | "Null"             [smtlib(smt_pointer_null)]
 
   syntax FunPtr ::= FunPtr(CId, TransUnit) | ExtFun(String)
 
   /*
    * BasePtr of Base * Size
-   * @immutable: Base, Size 
+   * @immutable: Base, Size
    */
   syntax BasePtr ::= "BasePtr" "(" Int "," Int ")"
 
   syntax Ptr ::= "PtrAdd" "(" Ptr "," Int "," Exp ")"   [function]
   syntax Int ::= "PtrSub" "(" Ptr "," Ptr "," Exp ")"   [function]
-  syntax Bool ::= Ptr "==Ptr" Ptr              [function]
-                | Ptr "=/=Ptr" Ptr             [function]
-                | "PtrLt" "(" Ptr "," Ptr ")"  [function]
+  syntax Bool ::= "PtrLt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrLeq" "(" Ptr "," Ptr ")" [function]
                 | "PtrGt" "(" Ptr "," Ptr ")"  [function]
                 | "PtrGeq" "(" Ptr "," Ptr ")" [function]
@@ -47,15 +44,6 @@ module CIL-COMMON-PTR
   rule PtrSub(Ptr(BP:BasePtr, Offset1:Int), Ptr(BP, Offset2:Int), V:TypedValue)
     => (Offset1 -Int Offset2) /Int mival(V)
     when (Offset1 -Int Offset2) %Int mival(V) ==Int 0
-
-  /* Structural equality of addresses */
-  rule Ptr(BasePtr(Base1:Int, Size1:Int), Offset1:Int)
-    ==Ptr Ptr(BasePtr(Base2:Int, Size2:Int), Offset2:Int)
-    => Base1 ==Int Base2 andBool Size1 ==Int Size2 andBool Offset1 ==Int Offset2
-  rule Null ==Ptr Null => true
-  rule Ptr(_, _) ==Ptr Null => false
-  rule Null ==Ptr Ptr(_, _) => false
-  rule P1:Ptr =/=Ptr P2:Ptr => notBool(P1:Ptr ==Ptr P2:Ptr)
 
   /* Relational operations on pointers are defined only for the same BasePtr. */
   rule
@@ -82,6 +70,7 @@ endmodule
  * to/from a list of bytes. The implementation is in file cil-implementation.k.
  */
 module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
+  imports LIST
   imports CIL-SYNTAX
   imports CIL-COMMON-PTR
 
@@ -93,23 +82,23 @@ module CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
 
   syntax Value ::= ByteValue | Bool | Float | Ptr | MInt | agg(List) | String
 
-  syntax ByteValue ::= Int | Float | Ptr | "undef" | "used"
+  syntax ByteValue ::= Int | Float | Ptr | MInt | "undef" | "used"
 
   /*
    * @invariant:
-   * Int ::= bytes2Value(IntType, List)
+   * MInt  ::= bytes2Value(IntType, List)
    * Float ::= bytes2Value(FloatingType, List)
-   * Ptr ::= bytes2Value(PtrType, List)
+   * Ptr   ::= bytes2Value(PtrType, List)
    * byteWidth(T:Type) =Int #lenList(L:List)
    */
   syntax Value ::= bytes2Value(Type, List) [function]
   /*
    * @invariant:
-   * value2Bytes(T:IntType, I:Int)
+   * value2Bytes(T:IntType, MI:MInt)
    * value2Bytes(T:FloatingType, F:Float)
    * value2Bytes(T:PtrType, P:Ptr)
    */
-  syntax List ::= value2Bytes(Type, Value) [function] 
+  syntax List ::= value2Bytes(Type, Value) [function]
 endmodule
 
 module CIL-COMMON-TYPED-VALUE
@@ -119,13 +108,18 @@ module CIL-COMMON-TYPED-VALUE
   syntax Exp ::= TypedValue
   /*
    * @invariant:
-   * tv(T:IntType, I:Int)
+   * tv(T:IntType, MI:MInt)
    * tv(T:FloatingType, F:Float)
    * tv(T:PtrType, P:Ptr)
    */
   syntax TypedValue ::= tv(Type, Value)
-                      | "norm" "(" Type "," Value ")"    [function]
+                      // TODO(AndreiS): [function] is not necessary and
+                      // does not work in symbolic execution
+                      //| norm(Type, Value)   [function]
   syntax TypedValues ::= List{TypedValue, ","}
+
+  /* helper operator */
+  syntax KItem ::= norm(Type, Value)
 
   syntax Exp ::= LeftValue
   syntax LeftValue ::= lv(Type, Ptr)
@@ -136,33 +130,39 @@ module CIL-COMMON-TYPED-VALUE
   syntax Int ::= val(TypedValue) [function]
   rule val(tv(_, V:Value)) => V
 
-  rule norm(T:Type, I:MInt) => norm(T, iMInt(I))
-
-  rule norm(T:IntType, true) => tv(T, mi(width(T), 1)) 
-  rule norm(T:IntType, false) => tv(T, mi(width(T), 0)) 
-
-  rule norm(T:IntType, F:Float) => norm(T, Float2Int(F))
-  rule norm(T:UnsignedIntType, I:Int) => tv(T, uMInt(mi(width(T), I)))
-  rule norm(T:SignedIntType, I:Int) => tv(T, sMInt(mi(width(T), I)))
+  rule norm(T:IntType, MI:MInt) => tv(T, MI)
+  rule norm(T:IntType, I:Int)   => tv(T, mi(width(T), I))
+  rule norm(T:IntType, true)    => tv(T, mi(width(T), 1))
+  rule norm(T:IntType, false)   => tv(T, mi(width(T), 0))
+  rule norm(T:IntType, F:Float) => tv(T, mi(width(T), Float2Int(F)))
 
   // TODO(chathhorn): not sure about the best way to handle this.
-  rule norm(T:Type, I:Int) => tv(T, uMInt(mi(width(T), I)))
-    when isPtrType(T) ==K true
+  rule norm(T:Type, I:Int) => tv(T, mi(width(T), I))
+  when isPtrType(T) ==K true
 
-  rule norm(T:FloatingType, I:Int) => norm(T, Int2Float(I))
+  syntax Float ::= Int2Double(Int) [function]
+  rule Int2Double(I:Int) => Int2Float(I, 53, 11)
+
+  rule norm(T:FloatingType, I:Int) => norm(T, Int2Double(I))
   rule norm(T:FloatingType, F:Float) => tv(T, F)
+
+  // TODO(chathhorn): rather hackish.
+  syntax Ptr ::= VaList
+  syntax VaList ::= "va_list" "(" TypedValues ")"
 endmodule
 
 module CIL-COMMON-MMU
+  imports LIST
+  imports MAP
   imports CIL-SYNTAX
   imports CIL-TYPING-SYNTAX
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
 
-  syntax List ::= #rangeList(Int, Int, Int)                       [function]
-                | #rangeList(Int, Int)                            [function]
-                | #rangeList(Int)                                 [function]
+  syntax List ::= #rangeList(Int, Int, Int)     [klabel(#rangeList3), function]
+                | #rangeList(Int, Int)          [klabel(#rangeList2), function]
+                | #rangeList(Int)               [klabel(#rangeList1), function]
                 | "$rangeList" "(" Int "," Int "," Int ")"        [function]
                 | "$downrangeList" "(" Int "," Int "," Int ")"    [function]
   rule #rangeList(I:Int) => #rangeList(0, I, 1)
@@ -175,54 +175,56 @@ module CIL-COMMON-MMU
     $rangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $rangeList(I +Int K, J:Int, K:Int)
-  when I <Int J 
+  when I <Int J
   rule $rangeList(I:Int, J:Int, _) => .List
   when I >=Int J
   rule
     $downrangeList(I:Int, J:Int, K:Int)
   =>
     ListItem(I) $downrangeList(I -Int K, J:Int, K:Int)
-  when I >Int J 
+  when I >Int J
   rule $downrangeList(I:Int, J:Int, _) => .List
   when I <=Int J
 
   syntax Map ::= #initMap(List, K) [function]
-  rule #initMap(ListItem(K1:K) L:List, K2:K) => K1 |-> K2 #initMap(L, K2)
+  rule #initMap((ListItem(K1:K) L:List), K2:K) => (K1 |-> K2) #initMap(L, K2)
   rule #initMap(.List, _) => .Map
 
   /*
    * Memory management.
    */
-  syntax K ::= newObject(Type)
-             | newZeroObject(Type)
-             | "$newObject" "(" Type "," K "," ByteValue ")"   [strict(2)]
-             | castObject(Type, Ptr)
-             | deleteObject(Ptr)
+  syntax KItem ::= newObject(Type)
+                 | newZeroObject(Type)
+                 | "$newObject" "(" Type "," K "," ByteValue ")"   [strict(2)]
+                 | castObject(Type, Ptr)
+                 | deleteObject(Ptr)
   rule newObject(T:Type) => $newObject(T, sizeof(T), undef)
   [structural]
   rule newZeroObject(T:Type) => $newObject(T, sizeof(T), 0)
   [structural]
   rule
     <k> $newObject(T:Type, Sz:TypedValue, V:ByteValue)
-      => tv(upPtr(T), Ptr(BasePtr(Base, mival(Sz)), 0))
+      => tv(upPtr(T), Ptr(BasePtr(!Base:Int, mival(Sz)), 0))
     ...</k>
     <heap>...
       .Bag
     =>
       <object>
-        <base-ptr> BasePtr(Base, (mival(Sz))) </base-ptr>
-        <object-type> T </object-type>
+        <base-ptr> BasePtr(!Base, (mival(Sz))) </base-ptr>
+        //<object-type> T </object-type>
         <bytes> #initMap(#rangeList(mival(Sz)), V) </bytes>
       </object>
     ...</heap>
-  when fresh(Base:Int)
   [structural]
   rule
     <k> deleteObject(Ptr(BP:BasePtr, (0))) => .K ...</k>
     <heap>...
-      <object>...
+      //<object>...
+      <object>
         <base-ptr> BP </base-ptr>
-      ...</object>
+        <bytes> _:Map </bytes>
+      //...</object>
+      </object>
     =>
       .Bag
     ...</heap>
@@ -232,13 +234,13 @@ module CIL-COMMON-MMU
   /*
    * Memory access.
    */
-  syntax K ::= "load" "(" Type "," Ptr ")"
-             | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
-             | "$load" "(" Type "," Ptr "," Int "," List ")"
-             | "store" "(" Type "," Ptr "," Value ")"
-             | "$store" "(" Ptr "," List ")"
+  syntax KItem ::= "load" "(" Type "," Ptr ")"
+                 | "$load" "(" Type "," Ptr "," K ")"             [strict(3)]
+                 | "$load" "(" Type "," Ptr "," Int "," List ")"
+                 | "store" "(" Type "," Ptr "," Value ")"
+                 | "$store" "(" Ptr "," List ")"
 
-  rule 
+  rule
     store(T:Type, P:Ptr, V:Value) => $store(P, value2Bytes(T, V))
   [structural]
   rule
@@ -248,10 +250,12 @@ module CIL-COMMON-MMU
           (ListItem(V:ByteValue) => .List) _:List)
     ...</k>
     <heap>...
-      <object>...
+      //<object>...
+      <object>
         <base-ptr> BP </base-ptr>
-        <bytes>... Offset |-> (_ => V) ...</bytes>
-      ...</object>
+        <bytes>... Offset |-> (_:KItem => V) ...</bytes>
+      //...</object>
+      </object>
     ...</heap>
   [structural]
   rule $store(_:Ptr, .List) => .K   [structural]
@@ -259,7 +263,7 @@ module CIL-COMMON-MMU
   rule load(T:Type, P:Ptr) => $load(T, P, sizeof(T))
     [structural]
 
-  rule $load(T:Type, P:Ptr, Sz:TypedValue) 
+  rule $load(T:Type, P:Ptr, Sz:TypedValue)
     => $load(T, P, mival(Sz), .List)
   [structural]
   rule
@@ -268,7 +272,7 @@ module CIL-COMMON-MMU
           _:Type,
           Ptr(BP:BasePtr, (Offset:Int => Offset +Int 1)),
           (M:Int => M -Int 1),
-          _:List (.List => ListItem(V:ByteValue)))
+          (_:List (.List => ListItem(V:ByteValue))))
     ...</k>
     <base-ptr> BP </base-ptr>
     <bytes>... Offset |-> V ...</bytes>
@@ -279,12 +283,12 @@ module CIL-COMMON-MMU
   // This is probably too crude.
   rule
     <k>
-      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _)
+      $load(T:Type, Ptr(BP:BasePtr, Offset:Int), M:Int, _:List)
       => tv(T, undef)
     ...</k>
     <base-ptr> BP </base-ptr>
     <bytes> Bytes:Map </bytes>
-    when (M >Int 0) andBool notBool (Offset in keys Bytes)
+    when (M >Int 0) andBool notBool (Offset in keys(Bytes))
     [structural]
   rule
     $load(T:Type, _:Ptr, 0, L:List) => tv(T, bytes2Value(T, L))
@@ -292,7 +296,7 @@ module CIL-COMMON-MMU
 endmodule
 
 module CIL-COMMON
-  imports MINT 
+  imports MINT
   imports CIL-COMMON-PTR
   imports CIL-COMMON-VALUE-SERIALIZATION-INTERFACE
   imports CIL-COMMON-TYPED-VALUE
@@ -300,12 +304,20 @@ module CIL-COMMON
 
   syntax Error ::= "dummy_Error_item"
 
-  syntax Int ::= mival(TypedValue) [function]
-  rule mival(tv(_, I:MInt)) => iMInt(I)
+  /* Marker for starting execution (after static pre-processing). */
+  syntax KItem ::= "callMain"
 
-  /* 0 has identical signed and unsigned representations */
-  syntax Bool ::= isZero(MInt) [function]
-  rule isZero(MI:MInt) => iMInt(uMInt(MI)) ==Int 0
+  /* These are also defined in a standard library header. */
+  // TODO(AndreiS): check if this more specific type works
+  syntax Type ::= "size_ptr" [function]
+                | "ptrdiff_t" [function]
+
+  /*
+   * Returns the unsigned interpretation of the machine integer stored inside
+   * this typed value.
+   */
+  syntax Int ::= mival(TypedValue) [function]
+  rule mival(tv(_, I:MInt)) => uvalueMInt(I)
 
   /*
    * List{Stmt} concatenation
@@ -314,9 +326,6 @@ module CIL-COMMON
   rule (S:Stmt Ss1:Stmts) @Stmts Ss2:Stmts => S (Ss1 @Stmts Ss2)
   rule .Stmts @Stmts Ss:Stmts => Ss
 
-  syntax ListItem ::= ListItem(Bag)
-
   syntax TransUnit ::= tu(String)
   syntax Phase ::= "initializing" | TransUnit | "executing" | "terminated"
-    
 endmodule

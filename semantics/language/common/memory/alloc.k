@@ -1,20 +1,20 @@
 module C-MEMORY-ALLOC-SYNTAX
-     syntax K ::= object(Type, Int, Map)
+     syntax KItem ::= object(Type, Int, Map)
 
-     syntax K ::= writeString(SymLoc, String)
-     syntax K ::= writeWString(SymLoc, List)
+     syntax KItem ::= writeString(SymLoc, String)
+     syntax KItem ::= writeWString(SymLoc, List)
 
-     syntax K ::= allocString(SymBase, String)
-     syntax K ::= allocWString(SymBase, List)
+     syntax KItem ::= allocString(SymBase, String)
+     syntax KItem ::= allocWString(SymBase, List)
 
-     syntax K ::= alloc(SymBase, Type, Int)
+     syntax KItem ::= alloc(SymBase, Type, Int)
 
-     syntax K ::= zeroObject(SymBase)
+     syntax KItem ::= zeroObject(SymBase)
 
-     syntax K ::= sizeofObject(SymBase)
+     syntax KItem ::= sizeofObject(SymBase)
 
-     syntax K ::= allocObject(SymBase, Type)
-     syntax K ::= allocObjectIfAbsent(SymBase, Type)
+     syntax KItem ::= allocObject(SymBase, Type)
+     syntax KItem ::= allocObjectIfAbsent(SymBase, Type)
 endmodule
 
 module C-MEMORY-ALLOC
@@ -31,13 +31,13 @@ module C-MEMORY-ALLOC
      imports C-ERROR-SYNTAX
 
      imports COMPAT-SYNTAX
-     
+
      rule writeString(Loc:SymLoc, S:String)
           => Computation(
                * tv(Loc, t(.Set, pointerType(t(.Set, char))))
                := tv(ordChar(firstChar(S:String)), t(.Set, char)))
                ~> writeString(Loc +bytes 1, butFirstChar(S:String))
-          when S:String =/=String ""
+          requires S:String =/=String ""
           [structural]
      // TODO this bare 4 needs to be updated to handle different size wchar_ts
      rule writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
@@ -45,7 +45,7 @@ module C-MEMORY-ALLOC
                * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
                := tv(N, cfg:wcharut))
                ~> writeWString(Loc +bytes 4, S)
-          [structural] 
+          [structural]
      rule writeString(Loc:SymLoc, "")
           => Computation(
                * tv(Loc, t(.Set, pointerType(t(.Set, char))))
@@ -55,43 +55,47 @@ module C-MEMORY-ALLOC
           => Computation(
                * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
                := tv(0, cfg:wcharut))
-          [structural] 
+          [structural]
 
      rule allocObject(Base:SymBase, T:Type)
           => alloc(Base, T, byteSizeofType(T))
           [structural]
-     rule <k> allocObjectIfAbsent(Base:SymBase, T:Type) 
+     rule <k> allocObjectIfAbsent(Base:SymBase, T:Type)
                => alloc(Base, T, byteSizeofType(T))
           ...</k>
           <mem> M:Map </mem>
-          when notBool (SetItem(Base) in (keys M))
-          [structural] 
-     rule <k> allocObjectIfAbsent(Base:SymBase, _) => . 
+          requires notBool (Base in (keys(M)))
+          [structural]
+     rule <k> allocObjectIfAbsent(Base:SymBase, _) => .K
           ...</k>
           <mem>... Base |-> object(_, _, _) ...</mem>
           [structural]
 
-     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => . ...</k>
+     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
           ...</mem>
-          when notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
           [structural]
-     
+
      // Used by calloc.
-     rule <k> zeroObject(Base:SymBase) => . ...</k>
+     syntax Map ::= createMap(KList, Bits) [function]
+     rule createMap(.KList, _:Bits) => .Map
+     rule createMap((I:K,, KL:KList), B:Bits) => (I |-> B) createMap(KL, B)
+
+     rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
-               Base |-> object(_, Len:Int, 
-                    _ => Map((0 to Len) |-> piece(0, cfg:bitsPerByte)))
+               Base |-> object(_, Len:Int,
+                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
-          
+
      rule <k> sizeofObject(Base:SymBase)
                => tv(Len, cfg:sizeut)
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
-          
+
      rule allocString(Base:SymBase, S:String)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, char), lengthString(S) +Int 1)))
@@ -99,8 +103,8 @@ module C-MEMORY-ALLOC
           [structural]
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
-               arrayType(cfg:wcharut, 4 *Int (lengthList(S) +Int 1))))
+               arrayType(cfg:wcharut, 4 *Int (size(S) +Int 1))))
           ~> allowInit(writeWString(lnew(Base), S))
-          [structural] 
-     
+          [structural]
+
 endmodule

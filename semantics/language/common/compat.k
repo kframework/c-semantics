@@ -1,11 +1,12 @@
 module COMPAT-SYNTAX
-     syntax K ::= l(KLabel) [avoid]
-     syntax K ::= klist(KList) [klabel('klist)]
+     //TODO(liyi): must not need the second one
+     syntax KItem ::= l(KLabel) [avoid]
+     syntax KItem ::= klist(KList) [function]
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
      syntax String ::= butFirstChar(String) [function]
-     
+
      syntax List ::= stringToList(String) [function]
      syntax String ::= listToString(List) [function]
 
@@ -15,72 +16,42 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= all(List, KLabel) [function]
 
-     syntax Bool ::= Bag "==Bag" Bag [function]
-     syntax Bool ::= Bag "=/=Bag" Bag [function]
+     //TODO(liyi): this might be able to remove
+     syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
 
-     syntax Bag ::= toBag(List) [function]
+     syntax Bool ::= List "==MSet" List [function]
+                   | List "=/=MSet" List [function]
+                   //TODO(liyi): might not need this later
+                   | listEqual(List, List) [function]
 
-     syntax Bool ::= BagItem "in" Bag [function]
-                   | K "#inBag" Bag [function]
-
-     syntax Int ::= string2Base(String, Int)
-          [function, klabel('string2Base), hook(#CONVERSION:string2Base)]
-     syntax String ::= base2String(Int, Int)
-          [function, klabel('base2String), hook(#CONVERSION:base2String)]
-
-     syntax Float ::= sqrtFloat(Float)
-          [function, hook(#FLOAT:sqrtFloat)]
-     syntax Float ::= logFloat(Float)
-          [function, hook(#FLOAT:logFloat)]
-     syntax Float ::= expFloat(Float)
-          [function, hook(#FLOAT:expFloat)]
-     syntax Float ::= atanFloat(Float)
-          [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= acosFloat(Float)
-          [function, hook(#FLOAT:acosFloat)]
-     syntax Float ::= asinFloat(Float)
-          [function, hook(#FLOAT:asinFloat)]
-     syntax Float ::= tanFloat(Float)
-          [function, hook(#FLOAT:tanFloat)]
-     syntax Float ::= cosFloat(Float)
-          [function, hook(#FLOAT:cosFloat)]
-     syntax Float ::= sinFloat(Float)
-          [function, hook(#FLOAT:sinFloat)]
-     syntax Float ::= atan2Float(Float, Float)
-          [function, hook(#FLOAT:atanFloat)]
-     syntax Float ::= floorFloat(Float)
-          [function, hook(#FLOAT:floorFloat)]
+     syntax List ::= removeListItem(List, K) [function]
 
      // TODO(chathhorn): ugly
-     syntax K ::= toKRList(List)
+     syntax KItem ::= toKRList(List)
 
-     syntax KResult ::= krlist(List) [klabel('krlist)]
+     syntax KResult ::= krlist(List)
 
      syntax List ::= reverseList(List) [function]
 
-     syntax ListItem ::= ListItem(Bag)
-     syntax K ::= list(List)
-     syntax K ::= map(Map)
-     syntax K ::= set(Set)
+     //TODO(liyi): syntax List ::= ListItem(Bag)
+     syntax KItem ::= bag2K(Bag)
+     syntax KItem ::= list(List)
+     syntax KItem ::= map(Map)
+     syntax KItem ::= set(Set)
 
-     syntax K ::= listToK(List) [function]
-     
-     syntax K ::= kpair(K, K)
+     syntax KItem ::= listToK(List) [function]
+
+     syntax KItem ::= kpair(K, K)
 
      syntax KList ::= Int "to" Int [function]
-     syntax Bool ::= K "in" List [function]
-     syntax "in" -/- [a-zA-Z]
 
      syntax List ::= times(Int, K) [function]
 
-     // syntax Int ::= lengthList(List) [function]
-
-     syntax Map ::= Map "[" K "<-" K "]"
-     rule M:Map[Val:K <- Key:K] => M[Val/Key] [macro]
-
-     syntax List ::= values(Map) [function]
-
      syntax Set ::= filterSet(Set, KLabel) [function]
+
+     //TODO(liyi): might not need this later
+     syntax KItem ::= "dotK"
+                    | theMapLookup(Map,K) [function]
 endmodule
 
 module COMPAT
@@ -89,10 +60,10 @@ module COMPAT
 
      rule stringToList("") => .List
      rule stringToList(S:String)
-               => ListItem(firstChar(S:String)) 
+               => ListItem(firstChar(S:String))
                     stringToList(butFirstChar(S:String))
-          when S:String =/=String ""
-          
+          requires S:String =/=String ""
+
      rule listToString(.List) => ""
      rule listToString((ListItem(S:String) L:List))
                => S:String +String listToString(L:List)
@@ -106,65 +77,102 @@ module COMPAT
           nthChar(S:String, N:Int) => substrString(S, N, N +Int 1)
 
      rule [butFirstChar]:
-          butFirstChar(S:String) 
+          butFirstChar(S:String)
           => substrString(S:String, 1, lengthString(S:String))
 
-     rule all(ListItem(K:K) L:List, Lbl:KLabel) 
-          => Lbl(K) andBool all(L, Lbl)
-     rule all(.List, _) => true 
-          
+     rule all(ListItem(K:K) L:List, Lbl:KLabel)
+          => Lbl(K:K) andBool all(L, Lbl)
+     rule all(.List, _) => true
+
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))
                +String toUpperCase(butFirstChar(S:String))
-          when lengthString(S) >Int 1
+          requires lengthString(S) >Int 1
 
      rule toUpperCase(C:String)
           => C:String
-          when (lengthString(C) ==Int 1)
+          requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) <Int ordChar("a")
                     orBool ordChar(C) >Int ordChar("z"))
      rule toUpperCase(C:String)
-          => chrChar(absInt(ordChar(C) 
+          => chrChar(absInt(ordChar(C)
                -Int (ordChar("a") -Int ordChar("A"))))
-          when (lengthString(C) ==Int 1)
+          requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) >=Int ordChar("a")
                     andBool ordChar(C) <=Int ordChar("z"))
-          
-     // this should probably go in the k prelude
-     rule K:K in (ListItem(K:K) _:List) => true
-     rule _:K in .List => false
-     rule K:K in (ListItem(K':K) L:List) => K:K in L:List
-          when K:K =/=K K':K
 
-     rule X:Bag ==Bag Y:Bag => Bag2KLabel X(.KList) ==K Bag2KLabel Y(.KList)
-     // rule X:Bag ==Bag Y:Bag => (X =Bag Y) ==K true
-     rule X:Bag =/=Bag Y:Bag => notBool (X ==Bag Y)
-     // rule X:Bag =/=Bag Y:Bag => (X =Bag Y) =/=K true
+     rule removeListItem(.List, _) => .List
+     rule removeListItem(ListItem(A:K) M:List, A) => M
+     rule removeListItem(ListItem(A:K) M:List, A':K)
+          => ListItem(A) removeListItem(M, A')
+          requires A =/=K A'
 
-     rule toBag(ListItem(K:K) L:List) => BagItem(K) toBag(L)
-     rule toBag(.List) => .Bag
+     //TODO(liyi): might not need this later
+     rule listEqual(.List, .List) => true
+     rule listEqual(L:List, .List) => false
+          requires L =/=K .List
+     rule listEqual(.List, L:List) => false
+          requires L =/=K .List
+     rule listEqual(ListItem(A:K) L1:List, ListItem(A:K) L2:List)
+          => listEqual(L1, L2)
+     rule listEqual(ListItem(A1:K) _, ListItem(A2:K) _)
+          => false
+          requires A1 =/=K A2
 
-     rule BagItem(K:K) in B:Bag => K #inBag B ==K true 
-     rule K:K #inBag BagItem(K) _:Bag => true
+     syntax Bool ::= subset(K, Set, Set) [function]
 
-     rule list(L:List) => toKRList(L) 
+     rule subset(K:K, S1:Set, S2:Set) => S1 <=Set (S2 -Set SetItem(K))
+          requires K in S2
+     rule subset(K:K, _, S2:Set) => false
+          requires notBool (K in S2)
+
+     rule '_==MSet_(.List ,, .List) => true
+     rule '_==MSet_(.List ,, ListItem(_) _:List) => false
+     rule '_==MSet_(ListItem(_) _:List ,, .List) => false
+     rule '_==MSet_(ListItem(K:K) M:List ,, M':List)
+          => '_==MSet_(M:List ,, removeListItem(M', K))
+          requires K:K in M':List
+     rule '_==MSet_(ListItem(K:K) _:List ,, M':List)
+          => false
+          requires notBool (K:K in M':List)
+
+     rule M:List =/=MSet M':List => notBool '_==MSet_(M ,, M')
+
+     rule list(L:List) => toKRList(L)
           [structural]
 
-     syntax K ::= "toKRList'" "(" List ")"
-     context toKRList'(_:List ListItem(HOLE) _:List)
-     rule toKRList(L:List) => toKRList'(L) ~> krlist(.List)
+     syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
+
+     // TODO(liyi): might not need this after associative matching
+     syntax SubKRItem ::= sItem(K) [strict]
+     syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
+     syntax SubKRList ::= toSubKRList(List) [function]
+
+     syntax SubResult ::= srItem(K)
+     syntax SubKRItem ::= SubResult
+     syntax KResult ::= SubResult
+
+     rule toSubKRList(.List) => .SubKRList
+     rule toSubKRList(ListItem(K:K) L:List) => sItem(K) ss:: toSubKRList(L)
+
+     // TODO(liyi): overcome the context associative matching
+     //context toKRList'(_:List ListItem(HOLE) _:List)
+     rule sItem(V:KResult) => srItem(V) [structural]
+
+     rule toKRList(L:List) => toKRList'(toSubKRList(L)) ~> krlist(.List)
           [structural]
-     rule toKRList'(_:List (ListItem(V:KResult) => .List)) 
-          ~> krlist((.List => ListItem(V)) _:List) 
-          when getKLabel(V) =/=KLabel 'krlist
+
+     rule toKRList'((srItem(V:KResult) ss:: S:SubKRList) => S)
+          ~> krlist(_:List (.List => ListItem(V)))
+          requires getKLabel(V) =/=KLabel 'krlist
           [structural]
      // Somewhat contrived feature: nested lists are flattened.
-     rule toKRList'(_:List (ListItem(krlist(L:List)) => .List)) 
-          ~> krlist((.List => L) _:List) 
+     rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S)
+          ~> krlist( _:List (.List => L))
           [structural]
-     rule toKRList'(.List) => .
+     rule toKRList'(.SubKRList) => .K
           [structural]
-     
+
      rule reverseList(.List) => .List
      rule reverseList(ListItem(K:K) L:List)
           => reverseList(L:List) ListItem(K:K)
@@ -174,32 +182,47 @@ module COMPAT
 
      rule N:Int to N => .KList
      rule N:Int to N':Int => (N,, ((N +Int 1) to N'))
-          when N <Int N'
+          requires N <Int N'
 
      rule times(0, _) => .List
      rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
-          when N >Int 0
+          requires N >Int 0
 
      syntax List ::= klistToList(KList) [function]
 
      rule klistToList((K:K,, L:KList)) => ListItem(K) klistToList(L)
      rule klistToList(.KList) => .List
 
-     rule klist(L:KList) => list(klistToList(L))
-          [structural, anywhere]
+     rule 'klist(L:KList) => 'list(klistToList(L))
 
-     // rule lengthList(L:List) => size(L)
+     syntax Set ::= #filterSet(K, Set, KLabel) [function]
 
-     rule values((_ |-> V:K) M:Map) => ListItem(V) values(M)
-     rule values(.Map) => .List
+     rule #filterSet(K:K, .Set, Pred:KLabel)
+          => SetItem(K)
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, .Set, Pred:KLabel)
+          => .Set
+          requires Pred(K) =/=K true
+     rule #filterSet(K:K, SetItem(K':K) S:Set, Pred:KLabel)
+          => SetItem(K) #filterSet(K', S, Pred)
+          requires Pred(K) ==K true
+     rule #filterSet(K:K, SetItem(K':K) S:Set, Pred:KLabel)
+          => #filterSet(K', S, Pred)
+          requires Pred(K) =/=K true
 
      rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => SetItem(K) filterSet(S, Pred)
-          when Pred(K) ==K true
-     rule filterSet(SetItem(K:K) S:Set, Pred:KLabel)
-          => filterSet(S, Pred)
-          when Pred(K) =/=K true
-     rule filterSet(.Set, _) => .Set
+          => #filterSet(K, S, Pred)
+     rule filterSet(.Set, Pred:KLabel)
+          => .Set
+
+     // TODO(liyi): might be able to remove later
+     rule isAllKResultInHeatList(.HeatList) => true
+     rule isAllKResultInHeatList(hItem(_) hs:: _) => false
+     rule isAllKResultInHeatList(hrItem(_) hs:: HL:HeatList)
+          => isAllKResultInHeatList(HL)
+     
+     //TODO(liyi): might not need this
+     rule dotK => .K [structural]
+     rule theMapLookup(K1:K |-> K2:K _:Map,K1) => K2
 
 endmodule
-

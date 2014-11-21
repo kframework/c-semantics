@@ -1,5 +1,5 @@
 module C-COMMON-EXPR-REFERENCE-SYNTAX
-     syntax K ::= checkRestrict(SymLoc, Type)
+     syntax KItem ::= checkRestrict(SymLoc, Type)
 endmodule
 
 module C-COMMON-EXPR-REFERENCE
@@ -29,18 +29,18 @@ module C-COMMON-EXPR-REFERENCE
      its operand.
      }
      */
-     rule &(nclv(Loc:SymLoc, T:Type))
+     rule &(lval(Loc:SymLoc, T:Type))
           => tv(addProv(align(getAlignas(T)),
                addProv(fromArray(0, byteSizeofType(T)), Loc)),
                t(.Set, pointerType(T)))
-          when notBool isRegisterLoc(Loc)
+          requires notBool isRegisterLoc(Loc)
           [structural]
-     rule (. => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
+     rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(tv(_, _))
           [structural]
-     rule (. => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
-          ~> &(nclv(Loc:SymLoc, _))
-          when isRegisterLoc(Loc)
+     rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
+          ~> &(lval(Loc:SymLoc, _))
+          requires isRegisterLoc(Loc)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{
@@ -54,24 +54,24 @@ module C-COMMON-EXPR-REFERENCE
      rule *(tv(Loc:SymLoc, T:Type))
           => checkRestrict(Loc, T)
           ~> lv(stripAllButFromUnion(Loc), innerType(T))
-          when isPointerType(T)
+          requires isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,
-                    t(.Set, pointerType(t(.Set, char))), 1)
+                    t(.Set, pointerType(t(.Set, char))), 1) ==K true
           [structural]
-     rule (. => UNDEF("CER3",
+     rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
                "6.5.3.2:4"))
           ~> *(tv(Loc:SymLoc, _))
-          when Loc ==K NullPointer
+          requires Loc ==K NullPointer
           [structural]
-     rule (. => UNDEF("CER4",
+     rule (.K => UNDEF("CER4",
                "Dereferencing a pointer past the end of an array.",
                "6.5.6:8"))
           ~> *(tv(Loc:SymLoc, _))
-          when notBool ifFromArrayInBounds(Loc,
-               t(.Set, pointerType(t(.Set, char))), 1)
+          requires ifFromArrayInBounds(Loc,
+               t(.Set, pointerType(t(.Set, char))), 1) =/=K true
           [structural]
 endmodule
 

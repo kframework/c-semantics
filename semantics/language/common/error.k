@@ -1,20 +1,20 @@
 module C-ERROR-SYNTAX
      // Deprecated...
-     syntax K ::= ERROR(String, String)
-     syntax K ::= ERROR(String, String, KList)
-     syntax K ::= ERROR(String, String, String, String)
+     syntax KItem ::= ERROR(String, String)
+     syntax KItem ::= ERROR(String, String, KList)
+     syntax KItem ::= ERROR(String, String, String, String)
 
      // Error code, desc., C11 citation.
-     syntax K ::= UNDEF(String, String, String)
-     syntax K ::= UNSPEC(String, String, String)
-     syntax K ::= CV(String, String, String)
-     syntax K ::= CVUB(String, String, String)
+     syntax KItem ::= UNDEF(String, String, String)
+     syntax KItem ::= UNSPEC(String, String, String)
+     syntax KItem ::= CV(String, String, String)
+     syntax KItem ::= CVUB(String, String, String)
 
      syntax KResult ::= Bool
      syntax Error ::= "errorDummy"
-     syntax K ::= assert(K, Error) [strict(1)]
+     syntax KItem ::= assert(K, Error) [strict(1)]
 
-     syntax K ::= EXIT(String)
+     syntax KItem ::= EXIT(String)
 endmodule
 
 module C-ERROR
@@ -31,9 +31,9 @@ module C-ERROR
 
      imports COMPAT-SYNTAX
 
-     rule assert(true, _) => .
+     rule assert(true, _) => .K
      rule assert(A:KResult, K:K) => K
-          when A =/=K true
+          requires A =/=K true
 
      syntax String ::= ErrorMsg(String, String, String, KList) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
@@ -48,7 +48,7 @@ module C-ERROR
           +String "\n"
           +String "See also: C11 sec. "
           +String Citation
-          when Citation =/=String ""
+          requires Citation =/=String ""
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
           => "Error: "
           +String Title
@@ -58,7 +58,7 @@ module C-ERROR
           +String "\n"
           +String "Type: "
           +String ErrType
-          when Citation ==String ""
+          requires Citation ==String ""
 
      syntax ErrorRef ::= Int
 
@@ -76,24 +76,24 @@ module C-ERROR
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
-     rule <k> (. => ERROR("CID1",
-               "Trying to look up identifier " +String S +String 
-               ", but no such identifier is in scope.", 
+     rule <k> (.K => ERROR("CID1",
+               "Trying to look up identifier " +String S +String
+               ", but no such identifier is in scope.",
                (305,, 332)) )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          when (notBool Identifier(S) in keys(Env))
-               andBool (notBool Identifier(S) in keys(Types))
+          requires (notBool (Identifier(S:String) in keys(Env)))
+               andBool (notBool (Identifier(S:String) in keys(Types)))
           [structural]
-     rule <k> (. => ERROR("CID2",
+     rule <k> (.K => ERROR("CID2",
                "No definition found for identifier " +String S +String ".") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
-          when (notBool Identifier(S) in keys(Env))
+          requires (notBool (Identifier(S) in keys(Env)))
                andBool (notBool isFunctionType(T))
           [structural]
 

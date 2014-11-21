@@ -6,8 +6,8 @@ module C-STMT-STATIC-ASSERT
      imports C-SYNTAX
 
      context StaticAssert(HOLE, _)
-     rule StaticAssert(tv(N:Int, _), _) => .
-          when N =/=Int 0
+     rule StaticAssert(tv(N:Int, _), _) => .K
+          requires N =/=Int 0
      rule StaticAssert(tv(symVal, _), _)
           => CV("SSA1",
                "Non-constant expression in static assertion.",

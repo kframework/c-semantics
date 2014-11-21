@@ -8,6 +8,7 @@ module C-COMMON-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
@@ -48,66 +49,58 @@ module C-COMMON-EXPR-ASSIGNMENT
      the right is a pointer.
 
      }*/
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when hasArithmeticType(T') andBool hasArithmeticType(T)
-               andBool (getQualifiers(T) ==Set .Set)
+     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+          requires hasArithmeticType(T') andBool hasArithmeticType(T)
+               andBool (getQualifiers(T) ==K .Set)
                andBool (T' =/=Type T)
           [structural]
 
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when (isStructType(T') orBool isUnionType(T'))
+     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+          requires (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
-               andBool (T' =/=Type T)
+               andBool (T' =/=K T)
           [structural]
 
-     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
+     rule lval(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          when areCompatible(
-                    stripQualifiers(stripAlignas(T')),
-                    stripQualifiers(stripAlignas(T)))
-               andBool getQualifiers(T) <=Set getQualifiers(T')
-               andBool t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T))
-               andBool getAlignas(T') <=Int getAlignas(T)
-          [structural]
-
-     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
-               := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
-               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          when (isVoidType(T') orBool isVoidType(T))
+          requires areCompatible(stripQualifiers(T'), stripQualifiers(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
           [structural]
 
-     rule nclv(_, T':Type) := (V:RValue => cast(T', V))
-          when isPointerType(T')
+     rule lval(_, t(Mods':Set, pointerType(T':Type)))
+               := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
+               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
+          requires (isVoidType(T') orBool isVoidType(T))
+               andBool (getQualifiers(T) <=Set getQualifiers(T'))
+               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
+          [structural]
+
+     rule lval(_, T':Type) := (V:TypedValue => cast(T', V))
+          requires isPointerType(T')
                andBool isNullPointerConstant(V)
-               andBool (T' =/=Type type(V))
+               andBool (T' =/=K type(V))
           [structural]
 
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          when isBoolType(T') andBool isPointerType(T)
+     rule lval(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+          requires isBoolType(T') andBool isPointerType(T)
           [structural]
 
-     rule (. => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
-          ~> nclv(_, T':Type) := tv(V:CValue, T:Type)
-          when (isPointerType(T') andBool notBool isPointerType(T)
+     rule (.K => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
+          ~> lval(_, T':Type) := tv(V:CValue, T:Type)
+          requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
                orBool (notBool isPointerType(T') andBool isPointerType(T))
-     rule (. => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
-          ~> nclv(_, T':Type) := tv(_, T:Type)
-          // TODO(chathhorn): split these out for better errors.
-          when isPointerType(T') andBool isPointerType(T)
+     rule (.K => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
+          ~> lval(_, T':Type) := tv(_, T:Type)
+          requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
-               andBool (
-                    notBool areCompatible(
-                         stripQualifiers(stripAlignas(innerType(T'))),
-                         stripQualifiers(stripAlignas(innerType(T))))
-                    orBool notBool (getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
-                    orBool getAlignas(innerType(T')) >Int getAlignas(innerType(T))
-               )
-     rule (. => CV("CEA3", "lvalue required as left operand in assignment.", ""))
+               andBool notBool
+                    ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
+                    andBool areCompatible(innerType(T'), innerType(T)))
+     rule (.K => CV("CEA3", "lvalue required as left operand in assignment.", ""))
           ~> tv(_, _) := tv(_, _)
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
@@ -135,26 +128,34 @@ module C-COMMON-EXPR-ASSIGNMENT
      compound assignment is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
+     syntax KItem ::= compoundAssignment(KItem, K, K) [strict(2, 3)]
+     // these should not be nd, in order to keep the operations together
+     //context compoundAssignment(_, (HOLE => peval(HOLE)), _)
+     //context compoundAssignment(_, _, (HOLE => reval(HOLE)))
 
-     rule E1:KResult *= E2:KResult => E1 := toRVal(E1) * E2
+     rule E1:K *= E2:K => compoundAssignment(l('_*_), E1, E2)
           [structural]
-     rule E1:KResult /= E2:KResult => E1 := toRVal(E1) / E2
+     rule E1:K /= E2:K => compoundAssignment(l('_/_), E1, E2)
           [structural]
-     rule E1:KResult %= E2:KResult => E1 := toRVal(E1) % E2
+     rule E1:K %= E2:K => compoundAssignment(l('_%_), E1, E2)
           [structural]
-     rule E1:KResult += E2:KResult => E1 := toRVal(E1) + E2
+     rule E1:K += E2:K => compoundAssignment(l('_+_), E1, E2)
           [structural]
-     rule E1:KResult -= E2:KResult => E1 := toRVal(E1) - E2
+     rule E1:K -= E2:K => compoundAssignment(l('_-_), E1, E2)
           [structural]
-     rule E1:KResult <<= E2:KResult => E1 := toRVal(E1) << E2
+     rule E1:K <<= E2:K => compoundAssignment(l('_<<_), E1, E2)
           [structural]
-     rule E1:KResult >>= E2:KResult => E1 := toRVal(E1) >> E2
+     rule E1:K >>= E2:K => compoundAssignment(l('_>>_), E1, E2)
           [structural]
-     rule E1:KResult &= E2:KResult => E1 := toRVal(E1) & E2
+     rule E1:K &= E2:K => compoundAssignment(l('_&_), E1, E2)
           [structural]
-     rule E1:KResult ^= E2:KResult => E1 := toRVal(E1) ^ E2
+     rule E1:K ^= E2:K => compoundAssignment(l('_^_), E1, E2)
           [structural]
-     rule E1:KResult |= E2:KResult => E1 := toRVal(E1) | E2
+     rule E1:K |= E2:K => compoundAssignment(l('_|_), E1, E2)
+          [structural]
+
+     rule compoundAssignment(l(L:KLabel), V:Value, V':Value)
+          => pkludge(V:Value) := L(rkludge(V:Value),, rkludge(V':Value))
           [structural]
 
 endmodule

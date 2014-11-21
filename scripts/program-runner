@@ -20,8 +20,8 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
-# Set heap size of krun
-$ENV{K_OPTS} = '-Xmx2048m';
+# Set heap and stack size of krun
+$ENV{K_OPTS} = '-Xms64m -Xmx2048m -Xss32m -XX:+TieredCompilation';
 
 # These are compile-time settings and are set by the compile script using this
 # file as a template.
@@ -71,9 +71,11 @@ sub main {
                   '--output-file' => $fileOutput, 
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
+                  '--smt' => 'none',
+                  '--pattern-matching' => '',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
-                  '--load-cfg' => $fileInput
+                  '--parser "kast --parser binary"' => $fileInput
                   );
 
       my @options = ();
@@ -242,7 +244,7 @@ sub parseRawResultLine {
             $parsed->{output} = $1;
       };
 
-      /< result-value > 'tv\(# (-?\d+)\(\.KList\),,/ && do {
+      /< result-value > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ result-value >/ && do {
             $parsed->{exitCode} = $1;
       };
 }
@@ -290,11 +292,11 @@ sub parseResult {
             $parsed->{output} = $1;
       };
 
-      /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,/ && do {
+      /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = $1;
       };
 
-      /<result-value>\s*tv\s*\(\s*NullPointer\s*,/ && do {
+      /<result-value>\s*tv\s*\(\s*NullPointer\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = 0;
       };
 }

@@ -7,5 +7,7 @@ module C-STMT-BREAK
      }*/
      rule [break]:
           Break => popLoop
-          [structural] 
+          [structural]
+
 endmodule
+

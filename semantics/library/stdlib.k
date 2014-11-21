@@ -11,12 +11,12 @@ module LIBC-STDLIB
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax K ::= printString(K)
+     syntax KItem ::= printString(K)
 
      rule printString(S:String)
           => writeToFD(1, ordChar(firstChar(S:String)))
                ~> printString(butFirstChar(S:String))
-          when lengthString(S:String) >Int 0
+          requires lengthString(S:String) >Int 0
           [structural]
      rule printString("") => writeToFD(1, 10)
           [structural]
@@ -26,17 +26,17 @@ module LIBC-STDLIB
           [interpRule]
 
      rule [exit]:
-          <k> prepareBuiltin(Identifier("exit"), 
-                    ListItem(tv(I:Int, t(_, int))))
+          <k> prepareBuiltin(Identifier("exit"),
+                    hrItem(tv(I:Int, t(_, int))))
                ~> _
-               => tv(I:Int, t(.Set, int)) 
+               => tv(I:Int, t(.Set, int))
           </k>
           [structural]
 
      rule [abort]:
-          <k> prepareBuiltin(Identifier("abort"), .List) 
-               ~> _ 
-               => printString("Aborted") ~> tv(134, t(.Set, int)) 
+          <k> prepareBuiltin(Identifier("abort"), .HeatList)
+               ~> _
+               => printString("Aborted") ~> tv(134, t(.Set, int))
           </k>
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
@@ -47,7 +47,7 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> prepareBuiltin(Identifier("malloc"),
-                    ListItem(tv(Len:Int, _)))
+                    hrItem(tv(Len:Int, _)))
                => alloc(Base, t(.Set, no-type), Len:Int)
                ~> tv(loc(Base, 0, SetItem(fromArray(0, Len))),
                     t(.Set, pointerType(t(.Set, void))))
@@ -77,48 +77,48 @@ module LIBC-STDLIB
      if the new object could not be allocated.
      }*/
      rule prepareBuiltin(Identifier("realloc"),
-          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) _)
+          hrItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)) hs:: _)
      rule [realloc]:
           <k> prepareBuiltin(Identifier("realloc"),
-                    ListItem(tv(loc(OldBase:SymBase, 0), _))
-                    ListItem(tv(NewLen:Int, _)))
+                    hrItem(tv(loc(OldBase:SymBase, 0), _)) hs::
+                    hrItem(tv(NewLen:Int, _)))
                => realloc(OldBase, NewBase, OldLen, NewLen)
                ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... 
-               (OldBase => NewBase) |-> (OldLen:Int => NewLen) 
+          <malloced>...
+               (OldBase => NewBase) |-> (OldLen:Int => NewLen)
           ...</malloced>
           <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
 
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
-               ListItem(tv(NullPointer, _))
-               ListItem(Len:KResult))
-          => prepareBuiltin(Identifier("malloc"), ListItem(Len:KResult))
+               hrItem(tv(NullPointer, _)) hs::
+               hrItem(Len:KResult))
+          => prepareBuiltin(Identifier("malloc"), hrItem(Len:KResult))
           [structural]
 
-     syntax K ::= "calloc-aux"
+     syntax KItem ::= "calloc-aux"
      rule [calloc]:
           prepareBuiltin(Identifier("calloc"),
-               ListItem(tv(N:Int, _))
-               ListItem(tv(Size:Int, _)))
+               hrItem(tv(N:Int, _)) hs::
+               hrItem(tv(Size:Int, _)))
           => prepareBuiltin(Identifier("malloc"),
-               ListItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
+               hrItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
           ~> calloc-aux
           [structural]
-     rule (. => zeroObject(base(Loc)) ) 
+     rule (.K => zeroObject(base(Loc)) )
           ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
-          ~> (calloc-aux => .)
+          ~> (calloc-aux => .K)
           [structural]
 
      rule prepareBuiltin(Identifier("free"),
-          ListItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
+          hrItem(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _)))
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
-                    ListItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
-               => deleteSizedObject(Base, Len:Int) 
+                    hrItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
+               => deleteSizedObject(Base, Len:Int)
                ~> voidVal
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
@@ -127,8 +127,8 @@ module LIBC-STDLIB
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
-          <k> prepareBuiltin((Identifier("rand")), .List)
-               => tv(absInt(randomRandom(Seed:Int)) 
+          <k> prepareBuiltin((Identifier("rand")), .HeatList)
+               => tv(absInt(randomRandom(Seed:Int))
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
           <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
@@ -136,7 +136,7 @@ module LIBC-STDLIB
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
-                    ListItem(tv(N:Int, t(.Set, unsigned-int))))
+                    hrItem(tv(N:Int, t(.Set, unsigned-int))))
                => voidVal
           ...</k>
           <rand-nat> _ => N:Int </rand-nat>

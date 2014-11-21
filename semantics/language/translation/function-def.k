@@ -1,5 +1,5 @@
 module C-FUNCTION-DEF-SYNTAX
-     syntax K ::= initFunction(K, K) [strict]
+     syntax KItem ::= initFunction(K, K) [strict]
      syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
@@ -38,12 +38,12 @@ module C-FUNCTION-DEF
           )
           ~> calculateGotoMap(X, Label(funLabel(X), safeBody(X, Blk)))
           ~> processFunDef(X, Blk)
-          when isFunctionType(T) andBool notBool hasDupParams(T)
+          requires isFunctionType(T) andBool notBool hasDupParams(T)
           [structural]
-     rule (. => ERROR("FD1", "duplicate parameters in "
+     rule (.K => ERROR("FD1", "duplicate parameters in "
                +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _)
-          when hasDupParams(T)
+          requires hasDupParams(T)
 
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
@@ -52,20 +52,20 @@ module C-FUNCTION-DEF
      // the empty list so that arguments will be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
      rule toPrototype(T:Type) => elideDeclParams(emptyToVoid(T))
-          when notBool isOldStyleFunctionType(T)
+          requires notBool isOldStyleFunctionType(T)
      rule toPrototype(T:Type) => setParams(T, .List)
-          when isOldStyleFunctionType(T)
+          requires isOldStyleFunctionType(T)
 
      syntax Type ::= emptyToVoid(Type) [function]
      rule emptyToVoid(T:Type)
           => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
-          when isFunctionType(T)
-               andBool (getParams(T) ==List .List)
+          requires isFunctionType(T)
+               andBool (getParams(T) ==K .List)
      rule emptyToVoid(T:Type) => T
-          when notBool isFunctionType(T)
-               orBool (getParams(T) =/=List .List)
+          requires notBool isFunctionType(T)
+               orBool (getParams(T) =/=K .List)
 
-     syntax K ::= processFunDef(CId, K)
+     syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
                => checkFunDefType(X, Proto)
                ~> staticEval(X, Params, Blk)
@@ -76,27 +76,27 @@ module C-FUNCTION-DEF
           ...</functions>
           [structural]
 
-     syntax K ::= checkFunDefType(CId, Type)
-     rule checkFunDefType(X:CId, T:Type) => .
-          when notBool isFunctionType(getReturn(T))
+     syntax KItem ::= checkFunDefType(CId, Type)
+     rule checkFunDefType(X:CId, T:Type) => .K
+          requires notBool isFunctionType(getReturn(T))
                andBool notBool isArrayType(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X =/=K Identifier("main"))
           [structural]
      rule checkFunDefType(X:CId, T:Type) => checkMainDef(T)
-          when isVoidOrComplete(getReturn(T))
+          requires isVoidOrComplete(getReturn(T))
                andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
           [structural]
-     rule (. => UNDEF("FD2", "invalid return type in function definition.",
+     rule (.K => UNDEF("FD2", "invalid return type in function definition.",
                "6.7.6.3:1"))
           ~> checkFunDefType(_, T:Type)
-          when isFunctionType(getReturn(T)) orBool isArrayType(getReturn(T))
+          requires isFunctionType(getReturn(T)) orBool isArrayType(getReturn(T))
           [structural]
-     rule (. => UNDEF("FD3", "incomplete parameter type in "
+     rule (.K => UNDEF("FD3", "incomplete parameter type in "
                +String "function definition.", "6.7.6.3:4"))
           ~> checkFunDefType(_, T:Type)
-          when notBool areVoidOrComplete(getParams(T))
+          requires notBool areVoidOrComplete(getParams(T))
           [structural]
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
@@ -106,70 +106,73 @@ module C-FUNCTION-DEF
           orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
-     rule areVoidOrComplete(L:List) => all(L, 'isVoidOrComplete) ==K true
+     rule areVoidOrComplete(L:List) => true
+          requires all(L, 'isVoidOrComplete)
+     rule areVoidOrComplete(_) => false [owise]
 
-     syntax K ::= checkMainDef(Type)
+     syntax KItem ::= checkMainDef(Type)
      rule checkMainDef(t(_, functionType(t(_, int),
                ListItem(t(_, void)))))
-          => .
+          => .K
           [structural]
      rule checkMainDef(t(_, functionType(t(_, int),
                ListItem(t(_, int)) ListItem(T:Type))))
-          => .
-          when #isArgvType(T) ==K true
+          => .K
+          requires #isArgvType(T) ==K true
           [structural]
-     rule (. => ERROR("FD4", "definition of main requires a prototype (5.1.2.2.1p1)."))
+     rule (.K => ERROR("FD4", "definition of main requires a prototype (5.1.2.2.1p1)."))
           ~> checkMainDef(T:Type)
-          when isOldStyleFunctionType(T)
+          requires isOldStyleFunctionType(T)
           [structural]
-     rule (. => ERROR("FD5", "main must return an int.", 4) )
+     rule (.K => ERROR("FD5", "main must return an int.", 4) )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
-          when T =/=K int
+          requires T =/=K int
           [structural]
-     rule (. => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
+     rule (.K => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
-          when T =/=K int andBool T =/=K void
+          requires T =/=K int andBool T =/=K void
           [structural]
-     rule (. => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
+     rule (.K => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
           ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
-          when #isArgvType(T) =/=K true
+          requires #isArgvType(T) =/=K true
           [structural]
-     rule (. => ERROR("FD8", "main must have zero or two parameters.") )
+     rule (.K => ERROR("FD8", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
-          when lengthList(Params) >Int 2
+          requires size(Params) >Int 2
           [structural]
-     rule (. => ERROR("FD9", "main must have zero or two parameters.") )
+     rule (.K => ERROR("FD9", "main must have zero or two parameters.") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
-          when T =/=K void
+          requires T =/=K void
           [structural]
 
-     syntax Bool ::= "#isArgvType" "(" Type ")" [function]
+     syntax Bool ::= #isArgvType(Type) [function]
      rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
-          when T ==K char // char is an alias.
+          requires T ==K char // char is an alias.
      rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
-          when T ==K char
+          requires T ==K char
+     rule #isArgvType(_) => false [owise]
 
      rule <k> initFunction(
                tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
-               => .
+               => .K
           ...</k>
-          <functions> M:Map => M[Fun <- base(Loc)] </functions>
-          when isFunctionType(T) andBool (notBool base(Loc) in keys(M))
+          <functions> M:Map => M[base(Loc) <- Fun] </functions>
+          requires isFunctionType(T) andBool (notBool (base(Loc) in keys(M)))
           [structural]
 
-     syntax K ::= safeBody(CId, K) [function]
+     syntax KItem ::= safeBody(CId, K) [function]
 
      rule safeBody(X:CId, Blk:K)
           => Blk ~> Return(NothingExpression)
-          when X =/=K Identifier("main")
+          requires X =/=K Identifier("main")
      rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, t(.Set, int)))
 
-     syntax K ::= "returnToFileScope"
+     syntax KItem ::= "returnToFileScope"
 
-     syntax K ::= staticEval(CId, List, K)
+     syntax KItem ::= staticEval(CId, List, K)
      rule <k> staticEval(X:CId, Params:List, Blk:K)
                => pushBlock
                ~> dummyBind(Params)
@@ -180,38 +183,59 @@ module C-FUNCTION-DEF
           <curr-function> _ => X </curr-function>
           [structural]
 
-     rule <k> returnToFileScope => . ...</k>
+     rule <k> returnToFileScope => .K ...</k>
           <curr-function> _ => file-scope </curr-function>
           [structural]
 
      syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
-     rule hasDupParams(T:Type) => #hasDupParams'(T) ==K true
+     rule hasDupParams(T:Type) => #hasDupParams'(T)
      rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
      rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
+     rule #hasDupParams'(_) => false [owise]
 
+     // TODO(liyili2): no associative matching in Java currently, we will do it once we
+     // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
      syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
-     rule hasDupIds(P:List) => #hasDupIds'(P) ==K true
-     rule #hasDupIds'(
-               _
-               ListItem(typedDeclaration(_, X:CId))
-               _
-               ListItem(typedDeclaration(_, X:CId))
-               _
-          ) => true
+     syntax Bool ::= cIdIsInList(CId, List) [function]
 
-     syntax K ::= dummyBind(List)
-     rule dummyBind(.List) => .
+     rule cIdIsInList(_:CId, .List) => false
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List))
+          => true
+     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List))
+          => cIdIsInList(X, Tail)
+          requires X =/=K Y
+     rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
+          => cIdIsInList(X, Tail) [owise]
+
+     rule hasDupIds(P:List) => #hasDupIds'(P)
+
+     rule #hasDupIds'(.List) => false
+     rule #hasDupIds'(
+               ListItem(typedDeclaration(_, X:CId))
+               Tail:List)
+          => true
+          requires cIdIsInList(X, Tail)
+
+     rule #hasDupIds'(
+               ListItem(typedDeclaration(_, X:CId))
+               Tail:List)
+          => #hasDupIds'(Tail)
+          requires notBool cIdIsInList(X, Tail)
+     rule #hasDupIds'(ListItem(_) Tail:List) => #hasDupIds'(Tail) [owise]
+
+     syntax KItem ::= dummyBind(List)
+     rule dummyBind(.List) => .K
           [structural]
-     rule dummyBind(ListItem(variadic)) => .
+     rule dummyBind(ListItem(variadic)) => .K
           [structural]
-     rule dummyBind(ListItem(typedDeclaration(T:Type, _))) => .
-          when isVoidType(T)
+     rule dummyBind(ListItem(typedDeclaration(T:Type, _))) => .K
+          requires isVoidType(T)
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
           => addToEnv(X, symVal)
           ~> giveType(X, T)
           ~> dummyBind(Params)
-          when notBool isVoidType(T)
+          requires notBool isVoidType(T)
           [structural]
 endmodule

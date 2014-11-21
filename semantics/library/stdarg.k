@@ -24,10 +24,10 @@ module LIBC-STDARG
      another function; if that function invokes the \cinline{va_arg} macro with
      parameter \cinline{ap}, the value of \cinline{ap} in the calling function
      is indeterminate and shall be passed to the \cinline{va_end} macro prior
-     to any further reference to \cinline{ap}. 
+     to any further reference to \cinline{ap}.
 
      }*/
-     
+
      ////////////////////////////--
      // Stdarg.h
      ////////////////////////////--
@@ -35,8 +35,8 @@ module LIBC-STDARG
           // ,, "__va_start"
           // ,, "__va_end"
           // ,, "__va_copy"
-          
-          
+
+
      /*@ \fromStandard{\source[n1570]{\para{7.16.1}{1}}}{
      The \cinline{va_start} and \cinline{va_arg} macros described in this
      subclause shall be implemented as macros, not functions. It is unspecified
@@ -48,45 +48,45 @@ module LIBC-STDARG
      a corresponding invocation of the \cinline{va_end} macro in the same
      function.
      }*/
-          
+
      // va_list __va_start(va_list* ap, void* pN);
      // fixme can add lots of checks here
      // tool fixme, change Value to K and unquote error
      rule [va-start]:
-          prepareBuiltin(Identifier("__va_start"), 
-               ListItem(ApLoc:KResult)
-               ListItem(ArgLoc:KResult))
+          prepareBuiltin(Identifier("__va_start"),
+               hrItem(ApLoc:KResult) hs::
+               hrItem(ArgLoc:KResult))
           => Computation(*(ApLoc) := incSymbolic(ArgLoc))
                ~> voidVal
           [structural]
-     
+
      rule [va-inc-start]:
-          prepareBuiltin(Identifier("__va_inc"), 
-               ListItem(ApLoc:RValue) 
-               ListItem(Size:RValue))
+          prepareBuiltin(Identifier("__va_inc"),
+               hrItem(ApLoc:TypedValue) hs::
+               hrItem(Size:TypedValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
-                    
-     syntax K ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
-          [strict(3(context('reval), result(RValue)))]
+
+     syntax KItem ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
+     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
      // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:RValue, _, Ap:KResult)
+          va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
-          [structural]                  
-          
+          [structural]
+
      // fixme can do lots of checks here too
      rule [va-copy]:
-          prepareBuiltin(Identifier("__va_copy"), 
-               ListItem(ApLoc:KResult) 
-               ListItem(Other:KResult))
+          prepareBuiltin(Identifier("__va_copy"),
+               hrItem(ApLoc:KResult) hs::
+               hrItem(Other:KResult))
           => Computation(*(ApLoc) := Other) ~> voidVal
           [structural]
-          
+
      // fixme can do lots of checks here too
      rule [va-end]:
           prepareBuiltin(Identifier("__va_end"),
-               ListItem(_:KResult)) => voidVal
+               hrItem(_:KResult)) => voidVal
           [structural]
 endmodule

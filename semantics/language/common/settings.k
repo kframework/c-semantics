@@ -1,5 +1,5 @@
 module C-SETTINGS-SYNTAX
-     syntax Type ::= "cfg:charAlias" [function]
+     syntax BaseType ::= "cfg:charAlias" [function]
      syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]
      syntax Int ::= "cfg:sizeofSignedChar" [function]
@@ -26,7 +26,7 @@ module C-SETTINGS
      imports C-SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     
+
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
      // same range, representation, and behavior as either signed char or
      // unsigned char.  37)... Irrespective of the choice made, char is a
@@ -37,7 +37,7 @@ module C-SETTINGS
      rule cfg:charAlias => signed-char
 
      rule cfg:bitsPerByte => 8
-     
+
      rule cfg:sizeofBool => 1
      rule cfg:sizeofSignedChar => 1
      rule cfg:sizeofShortInt => 2
@@ -50,14 +50,14 @@ module C-SETTINGS
      rule cfg:sizeofEnum => cfg:sizeofInt
 
      rule cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
-     
+
      rule cfg:mtxPlain => 0
 
      rule cfg:sizeut => t(.Set, unsigned-int)
      rule cfg:wcharut => t(.Set, int)
      rule cfg:ptrsize => 4
      rule cfg:ptrdiffut => t(.Set, int)
-     
+
      rule cfg:enumMin => min(t(.Set, int))
      rule cfg:enumMax => max(t(.Set, int))
 endmodule

@@ -1,7 +1,7 @@
 module C-DECL-TAGGED-SYNTAX
      // Not defined, just used.
-     syntax K ::= addGlobalTag(CId, FieldInfo)
-     syntax K ::= addLocalTag(CId, FieldInfo)
+     syntax KItem ::= addGlobalTag(CId, FieldInfo)
+     syntax KItem ::= addLocalTag(CId, FieldInfo)
 
      syntax FieldInfo ::= makeStructFieldInfo(List) [function]
      syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
@@ -25,25 +25,25 @@ module C-DECL-TAGGED
      // note that struct defs might appear buried in a type.
      rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
-          when L =/=List .List
+          requires L =/=K .List
           [structural]
-     rule (. => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
-          when L =/=List .List
+          requires L =/=K .List
           [structural]
-     rule (. => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
           [structural]
 
-     rule makeStructFieldInfo(L:List) 
+     rule makeStructFieldInfo(L:List)
           => makeStructFieldInfo'(
                incompleteToFlexibleArrayMember(L),
                0, .Map, .Map,
                incompleteToFlexibleArrayMember(L))
-          when L =/=List .List
+          requires L =/=K .List
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
@@ -55,24 +55,24 @@ module C-DECL-TAGGED
                , L':List
           )
           => makeStructFieldInfo'(L, V +Int byteSizeofType(T),
-               Types[T <- Field], Offsets[V <- Field], L')
-     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List) 
+               Types[Field <- T], Offsets[Field <- V], L')
+     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, Types, Offsets)
 
      // FIXME: chould check for some struct contraints here.
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T:Type, X:CId)) 
+          ListItem(typedDeclaration(T:Type, X:CId))
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
-          when isCompleteType(T)
+          requires isCompleteType(T)
      rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(Mods:Set, incompleteArrayType(T:Type)), X:CId)))
           => ListItem(typedDeclaration(t(Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
-          when L =/=List .List
+          requires L =/=K .List
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
@@ -83,11 +83,11 @@ module C-DECL-TAGGED
                , L':List
           )
           => makeUnionFieldInfo'(L,
-               Types[T <- Field], Offsets[0 <- Field], L')
-     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List) 
+               Types[Field <- T], Offsets[Field <- 0], L')
+     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, Types, Offsets)
 
-     syntax K ::= addTag(CId, FieldInfo)
+     syntax KItem ::= addTag(CId, FieldInfo)
      rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
                // Elide function parameter names in struct types.
                => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
@@ -98,7 +98,7 @@ module C-DECL-TAGGED
                => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
           ...</k>
           <curr-function> F:CId </curr-function>
-          when F =/=K file-scope
+          requires F =/=K file-scope
           [structural]
 
 endmodule
