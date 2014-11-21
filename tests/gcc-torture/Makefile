@@ -10,6 +10,7 @@ CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; fi
 
 .PHONY: test clean reference
+.PRECIOUS: %.kcc %.out
 
 test: ${TEST_RESULTS}
 
