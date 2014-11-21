@@ -11,11 +11,16 @@ CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else 
 
 .PHONY: test clean reference
 
-test: ${TEST_RESULTS}
+export K_NAILGUN := true
+
+test: start-server ${TEST_RESULTS}
 
 reference: ${REFERENCE_TEST_RESULTS}
 
-compare: ${TEST_COMPARISON}
+compare: start-server ${TEST_COMPARISON}
+
+start-server:
+	kserver > kserver.log 2>&1 &
 
 %.out: %.kcc
 	@echo -n "Running $<... "
@@ -38,4 +43,5 @@ compare: ${TEST_COMPARISON}
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
-	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
+	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp kserver.log
+	stop-kserver
