@@ -10,17 +10,13 @@ CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; fi
 
 .PHONY: test clean reference
+.PRECIOUS: %.kcc %.out
 
-export K_NAILGUN := true
-
-test: start-server ${TEST_RESULTS}
+test: ${TEST_RESULTS}
 
 reference: ${REFERENCE_TEST_RESULTS}
 
-compare: start-server ${TEST_COMPARISON}
-
-start-server:
-	kserver > kserver.log 2>&1 &
+compare: ${TEST_COMPARISON}
 
 %.out: %.kcc
 	@echo -n "Running $<... "
@@ -43,5 +39,4 @@ start-server:
 	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
-	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp kserver.log
-	stop-kserver
+	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
