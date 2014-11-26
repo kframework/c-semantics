@@ -18,7 +18,8 @@ module C-TYPING-MISC
 
      rule char => cfg:charAlias
 
-     // Char types?
+     rule correspondingUnsignedType(t(S:Set, signed-char))
+          => t(S, unsigned-char)
      rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
      rule correspondingUnsignedType(t(S:Set, long-int))
@@ -26,6 +27,8 @@ module C-TYPING-MISC
      rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
 
+     rule correspondingSignedType(t(S:Set, unsigned-char))
+          => t(S, signed-char)
      rule correspondingSignedType(t(S:Set, unsigned-int))
           => t(S, int)
      rule correspondingSignedType(t(S:Set, unsigned-long-int))
@@ -344,8 +347,10 @@ module C-TYPING-MISC
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
-     //TODO(liyili): might not need the klabel for all the tagRestrict functions in this file 
-     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType) [function,klabel('tagRestrictSimpleType)]
+     //TODO(liyili): might not need the klabel for all the tagRestrict
+     //functions in this file 
+     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType)
+          [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:BaseType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
@@ -374,17 +379,20 @@ module C-TYPING-MISC
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
 
-     syntax List ::= tagRestrict(RestrictTag, List) [function,klabel('tagRestrictList)]
+     syntax List ::= tagRestrict(RestrictTag, List)
+          [function, klabel('tagRestrictList)]
      rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
-     syntax Map ::= tagRestrict(RestrictTag, Map) [function,klabel('tagRestrictMap)]
+     syntax Map ::= tagRestrict(RestrictTag, Map)
+          [function, klabel('tagRestrictMap)]
      rule tagRestrict(Tag:RestrictTag, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
-     syntax Set ::= tagRestrict(RestrictTag, Set) [function,klabel('tagRestrictSet)]
+     syntax Set ::= tagRestrict(RestrictTag, Set)
+          [function, klabel('tagRestrictSet)]
      rule tagRestrict(Tag:RestrictTag, S:Set)
           => SetItem(RestrictBlock(Tag)) S
           requires Restrict in S
