@@ -125,6 +125,10 @@ sub main {
             $krun_args{'--verbose'} = '';
       }
 
+      if (defined nativeLibraries()) {
+            $krun_args{'--native-libraries'} = '"' . nativeLibraries() . '"';
+      }
+
       if (defined $ENV{SEARCH}) {
             $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';

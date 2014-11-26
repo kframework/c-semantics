@@ -1,5 +1,7 @@
 module C-BUILTIN-SYNTAX
      syntax Map ::= "builtins" [function]
+                  | "semantics-defined-builtins" [function]
+                  | "native-defined-builtins"[function]
      syntax KItem ::= "handleBuiltin"
 endmodule
 
@@ -13,10 +15,18 @@ module C-BUILTIN
      imports C-TYPING-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
 
+     rule builtins => semantics-defined-builtins native-defined-builtins
+
+     syntax Map ::= "real-native-defined-builtins" "(" Set ")" [function, hook(C-SEMANTICS:nativeFunctions)]
+     rule native-defined-builtins => real-native-defined-builtins(keys(semantics-defined-builtins))
+
+     // defined as a K rule for if the hook is not defined
+     rule real-native-defined-builtins(_) => .Map
+
      // Types for library functions defined in the semantics. These are the
      // "definitive" types against which all calls are checked for
      // compatibility.
-     rule builtins =>
+     rule semantics-defined-builtins =>
           "__debug" |-> fun(void, int)
           "__fslCloseFile" |-> fun(int, int)
           "__fslFGetC" |-> fun(int, int, unsigned-long-long-int)

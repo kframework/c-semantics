@@ -8,6 +8,7 @@ require "stdlib.k"
 require "string.k"
 require "threads.k"
 require "time.k"
+require "native.k"
 
 module C-LIBRARY
      ////////////////////////////////
@@ -23,5 +24,7 @@ module C-LIBRARY
      imports LIBC-STRING
      imports LIBC-THREADS
      imports LIBC-TIME
+
+     imports C-NATIVE-BRIDGE
 
 endmodule
