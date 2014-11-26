@@ -104,7 +104,7 @@ module C-STMT-GOTO
                F |-> K:K
           ...</goto-map>
      rule preprocessGoto(map(M:Map), Lbl:CId)
-          => preprocessGoto(theMapLookup(M, Lbl), Lbl)
+          => preprocessGoto(lookup(M, Lbl), Lbl)
      rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
           requires getKLabel(GotoInfo) =/=KLabel 'map
                andBool getKLabel(Lbl) =/=KLabel 'funLabel
@@ -199,7 +199,7 @@ module C-STMT-GOTO
                andBool subListEqualBack(ActualHistory, BlockNums)
           [structural]
 
-     rule <k> ( . => pushBlock
+     rule <k> (.K => pushBlock
                ~> addToHistory(getLastOfList(
                         getSubListBack(ActualHist, BlockNums)))
                ~> addVariablesForBlock(getLastOfList(

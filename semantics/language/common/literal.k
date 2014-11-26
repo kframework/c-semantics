@@ -39,9 +39,12 @@ module C-LITERAL
 
      // Included for symmetry.
      syntax IntConstant ::= decimalConstant(Int)
-     rule DecimalConstant(N:Int) => decimalConstant(N) [anywhere,structural]
-     rule StringLiteral(S:String) => stringLiteral(S) [anywhere,structural]
-     rule WStringLiteral(list(S:List)) => wstringLiteral(S) [anywhere,structural]
+     rule DecimalConstant(N:Int) => decimalConstant(N)
+          [anywhere, structural]
+     rule StringLiteral(S:String) => stringLiteral(S)
+          [anywhere, structural]
+     rule WStringLiteral(list(S:List)) => wstringLiteral(S)
+          [anywhere, structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
 

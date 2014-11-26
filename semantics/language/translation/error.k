@@ -17,7 +17,6 @@ module C-TRANSLATION-ERROR
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-    //TODO(liyili2): write to stderr has problem, use 2 instead
      rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")
           ~> #write(2, "File: " +String File
@@ -31,21 +30,5 @@ module C-TRANSLATION-ERROR
           => #write(2, Msg +String "\n")
           ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
-
-     // rule [err00046]:
-     //      (.K => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
-     //      concretize(T:Type, dataList((piece(N:Int, _:Int),, _)))
-     //      requires hasFloatType(T) andBool (N >=Int 0)
-     //      [structural]
-
-// TODO(chathhorn): add this back.
-//      rule <k> (.K => ERROR("00215",
-//                "Found multiple declarations of " +String S
-//                +String " with incompatible types.", 15)) ~>
-//                verifyCompat(T:Type, Identifier(S:String))
-//           ...</k>
-//           <curr-tu> Tu:String </curr-tu>
-//           <raw-types>... kpair(Tu, Identifier(S)) |-> PrevT:Type </raw-types>
-//           requires notBool areCompatible(PrevT, T)
 
 endmodule
