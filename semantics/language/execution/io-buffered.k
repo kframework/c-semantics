@@ -57,12 +57,12 @@ module C-IO-BUFFERED
 
      // TODO(chathhorn): java port.
      //updateMap by an indicator 0/1 to decide which kind of update we should perform
-     syntax KItem ::= updateMapInKItem(K,SymLoc,Int,Int) [function]
-		    | #isInMap(K,SymLoc) [function]
-     rule updateMapInKItem(map(M:Map),Loc:SymLoc,I:Int,0) 
-		=> map(M[Loc <- maxInt(theMapLookup(M,Loc),I)])  
-     rule updateMapInKItem(map(M:Map),Loc:SymLoc,I:Int,1) 
-		=> map(M[Loc <- I])  
+     syntax KItem ::= updateMapInKItem(K, SymLoc, Int, Int) [function]
+                    | #isInMap(K, SymLoc) [function]
+     rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 0)
+          => map(M[Loc <- maxInt(theMapLookup(M, Loc), I)])
+     rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 1)
+          => map(M[Loc <- I])
      rule #isInMap(map(M:Map), Loc:SymLoc) => true
           requires Loc in keys(M)
      rule #isInMap(_, _) => false [owise]
@@ -71,18 +71,18 @@ module C-IO-BUFFERED
                 (Tag:RestrictTag => .K), _)
            ...</k>
            <modified>...
-                Tag |-> (MK:K => updateMapInKItem(MK,Loc,byteSizeofType(T),0))
+                Tag |-> (MK:K => updateMapInKItem(MK, Loc, byteSizeofType(T), 0))
            ...</modified>
-	  requires #isInMap(MK,Loc) ==K true
+          requires #isInMap(MK, Loc) ==K true
      rule <k> setModified(Loc:SymLoc, T:Type,
                (Tag:RestrictTag => .K), _)
            ...</k>
            <modified>...
-                Tag |-> (MK:K => updateMapInKItem(MK,Loc,byteSizeofType(T),1))
+                Tag |-> (MK:K => updateMapInKItem(MK, Loc, byteSizeofType(T), 1))
            ...</modified>
-	  requires #isInMap(MK,Loc) =/=K true
-     rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set) 
-		=> setModified(Loc, T, K, S)
+          requires #isInMap(MK, Loc) =/=K true
+     rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set)
+          => setModified(Loc, T, K, S)
      rule setModified(_, _, .K, .Set) => .K
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
@@ -478,25 +478,25 @@ module C-IO-BUFFERED
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, SI:Int, fieldInfo(
-               F1List:List (ListItem(typedDeclaration(_, F1:CId))),
-               F2Map:Map (F1 |-> T:Type),
-               F3Map:Map (F1 |-> Offset1:Int)
+               Fields:List (ListItem(typedDeclaration(_, FId:CId))),
+               Types:Map (FId |-> T:Type),
+               Offsets:Map (FId |-> FOffset:Int)
           ))), Offset:Int)
           => getTypeAtOffset(t(Mods, structType(SCId, SI, fieldInfo(
-               F1List,
-               F2Map (F1 |-> T),
-               F3Map (F1 |-> Offset1)
+               Fields,
+               Types (FId |-> T),
+               Offsets (FId |-> FOffset)
           ))), Offset)
           requires (Offset =/=Int 0)
-               andBool (Offset1 >Int Offset)
+               andBool (FOffset >Int Offset)
      rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
-               _ ListItem(typedDeclaration(_, F1:CId)),
-               _ F1 |-> T:Type,
-               _ F1 |-> Offset1:Int
+               _ ListItem(typedDeclaration(_, FId:CId)),
+               _ FId |-> T:Type,
+               _ FId |-> FOffset:Int
           ))), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int Offset1)
+          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
-               andBool (Offset1 <=Int Offset)
+               andBool (FOffset <=Int Offset)
      //TODO(liyili2): why it is nessary here
      syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
