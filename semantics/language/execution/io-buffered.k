@@ -60,7 +60,7 @@ module C-IO-BUFFERED
      syntax KItem ::= updateMapInKItem(K, SymLoc, Int, Int) [function]
                     | #isInMap(K, SymLoc) [function]
      rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 0)
-          => map(M[Loc <- maxInt(theMapLookup(M, Loc), I)])
+          => map(M[Loc <- maxInt(lookup(M, Loc), I)])
      rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 1)
           => map(M[Loc <- I])
      rule #isInMap(map(M:Map), Loc:SymLoc) => true
