@@ -27,6 +27,7 @@ module C-DYNAMIC-SYNTAX
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
+     syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
 
      // TODO(chathhorn): seems excessive to make this an CId. Also, it kinda
      // goes against our naming conventions.
@@ -70,12 +71,7 @@ module C-DYNAMIC
 
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
           => UnknownCabsLoc
-     rule filterCabsLoc(CabsLoc(S:String, I1:Int, I2:Int, I3:Int))
-          => CabsLoc(S, I1, I2, I3)
-          requires S =/=String "cabs loc unknown"
-               orBool I1 =/=Int -10
-               orBool I2 =/=Int -10
-               orBool I3 =/=Int 0
+     rule filterCabsLoc(L:CabsLoc) => L [owise]
 
      rule ExpressionLoc(K:K, _) => K
 

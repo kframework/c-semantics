@@ -75,8 +75,6 @@ module C-SYNTAX
      */
      syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
 
-     syntax CabsLoc ::= filterCabsLoc(CabsLoc)
-
      /*
      type typeSpecifier = (* Merge all specifiers into one type *)
      Tvoid                             (* Type specifier ISO 6.7.2 *)
@@ -421,7 +419,7 @@ module C-SYNTAX
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
      syntax Expression ::= ExpressionLoc(K, K) [function]
 
-     //must be declared as function, 
+     //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
      syntax Expression ::= "NothingExpression" [function]
 
