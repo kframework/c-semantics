@@ -348,7 +348,7 @@ module C-TYPING-MISC
      rule tagRestrict(_, variadic) => variadic
 
      //TODO(liyili): might not need the klabel for all the tagRestrict
-     //functions in this file 
+     //functions in this file
      syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType)
           [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:BaseType) => T

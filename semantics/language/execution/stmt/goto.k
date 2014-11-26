@@ -199,7 +199,7 @@ module C-STMT-GOTO
                andBool subListEqualBack(ActualHistory, BlockNums)
           [structural]
 
-     rule <k> ( . => pushBlock
+     rule <k> (.K => pushBlock
                ~> addToHistory(getLastOfList(
                         getSubListBack(ActualHist, BlockNums)))
                ~> addVariablesForBlock(getLastOfList(

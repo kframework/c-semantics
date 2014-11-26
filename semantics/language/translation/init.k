@@ -24,12 +24,11 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
-     //TODO(liyili2): write to stdout does not work
      rule <k> link
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
                ~> resolveReferences
-               ~> printSuccess("Translation successful!\n")
+               ~> printSuccess
           ...</k>
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
@@ -45,7 +44,7 @@ module C-TRANSLATION-INIT
           ...</k>
           <global> ThisObj:Bag </global>
 
-     rule <k> link => printSuccess("Translation successful!\n") ...</k>
+     rule <k> link => printSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
 
      rule (<T>...
@@ -184,28 +183,21 @@ module C-TRANSLATION-INIT
      //           <external-defs>... X |-> _  ...</external-defs>
      //      ...</global>))
 
-     // TODO(chathhorn): should fix this so it doesn't create duplicates keys
-     // in the external-types cell. I'm not entirely sure what the right fix
-     // is, though -- I suppose it must be to take the composite type. It's not
-     // terribly important, though, this is just to catch incompatible
-     // declarations across TUs, so duplicates vs. composite types probably
-     // doesn't change too much.
      syntax Bag ::= mergeObj(Bag, Bag) [function]
-     syntax Map ::= mergeInExternalDecls(Map,Map) [function]
-                  | mergeInExternalDecl(K,K,K,K,Map) [function]
+     syntax Map ::= mergeDecls(Map, Map) [function]
+                  | mergeDecl(K, K, K, Map) [function]
 
-     rule mergeInExternalDecls(.Map,M:Map) => M
-     rule mergeInExternalDecls((A:K |-> B:K) M:Map,M':Map) 
-          => mergeInExternalDecls(M,mergeInExternalDecl(A,B,.K,.K,M'))
-     rule mergeInExternalDecl(A:K,B:K,.K,.K,.Map) => A |-> B
-     rule mergeInExternalDecl(A:K,B:K,.K,.K,(A':K |-> B':K) M:Map) 
-          => mergeInExternalDecl(A,B,A':K,B':K,M)
-     rule mergeInExternalDecl(A:K,B:K,A':K,B':K, M:Map) 
-          => (A':K |-> B':K) mergeInExternalDecl(A,B,.K,.K,M)
-          requires (A =/=K A') andBool (A' =/=K .K)
-     rule mergeInExternalDecl(A:K, set(S:Set), A:K, set(S':Set), M:Map) 
-          => (A:K |-> set(S S')) M
- 
+     rule mergeDecls(.Map, M:Map) => M
+     rule mergeDecls((Key:K |-> Val:K) M:Map, M':Map)
+          => mergeDecls(M, mergeDecl(Key, Val, .K, M'))
+
+     rule mergeDecl(Key:K, Val:K, .K, M:Map) => (Key |-> Val) M
+          requires notBool (Key in keys(M))
+     rule mergeDecl(Key:K, Val:K, .K, (Key |-> Val':K) M:Map)
+          => mergeDecl(Key, Val, Val', M)
+     rule mergeDecl(Key:K, set(S:Set), set(S':Set), M:Map)
+          => (Key |-> set(S S')) M
+
      rule mergeObj(B:Bag, .Bag) => B
      rule mergeObj(.Bag, B:Bag) => B
      rule mergeObj(
@@ -254,7 +246,7 @@ module C-TRANSLATION-INIT
                <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
 
                <linking-state>
-                    <external-decls> mergeInExternalDecls(ExtDecls1, ExtDecls2) </external-decls>
+                    <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 
@@ -265,10 +257,10 @@ module C-TRANSLATION-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     //TODO(liyili2): write to stdout not work currently
-     //syntax KItem ::= "printSuccess"
-     //rule printSuccess => #write(1, "Translation successful!\n")
-     syntax KItem ::= printSuccess(String)
-     rule printSuccess(S:String) => #write(1,S)
+     syntax KItem ::= "printSuccess" | print(String)
+
+     // This message tells kcc the translation phase succeeded.
+     rule printSuccess => print("Translation successful!\n")
+     rule print(S:String) => #write(1, S)
 
 endmodule

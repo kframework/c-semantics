@@ -81,7 +81,7 @@ module LIBC-STDIO
      syntax C ::= vpair(K, K) [strict]
      syntax KResult ::= vpairResult(K, K)
 
-     rule vpair(K:KResult,K':KResult) => vpairResult(K,K')
+     rule vpair(K:KResult, K':KResult) => vpairResult(K, K')
 
      rule [nextvarg-start]:
           nextvarg(Loc:SymLoc, T:Type)

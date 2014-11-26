@@ -51,7 +51,7 @@ module COMPAT-SYNTAX
 
      //TODO(liyi): might not need this later
      syntax KItem ::= "dotK"
-                    | lookup(Map,K) [function]
+                    | lookup(Map, K) [function]
 endmodule
 
 module COMPAT
@@ -145,7 +145,7 @@ module COMPAT
 
      // TODO(liyi): might not need this after associative matching
      syntax SubKRItem ::= sItem(K) [strict]
-     syntax SubKRList ::= List{SubKRItem,"ss::"} [strict]
+     syntax SubKRList ::= List{SubKRItem, "ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]
 
      syntax SubResult ::= srItem(K)
@@ -223,6 +223,6 @@ module COMPAT
 
      //TODO(liyi): might not need this
      rule dotK => .K [structural]
-     rule lookup(K1:K |-> K2:K _:Map,K1) => K2
+     rule lookup(Key |-> Val:K _:Map, Key:K) => Val
 
 endmodule

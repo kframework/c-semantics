@@ -81,56 +81,39 @@ module C-MEMORY-WRITING
 
      syntax Set ::= keepUnion(Set) [function]
                   | stripUnion(Set) [function]
-                  | #keepUnion(K, Set, Set) [function]
-                  | #stripUnion(K, Set, Set) [function]
 
      rule keepUnion(.Set) => .Set
-     rule keepUnion(SetItem(K:K) S:Set) => #keepUnion(K, S, .Set)
-
-     rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
-               .Set, S':Set)
-          => SetItem(fromUnion(UnionLoc, F, Fields)) S'
-     rule #keepUnion(K:K, .Set, S':Set) => S'
-          requires getKLabel(K) =/=KLabel 'fromUnion
-     rule #keepUnion(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
-          SetItem(K':K) S:Set, S':Set)
-          => #keepUnion(K', S:Set, SetItem(fromUnion(UnionLoc, F, Fields)) S')
-     rule #keepUnion(K:K, SetItem(K':K) S:Set, S':Set)
-          => #keepUnion(K', S, S')
-          requires getKLabel(K) =/=KLabel 'fromUnion
+     rule keepUnion(SetItem(K:K) S:Set) =>
+          #if (getKLabel(K) ==KLabel 'fromUnion)
+          #then (SetItem(K) keepUnion(S))
+          #else keepUnion(S)
+          #fi
 
      rule stripUnion(.Set) => .Set
-     rule stripUnion(SetItem(K:K) S:Set) => #stripUnion(K, S, .Set)
+     rule stripUnion(SetItem(K:K) S:Set) =>
+          #if (getKLabel(K) ==KLabel 'fromUnion)
+          #then stripUnion(S)
+          #else (SetItem(K) stripUnion(S))
+          #fi
 
-     rule #stripUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo), .Set, S':Set)
-          => S'
-     rule #keepUnion(K:K, .Set, S':Set) => SetItem(K) S'
-          requires getKLabel(K) =/=KLabel 'fromUnion
-     rule #keepUnion(fromUnion(_:SymLoc, _:CId, _:FieldInfo),
-          SetItem(K':K) S:Set, S':Set)
-          => #keepUnion(K', S:Set, S')
-     rule #keepUnion(K:K, SetItem(K':K) S:Set, S':Set)
-          => #keepUnion(K', S, SetItem(K) S')
-          requires getKLabel(K) =/=KLabel 'fromUnion
-
-     rule (.K => makeUnionUnKnown(.K, keepUnion(S)))
+     rule (.K => makeUnionUnknown(.K, keepUnion(S)))
           ~> write-specific(
                loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
-          requires hasUnionMarker(loc(Base,Offset,S))
+          requires hasUnionMarker(loc(Base, Offset, S))
           [structural]
 
      syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-                    | makeUnionUnKnown(K, Set)
+                    | makeUnionUnknown(K, Set)
 
-     rule makeUnionUnKnown(.K, .Set) => .K
+     rule makeUnionUnknown(.K, .Set) => .K
           [structural]
-     rule makeUnionUnKnown(.K, SetItem(K:K) S:Set)
-          => makeUnionUnKnown(K, S)
+     rule makeUnionUnknown(.K, SetItem(K:K) S:Set)
+          => makeUnionUnknown(K, S)
           [structural]
-     rule makeUnionUnKnown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
+     rule makeUnionUnknown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
                S:Set)
           => allowInit(makeUnknown(UnionLoc, F, Fields))
-          ~> makeUnionUnKnown(.K, S)
+          ~> makeUnionUnknown(.K, S)
           [structural]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
