@@ -81,14 +81,10 @@ module C-TYPING-PREDICATES
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(_, _) => false [owise]
 
-     rule isBasicType(T:Type) => #isBasic(T)
-
-     syntax Bool ::= #isBasic(Type) [function]
-
-     rule #isBasic(t(_, T:SimpleType)) => true
+     rule isBasicType(t(_, T:SimpleType)) => true
           requires T in basicTypes
-     rule #isBasic(t(_, enumType(_))) => true
-     rule #isBasic(_) => false [owise]
+     rule isBasicType(t(_, enumType(_))) => true
+     rule isBasicType(_) => false [owise]
 
      syntax Set ::= "basicTypes" [function]
      rule basicTypes =>
@@ -136,46 +132,80 @@ module C-TYPING-PREDICATES
      rule hasIntegerType(T:Type)
           => hasUnsignedIntegerType(T) orBool hasSignedIntegerType(T)
 
-     rule hasUnsignedIntegerType(T:Type) => #hasUnsignedInteger(T)
-     rule hasSignedIntegerType(T:Type) => #hasSignedInteger(T)
-
-     syntax Bool ::= #hasUnsignedInteger(Type) [function]
-                   | #hasSignedInteger(Type) [function]
-
-     rule #hasUnsignedInteger(t(_, bitfieldType(T:Type, _)))
-          => #hasUnsignedInteger(T)
-     rule #hasUnsignedInteger(t(_, T:SimpleType)) => true
+     rule hasUnsignedIntegerType(t(_, bitfieldType(T:Type, _)))
+          => hasUnsignedIntegerType(T)
+     rule hasUnsignedIntegerType(t(_, T:SimpleType)) => true
           requires T in unsignedIntegerTypes
-     rule #hasUnsignedInteger(typedDeclaration(T:Type, _))
-          => #hasUnsignedInteger(T)
-     rule #hasUnsignedInteger(_) => false [owise]
+     rule hasUnsignedIntegerType(typedDeclaration(T:Type, _))
+          => hasUnsignedIntegerType(T)
+     rule hasUnsignedIntegerType(_) => false [owise]
 
-     rule #hasSignedInteger(t(_, T:SimpleType)) => true
+     rule hasSignedIntegerType(t(_, T:SimpleType)) => true
           requires T in signedIntegerTypes
-     rule #hasSignedInteger(t(_, enumType(_))) => true
-     rule #hasSignedInteger(t(_, bitfieldType(T:Type, _)))
-          => #hasSignedInteger(T)
-     rule #hasSignedInteger(typedDeclaration(T:Type, _))
-          => #hasSignedInteger(T)
-     rule #hasSignedInteger(_) => false [owise]
+     rule hasSignedIntegerType(t(_, enumType(_))) => true
+     rule hasSignedIntegerType(t(_, bitfieldType(T:Type, _)))
+          => hasSignedIntegerType(T)
+     rule hasSignedIntegerType(typedDeclaration(T:Type, _))
+          => hasSignedIntegerType(T)
+     rule hasSignedIntegerType(_) => false [owise]
 
-     rule hasFloatType(T:Type) => #hasFloat(T)
-     rule hasCharType(T:Type) => #hasChar(T)
-     rule isUCharType(T:Type) => #isUChar(T)
+     rule hasFloatType(t(_, T:SimpleType)) => true
+          requires T in floatTypes
+     rule hasFloatType(typedDeclaration(T:Type, _)) => hasFloatType(T)
+     rule hasFloatType(_) => false [owise]
+
+     rule hasCharType(t(_, T:SimpleType)) => true
+          requires T in charTypes
+     rule hasCharType(typedDeclaration(T:Type, _)) => hasCharType(T)
+     rule hasCharType(_) => false [owise]
+
+     rule isUCharType(t(_, unsigned-char)) => true
+     rule isUCharType(typedDeclaration(T:Type, _)) => isUCharType(T)
+
      rule isWCharType(t(_, T:SimpleType)) => true
-          requires T ==K simpleType(cfg:wcharut) 
+          requires T ==K simpleType(cfg:wcharut)
      rule isWCharType(_) => false [owise]
-     rule isPointerType(T:Type) => #isPointer(T)
-     rule isBoolType(T:Type) => #isBoolT(T)
-     rule isArrayType(T:Type) => #isArray(T)
-     rule isFlexibleArrayType(T:Type) => #isFlexibleArray(T)
-     rule isVoidType(T:Type) => #isVoid(T)
-     rule isNoType(T:Type) => #isNoT(T)
+
+     rule isPointerType(t(_, pointerType(_))) => true
+     rule isPointerType(typedDeclaration(T:Type, _)) => isPointerType(T)
+     rule isPointerType(_) => false [owise]
+
+     rule isBoolType(t(_, bool)) => true
+     rule isBoolType(typedDeclaration(T:Type, _)) => isBoolType(T)
+     rule isBoolType(_) => false [owise]
+
+     rule isArrayType(t(_, arrayType(_, _))) => true
+     rule isArrayType(t(_, incompleteArrayType(_))) => true
+     rule isArrayType(t(_, flexibleArrayType(_))) => true
+     rule isArrayType(t(_, variableLengthArrayType(_, _))) => true
+     rule isArrayType(typedDeclaration(T:Type, _)) => isArrayType(T)
+     rule isArrayType(_) => false [owise]
+
+     rule isFlexibleArrayType(t(_, flexibleArrayType(_))) => true
+     rule isFlexibleArrayType(typedDeclaration(T:Type, _))
+          => isFlexibleArrayType(T)
+     rule isFlexibleArrayType(_) => false [owise]
+
+     rule isVoidType(t(_, void)) => true
+     rule isVoidType(typedDeclaration(T:Type, _)) => isVoidType(T)
+     rule isVoidType(_) => false [owise]
+
+     rule isNoType(t(_, no-type)) => true
+     rule isNoType(typedDeclaration(T:Type, _)) => isNoType(T)
+     rule isNoType(_) => false [owise]
 
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T)
-     rule isStructType(T:Type) => #isStruct(T)
-     rule isUnionType(T:Type) => #isUnion(T)
+
+     rule isStructType(t(_, structType(_, _, _))) => true
+     rule isStructType(t(_, incompleteStructType(_))) => true
+     rule isStructType(typedDeclaration(T:Type, _)) => isStructType(T)
+     rule isStructType(_) => false [owise]
+
+     rule isUnionType(t(_, unionType(_, _, _))) => true
+     rule isUnionType(t(_, incompleteUnionType(_))) => true
+     rule isUnionType(typedDeclaration(T:Type, _)) => isUnionType(T)
+     rule isUnionType(_) => false [owise]
 
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
@@ -183,18 +213,41 @@ module C-TYPING-PREDICATES
                orBool isIncompleteUnionType(T)
                orBool isVoidType(T))
 
-     rule isIncompleteArrayType(T:Type) => #isIncompleteArray(T)
-     rule isIncompleteStructType(T:Type) => #isIncompleteStruct(T)
-     rule isIncompleteUnionType(T:Type) => #isIncompleteUnion(T)
+     rule isIncompleteArrayType(t(_, incompleteArrayType(_))) => true
+     rule isIncompleteArrayType(t(_, flexibleArrayType(_))) => true
+     rule isIncompleteArrayType(typedDeclaration(T:Type, _))
+          => isIncompleteArrayType(T)
+     rule isIncompleteArrayType(_) => false [owise]
 
-     rule isBitfieldType(T:Type) => #isBitfield(T)
-     rule isFunctionType(T:Type) =>  #isFunction(T)
+     rule isIncompleteStructType(t(_, incompleteStructType(_))) => true
+     rule isIncompleteStructType(typedDeclaration(T:Type, _))
+          => isIncompleteStructType(T)
+     rule isIncompleteStructType(_) => false [owise]
+
+     rule isIncompleteUnionType(t(_, incompleteUnionType(_))) => true
+     rule isIncompleteUnionType(typedDeclaration(T:Type, _))
+          => isIncompleteUnionType(T)
+     rule isIncompleteUnionType(_) => false [owise]
+
+     rule isBitfieldType(t(_, bitfieldType(_, _))) => true
+     rule isBitfieldType(typedDeclaration(T:Type, _)) => isBitfieldType(T)
+     rule isBitfieldType(_) => false [owise]
+
+     rule isFunctionType(t(_, functionType(_, _))) => true
+     rule isFunctionType(typedDeclaration(T:Type, _)) => isFunctionType(T)
+     rule isFunctionType(_) => false [owise]
+
      rule isOldStyleFunctionType(T:Type)
           => isFunctionType(T) andBool (oldStyle in getModifiers(T))
-     rule isFunctionPointerType(T:Type) => #isFunctionPointer(T)
+
+     rule isFunctionPointerType(t(_, pointerType(t(_, functionType(_, _)))))
+          => true
+     rule isFunctionPointerType(typedDeclaration(T:Type, _))
+          => isFunctionPointerType(T)
+     rule isFunctionPointerType(_) => false [owise]
 
      rule isTypedDeclaration(typedDeclaration(_, _)) => true
-     rule isTypedDeclaration(T:Type) => false [owise]
+     rule isTypedDeclaration(_) => false [owise]
 
      // /*@ \source[n1570]{\para{6.2.5}{18}}
      // Integer and floating types are collectively called arithmetic types.
@@ -211,125 +264,18 @@ module C-TYPING-PREDICATES
 
      rule isConstType(T:Type) => (Const in getQualifiers(T))
      rule isVolatileType(T:Type) => (Volatile in getQualifiers(T))
-     rule isRestrictType(T:Type) => true
-          requires #isRestrict(T)
-     rule isRestrictType(T:Type) => false [owise]
 
-     syntax Bool ::= #hasFloat(Type) [function]
-                   | #hasChar(Type) [function]
-                   | #isUChar(Type) [function]
-                   | #isPointer(Type) [function]
-                   | #isBoolT(Type) [function]
-                   | #isArray(Type) [function]
-                   | #isFlexibleArray(Type) [function]
-                   | #isVoid(Type) [function]
-                   | #isNoT(Type) [function]
-                   | #isStruct(Type) [function]
-                   | #isUnion(Type) [function]
-                   | #isIncompleteArray(Type)  [function]
-                   | #isIncompleteStruct(Type) [function]
-                   | #isIncompleteUnion(Type)  [function]
-                   | #isBitfield(Type) [function]
-                   | #isFunction(Type) [function]
-                   | #isFunctionPointer(Type) [function]
-                   | #isRestrict(Type) [function]
+     rule isRestrictType(t(SetItem(Restrict) _, _)) => true
+     rule isRestrictType(_) => false [owise]
 
-     rule #hasFloat(t(_, T:SimpleType)) => true
-          requires T in floatTypes
-     rule #hasFloat(typedDeclaration(T:Type, _)) => #hasFloat(T)
-     rule #hasFloat(_) => false [owise]
-
-     rule #hasChar(t(_, T:SimpleType)) => true
-          requires T in charTypes
-     rule #hasChar(typedDeclaration(T:Type, _)) => #hasChar(T)
-     rule #hasChar(_) => false [owise]
-
-     rule #isUChar(t(_, unsigned-char)) => true
-     rule #isUChar(typedDeclaration(T:Type, _)) => #isUChar(T)
-
-     rule #isPointer(t(_, pointerType(_))) => true
-     rule #isPointer(typedDeclaration(T:Type, _)) => #isPointer(T)
-     rule #isPointer(_) => false [owise]
-
-     rule #isBoolT(t(_, bool)) => true
-     rule #isBoolT(typedDeclaration(T:Type, _)) => #isBoolT(T)
-     rule #isBoolT(_) => false [owise]
-
-     rule #isArray(t(_, arrayType(_, _))) => true
-     rule #isArray(t(_, incompleteArrayType(_))) => true
-     rule #isArray(t(_, flexibleArrayType(_))) => true
-     rule #isArray(t(_, variableLengthArrayType(_, _))) => true
-     rule #isArray(typedDeclaration(T:Type, _)) => #isArray(T)
-     rule #isArray(_) => false [owise]
-
-     rule #isFlexibleArray(t(_, flexibleArrayType(_))) => true
-     rule #isFlexibleArray(typedDeclaration(T:Type, _)) => #isFlexibleArray(T)
-     rule #isFlexibleArray(_) => false [owise]
-
-     rule #isVoid(t(_, void)) => true
-     rule #isVoid(typedDeclaration(T:Type, _)) => #isVoid(T)
-     rule #isVoid(_) => false [owise]
-
-     rule #isNoT(t(_, no-type)) => true
-     rule #isNoT(typedDeclaration(T:Type, _)) => #isNoT(T)
-     rule #isNoT(_) => false [owise]
-
-     rule #isStruct(t(_, structType(_, _, _))) => true
-     rule #isStruct(t(_, incompleteStructType(_))) => true
-     rule #isStruct(typedDeclaration(T:Type, _)) => #isStruct(T)
-     rule #isStruct(_) => false [owise]
-
-     rule #isUnion(t(_, unionType(_, _, _))) => true
-     rule #isUnion(t(_, incompleteUnionType(_))) => true
-     rule #isUnion(typedDeclaration(T:Type, _)) => #isUnion(T)
-     rule #isUnion(_) => false [owise]
-
-     rule #isIncompleteArray(t(_, incompleteArrayType(_))) => true
-     rule #isIncompleteArray(t(_, flexibleArrayType(_))) => true
-     rule #isIncompleteArray(typedDeclaration(T:Type, _))
-          => #isIncompleteArray(T)
-     rule #isIncompleteArray(_) => false [owise]
-
-     rule #isIncompleteStruct(t(_, incompleteStructType(_))) => true
-     rule #isIncompleteStruct(typedDeclaration(T:Type, _))
-          => #isIncompleteStruct(T)
-     rule #isIncompleteStruct(_) => false [owise]
-
-     rule #isIncompleteUnion(t(_, incompleteUnionType(_))) => true
-     rule #isIncompleteUnion(typedDeclaration(T:Type, _))
-          => #isIncompleteUnion(T)
-     rule #isIncompleteUnion(_) => false [owise]
-
-     rule #isBitfield(t(_, bitfieldType(_, _))) => true
-     rule #isBitfield(typedDeclaration(T:Type, _)) => #isBitfield(T)
-     rule #isBitfield(_) => false [owise]
-
-     rule #isFunction(t(_, functionType(_, _))) => true
-     rule #isFunction(typedDeclaration(T:Type, _)) => #isFunction(T)
-     rule #isFunction(_) => false [owise]
-
-     rule #isFunctionPointer(t(_, pointerType(t(_, functionType(_, _)))))
-          => true
-     rule #isFunctionPointer(typedDeclaration(T:Type, _))
-          => #isFunctionPointer(T)
-     rule #isFunctionPointer(_) => false [owise]
-
-     rule #isRestrict(t(SetItem(Restrict) _, _)) => true
-     rule #isRestrict(_) => false [owise]
-
-     rule isNullPointerConstant(TV:TypedValue) => true
-          requires #isNPC(TV)
-     rule isNullPointerConstant(TV:TypedValue) => false [owise]
-
-     syntax Bool ::= "#isNPC" "(" TypedValue ")" [function]
-     rule #isNPC(tv(0, T:Type)) => true
+     rule isNullPointerConstant(tv(0, T:Type)) => true
           requires hasIntegerType(T)
                andBool fromConstantExpr(T)
-     rule #isNPC(tv(NullPointer, T:Type)) => true
+     rule isNullPointerConstant(tv(NullPointer, T:Type)) => true
           requires isPointerType(T)
                andBool (simpleType(innerType(T)) ==K void)
                andBool fromConstantExpr(T)
-     rule #isNPC(_) => false [owise]
+     rule isNullPointerConstant(_) => false [owise]
 
      // TODO(chathhorn)
      rule fromConstantExpr(_) => true

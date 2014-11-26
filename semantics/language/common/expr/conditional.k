@@ -28,7 +28,7 @@ module C-COMMON-EXPR-CONDITIONAL
      syntax TypeResult ::= trItem(K)
 
      //TODO(liyili2): might not need this list in the future.
-     syntax TypeList ::= List{TypeItem,"ts::"} [strict]
+     syntax TypeList ::= List{TypeItem, "ts::"} [strict]
      syntax List ::= tListToList(TypeList) [function]
 
      rule tListToList(.TypeList) => .List
@@ -77,7 +77,7 @@ module C-COMMON-EXPR-CONDITIONAL
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
-	/*
+     /*
      //(liyili2):add this following rule for checking T1 ==K T2
      rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
           => convertedType(T1))
@@ -86,7 +86,7 @@ module C-COMMON-EXPR-CONDITIONAL
                andBool hasArithmeticType(T1)
                andBool hasArithmeticType(T2)
           [structural]
-	*/
+     */
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      \broken{If both the second and third operands are pointers or one is a

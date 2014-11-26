@@ -94,22 +94,23 @@ module C-STMT-GOTO
 
      // declaration stack, actual local variables
      syntax KItem ::= processGotoSameBlock(List, List)
-		    | preprocessGoto(K,CId) [function]
+                    | preprocessGoto(K, CId) [function]
 
-     rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K,Lbl) </k>
+     rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K, Lbl) </k>
           <curr-function> F:CId </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
                F |-> K:K
           ...</goto-map>
-     rule preprocessGoto(map(M:Map),Lbl) => preprocessGoto(theMapLookup(M,Lbl),Lbl)
-     rule preprocessGoto(GotoInfo:K,Lbl) => processGoto(GotoInfo) 
-	  requires getKLabel(GotoInfo) =/=KLabel 'map 
-		   andBool getKLabel(Lbl) =/=KLabel 'funLabel
-     rule preprocessGoto(gotoObject(_, _, Blk:K, _, _),Lbl) 
-		=> Blk
-	  requires getKLabel(Lbl) ==KLabel 'funLabel
+     rule preprocessGoto(map(M:Map), Lbl:CId)
+          => preprocessGoto(theMapLookup(M, Lbl), Lbl)
+     rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
+          requires getKLabel(GotoInfo) =/=KLabel 'map
+               andBool getKLabel(Lbl) =/=KLabel 'funLabel
+     rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), Lbl:CId)
+          => Blk
+          requires getKLabel(Lbl) ==KLabel 'funLabel
 
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth:Int,
@@ -130,63 +131,64 @@ module C-STMT-GOTO
           [structural]
 
      // - second case, we're in a different block
-     syntax Bool ::= subListEqualBack(List,List) [function]     
-     syntax List ::= getSubListBack(List,List) [function]
-		   | getTopOfList(List) [function]
+     syntax Bool ::= subListEqualBack(List, List) [function]
+     syntax List ::= getSubListBack(List, List) [function]
+                   | getTopOfList(List) [function]
      syntax KItem ::= getLastOfList(List) [function]
 
-     rule subListEqualBack(.List,L:List) => true
-     rule subListEqualBack(ListItem(K:K) L:List,.List) => false
-     rule subListEqualBack(L:List ListItem(K:K),L':List ListItem(K:K)) 
-           => subListEqualBack(L:List,L':List) 
-     rule subListEqualBack(L:List ListItem(K:K),L':List ListItem(K':K)) 
-           => false 
+     rule subListEqualBack(.List, _) => true
+     rule subListEqualBack(ListItem(_) _, .List) => false
+     rule subListEqualBack(L:List ListItem(K:K), L':List ListItem(K))
+           => subListEqualBack(L:List, L':List)
+     rule subListEqualBack(_ ListItem(K:K), _ ListItem(K':K))
+           => false
           requires K =/=K K'
 
-     rule getSubListBack(.List,L:List) => L
-     rule getSubListBack(ListItem(K:K) L:List,.List) => .List
-     rule getSubListBack(L:List ListItem(K:K),L':List ListItem(K:K)) 
-           => getSubListBack(L:List,L':List) 
-     rule getSubListBack(L:List ListItem(K:K),L':List ListItem(K':K)) 
-           => .List 
+     rule getSubListBack(.List, L:List) => L
+     rule getSubListBack(ListItem(_) _:List, .List) => .List
+     rule getSubListBack(L:List ListItem(K:K), L':List ListItem(K))
+           => getSubListBack(L:List, L':List)
+     rule getSubListBack(_:List ListItem(K:K), _:List ListItem(K':K))
+           => .List
           requires K =/=K K'
 
-     rule getTopOfList(L:List ListItem(K:K)) => L
-     rule getLastOfList(L:List ListItem(K:K)) => K
- 
+     rule getTopOfList(L:List ListItem(_)) => L
+     rule getLastOfList(_:List ListItem(K:K)) => K
+
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
      rule [processGoto-pop-differing-1]:
-          <k> (. => popBlock) 
+          <k> (.K => popBlock)
                ~> processGoto(gotoObject(
                     _:Int, TargetBlockHistory:List, _, _, _))
           ...</k>
-          <block-history> 
+          <block-history>
                ListItem(BlockNum:Int) _:List
           </block-history>
           requires notBool BlockNum in TargetBlockHistory
-          [structural] 
-          
+          [structural]
+
      //  same
      rule [processGoto-pop-differing-2]:
-          <k> (. => popBlock) 
-               ~> processGoto(gotoObject(_:Int, 
-                    TheList:List, _, _, _))
+          <k> (.K => popBlock)
+               ~> processGoto(gotoObject(_:Int,
+                    BlockNums:List, _, _, _))
           ...</k>
           <block-history>
                ListItem(BlockNum:Int) ActualHistory:List
           </block-history>
-          requires BlockNum in TheList andBool
-               (notBool subListEqualBack(ListItem(BlockNum) ActualHistory,TheList))
-          [structural] 
-               
+          requires BlockNum in BlockNums andBool
+               (notBool subListEqualBack(ListItem(BlockNum) ActualHistory,
+               BlockNums))
+          [structural]
+
      //  once we share a history, we start to push
-     rule <k> processGoto(gotoObject(TargetDepth:Int, 
-                    TheList:List, K:K, LoopStack:List, DeclStack:List))
+     rule <k> processGoto(gotoObject(TargetDepth:Int,
+                    BlockNums:List, K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
-                    ~> processGotoDown(gotoObject(TargetDepth, 
-                         (getTopOfList(getSubListBack(ActualHistory,
-			TheList)) ListItem(CurrentBlock) ActualHistory),
+                    ~> processGotoDown(gotoObject(TargetDepth,
+                         (getTopOfList(getSubListBack(ActualHistory, BlockNums))
+                         ListItem(CurrentBlock) ActualHistory),
                          K, LoopStack, DeclStack))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
@@ -194,23 +196,23 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool subListEqualBack(ActualHistory,TheList)
-          [structural] 
-          
+               andBool subListEqualBack(ActualHistory, BlockNums)
+          [structural]
+
      rule <k> ( . => pushBlock
                ~> addToHistory(getLastOfList(
-                        getSubListBack(ActualHist,TheList)))
+                        getSubListBack(ActualHist, BlockNums)))
                ~> addVariablesForBlock(getLastOfList(
-                        getSubListBack(ActualHist,TheList)), DeclStk)
-               ) ~> processGotoDown(gotoObject(TargetDepth:Int, 
-                    TheList:List, _, _,
+                        getSubListBack(ActualHist, BlockNums)), DeclStk)
+               ) ~> processGotoDown(gotoObject(TargetDepth:Int,
+                    BlockNums:List, _, _,
                     DeclStk:List))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-		andBool subListEqualBack(ActualHist,TheList)
-          [structural] 
+               andBool subListEqualBack(ActualHist, BlockNums)
+          [structural]
 
      //  We've made it to the block above the target
      rule <k> L:KLabel(gotoObject(SIntDepth:Int,
@@ -279,7 +281,7 @@ module C-STMT-GOTO
           [structural]
 
      //  fixme this is wrong
-     rule addVariablesForBlock(_:Int, .List) => .K
+     rule addVariablesForBlock(_, .List) => .K
           [structural]
 
 endmodule

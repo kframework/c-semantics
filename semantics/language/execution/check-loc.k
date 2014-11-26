@@ -13,10 +13,10 @@ module C-CHECK-LOC
 
      imports COMPAT-SYNTAX
 
-     rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
+     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
           <modified>... Tag |-> _ ...</modified>
           [structural]
-     rule <k> enterRestrictScope(Tag:RestrictTag) => . ...</k>
+     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
           <modified> Tags:Map .Map => Tag |-> map(.Map) </modified>
           when notBool (Tag in keys(Tags))
           [structural]
