@@ -55,6 +55,7 @@ my $spec = q(#
       -o <file>			Place the output into <file>.
       #-verbose			Do not delete intermediate files.
       -w			Do not print warning messages.
+      -l<lib>...		Link semantics against native-compiled so file
       <files>...		C files to be compiled. [required]
       #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
       #-fsigned-char			Let the type "char" be signed, like "signed char."
@@ -181,6 +182,10 @@ sub main {
 
      my @file_args = ();
 
+     if ($args->{'-l'}) {
+          push(@file_args, '--native-libraries');
+          push(@file_args, (@{$args->{'-l'}}));
+     }
      if (scalar @objFiles == 0) {
           push(@file_args, '-cOBJ1=".Bag"');
           push(@file_args, '-cOBJ2=".Bag"');
@@ -247,6 +252,14 @@ sub main {
      print $programRunnerTmp "$programRunner\n";
 
      print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
+
+     if ($args->{'-l'}) {
+           my @nativeLibraries = @{$args->{'-l'}};
+
+           print $programRunnerTmp "sub nativeLibraries {\n return '@nativeLibraries';\n}\n";
+     } else {
+           print $programRunnerTmp "sub nativeLibraries {\n return undef;\n}\n";
+     }
 
      close($programRunnerTmp);
 
