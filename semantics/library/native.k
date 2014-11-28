@@ -6,5 +6,5 @@ module C-NATIVE-BRIDGE
 
   syntax Value ::= #nativeCall(String, List) [function, hook(C-SEMANTICS:nativeCall), impure]
 
-  rule prepareBuiltin(Identifier(S:String), H:HeatList) => #nativeCall(S, hListToList(H)) when S in keys(native-defined-builtins)
+  rule prepareBuiltin(Identifier(S:String), H:HeatList) => #nativeCall(S, hListToList(H)) when S in keys(nativeDefinedBuiltins)
 endmodule
