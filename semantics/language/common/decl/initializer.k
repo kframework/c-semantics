@@ -1,4 +1,6 @@
 module C-DECL-INITIALIZER-SYNTAX
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      syntax KResult ::= initializer(K)
 
@@ -22,13 +24,11 @@ module C-DECL-INITIALIZER
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-ZERO-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      rule <k> allowInit(K:K) => K ~> initDone ...</k>

@@ -1,4 +1,7 @@
 module C-BITSIZE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
+
      syntax Int ::= bitSizeofType(Type) [function]
      syntax Int ::= byteSizeofType(Type) [function]
 
@@ -21,8 +24,6 @@ module C-BITSIZE
      imports C-DECL-DEFINITION-SYNTAX
 
      imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX

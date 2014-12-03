@@ -1,4 +1,7 @@
 module C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      syntax CSize ::= SymVal
      syntax SymBase ::= SymVal
      syntax SymLoc ::= SymVal
@@ -9,14 +12,14 @@ module C-SYMBOLIC-VALUE-SYNTAX
 endmodule
 
 module C-SYMBOLIC-VALUE
+     imports C-SYMBOLIC-VALUE-SYNTAX
+
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX

@@ -1,4 +1,8 @@
 module C-DYNAMIC-SYNTAX
+     syntax SimpleType // defined in C-TYPING-SYNTAX
+     syntax Bits // defined in C-BITS-SYNTAX
+     syntax SymLoc // defined in C-SYMLOC-SYNTAX
+
      syntax Type ::= t(Set, SimpleType)
 
      syntax Value ::= "voidVal"

@@ -1,4 +1,6 @@
 module C-TYPE-BUILDER-SYNTAX
+     imports C-TYPING-SYNTAX
+
      syntax FlexType ::= Type | SimpleType
 
      syntax Type ::= fun(FlexType) [function]
@@ -24,7 +26,6 @@ module C-TYPE-BUILDER
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-INTERPRETATION-SYNTAX
-     imports C-TYPING-SYNTAX
 
      rule fun(R:FlexType)
           => fun(R, void)

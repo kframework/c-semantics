@@ -1,4 +1,6 @@
 module C-SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
+
      syntax SymBase ::= base(SymLoc) [function]
      syntax Int ::= offset(SymLoc) [function]
 
@@ -103,7 +105,6 @@ module C-SYMLOC
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 

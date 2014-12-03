@@ -1,4 +1,7 @@
 module C-DECL-GLOBAL-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      syntax Linkage ::= "external" | "internal"
 
      syntax Bool ::= isNaked(Type) [function]
@@ -21,12 +24,10 @@ module C-DECL-GLOBAL
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX

@@ -1,11 +1,12 @@
 module C-PROCESS-LABEL-SYNTAX
+     imports C-SYNTAX
+
      syntax KItem ::= calculateGotoMap(CId, K)
 endmodule
 
 module C-PROCESS-LABEL
      imports C-PROCESS-LABEL-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX

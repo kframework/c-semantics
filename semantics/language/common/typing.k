@@ -7,6 +7,9 @@ require "typing/predicates.k"
 require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
+     imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      syntax KItem ::= typeof(K)
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)

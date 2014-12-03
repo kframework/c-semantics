@@ -1,4 +1,6 @@
 module C-DECL-DEFINITION-SYNTAX
+     imports C-SYNTAX
+
      syntax KItem ::= declare(K, K) [strict(1)]
      syntax KItem ::= declareInternalVariable(CId, Type, K)
 
@@ -17,7 +19,6 @@ module C-DECL-DEFINITION
 
      imports C-MEMORY-ALLOC-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX

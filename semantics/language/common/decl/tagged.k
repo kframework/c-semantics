@@ -1,4 +1,5 @@
 module C-DECL-TAGGED-SYNTAX
+     imports C-SYNTAX
      // Not defined, just used.
      syntax KItem ::= addGlobalTag(CId, FieldInfo)
      syntax KItem ::= addLocalTag(CId, FieldInfo)
@@ -16,7 +17,6 @@ module C-DECL-TAGGED
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX

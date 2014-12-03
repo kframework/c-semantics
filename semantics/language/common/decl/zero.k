@@ -1,11 +1,12 @@
 module C-DECL-ZERO-SYNTAX
+     imports C-SYNTAX
+
      syntax KItem ::= zero(CId)
 endmodule
 
 module C-DECL-ZERO
      imports C-DECL-ZERO-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX

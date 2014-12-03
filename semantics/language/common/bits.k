@@ -1,4 +1,5 @@
 module C-BITS-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      syntax Bits ::= Int
 
