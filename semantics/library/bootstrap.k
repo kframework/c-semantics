@@ -1,4 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
+     imports C-SYNTAX
+
      syntax KItem ::= varg(K) [strict]
      //TODO(liyili): might not need this if we have hybrid label
      syntax KResult ::= vargResult(K)
@@ -9,7 +11,6 @@ endmodule
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
