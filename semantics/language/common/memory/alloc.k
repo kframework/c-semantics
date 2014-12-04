@@ -1,4 +1,7 @@
 module C-MEMORY-ALLOC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      syntax KItem ::= object(Type, Int, Map)
 
      syntax KItem ::= writeString(SymLoc, String)
@@ -23,9 +26,7 @@ module C-MEMORY-ALLOC
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-ERROR-SYNTAX

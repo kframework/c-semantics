@@ -1,4 +1,6 @@
 module COMPAT-SYNTAX
+     imports C-SYNTAX // Would like to get rid of this.
+
      //TODO(liyi): must not need the second one
      syntax KItem ::= l(KLabel) [avoid]
      syntax KItem ::= klist(KList) [function]
@@ -56,7 +58,6 @@ endmodule
 
 module COMPAT
      imports COMPAT-SYNTAX
-     imports C-SYNTAX // Would like to get rid of this.
 
      rule stringToList("") => .List
      rule stringToList(S:String)

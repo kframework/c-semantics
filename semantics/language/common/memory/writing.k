@@ -1,4 +1,6 @@
 module C-MEMORY-WRITING-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      // location, value
      syntax KItem ::= write(SymLoc, CValue, Type)
 
@@ -24,7 +26,6 @@ module C-MEMORY-WRITING
      imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 

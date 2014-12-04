@@ -1,4 +1,6 @@
 module LIBC-STDIO-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      // offset, type, length, checklength
      syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
           [strict(3, 4)]
@@ -14,7 +16,6 @@ module LIBC-STDIO
      imports C-BITSIZE-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX

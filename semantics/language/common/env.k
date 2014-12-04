@@ -1,4 +1,8 @@
 module C-ENV-SYNTAX
+     imports C-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= "populateFromGlobal"
@@ -7,9 +11,7 @@ module C-ENV-SYNTAX
 endmodule
 
 module C-ENV
-     imports C-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX

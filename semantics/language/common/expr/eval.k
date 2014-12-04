@@ -1,4 +1,6 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      // TODO(chathhorn): hackish, rename at least
      //TODO(liyili2): change it to function in order to solve anywhere problem
      syntax KItem ::= rkludge(K) [function]
@@ -16,7 +18,6 @@ module C-COMMON-EXPR-EVAL
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 

@@ -30,6 +30,8 @@ module C-SYNTAX
 
      syntax KResult ::= SpecifierElem
 
+     syntax Statement // defined in C-ABSTRACT-SYNTAX
+
      syntax C ::= CabsLoc
      syntax C ::= TypeSpecifier
      syntax C ::= Storage

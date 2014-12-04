@@ -1,4 +1,6 @@
 module C-FUNCTION-DEF-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      syntax KItem ::= initFunction(K, K) [strict]
      syntax Bool ::= hasDupParams(Type) [function]
 endmodule
@@ -8,7 +10,6 @@ module C-FUNCTION-DEF
 
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX

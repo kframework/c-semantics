@@ -1,4 +1,6 @@
 module C-IO-BUFFERED-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
 
      // deletes the base object from memory, given a location
@@ -20,7 +22,6 @@ module C-IO-BUFFERED
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX

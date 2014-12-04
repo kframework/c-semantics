@@ -1,4 +1,6 @@
 module C-COMMON-EXPR-REFERENCE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      syntax KItem ::= checkRestrict(SymLoc, Type)
 endmodule
 
@@ -9,7 +11,6 @@ module C-COMMON-EXPR-REFERENCE
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX

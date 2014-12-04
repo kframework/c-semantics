@@ -1,4 +1,6 @@
 module C-MEMORY-READING-SYNTAX
+     imports C-SYMLOC-SYNTAX
+
      // location, type
      syntax KItem ::= read(SymLoc, Type)
 
@@ -26,7 +28,6 @@ module C-MEMORY-READING
      imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 

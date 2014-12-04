@@ -1,4 +1,6 @@
 module C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      // interpret the result of arithmetic as in 6.5.4
      syntax KItem ::= arithInterpret(Type, BaseValue) [function]
      // as described in 6.3 // totype, fromvalue
@@ -14,7 +16,6 @@ module C-CONVERSION
 
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX

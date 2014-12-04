@@ -1,11 +1,12 @@
 module C-STMT-IF-THEN-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
      syntax Bool ::= isTruthValue(TypedValue) [function]
 endmodule
 
 module C-STMT-IF-THEN
      imports C-STMT-IF-THEN-SYNTAX
      imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 

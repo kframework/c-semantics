@@ -1,4 +1,6 @@
 module C-CHECK-LOC-SYNTAX
+     imports C-TYPING-SYNTAX
+
      syntax KItem ::= enterRestrictScope(RestrictTag)
 endmodule
 
@@ -9,7 +11,6 @@ module C-CHECK-LOC
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
