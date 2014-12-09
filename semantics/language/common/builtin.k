@@ -47,7 +47,6 @@ module C-BUILTIN
           "floor" |-> fun(double, double)
           "fmod" |-> fun(double, double, double)
           "free" |-> fun(void, ptr(void))
-          "getchar" |-> fun(int)
           "log" |-> fun(double, double)
           "longjmp" |-> fun(void, jmp_buf, int)
           "malloc" |-> fun(ptr(void), unsigned-int)

@@ -14,20 +14,28 @@ int puts(const char * str){
 	return printf("%s\n", str);
 }
 
-int __fslPutc(char c, int handle);
+int __fslPutc(unsigned char c, int handle);
 int __fslOpenFile(const char* filename, const char* mode);
 int __fslCloseFile(int handle);
 int __fslFGetC(int handle, unsigned long long int offset);
 int __fsl_next_fd = 3;
 
-int putc (char c, FILE* stream) {
+int fputc (int c, FILE* stream) {
 	return __fslPutc(c, stream->handle);
 }
 
+int putc(int c, FILE *stream) {
+	return fputc(c, stream);
+}
 
-FILE stdin_file = {0, 0, 0};
-FILE stdout_file = {0, 1, 0};
-FILE stderr_file = {0, 2, 0};
+int putchar(int c) {
+	return putc(c, stdout);
+}
+
+
+FILE stdin_file = {0, 0, 0, 0};
+FILE stdout_file = {0, 1, 0, 0};
+FILE stderr_file = {0, 2, 0, 0};
 FILE* stdin = &stdin_file;
 FILE* stdout = &stdout_file;
 FILE* stderr = &stderr_file;
@@ -60,15 +68,31 @@ int feof ( FILE * stream ) {
 	return stream->eof;
 }
 
+int ferror (FILE *stream) {
+	return stream->error;
+}
+
 int fgetc(FILE* stream){
+	if (stream->eof) {
+		return EOF;
+	}
 	int retval = __fslFGetC(stream->handle, 0); // offset is not being used
-	if (retval < 0) {
+	if (retval == -1) {
 		// stream->offset++;
 	// } else {
 		stream->eof = 1;
+		return EOF;
+	}
+	if (retval == -2) {
+		stream->error = 1;
+		return EOF;
 	}
 	//printf("read %x\n", retval);
 	return retval;
+}
+
+int getchar() {
+	return getc(stdin);
 }
 
 char* fgets (char* restrict str, int size, FILE* restrict stream){
