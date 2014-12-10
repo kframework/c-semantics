@@ -5,7 +5,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:sizeofSignedChar" [function]
      syntax Int ::= "cfg:sizeofShortInt" [function]
      syntax Int ::= "cfg:sizeofInt" [function]
-     syntax Int ::= "cfg:sizeofLongInt" [function]
+     syntax Int ::= "cfg:sizeofLongInt" [function, hook(C-SEMANTICS:long-size), impure]
      syntax Int ::= "cfg:sizeofLongLongInt" [function]
      syntax Int ::= "cfg:sizeofFloat" [function]
      syntax Int ::= "cfg:sizeofDouble" [function]

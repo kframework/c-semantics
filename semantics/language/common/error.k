@@ -14,7 +14,9 @@ module C-ERROR-SYNTAX
      syntax Error ::= "errorDummy"
      syntax KItem ::= assert(K, Error) [strict(1)]
 
-     syntax KItem ::= EXIT(String)
+     syntax ErrorExit ::= EXIT(String)
+
+     syntax Bool ::= "isErrorRecovery" [function, hook(C-SEMANTICS:isErrorRecovery), impure]
 endmodule
 
 module C-ERROR
@@ -34,6 +36,8 @@ module C-ERROR
      rule assert(true, _) => .K
      rule assert(A:KResult, K:K) => K
           requires A =/=K true
+
+     syntax KItem ::= EXITFunc(String) [function, hook(C-SEMANTICS:error), impure]
 
      syntax String ::= ErrorMsg(String, String, String, KList) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
@@ -63,18 +67,22 @@ module C-ERROR
      syntax ErrorRef ::= Int
 
      rule ERROR(Title:String, Msg:String)
-          => EXIT(ErrorMsg(Title, Msg, "", ""))
+          => EXITFunc(ErrorMsg(Title, Msg, "", ""))
      rule ERROR(Title:String, Msg:String, _:KList)
-          => EXIT(ErrorMsg(Title, Msg, "", ""))
+          => EXITFunc(ErrorMsg(Title, Msg, "", ""))
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
+          => EXITFunc(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
      rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
+          => EXITFunc(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
+          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
      rule CVUB(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
+          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
+
+     // defined as a K rule for if the hook is not defined
+     rule EXITFunc(S:String) => EXIT(S)
+     rule isErrorRecovery => false
 
      rule <k> (.K => ERROR("CID1",
                "Trying to look up identifier " +String S +String

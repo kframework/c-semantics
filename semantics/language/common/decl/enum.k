@@ -38,7 +38,8 @@ module C-DECL-ENUM
           [structural]
 
 
-     syntax KItem ::= enumInit(CId, K) [strict(2)]
+     syntax KItem ::= enumInit(CId, K)
+     context enumInit(_, HOLE => reval(HOLE))
      rule enumInit(X:CId, V:TypedValue)
           => Computation(X := V)
           requires hasIntegerType(type(V))

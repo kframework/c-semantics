@@ -50,7 +50,9 @@ FILE* fopen(const char *filename, const char *mode){
 	FILE* newFile = (FILE*)malloc(sizeof(FILE));
 	newFile->offset = 0;
 	newFile->handle = nextHandle;
-	
+	newFile->eof = 0;
+	newFile->error = 0;	
+
 	return newFile;
 }
 

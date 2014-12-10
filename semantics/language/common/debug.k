@@ -1,4 +1,4 @@
 module DEBUG-SYNTAX
-     syntax KItem ::= "HALT" | HALT(K)
+     syntax ErrorExit ::= "HALT" | HALT(K)
 endmodule
 
