@@ -95,22 +95,11 @@ module LIBC-STDIO
           requires value(Len) ==Int value(Len')
           [structural]
 
-     rule [putchar]:
-          prepareBuiltin(Identifier("putchar"),
-               hrItem(tv(N:Int, _)))
-          => writeToFD(1, N) ~> tv(N, t(.Set, int))
-          [structural]
-
      rule [fslPutc]:
           prepareBuiltin(Identifier("__fslPutc"),
                hrItem(tv(N:Int, _)) hs::
                hrItem(tv(H:Int, _)))
           => writeToFD(H, N) ~> tv(N, t(.Set, int))
-          [structural]
-
-     rule [getchar]:
-          prepareBuiltin(Identifier("getchar"), .HeatList)
-          => flush(1) ~> readFromFD(0)
           [structural]
 
      rule [fslFGetC]:

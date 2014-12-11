@@ -53,6 +53,11 @@ module LIBC-IO
           <fid> FD </fid>
           <next-byte> #EOF </next-byte>
           [observable]
+     rule <k> readFromFD(FD:Int) => tv(-2, t(.Set, int)) ...</k>
+          <fid> FD </fid>
+          <next-byte> E:IOError </next-byte> 
+          requires E =/=K #EOF
+     rule chrChar(E:IOError :>Int) => E
 // TODO(chathhorn): java port.
 //      rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
 //           [structural, simplification]

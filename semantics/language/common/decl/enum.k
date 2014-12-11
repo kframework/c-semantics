@@ -19,7 +19,7 @@ module C-DECL-ENUM
 
      rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), K:K)
           => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(Const), int), E),
+               t(SetItem(Static), int), E),
                // Skip calculating the initializer so we can force int type.
                initializer(enumInit(E, K)))
           ~> fillEnums-aux(
@@ -28,7 +28,7 @@ module C-DECL-ENUM
      rule fillEnums-aux(EnumDef(X:CId, list(
                ListItem(EnumItemInit(E:CId, Exp:K)) L:List)), _)
           => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(Const), int), E),
+               t(SetItem(Static), int), E),
                initializer(enumInit(E, Exp)))
           ~> fillEnums-aux(
                EnumDef(X, list(L)), Exp + tv(1, t(.Set, int)))
@@ -38,7 +38,8 @@ module C-DECL-ENUM
           [structural]
 
 
-     syntax KItem ::= enumInit(CId, K) [strict(2)]
+     syntax KItem ::= enumInit(CId, K)
+     context enumInit(_, HOLE => reval(HOLE))
      rule enumInit(X:CId, V:TypedValue)
           => Computation(X := V)
           requires hasIntegerType(type(V))
