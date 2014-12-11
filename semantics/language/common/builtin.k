@@ -54,7 +54,6 @@ module C-BUILTIN
           "mtx_lock" |-> fun(int, ptr(mtx_t))
           "mtx_unlock" |-> fun(int, ptr(mtx_t))
           "printf" |-> fun(int, restrict(ptr(const(char))), variadic)
-          "putchar" |-> fun(int, int)
           "rand" |-> fun(int)
           "realloc" |-> fun(ptr(void), ptr(void), unsigned-int)
           "setjmp" |-> fun(int, jmp_buf)
