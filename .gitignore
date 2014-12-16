@@ -1,0 +1,10 @@
+parser/*.o
+parser/*.cmi
+parser/*.cmx
+.*.swp
+semantics/c11*-kompiled
+dist
+parser/cparser
+parser/clexer.ml
+parser/cparser.ml
+parser/cparser.mli
