@@ -1,8 +1,11 @@
 module C-BUILTIN-SYNTAX
+     imports C-SYNTAX
+
      syntax Map ::= "builtins" [function]
                   | "semanticsDefinedBuiltins" [function]
                   | "nativeDefinedBuiltins"[function]
      syntax KItem ::= "handleBuiltin"
+                    | handleBuiltinConstant(CId)
 endmodule
 
 module C-BUILTIN
@@ -11,7 +14,6 @@ module C-BUILTIN
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
 
@@ -58,7 +60,7 @@ module C-BUILTIN
           "realloc" |-> fun(ptr(void), ptr(void), unsigned-int)
           "setjmp" |-> fun(int, jmp_buf)
           "sin" |-> fun(double, double)
-          "snprintf" |-> fun(int, restrict(ptr(char)), unsigned-int, restrict(ptr(const(char))), variadic)
+          "snprintf" |-> fun(int, restrict(ptr(char)), cfg:sizeut, restrict(ptr(const(char))), variadic)
           "sprintf" |-> fun(int, restrict(ptr(char)), restrict(ptr(const(char))), variadic)
           "sqrt" |-> fun(double, double)
           "srand" |-> fun(void, unsigned-int)

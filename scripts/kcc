@@ -40,6 +40,8 @@ my $TRANS_DEF =
 
 our @cppDefines = ();
 our @cppIncludeDirs = ();
+our @cppIncludes = ();
+our @cppUndefines = ();
 
 my $spec = q(#
       -c			Compile and assemble, but do not link.
@@ -49,8 +51,13 @@ my $spec = q(#
       -d			Keep intermediate files.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
 { push(@main::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+      -U <name>			Undefine <name> as a macro.
+{ push(@main::cppUndefines, " -U$name"); }
+      -E			Preprocess only.
       -I <dir>			Look for headers in <dir>.
 { push(@main::cppIncludeDirs, " -I$dir "); }
+      -include <file>		Add header to file during preprocessing.
+{ push(@main::cppIncludes, " -include $file "); }
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
       #-verbose			Do not delete intermediate files.
@@ -60,6 +67,7 @@ my $spec = q(#
       #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
       #-fsigned-char			Let the type "char" be signed, like "signed char."
       #-fbits-per-byte <num>		Sets the number of bits in a byte.
+      -fnative-libc			Link semantics against native C library.
       #[mutex: -funsigned-char -fsigned-char]
       -lm			Ignored
       -O[<level:/0|1|2|3|s/>]	Ignored
@@ -78,9 +86,17 @@ exit main();
 
 sub main {
      my @stdlib = ();
-     push(@stdlib, catfile($myDirectory, 'lib', 'libc.o'));
 
      $args->parse() or die "Failed to parse the command line.\n";
+
+     if ($args->{'-E'}) {
+          for (@{$args->{'<files>'}}) {
+            my $filename = preprocessOnly($args->{'-w'}, $_);
+            system("cat", "$filename.pre.gen");
+          }
+
+          return 0;
+     }
 
      if ($args->{'-c'}) {
           for (@{$args->{'<files>'}}) {
@@ -126,10 +142,32 @@ sub main {
           compile($_);
      }
 
-     if (! $args->{'-s'}) {
-          push(@objFiles, @stdlib);
+
+     my @file_args = ();
+
+     my $libc;
+     if ($args->{'-fnative-libc'}) {
+         $libc = 'c';
+     } else {
+         $libc = catfile($myDirectory, 'lib', 'libc.o');
      }
 
+     if ($args->{'-l'}) {
+          push(@stdlib, @{$args->{'-l'}});
+     }
+     if (!$args->{'-s'}) {
+          push(@stdlib, $libc);
+     }
+     if (@stdlib && $args->{'-fnative-libc'}) {
+          push(@file_args, '--native-libraries');
+          push(@file_args, "'@stdlib'");
+          if (grep /c/, @stdlib) {
+            push(@objFiles, catfile($myDirectory, 'lib', 'libc.o'));
+          }
+     } elsif (@stdlib) {
+          push(@objFiles, @stdlib);
+     }
+        
      # Reduce our objFiles down to at most two.
      mergeObjs(2);
 
@@ -180,12 +218,6 @@ sub main {
           '-cOPTIONS="(SetItem(DEBUG) .Set)"', 
      );
 
-     my @file_args = ();
-
-     if ($args->{'-l'}) {
-          push(@file_args, '--native-libraries');
-          push(@file_args, (@{$args->{'-l'}}));
-     }
      if (scalar @objFiles == 0) {
           push(@file_args, '-cOBJ1=".Bag"');
           push(@file_args, '-cOBJ2=".Bag"');
@@ -423,6 +455,13 @@ sub compile {
           $ppResult
           );
 
+     if ($args->{'-l'}) {
+          push(@krun_args, '--native-libraries');
+          push(@krun_args, (@{$args->{'-l'}}));
+          push(@krun_args_pretty, '--native-libraries');
+          push(@krun_args_pretty, (@{$args->{'-l'}}));
+     }
+
      my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
      my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
 
@@ -453,29 +492,31 @@ sub compile {
      }
 }
 
-sub preprocess {
+sub preprocessOnly {
      my ($nowarn, $inputFile) = (@_);
 
      my $PEDANTRY_OPTIONS = 
-          "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c99";
-     my $CPP_OPTIONS = "-CC -std=c99 -nostdlib -nodefaultlibs -U __GNUC__";
-
-     my $compilationLog = File::Temp->new( 
-          TEMPLATE => 'tmp-kcc-parsing-XXXX', 
-          SUFFIX => '.log', 
-          UNLINK => 0 );
-     push(@tempFiles, $compilationLog);
+          "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c11";
+     my $CPP_OPTIONS = "-CC -std=c11 -nostdlib -nodefaultlibs -U __GNUC__ -include $myDirectory/includes/kcc_settings.h";
 
      my $trueFilename = $inputFile;
-     my ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
-     my $fullfilename = catfile($directoryname, "$filename.c");
-     my $ppResult = "$filename.c11-translation";
+     my $filename;
+     my $directoryname;
+     my $suffix;
+     my $fullfilename;
+     if ($trueFilename eq '-') {
+          $fullfilename = '-';
+          $directoryname = '.';
+          $filename = 'stdin';
+     } else {
+          ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
+          $fullfilename = catfile($directoryname, "$filename.c");
 
-     (-e $fullfilename)
-          or die "$filename.c not found.";
-
+          (-e $fullfilename)
+               or die "$filename.c not found.";
+     }
      my $cppCommand = 
-          "gcc $PEDANTRY_OPTIONS $CPP_OPTIONS @main::cppDefines @main::cppIncludeDirs -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
+          "gcc-4.9 $PEDANTRY_OPTIONS $CPP_OPTIONS @main::cppDefines @main::cppUndefines @main::cppIncludeDirs @main::cppIncludes -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
 
      push(@tempFiles, "$filename.warnings.log");
      push(@tempFiles, "$filename.pre.gen");
@@ -493,11 +534,29 @@ sub preprocess {
      if (! $nowarn) {
           print join("\n", @lines);
      }
-     $retval = system(
-          "$cparser $filename.pre.gen --trueName $trueFilename 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
+
+     return $filename;
+}
+
+
+sub preprocess {
+     my ($nowarn, $inputFile) = (@_);
+
+     my $compilationLog = File::Temp->new( 
+          TEMPLATE => 'tmp-kcc-parsing-XXXX', 
+          SUFFIX => '.log', 
+          UNLINK => 0 );
+     push(@tempFiles, $compilationLog);
+
+     my $filename = preprocessOnly($nowarn, $inputFile);
+
+     my $ppResult = "$filename.c11-translation";
+
+          my $retval = system(
+          "$cparser $filename.pre.gen --trueName $inputFile 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
 
      open FILE, "$filename.warnings.log";
-     @lines = <FILE>;
+     my @lines = <FILE>;
      close FILE;
 
      if ($retval) {
