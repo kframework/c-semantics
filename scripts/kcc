@@ -285,10 +285,8 @@ sub main {
 
      print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
 
-     if ($args->{'-l'}) {
-           my @nativeLibraries = @{$args->{'-l'}};
-
-           print $programRunnerTmp "sub nativeLibraries {\n return '@nativeLibraries';\n}\n";
+     if (@stdlib && $args->{'-fnative-libc'}) {
+           print $programRunnerTmp "sub nativeLibraries {\n return '@stdlib';\n}\n";
      } else {
            print $programRunnerTmp "sub nativeLibraries {\n return undef;\n}\n";
      }
@@ -509,8 +507,8 @@ sub preprocessOnly {
           $directoryname = '.';
           $filename = 'stdin';
      } else {
-          ($filename, $directoryname, $suffix) = fileparse($inputFile, '.c');
-          $fullfilename = catfile($directoryname, "$filename.c");
+          ($filename, $directoryname, $suffix) = fileparse($inputFile, ('.c', '.h'));
+          $fullfilename = catfile($directoryname, "$filename$suffix");
 
           (-e $fullfilename)
                or die "$filename.c not found.";

@@ -102,20 +102,14 @@ module C-TYPING-MISC
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
 
-     // TODO(chathhorn): real floating point support.
-     rule fmin(t(_, float)) => 0.0 -Float (3.4 *Float (10.0 ^Float 38.0))
-     rule fmax(t(_, float)) => 3.4 *Float (10.0 ^Float 38.0)
+     rule fmin(t(_, float)) => minValueFloat(24, 8)
+     rule fmax(t(_, float)) => maxValueFloat(24, 8)
 
-     // TODO(chathhorn): maude's floats are double-precision.
-     // rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
-     // rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
-     rule fmin(t(_, double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
-     rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, double)) => minValueFloat(53, 11)
+     rule fmax(t(_, double)) => maxValueFloat(53, 11)
 
-     // rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
-     // rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
-     rule fmin(t(_, long-double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
-     rule fmax(t(_, long-double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, long-double)) => minValueFloat(64, 15)
+     rule fmax(t(_, long-double)) => maxValueFloat(64, 15)
 
      rule getParams(t(_, functionType(_, P:List))) => P
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)

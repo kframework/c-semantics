@@ -36,10 +36,14 @@ $(DIST_DIR)/c11-kompiled $(DIST_DIR)/c11-translation-kompiled: $(FILES_TO_DIST) 
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+	@touch $(DIST_DIR)/c11-translation-kompiled
+	@touch $(DIST_DIR)/c11-kompiled
 
 $(DIST_DIR)/c11-nd-kompiled: $(DIST_DIR)/c11-kompiled semantics $(SEMANTICS_DIR)/c11-nd-kompiled $(SEMANTICS_DIR)/c11-nd-thread-kompiled
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
+	@touch $(DIST_DIR)/c11-nd-kompiled
+	@touch $(DIST_DIR)/c11-nd-thread-kompiled
 
 $(DIST_DIR)/lib/libc.o: $(DIST_DIR)/c11-kompiled
 	@echo "Translating the standard library... ($(LIBC_DIR))"

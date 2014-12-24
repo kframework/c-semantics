@@ -57,7 +57,7 @@ module C-BUILTIN
           "mtx_unlock" |-> fun(int, ptr(mtx_t))
           "printf" |-> fun(int, restrict(ptr(const(char))), variadic)
           "rand" |-> fun(int)
-          "realloc" |-> fun(ptr(void), ptr(void), unsigned-int)
+          "realloc" |-> fun(ptr(void), ptr(void), cfg:sizeut)
           "setjmp" |-> fun(int, jmp_buf)
           "sin" |-> fun(double, double)
           "snprintf" |-> fun(int, restrict(ptr(char)), cfg:sizeut, restrict(ptr(const(char))), variadic)
