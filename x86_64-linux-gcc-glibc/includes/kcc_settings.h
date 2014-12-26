@@ -24,6 +24,4 @@
 
 #define __thread _Thread_local
 
-typedef void* __builtin_va_list;
-
 #endif

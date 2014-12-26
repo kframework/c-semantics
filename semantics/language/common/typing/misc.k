@@ -102,13 +102,13 @@ module C-TYPING-MISC
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
 
-     rule fmin(t(_, float)) => minValueFloat(24, 8)
+     rule fmin(t(_, float)) => 0.0f -Float maxValueFloat(24, 8)
      rule fmax(t(_, float)) => maxValueFloat(24, 8)
 
-     rule fmin(t(_, double)) => minValueFloat(53, 11)
+     rule fmin(t(_, double)) => 0.0 -Float maxValueFloat(53, 11)
      rule fmax(t(_, double)) => maxValueFloat(53, 11)
 
-     rule fmin(t(_, long-double)) => minValueFloat(64, 15)
+     rule fmin(t(_, long-double)) => Int2Float(0, 64, 15) -Float maxValueFloat(64, 15)
      rule fmax(t(_, long-double)) => maxValueFloat(64, 15)
 
      rule getParams(t(_, functionType(_, P:List))) => P
@@ -122,7 +122,8 @@ module C-TYPING-MISC
 
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
-     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+     
+rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
