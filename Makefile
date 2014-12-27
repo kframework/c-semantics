@@ -45,7 +45,7 @@ $(DIST_DIR)/c11-nd-kompiled: $(DIST_DIR)/c11-kompiled semantics $(SEMANTICS_DIR)
 	@touch $(DIST_DIR)/c11-nd-kompiled
 	@touch $(DIST_DIR)/c11-nd-thread-kompiled
 
-$(DIST_DIR)/lib/libc.o: $(DIST_DIR)/c11-kompiled
+$(DIST_DIR)/lib/libc.o: $(DIST_DIR)/c11-translation-kompiled
 	@echo "Translating the standard library... ($(LIBC_DIR))"
 	@$(DIST_DIR)/kcc -clib -o $(DIST_DIR)/lib/libc.o $(wildcard $(LIBC_DIR)/src/*.c) $(KCCFLAGS) -I $(LIBC_DIR)/src/
 	@echo "Done."

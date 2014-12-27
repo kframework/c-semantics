@@ -14,7 +14,7 @@ module C-TYPING-MISC
 
      rule simpleType(t(_, T:SimpleType)) => T
 
-     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
+     rule simplifyTruth(V:K) => V != tv(0, t(SetItem(IntegerConstant), int))
 
      rule char => cfg:charAlias
 
@@ -168,6 +168,10 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           SetItem(Noreturn)
           SetItem(Inline)
 
+     syntax Set ::= "constantModifiers" [function]
+     rule constantModifiers => 
+          SetItem(IntegerConstant)
+
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
@@ -192,6 +196,9 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
+
+     rule stripConstants(T:Type)
+          => setModifiers(T, getModifiers(T) -Set constantModifiers)
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
