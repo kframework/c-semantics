@@ -6,7 +6,7 @@
    Written by Jakub Jelinek, June 23, 2003.  */
 
 //;
-extern char *strcpy (char *, const char *);
+extern char *strcpy (char * restrict, const char * restrict);
 extern int memcmp (const void *, const void *, size_t);
 extern void abort (void);
 extern void exit (int);
