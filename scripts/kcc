@@ -206,6 +206,7 @@ sub main {
           '--output "binary"', 
           "--output-file \"$confOutTmp\"",
           "-d $TRANS_DEF",
+          '-w none',
           '--pattern-matching',
           '-cOPTIONS="(.Set)"', 
      );
@@ -372,6 +373,7 @@ sub mergeObjs {
                "-cOBJ1=\"$obj1\"",
                "-cOBJ2=\"$obj2\"",
                "-d $TRANS_DEF",
+               '-w none',
                '--pattern-matching',
                );
 
@@ -436,7 +438,7 @@ sub compile {
           '-cOBJ2=".Bag"',
           '--parser "cat"', 
           "-d $TRANS_DEF",
-          "--debug",
+          '-w none',
           '--pattern-matching',
           $ppResult
           );
