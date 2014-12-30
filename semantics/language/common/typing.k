@@ -136,6 +136,8 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= RestrictBlock(RestrictTag)
      syntax RestrictTag ::= Int | CId | "global"
 
+     syntax Modifier ::= "IntegerConstant"
+
      syntax Set ::= getStorageSpecifiers(Type) [function]
      syntax Set ::= getFunctionSpecifiers(Type) [function]
      // Gets function and storage specifiers.
@@ -147,6 +149,7 @@ module C-TYPING-SYNTAX
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
+     syntax Type ::= stripConstants(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]

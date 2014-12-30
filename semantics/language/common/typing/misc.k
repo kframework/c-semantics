@@ -14,7 +14,7 @@ module C-TYPING-MISC
 
      rule simpleType(t(_, T:SimpleType)) => T
 
-     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
+     rule simplifyTruth(V:K) => V != tv(0, t(SetItem(IntegerConstant), int))
 
      rule char => cfg:charAlias
 
@@ -102,20 +102,14 @@ module C-TYPING-MISC
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
 
-     // TODO(chathhorn): real floating point support.
-     rule fmin(t(_, float)) => 0.0 -Float (3.4 *Float (10.0 ^Float 38.0))
-     rule fmax(t(_, float)) => 3.4 *Float (10.0 ^Float 38.0)
+     rule fmin(t(_, float)) => 0.0f -Float maxValueFloat(24, 8)
+     rule fmax(t(_, float)) => maxValueFloat(24, 8)
 
-     // TODO(chathhorn): maude's floats are double-precision.
-     // rule fmin(t(_, double)) => -1.79 *Float (10.0 ^Float 308.0)
-     // rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
-     rule fmin(t(_, double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
-     rule fmax(t(_, double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, double)) => 0.0 -Float maxValueFloat(53, 11)
+     rule fmax(t(_, double)) => maxValueFloat(53, 11)
 
-     // rule fmin(t(_, long-double)) => -1.19 *Float (10.0 ^Float 4932.0)
-     // rule fmax(t(_, long-double)) => 1.19 *Float (10.0 ^Float 4932.0)
-     rule fmin(t(_, long-double)) => 0.0 -Float (1.79 *Float (10.0 ^Float 308.0))
-     rule fmax(t(_, long-double)) => 1.79 *Float (10.0 ^Float 308.0)
+     rule fmin(t(_, long-double)) => Int2Float(0, 64, 15) -Float maxValueFloat(64, 15)
+     rule fmax(t(_, long-double)) => maxValueFloat(64, 15)
 
      rule getParams(t(_, functionType(_, P:List))) => P
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
@@ -128,7 +122,8 @@ module C-TYPING-MISC
 
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
-     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+     
+rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
@@ -173,6 +168,10 @@ module C-TYPING-MISC
           SetItem(Noreturn)
           SetItem(Inline)
 
+     syntax Set ::= "constantModifiers" [function]
+     rule constantModifiers => 
+          SetItem(IntegerConstant)
+
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
@@ -197,6 +196,9 @@ module C-TYPING-MISC
 
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
+
+     rule stripConstants(T:Type)
+          => setModifiers(T, getModifiers(T) -Set constantModifiers)
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)

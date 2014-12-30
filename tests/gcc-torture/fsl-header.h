@@ -12,7 +12,7 @@ void free(void*);
 int strcmp(const char *, const char *);
 char* strncpy(char * restrict, const char * restrict, size_t);
 size_t strlen(const char *s);
-char *strcpy(char *, const char *);
+char *strcpy(char * restrict, const char * restrict);
 void* memset(void *, int, size_t);
 int printf(const char * restrict, ...);
 

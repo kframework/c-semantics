@@ -49,6 +49,9 @@ module C-STMT-IF-THEN
      rule maybeSymVal(noResult, noResult) => .K
      rule maybeSymVal(tv(_, T:Type), tv(_, T:Type)) => tv(symVal, T)
      rule maybeSymVal(voidVal, voidVal) => voidVal
-
+     rule maybeSymVal(voidVal, tv(_, T:Type)) => voidVal
+          requires isVoidType(T)
+     rule maybeSymVal(tv(_, T:Type), voidVal) => voidVal
+          requires isVoidType(T)
 endmodule
 

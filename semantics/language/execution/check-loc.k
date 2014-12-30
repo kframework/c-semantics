@@ -39,14 +39,17 @@ module C-CHECK-LOC
      rule <k> checkLoc'(loc((Base:SymBase => Base'), _)) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, _)) => errorLocInvalid ...</k>
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int)) => errorLocInvalid ...</k>
           <mem> Mem:Map </mem>
           <functions> Funs:Map </functions>
           <linkings> Links:Map </linkings>
           requires notBool (Base in keys(Mem))
                andBool notBool (Base in keys(Funs))
                andBool notBool (Base in keys(Links))
+               andBool notBool isNativeLoc(loc(Base, Offset))
           [structural]
+     rule checkLoc'(L:SymLoc) => .K
+          requires isNativeLoc(L)
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
      rule checkOffsets(Offset:Int, Len:Int) => .K

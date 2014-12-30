@@ -20,6 +20,8 @@ module C-SYMLOC-SYNTAX
      // is how we keep track of register-ness.
      syntax Duration ::= register(Int)
 
+     syntax Duration ::= "native"
+
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
@@ -31,6 +33,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isLinkerLoc(SymBase) [function, klabel('isLinkerLoc2)]
      syntax Bool ::= isArgvLoc(SymLoc) [function]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
+     syntax Bool ::= isNativeLoc(SymLoc) [function]
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
@@ -160,6 +163,10 @@ module C-SYMLOC
      rule isRegisterLoc(loc(_ @ register(_), _)) => true
      rule isRegisterLoc(loc(_ @ register(_), _, _)) => true
      rule isRegisterLoc(_) => false [owise]
+
+     rule isNativeLoc(loc(_ @ native, _)) => true
+     rule isNativeLoc(loc(_ @ native, _, _)) => true
+     rule isNativeLoc(_) => false [owise]
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 

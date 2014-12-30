@@ -87,6 +87,15 @@ module C-COMMON-EXPR-ASSIGNMENT
           requires isBoolType(T') andBool isPointerType(T)
           [structural]
 
+     /*@ \fromStandard{\source[n1570]{\para{6.6}{3}}}{
+     Constant expressions shall not contain assignment, increment, decrement,
+     function-call, or comma operators, except when they are contained within
+     a subexpression that is not evaluated.
+     }*/
+
+     rule lval(_, T':Type => stripConstants(T')) := tv(V:CValue, T:Type => stripConstants(T))
+          requires fromConstantExpr(T') orBool fromConstantExpr(T)
+
      rule (.K => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
           requires (isPointerType(T') andBool notBool isPointerType(T)

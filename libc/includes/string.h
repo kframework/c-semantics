@@ -6,7 +6,7 @@
 // string.h
 size_t strlen(const char *str);
 int strcmp(const char *str1, const char *str2);
-char *strcpy(char *s1, const char *s2);
+char *strcpy(char * restrict s1, const char * restrict s2);
 char *strncpy(char *restrict dest, const char *restrict src, size_t n);
 char *strcat(char *restrict dest, const char *restrict src);
 char *strncat(char *restrict s1, const char *restrict s2, size_t n);

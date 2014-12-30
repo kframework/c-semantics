@@ -14,24 +14,24 @@ module C-DECL-ENUM
      rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
           [structural]
 
-     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(.Set, int)))
+     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(SetItem(IntegerConstant), int)))
           [structural]
 
      rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), K:K)
           => declare(typedDeclaration(
-               t(SetItem(Static), int), E),
+               t(SetItem(Static) SetItem(IntegerConstant), int), E),
                // Skip calculating the initializer so we can force int type.
                initializer(enumInit(E, K)))
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), K + tv(1, t(.Set, int)))
+               EnumDef(X, list(L)), K + tv(1, t(SetItem(IntegerConstant), int)))
           [structural]
      rule fillEnums-aux(EnumDef(X:CId, list(
                ListItem(EnumItemInit(E:CId, Exp:K)) L:List)), _)
           => declare(typedDeclaration(
-               t(SetItem(Static), int), E),
+               t(SetItem(Static) SetItem(IntegerConstant), int), E),
                initializer(enumInit(E, Exp)))
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), Exp + tv(1, t(.Set, int)))
+               EnumDef(X, list(L)), Exp + tv(1, t(SetItem(IntegerConstant), int)))
           requires Exp =/=K NothingExpression
           [structural]
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
@@ -46,6 +46,10 @@ module C-DECL-ENUM
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
           ~> enumInit(_, tv(_, T:Type))
           requires notBool hasIntegerType(T)
+
+     rule t(S:Set (.Set => SetItem(IntegerConstant)), enumType(_))
+          requires notBool IntegerConstant in S
+          [structural, anywhere]
 
 endmodule
 

@@ -37,8 +37,6 @@ module C-DECL-RESOLUTION
           (<tu-linking-state>...
                <externals> .Map </externals>
           ...</tu-linking-state> => .Bag)
-          // TODO(chathhorn): move
-          <incomplete-tags> .Set </incomplete-tags>
           [structural]
 
      rule allocateIncompleteTentative(X:CId,

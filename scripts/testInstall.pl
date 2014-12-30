@@ -2,6 +2,7 @@
 my $kcc = $ARGV[0];
 my $filename = $ARGV[1];
 my $compiled = $ARGV[2];
+my $flags = $ARGV[3];
 
 my $testProgram1 = "#include <stdio.h>\nint main(void) {printf(\"x\"); return 42;}\n";
 
@@ -16,8 +17,8 @@ sub aTest {
 	open($fh, ">$filename") or die "Couldn't open $filename";
 	print $fh $testProgram;
 	close($fh);
-	print "Running: $kcc -o $compiled $filename...\n";
-	system("$kcc -o $compiled $filename") == 0
+	print "Running: $kcc -o $compiled $filename $flags...\n";
+	system("$kcc -o $compiled $filename $flags") == 0
 		or die "There was a problem compiling the test program.  The return value from kcc was: $?";
 
 	open P,"$compiled |" or die "Error running compiled program!";

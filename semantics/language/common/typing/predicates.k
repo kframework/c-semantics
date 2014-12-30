@@ -277,7 +277,9 @@ module C-TYPING-PREDICATES
                andBool fromConstantExpr(T)
      rule isNullPointerConstant(_) => false [owise]
 
-     // TODO(chathhorn)
-     rule fromConstantExpr(_) => true
+     // TODO(chathhorn): arithmetic and address constants
+     rule fromConstantExpr(T:Type) => true
+          requires (hasIntegerType(T) andBool IntegerConstant in getModifiers(T))
+     rule fromConstantExpr(_) => false [owise]
 
 endmodule
