@@ -20,10 +20,7 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
-# Set heap and stack size of krun
-$ENV{K_OPTS} = '-Xms64m -Xmx2048m -Xss32m -XX:+TieredCompilation';
-
-$::VERSION="0.1";
+$::VERSION="0.1 GNU-compatible";
 
 my $KRUN = "krun";
 
@@ -45,7 +42,7 @@ our @cppUndefines = ();
 
 my $spec = q(#
       -c			Compile and assemble, but do not link.
-      -clib			Compile and assemble into a single object file (for
+      -shared			Compile and assemble into a single object file (for
 				faster loading).
       #-i				Include support for runtime file io.
       -d			Keep intermediate files.
@@ -68,16 +65,27 @@ my $spec = q(#
       #-fsigned-char			Let the type "char" be signed, like "signed char."
       #-fbits-per-byte <num>		Sets the number of bits in a byte.
       -fnative-libc			Link semantics against native C library.
+      --help				Show usage information [undocumented]
+                        { $self->usage(0); }
+      -v				Show version information [undocumented]
+                                { $self->version(0); }
+
       #[mutex: -funsigned-char -fsigned-char]
-      -lm			Ignored
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
       -x <language>		Ignored
       -pedantic			Ignored
       -Wall			Ignored
+
+      -Xmx<size>		Passed to underlying JVM
                   
       There are additional options available at runtime. Try running your compiled
       program with HELP set (e.g., HELP=1 ./a.out) to see these.
+
+      The following lines of output are added to this message for compatibility
+      with GNU ld and libtool:
+
+      : supported targets: elf
       );
 
 my $args = Getopt::Declare->new($spec, ['-BUILD']);
@@ -88,6 +96,13 @@ sub main {
      my @stdlib = ();
 
      $args->parse() or die "Failed to parse the command line.\n";
+
+     my $heapSize = "2G";
+     if ($args->{'-Xmx'}) {
+          $heapSize = $args->{'-Xmx'};
+     }
+     # Set heap and stack size of krun
+     $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
 
      if ($args->{'-E'}) {
           for (@{$args->{'<files>'}}) {
@@ -149,7 +164,7 @@ sub main {
      if ($args->{'-fnative-libc'}) {
          $libc = 'c';
      } else {
-         $libc = catfile($myDirectory, 'lib', 'libc.o');
+         $libc = catfile($myDirectory, 'lib', 'libc.so');
      }
 
      if ($args->{'-l'}) {
@@ -162,7 +177,7 @@ sub main {
           push(@file_args, '--native-libraries');
           push(@file_args, "'@stdlib'");
           if (grep /c/, @stdlib) {
-            push(@objFiles, catfile($myDirectory, 'lib', 'libc.o'));
+            push(@objFiles, catfile($myDirectory, 'lib', 'libc.so'));
           }
      } elsif (@stdlib) {
           push(@objFiles, @stdlib);
@@ -341,32 +356,26 @@ sub mergeObjs {
 
      return if (scalar @objFiles < $n);
 
-     my $accum = File::Temp->new( 
-          TEMPLATE => 'tmp-kcc-accum-XXXX', 
-          SUFFIX => '.o', 
-          UNLINK => 0 );
-     push(@tempFiles, $accum);
-
      my $mergeStdout = File::Temp->new( 
           TEMPLATE => 'tmp-kcc-merge-stdout-XXXX', 
           SUFFIX => '.o', 
           UNLINK => 0 );
      push(@tempFiles, $mergeStdout);
 
-     my $objFile = shift @objFiles;
-
-     copy($objFile, $accum);
-
-     unshift(@objFiles, $accum);
-
      while (scalar @objFiles > $n) {
 
           my $obj1 = shift @objFiles;
           my $obj2 = shift @objFiles;
 
+          my $accum = File::Temp->new( 
+               TEMPLATE => 'tmp-kcc-accum-XXXX', 
+               SUFFIX => '.o', 
+               UNLINK => 0 );
+          push(@tempFiles, $accum);
+
           my @krun_args = (
                '--output "binary"',
-               "--output-file \"$obj1\"",
+               "--output-file \"$accum\"",
                '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
                '-cPGM=".K"',
                '-pOBJ1="kast --parser binary" -pOBJ2="kast --parser binary"',
@@ -387,7 +396,7 @@ sub mergeObjs {
                die "Error merging object files: $obj1, $obj2\n";
           }
 
-          unshift(@objFiles, $obj1);
+          push(@objFiles, $accum);
      }
 }
 

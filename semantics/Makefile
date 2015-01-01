@@ -18,12 +18,12 @@ default: fast
 
 c11-translation-kompiled: $(C11_TRANSLATION_FILES)
 	@echo "Kompiling the static C semantics..."
-	@$(KOMPILE) --backend java --smt none c11-translation.k -d "c11-translation-kompiled" -w all -v
+	@$(KOMPILE) --backend java --smt none c11-translation.k -d "c11-translation-kompiled" -w all -v --debug
 	@touch c11-translation-kompiled
 
 c11-kompiled: $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics..."
-	@$(KOMPILE) --backend java --smt none c11.k -d "c11-kompiled" -w all -v --transition "interpRule"
+	@$(KOMPILE) --backend java --smt none c11.k -d "c11-kompiled" -w all -v --transition "interpRule" --debug
 	@touch c11-kompiled
 
 c11-nd-kompiled: $(C11_FILES)

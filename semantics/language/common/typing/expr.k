@@ -82,6 +82,8 @@ module C-TYPING-EXPR
      }*/
      rule <type> SizeofExpression(_) => cfg:sizeut ...</type>
           [structural]
+     rule <type> SizeofType(_, _) => cfg:sizeut ...</type>
+          [structural]
 
      rule <type>
                t(S:Set, pointerType(T:Type)) + T':Type

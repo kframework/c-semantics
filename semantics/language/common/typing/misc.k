@@ -96,7 +96,8 @@ module C-TYPING-MISC
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
           requires hasIntegerType(T)
      rule inRange(V:Float, T:Type)
-          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T))) 
+          orBool isInfinite(V) orBool isNaN(V)
           requires hasFloatType(T)
 
      syntax Float ::= fmax(Type) [function]
