@@ -47,9 +47,5 @@ module C-DECL-ENUM
           ~> enumInit(_, tv(_, T:Type))
           requires notBool hasIntegerType(T)
 
-     rule t(S:Set (.Set => SetItem(IntegerConstant)), enumType(_))
-          requires notBool IntegerConstant in S
-          [structural, anywhere]
-
 endmodule
 
