@@ -20,7 +20,7 @@ FILES_TO_DIST = \
 
 default: dist
 
-fast: $(DIST_DIR)/lib/libc.o
+fast: $(DIST_DIR)/lib/libc.so
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
@@ -45,12 +45,12 @@ $(DIST_DIR)/c11-nd-kompiled: $(DIST_DIR)/c11-kompiled semantics $(SEMANTICS_DIR)
 	@touch $(DIST_DIR)/c11-nd-kompiled
 	@touch $(DIST_DIR)/c11-nd-thread-kompiled
 
-$(DIST_DIR)/lib/libc.o: $(DIST_DIR)/c11-translation-kompiled
+$(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled
 	@echo "Translating the standard library... ($(LIBC_DIR))"
-	@$(DIST_DIR)/kcc -shared -o $(DIST_DIR)/lib/libc.so $(wildcard $(LIBC_DIR)/src/*.c) $(KCCFLAGS) -I $(LIBC_DIR)/src/
+	@$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/lib/libc.so $(wildcard $(LIBC_DIR)/src/*.c) $(KCCFLAGS) -I $(LIBC_DIR)/src/
 	@echo "Done."
 
-$(DIST_DIR): $(DIST_DIR)/lib/libc.o
+$(DIST_DIR): $(DIST_DIR)/lib/libc.so
 	@echo "Testing kcc..."
 	@perl $(SCRIPTS_DIR)/testInstall.pl $(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c $(DIST_DIR)/testProgram.compiled $(KCCFLAGS)
 	@echo "Done."

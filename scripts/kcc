@@ -126,17 +126,6 @@ sub main {
           return 0;
      }
 
-     if ($args->{'-clib'}) {
-          for (@{$args->{'<files>'}}) {
-               compile($_);
-          }
-
-          # Reduce our objFiles all the way down to a single one.
-          mergeObjs(1);
-          move($objFiles[0], $args->{'-o'} || 'a.o');
-          return 0;
-     }
-
      # Otherwise, we're compiling an executable.
 
      # Classify file arguments as either obj files or src files based on
@@ -181,6 +170,16 @@ sub main {
           }
      } elsif (@stdlib) {
           push(@objFiles, @stdlib);
+     }
+
+     if ($args->{'-shared'}) {
+          if (defined $unppSourceFile) { 
+               compile($unppSourceFile);
+          }
+          # Reduce our objFiles all the way down to a single one.
+          mergeObjs(1);
+          move($objFiles[0], $args->{'-o'} || 'a.o');
+          return 0;
      }
         
      # Reduce our objFiles down to at most two.
