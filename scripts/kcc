@@ -47,7 +47,7 @@ my $spec = q(#
       #-i				Include support for runtime file io.
       -d			Keep intermediate files.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@main::cppDefines, " -D$name=\"" . ((defined $definition) ? "$definition" : "1") . "\" "); }
+{ push(@main::cppDefines, " -D$name=\Q$definition\E"); }
       -U <name>			Undefine <name> as a macro.
 { push(@main::cppUndefines, " -U$name"); }
       -E			Preprocess only.
@@ -55,6 +55,7 @@ my $spec = q(#
 { push(@main::cppIncludeDirs, " -I$dir "); }
       -include <file>		Add header to file during preprocessing.
 { push(@main::cppIncludes, " -include $file "); }
+      -L <dir>			Look for shared libraries in <dir>.
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
       #-verbose			Do not delete intermediate files.
@@ -76,6 +77,7 @@ my $spec = q(#
       -x <language>		Ignored
       -pedantic			Ignored
       -Wall			Ignored
+      -rpath <file>		Ignored
 
       -Xmx<size>		Passed to underlying JVM
                   
@@ -226,7 +228,7 @@ sub main {
      );
 
      my @krun_args_pretty = (
-          '--output "pretty"', 
+          '--output "kast"', 
           "--output-file \"$confOutPrettyTmp\"",
           "-d $TRANS_DEF",
           '--pattern-matching',
@@ -250,7 +252,6 @@ sub main {
           push(@file_args, '--parser "cat"');
           push(@file_args, $sourceFile);
      } else {
-          push(@file_args, '-pOBJ1="kast --parser ground -e" -pOBJ2="kast --parser ground -e"');
           push(@file_args, '-cPGM=".K"');
      }
 
@@ -355,14 +356,9 @@ sub mergeObjs {
 
      return if (scalar @objFiles < $n);
 
-     my $mergeStdout = File::Temp->new( 
-          TEMPLATE => 'tmp-kcc-merge-stdout-XXXX', 
-          SUFFIX => '.o', 
-          UNLINK => 0 );
-     push(@tempFiles, $mergeStdout);
+     my @pids = ();
 
-     while (scalar @objFiles > $n) {
-
+     while (scalar @objFiles + scalar @pids > $n) {
           my $obj1 = shift @objFiles;
           my $obj2 = shift @objFiles;
 
@@ -371,6 +367,12 @@ sub mergeObjs {
                SUFFIX => '.o', 
                UNLINK => 0 );
           push(@tempFiles, $accum);
+
+          my $mergeStdout = File::Temp->new( 
+               TEMPLATE => 'tmp-kcc-merge-stdout-XXXX', 
+               SUFFIX => '.o', 
+               UNLINK => 0 );
+          push(@tempFiles, $mergeStdout);
 
           my @krun_args = (
                '--output "binary"',
@@ -388,14 +390,37 @@ sub mergeObjs {
           my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
 
           print $cmd . "\n" if ($args->{'-d'});
-          system($cmd);
-
-          if (!checkTransSuccess($mergeStdout)) {
-               print "Command line: $cmd\n";
-               die "Error merging object files: $obj1, $obj2\n";
+          my $pid = fork();
+          if (!defined $pid) {
+            die "Error running process";
           }
+          if (!$pid) {
+            exec($cmd);
+            die "Unreachable";
+          }
+          my %data = (
+            'pid' => $pid,
+            'out' => $accum,
+            'stdout' => $mergeStdout,
+            'cmd' => $cmd,
+            'obj1' => $obj1,
+            'obj2' => $obj2
+          );
+          push(@pids, \%data);
 
-          push(@objFiles, $accum);
+          if (scalar @pids >= 4 || scalar @objFiles == 0) {
+            # finished a round, wait for results
+            while (scalar @pids > 0) {
+              my %data = %{shift @pids};
+              push(@objFiles, $data{'out'});
+              waitpid $data{'pid'}, 0;
+
+              if (!checkTransSuccess($data{'stdout'})) {
+                   print "Command line: $data{'cmd'}\n";
+                   die "Error merging object files: $data{'obj1'}, $data{'obj2'}\n";
+              }
+            }
+          }
      }
 }
 
@@ -452,7 +477,7 @@ sub compile {
           );
 
      my @krun_args_pretty = (
-          '--output "pretty"', 
+          '--output "kast"', 
           "--output-file \"$localOvalPretty\"",
           '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
           '-cOBJ1=".Bag"',

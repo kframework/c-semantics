@@ -149,7 +149,7 @@ module C-TYPING-EXPR
      operand. Then the right operand is evaluated; the result has its type and
      value.
      }*/
-     rule <type> Comma(list(ListItem(_:K) ListItem(K:K))) => K ...</type>
+     rule <type> Comma(list(L:List ListItem(K:K))) => K ...</type>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{5}}}{
