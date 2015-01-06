@@ -39,8 +39,10 @@ our @cppDefines = ();
 our @cppIncludeDirs = ();
 our @cppIncludes = ();
 our @cppUndefines = ();
+our @stdlib = ();
 
 my $spec = q(#
+      [strict]
       -c			Compile and assemble, but do not link.
       -shared			Compile and assemble into a single object file (for
 				faster loading).
@@ -60,8 +62,9 @@ my $spec = q(#
       -o <file>			Place the output into <file>.
       #-verbose			Do not delete intermediate files.
       -w			Do not print warning messages.
-      -l<lib>...		Link semantics against native-compiled so file
-      <files>...		C files to be compiled. [required]
+      -l<lib>			Link semantics against native-compiled so file
+{ push (@main::stdlib, $lib) }
+      <files>...		C files to be compiled. [required] [repeatable]
       #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
       #-fsigned-char			Let the type "char" be signed, like "signed char."
       #-fbits-per-byte <num>		Sets the number of bits in a byte.
@@ -78,6 +81,7 @@ my $spec = q(#
       -pedantic			Ignored
       -Wall			Ignored
       -rpath <file>		Ignored
+      -soname <file>		Ignored
 
       -Xmx<size>		Passed to underlying JVM
                   
@@ -95,8 +99,6 @@ my $args = Getopt::Declare->new($spec, ['-BUILD']);
 exit main();
 
 sub main {
-     my @stdlib = ();
-
      $args->parse() or die "Failed to parse the command line.\n";
 
      my $heapSize = "2G";
@@ -158,9 +160,6 @@ sub main {
          $libc = catfile($myDirectory, 'lib', 'libc.so');
      }
 
-     if ($args->{'-l'}) {
-          push(@stdlib, @{$args->{'-l'}});
-     }
      if (!$args->{'-s'}) {
           push(@stdlib, $libc);
      }
@@ -183,7 +182,7 @@ sub main {
           move($objFiles[0], $args->{'-o'} || 'a.o');
           return 0;
      }
-        
+
      # Reduce our objFiles down to at most two.
      mergeObjs(2);
 
@@ -428,15 +427,36 @@ sub classify {
      my @files = @_;
 
      for (@files) {
-          my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.o', '\.a'));
+          my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.o', '\.a', '\.so'));
 
-          if (($suffix eq '.o') or ($suffix eq '.a')) {
+          if (($suffix eq '.o') or ($suffix eq '.so')) {
                push(@objFiles, $_);
+          } elsif ($suffix eq '.a') {
+               extractStatic($_, $base, $suffix);
           } else {
                push(@srcFiles, $_);
           }
 
      }
+}
+
+sub extractStatic {
+  my ($file, $basename, $suffix) = (@_);
+  my $tempDir = File::Temp->newdir(
+      TEMPLATE => 'tmp-kcc-ar-XXXX',
+      CLEANUP => 0);
+  push (@tempFiles, $tempDir);
+  copy ($file, $tempDir);
+  system("cd $tempDir && ar -x $basename$suffix");
+  opendir my $dir, $tempDir or die "Cannot open directory: $tempDir";
+  my @files = readdir $dir;
+  closedir $dir;
+  for (@files) {
+    my ($base, $dir, $suffix) = fileparse($_, ('\.o', '\.a'));
+    if ($suffix eq '.o') {
+      push(@objFiles, "$tempDir/$_");
+    }
+  }
 }
 
 sub compile {
@@ -487,13 +507,6 @@ sub compile {
           '--pattern-matching',
           $ppResult
           );
-
-     if ($args->{'-l'}) {
-          push(@krun_args, '--native-libraries');
-          push(@krun_args, (@{$args->{'-l'}}));
-          push(@krun_args_pretty, '--native-libraries');
-          push(@krun_args_pretty, (@{$args->{'-l'}}));
-     }
 
      my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
      my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
@@ -646,8 +659,10 @@ sub interruptHandler {
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-     for (@tempFiles) {
-          unlink;
+     if (!$args->{'-d'}) {
+          for (@tempFiles) {
+               unlink;
+          }
      }
 }
 
