@@ -35,6 +35,8 @@ my $cparser = catfile($myDirectory, 'cparser');
 my $TRANS_DEF =
       catfile($myDirectory, "c11-translation-kompiled");
 
+my @originalArgv;
+
 our @cppDefines = ();
 our @cppIncludeDirs = ();
 our @cppIncludes = ();
@@ -46,7 +48,6 @@ my $spec = q(#
       -c			Compile and assemble, but do not link.
       -shared			Compile and assemble into a single object file (for
 				faster loading).
-      #-i				Include support for runtime file io.
       -d			Keep intermediate files.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
 { push(@main::cppDefines, " -D$name=\Q$definition\E"); }
@@ -54,27 +55,22 @@ my $spec = q(#
 { push(@main::cppUndefines, " -U$name"); }
       -E			Preprocess only.
       -I <dir>			Look for headers in <dir>.
-{ push(@main::cppIncludeDirs, " -I$dir "); }
+{ push(@main::cppIncludeDirs, '-I', $dir); }
       -include <file>		Add header to file during preprocessing.
-{ push(@main::cppIncludes, " -include $file "); }
+{ push(@main::cppIncludes, '-include', $file); }
       -L <dir>			Look for shared libraries in <dir>.
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
-      #-verbose			Do not delete intermediate files.
-      -w			Do not print warning messages.
       -l<lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
       <files>...		C files to be compiled. [required] [repeatable]
-      #-funsigned-char			Let the type "char" be unsigned, like "unsigned char."
-      #-fsigned-char			Let the type "char" be signed, like "signed char."
-      #-fbits-per-byte <num>		Sets the number of bits in a byte.
       -fnative-libc			Link semantics against native C library.
       --help				Show usage information [undocumented]
                         { $self->usage(0); }
       -v				Show version information [undocumented]
                                 { $self->version(0); }
+      --version				[ditto]
 
-      #[mutex: -funsigned-char -fsigned-char]
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
       -x <language>		Ignored
@@ -85,9 +81,6 @@ my $spec = q(#
 
       -Xmx<size>		Passed to underlying JVM
                   
-      There are additional options available at runtime. Try running your compiled
-      program with HELP set (e.g., HELP=1 ./a.out) to see these.
-
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
 
@@ -99,7 +92,12 @@ my $args = Getopt::Declare->new($spec, ['-BUILD']);
 exit main();
 
 sub main {
+     @originalArgv = @ARGV;
      $args->parse() or die "Failed to parse the command line.\n";
+
+     if (!$args->{'-s'}) {
+       push(@stdlib, 'c');
+     }
 
      my $heapSize = "2G";
      if ($args->{'-Xmx'}) {
@@ -109,207 +107,64 @@ sub main {
      $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
 
      if ($args->{'-E'}) {
-          for (@{$args->{'<files>'}}) {
-            my $filename = preprocessOnly($args->{'-w'}, $_);
-            system("cat", "$filename.pre.gen");
-          }
-
-          return 0;
+          return preprocess($args->{'-o'}. @{$args->{'<files>'}});
      }
 
      if ($args->{'-c'}) {
-          for (@{$args->{'<files>'}}) {
-               compile($_);
-          }
-
-          if ($args->{'-o'}) {
-               move($objFiles[0], $args->{'-o'}) 
-                    or die "Failed to move the generated program to its destination $args->{'-o'}: $!\n";
-          }
-
+          compile($args->{'-o'}, @{$args->{'<files>'}});
           return 0;
-     }
-
-     # Otherwise, we're compiling an executable.
-
-     # Classify file arguments as either obj files or src files based on
-     # extension.
-     classify(@{$args->{'<files>'}});
-
-     # Pull off the first source file to leave as source and compile the rest.
-     my $unppSourceFile = shift @srcFiles;
-     my $sourceFile;
-
-     if (defined $unppSourceFile) {
-          $sourceFile = preprocess($args->{'-w'}, $unppSourceFile);
-          (-e $sourceFile)
-               or die "Parsing failed for $unppSourceFile.\n";
-     }
-
-     for (@srcFiles) {
-          compile($_);
-     }
-
-
-     my @file_args = ();
-
-     my $libc;
-     if ($args->{'-fnative-libc'}) {
-         $libc = 'c';
-     } else {
-         $libc = catfile($myDirectory, 'lib', 'libc.so');
-     }
-
-     if (!$args->{'-s'}) {
-          push(@stdlib, $libc);
-     }
-     if (@stdlib && $args->{'-fnative-libc'}) {
-          push(@file_args, '--native-libraries');
-          push(@file_args, "'@stdlib'");
-          if (grep /c/, @stdlib) {
-            push(@objFiles, catfile($myDirectory, 'lib', 'libc.so'));
-          }
-     } elsif (@stdlib) {
-          push(@objFiles, @stdlib);
      }
 
      if ($args->{'-shared'}) {
-          if (defined $unppSourceFile) { 
-               compile($unppSourceFile);
-          }
-          # Reduce our objFiles all the way down to a single one.
-          mergeObjs(1);
-          move($objFiles[0], $args->{'-o'} || 'a.o');
+          classify(@{$args->{'<files>'}});
+          mergeObjs(1, 0);
+          move($objFiles[0], $args->{'-o'} || 'a.out');
           return 0;
      }
 
+     if ($args->{'-s'}) {
+          classify(@{$args->{'<files>'}});
+     } else {
+          classify(@{$args->{'<files>'}}, catfile($myDirectory, 'lib', 'libc.so'));
+     }
+
      # Reduce our objFiles down to at most two.
-     mergeObjs(2);
+     mergeObjs(2, 1);
 
      my $oval = $args->{'-o'} || 'a.out';
 
-     my $programRunnerTmp = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-runner-XXXX', 
-               SUFFIX => '.pl', 
-               UNLINK => 0 );
-     push(@tempFiles, $programRunnerTmp);
-
-     my $confOutTmp = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-conf-XXXX', 
-               SUFFIX => '.bin', 
-               UNLINK => 0 );
-     push(@tempFiles, $confOutTmp);
-
-     my $confOutPrettyTmp = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-conf-pretty-XXXX', 
-               SUFFIX => '.txt', 
-               UNLINK => 0 );
-     push(@tempFiles, $confOutPrettyTmp) if (!$args->{'-d'});
-
-     my $linkStdout = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-link-stdout-XXXX', 
-               SUFFIX => '.txt', 
-               UNLINK => 0 );
-     push(@tempFiles, $linkStdout);
+     my $programConfFile = tempFile(); 
 
      # At this point, we have 0-1 source files and 0-2 object files left for
      # the final call(s) to kcc. Setting up the arguments is kinda difficult
      # because we need to use different parsers if one of the config vars
      # should be empty.
 
-     my @krun_args = (
-          '--output "binary"', 
-          "--output-file \"$confOutTmp\"",
-          "-d $TRANS_DEF",
-          '-w none',
-          '--pattern-matching',
-          '-cOPTIONS="(.Set)"', 
-     );
+     my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $srcFiles[0], 1));
 
-     my @krun_args_pretty = (
-          '--output "kast"', 
-          "--output-file \"$confOutPrettyTmp\"",
-          "-d $TRANS_DEF",
-          '--pattern-matching',
-          '-cOPTIONS="(SetItem(DEBUG) .Set)"', 
-     );
-
-     if (scalar @objFiles == 0) {
-          push(@file_args, '-cOBJ1=".Bag"');
-          push(@file_args, '-cOBJ2=".Bag"');
-     } elsif (scalar @objFiles == 1) {
-          push(@file_args, '-cOBJ1=".Bag"');
-          push(@file_args, '-pOBJ2="kast --parser binary"');
-          push(@file_args, "-cOBJ2=\"$objFiles[0]\"");
-     } elsif (scalar @objFiles == 2) {
-          push(@file_args, '-pOBJ1="kast --parser binary" -pOBJ2="kast --parser binary"');
-          push(@file_args, "-cOBJ1=\"$objFiles[0]\"");
-          push(@file_args, "-cOBJ2=\"$objFiles[1]\"");
-     }
-
-     if (defined $sourceFile) {
-          push(@file_args, '--parser "cat"');
-          push(@file_args, $sourceFile);
-     } else {
-          push(@file_args, '-cPGM=".K"');
-     }
-
-     push (@krun_args, @file_args);
-     push (@krun_args_pretty, @file_args);
-
-     my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $linkStdout 2>&1";
-     my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
-
-     print $cmd . "\n" if ($args->{'-d'});
-     system($cmd);
-
-     print $cmd_pretty . "\n" if ($args->{'-d'});
-     system($cmd_pretty) if ($args->{'-d'});
-
-     open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
-     my $programRunner = join("", <FILE>);
-     close(FILE);
-
-     open(FILE, $confOutTmp) or die "Couldn't open file: $!\n";
-     binmode(FILE, ':raw');
+     open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
      my $programConf = join("", <FILE>);
      close(FILE);
 
-     my $gzippedConf;
+     open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
+     my $template = join("", <FILE>);
+     close(FILE);
 
-     gzip \$programConf => \$gzippedConf
-          or die "gzip failed: $GzipError\n";
+     $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
 
-     $programConf = encode_base64($gzippedConf);
-
-     if ($args->{'-d'}) {
-          print "Final configuration saved to $confOutPrettyTmp.\n";
-     }
-     if (!checkTransSuccess($linkStdout)) {
-          print "Error during translation.\n";
-          if (!$args->{'-d'}) {
-               die "Use \"kcc -d\" to get the final configuration.\n";
-          } else {
-               die "See the final configuration for details.\n";
-          }
+     if ($retval) {
+          error();
      }
 
-     $programRunner = performSpecializations($programRunner);
-
-     print $programRunnerTmp "$programRunner\n";
-
-     print $programRunnerTmp "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-
+     open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
+     print $programRunner "$template\n";
+     print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
      if (@stdlib && $args->{'-fnative-libc'}) {
-           print $programRunnerTmp "sub nativeLibraries {\n return '@stdlib';\n}\n";
+           print $programRunner "sub nativeLibraries {\n return '@stdlib';\n}\n";
      } else {
-           print $programRunnerTmp "sub nativeLibraries {\n return undef;\n}\n";
+           print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
      }
-
-     close($programRunnerTmp);
-
-     copy("$programRunnerTmp", $oval)
-          or die "Failed to move the generated program to its destination $oval: $!\n";
+     close($programRunner);
 
      my $numFilesChanged = chmod(0755, $oval);
 
@@ -319,91 +174,36 @@ sub main {
      return 0;
 }
 
-sub checkTransSuccess {
-     my ($file) = (@_);
-
-     open(OUT, "<$file");
-
-     my $success = 0;
-     my $output = "";
-
-     { 
-          local $/ = undef;
-          $output = <OUT>;
-     }
-
-     if ($output =~ /Translation successful!/) {
-          return 1;
-     } else {
-          print $output;
-          return 0;
-     }
-}
-
-sub performSpecializations {
-     my ($file) = (@_);
-
-     my $mainFileName = $args->{'<files>'}[0];
-
-     $file =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
-     $file =~ s?EXTERN_IDENTIFIER?$mainFileName?g;
-     return $file;
-}
-
 sub mergeObjs {
-     my ($n) = (@_);
-
-     return if (scalar @objFiles < $n);
+     my ($numObj, $numSrc) = (@_);
 
      my @pids = ();
 
-     while (scalar @objFiles + scalar @pids > $n) {
+     while (scalar @srcFiles > $numSrc) {
+          my $oval = tempFile();
+          compile($oval, shift @srcFiles);
+          push(@objFiles, $oval);
+     }
+
+     while (scalar @objFiles + scalar @pids > $numObj) {
           my $obj1 = shift @objFiles;
           my $obj2 = shift @objFiles;
 
-          my $accum = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-accum-XXXX', 
-               SUFFIX => '.o', 
-               UNLINK => 0 );
-          push(@tempFiles, $accum);
-
-          my $mergeStdout = File::Temp->new( 
-               TEMPLATE => 'tmp-kcc-merge-stdout-XXXX', 
-               SUFFIX => '.o', 
-               UNLINK => 0 );
-          push(@tempFiles, $mergeStdout);
-
-          my @krun_args = (
-               '--output "binary"',
-               "--output-file \"$accum\"",
-               '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
-               '-cPGM=".K"',
-               '-pOBJ1="kast --parser binary" -pOBJ2="kast --parser binary"',
-               "-cOBJ1=\"$obj1\"",
-               "-cOBJ2=\"$obj2\"",
-               "-d $TRANS_DEF",
-               '-w none',
-               '--pattern-matching',
-               );
-
-          my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $mergeStdout 2>&1";
-
-          print $cmd . "\n" if ($args->{'-d'});
+          my $accum = tempFile();
           my $pid = fork();
           if (!defined $pid) {
             die "Error running process";
           }
           if (!$pid) {
-            exec($cmd);
-            die "Unreachable";
+            my @cmd = getKRunCommand($accum, $obj1, $obj2, undef, 0);
+            if ($args->{'-d'}) {
+              print("krun '" . join("' '", @cmd) . "'\n");
+            }
+            exec('krun', @cmd);
           }
           my %data = (
             'pid' => $pid,
             'out' => $accum,
-            'stdout' => $mergeStdout,
-            'cmd' => $cmd,
-            'obj1' => $obj1,
-            'obj2' => $obj2
           );
           push(@pids, \%data);
 
@@ -414,9 +214,8 @@ sub mergeObjs {
               push(@objFiles, $data{'out'});
               waitpid $data{'pid'}, 0;
 
-              if (!checkTransSuccess($data{'stdout'})) {
-                   print "Command line: $data{'cmd'}\n";
-                   die "Error merging object files: $data{'obj1'}, $data{'obj2'}\n";
+              if ($? >> 8) {
+                   error();
               }
             }
           }
@@ -442,210 +241,139 @@ sub classify {
 
 sub extractStatic {
   my ($file, $basename, $suffix) = (@_);
+  -e $file or die "$file does not exist";
   my $tempDir = File::Temp->newdir(
       TEMPLATE => 'tmp-kcc-ar-XXXX',
       CLEANUP => 0);
   push (@tempFiles, $tempDir);
   copy ($file, $tempDir);
   system("cd $tempDir && ar -x $basename$suffix");
+  if ($? >> 8) {
+    die "failed to run ar -x";
+  }
   opendir my $dir, $tempDir or die "Cannot open directory: $tempDir";
   my @files = readdir $dir;
   closedir $dir;
   for (@files) {
-    my ($base, $dir, $suffix) = fileparse($_, ('\.o', '\.a'));
-    if ($suffix eq '.o') {
+    if ($_ ne "$basename$suffix") {
       push(@objFiles, "$tempDir/$_");
     }
   }
 }
 
 sub compile {
-     my ($file) = (@_);
-     my $inputFile = rel2abs($file);
+     my ($oval, $inputFile) = (@_);
+     my $retval = execute('krun', getKRunCommand($oval, undef, undef, $inputFile, 0));
+     if ($retval) {
+          error();
+     }
+}
 
-     (-e $inputFile)
-          or die "kcc: $file: No such file or directory.\n";
-
-     my ($baseName, $inputDirectory, $suffix) = 
-          fileparse($inputFile, ('\.c', '\.o', '\.a'));
-
-# Assume it's a normal input file, so compile it.
-     my $localOval = "$baseName.o";
-     my $localOvalPretty = "$baseName.pretty.o";
-     my $ppResult = preprocess($args->{'-w'}, $inputFile);
-
-     (-e $ppResult)
-          or die "Parsing failed: expected to find $baseName.c11-translation, but did not.\n";
-
-     my $compileStdout = File::Temp->new( 
-          TEMPLATE => 'tmp-kcc-compile-stdout-XXXX', 
-          SUFFIX => '.o', 
-          UNLINK => 0 );
-     push(@tempFiles, $compileStdout);
+sub getKRunCommand {
+     my ($output, $obj1, $obj2, $src, $link) = (@_);
 
      my @krun_args = (
-          '--output "binary"', 
-          "--output-file \"$localOval\"",
-          '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
-          '-cOBJ1=".Bag"',
-          '-cOBJ2=".Bag"',
-          '--parser "cat"', 
-          "-d $TRANS_DEF",
-          '-w none',
+          '--output', 'binary', 
+          '--output-file', $output,
+          '-d', $TRANS_DEF,
+          '-w', 'none',
           '--pattern-matching',
-          $ppResult
-          );
+          '--exit-code',
+          '<result-value> _:Int </result-value>'
+     );
 
-     my @krun_args_pretty = (
-          '--output "kast"', 
-          "--output-file \"$localOvalPretty\"",
-          '-cOPTIONS="(SetItem(NOLINK) .Set)"', 
-          '-cOBJ1=".Bag"',
-          '-cOBJ2=".Bag"',
-          '--parser "cat"', 
-          "-d $TRANS_DEF",
-          '--pattern-matching',
-          $ppResult
-          );
-
-     my $cmd = "$KRUN --smt none " . (join ' ', (@krun_args)) . " > $compileStdout 2>&1";
-     my $cmd_pretty = "$KRUN --smt none " . (join ' ', (@krun_args_pretty)) . " > /dev/null 2>&1";
-
-     print $cmd . "\n" if ($args->{'-d'});
-     system($cmd);
-
-     print $cmd_pretty . "\n" if ($args->{'-d'});
-     system($cmd_pretty) if ($args->{'-d'});
-
-     push(@objFiles, $localOval);
-     if (!$args->{'-c'}) {
-          push(@tempFiles, $localOval);
-     }
-     if (!$args->{'-d'}) {
-          push(@tempFiles, $localOvalPretty);
-     }
-
-     if ($args->{'-d'}) {
-          print "Final configuration saved to $localOvalPretty.\n";
-     }
-     if (!checkTransSuccess($compileStdout)) {
-          print "Error during translation: $localOval\n";
-          if (!$args->{'-d'}) {
-               die "Use \"kcc -d\" to get the final configuration.\n";
-          } else {
-               die "See the final configuration for details.\n";
-          }
-     }
-}
-
-sub preprocessOnly {
-     my ($nowarn, $inputFile) = (@_);
-
-     my $PEDANTRY_OPTIONS = 
-          "-Wall -Wextra -Werror -Wmissing-prototypes -pedantic -x c -std=c11";
-     my $CPP_OPTIONS = "-CC -std=c11 -nostdlib -nodefaultlibs -U __GNUC__ -include $myDirectory/includes/kcc_settings.h";
-
-     my $trueFilename = $inputFile;
-     my $filename;
-     my $directoryname;
-     my $suffix;
-     my $fullfilename;
-     if ($trueFilename eq '-') {
-          $fullfilename = '-';
-          $directoryname = '.';
-          $filename = 'stdin';
+     if ($link) {
+          push(@krun_args, '-cOPTIONS=.Set');
      } else {
-          ($filename, $directoryname, $suffix) = fileparse($inputFile, ('.c', '.h'));
-          $fullfilename = catfile($directoryname, "$filename$suffix");
-
-          (-e $fullfilename)
-               or die "$filename.c not found.";
-     }
-     my $cppCommand = 
-          "gcc-4.9 $PEDANTRY_OPTIONS $CPP_OPTIONS @main::cppDefines @main::cppUndefines @main::cppIncludeDirs @main::cppIncludes -E -iquote . -iquote $directoryname -I $myDirectory/includes $fullfilename 1> $filename.pre.gen 2> $filename.warnings.log";
-
-     push(@tempFiles, "$filename.warnings.log");
-     push(@tempFiles, "$filename.pre.gen");
-
-     my $retval = system($cppCommand);
-     open FILE, "$filename.warnings.log";
-     my @lines = <FILE>;
-     close FILE;
-
-     if ($retval) {
-          print STDERR "Error running preprocessor:\n";
-          print STDERR join("\n", @lines);
-          die "Translation failed.\n"
-     }
-     if (! $nowarn) {
-          print join("\n", @lines);
+          push(@krun_args, '-cOPTIONS=SetItem(NOLINK)');
      }
 
-     return $filename;
+     if (defined $obj1) {
+          push(@krun_args, '-pOBJ1=kast --parser binary');
+          push(@krun_args, "-cOBJ1=$obj1");
+     } else {
+          push(@krun_args, '-cOBJ1=.Bag');
+     }
+     if (defined $obj2) {
+          push(@krun_args, '-pOBJ2=kast --parser binary');
+          push(@krun_args, "-cOBJ2=$obj2");
+     } else {
+          push(@krun_args, '-cOBJ2=.Bag');
+     }
+     if (defined $src) {
+          my $kast = parse($src);
+          push(@krun_args, '--parser', 'cat');
+          push(@krun_args, $kast);
+     } else {
+          push(@krun_args, '-cPGM=.K');
+     }
+
+     if ($args->{'-fnative-libc'} && scalar @stdlib) {
+          push(@krun_args, '--native-libraries');
+          push(@krun_args, "@stdlib");
+     }
+
+     return @krun_args;
 }
-
 
 sub preprocess {
-     my ($nowarn, $inputFile) = (@_);
+     my ($output, $inputFile) = (@_);
 
-     my $compilationLog = File::Temp->new( 
-          TEMPLATE => 'tmp-kcc-parsing-XXXX', 
-          SUFFIX => '.log', 
-          UNLINK => 0 );
-     push(@tempFiles, $compilationLog);
+     my $directoryname = dirname($inputFile);
+     my @ppArgs = ("gcc-4.9", "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
+                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib", "-nodefaultlibs",
+                   "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
+                   @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,
+                   @main::cppIncludes, '-E', '-iquote', '.', '-iquote', $directoryname,
+                   '-I', "$myDirectory/includes", $inputFile, '-o', $output);
 
-     my $filename = preprocessOnly($nowarn, $inputFile);
-
-     my $ppResult = "$filename.c11-translation";
-
-          my $retval = system(
-          "$cparser $filename.pre.gen --trueName $inputFile 2> $filename.warnings.log 1> $filename.gen.parse.tmp");
-
-     open FILE, "$filename.warnings.log";
-     my @lines = <FILE>;
-     close FILE;
-
-     if ($retval) {
-          unlink("$filename.gen.parse.tmp");
-          print STDERR "Error running C parser:\n";
-          print STDERR join("\n", @lines);
-          die "Translation failed.\n"
-     }
-     if (! $nowarn) {
-          print join("\n", @lines);
-     }
-     move("$filename.gen.parse.tmp", "$filename.gen.parse") 
-          or die "Failed to move $filename.gen.parse.tmp to $filename.gen.parse: $!\n";
-
-     push(@tempFiles, "$filename.gen.parse");
-
-     $retval = 
-          system("cat $filename.gen.parse | $xmlToK 2> $compilationLog 1> $ppResult");
-
-     push(@tempFiles, $ppResult);
-
-     open FILE, "$compilationLog" 
-          or die "Could not open $compilationLog.\n";
-     @lines = <FILE>;
-     close FILE;
-
-     if ($retval) {
-          print STDERR "Error compiling program:\n";
-          print STDERR join("\n", @lines);
-          die "Translation failed.\n"
-     }
-
-     return $ppResult;
+     my $retval = execute(@ppArgs);
+     return $retval;
 }
 
-sub printNested {
-     my ($name, @rest) = (@_);
+sub execute {
+    my @cmd = @_;
+    if ($args->{'-d'}) {
+      print("'" . join("' '", @cmd) . "'\n");
+    }
+    my $pgm = shift @cmd;
+    system($pgm, @cmd);
+    return $? >> 8;
+}
 
-     if (defined($name)) {
-          return "_`,`,_(($name), " . printNested(@rest) .")";
-     } else {
-          return '.KList';
+sub tempFile {
+     my $file = File::Temp->new( 
+                TEMPLATE => 'tmp-kcc-XXXXXXX', 
+                UNLINK => 0 );
+     push(@tempFiles, $file);
+     return $file;
+}
+
+sub parse {
+     my ($inputFile) = (@_);
+
+     my $ppResult = tempFile();
+     my $kast = tempFile();
+     my $filename = preprocess($ppResult, $inputFile);
+
+     my $cmd = ("$cparser $ppResult --trueName '$inputFile' | $xmlToK > $kast");
+     if ($args->{'-d'}) {
+       print("$cmd\n");
      }
+     system($cmd);
+     if ($? >> 8) {
+          error();
+     }
+
+     return $kast;
+}
+
+sub error {
+  if ($args->{'-d'}) {
+    die "Translation failed. Refer to last command run for details.";
+  } else {
+    die "Translation failed. Run kcc -d @originalArgv to see commands run.\n";
+  }
 }
 
 sub interruptHandler {

@@ -267,10 +267,10 @@ module C-TRANSLATION-INIT
                <translation-units> TUs1 TUs2 </translation-units>
           </global>
 
-     syntax KItem ::= "printSuccess" | print(String)
+     syntax KItem ::= "printSuccess"
 
      // This message tells kcc the translation phase succeeded.
-     rule printSuccess => print("Translation successful!\n")
-     rule print(S:String) => #write(1, S)
+     rule <k> printSuccess => . ...</k>
+          <result-value> _ => 0 </result-value>
 
 endmodule
