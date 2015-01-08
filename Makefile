@@ -34,14 +34,14 @@ $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin $(DIST_DIR)/c11-translation-ko
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
-	@cp -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
+	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 
 $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin $(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin
+$(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin $(wildcard $(LIBC_DIR)/src/*) $(SCRIPTS_DIR)/kcc
 	@echo "Translating the standard library... ($(LIBC_DIR))"
 	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/lib/libc.so $(wildcard $(LIBC_DIR)/src/*.c) $(KCCFLAGS) -I $(LIBC_DIR)/src/
 	@echo "Done."

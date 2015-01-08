@@ -48,11 +48,11 @@ my $spec = q(#
       -c			Compile and assemble, but do not link.
       -shared			Compile and assemble into a single object file (for
 				faster loading).
-      -d			Keep intermediate files.
+      -d			Print debugging information.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@main::cppDefines, " -D$name=\Q$definition\E"); }
+{ push(@main::cppDefines, defined $definition ? "-D$name=\Q$definition\E" : "-D$name"); }
       -U <name>			Undefine <name> as a macro.
-{ push(@main::cppUndefines, " -U$name"); }
+{ push(@main::cppUndefines, "-U$name"); }
       -E			Preprocess only.
       -I <dir>			Look for headers in <dir>.
 { push(@main::cppIncludeDirs, '-I', $dir); }
@@ -69,7 +69,6 @@ my $spec = q(#
                         { $self->usage(0); }
       -v				Show version information [undocumented]
                                 { $self->version(0); }
-      --version				[ditto]
 
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
@@ -107,11 +106,27 @@ sub main {
      $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
 
      if ($args->{'-E'}) {
-          return preprocess($args->{'-o'}. @{$args->{'<files>'}});
+          my $oval = $args->{'-o'};
+          if ($oval) {
+            if (scalar @{$args->{'<files>'}} > 1) {
+              die "cannot specify -o with -c or -E with multiple files";
+            }
+          } else {
+            $oval = '-';
+          }
+          return preprocess($oval, @{$args->{'<files>'}});
      }
 
      if ($args->{'-c'}) {
-          compile($args->{'-o'}, @{$args->{'<files>'}});
+          my $oval = $args->{'-o'};
+          if ($oval) {
+            if (scalar @{$args->{'<files>'}} > 1) {
+              die "cannot specify -o with -c or -E with multiple files";
+            }
+          } else {
+            $oval = basename($args->{'<files>'}[0], ".c") . ".o";
+          }
+          compile($oval, @{$args->{'<files>'}});
           return 0;
      }
 
@@ -141,6 +156,7 @@ sub main {
      # should be empty.
 
      my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $srcFiles[0], 1));
+     checkError($retval);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
      my $programConf = join("", <FILE>);
@@ -151,10 +167,6 @@ sub main {
      close(FILE);
 
      $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
-
-     if ($retval) {
-          error();
-     }
 
      open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
      print $programRunner "$template\n";
@@ -214,9 +226,7 @@ sub mergeObjs {
               push(@objFiles, $data{'out'});
               waitpid $data{'pid'}, 0;
 
-              if ($? >> 8) {
-                   error();
-              }
+              checkError($? >> 8);
             }
           }
      }
@@ -264,9 +274,7 @@ sub extractStatic {
 sub compile {
      my ($oval, $inputFile) = (@_);
      my $retval = execute('krun', getKRunCommand($oval, undef, undef, $inputFile, 0));
-     if ($retval) {
-          error();
-     }
+     checkError($retval);
 }
 
 sub getKRunCommand {
@@ -281,6 +289,10 @@ sub getKRunCommand {
           '--exit-code',
           '<result-value> _:Int </result-value>'
      );
+
+     if ($args->{'-d'}) {
+          push(@krun_args, '--debug');
+     }
 
      if ($link) {
           push(@krun_args, '-cOPTIONS=.Set');
@@ -354,25 +366,28 @@ sub parse {
 
      my $ppResult = tempFile();
      my $kast = tempFile();
-     my $filename = preprocess($ppResult, $inputFile);
+     checkError(preprocess($ppResult, $inputFile));
 
      my $cmd = ("$cparser $ppResult --trueName '$inputFile' | $xmlToK > $kast");
      if ($args->{'-d'}) {
        print("$cmd\n");
      }
      system($cmd);
-     if ($? >> 8) {
-          error();
-     }
+     checkError($? >> 8);
 
      return $kast;
 }
 
-sub error {
-  if ($args->{'-d'}) {
-    die "Translation failed. Refer to last command run for details.";
-  } else {
-    die "Translation failed. Run kcc -d @originalArgv to see commands run.\n";
+sub checkError {
+  my ($retval) = (@_);
+  if ($retval) {
+    if ($args->{'-d'}) {
+      print STDERR "Translation failed. Refer to last command run for details.";
+      exit $retval;
+    } else {
+      print STDERR "Translation failed. Run kcc -d @originalArgv to see commands run.\n";
+      exit $retval;
+    }
   }
 }
 
