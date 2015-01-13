@@ -332,7 +332,7 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     my @ppArgs = ("gcc-4.9", "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
+     my @ppArgs = ("gcc-4.8", "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib", "-nodefaultlibs",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,

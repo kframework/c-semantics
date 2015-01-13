@@ -108,13 +108,13 @@ module C-TRANSLATION-INIT
 
      rule <k> addBuiltin(B:CId, T:Type) => declare(
                typedDeclaration(T, B),
-               NoInit) ...</k>
+               initializer(handleBuiltinConstant(B, T))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
                
-     syntax Value ::= #nativeConstant(String) [function, hook(C-SEMANTICS:nativeConstant), impure]
-     rule handleBuiltinConstant(Identifier(S:String)) => #nativeConstant(S) when S in keys(nativeDefinedBuiltins)
+     syntax KItem ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
+     rule handleBuiltinConstant(Identifier(S:String), T) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(Bag, Bag)
      rule checkMerge(_, _) => .K
