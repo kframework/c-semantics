@@ -285,10 +285,10 @@ module C-IO-BUFFERED
 
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C-SEMANTICS:readNativeByte), impure]
-     rule <k> (readByte(Loc:SymLoc, size(Aux), T:Type)
+     rule <k> (readByte(Loc:SymLoc, T:Type)
                => assert(notBool (Loc in Locs),
                     errorUnseqEffects)
-               ~> tv(#readNativeByte(Loc, T), t(.Set, no-type)))
+               ~> tv(#readNativeByte(Loc, size(Aux), T), t(.Set, no-type)))
                ~> readBytes-aux(_, N, Aux:List, _)
           ...</k>
           <locs-written> Locs:List </locs-written>
