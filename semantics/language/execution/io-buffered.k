@@ -383,6 +383,13 @@ module C-IO-BUFFERED
           requires isNoType(T)
                andBool notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
+     rule <k> getEffectiveType(Loc:SymLoc) => t(.Set, no-type) ...</k>
+          <effective-types> EffTypes:Map </effective-types>
+          requires isNativeLoc(Loc)
+               andBool notBool (Loc in keys(EffTypes))
+     rule <k> getEffectiveType(Loc:SymLoc) => T ...</k>
+          <effective-types> Loc |-> T:Type </effective-types>
+          requires isNativeLoc(Loc)
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
      rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .K
