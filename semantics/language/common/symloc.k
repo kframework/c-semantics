@@ -20,7 +20,8 @@ module C-SYMLOC-SYNTAX
      // is how we keep track of register-ness.
      syntax Duration ::= register(Int)
 
-     syntax Duration ::= "native"
+     syntax Duration ::= "nativeAddress"
+     syntax Duration ::= nativeSymbol(String)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      // I.e., static or link.
@@ -164,8 +165,10 @@ module C-SYMLOC
      rule isRegisterLoc(loc(_ @ register(_), _, _)) => true
      rule isRegisterLoc(_) => false [owise]
 
-     rule isNativeLoc(loc(_ @ native, _)) => true
-     rule isNativeLoc(loc(_ @ native, _, _)) => true
+     rule isNativeLoc(loc(_ @ nativeAddress, _)) => true
+     rule isNativeLoc(loc(_ @ nativeAddress, _, _)) => true
+     rule isNativeLoc(loc(_ @ nativeSymbol(_), _)) => true
+     rule isNativeLoc(loc(_ @ nativeSymbol(_), _, _)) => true
      rule isNativeLoc(_) => false [owise]
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)

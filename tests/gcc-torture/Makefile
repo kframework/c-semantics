@@ -5,7 +5,7 @@ TEST_RESULTS = ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
-GCC = gcc-4.9 -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c11
+GCC = gcc-4.8 -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c11
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 

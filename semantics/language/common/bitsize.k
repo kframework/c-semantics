@@ -24,13 +24,18 @@ module C-BITSIZE
      imports C-DECL-DEFINITION-SYNTAX
 
      imports C-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
 
      rule sizeofType(T:Type)
           => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
+          requires isCompleteType(T) andBool notBool isFunctionType(T)
           [structural]
+     rule (. => CV("CBS1", "Trying to compute sizeof of a type that is incomplete or a function type.", "6.5.3.4:1")) ~> sizeofType(T:Type)
+          requires notBool isCompleteType(T) orBool isFunctionType(T)
+
      rule byteSizeofType(T:Type)
           => bitsToBytes(bitSizeofType(T))
 

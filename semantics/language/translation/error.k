@@ -26,9 +26,11 @@ module C-TRANSLATION-ERROR
           <curr-program-loc>
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
+          <result-value> _ => 1 </result-value>
      rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")
           ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
+          <result-value> _ => 1 </result-value>
 
 endmodule

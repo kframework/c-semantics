@@ -315,6 +315,9 @@ module C-PROMOTION
      rule [arithConversion-int-done]:
           usualArithmeticConversion-aux(T:Type, T:Type)
           => T
+     rule usualArithmeticConversion-aux(T:Type, T':Type)
+          => stripConstants(T)
+          requires T =/=K T' andBool stripConstants(T) ==K stripConstants(T')
 
      syntax Type ::= maxType(Type, Type) [function]
      rule maxType(T:Type, T':Type) => T

@@ -283,6 +283,21 @@ module C-IO-BUFFERED
                     orBool isThreadDuration(loc(Base, Offset)))
           [structural]
 
+
+     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C-SEMANTICS:readNativeByte), impure]
+     rule <k> (readByte(Loc:SymLoc, T:Type)
+               => assert(notBool (Loc in Locs),
+                    errorUnseqEffects)
+               ~> tv(#readNativeByte(Loc, size(Aux), T), t(.Set, no-type)))
+               ~> readBytes-aux(_, N, Aux:List, _)
+          ...</k>
+          <locs-written> Locs:List </locs-written>
+          <buffer> Mem:List </buffer>
+          requires notBool (Loc in locations(Mem))
+               andBool isNativeLoc(Loc)
+          [structural]
+
+
      // Resolve a linker address to a real "physical" address.
      rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
           <linkings>... LinkBase |-> Base:SymBase ...</linkings>
@@ -383,6 +398,13 @@ module C-IO-BUFFERED
           requires isNoType(T)
                andBool notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
+     rule <k> getEffectiveType(Loc:SymLoc) => t(.Set, no-type) ...</k>
+          <effective-types> EffTypes:Map </effective-types>
+          requires isNativeLoc(Loc)
+               andBool notBool (Loc in keys(EffTypes))
+     rule <k> getEffectiveType(Loc:SymLoc) => T ...</k>
+          <effective-types> Loc |-> T:Type </effective-types>
+          requires isNativeLoc(Loc)
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
      rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .K

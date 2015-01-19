@@ -1,17 +1,17 @@
 module C-BUILTIN-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      syntax Map ::= "builtins" [function]
                   | "semanticsDefinedBuiltins" [function]
                   | "nativeDefinedBuiltins"[function]
      syntax KItem ::= "handleBuiltin"
-                    | handleBuiltinConstant(CId)
+                    | handleBuiltinConstant(CId, Type)
 endmodule
 
 module C-BUILTIN
      imports C-BITS-SYNTAX
      imports C-BUILTIN-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX

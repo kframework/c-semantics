@@ -56,6 +56,7 @@ module C-CONFIGURATION
           </tu>
      </translation-units>
 </global>
+<result-value color="red"> 1 </result-value>
 <T multiplicity="?">
 <exec>
      // SymLoc |-> Type
