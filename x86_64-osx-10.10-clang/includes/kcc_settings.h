@@ -24,4 +24,6 @@
 
 #define __thread _Thread_local
 
+#define __attribute__(x)
+
 #endif

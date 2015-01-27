@@ -24,7 +24,7 @@ fast: $(DIST_DIR)/lib/libc.so $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! gcc-4.8 -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc 4.8 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
+	@if ! gcc-4.9 -v > /dev/null 2>&1; then if ! clang -v 2>&1 | grep "LLVM 3.5" > /dev/null; then echo "ERROR: You don't seem to have gcc 4.9 or clang 3.5 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
 	@if ! kompile --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have kompile installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
@@ -34,8 +34,8 @@ $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin $(DIST_DIR)/c11-translation-ko
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)
 	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
-	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
+	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 
 $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin $(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)

@@ -332,8 +332,16 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     my @ppArgs = ("gcc-4.8", "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
-                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib", "-nodefaultlibs",
+     system("which", "gcc-4.9");
+     my $pp;
+     if ($? >> 8 == 0) {
+          $pp = "gcc-4.9";
+     } else {
+          # no gcc, try clang
+          $pp = "clang";
+     }
+     my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
+                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,
                    @main::cppIncludes, '-E', '-iquote', '.', '-iquote', $directoryname,
