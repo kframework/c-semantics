@@ -46,7 +46,7 @@ cparser.cmx: cabs.cmi cabshelper.cmi lexerhack.cmi cprint.cmi
 cabsDriver.cmx cabsDriver.cmi: cparser.cmi frontc.cmi clexer.cmi xmlPrinter.cmi
 frontc.cmx frontc.cmi: errormsg.cmi whitetrack.cmi cprint.cmi clexer.cmi
 clexer.cmx clexer.cmi: lexerhack.cmi cparser.cmi cprint.cmi cabshelper.cmi
-xmlPrinter.cmx xmlPrinter.cmi: cabs.cmi
+xmlPrinter.cmx xmlPrinter.cmi: cabs.cmi escape.cmi
 #xmlPrinter.cmi
 #xmlPrinter.cmx xmlPrinter.cmi: $(IOXML)
 %.cmx %.cmi: %.ml 
