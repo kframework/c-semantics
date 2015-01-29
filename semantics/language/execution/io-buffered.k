@@ -289,7 +289,7 @@ module C-IO-BUFFERED
                => assert(notBool (Loc in Locs),
                     errorUnseqEffects)
                ~> tv(#readNativeByte(Loc, size(Aux), T), t(.Set, no-type)))
-               ~> readBytes-aux(_, N, Aux:List, _)
+               ~> readBytes-aux(_, _, Aux:List, _)
           ...</k>
           <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
@@ -466,10 +466,10 @@ module C-IO-BUFFERED
      // effective type.
      rule #effectivelyCompat(L:Type,
      // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
-               t(Mods:Set, unionType(X:CId, Sz:Int, fieldInfo(Decls:List, Types:Map, Offs:Map))))
+               t(Mods:Set, unionType(X:CId, fieldInfo(Decls:List, Sz:Int, Types:Map, Offs:Map))))
           => effectivelyCompatWithUnion(L, values(Types))
           requires notBool (areCompatible(stripQualifiers(L),
-                         stripQualifiers(t(Mods, unionType(X, Sz, fieldInfo(Decls, Types, Offs)))))
+                         stripQualifiers(t(Mods, unionType(X, fieldInfo(Decls, Sz, Types, Offs)))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
                andBool notBool hasCharType(L:Type)
@@ -500,20 +500,23 @@ module C-IO-BUFFERED
                Offset %Int byteSizeofType(T))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
-     rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, SI:Int, fieldInfo(
+     rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, fieldInfo(
                Fields:List (ListItem(typedDeclaration(_, FId:CId))),
+               SI:Int,
                Types:Map (FId |-> T:Type),
                Offsets:Map (FId |-> FOffset:Int)
           ))), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(SCId, SI, fieldInfo(
+          => getTypeAtOffset(t(Mods, structType(SCId, fieldInfo(
                Fields,
+               SI,
                Types (FId |-> T),
                Offsets (FId |-> FOffset)
           ))), Offset)
           requires (Offset =/=Int 0)
                andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(t(Mods:Set, structType(_, _, fieldInfo(
+     rule getTypeAtOffset(t(Mods:Set, structType(_, fieldInfo(
                _ ListItem(typedDeclaration(_, FId:CId)),
+               _,
                _ FId |-> T:Type,
                _ FId |-> FOffset:Int
           ))), Offset:Int)
@@ -537,7 +540,7 @@ module C-IO-BUFFERED
      syntax Type ::= effInnerType(K) [function]
      rule effInnerType(T:Type) => innerType(T)
           requires isArrayType(T)
-     rule effInnerType(t(_, structType(_, _, fieldInfo(
-               ListItem(typedDeclaration(T:Type, _)) _, _, _))))
+     rule effInnerType(t(_, structType(_, fieldInfo(
+               ListItem(typedDeclaration(T:Type, _)) _, _, _, _))))
           => T
 endmodule

@@ -96,8 +96,8 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           requires areCompatible(CallT, DefT)
           [structural]
-     rule (.K => ERROR("FC1", "attempt to call the function " +String
-               idToString(X) +String " through a pointer with incompatible type."))
+     rule (.K => UNDEF("FC1", "attempt to call the function " +String
+               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9"))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
           requires notBool areCompatible(CallT, DefT)
           [structural]
@@ -110,7 +110,8 @@ module C-EXPR-FUNCTION-CALL
                ~> enterRestrictScope(X)
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
-               ~> sequencePoint
+               ~> sequencePoint 
+               ~> setFun(X)
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
@@ -127,12 +128,16 @@ module C-EXPR-FUNCTION-CALL
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>
-               <curr-function> CurrFun:K => X </curr-function>
+               <curr-function> CurrFun:K </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
                (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
+
+     syntax KItem ::= setFun(CId)
+     rule <k> setFun(X:CId) => .K ...</k>
+          <curr-function> _ => X </curr-function>
 
      rule <k> bindParam(X:CId, T:Type, V:TypedValue)
                => allocObject(Base, T)

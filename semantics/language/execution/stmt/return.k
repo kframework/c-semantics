@@ -39,7 +39,8 @@ module C-STMT-RETURN
      //  "emptyValue", which will hopefully be cast to void
      rule <k> Return(V:KResult) ~> _
                => sequencePoint
-               ~> cast(T, V)
+               ~> stripConstants(cast(T, V))
+               ~> setLoc(CurrLoc, CurrFun)
                ~> K
           </k>
           <tu-id> TU </tu-id>
@@ -48,9 +49,9 @@ module C-STMT-RETURN
           ...</gtypes>
           <control>
                <curr-tu> TU:String => OldTU </curr-tu>
-               <curr-function> F:CId => CurrFun </curr-function>
+               <curr-function> F:CId </curr-function>
                <curr-function-params> _ => CurrFunParams </curr-function-params>
-               <curr-program-loc> _ => CurrLoc </curr-program-loc>
+               <curr-program-loc> _ </curr-program-loc>
                (<control-details>...
                     <local>...
                          <local-addresses> .Set </local-addresses>
@@ -80,6 +81,11 @@ module C-STMT-RETURN
           ...</call-stack>
           requires notBool (Noreturn in Mods)
           [structural]
+
+     syntax KItem ::= setLoc(K, CId)
+     rule <k> V:KResult ~> setLoc(CurrLoc:K, CurrFun:CId) => V ...</k>
+          <curr-program-loc> _ => CurrLoc </curr-program-loc>
+          <curr-function> _ => CurrFun </curr-function>
 
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
                     "6.7.4"))

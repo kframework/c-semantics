@@ -332,8 +332,16 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     my @ppArgs = ("gcc-4.8", "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
-                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib", "-nodefaultlibs",
+     system("which gcc-4.9 > /dev/null 2>&1");
+     my $pp;
+     if ($? >> 8 == 0) {
+          $pp = "gcc-4.9";
+     } else {
+          # no gcc, try clang
+          $pp = "clang";
+     }
+     my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
+                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,
                    @main::cppIncludes, '-E', '-iquote', '.', '-iquote', $directoryname,
@@ -382,7 +390,7 @@ sub checkError {
   my ($retval) = (@_);
   if ($retval) {
     if ($args->{'-d'}) {
-      print STDERR "Translation failed. Refer to last command run for details.";
+      print STDERR "Translation failed. Refer to last command run for details.\n";
       exit $retval;
     } else {
       print STDERR "Translation failed. Run kcc -d @originalArgv to see commands run.\n";

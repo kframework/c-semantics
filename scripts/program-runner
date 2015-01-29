@@ -62,6 +62,7 @@ sub main {
                   '--pattern-matching' => '',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
+                  '-w' => 'none',
                   '--parser "kast --parser binary"' => $fileInput
                   );
 
@@ -70,8 +71,6 @@ sub main {
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
             print "DEBUG --- runs krun with the --debug flag.\n";
-            print "SEARCH --- searches for all possible behaviors instead of interpreting.\n";
-            print "THREADSEARCH --- searches for all possible behaviors related to concurrency instead of interpreting.\n";
             print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space.\n";
             print "TRACE --- runs krun with the --trace flag.\n";
             print "DUMPALL --- leaves all the intermediate files in the current directory.\n";
@@ -141,79 +140,11 @@ sub main {
       print $cmd . "\n" if defined $ENV{VERBOSE};
       system($cmd);
 
-      # Print errors and/or results and exit.
-      if (defined $ENV{SEARCH} || defined $ENV{THREADSEARCH}) {
-            my $graphOutputFile = "kcc-search-results.dot";
-
-            print "Generated $fileOutput\n" if defined $ENV{VERBOSE};
-            print "Examining the output...\n" if defined $ENV{VERBOSE};
-            my $graphOutput = graphSearch($graphOutputFile, $fileOutput);
-            print "$graphOutput\n";
-            print "Generated $graphOutputFile.\n";
-
-            if (defined $ENV{GRAPH}) {
-                  print "Generating graph...\n";
-                  system("dot -Tps2 $graphOutputFile > kcc-search-results.ps") == 0 
-                        or die "Running dot failed: $?\n";
-                  print "Generated kcc-search-results.ps.\n";
-                  system("ps2pdf kcc-search-results.ps kcc-search-results.pdf") == 0 
-                        or die "Running ps2pdf failed: $?\n";
-                  print "Generated kcc-search-results.pdf\n";
-            }
-            return 0;
-      } 
-
       if (defined $ENV{LTLMC} | defined $ENV{DEBUG}) {
             return 0;
       }
 
       return processResult($fileOutput, defined $ENV{VERBOSE});
-}
-
-sub parseRawResultLine {
-      my ($parsed) = (@_);
-
-      /< k > (.*) <\/ k >/ && do {
-            $parsed->{finalComp} = $1;
-      };
-
-      /< error-cell > # "(.*)"\(\.KList\) <\/ error-cell >/ && do {
-            $parsed->{haveError} = 1;
-            my $output = $1;
-            $output =~ s/\%/\%\%/g;
-            $output =~ s/`/\\`/g;
-            $output =~ s/\\\\/\\\\\\\\/g;
-            $parsed->{errorMsg} = substr(`printf "x$output"`, 1);
-      };
-
-      /< curr-function > 'Identifier\(# "(.*)"\(\.KList\)\) <\/ curr-function >/ && do {
-            $parsed->{errorFunc} = $1;
-      };
-
-      /< curr-program-loc > 'CabsLoc\(# "(.*)"\(\.KList\),,# (\d+).*<\/ curr-program-loc >/ && do {
-            $parsed->{errorFile} = $1;
-            $parsed->{errorLine} = $2;
-      };
-
-      /< final-computation > (.*) <\/ final-computation >/ && do {
-            $parsed->{finalComp} = $1;
-      };
-
-      /< computation > (.*) <\/ computation >/ && do {
-            $parsed->{finalCompGoto} = $1;
-      };
-
-      /< type > (.*) <\/ type >/ && do {
-            $parsed->{finalCompType} = $1;
-      };
-
-      /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
-            $parsed->{output} = $1;
-      };
-
-      /< result-value > 'tv\(# (-?\d+)\(\.KList\),,'t\(Set2KLabel \.Set\(\.KList\),,'int\(\.KList\)\)\) <\/ result-value >/ && do {
-            $parsed->{exitCode} = $1;
-      };
 }
 
 # TODO(chathhorn): We have two functions here because of the newlines -- the
@@ -263,6 +194,10 @@ sub parseResult {
             $parsed->{exitCode} = $1;
       };
 
+      /<result-value>\s*tv\s*\(\s*unknown\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+            $parsed->{errorMsg} = "Unspecified value returned from main function.";
+      };
+
       /<result-value>\s*tv\s*\(\s*NullPointer\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = 0;
       };
@@ -294,6 +229,7 @@ sub processResult {
                   || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
             print "\n=============================================================\n";
             print "ERROR! KCC encountered an error while executing this program.\n";
+        
 
             if (defined $parsed{errorMsg}) {
                   print "=============================================================\n";
@@ -328,186 +264,6 @@ sub processResult {
       }
       return $parsed{exitCode} if defined $parsed{exitCode};
       return 139; # emulates a segfault in order to avoid reusing any conventionally-valid exit code
-}
-
-sub graphSearch {
-      require GraphViz;
-
-      my %states = (); # stateId => stateLabel
-            my %arcs = (); # startArcId => endArcId => arcLabel
-            my %errorStates = (); # stateId => errorKind
-            my %goodFinal = (); # stateId => ""
-
-            my ($outFilename, $inFilename) = (@_);
-      my $retval = "";
-
-      my $g = GraphViz->new();
-
-# Literal braces, vertical bars and angle brackets must be escaped.
-
-      my $state = "start";
-      my $currentStateNumber;
-      my $currentStateDestination;
-      my $currentState = "";
-      my $currentRule = "";
-      my $currentRuleName;
-      my @currentArc;
-
-      my $seenMain = 0;
-
-      my @solutions;
-
-      open(IN, "<$inFilename");
-
-      for (<IN>) {
-            chomp;
-
-            # handle start state
-            if ($state eq "start") {
-                  /^Solution (\d+) / && do {
-                        $state = "solution";
-                  };
-
-                  /^No solution\./ && do {
-                        $state = "state";
-                  };
-            }
-
-            if ($state eq "solution") {
-                  /^Solution (\d+) / && do {
-                        my $numSolutions = $1;
-                        push(@solutions, {});
-                        $solutions[-1]->{'num'} = $numSolutions;
-                  };
-
-                  parseRawResultLine($solutions[-1]);
-
-                  # keep reading (and throwing away) until we hit a state
-                  /^state (\d+)/ && do {
-                        $currentStateNumber = $1;
-                        $states{$currentStateNumber} = "";
-                        $state = "state";
-                  };
-
-                  next;
-            }
-
-            # handle state state
-            if ($state eq "state") {
-                  # keep reading until we hit an arc
-                  if (/^arc (\d+) ===> state (\d+) \((c?rl) /) {
-                        $state = "arc";
-                        # meant to continue to next case
-                  } elsif (/^state (\d+)/) {
-                        $currentStateNumber = $1;
-                        $states{$currentStateNumber} = "";
-                        $state = "state";
-                        next;
-                  } else {
-                        $currentState .= $_;
-                        /"stdout"\(\.KList\) \|-> # "(.*)"\(\.KList\)/ && do {
-                              my $currentOutput = $1;
-                              $states{$currentStateNumber} = $currentOutput;
-                        };
-
-                        /< output > #buffer\(# "(.*)"\(\.KList\)\) <\/ output >/ && do {
-                              my $currentOutput = $1;
-                              $goodFinal{$currentStateNumber} = "";
-                              $states{$currentStateNumber} = $currentOutput;
-                        };
-
-                        /< error-cell > (.*) <\/ error-cell >/ && do {
-                              my $currentOutput = $1;
-                              $errorStates{$currentStateNumber} = "";
-                        };
-                        next;
-                  }
-            }
-
-            # handle arc state
-            if ($state eq "arc") {
-                  # keep reading until we hit a state or arc
-                  if (/^state (\d+)/) {
-                        $currentStateNumber = $1;
-                        $states{$currentStateNumber} = "";
-                        $state = "state";
-                  } elsif (/^arc (\d+) ===> state (\d+) \((c?rl) /) {
-                        my $arcNumber = $1;
-                        $currentStateDestination = $2;
-                        $currentRule = $3;
-                        if ($seenMain) {
-                              $arcs{$currentStateNumber}{$currentStateDestination} = "";
-                        }
-                        $state = "arc";
-                        $currentRuleName = "";
-                  } else {
-                        $currentRule .= $_;
-
-                        /label ([\w-]+).*\] \.\)$/ && do {
-                              $currentRuleName = $1;
-                              if ($currentRuleName eq "call-main") {
-                                    %states = ();
-                                    $seenMain = 1; 
-                              }
-                              if ($seenMain) {
-                                    $arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
-                              }
-                        };
-
-                        /metadata .*heating/ && do {
-                              if (/freezer\("\(([^\)]+)\)\./) {
-                                    $currentRuleName = $1;
-                        }
-                        $currentRuleName .= ' heat';
-                        if ($seenMain) {
-                              $arcs{$currentStateNumber}{$currentStateDestination} = $currentRuleName;
-                        }
-                        };
-                  }
-                  next;
-            }
-      }
-
-      for my $node (keys %states) {
-            my $attribs = getAttribs($node, \%errorStates, \%goodFinal);
-            $attribs->{'label'} = "$node\n${states{$node}}";
-            $g->add_node($node, %$attribs);
-      }
-
-      for my $from (keys %arcs) {
-            for my $to (keys %{$arcs{$from}}) {
-                  $g->add_edge($from => $to, label => $arcs{$from}{$to});
-            }
-      }
-
-      open(DOTOUTPUT, ">$outFilename");
-      print DOTOUTPUT $g->as_text;
-      close(DOTOUTPUT);
-
-      $retval .= "========================================================================\n";
-      $retval .= scalar(@solutions) . " solutions found\n"; 
-      for my $solution (@solutions) {
-
-            $retval .= "------------------------------------------------------------------------\n";
-            $retval .= "Solution $solution->{'num'}\n";
-            if (defined $solution->{'exitCode'}) {
-                  $retval .= "Program completed successfully\n"; 
-                  $retval .= "Exit code: " . getString($solution->{'exitCode'}) . "\n";
-            } else {
-                  $retval .= "Program got stuck\n";
-                  $retval .= "File: " . getString($solution->{'errorFile'}) . "\n";
-                  $retval .= "Line: " . getString($solution->{'errorLine'}) . "\n";
-            }
-            if (defined $solution->{'errorMsg'}) {
-                  $retval .= getString($solution->{'errorMsg'}) . "\n";
-            }
-            $retval .= "Output:\n" . getString($solution->{'output'}) . "\n";
-
-      }
-      $retval .= "========================================================================\n";
-      $retval .= scalar(@solutions) . " solutions found\n"; 
-
-      return $retval;
 }
 
 sub getAttribs {

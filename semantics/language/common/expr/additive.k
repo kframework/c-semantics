@@ -5,6 +5,7 @@ module C-COMMON-EXPR-ADDITIVE
      imports C-TYPING-SYNTAX
      imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
 
      imports C-ERROR-SYNTAX
@@ -92,16 +93,28 @@ module C-COMMON-EXPR-ADDITIVE
                andBool simpleType(innerType(T')) =/=K void
           [structural]
 
-     syntax KItem ::= addToPointer(SymLoc, Type, Int) [function]
+     rule (.K => CV("CEA3", "Invalid operand types to addition", "6.5.6:2"))
+          ~> tv(_, T:Type) + tv(_, T':Type)
+          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T'))
+               orBool (isPointerType(T') andBool hasIntegerType(T)))
+
+     rule (.K => CV("CEA4", "Invalid operand types to subtraction", "6.5.6:3"))
+          ~> tv(_, T:Type) - tv(_, T':Type)
+          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
+               orBool (isPointerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool hasIntegerType(T')))
+
+     syntax KItem ::= addToPointer(SymLoc, Type, Int)
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => tv(newFromArray(Loc, T, I)
                +bytes (I *Int byteSizeofType(innerType(T))), T)
           requires ifFromArrayInBounds(Loc, T, I) ==K true
-     rule (.K => ERROR("CEA1",
+     rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
-               (46,, 49)) )
+               "6.5.6:8"))
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
-          requires ifFromArrayInBounds(Loc, T, I) =/=K true
+          requires notBool ifFromArrayInBounds(Loc, T, I)
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
                      | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]
@@ -156,35 +169,61 @@ module C-COMMON-EXPR-ADDITIVE
                byteSizeofType(T))
           requires base(L1) ==K base(L2)
           [structural]
+
+     rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
+          "6.5.6:9"))
+          ~> tv(L1:SymLoc, t(_, pointerType(T)))
+               - tv(L2:SymLoc, t(_, pointerType(T)))
+          requires base(L1) =/=K base(L2)
+
      // ptr1, ptr2, size of ptr type
      syntax KItem ::= computePointerDifference(Int, Int)
      rule computePointerDifference(Diff:Int, Size:Int)
-          => tv(Diff /Int Size, cfg:ptrdiffut)
+          => tv(Diff /Int Size, t(.Set, cfg:ptrdiffut))
           requires (Diff %Int Size ==Int 0)
-               andBool (Diff /Int Size) <=Int max(cfg:ptrdiffut)
-               andBool (Diff /Int Size) >=Int min(cfg:ptrdiffut)
+               andBool (Diff /Int Size) <=Int max(t(.Set, cfg:ptrdiffut))
+               andBool (Diff /Int Size) >=Int min(t(.Set, cfg:ptrdiffut))
           [structural]
      rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
                "6.5.6"))
           ~> computePointerDifference(Diff:Int, Size:Int)
-          requires (Diff /Int Size) >Int max(cfg:ptrdiffut)
-               orBool (Diff /Int Size) <Int min(cfg:ptrdiffut)
+          requires (Diff /Int Size) >Int max(t(.Set, cfg:ptrdiffut))
+               orBool (Diff /Int Size) <Int min(t(.Set, cfg:ptrdiffut))
           [structural]
 
-     rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
+     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
           => arithInterpret(T, (I1 +Int I2))
-          requires isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T)
           [structural]
-     rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
+     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
           => arithInterpret(T, (I1 -Int I2))
-          requires isPromoted(T) andBool T ==Type T'
+          requires isPromoted(T)
           [structural]
-     rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
+     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
           => arithInterpret(T, F1 +Float F2)
-          requires T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
+     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
           => arithInterpret(T, (F1 -Float F2))
-          requires T ==Type T'
           [structural]
+
+     rule tv(_, T:Type) + tv(unknown, T:Type)
+          => tv(unknown, T)
+          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          [structural]
+     rule tv(unknown, T:Type) + tv(_, T:Type)
+          => tv(unknown, T)
+          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          [structural]
+
+     rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
+               "6.3.1.3:3"))
+          ~> tv(_, T:Type) + tv(unknown, T:Type)
+          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          [structural]
+     rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
+               "6.3.1.3:3"))
+          ~> tv(unknown, T:Type) + tv(_, T:Type)
+          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          [structural]
+
 endmodule

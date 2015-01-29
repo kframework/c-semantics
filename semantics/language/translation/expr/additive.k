@@ -29,7 +29,7 @@ module C-EXPR-ADDITIVE
           [structural]
 
      rule tv(V:CValue, t(_, pointerType(T:Type))) - tv(V':CValue, t(_, pointerType(T':Type)))
-          => tv(symVal, cfg:ptrdiffut)
+          => tv(symVal, t(.Set, cfg:ptrdiffut))
           requires (V ==K symVal) orBool (V' ==K symVal)
                andBool T ==Type T'
           [structural]

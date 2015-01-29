@@ -48,14 +48,24 @@ module C-BINDING
                (ListItem(V:TypedValue) => .List) _)
           requires #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
-     rule (.K => ERROR("B1", "types of function call arguments aren't "
-               +String "compatible with declared types after promotions."))
+     rule (.K => UNDEF("B1", "types of function call arguments aren't "
+               +String "compatible with declared types after promotions.", "6.5.2.2:6"))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
                ListItem(V:TypedValue) _)
           requires notBool #arePromotedTypesCompat(value(V), T, type(V))
           [structural]
+     rule (.K => UNDEF("B2", "function call has fewer arguments than "
+               +String "parameters in function definition.", "6.5.2.2:6"))
+          ~> bind(
+               ListItem(typedDeclaration(T:Type, _)) _,
+               ListItem(T':Type) _,
+               .List)
+          requires notBool (isVoidType(T) andBool isVoidType(T'))
+     rule (.K => UNDEF("B3", "function call has more arguments than "
+               +String "parameters in function definition.", "6.5.2.2:6"))
+          ~> bind(.List, .List, ListItem(_) _)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)

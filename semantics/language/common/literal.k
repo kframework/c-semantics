@@ -253,7 +253,7 @@ module C-LITERAL
      rule CharLiteral(N:Int)
           => cast(t(SetItem(IntegerConstant), int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))))
           [structral, anywhere]
-     rule WCharLiteral(N:Int) => tv(N, cfg:wcharut)
+     rule WCharLiteral(N:Int) => tv(N, t(.Set, cfg:wcharut))
           [structral, anywhere]
      rule Constant(V:Value) => V
           [structral, anywhere]

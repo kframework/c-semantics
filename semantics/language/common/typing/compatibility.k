@@ -11,6 +11,7 @@ module C-TYPING-COMPATIBILITY
      imports C-TYPING-COMPATIBILITY-SYNTAX
 
      imports C-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -69,33 +70,33 @@ module C-TYPING-COMPATIBILITY
           requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
-               t(Mods:Set, structType(X:CId, _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, structType(X:CId, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, structType(X:CId, fieldInfo(Fs:List, _, _, _))),
+               t(Mods':Set, structType(X:CId, fieldInfo(Fs':List, _, _, _))))
           => #areCompat(Fs, Fs')
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, structType(X:CId, _, _)),
+               t(Mods:Set, structType(X:CId, _)),
                t(Mods':Set, incompleteStructType(X:CId)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteStructType(X:CId)),
-               t(Mods':Set, structType(X:CId, _, _)))
+               t(Mods':Set, structType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, unionType(X:CId, _, fieldInfo(Fs:List, _, _))),
-               t(Mods':Set, unionType(X:CId, _, fieldInfo(Fs':List, _, _))))
+               t(Mods:Set, unionType(X:CId, fieldInfo(Fs:List, _, _, _))),
+               t(Mods':Set, unionType(X:CId, fieldInfo(Fs':List, _, _, _))))
           => #areCompat(Fs, Fs')
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, unionType(X:CId, _, _)),
+               t(Mods:Set, unionType(X:CId, _)),
                t(Mods':Set, incompleteUnionType(X:CId)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteUnionType(X:CId)),
-               t(Mods':Set, unionType(X:CId, _, _)))
+               t(Mods':Set, unionType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
@@ -193,13 +194,14 @@ module C-TYPING-COMPATIBILITY
                // It's more complicated than this, too, I think -- e.g.,
                // alignas on a definition implies no alignas should be on any
                // declaration.
-               andBool ((#hasAlignas(Mods) =/=K true
-                    orBool #hasAlignas(Mods') =/=K true)
-                    orElseBool getAlignas(Mods) ==Int getAlignas(Mods'))
+ /*              andBool ((notBool #hasAlignas(Mods)
+                    andBool notBool #hasAlignas(Mods'))
+                    orElseBool (#hasAlignas(Mods) 
+                    andBool #hasAlignas(Mods') andBool getAlignas(Mods) ==Int getAlignas(Mods')))*/
 
      rule getAlignas(T:Type) => getAlignas(getModifiers(T))
           requires #hasAlignas(getModifiers(T)) ==K true
-     rule getAlignas(T:Type) => 1
+     rule getAlignas(T:Type) => byteAlignofType(T)
           requires #hasAlignas(getModifiers(T)) =/=K true
 
      syntax Int ::= getAlignas(Set) [function]

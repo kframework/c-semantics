@@ -58,12 +58,10 @@ module C-TYPE-BUILDER
 
      rule struct(S:String, Decls:List)
           => t(.Set, structType(Identifier(S),
-               bitSizeofStruct(makeStructFieldInfo(Decls)),
                makeStructFieldInfo(Decls)))
 
      rule union(S:String, Decls:List)
           => t(.Set, unionType(Identifier(S),
-               bitSizeofUnion(makeUnionFieldInfo(Decls)),
                makeUnionFieldInfo(Decls)))
 
      rule decl(T:FlexType, S:String)

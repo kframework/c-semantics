@@ -84,8 +84,8 @@ module C-DECL-LOCAL
           [structural]
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
-     rule <k> (.K => ERROR("TDL1", "Extern declaration of "
-                    +String idToString(X) +String " follows one with no linkage."))
+     rule <k> (.K => CV("TDL1", "Extern declaration of "
+                    +String idToString(X) +String " follows one with no linkage.", "6.7:3"))
                ~> declareInternalVariable(X:CId, T:Type, NoInit)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -94,13 +94,13 @@ module C-DECL-LOCAL
           <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
           [structural]
-     rule (.K => ERROR("TDL2", "Extern declaration of " +String idToString(X)
-               +String " appears at block scope with an initializer."))
+     rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
+               +String " appears at block scope with an initializer.", "6.7.9:5"))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
           requires isExternType(T) andBool K =/=K NoInit
           [structural]
-     rule <k> (.K => ERROR("TDL3", "Extern declaration of " +String idToString(X)
-                    +String " with incompatible type."))
+     rule <k> (.K => CV("TDL3", "Extern declaration of " +String idToString(X)
+                    +String " with incompatible type.", "6.7:4"))
                ~> declareInternalVariable(X:CId, T':Type, NoInit)
           ...</k>
           <external-types>... X |-> T:Type ...</external-types>
@@ -129,8 +129,8 @@ module C-DECL-LOCAL
           requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
-     rule <k> (.K => ERROR("TDL4","redeclaration of " +String idToString(X)
-                    +String " with no linkage."))
+     rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
+                    +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>

@@ -20,7 +20,7 @@ module C-COMMON-EXPR-MEMBERS
      so-qualified version of the type of the designated member.
      }*/
      rule <k> lval(Loc:SymLoc, t(Mods:Set,
-                    structType(S:CId, _, Fields:FieldInfo))) . F:CId
+                    structType(S:CId, Fields:FieldInfo))) . F:CId
                => lookupField(F, Loc, Mods, S, Fields, Fields)
           ...</k>
           <initializing> I:Int </initializing>
@@ -28,7 +28,7 @@ module C-COMMON-EXPR-MEMBERS
                orBool I >Int 0
           [structural]
      rule <k> lval(Loc:SymLoc, t(Mods:Set,
-                    unionType(S:CId, _, Fields:FieldInfo))) . F:CId
+                    unionType(S:CId, Fields:FieldInfo))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
                     Mods, S, Fields, Fields)
           ...</k>
@@ -39,7 +39,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, structType(_, _, _))) . _:CId
+               ~> lval(_, t(Mods:Set, structType(_, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           requires Atomic in Mods
@@ -47,7 +47,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, unionType(_, _, _))) . _:CId
+               ~> lval(_, t(Mods:Set, unionType(_, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           requires Atomic in Mods
@@ -57,22 +57,31 @@ module C-COMMON-EXPR-MEMBERS
      // TODO(chathhorn): anonymous structs/unions.
      syntax KItem ::= lookupField(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
           [function]
+     syntax KItem ::= lookupFieldHold(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
 
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
-          fieldInfo(_,
+          fieldInfo(_, _,
                F |-> T:Type _,
                F |-> Offset:Int _))
           // Complete recursive struct/union definitions.
           => lv(Loc +bytes Offset,
                completeTag(S, Fields, addQualifiers(Mods, T)))
+     rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo, 
+          fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
+          => lookupFieldHold(F, Loc, Mods, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
+          requires notBool (F in keys(Types) andBool F in keys(Offsets))
+       
+     rule (.K => CV("CEM3", "attempting to access member but it does not exist", "6.5.2.3:1"))
+          ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))
+          requires notBool (F in keys(Types) andBool F in keys(Offsets))
 
      // Same deal as above, only for byte lists.
      rule tv(agg(L:List), t(Mods:Set,
-               structType(S:CId, _, Fields:FieldInfo))) . F:CId
+               structType(S:CId, Fields:FieldInfo))) . F:CId
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
      rule tv(agg(L:List), t(Mods:Set,
-               unionType(S:CId, _, Fields:FieldInfo))) . F:CId
+               unionType(S:CId, Fields:FieldInfo))) . F:CId
           => extractField(F, L, Mods, S, Fields, Fields)
           [structural]
 
@@ -80,7 +89,7 @@ module C-COMMON-EXPR-MEMBERS
           [function]
 
      rule extractField(F:CId, L:List, Mods:Set, S:CId, Fields:FieldInfo,
-          fieldInfo(_,
+          fieldInfo(_, _,
                F |-> t(Mods':Set, T':SimpleType) _,
                F |-> Offset:Int _))
           => concretize(completeTag(S, Fields, t(Mods Mods', T')),

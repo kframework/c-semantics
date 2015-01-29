@@ -13,7 +13,8 @@ understand this project:
 ## Quick overview
 
 - `kcc` is meant to to act a lot like `gcc`. You use it and run programs the
-  same way.
+  same way. If your system provides a command `kcc` already (of which there are
+  several possible), we also provide the synonym `kclang`.
 - The programs `kcc` generates act like normal programs. Both the output to
   stdout (e.g., `printf`), as well as the return value of the program should be
   what you expect. In terms of operational behavior, a correct program compiled

@@ -271,14 +271,10 @@ module C-SYMLOC
      rule #isBases(basedOn(_, _)) => true
      rule #isBases(_) => false [owise]
 
-     rule hasUnionMarker(Loc:SymLoc) => #hasUnionMarker(.K, Loc)
-
-     syntax Bool ::= #hasUnionMarker(K, SymLoc) [function]
-     rule #hasUnionMarker(fromUnion(_, _, _), _:SymLoc) => true
-     rule #hasUnionMarker(K:K, loc(Base:SymBase, Offset:Int, SetItem(K':K) S:Set))
-          => #hasUnionMarker(K', loc(Base, Offset, S))
-          requires (K ==K .K) orBool (getKLabel(K) =/=KLabel 'fromUnion)
-     rule #hasUnionMarker(_, _) => false [owise]
+     rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
+          => getKLabel(K) ==KLabel 'fromUnion
+          orBool hasUnionMarker(loc(Base, Offset, S))
+     rule hasUnionMarker(_) => false [owise]
 
      rule isFromArray(Loc:SymLoc) => #isFromArray(Loc)
 

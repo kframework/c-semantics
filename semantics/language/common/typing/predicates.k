@@ -50,33 +50,33 @@ module C-TYPING-PREDICATES
           => #typesEq(T, T')
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, structType(X:CId, _, _)),
-               t(Mods':Set, structType(X:CId, _, _)))
+               t(Mods:Set, structType(X:CId,  _)),
+               t(Mods':Set, structType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, structType(X:CId, _, _)),
+               t(Mods:Set, structType(X:CId, _)),
                t(Mods':Set, incompleteStructType(X:CId)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, incompleteStructType(X:CId)),
-               t(Mods':Set, structType(X:CId, _, _)))
+               t(Mods':Set, structType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, unionType(X:CId, _, _)),
-               t(Mods':Set, unionType(X:CId, _, _)))
+               t(Mods:Set, unionType(X:CId, _)),
+               t(Mods':Set, unionType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, unionType(X:CId, _, _)),
+               t(Mods:Set, unionType(X:CId, _)),
                t(Mods':Set, incompleteUnionType(X:CId)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
                t(Mods:Set, incompleteUnionType(X:CId)),
-               t(Mods':Set, unionType(X:CId, _, _)))
+               t(Mods':Set, unionType(X:CId, _)))
           => true
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(_, _) => false [owise]
@@ -161,9 +161,10 @@ module C-TYPING-PREDICATES
 
      rule isUCharType(t(_, unsigned-char)) => true
      rule isUCharType(typedDeclaration(T:Type, _)) => isUCharType(T)
+     rule isUCharType(_) => false [owise]
 
      rule isWCharType(t(_, T:SimpleType)) => true
-          requires T ==K simpleType(cfg:wcharut)
+          requires T ==K cfg:wcharut
      rule isWCharType(_) => false [owise]
 
      rule isPointerType(t(_, pointerType(_))) => true
@@ -197,12 +198,12 @@ module C-TYPING-PREDICATES
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T)
 
-     rule isStructType(t(_, structType(_, _, _))) => true
+     rule isStructType(t(_, structType(_, _))) => true
      rule isStructType(t(_, incompleteStructType(_))) => true
      rule isStructType(typedDeclaration(T:Type, _)) => isStructType(T)
      rule isStructType(_) => false [owise]
 
-     rule isUnionType(t(_, unionType(_, _, _))) => true
+     rule isUnionType(t(_, unionType(_, _))) => true
      rule isUnionType(t(_, incompleteUnionType(_))) => true
      rule isUnionType(typedDeclaration(T:Type, _)) => isUnionType(T)
      rule isUnionType(_) => false [owise]

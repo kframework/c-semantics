@@ -33,19 +33,19 @@ module C-EXECUTION-ERROR
           requires T =/=K void
 
      rule [err00037]:
-          (.K => ERROR("00037", "Trying to read through a null pointer.") ) ~>
+          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1") ) ~>
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => ERROR("00046", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
+          (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
           concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
           requires hasFloatType(T) andBool (N >Int 0)
           [structural]
 
-     rule (.K => ERROR("00500",
+     rule (.K => UNDEF("CEER3",
                "printf: Format string expects type of size " +String
                Int2String(value(A)) +String ", but got an argument of size "
-               +String Int2String(value(B)) +String ".", 409) ) ~>
+               +String Int2String(value(B)) +String ".", "7.21.6.1:9") ) ~>
           nextvarg-aux(_, _, A:TypedValue, B:TypedValue)
           requires value(A) =/=Int value(B)
           [structural]

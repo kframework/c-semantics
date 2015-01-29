@@ -97,22 +97,36 @@ module C-DECL-GLOBAL
           requires notBool validStorageClass(T)
           [structural]
 
-     rule <k> (.K => ERROR("TDG3",
+     rule <k> (.K => UNDEF("TDG3",
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
-               8))
+               "6.7.1:7"))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
+               andBool isFunctionType(T)
           [structural]
 
-     rule <k> (.K => ERROR("TDG4",
+     rule <k> (.K => CV("TDG18",
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
-               8))
+               "6.7.1:3"))
+               ~> declare''(typedDeclaration(T:Type, X:CId), _)
+          ...</k>
+          <curr-function> F:K </curr-function>
+          requires F =/=K file-scope
+               andBool validStorageClass(T)
+               andBool notBool validLocalStorageClass(T)
+               andBool notBool isFunctionType(T)
+          [structural]
+
+     rule <k> (.K => CV("TDG4",
+               "declaration for " +String idToString(X) +String
+               " appears with invalid storage class specifiers.",
+               "6.9:2"))
                ~> declare''(typedDeclaration(T:Type, X:CId), _)
           ...</k>
           <curr-function> file-scope </curr-function>
@@ -233,6 +247,8 @@ module C-DECL-GLOBAL
           validStorageClass'(T, Specs)
           andBool notBool (
                (isFunctionType(T) andBool (Static in Specs))
+               orBool (notBool isFunctionType(T) andBool ThreadLocal in Specs
+                    andBool notBool (Static in Specs orBool Extern in Specs))
           )
 
      // *** External variables ***
@@ -303,8 +319,8 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (.K => ERROR("TDG9",
-               "conflicting types for " +String idToString(X)))
+     rule <k> (.K => CV("TDG9",
+               "conflicting types for " +String idToString(X), "6.7:4"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -353,8 +369,8 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (.K => ERROR("TDG10",
-               "conflicting types for " +String idToString(X)))
+     rule <k> (.K => CV("TDG10",
+               "conflicting types for " +String idToString(X), "6.7:4"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -407,9 +423,9 @@ module C-DECL-GLOBAL
           [structural]
 
      // Static, previously extern.
-     rule <k> (.K => ERROR("TDG11",
+     rule <k> (.K => UNDEF("TDG11",
                "static declaration of " +String idToString(X)
-               +String " follows non-static declaration.", 8))
+               +String " follows non-static declaration.", "6.2.2:7"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -550,8 +566,8 @@ module C-DECL-GLOBAL
           [structural]
 
      // already initialized
-     rule (.K => ERROR("TDG13", "Redefinition of symbol: "
-               +String idToString(X)))
+     rule (.K => CV("TDG13", "Redefinition of symbol: "
+               +String idToString(X), "6.9:3"))
           ~> declareExternalVariable'(initValue(X:CId, _, K:K),
                initialized, _, _)
           requires  K =/=K .K
@@ -619,8 +635,8 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Base' ...</external-defs>
           [structural]
 
-     rule <k> (.K => ERROR("TDG14",
-               "redefinition of symbol with external linkage: " +String idToString(X)))
+     rule <k> (.K => CV("TDG14",
+               "redefinition of symbol with external linkage: " +String idToString(X), "6.9:5"))
                ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
@@ -696,8 +712,8 @@ module C-DECL-GLOBAL
           requires notBool (X in Incs)
                andBool notBool (X in keys(GStructs))
           [structural]
-     rule <k> (.K => ERROR("TDG15",
-               "redefinition of a struct, union, or enum: " +String idToString(X)))
+     rule <k> (.K => CV("TDG15",
+               "redefinition of a struct, union, or enum: " +String idToString(X), "6.7.2.3:1"))
                ~> addGlobalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -801,12 +817,12 @@ module C-DECL-GLOBAL
      rule <k> (completeTagInTag(S:CId, Info:FieldInfo, S2:CId) => .K ) ...</k>
           <gstructs>...
                S2 |-> fieldInfo(
-                    (Decls:List => completeTagsInList(S |-> Info, Decls)),
+                    (Decls:List => completeTagsInList(S |-> Info, Decls)), _,
                     (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
           ...</gstructs>
           <structs>...
                S2 |-> fieldInfo(
-                    (Decls:List => completeTagsInList(S |-> Info, Decls)),
+                    (Decls:List => completeTagsInList(S |-> Info, Decls)), _,
                     (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
           ...</structs>
           requires S =/=K S2
@@ -826,9 +842,9 @@ module C-DECL-GLOBAL
           <types> Types:Map </types>
           requires notBool (X in keys(Types))
           [structural]
-     rule <k> (.K => ERROR("TDG16",
+     rule <k> (.K => CV("TDG16",
                "incompatible redeclaration of symbol with internal or external linkage: "
-               +String idToString(X)))
+               +String idToString(X), "6.7:4"))
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>

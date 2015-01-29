@@ -119,7 +119,7 @@ module C-MEMORY-WRITING
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
-     rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List,
+     rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List, _,
                F |-> T:Type _, _))
           => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
@@ -127,16 +127,8 @@ module C-MEMORY-WRITING
                     piece(unknown, cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
-     rule makeUnknown(_, F:CId, fieldInfo(L:List, F |-> T:Type _, _)) => .K
+     rule makeUnknown(_, F:CId, fieldInfo(L:List, _, F |-> T:Type _, _)) => .K
           requires maxByteSizeofList(L) <=Int byteSizeofType(T)
-          [structural]
-
-     rule write-specific(Loc:SymLoc,
-               agg(ListItem(V:CValue) ListItem(V':CValue) L:List),
-               T:Type)
-          => writeBytes(stripProv(Loc), dataList(ListItem(V) ListItem(V') L), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
-               andBool notBool isBitfieldType(T)
           [structural]
 
      syntax Int ::= justBits(Int, Type) [function]
@@ -242,12 +234,12 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(Loc:SymLoc, T:Type))
           => splitPointerBytes(Loc, T, byteSizeofType(T))
           requires isPointerType(T)
-     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo))))
-          => splitStructBytes(dataList(L), t(S, structType(X, NBits, Info)),
-               byteSizeofType(t(S, structType(X, NBits, Info))))
-     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo))))
-          => splitStructBytes(dataList(L), t(S, unionType(X, NBits, Info)),
-               byteSizeofType(t(S, unionType(X, NBits, Info))))
+     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:CId, Info:FieldInfo))))
+          => splitStructBytes(dataList(L), t(S, structType(X, Info)),
+               byteSizeofType(t(S, structType(X, Info))))
+     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:CId, Info:FieldInfo))))
+          => splitStructBytes(dataList(L), t(S, unionType(X, Info)),
+               byteSizeofType(t(S, unionType(X, Info))))
 
      syntax List ::= splitUnknown(Int) [function]
      rule splitUnknown(N:Int)
@@ -280,7 +272,29 @@ module C-MEMORY-WRITING
                L ListItem(piece(N, PieceLen)))
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
+               andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, T)
+                    orBool N ==K unknown)
+     rule splitStructBytes(
+          dataList(ListItem(piece((N:Bits => unknown), _:Int)) _:List),
+               T:Type, Len:Int, _:List)
+          requires isPaddingOffset(byteSizeofType(T) -Int Len, T)
+               andBool N =/=K unknown
      rule splitStructBytes(_, _, 0, L:List) => dataList(L)
+
+     syntax Bool ::= isPaddingOffset(Int, Type) [function]
+     rule isPaddingOffset(Offset:Int, 
+          t(_, structType(_, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))))
+          => notBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+     rule isPaddingOffset(Offset:Int, 
+          t(_, unionType(_, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))))
+          => notBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+     syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
+     rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) 
+          Decls:List, Types:Map, Offsets:Map)
+          => (Offsets[F] <=Int Offset andBool Offset <Int Offsets[F] +Int
+               byteSizeofType(Types[F]))
+          orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+     rule isNonPaddingOffset(_, .List, _, _) => false
 
      syntax DataList ::= splitPointerBytes(SymLoc, Type, Int) [function]
      syntax DataList ::= splitPointerBytes(SymLoc, Type, Int, K, List) [function]

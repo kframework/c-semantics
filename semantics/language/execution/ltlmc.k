@@ -126,7 +126,7 @@ module C-LTLMC
 
      rule ltlRVal(_,
           #struct(V:List,
-               fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+               fieldInfo(_, _, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:CId)
           => joinBytes(T,
                fillToBytes-aux(
@@ -137,7 +137,7 @@ module C-LTLMC
                     .List))
      rule ltlRVal(_,
           #union(V:List,
-               fieldInfo(_, (_ X |-> T:Type), (_ X |-> Offset:Int))
+               fieldInfo(_, _, (_ X |-> T:Type), (_ X |-> Offset:Int))
           ) . X:CId)
           => joinBytes(T,
                fillToBytes-aux(
@@ -202,9 +202,9 @@ module C-LTLMC
      rule joinBytes(t(_, pointerType(T:Type)),
                dataList(ListItem(piece(subObject(L:SymLoc, _, _), _)) _:List))
           => #ptr(L, T)
-     rule joinBytes(t(_, structType(_, _, Info:FieldInfo)), dataList(V:List))
+     rule joinBytes(t(_, structType(_, Info:FieldInfo)), dataList(V:List))
           => #struct(V, Info)
-     rule joinBytes(t(_, unionType(_, _, Info:FieldInfo)), dataList(V:List))
+     rule joinBytes(t(_, unionType(_, Info:FieldInfo)), dataList(V:List))
           => #union(V, Info)
      rule joinBytes(T:Type, dataList(V:List))
           => joinBytes'(T, V, .List)

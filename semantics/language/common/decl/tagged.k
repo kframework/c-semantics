@@ -12,6 +12,7 @@ module C-DECL-TAGGED
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
 
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
@@ -47,6 +48,8 @@ module C-DECL-TAGGED
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
+     syntax Int ::= structPadding(Int, Int) [function]
+     
      rule makeStructFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , V:Int
@@ -54,10 +57,12 @@ module C-DECL-TAGGED
                , Offsets:Map
                , L':List
           )
-          => makeStructFieldInfo'(L, V +Int byteSizeofType(T),
-               Types[Field <- T], Offsets[Field <- V], L')
-     rule makeStructFieldInfo'(.List, _, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, Types, Offsets)
+          => makeStructFieldInfo'(L, V +Int byteSizeofType(T) +Int structPadding(V, byteAlignofType(T)),
+               Types[Field <- T], Offsets[Field <- V +Int structPadding(V, byteAlignofType(T))], L')
+     rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
+          => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))) *Int cfg:bitsPerByte, Types, Offsets)
+
+     rule structPadding(Offset:Int, Alignment:Int) => (0 -Int Offset) modInt Alignment
 
      // FIXME: chould check for some struct contraints here.
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
@@ -85,17 +90,17 @@ module C-DECL-TAGGED
           => makeUnionFieldInfo'(L,
                Types[Field <- T], Offsets[Field <- 0], L')
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, Types, Offsets)
+          => fieldInfo(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets)
 
      syntax KItem ::= addTag(CId, FieldInfo)
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map))
                // Elide function parameter names in struct types.
-               => addGlobalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
+               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
           ...</k>
           <curr-function> file-scope </curr-function>
           [structural]
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, Ts:Map, Offs:Map))
-               => addLocalTag(S, fieldInfo(elideList(Fs), elideMap(Ts), Offs))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map))
+               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
           ...</k>
           <curr-function> F:CId </curr-function>
           requires F =/=K file-scope

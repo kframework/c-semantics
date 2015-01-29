@@ -100,7 +100,7 @@ module C-BUILTIN
      rule offsetOf'(K:K, F:CId) => K . F
 
      syntax KItem ::= toOffset(K) [strict]
-     rule toOffset(tv(Loc:SymLoc, _)) => tv(offset(Loc), cfg:sizeut)
+     rule toOffset(tv(Loc:SymLoc, _)) => tv(offset(Loc), t(.Set, cfg:sizeut))
           [structural]
 
 endmodule

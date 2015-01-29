@@ -125,10 +125,10 @@ module C-DYNAMIC
      rule loadObj(.Bag) => .K
           [structural]
 
-     rule N:Int => tv(N, cfg:largestUnsigned)
+     rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
 
-     rule N:CSize => tv(N, cfg:largestUnsigned)
+     rule N:CSize => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
 
 endmodule

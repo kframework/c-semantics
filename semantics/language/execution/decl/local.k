@@ -30,6 +30,18 @@ module C-DECL-LOCAL
           ...</external-types>
           requires isExternType(T) orBool isFunctionType(T)
           [structural]
+     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
+               => giveType(X, T)
+          ...</k>
+          <curr-tu> TU:String </curr-tu>
+          <tu-id> TU </tu-id>
+          <external-defs> Defs:Map </external-defs>
+          <external-types> Types:Map </external-types>
+          requires isExternType(T) orBool isFunctionType(T)
+               andBool notBool X in keys(Defs)
+               andBool notBool X in keys(Types)
+          [structural]
+ 
      rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Base)
                ~> giveType(X, T')
