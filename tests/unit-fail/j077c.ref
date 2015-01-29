@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEA6
+Description: passing a pointer not to an array object as a function parameter with a static-qualified array size.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:7
+=============================================================
+File: j077c.c
+Function: main
+Line: 4
+=============================================================

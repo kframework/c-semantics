@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: ECL2
+Description: Found pointer that refers outside the bounds of an object + 1.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4
+=============================================================
+File: j062b.c
+Function: main
+Line: 7
+=============================================================

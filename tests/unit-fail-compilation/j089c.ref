@@ -1,0 +1,7 @@
+File: j089c.c
+Line: 2
+Error: TDG12
+Description: declaration for an object is a tentative definition with internal linkage.
+Type: Undefined behavior.
+See also: C11 sec. 6.9.2:3
+Translation failed. Run kcc -d j089c.c to see commands run.

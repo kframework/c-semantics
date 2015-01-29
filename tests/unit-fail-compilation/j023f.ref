@@ -1,0 +1,7 @@
+File: j023f.c
+Line: 3
+Error: CEAS4
+Description: void value as right operand in assignment
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.2
+Translation failed. Run kcc -d j023f.c to see commands run.

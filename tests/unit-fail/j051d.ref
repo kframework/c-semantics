@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEB7
+Description: the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.7:3
+=============================================================
+File: j051d.c
+Function: main
+Line: 6
+=============================================================

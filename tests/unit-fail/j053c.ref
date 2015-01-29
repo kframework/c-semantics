@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CER2
+Description: Cannot compare pointers with different base objects using '<='.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.8:5
+=============================================================
+File: j053c.c
+Function: main
+Line: 8
+=============================================================

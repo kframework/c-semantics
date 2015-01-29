@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: EIO1
+Description: Unsequenced side effect on scalar object with side effect of same object.
+Type: Undefined behavior.
+See also: C11 sec. 6.5
+=============================================================
+File: j035b.c
+Function: main
+Line: 3
+=============================================================

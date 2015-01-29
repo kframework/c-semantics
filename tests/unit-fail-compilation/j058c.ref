@@ -1,0 +1,7 @@
+File: j058c.c
+Line: 7
+Error: TIO1
+Description: Non-constant static initializer.
+Type: Constraint violation or undefined behavior.
+See also: C11 sec. 6.6
+Translation failed. Run kcc -d j058c.c to see commands run.

@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: B2
+Description: function call has fewer arguments than parameters in function definition.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.2.2:6
+=============================================================
+File: j038a.c
+Function: main
+Line: 4
+=============================================================

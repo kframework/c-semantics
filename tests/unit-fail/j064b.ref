@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: EIO3
+Description: Trying to modify an object declared with const type.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.3
+=============================================================
+File: j064b.c
+Function: main
+Line: 6
+=============================================================

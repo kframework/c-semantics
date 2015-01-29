@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEC1
+Description: If one of a conditional expression's branches has pointer type, the other must be a compatible type, a null pointer constant, or a pointer to void.
+Type: Constraint violation.
+See also: C11 sec. 6.5.15:3
+=============================================================
+File: j076g.c
+Function: main
+Line: 4
+=============================================================

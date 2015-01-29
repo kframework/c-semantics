@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CTI2
+Description: Arrays must have positive length.
+Type: Constraint violation.
+See also: C11 sec. 6.7.6.2:1
+=============================================================
+File: j075a.c
+Function: main
+Line: 3
+=============================================================

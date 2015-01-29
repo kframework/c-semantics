@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: B1
+Description: types of function call arguments aren't compatible with declared types after promotions.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.2.2:6
+=============================================================
+File: j040b.c
+Function: main
+Line: 8
+=============================================================

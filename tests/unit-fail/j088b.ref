@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV5
+Description: casting empty value to type other than void.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.2
+=============================================================
+File: j088b.c
+Function: f
+Line: 4
+=============================================================
