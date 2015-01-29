@@ -1,12 +1,12 @@
 #include <stdlib.h>
 double d;
 
-__inline__ double foo (void)
+static __inline__ double foo (void)
 {
   return d;
 }
 
-__inline__ int bar (void)
+static __inline__ int bar (void)
 {
   foo();
   return 0;

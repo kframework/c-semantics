@@ -7,7 +7,7 @@ l,int m,int n,int o)
     return;
 }
 
-inline void debug(const char *msg,...)
+static inline void debug(const char *msg,...)
 {
     va_list ap;
     va_start( ap, msg );

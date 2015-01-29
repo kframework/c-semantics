@@ -2,7 +2,7 @@
 #include <stdlib.h>
 int strcmp (const char*, const char*);
 char s[2048] = "a";
-inline bool foo(const char *str) {
+static inline bool foo(const char *str) {
   return !strcmp(s,str);
 }
 int main() {

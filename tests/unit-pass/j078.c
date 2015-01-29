@@ -3,7 +3,7 @@ int a(void) {
 }
 
 int b(void) {
-      _Thread_local int x;
+      _Thread_local static int x;
       return 0;
 }
 

@@ -1,5 +1,5 @@
 #include <stdlib.h>
-inline int
+static inline int
 f (int x)
 {
   return (x + 1);

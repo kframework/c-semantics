@@ -1,3 +1,4 @@
+#include "fsl-header.h"
 void exit(int status);
 void abort(void);
 /* This is a modfied version of va-arg-9.c to test va_copy.  */
@@ -7,8 +8,6 @@ void abort(void);
 #ifndef va_copy
 #define va_copy __va_copy
 #endif
-
-extern size_t strlen (const char *);
 
 int
 to_hex (unsigned int a)

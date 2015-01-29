@@ -1,6 +1,6 @@
 void exit(int status);
 void abort(void);
-inline
+static inline
 void f (x)
       int x;
 {

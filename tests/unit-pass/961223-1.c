@@ -3,7 +3,7 @@ struct s {
   double d;
 };
 
-inline struct s
+static inline struct s
 sub (struct s s)
 {
   s.d += 1.0;

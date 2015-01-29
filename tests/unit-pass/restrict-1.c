@@ -11,7 +11,7 @@ typedef struct
   int i, dummy;
 } A;
 
-inline A foo (const A* p, const A* q)
+static inline A foo (const A* p, const A* q)
 {
   return (A){p->i+q->i};
 }

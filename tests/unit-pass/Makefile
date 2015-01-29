@@ -1,34 +1,42 @@
-TESTS = $(wildcard ./*.c)
+TUS = $(wildcard ./*.c)
+TESTS = $(filter-out %-link2.c, ${TUS})
 GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
-GCC = gcc-4.8 -lm -Wall -Wextra -x c -O0 -m32 -U __GNUC__ -pedantic -std=c11
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
-.PHONY: test clean reference
+.PHONY: test clean reference comparison
 .PRECIOUS: %.kcc %.out
 
 test: ${TEST_RESULTS}
 
 reference: ${REFERENCE_TEST_RESULTS}
 
-compare: ${TEST_COMPARISON}
+comparison: ${TEST_COMPARISON}
 
 %.out: %.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
+%-link1.kcc: %-link1.c %-link2.c
+	@echo -n "Compiling $^... "
+	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
+%-link1.gcc: %-link1.c %-link2.c
+	@echo -n "Compiling $^ (reference)... "
+	@gcc-4.9 -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
-	@${GCC} -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@gcc-4.9 -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.ref: %.gcc
 	@echo -n "Running $<... "
