@@ -78,11 +78,15 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
      syntax SimpleType ::= variableLengthArrayType(Type, K)
 
-     syntax SimpleType ::= structType(CId, FieldInfo)
-     syntax SimpleType ::= incompleteStructType(CId)
+     syntax SimpleType ::= structType(StructId)
+     syntax SimpleType ::= unionType(StructId)
+     syntax StructId ::= global(CId, String)
+                       | local(CId, String, Int)
 
-     syntax SimpleType ::= unionType(CId, FieldInfo)
-     syntax SimpleType ::= incompleteUnionType(CId)
+     syntax KItem ::= getFieldInfo(StructId) [function]
+     syntax KItem ::= getFieldInfo(Type) [function]
+     syntax CId ::= getTag(StructId) [function]
+     syntax KItem ::= "#incomplete"
 
      // Basic types
      // TODO(chathhorn): probably should create subsorts for
@@ -163,13 +167,6 @@ module C-TYPING-SYNTAX
 
      syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
-
-     syntax Type ::= completeTag(CId, FieldInfo, Type) [function]
-                   | completeTags(Map, Type) [function]
-     syntax KItem ::= #completeTags(K) [strict]
-
-     syntax List ::= completeTagsInList(Map, List) [function]
-     syntax Map ::= completeTagsInMap(Map, Map) [function]
 
      syntax Bool ::= isNullPointerConstant(TypedValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]

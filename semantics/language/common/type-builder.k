@@ -13,8 +13,8 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= arr(FlexType, Int) [function]
      syntax Type ::= const(FlexType) [function]
      syntax Type ::= restrict(FlexType) [function]
-     syntax Type ::= struct(String, List) [function]
-     syntax Type ::= union(String, List) [function]
+     syntax Type ::= struct(String) [function]
+     syntax Type ::= union(String) [function]
      syntax Type ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 endmodule
@@ -56,13 +56,11 @@ module C-TYPE-BUILDER
 
      rule restrict(T:FlexType) => addQualifier(Restrict, expand(T))
 
-     rule struct(S:String, Decls:List)
-          => t(.Set, structType(Identifier(S),
-               makeStructFieldInfo(Decls)))
+     rule struct(S:String)
+          => t(.Set, structType(global(Identifier(S), "builtin")))
 
-     rule union(S:String, Decls:List)
-          => t(.Set, unionType(Identifier(S),
-               makeUnionFieldInfo(Decls)))
+     rule union(S:String)
+          => t(.Set, unionType(global(Identifier(S), "builtin")))
 
      rule decl(T:FlexType, S:String)
           => typedDeclaration(expand(T), Identifier(S))

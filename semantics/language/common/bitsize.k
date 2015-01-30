@@ -90,10 +90,10 @@ module C-BITSIZE
      rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 
-     rule bitSizeofType(t(_, structType(_, fieldInfo(_, NBits:Int, _, _))))
-          => NBits
-     rule bitSizeofType(t(_, unionType(_, fieldInfo(_, NBits:Int, _, _))))
-          => NBits
+     rule bitSizeofType(t(_, structType(S:StructId)))
+          => bitSizeofStruct(getFieldInfo(S))
+     rule bitSizeofType(t(_, unionType(S:StructId)))
+          => bitSizeofUnion(getFieldInfo(S))
 
      rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _))
           => NBits

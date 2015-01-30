@@ -239,110 +239,6 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
      rule innerType(t(_, functionType(T:Type, _))) => T
      rule innerType(typedDeclaration(T:Type, _)) => T
 
-     rule <k> #completeTags(T:Type) => completeTags(Tags, T) ...</k>
-          <structs> Tags:Map </structs>
-          requires Tags =/=K .Map
-     rule <k> #completeTags(T:Type) => T ...</k>
-          <structs> .Map </structs>
-
-     // TODO(chathhorn): do this in a better way. Keeping all tags in a map and
-     // checking it to tell whether a tag has been completed or not was
-     // probably the better way to do things.
-     rule completeTag(X:CId, Info:FieldInfo, T:Type)
-          => completeTags(X |-> Info, T)
-
-     rule completeTags(Tags:Map, t(S:Set, bitfieldType(T:Type, Sz:CSize)))
-          => t(S, bitfieldType(completeTags(Tags, T), Sz))
-     rule completeTags(Tags:Map, t(S:Set, functionType(R:Type, Args:List)))
-          => t(S, functionType(completeTags(Tags, R), completeTagsInList(Tags, Args)))
-     rule completeTags(Tags:Map, t(S:Set, pointerType(T:Type)))
-          => t(S, pointerType(completeTags(Tags, T)))
-     rule completeTags(Tags:Map, t(S:Set, arrayType(T:Type, Sz:CSize)))
-          => t(S, arrayType(completeTags(Tags, T), Sz))
-     rule completeTags(Tags:Map, t(S:Set, incompleteArrayType(T:Type)))
-          => t(S, incompleteArrayType(completeTags(Tags, T)))
-     rule completeTags(Tags:Map, t(S:Set, flexibleArrayType(T:Type)))
-          => t(S, flexibleArrayType(completeTags(Tags:Map, T)))
-     rule completeTags(Tags:Map, t(S:Set, variableLengthArrayType(T:Type, N:K)))
-          => t(S, variableLengthArrayType(completeTags(Tags:Map, T), N))
-
-     rule completeTags(_ X:CId |-> Info:FieldInfo,
-               t(S:Set, incompleteStructType(X:CId)))
-          => t(S, structType(X, Info))
-     rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
-          => t(S, incompleteStructType(X))
-          requires notBool (X in keys(Tags))
-     rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               structType(X:CId,
-                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
-          => t(S, structType(X,
-               fieldInfo(
-                    completeTagsInList(Tags, Decls),
-                    NBits,
-                    completeTagsInMap(Tags, Types),
-                    Offsets)))
-     // Don't complete recursive struct definitions.
-     rule completeTags(Tags:Map, t(S:Set,
-               structType(X:CId,
-                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
-          => t(S, structType(X,
-               fieldInfo(
-                    completeTagsInList(Tags, Decls),
-                    NBits,
-                    completeTagsInMap(Tags, Types),
-                    Offsets)))
-          requires notBool (X in keys(Tags))
-
-     rule completeTags(_ X:CId |-> Info:FieldInfo,
-               t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, unionType(X, Info))
-     rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, incompleteUnionType(X))
-          requires notBool (X in keys(Tags))
-     rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               unionType(X:CId,
-                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
-          => t(S, unionType(X,
-               fieldInfo(
-                    completeTagsInList(Tags, Decls),
-                    NBits,
-                    completeTagsInMap(Tags, Types),
-                    Offsets)))
-     rule completeTags(Tags:Map, t(S:Set,
-               unionType(X:CId,
-                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
-          => t(S, unionType(X,
-               fieldInfo(
-                    completeTagsInList(Tags, Decls),
-                    NBits,
-                    completeTagsInMap(Tags, Types),
-                    Offsets)))
-          requires notBool (X in keys(Tags))
-
-     rule completeTags(_, t(S:Set, T:SimpleType))
-          => t(S, T)
-          requires (getKLabel(T) =/=KLabel 'bitfieldType)
-               andBool (getKLabel(T) =/=KLabel 'functionType )
-               andBool (getKLabel(T) =/=KLabel 'pointerType )
-               andBool (getKLabel(T) =/=KLabel 'arrayType )
-               andBool (getKLabel(T) =/=KLabel 'incompleteArrayType )
-               andBool (getKLabel(T) =/=KLabel 'flexibleArrayType )
-               andBool (getKLabel(T) =/=KLabel 'variableLengthArrayType )
-               andBool (getKLabel(T) =/=KLabel 'incompleteStructType)
-               andBool (getKLabel(T) =/=KLabel 'incompleteUnionType)
-     // Function parameters.
-     rule completeTags(Tags:Map, typedDeclaration(T:Type, X:CId))
-          => typedDeclaration(completeTags(Tags, T), X)
-     rule completeTags(_, variadic) => variadic
-
-     rule completeTagsInList(Tags:Map, ListItem(T:Type) L:List)
-          => ListItem(completeTags(Tags, T)) completeTagsInList(Tags, L)
-     rule completeTagsInList(_, .List) => .List
-
-     rule completeTagsInMap(Tags:Map, X:CId |-> T:Type M:Map)
-          => X |-> completeTags(Tags, T) completeTagsInMap(Tags, M)
-     rule completeTagsInMap(_, .Map) => .Map
-
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
           => ListItem(X) idsFromParams(L)
@@ -357,11 +253,11 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
-     //TODO(liyili): might not need the klabel for all the tagRestrict
-     //functions in this file
      syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType)
           [function, klabel('tagRestrictSimpleType)]
-     rule tagRestrict(_, T:BaseType) => T
+     rule tagRestrict(_, T:SimpleType) => T
+     //TODO(chathhorn): reimplement
+/*     rule tagRestrict(_, T:BaseType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
      rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
@@ -388,7 +284,7 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
                fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
-
+*/
      syntax List ::= tagRestrict(RestrictTag, List)
           [function, klabel('tagRestrictList)]
      rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
@@ -432,5 +328,16 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
      rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
           => 36893488147419103232
           requires isInt(N) =/=K true
+
+     rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
+     rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, unionType(S:StructId))) => getFieldInfo(S)
+     syntax KItem ::= #getFieldInfo(StructId, Bag) [function]
+     rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop> _:Bag)
+          => F
+     rule #getFieldInfo(_, _) => #incomplete [owise]
+
+     rule getTag(global(S:CId, _)) => S
+     rule getTag(local(S:CId, _, _)) => S
 
 endmodule

@@ -169,14 +169,16 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule <type>
-               t(_, structType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
+               t(_, structType(S:StructId)) . F:CId
                => T
           ...</type>
+          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
           [structural]
      rule <type>
-               t(_, unionType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
+               t(_, unionType(S:StructId)) . F:CId
                => T
           ...</type>
+          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

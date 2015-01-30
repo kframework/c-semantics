@@ -690,27 +690,22 @@ module C-DECL-GLOBAL
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys(Exts))
                ~> completeTagInIntDecls(X, Info, keys(Ints))
-               ~> completeTagInTags(X, Info, keys(Structs))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <gtypes> GTypes:Map => completeTagsInMap(X |-> Info, GTypes) </gtypes>
-          <types> Types:Map => completeTagsInMap(X |-> Info, Types) </types>
-          <structs> Structs:Map => Structs[X <- Info] </structs>
-          <gstructs> GStructs:Map => GStructs[X <- Info] </gstructs>
+          <structs> Structs:Map => Structs[global(X, Tu) <- Info] </structs>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          requires notBool (X in keys(GStructs))
+          requires notBool (global(X, Tu) in keys(Structs))
           [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs[X <- Info] </structs>
-          <gstructs> GStructs:Map => GStructs[X <- Info] </gstructs>
+          <structs> Structs:Map => Structs[global(X, Tu) <- Info] </structs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           requires notBool (X in Incs)
-               andBool notBool (X in keys(GStructs))
+               andBool notBool (global(X, Tu) in keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15",
                "redefinition of a struct, union, or enum: " +String idToString(X), "6.7.2.3:1"))
@@ -718,8 +713,8 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <gstructs> GStructs:Map </gstructs>
-          requires (X in keys(GStructs))
+          <structs> GStructs:Map </structs>
+          requires (global(X, Tu) in keys(GStructs))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -738,25 +733,25 @@ module C-DECL-GLOBAL
      rule completeTagInExtDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> completeTagInExtDecl(Tag:CId, Info:FieldInfo, X:CId)
+     rule <k> completeTagInExtDecl(_, _, X:CId)
                => declare(
-                    typedDeclaration(completeTag(Tag, Info, T), X), NoInit)
+                    typedDeclaration(T, X), NoInit)
           ...</k>
           <externals>...
-               X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
+               X |-> declState(_, T:Type,
                          declared, _)
           ...</externals>
           requires notBool isFunctionType(T)
-               andBool isCompleteType(completeTag(Tag, Info, T))
+               andBool isCompleteType(T)
           [structural]
 
-     rule <k> (completeTagInExtDecl(Tag:CId, Info:FieldInfo, X:CId) => .K )
+     rule <k> (completeTagInExtDecl(_, _, X:CId) => .K )
           ...</k>
           <externals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</externals>
           requires isFunctionType(T)
-               orBool notBool isCompleteType(completeTag(Tag, Info, T))
+               orBool notBool isCompleteType(T)
                orBool DS =/=K declared
           [structural]
 
@@ -773,59 +768,27 @@ module C-DECL-GLOBAL
      rule completeTagInIntDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> (completeTagInIntDecl(Tag:CId, Info:FieldInfo, X:CId) => declare(
+     rule <k> (completeTagInIntDecl(_, _, X:CId) => declare(
                typedDeclaration(
-                    completeTag(Tag, Info, addStorage(Static, T)), X),
+                    addStorage(Static, T), X),
                          NoInit))
           ...</k>
           <internals>...
-               X |-> declState(_, (T:Type => completeTag(Tag, Info, T)),
+               X |-> declState(_, T:Type,
                     declared, _)
           ...</internals>
           requires notBool isFunctionType(T)
-               andBool isCompleteType(completeTag(Tag, Info, T))
+               andBool isCompleteType(T)
           [structural]
 
-     rule <k> (completeTagInIntDecl(Tag:CId, Info:FieldInfo, X:CId) => .K )
+     rule <k> (completeTagInIntDecl(_, _, X:CId) => .K )
           ...</k>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>
           requires isFunctionType(T)
-               orBool notBool isCompleteType(completeTag(Tag, Info, T))
+               orBool notBool isCompleteType(T)
                orBool DS =/=K declared
-          [structural]
-
-     syntax KItem ::= completeTagInTags(CId, FieldInfo, Set)
-                    | completeTagInTag(CId, FieldInfo, CId)
-
-
-     rule <k> ( .K => completeTagInTag(S, Info, S2))
-               ~> completeTagInTags(S:CId, Info:FieldInfo, (SetItem(S2:CId) => .Set)  _)
-          ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          [structural]
-
-     rule completeTagInTags(_, _, .Set) => .K
-          [structural]
-
-
-     rule completeTagInTag(S:CId, _, S:CId) => .K
-          [structural]
-
-     rule <k> (completeTagInTag(S:CId, Info:FieldInfo, S2:CId) => .K ) ...</k>
-          <gstructs>...
-               S2 |-> fieldInfo(
-                    (Decls:List => completeTagsInList(S |-> Info, Decls)), _,
-                    (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
-          ...</gstructs>
-          <structs>...
-               S2 |-> fieldInfo(
-                    (Decls:List => completeTagsInList(S |-> Info, Decls)), _,
-                    (Fields:Map => completeTagsInMap(S |-> Info, Fields)), _)
-          ...</structs>
-          requires S =/=K S2
           [structural]
 
      syntax KItem ::= giveCompositeType(CId, Type)
