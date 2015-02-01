@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: ECL4
+Description: An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.3.1:4
+=============================================================
+File: j068c.c
+Function: f
+Line: 9
+=============================================================

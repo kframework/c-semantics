@@ -238,7 +238,7 @@ module C-SYMLOC
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 
-     rule getBases(Prov:Set) => filterSet(Prov, '#isBases)
+     rule getBases(Prov:Set) => filterSet(Prov, 'isBases)
 
      rule transferProv(From:SymLoc, tv(To:SymLoc, T:Type))
           => tv(addProv(prov(From), To), T)
@@ -267,9 +267,9 @@ module C-SYMLOC
           => lval(addProv(Prov, Loc), T)
           [structural]
 
-     syntax Bool ::= #isBases(Provenance) [function]
-     rule #isBases(basedOn(_, _)) => true
-     rule #isBases(_) => false [owise]
+     syntax Bool ::= isBases(Provenance) [function]
+     rule isBases(basedOn(_, _)) => true
+     rule isBases(_) => false [owise]
 
      rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
           => getKLabel(K) ==KLabel 'fromUnion
