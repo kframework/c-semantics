@@ -119,22 +119,21 @@ module C-DECL-INITIALIZER
 
      rule (.K => UNDEF("CDI1",
                "Initializer for scalar contains multiple expressions", "6.7.9:11"))
-          ~> figureInit(X:CId, T:Type,
-               CompoundInit(list(L:List)))
+          ~> figureInit(_, T:Type, CompoundInit(list(L:List)))
           requires notBool (isAggregateType(T) orBool isUnionType(T))
-          andBool size(L) >Int 1
+               andBool size(L) >Int 1
 
      rule (.K => UNDEF("CDI2",
                "Initializer for scalar contains multiple levels of braces", "6.7.9:11"))
-          ~> figureInit(X:CId, T:Type,
+          ~> figureInit(_, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(_))))))
           requires notBool (isAggregateType(T) orBool isUnionType(T))
 
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type", "6.7.9:16"))
-          ~> figureInit(X:CId, t(_, incompleteArrayType(T:Type)), SingleInit(K:K))
+          ~> figureInit(_, t(_, incompleteArrayType(T:Type)), SingleInit(K:K))
           requires notBool isWCharType(T) orBool getKLabel K =/=KLabel 'wstringLiteral
-  
+
    // id, type, initializer
      syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
      rule figureInit-aux(X:CId, T:Type, initializer(K:K))
@@ -424,14 +423,15 @@ module C-DECL-INITIALIZER
                andBool notBool isUnionType(T')
           [structural]
 
-     rule <k> (. => CV("CDI4", "Attempting to initialize nonexistent member",
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member",
                "6.7.9:2"))
-          ~> T:Type ~> initializeSingleInit(_) ...</k>
+               ~> T:Type ~> initializeSingleInit(_)
+          ...</k>
           <curr-subobject>
                ListItem(next)
           ...</curr-subobject>
           requires notBool isStructType(T)
-          andBool notBool isUnionType(T)
+               andBool notBool isUnionType(T)
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays

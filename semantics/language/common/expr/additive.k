@@ -172,7 +172,7 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9"))
-          ~> tv(L1:SymLoc, t(_, pointerType(T)))
+          ~> tv(L1:SymLoc, t(_, pointerType(T:Type)))
                - tv(L2:SymLoc, t(_, pointerType(T)))
           requires base(L1) =/=K base(L2)
 

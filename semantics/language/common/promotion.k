@@ -251,8 +251,8 @@ module C-PROMOTION
                andBool (T =/=Type T')
           [structural]
 
-     rule Lbl:KLabel(tv(V:CValue, (T:Type => stripConstants(T))),, 
-                     tv(V':CValue, (T':Type => stripConstants(T'))))
+     rule Lbl:KLabel(tv(_, (T:Type => stripConstants(T))),, 
+                     tv(_, (T':Type => stripConstants(T'))))
           requires isArithBinOp(Lbl)
                andBool (T ==Type T')
                andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
