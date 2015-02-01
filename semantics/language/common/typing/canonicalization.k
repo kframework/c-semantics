@@ -9,7 +9,7 @@ module C-TYPING-CANONICALIZATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-COMMON-EXPR-ALIGNOF-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
@@ -200,7 +200,7 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
-               => t(.Set, structType(X, bitSizeofStruct(Info), Info))
+               => t(.Set, structType(X, Info))
           ...</k>
           <structs>...
                X |-> Info:FieldInfo
@@ -232,7 +232,7 @@ module C-TYPING-CANONICALIZATION
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
-               => t(.Set, unionType(X, bitSizeofUnion(Info), Info))
+               => t(.Set, unionType(X, Info))
           ...</k>
           <structs>...
                X |-> Info:FieldInfo

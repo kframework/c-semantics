@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV6
+Description: casting void type to non-void type.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.2
+=============================================================
+File: j023e.c
+Function: main
+Line: 4
+=============================================================

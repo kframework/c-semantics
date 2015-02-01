@@ -41,8 +41,8 @@ module C-FUNCTION-DEF
           ~> processFunDef(X, Blk)
           requires isFunctionType(T) andBool notBool hasDupParams(T)
           [structural]
-     rule (.K => ERROR("FD1", "duplicate parameters in "
-               +String "function definition."))
+     rule (.K => CV("FD1", "duplicate parameters in "
+               +String "function definition.", "6.7:3"))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _)
           requires hasDupParams(T)
 
@@ -121,27 +121,27 @@ module C-FUNCTION-DEF
           => .K
           requires #isArgvType(T) ==K true
           [structural]
-     rule (.K => ERROR("FD4", "definition of main requires a prototype (5.1.2.2.1p1)."))
+     rule (.K => CV("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1"))
           ~> checkMainDef(T:Type)
           requires isOldStyleFunctionType(T)
           [structural]
-     rule (.K => ERROR("FD5", "main must return an int.", 4) )
+     rule (.K => CV("FD5", "main must return an int.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
           requires T =/=K int
           [structural]
-     rule (.K => ERROR("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", 4) )
+     rule (.K => CV("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
-     rule (.K => ERROR("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.") )
+     rule (.K => CV("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
           requires #isArgvType(T) =/=K true
           [structural]
-     rule (.K => ERROR("FD8", "main must have zero or two parameters.") )
+     rule (.K => CV("FD8", "main must have zero or two parameters.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
           requires size(Params) >Int 2
           [structural]
-     rule (.K => ERROR("FD9", "main must have zero or two parameters.") )
+     rule (.K => CV("FD9", "main must have zero or two parameters.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
           requires T =/=K void
           [structural]

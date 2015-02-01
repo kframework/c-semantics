@@ -112,6 +112,16 @@ module C-COMMON-EXPR-CONDITIONAL
           when hasIntegerType(T2) andBool isPointerType(T1)
           [structural]
 
+     rule (.K => CV("CEC1", "If one of a conditional expression's branches has pointer type, the other must be a compatible type, a null pointer constant, or a pointer to void.",
+               "6.5.15:3"))
+          ~> types(trItem(T1:Type) ts:: trItem(T2:Type))
+          requires (isPointerType(T1) andThenBool notBool ((isPointerType(T2) andThenBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2))))
+               orBool hasIntegerType(T2) orBool (notBool isFunctionType(innerType(T1))
+               andBool isVoidType(innerType(T2)))))
+          orBool (isPointerType(T2) andThenBool notBool ((isPointerType(T1) andThenBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2))))
+               orBool hasIntegerType(T2) orBool (notBool isFunctionType(innerType(T1))
+               andBool isVoidType(innerType(T2)))))
+
      rule (types(
                trItem(t(Mods:Set, pointerType(T:Type)))
                ts:: trItem(t(Mods':Set, pointerType(T':Type)))
@@ -122,15 +132,17 @@ module C-COMMON-EXPR-CONDITIONAL
 
      rule (types(
                trItem(t(Mods1:Set, pointerType(t(Mods1':Set, void))))
-               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, _))))
+               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
+          requires notBool isFunctionType(t(Mods2', S))
           [structural]
      rule (types(
-               trItem (t(Mods1:Set, pointerType(t(Mods1':Set, _))))
+               trItem (t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))))
                ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, void))))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
+          requires notBool isFunctionType(t(Mods1', S))
           [structural]
 
      // this should take care of the void/struct cases
@@ -143,15 +155,15 @@ module C-COMMON-EXPR-CONDITIONAL
           => IfThenElse(E, Cast(T, E1), Cast(T, E2))
           [structural]
 
-     rule (.K => ERROR("00041", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
+     rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
           requires T =/=K void
           [structural]
-     rule (.K => ERROR("00042", "If one of a conditional expression's branches has void type, the other must also have void type.") ) ~>
+     rule (.K => CV("CEC3", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
           requires T =/=K void
           [structural]
-     rule (.K => ERROR("00043", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
+     rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
           types(trItem(T:Type) ts:: trItem(T':Type))
           requires (T =/=K T')
                andBool (isStructType(T) orBool isUnionType(T))

@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV7
+Description: conversion from pointer to integer of a value possibly unrepresentable in the integer type.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.3:6
+=============================================================
+File: j024a.c
+Function: main
+Line: 5
+=============================================================

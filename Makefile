@@ -6,7 +6,9 @@ TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
 KCCFLAGS = 
-TORTURE_TEST_DIR = tests/gcc-torture
+PASS_TESTS_DIR = tests/unit-pass
+FAIL_TESTS_DIR = tests/unit-fail
+FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/query-kcc-prof \
@@ -24,21 +26,28 @@ fast: $(DIST_DIR)/lib/libc.so $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! gcc-4.8 -v > /dev/null 2>&1; then echo "ERROR: You don't seem to have gcc 4.8 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
+	@if ! gcc-4.9 -v > /dev/null 2>&1; then if ! clang -v 2>&1 | grep "LLVM 3.5" > /dev/null; then echo "ERROR: You don't seem to have gcc 4.9 or clang 3.5 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
 	@if ! kompile --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have kompile installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin: $(FILES_TO_DIST) semantics-fast | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) semantics-fast | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)
-	@cp $(FILES_TO_DIST) $(DIST_DIR)
-	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
-	@cp --preserve=timestamps -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
+	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin $(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin: semantics
+$(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin: $(DIST_DIR)/kcc
+	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
+
+$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin: $(DIST_DIR)/kcc
+	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
+
+$(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
+
+$(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 
 $(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin $(wildcard $(LIBC_DIR)/src/*) $(SCRIPTS_DIR)/kcc
@@ -67,19 +76,22 @@ semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k
 	@$(MAKE) -C $(SEMANTICS_DIR) fast
 
 $(SEMANTICS_DIR)/settings.k:
-	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
+	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
 
 semantics: check-vars $(SEMANTICS_DIR)/settings.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
-test: gcc-torture
-
-gcc-torture: dist
-	@$(MAKE) -C $(TORTURE_TEST_DIR) test
+check:	fast
+	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
+	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
+	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
 
 clean:
 	-$(MAKE) -C $(PARSER_DIR) clean
 	-$(MAKE) -C $(SEMANTICS_DIR) clean
 	-$(MAKE) -C $(TESTS_DIR) clean
+	-$(MAKE) -C $(PASS_TESTS_DIR) clean
+	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
+	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
 	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k

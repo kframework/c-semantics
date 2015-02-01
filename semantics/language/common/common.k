@@ -1,3 +1,4 @@
+require "alignment.k"
 require "binding.k"
 require "bitsize.k"
 require "bits.k"
@@ -42,6 +43,7 @@ require "memory/reading.k"
 require "memory/writing.k"
 
 module C-COMMON
+     imports C-ALIGNMENT
      imports C-BINDING
      imports C-BITSIZE
      imports C-BITS

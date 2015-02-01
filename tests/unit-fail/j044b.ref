@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV9
+Description: conversion from pointer to floating point type or from floating point type to pointer.
+Type: Constraint violation.
+See also: C11 sec. 6.5.4:4
+=============================================================
+File: j044b.c
+Function: main
+Line: 4
+=============================================================

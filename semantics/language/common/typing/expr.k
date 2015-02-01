@@ -80,9 +80,9 @@ module C-TYPING-EXPR
      its type (an unsigned integer type) is \cinline{size_t}, defined in
      \header{<stddef.h>} (and other headers).
      }*/
-     rule <type> SizeofExpression(_) => cfg:sizeut ...</type>
+     rule <type> SizeofExpression(_) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
           [structural]
-     rule <type> SizeofType(_, _) => cfg:sizeut ...</type>
+     rule <type> SizeofType(_, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
           [structural]
 
      rule <type>
@@ -105,7 +105,7 @@ module C-TYPING-EXPR
           [structural]
      rule <type>
                t(_, pointerType(_:Type)) - t(_, pointerType(_:Type))
-               => cfg:ptrdiffut
+               => t(.Set, cfg:ptrdiffut)
           ...</type>
           [structural]
      rule <type>
@@ -135,7 +135,7 @@ module C-TYPING-EXPR
           [structural]
      rule <type>
                wstringLiteral(L:List)
-               => t(.Set, arrayType(cfg:wcharut, size(L) +Int 1))
+               => t(.Set, arrayType(t(.Set, cfg:wcharut), size(L) +Int 1))
           ...</type>
           [structural]
 
@@ -149,7 +149,7 @@ module C-TYPING-EXPR
      operand. Then the right operand is evaluated; the result has its type and
      value.
      }*/
-     rule <type> Comma(list(L:List ListItem(K:K))) => K ...</type>
+     rule <type> Comma(list(_:List ListItem(K:K))) => K ...</type>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{5}}}{
@@ -169,12 +169,12 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule <type>
-               t(_, structType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:CId
+               t(_, structType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
                => T
           ...</type>
           [structural]
      rule <type>
-               t(_, unionType(_, _, fieldInfo(_, (_ F |-> T:Type), _))) . F:CId
+               t(_, unionType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
                => T
           ...</type>
           [structural]

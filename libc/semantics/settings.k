@@ -18,16 +18,29 @@ module C-SETTINGS
      rule cfg:sizeofLongDouble => 16
      rule cfg:sizeofEnum => cfg:sizeofInt
 
-     rule cfg:largestUnsigned => t(.Set, unsigned-long-long-int)
+     rule cfg:largestUnsigned => unsigned-long-long-int
 
      rule cfg:mtxPlain => 0
 
-     rule cfg:sizeut => t(.Set, unsigned-int)
-     rule cfg:wcharut => t(.Set, int)
+     rule cfg:sizeut => unsigned-int
+     rule cfg:wcharut => int
      rule cfg:ptrsize => 4
-     rule cfg:ptrdiffut => t(.Set, int)
+     rule cfg:ptrdiffut => int
 
      rule cfg:enumMin => min(t(.Set, int))
      rule cfg:enumMax => max(t(.Set, int))
+
+     rule cfg:alignofBool => 1
+     rule cfg:alignofSignedChar => 1
+     rule cfg:alignofShortInt => 2
+     rule cfg:alignofInt => 4
+     rule cfg:alignofLongInt => 4
+     rule cfg:alignofLongLongInt => 8
+     rule cfg:alignofFloat => 4
+     rule cfg:alignofDouble => 8
+     rule cfg:alignofLongDouble => 16
+     rule cfg:alignofEnum => cfg:alignofInt
+     rule cfg:alignofPointer => 4
+
 endmodule
 

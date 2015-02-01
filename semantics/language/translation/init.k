@@ -114,7 +114,7 @@ module C-TRANSLATION-INIT
           requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
                
      syntax KItem ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
-     rule handleBuiltinConstant(Identifier(S:String), T) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
+     rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(Bag, Bag)
      rule checkMerge(_, _) => .K
@@ -270,7 +270,7 @@ module C-TRANSLATION-INIT
      syntax KItem ::= "printSuccess"
 
      // This message tells kcc the translation phase succeeded.
-     rule <k> printSuccess => . ...</k>
+     rule <k> printSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>
 
 endmodule

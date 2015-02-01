@@ -43,8 +43,8 @@ module C-MEMORY-ALLOC
      // TODO this bare 4 needs to be updated to handle different size wchar_ts
      rule writeWString(Loc:SymLoc, ListItem(N:Int) S:List)
           => Computation(
-               * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
-               := tv(N, cfg:wcharut))
+               * tv(Loc, t(.Set, pointerType(t(.Set, cfg:wcharut))))
+               := tv(N, t(.Set, cfg:wcharut)))
                ~> writeWString(Loc +bytes 4, S)
           [structural]
      rule writeString(Loc:SymLoc, "")
@@ -54,8 +54,8 @@ module C-MEMORY-ALLOC
           [structural]
      rule writeWString(Loc:SymLoc, .List)
           => Computation(
-               * tv(Loc, t(.Set, pointerType(cfg:wcharut)))
-               := tv(0, cfg:wcharut))
+               * tv(Loc, t(.Set, pointerType(t(.Set, cfg:wcharut))))
+               := tv(0, t(.Set, cfg:wcharut)))
           [structural]
 
      rule allocObject(Base:SymBase, T:Type)
@@ -92,7 +92,7 @@ module C-MEMORY-ALLOC
           [structural]
 
      rule <k> sizeofObject(Base:SymBase)
-               => tv(Len, cfg:sizeut)
+               => tv(Len, t(.Set, cfg:sizeut))
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
@@ -104,7 +104,7 @@ module C-MEMORY-ALLOC
           [structural]
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
-               arrayType(cfg:wcharut, 4 *Int (size(S) +Int 1))))
+               arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
           ~> allowInit(writeWString(lnew(Base), S))
           [structural]
 

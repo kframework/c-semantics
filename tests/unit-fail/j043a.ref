@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CER4
+Description: Dereferencing a pointer past the end of an array.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.6:8
+=============================================================
+File: j043a.c
+Function: main
+Line: 3
+=============================================================

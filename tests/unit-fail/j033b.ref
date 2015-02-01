@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: EIO4
+Description: Trying to modify a string literal.
+Type: Undefined behavior.
+See also: C11 sec. 6.4.5:7
+=============================================================
+File: j033b.c
+Function: main
+Line: 4
+=============================================================

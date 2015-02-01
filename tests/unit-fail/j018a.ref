@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV4
+Description: floating-point value outside the range of values that can be represented after conversion.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.1.5:1
+=============================================================
+File: j018a.c
+Function: main
+Line: 4
+=============================================================

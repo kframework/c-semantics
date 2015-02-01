@@ -3,6 +3,7 @@ module C-CONVERSION-SYNTAX
 
      // interpret the result of arithmetic as in 6.5.4
      syntax KItem ::= arithInterpret(Type, BaseValue) [function]
+     syntax KItem ::= arithInterpretHold(Type, BaseValue)
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
@@ -44,8 +45,12 @@ module C-CONVERSION
           // will work, but not sure why
           requires hasUnsignedIntegerType(T)
                andBool (N <Int min(T))
-     rule (.K => UNDEF("CCV1", "signed overflow.", "6.3.1.3:3"))
-          ~> arithInterpret(T:Type, I:Int)
+     rule arithInterpret(T:Type, I:Int) => arithInterpretHold(T:Type, I:Int)
+          requires hasSignedIntegerType(T)
+               andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
+
+     rule (.K => UNSPEC("CCV1", "signed overflow.", "6.3.1.3:3"))
+          ~> arithInterpretHold(T:Type, I:Int)
           requires hasSignedIntegerType(T)
                andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
@@ -55,7 +60,7 @@ module C-CONVERSION
      // errors.
 
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(V, T')
+          => tv(V, addModifiers(getConstants(T), T'))
           requires stripQualifiers(T) ==K stripQualifiers(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -85,7 +90,7 @@ module C-CONVERSION
      than \cinline{_Bool}, if the value can be represented by the new type, it
      is unchanged.
      }*/
-     rule cast(T':Type, tv(V:Int, T:Type)) => tv(V, T')
+     rule cast(T':Type, tv(V:Int, T:Type)) => tv(V, addModifiers(getConstants(T), T'))
           requires hasIntegerType(T) andBool hasIntegerType(T')
                andBool notBool isBoolType(T')
                andBool inRange(V, T')
@@ -332,7 +337,7 @@ module C-CONVERSION
      rule cast(t(_, T:SimpleType), voidVal) => castHold(t(.Set, T), voidVal)
           requires (T =/=K void)
 
-     rule (.K => ERROR("CCV5", "casting empty value to type other than void.", 89))
+     rule (.K => UNDEF("CCV5", "casting empty value to type other than void.", "6.3.2.2"))
           ~> castHold(t(_, T:SimpleType), emptyValue)
           requires T =/=K void
           [structural]
@@ -411,6 +416,28 @@ module C-CONVERSION
                andBool byteSizeofType(T) >Int byteSizeofType(T')
           [structural]
 
+     rule cast(T':Type, tv(V:CValue, T:Type))
+          => castHold(T', tv(V, T))
+          requires (isPointerType(T) andBool hasFloatType(T'))
+               orBool (hasFloatType(T) andBool isPointerType(T'))
+               orBool (notBool isPointerType(T) andBool notBool hasArithmeticType(T) andBool notBool isVoidType(T'))
+               orBool (notBool isPointerType(T') andBool notBool hasArithmeticType(T') andBool notBool isVoidType(T'))
+
+     rule (.K => CV("CCV9",
+          "conversion from pointer to floating point type or from floating point type to pointer.",
+          "6.5.4:4"))
+          ~> castHold(T', tv(_, T))
+          requires (isPointerType(T) andBool hasFloatType(T'))
+               orBool (hasFloatType(T) andBool isPointerType(T'))
+
+     rule (.K => CV("CCV10",
+          "conversion to or from non-scalar type.",
+          "6.5.4:2"))
+          ~> castHold(T', tv(_, T))
+          requires notBool isVoidType(T') andBool ((notBool isPointerType(T) 
+               andBool notBool hasArithmeticType(T)) orBool (notBool isPointerType(T')
+               andBool notBool hasArithmeticType(T')))
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
      A pointer to an object type may be converted to a pointer to a different
      object type. If the resulting pointer is not correctly aligned for the
@@ -431,7 +458,8 @@ module C-CONVERSION
      rule cast(t(Mods:Set, pointerType(T':Type)),
                tv(Loc:SymLoc, t(_, pointerType(_))))
           => tv(Loc, t(Mods, pointerType(T')))
-          requires getAlignas(T') <=Int getAlign(Loc)
+     //TODO(dwightguth): handle pointer alignment
+/*          requires getAlignas(T') <=Int getAlign(Loc)
      rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
           => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
           requires getAlignas(T') >Int getAlign(Loc)
@@ -440,6 +468,6 @@ module C-CONVERSION
                "6.3.2.3:7"))
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))
           requires getAlignas(T') >Int getAlign(Loc)
-          [structural]
+          [structural]*/
 endmodule
 

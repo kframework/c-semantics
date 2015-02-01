@@ -84,10 +84,10 @@ module C-ERROR
      rule EXITFunc(S:String) => EXIT(S)
      rule isErrorRecovery => false
 
-     rule <k> (.K => ERROR("CID1",
+     rule <k> (.K => CV("CID1",
                "Trying to look up identifier " +String S +String
                ", but no such identifier is in scope.",
-               (305,, 332)) )
+               "6.5.1:2") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
@@ -95,14 +95,13 @@ module C-ERROR
           requires (notBool (Identifier(S:String) in keys(Env)))
                andBool (notBool (Identifier(S:String) in keys(Types)))
           [structural]
-     rule <k> (.K => ERROR("CID2",
-               "No definition found for identifier " +String S +String ".") )
+     rule <k> (.K => UNDEF("CID2",
+               "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> T:Type ...</types>
           requires (notBool (Identifier(S) in keys(Env)))
-               andBool (notBool isFunctionType(T))
           [structural]
 
 endmodule

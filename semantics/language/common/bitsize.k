@@ -30,10 +30,10 @@ module C-BITSIZE
      imports COMPAT-SYNTAX
 
      rule sizeofType(T:Type)
-          => cast(cfg:sizeut, tv(byteSizeofType(elideDeclParams(T)), cfg:largestUnsigned))
+          => cast(t(SetItem(IntegerConstant), cfg:sizeut), tv(byteSizeofType(elideDeclParams(T)), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
           requires isCompleteType(T) andBool notBool isFunctionType(T)
           [structural]
-     rule (. => CV("CBS1", "Trying to compute sizeof of a type that is incomplete or a function type.", "6.5.3.4:1")) ~> sizeofType(T:Type)
+     rule (.K => CV("CBS1", "Trying to compute sizeof of a type that is incomplete or a function type.", "6.5.3.4:1")) ~> sizeofType(T:Type)
           requires notBool isCompleteType(T) orBool isFunctionType(T)
 
      rule byteSizeofType(T:Type)
@@ -90,15 +90,15 @@ module C-BITSIZE
      rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 
-     rule bitSizeofType(t(_, structType(_, NBits:Int, _)))
+     rule bitSizeofType(t(_, structType(_, fieldInfo(_, NBits:Int, _, _))))
           => NBits
-     rule bitSizeofType(t(_, unionType(_, NBits:Int, _)))
+     rule bitSizeofType(t(_, unionType(_, fieldInfo(_, NBits:Int, _, _))))
           => NBits
 
-     rule bitSizeofStruct(fieldInfo(Decls:List, _, _))
-          => byteSizeofList(Decls) *Int cfg:bitsPerByte
-     rule bitSizeofUnion(fieldInfo(Decls:List, _, _))
-          => maxByteSizeofList(Decls) *Int cfg:bitsPerByte
+     rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _))
+          => NBits
+     rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _))
+          => NBits
 
      //- derived
      syntax Int ::= bitsToBytes(CSize) [function]

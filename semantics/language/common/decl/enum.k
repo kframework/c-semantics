@@ -42,10 +42,10 @@ module C-DECL-ENUM
      context enumInit(_, HOLE => reval(HOLE))
      rule enumInit(X:CId, V:TypedValue)
           => Computation(X := V)
-          requires hasIntegerType(type(V))
+          requires hasIntegerType(type(V)) andBool IntegerConstant in getModifiers(type(V))
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
           ~> enumInit(_, tv(_, T:Type))
-          requires notBool hasIntegerType(T)
+          requires notBool hasIntegerType(T) orBool notBool IntegerConstant in getModifiers(T)
 
 endmodule
 

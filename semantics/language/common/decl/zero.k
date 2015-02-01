@@ -47,14 +47,14 @@ module C-DECL-ZERO
      rule zeroType(_, t(_, arrayType(_:Type, 0))) => .K
           [structural]
 
-     rule zeroType(X:K, t(_, structType(_, _,
-               fieldInfo(Fields:List, _, _)
+     rule zeroType(X:K, t(_, structType(_,
+               fieldInfo(Fields:List, _, _, _)
           )))
           => zeroStruct(X, Fields)
           [structural]
 
-     rule zeroType(X:K, t(_, unionType(_, _,
-               fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _)
+     rule zeroType(X:K, t(_, unionType(_,
+               fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)
           )))
           => zeroType(X . F, T)
           [structural]

@@ -127,6 +127,26 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
+
+     rule tv(unknown, T:Type) & tv(E2:Int, T':Type)
+          => tv(unknown, T)
+          requires isPromoted(T) andBool E2 >=Int 0
+               andBool T ==Type T'
+     rule tv(E1, T:Type) & tv(unknown, T':Type)
+          => tv(unknown, T)
+          requires isPromoted(T) andBool E1 >=Int 0
+               andBool T ==Type T'
+ 
+     rule tv(unknown, T:Type) & tv(E2:Int, T':Type)
+          => tv(trap, T)
+          requires isPromoted(T) andBool E2 <Int 0
+               andBool T ==Type T'
+     rule tv(E1, T:Type) & tv(unknown, T':Type)
+          => tv(trap, T)
+          requires isPromoted(T) andBool E1 <Int 0
+               andBool T ==Type T'
+ 
+     
      rule (.K => CV("CEB9",
                "both bitwise AND operands must have integer type.",
                "6.5.10:2"))

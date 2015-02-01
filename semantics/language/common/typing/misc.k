@@ -148,6 +148,8 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
      rule getSpecifiers(T:Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
 
+     rule getConstants(T:Type)
+          => intersectSet(getModifiers(T), constantModifiers)
 
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
@@ -200,6 +202,8 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule stripConstants(T:Type)
           => setModifiers(T, getModifiers(T) -Set constantModifiers)
+     rule stripConstants(tv(V:CValue, T:Type)) => tv(V, stripConstants(T))
+     rule stripConstants(V:KItem) => V [owise]
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
@@ -221,7 +225,6 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
-     syntax Type ::= addModifier(Modifier, Type) [function]
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
@@ -265,49 +268,53 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteStructType(X:CId)))
-          => t(S, structType(X, bitSizeofStruct(Info), Info))
+          => t(S, structType(X, Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
           requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               structType(X:CId, NBits:Int,
-                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
-          => t(S, structType(X, NBits,
+               structType(X:CId,
+                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
+          => t(S, structType(X,
                fieldInfo(
                     completeTagsInList(Tags, Decls),
+                    NBits,
                     completeTagsInMap(Tags, Types),
                     Offsets)))
      // Don't complete recursive struct definitions.
      rule completeTags(Tags:Map, t(S:Set,
-               structType(X:CId, NBits:Int,
-                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
-          => t(S, structType(X, NBits,
+               structType(X:CId,
+                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
+          => t(S, structType(X,
                fieldInfo(
                     completeTagsInList(Tags, Decls),
+                    NBits,
                     completeTagsInMap(Tags, Types),
                     Offsets)))
           requires notBool (X in keys(Tags))
 
      rule completeTags(_ X:CId |-> Info:FieldInfo,
                t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, unionType(X, bitSizeofUnion(Info), Info))
+          => t(S, unionType(X, Info))
      rule completeTags(Tags:Map, t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
           requires notBool (X in keys(Tags))
      rule completeTags(X |-> _ Tags:Map, t(S:Set,
-               unionType(X:CId, NBits:Int,
-                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
-          => t(S, unionType(X, NBits,
+               unionType(X:CId,
+                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
+          => t(S, unionType(X,
                fieldInfo(
                     completeTagsInList(Tags, Decls),
+                    NBits,
                     completeTagsInMap(Tags, Types),
                     Offsets)))
      rule completeTags(Tags:Map, t(S:Set,
-               unionType(X:CId, NBits:Int,
-                    fieldInfo(Decls:List, Types:Map, Offsets:Map))))
-          => t(S, unionType(X, NBits,
+               unionType(X:CId,
+                    fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map))))
+          => t(S, unionType(X,
                fieldInfo(
                     completeTagsInList(Tags, Decls),
+                    NBits,
                     completeTagsInMap(Tags, Types),
                     Offsets)))
           requires notBool (X in keys(Tags))
@@ -369,16 +376,16 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => variableLengthArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(_, incompleteStructType(X:CId))
           => incompleteStructType(X)
-     rule tagRestrict(Tag:RestrictTag, structType(X:CId, NBits:Int,
-               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
-          => structType(X, NBits,
-               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(Tag:RestrictTag, structType(X:CId,
+               fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
+          => structType(X,
+               fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, incompleteUnionType(X:CId))
           => incompleteUnionType(X)
-     rule tagRestrict(Tag:RestrictTag, unionType(X:CId, NBits:Int,
-               fieldInfo(Decls:List, Types:Map, Offsets:Map)))
-          => unionType(X, NBits,
-               fieldInfo(tagRestrict(Tag, Decls), tagRestrict(Tag, Types), Offsets))
+     rule tagRestrict(Tag:RestrictTag, unionType(X:CId,
+               fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
+          => unionType(X,
+               fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
 

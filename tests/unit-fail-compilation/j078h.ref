@@ -1,0 +1,7 @@
+File: j078h.c
+Line: 3
+Error: TDG7
+Description: void parameter appears with qualifiers.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:10
+Translation failed. Run kcc -d j078h.c to see commands run.

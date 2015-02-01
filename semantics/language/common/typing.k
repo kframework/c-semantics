@@ -22,7 +22,7 @@ module C-TYPING-SYNTAX
 
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
-     syntax FieldInfo ::= fieldInfo(List, Map, Map)
+     syntax FieldInfo ::= fieldInfo(List, Int, Map, Map)
 
      // Represents a type before canonicalization.  as in "int *x", first arg
      // is "Int", second arg is "PointerType(JustBase)"
@@ -78,10 +78,10 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= flexibleArrayType(Type)
      syntax SimpleType ::= variableLengthArrayType(Type, K)
 
-     syntax SimpleType ::= structType(CId, Int, FieldInfo)
+     syntax SimpleType ::= structType(CId, FieldInfo)
      syntax SimpleType ::= incompleteStructType(CId)
 
-     syntax SimpleType ::= unionType(CId, Int, FieldInfo)
+     syntax SimpleType ::= unionType(CId, FieldInfo)
      syntax SimpleType ::= incompleteUnionType(CId)
 
      // Basic types
@@ -143,18 +143,20 @@ module C-TYPING-SYNTAX
      // Gets function and storage specifiers.
      syntax Set ::= getSpecifiers(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
+     syntax Set ::= getConstants(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripFunctionSpecifiers(Type) [function]
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
-     syntax Type ::= stripConstants(Type) [function]
+     syntax KItem ::= stripConstants(K) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
      syntax Type ::= addModifiers(Set, Type) [function]
+     syntax Type ::= addModifier(Modifier, Type) [function]
 
      syntax Type ::= typedDeclaration(Type, CId)
           [latex(\terminal{typedDecl}\!({#1},{#2}\!))]

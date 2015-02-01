@@ -27,8 +27,12 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     rule BitFieldType(T:Type, tv(N:CSize, _))
+     rule BitFieldType(T:Type, tv(N:CSize, t(SetItem(IntegerConstant) _:Set, _)))
           => t(.Set, bitfieldType(T, N)) [structural]
+
+     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression", "6.7.2.1:4"))
+          ~> BitFieldType(T:Type, tv(N:CValue, t(Modifiers:Set, _)))
+          requires notBool IntegerConstant in Modifiers orBool isCSize(N) =/=K true
 
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)
@@ -136,12 +140,12 @@ module C-TYPING-INTERPRETATION
           => t(S, pointerType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K)
           => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, structType(X, NBits, Info)))
+     rule pushTypeDown(t(S:Set, structType(X:CId, Info:FieldInfo)), Lbl:K)
+          => applyTypeFunction(Lbl, t(S, structType(X, Info)))
      rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:K)
           => applyTypeFunction(Lbl, t(S, incompleteStructType(X)))
-     rule pushTypeDown(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, unionType(X, NBits, Info)))
+     rule pushTypeDown(t(S:Set, unionType(X:CId, Info:FieldInfo)), Lbl:K)
+          => applyTypeFunction(Lbl, t(S, unionType(X, Info)))
      rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:K)
           => applyTypeFunction(Lbl, t(S, incompleteUnionType(X)))
      rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:K)
@@ -232,12 +236,12 @@ module C-TYPING-INTERPRETATION
           requires isBasicType(T)
      rule extractActualType(t(S:Set, enumType(X:CId)))
           => t(S, enumType(X))
-     rule extractActualType(t(S:Set, structType(X:CId, NBits:Int, Info:FieldInfo)))
-          => t(S, structType(X, NBits, Info))
+     rule extractActualType(t(S:Set, structType(X:CId, Info:FieldInfo)))
+          => t(S, structType(X, Info))
      rule extractActualType(t(S:Set, incompleteStructType(X:CId)))
           => t(S, incompleteStructType(X))
-     rule extractActualType(t(S:Set, unionType(X:CId, NBits:Int, Info:FieldInfo)))
-          => t(S, unionType(X, NBits, Info))
+     rule extractActualType(t(S:Set, unionType(X:CId, Info:FieldInfo)))
+          => t(S, unionType(X, Info))
      rule extractActualType(t(S:Set, incompleteUnionType(X:CId)))
           => t(S, incompleteUnionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))

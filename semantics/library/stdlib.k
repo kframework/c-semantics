@@ -9,6 +9,7 @@ module LIBC-STDLIB
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
 
      syntax KItem ::= printString(K)
@@ -92,6 +93,15 @@ module LIBC-STDLIB
           <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           [structural]
 
+     rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed.",
+                           "7.22.3.5:3"))
+              ~> prepareBuiltin(Identifier("realloc"),
+                    hrItem(tv(loc(Base:SymBase, 0), _)) hs::
+                    hrItem(tv(_, _)))
+          ...</k>
+          <malloced> Malloced:Map </malloced>
+          requires notBool Base in keys(Malloced)
+
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
                hrItem(tv(NullPointer, _)) hs::
@@ -105,7 +115,7 @@ module LIBC-STDLIB
                hrItem(tv(N:Int, _)) hs::
                hrItem(tv(Size:Int, _)))
           => prepareBuiltin(Identifier("malloc"),
-               hrItem(tv(N:Int *Int Size:Int, cfg:sizeut)))
+               hrItem(tv(N:Int *Int Size:Int, t(.Set, cfg:sizeut))))
           ~> calloc-aux
           [structural]
      rule (.K => zeroObject(base(Loc)) )

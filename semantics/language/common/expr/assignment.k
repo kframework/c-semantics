@@ -93,15 +93,21 @@ module C-COMMON-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule lval(_, T':Type => stripConstants(T')) := tv(V:CValue, T:Type => stripConstants(T))
+     rule lval(_, T':Type => stripConstants(T')) := tv(_:CValue, T:Type => stripConstants(T))
           requires fromConstantExpr(T') orBool fromConstantExpr(T)
 
-     rule (.K => ERROR("CEA1", "incompatible types in assignment or function call arguments."))
+     rule (.K => CV("CEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> lval(_, T':Type) := tv(V:CValue, T:Type)
           requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
-               orBool (notBool isPointerType(T') andBool isPointerType(T))
-     rule (.K => ERROR("CEA2", "incompatible pointer types in assignment or function call arguments."))
+               orBool hasArithmeticType(T') andBool notBool hasArithmeticType(T)
+               orBool ((isStructType(T') orBool isUnionType(T'))
+               andBool notBool areCompatible(stripQualifiers(T'), T))
+               orBool (isBoolType(T') andBool notBool isPointerType(T))
+               orBool notBool (isPointerType(T') orBool hasArithmeticType(T')
+                    orBool isStructType(T') orBool isUnionType(T') orBool isBoolType(T'))
+          
+     rule (.K => CV("CEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> lval(_, T':Type) := tv(_, T:Type)
           requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
@@ -109,8 +115,11 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool notBool
                     ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
                     andBool areCompatible(innerType(T'), innerType(T)))
-     rule (.K => CV("CEA3", "lvalue required as left operand in assignment.", ""))
+     rule (.K => CV("CEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
           ~> tv(_, _) := tv(_, _)
+
+     rule (.K => UNDEF("CEAS4", "void value as right operand in assignment", "6.3.2.2"))
+          ~> lval(_, T':Type) := voidVal
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
      In simple assignment (\cinline{=}), the value of the right operand is

@@ -1,0 +1,7 @@
+File: j004f.c
+Line: 3
+Error: FD7
+Description: if main has arguments, the type of the second argument must be equivalent to char**.
+Type: Constraint violation.
+See also: C11 sec. 5.1.2.2.1:1
+Translation failed. Run kcc -d j004f.c to see commands run.

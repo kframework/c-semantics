@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEA1
+Description: A pointer (or array subscript) outside the bounds of an object.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.6:8
+=============================================================
+File: j049c.c
+Function: main
+Line: 3
+=============================================================
