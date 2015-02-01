@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEA4
+Description: Attempt to alias restrict qualified pointers associated with the same block.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.3.1:4
+=============================================================
+File: j069b.c
+Function: main
+Line: 7
+=============================================================
