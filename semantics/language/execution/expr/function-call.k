@@ -110,8 +110,7 @@ module C-EXPR-FUNCTION-CALL
                ~> enterRestrictScope(X)
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
-               ~> sequencePoint 
-               ~> setFun(X)
+               ~> sequencePoint
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
@@ -128,16 +127,12 @@ module C-EXPR-FUNCTION-CALL
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:K => Tu </curr-tu>
-               <curr-function> CurrFun:K </curr-function>
+               <curr-function> CurrFun:K => X </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
                (C:Bag => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
-
-     syntax KItem ::= setFun(CId)
-     rule <k> setFun(X:CId) => .K ...</k>
-          <curr-function> _ => X </curr-function>
 
      rule <k> bindParam(X:CId, T:Type, V:TypedValue)
                => allocObject(Base, T)
