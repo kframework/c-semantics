@@ -70,6 +70,7 @@ module C-STMT-BLOCK
      rule <k> Block(BlockNum:Int, _, list(Statements:List))
                => enterRestrictScope(BlockNum)
                ~> listToK(Statements)
+               ~> exitRestrictScope(BlockNum)
           ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]

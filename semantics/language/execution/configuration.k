@@ -51,8 +51,8 @@ module C-CONFIGURATION
      // restrict-qualified pointers.
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
-     // RestrictTag |-> (SymLoc |-> Int)
-     <modified> .Map </modified>
+     // RestrictTag |-> activity(Int, SymLoc |-> Int)
+     <activeBlocks> .Map </activeBlocks>
 
      // stdlib
      <rand-nat color="black"> 0 </rand-nat>

@@ -15,6 +15,7 @@ endmodule
 module C-IO-BUFFERED
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -53,23 +54,23 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc:SymLoc, T:Type)
                => setModified(Loc, T, .K, keys(Modified))
           ...</k>
-          <modified> Modified:Map </modified>
+          <activeBlocks> Modified:Map </activeBlocks>
 
      syntax KItem ::= updateModified(K, SymLoc, Int) [function]
-     rule updateModified(map(M:Map), Loc:SymLoc, I:Int)
-          => map(M[Loc <- maxInt(lookup(M, Loc), I)])
+     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+          => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
           requires Loc in keys(M)
-     rule updateModified(map(M:Map), Loc:SymLoc, I:Int)
-          => map(M (Loc |-> I))
+     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+          => activity(N, M (Loc |-> I))
           requires notBool (Loc in keys(M))
 
      syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:RestrictTag => .K), _)
            ...</k>
-           <modified>...
+           <activeBlocks>...
                 Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
-           ...</modified>
+           ...</activeBlocks>
      rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set)
           => setModified(Loc, T, K, S)
      rule setModified(_, _, .K, .Set) => .K
