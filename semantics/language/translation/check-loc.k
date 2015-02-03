@@ -4,6 +4,6 @@ module C-CHECK-LOC
 
      rule checkLoc(_) => .K
 
-     rule checkRestrict(_, _) => .K
+     rule checkRestrict(_) => .K
 
 endmodule

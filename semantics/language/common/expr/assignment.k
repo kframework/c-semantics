@@ -119,7 +119,7 @@ module C-COMMON-EXPR-ASSIGNMENT
           ~> tv(_, _) := tv(_, _)
 
      rule (.K => UNDEF("CEAS4", "void value as right operand in assignment", "6.3.2.2"))
-          ~> lval(_, T':Type) := voidVal
+          ~> lval(_, _) := voidVal
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
      In simple assignment (\cinline{=}), the value of the right operand is

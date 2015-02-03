@@ -1,0 +1,7 @@
+File: j039c-link2.c
+Line: 2
+Error: TIN1
+Description: Identifier foo declared with incompatble types in different translation units.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.7:2
+Translation failed. Run kcc -d j039c-link1.c j039c-link2.c to see commands run.

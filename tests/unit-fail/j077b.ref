@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CEA7
+Description: passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:7
+=============================================================
+File: j077b.c
+Function: main
+Line: 8
+=============================================================

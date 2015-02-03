@@ -100,7 +100,7 @@ module C-ERROR
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
-          <types>... Identifier(S) |-> T:Type ...</types>
+          <types>... Identifier(S) |-> _ ...</types>
           requires (notBool (Identifier(S) in keys(Env)))
           [structural]
 

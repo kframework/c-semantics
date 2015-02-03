@@ -9,6 +9,7 @@ endmodule
 module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
+     imports C-CHECK-LOC-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
@@ -106,10 +107,12 @@ module C-EXECUTION-INIT
           <main-tu> SetItem(MainTU:String) </main-tu>
           [structural]
 
-     rule <modified> _ => global |-> map(.Map) </modified>
-          <threads>
+     rule <threads>
                <thread>...
-                    <k> initMainThread'(MainTU:String) => populateFromGlobal ...</k>
+                    <k> initMainThread'(MainTU:String)
+                         => enterRestrictScope(global)
+                         ~> populateFromGlobal
+                    ...</k>
                     <next-loc> _ => 0 @ auto(0) </next-loc>
                     <thread-local>...
                          <control>...

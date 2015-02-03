@@ -31,7 +31,7 @@ module C-TYPING-INTERPRETATION
           => t(.Set, bitfieldType(T, N)) [structural]
 
      rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression", "6.7.2.1:4"))
-          ~> BitFieldType(T:Type, tv(N:CValue, t(Modifiers:Set, _)))
+          ~> BitFieldType(_, tv(N:CValue, t(Modifiers:Set, _)))
           requires notBool IntegerConstant in Modifiers orBool isCSize(N) =/=K true
 
      syntax KItem ::= makeFunctionType(List)

@@ -1,7 +1,7 @@
 module C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     syntax KItem ::= checkRestrict(SymLoc, Type)
+     syntax KItem ::= checkRestrict(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-REFERENCE
@@ -53,7 +53,7 @@ module C-COMMON-EXPR-REFERENCE
      \cinline{*} operator is undefined.
      }*/
      rule *(tv(Loc:SymLoc, T:Type))
-          => checkRestrict(Loc, T)
+          => checkRestrict(Loc)
           ~> lv(stripAllButFromUnion(Loc), innerType(T))
           requires isPointerType(T)
                andBool notBool isVoidType(innerType(T))

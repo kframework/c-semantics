@@ -15,6 +15,7 @@ endmodule
 module C-IO-BUFFERED
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
@@ -50,38 +51,26 @@ module C-IO-BUFFERED
           requires I >Int 0
 
      syntax KItem ::= setModified(SymLoc, Type)
-     syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type)
                => setModified(Loc, T, .K, keys(Modified))
           ...</k>
-          <modified> Modified:Map </modified>
+          <activeBlocks> Modified:Map </activeBlocks>
 
-     // TODO(chathhorn): java port.
-     //updateMap by an indicator 0/1 to decide which kind of update we should perform
-     syntax KItem ::= updateMapInKItem(K, SymLoc, Int, Int) [function]
-                    | #isInMap(K, SymLoc) [function]
-     rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 0)
-          => map(M[Loc <- maxInt(lookup(M, Loc), I)])
-     rule updateMapInKItem(map(M:Map), Loc:SymLoc, I:Int, 1)
-          => map(M[Loc <- I])
-     rule #isInMap(map(M:Map), Loc:SymLoc) => true
+     syntax KItem ::= updateModified(K, SymLoc, Int) [function]
+     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+          => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
           requires Loc in keys(M)
-     rule #isInMap(_, _) => false [owise]
+     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+          => activity(N, M (Loc |-> I))
+          requires notBool (Loc in keys(M))
 
+     syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:RestrictTag => .K), _)
            ...</k>
-           <modified>...
-                Tag |-> (MK:K => updateMapInKItem(MK, Loc, byteSizeofType(T), 0))
-           ...</modified>
-          requires #isInMap(MK, Loc) ==K true
-     rule <k> setModified(Loc:SymLoc, T:Type,
-               (Tag:RestrictTag => .K), _)
-           ...</k>
-           <modified>...
-                Tag |-> (MK:K => updateMapInKItem(MK, Loc, byteSizeofType(T), 1))
-           ...</modified>
-          requires #isInMap(MK, Loc) =/=K true
+           <activeBlocks>...
+                Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
+           ...</activeBlocks>
      rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set)
           => setModified(Loc, T, K, S)
      rule setModified(_, _, .K, .Set) => .K

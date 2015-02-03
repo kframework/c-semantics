@@ -2,12 +2,12 @@
 =============================================================
 ERROR! KCC encountered an error while executing this program.
 =============================================================
-Error: FC1
-Description: attempt to call the function f through a pointer with incompatible type.
+Error: CEA7
+Description: passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.
 Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:9
+See also: C11 sec. 6.7.6.3:7
 =============================================================
-File: j015d-link1.c
+File: j077a.c
 Function: main
-Line: 4
+Line: 7
 =============================================================

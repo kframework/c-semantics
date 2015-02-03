@@ -426,15 +426,15 @@ module C-CONVERSION
      rule (.K => CV("CCV9",
           "conversion from pointer to floating point type or from floating point type to pointer.",
           "6.5.4:4"))
-          ~> castHold(T', tv(_, T))
+          ~> castHold(T':Type, tv(_, T:Type))
           requires (isPointerType(T) andBool hasFloatType(T'))
                orBool (hasFloatType(T) andBool isPointerType(T'))
 
      rule (.K => CV("CCV10",
           "conversion to or from non-scalar type.",
           "6.5.4:2"))
-          ~> castHold(T', tv(_, T))
-          requires notBool isVoidType(T') andBool ((notBool isPointerType(T) 
+          ~> castHold(T':Type, tv(_, T:Type))
+          requires notBool isVoidType(T') andBool ((notBool isPointerType(T)
                andBool notBool hasArithmeticType(T)) orBool (notBool isPointerType(T')
                andBool notBool hasArithmeticType(T')))
 

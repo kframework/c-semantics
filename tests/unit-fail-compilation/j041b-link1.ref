@@ -1,0 +1,7 @@
+File: j041b-link2.c
+Line: 1
+Error: TIN1
+Description: Identifier f declared with incompatble types in different translation units.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.7:2
+Translation failed. Run kcc -d j041b-link1.c j041b-link2.c to see commands run.
