@@ -24,4 +24,6 @@
 
 #define __thread _Thread_local
 
+#define __builtin_offsetof(t, m) __kcc_offsetof(t, m)
+
 #endif

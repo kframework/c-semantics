@@ -116,7 +116,7 @@ module C-COMMON-EXPR-CONDITIONAL
                +String " other must be a pointer to void.",
                "6.5.15:3"))
           ~> types(trItem(T1:Type) ts:: trItem(T2:Type))
-          requires isPointerType(T1) andBool isPointerType(T2) andThenBool notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
+          requires isPointerType(T1) andThenBool isPointerType(T2) andThenBool notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
                andThenBool notBool isVoidType(innerType(T1)) andThenBool notBool isVoidType(innerType(T2))
 
      rule (types(

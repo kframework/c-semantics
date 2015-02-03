@@ -85,6 +85,8 @@ module C-TYPING-EXPR
      rule <type> SizeofType(_, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
           [structural]
 
+     rule <type> OffsetOf(_, _, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
+
      rule <type>
                t(S:Set, pointerType(T:Type)) + T':Type
                => t(S, pointerType(T))
