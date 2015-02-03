@@ -128,6 +128,25 @@ module C-TYPING-EXPR
           ...</type>
           requires hasIntegerType(T')
           [structural]
+     rule <type>
+               t(S:Set, incompleteArrayType(T:Type)) + T':Type
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+     rule <type>
+               T':Type + t(S:Set, incompleteArrayType(T:Type))
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+     rule <type>
+               t(S:Set, incompleteArrayType(T:Type)) - T':Type
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+
 
      // c99 6.4.5
      rule <type>

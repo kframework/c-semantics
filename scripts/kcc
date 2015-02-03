@@ -341,7 +341,7 @@ sub preprocess {
           $pp = "clang";
      }
      my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
-                   "-pedantic", "-x", "c", "-std=c11", "-CC", "-nostdlib",
+                   "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,
                    @main::cppIncludes, '-E', '-iquote', '.', '-iquote', $directoryname,
