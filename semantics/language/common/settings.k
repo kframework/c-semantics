@@ -41,4 +41,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofEnum" [function]
      syntax Int ::= "cfg:alignofPointer" [function]
 
+     syntax CValue ::= "cfg:intToPointer" "(" CValue ")" [function]
+     syntax CValue ::= "cfg:pointerToInt" "(" CValue ")" [function]
+
 endmodule

@@ -2,6 +2,8 @@ module C-SETTINGS
      imports C-SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-BITS-SYNTAX
 
      rule cfg:charAlias => signed-char
 
@@ -41,6 +43,12 @@ module C-SETTINGS
      rule cfg:alignofLongDouble => 16
      rule cfg:alignofEnum => cfg:alignofInt
      rule cfg:alignofPointer => 8
+
+     rule cfg:intToPointer(V:Int) => loc(0 @ nativeAddress, V)
+     rule cfg:intToPointer(_) => trap [owise]
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int)) => V
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _)) => V
+     rule cfg:pointerToInt(_) => unknown [owise]
 
 endmodule
 

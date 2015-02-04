@@ -74,7 +74,7 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, structType(S':StructId)))
           => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
           requires sameQualifiers(Mods, Mods')
-          andBool getTag(S) ==K getTag(S')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool getFieldInfo(S) =/=K #incomplete
           andBool getFieldInfo(S') =/=K #incomplete
      rule #areCompat(
@@ -82,7 +82,7 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, structType(S':StructId)))
           => true
           requires sameQualifiers(Mods, Mods')
-          andBool getTag(S) ==K getTag(S')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool (getFieldInfo(S) ==K #incomplete
                orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
@@ -90,18 +90,22 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, unionType(S':StructId)))
           => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
           requires sameQualifiers(Mods, Mods')
-          andBool getTag(S) ==K getTag(S')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool getFieldInfo(S) =/=K #incomplete
           andBool getFieldInfo(S') =/=K #incomplete
      syntax Bool ::= #areFieldsCompat(K, K) [function]
      rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _))
           => #areCompat(Fs, Fs')
+     syntax Bool ::= #areTagsCompat(K, K) [function]
+     rule #areTagsCompat(Identifier(S:String), Identifier(S:String)) => true
+     rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
+     rule #areTagsCompat(_, _) => false [owise]
      rule #areCompat(
                t(Mods:Set, unionType(S:StructId)),
                t(Mods':Set, unionType(S':StructId)))
           => true
           requires sameQualifiers(Mods, Mods')
-          andBool getTag(S) ==K getTag(S')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool (getFieldInfo(S) ==K #incomplete
                orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
