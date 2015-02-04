@@ -50,7 +50,7 @@ my $spec = q(#
 				faster loading).
       -d			Print debugging information.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@main::cppDefines, defined $definition ? "-D$name=\Q$definition\E" : "-D$name"); }
+{ push(@main::cppDefines, defined $definition ? "-D$name=$definition" : "-D$name"); }
       -U <name>			Undefine <name> as a macro.
 { push(@main::cppUndefines, "-U$name"); }
       -E			Preprocess only.

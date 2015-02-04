@@ -97,7 +97,7 @@ module C-TYPING-COMPATIBILITY
      rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _))
           => #areCompat(Fs, Fs')
      syntax Bool ::= #areTagsCompat(K, K) [function]
-     rule #areTagsCompat(Identifier(S:String), Identifier(S:String)) => true
+     rule #areTagsCompat(C:CId, C:CId) => true
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
      rule #areCompat(
