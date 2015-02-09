@@ -31,17 +31,17 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(FILES_TO_DIST) semantics-fast | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)
 	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin: $(DIST_DIR)/kcc
+$(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin: $(DIST_DIR)/kcc semantics-fast
 	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin: $(DIST_DIR)/kcc
+$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin: $(DIST_DIR)/kcc semantics-fast
 	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 
 $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin: semantics

@@ -85,6 +85,8 @@ module C-TYPING-EXPR
      rule <type> SizeofType(_, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
           [structural]
 
+     rule <type> OffsetOf(_, _, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
+
      rule <type>
                t(S:Set, pointerType(T:Type)) + T':Type
                => t(S, pointerType(T))
@@ -126,6 +128,25 @@ module C-TYPING-EXPR
           ...</type>
           requires hasIntegerType(T')
           [structural]
+     rule <type>
+               t(S:Set, incompleteArrayType(T:Type)) + T':Type
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+     rule <type>
+               T':Type + t(S:Set, incompleteArrayType(T:Type))
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+     rule <type>
+               t(S:Set, incompleteArrayType(T:Type)) - T':Type
+               => t(S, pointerType(T))
+          ...</type>
+          requires hasIntegerType(T')
+          [structural]
+
 
      // c99 6.4.5
      rule <type>
@@ -169,14 +190,16 @@ module C-TYPING-EXPR
      so-qualified version of the type of the designated member.
      }*/
      rule <type>
-               t(_, structType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
+               t(_, structType(S:StructId)) . F:CId
                => T
           ...</type>
+          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
           [structural]
      rule <type>
-               t(_, unionType(_, fieldInfo(_, _, (_ F |-> T:Type), _))) . F:CId
+               t(_, unionType(S:StructId)) . F:CId
                => T
           ...</type>
+          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

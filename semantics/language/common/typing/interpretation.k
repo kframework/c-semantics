@@ -1,5 +1,6 @@
 module C-TYPING-INTERPRETATION-SYNTAX
      syntax List ::= adjustParams(List) [function]
+     syntax CId ::= prototype(CId)
 endmodule
 
 module C-TYPING-INTERPRETATION
@@ -80,7 +81,6 @@ module C-TYPING-INTERPRETATION
      rule FunctionType(T:Type) => T
           [structural]
 
-     syntax CId ::= prototype(CId)
      // "Prototype scope."
      rule <k> Prototype(T:Type, list(L:List), Var:Bool)
                => pushBlock ~> Prototype'(T, L, .List, Var)
@@ -140,14 +140,10 @@ module C-TYPING-INTERPRETATION
           => t(S, pointerType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K)
           => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(S:Set, structType(X:CId, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, structType(X, Info)))
-     rule pushTypeDown(t(S:Set, incompleteStructType(X:CId)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, incompleteStructType(X)))
-     rule pushTypeDown(t(S:Set, unionType(X:CId, Info:FieldInfo)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, unionType(X, Info)))
-     rule pushTypeDown(t(S:Set, incompleteUnionType(X:CId)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, incompleteUnionType(X)))
+     rule pushTypeDown(t(S:Set, structType(X:StructId)), Lbl:K)
+          => applyTypeFunction(Lbl, t(S, structType(X)))
+     rule pushTypeDown(t(S:Set, unionType(X:StructId)), Lbl:K)
+          => applyTypeFunction(Lbl, t(S, unionType(X)))
      rule pushTypeDown(t(S:Set, enumType(X:CId)), Lbl:K)
           => applyTypeFunction(Lbl, t(S, enumType(X)))
 
@@ -236,14 +232,10 @@ module C-TYPING-INTERPRETATION
           requires isBasicType(T)
      rule extractActualType(t(S:Set, enumType(X:CId)))
           => t(S, enumType(X))
-     rule extractActualType(t(S:Set, structType(X:CId, Info:FieldInfo)))
-          => t(S, structType(X, Info))
-     rule extractActualType(t(S:Set, incompleteStructType(X:CId)))
-          => t(S, incompleteStructType(X))
-     rule extractActualType(t(S:Set, unionType(X:CId, Info:FieldInfo)))
-          => t(S, unionType(X, Info))
-     rule extractActualType(t(S:Set, incompleteUnionType(X:CId)))
-          => t(S, incompleteUnionType(X))
+     rule extractActualType(t(S:Set, structType(X:StructId)))
+          => t(S, structType(X))
+     rule extractActualType(t(S:Set, unionType(X:StructId)))
+          => t(S, unionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))
           => t(S, arrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))

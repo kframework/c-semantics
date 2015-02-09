@@ -70,35 +70,44 @@ module C-TYPING-COMPATIBILITY
           requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
-               t(Mods:Set, structType(X:CId, fieldInfo(Fs:List, _, _, _))),
-               t(Mods':Set, structType(X:CId, fieldInfo(Fs':List, _, _, _))))
+               t(Mods:Set, structType(S:StructId)),
+               t(Mods':Set, structType(S':StructId)))
+          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
+          requires sameQualifiers(Mods, Mods')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
+          andBool getFieldInfo(S) =/=K #incomplete
+          andBool getFieldInfo(S') =/=K #incomplete
+     rule #areCompat(
+               t(Mods:Set, structType(S:StructId)),
+               t(Mods':Set, structType(S':StructId)))
+          => true
+          requires sameQualifiers(Mods, Mods')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
+          andBool (getFieldInfo(S) ==K #incomplete
+               orBool getFieldInfo(S') ==K #incomplete)
+     rule #areCompat(
+               t(Mods:Set, unionType(S:StructId)),
+               t(Mods':Set, unionType(S':StructId)))
+          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
+          requires sameQualifiers(Mods, Mods')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
+          andBool getFieldInfo(S) =/=K #incomplete
+          andBool getFieldInfo(S') =/=K #incomplete
+     syntax Bool ::= #areFieldsCompat(K, K) [function]
+     rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _))
           => #areCompat(Fs, Fs')
-          requires sameQualifiers(Mods, Mods')
+     syntax Bool ::= #areTagsCompat(K, K) [function]
+     rule #areTagsCompat(C:CId, C:CId) => true
+     rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
+     rule #areTagsCompat(_, _) => false [owise]
      rule #areCompat(
-               t(Mods:Set, structType(X:CId, _)),
-               t(Mods':Set, incompleteStructType(X:CId)))
+               t(Mods:Set, unionType(S:StructId)),
+               t(Mods':Set, unionType(S':StructId)))
           => true
           requires sameQualifiers(Mods, Mods')
-     rule #areCompat(
-               t(Mods:Set, incompleteStructType(X:CId)),
-               t(Mods':Set, structType(X:CId, _)))
-          => true
-          requires sameQualifiers(Mods, Mods')
-     rule #areCompat(
-               t(Mods:Set, unionType(X:CId, fieldInfo(Fs:List, _, _, _))),
-               t(Mods':Set, unionType(X:CId, fieldInfo(Fs':List, _, _, _))))
-          => #areCompat(Fs, Fs')
-          requires sameQualifiers(Mods, Mods')
-     rule #areCompat(
-               t(Mods:Set, unionType(X:CId, _)),
-               t(Mods':Set, incompleteUnionType(X:CId)))
-          => true
-          requires sameQualifiers(Mods, Mods')
-     rule #areCompat(
-               t(Mods:Set, incompleteUnionType(X:CId)),
-               t(Mods':Set, unionType(X:CId, _)))
-          => true
-          requires sameQualifiers(Mods, Mods')
+          andBool #areTagsCompat(getTag(S), getTag(S'))
+          andBool (getFieldInfo(S) ==K #incomplete
+               orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
                t(Mods':Set, arrayType(T':Type, N:CSize)))

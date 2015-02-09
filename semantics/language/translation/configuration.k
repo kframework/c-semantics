@@ -23,6 +23,8 @@ module C-CONFIGURATION
           <external-uses> SetItem(Identifier("main")) </external-uses>
      </linking-state>
 
+     <structs color="lightgray"> .Map </structs>
+
      // dummy link base |-> real base
      <linkings> .Map </linkings>
 
@@ -31,14 +33,11 @@ module C-CONFIGURATION
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
-               <gstructs color="lightgray"> .Map </gstructs>
 
                // kpair(CId, BlockNum) |-> SymBase
                <local-statics> .Map </local-statics>
                // kpair(CId, BlockNum) |-> Type
                <local-types> .Map </local-types>
-               // kpair(CId, BlockNum) |-> FieldInfo
-               <local-structs> .Map </local-structs>
 
                <tu-linking-state>
                     <externals> .Map </externals>
@@ -111,7 +110,6 @@ module C-CONFIGURATION
                     // maps from CIds
                     <env color="red"> .Map </env>
                     <types color="lightgray"> .Map </types>
-                    <structs color="lightgray"> .Map </structs>
                     <block-history> .List </block-history>
                </local>
                <block-stack color="violet"> .List </block-stack>

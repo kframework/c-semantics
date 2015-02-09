@@ -50,35 +50,17 @@ module C-TYPING-PREDICATES
           => #typesEq(T, T')
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
-               t(Mods:Set, structType(X:CId,  _)),
-               t(Mods':Set, structType(X:CId, _)))
+               t(Mods:Set, structType(X:StructId)),
+               t(Mods':Set, structType(X':StructId)))
           => true
           requires sameQualifiers(Mods, Mods')
+          andBool getTag(X) ==K getTag(X')
      rule #typesEq(
-               t(Mods:Set, structType(X:CId, _)),
-               t(Mods':Set, incompleteStructType(X:CId)))
+               t(Mods:Set, unionType(X:StructId)),
+               t(Mods':Set, unionType(X':StructId)))
           => true
           requires sameQualifiers(Mods, Mods')
-     rule #typesEq(
-               t(Mods:Set, incompleteStructType(X:CId)),
-               t(Mods':Set, structType(X:CId, _)))
-          => true
-          requires sameQualifiers(Mods, Mods')
-     rule #typesEq(
-               t(Mods:Set, unionType(X:CId, _)),
-               t(Mods':Set, unionType(X:CId, _)))
-          => true
-          requires sameQualifiers(Mods, Mods')
-     rule #typesEq(
-               t(Mods:Set, unionType(X:CId, _)),
-               t(Mods':Set, incompleteUnionType(X:CId)))
-          => true
-          requires sameQualifiers(Mods, Mods')
-     rule #typesEq(
-               t(Mods:Set, incompleteUnionType(X:CId)),
-               t(Mods':Set, unionType(X:CId, _)))
-          => true
-          requires sameQualifiers(Mods, Mods')
+          andBool getTag(X) ==K getTag(X')
      rule #typesEq(_, _) => false [owise]
 
      rule isBasicType(t(_, T:SimpleType)) => true
@@ -198,13 +180,11 @@ module C-TYPING-PREDICATES
      rule isAggregateType(T:Type)
           => isArrayType(T) orBool isStructType(T)
 
-     rule isStructType(t(_, structType(_, _))) => true
-     rule isStructType(t(_, incompleteStructType(_))) => true
+     rule isStructType(t(_, structType(_))) => true
      rule isStructType(typedDeclaration(T:Type, _)) => isStructType(T)
      rule isStructType(_) => false [owise]
 
-     rule isUnionType(t(_, unionType(_, _))) => true
-     rule isUnionType(t(_, incompleteUnionType(_))) => true
+     rule isUnionType(t(_, unionType(_))) => true
      rule isUnionType(typedDeclaration(T:Type, _)) => isUnionType(T)
      rule isUnionType(_) => false [owise]
 
@@ -220,12 +200,12 @@ module C-TYPING-PREDICATES
           => isIncompleteArrayType(T)
      rule isIncompleteArrayType(_) => false [owise]
 
-     rule isIncompleteStructType(t(_, incompleteStructType(_))) => true
+     rule isIncompleteStructType(t(_, structType(S:StructId))) => getFieldInfo(S) ==K #incomplete
      rule isIncompleteStructType(typedDeclaration(T:Type, _))
           => isIncompleteStructType(T)
      rule isIncompleteStructType(_) => false [owise]
 
-     rule isIncompleteUnionType(t(_, incompleteUnionType(_))) => true
+     rule isIncompleteUnionType(t(_, unionType(S:StructId))) => getFieldInfo(S) ==K #incomplete
      rule isIncompleteUnionType(typedDeclaration(T:Type, _))
           => isIncompleteUnionType(T)
      rule isIncompleteUnionType(_) => false [owise]

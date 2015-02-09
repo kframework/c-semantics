@@ -22,6 +22,7 @@ module C-CONVERSION
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
@@ -383,7 +384,7 @@ module C-CONVERSION
      aligned, might not point to an entity of the referenced type, and might be
      a trap representation.
      }*/
-     rule cast(T':Type, tv(V:CValue, T:Type)) => tv(trap, T')
+     rule cast(T':Type, tv(V:CValue, T:Type)) => tv(cfg:intToPointer(V), T')
           requires hasIntegerType(T)
                andBool (V =/=K 0)
                andBool isPointerType(T')
@@ -395,7 +396,7 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(unknown, T')
+          => tv(cfg:pointerToInt(V), T')
           requires isPointerType(T)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
