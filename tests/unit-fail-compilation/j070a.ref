@@ -1,0 +1,7 @@
+File: j070a.c
+Line: 4
+Error: TDR1
+Description: declaration for inline function not defined in the same translation unit: f
+Type: Undefined behavior.
+See also: C11 sec. 6.7.4
+Translation failed. Run kcc -d j070a.c to see commands run.

@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: ESR1
+Description: Return from a function declared _Noreturn.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.4
+=============================================================
+File: j071c.c
+Function: f
+Line: 2
+=============================================================
