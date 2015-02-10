@@ -110,8 +110,15 @@ module C-TRANSLATION-INIT
                typedDeclaration(T, B),
                initializer(handleBuiltinConstant(B, T))) ...</k>
           <external-types>... B |-> _ ...</external-types>
+          <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
+
+     rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
+          <external-types>... B |-> _ ...</external-types>
+          <external-uses> Uses:Set </external-uses>
+          <external-defs> Defs:Map </external-defs>
+          requires notBool (B in keys(Defs))  andBool notBool (B in Uses) andBool notBool isFunctionType(T)
 
      syntax KItem ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)

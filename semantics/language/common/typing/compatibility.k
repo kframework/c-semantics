@@ -1,5 +1,5 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
-     syntax Bool ::= #areCompat(Type, Type) [function]
+     syntax Bool ::= #areCompat(Type, Type, Set) [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
      syntax Int ::= getAlignas(Type) [function]
 
@@ -46,12 +46,12 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= #areCompat(List, List) [function,klabel(#areCompatList)]
+     syntax Bool ::= #areCompat(List, List, Set) [function,klabel(#areCompatList)]
 
-     rule areCompatible(T:Type, T':Type) => #areCompat(T, T')
+     rule areCompatible(T:Type, T':Type) => #areCompat(T, T', .Set)
 
-     rule #areCompat(T:Type, T) => true
-     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T)) => true
+     rule #areCompat(T:Type, T, _) => true
+     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T), _) => true
           requires sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should be a setting.
@@ -60,26 +60,38 @@ module C-TYPING-COMPATIBILITY
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
                t(Mods:Set, enumType(_)),
-               t(Mods':Set, int))
+               t(Mods':Set, int), _)
           => true
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, int),
-               t(Mods':Set, enumType(_)))
+               t(Mods':Set, enumType(_)), _)
           => true
           requires sameQualifiers(Mods, Mods')
 
+     // TODO(chathhorn): should also check for equivalent members
+     rule #areCompat(
+               t(Mods:Set, enumType(X:CId)),
+               t(Mods':Set, enumType(X':CId)), _)
+          => true
+          requires sameQualifiers(Mods, Mods')
+          andBool #areTagsCompat(X, X')
+
+     rule #areCompat(T:Type, T':Type, Cache:Set) => true
+          requires kpair(T, T') in Cache
+
      rule #areCompat(
                t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)))
-          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
+               t(Mods':Set, structType(S':StructId)), Cache:Set)
+          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
           requires sameQualifiers(Mods, Mods')
           andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool getFieldInfo(S) =/=K #incomplete
           andBool getFieldInfo(S') =/=K #incomplete
+          andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
      rule #areCompat(
                t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)))
+               t(Mods':Set, structType(S':StructId)), _)
           => true
           requires sameQualifiers(Mods, Mods')
           andBool #areTagsCompat(getTag(S), getTag(S'))
@@ -87,22 +99,23 @@ module C-TYPING-COMPATIBILITY
                orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
                t(Mods:Set, unionType(S:StructId)),
-               t(Mods':Set, unionType(S':StructId)))
-          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'))
+               t(Mods':Set, unionType(S':StructId)), Cache:Set)
+          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
           requires sameQualifiers(Mods, Mods')
           andBool #areTagsCompat(getTag(S), getTag(S'))
           andBool getFieldInfo(S) =/=K #incomplete
           andBool getFieldInfo(S') =/=K #incomplete
-     syntax Bool ::= #areFieldsCompat(K, K) [function]
-     rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _))
-          => #areCompat(Fs, Fs')
+          andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
+     syntax Bool ::= #areFieldsCompat(K, K, Set) [function]
+     rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _), Cache:Set)
+          => #areCompat(Fs, Fs', Cache)
      syntax Bool ::= #areTagsCompat(K, K) [function]
      rule #areTagsCompat(C:CId, C:CId) => true
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
      rule #areCompat(
                t(Mods:Set, unionType(S:StructId)),
-               t(Mods':Set, unionType(S':StructId)))
+               t(Mods':Set, unionType(S':StructId)), _)
           => true
           requires sameQualifiers(Mods, Mods')
           andBool #areTagsCompat(getTag(S), getTag(S'))
@@ -110,51 +123,51 @@ module C-TYPING-COMPATIBILITY
                orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
-               t(Mods':Set, arrayType(T':Type, N:CSize)))
-          => #areCompat(T, T')
+               t(Mods':Set, arrayType(T':Type, N:CSize)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, _)),
-               t(Mods':Set, incompleteArrayType(T':Type)))
-          => #areCompat(T, T')
+               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+          => #areCompat(T, T',  Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, arrayType(T':Type, _)))
-          => #areCompat(T, T')
+               t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, _)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)))
-          => #areCompat(T, T')
+               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, variableLengthArrayType(T:Type, _)),
-               t(Mods':Set, arrayType(T':Type, _)))
-          => #areCompat(T, T')
+               t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)))
-          => #areCompat(T, T')
+               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, variableLengthArrayType(T:Type, _)),
-               t(Mods':Set, incompleteArrayType(T':Type)))
-          => #areCompat(T, T')
+               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
-               t(Mods':Set, pointerType(T':Type)))
-          => #areCompat(T, T')
+               t(Mods':Set, pointerType(T':Type)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
 
      // Struct and union fields.
      rule #areCompat(
                typedDeclaration(T:Type, X:CId),
-               typedDeclaration(T':Type, X:CId))
-          => #areCompat(T, T')
+               typedDeclaration(T':Type, X:CId), Cache:Set)
+          => #areCompat(T, T', Cache)
 
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments, as long as they're all
@@ -164,37 +177,37 @@ module C-TYPING-COMPATIBILITY
      // at the argument types in a function definition w/no prototype?
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, .List)),
-               t(Mods':Set, functionType(T':Type, Args':List)))
-          => #areCompat(T, T')
+               t(Mods':Set, functionType(T':Type, Args':List)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args')
                andBool notBool (variadic in Args')
      rule #areCompat(
                t(Mods:Set, functionType(T:Type, Args:List)),
-               t(Mods':Set, functionType(T':Type, .List)))
-          => #areCompat(T, T')
+               t(Mods':Set, functionType(T':Type, .List)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args)
                andBool notBool (variadic in Args)
      rule #areCompat(
                t(Mods:Set, functionType(T:Type,  L:List)),
-               t(Mods':Set, functionType(T':Type, L':List)))
-          => #areCompat(T, T') andBool #areParamsCompat(L, L')
+               t(Mods':Set, functionType(T':Type, L':List)), Cache:Set)
+          => #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
           requires (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
-     rule #areCompat(_:Type, _:Type) => false [owise]
+     rule #areCompat(_:Type, _:Type, _) => false [owise]
 
-     syntax Bool ::= #areParamsCompat(List, List) [function]
+     syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
                ListItem(T:Type) L:List,
-               ListItem(T':Type) L':List)
-          => #areCompat(T, T') andBool #areParamsCompat(L, L')
-     rule #areParamsCompat(ListItem(variadic), ListItem(variadic)) => true
-     rule #areParamsCompat(.List, .List) => true
+               ListItem(T':Type) L':List, Cache:Set)
+          => #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
+     rule #areParamsCompat(ListItem(variadic), ListItem(variadic), _) => true
+     rule #areParamsCompat(.List, .List, _) => true
 
-     rule #areCompat(ListItem(T:Type) L:List, ListItem(T':Type) L':List)
-          => #areCompat(T, T') andBool #areCompat(L, L')
-     rule #areCompat(.List, .List) => true
+     rule #areCompat(ListItem(T:Type) L:List, ListItem(T':Type) L':List, Cache:Set)
+          => #areCompat(T, T', Cache) andBool #areCompat(L, L', Cache)
+     rule #areCompat(.List, .List, _) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)
           => (intersectSet(Mods, typeQualifiers)
