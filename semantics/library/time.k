@@ -5,12 +5,5 @@ module LIBC-TIME
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     // fixme, just a placeholder
-     rule [time]:
-          prepareBuiltin(Identifier("time"),
-               hrItem(_:KResult))
-          => tv(0, t(.Set, long-long-int))
-          [structural]
-
 endmodule
 

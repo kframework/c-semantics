@@ -120,7 +120,7 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs))  andBool notBool (B in Uses) andBool notBool isFunctionType(T)
 
-     syntax KItem ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
+     syntax K ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(Bag, Bag)
