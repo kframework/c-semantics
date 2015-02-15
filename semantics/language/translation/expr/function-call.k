@@ -28,7 +28,6 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      */
 
-     context Call((HOLE => reval(HOLE)), _)
      context Call(_, (HOLE => revalParams(HOLE)))
 
      rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, P:List))))), rvlist(L:List))
@@ -45,7 +44,7 @@ module C-EXPR-FUNCTION-CALL
                orBool isArrayType(T) // Don't think this is possible.
           [structural]
 
-     rule bindParam(_, T:Type, V:TypedValue)
+     rule bindParam(_, T:Type, V:RValue)
           => allowInit(Computation(lv(symVal, T) := V))
      rule bindParam(_) => .K
 

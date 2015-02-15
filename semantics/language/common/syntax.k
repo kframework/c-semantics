@@ -1,11 +1,10 @@
 module C-SYNTAX
      // these are semantic
-     syntax KItem ::= reval(K) [semantic, context(result(KResult))]
-     syntax KItem ::= peval(K) [semantic]
+     syntax KItem ::= reval(K)
 
      //TODO(liyili2): might not need this list in the future.
      syntax HeatItem ::= hItem(K)
-     context hItem(HOLE => reval(HOLE)) [ndheat]
+     context hItem(HOLE => reval(HOLE)) [ndheat, result(RValue)]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]
      syntax HeatList ::= toHeatList(List) [function]
@@ -265,7 +264,7 @@ module C-SYNTAX
      and init_name = name * init_expression
      */
      syntax InitName ::= InitName(K, K)
-     context InitName(_, (HOLE => reval(HOLE))) [ndheat]
+     context InitName(_, (HOLE => reval(HOLE))) [ndheat, result(RValue)]
 
      /*
      (* Single names are for declarations that cannot come in groups, like
@@ -345,7 +344,7 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Nop"
      syntax PureStatement ::= Computation(K) [latex({{#1}};)]
-     context Computation((HOLE => reval(HOLE)))
+     context Computation(HOLE => reval(HOLE)) [result(RValue)]
      syntax PureStatement ::= BlockStatement(K)
      syntax PureStatement ::= Sequence(K, K)
 
@@ -356,7 +355,8 @@ module C-SYNTAX
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
      syntax PureStatement ::= IfThenElse(K, K, K)
-     context IfThenElse((HOLE => reval(HOLE)), _, _)
+     context IfThenElse((HOLE => reval(HOLE)), _, _) [result(RValue)]
+
      syntax PureStatement ::= While(K, K)
      syntax PureStatement ::= DoWhile(K, K)
      // id, ...
@@ -369,8 +369,9 @@ module C-SYNTAX
      */
      syntax PureStatement ::= "Break" [klabel('Break)]
      syntax PureStatement ::= "Continue" [klabel('Continue)]
+
      syntax PureStatement ::= Return(K)
-     context Return((HOLE => reval(HOLE)))
+     context Return(HOLE => reval(HOLE)) [result(RValue)]
 
      /*
      | SWITCH of expression * statement * cabsloc
@@ -380,7 +381,8 @@ module C-SYNTAX
      */
      // unique switch id
      syntax PureStatement ::= Switch(K, K, K)
-     context Switch(_, (HOLE => reval(HOLE)), _)
+     context Switch(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+
      // unique switch id, unique case id, exp, statement
      syntax PureStatement ::= Case(Int, Int, K, K)
      // gcc extension
@@ -437,19 +439,19 @@ module C-SYNTAX
                          | "!" K [prec(22)]
                          | "~" K [prec(22)]
                          | "*" K [prec(22)]
-                         | "&" K [strict, prec(22)]
-                         | "++" K [prefer, prec(22)]
-                         | "--" K [prefer, latex(\terminal{-{}-}{#1}), prec(22)]
-                         | K "++" [prefer]
-                         | K "--" [prefer, latex({#1}\terminal{-{}-})]
+                         | "&" K [prec(22), strict]
+                         | "++" K [prec(22), prefer, strict]
+                         | "--" K [prec(22), prefer, strict, latex(\terminal{-{}-}{#1})]
+                         | K "++" [prefer, strict]
+                         | K "--" [prefer, strict, latex({#1}\terminal{-{}-})]
      /* | BINARY of binary_operator * expression * expression */
                          > K "*" K [prec(31), left]
                          | K "/" K [prec(31), left]
                          | K "%" K [prec(31), left]
                          > K "+" K [prec(33), left]
                          | K "-" K [prec(33), left]
-                         > K "<<" K [latex({{#1}}\ll{{#2}}), prec(35), left]
-                         | K ">>" K [latex({{#1}}\gg{{#2}}), prec(35), left]
+                         > K "<<" K [prec(35), left, latex({{#1}}\ll{{#2}})]
+                         | K ">>" K [prec(35), left, latex({{#1}}\gg{{#2}})]
                          > K "<" K [prec(37), left]
                          | K "<=" K [prec(37), left]
                          | K ">" K [prec(37), left]
@@ -459,92 +461,132 @@ module C-SYNTAX
                          > K "&" K [prec(41), left]
                          > K "^" K [prec(43), left]
                          > K "|" K [prec(45), left]
-                         > K "&&" K [prefer, prec(47), left]
+                         > K "&&" K [prec(47), prefer, left]
                          > K "||" K [prec(49), left]
      /* | QUESTION of expression * expression * expression */
                          // Ternary operator is right-associative.
-                         > K "?" K ":" K [right]
-                         > K "*=" K [prec(53)]
-                         | K "/=" K [prec(53)]
-                         | K "%=" K [prec(53)]
-                         | K "+=" K [prec(53)]
-                         | K "-=" K [prec(53)]
+                         > K "?" K ":" K
+                              [prec(51), right, gather(e & E)]
+                         > K "*=" K
+                              [prec(53)]
+                         | K "/=" K
+                              [prec(53)]
+                         | K "%=" K
+                              [prec(53)]
+                         | K "+=" K
+                              [prec(53)]
+                         | K "-=" K
+                              [prec(53)]
                          | K "<<=" K
-                              [latex({{#1}}\terminal{$\gg$=}{{#2}}), prec(53)]
-                         | K "&=" K [prec(53)]
-                         | K "^=" K [prec(53)]
-                         | K "|=" K [prec(53)]
+                              [prec(53)]
+                         | K "&=" K
+                              [prec(53)]
+                         | K "^=" K
+                              [prec(53)]
+                         | K "|=" K
+                              [prec(53)]
                          | K ">>=" K
-                              [latex({{#1}}\terminal{$\ll$=}{{#2}}), prec(53)]
+                              [prec(53), latex({{#1}}\terminal{$\ll$=}{{#2}})]
                          | K ":=" K [prec(53)]
 
-     context - (HOLE => reval(HOLE))
-     context + (HOLE => reval(HOLE))
-     context ! (HOLE => reval(HOLE))
-     context ~ (HOLE => reval(HOLE))
-     context * (HOLE => reval(HOLE))
-     context (HOLE => peval(HOLE)) ++
-     context (HOLE => peval(HOLE)) --
-     context (HOLE => reval(HOLE)) * _ [ndheat]
-     context _ * (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) / _ [ndheat]
-     context _ / (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) % _ [ndheat]
-     context _ % (HOLE => reval(HOLE)) [ndheat]
+     context - (HOLE => reval(HOLE)) [result(RValue)]
+     context + (HOLE => reval(HOLE)) [result(RValue)]
+     context ! (HOLE => reval(HOLE)) [result(RValue)]
+     context ~ (HOLE => reval(HOLE)) [result(RValue)]
+     context * (HOLE => reval(HOLE)) [result(RValue)]
 
-     context (HOLE => reval(HOLE)) + _ [ndheat]
-     context _ + (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) - _ [ndheat]
-     context _ - (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) * _ [ndheat, result(RValue)]
+     context _ * (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) / _ [ndheat, result(RValue)]
+     context _ / (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) % _ [ndheat, result(RValue)]
+     context _ % (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) << _ [ndheat]
-     context _ << (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) + _ [ndheat, result(RValue)]
+     context _ + (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) - _ [ndheat, result(RValue)]
+     context _ - (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) >> _ [ndheat]
-     context _ >> (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) << _ [ndheat, result(RValue)]
+     context _ << (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) < _ [ndheat]
-     context _ < (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) <= _ [ndheat]
-     context _ <= (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) >> _ [ndheat, result(RValue)]
+     context _ >> (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) > _ [ndheat]
-     context _ > (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) >= _ [ndheat]
-     context _ >= (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) < _ [ndheat, result(RValue)]
+     context _ < (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) <= _ [ndheat, result(RValue)]
+     context _ <= (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) == _ [ndheat]
-     context _ == (HOLE => reval(HOLE)) [ndheat]
-     context (HOLE => reval(HOLE)) != _ [ndheat]
-     context _ != (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) > _ [ndheat, result(RValue)]
+     context _ > (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) >= _ [ndheat, result(RValue)]
+     context _ >= (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) & _ [ndheat]
-     context _ & (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) == _ [ndheat, result(RValue)]
+     context _ == (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE => reval(HOLE)) != _ [ndheat, result(RValue)]
+     context _ != (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) ^ _ [ndheat]
-     context _ ^ (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) & _ [ndheat, result(RValue)]
+     context _ & (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) | _ [ndheat]
-     context _ | (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) ^ _ [ndheat, result(RValue)]
+     context _ ^ (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) && _ [ndheat]
+     context (HOLE => reval(HOLE)) | _ [ndheat, result(RValue)]
+     context _ | (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) || _ [ndheat]
+     context (HOLE => reval(HOLE)) && _ [ndheat, result(RValue)]
 
-     context (HOLE => peval(HOLE)) := _ [ndheat]
-     context _ := (HOLE => reval(HOLE)) [ndheat]
+     context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) ? _ : _
+     context (HOLE => reval(HOLE)) ? _ : _ [result(RValue)]
+
+     context HOLE *= _
+     context _ *= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE /= _
+     context _ /= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE %= _
+     context _ %= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE += _
+     context _ += (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE -= _
+     context _ -= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE <<= _
+     context _ <<= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE &= _
+     context _ &= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE ^= _
+     context _ ^= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE |= _
+     context _ |= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE >>= _
+     context _ >>= (HOLE => reval(HOLE)) [result(RValue)]
+
+     context HOLE := _ [ndheat]
+     context _ := (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
      /*
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= Cast(K, K, K) [strict(1)]
-     context Cast(_, _, (HOLE => reval(HOLE)))
+     syntax Expression ::= Cast(K, K, K)
+     context Cast(HOLE, _, _)
+     context Cast(_, _, (HOLE => reval(HOLE))) [result(RValue)]
 
-     syntax Expression ::= Cast(K, K) [strict(1)]
-     context Cast(_, (HOLE => reval(HOLE)))
+     syntax Expression ::= Cast(K, K)
+     context Cast(HOLE, _)
+     context Cast(_, (HOLE => reval(HOLE))) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
      syntax Expression ::= CompoundLiteral(K, K, K, K) [strict(2)]
@@ -554,8 +596,8 @@ module C-SYNTAX
         should be printed as just T *)
      | CALL of expression * expression list
      */
-     syntax Expression ::= "Call" "(" K "," K ")"
-          [klabel('Call)] // K, List
+     syntax Expression ::= Call(K, K)
+     context Call((HOLE => reval(HOLE)), _) [ndheat, result(RValue)]
 
      /*
      | COMMA of expression list
@@ -589,10 +631,10 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      | MEMBEROFPTR of expression * string
      */
-     syntax Expression ::= K "." CId [left]
-     context (HOLE => peval(HOLE)) . _
+     syntax Expression ::= K "." CId [left, strict(1)]
+
      syntax Expression ::= K "->" CId [left]
-     context (HOLE => reval(HOLE)) -> _
+     context (HOLE => reval(HOLE)) -> _ [result(RValue)]
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

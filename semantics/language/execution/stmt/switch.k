@@ -46,20 +46,20 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax KItem ::= tryCase(K, Value, K)
-     context tryCase((HOLE => reval(HOLE)), _, _)
+     syntax KItem ::= tryCase(K, RValue, K)
+     context tryCase((HOLE => reval(HOLE)), _, _) [result(RValue)]
 
-     syntax KItem ::= "#handleSwitch-aux" "(" Int "," Value "," K "," K "," Map ")"
+     syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," K "," Map ")"
 
      rule #handleSwitch-aux(_, _, .K, _, .Map) => .K
           [structural]
 
-     rule #handleSwitch-aux(SN:Int, V:Value, .K, _,
+     rule #handleSwitch-aux(SN:Int, V:RValue, .K, _,
                (Key:K |-> CaseHelper:K) M:Map)
           => #handleSwitch-aux(SN, V, Key, CaseHelper, M)
           [structural]
 
-     rule #handleSwitch-aux(SN:Int, V:Value, genLabel(SN, Exp:K),
+     rule #handleSwitch-aux(SN:Int, V:RValue, genLabel(SN, Exp:K),
                CaseHelper:K, M:Map)
           => (tryCase(Exp, V, CaseHelper)
           ~> #handleSwitch-aux(SN, V, .K, .K, M))
@@ -67,7 +67,7 @@ module C-STMT-SWITCH
           [structural]
 
      //  if all that's left is a default, do it
-     rule #handleSwitch-aux(SN:Int, V:Value, genLabel(SN:Int, l('Default)),
+     rule #handleSwitch-aux(SN:Int, V:RValue, genLabel(SN:Int, l('Default)),
                _:K, M:Map)
           => (#handleSwitch-aux(SN, V, .K, .K, M)
           ~> Goto(genLabel(SN, l('Default))))
@@ -78,7 +78,7 @@ module C-STMT-SWITCH
           requires SN =/=Int SN'
           [structural]
 
-     rule #handleSwitch-aux(_:Int, _:Value, (K:K => .K),
+     rule #handleSwitch-aux(_:Int, _:RValue, (K:K => .K),
                (_ => .K), _)
           requires getKLabel(K) =/=KLabel 'genLabel
           [structural]
@@ -93,7 +93,7 @@ module C-STMT-SWITCH
           [structural]
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(V:Value, V:Value, CaseHelper:K) => Goto(CaseHelper)
+     rule tryCase(V:RValue, V:RValue, CaseHelper:K) => Goto(CaseHelper)
           [structural]
 
 endmodule

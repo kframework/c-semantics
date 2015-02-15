@@ -5,7 +5,7 @@ module C-EXPR-LOGICAL
      imports C-TYPING-SYNTAX
      imports C-STMT-IF-THEN-SYNTAX
 
-     context _ && (HOLE => reval(HOLE))
+     context _ && (HOLE => reval(HOLE)) [result(RValue)]
      rule tv(0, t(_, int)) && _:KResult => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && V:KResult => simplifyTruth(V)
@@ -16,7 +16,7 @@ module C-EXPR-LOGICAL
           requires notBool isTruthValue(tv(V, T)) // symVal is a truth value.
           [structural]
 
-     context _ || (HOLE => reval(HOLE))
+     context _ || (HOLE => reval(HOLE)) [result(RValue)]
      rule tv(0, t(_, int)) || V:KResult => V
           [structural]
      rule tv(1, t(_, int)) || _:KResult => tv(1, t(.Set, int))

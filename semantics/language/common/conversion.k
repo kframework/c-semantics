@@ -2,14 +2,14 @@ module C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      // interpret the result of arithmetic as in 6.5.4
-     syntax KItem ::= arithInterpret(Type, BaseValue) [function]
-     syntax KItem ::= arithInterpretHold(Type, BaseValue)
+     syntax KItem ::= arithInterpret(Type, NumValue) [function]
+     syntax KItem ::= arithInterpretHold(Type, NumValue)
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
-     syntax KItem ::= cast(Type, Value) [function]
+     syntax KItem ::= cast(Type, RValue) [function]
      //Might not need this if we have anywhere rule
-     syntax KItem ::= castHold(Type, Value)
+     syntax KItem ::= castHold(Type, RValue)
 endmodule
 
 module C-CONVERSION
@@ -364,7 +364,7 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(T':Type, V:TypedValue) => tv(NullPointer, T')
+     rule cast(T':Type, V:RValue) => tv(NullPointer, T')
           requires isNullPointerConstant(V)
                andBool isPointerType(T')
 

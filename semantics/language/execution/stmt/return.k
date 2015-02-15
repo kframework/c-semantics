@@ -1,5 +1,6 @@
 module C-STMT-RETURN
      imports C-CHECK-LOC-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -24,11 +25,11 @@ module C-STMT-RETURN
      assignment to an object having the return type of the function.
      }*/
 
-     rule <k> (.K => deleteObject(Base)) ~> Return(_:KResult) ...</k>
+     rule <k> (.K => deleteObject(Base)) ~> Return(_:RValue) ...</k>
           <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
           [structural]
 
-     rule <k> Return(_:KResult) ...</k>
+     rule <k> Return(_:RValue) ...</k>
           <local-addresses> .Set => Addresses </local-addresses>
           <block-stack>
                ListItem(bag2K(_ <local-addresses> Addresses:Set </local-addresses>))
@@ -38,10 +39,10 @@ module C-STMT-RETURN
 
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> Return(V:KResult) ~> _
+     rule <k> Return(V:RValue) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
-               ~> stripConstants(cast(T, V))
+               ~> checkUse(stripConstants(cast(T, V)))
                ~> setLoc(CurrLoc, CurrFun)
                ~> K
           </k>

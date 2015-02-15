@@ -255,7 +255,7 @@ module C-LITERAL
           [structral, anywhere]
      rule WCharLiteral(N:Int) => tv(N, t(.Set, cfg:wcharut))
           [structral, anywhere]
-     rule Constant(V:Value) => V
+     rule Constant(V:RValue) => V
           [structral, anywhere]
      rule Constant(S:StringLiteral) => S
           [structral, anywhere]

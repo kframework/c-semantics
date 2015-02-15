@@ -46,7 +46,7 @@ module C-EXECUTION-ERROR
                "printf: Format string expects type of size " +String
                Int2String(value(A)) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", "7.21.6.1:9") ) ~>
-          nextvarg-aux(_, _, A:TypedValue, B:TypedValue)
+          nextvarg-aux(_, _, A:RValue, B:RValue)
           requires value(A) =/=Int value(B)
           [structural]
 

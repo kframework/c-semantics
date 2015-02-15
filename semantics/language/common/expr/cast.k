@@ -15,11 +15,11 @@ module C-COMMON-EXPR-CAST
      cast specifies a conversion even if the type of the expression is the same
      as the named type and removes any extra range and precision.
      }*/
-     rule Cast(T:Type, K:K, V:Value)
+     rule Cast(T:Type, K:K, V:RValue)
           => Cast(DeclType(T, K), V)
           [structural]
 
-     rule Cast(T:Type, V:Value) => cast(elideDeclParams(T), V)
+     rule Cast(T:Type, V:RValue) => cast(elideDeclParams(T), V)
           [structural]
 
 endmodule

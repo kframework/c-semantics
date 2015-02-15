@@ -171,7 +171,7 @@ module C-TYPING-SYNTAX
      syntax List ::= completeTagsInList(Map, List) [function]
      syntax Map ::= completeTagsInMap(Map, Map) [function]
 
-     syntax Bool ::= isNullPointerConstant(TypedValue) [function]
+     syntax Bool ::= isNullPointerConstant(RValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]

@@ -47,7 +47,7 @@ module C-TYPING-INTERPRETATION
      // We need to keep the unevaluated size expression around in the case of
      // VLA function parameters.
      syntax KItem ::= "ArrayType'" "(" Type "," K "," K "," K ")"
-     context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat]
+     context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat, result(RValue)]
      rule ArrayType'(T:Type, tv(N:Int, _), _, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
           requires N >Int 0

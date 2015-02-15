@@ -7,26 +7,26 @@ module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
+     rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
                andBool notBool fromArrayStatic(T)
           [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
+     rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T)
           => checkArrayStaticAssign(T, V)
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
                andBool fromArrayStatic(T)
           [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
+     rule nclv(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
           => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)
           ~> transferProv(Loc, tv(V, T))
           requires isRestrictType(T)
           [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
+     rule nclv(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
           => checkArrayStaticAssign(T, V)
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T)

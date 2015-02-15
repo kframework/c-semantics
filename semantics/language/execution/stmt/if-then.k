@@ -2,7 +2,7 @@ module C-STMT-IF-THEN-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      // TODO(chathhorn): I suppose this might not be the best place for this.
-     syntax Bool ::= isTruthValue(TypedValue) [function]
+     syntax Bool ::= isTruthValue(RValue) [function]
 endmodule
 
 module C-STMT-IF-THEN
@@ -33,7 +33,7 @@ module C-STMT-IF-THEN
      rule [if-then-else-false]:
           IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
-     rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
+     rule IfThenElse((V:RValue => simplifyTruth(V)), _, _)
           requires notBool isTruthValue(V)
           [structural]
 

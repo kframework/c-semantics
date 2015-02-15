@@ -22,7 +22,7 @@ module LIBC-THREADS
 
      syntax KItem ::= "threadRunning"
 
-     syntax KItem ::= "spawn-aux" "(" Int "," Value "," Value ")"
+     syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
      rule [thrd-create-start]:
           <k> prepareBuiltin(Identifier("thrd_create"),
                     hrItem(ThIdPointer:KResult) hs::
@@ -70,7 +70,7 @@ module LIBC-THREADS
           <thread-id> ThId:Int </thread-id>
           [structural]
 
-     syntax KItem ::= "join-aux" "(" Int "," Value ")"
+     syntax KItem ::= "join-aux" "(" Int "," RValue ")"
 
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),

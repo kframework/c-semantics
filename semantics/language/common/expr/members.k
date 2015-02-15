@@ -19,7 +19,7 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> lval(Loc:SymLoc, t(Mods:Set,
+     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
                     structType(S:CId, Fields:FieldInfo))) . F:CId
                => lookupField(F, Loc, Mods, S, Fields, Fields)
           ...</k>
@@ -27,7 +27,7 @@ module C-COMMON-EXPR-MEMBERS
           requires notBool (Atomic in Mods)
                orBool I >Int 0
           [structural]
-     rule <k> lval(Loc:SymLoc, t(Mods:Set,
+     rule <k> nclv(Loc:SymLoc, t(Mods:Set,
                     unionType(S:CId, Fields:FieldInfo))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
                     Mods, S, Fields, Fields)
@@ -39,7 +39,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, structType(_, _))) . _:CId
+               ~> nclv(_, t(Mods:Set, structType(_, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           requires Atomic in Mods
@@ -47,7 +47,7 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
                "6.5.2.3:5"))
-               ~> lval(_, t(Mods:Set, unionType(_, _))) . _:CId
+               ~> nclv(_, t(Mods:Set, unionType(_, _))) . _:CId
           ...</k>
           <initializing> 0 </initializing>
           requires Atomic in Mods
@@ -70,7 +70,7 @@ module C-COMMON-EXPR-MEMBERS
           fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
           => lookupFieldHold(F, Loc, Mods, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
           requires notBool (F in keys(Types) andBool F in keys(Offsets))
-       
+
      rule (.K => CV("CEM3", "attempting to access member but it does not exist", "6.5.2.3:1"))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))
           requires notBool (F in keys(Types) andBool F in keys(Offsets))

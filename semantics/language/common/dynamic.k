@@ -5,28 +5,27 @@ module C-DYNAMIC-SYNTAX
 
      syntax Type ::= t(Set, SimpleType)
 
-     syntax Value ::= "voidVal"
-
      syntax Agg ::= agg(List)
 
-     syntax CValue ::= Bits | SymLoc | Float | Agg
+     syntax LValue ::= lv(SymLoc, Type)
 
-     syntax TypedValue ::= tv(CValue, Type)
+     syntax RValue ::= "voidVal"
+     syntax RValue ::= "emptyValue"
+     syntax RValue ::= tv(CValue, Type)
           [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
-     syntax LValue ::= lv(SymLoc, Type)
-     syntax Value ::= lval(SymLoc, Type)
+     syntax KItem ::= toRVal(K)
 
      syntax Type ::= type(K) [function]
-     syntax KItem ::= value(TypedValue) [function]
+     syntax KItem ::= value(RValue) [function]
 
      syntax KItem ::= "discard"
-     syntax Value ::= "emptyValue"
 
-     syntax BaseValue ::= Float | Bits // Int is a subsort of Bits
-     syntax C ::= BaseValue | Type | Value
-     syntax Value ::= TypedValue
-     syntax KResult ::= Value | Type
+     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
+     syntax CValue ::= NumValue | SymLoc | Agg
+     syntax C ::= NumValue | Type | RValue
+
+     syntax KResult ::= RValue | Type | nclv(SymLoc, Type)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -66,12 +65,16 @@ module C-DYNAMIC
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
+     context toRVal(HOLE => reval(HOLE)) [result(RValue)]
+     rule toRVal(V:RValue) => V
+          [structural]
+
      rule value(tv(V:CValue, _)) => V
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
-     rule type(lval(_, T:Type)) => T
+     rule type(nclv(_, T:Type)) => T
 
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
           => UnknownCabsLoc
