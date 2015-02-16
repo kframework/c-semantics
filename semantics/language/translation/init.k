@@ -110,8 +110,15 @@ module C-TRANSLATION-INIT
                typedDeclaration(T, B),
                initializer(handleBuiltinConstant(B, T))) ...</k>
           <external-types>... B |-> _ ...</external-types>
+          <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
+
+     rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
+          <external-types>... B |-> _ ...</external-types>
+          <external-uses> Uses:Set </external-uses>
+          <external-defs> Defs:Map </external-defs>
+          requires notBool (B in keys(Defs))  andBool notBool (B in Uses) andBool notBool isFunctionType(T)
 
      syntax KItem ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
@@ -189,6 +196,8 @@ module C-TRANSLATION-INIT
                     <external-uses> ExtUses1:Set </external-uses>
                </linking-state>
 
+               <structs> Structs1:Map </structs>
+
                <linkings> Links1:Map </linkings>
 
                <main-tu> Main1:Set </main-tu>
@@ -206,6 +215,8 @@ module C-TRANSLATION-INIT
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-uses> ExtUses2:Set </external-uses>
                </linking-state>
+
+               <structs> Structs2:Map </structs>
 
                <linkings> Links2:Map </linkings>
 
@@ -226,6 +237,8 @@ module C-TRANSLATION-INIT
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
                </linking-state>
 
+               <structs> updateMap(Structs1, Structs2) </structs>
+ 
                <linkings> updateMap(Links1, Links2) </linkings>
 
                <main-tu> Main1 Main2 </main-tu>

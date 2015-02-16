@@ -27,10 +27,8 @@ module C-ENV
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>
           <gtypes> GT:Map </gtypes>
-          <gstructs> GS:Map </gstructs>
           <env> _ => G </env>
           <types> _ => GT </types>
-          <structs> _ => GS </structs>
           [structural]
 
      rule <k> addToEnv(X:CId, Base:SymBase) => addToGlobalEnv(X, Base) ...</k>

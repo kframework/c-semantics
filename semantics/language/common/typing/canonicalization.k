@@ -4,6 +4,7 @@ endmodule
 
 module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-SYNTAX
@@ -185,66 +186,94 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
-               => t(.Set, structType(X, Info))
+               => t(.Set, structType(global(X, Tu)))
           ...</k>
           <structs>...
-               X |-> Info:FieldInfo
+               global(X, Tu) |-> _
           ...</structs>
+          <curr-tu> Tu:String </curr-tu>
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
-               => t(.Set, incompleteStructType(X))
+               => t(.Set, structType(local(X, Tu, BlockNum)))
+          ...</k>
+          <structs>...
+               local(X, Tu, BlockNum) |-> _
+          ...</structs>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          requires X =/=K Identifier("")
+          [structural]
+     rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
+               => t(.Set, structType(global(X, Tu)))
           ...</k>
           <structs> Structs:Map </structs>
-          <curr-function> file-scope </curr-function>
+          <curr-function> F:K </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (X in keys(Structs))
+               andBool notBool (global(X, Tu) in keys(Structs))
+               andBool F ==K file-scope orBool F ==K prototype(file-scope)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
-               => t(.Set, incompleteStructType(X))
+               => t(.Set, structType(local(X, Tu, BlockNum)))
           ...</k>
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
-               andBool notBool (X in keys(Structs))
-               andBool (F =/=K file-scope)
+               andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
+               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
           [structural]
      rule canonicalizeSpecifier(ListItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
-               => t(.Set, unionType(X, Info))
+               => t(.Set, unionType(global(X, Tu)))
           ...</k>
           <structs>...
-               X |-> Info:FieldInfo
+               global(X, Tu) |-> _
           ...</structs>
+          <curr-tu> Tu:String </curr-tu>
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
-               => t(.Set, incompleteUnionType(X))
+               => t(.Set, unionType(local(X, Tu, BlockNum)))
+          ...</k>
+          <structs>...
+               local(X, Tu, BlockNum) |-> _
+          ...</structs>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          requires X =/=K Identifier("")
+          [structural]
+     rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
+               => t(.Set, unionType(global(X, Tu)))
           ...</k>
           <structs> Structs:Map </structs>
-          <curr-function> file-scope </curr-function>
+          <curr-function> F:K </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (X in keys(Structs))
+               andBool notBool (global(X, Tu) in keys(Structs))
+               andBool F ==K file-scope orBool F ==K prototype(file-scope)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
-               => t(.Set, incompleteUnionType(X))
+               => t(.Set, unionType(local(X, Tu, BlockNum)))
           ...</k>
           <structs> Structs:Map </structs>
           <curr-function> F:K </curr-function>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
-               andBool notBool (X in keys(Structs))
-               andBool (F =/=K file-scope)
+               andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
+               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
           [structural]
-
+ 
      rule canonicalizeSpecifier(ListItem(EnumDef(X:CId, L:K)))
           => EnumDef(X, L) ~> t(.Set, enumType(X))
           requires X =/=K Identifier("")

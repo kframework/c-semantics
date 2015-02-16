@@ -72,16 +72,10 @@ module C-BUILTIN
           "time" |-> fun(long-long-int, ptr(long-long-int))
 
      syntax Type ::= "mtx_t" [function]
-     rule mtx_t => struct("mtx_t_",
-          field(int, "id")
-          field(int, "type")
-          field(int, "owner")
-          field(int, "owned")
-          field(int, "flag")
-          field(int, "alive"))
+     rule mtx_t => struct("mtx_t_")
 
      syntax Type ::= "jmp_buf" [function]
-     rule jmp_buf => arr(struct("jmp_buf_", field(unsigned-char, "used")), 1)
+     rule jmp_buf => arr(struct("jmp_buf_"), 1)
 
      // Used by stddef.h.
      rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)

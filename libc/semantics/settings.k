@@ -2,6 +2,7 @@ module C-SETTINGS
      imports C-SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BITS-SYNTAX
 
      rule cfg:charAlias => signed-char
 
@@ -41,6 +42,9 @@ module C-SETTINGS
      rule cfg:alignofLongDouble => 16
      rule cfg:alignofEnum => cfg:alignofInt
      rule cfg:alignofPointer => 4
+
+     rule cfg:intToPointer(V:CValue) => trap
+     rule cfg:pointerToInt(V:CValue) => unknown
 
 endmodule
 

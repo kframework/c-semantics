@@ -16,6 +16,8 @@ module C-CONFIGURATION
      // CId |-> SymBase
      <external-defs> .Map </external-defs>
 
+     <structs color="lightgray"> .Map </structs>
+
      // dummy link base |-> real base
      <linkings> .Map </linkings>
 
@@ -24,14 +26,11 @@ module C-CONFIGURATION
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
-               <gstructs color="lightgray"> .Map </gstructs>
 
                // kpair(CId, BlockNum) |-> SymBase
                <local-statics> .Map </local-statics>
                // kpair(CId, BlockNum) |-> Type
                <local-types> .Map </local-types>
-               // kpair(CId, BlockNum) |-> FieldInfo
-               <local-structs> .Map </local-structs>
 
                <next-unnamed color="black"> 0 </next-unnamed>
 
@@ -111,7 +110,6 @@ module C-CONFIGURATION
                                    // maps from CIds
                                    <env color="red"> .Map </env>
                                    <types color="lightgray"> .Map </types>
-                                   <structs color="lightgray"> .Map </structs>
 
                                    // printf
                                    <formatting multiplicity="?">

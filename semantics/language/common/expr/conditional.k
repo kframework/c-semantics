@@ -112,15 +112,12 @@ module C-COMMON-EXPR-CONDITIONAL
           when hasIntegerType(T2) andBool isPointerType(T1)
           [structural]
 
-     rule (.K => CV("CEC1", "If one of a conditional expression's branches has pointer type, the other must be a compatible type, a null pointer constant, or a pointer to void.",
+     rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
+               +String " other must be a pointer to void.",
                "6.5.15:3"))
           ~> types(trItem(T1:Type) ts:: trItem(T2:Type))
-          requires (isPointerType(T1) andThenBool notBool ((isPointerType(T2) andThenBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2))))
-               orBool hasIntegerType(T2) orBool (notBool isFunctionType(innerType(T1))
-               andBool isVoidType(innerType(T2)))))
-          orBool (isPointerType(T2) andThenBool notBool ((isPointerType(T1) andThenBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2))))
-               orBool hasIntegerType(T2) orBool (notBool isFunctionType(innerType(T1))
-               andBool isVoidType(innerType(T2)))))
+          requires isPointerType(T1) andThenBool isPointerType(T2) andThenBool notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
+               andThenBool notBool isVoidType(innerType(T1)) andThenBool notBool isVoidType(innerType(T2))
 
      rule (types(
                trItem(t(Mods:Set, pointerType(T:Type)))

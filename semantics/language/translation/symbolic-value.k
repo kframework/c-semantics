@@ -83,8 +83,8 @@ module C-SYMBOLIC-VALUE
      // Not sure about this -- makes all VLAs compat with non-VLAs.
      rule #areCompat(
                t(Mods:Set, arrayType(T:Type, N:CSize)),
-               t(Mods':Set, arrayType(T':Type, N':CSize)))
-          => #areCompat(T, T')
+               t(Mods':Set, arrayType(T':Type, N':CSize)), Cache:Set)
+          => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
                andBool ((N ==K symVal) orBool (N' ==K symVal))
 

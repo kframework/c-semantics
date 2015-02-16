@@ -455,10 +455,10 @@ module C-IO-BUFFERED
      // effective type.
      rule #effectivelyCompat(L:Type,
      // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
-               t(Mods:Set, unionType(X:CId, fieldInfo(Decls:List, Sz:Int, Types:Map, Offs:Map))))
-          => effectivelyCompatWithUnion(L, values(Types))
+               t(Mods:Set, unionType(X:StructId)))
+          => effectivelyCompatWithUnion(L, getFieldInfo(X))
           requires notBool (areCompatible(stripQualifiers(L),
-                         stripQualifiers(t(Mods, unionType(X, fieldInfo(Decls, Sz, Types, Offs)))))
+                         stripQualifiers(t(Mods, unionType(X))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
                andBool notBool hasCharType(L:Type)
@@ -467,11 +467,14 @@ module C-IO-BUFFERED
           requires hasCharType(L:Type)
      rule #effectivelyCompat(_, _) => false [owise]
 
-     syntax Bool ::= effectivelyCompatWithUnion(Type, List) [function]
-     rule effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)
+     syntax Bool ::= effectivelyCompatWithUnion(Type, K) [function]
+     rule effectivelyCompatWithUnion(T:Type, fieldInfo(_, _, Types:Map, _))
+          => #effectivelyCompatWithUnion(T, values(Types))
+     syntax Bool ::= #effectivelyCompatWithUnion(Type, List) [function]
+     rule #effectivelyCompatWithUnion(T:Type, ListItem(T':Type) L:List)
           => #effectivelyCompat(T, T') ==K true
-               orElseBool effectivelyCompatWithUnion(T, L)
-     rule effectivelyCompatWithUnion(_, .List) => false
+               orElseBool #effectivelyCompatWithUnion(T, L)
+     rule #effectivelyCompatWithUnion(_, .List) => false
 
      // Returns the "biggest" type at that offset -- i.e., for a struct, union,
      // or array, it'll return the struct/union/array type and not the type of
@@ -489,26 +492,30 @@ module C-IO-BUFFERED
                Offset %Int byteSizeofType(T))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
-     rule getTypeAtOffset(t(Mods:Set, structType(SCId:CId, fieldInfo(
+     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
+          => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
+
+     syntax Type ::= getTypeAtOffset(Type, K, Int) [function]
+     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
                Fields:List (ListItem(typedDeclaration(_, FId:CId))),
                SI:Int,
                Types:Map (FId |-> T:Type),
                Offsets:Map (FId |-> FOffset:Int)
-          ))), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(SCId, fieldInfo(
+          ), Offset:Int)
+          => getTypeAtOffset(t(Mods, structType(S)), fieldInfo(
                Fields,
                SI,
                Types (FId |-> T),
                Offsets (FId |-> FOffset)
-          ))), Offset)
+          ), Offset)
           requires (Offset =/=Int 0)
                andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(t(Mods:Set, structType(_, fieldInfo(
+     rule getTypeAtOffset(t(Mods:Set, structType(_)), fieldInfo(
                _ ListItem(typedDeclaration(_, FId:CId)),
                _,
                _ FId |-> T:Type,
                _ FId |-> FOffset:Int
-          ))), Offset:Int)
+          ), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
@@ -529,7 +536,9 @@ module C-IO-BUFFERED
      syntax Type ::= effInnerType(K) [function]
      rule effInnerType(T:Type) => innerType(T)
           requires isArrayType(T)
-     rule effInnerType(t(_, structType(_, fieldInfo(
-               ListItem(typedDeclaration(T:Type, _)) _, _, _, _))))
+     rule effInnerType(t(_, structType(S:StructId)))
+          => effInnerType(getFieldInfo(S))
+     rule effInnerType(fieldInfo(ListItem(typedDeclaration(T:Type, _)) _, _, _, _))
           => T
+
 endmodule

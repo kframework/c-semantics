@@ -57,9 +57,14 @@ module C-ALIGNMENT
 
      rule byteAlignofType(t(_, arrayType(T:Type, _)))  => byteAlignofType(T)
      rule byteAlignofType(t(_, pointerType(_))) => cfg:alignofPointer
-     rule byteAlignofType(t(_, structType(_, fieldInfo(Decls:List, _, _, _))))
-          => maxByteAlignofList(Decls)
-     rule byteAlignofType(t(_, unionType(_, fieldInfo(Decls:List, _, _, _))))
+     rule byteAlignofType(t(_, structType(S:StructId)))
+          => byteAlignofStruct(getFieldInfo(S))
+     rule byteAlignofType(t(_, unionType(S:StructId)))
+          => byteAlignofStruct(getFieldInfo(S))
+
+     syntax Int ::= byteAlignofStruct(K) [function]
+
+     rule byteAlignofStruct(fieldInfo(Decls:List, _, _, _))
           => maxByteAlignofList(Decls)
 
      // TODO(dwightguth): make sure we correctly handle all the corner cases

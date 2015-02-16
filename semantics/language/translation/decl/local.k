@@ -177,7 +177,9 @@ module C-DECL-LOCAL
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs> Structs:Map => Structs[X <- Info] </structs>
+          <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires notBool (X in keys(Structs))
           [structural]
      rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
