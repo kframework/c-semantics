@@ -58,15 +58,18 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
           requires (isStructType(T') orBool isUnionType(T'))
                andBool areCompatible(stripQualifiers(T'), T)
-               andBool (T' =/=K T)
+               andBool (T' =/=Type T)
           [structural]
 
      rule nclv(_, t(Mods':Set, pointerType(T':Type)))
                := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          requires areCompatible(stripQualifiers(T'), stripQualifiers(T))
-               andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
+          requires areCompatible(
+                    stripQualifiers(stripAlignas(T')),
+                    stripQualifiers(stripAlignas(T)))
+               andBool getQualifiers(T) <=Set getQualifiers(T')
+               andBool t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T))
+               andBool getAlignas(T') <=Int getAlignas(T)
           [structural]
 
      rule nclv(_, t(Mods':Set, pointerType(T':Type)))
@@ -74,13 +77,13 @@ module C-COMMON-EXPR-ASSIGNMENT
                => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
           requires (isVoidType(T') orBool isVoidType(T))
                andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=K t(Mods, pointerType(T)))
+               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
 
      rule nclv(_, T':Type) := (V:RValue => cast(T', V))
           requires isPointerType(T')
                andBool isNullPointerConstant(V)
-               andBool (T' =/=K type(V))
+               andBool (T' =/=Type type(V))
           [structural]
 
      rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
@@ -112,9 +115,13 @@ module C-COMMON-EXPR-ASSIGNMENT
           requires isPointerType(T') andBool isPointerType(T)
                andBool notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
-               andBool notBool
-                    ((getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
-                    andBool areCompatible(innerType(T'), innerType(T)))
+               andBool (
+                    notBool areCompatible(
+                         stripQualifiers(stripAlignas(innerType(T'))),
+                         stripQualifiers(stripAlignas(innerType(T))))
+                    orBool notBool (getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
+                    orBool getAlignas(innerType(T')) >Int getAlignas(innerType(T))
+               )
      rule (.K => CV("CEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
           ~> tv(_, _) := tv(_, _)
 

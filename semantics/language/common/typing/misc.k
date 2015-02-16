@@ -96,7 +96,7 @@ module C-TYPING-MISC
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
           requires hasIntegerType(T)
      rule inRange(V:Float, T:Type)
-          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T))) 
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
           requires hasFloatType(T)
 
@@ -123,8 +123,8 @@ module C-TYPING-MISC
 
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
-     
-rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+
+     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
@@ -172,7 +172,7 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           SetItem(Inline)
 
      syntax Set ::= "constantModifiers" [function]
-     rule constantModifiers => 
+     rule constantModifiers =>
           SetItem(IntegerConstant)
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
@@ -199,6 +199,20 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
+
+     rule stripAlignas(t(Mods:Set, T:SimpleType))
+          => t(filterSet(Mods, 'isNotAlignas), T)
+
+     syntax Bool ::= isNotAlignas(Modifier) [function]
+     rule isNotAlignas(alignas(_)) => false
+     rule isNotAlignas(_) => true [owise]
+
+     rule stripReadFrom(t(Mods:Set, T:SimpleType))
+          => t(filterSet(Mods, 'isNotReadFrom), T)
+
+     syntax Bool ::= isNotReadFrom(Modifier) [function]
+     rule isNotReadFrom(readFrom(_)) => false
+     rule isNotReadFrom(_) => true [owise]
 
      rule stripConstants(T:Type)
           => setModifiers(T, getModifiers(T) -Set constantModifiers)
@@ -417,6 +431,15 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
      rule getRestrictBlock'(RestrictBlock(Tag:RestrictTag), _) => Tag
      rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
           requires getKLabel(K) =/=KLabel 'RestrictBlock
+               andBool (K =/=K .K)
+
+     rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
+
+     syntax SymLoc ::= "getReadFrom'" "(" K "," Set ")" [function]
+     rule getReadFrom'(.K, SetItem(K:K) S:Set) => getReadFrom'(K, S)
+     rule getReadFrom'(readFrom(Loc:SymLoc), _) => Loc
+     rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
+          requires getKLabel(K) =/=KLabel 'readFrom
                andBool (K =/=K .K)
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N

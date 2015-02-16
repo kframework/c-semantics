@@ -283,4 +283,18 @@ module C-TYPING-PREDICATES
           requires (hasIntegerType(T) andBool IntegerConstant in getModifiers(T))
      rule fromConstantExpr(_) => false [owise]
 
+     rule hasAlignas(t(Mods:Set, _)) => hasAlignasMod(Mods)
+
+     rule hasAlignasMod(Mods:Set) => some(Mods, 'isAlignas)
+
+     syntax Bool ::= isAlignas(Modifier) [function]
+     rule isAlignas(alignas(_)) => true
+     rule isAlignas(_) => false [owise]
+
+     rule hasReadFrom(t(Mods:Set, _)) => some(Mods, 'isReadFrom)
+
+     syntax Bool ::= isReadFrom(Modifier) [function]
+     rule isReadFrom(readFrom(_)) => true
+     rule isReadFrom(_) => false [owise]
+
 endmodule

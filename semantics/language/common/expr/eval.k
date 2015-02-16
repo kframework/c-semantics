@@ -43,7 +43,7 @@ module C-COMMON-EXPR-EVAL
 
      // Lvalue conversion.
      rule reval(nclv(Loc:SymLoc, T:Type) => checkUse(instantiate(Loc, T)))
-          when notBool isArrayType(T)
+          requires notBool isArrayType(T)
                andBool notBool isFunctionType(T)
           [structural]
 
@@ -63,7 +63,7 @@ module C-COMMON-EXPR-EVAL
      rule reval(nclv(Loc:SymLoc, T:Type)
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
-          when isArrayType(T)
+          requires isArrayType(T)
           [structural]
 
      syntax Type ::= arrayToPtrType(Type) [function]
@@ -76,12 +76,12 @@ module C-COMMON-EXPR-EVAL
                addProv(fromArray(0,
                     byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc))
-          when isRestrictType(T)
+          requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(fromArray(0,
                byteSizeofType(innerType(T)) *Int arrayLength(T)),
                Loc)
-          when notBool isRestrictType(T)
+          requires notBool isRestrictType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
      A function designator is an expression that has function type. Except
@@ -93,17 +93,17 @@ module C-COMMON-EXPR-EVAL
 
      rule reval(nclv(Loc:SymLoc, T:Type)
                => checkUse(tv(Loc, t(.Set, pointerType(T)))))
-          when isFunctionType(T)
+          requires isFunctionType(T)
           [structural]
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
           <initializing> I:Int </initializing>
-          when I >Int 0
+          requires I >Int 0
           [structural]
      rule <k> checkRegister(Loc:SymLoc) => .K ...</k>
           <initializing> 0 </initializing>
-          when notBool isRegisterLoc(Loc)
+          requires notBool isRegisterLoc(Loc)
           [structural]
      rule <k> checkRegister(Loc:SymLoc)
                => UNDEF("CEE1",
@@ -111,14 +111,14 @@ module C-COMMON-EXPR-EVAL
                     "6.3.2.1")
           ...</k>
           <initializing> 0 </initializing>
-          when isRegisterLoc(Loc)
+          requires isRegisterLoc(Loc)
           [structural]
 
      rule checkUse(V:KResult) => V
-          when getKLabel(V) =/=KLabel 'tv
+          requires getKLabel(V) =/=KLabel 'tv
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          when (isSymLoc(V) =/=K true)
+          requires (isSymLoc(V) =/=K true)
                andBool (isTrap(V) =/=K true)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)

@@ -296,7 +296,7 @@ module C-SYMLOC
           => #stripAllButFromUnion(Base, Offset, K', S', S)
           requires getKLabel(K) =/=KLabel 'fromUnion
      rule stripAllButFromUnion(Loc:SymLoc) => stripProv(Loc)
-          when notBool hasUnionMarker(Loc)
+          requires notBool hasUnionMarker(Loc)
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
@@ -319,15 +319,17 @@ module C-SYMLOC
                T:Type, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
      rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
-          when notBool isFromArray(Loc)
+          requires notBool isFromArray(Loc)
 
      syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => true
-          requires Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int 0)
+               andBool (Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len)
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => false
-          requires Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
+               orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
           requires getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)

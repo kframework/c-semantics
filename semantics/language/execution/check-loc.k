@@ -21,12 +21,12 @@ module C-CHECK-LOC
           [structural]
      rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
           <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
-          when notBool (Tag in keys(Tags))
+          requires notBool (Tag in keys(Tags))
           [structural]
 
      rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
-          when N >Int 1
+          requires N >Int 1
           [structural]
      rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>

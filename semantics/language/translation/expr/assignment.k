@@ -7,7 +7,7 @@ module C-EXPR-ASSIGNMENT
      rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
           => write(Loc, V, T)
           ~> tv(V, T)
-          when T ==Type T'
+          requires T ==Type T'
           [structural]
 
 endmodule

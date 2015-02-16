@@ -79,7 +79,7 @@ module C-EXPR-FUNCTION-CALL
 
      /*TODO(liyili2): might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          when all(L, isKResult)
+          requires all(L, isKResult)
           [structural]
      */
 

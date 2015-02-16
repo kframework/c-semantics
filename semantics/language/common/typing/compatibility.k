@@ -194,18 +194,16 @@ module C-TYPING-COMPATIBILITY
                // It's more complicated than this, too, I think -- e.g.,
                // alignas on a definition implies no alignas should be on any
                // declaration.
- /*              andBool ((notBool #hasAlignas(Mods)
-                    andBool notBool #hasAlignas(Mods'))
-                    orElseBool (#hasAlignas(Mods) 
-                    andBool #hasAlignas(Mods') andBool getAlignas(Mods) ==Int getAlignas(Mods')))*/
+               andBool ((notBool hasAlignasMod(Mods) andBool notBool hasAlignasMod(Mods'))
+                    orElseBool (getAlignasMod(Mods) ==Int getAlignasMod(Mods')))
 
-     rule getAlignas(T:Type) => getAlignas(getModifiers(T))
-          requires #hasAlignas(getModifiers(T)) ==K true
+     rule getAlignas(T:Type) => getAlignasMod(getModifiers(T))
+          requires hasAlignasMod(getModifiers(T))
      rule getAlignas(T:Type) => byteAlignofType(T)
-          requires #hasAlignas(getModifiers(T)) =/=K true
+          requires notBool hasAlignasMod(getModifiers(T))
 
-     syntax Int ::= getAlignas(Set) [function]
-     rule getAlignas(Mods:Set) => getAlignas'(.K, Mods)
+     syntax Int ::= getAlignasMod(Set) [function]
+     rule getAlignasMod(Mods:Set) => getAlignas'(.K, Mods)
 
      // TODO(chathhorn): obnoxious unsupported map patterns thing.
      syntax Int ::= "getAlignas'" "(" K "," Set ")" [function]
@@ -222,19 +220,6 @@ module C-TYPING-COMPATIBILITY
      syntax Bool ::= "#isAlignas" "(" K ")" [function]
      rule #isAlignas(alignas(_)) => true
      rule #isAlignas(_) => false [owise]
-
-     // TODO(chathhorn): move this to compat.k
-     syntax Bool ::= some(Set, KLabel) [function]
-     rule some(S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
-
-     syntax Bool ::= "some'" "(" K "," Set "," KLabel ")" [function]
-     rule some'(.K, SetItem(K:K) S:Set, Lbl:KLabel) => some'(K, S, Lbl)
-     rule some'(K:K, _, Lbl:KLabel) => true
-          requires Lbl(K) ==K true
-     rule some'(K:K, S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
-          requires Lbl(K) =/=K true
-               andBool (K =/=K .K)
-     rule some'(.K, .Set, _) => false
 
      // We can assume the types are compatible.
      //TODO(liyi): might not need canonicalizeArrayType later
