@@ -72,6 +72,10 @@ module C-MEMORY-WRITING
           <initializing> 0 </initializing>
           requires isStringLoc(Loc)
           [structural]
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+              => write-specific(Loc, V, T)
+          ...</k>
+          requires isNativeLoc(Loc)
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)
