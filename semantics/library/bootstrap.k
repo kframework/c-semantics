@@ -12,11 +12,12 @@ endmodule
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -25,7 +26,8 @@ module LIBC-BOOTSTRAP
      rule varg(K:KResult) => vargResult(K)
 
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
-          => tv(loc(linc(base(Loc)), offset(Loc)), T)
+          => tv(addProv(align(cfg:alignofMalloc),
+               loc(linc(base(Loc)), offset(Loc))), T)
           [structural]
 
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
