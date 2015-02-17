@@ -8,6 +8,7 @@ module C-COMMON-EXPR-REFERENCE
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
 
      imports C-BITSIZE-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -30,17 +31,16 @@ module C-COMMON-EXPR-REFERENCE
      its operand.
      }
      */
-     rule &(lval(Loc:SymLoc, T:Type))
-          => tv(addProv(align(getAlignas(T)),
-               addProv(fromArray(0, byteSizeofType(T)), Loc)),
-               t(.Set, pointerType(T)))
+     rule &(nclv(Loc:SymLoc, T:Type))
+          => checkUse(tv(addProv(fromArray(0, byteSizeofType(T)), Loc),
+               t(.Set, pointerType(T))))
           requires notBool isRegisterLoc(Loc)
           [structural]
      rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(tv(_, _))
           [structural]
      rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
-          ~> &(lval(Loc:SymLoc, _))
+          ~> &(nclv(Loc:SymLoc, _))
           requires isRegisterLoc(Loc)
           [structural]
 

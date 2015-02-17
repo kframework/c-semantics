@@ -38,13 +38,13 @@ module C-ALIGNMENT
      rule byteAlignofType(t(_, unsigned-long-long-int)) => byteAlignofType(t(.Set, long-long-int))
 
      rule byteAlignofType(t(_, enumType(_))) => cfg:alignofEnum
-     
+
      syntax Int ::= byteAlignofList(List) [function]
      syntax Int ::= "byteAlignofList'" "(" Int "," List ")" [function]
 
      rule byteAlignofList(L:List) => byteAlignofList'(0, L)
      rule byteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)
-	  => byteAlignofList'((Sz +Int byteAlignofType(T)), LL)
+          => byteAlignofList'((Sz +Int byteAlignofType(T)), LL)
      rule byteAlignofList'(Sz:Int, .List) => Sz
 
      syntax Int ::= "maxByteAlignofList'" "(" Int "," List ")" [function]

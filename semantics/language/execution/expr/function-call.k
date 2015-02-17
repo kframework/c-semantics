@@ -48,7 +48,6 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     context Call((HOLE => reval(HOLE)), _) [ndheat]
      context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
@@ -80,7 +79,7 @@ module C-EXPR-FUNCTION-CALL
 
      /*TODO(liyili2): might need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          when all(L, isKResult)
+          requires all(L, isKResult)
           [structural]
      */
 
@@ -134,7 +133,7 @@ module C-EXPR-FUNCTION-CALL
           </control>
           [structural]
 
-     rule <k> bindParam(X:CId, T:Type, V:TypedValue)
+     rule <k> bindParam(X:CId, T:Type, V:RValue)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)

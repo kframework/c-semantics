@@ -51,6 +51,8 @@ module COMPAT-SYNTAX
 
      syntax Set ::= filterSet(Set, KLabel) [function]
 
+     syntax Bool ::= some(Set, KLabel) [function]
+
      //TODO(liyi): might not need this later
      syntax KItem ::= "dotK"
                     | lookup(Map, K) [function]
@@ -215,6 +217,18 @@ module COMPAT
           => #filterSet(K, S, Pred)
      rule filterSet(.Set, _)
           => .Set
+
+     rule some(S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
+
+     syntax Bool ::= "some'" "(" K "," Set "," KLabel ")" [function]
+     rule some'(.K, SetItem(K:K) S:Set, Lbl:KLabel) => some'(K, S, Lbl)
+     rule some'(K:K, _, Lbl:KLabel) => true
+          requires Lbl(K) ==K true
+     rule some'(K:K, S:Set, Lbl:KLabel) => some'(.K, S, Lbl)
+          requires Lbl(K) =/=K true
+               andBool (K =/=K .K)
+     rule some'(.K, .Set, _) => false
+
 
      // TODO(liyi): might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true

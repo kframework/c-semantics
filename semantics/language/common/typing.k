@@ -136,6 +136,8 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
+     syntax Modifier ::= readFrom(SymLoc)
+
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
      syntax RestrictTag ::= Int | CId | "global"
@@ -155,6 +157,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
      syntax KItem ::= stripConstants(K) [function]
+     syntax Type ::= stripAlignas(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
      syntax Type ::= addQualifiers(Set, Type) [function]
@@ -168,8 +171,12 @@ module C-TYPING-SYNTAX
      syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
-     syntax Bool ::= isNullPointerConstant(TypedValue) [function]
+     syntax Bool ::= isNullPointerConstant(RValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
+
+     syntax Bool ::= hasReadFrom(Type) [function]
+     syntax SymLoc ::= getReadFrom(Type) [function]
+     syntax Type ::= stripReadFrom(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]
 
@@ -182,6 +189,15 @@ module C-TYPING-SYNTAX
      syntax Type ::= canonicalizeArrayType(Type) [function]
      syntax List ::= canonicalizeArrayTypeInList(List) [function]
      syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
+
+     syntax Bool ::= hasAlignas(Type) [function]
+     syntax Bool ::= hasAlignasMod(Set) [function]
+
+     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
+     // or array, it'll return the struct/union/array type and not the type of
+     // its first member. Returns no-type when nothing seems to be aligned at
+     // that offset.
+     syntax Type ::= getTypeAtOffset(Type, Int) [function]
 
 endmodule
 

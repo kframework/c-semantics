@@ -96,7 +96,7 @@ module C-TYPING-MISC
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
           requires hasIntegerType(T)
      rule inRange(V:Float, T:Type)
-          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T))) 
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
           requires hasFloatType(T)
 
@@ -123,8 +123,8 @@ module C-TYPING-MISC
 
      syntax Type ::= setModifiers(Type, Set) [function]
      rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
-     
-rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
+
+     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
@@ -172,7 +172,7 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           SetItem(Inline)
 
      syntax Set ::= "constantModifiers" [function]
-     rule constantModifiers => 
+     rule constantModifiers =>
           SetItem(IntegerConstant)
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
@@ -199,6 +199,20 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule stripSpecifiers(T:Type)
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
+
+     rule stripAlignas(t(Mods:Set, T:SimpleType))
+          => t(filterSet(Mods, 'isNotAlignas), T)
+
+     syntax Bool ::= isNotAlignas(Modifier) [function]
+     rule isNotAlignas(alignas(_)) => false
+     rule isNotAlignas(_) => true [owise]
+
+     rule stripReadFrom(t(Mods:Set, T:SimpleType))
+          => t(filterSet(Mods, 'isNotReadFrom), T)
+
+     syntax Bool ::= isNotReadFrom(Modifier) [function]
+     rule isNotReadFrom(readFrom(_)) => false
+     rule isNotReadFrom(_) => true [owise]
 
      rule stripConstants(T:Type)
           => setModifiers(T, getModifiers(T) -Set constantModifiers)
@@ -315,6 +329,15 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           requires getKLabel(K) =/=KLabel 'RestrictBlock
                andBool (K =/=K .K)
 
+     rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
+
+     syntax SymLoc ::= "getReadFrom'" "(" K "," Set ")" [function]
+     rule getReadFrom'(.K, SetItem(K:K) S:Set) => getReadFrom'(K, S)
+     rule getReadFrom'(readFrom(Loc:SymLoc), _) => Loc
+     rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
+          requires getKLabel(K) =/=KLabel 'readFrom
+               andBool (K =/=K .K)
+
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of
      these rules shouldn't be used later anyway */
@@ -339,5 +362,44 @@ rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
 
      rule getTag(global(S:CId, _)) => S
      rule getTag(local(S:CId, _, _)) => S
+
+     rule getTypeAtOffset(T:Type, 0) => T
+     // Preserve the qualifiers.
+     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
+          requires (Offset =/=Int 0)
+               andBool notBool isAggregateType(T)
+     // Arrays.
+     rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
+          => getTypeAtOffset(addQualifiers(Mods, T),
+               Offset %Int byteSizeofType(T))
+          requires Offset =/=Int 0 // We assume the offset must be in range.
+     // Structs.
+     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
+          => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
+
+     syntax Type ::= getTypeAtOffset(Type, K, Int) [function]
+     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
+               Fields:List (ListItem(typedDeclaration(_, FId:CId))),
+               SI:Int,
+               Types:Map (FId |-> T:Type),
+               Offsets:Map (FId |-> FOffset:Int)
+          ), Offset:Int)
+          => getTypeAtOffset(t(Mods, structType(S)), fieldInfo(
+               Fields,
+               SI,
+               Types (FId |-> T),
+               Offsets (FId |-> FOffset)
+          ), Offset)
+          requires (Offset =/=Int 0)
+               andBool (FOffset >Int Offset)
+     rule getTypeAtOffset(t(Mods:Set, structType(_)), fieldInfo(
+               _ ListItem(typedDeclaration(_, FId:CId)),
+               _,
+               _ FId |-> T:Type,
+               _ FId |-> FOffset:Int
+          ), Offset:Int)
+          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
+          requires (Offset =/=Int 0)
+               andBool (FOffset <=Int Offset)
 
 endmodule

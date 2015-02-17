@@ -26,7 +26,7 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural]
 
-     rule Computation(_:KResult) => .K
+     rule Computation(_:RValue) => .K
           [structural]
 
      rule Nop => .K

@@ -7,32 +7,66 @@ module C-EXPR-ASSIGNMENT
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-          => write(Loc, V, T)
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool notBool fromArrayStatic(T)
+               andBool notBool fromArrayStatic(T')
+               andBool (T ==Type T')
           [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:CValue, T)
-          => checkArrayStaticAssign(T, V)
-          ~> write(Loc, V, T)
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> checkArrayStaticAssign(T', V)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool fromArrayStatic(T)
+               andBool fromArrayStatic(T')
+               andBool (T ==Type T')
           [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
-          => checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T)
-          ~> transferProv(Loc, tv(V, T))
-          requires isRestrictType(T)
-          [structural]
-     rule lval(Loc:SymLoc, T:Type) := tv(V:SymLoc, T)
-          => checkArrayStaticAssign(T, V)
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+          => checkOverlap(stripProv(Loc), T)
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires isRestrictType(T)
-               andBool fromArrayStatic(T)
+               andBool (T ==Type T')
+          [structural]
+     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+          => checkOverlap(stripProv(Loc), T)
+          ~> checkArrayStaticAssign(T', V)
+          ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+          ~> write(Loc, V, T')
+          ~> transferProv(Loc, tv(V, T))
+          requires isRestrictType(T)
+               andBool fromArrayStatic(T')
+               andBool (T ==Type T')
+          [structural]
+
+     syntax KItem ::= checkOverlap(SymLoc, Type)
+     rule checkOverlap(_, T:Type) => .K
+          requires notBool hasReadFrom(T)
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          requires getReadFrom(T) ==K Loc
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          requires notBool sameBase(getReadFrom(T), Loc)
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          requires (getReadFrom(T) +bytes byteSizeofType(T)) <=bytes Loc
+          [structural]
+     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+          requires (Loc +bytes byteSizeofType(T)) <=bytes getReadFrom(T)
+          [structural]
+     rule (.K => UNDEF("EEA1",
+               "assignment from non-exactly-overlapping overlapping read.",
+               "6.5.16.2"))
+          ~> checkOverlap(Loc:SymLoc, T:Type)
+          requires sameBase(getReadFrom(T), Loc)
+               andBool (getReadFrom(T) =/=K Loc)
+               andBool (((getReadFrom(T) +bytes byteSizeofType(T)) >bytes Loc)
+               orBool ((Loc +bytes byteSizeofType(T)) >bytes getReadFrom(T)))
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
@@ -52,16 +86,16 @@ module C-EXPR-ASSIGNMENT
      rule checkRestrictAssign(Tag:RestrictTag, Tags:Set) => .K
           requires (Tag =/=K global) andBool notBool (Tag in Tags)
      rule checkRestrictAssign(Tag:RestrictTag, Tags:Set)
-          => UNDEF("CEA4", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
+          => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
           requires Tag in Tags
      rule checkRestrictAssign(global, .Set) => .K
      // TODO(chathhorn): more cases here we don't catch.
      rule checkRestrictAssign(global, SetItem(_) _)
-          => UNDEF("CEA5", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4")
+          => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4")
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
-          => getKLabel(K) ==KLabel 'arrayStatic orBool fromArrayStatic(t(S, T))
+          => (getKLabel(K) ==KLabel 'arrayStatic) orBool fromArrayStatic(t(S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
@@ -71,7 +105,7 @@ module C-EXPR-ASSIGNMENT
           => checkArrayStaticAssign'(T,
                getFirstMatch(Mods, 'arrayStatic),
                getFirstMatch(Prov, 'fromArray))
-     rule (.K => UNDEF("CEA6",
+     rule (.K => UNDEF("EEA4",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
@@ -81,7 +115,7 @@ module C-EXPR-ASSIGNMENT
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           => .K
           requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
-     rule (.K => UNDEF("CEA7",
+     rule (.K => UNDEF("EEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign'(T:Type,
@@ -93,7 +127,7 @@ module C-EXPR-ASSIGNMENT
 
      rule getFirstMatch(S:Set, L:KLabel) => getFirstMatch'(.K, S, L)
 
-     rule getFirstMatch'((.K => K), SetItem(K:K) _, _)
+     rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
      rule getFirstMatch'((K:K => .K), _, L:KLabel)
           requires getKLabel(K) =/=KLabel L
      rule getFirstMatch'(K:K, _, L:KLabel) => K

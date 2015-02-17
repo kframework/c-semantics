@@ -51,7 +51,7 @@ module LIBC-STDARG
 
      // va_list __va_start(va_list* ap, void* pN);
      // fixme can add lots of checks here
-     // tool fixme, change Value to K and unquote error
+     // tool fixme, change RValue to K and unquote error
      rule [va-start]:
           prepareBuiltin(Identifier("__va_start"),
                hrItem(ApLoc:KResult) hs::
@@ -62,16 +62,16 @@ module LIBC-STDARG
 
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"),
-               hrItem(ApLoc:TypedValue) hs::
-               hrItem(Size:TypedValue))
+               hrItem(ApLoc:RValue) hs::
+               hrItem(Size:RValue))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
 
-     syntax KItem ::= "va-inc-aux" "(" TypedValue "," TypedValue "," K ")"
-     context va-inc-aux(_, _, (HOLE => reval(HOLE)))
+     syntax KItem ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
+     context va-inc-aux(_, _, (HOLE => reval(HOLE))) [result(RValue)]
      // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:TypedValue, _, Ap:KResult)
+          va-inc-aux(ApLoc:RValue, _, Ap:KResult)
           => Computation(*(ApLoc) := incSymbolic(Ap))
                ~> Ap:KResult
           [structural]

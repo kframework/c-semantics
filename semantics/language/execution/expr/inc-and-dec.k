@@ -21,7 +21,7 @@ module C-EXPR-INC-AND-DEC
      with atomic type is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     rule lval(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
+     rule nclv(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
           [structural]
      rule postInc(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
           => lv(Loc, T') := tv(V, T) + tv(1, t(.Set, int))
@@ -33,7 +33,7 @@ module C-EXPR-INC-AND-DEC
      operator, except that the value of the operand is decremented (that is,
      the value 1 of the appropriate type is subtracted from it).
      }*/
-     rule lval(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
+     rule nclv(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
           [structural]
      rule postDec(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
           => lv(Loc, T') := tv(V, T) - tv(1, t(.Set, int))

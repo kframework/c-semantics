@@ -39,8 +39,8 @@ module C-DECL-ENUM
 
 
      syntax KItem ::= enumInit(CId, K)
-     context enumInit(_, HOLE => reval(HOLE))
-     rule enumInit(X:CId, V:TypedValue)
+     context enumInit(_, HOLE => reval(HOLE)) [result(RValue)]
+     rule enumInit(X:CId, V:RValue)
           => Computation(X := V)
           requires hasIntegerType(type(V)) andBool IntegerConstant in getModifiers(type(V))
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))

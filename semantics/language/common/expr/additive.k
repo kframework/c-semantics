@@ -1,12 +1,13 @@
 module C-COMMON-EXPR-ADDITIVE
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
-     imports C-CONVERSION-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-PROMOTION-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports C-ERROR-SYNTAX
 
@@ -107,8 +108,8 @@ module C-COMMON-EXPR-ADDITIVE
 
      syntax KItem ::= addToPointer(SymLoc, Type, Int)
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
-          => tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T)
+          => checkUse(tv(newFromArray(Loc, T, I)
+               +bytes (I *Int byteSizeofType(innerType(T))), T))
           requires ifFromArrayInBounds(Loc, T, I) ==K true
      rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
@@ -191,19 +192,21 @@ module C-COMMON-EXPR-ADDITIVE
                orBool (Diff /Int Size) <Int min(t(.Set, cfg:ptrdiffut))
           [structural]
 
-     rule tv(I1:Int, T:Type) + tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))
-          requires isPromoted(T)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(I1:Int, T:Type) - tv(I2:Int, T:Type)
+     rule tv(I1:Int, T:Type) - tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 -Int I2))
-          requires isPromoted(T)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) + tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) + tv(F2:Float, T':Type)
           => arithInterpret(T, F1 +Float F2)
+          requires T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) - tv(F2:Float, T:Type)
+     rule tv(F1:Float, T:Type) - tv(F2:Float, T':Type)
           => arithInterpret(T, (F1 -Float F2))
+          requires T ==Type T'
           [structural]
 
      rule tv(_, T:Type) + tv(unknown, T:Type)

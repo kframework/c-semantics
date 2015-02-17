@@ -17,32 +17,17 @@ module C-TYPING-CANONICALIZATION
      syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE, _, _, _)
 
-     /* TODO(liyi): might not need this, because no anywhere rule current,
-       so we just use a function deleteUnuseType
-     // FIXME what good is this_
-     rule ListItem(SpecTypedef) => .List [structural, anywhere]
-     // FIXME ignoring inlines
-     rule [ignore-inline]: ListItem(Inline) => .List [structural, anywhere]
-     rule [ignore-noreturn]: ListItem(Noreturn) => .List [structural, anywhere]
-     // FIXME should save these for later use
-     rule ListItem(Attribute(_:String, _)) => .List [structural, anywhere]
-     rule ListItem(atomic(_)) => .List [structural, anywhere]
-     rule ListItem(alignas(_)) => .List [structural, anywhere]
-
-     */
-
      syntax List ::= deleteUnuseType(List) [function]
 
      rule deleteUnuseType(.List) => .List
-     rule deleteUnuseType(ListItem(K:K) L:List) => deleteUnuseType(L)
-          requires K ==K SpecTypedef orBool K ==K Inline
-               orBool K ==K Noreturn
-     rule deleteUnuseType(ListItem(Attribute(_:String, _)) L:List)
+     rule deleteUnuseType(ListItem(K:K) L:List)
+          => deleteUnuseType(L)
+          requires K ==K SpecTypedef
+     rule deleteUnuseType(ListItem(Attribute(_, _)) L:List)
           => deleteUnuseType(L)
      rule deleteUnuseType(ListItem(K:K) L:List)
           => ListItem(K) deleteUnuseType(L)
-          requires K =/=K SpecTypedef andBool K =/=K Inline
-               andBool K =/=K Noreturn
+          requires K =/=K SpecTypedef 
                andBool getKLabel(K) =/=KLabel 'Attribute
 
      rule canonicalizeType(M:List)

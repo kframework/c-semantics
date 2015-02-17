@@ -23,6 +23,7 @@ endmodule
 module C-MEMORY-ALLOC
      imports C-MEMORY-ALLOC-SYNTAX
 
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
@@ -100,12 +101,13 @@ module C-MEMORY-ALLOC
      rule allocString(Base:SymBase, S:String)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ~> allowInit(writeString(lnew(Base), S))
+          ~> allowInit(writeString(lnew(Base, cfg:alignofSignedChar), S))
           [structural]
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
-          ~> allowInit(writeWString(lnew(Base), S))
+          ~> allowInit(writeWString(
+               lnew(Base, byteAlignofType(t(.Set, cfg:wcharut))), S))
           [structural]
 
 endmodule

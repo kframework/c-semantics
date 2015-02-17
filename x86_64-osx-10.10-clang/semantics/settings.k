@@ -43,6 +43,8 @@ module C-SETTINGS
      rule cfg:alignofLongDouble => 16
      rule cfg:alignofEnum => cfg:alignofInt
      rule cfg:alignofPointer => 8
+     // Max of the above.
+     rule cfg:alignofMalloc => 16
 
      rule cfg:intToPointer(V:Int) => loc(0 @ nativeAddress, V)
      rule cfg:intToPointer(_) => trap [owise]

@@ -2,14 +2,14 @@ module C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      // interpret the result of arithmetic as in 6.5.4
-     syntax KItem ::= arithInterpret(Type, BaseValue) [function]
-     syntax KItem ::= arithInterpretHold(Type, BaseValue)
+     syntax KItem ::= arithInterpret(Type, NumValue) [function]
+     syntax KItem ::= arithInterpretHold(Type, NumValue)
      // as described in 6.3 // totype, fromvalue
      // change it to function in order
      // to solve anywhere rule
-     syntax KItem ::= cast(Type, Value) [function]
+     syntax KItem ::= cast(Type, RValue) [function]
      //Might not need this if we have anywhere rule
-     syntax KItem ::= castHold(Type, Value)
+     syntax KItem ::= castHold(Type, RValue)
 endmodule
 
 module C-CONVERSION
@@ -56,13 +56,9 @@ module C-CONVERSION
                andBool notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
 
-     // TODO(chathhorn): the rules for cast are a bit of a mess because we've
-     // assumed they apply apply anywhere but they still need to raise some
-     // errors.
-
-     rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(V, addModifiers(getConstants(T), T'))
+     rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, cast(T', T))
           requires stripQualifiers(T) ==K stripQualifiers(T')
+               andBool notBool isPointerType(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
      When any scalar value is converted to \cinline{_Bool}, the result is 0 if
@@ -70,20 +66,20 @@ module C-CONVERSION
      }*/
      rule cast(t(Mods:Set, bool), tv(I:Int, T:Type))
           => #if I ==Int 0
-               #then tv(0, t(Mods, bool))
-               #else tv(1, t(Mods, bool)) #fi
+               #then tv(0, cast(t(Mods, bool), T))
+               #else tv(1, cast(t(Mods, bool), T)) #fi
           requires hasIntegerType(T)
 
      rule cast(t(Mods:Set, bool), tv(F:Float, T:Type))
           => #if F ==Float Int2Float(0, 53, 11)
-               #then tv(0, t(Mods, bool))
-               #else tv(1, t(Mods, bool)) #fi
+               #then tv(0, cast(t(Mods, bool), T))
+               #else tv(1, cast(t(Mods, bool), T)) #fi
           requires hasFloatType(T)
 
      rule cast(t(Mods:Set, bool), tv(V:SymLoc, T:Type))
           => #if V ==K NullPointer
-               #then tv(0, t(Mods, bool))
-               #else tv(1, t(Mods, bool)) #fi
+               #then tv(0, cast(t(Mods, bool), T))
+               #else tv(1, cast(t(Mods, bool), T)) #fi
           requires isPointerType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{1}}}{
@@ -91,7 +87,8 @@ module C-CONVERSION
      than \cinline{_Bool}, if the value can be represented by the new type, it
      is unchanged.
      }*/
-     rule cast(T':Type, tv(V:Int, T:Type)) => tv(V, addModifiers(getConstants(T), T'))
+     rule cast(T':Type, tv(V:Int, T:Type))
+          => tv(V, cast(T', T))
           requires hasIntegerType(T) andBool hasIntegerType(T')
                andBool notBool isBoolType(T')
                andBool inRange(V, T')
@@ -140,38 +137,39 @@ module C-CONVERSION
                andBool hasIntegerType(T)
 
      rule cast(T':Type, tv(I:Int, T:Type))
-          => tv(I %Int (max(T') +Int 1), T')
+          => tv(I %Int (max(T') +Int 1), cast(T', T))
           requires isBitfieldType(T')
                andBool (I >Int max(T'))
                andBool hasIntegerType(T)
                andBool hasUnsignedIntegerType(innerType(T'))
 
      rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:Type))
-          => tv(I %Int (max(t(Mods, unsigned-char)) +Int 1), t(Mods, unsigned-char))
+          => tv(I %Int (max(t(Mods, unsigned-char)) +Int 1),
+               cast(t(Mods, unsigned-char), T))
           requires (I >Int max(t(Mods, unsigned-char)))
                andBool hasIntegerType(T)
 
      rule cast(t(Mods:Set, unsigned-short-int), tv(I:Int, T:Type))
           => tv(I %Int (max(t(Mods, unsigned-short-int)) +Int 1),
-               t(Mods, unsigned-short-int))
+               cast(t(Mods, unsigned-short-int), T))
           requires (I >Int max(t(Mods, unsigned-short-int)))
                andBool hasIntegerType(T)
 
      rule cast(t(Mods:Set, unsigned-int), tv(I:Int, T:Type))
           => tv(I %Int (max(t(Mods, unsigned-int)) +Int 1),
-               t(Mods, unsigned-int))
+               cast(t(Mods, unsigned-int), T))
           requires (I >Int max(t(Mods, unsigned-int)))
                andBool hasIntegerType(T)
 
      rule cast(t(Mods:Set, unsigned-long-int), tv(I:Int, T:Type))
           => tv(I %Int (max(t(Mods, unsigned-long-int)) +Int 1),
-               t(Mods, unsigned-long-int))
+               cast(t(Mods, unsigned-long-int), T))
           requires (I >Int max(t(Mods, unsigned-long-int)))
                andBool hasIntegerType(T)
 
      rule cast(t(Mods:Set, unsigned-long-long-int), tv(I:Int, T:Type))
           => tv(I %Int (max(t(Mods, unsigned-long-long-int)) +Int 1),
-               t(Mods, unsigned-long-long-int))
+               cast(t(Mods, unsigned-long-long-int), T))
           requires (I >Int max(t(Mods, unsigned-long-long-int)))
                andBool hasIntegerType(T)
 
@@ -249,12 +247,11 @@ module C-CONVERSION
 
      // TODO(chathhorn): not sure about this.
      rule cast(T':Type, tv(unknown, T:Type))
-          => tv(unknown, T')
+          => tv(unknown, cast(T', T))
           requires bitSizeofType(T') >=Int bitSizeofType(T)
 
-     rule cast(T':Type, tv(unknown, _:Type))
-          => tv(trap, T')
-
+     rule cast(T':Type, tv(unknown, T:Type))
+          => tv(trap, cast(T', T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
@@ -262,7 +259,7 @@ module C-CONVERSION
      value is truncated toward zero). If the value of the integral part cannot
      be represented by the integer type, the behavior is undefined.
      }*/
-     rule cast(T':Type, tv(V:Float, T:Type)) => tv(Float2Int(V), T')
+     rule cast(T':Type, tv(V:Float, T:Type)) => tv(Float2Int(V), cast(T', T))
           requires hasIntegerType(T') andBool hasFloatType(T)
                andBool inRange(Float2Int(V), T')
                andBool notBool isBoolType (T')
@@ -291,7 +288,8 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(T':Type, tv(V:Int, T:Type)) => tv(Int2Float(V, 53, 11), T')
+     rule cast(T':Type, tv(V:Int, T:Type))
+          => tv(Int2Float(V, 53, 11), cast(T', T))
           requires hasIntegerType(T)
                andBool inRange(Int2Float(V, 53, 11), T')
 
@@ -307,7 +305,7 @@ module C-CONVERSION
      and precision than that required by the new type (see 6.3.1.8 and
      6.8.6.4).
      }*/
-     rule cast(T':Type, tv(V:Float, T:Type)) => tv(V, T')
+     rule cast(T':Type, tv(V:Float, T:Type)) => tv(V, cast(T', T))
           requires hasFloatType(T') andBool hasFloatType(T)
                andBool inRange(V, T')
 
@@ -331,7 +329,7 @@ module C-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/
-     rule cast(t(_, void), _) => voidVal
+     rule cast(t(_, void), _:RValue) => voidVal
 
      rule cast(t(_, T:SimpleType), emptyValue) => castHold(t(.Set, T), emptyValue)
           requires T =/=K void
@@ -365,7 +363,7 @@ module C-CONVERSION
      pointer, called a null pointer, is guaranteed to compare unequal to a
      pointer to any object or function.
      }*/
-     rule cast(T':Type, V:TypedValue) => tv(NullPointer, T')
+     rule cast(T':Type, V:RValue) => tv(NullPointer, cast(T', type(V)))
           requires isNullPointerConstant(V)
                andBool isPointerType(T')
 
@@ -373,7 +371,7 @@ module C-CONVERSION
      Conversion of a null pointer to another pointer type yields a null pointer
      of that type. Any two null pointers shall compare equal.
      }*/
-     rule cast(T':Type, tv(NullPointer, T:Type)) => tv(NullPointer, T')
+     rule cast(T':Type, tv(NullPointer, T:Type)) => tv(NullPointer, cast(T', T))
           requires isPointerType(T)
                andBool isPointerType(T')
           [structural, anywhere]
@@ -384,7 +382,8 @@ module C-CONVERSION
      aligned, might not point to an entity of the referenced type, and might be
      a trap representation.
      }*/
-     rule cast(T':Type, tv(V:CValue, T:Type)) => tv(cfg:intToPointer(V), T')
+     rule cast(T':Type, tv(V:CValue, T:Type))
+          => tv(cfg:intToPointer(V), cast(T', T))
           requires hasIntegerType(T)
                andBool (V =/=K 0)
                andBool isPointerType(T')
@@ -396,7 +395,7 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:pointerToInt(V), T')
+          => tv(cfg:pointerToInt(V), cast(T', T))
           requires isPointerType(T)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
@@ -431,13 +430,14 @@ module C-CONVERSION
           requires (isPointerType(T) andBool hasFloatType(T'))
                orBool (hasFloatType(T) andBool isPointerType(T'))
 
+     // TODO(chathhorn): note that this breaks handling of compound literals.
      rule (.K => CV("CCV10",
           "conversion to or from non-scalar type.",
           "6.5.4:2"))
           ~> castHold(T':Type, tv(_, T:Type))
-          requires notBool isVoidType(T') andBool ((notBool isPointerType(T)
-               andBool notBool hasArithmeticType(T)) orBool (notBool isPointerType(T')
-               andBool notBool hasArithmeticType(T')))
+          requires notBool isVoidType(T') andBool (
+               (notBool isPointerType(T) andBool notBool hasArithmeticType(T)) orBool
+               (notBool isPointerType(T') andBool notBool hasArithmeticType(T')))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
      A pointer to an object type may be converted to a pointer to a different
@@ -456,19 +456,30 @@ module C-CONVERSION
      whose type is not compatible with the referenced type, the behavior is
      undefined.
      }*/
-     rule cast(t(Mods:Set, pointerType(T':Type)),
-               tv(Loc:SymLoc, t(_, pointerType(_))))
-          => tv(Loc, t(Mods, pointerType(T')))
+     rule cast(t(Mods':Set, pointerType(T':Type)),
+               tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
+          => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
+          requires getAlignas(T') <=Int getAlign(Loc)
      //TODO(dwightguth): handle pointer alignment
-/*          requires getAlignas(T') <=Int getAlign(Loc)
      rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
           => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
           requires getAlignas(T') >Int getAlign(Loc)
-     rule (.K => UNDEF("CCV8",
+     rule (.K => UNDEF("CCV11",
                "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
                "6.3.2.3:7"))
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))
           requires getAlignas(T') >Int getAlign(Loc)
-          [structural]*/
+          [structural]
+
+     syntax Type ::= cast(Type, Type) [function, klabel('castTypes)]
+
+     rule cast(T':Type, T:Type) => T'
+          requires notBool hasReadFrom(T)
+               andBool notBool fromConstantExpr(T)
+     rule cast(T':Type, T:Type)
+          => addModifier(readFrom(getReadFrom(T)), stripReadFrom(T'))
+          requires hasReadFrom(T)
+     rule cast(T':Type, T:Type) => addModifiers(getConstants(T), T')
+          requires fromConstantExpr(T)
 endmodule
 

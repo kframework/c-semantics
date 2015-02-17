@@ -48,7 +48,7 @@ module C-STMT-BLOCK
      The expression in an expression statement is evaluated as a void expression
      for its side effects.
      }*/
-     rule Computation(_:KResult) => sequencePoint
+     rule Computation(_:RValue) => sequencePoint
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{

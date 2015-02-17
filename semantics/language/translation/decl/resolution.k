@@ -30,7 +30,6 @@ module C-DECL-RESOLUTION
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           [structural]
-
      rule <k> allocateIncompleteTentatives => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

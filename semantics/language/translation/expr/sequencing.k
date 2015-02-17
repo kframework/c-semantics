@@ -4,16 +4,11 @@ module C-EXPR-SEQUENCING
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax KItem ::= commaEval(K) [strict]
-
-     rule commaEval(R:KResult) => rkludge(R)
-          [structural]
-
      rule Comma(list(ListItem(K:K) L:List))
-          => commaEval(K) ~> discard ~> Comma(list(L))
+          => toRVal(K) ~> discard ~> Comma(list(L))
           requires L =/=MSet .List
           [structural]
-     rule Comma(list(ListItem(K:K))) => commaEval(K)
+     rule Comma(list(ListItem(K:K))) => toRVal(K)
           [structural]
 
 endmodule

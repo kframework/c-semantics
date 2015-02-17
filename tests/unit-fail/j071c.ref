@@ -2,12 +2,12 @@
 =============================================================
 ERROR! KCC encountered an error while executing this program.
 =============================================================
-Error: CEA1
-Description: A pointer (or array subscript) outside the bounds of an object.
+Error: ESR1
+Description: Return from a function declared _Noreturn.
 Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8
+See also: C11 sec. 6.7.4
 =============================================================
-File: j046c.c
-Function: main
-Line: 3
+File: j071c.c
+Function: f
+Line: 2
 =============================================================

@@ -495,50 +495,6 @@ module C-IO-BUFFERED
                orElseBool #effectivelyCompatWithUnion(T, L)
      rule #effectivelyCompatWithUnion(_, .List) => false
 
-     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
-     // or array, it'll return the struct/union/array type and not the type of
-     // its first member. Returns no-type when nothing seems to be aligned at
-     // that offset.
-     syntax Type ::= getTypeAtOffset(Type, Int) [function]
-     rule getTypeAtOffset(T:Type, 0) => T
-     // Preserve the qualifiers.
-     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
-          requires (Offset =/=Int 0)
-               andBool notBool isAggregateType(T)
-     // Arrays.
-     rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int byteSizeofType(T))
-          requires Offset =/=Int 0 // We assume the offset must be in range.
-     // Structs.
-     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
-
-     syntax Type ::= getTypeAtOffset(Type, K, Int) [function]
-     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
-               Fields:List (ListItem(typedDeclaration(_, FId:CId))),
-               SI:Int,
-               Types:Map (FId |-> T:Type),
-               Offsets:Map (FId |-> FOffset:Int)
-          ), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(S)), fieldInfo(
-               Fields,
-               SI,
-               Types (FId |-> T),
-               Offsets (FId |-> FOffset)
-          ), Offset)
-          requires (Offset =/=Int 0)
-               andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(t(Mods:Set, structType(_)), fieldInfo(
-               _ ListItem(typedDeclaration(_, FId:CId)),
-               _,
-               _ FId |-> T:Type,
-               _ FId |-> FOffset:Int
-          ), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
-          requires (Offset =/=Int 0)
-               andBool (FOffset <=Int Offset)
-     //TODO(liyili2): why it is nessary here
      syntax Set ::= getQualsAtOffset(Type, Int) [function]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))

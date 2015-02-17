@@ -1,7 +1,7 @@
 module C-STMT-IF-THEN-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     syntax Bool ::= isTruthValue(TypedValue) [function]
+     syntax Bool ::= isTruthValue(RValue) [function]
 endmodule
 
 module C-STMT-IF-THEN
@@ -13,7 +13,7 @@ module C-STMT-IF-THEN
      rule isTruthValue(tv(V:CValue, t(_, T:SimpleType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1 orBool V ==K symVal)
 
-     rule IfThenElse((V:TypedValue => simplifyTruth(V)), _, _)
+     rule IfThenElse((V:RValue => simplifyTruth(V)), _, _)
           requires notBool isTruthValue(V)
           [structural]
 

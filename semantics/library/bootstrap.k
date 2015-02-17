@@ -3,30 +3,31 @@ module LIBC-BOOTSTRAP-SYNTAX
 
      syntax KItem ::= varg(K) [strict]
      //TODO(liyili): might not need this if we have hybrid label
-     syntax KResult ::= vargResult(K)
+     syntax RValue ::= vargResult(K)
      syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
      syntax KItem ::= incSymbolic(K)
+     context incSymbolic(HOLE => reval(HOLE)) [result(RValue)]
 endmodule
 
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
-     rule rkludge(vargResult(K:K)) => vargResult(K)
      //TODO(liyili): might not need this if we have hybrid label
      rule varg(K:KResult) => vargResult(K)
 
-     context incSymbolic(HOLE => reval(HOLE))
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
-          => tv(loc(linc(base(Loc)), offset(Loc)), T)
+          => tv(addProv(align(cfg:alignofMalloc),
+               loc(linc(base(Loc)), offset(Loc))), T)
           [structural]
 
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
