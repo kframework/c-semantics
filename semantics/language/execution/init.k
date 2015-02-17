@@ -18,6 +18,7 @@ module C-EXECUTION-INIT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports LIBC-IO-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
@@ -68,10 +69,10 @@ module C-EXECUTION-INIT
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
           => allocObject(N +Int 1 @ argv, strType(S))
-          ~> writeString(lnew(N +Int 1 @ argv), S)
+          ~> writeString(lnew(N +Int 1 @ argv, getAlignas(strType(S))), S)
           ~> allowInit(Computation(
                Identifier("#incomingArgumentsArray")[N]
-                    := lv(lnew(N +Int 1 @ argv), strType(S))))
+                    := lv(lnew(N +Int 1 @ argv, getAlignas(strType(S))), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)

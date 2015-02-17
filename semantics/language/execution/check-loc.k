@@ -60,12 +60,12 @@ module C-CHECK-LOC
           [structural]
      rule checkLoc'(L:SymLoc) => .K
           requires isNativeLoc(L)
+          [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
      rule checkOffsets(Offset:Int, Len:Int) => .K
           requires (Offset <=Int Len) andBool (Offset >=Int 0)
-     rule checkOffsets(Offset:Int, Len:Int) => errorLocBounds
-          requires (Offset >Int Len) orBool (Offset <Int 0)
+     rule checkOffsets(_, _) => errorLocBounds [owise]
 
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"

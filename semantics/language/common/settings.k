@@ -40,6 +40,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofLongDouble" [function]
      syntax Int ::= "cfg:alignofEnum" [function]
      syntax Int ::= "cfg:alignofPointer" [function]
+     syntax Int ::= "cfg:alignofMalloc" [function]
 
      syntax CValue ::= "cfg:intToPointer" "(" CValue ")" [function]
      syntax CValue ::= "cfg:pointerToInt" "(" CValue ")" [function]

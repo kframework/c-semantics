@@ -1,14 +1,15 @@
 module C-COMPOUND-LITERAL
+     imports C-ALIGNMENT-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -76,13 +77,13 @@ module C-COMPOUND-LITERAL
 
      // TODO(chathhorn) identical to trans, move these to common.
      rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S)),
+               => lv(lnew(string(S), cfg:alignofSignedChar),
                     t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
           [structural]
      rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S)),
+               => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
                     t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>

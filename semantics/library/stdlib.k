@@ -2,15 +2,16 @@ module LIBC-STDLIB
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax KItem ::= printString(K)
 
@@ -50,7 +51,7 @@ module LIBC-STDLIB
      rule <k> prepareBuiltin(Identifier("malloc"),
                     hrItem(tv(Len:Int, _)))
                => alloc(Base, t(.Set, no-type), Len:Int)
-               ~> tv(loc(Base, 0, SetItem(fromArray(0, Len))),
+               ~> tv(addProv(fromArray(0, Len), lnew(Base, cfg:alignofMalloc)),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => Base |-> Len:Int ...</malloced>

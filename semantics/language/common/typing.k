@@ -192,6 +192,13 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= hasAlignas(Type) [function]
      syntax Bool ::= hasAlignasMod(Set) [function]
+
+     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
+     // or array, it'll return the struct/union/array type and not the type of
+     // its first member. Returns no-type when nothing seems to be aligned at
+     // that offset.
+     syntax Type ::= getTypeAtOffset(Type, Int) [function]
+
 endmodule
 
 module C-TYPING

@@ -54,8 +54,9 @@ module C-SYMLOC-SYNTAX
      syntax KResult ::= SymLoc
 
      syntax SymBase ::= linc(SymBase) [function]
-     syntax SymLoc ::= lnew(SymBase) [function]
-     syntax SymLoc ::= restrictedNew(SymBase, RestrictTag) [function]
+     // Base, alignment.
+     syntax SymLoc ::= lnew(SymBase, Int) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, Int, RestrictTag) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -181,9 +182,11 @@ module C-SYMLOC
 
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
-     rule lnew(Base:SymBase) => loc(Base, 0)
-     rule restrictedNew(Base:SymBase, Tag:RestrictTag)
-          => loc(Base, 0, SetItem(basedOn(Base, Tag)))
+     rule lnew(Base:SymBase, Align:Int)
+          => loc(Base, 0, SetItem(align(Align)))
+
+     rule restrictedNew(Base:SymBase, Align:Int, Tag:RestrictTag)
+          => addProv(basedOn(Base, Tag), lnew(Base, Align))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
@@ -305,7 +308,6 @@ module C-SYMLOC
      rule getAlign(loc(_, _, Provs:Set)) => getAlign'(.K, Provs)
      rule getAlign(loc(_, _)) => 1
 
-     // TODO(chathhorn): "unsupported map pattern" -- so ugly.
      syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
      rule getAlign'(.K, .Set) => 1
      rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)

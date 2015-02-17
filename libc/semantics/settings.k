@@ -42,9 +42,11 @@ module C-SETTINGS
      rule cfg:alignofLongDouble => 16
      rule cfg:alignofEnum => cfg:alignofInt
      rule cfg:alignofPointer => 4
+     // Max of the above.
+     rule cfg:alignofMalloc => 16
 
-     rule cfg:intToPointer(V:CValue) => trap
-     rule cfg:pointerToInt(V:CValue) => unknown
+     rule cfg:intToPointer(_) => trap
+     rule cfg:pointerToInt(_) => unknown
 
 endmodule
 

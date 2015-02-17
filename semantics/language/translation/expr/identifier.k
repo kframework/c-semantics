@@ -4,9 +4,10 @@ module C-EXPR-IDENTIFIER
      imports C-MEMORY-READING-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule <k> X:CId => lv(lnew(Base), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           requires notBool isLinkerLoc(Base)
@@ -17,7 +18,7 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T:Type ...</types>
           [structural]
 
-     rule <k> X:CId => lv(lnew(Base), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>
@@ -28,7 +29,7 @@ module C-EXPR-IDENTIFIER
 
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
-     rule <k> X:CId => lv(lnew(Base), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>

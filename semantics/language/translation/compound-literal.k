@@ -1,4 +1,5 @@
 module C-COMPOUND-LITERAL
+     imports C-ALIGNMENT-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -106,13 +107,13 @@ module C-COMPOUND-LITERAL
           [structural]
 
      rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S)),
+               => lv(lnew(string(S), cfg:alignofSignedChar),
                     t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
           [structural]
      rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S)),
+               => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
                     t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>

@@ -33,14 +33,15 @@ module C-LTLMC-SYNTAX
 endmodule
 
 module C-LTLMC
+     imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-LTLMC-SYNTAX
      imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -233,5 +234,5 @@ module C-LTLMC
                ...</gtypes>
           ...</T> ...</generatedTop>,
           S:String)
-          => #ptr(lnew(Base), T)
+          => #ptr(lnew(Base, getAlignas(T)), T)
 endmodule
