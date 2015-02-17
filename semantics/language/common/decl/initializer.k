@@ -31,6 +31,8 @@ module C-DECL-INITIALIZER
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-BUILTIN-SYNTAX
+     imports C-BITSIZE-SYNTAX
 
      rule <k> allowInit(K:K) => K ~> initDone ...</k>
           <initializing> I:Int => I +Int 1 </initializing>
@@ -143,10 +145,20 @@ module C-DECL-INITIALIZER
 
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
-                    => arrayType(T, N))), initializer(_))
+                    => arrayType(T, N))), initializer(K:K))
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
+          requires (getKLabel K) =/=KLabel 'handleBuiltinConstant
           [structural]
+ 
+     rule <k> figureInit-aux(_:CId, t(_,
+                    (incompleteArrayType(T:Type)
+                    => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))), initializer(handleBuiltinConstant(Identifier(S:String), _)))
+          ...</k>
+          requires S in keys(nativeDefinedBuiltins)
+          [structural]
+
+     syntax Int ::= #nativeSymbolLength(String) [function, hook(C-SEMANTICS:nativeSymbolLength), impure]
 
      syntax KItem ::= te(K, Type)
 

@@ -103,6 +103,11 @@ module C-IO-BUFFERED
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
           [structural]
+     rule <k> checkWrite(Loc:SymLoc, _) => .K ...</k>
+          <locs-written>
+               Locs:List (.List => ListItem(Loc))
+          </locs-written>
+          requires notBool Loc in Locs andBool isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO1",
                "Unsequenced side effect on scalar object with side effect of same object.",
                "6.5") )
@@ -159,6 +164,12 @@ module C-IO-BUFFERED
           ...</mem>
           requires Offset <Int Len
           [structural]
+
+     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
+     rule <buffer>
+               ListItem(bwrite(Loc:SymLoc, V:K)) => #writeNativeByte(Loc, V)
+          ...</buffer>
+          requires isNativeLoc(Loc)
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
@@ -392,14 +403,14 @@ module C-IO-BUFFERED
           requires isNativeLoc(Loc)
                andBool notBool (Loc in keys(EffTypes))
      rule <k> getEffectiveType(Loc:SymLoc) => T ...</k>
-          <effective-types> Loc |-> T:Type </effective-types>
+          <effective-types>... Loc |-> T:Type ...</effective-types>
           requires isNativeLoc(Loc)
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
-     rule <k> setEffectiveType(loc(Base:SymBase, _), T':Type) => .K
+     rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .K
           ...</k>
           <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          requires notBool isNoType(T) orBool hasCharType(T':Type)
+          requires notBool isNoType(T)
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .K
           ...</k>
@@ -407,6 +418,14 @@ module C-IO-BUFFERED
           <effective-types> M:Map => M [ loc(Base, Offset) <- T' ] </effective-types>
           requires isNoType(T) andBool notBool hasCharType(T':Type)
           [structural]
+     rule <k> setEffectiveType(Loc:SymLoc, T:Type) => .K ...</k>
+          <effective-types> M:Map => M [ Loc <- T ] </effective-types>
+          requires notBool hasCharType(T:Type) andBool isNativeLoc(Loc)
+     rule <k> setEffectiveType(_, T:Type) => .K ...</k>
+          requires hasCharType(T:Type)
+          
+          [structural]
+
 
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L:Type, Eff:Type) => .K
