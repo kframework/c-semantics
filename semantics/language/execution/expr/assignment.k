@@ -9,37 +9,37 @@ module C-EXPR-ASSIGNMENT
 
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
           => checkOverlap(stripProv(Loc), T)
-          ~> write(Loc, V, T)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool notBool fromArrayStatic(T)
+               andBool notBool fromArrayStatic(T')
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
           => checkOverlap(stripProv(Loc), T)
-          ~> checkArrayStaticAssign(T, V)
-          ~> write(Loc, V, T)
+          ~> checkArrayStaticAssign(T', V)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
-               andBool fromArrayStatic(T)
+               andBool fromArrayStatic(T')
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
           => checkOverlap(stripProv(Loc), T)
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires isRestrictType(T)
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
           => checkOverlap(stripProv(Loc), T)
-          ~> checkArrayStaticAssign(T, V)
+          ~> checkArrayStaticAssign(T', V)
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
-          ~> write(Loc, V, T)
+          ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires isRestrictType(T)
-               andBool fromArrayStatic(T)
+               andBool fromArrayStatic(T')
                andBool (T ==Type T')
           [structural]
 
@@ -95,7 +95,7 @@ module C-EXPR-ASSIGNMENT
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
-          => getKLabel(K) ==KLabel 'arrayStatic orBool fromArrayStatic(t(S, T))
+          => (getKLabel(K) ==KLabel 'arrayStatic) orBool fromArrayStatic(t(S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
@@ -127,7 +127,7 @@ module C-EXPR-ASSIGNMENT
 
      rule getFirstMatch(S:Set, L:KLabel) => getFirstMatch'(.K, S, L)
 
-     rule getFirstMatch'((.K => K), SetItem(K:K) _, _)
+     rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
      rule getFirstMatch'((K:K => .K), _, L:KLabel)
           requires getKLabel(K) =/=KLabel L
      rule getFirstMatch'(K:K, _, L:KLabel) => K

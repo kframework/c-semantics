@@ -430,13 +430,14 @@ module C-CONVERSION
           requires (isPointerType(T) andBool hasFloatType(T'))
                orBool (hasFloatType(T) andBool isPointerType(T'))
 
+     // TODO(chathhorn): note that this breaks handling of compound literals.
      rule (.K => CV("CCV10",
           "conversion to or from non-scalar type.",
           "6.5.4:2"))
           ~> castHold(T':Type, tv(_, T:Type))
-          requires notBool isVoidType(T') andBool ((notBool isPointerType(T)
-               andBool notBool hasArithmeticType(T)) orBool (notBool isPointerType(T')
-               andBool notBool hasArithmeticType(T')))
+          requires notBool isVoidType(T') andBool (
+               (notBool isPointerType(T) andBool notBool hasArithmeticType(T)) orBool
+               (notBool isPointerType(T') andBool notBool hasArithmeticType(T')))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{7}}}{
      A pointer to an object type may be converted to a pointer to a different
