@@ -31,7 +31,7 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(FILES_TO_DIST) | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(LIBC_DIR)/includes/*) | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)

@@ -74,7 +74,7 @@ module C-BUILTIN
      rule mtx_t => struct("mtx_t_")
 
      syntax Type ::= "jmp_buf" [function]
-     rule jmp_buf => arr(struct("jmp_buf_"), 1)
+     rule jmp_buf => arr(struct("__jmp_buf_tag"), 1)
 
      // Used by stddef.h.
      rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)
