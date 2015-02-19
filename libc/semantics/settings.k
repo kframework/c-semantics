@@ -45,8 +45,8 @@ module C-SETTINGS
      // Max of the above.
      rule cfg:alignofMalloc => 16
 
-     rule cfg:intToPointer(_) => trap
-     rule cfg:pointerToInt(_) => unknown
+     rule cfg:intToPointer(_, _) => trap
+     rule cfg:pointerToInt(_, _) => unknown
 
 endmodule
 

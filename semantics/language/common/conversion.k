@@ -382,7 +382,7 @@ module C-CONVERSION
      a trap representation.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:intToPointer(V), cast(T', T))
+          => tv(cfg:intToPointer(V, T), cast(T', T))
           requires hasIntegerType(T)
                andBool (V =/=K 0)
                andBool isPointerType(T')
@@ -394,7 +394,7 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:pointerToInt(V), cast(T', T))
+          => tv(cfg:pointerToInt(V, T'), cast(T', T))
           requires isPointerType(T)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
