@@ -57,7 +57,7 @@ module C-CONVERSION
           [structural]
 
      rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, cast(T', T))
-          requires stripQualifiers(T) ==K stripQualifiers(T')
+          requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool notBool isPointerType(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.2}{1}}}{
@@ -374,7 +374,6 @@ module C-CONVERSION
      rule cast(T':Type, tv(NullPointer, T:Type)) => tv(NullPointer, cast(T', T))
           requires isPointerType(T)
                andBool isPointerType(T')
-          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{5}}}{
      An integer may be converted to any pointer type. Except as previously
@@ -420,8 +419,13 @@ module C-CONVERSION
           => castHold(T', tv(V, T))
           requires (isPointerType(T) andBool hasFloatType(T'))
                orBool (hasFloatType(T) andBool isPointerType(T'))
-               orBool (notBool isPointerType(T) andBool notBool hasArithmeticType(T) andBool notBool isVoidType(T'))
-               orBool (notBool isPointerType(T') andBool notBool hasArithmeticType(T') andBool notBool isVoidType(T'))
+               orBool (T =/=Type T') andBool
+               ((notBool isPointerType(T)
+                    andBool notBool hasArithmeticType(T)
+                    andBool notBool isVoidType(T'))
+               orBool (notBool isPointerType(T')
+                    andBool notBool hasArithmeticType(T')
+                    andBool notBool isVoidType(T')))
 
      rule (.K => CV("CCV9",
           "conversion from pointer to floating point type or from floating point type to pointer.",
@@ -430,7 +434,6 @@ module C-CONVERSION
           requires (isPointerType(T) andBool hasFloatType(T'))
                orBool (hasFloatType(T) andBool isPointerType(T'))
 
-     // TODO(chathhorn): note that this breaks handling of compound literals.
      rule (.K => CV("CCV10",
           "conversion to or from non-scalar type.",
           "6.5.4:2"))
