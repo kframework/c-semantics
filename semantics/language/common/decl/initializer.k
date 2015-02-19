@@ -148,9 +148,10 @@ module C-DECL-INITIALIZER
                     => arrayType(T, N))), initializer(K:K))
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
-          requires (getKLabel K) =/=KLabel 'handleBuiltinConstant
+          requires notBool isKItem(K)
+               orElseBool (getKLabel(K) =/=KLabel 'handleBuiltinConstant)
           [structural]
- 
+
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
                     => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))), initializer(handleBuiltinConstant(Identifier(S:String), _)))
