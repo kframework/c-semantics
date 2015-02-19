@@ -56,6 +56,8 @@ module COMPAT-SYNTAX
      //TODO(liyi): might not need this later
      syntax KItem ::= "dotK"
                     | lookup(Map, K) [function]
+
+     syntax Bool ::= isKItem(K) [function]
 endmodule
 
 module COMPAT
@@ -240,4 +242,6 @@ module COMPAT
      rule dotK => .K [structural]
      rule lookup(Key |-> Val:K _:Map, Key:K) => Val
 
+     rule isKItem(K:KItem) => true
+     rule isKItem(_) => false [owise]
 endmodule
