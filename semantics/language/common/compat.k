@@ -231,7 +231,6 @@ module COMPAT
                andBool (K =/=K .K)
      rule some'(.K, .Set, _) => false
 
-
      // TODO(liyi): might be able to remove later
      rule isAllKResultInHeatList(.HeatList) => true
      rule isAllKResultInHeatList(hItem(_) hs:: _) => false
@@ -242,6 +241,6 @@ module COMPAT
      rule dotK => .K [structural]
      rule lookup(Key |-> Val:K _:Map, Key:K) => Val
 
-     rule isKItem(K:KItem) => true
+     rule isKItem(_:KItem) => true
      rule isKItem(_) => false [owise]
 endmodule

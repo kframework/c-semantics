@@ -83,7 +83,7 @@ module C-BUILTIN
      syntax KItem ::= offsetOf(K, K) [strict(1)]
      syntax SymBase ::= "accum"
      rule offsetOf(T:Type, Mem:K)
-          => toOffset(& ( offsetOf'(lv(loc(accum, 0), T), Mem) ))
+          => toOffset(offsetOf'(lv(loc(accum, 0), T), Mem))
           [structural]
 
      // Rejigger the AST.
@@ -93,7 +93,7 @@ module C-BUILTIN
      rule offsetOf'(K:K, F:CId) => K . F
 
      syntax KItem ::= toOffset(K) [strict]
-     rule toOffset(tv(Loc:SymLoc, _)) => tv(offset(Loc), t(.Set, cfg:sizeut))
+     rule toOffset(nclv(Loc:SymLoc, _)) => tv(offset(Loc), t(.Set, cfg:sizeut))
           [structural]
 
 endmodule
