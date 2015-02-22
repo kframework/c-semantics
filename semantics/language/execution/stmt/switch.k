@@ -86,14 +86,16 @@ module C-STMT-SWITCH
      rule tryCase(
                (tv(V:K, T':Type) => stripConstants(cast(T, tv(V, T')))),
                tv(_, T:Type), _)
-          requires T =/=K T'
+          requires T =/=Type T'
           [structural]
-     rule tryCase(tv(V':K, T:Type), tv(V:K, T:Type), _) => .K
-          requires V =/=K V'
+     rule tryCase(tv(V':K, T':Type), tv(V:K, T:Type), _) => .K
+          requires (V =/=K V') andBool (T ==Type T')
           [structural]
      //  match found in value and type, goto it
      //  don't need to erase the rest of K since we're GOTOing
-     rule tryCase(V:RValue, V:RValue, CaseHelper:K) => Goto(CaseHelper)
+     rule tryCase(tv(V:CValue, T':Type), tv(V:CValue, T:Type), CaseHelper:K)
+          => Goto(CaseHelper)
+          requires T ==Type T'
           [structural]
 
 endmodule

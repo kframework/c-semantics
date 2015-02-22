@@ -38,11 +38,6 @@ module C-SYMLOC-SYNTAX
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
-     // I.e., static, argv, allocated, or thread (the same as "not
-     // isLinkerLoc," except it's a "positive" check). This is mostly intended
-     // to test for the symbolic locs added in translation (a bit of a hack).
-     syntax Bool ::= isPhysicalLoc(SymLoc) [function]
-
      syntax SymBase ::= Int "@" Duration
 
 
@@ -100,8 +95,9 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isFromArray(SymLoc) [function]
 
      syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
-     syntax SymLoc ::= stripAllButFromUnion(SymLoc) [function]
 
+     syntax SymLoc ::= stripBases(SymLoc) [function]
+     syntax SymLoc ::= stripFromArray(SymLoc) [function]
      syntax SymLoc ::= stripProv(SymLoc) [function]
 endmodule
 
@@ -112,12 +108,6 @@ module C-SYMLOC
      imports C-SYMLOC-SYNTAX
 
      imports COMPAT-SYNTAX
-
-     rule isPhysicalLoc(Loc:SymLoc)
-          => (isAllocatedDuration(Loc)
-               orBool isStaticDuration(Loc)
-               orBool isThreadDuration(Loc)
-               orBool isAutoDuration(Loc))
 
      rule isAllocatedDuration(loc(_ @ alloc, _)) => true
      rule isAllocatedDuration(loc(_ @ alloc, _, _)) => true
@@ -241,7 +231,11 @@ module C-SYMLOC
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 
-     rule getBases(Prov:Set) => filterSet(Prov, 'isBases)
+     rule getBases(Prov:Set) => filterSet(Prov, 'isBase)
+
+     syntax Bool ::= isBase(Provenance) [function]
+     rule isBase(basedOn(_, _)) => true
+     rule isBase(_) => false [owise]
 
      rule transferProv(From:SymLoc, tv(To:SymLoc, T:Type))
           => tv(addProv(prov(From), To), T)
@@ -263,10 +257,6 @@ module C-SYMLOC
           => lv(addProv(Prov, Loc), T)
           [structural]
 
-     syntax Bool ::= isBases(Provenance) [function]
-     rule isBases(basedOn(_, _)) => true
-     rule isBases(_) => false [owise]
-
      rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
           => getKLabel(K) ==KLabel 'fromUnion
           orBool hasUnionMarker(loc(Base, Offset, S))
@@ -279,34 +269,31 @@ module C-SYMLOC
           => getKLabel(K) ==KLabel 'fromArray orBool #isFromArray(loc(Base, Offset, S))
      rule #isFromArray(_) => false [owise]
 
-     rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int))
-          => loc(Base, Offset)
-     rule stripAllButFromUnion(NullPointer) => NullPointer
-     rule stripAllButFromUnion(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
-          => #stripAllButFromUnion(Base, Offset, K, S, .Set)
+     rule stripBases(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
+     rule stripBases(loc(Base:SymBase, Offset:Int, Prov:Set))
+          => loc(Base, Offset, filterSet(Prov, 'notBase))
+     rule stripBases(Loc:SymLoc) => Loc [owise]
 
-     syntax SymLoc ::= #stripAllButFromUnion(SymBase, Int, K, Set, Set) [function]
-     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, .Set, S:Set)
-          => loc(Base, Offset, SetItem(K) S)
-          requires getKLabel(K) ==KLabel 'fromUnion
-     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, .Set, S:Set)
-          => loc(Base, Offset, S)
-          requires getKLabel(K) =/=KLabel 'fromUnion
-     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S':Set, S:Set)
-          => #stripAllButFromUnion(Base, Offset, K', S', SetItem(K) S)
-          requires getKLabel(K) ==KLabel 'fromUnion
-     rule #stripAllButFromUnion(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S':Set, S:Set)
-          => #stripAllButFromUnion(Base, Offset, K', S', S)
-          requires getKLabel(K) =/=KLabel 'fromUnion
-     rule stripAllButFromUnion(Loc:SymLoc) => stripProv(Loc)
-          requires notBool hasUnionMarker(Loc)
+     syntax Bool ::= notBase(Provenance) [function]
+     rule notBase(basedOn(_, _)) => false
+     rule notBase(_) => true [owise]
+
+     rule stripFromArray(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
+     rule stripFromArray(loc(Base:SymBase, Offset:Int, Prov:Set))
+          => loc(Base, Offset, filterSet(Prov, 'notFromArray))
+     rule stripFromArray(Loc:SymLoc) => Loc [owise]
+
+     syntax Bool ::= notFromArray(Provenance) [function]
+     rule notFromArray(fromArray(_, _)) => false
+     rule notFromArray(_) => true [owise]
 
      rule stripProv(loc(Base:SymBase, Offset:Int, _)) => loc(Base, Offset)
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
-     rule stripProv(NullPointer) => NullPointer
+     rule stripProv(Loc:SymLoc) => Loc [owise]
 
      rule getAlign(loc(_, _, Provs:Set)) => getAlign'(.K, Provs)
-     rule getAlign(loc(_, _)) => 1
+     rule getAlign(NullPointer) => cfg:alignofMalloc
+     rule getAlign(_) => 1 [owise]
 
      syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
      rule getAlign'(.K, .Set) => 1

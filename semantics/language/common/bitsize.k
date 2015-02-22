@@ -106,7 +106,6 @@ module C-BITSIZE
           requires cfg:bitsPerByte dividesInt N
      rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1)
           requires notBool cfg:bitsPerByte dividesInt N
-     rule bitsToBytes(N:CSize) => N // Pass through sym values.
-          requires isInt(N:CSize) =/=K true
+     rule bitsToBytes(N:CSize) => N [owise] // Pass through sym values.
 
 endmodule

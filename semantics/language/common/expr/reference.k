@@ -54,7 +54,7 @@ module C-COMMON-EXPR-REFERENCE
      }*/
      rule *(tv(Loc:SymLoc, T:Type))
           => checkRestrict(Loc)
-          ~> lv(stripAllButFromUnion(Loc), innerType(T))
+          ~> lv(stripBases(stripFromArray(Loc)), innerType(T))
           requires isPointerType(T)
                andBool notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
