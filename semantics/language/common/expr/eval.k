@@ -17,7 +17,6 @@ module C-COMMON-EXPR-EVAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      rule reval(K:K) => K ~> reval(HOLE) [heat]
