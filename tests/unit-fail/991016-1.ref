@@ -1,0 +1,13 @@
+
+=============================================================
+ERROR! KCC encountered an error while executing this program.
+=============================================================
+Error: CCV11
+Description: conversion to a pointer type with a stricter alignment requirement (possibly undefined).
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.3:7
+=============================================================
+File: 991016-1.c
+Function: doit
+Line: 15
+=============================================================

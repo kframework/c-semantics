@@ -68,8 +68,8 @@ module C-COMMON-EXPR-MEMBERS
           // Complete recursive struct/union definitions.
           => lv(Loc +bytes Offset,
                addQualifiers(Mods, T))
-     rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo, 
-          fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
+     rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
+               fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
           => lookupFieldHold(F, Loc, Mods, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
           requires notBool (F in keys(Types) andBool F in keys(Offsets))
 

@@ -190,15 +190,15 @@ sub parseResult {
             $parsed->{output} = $1;
       };
 
-      /<result-value>\s*tv\s*\(\s*(-?\d+)\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+      /<result-value>\s*(-?\d+)\s*<\/result-value>/ && do {
             $parsed->{exitCode} = $1;
       };
 
-      /<result-value>\s*tv\s*\(\s*unknown\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+      /<result-value>\s*unknown\s*<\/result-value>/ && do {
             $parsed->{errorMsg} = "Unspecified value returned from main function.";
       };
 
-      /<result-value>\s*tv\s*\(\s*NullPointer\s*,\s*t\s*\(\s*\.Set\s*,\s*int\s*\)\s*\)\s*<\/result-value>/ && do {
+      /<result-value>\s*NullPointer\s*<\/result-value>/ && do {
             $parsed->{exitCode} = 0;
       };
 }
