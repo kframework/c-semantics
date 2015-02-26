@@ -49,10 +49,9 @@ module C-SETTINGS
      rule cfg:intToPointer(V:Int, _) => loc(0 @ nativeAddress, V, SetItem(align(getNativeAlign(V))))
      rule cfg:intToPointer(L:SymLoc, _) => L
      rule cfg:intToPointer(_, _) => trap [owise]
-     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int), t(_, unsigned-long-int)) => V
-     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _), t(_, unsigned-long-int)) => V
-     rule cfg:pointerToInt(L:SymLoc, t(_, unsigned-long-int)) => L requires notBool isNativeLoc(L)
-     rule cfg:pointerToInt(_, _) => unknown [owise]
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int), _) => V
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _), _) => V
+     rule cfg:pointerToInt(L:SymLoc, _) => L requires notBool isNativeLoc(L)
 
 endmodule
 
