@@ -116,6 +116,10 @@ module C-COMMON-EXPR-ADDITIVE
                "6.5.6:8"))
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
+     rule _:ErrorExit ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
+          => checkUse(tv(newFromArray(Loc, T, I)
+               +bytes (I *Int byteSizeofType(innerType(T))), T))
+          requires notBool ifFromArrayInBounds(Loc, T, I) andBool isErrorRecovery
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
                      | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]

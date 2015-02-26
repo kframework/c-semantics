@@ -462,7 +462,8 @@ module C-CONVERSION
      rule cast(t(Mods':Set, pointerType(T':Type)),
                tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
           => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
-          requires getAlignas(T') <=Int getAlign(Loc)
+          requires getAlignas(T') <=Int getAlign(Loc) 
+          orElseBool isFunctionType(T) andBool isFunctionType(T')
      //TODO(dwightguth): handle pointer alignment
      rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
           => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
