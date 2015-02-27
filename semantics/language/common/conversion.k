@@ -474,6 +474,10 @@ module C-CONVERSION
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))
           requires getAlignas(T') >Int getAlign(Loc)
           [structural]
+     rule _:ErrorExit ~> castHold(t(Mods':Set, pointerType(T':Type)),
+               tv(Loc:SymLoc, t(Mods, pointerType(T:Type))))
+          => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
+          requires isErrorRecovery
 
      syntax Type ::= cast(Type, Type) [function, klabel('castTypes)]
 
