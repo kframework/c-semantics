@@ -2,10 +2,10 @@
 =============================================================
 ERROR! KCC encountered an error while executing this program.
 =============================================================
-Error: EIO10
-Description: Type of lvalue not compatible with the effective type of the object being accessed.
+Error: CCV11
+Description: conversion to a pointer type with a stricter alignment requirement (possibly undefined).
 Type: Undefined behavior.
-See also: C11 sec. 6.5:7
+See also: C11 sec. 6.3.2.3:7
 =============================================================
 File: j019b.c
 Function: main

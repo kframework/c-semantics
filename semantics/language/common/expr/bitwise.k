@@ -138,11 +138,11 @@ module C-COMMON-EXPR-BITWISE
                andBool T ==Type T'
 
      rule tv(unknown, T:Type) & tv(E2:Int, T':Type)
-          => tv(trap, T)
+          => trap(T)
           requires isPromoted(T) andBool E2 <Int 0
                andBool T ==Type T'
      rule tv(E1:Int, T:Type) & tv(unknown, T':Type)
-          => tv(trap, T)
+          => trap(T)
           requires isPromoted(T) andBool E1 <Int 0
                andBool T ==Type T'
 
