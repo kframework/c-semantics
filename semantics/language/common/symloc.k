@@ -67,6 +67,7 @@ module C-SYMLOC-SYNTAX
      syntax ThreadId ::= getThreadId(SymLoc) [function]
      syntax ThreadId ::= Int | "no-thread"
      syntax Int ::= getAlign(SymLoc) [function]
+     syntax Int ::= getNativeAlign(Int) [function]
 
      syntax Set ::= prov(SymLoc) [function]
      //TODO: why it is nessary here
@@ -91,6 +92,7 @@ module C-SYMLOC-SYNTAX
      syntax Provenance ::= align(Int)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
+     syntax Bool ::= hasAlign(Set) [function]
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
@@ -325,5 +327,16 @@ module C-SYMLOC
           => #ifFromArrayInBounds(K', S, T, I)
           requires getKLabel(K) =/=KLabel 'fromArray
 
+     syntax Bool ::= isAlign(K) [function]
+     rule isAlign(align(_)) => true
+     rule isAlign(_) => false [owise]
+
+     rule hasAlign(S:Set) => some(S, 'isAlign)
+
+     syntax Int ::= #getNativeAlign(Int, Int, Int) [function]
+     rule getNativeAlign(Address:Int) => #getNativeAlign(Address, 1, 0)
+     rule #getNativeAlign(Address:Int, Accum:Int, I:Int) => #getNativeAlign(Address /Int 2, Accum *Int 2, I +Int 1)
+          requires Address %Int 2 ==Int 0 andBool I <Int cfg:ptrsize *Int cfg:bitsPerByte
+     rule #getNativeAlign(_, Accum:Int, _) => Accum [owise]
 endmodule
 

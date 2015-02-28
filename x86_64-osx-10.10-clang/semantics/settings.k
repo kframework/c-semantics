@@ -46,11 +46,13 @@ module C-SETTINGS
      // Max of the above.
      rule cfg:alignofMalloc => 16
 
-     rule cfg:intToPointer(V:Int) => loc(0 @ nativeAddress, V)
-     rule cfg:intToPointer(_) => trap [owise]
-     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int)) => V
-     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _)) => V
-     rule cfg:pointerToInt(_) => unknown [owise]
+     rule cfg:intToPointer(V:Int, _) => loc(0 @ nativeAddress, V)
+     rule cfg:intToPointer(L:SymLoc, _) => L
+     rule cfg:intToPointer(_, _) => trap [owise]
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int), t(_, unsigned-long-int)) => V
+     rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _), t(_, unsigned-long-int)) => V
+     rule cfg:pointerToInt(L:SymLoc, t(_, unsigned-long-int)) => L requires notBool isNativeLoc(L)
+     rule cfg:pointerToInt(_, _) => unknown [owise]
 
 endmodule
 

@@ -162,9 +162,8 @@ module C-MEMORY-READING
      rule joinIntegerBytes(T:Type, L:List)
           => joinIntegerBytes-aux(T, L, piece(0, 0))
      rule joinIntegerBytes-aux(T:Type,
-               ListItem(piece(subObject(Loc:SymLoc, Start:Int, End:Int), _)), piece(0, 0))
-          => tv(subObject(Loc, Start, End), stripQualifiers(T))
-          requires isUCharType(T)
+               L:List ListItem(piece(subObject(Loc:SymLoc, Start:Int, End:Int), Len:Int)), piece(0, 0))
+          => joinPointerBytes(T, L ListItem(piece(subObject(Loc, Start, End), Len)))
      rule joinIntegerBytes-aux(T:Type,
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T,

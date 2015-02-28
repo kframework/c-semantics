@@ -177,6 +177,11 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(T:Type) => T
 //      requires isBasicType(T)
 
+     syntax Bool ::= isGlobalScope(K) [function]
+     rule isGlobalScope(file-scope) => true
+     rule isGlobalScope(prototype(K:K)) => isGlobalScope(K)
+     rule isGlobalScope(_) => false [owise]
+
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
                => t(.Set, typedefType(X, T))
@@ -214,7 +219,7 @@ module C-TYPING-CANONICALIZATION
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
                andBool notBool (global(X, Tu) in keys(Structs))
-               andBool F ==K file-scope orBool F ==K prototype(file-scope)
+               andBool isGlobalScope(F)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
                => t(.Set, structType(local(X, Tu, BlockNum)))
@@ -225,7 +230,7 @@ module C-TYPING-CANONICALIZATION
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
                andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
-               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
+               andBool notBool isGlobalScope(F)
           [structural]
      rule canonicalizeSpecifier(ListItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
@@ -260,7 +265,7 @@ module C-TYPING-CANONICALIZATION
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
                andBool notBool (global(X, Tu) in keys(Structs))
-               andBool F ==K file-scope orBool F ==K prototype(file-scope)
+               andBool isGlobalScope(F)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
                => t(.Set, unionType(local(X, Tu, BlockNum)))
@@ -271,7 +276,7 @@ module C-TYPING-CANONICALIZATION
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
                andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
-               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
+               andBool notBool isGlobalScope(F)
           [structural]
  
      rule canonicalizeSpecifier(ListItem(EnumDef(X:CId, L:K)))

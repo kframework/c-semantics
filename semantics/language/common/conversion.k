@@ -382,7 +382,7 @@ module C-CONVERSION
      a trap representation.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:intToPointer(V), cast(T', T))
+          => tv(cfg:intToPointer(V, T), cast(T', T))
           requires hasIntegerType(T)
                andBool (V =/=K 0)
                andBool isPointerType(T')
@@ -394,7 +394,7 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:pointerToInt(V), cast(T', T))
+          => tv(cfg:pointerToInt(V, T'), cast(T', T))
           requires isPointerType(T)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
@@ -462,7 +462,8 @@ module C-CONVERSION
      rule cast(t(Mods':Set, pointerType(T':Type)),
                tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
           => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
-          requires getAlignas(T') <=Int getAlign(Loc)
+          requires getAlignas(T') <=Int getAlign(Loc) 
+          orElseBool isFunctionType(T) andBool isFunctionType(T')
      //TODO(dwightguth): handle pointer alignment
      rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
           => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
@@ -473,6 +474,10 @@ module C-CONVERSION
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))
           requires getAlignas(T') >Int getAlign(Loc)
           [structural]
+     rule _:ErrorExit ~> castHold(t(Mods':Set, pointerType(T':Type)),
+               tv(Loc:SymLoc, t(Mods, pointerType(T:Type))))
+          => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
+          requires isErrorRecovery
 
      syntax Type ::= cast(Type, Type) [function, klabel('castTypes)]
 

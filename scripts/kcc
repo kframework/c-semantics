@@ -167,6 +167,7 @@ sub main {
      close(FILE);
 
      $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+     $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
      open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
      print $programRunner "$template\n";

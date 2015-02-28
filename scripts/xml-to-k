@@ -279,6 +279,9 @@ sub escapeWString {
 		}
 		push @str, "#token(\"" . $single . "\", \"Int\")";
 	}
+        if (!@str) {
+          return "`'klist`(.::KList)";
+        }
 
 	return "`'klist`"
             . paren(join(KLIST_SEPARATOR, @str));
