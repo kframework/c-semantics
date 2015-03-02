@@ -475,7 +475,7 @@ module C-CONVERSION
           requires getAlignas(T') >Int getAlign(Loc)
           [structural]
      rule _:ErrorExit ~> castHold(t(Mods':Set, pointerType(T':Type)),
-               tv(Loc:SymLoc, t(Mods, pointerType(T:Type))))
+               tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
           => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
           requires isErrorRecovery
 
