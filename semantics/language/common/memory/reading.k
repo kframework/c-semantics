@@ -90,7 +90,7 @@ module C-MEMORY-READING
                andBool notBool (isStructType(T) orBool isUnionType(T))
           [structural]
      rule concretize(T:Type, dataList(L:List))
-          => tv(trap, stripQualifiers(T))
+          => trap(stripQualifiers(T))
           requires (#hasTrap(L) ==K true)
                andBool notBool isUCharType(T)
                andBool notBool (isStructType(T) orBool isUnionType(T))

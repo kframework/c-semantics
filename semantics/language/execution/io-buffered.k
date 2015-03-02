@@ -297,7 +297,6 @@ module C-IO-BUFFERED
                andBool isNativeLoc(Loc)
           [structural]
 
-
      // Resolve a linker address to a real "physical" address.
      rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
           <linkings>... LinkBase |-> Base:SymBase ...</linkings>
@@ -423,7 +422,6 @@ module C-IO-BUFFERED
           requires notBool hasCharType(T:Type) andBool isNativeLoc(Loc)
      rule <k> setEffectiveType(_, T:Type) => .K ...</k>
           requires hasCharType(T:Type)
-          
           [structural]
 
 

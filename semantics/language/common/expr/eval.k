@@ -94,6 +94,12 @@ module C-COMMON-EXPR-EVAL
           requires isFunctionType(T)
           [structural]
 
+     rule reval(trap(T:Type)
+               => UNDEF("CEE2", "Indeterminate value used in an expression.",
+                    "6.2.4, 6.7.9, 6.8")
+               ~> tv(trap, T))
+          [structural]
+
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
           <initializing> I:Int </initializing>
@@ -116,15 +122,10 @@ module C-COMMON-EXPR-EVAL
           requires getKLabel(V) =/=KLabel 'tv
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          requires (isSymLoc(V) =/=K true)
-               andBool (isTrap(V) =/=K true)
+          requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
+          [structural]
+     rule checkUse(tv(trap, T:Type)) => trap(T)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
-     rule checkUse(tv(trap, T:Type))
-          => UNDEF("CEE2", "Indeterminate value used in an expression.",
-               "6.2.4, 6.7.9, 6.8")
-          ~> tv(trap, T)
-          [structural]
-
 endmodule

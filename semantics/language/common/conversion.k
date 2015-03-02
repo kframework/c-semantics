@@ -17,12 +17,13 @@ module C-CONVERSION
 
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
@@ -32,7 +33,7 @@ module C-CONVERSION
                andBool (max(T) >=Int N)
                andBool hasIntegerType(T)
      rule arithInterpret(T:Type, unknown) => tv(unknown, T)
-     rule arithInterpret(T:Type, trap) => tv(trap, T)
+     rule arithInterpret(T:Type, trap) => trap(T)
      // fixme
      rule arithInterpret(T:Type, F:Float) => tv(F, T)
           requires hasFloatType(T)
@@ -249,9 +250,9 @@ module C-CONVERSION
      rule cast(T':Type, tv(unknown, T:Type))
           => tv(unknown, cast(T', T))
           requires bitSizeofType(T') >=Int bitSizeofType(T)
-
      rule cast(T':Type, tv(unknown, T:Type))
-          => tv(trap, cast(T', T))
+          => trap(cast(T', T))
+          requires bitSizeofType(T') <Int bitSizeofType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
@@ -382,7 +383,7 @@ module C-CONVERSION
      a trap representation.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:intToPointer(V, T), cast(T', T))
+          => checkUse(tv(cfg:intToPointer(V, T), cast(T', T)))
           requires hasIntegerType(T)
                andBool (V =/=K 0)
                andBool isPointerType(T')
@@ -394,7 +395,7 @@ module C-CONVERSION
      need not be in the range of values of any integer type.
      }*/
      rule cast(T':Type, tv(V:CValue, T:Type))
-          => tv(cfg:pointerToInt(V, T'), cast(T', T))
+          => checkUse(tv(cfg:pointerToInt(V, T'), cast(T', T)))
           requires isPointerType(T)
                andBool hasIntegerType(T') andBool notBool isBoolType(T')
                andBool (byteSizeofType(T) <=Int byteSizeofType(T')
