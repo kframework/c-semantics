@@ -27,7 +27,7 @@ module C-TYPING-CANONICALIZATION
           => deleteUnuseType(L)
      rule deleteUnuseType(ListItem(K:K) L:List)
           => ListItem(K) deleteUnuseType(L)
-          requires K =/=K SpecTypedef 
+          requires K =/=K SpecTypedef
                andBool getKLabel(K) =/=KLabel 'Attribute
 
      rule canonicalizeType(M:List)
@@ -316,12 +316,6 @@ module C-TYPING-CANONICALIZATION
                UnionDef(X:CId, L:K) => UnionRef(X)))
           requires X =/=K Identifier("")
           [structural]
-
-     // TODO(chathhorn): merging; eliding anywhere rules.
-     // // FIXME what good is this_
-     // rule ListItem(SpecTypedef) => .List [structural, anywhere]
-     // // FIXME should save these for later use
-     // rule ListItem(Attribute(_:String, _)) => .List [structural, anywhere]
 
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)
