@@ -211,7 +211,7 @@ module C-TYPING-MISC
           => t(filterSet(Mods, 'isNotReadFrom), T)
 
      syntax Bool ::= isNotReadFrom(Modifier) [function]
-     rule isNotReadFrom(readFrom(_)) => false
+     rule isNotReadFrom(readFrom(_, _)) => false
      rule isNotReadFrom(_) => true [owise]
 
      rule stripConstants(T:Type)
@@ -331,12 +331,19 @@ module C-TYPING-MISC
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 
-     syntax SymLoc ::= "getReadFrom'" "(" K "," Set ")" [function]
+     syntax Modifier ::= "getReadFrom'" "(" K "," Set ")" [function]
      rule getReadFrom'(.K, SetItem(K:K) S:Set) => getReadFrom'(K, S)
-     rule getReadFrom'(readFrom(Loc:SymLoc), _) => Loc
+     rule getReadFrom'(readFrom(Loc:SymLoc, Len:Int), _) => readFrom(Loc, Len)
      rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
           requires getKLabel(K) =/=KLabel 'readFrom
                andBool (K =/=K .K)
+
+     rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
+     rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
+     syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
+     syntax Int ::= #getReadFromLen(Modifier) [function]
+     rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
+     rule #getReadFromLen(readFrom(_, Len:Int)) => Len
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of

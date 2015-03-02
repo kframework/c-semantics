@@ -274,7 +274,7 @@ module C-TYPING-PREDICATES
      rule hasReadFrom(t(Mods:Set, _)) => some(Mods, 'isReadFrom)
 
      syntax Bool ::= isReadFrom(K) [function]
-     rule isReadFrom(readFrom(_)) => true
+     rule isReadFrom(readFrom(_, _)) => true
      rule isReadFrom(_) => false [owise]
 
 endmodule
