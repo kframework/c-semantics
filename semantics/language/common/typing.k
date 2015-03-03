@@ -136,7 +136,7 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
-     syntax Modifier ::= readFrom(SymLoc)
+     syntax Modifier ::= readFrom(SymLoc, Int)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
@@ -175,7 +175,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax Bool ::= hasReadFrom(Type) [function]
-     syntax SymLoc ::= getReadFrom(Type) [function]
+     syntax Modifier ::= getReadFrom(Type) [function]
+     syntax SymLoc ::= getReadFromLoc(Type) [function]
+     syntax Int ::= getReadFromLen(Type) [function]
      syntax Type ::= stripReadFrom(Type) [function]
 
      syntax List ::= idsFromParams(List) [function]

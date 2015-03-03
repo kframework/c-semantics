@@ -486,7 +486,7 @@ module C-CONVERSION
           requires notBool hasReadFrom(T)
                andBool notBool fromConstantExpr(T)
      rule cast(T':Type, T:Type)
-          => addModifier(readFrom(getReadFrom(T)), stripReadFrom(T'))
+          => addModifier(getReadFrom(T), stripReadFrom(T'))
           requires hasReadFrom(T)
      rule cast(T':Type, T:Type) => addModifiers(getConstants(T), T')
           requires fromConstantExpr(T)
