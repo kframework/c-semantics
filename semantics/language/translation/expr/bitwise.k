@@ -5,6 +5,7 @@ module C-EXPR-BITWISE
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ERROR-SYNTAX
 
      rule ~ tv(symVal, T:Type) => tv(symVal, T)
           requires isPromoted(T)
@@ -19,6 +20,10 @@ module C-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E1 >=Int 0
           [structural]
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << tv(symVal, T2:Type)
+          => tv(symVal, T1)
+          requires isPromoted(T1) andBool isPromoted(T2)
+          andBool E1 <Int 0 andBool isErrorRecovery
      rule tv(symVal, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)
           [structural]

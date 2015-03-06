@@ -71,6 +71,12 @@ module C-COMMON-EXPR-BITWISE
           ~> tv(E1:Int, _) << tv(_, _)
           requires E1 <Int 0
           [structural]
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << tv(E2:Int, T2:Type)
+          => bitwiseInterpret(T1, E1 <<Int E2, 
+               isNegZero(E1, T1) orBool isNegZero(E2, T2))
+          requires isPromoted(T1) andBool isPromoted(T2)
+          andBool (E1 <Int 0 orBool E2 <Int 0 orBool E2 >=Int bitSizeofType(T1))
+          andBool isErrorRecovery
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -217,6 +223,8 @@ module C-COMMON-EXPR-BITWISE
                "6.2.6.2:4"))
           ~> bitwiseInterpret(tv(N:Int, T:Type))
           requires isNegZero(N, T)
+     rule _:ErrorExit ~> bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
+          requires isNegZero(N, T) andBool isErrorRecovery
 
      // Because of the undefinedness of bit shifting negative numbers, the
      // bitwise operations behave the same regardless of the encoding of
