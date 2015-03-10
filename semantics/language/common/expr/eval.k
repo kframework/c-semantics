@@ -43,8 +43,7 @@ module C-COMMON-EXPR-EVAL
 
      // Lvalue conversion.
      rule reval(nclv(Loc:SymLoc, T:Type) => checkUse(instantiate(Loc, T)))
-          requires notBool isArrayType(T)
-               andBool notBool isFunctionType(T)
+          requires notBool isArrayOrFunctionType(T)
           [structural]
 
      rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
@@ -60,10 +59,9 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:Type)
+     rule reval(nclv(Loc:SymLoc, T:ArrayType)
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
-          requires isArrayType(T)
           [structural]
 
      syntax Type ::= arrayToPtrType(Type) [function]
@@ -89,9 +87,8 @@ module C-COMMON-EXPR-EVAL
      expression that has type ``pointer to a function returning T''.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:Type)
+     rule reval(nclv(Loc:SymLoc, T:FunctionType)
                => checkUse(tv(Loc, t(.Set, pointerType(T)))))
-          requires isFunctionType(T)
           [structural]
 
      rule reval(trap(T:Type)

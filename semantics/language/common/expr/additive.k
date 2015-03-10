@@ -78,33 +78,30 @@ module C-COMMON-EXPR-ADDITIVE
      operator that is evaluated.
      }*/
 
-     rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
+     rule tv(Loc:SymLoc, T':PointerType) + tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires simpleType(innerType(T')) =/=K void
           [structural]
-     rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
+     rule tv(I:Int, _:IntegerType) + tv(Loc:SymLoc, T':PointerType)
           => addToPointer(Loc, T', I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires simpleType(innerType(T')) =/=K void
           [structural]
-     rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
+     rule tv(Loc:SymLoc, T':PointerType) - tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', 0 -Int I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires simpleType(innerType(T')) =/=K void
           [structural]
 
      rule (.K => CV("CEA3", "Invalid operand types to addition", "6.5.6:2"))
           ~> tv(_, T:Type) + tv(_, T':Type)
-          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-               orBool (isPointerType(T') andBool hasIntegerType(T)))
+          requires notBool ((isArithmeticType(T) andBool isArithmeticType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
+               orBool (isPointerType(T') andBool isIntegerType(T)))
 
      rule (.K => CV("CEA4", "Invalid operand types to subtraction", "6.5.6:3"))
           ~> tv(_, T:Type) - tv(_, T':Type)
-          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
+          requires notBool ((isArithmeticType(T) andBool isArithmeticType(T'))
                orBool (isPointerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T')))
+               orBool (isPointerType(T) andBool isIntegerType(T')))
 
      syntax KItem ::= addToPointer(SymLoc, Type, Int)
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
@@ -213,24 +210,24 @@ module C-COMMON-EXPR-ADDITIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(_, T:Type) + tv(unknown, T:Type)
+     rule tv(_, T:UnsignedIntegerType) + tv(unknown, T)
           => tv(unknown, T)
-          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          requires isPromoted(T)
           [structural]
-     rule tv(unknown, T:Type) + tv(_, T:Type)
+     rule tv(unknown, T:UnsignedIntegerType) + tv(_, T)
           => tv(unknown, T)
-          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          requires isPromoted(T)
           [structural]
 
      rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
                "6.3.1.3:3"))
-          ~> tv(_, T:Type) + tv(unknown, T:Type)
-          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          ~> tv(_, T:SignedIntegerType) + tv(unknown, T)
+          requires isPromoted(T)
           [structural]
      rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
                "6.3.1.3:3"))
-          ~> tv(unknown, T:Type) + tv(_, T:Type)
-          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          ~> tv(unknown, T:SignedIntegerType) + tv(_, T)
+          requires isPromoted(T)
           [structural]
 
 endmodule

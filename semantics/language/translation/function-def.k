@@ -22,7 +22,7 @@ module C-FUNCTION-DEF
 
      imports COMPAT-SYNTAX
 
-     rule FunctionDefinition(typedDeclaration(T:Type, X:CId), Blk:K)
+     rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare(
                typedDeclaration(toPrototype(T), X),
                initializer(initFunction(
@@ -39,7 +39,7 @@ module C-FUNCTION-DEF
           )
           ~> calculateGotoMap(X, Label(funLabel(X), safeBody(X, Blk)))
           ~> processFunDef(X, Blk)
-          requires isFunctionType(T) andBool notBool hasDupParams(T)
+          requires notBool hasDupParams(T)
           [structural]
      rule (.K => CV("FD1", "duplicate parameters in "
                +String "function definition.", "6.7:3"))
@@ -58,10 +58,9 @@ module C-FUNCTION-DEF
           requires isOldStyleFunctionType(T)
 
      syntax Type ::= emptyToVoid(Type) [function]
-     rule emptyToVoid(T:Type)
+     rule emptyToVoid(T:FunctionType)
           => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
-          requires isFunctionType(T)
-               andBool (getParams(T) ==K .List)
+          requires (getParams(T) ==K .List)
      rule emptyToVoid(T:Type) => T
           requires notBool isFunctionType(T)
                orBool (getParams(T) =/=K .List)
@@ -78,26 +77,25 @@ module C-FUNCTION-DEF
           [structural]
 
      syntax KItem ::= checkFunDefType(CId, Type)
-     rule checkFunDefType(X:CId, T:Type) => .K
-          requires notBool isFunctionType(getReturn(T))
-               andBool notBool isArrayType(getReturn(T))
-               andBool areVoidOrComplete(getParams(T))
+     rule checkFunDefType(X:CId, t(_, functionType(R:Type, P:List))) => .K
+          requires notBool isArrayOrFunctionType(R)
+               andBool areVoidOrComplete(P)
                andBool (X =/=K Identifier("main"))
           [structural]
-     rule checkFunDefType(X:CId, T:Type) => checkMainDef(T)
-          requires isVoidOrComplete(getReturn(T))
-               andBool areVoidOrComplete(getParams(T))
+     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, P:List))) 
+          => checkMainDef(t(Mods, functionType(R, P)))
+          requires isVoidOrComplete(R)
+               andBool areVoidOrComplete(P)
                andBool (X ==K Identifier("main"))
           [structural]
      rule (.K => UNDEF("FD2", "invalid return type in function definition.",
                "6.7.6.3:1"))
-          ~> checkFunDefType(_, T:Type)
-          requires isFunctionType(getReturn(T)) orBool isArrayType(getReturn(T))
+          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)))
           [structural]
      rule (.K => UNDEF("FD3", "incomplete parameter type in "
                +String "function definition.", "6.7.6.3:4"))
-          ~> checkFunDefType(_, T:Type)
-          requires notBool areVoidOrComplete(getParams(T))
+          ~> checkFunDefType(_, t(_, functionType(_, P:List)))
+          requires notBool areVoidOrComplete(P)
           [structural]
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
@@ -156,11 +154,11 @@ module C-FUNCTION-DEF
      rule #isArgvType(_) => false [owise]
 
      rule <k> initFunction(
-               tv(Loc:SymLoc, t(_, pointerType(T:Type))), Fun:KResult)
+               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), Fun:KResult)
                => .K
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
-          requires isFunctionType(T) andBool (notBool (base(Loc) in keys(M)))
+          requires (notBool (base(Loc) in keys(M)))
           [structural]
 
      syntax KItem ::= safeBody(CId, K) [function]
@@ -230,8 +228,7 @@ module C-FUNCTION-DEF
           [structural]
      rule dummyBind(ListItem(variadic)) => .K
           [structural]
-     rule dummyBind(ListItem(typedDeclaration(T:Type, _))) => .K
-          requires isVoidType(T)
+     rule dummyBind(ListItem(typedDeclaration(_:VoidType, _))) => .K
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
           => addToEnv(X, symVal)

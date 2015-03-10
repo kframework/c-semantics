@@ -130,8 +130,7 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makeOldStyleFunctionType(L))
           [structural]
 
-     rule pushTypeDown(T:Type, Lbl:K) => applyTypeFunction(Lbl, T)
-          requires isBasicType(T)
+     rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:K)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
@@ -224,8 +223,7 @@ module C-TYPING-INTERPRETATION
      rule NameAndType(X:CId, T:Type) => typedDeclaration(T, X)
           [structural]
 
-     rule extractActualType(T:Type) => T
-          requires isBasicType(T)
+     rule extractActualType(T:BasicType) => T
      rule extractActualType(t(S:Set, structType(X:StructId)))
           => t(S, structType(X))
      rule extractActualType(t(S:Set, unionType(X:StructId)))
@@ -278,7 +276,6 @@ module C-TYPING-INTERPRETATION
           => t(Mods, pointerType(T))
      rule adjustParam(T:Type) => T
           requires notBool isTypedDeclaration(T)
-               andBool notBool isFunctionType(T)
-               andBool notBool isArrayType(T)
+               andBool notBool isArrayOrFunctionType(T)
 
 endmodule

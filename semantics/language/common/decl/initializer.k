@@ -55,20 +55,19 @@ module C-DECL-INITIALIZER
           [structural]
 
      // aggregates
-     rule figureInit(X:CId, T:Type, CompoundInit(L:K))
+     rule figureInit(X:CId, T:AggregateOrUnionType, CompoundInit(L:K))
           => giveType(X, T)
           ~> figureInit-aux(X, T, startInit(T, X, CompoundInit(L)))
-          requires isAggregateType(T) orBool isUnionType(T)
           [structural]
 
      rule figureInit(
                _,
-               t(_, arrayType(T:Type, Len:Int)),
+               t(_, arrayType(_:CharType, Len:Int)),
                (SingleInit(stringLiteral(S:String))
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
           )
-          requires hasCharType(T:Type) andBool (lengthString(S) <=Int Len)
+          requires (lengthString(S) <=Int Len)
           [structural]
 
      rule figureInit(
@@ -81,10 +80,9 @@ module C-DECL-INITIALIZER
           requires isWCharType(T) andBool (size(S) <=Int Len)
           [structural]
 
-     rule figureInit(_, t(_, (incompleteArrayType(T:Type)
+     rule figureInit(_, t(_, (incompleteArrayType(T:CharType)
           => arrayType(T, lengthString(S) +Int 1))),
                SingleInit(stringLiteral(S:String)))
-          requires hasCharType(T:Type)
           [structural]
 
      rule figureInit(_, t(_, (incompleteArrayType(T:Type)
@@ -116,20 +114,20 @@ module C-DECL-INITIALIZER
                CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
           => figureInit-aux(X, T,
                initializer(Computation(X := K)))
-          requires notBool (isAggregateType(T) orBool isUnionType(T))
+          requires notBool isAggregateOrUnionType(T)
           [structural]
 
      rule (.K => UNDEF("CDI1",
                "Initializer for scalar contains multiple expressions", "6.7.9:11"))
           ~> figureInit(_, T:Type, CompoundInit(list(L:List)))
-          requires notBool (isAggregateType(T) orBool isUnionType(T))
+          requires notBool isAggregateOrUnionType(T)
                andBool size(L) >Int 1
 
      rule (.K => UNDEF("CDI2",
                "Initializer for scalar contains multiple levels of braces", "6.7.9:11"))
           ~> figureInit(_, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(_))))))
-          requires notBool (isAggregateType(T) orBool isUnionType(T))
+          requires notBool isAggregateOrUnionType(T)
 
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type", "6.7.9:16"))
@@ -180,7 +178,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= startInit(Type, CId, K)
-     rule <k> startInit(T:Type, X:CId, CompoundInit(list(L:List)))
+     rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))
                => fillInits(L) ~> getInit
           ...</k>
           <incomplete-length> _ => 0 </incomplete-length>
@@ -191,7 +189,6 @@ module C-DECL-INITIALIZER
                .List => ListItem(te(X, T))
           </curr-object>
           <saved-init>... .K => zero(X) </saved-init>
-          requires isUnionType(T) orBool isAggregateType(T)
           [structural]
 
      rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
@@ -330,13 +327,12 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                (_:List => .List)
-               ListItem(te(K:K, T:Type))
+               ListItem(te(K:K, T:AggregateOrUnionType))
                (ListItem(Remainder:K) => .List)
           </curr-subobject>
           <curr-object>
                (.List => ListItem(te(K, T)))
           ...</curr-object>
-          requires isAggregateType(T) orBool isUnionType(T)
           [structural]
      rule <k> finishCompoundInit(L:List) => .K ...</k>
           <curr-object>
@@ -353,22 +349,20 @@ module C-DECL-INITIALIZER
                => fillInit(InitFragment(buildDesignator(
                     InFieldInit(F, K')), Exp))
           ...</k>
-          <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
+          <curr-object> ListItem(te(K:K, T:StructOrUnionType)) ...</curr-object>
           <curr-subobject>
                _:List => ListItem(block) ListItem(te(K, T))
           </curr-subobject>
-          requires isStructType(T) orBool isUnionType(T)
           [structural]
      // fixme does this need to worry about incompleteLength_
      rule <k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
                => fillInit(InitFragment(
                     buildDesignator(AtIndexInit(Index, K')), Exp))
           ...</k>
-          <curr-object> ListItem(te(K:K, T:Type)) ...</curr-object>
+          <curr-object> ListItem(te(K:K, T:ArrayType)) ...</curr-object>
           <curr-subobject>
                _:List => ListItem(block) ListItem(te(K, T))
           </curr-subobject>
-          requires isArrayType(T)
           [structural]
 
      syntax KItem ::= buildDesignator(K)
@@ -396,9 +390,8 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(te(K[[N]], innerType(T))))
-                    ListItem(te(K:K, T:Type))
+                    ListItem(te(K:K, T:ArrayType))
           ...</curr-subobject>
-          requires isArrayType(T)
           [structural]
 
      syntax KItem ::= "popInit"
@@ -430,8 +423,7 @@ module C-DECL-INITIALIZER
           requires (isBasicType(T)
                     orBool isPointerType(T)
                     orBool isBitfieldType(T))
-               andBool notBool isStructType(T')
-               andBool notBool isUnionType(T')
+               andBool notBool isStructOrUnionType(T')
           [structural]
 
      rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member",
@@ -441,16 +433,13 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                ListItem(next)
           ...</curr-subobject>
-          requires notBool isStructType(T)
-               andBool notBool isUnionType(T)
+          requires notBool isStructOrUnionType(T)
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
      syntax KItem ::= initFromAggregateRHS(K, Type)
-     rule T:Type ~> initializeSingleInit(K:K)
+     rule T:StructOrUnionType ~> initializeSingleInit(K:K)
           => initFromAggregateRHS(K, T)
-          requires isStructType(T)
-               orBool isUnionType(T)
           [structural]
 
      syntax KItem ::= initFromStructRHS(K, Type)
@@ -493,10 +482,10 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(stringLiteral(S)))
           ...</k>
           <curr-subobject>
-               ListItem(te(_:K, T:Type))
-               ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
+               ListItem(te(_:K, T:CharType))
+               ListItem(te(_, t(_, arrayType(T, Len:Int))))
           ...</curr-subobject>
-          requires hasCharType(T:Type) andBool lengthString(S) ==Int Len
+          requires lengthString(S) ==Int Len
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(wstringLiteral(S)))
@@ -511,10 +500,10 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(stringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(te(_:K, T:Type))
-               ListItem(te(_, t(_, arrayType(T:Type, Len:Int))))
+               ListItem(te(_:K, T:CharType))
+               ListItem(te(_, t(_, arrayType(T, Len:Int))))
           ...</curr-subobject>
-          requires hasCharType(T:Type) andBool lengthString(S) <Int Len
+          requires lengthString(S) <Int Len
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit(SingleInit(wstringLiteral(S ListItem(0))))
@@ -529,10 +518,9 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(stringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(te(_:K, T:Type))
-               ListItem(te(_, t(_, incompleteArrayType(T:Type))))
+               ListItem(te(_:K, T:CharType))
+               ListItem(te(_, t(_, incompleteArrayType(T))))
           ...</curr-subobject>
-          requires hasCharType(T:Type)
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
                => fillInit-aux(SingleInit(
@@ -548,8 +536,8 @@ module C-DECL-INITIALIZER
                => fillInit(initHead(S))
                ~> fillInit-aux(initTail(S))
           ...</k>
-          <curr-subobject> ListItem(te(_, T:Type)) ...</curr-subobject>
-          requires (S =/=String "") andBool hasCharType(T:Type)
+          <curr-subobject> ListItem(te(_, _:CharType)) ...</curr-subobject>
+          requires (S =/=String "")
           [structural]
 
      syntax KItem ::= initHead(String) [function]
@@ -583,7 +571,7 @@ module C-DECL-INITIALIZER
           <curr-subobject>
                ListItem(te(_, T:Type))
           ...</curr-subobject>
-          requires notBool hasCharType(T:Type)
+          requires notBool isCharType(T:Type)
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]

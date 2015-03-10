@@ -224,25 +224,20 @@ module C-MEMORY-WRITING
           requires Pos <Int Len
 
      // this general rule is useful for unknowns, abstracts, etc
-     rule splitBytes(tv(N:Bits, T:Type))
+     rule splitBytes(tv(N:Bits, _:CharType))
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
-          requires hasCharType(T:Type) andBool (isInt(N:Bits) =/=K true)
+          requires (isInt(N:Bits) =/=K true)
      rule splitBytes(tv(unknown, T:Type))
           => dataList(splitUnknown(bitSizeofType(T)))
      rule splitBytes(tv(I:Int, T:Type))
           => splitIntegerBytes(I, T, byteSizeofType(T))
-          requires hasIntegerType(T)
      rule splitBytes(tv(F:Float, T:Type))
           => splitFloatBytes(F, T, byteSizeofType(T))
-          requires hasFloatType(T)
      rule splitBytes(tv(Loc:SymLoc, T:Type))
           => splitPointerBytes(Loc, byteSizeofType(T))
-     rule splitBytes(tv(agg(L:List), t(S:Set, structType(X:StructId))))
-          => splitStructBytes(dataList(L), t(S, structType(X)),
-               byteSizeofType(t(S, structType(X))))
-     rule splitBytes(tv(agg(L:List), t(S:Set, unionType(X:StructId))))
-          => splitStructBytes(dataList(L), t(S, unionType(X)),
-               byteSizeofType(t(S, unionType(X))))
+     rule splitBytes(tv(agg(L:List), T:StructOrUnionType))
+          => splitStructBytes(dataList(L), T,
+               byteSizeofType(T))
 
      syntax List ::= splitUnknown(Int) [function]
      rule splitUnknown(N:Int)
@@ -321,9 +316,8 @@ module C-MEMORY-WRITING
 
      syntax Bits ::= lowestByte(Int, Type) [function]
 
-     rule lowestByte(I:Int, T:Type)
+     rule lowestByte(I:Int, _:IntegerType)
           => piece(I &Int byteMaskSet, cfg:bitsPerByte)
-          requires hasIntegerType(T)
           [structural]
 
      syntax Int ::= "byteMaskSet" [function]

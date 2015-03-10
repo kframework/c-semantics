@@ -58,12 +58,11 @@ module C-EXPR-FUNCTION-CALL
           <linkings>... Base |-> Base':SymBase ...</linkings>
 
      rule <k> Call(
-               tv(loc(Base:SymBase, 0), t(_, pointerType(T:Type))),
+               tv(loc(Base:SymBase, 0), t(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
           <functions>... Base |-> Fun:KResult ...</functions>
-          requires isFunctionType(T)
           [structural]
 
      syntax KItem ::= revalParams(K)

@@ -52,15 +52,13 @@ module C-MEMORY-READING
           => concretize(T, readBytes(stripProv(Loc), byteSizeofType(T), T))
           requires notBool isBitfieldType(T)
           [structural]
-     rule readActual(Loc:SymLoc, T:Type)
+     rule readActual(Loc:SymLoc, T:BitfieldType)
           => concretize(T, fillToBytes(extractBitsFromMem(Loc, T)))
-          requires isBitfieldType(T)
           [structural]
 
-     rule concretize(T:Type, dataList(L:List))
+     rule concretize(T:IntegerType, dataList(L:List))
           => joinIntegerBytes(T, L)
-          requires hasIntegerType(T)
-               andBool notBool isBitfieldType(T)
+          requires notBool isBitfieldType(T)
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
@@ -69,40 +67,36 @@ module C-MEMORY-READING
           requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(T:Type, dataList(L:List))
+     rule concretize(T:FloatType, dataList(L:List))
           => joinFloatBytes(T, L)
-          requires hasFloatType(T)
-               andBool (#hasUnknown(L) =/=K true)
+          requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
 
      // fixme should also check sizes are appropriate
-     rule concretize(T:Type, dataList(L:List))
+     rule concretize(T:PointerType, dataList(L:List))
           => joinPointerBytes(T, L)
-          requires isPointerType(T)
-               andBool (#hasUnknown(L) =/=K true)
+          requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
      rule concretize(T:Type, dataList(L:List))
           => tv(unknown, stripQualifiers(T))
           requires (#hasUnknown(L) ==K true)
                andBool (#hasTrap(L) =/=K true)
-               andBool notBool (isStructType(T) orBool isUnionType(T))
+               andBool notBool isStructOrUnionType(T)
           [structural]
      rule concretize(T:Type, dataList(L:List))
           => trap(stripQualifiers(T))
           requires (#hasTrap(L) ==K true)
                andBool notBool isUCharType(T)
-               andBool notBool (isStructType(T) orBool isUnionType(T))
+               andBool notBool isStructOrUnionType(T)
           [structural]
-     rule concretize(T:Type, dataList(L:List))
+     rule concretize(T:UCharType, dataList(L:List))
           => tv(unknown, stripQualifiers(T))
           requires (#hasTrap(L) ==K true)
-               andBool isUCharType(T)
           [structural]
-     rule concretize(T:Type, dataList(L:List))
+     rule concretize(T:StructOrUnionType, dataList(L:List))
           => tv(agg(L), stripQualifiers(T))
-          requires isStructType(T) orBool isUnionType(T)
           [structural]
 
      syntax Bool ::= #hasUnknown(List) [function]
@@ -179,18 +173,15 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(Type, K) [function]
      syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T:Type, I:Int) => tv(I, stripQualifiers(T))
+     rule interpret-aux(T:IntegerType, I:Int) => tv(I, stripQualifiers(T))
           requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
-               andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int)
+     rule interpret-aux(T:IntegerType, I:Int)
           => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int >Int max(T))
-               andBool hasIntegerType(T)
-     rule interpret-aux(T:Type, I:Int)
+     rule interpret-aux(T:IntegerType, I:Int)
           => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int <Int min(T))
-               andBool hasIntegerType(T)
 
      // loc, size in bits
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)

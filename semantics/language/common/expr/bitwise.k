@@ -50,8 +50,8 @@ module C-COMMON-EXPR-BITWISE
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) << tv(_, T2:Type)
-          requires notBool hasIntegerType(T1)
-               orBool notBool hasIntegerType(T2)
+          requires notBool isIntegerType(T1)
+               orBool notBool isIntegerType(T2)
           [structural]
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
@@ -98,8 +98,8 @@ module C-COMMON-EXPR-BITWISE
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
           ~> tv(_, T1:Type) >> tv(_, T2:Type)
-          requires notBool hasIntegerType(T1)
-               orBool notBool hasIntegerType(T2)
+          requires notBool isIntegerType(T1)
+               orBool notBool isIntegerType(T2)
           [structural]
      rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
@@ -157,8 +157,8 @@ module C-COMMON-EXPR-BITWISE
                "both bitwise AND operands must have integer type.",
                "6.5.10:2"))
           ~> tv(_, T1:Type) & tv(_, T2:Type)
-          requires notBool hasIntegerType(T1)
-               orBool notBool hasIntegerType(T2)
+          requires notBool isIntegerType(T1)
+               orBool notBool isIntegerType(T2)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.11}{3--4}}}{
@@ -178,8 +178,8 @@ module C-COMMON-EXPR-BITWISE
                "both bitwise exclusive OR operands must have integer type.",
                "6.5.11:2"))
           ~> tv(_, T1:Type) ^ tv(_, T2:Type)
-          requires notBool hasIntegerType(T1)
-               orBool notBool hasIntegerType(T2)
+          requires notBool isIntegerType(T1)
+               orBool notBool isIntegerType(T2)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.12}{3--4}}}{
@@ -199,18 +199,15 @@ module C-COMMON-EXPR-BITWISE
                "both bitwise inclusive OR operands must have integer type.",
                "6.5.12:2"))
           ~> tv(_, T1:Type) | tv(_, T2:Type)
-          requires notBool hasIntegerType(T1)
-               orBool notBool hasIntegerType(T2)
+          requires notBool isIntegerType(T1)
+               orBool notBool isIntegerType(T2)
           [structural]
 
      syntax KItem ::= bitwiseInterpret(Type, Int, Bool)
-     rule bitwiseInterpret(T:Type, N:Int, _) => arithInterpret(T, N)
-          requires hasUnsignedIntegerType(T)
-     rule bitwiseInterpret(T:Type, N:Int, true) => arithInterpret(T, N)
-          requires hasSignedIntegerType(T)
-     rule bitwiseInterpret(T:Type, N:Int, false)
+     rule bitwiseInterpret(T:UnsignedIntegerType, N:Int, _) => arithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerType, N:Int, true) => arithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerType, N:Int, false)
           => bitwiseInterpret(arithInterpret(T, N))
-          requires hasSignedIntegerType(T)
 
      syntax KItem ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)

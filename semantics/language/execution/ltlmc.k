@@ -207,9 +207,8 @@ module C-LTLMC
           => #struct(V, getFieldInfo(S))
      rule joinBytes(t(_, unionType(S:StructId)), dataList(V:List))
           => #union(V, getFieldInfo(S))
-     rule joinBytes(T:Type, dataList(V:List))
+     rule joinBytes(T:IntegerType, dataList(V:List))
           => joinBytes'(T, V, .List)
-          requires hasIntegerType(T:Type)
 
      rule joinBytes'(T:Type,
                L:List ListItem(piece(N:Int, Len:Int)),

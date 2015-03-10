@@ -36,18 +36,14 @@ module C-TYPING-MISC
      rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
           => t(S, long-long-int)
 
-     rule min(t(_, bitfieldType(T:Type, _))) => 0
-          requires hasUnsignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int)))
+     rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
+     rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
           => (2 ^Int absInt(N)) -Int 1
-          requires hasUnsignedIntegerType(T)
 
-     rule min(t(_, bitfieldType(T:Type, N:Int)))
+     rule min(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
-          requires hasSignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int)))
+     rule max(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
           => (2 ^Int absInt(N -Int 1)) -Int 1
-          requires hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
@@ -92,13 +88,11 @@ module C-TYPING-MISC
      rule min(t(_, enumType(_))) => cfg:enumMin
      rule max(t(_, enumType(_))) => cfg:enumMax
 
-     rule inRange(V:Int, T:Type)
+     rule inRange(V:Int, T:IntegerType)
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
-          requires hasIntegerType(T)
-     rule inRange(V:Float, T:Type)
+     rule inRange(V:Float, T:FloatType)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
-          requires hasFloatType(T)
 
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
@@ -271,7 +265,7 @@ module C-TYPING-MISC
           [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
-/*     rule tagRestrict(_, T:BaseType) => T
+/*     rule tagRestrict(_, T:SimpleType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
      rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))

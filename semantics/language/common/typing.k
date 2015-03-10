@@ -28,29 +28,16 @@ module C-TYPING-SYNTAX
      // is "Int", second arg is "PointerType(JustBase)"
      syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
 
-     syntax Bool ::= hasArithmeticType(Type) [function]
-     syntax Bool ::= hasCharType(Type) [function]
-     syntax Bool ::= isUCharType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
-     syntax Bool ::= isPointerType(Type) [function]
-     syntax Bool ::= isArrayType(Type) [function]
      syntax Bool ::= isFlexibleArrayType(Type) [function]
-     syntax Bool ::= isBoolType(Type) [function]
-     syntax Bool ::= isStructType(Type) [function]
-     syntax Bool ::= isUnionType(Type) [function]
-     syntax Bool ::= isAggregateType(Type) [function]
-     syntax Bool ::= isFunctionType(Type) [function]
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
-     syntax Bool ::= isBitfieldType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
      syntax Bool ::= isIncompleteArrayType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
-     syntax Bool ::= isVoidType(Type) [function]
-     syntax Bool ::= isNoType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
 
      // Storage class specifiers.
@@ -66,6 +53,23 @@ module C-TYPING-SYNTAX
 
      syntax CSize ::= Int
      syntax CValue ::= CSize
+
+     // Basic types
+     syntax SimpleCharType ::= "char" [function]
+     syntax SimpleSignedType ::= "short-int" | "int"
+     		               | "long-int" | "long-long-int" 
+                               | SimpleSignedCharType
+     syntax SimpleFloatType ::= "float" | "double" | "long-double"
+     syntax SimpleSignedCharType ::= "signed-char"
+     syntax SimpleUnsignedCharType ::= "unsigned-char"
+     syntax SimpleCharType ::= SimpleSignedCharType | SimpleUnsignedCharType
+     syntax SimpleUnsignedType ::= "bool" | "unsigned-short-int" 
+                                 | "unsigned-int" | "unsigned-long-int" 
+                                 | "unsigned-long-long-int" 
+                                 | SimpleUnsignedCharType
+     syntax SimpleType ::= "no-type" | "void" | SimpleCharType 
+                         | SimpleFloatType | SimpleUnsignedType 
+                         | SimpleSignedType
 
      // Composite types
      syntax SimpleType ::= enumType(CId)
@@ -88,25 +92,40 @@ module C-TYPING-SYNTAX
      syntax CId ::= getTag(StructId) [function]
      syntax KItem ::= "#incomplete"
 
-     // Basic types
-     // TODO(chathhorn): probably should create subsorts for
-     // Unsigned/SignedIntTYpe, etc.
-     syntax SimpleType ::= BaseType
-     syntax BaseType ::= "char" [function]
-     syntax BaseType ::= "void" | "bool" | "short-int" | "int"
-                        | "long-int" | "long-long-int"
-     syntax BaseType ::= "float" | "double" | "long-double"
-     syntax BaseType ::= "signed-char" | "unsigned-char"
-     syntax BaseType ::= "unsigned-short-int" | "unsigned-int"
-                        | "unsigned-long-int" | "unsigned-long-long-int"
-     syntax BaseType ::= "no-type"
-
      // These aren't real types, but are values that can appear in type
      // contexts.
      syntax SimpleType ::= typedefType(CId, Type)
      syntax Type ::= "variadic"
 
-     syntax Bool ::= isBasicType(K) [function]
+     syntax Type ::= BasicType | PointerType | AggregateOrUnionType 
+                   | StructOrUnionType | ArrayOrFunctionType
+     syntax AggregateOrUnionType ::= AggregateType | UnionType
+     syntax AggregateType ::= ArrayType | StructType
+     syntax StructOrUnionType ::= StructType | UnionType
+     syntax ArrayOrFunctionType ::= ArrayType | FunctionType
+     syntax BasicType ::= ArithmeticType | VoidType | NoType
+     syntax ArithmeticType ::= IntegerType | FloatType
+     syntax IntegerType ::= UnsignedIntegerType | SignedIntegerType | CharType | BitfieldType
+     syntax SignedIntegerType ::= SCharType | SignedBitfieldType
+     syntax UnsignedIntegerType ::= UCharType | BoolType | UnsignedBitfieldType
+     syntax CharType ::= UCharType | SCharType
+     syntax BitfieldType ::= UnsignedBitfieldType | SignedBitfieldType
+
+     syntax PointerType
+     syntax UnsignedBitfieldType
+     syntax SignedBitfieldType
+     syntax UnionType
+     syntax ArrayType
+     syntax StructType
+     syntax FunctionType
+     syntax VoidType
+     syntax NoType
+     syntax FloatType
+     syntax UnsignedIntegerType
+     syntax SignedIntegerType
+     syntax UCharType
+     syntax SCharType
+     syntax BoolType
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
@@ -115,10 +134,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= hasSameSignedness(Type, Type) [function]
      syntax Type ::= correspondingUnsignedType(Type) [function]
      syntax Type ::= correspondingSignedType(Type) [function]
-     syntax Bool ::= hasIntegerType(Type) [function]
-     syntax Bool ::= hasUnsignedIntegerType(Type) [function]
-     syntax Bool ::= hasSignedIntegerType(Type) [function]
-     syntax Bool ::= hasFloatType(Type) [function]
 
      syntax Int ::= min(Type) [function]
      syntax Int ::= max(Type) [function]

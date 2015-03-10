@@ -174,8 +174,7 @@ module C-TYPING-CANONICALIZATION
 //      => t(S, incompleteUnionType(C))
 //      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
 //      => t(S, typedefType(C, canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(T:Type) => T
-//      requires isBasicType(T)
+//      rule canonicalizeArrayType(T:BasicType) => T
 
      syntax Bool ::= isGlobalScope(K) [function]
      rule isGlobalScope(file-scope) => true

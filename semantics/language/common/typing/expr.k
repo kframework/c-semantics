@@ -88,22 +88,19 @@ module C-TYPING-EXPR
      rule <type> OffsetOf(_, _, _) => t(SetItem(IntegerConstant), cfg:sizeut) ...</type>
 
      rule <type>
-               t(S:Set, pointerType(T:Type)) + T':Type
+               t(S:Set, pointerType(T:Type)) + _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               T':Type + t(S:Set, pointerType(T:Type))
+               _:IntegerType + t(S:Set, pointerType(T:Type))
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               t(S:Set, pointerType(T:Type)) - T':Type
+               t(S:Set, pointerType(T:Type)) - _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
                t(_, pointerType(_:Type)) - t(_, pointerType(_:Type))
@@ -111,40 +108,34 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
      rule <type>
-               t(S:Set, arrayType(T:Type, _)) + T':Type
+               t(S:Set, arrayType(T:Type, _)) + _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               T':Type + t(S:Set, arrayType(T:Type, _))
+               _:IntegerType + t(S:Set, arrayType(T:Type, _))
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               t(S:Set, arrayType(T:Type, _)) - T':Type
+               t(S:Set, arrayType(T:Type, _)) - _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               t(S:Set, incompleteArrayType(T:Type)) + T':Type
+               t(S:Set, incompleteArrayType(T:Type)) + _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               T':Type + t(S:Set, incompleteArrayType(T:Type))
+               _:IntegerType + t(S:Set, incompleteArrayType(T:Type))
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
      rule <type>
-               t(S:Set, incompleteArrayType(T:Type)) - T':Type
+               t(S:Set, incompleteArrayType(T:Type)) - _:IntegerType
                => t(S, pointerType(T))
           ...</type>
-          requires hasIntegerType(T')
           [structural]
 
 
@@ -226,20 +217,16 @@ module C-TYPING-EXPR
           [structural]
 
      rule <type>
-               L:KLabel(T:Type,, T':Type)
+               L:KLabel(T:ArithmeticType,, T':ArithmeticType)
                => usualArithmeticConversion(T, T')
           ...</type>
           requires isArithBinConversionOp(L)
-               andBool (hasIntegerType(T) orBool hasFloatType(T))
-               andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
 
      rule <type>
-               _:K ? T:Type : T':Type
+               _:K ? T:ArithmeticType : T':ArithmeticType
                => usualArithmeticConversion(T, T')
           ...</type>
-          requires (hasIntegerType(T) orBool hasFloatType(T))
-               andBool (hasIntegerType(T') orBool hasFloatType(T'))
           [structural]
      rule <type> _:K ? T:Type : T:Type => T:Type ...</type>
           requires notBool isArrayType(T)
@@ -263,26 +250,22 @@ module C-TYPING-EXPR
           ...</type>
           [structural]
 
-     rule <type> L:KLabel(T:Type) => T ...</type>
+     rule <type> L:KLabel(T:FloatType) => T ...</type>
           requires isArithUnaryOp(L)
-               andBool hasFloatType(T)
           [structural]
-     rule <type> L:KLabel(T:Type) => promote(T) ...</type>
-          requires isArithUnaryOp(L) andBool hasIntegerType(T)
-          [structural]
-
-     rule <type> L:KLabel(T:Type,, _:KList) => T ...</type>
-          requires hasFloatType(T)
-               andBool (l(L) in typeStrictLeftBinaryOperators)
-          [structural]
-     rule <type> L:KLabel(T:Type,, _:KList) => promote(T) ...</type>
-          requires hasIntegerType(T)
-               andBool (l(L) in typeStrictLeftBinaryOperators)
+     rule <type> L:KLabel(T:IntegerType) => promote(T) ...</type>
+          requires isArithUnaryOp(L)
           [structural]
 
-     rule <type> L:KLabel(T:Type) => T ...</type>
-          requires isPointerType(T)
-               andBool (
+     rule <type> L:KLabel(T:FloatType,, _:KList) => T ...</type>
+          requires (l(L) in typeStrictLeftBinaryOperators)
+          [structural]
+     rule <type> L:KLabel(T:IntegerType,, _:KList) => promote(T) ...</type>
+          requires (l(L) in typeStrictLeftBinaryOperators)
+          [structural]
+
+     rule <type> L:KLabel(T:PointerType) => T ...</type>
+          requires (
                     (L ==KLabel ('_++))
                     orBool (L:KLabel ==KLabel ('_--))
                     orBool (L:KLabel ==KLabel ('--_))

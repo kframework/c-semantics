@@ -170,26 +170,23 @@ module C-PROMOTION
      rule #isPromoted(_) => false [owise]
 
      rule L:KLabel(
-               (tv(V:CValue, T:Type) => tv(V, promote(T)))
+               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
           )
           requires isArithUnaryOp(L)
-               andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
      rule L:KLabel(
-               (tv(V:CValue, T:Type) => tv(V, promote(T)))
+               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
                ,, _
           )
           requires isArithBinOp(L)
-               andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
      rule L:KLabel(
                _,,
-               (tv(V:CValue, T:Type) => tv(V, promote(T)))
+               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
           )
           requires isArithBinOp(L)
-               andBool hasIntegerType(T)
                andBool notBool isPromoted(T)
           [structural]
 
@@ -241,13 +238,11 @@ module C-PROMOTION
      the same, and complex otherwise. This pattern is called the usual
      arithmetic conversions:
      }*/
-     rule Lbl:KLabel(tv(V:CValue, T:Type),, tv(V':CValue, T':Type))
+     rule Lbl:KLabel(tv(V:CValue, T:ArithmeticType),, tv(V':CValue, T':ArithmeticType))
           => Lbl(cast(
                usualArithmeticConversion(T, T'), tv(V, T)),,
                cast(usualArithmeticConversion(T, T'), tv(V', T')))
           requires isArithBinConversionOp(Lbl)
-               andBool (hasIntegerType(T) orBool hasFloatType(T))
-               andBool (hasIntegerType(T') orBool hasFloatType(T'))
                andBool (T =/=Type T')
           [structural]
 
@@ -308,8 +303,8 @@ module C-PROMOTION
 
      rule usualArithmeticConversion(T:Type, T':Type)
           => usualArithmeticConversion-aux(promote(T), promote(T'))
-          requires notBool hasFloatType(T)
-               andBool notBool hasFloatType(T')
+          requires notBool isFloatType(T)
+               andBool notBool isFloatType(T')
 
      /*@
      \begin{itemize}
@@ -354,14 +349,10 @@ module C-PROMOTION
      with unsigned integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:Type, T':Type) => T'
-          requires hasSignedIntegerType(T)
-               andBool hasUnsignedIntegerType(T')
-               andBool rank(T') >=Int rank(T)
-     rule usualArithmeticConversion-aux(T:Type, T':Type) => T
-          requires hasUnsignedIntegerType(T)
-               andBool hasSignedIntegerType(T')
-               andBool rank(T) >=Int rank(T')
+     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType) => T'
+          requires rank(T') >=Int rank(T)
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType) => T
+          requires rank(T) >=Int rank(T')
 
      /*@
      \begin{itemize}
@@ -373,16 +364,12 @@ module C-PROMOTION
      the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:Type, T':Type) => T
-          requires hasSignedIntegerType(T)
-               andBool hasUnsignedIntegerType(T')
-               andBool rank(T') <Int rank(T)
+     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType) => T
+          requires rank(T') <Int rank(T)
                andBool min(T) <=Int min(T')
                andBool max(T) >=Int max(T')
-     rule usualArithmeticConversion-aux(T:Type, T':Type) => T'
-          requires hasUnsignedIntegerType(T)
-               andBool hasSignedIntegerType(T')
-               andBool rank(T) <Int rank(T')
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType) => T'
+          requires rank(T) <Int rank(T')
                andBool min(T') <=Int min(T)
                andBool max(T') >=Int max(T)
 
@@ -394,18 +381,14 @@ module C-PROMOTION
      corresponding to the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:Type, T':Type)
+     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType)
           => correspondingUnsignedType(T)
-          requires hasSignedIntegerType(T)
-               andBool hasUnsignedIntegerType(T')
-               andBool rank(T') <Int rank(T)
+          requires rank(T') <Int rank(T)
                andBool (min(T) >Int min(T')
                     orBool max(T) <Int max(T'))
-     rule usualArithmeticConversion-aux(T:Type, T':Type)
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType)
           => correspondingUnsignedType(T')
-          requires hasUnsignedIntegerType(T)
-               andBool hasSignedIntegerType(T')
-               andBool rank(T) <Int rank(T')
+          requires rank(T) <Int rank(T')
                andBool (min(T') >Int min(T)
                     orBool max(T') <Int max(T))
 
