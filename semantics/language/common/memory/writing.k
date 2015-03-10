@@ -248,36 +248,36 @@ module C-MEMORY-WRITING
           requires N <=Int 0
 
      syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
-     syntax DataList ::= splitIntegerBytes(Int, Type, Int, List) [function]
+     syntax DataList ::= #splitIntegerBytes(Int, Type, Int, List) [function]
 
      rule splitIntegerBytes(I:Int, T:Type, Len:Int)
-          => splitIntegerBytes(I, T, Len, .List)
-     rule splitIntegerBytes(I:Int, T:Type, Len:Int, L:List)
-          => splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1,
+          => #splitIntegerBytes(I, T, Len, .List)
+     rule #splitIntegerBytes(I:Int, T:Type, Len:Int, L:List)
+          => #splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1,
                L ListItem(lowestByte(I, T)))
           requires Len >Int 0
-     rule splitIntegerBytes(_, _, 0, L:List) => dataList(L)
+     rule #splitIntegerBytes(_, _, 0, L:List) => dataList(L)
 
      syntax DataList ::= splitStructBytes(K, Type, Int) [function]
-     syntax DataList ::= splitStructBytes(K, Type, Int, List)  [function]
+     syntax DataList ::= #splitStructBytes(K, Type, Int, List)  [function]
 
      rule splitStructBytes(dataList(L:List), T:Type, Len:Int)
-          => splitStructBytes(dataList(L), T, Len, .List)
-     rule splitStructBytes(
+          => #splitStructBytes(dataList(L), T, Len, .List)
+     rule #splitStructBytes(
           dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
                T:Type, Len:Int, L:List)
-          => splitStructBytes(dataList(Rest), T, Len -Int 1,
+          => #splitStructBytes(dataList(Rest), T, Len -Int 1,
                L ListItem(piece(N, PieceLen)))
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(T))
                     orBool N ==K unknown)
-     rule splitStructBytes(
+     rule #splitStructBytes(
           dataList(ListItem(piece((N:Bits => unknown), _:Int)) _:List),
                T:Type, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(T))
                andBool N =/=K unknown
-     rule splitStructBytes(_, _, 0, L:List) => dataList(L)
+     rule #splitStructBytes(_, _, 0, L:List) => dataList(L)
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset:Int, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))

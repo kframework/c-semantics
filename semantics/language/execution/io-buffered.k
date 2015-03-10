@@ -160,10 +160,19 @@ module C-IO-BUFFERED
                (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
           <mem>...
-               Base |-> object(_, Len:Int, M:Map => M[Offset <- V])
+               Base |-> (K:KItem => updateObject(K, Offset, V))
           ...</mem>
-          requires Offset <Int Len
+          requires objectInBounds(K, Offset) 
           [structural]
+
+     // TODO(dwightguth): remove this ugliness
+     // this is here because the above rule used to use the PatternMatcher implementation for matching which is really slow.
+     // the below rules use NonACPatternMatcher which does not have this performance issue
+     syntax KItem ::= updateObject(K, Int, K) [function]
+     syntax Bool ::= objectInBounds(K, Int) [function]
+
+     rule updateObject(object(T:K, Len:Int, M:Map), Offset:Int, V:K) => object(T, Len, M[Offset <- V])
+     rule objectInBounds(object(_, Len:Int, _), Offset:Int) => Offset <Int Len
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
      rule <buffer>

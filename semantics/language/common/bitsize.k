@@ -101,10 +101,7 @@ module C-BITSIZE
 
      //- derived
      syntax Int ::= bitsToBytes(CSize) [function]
-     rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
-          requires cfg:bitsPerByte dividesInt N
-     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1)
-          requires notBool cfg:bitsPerByte dividesInt N
+     rule bitsToBytes(N:Int) => (absInt(N) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
      rule bitsToBytes(N:CSize) => N [owise] // Pass through sym values.
 
 endmodule
