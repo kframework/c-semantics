@@ -66,7 +66,6 @@ module C-CONFIGURATION
           <mutexes color="yellow"> .Map </mutexes>
           <glocks color="yellow"> .List </glocks>
      </thread-info>
-     <compound-lit-map> .Map </compound-lit-map>
      <threads color="yellow">
           <thread multiplicity="*" color="yellow">
                <thread-id color="yellow"> 0 </thread-id>
@@ -110,6 +109,7 @@ module C-CONFIGURATION
                                    // maps from CIds
                                    <env color="red"> .Map </env>
                                    <types color="lightgray"> .Map </types>
+                                   <compound-lit-map> .Map </compound-lit-map>
 
                                    // printf
                                    <formatting multiplicity="?">

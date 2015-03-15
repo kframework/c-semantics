@@ -88,41 +88,41 @@ module C-COMMON-EXPR-RELATIONAL
      rule tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) <Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool base(Loc) ==K base(Loc')
+               andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
-          requires base(Loc) =/=K base(Loc')
+          requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) <=Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool base(Loc) ==K base(Loc')
+               andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
-          requires base(Loc) =/=K base(Loc')
+          requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) >Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+               andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
-          requires (base(Loc) =/=K base(Loc'))
+          requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
      rule tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) >=Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+               andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
-          requires (base(Loc) =/=K base(Loc'))
+          requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
 
@@ -215,12 +215,12 @@ module C-COMMON-EXPR-RELATIONAL
      }*/
      // if they're identical, we know for sure they are the same
      rule tv(N:SymLoc, T:Type) == tv(N:SymLoc, T':Type)
-          => tv(1, t(.Set, int))
+          => makeTruth(true)
           requires isPointerType(T)
                andBool isPointerType(T')
           [structural]
      rule tv(N:SymLoc, T:Type) != tv(N:SymLoc, T':Type)
-          => tv(0, t(.Set, int))
+          => makeTruth(false)
           requires isPointerType(T)
                andBool isPointerType(T')
           [structural]
@@ -252,24 +252,24 @@ module C-COMMON-EXPR-RELATIONAL
      rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) ==Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+               andBool sameBase(Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type)
           => makeTruth(offset(Loc) =/=Int offset(Loc'))
           requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+               andBool sameBase(Loc, Loc')
           [structural]
 
      // next, they are part of different objects.
      rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type)
-          => tv(0, t(.Set, int))
+          => makeTruth(false)
           requires (isPointerType(T) andBool isPointerType(T'))
-               andBool (base(Loc) =/=K base(Loc'))
+               andBool notBool sameBase(Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type)
-          => tv(1, t(.Set, int))
+          => makeTruth(true)
           requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) =/=K base(Loc'))
+               andBool notBool sameBase(Loc, Loc')
           [structural]
 
      //- comparison of ints with pointers

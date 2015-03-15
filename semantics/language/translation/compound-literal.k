@@ -58,15 +58,13 @@ module C-COMPOUND-LITERAL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> zero(X)
-               ~> Init
+               ~> allowInit(Init)
                ~> X
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
-          <initializing> I:Int </initializing>
-          requires I >Int 0
+          <block-history> .List </block-history>
           [structural]
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, symVal)
@@ -74,7 +72,7 @@ module C-COMPOUND-LITERAL
                ~> Init
                ~> X
           ...</k>
-          <initializing> 0 </initializing>
+          <block-history> ListItem(_) ...</block-history>
           [structural]
 
      // here we start with a local address, put the string in memory, then
