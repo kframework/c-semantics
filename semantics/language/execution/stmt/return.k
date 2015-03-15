@@ -53,10 +53,12 @@ module C-STMT-RETURN
      rule <k> (.K => deleteObject(Base)) ~> Return'(_:RValue) ...</k>
           <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
           [structural]
-     rule <k> Return'(_:RValue) ...</k>
+     rule <k> (.K => exitRestrictScope(BlockNum)) ~> Return'(_:RValue) ...</k>
           <local-addresses> .Set => Addresses </local-addresses>
           <block-stack>
-               ListItem(bag2K(_ <local-addresses> Addresses:Set </local-addresses>))
+               ListItem(bag2K(_
+                    <block-history> ListItem(BlockNum:Int) ...</block-history>
+                    <local-addresses> Addresses:Set </local-addresses>))
                => .List
           ...</block-stack>
           [structural]
