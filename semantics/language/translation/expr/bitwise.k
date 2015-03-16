@@ -14,7 +14,7 @@ module C-EXPR-BITWISE
      rule tv(symVal, T1:Type) << tv(E2:Int, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)
+               andBool E2 <Int bitSizeofType(T1):>Int
           [structural]
      rule tv(E1:Int, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)
@@ -31,7 +31,7 @@ module C-EXPR-BITWISE
      rule tv(symVal, T1:Type) >> tv(E2:Int, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1)
+               andBool E2 <Int bitSizeofType(T1):>Int
           [structural]
      rule tv(E1:Int, T1:Type) >> tv(symVal, T2:Type) => tv(symVal, T1)
           requires isPromoted(T1) andBool isPromoted(T2)

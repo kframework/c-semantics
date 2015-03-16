@@ -212,10 +212,10 @@ module C-CONVERSION
      // TODO(chathhorn): not sure about this.
      rule cast(T':Type, tv(unknown, T:Type))
           => tv(unknown, cast(T', T))
-          requires bitSizeofType(T') >=Int bitSizeofType(T)
+          requires bitSizeofType(T'):>Int >=Int bitSizeofType(T):>Int
      rule cast(T':Type, tv(unknown, T:Type))
           => trap(cast(T', T))
-          requires bitSizeofType(T') <Int bitSizeofType(T)
+          requires bitSizeofType(T'):>Int <Int bitSizeofType(T):>Int
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type
@@ -348,20 +348,20 @@ module C-CONVERSION
      rule cast(T':IntegerType, tv(V:CValue, T:PointerType))
           => checkUse(tv(cfg:pointerToInt(V, T'), cast(T', T)))
           requires notBool isBoolType(T')
-               andBool (byteSizeofType(T) <=Int byteSizeofType(T')
+               andBool (byteSizeofType(T):>Int <=Int byteSizeofType(T'):>Int
                     orBool (V ==K NullPointer))
      rule cast(T':IntegerType, tv(V:CValue, T:PointerType))
           => castHold(T', tv(V:CValue, T))
           requires (V =/=K NullPointer)
                andBool notBool isBoolType(T')
-               andBool byteSizeofType(T) >Int byteSizeofType(T')
+               andBool byteSizeofType(T):>Int >Int byteSizeofType(T'):>Int
      rule (.K => UNDEF("CCV7",
                "conversion from pointer to integer of a value possibly unrepresentable in the integer type.",
                "6.3.2.3:6"))
           ~> castHold(T':IntegerType, tv(V:CValue, T:PointerType))
           requires (V =/=K NullPointer)
                andBool notBool isBoolType(T')
-               andBool byteSizeofType(T) >Int byteSizeofType(T')
+               andBool byteSizeofType(T):>Int >Int byteSizeofType(T'):>Int
           [structural]
 
      rule cast(T':Type, tv(V:CValue, T:Type))

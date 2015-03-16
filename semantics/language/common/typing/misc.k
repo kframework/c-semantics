@@ -49,41 +49,41 @@ module C-TYPING-MISC
      rule max(t(_, bool)) => 1
 
      rule min(t(_, signed-char))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1))
      rule max(t(_, signed-char))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1)) -Int 1
      rule min(t(_, short-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1))
      rule max(t(_, short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1)) -Int 1
      rule min(t(_, int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1))
      rule max(t(_, int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1)) -Int 1
      rule min(t(_, long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1))
      rule max(t(_, long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1)) -Int 1
      rule min(t(_, long-long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1))
      rule max(t(_, long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char))
-          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
+          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char)):>Int) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)):>Int)) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)):>Int)) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)):>Int)) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)):>Int)) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
      rule max(t(_, enumType(_))) => cfg:enumMax
@@ -372,7 +372,7 @@ module C-TYPING-MISC
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int byteSizeofType(T))
+               Offset %Int byteSizeofType(T):>Int)
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)

@@ -106,7 +106,7 @@ module C-COMMON-EXPR-ADDITIVE
      syntax KItem ::= addToPointer(SymLoc, Type, Int)
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => checkUse(tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T))
+               +bytes (I *Int byteSizeofType(innerType(T)):>Int), T))
           requires ifFromArrayInBounds(Loc, T, I) ==K true
      rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
@@ -115,7 +115,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires notBool ifFromArrayInBounds(Loc, T, I)
      rule _:ErrorExit ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           => checkUse(tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T))
+               +bytes (I *Int byteSizeofType(innerType(T)):>Int), T))
           requires notBool ifFromArrayInBounds(Loc, T, I) andBool isErrorRecovery
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
@@ -124,14 +124,14 @@ module C-COMMON-EXPR-ADDITIVE
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
                Len:Int), .Set, Prov:Set, T:Type, I:Int)
           => loc(Base, Offset, SetItem(
-               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)):>Int, Len)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
           requires getKLabel(K) =/=KLabel 'fromArray
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
                Len:Int), SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
-               I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
+               I *Int byteSizeofType(innerType(T)):>Int, Len)) Prov, T, I)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
           requires getKLabel(K) =/=KLabel 'fromArray
@@ -179,7 +179,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires base(L1) =/=K base(L2)
 
      // ptr1, ptr2, size of ptr type
-     syntax KItem ::= computePointerDifference(Int, Int)
+     syntax KItem ::= computePointerDifference(Int, CSize)
      rule computePointerDifference(Diff:Int, Size:Int)
           => tv(Diff /Int Size, t(.Set, cfg:ptrdiffut))
           requires (Diff %Int Size ==Int 0)

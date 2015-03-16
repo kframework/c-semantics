@@ -5,17 +5,17 @@ module C-MEMORY-READING-SYNTAX
      syntax KItem ::= read(SymLoc, Type)
 
      // Returns the bytes in the order in which they are in memory.
-     syntax KItem ::= readBytes(SymLoc, Int, Type)
+     syntax KItem ::= readBytes(SymLoc, CSize, Type)
 
      syntax KItem ::= concretize(Type, K) [strict(2)]
 
      // data, offset, size in bits
-     syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
+     syntax KItem ::= extractBitsFromList(K, Int, CSize) [strict(1)]
 
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
-     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
+     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," CSize "," List ")"
           [function]
 endmodule
 
@@ -129,7 +129,7 @@ module C-MEMORY-READING
           => joinFloatBytes(T, 0.0, Len +Int NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
           => tv(F, stripQualifiers(T))
-          requires Len ==Int bitSizeofType(T)
+          requires Len ==Int bitSizeofType(T):>Int
 
      syntax RValue ::= joinPointerBytes(Type, List) [function]
      syntax RValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -177,10 +177,10 @@ module C-MEMORY-READING
           requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T):>Int)))
           requires (I:Int >Int max(T))
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T):>Int)))
           requires (I:Int <Int min(T))
 
      // loc, size in bits

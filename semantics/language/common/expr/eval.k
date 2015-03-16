@@ -71,11 +71,11 @@ module C-COMMON-EXPR-EVAL
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
-             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
+             addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
+          => addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
 

@@ -56,7 +56,7 @@ module C-IO-BUFFERED
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
 
-     syntax KItem ::= updateModified(K, SymLoc, Int) [function]
+     syntax KItem ::= updateModified(K, SymLoc, CSize) [function]
      rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
           => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
           requires Loc in keys(M)

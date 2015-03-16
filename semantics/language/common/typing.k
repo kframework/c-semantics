@@ -151,7 +151,7 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= atomic(Type) [klabel('atomic)]
      syntax Modifier ::= alignas(Int) [klabel('alignas)]
 
-     syntax Modifier ::= readFrom(SymLoc, Int)
+     syntax Modifier ::= readFrom(SymLoc, CSize)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)

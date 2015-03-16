@@ -10,7 +10,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax KItem ::= allocString(SymBase, String)
      syntax KItem ::= allocWString(SymBase, List)
 
-     syntax KItem ::= alloc(SymBase, Type, Int)
+     syntax KItem ::= alloc(SymBase, Type, CSize)
 
      syntax KItem ::= zeroObject(SymBase)
 
