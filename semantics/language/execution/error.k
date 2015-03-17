@@ -38,8 +38,8 @@ module C-EXECUTION-ERROR
           [structural]
      rule [err00046]:
           (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
-          concretize(T:Type, dataList(ListItem(piece(N:Int, _)) _))
-          requires hasFloatType(T) andBool (N >Int 0)
+          concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
+          requires (N >Int 0)
           [structural]
 
      rule (.K => UNDEF("CEER3",

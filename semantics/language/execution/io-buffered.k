@@ -56,7 +56,7 @@ module C-IO-BUFFERED
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
 
-     syntax KItem ::= updateModified(K, SymLoc, Int) [function]
+     syntax KItem ::= updateModified(K, SymLoc, CSize) [function]
      rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
           => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
           requires Loc in keys(M)
@@ -160,10 +160,19 @@ module C-IO-BUFFERED
                (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
           ...</buffer>
           <mem>...
-               Base |-> object(_, Len:Int, M:Map => M[Offset <- V])
+               Base |-> (K:KItem => updateObject(K, Offset, V))
           ...</mem>
-          requires Offset <Int Len
+          requires objectInBounds(K, Offset) 
           [structural]
+
+     // TODO(dwightguth): remove this ugliness
+     // this is here because the above rule used to use the PatternMatcher implementation for matching which is really slow.
+     // the below rules use NonACPatternMatcher which does not have this performance issue
+     syntax KItem ::= updateObject(K, Int, K) [function]
+     syntax Bool ::= objectInBounds(K, Int) [function]
+
+     rule updateObject(object(T:K, Len:Int, M:Map), Offset:Int, V:K) => object(T, Len, M[Offset <- V])
+     rule objectInBounds(object(_, Len:Int, _), Offset:Int) => Offset <Int Len
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
      rule <buffer>
@@ -385,17 +394,15 @@ module C-IO-BUFFERED
           requires notBool isNoType(T)
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T' ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
           <effective-types>...
                loc(Base, Offset) |-> T':Type
           ...</effective-types>
-          requires isNoType(T)
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:NoType, _, _) ...</mem>
           <effective-types> EffTypes:Map </effective-types>
-          requires isNoType(T)
-               andBool notBool (loc(Base, Offset) in keys(EffTypes))
+          requires notBool (loc(Base, Offset) in keys(EffTypes))
           [structural]
      rule <k> getEffectiveType(Loc:SymLoc) => t(.Set, no-type) ...</k>
           <effective-types> EffTypes:Map </effective-types>
@@ -413,15 +420,14 @@ module C-IO-BUFFERED
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .K
           ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
           <effective-types> M:Map => M [ loc(Base, Offset) <- T' ] </effective-types>
-          requires isNoType(T) andBool notBool hasCharType(T':Type)
+          requires notBool isCharType(T':Type)
           [structural]
      rule <k> setEffectiveType(Loc:SymLoc, T:Type) => .K ...</k>
           <effective-types> M:Map => M [ Loc <- T ] </effective-types>
-          requires notBool hasCharType(T:Type) andBool isNativeLoc(Loc)
-     rule <k> setEffectiveType(_, T:Type) => .K ...</k>
-          requires hasCharType(T:Type)
+          requires notBool isCharType(T:Type) andBool isNativeLoc(Loc)
+     rule <k> setEffectiveType(_, _:CharType) => .K ...</k>
           [structural]
 
 
@@ -460,12 +466,11 @@ module C-IO-BUFFERED
      // - an aggregate or union type that includes one of the aforementioned
      // types among its members (including, recursively, a member of a
      // subaggregate or contained union), or
-     rule #effectivelyCompat(L:Type, Eff:Type)
+     rule #effectivelyCompat(L:Type, Eff:AggregateType)
           => #effectivelyCompat(L, effInnerType(Eff))
-          requires isAggregateType(Eff)
-               andBool notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                     andBool getQualifiers(Eff) <=Set getQualifiers(L))
-               andBool notBool hasCharType(L:Type)
+               andBool notBool isCharType(L:Type)
      // TODO(chathhorn): this is where things get sketchy. Very unclear
      // about the implications of strict aliasing w/r/t unions. As it is, we
      // let it pass if we're compatible with one of the union members of the
@@ -478,10 +483,9 @@ module C-IO-BUFFERED
                          stripQualifiers(t(Mods, unionType(X))))
                     andBool intersectSet(Mods, typeQualifiers)
                          <=Set getQualifiers(L))
-               andBool notBool hasCharType(L:Type)
+               andBool notBool isCharType(L:Type)
      // - a character type.
-     rule #effectivelyCompat(L:Type, _) => true
-          requires hasCharType(L:Type)
+     rule #effectivelyCompat(_:CharType, _) => true
      rule #effectivelyCompat(_, _) => false [owise]
 
      syntax Bool ::= effectivelyCompatWithUnion(Type, K) [function]
@@ -500,15 +504,13 @@ module C-IO-BUFFERED
      syntax Set ::= getQualsAtOffset(Type) [function]
      rule getQualsAtOffset(T:Type) => getQualifiers(T)
           requires notBool isAggregateType(T)
-     rule getQualsAtOffset(T:Type)
+     rule getQualsAtOffset(T:AggregateType)
           => getQualifiers(T) getQualsAtOffset(effInnerType(T))
-          requires isAggregateType(T)
      // TODO(chathhorn): absolutely no idea what to do about qualifiers on
      // union members -- do we need to get the effective type of the object?
 
      syntax Type ::= effInnerType(K) [function]
-     rule effInnerType(T:Type) => innerType(T)
-          requires isArrayType(T)
+     rule effInnerType(T:ArrayType) => innerType(T)
      rule effInnerType(t(_, structType(S:StructId)))
           => effInnerType(getFieldInfo(S))
      rule effInnerType(fieldInfo(ListItem(typedDeclaration(T:Type, _)) _, _, _, _))

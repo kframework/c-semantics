@@ -161,7 +161,7 @@ module C-LTLMC
      rule ltlRVal(_, L:Int != R:Int) => intify(L ==Int R)
 
      syntax ValueProp ::= dumbRead(Bag, SymLoc, Type) [function]
-     syntax ValueProp ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")"
+     syntax ValueProp ::= "dumbRead'" "(" Map "," SymLoc "," Type "," CSize "," List ")"
           [function]
      /*TODO(liyili2): cannot handle this cases
      rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))
@@ -207,9 +207,8 @@ module C-LTLMC
           => #struct(V, getFieldInfo(S))
      rule joinBytes(t(_, unionType(S:StructId)), dataList(V:List))
           => #union(V, getFieldInfo(S))
-     rule joinBytes(T:Type, dataList(V:List))
+     rule joinBytes(T:IntegerType, dataList(V:List))
           => joinBytes'(T, V, .List)
-          requires hasIntegerType(T:Type)
 
      rule joinBytes'(T:Type,
                L:List ListItem(piece(N:Int, Len:Int)),

@@ -85,40 +85,36 @@ module C-COMMON-EXPR-RELATIONAL
           [structural]
 
      //- comparison of pointers
-     rule tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) < tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) <Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool base(Loc) ==K base(Loc')
+          requires base(Loc) ==K base(Loc')
           [structural]
      rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
           requires base(Loc) =/=K base(Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) <= tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) <=Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool base(Loc) ==K base(Loc')
+          requires base(Loc) ==K base(Loc')
           [structural]
      rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
           requires base(Loc) =/=K base(Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) > tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) >Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+          requires (base(Loc) ==K base(Loc'))
           [structural]
      rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
           requires (base(Loc) =/=K base(Loc'))
                andBool (T ==Type T')
           [structural]
-     rule tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) >= tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) >=Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+          requires (base(Loc) ==K base(Loc'))
           [structural]
      rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
@@ -128,23 +124,23 @@ module C-COMMON-EXPR-RELATIONAL
 
      rule (.K => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) < tv(_, T':Type)
-          requires (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          requires (isIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
      rule (.K => CV("CER6", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) <= tv(_, T':Type)
-          requires (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          requires (isIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
      rule (.K => CV("CER7", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) > tv(_, T':Type)
-          requires (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          requires (isIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
      rule (.K => CV("CER8", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) >= tv(_, T':Type)
-          requires (hasIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
+          requires (isIntegerType(T) andBool isPointerType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
@@ -214,85 +210,65 @@ module C-COMMON-EXPR-RELATIONAL
      an array of length one with the type of the object as its element type.
      }*/
      // if they're identical, we know for sure they are the same
-     rule tv(N:SymLoc, T:Type) == tv(N:SymLoc, T':Type)
+     rule tv(N:SymLoc, _:PointerType) == tv(N:SymLoc, _:PointerType)
           => tv(1, t(.Set, int))
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
-     rule tv(N:SymLoc, T:Type) != tv(N:SymLoc, T':Type)
+     rule tv(N:SymLoc, _:PointerType) != tv(N:SymLoc, _:PointerType)
           => tv(0, t(.Set, int))
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
 
      // if one of the pointers is null, it's also straightforward
-     rule tv(NullPointer, T:Type) == tv(N:SymLoc, T':Type)
+     rule tv(NullPointer, _:PointerType) == tv(N:SymLoc, _:PointerType)
           => makeTruth(NullPointer ==K N)
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
-     rule tv(NullPointer, T:Type) != tv(N:SymLoc, T':Type)
+     rule tv(NullPointer, _:PointerType) != tv(N:SymLoc, _:PointerType)
           => makeTruth(NullPointer =/=K N)
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
-     rule tv(N:SymLoc, T:Type) == tv(NullPointer, T':Type)
+     rule tv(N:SymLoc, _:PointerType) == tv(NullPointer, _:PointerType)
           => makeTruth(NullPointer ==K N)
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
-     rule tv(N:SymLoc, T:Type) != tv(NullPointer, T':Type)
+     rule tv(N:SymLoc, _:PointerType) != tv(NullPointer, _:PointerType)
           => makeTruth(NullPointer =/=K N)
-          requires isPointerType(T)
-               andBool isPointerType(T')
           [structural]
 
      // otherwise, there are a number of cases.
      // First, they are part of the same object
-     rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) == tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) ==Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+          requires (base(Loc) ==K base(Loc'))
           [structural]
-     rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) != tv(Loc':SymLoc, _:PointerType)
           => makeTruth(offset(Loc) =/=Int offset(Loc'))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) ==K base(Loc'))
+          requires (base(Loc) ==K base(Loc'))
           [structural]
 
      // next, they are part of different objects.
-     rule tv(Loc:SymLoc, T:Type) == tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) == tv(Loc':SymLoc, _:PointerType)
           => tv(0, t(.Set, int))
-          requires (isPointerType(T) andBool isPointerType(T'))
-               andBool (base(Loc) =/=K base(Loc'))
+          requires (base(Loc) =/=K base(Loc'))
           [structural]
-     rule tv(Loc:SymLoc, T:Type) != tv(Loc':SymLoc, T':Type)
+     rule tv(Loc:SymLoc, _:PointerType) != tv(Loc':SymLoc, _:PointerType)
           => tv(1, t(.Set, int))
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (base(Loc) =/=K base(Loc'))
+          requires (base(Loc) =/=K base(Loc'))
           [structural]
 
      //- comparison of ints with pointers
      // fixme there are further restrictions on pointers
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':Type)
+     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':PointerType)
           requires isPromoted(T)
-               andBool isPointerType(T')
                andBool isNullPointerConstant(tv(N, T))
           [structural]
-     rule tv(_, T:Type) == (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPointerType(T)
-               andBool isPromoted(T')
+     rule tv(_, T:PointerType) == (tv(N:Int, T':Type) => tv(NullPointer, T))
+          requires isPromoted(T')
                andBool isNullPointerConstant(tv(N, T'))
           [structural]
 
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':Type)
+     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':PointerType)
           requires isPromoted(T)
-               andBool isPointerType(T')
                andBool isNullPointerConstant(tv(N, T))
           [structural]
-     rule tv(_, T:Type) != (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPointerType(T)
-               andBool isPromoted(T')
+     rule tv(_, T:PointerType) != (tv(N:Int, T':Type) => tv(NullPointer, T))
+          requires isPromoted(T')
                andBool isNullPointerConstant(tv(N, T'))
           [structural]
 
