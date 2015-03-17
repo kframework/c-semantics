@@ -18,7 +18,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k test-build
+.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
 
 default: dist
 
@@ -72,13 +72,16 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k
+semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
 	@$(MAKE) -C $(SEMANTICS_DIR) fast
 
 $(SEMANTICS_DIR)/settings.k:
 	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
 
-semantics: check-vars $(SEMANTICS_DIR)/settings.k
+$(SEMANTICS_DIR)/extensions.k:
+	@diff $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)/extensions.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)
+
+semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 check:	fast
@@ -94,4 +97,4 @@ clean:
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k

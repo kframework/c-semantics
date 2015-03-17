@@ -172,10 +172,17 @@ module C-COMMON-EXPR-ADDITIVE
           requires base(L1) ==K base(L2)
           [structural]
 
+     // uintptr_t
+     rule tv(L1:SymLoc, _:IntegerType)
+               - tv(L2:SymLoc, _:IntegerType)
+          => computePointerDifference(offset(L1) -Int offset(L2),
+               1)
+          requires base(L1) ==K base(L2)
+
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9"))
-          ~> tv(L1:SymLoc, t(_, pointerType(T:Type)))
-               - tv(L2:SymLoc, t(_, pointerType(T)))
+          ~> tv(L1:SymLoc, _)
+               - tv(L2:SymLoc, _)
           requires base(L1) =/=K base(L2)
 
      // ptr1, ptr2, size of ptr type

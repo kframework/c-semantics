@@ -137,13 +137,14 @@ module LIBC-STDLIB
 
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
-     rule [rand]:
+     // TODO(dwightguth): fix this builtin
+/*     rule [rand]:
           <k> prepareBuiltin((Identifier("rand")), .HeatList)
                => tv(absInt(randomRandom(Seed:Int))
                     %Int max(t(.Set, int)), t(.Set, int))
           ...</k>
           <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
-          [structural]
+          [structural]*/
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
