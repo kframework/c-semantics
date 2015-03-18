@@ -47,16 +47,15 @@ module C-DECL-GLOBAL
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
+     rule <k> declare''(typedDeclaration(T:FunctionType, X:CId), K:K)
                => declareInternalVariable(X, T, K)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
-               andBool isFunctionType(T)
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
+     rule <k> declare''(typedDeclaration(T:FunctionType, X:CId), K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit
                     #then NoInit
@@ -64,8 +63,7 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-function> file-scope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
-          requires isFunctionType(T)
-               andBool validGlobalStorageClass(T)
+          requires validGlobalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
@@ -84,9 +82,8 @@ module C-DECL-GLOBAL
                "declaration for the function " +String idToString(X) +String
                " appears with type qualifiers.",
                "6.7.3"))
-          ~> declare''(typedDeclaration(T:Type, X:CId), _)
-          requires isFunctionType(T)
-               andBool getQualifiers(T) =/=K .Set
+          ~> declare''(typedDeclaration(T:FunctionType, X:CId), _)
+          requires getQualifiers(T) =/=K .Set
           [structural]
 
      rule (.K => CV("TDG2",
@@ -101,13 +98,12 @@ module C-DECL-GLOBAL
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
                "6.7.1:7"))
-               ~> declare''(typedDeclaration(T:Type, X:CId), _)
+               ~> declare''(typedDeclaration(T:FunctionType, X:CId), _)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
-               andBool isFunctionType(T)
           [structural]
 
      rule <k> (.K => CV("TDG18",
@@ -142,8 +138,7 @@ module C-DECL-GLOBAL
 
      // TODO(chathhorn): consider checking function init list here (disallowed
      // in the case of a prototype).
-     rule checkDeclType(T:Type, _) => checkParams(T)
-          requires isFunctionType(T)
+     rule checkDeclType(T:FunctionType, _) => checkParams(T)
           [structural]
      rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
           requires notBool isFunctionType(T)
@@ -177,16 +172,14 @@ module C-DECL-GLOBAL
      rule (.K => UNDEF("TDG6",
                "void parameter appears with a storage class specifier.",
                "6.7.6.3:10"))
-          ~> checkParam(T:Type)
+          ~> checkParam(T:VoidType)
           requires (getStorageSpecifiers(T) =/=K .Set)
-               andBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("TDG7",
                "void parameter appears with qualifiers.",
                "6.7.6.3:10"))
-          ~> checkParam(T:Type)
+          ~> checkParam(T:VoidType)
           requires (getQualifiers(T) =/=K .Set)
-               andBool isVoidType(T)
           [structural]
 
      rule checkComplete(_, NoInit) => .K

@@ -85,4 +85,6 @@ module C-COMMON
      imports C-MEMORY-ALLOC
      imports C-MEMORY-READING
      imports C-MEMORY-WRITING
+
+     imports C-COMMON-EXTENSIONS
 endmodule

@@ -1,5 +1,6 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
      syntax KItem ::= canonicalizeType(List)
+     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -14,7 +15,6 @@ module C-TYPING-CANONICALIZATION
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE, _, _, _)
 
      syntax List ::= deleteUnuseType(List) [function]
@@ -174,8 +174,7 @@ module C-TYPING-CANONICALIZATION
 //      => t(S, incompleteUnionType(C))
 //      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
 //      => t(S, typedefType(C, canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(T:Type) => T
-//      requires isBasicType(T)
+//      rule canonicalizeArrayType(T:BasicType) => T
 
      syntax Bool ::= isGlobalScope(K) [function]
      rule isGlobalScope(file-scope) => true

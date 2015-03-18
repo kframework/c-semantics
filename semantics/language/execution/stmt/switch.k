@@ -30,10 +30,9 @@ module C-STMT-SWITCH
      \cinline{default} label, no part of the switch body is executed.
      }*/
 
-     rule Switch(SN:Int, tv(V:K, T:Type), _)
+     rule Switch(SN:Int, tv(V:K, T:IntegerType), _)
           => sequencePoint
                ~> handleSwitch(SN, cast(promote(T), tv(V, T)))
-          requires hasIntegerType(T)
           [structural]
 
      rule <k> handleSwitch(SN:Int, V:KResult)

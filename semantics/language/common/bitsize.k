@@ -2,8 +2,8 @@ module C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax Int ::= bitSizeofType(Type) [function]
-     syntax Int ::= byteSizeofType(Type) [function]
+     syntax CSize ::= bitSizeofType(Type) [function]
+     syntax CSize ::= byteSizeofType(Type) [function]
 
      syntax Int ::= bitSizeofStruct(FieldInfo) [function]
      syntax Int ::= bitSizeofUnion(FieldInfo) [function]
@@ -64,19 +64,19 @@ module C-BITSIZE
 
      rule byteSizeofList(L:List) => byteSizeofList'(0, L)
      rule byteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => byteSizeofList'((Sz +Int byteSizeofType(T)), LL)
+          => byteSizeofList'((Sz +Int byteSizeofType(T):>Int), LL)
      rule byteSizeofList'(Sz:Int, .List) => Sz
 
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
      rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(T)), LL)
+          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(T):>Int), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
      rule bitSizeofType(t(_, no-type))
           => 0
      rule bitSizeofType(t(_, arrayType(T:Type, N:Int)))
-          => bitSizeofType(T) *Int N
+          => bitSizeofType(T):>Int *Int N
      rule bitSizeofType(t(_, flexibleArrayType(_)))
           => 0
      rule bitSizeofType(t(_, functionType(_, _)))
@@ -85,8 +85,8 @@ module C-BITSIZE
           => cfg:ptrsize *Int cfg:bitsPerByte
      rule bitSizeofType(t(_, bitfieldType(_, N:Int)))
           => N
-     rule bitSizeofType(T:Type) => numBytes(T) *Int cfg:bitsPerByte
-          requires isBasicType(T)
+     rule bitSizeofType(T:BasicType) => numBytes(T) *Int cfg:bitsPerByte
+          requires notBool isTypedDeclaration(T)
      rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 
@@ -101,11 +101,8 @@ module C-BITSIZE
           => NBits
 
      //- derived
-     syntax Int ::= bitsToBytes(CSize) [function]
-     rule bitsToBytes(N:Int) => absInt(N /Int cfg:bitsPerByte)
-          requires cfg:bitsPerByte dividesInt N
-     rule bitsToBytes(N:Int) => absInt((N /Int cfg:bitsPerByte) +Int 1)
-          requires notBool cfg:bitsPerByte dividesInt N
+     syntax CSize ::= bitsToBytes(CSize) [function]
+     rule bitsToBytes(N:Int) => (absInt(N) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
      rule bitsToBytes(N:CSize) => N [owise] // Pass through sym values.
 
 endmodule

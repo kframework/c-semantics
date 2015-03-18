@@ -78,38 +78,62 @@ module C-COMMON-EXPR-ADDITIVE
      operator that is evaluated.
      }*/
 
-     rule tv(Loc:SymLoc, T':Type) + tv(I:Int, T:Type)
+     rule tv(Loc:SymLoc, T':PointerType) + tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
-     rule tv(I:Int, T:Type) + tv(Loc:SymLoc, T':Type)
+     rule tv(I:Int, _:IntegerType) + tv(Loc:SymLoc, T':PointerType)
           => addToPointer(Loc, T', I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
-     rule tv(Loc:SymLoc, T':Type) - tv(I:Int, T:Type)
+     rule tv(Loc:SymLoc, T':PointerType) - tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', 0 -Int I)
-          requires hasIntegerType(T) andBool isPointerType(T')
-               andBool simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
+
+     rule (.K => CV("CEA7", 
+               "Computing pointer addition of a pointer not to a complete object type",
+               "6.5.6:2"))
+          ~> tv(_:SymLoc, T':PointerType) + tv(_:Int, _:IntegerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+     rule (.K => CV("CEA7", 
+               "Computing pointer addition of a pointer not to a complete object type",
+               "6.5.6:2"))
+          ~> tv(_:Int, _:IntegerType) + tv(_:SymLoc, T':PointerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+     rule (.K => CV("CEA8", 
+               "Computing pointer minus integer of a pointer not to a complete object type",
+               "6.5.6:3"))
+          ~> tv(_:SymLoc, T':PointerType) - tv(_:Int, _:IntegerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+
+
 
      rule (.K => CV("CEA3", "Invalid operand types to addition", "6.5.6:2"))
           ~> tv(_, T:Type) + tv(_, T':Type)
-          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T'))
-               orBool (isPointerType(T') andBool hasIntegerType(T)))
+          requires notBool ((isArithmeticType(T) andBool isArithmeticType(T'))
+               orBool (isPointerType(T) andBool isIntegerType(T'))
+               orBool (isPointerType(T') andBool isIntegerType(T)))
 
      rule (.K => CV("CEA4", "Invalid operand types to subtraction", "6.5.6:3"))
           ~> tv(_, T:Type) - tv(_, T':Type)
-          requires notBool ((hasArithmeticType(T) andBool hasArithmeticType(T'))
+          requires notBool ((isArithmeticType(T) andBool isArithmeticType(T'))
                orBool (isPointerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool hasIntegerType(T')))
+               orBool (isPointerType(T) andBool isIntegerType(T')))
 
      syntax KItem ::= addToPointer(SymLoc, Type, Int)
      rule addToPointer(Loc:SymLoc, T:Type, I:Int)
           => checkUse(tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T))
+               +bytes (I *Int byteSizeofType(innerType(T)):>Int), T))
           requires ifFromArrayInBounds(Loc, T, I) ==K true
      rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
@@ -118,7 +142,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires notBool ifFromArrayInBounds(Loc, T, I)
      rule _:ErrorExit ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           => checkUse(tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T))
+               +bytes (I *Int byteSizeofType(innerType(T)):>Int), T))
           requires notBool ifFromArrayInBounds(Loc, T, I) andBool isErrorRecovery
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
@@ -127,14 +151,14 @@ module C-COMMON-EXPR-ADDITIVE
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
                Len:Int), .Set, Prov:Set, T:Type, I:Int)
           => loc(Base, Offset, SetItem(
-               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
+               fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)):>Int, Len)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
           requires getKLabel(K) =/=KLabel 'fromArray
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
                Len:Int), SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
-               I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
+               I *Int byteSizeofType(innerType(T)):>Int, Len)) Prov, T, I)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
           requires getKLabel(K) =/=KLabel 'fromArray
@@ -172,17 +196,33 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(offset(L1) -Int offset(L2),
                byteSizeofType(T))
-          requires base(L1) ==K base(L2)
+          requires base(L1) ==K base(L2) andBool notBool isFunctionType(T)
+               andBool isCompleteType(T)
           [structural]
+
+     // uintptr_t
+     rule tv(L1:SymLoc, _:IntegerType)
+               - tv(L2:SymLoc, _:IntegerType)
+          => computePointerDifference(offset(L1) -Int offset(L2),
+               1)
+          requires base(L1) ==K base(L2)
+
+     rule (.K => CV("CEA9",
+               "Computing pointer difference between pointers not to complete object types.",
+               "6.5.6:3"))
+          ~> tv(_:SymLoc, T:PointerType)
+               - tv(_:SymLoc, T:PointerType)
+          requires isFunctionType(innerType(T)) 
+               orBool notBool isCompleteType(innerType(T))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9"))
-          ~> tv(L1:SymLoc, t(_, pointerType(T:Type)))
-               - tv(L2:SymLoc, t(_, pointerType(T)))
+          ~> tv(L1:SymLoc, _)
+               - tv(L2:SymLoc, _)
           requires base(L1) =/=K base(L2)
 
      // ptr1, ptr2, size of ptr type
-     syntax KItem ::= computePointerDifference(Int, Int)
+     syntax KItem ::= computePointerDifference(Int, CSize)
      rule computePointerDifference(Diff:Int, Size:Int)
           => tv(Diff /Int Size, t(.Set, cfg:ptrdiffut))
           requires (Diff %Int Size ==Int 0)
@@ -213,24 +253,24 @@ module C-COMMON-EXPR-ADDITIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(_, T:Type) + tv(unknown, T:Type)
+     rule tv(_, T:UnsignedIntegerType) + tv(unknown, T)
           => tv(unknown, T)
-          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          requires isPromoted(T)
           [structural]
-     rule tv(unknown, T:Type) + tv(_, T:Type)
+     rule tv(unknown, T:UnsignedIntegerType) + tv(_, T)
           => tv(unknown, T)
-          requires isPromoted(T) andBool hasUnsignedIntegerType(T)
+          requires isPromoted(T)
           [structural]
 
      rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
                "6.3.1.3:3"))
-          ~> tv(_, T:Type) + tv(unknown, T:Type)
-          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          ~> tv(_, T:SignedIntegerType) + tv(unknown, T)
+          requires isPromoted(T)
           [structural]
      rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
                "6.3.1.3:3"))
-          ~> tv(unknown, T:Type) + tv(_, T:Type)
-          requires isPromoted(T) andBool hasSignedIntegerType(T)
+          ~> tv(unknown, T:SignedIntegerType) + tv(_, T)
+          requires isPromoted(T)
           [structural]
 
 endmodule

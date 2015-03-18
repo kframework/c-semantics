@@ -117,13 +117,13 @@ module C-EXPR-ASSIGNMENT
      rule checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           => .K
-          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T):>Int)
      rule (.K => UNDEF("EEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
-          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T):>Int)
 
      syntax KItem ::= getFirstMatch(Set, KLabel) [function]
                     | "getFirstMatch'" "(" K "," Set "," KLabel ")" [function]

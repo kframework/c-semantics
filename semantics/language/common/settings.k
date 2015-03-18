@@ -6,7 +6,7 @@ module C-SETTINGS-SYNTAX
      //
      // FIXME I'm not sure what consequence being a separate type entails, so
      // for now it will just be rewritten to the chosen type
-     syntax BaseType ::= "cfg:charAlias" [function]
+     syntax SimpleCharType ::= "cfg:charAlias" [function]
 
      syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]

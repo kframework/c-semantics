@@ -46,8 +46,8 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           requires T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM1", "Division by 0.", "6.5.5:5") )
-          ~> tv(_, T:Type) / tv(0, T':Type)
-          requires hasIntegerType(T) andBool isPromoted(T)
+          ~> tv(_, T:IntegerType) / tv(0, T':Type)
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
 
@@ -60,14 +60,13 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM2", "Modulus by 0.", "6.5.5:5") )
-          ~> tv(_, T:Type) % tv(0, T':Type)
-          requires hasIntegerType(T) andBool isPromoted(T)
+          ~> tv(_, T:IntegerType) % tv(0, T':Type)
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule (.K => UNSPEC("CEM3", "Signed overflow.", "6.3.1.3:3") ) ~>
-          tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
-          requires hasIntegerType(T)
-               andBool notBool (min(T) <=Int I1 /Int I2
+          tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
+          requires notBool (min(T) <=Int I1 /Int I2
                     andBool max(T) >=Int I1 /Int I2)
                andBool isPromoted(T)
                andBool I2 =/=Int 0

@@ -164,6 +164,9 @@ let init_lexicon _ =
 
       ("__kcc_offsetof", fun loc -> OFFSETOF loc);
 
+      (* GCC Extensions *)
+      ("__kcc_typeof", fun loc -> TYPEOF loc);
+
       (* Not in C11. *)
       ("__attribute__", fun loc -> ATTRIBUTE loc);
       ("__attribute", fun loc -> ATTRIBUTE loc);

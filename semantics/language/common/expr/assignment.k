@@ -49,15 +49,13 @@ module C-COMMON-EXPR-ASSIGNMENT
      the right is a pointer.
 
      }*/
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          requires hasArithmeticType(T') andBool hasArithmeticType(T)
-               andBool (getQualifiers(T) ==K .Set)
+     rule nclv(_, T':ArithmeticType) := (tv(V:CValue, T:ArithmeticType) => cast(T', tv(V, T)))
+          requires (getQualifiers(T) ==K .Set)
                andBool (T' =/=Type T)
           [structural]
 
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          requires (isStructType(T') orBool isUnionType(T'))
-               andBool areCompatible(stripQualifiers(T'), T)
+     rule nclv(_, T':StructOrUnionType) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
+          requires areCompatible(stripQualifiers(T'), T)
                andBool (T' =/=Type T)
           [structural]
 
@@ -80,14 +78,12 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
           [structural]
 
-     rule nclv(_, T':Type) := (V:RValue => cast(T', V))
-          requires isPointerType(T')
-               andBool isNullPointerConstant(V)
+     rule nclv(_, T':PointerType) := (V:RValue => cast(T', V))
+          requires isNullPointerConstant(V)
                andBool (T' =/=Type type(V))
           [structural]
 
-     rule nclv(_, T':Type) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          requires isBoolType(T') andBool isPointerType(T)
+     rule nclv(_, T':BoolType) := (tv(V:CValue, T:PointerType) => cast(T', tv(V, T)))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.6}{3}}}{
@@ -103,17 +99,16 @@ module C-COMMON-EXPR-ASSIGNMENT
           ~> nclv(_, T':Type) := tv(V:CValue, T:Type)
           requires (isPointerType(T') andBool notBool isPointerType(T)
                     andBool notBool isNullPointerConstant(tv(V, T)))
-               orBool hasArithmeticType(T') andBool notBool hasArithmeticType(T)
-               orBool ((isStructType(T') orBool isUnionType(T'))
+               orBool isArithmeticType(T') andBool notBool isArithmeticType(T)
+               orBool ((isStructOrUnionType(T'))
                andBool notBool areCompatible(stripQualifiers(T'), T))
                orBool (isBoolType(T') andBool notBool isPointerType(T))
-               orBool notBool (isPointerType(T') orBool hasArithmeticType(T')
-                    orBool isStructType(T') orBool isUnionType(T') orBool isBoolType(T'))
+               orBool notBool (isPointerType(T') orBool isArithmeticType(T')
+                    orBool isStructOrUnionType(T') orBool isBoolType(T'))
 
      rule (.K => CV("CEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
-          ~> nclv(_, T':Type) := tv(_, T:Type)
-          requires isPointerType(T') andBool isPointerType(T)
-               andBool notBool isVoidType(innerType(T'))
+          ~> nclv(_, T':PointerType) := tv(_, T:PointerType)
+          requires notBool isVoidType(innerType(T'))
                andBool notBool isVoidType(innerType(T))
                andBool (
                     notBool areCompatible(
