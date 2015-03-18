@@ -253,7 +253,7 @@ module C-COMMON-EXPR-RELATIONAL
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) != tv(Loc':SymLoc, T':PointerType)
           => makeTruth(true, T, T')
-          requires notBool sameBase(T, T')
+          requires notBool sameBase(Loc, Loc')
           [structural]
 
      //- comparison of ints with pointers
