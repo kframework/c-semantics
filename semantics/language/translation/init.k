@@ -34,13 +34,13 @@ module C-TRANSLATION-INIT
           requires notBool (NOLINK in Opts)
 
      rule load(Obj1:Bag, Obj2:Bag)
-               => checkMerge(Obj1, Obj2)
-               ~> load'(mergeObj(Obj1, Obj2))
+               => load'(mergeObj(Obj1, Obj2))
+               ~> checkMerge(Obj1, Obj2)
 
      syntax KItem ::= "load'" "(" Bag ")"
      rule <k> load'(Merged:Bag)
-               => checkMerge(Merged, <global> ThisObj </global>)
-               ~> loadObj(mergeObj(Merged, <global> ThisObj </global>))
+               => loadObj(mergeObj(Merged, <global> ThisObj </global>))
+               ~> checkMerge(Merged, <global> ThisObj </global>)
           ...</k>
           <global> ThisObj:Bag </global>
 

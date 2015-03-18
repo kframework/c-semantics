@@ -2,6 +2,7 @@ module C-COMMON-EXTENSIONS
   imports C-SYNTAX
   imports COMPAT-SYNTAX
   imports C-DYNAMIC-SYNTAX
+  imports C-TYPING-SYNTAX
   imports C-TYPING-STRICTNESS-SYNTAX
   imports C-TYPING-CANONICALIZATION-SYNTAX
 
@@ -17,10 +18,10 @@ module C-COMMON-EXTENSIONS
   rule GnuBodyReturn(R:RValue) ~> popBlock => popBlock ~> R
 
   // Typeof operator
-  rule <k> canonicalizeType-aux(_:List ListItem(TypeofExpression(K:K) => evalToType), _, _, _, _) ...</k>
+  rule <k> (.K => evalToType) ~> canonicalizeType-aux(_:List ListItem(TypeofExpression(K:K) => typeof(MYHOLE)), _, _, _, _) ...</k>
        (.Bag => <type> K:K </type>)
 
-  rule <k> canonicalizeType-aux(_:List (ListItem(evalToType) => .List), (.K => T), _, _, _) ...</k>
+  rule <k> (evalToType => .K) ~> canonicalizeType-aux(_:List (ListItem(typeof(MYHOLE)) => .List), (.K => T), _, _, _) ...</k>
        (<type> T:Type </type> => .Bag)
 endmodule
 

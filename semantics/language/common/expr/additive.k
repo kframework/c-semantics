@@ -80,16 +80,43 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(Loc:SymLoc, T':PointerType) + tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', I)
-          requires simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
      rule tv(I:Int, _:IntegerType) + tv(Loc:SymLoc, T':PointerType)
           => addToPointer(Loc, T', I)
-          requires simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
      rule tv(Loc:SymLoc, T':PointerType) - tv(I:Int, _:IntegerType)
           => addToPointer(Loc, T', 0 -Int I)
-          requires simpleType(innerType(T')) =/=K void
+          requires notBool isFunctionType(innerType(T')) 
+               andBool isCompleteType(innerType(T'))
           [structural]
+
+     rule (.K => CV("CEA7", 
+               "Computing pointer addition of a pointer not to a complete object type",
+               "6.5.6:2"))
+          ~> tv(_:SymLoc, T':PointerType) + tv(_:Int, _:IntegerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+     rule (.K => CV("CEA7", 
+               "Computing pointer addition of a pointer not to a complete object type",
+               "6.5.6:2"))
+          ~> tv(_:Int, _:IntegerType) + tv(_:SymLoc, T':PointerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+     rule (.K => CV("CEA8", 
+               "Computing pointer minus integer of a pointer not to a complete object type",
+               "6.5.6:3"))
+          ~> tv(_:SymLoc, T':PointerType) - tv(_:Int, _:IntegerType)
+          requires isFunctionType(innerType(T'))
+               orBool notBool isCompleteType(innerType(T'))
+          [structural]
+
+
 
      rule (.K => CV("CEA3", "Invalid operand types to addition", "6.5.6:2"))
           ~> tv(_, T:Type) + tv(_, T':Type)
@@ -169,7 +196,8 @@ module C-COMMON-EXPR-ADDITIVE
                - tv(L2:SymLoc, t(_, pointerType(T:Type)))
           => computePointerDifference(offset(L1) -Int offset(L2),
                byteSizeofType(T))
-          requires base(L1) ==K base(L2)
+          requires base(L1) ==K base(L2) andBool notBool isFunctionType(T)
+               andBool isCompleteType(T)
           [structural]
 
      // uintptr_t
@@ -178,6 +206,14 @@ module C-COMMON-EXPR-ADDITIVE
           => computePointerDifference(offset(L1) -Int offset(L2),
                1)
           requires base(L1) ==K base(L2)
+
+     rule (.K => CV("CEA9",
+               "Computing pointer difference between pointers not to complete object types.",
+               "6.5.6:3"))
+          ~> tv(_:SymLoc, T:PointerType)
+               - tv(_:SymLoc, T:PointerType)
+          requires isFunctionType(innerType(T)) 
+               orBool notBool isCompleteType(innerType(T))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9"))
