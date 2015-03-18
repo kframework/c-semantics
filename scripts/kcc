@@ -287,7 +287,6 @@ sub getKRunCommand {
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
-          '--pattern-matching',
           '--exit-code',
           '<result-value> _:Int </result-value>'
      );
