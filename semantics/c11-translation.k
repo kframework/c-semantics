@@ -1,6 +1,7 @@
 require "language/translation/translation.k"
 require "language/common/common.k"
 require "settings.k"
+require "extensions.k"
 
 module C11-TRANSLATION-SYNTAX
      imports C-ABSTRACT-SYNTAX

@@ -62,7 +62,6 @@ sub main {
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   '--smt' => 'none',
-                  '--pattern-matching' => '',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '-w' => 'none',

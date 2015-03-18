@@ -11,9 +11,6 @@ module C-TYPING-EXPR
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     // FIXME need to automatically pad structs
-     syntax KItem ::= "MYHOLE"
-
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>
           SetItem(l('_:=_))

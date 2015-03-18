@@ -9,3 +9,4 @@ parser/clexer.ml
 parser/cparser.ml
 parser/cparser.mli
 semantics/settings.k
+semantics/extensions.k

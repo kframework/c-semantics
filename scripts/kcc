@@ -61,6 +61,7 @@ my $spec = q(#
       -L <dir>			Look for shared libraries in <dir>.
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
+      --output <file>		[ditto]
       -l<lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
       <files>...		C files to be compiled. [required] [repeatable]
@@ -286,7 +287,6 @@ sub getKRunCommand {
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
-          '--pattern-matching',
           '--exit-code',
           '<result-value> _:Int </result-value>'
      );

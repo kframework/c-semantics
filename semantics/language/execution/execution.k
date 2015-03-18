@@ -55,6 +55,8 @@ module C-EXECUTION
      imports C-EXPR-SEQUENCING
 
      imports C-DECL-LOCAL
+
+     imports C-EXECUTION-EXTENSIONS
 endmodule
 
 

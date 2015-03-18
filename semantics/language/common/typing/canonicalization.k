@@ -1,5 +1,6 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
      syntax KItem ::= canonicalizeType(List)
+     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -14,7 +15,6 @@ module C-TYPING-CANONICALIZATION
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE, _, _, _)
 
      syntax List ::= deleteUnuseType(List) [function]

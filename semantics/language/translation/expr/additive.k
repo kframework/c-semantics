@@ -12,23 +12,28 @@ module C-EXPR-ADDITIVE
      rule tv(V':CValue, t(Mods:Set, pointerType(T':Type))) + tv(V:CValue, _:IntegerType)
           => tv(symVal, t(Mods, pointerType(T')))
           requires ((V ==K symVal) orBool (V' ==K symVal))
-               andBool simpleType(T') =/=K void
+               andBool notBool isFunctionType(T') 
+               andBool isCompleteType(T')
           [structural]
      rule tv(V:CValue, _:IntegerType) + tv(V':CValue, t(Mods:Set, pointerType(T':Type)))
           => tv(symVal, t(Mods, pointerType(T')))
           requires ((V ==K symVal) orBool (V' ==K symVal))
-               andBool simpleType(T') =/=K void
+               andBool notBool isFunctionType(T') 
+               andBool isCompleteType(T')
           [structural]
      rule tv(V':CValue, t(Mods:Set, pointerType(T':Type))) - tv(V:CValue, _:IntegerType)
           => tv(symVal, t(Mods, pointerType(T')))
           requires ((V ==K symVal) orBool (V' ==K symVal))
-               andBool simpleType(T') =/=K void
+               andBool notBool isFunctionType(T') 
+               andBool isCompleteType(T')
           [structural]
 
      rule tv(V:CValue, t(_, pointerType(T:Type))) - tv(V':CValue, t(_, pointerType(T':Type)))
           => tv(symVal, t(.Set, cfg:ptrdiffut))
-          requires (V ==K symVal) orBool (V' ==K symVal)
+          requires ((V ==K symVal) orBool (V' ==K symVal))
                andBool T ==Type T'
+               andBool notBool isFunctionType(T)
+               andBool isCompleteType(T)
           [structural]
 
      rule tv(V:CValue, T:Type) + tv(V':CValue, T':Type)

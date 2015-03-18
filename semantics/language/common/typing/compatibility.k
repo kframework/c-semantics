@@ -156,6 +156,11 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
