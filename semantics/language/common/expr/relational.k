@@ -91,38 +91,38 @@ module C-COMMON-EXPR-RELATIONAL
      //- comparison of pointers
      rule tv(Loc:SymLoc, T:PointerType) < tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) <Int offset(Loc'), T, T')
-          requires base(Loc) ==K base(Loc')
+          requires sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
-          requires base(Loc) =/=K base(Loc')
+          requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) <= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
-          requires base(Loc) ==K base(Loc')
+          requires sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
-          requires base(Loc) =/=K base(Loc')
+          requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) > tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
-          requires (base(Loc) ==K base(Loc'))
+          requires sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
-          requires (base(Loc) =/=K base(Loc'))
+          requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) >= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
-          requires (base(Loc) ==K base(Loc'))
+          requires sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
-          requires (base(Loc) =/=K base(Loc'))
+          requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
 
@@ -214,11 +214,11 @@ module C-COMMON-EXPR-RELATIONAL
      an array of length one with the type of the object as its element type.
      }*/
      // if they're identical, we know for sure they are the same
-     rule tv(N:SymLoc, _:PointerType) == tv(N:SymLoc, _:PointerType)
-          => tv(1, t(.Set, int))
+     rule tv(N:SymLoc, T:PointerType) == tv(N:SymLoc, T':PointerType)
+          => makeTruth(true, T, T')
           [structural]
-     rule tv(N:SymLoc, _:PointerType) != tv(N:SymLoc, _:PointerType)
-          => tv(0, t(.Set, int))
+     rule tv(N:SymLoc, T:PointerType) != tv(N:SymLoc, T':PointerType)
+          => makeTruth(false, T, T')
           [structural]
 
      // if one of the pointers is null, it's also straightforward
@@ -239,11 +239,11 @@ module C-COMMON-EXPR-RELATIONAL
      // First, they are part of the same object
      rule tv(Loc:SymLoc, T:PointerType) == tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) ==Int offset(Loc'), T, T')
-          requires (base(Loc) ==K base(Loc'))
+          requires sameBase(Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) != tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) =/=Int offset(Loc'), T, T')
-          requires (base(Loc) ==K base(Loc'))
+          requires sameBase(Loc, Loc')
           [structural]
 
      // next, they are part of different objects.
@@ -253,7 +253,7 @@ module C-COMMON-EXPR-RELATIONAL
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) != tv(Loc':SymLoc, T':PointerType)
           => makeTruth(true, T, T')
-          requires (base(Loc) =/=K base(Loc'))
+          requires notBool sameBase(Loc, Loc')
           [structural]
 
      //- comparison of ints with pointers

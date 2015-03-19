@@ -57,10 +57,23 @@ module C-COMPOUND-LITERAL
                ~> X
           ...</k>
           <compound-lit-map> M:Map => M[X <- Base] </compound-lit-map>
+          <local-addresses>... .Set => SetItem(Base) </local-addresses>
           <next-loc> Base:SymBase => linc(Base) </next-loc>
           requires notBool (X in keys(M))
           [structural]
-
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
+               => allocObject(Base', T)
+               ~> addToEnv(X, Base')
+               ~> giveType(X, T)
+               ~> allowInit(Init)
+               ~> sequencePoint
+               ~> X
+          ...</k>
+          <compound-lit-map>... X |-> (Base:SymBase => Base') ...</compound-lit-map>
+          <local-addresses> Addrs:Set => Addrs SetItem(Base') </local-addresses>
+          <next-loc> Base':SymBase => linc(Base') </next-loc>
+          requires notBool (Base in Addrs)
+          [structural]
      // This and the compound-lit-map is apparently needed to properly handle
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
@@ -72,21 +85,18 @@ module C-COMPOUND-LITERAL
                ~> sequencePoint
                ~> X
           ...</k>
+          <local-addresses>... SetItem(Base) ...</local-addresses>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           [structural]
 
      // TODO(chathhorn) identical to trans, move these to common.
-     rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S), cfg:alignofSignedChar),
-                    t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ...</k>
-          <mem>... string(S) |-> _ ...</mem>
+     rule stringLiteral(S:String)
+          => lv(lnew(string(S), cfg:alignofSignedChar),
+               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           [structural]
-     rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
-                    t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
-          ...</k>
-          <mem>... wstring(S) |-> _ ...</mem>
+     rule wstringLiteral(S:List)
+          => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
+               t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           [structural]
 
 endmodule

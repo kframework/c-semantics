@@ -139,8 +139,8 @@ module C-DECL-LOCAL
                ~> addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
-          <should-init> false </should-init>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
+          <should-init> false </should-init>
           [structural]
      rule <k> defineAndInit(X:CId, T:Type, NoInit, Base:SymBase)
                => allocObjectIfAbsent(Base, T)

@@ -588,8 +588,10 @@ and hash = parse
                 { let here = currentLoc () in
                   PRAGMA_LINE (pragmaName ^ pragma lexbuf, here)
                 }
-| "pragma"      { pragmaLine := true; PRAGMA (currentLoc ()) }
-| _	        { addWhite lexbuf; endline lexbuf}
+| "pragma" blank "KCC" blank "inv"  { PRAGMA_KCC_INV (pragma lexbuf, currentLoc ()) }
+| "pragma" blank "KCC" blank "rule" { PRAGMA_KCC_RULE (pragma lexbuf, currentLoc ()) }
+| "pragma"                          { pragmaLine := true; PRAGMA (currentLoc ()) }
+| _                                 { addWhite lexbuf; endline lexbuf}
 
 and file =  parse 
         '\n'		        {addWhite lexbuf; E.newline (); initial lexbuf}

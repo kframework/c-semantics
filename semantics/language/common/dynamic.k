@@ -102,7 +102,11 @@ module C-DYNAMIC
      program to behave in a non-conforming manner. Any such pragma that is not
      recognized by the implementation is ignored.
      }*/
-     rule Pragma(_:K) => .K
+     rule Pragma(_) => .K
+          [structural]
+     rule PragmaKccInv(_) => .K
+          [structural]
+     rule PragmaKccRule(_) => .K
           [structural]
 
      rule AttributeWrapper(K:K, _) => K

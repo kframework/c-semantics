@@ -70,8 +70,8 @@ $ ocaml
 (Press ctrl-d to exit.)
 
 ### 4. Install K.
-- This version of the C semantics is compatible with version 3.4 of the K
-  Framework (<https://github.com/kframework/k/releases/tag/v3.4>). See
+- This version of the C semantics should be compatible with the latest version
+  of the K Framework (<https://github.com/kframework/k>). See
   <http://kframework.org> for download and installation details.
 
 ### 5. Install optional packages.
