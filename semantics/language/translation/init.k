@@ -1,5 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax KItem ::= load(Bag, Bag)
+     syntax KItem ::= load(Bag, Bag, Bag, Bag)
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -33,12 +33,23 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
 
-     rule load(Obj1:Bag, Obj2:Bag)
-               => load'(mergeObj(Obj1, Obj2))
+     rule load(Obj1:Bag, Obj2:Bag, Obj3:Bag, Obj4:Bag)
+               => load(mergeObj(Obj1, Obj2), Obj3, Obj4)
                ~> checkMerge(Obj1, Obj2)
 
-     syntax KItem ::= "load'" "(" Bag ")"
-     rule <k> load'(Merged:Bag)
+     syntax KItem ::= load(Bag, Bag, Bag)
+     syntax KItem ::= load(Bag, Bag)
+     syntax KItem ::= load(Bag)
+
+     rule load(Merged:Bag, Obj3:Bag, Obj4:Bag)
+               => load(mergeObj(Merged, Obj3), Obj4)
+               ~> checkMerge(Merged, Obj3)
+
+     rule load(Merged:Bag, Obj4:Bag)
+               => load(mergeObj(Merged, Obj4))
+               ~> checkMerge(Merged, Obj4)
+
+     rule <k> load(Merged:Bag)
                => loadObj(mergeObj(Merged, <global> ThisObj </global>))
                ~> checkMerge(Merged, <global> ThisObj </global>)
           ...</k>
