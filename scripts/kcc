@@ -40,6 +40,8 @@ my @originalArgv;
 our @cppArgs = ();
 our @stdlib = ();
 
+our $oflag;
+
 my $spec = q(#
       [strict]
       -c			Compile and assemble, but do not link.
@@ -58,6 +60,7 @@ my $spec = q(#
       -L <dir>			Look for shared libraries in <dir>.
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
+{ $main::oflag = $file; }
       --output <file>		[ditto]
       -l<lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
@@ -111,7 +114,7 @@ sub main {
      $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
 
      if ($args->{'-E'}) {
-          my $oval = $args->{'-o'};
+          my $oval = $main::oflag;
           if ($oval) {
             if (scalar @{$args->{'<files>'}} > 1) {
               die "cannot specify -o with -c or -E with multiple files";
@@ -123,7 +126,7 @@ sub main {
      }
 
      if ($args->{'-c'}) {
-          my $oval = $args->{'-o'};
+          my $oval = $main::oflag;
           if ($oval) {
             if (scalar @{$args->{'<files>'}} > 1) {
               die "cannot specify -o with -c or -E with multiple files";
@@ -138,7 +141,7 @@ sub main {
      if ($args->{'-shared'}) {
           classify(@{$args->{'<files>'}});
           mergeObjs(1, 0);
-          move($objFiles[0], $args->{'-o'} || 'a.out');
+          move($objFiles[0], $main::oflag || 'a.out');
           return 0;
      }
 
@@ -151,7 +154,7 @@ sub main {
      # Reduce our objFiles down to at most two.
      mergeObjs(4, 1);
 
-     my $oval = $args->{'-o'} || 'a.out';
+     my $oval = $main::oflag || 'a.out';
 
      my $programConfFile = tempFile(); 
 
