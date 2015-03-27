@@ -37,11 +37,10 @@ my $TRANS_DEF =
 
 my @originalArgv;
 
-our @cppDefines = ();
-our @cppIncludeDirs = ();
-our @cppIncludes = ();
-our @cppUndefines = ();
+our @cppArgs = ();
 our @stdlib = ();
+
+our $oflag;
 
 my $spec = q(#
       [strict]
@@ -50,17 +49,18 @@ my $spec = q(#
 				faster loading).
       -d			Print debugging information.
       -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@main::cppDefines, defined $definition ? "-D$name=$definition" : "-D$name"); }
+{ push(@main::cppArgs, defined $definition ? "-D$name=$definition" : "-D$name"); }
       -U <name>			Undefine <name> as a macro.
-{ push(@main::cppUndefines, "-U$name"); }
+{ push(@main::cppArgs, "-U$name"); }
       -E			Preprocess only.
       -I <dir>			Look for headers in <dir>.
-{ push(@main::cppIncludeDirs, '-I', $dir); }
+{ push(@main::cppArgs, '-I', $dir); }
       -include <file>		Add header to file during preprocessing.
-{ push(@main::cppIncludes, '-include', $file); }
+{ push(@main::cppArgs, '-include', $file); }
       -L <dir>			Look for shared libraries in <dir>.
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
+{ $main::oflag = $file; }
       --output <file>		[ditto]
       -l<lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
@@ -70,6 +70,13 @@ my $spec = q(#
                         { $self->usage(0); }
       -v				Show version information [undocumented]
                                 { $self->version(0); }
+
+      -MD			Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MD'); }
+      -MP			Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MP'); }
+      -MF <file>		Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MF', $file); }
 
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
@@ -107,7 +114,7 @@ sub main {
      $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
 
      if ($args->{'-E'}) {
-          my $oval = $args->{'-o'};
+          my $oval = $main::oflag;
           if ($oval) {
             if (scalar @{$args->{'<files>'}} > 1) {
               die "cannot specify -o with -c or -E with multiple files";
@@ -119,7 +126,7 @@ sub main {
      }
 
      if ($args->{'-c'}) {
-          my $oval = $args->{'-o'};
+          my $oval = $main::oflag;
           if ($oval) {
             if (scalar @{$args->{'<files>'}} > 1) {
               die "cannot specify -o with -c or -E with multiple files";
@@ -134,7 +141,7 @@ sub main {
      if ($args->{'-shared'}) {
           classify(@{$args->{'<files>'}});
           mergeObjs(1, 0);
-          move($objFiles[0], $args->{'-o'} || 'a.out');
+          move($objFiles[0], $main::oflag || 'a.out');
           return 0;
      }
 
@@ -145,9 +152,9 @@ sub main {
      }
 
      # Reduce our objFiles down to at most two.
-     mergeObjs(2, 1);
+     mergeObjs(4, 1);
 
-     my $oval = $args->{'-o'} || 'a.out';
+     my $oval = $main::oflag || 'a.out';
 
      my $programConfFile = tempFile(); 
 
@@ -156,7 +163,7 @@ sub main {
      # because we need to use different parsers if one of the config vars
      # should be empty.
 
-     my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $srcFiles[0], 1));
+     my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
      checkError($retval);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
@@ -202,6 +209,8 @@ sub mergeObjs {
      while (scalar @objFiles + scalar @pids > $numObj) {
           my $obj1 = shift @objFiles;
           my $obj2 = shift @objFiles;
+          my $obj3 = shift @objFiles;
+          my $obj4 = shift @objFiles;
 
           my $accum = tempFile();
           my $pid = fork();
@@ -209,7 +218,7 @@ sub mergeObjs {
             die "Error running process";
           }
           if (!$pid) {
-            my @cmd = getKRunCommand($accum, $obj1, $obj2, undef, 0);
+            my @cmd = getKRunCommand($accum, $obj1, $obj2, $obj3, $obj4, undef, 0);
             if ($args->{'-d'}) {
               print("krun '" . join("' '", @cmd) . "'\n");
             }
@@ -221,7 +230,7 @@ sub mergeObjs {
           );
           push(@pids, \%data);
 
-          if (scalar @pids >= 4 || scalar @objFiles == 0) {
+          if (scalar @pids >= 4) {
             # finished a round, wait for results
             while (scalar @pids > 0) {
               my %data = %{shift @pids};
@@ -231,6 +240,14 @@ sub mergeObjs {
               checkError($? >> 8);
             }
           }
+     }
+
+     while (scalar @pids > 0) {
+       my %data = %{shift @pids};
+       push(@objFiles, $data{'out'});
+       waitpid $data{'pid'}, 0;
+
+       checkError($? >> 8);
      }
 }
 
@@ -275,12 +292,24 @@ sub extractStatic {
 
 sub compile {
      my ($oval, $inputFile) = (@_);
-     my $retval = execute('krun', getKRunCommand($oval, undef, undef, $inputFile, 0));
+     my $retval = execute('krun', getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
      checkError($retval);
 }
 
+sub pushObj {
+     my ($arr, $obj, $i) = (@_);
+
+     if (defined $obj) {
+          push(@{$_[0]}, "-pOBJ$i=kast --parser binary");
+          push(@{$_[0]}, "-cOBJ$i=$obj");
+     } else {
+          push(@{$_[0]}, "-cOBJ$i=.Bag");
+     }
+}
+   
+
 sub getKRunCommand {
-     my ($output, $obj1, $obj2, $src, $link) = (@_);
+     my ($output, $obj1, $obj2, $obj3, $obj4, $src, $link) = (@_);
 
      my @krun_args = (
           '--output', 'binary', 
@@ -301,18 +330,10 @@ sub getKRunCommand {
           push(@krun_args, '-cOPTIONS=SetItem(NOLINK)');
      }
 
-     if (defined $obj1) {
-          push(@krun_args, '-pOBJ1=kast --parser binary');
-          push(@krun_args, "-cOBJ1=$obj1");
-     } else {
-          push(@krun_args, '-cOBJ1=.Bag');
-     }
-     if (defined $obj2) {
-          push(@krun_args, '-pOBJ2=kast --parser binary');
-          push(@krun_args, "-cOBJ2=$obj2");
-     } else {
-          push(@krun_args, '-cOBJ2=.Bag');
-     }
+     pushObj(\@krun_args, $obj1, '1');
+     pushObj(\@krun_args, $obj2, '2');
+     pushObj(\@krun_args, $obj3, '3');
+     pushObj(\@krun_args, $obj4, '4');
      if (defined $src) {
           my $kast = parse($src);
           push(@krun_args, '--parser', 'cat');
@@ -344,8 +365,7 @@ sub preprocess {
      my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
-                   @main::cppDefines, @main::cppUndefines, @main::cppIncludeDirs,
-                   @main::cppIncludes, '-E', '-iquote', '.', '-iquote', $directoryname,
+                   @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
                    '-I', "$myDirectory/includes", $inputFile, '-o', $output);
 
      my $retval = execute(@ppArgs);

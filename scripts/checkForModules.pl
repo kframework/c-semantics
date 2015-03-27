@@ -4,7 +4,6 @@ my @requiredModules = qw(
 	XML::LibXML::Reader
 	Text::Diff
 	DBI
-	DBD::SQLite
 	Getopt::Declare
       MIME::Base64
       IO::Compress::Gzip
