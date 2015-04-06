@@ -1,4 +1,5 @@
 module C-PROMOTION-SYNTAX
+     imports KAST
      // should be K, but is Type for efficiency reasons
      syntax Type ::= promote(Type) [function]
      syntax Bool ::= isArithBinConversionOp(KLabel) [function]

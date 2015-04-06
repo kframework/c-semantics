@@ -1,5 +1,7 @@
 module COMPAT-SYNTAX
      imports C-SYNTAX // Would like to get rid of this.
+     imports KCELLS
+     imports MAP
 
      //TODO(liyi): must not need the second one
      syntax KItem ::= l(KLabel) [avoid]

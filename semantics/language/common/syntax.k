@@ -1,4 +1,11 @@
 module C-SYNTAX
+     imports BASIC-K
+     imports STRING-SYNTAX
+     imports INT-SYNTAX
+     imports BOOL-SYNTAX
+     imports LIST
+     imports KORE-COMPAT
+
      // these are semantic
      syntax KItem ::= reval(K)
 

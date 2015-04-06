@@ -19,6 +19,7 @@ module C-FUNCTION-DEF
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BINDING-SYNTAX
+     imports C-ANNOTATION-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -175,6 +176,7 @@ module C-FUNCTION-DEF
      rule <k> staticEval(X:CId, Params:List, Blk:K)
                => pushBlock
                ~> dummyBind(Params)
+               ~> generateRuleAnnotation(X)
                ~> Blk
                ~> popBlock
                ~> returnToFileScope

@@ -1,4 +1,5 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
+     imports SET
      syntax Bool ::= #areCompat(Type, Type, Set) [function]
      syntax Bool ::= sameQualifiers(Set, Set) [function]
      syntax Int ::= getAlignas(Type) [function]
