@@ -48,19 +48,19 @@ module C-SYMBOLIC-VALUE
           requires I >Int 0
           [structural]
 
-     rule bitSizeofType(T:Type) => symVal:>Int
+     rule bitSizeofType(T:Type) => symVal
           requires notBool isCompleteType(T)
                andBool notBool isFlexibleArrayType(T)
-     rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal:>Int
-     rule bitSizeofType(t(_, variableLengthArrayType(_, _))) => symVal:>Int
+     rule bitSizeofType(t(_, arrayType(_, symVal))) => symVal
+     rule bitSizeofType(t(_, variableLengthArrayType(_, _))) => symVal
 
      rule splitBytes(tv(symVal, T:Type))
           => dataList(
-               times(byteSizeofType(T), piece(symVal, cfg:bitsPerByte)))
+               times(byteSizeofType(T):>Int, piece(symVal, cfg:bitsPerByte)))
 
      rule write-specific(Loc:SymLoc, symVal, T:Type)
           => writeBytes(Loc, dataList(ListItem(symVal)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+          requires (bitSizeofType(T):>Int %Int cfg:bitsPerByte =/=Int 0)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
           [structural]
 

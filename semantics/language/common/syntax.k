@@ -306,6 +306,7 @@ module C-SYNTAX
      syntax PureDefinition ::= OnlyTypedef(K)
      syntax PureDefinition ::= GlobAsm(String)
      syntax PureDefinition ::= Pragma(K)
+     syntax PureDefinition ::= PragmaKccInv(String) | PragmaKccRule(String)
      syntax PureDefinition ::= Linkage(String, K)
      syntax PureDefinition ::= Transformer(K, K )
      syntax PureDefinition ::= ExpressionTransformer(K, K)

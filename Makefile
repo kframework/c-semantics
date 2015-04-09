@@ -18,7 +18,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k test-build
+.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
 
 default: dist
 
@@ -26,12 +26,12 @@ fast: $(DIST_DIR)/lib/libc.so $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
-	@if ! gcc-4.9 -v > /dev/null 2>&1; then if ! clang -v 2>&1 | grep "LLVM 3.5" > /dev/null; then echo "ERROR: You don't seem to have gcc 4.9 or clang 3.5 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
+	@if ! gcc-4.9 -v > /dev/null 2>&1; then if ! clang -v 2>&1 | grep "3.5" > /dev/null; then echo "ERROR: You don't seem to have gcc 4.9 or clang 3.5 installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi fi
 	@if ! kompile --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have kompile installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(FILES_TO_DIST) | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(LIBC_DIR)/includes/*) | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/lib
 	@cp -r $(LIBC_DIR)/includes $(DIST_DIR)
@@ -59,7 +59,7 @@ $(DIST_DIR): test-build $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin 
 
 test-build: fast
 	@echo "Testing kcc..."
-	echo '#include <stdio.h>\nint main(void) {printf("x"); return 42;}\n' | $(DIST_DIR)/kcc - -o $(DIST_DIR)/testProgram.compiled
+	printf "#include <stdio.h>\nint main(void) {printf(\"x\"); return 42;}\n" | $(DIST_DIR)/kcc - -o $(DIST_DIR)/testProgram.compiled
 	$(DIST_DIR)/testProgram.compiled 2> /dev/null > $(DIST_DIR)/testProgram.out; test $$? -eq 42
 	grep x $(DIST_DIR)/testProgram.out > /dev/null
 	@echo "Done."
@@ -72,13 +72,16 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k
+semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
 	@$(MAKE) -C $(SEMANTICS_DIR) fast
 
 $(SEMANTICS_DIR)/settings.k:
 	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
 
-semantics: check-vars $(SEMANTICS_DIR)/settings.k
+$(SEMANTICS_DIR)/extensions.k:
+	@diff $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)/extensions.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)
+
+semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 check:	fast
@@ -94,4 +97,4 @@ clean:
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k

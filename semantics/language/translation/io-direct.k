@@ -20,11 +20,12 @@ module C-IO-DIRECT
                => writeBytes(Loc, D)
           ...</k>
           <initializing> I:Int </initializing>
-          requires I >Int 0
+          requires I >Int 0 andBool notBool isSymbolic(Loc)
           [structural]
-
      rule <k> writeBytes(_, _, _) => .K ...</k>
           <initializing> 0 </initializing>
+          [structural]
+     rule writeBytes(symVal, _, _) => .K
           [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))

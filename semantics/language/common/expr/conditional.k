@@ -43,14 +43,12 @@ module C-COMMON-EXPR-CONDITIONAL
      syntax KItem ::= retype(K) [strict]
 
      // fixme, not handling qualifiers correctly
-     rule retype(T:Type) => t(.Set, pointerType(innerType(T)))
-          requires isArrayType(T)
+     rule retype(T:ArrayType) => t(.Set, pointerType(innerType(T)))
           [structural]
-     rule retype(T:Type) => t(.Set, pointerType(T))
-          requires isFunctionType(T)
+     rule retype(T:FunctionType) => t(.Set, pointerType(T))
           [structural]
      rule retype(T:Type) => T
-          requires notBool (isArrayType(T) orBool isFunctionType(T))
+          requires notBool isArrayOrFunctionType(T)
           [structural]
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
@@ -70,21 +68,17 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
+     rule (types(trItem(T1:ArithmeticType) ts:: trItem(T2:ArithmeticType))
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           requires T1 =/=K T2
-               andBool hasArithmeticType(T1)
-               andBool hasArithmeticType(T2)
           [structural]
      /*
      //(liyili2):add this following rule for checking T1 ==K T2
-     rule (types(trItem(T1:Type) ts:: trItem(T2:Type))
+     rule (types(trItem(T1:ArithmeticType) ts:: trItem(T2:ArithmeticType))
           => convertedType(T1))
                ~> _ ? _ : _
           requires T1 ==K T2
-               andBool hasArithmeticType(T1)
-               andBool hasArithmeticType(T2)
           [structural]
      */
 
@@ -103,21 +97,19 @@ module C-COMMON-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T2))
+     rule (types(trItem(T1:IntegerType) ts:: trItem(T2:PointerType)) => convertedType(T2))
           ~> _ ? tv(0, T1) : _
-          when hasIntegerType(T1) andBool isPointerType(T2)
           [structural]
-     rule (types(trItem(T1:Type) ts:: trItem(T2:Type)) => convertedType(T1))
+     rule (types(trItem(T1:PointerType) ts:: trItem(T2:IntegerType)) => convertedType(T1))
           ~> _? _ : tv(0, T2)
-          when hasIntegerType(T2) andBool isPointerType(T1)
           [structural]
 
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
                +String " other must be a pointer to void.",
                "6.5.15:3"))
-          ~> types(trItem(T1:Type) ts:: trItem(T2:Type))
-          requires isPointerType(T1) andThenBool isPointerType(T2) andThenBool notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
-               andThenBool notBool isVoidType(innerType(T1)) andThenBool notBool isVoidType(innerType(T2))
+          ~> types(trItem(T1:PointerType) ts:: trItem(T2:PointerType))
+          requires notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
+               andBool notBool isVoidType(innerType(T1)) andBool notBool isVoidType(innerType(T2))
 
      rule (types(
                trItem(t(Mods:Set, pointerType(T:Type)))
@@ -161,10 +153,8 @@ module C-COMMON-EXPR-CONDITIONAL
           requires T =/=K void
           [structural]
      rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(trItem(T:Type) ts:: trItem(T':Type))
+          types(trItem(T:StructOrUnionType) ts:: trItem(T':StructOrUnionType))
           requires (T =/=K T')
-               andBool (isStructType(T) orBool isUnionType(T))
-               andBool (isStructType(T') orBool isUnionType(T'))
           [structural]
 endmodule
 

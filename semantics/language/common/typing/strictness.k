@@ -1,6 +1,8 @@
 module C-TYPING-STRICTNESS-SYNTAX
      syntax KItem ::= "evalToType"
 
+     // FIXME need to automatically pad structs
+     syntax KItem ::= "MYHOLE"
 endmodule
 
 module C-TYPING-STRICTNESS

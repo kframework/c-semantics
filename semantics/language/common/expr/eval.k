@@ -43,8 +43,7 @@ module C-COMMON-EXPR-EVAL
 
      // Lvalue conversion.
      rule reval(nclv(Loc:SymLoc, T:Type) => checkUse(instantiate(Loc, T)))
-          requires notBool isArrayType(T)
-               andBool notBool isFunctionType(T)
+          requires notBool isArrayOrFunctionType(T)
           [structural]
 
      rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
@@ -60,10 +59,9 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:Type)
+     rule reval(nclv(Loc:SymLoc, T:ArrayType)
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
-          requires isArrayType(T)
           [structural]
 
      syntax Type ::= arrayToPtrType(Type) [function]
@@ -73,11 +71,11 @@ module C-COMMON-EXPR-EVAL
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
-             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
+             addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
+          => addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
 
@@ -89,9 +87,14 @@ module C-COMMON-EXPR-EVAL
      expression that has type ``pointer to a function returning T''.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:Type)
+     rule reval(nclv(Loc:SymLoc, T:FunctionType)
                => checkUse(tv(Loc, t(.Set, pointerType(T)))))
-          requires isFunctionType(T)
+          [structural]
+
+     rule reval(trap(T:Type)
+               => UNDEF("CEE2", "Indeterminate value used in an expression.",
+                    "6.2.4, 6.7.9, 6.8")
+               ~> tv(trap, T))
           [structural]
 
      syntax KItem ::= checkRegister(SymLoc)
@@ -116,15 +119,10 @@ module C-COMMON-EXPR-EVAL
           requires getKLabel(V) =/=KLabel 'tv
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
-          requires (isSymLoc(V) =/=K true)
-               andBool (isTrap(V) =/=K true)
+          requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
+          [structural]
+     rule checkUse(tv(trap, T:Type)) => trap(T)
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
-     rule checkUse(tv(trap, T:Type))
-          => UNDEF("CEE2", "Indeterminate value used in an expression.",
-               "6.2.4, 6.7.9, 6.8")
-          ~> tv(trap, T)
-          [structural]
-
 endmodule

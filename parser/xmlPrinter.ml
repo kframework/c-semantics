@@ -146,6 +146,10 @@ and printDef def =
 			printDefinitionLoc (wrap ((printRawString a) :: []) "GlobAsm") b
 		| PRAGMA (a, b) ->
 			printDefinitionLoc (wrap ((printExpression a) :: []) "Pragma") b
+		| PRAGMA_KCC_INV (a, b) ->
+			printDefinitionLoc (wrap ((printRawString a) :: []) "PragmaKccInv") b
+		| PRAGMA_KCC_RULE (a, b) ->
+			printDefinitionLoc (wrap ((printRawString a) :: []) "PragmaKccRule") b
 		| LINKAGE (a, b, c) ->
 			printDefinitionLoc (wrap ((printRawString a) :: (printDefs c) :: []) "Linkage") b
 		| TRANSFORMER (a, b, c) ->

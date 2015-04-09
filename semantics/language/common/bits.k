@@ -8,7 +8,7 @@ module C-BITS-SYNTAX
      syntax Bits ::= Trap
      syntax Bits ::= Unknown
 
-     syntax Bits ::= piece(Bits, Int)
+     syntax Bits ::= piece(Bits, CSize)
      syntax Bits ::= Bits "bit::" Bits
 
      // original number, from, to inclusive

@@ -146,11 +146,10 @@ module C-BINDING
                andBool representable(V, argPromoteType(T'))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T)))
-     rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
-          requires isPointerType(T) andBool isPointerType(T')
-               andBool (hasCharType(innerType(argPromoteType(T)))
+     rule #arePromotedTypesCompat(_, T:PointerType, T':PointerType) => true
+          requires (isCharType(innerType(argPromoteType(T)))
                     orBool isVoidType(innerType(argPromoteType(T))))
-               andBool (hasCharType(innerType(argPromoteType(T')))
+               andBool (isCharType(innerType(argPromoteType(T')))
                     orBool isVoidType(innerType(argPromoteType(T'))))
      rule #arePromotedTypesCompat(_, _, _) => false [owise]
 
@@ -174,9 +173,8 @@ module C-BINDING
           => t(Mods, double)
      rule argPromoteType(t(Mods:Set, long-double))
           => t(Mods, long-double)
-     rule argPromoteType(T:Type)
+     rule argPromoteType(T:IntegerType)
           => promote(T)
-          requires hasIntegerType(T)
      rule argPromoteType(T:Type) => T [owise]
 
      // "are argument-promoted".

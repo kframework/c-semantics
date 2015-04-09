@@ -1,5 +1,6 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
      syntax KItem ::= canonicalizeType(List)
+     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
 endmodule
 
 module C-TYPING-CANONICALIZATION
@@ -14,7 +15,6 @@ module C-TYPING-CANONICALIZATION
      imports COMPAT-SYNTAX
      imports DEBUG-SYNTAX
 
-     syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
      context canonicalizeType-aux(_, HOLE, _, _, _)
 
      syntax List ::= deleteUnuseType(List) [function]
@@ -27,7 +27,7 @@ module C-TYPING-CANONICALIZATION
           => deleteUnuseType(L)
      rule deleteUnuseType(ListItem(K:K) L:List)
           => ListItem(K) deleteUnuseType(L)
-          requires K =/=K SpecTypedef 
+          requires K =/=K SpecTypedef
                andBool getKLabel(K) =/=KLabel 'Attribute
 
      rule canonicalizeType(M:List)
@@ -174,8 +174,12 @@ module C-TYPING-CANONICALIZATION
 //      => t(S, incompleteUnionType(C))
 //      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
 //      => t(S, typedefType(C, canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(T:Type) => T
-//      requires isBasicType(T)
+//      rule canonicalizeArrayType(T:BasicType) => T
+
+     syntax Bool ::= isGlobalScope(K) [function]
+     rule isGlobalScope(file-scope) => true
+     rule isGlobalScope(prototype(K:K)) => isGlobalScope(K)
+     rule isGlobalScope(_) => false [owise]
 
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
@@ -214,7 +218,7 @@ module C-TYPING-CANONICALIZATION
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
                andBool notBool (global(X, Tu) in keys(Structs))
-               andBool F ==K file-scope orBool F ==K prototype(file-scope)
+               andBool isGlobalScope(F)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
                => t(.Set, structType(local(X, Tu, BlockNum)))
@@ -225,7 +229,7 @@ module C-TYPING-CANONICALIZATION
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
                andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
-               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
+               andBool notBool isGlobalScope(F)
           [structural]
      rule canonicalizeSpecifier(ListItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
@@ -260,7 +264,7 @@ module C-TYPING-CANONICALIZATION
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
                andBool notBool (global(X, Tu) in keys(Structs))
-               andBool F ==K file-scope orBool F ==K prototype(file-scope)
+               andBool isGlobalScope(F)
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
                => t(.Set, unionType(local(X, Tu, BlockNum)))
@@ -271,7 +275,7 @@ module C-TYPING-CANONICALIZATION
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires (X =/=K Identifier(""))
                andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
-               andBool (F =/=K file-scope) andBool F =/=K prototype(file-scope)
+               andBool notBool isGlobalScope(F)
           [structural]
  
      rule canonicalizeSpecifier(ListItem(EnumDef(X:CId, L:K)))
@@ -311,12 +315,6 @@ module C-TYPING-CANONICALIZATION
                UnionDef(X:CId, L:K) => UnionRef(X)))
           requires X =/=K Identifier("")
           [structural]
-
-     // TODO(chathhorn): merging; eliding anywhere rules.
-     // // FIXME what good is this_
-     // rule ListItem(SpecTypedef) => .List [structural, anywhere]
-     // // FIXME should save these for later use
-     // rule ListItem(Attribute(_:String, _)) => .List [structural, anywhere]
 
      rule canonicalizeType-aux(.List, (.K => canonicalizeSpecifier(B)),
                (B:List => .List), _, _)

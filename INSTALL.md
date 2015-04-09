@@ -12,7 +12,7 @@ installation process for our C semantics can be summarized as:
 $ cd ~
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
 $ sudo apt-get install build-essential libxml-libxml-perl ocaml graphviz
-$ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
+$ sudo cpan -i Text::Diff DBI Getopt::Declare
 $ cd c-semantics
 $ make
 $ export PATH=$PATH:~/c-semantics/dist
@@ -35,12 +35,11 @@ $ sudo apt-get install build-essential
   Perl in Windows):
     - Text::Diff
     - DBI
-    - DBD::SQLite
     - Getopt::Declare
 
 To install these modules using cpan:
 ```
-$ sudo cpan -i Text::Diff DBI DBD::SQLite Getopt::Declare
+$ sudo cpan -i Text::Diff DBI Getopt::Declare
 ```
 
 We also need the XML::LibXML::Reader Perl module. The easiest way to install
@@ -70,8 +69,8 @@ $ ocaml
 (Press ctrl-d to exit.)
 
 ### 4. Install K.
-- This version of the C semantics is compatible with version 3.4 of the K
-  Framework (<https://github.com/kframework/k/releases/tag/v3.4>). See
+- This version of the C semantics should be compatible with the latest version
+  of the K Framework (<https://github.com/kframework/k>). See
   <http://kframework.org> for download and installation details.
 
 ### 5. Install optional packages.

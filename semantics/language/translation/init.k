@@ -1,5 +1,5 @@
 module C-TRANSLATION-INIT-SYNTAX
-     syntax KItem ::= load(Bag, Bag)
+     syntax KItem ::= load(Bag, Bag, Bag, Bag)
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -33,14 +33,25 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
 
-     rule load(Obj1:Bag, Obj2:Bag)
-               => checkMerge(Obj1, Obj2)
-               ~> load'(mergeObj(Obj1, Obj2))
+     rule load(Obj1:Bag, Obj2:Bag, Obj3:Bag, Obj4:Bag)
+               => load(mergeObj(Obj1, Obj2), Obj3, Obj4)
+               ~> checkMerge(Obj1, Obj2)
 
-     syntax KItem ::= "load'" "(" Bag ")"
-     rule <k> load'(Merged:Bag)
-               => checkMerge(Merged, <global> ThisObj </global>)
-               ~> loadObj(mergeObj(Merged, <global> ThisObj </global>))
+     syntax KItem ::= load(Bag, Bag, Bag)
+     syntax KItem ::= load(Bag, Bag)
+     syntax KItem ::= load(Bag)
+
+     rule load(Merged:Bag, Obj3:Bag, Obj4:Bag)
+               => load(mergeObj(Merged, Obj3), Obj4)
+               ~> checkMerge(Merged, Obj3)
+
+     rule load(Merged:Bag, Obj4:Bag)
+               => load(mergeObj(Merged, Obj4))
+               ~> checkMerge(Merged, Obj4)
+
+     rule <k> load(Merged:Bag)
+               => loadObj(mergeObj(Merged, <global> ThisObj </global>))
+               ~> checkMerge(Merged, <global> ThisObj </global>)
           ...</k>
           <global> ThisObj:Bag </global>
 
@@ -90,7 +101,7 @@ module C-TRANSLATION-INIT
 
      rule addBuiltins(.Map) => .K
 
-     rule <k> addBuiltin(B:CId, T:Type) => declare(
+     rule <k> addBuiltin(B:CId, T:FunctionType) => declare(
                typedDeclaration(T, B),
                initializer(initFunction(
                     &(B),
@@ -98,7 +109,7 @@ module C-TRANSLATION-INIT
                ))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs)) andBool isFunctionType(T)
+          requires notBool (B in keys(Defs))
 
      rule <k> addBuiltin(B:CId, _) => .K ...</k>
           <external-types> Types:Map </external-types>

@@ -19,7 +19,7 @@ reference: ${REFERENCE_TEST_RESULTS}
 comparison: ${TEST_COMPARISON}
 
 libtest.so: libtest.c
-	gcc-4.9 -shared -std=c11 -o $@ $<
+	gcc-4.9 -shared -std=c11 -fPIC -o $@ $<
 
 %.out: %.kcc
 	@echo -n "Running $<... "
@@ -31,7 +31,7 @@ libtest.so: libtest.c
 
 %.gcc: %.c libtest.so
 	@echo -n "Compiling $< (reference)... "
-	@gcc-4.9 -std=c11 -o $@ $< -lm ./libtest.so > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@gcc-4.9 -std=c11 -o $@ $< -ldl -lm ./libtest.so > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.ref: %.gcc
 	@echo -n "Running $<... "

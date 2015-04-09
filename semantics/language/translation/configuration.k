@@ -63,7 +63,8 @@ module C-CONFIGURATION
 
      <k color="green" multiplicity="?">
           $PGM:K
-          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag))
+          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
+                  unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
           ~> link
           ~> cleanup
      </k>

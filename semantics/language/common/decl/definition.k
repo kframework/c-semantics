@@ -77,8 +77,7 @@ module C-DECL-DEFINITION
           => t(Mods, pointerType(elideDeclParams(T)))
      rule elideDeclParams(T:Type) => T
           requires notBool isTypedDeclaration(T)
-               andBool notBool isFunctionType(T)
-               andBool notBool isArrayType(T)
+               andBool notBool isArrayOrFunctionType(T)
                andBool notBool isPointerType(T)
 
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)

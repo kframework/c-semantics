@@ -31,6 +31,10 @@ module C-CHECK-LOC
      rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>
           [structural]
+     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+          <activeBlocks> Blocks:Map </activeBlocks>
+          requires notBool Tag in keys(Blocks)
+          [structural]
 
      rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
           [structural]

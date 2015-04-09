@@ -52,11 +52,10 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:Type))
+     rule *(tv(Loc:SymLoc, T:PointerType))
           => checkRestrict(Loc)
           ~> lv(stripBases(stripFromArray(Loc)), innerType(T))
-          requires isPointerType(T)
-               andBool notBool isVoidType(innerType(T))
+          requires notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,
                     t(.Set, pointerType(t(.Set, char))), 1) ==K true

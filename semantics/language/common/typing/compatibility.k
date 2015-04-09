@@ -156,6 +156,11 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
                t(Mods:Set, pointerType(T:Type)),
@@ -245,11 +250,9 @@ module C-TYPING-COMPATIBILITY
 
      // We can assume the types are compatible.
      //TODO(liyi): might not need canonicalizeArrayType later
-     rule compositeType(T:Type, T:Type) => T
-          requires isBasicType(T)
-               orBool isStructType(T)
-               orBool isUnionType(T)
-               orBool isBitfieldType(T)
+     rule compositeType(T:BasicType, T:BasicType) => T
+     rule compositeType(T:StructOrUnionType, T:StructOrUnionType) => T
+     rule compositeType(T:BitfieldType, T:BitfieldType) => T
      rule compositeType(
                t(Mods:Set, T:SimpleType),
                t(Mods':Set, T:SimpleType))
@@ -260,8 +263,7 @@ module C-TYPING-COMPATIBILITY
           // => canonicalizeArrayType(t(Mods Mods', T))
           => t(Mods Mods', T)
           requires isBasicType(t(.Set, T))
-               orBool isStructType(t(.Set, T))
-               orBool isUnionType(t(.Set, T))
+               orBool isStructOrUnionType(t(.Set, T))
                orBool isBitfieldType(t(.Set, T))
 
      // TODO(chathhorn): surely implementation defined, although I don't see

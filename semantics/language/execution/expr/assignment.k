@@ -8,7 +8,7 @@ module C-EXPR-ASSIGNMENT
      imports C-TYPING-SYNTAX
 
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => checkOverlap(stripProv(Loc), T)
+          => checkOverlap(stripProv(Loc), T, T')
           ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
           requires notBool isRestrictType(T)
@@ -16,7 +16,7 @@ module C-EXPR-ASSIGNMENT
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
-          => checkOverlap(stripProv(Loc), T)
+          => checkOverlap(stripProv(Loc), T, T')
           ~> checkArrayStaticAssign(T', V)
           ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
@@ -25,7 +25,7 @@ module C-EXPR-ASSIGNMENT
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
-          => checkOverlap(stripProv(Loc), T)
+          => checkOverlap(stripProv(Loc), T, T')
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
           ~> transferProv(Loc, tv(V, T))
@@ -33,7 +33,7 @@ module C-EXPR-ASSIGNMENT
                andBool (T ==Type T')
           [structural]
      rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
-          => checkOverlap(stripProv(Loc), T)
+          => checkOverlap(stripProv(Loc), T, T')
           ~> checkArrayStaticAssign(T', V)
           ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
@@ -43,10 +43,10 @@ module C-EXPR-ASSIGNMENT
                andBool (T ==Type T')
           [structural]
 
-     syntax KItem ::= checkOverlap(SymLoc, Type)
-     rule checkOverlap(Loc:SymLoc, T:Type) => .K
+     syntax KItem ::= checkOverlap(SymLoc, Type, Type)
+     rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
           requires notBool hasReadFrom(T)
-               orBool getReadFrom(T) ==K Loc
+               orBool (getReadFrom(T) ==K Loc andBool getReadFromLen(T) ==K byteSizeofType(T'))
                orBool notBool sameBase(getReadFrom(T), Loc)
                orBool (getReadFrom(T) +bytes byteSizeofType(T)) <=bytes Loc
                orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFrom(T)
@@ -54,10 +54,10 @@ module C-EXPR-ASSIGNMENT
      rule (.K => UNDEF("EEA1",
                "assignment from non-exactly-overlapping overlapping read.",
                "6.5.16.2"))
-          ~> checkOverlap(Loc:SymLoc, T:Type)
+          ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
           requires hasReadFrom(T)
                andBool sameBase(getReadFrom(T), Loc)
-               andBool (getReadFrom(T) =/=K Loc)
+               andBool (getReadFrom(T) =/=K Loc orBool getReadFromLen(T) =/=K byteSizeofType(T'))
                andBool (getReadFrom(T) +bytes byteSizeofType(T)) >bytes Loc
                andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFrom(T)
           [structural]
@@ -107,13 +107,13 @@ module C-EXPR-ASSIGNMENT
      rule checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           => .K
-          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T):>Int)
      rule (.K => UNDEF("EEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
-          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T):>Int)
 
      syntax KItem ::= getFirstMatch(Set, KLabel) [function]
                     | "getFirstMatch'" "(" K "," Set "," KLabel ")" [function]

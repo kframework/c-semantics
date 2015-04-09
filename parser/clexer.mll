@@ -164,6 +164,9 @@ let init_lexicon _ =
 
       ("__kcc_offsetof", fun loc -> OFFSETOF loc);
 
+      (* GCC Extensions *)
+      ("__kcc_typeof", fun loc -> TYPEOF loc);
+
       (* Not in C11. *)
       ("__attribute__", fun loc -> ATTRIBUTE loc);
       ("__attribute", fun loc -> ATTRIBUTE loc);
@@ -585,8 +588,10 @@ and hash = parse
                 { let here = currentLoc () in
                   PRAGMA_LINE (pragmaName ^ pragma lexbuf, here)
                 }
-| "pragma"      { pragmaLine := true; PRAGMA (currentLoc ()) }
-| _	        { addWhite lexbuf; endline lexbuf}
+| "pragma" blank "KCC" blank "inv"  { PRAGMA_KCC_INV (pragma lexbuf, currentLoc ()) }
+| "pragma" blank "KCC" blank "rule" { PRAGMA_KCC_RULE (pragma lexbuf, currentLoc ()) }
+| "pragma"                          { pragmaLine := true; PRAGMA (currentLoc ()) }
+| _                                 { addWhite lexbuf; endline lexbuf}
 
 and file =  parse 
         '\n'		        {addWhite lexbuf; E.newline (); initial lexbuf}

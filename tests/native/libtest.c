@@ -90,3 +90,7 @@ union bar bar2(void) {
 void bar3(union bar*x) {
   x->x[0] = 2;
 }
+
+char * func(char * (*f)(char *), char *x) {
+  return f(x);
+}

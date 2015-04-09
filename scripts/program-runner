@@ -21,7 +21,10 @@ $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # handle control-c 
 
 # Set heap and stack size of krun
-$ENV{K_OPTS} = '-Xms64m -Xmx2048m -Xss32m -XX:+TieredCompilation';
+
+my $HEAP_SIZE = "EXTERN_HEAP_SIZE";
+
+$ENV{K_OPTS} = "-Xms64m -Xmx$HEAP_SIZE -Xss32m -XX:+TieredCompilation";
 
 my $SCRIPTS_DIR = "EXTERN_SCRIPTS_DIR";
 
@@ -59,7 +62,6 @@ sub main {
                   '-d' => $EXEC_DEF,
                   '--io' => 'on', 
                   '--smt' => 'none',
-                  '--pattern-matching' => '',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '-w' => 'none',

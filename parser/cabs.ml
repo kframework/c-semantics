@@ -181,6 +181,8 @@ and definition =
  | ONLYTYPEDEF of specifier * cabsloc
  | GLOBASM of string * cabsloc
  | PRAGMA of expression * cabsloc
+ | PRAGMA_KCC_INV of string * cabsloc
+ | PRAGMA_KCC_RULE of string * cabsloc
  | LINKAGE of string * cabsloc * definition list (* extern "C" { ... } *)
  (* toplevel form transformer, from the first definition to the *)
  (* second group of definitions *)

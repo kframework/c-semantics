@@ -36,69 +36,63 @@ module C-TYPING-MISC
      rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
           => t(S, long-long-int)
 
-     rule min(t(_, bitfieldType(T:Type, _))) => 0
-          requires hasUnsignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int)))
+     rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
+     rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
           => (2 ^Int absInt(N)) -Int 1
-          requires hasUnsignedIntegerType(T)
 
-     rule min(t(_, bitfieldType(T:Type, N:Int)))
+     rule min(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
           => 0 -Int (2 ^Int absInt(N -Int 1))
-          requires hasSignedIntegerType(T)
-     rule max(t(_, bitfieldType(T:Type, N:Int)))
+     rule max(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
           => (2 ^Int absInt(N -Int 1)) -Int 1
-          requires hasSignedIntegerType(T)
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
 
      rule min(t(_, signed-char))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1))
      rule max(t(_, signed-char))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1)) -Int 1
      rule min(t(_, short-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1))
      rule max(t(_, short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1)) -Int 1
      rule min(t(_, int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1))
      rule max(t(_, int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1)) -Int 1
      rule min(t(_, long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1))
      rule max(t(_, long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1)) -Int 1
      rule min(t(_, long-long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1))
      rule max(t(_, long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char))
-          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
+          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char)):>Int) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)):>Int)) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)):>Int)) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)):>Int)) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)):>Int)) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
      rule max(t(_, enumType(_))) => cfg:enumMax
 
-     rule inRange(V:Int, T:Type)
+     rule inRange(V:Int, T:IntegerType)
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
-          requires hasIntegerType(T)
-     rule inRange(V:Float, T:Type)
+     rule inRange(V:Float, T:FloatType)
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
-          requires hasFloatType(T)
 
      syntax Float ::= fmax(Type) [function]
      syntax Float ::= fmin(Type) [function]
@@ -211,7 +205,7 @@ module C-TYPING-MISC
           => t(filterSet(Mods, 'isNotReadFrom), T)
 
      syntax Bool ::= isNotReadFrom(Modifier) [function]
-     rule isNotReadFrom(readFrom(_)) => false
+     rule isNotReadFrom(readFrom(_, _)) => false
      rule isNotReadFrom(_) => true [owise]
 
      rule stripConstants(T:Type)
@@ -271,7 +265,7 @@ module C-TYPING-MISC
           [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
-/*     rule tagRestrict(_, T:BaseType) => T
+/*     rule tagRestrict(_, T:SimpleType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
      rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
@@ -331,13 +325,20 @@ module C-TYPING-MISC
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 
-     syntax SymLoc ::= "getReadFrom'" "(" K "," Set ")" [function]
+     syntax Modifier ::= "getReadFrom'" "(" K "," Set ")" [function]
      rule getReadFrom'(.K, SetItem(K:K) S:Set) => getReadFrom'(K, S)
-     rule getReadFrom'(readFrom(Loc:SymLoc), _) => Loc
+     rule getReadFrom'(readFrom(Loc:SymLoc, Len:Int), _) => readFrom(Loc, Len)
      rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
           requires getKLabel(K) =/=KLabel 'readFrom
                andBool (K =/=K .K)
      rule getReadFrom'(.K, .Set) => NullPointer
+
+     rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
+     rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
+     syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
+     syntax Int ::= #getReadFromLen(Modifier) [function]
+     rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
+     rule #getReadFromLen(readFrom(_, Len:Int)) => Len
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of
@@ -372,7 +373,7 @@ module C-TYPING-MISC
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int byteSizeofType(T))
+               Offset %Int byteSizeofType(T):>Int)
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
