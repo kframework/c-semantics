@@ -44,7 +44,7 @@ module LIBC-THREADS
                          ThId:Int, ThFuncPointer:KResult, ThArg:KResult)
                     => thrd-success
                ...</k>
-               <curr-tu> Tu:K </curr-tu>
+               <curr-tu> Tu:String </curr-tu>
                <buffer> .List </buffer>
           ...</thread>
           <genv> Env:Map </genv>
@@ -59,7 +59,7 @@ module LIBC-THREADS
                <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
                </k>
                <env> Env:Map </env>
-               <curr-tu> Tu:K </curr-tu>
+               <curr-tu> Tu:String </curr-tu>
           ...</thread>)
           [large, ndthread]
 

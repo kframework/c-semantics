@@ -115,7 +115,7 @@ module C-EXPR-FUNCTION-CALL
           <call-stack> .List => ListItem(
                bag2K(<call-stack-frame>...
                     <stack-control>
-                         <curr-tu> OldTu:K </curr-tu>
+                         <curr-tu> OldTu:String </curr-tu>
                          C:Bag
                     </stack-control>
                     <continuation> K:K </continuation>
@@ -125,7 +125,7 @@ module C-EXPR-FUNCTION-CALL
                ...</call-stack-frame>)
           ) ...</call-stack>
           <control>
-               <curr-tu> OldTu:K => Tu </curr-tu>
+               <curr-tu> OldTu:String => Tu </curr-tu>
                <curr-function> CurrFun:K => X </curr-function>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>

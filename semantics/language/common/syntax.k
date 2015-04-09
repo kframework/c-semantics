@@ -524,7 +524,7 @@ module C-SYNTAX
      context _ >= (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
      context (HOLE => reval(HOLE)) == _ [ndheat, result(RValue)]
-     context _ == (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context _:RValue == (HOLE => reval(HOLE)) [ndheat, result(RValue)]
      context (HOLE => reval(HOLE)) != _ [ndheat, result(RValue)]
      context _ != (HOLE => reval(HOLE)) [ndheat, result(RValue)]
 
@@ -540,8 +540,6 @@ module C-SYNTAX
      context (HOLE => reval(HOLE)) && _ [ndheat, result(RValue)]
 
      context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
-
-     context (HOLE => reval(HOLE)) ? _ : _ [result(RValue)]
 
      context HOLE *= _
      context _ *= (HOLE => reval(HOLE)) [result(RValue)]

@@ -337,6 +337,7 @@ module C-TYPING-MISC
      rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
           requires getKLabel(K) =/=KLabel 'readFrom
                andBool (K =/=K .K)
+     rule getReadFrom'(.K, .Set) => NullPointer
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of

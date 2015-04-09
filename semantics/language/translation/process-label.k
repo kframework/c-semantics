@@ -50,14 +50,14 @@ module C-PROCESS-LABEL
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
           [structural]
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
           <curr-function> F:CId => file-scope </curr-function>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
           requires M =/=K .Map
@@ -284,7 +284,7 @@ module C-PROCESS-LABEL
           <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
                F |-> map(
@@ -304,7 +304,7 @@ module C-PROCESS-LABEL
           <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
                F:CId |-> map(
@@ -323,7 +323,7 @@ module C-PROCESS-LABEL
           <curr-function> F:CId </curr-function>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
                F:CId |-> map(
