@@ -46,20 +46,22 @@ module C-EXPR-ASSIGNMENT
      syntax KItem ::= checkOverlap(SymLoc, Type, Type)
      rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
           requires notBool hasReadFrom(T)
-               orBool (getReadFrom(T) ==K Loc andBool getReadFromLen(T) ==K byteSizeofType(T'))
-               orBool notBool sameBase(getReadFrom(T), Loc)
-               orBool (getReadFrom(T) +bytes byteSizeofType(T)) <=bytes Loc
-               orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFrom(T)
+               orBool (getReadFromLoc(T) ==K Loc
+                   andBool getReadFromLen(T) ==K byteSizeofType(T'))
+               orBool notBool sameBase(getReadFromLoc(T), Loc)
+               orBool (getReadFromLoc(T) +bytes byteSizeofType(T)) <=bytes Loc
+               orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFromLoc(T)
           [structural]
      rule (.K => UNDEF("EEA1",
                "assignment from non-exactly-overlapping overlapping read.",
                "6.5.16.2"))
           ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
           requires hasReadFrom(T)
-               andBool sameBase(getReadFrom(T), Loc)
-               andBool (getReadFrom(T) =/=K Loc orBool getReadFromLen(T) =/=K byteSizeofType(T'))
-               andBool (getReadFrom(T) +bytes byteSizeofType(T)) >bytes Loc
-               andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFrom(T)
+               andBool sameBase(getReadFromLoc(T), Loc)
+               andBool (getReadFromLoc(T) =/=K Loc
+                   orBool getReadFromLen(T) =/=K byteSizeofType(T'))
+               andBool (getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc
+               andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
