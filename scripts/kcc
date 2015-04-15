@@ -354,10 +354,10 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     system("which gcc-4.9 > /dev/null 2>&1");
+     system("which gcc > /dev/null 2>&1");
      my $pp;
      if ($? >> 8 == 0) {
-          $pp = "gcc-4.9";
+          $pp = "gcc";
      } else {
           # no gcc, try clang
           $pp = "clang";
