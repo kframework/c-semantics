@@ -48,8 +48,7 @@ module C-SYMLOC-SYNTAX
 
      syntax KResult ::= SymLoc
 
-     syntax SymBase ::= linc(SymBase)       [function]
-     syntax SymBase ::= lfresh(Duration)    [function]
+     syntax SymBase ::= linc(SymBase) [function]
 
      // Base, alignment.
      syntax SymLoc ::= lnew(SymBase, Int) [function]
@@ -175,7 +174,6 @@ module C-SYMLOC
      rule offset(loc(_, Offset:Int, _)) => Offset
 
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
-     rule lfresh(D:Duration) => (!X:Int @ D)
 
      rule lnew(Base:SymBase, Align:Int)
           => loc(Base, 0, SetItem(align(Align)))

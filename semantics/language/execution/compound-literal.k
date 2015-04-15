@@ -49,14 +49,14 @@ module C-COMPOUND-LITERAL
           [structural]
 
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => handleCompoundLiteralHelper(initValue(X, T, Init), lfresh(D))
+               => handleCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
           ...</k>
           <compound-lit-map> M:Map </compound-lit-map>
           <duration> D:Duration </duration>
           requires notBool (X in keys(M))
           [structural]
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => handleCompoundLiteralHelper(initValue(X, T, Init), lfresh(D))
+               => handleCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
           ...</k>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           <local-addresses> Addrs:Set </local-addresses>
