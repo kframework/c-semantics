@@ -73,18 +73,18 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareOnly(CId, Type)
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, NoInit, Base)
+               => defineAndInit(X, T, NoInit, lfresh(D))
           ...</k>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           requires isCompleteType(T)
                andBool notBool isRegisterType(T)
                andBool (notBool X in Vars)
           [structural]
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, NoInit, autoToRegister(Base))
+               => defineAndInit(X, T, NoInit, autoToRegister(lfresh(D)))
           ...</k>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           requires isCompleteType(T)
                andBool isRegisterType(T)
@@ -99,17 +99,17 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
-               => defineAndInit(X, T, figureInit(X, T, K), Base)
+               => defineAndInit(X, T, figureInit(X, T, K), lfresh(D))
           ...</k>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           requires notBool X in Vars
                andBool notBool isRegisterType(T)
           [structural]
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
-               => defineAndInit(X, T, figureInit(X, T, K), autoToRegister(Base))
+               => defineAndInit(X, T, figureInit(X, T, K), autoToRegister(lfresh(D)))
           ...</k>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
+          <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           requires notBool X in Vars
                andBool isRegisterType(T)

@@ -133,6 +133,12 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
+               => bindParamHelper(X, T, V, lfresh(D))
+          ...</k>
+          <duration> D:Duration </duration>
+          [structural]
+     syntax KItem ::= bindParamHelper(CId, Type, RValue, SymBase)
+     rule <k> bindParamHelper(X:CId, T:Type, V:RValue, Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
@@ -141,10 +147,14 @@ module C-EXPR-FUNCTION-CALL
           <curr-function-params>...
                (.List => ListItem(X))
           </curr-function-params>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
-     rule <k> bindParam(X:CId)
+
+     rule <k> bindParam(X:CId) => bindParamHelper(X, lfresh(D)) ...</k>
+          <duration> D:Duration </duration>
+          [structural]
+     syntax KItem ::= bindParamHelper(CId, SymBase)
+     rule <k> bindParamHelper(X:CId, Base:SymBase)
                => allocObject(Base, t(.Set, no-type))
                ~> addToEnv(X, Base)
                ~> giveType(X, t(.Set, no-type))
@@ -152,7 +162,6 @@ module C-EXPR-FUNCTION-CALL
           <curr-function-params>...
                (.List => ListItem(X))
           </curr-function-params>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 

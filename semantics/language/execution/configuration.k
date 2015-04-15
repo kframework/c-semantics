@@ -79,7 +79,7 @@ module C-CONFIGURATION
                </k>
                <initializing> 0 </initializing>
 
-               <next-loc color="black"> 0 @ auto(0) </next-loc>
+               <duration color="black"> auto(0) </duration>
                <final-computation multiplicity="?" color="lightgray">
                     .K
                </final-computation>

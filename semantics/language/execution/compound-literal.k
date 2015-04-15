@@ -49,6 +49,24 @@ module C-COMPOUND-LITERAL
           [structural]
 
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
+               => handleCompoundLiteralHelper(initValue(X, T, Init), lfresh(D))
+          ...</k>
+          <compound-lit-map> M:Map </compound-lit-map>
+          <duration> D:Duration </duration>
+          requires notBool (X in keys(M))
+          [structural]
+     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
+               => handleCompoundLiteralHelper(initValue(X, T, Init), lfresh(D))
+          ...</k>
+          <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
+          <local-addresses> Addrs:Set </local-addresses>
+          <duration> D:Duration </duration>
+          requires notBool (Base in Addrs)
+          [structural]
+     syntax KItem ::= handleCompoundLiteralHelper(K, SymBase)
+     rule <k> handleCompoundLiteralHelper(
+                    initValue(X:CId, T:Type, Init:K),
+                    Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
@@ -58,21 +76,6 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map> M:Map => M[X <- Base] </compound-lit-map>
           <local-addresses>... .Set => SetItem(Base) </local-addresses>
-          <next-loc> Base:SymBase => linc(Base) </next-loc>
-          requires notBool (X in keys(M))
-          [structural]
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => allocObject(Base', T)
-               ~> addToEnv(X, Base')
-               ~> giveType(X, T)
-               ~> allowInit(Init)
-               ~> sequencePoint
-               ~> X
-          ...</k>
-          <compound-lit-map>... X |-> (Base:SymBase => Base') ...</compound-lit-map>
-          <local-addresses> Addrs:Set => Addrs SetItem(Base') </local-addresses>
-          <next-loc> Base':SymBase => linc(Base') </next-loc>
-          requires notBool (Base in Addrs)
           [structural]
      // This and the compound-lit-map is apparently needed to properly handle
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
