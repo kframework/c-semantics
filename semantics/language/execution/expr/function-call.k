@@ -133,7 +133,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
-               => bindParamHelper(X, T, V, lfresh(D))
+               => bindParamHelper(X, T, V, !I:Int @ D)
           ...</k>
           <duration> D:Duration </duration>
           [structural]
@@ -150,7 +150,7 @@ module C-EXPR-FUNCTION-CALL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
-     rule <k> bindParam(X:CId) => bindParamHelper(X, lfresh(D)) ...</k>
+     rule <k> bindParam(X:CId) => bindParamHelper(X, !I:Int @ D) ...</k>
           <duration> D:Duration </duration>
           [structural]
      syntax KItem ::= bindParamHelper(CId, SymBase)

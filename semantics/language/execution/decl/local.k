@@ -73,7 +73,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareOnly(CId, Type)
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, NoInit, lfresh(D))
+               => defineAndInit(X, T, NoInit, !I:Int @ D)
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -82,7 +82,7 @@ module C-DECL-LOCAL
                andBool (notBool X in Vars)
           [structural]
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, NoInit, autoToRegister(lfresh(D)))
+               => defineAndInit(X, T, NoInit, autoToRegister(!I:Int @ D))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -99,7 +99,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
-               => defineAndInit(X, T, figureInit(X, T, K), lfresh(D))
+               => defineAndInit(X, T, figureInit(X, T, K), !I:Int @ D)
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -107,7 +107,7 @@ module C-DECL-LOCAL
                andBool notBool isRegisterType(T)
           [structural]
      rule <k> declareAndDefine(X:CId, T:Type, K:K)
-               => defineAndInit(X, T, figureInit(X, T, K), autoToRegister(lfresh(D)))
+               => defineAndInit(X, T, figureInit(X, T, K), autoToRegister(!I:Int @ D))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
