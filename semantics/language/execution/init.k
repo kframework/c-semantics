@@ -114,7 +114,7 @@ module C-EXECUTION-INIT
                          => enterRestrictScope(global)
                          ~> populateFromGlobal
                     ...</k>
-                    <next-loc> _ => 0 @ auto(0) </next-loc>
+                    <duration> _ => auto(0) </duration>
                     <thread-local>...
                          <control>...
                               <curr-function>
