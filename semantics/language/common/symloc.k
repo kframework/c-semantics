@@ -49,6 +49,7 @@ module C-SYMLOC-SYNTAX
      syntax KResult ::= SymLoc
 
      syntax SymBase ::= linc(SymBase) [function]
+
      // Base, alignment.
      syntax SymLoc ::= lnew(SymBase, Int) [function]
      syntax SymLoc ::= restrictedNew(SymBase, Int, RestrictTag) [function]
