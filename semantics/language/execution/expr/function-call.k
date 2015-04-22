@@ -51,7 +51,8 @@ module C-EXPR-FUNCTION-CALL
      context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
-     rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _), _)
+     rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _),
+               _:KResult)
           [structural]
      // Resolve a linker loc to a real loc.
      rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
