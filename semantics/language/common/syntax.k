@@ -542,8 +542,6 @@ module C-SYNTAX
 
      context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) ? _ : _ [result(RValue)]
-
      context HOLE *= _
      context _ *= (HOLE => reval(HOLE)) [result(RValue)]
 
@@ -635,7 +633,6 @@ module C-SYNTAX
      syntax Expression ::= K "." CId [left, strict(1)]
 
      syntax Expression ::= K "->" CId [left]
-     context (HOLE => reval(HOLE)) -> _ [result(RValue)]
      /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)

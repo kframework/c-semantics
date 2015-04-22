@@ -140,6 +140,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= inRange(CValue, Type) [function]
 
      syntax Modifier ::= Storage | CVSpecifier
+     syntax Modifier ::= "noModifier"
 
      // Returns both type qualifiers, storage class specifiers, and any the
      // other information stored in the modifiers list (e.g., oldStyle).

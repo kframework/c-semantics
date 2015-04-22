@@ -28,7 +28,7 @@ module C-COMMON-EXPR-CONDITIONAL
      syntax TypeResult ::= trItem(K)
 
      //TODO(liyili2): might not need this list in the future.
-     syntax TypeList ::= List{TypeItem, "ts::"} [strict]
+     syntax TypeList ::= List{TypeItem, "ts::"} [seqstrict]
      syntax List ::= tListToList(TypeList) [function]
 
      rule tListToList(.TypeList) => .List

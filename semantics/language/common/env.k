@@ -23,7 +23,7 @@ module C-ENV
           [structural]
 
      rule <k> populateFromGlobal => .K ...</k>
-          <curr-tu> Tu:K </curr-tu>
+          <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>
           <gtypes> GT:Map </gtypes>

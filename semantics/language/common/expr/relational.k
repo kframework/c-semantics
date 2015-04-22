@@ -213,15 +213,7 @@ module C-COMMON-EXPR-RELATIONAL
      element of an array behaves the same as a pointer to the first element of
      an array of length one with the type of the object as its element type.
      }*/
-     // if they're identical, we know for sure they are the same
-     rule tv(N:SymLoc, T:PointerType) == tv(N:SymLoc, T':PointerType)
-          => makeTruth(true, T, T')
-          [structural]
-     rule tv(N:SymLoc, T:PointerType) != tv(N:SymLoc, T':PointerType)
-          => makeTruth(false, T, T')
-          [structural]
-
-     // if one of the pointers is null, it's also straightforward
+     // if one of the pointers is null, it's straightforward
      rule tv(NullPointer, T:PointerType) == tv(N:SymLoc, T':PointerType)
           => makeTruth(NullPointer ==K N, T, T')
           [structural]
@@ -238,22 +230,30 @@ module C-COMMON-EXPR-RELATIONAL
      // otherwise, there are a number of cases.
      // First, they are part of the same object
      rule tv(Loc:SymLoc, T:PointerType) == tv(Loc':SymLoc, T':PointerType)
-          => makeTruth(offset(Loc) ==Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          => makeTruth(offset(Loc) ==K offset(Loc'), T, T')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) != tv(Loc':SymLoc, T':PointerType)
-          => makeTruth(offset(Loc) =/=Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          => makeTruth(offset(Loc) =/=K offset(Loc'), T, T')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
 
      // next, they are part of different objects.
      rule tv(Loc:SymLoc, T:PointerType) == tv(Loc':SymLoc, T':PointerType)
           => makeTruth(false, T, T')
-          requires (base(Loc) =/=K base(Loc'))
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) != tv(Loc':SymLoc, T':PointerType)
           => makeTruth(true, T, T')
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
           [structural]
 
      //- comparison of ints with pointers

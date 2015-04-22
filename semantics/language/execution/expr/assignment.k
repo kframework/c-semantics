@@ -44,32 +44,24 @@ module C-EXPR-ASSIGNMENT
           [structural]
 
      syntax KItem ::= checkOverlap(SymLoc, Type, Type)
-     rule checkOverlap(_, T:Type, _) => .K
+     rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
           requires notBool hasReadFrom(T)
-          [structural]
-     rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
-          requires getReadFromLoc(T) ==K Loc
-               andBool getReadFromLen(T) ==K byteSizeofType(T')
-          [structural]
-     rule checkOverlap(Loc:SymLoc, T:Type, _) => .K
-          requires notBool sameBase(getReadFromLoc(T), Loc)
-          [structural]
-     rule checkOverlap(Loc:SymLoc, T:Type, _) => .K
-          requires (getReadFromLoc(T) +bytes getReadFromLen(T)) <=bytes Loc
-          [structural]
-     rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
-          requires (Loc +bytes byteSizeofType(T')) <=bytes getReadFromLoc(T)
+               orBool (getReadFromLoc(T) ==K Loc
+                   andBool getReadFromLen(T) ==K byteSizeofType(T'))
+               orBool notBool sameBase(getReadFromLoc(T), Loc)
+               orBool (getReadFromLoc(T) +bytes byteSizeofType(T)) <=bytes Loc
+               orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFromLoc(T)
           [structural]
      rule (.K => UNDEF("EEA1",
                "assignment from non-exactly-overlapping overlapping read.",
                "6.5.16.2"))
           ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
-          requires sameBase(getReadFromLoc(T), Loc)
-               andBool ((getReadFromLoc(T) =/=K Loc)
-               andBool (((getReadFromLoc(T) +bytes getReadFromLen(T)) >bytes Loc)
-               orBool ((Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T))))
-               orBool (getReadFromLoc(T) ==K Loc 
-               andBool getReadFromLen(T) =/=K byteSizeofType(T'))
+          requires hasReadFrom(T)
+               andBool sameBase(getReadFromLoc(T), Loc)
+               andBool (getReadFromLoc(T) =/=K Loc
+                   orBool getReadFromLen(T) =/=K byteSizeofType(T'))
+               andBool (getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc
+               andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)
           [structural]
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]

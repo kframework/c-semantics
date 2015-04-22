@@ -331,6 +331,7 @@ module C-TYPING-MISC
      rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
           requires getKLabel(K) =/=KLabel 'readFrom
                andBool (K =/=K .K)
+     rule getReadFrom'(.K, .Set) => noModifier
 
      rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
      rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
