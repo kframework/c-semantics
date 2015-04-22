@@ -45,7 +45,7 @@ module C-CHECK-LOC
      rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
                => checkOffsets(Offset, Len)
           ...</k>
-          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
+          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
           [structural]
      rule <k> checkLoc'(loc(Base:SymBase, 0)) => .K ...</k>
           <functions>... Base |-> _ ...</functions>
@@ -170,7 +170,7 @@ module C-CHECK-LOC
 
      syntax KItem ::= "checkRestrict'" "(" Provenance ")"
      rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => .K ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:Type, _, _, _) ...</mem>
           requires notBool isConstType(innerType(T))
           [structural]
      rule <k> (.K => UNDEF("ECL4",
@@ -178,7 +178,7 @@ module C-CHECK-LOC
                "6.7.3.1:4"))
                ~> checkRestrict'(basedOn(Base:SymBase, _))
           ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:Type, _, _, _) ...</mem>
           requires isConstType(innerType(T))
           [structural]
 endmodule

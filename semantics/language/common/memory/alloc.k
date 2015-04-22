@@ -2,7 +2,8 @@ module C-MEMORY-ALLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     syntax KItem ::= object(Type, Int, Map)
+     /* object(type, size, byte map, effective type map) */
+     syntax KItem ::= object(Type, Int, Map, Map)
 
      syntax KItem ::= writeString(SymLoc, String)
      syntax KItem ::= writeWString(SymLoc, List)
@@ -70,12 +71,12 @@ module C-MEMORY-ALLOC
           [structural]
      rule <k> allocObjectIfAbsent(Base:SymBase, _) => .K
           ...</k>
-          <mem>... Base |-> object(_, _, _) ...</mem>
+          <mem>... Base |-> object(_, _, _, _) ...</mem>
           [structural]
 
      rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
+               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map, .Map)
           ...</mem>
           requires notBool isLinkerLoc(Base)
           [structural]
@@ -88,14 +89,15 @@ module C-MEMORY-ALLOC
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int,
-                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))
+                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)),
+                    .Map)
           ...</mem>
           [structural]
 
      rule <k> sizeofObject(Base:SymBase)
                => tv(Len, t(.Set, cfg:sizeut))
           ...</k>
-          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
+          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
           [structural]
 
      rule allocString(Base:SymBase, S:String)

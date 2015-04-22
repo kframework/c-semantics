@@ -85,7 +85,7 @@ module C-IO-BUFFERED
      syntax KItem ::= checkWrite(SymLoc, Type)
      rule <k> checkWrite(loc(Base:SymBase, Offset:Int), T:Type) => .K ...</k>
           <thread-id> ThreadId:Int </thread-id>
-          <mem>... Base |-> object(ObjT:Type, Len:Int, _) ...</mem>
+          <mem>... Base |-> object(ObjT:Type, Len:Int, _, _) ...</mem>
           <locs-written>
                Locs:List (.List => ListItem(loc(Base, Offset)))
           </locs-written>
@@ -122,7 +122,7 @@ module C-IO-BUFFERED
                "6.5.6:8"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
-          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
+          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
           requires Offset >=Int Len orBool Offset <Int 0
           [structural]
      rule <k> (.K => UNDEF("EIO3",
@@ -130,7 +130,7 @@ module C-IO-BUFFERED
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), _)
           ...</k>
-          <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
+          <mem>... Base |-> object(ObjT:Type, _, _, _) ...</mem>
           requires (Const in getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (.K => UNDEF("EIO4",
@@ -138,7 +138,7 @@ module C-IO-BUFFERED
                "6.7.3"))
                ~> checkWrite(loc(Base:SymBase, Offset:Int), T:Type)
           ...</k>
-          <mem>... Base |-> object(ObjT:Type, _, _) ...</mem>
+          <mem>... Base |-> object(ObjT:Type, _, _, _) ...</mem>
           requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
@@ -171,8 +171,10 @@ module C-IO-BUFFERED
      syntax KItem ::= updateObject(K, Int, K) [function]
      syntax Bool ::= objectInBounds(K, Int) [function]
 
-     rule updateObject(object(T:K, Len:Int, M:Map), Offset:Int, V:K) => object(T, Len, M[Offset <- V])
-     rule objectInBounds(object(_, Len:Int, _), Offset:Int) => Offset <Int Len
+     rule updateObject(object(T:K, Len:Int, Bytes:Map, Types:Map), Offset:Int, V:K)
+          => object(T, Len, Bytes[Offset <- V], Types)
+     rule objectInBounds(object(_, Len:Int, _, _), Offset:Int)
+          => Offset <Int Len
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
      rule <buffer>
@@ -236,7 +238,7 @@ module C-IO-BUFFERED
                ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>...
-               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K))
+               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K), _)
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> .List </buffer>
@@ -251,7 +253,7 @@ module C-IO-BUFFERED
                ~> tv(V, t(.Set, no-type))
           ...</k>
           <mem>...
-               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K))
+               Base |-> object(ObjT:Type, Len:Int, (_ Offset:Int |-> V:K), _)
           ...</mem>
           <locs-written> Locs:List </locs-written>
           <buffer> Mem:List </buffer>
@@ -266,8 +268,8 @@ module C-IO-BUFFERED
           ...</k>
           <mem>...
                Base |-> object(ObjT:Type, Len:Int,
-               M:Map => M[
-                     Offset <- piece(trap, cfg:bitsPerByte)])
+                    M:Map => M[Offset <- piece(trap, cfg:bitsPerByte)],
+                    _)
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
@@ -283,7 +285,8 @@ module C-IO-BUFFERED
           ...</k>
           <mem>...
                Base |-> object(ObjT:Type, Len:Int,
-               M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
+                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)],
+                    _)
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
@@ -353,14 +356,16 @@ module C-IO-BUFFERED
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>...
-               Old |-> object(_, _, M:Map)
-               New |-> object(_, _, _:Map (.Map => (N' -Int 1) |-> (M [ N' -Int 1])<:K))
+               Old |-> object(_, _, M:Map, _)
+               New |-> object(_, _,
+                    _:Map (.Map => (N' -Int 1) |-> (M [ N' -Int 1])<:K),
+                    _)
           ...</mem>
           requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
           [structural]
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
-          <mem>... Old |-> object(_, _, M:Map) ...</mem>
+          <mem>... Old |-> object(_, _, M:Map, _) ...</mem>
           requires (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .K
@@ -369,20 +374,20 @@ module C-IO-BUFFERED
      syntax KItem ::= copyObjectType(SymBase, SymBase)
      rule <k> copyObjectType(Old:SymBase, New:SymBase) => .K ...</k>
           <mem>...
-               Old |-> object(T:Type, _, _)
-               New |-> object((_ => T), _, _)
+               Old |-> object(T:Type, _, _, _)
+               New |-> object((_ => T), _, _, _)
           ...</mem>
 
      rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .K
           ...</k>
-          <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
+          <mem>... Base |-> object(_, Len, _, _) => .Map ...</mem>
           // fixme could make this more relaxed by checking of block is in
           // buffer, not just empty
           <buffer> .List </buffer>
           [structural]
 
      rule <k> deleteObject(Base:SymBase) => .K ...</k>
-          <mem>... Base |-> object(_, _, _) => .Map ...</mem>
+          <mem>... Base |-> object(_, _, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
           [structural]
 
@@ -390,24 +395,21 @@ module C-IO-BUFFERED
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int))
                => getTypeAtOffset(T, Offset)
           ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:Type, _, _, _) ...</mem>
           requires notBool isNoType(T)
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T' ...</k>
-          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
-          <effective-types>...
-               loc(Base, Offset) |-> T':Type
-          ...</effective-types>
+          <mem>...
+               Base |-> object(_:NoType, _, _, Offset |-> T':Type _)
+          ...</mem>
           [structural]
      rule <k> getEffectiveType(loc(Base:SymBase, Offset:Int)) => T ...</k>
-          <mem>... Base |-> object(T:NoType, _, _) ...</mem>
-          <effective-types> EffTypes:Map </effective-types>
-          requires notBool (loc(Base, Offset) in keys(EffTypes))
+          <mem>... Base |-> object(T:NoType, _, _, EffTypes:Map) ...</mem>
+          requires notBool (Offset in keys(EffTypes))
           [structural]
      rule <k> getEffectiveType(Loc:SymLoc) => t(.Set, no-type) ...</k>
           <effective-types> EffTypes:Map </effective-types>
-          requires isNativeLoc(Loc)
-               andBool notBool (Loc in keys(EffTypes))
+          requires isNativeLoc(Loc) andBool notBool (Loc in keys(EffTypes))
      rule <k> getEffectiveType(Loc:SymLoc) => T ...</k>
           <effective-types>... Loc |-> T:Type ...</effective-types>
           requires isNativeLoc(Loc)
@@ -415,13 +417,14 @@ module C-IO-BUFFERED
      syntax KItem ::= setEffectiveType(SymLoc, Type)
      rule <k> setEffectiveType(loc(Base:SymBase, _), _) => .K
           ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:Type, _, _, _) ...</mem>
           requires notBool isNoType(T)
           [structural]
      rule <k> setEffectiveType(loc(Base:SymBase, Offset:Int), T':Type) => .K
           ...</k>
-          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
-          <effective-types> M:Map => M [ loc(Base, Offset) <- T' ] </effective-types>
+          <mem>...
+               Base |-> object(_:NoType, _, _, M:Map => M [ Offset <- T' ])
+          ...</mem>
           requires notBool isCharType(T':Type)
           [structural]
      rule <k> setEffectiveType(Loc:SymLoc, T:Type) => .K ...</k>
