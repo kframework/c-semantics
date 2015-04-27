@@ -61,24 +61,6 @@ considering different expression sequencings.
 
 See [examples/README.md](examples/README.md#ltl-model-checking) for more details.
 
-### Profiling the semantics
-
-Running `PROFILE=1 ./a.out` will record which rules of the semantics are
-exercised during the evaluation of a program. The program executes as normal,
-but this additional information is recorded in an SQLite database
-`kccProfileDB.sqlite` in your current directory. You can access the
-information by running queries against the database. Some sample queries are
-provided by the `query-kcc-prof` script, and can be executed with, e.g., 
-```
-$ query-kcc-prof exec
-```
-You can look at the provided queries (see [scripts/query-kcc-prof][]) and
-construct your own, or access the database using your own programs. Different
-runs of the tool are kept distinct in the database, so you can run a bunch of
-programs and then analyze the collective data. You can simply delete the
-`kccProfileDB.sqlite` file to start another series of tests with a fresh
-database.
-
 ### Testing the semantics
 
 The [tests][] directory includes many of the tests we've used to build confidence

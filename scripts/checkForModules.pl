@@ -3,7 +3,6 @@ use strict;
 my @requiredModules = qw(
 	XML::LibXML::Reader
 	Text::Diff
-	DBI
 	Getopt::Declare
       MIME::Base64
       IO::Compress::Gzip
