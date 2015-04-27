@@ -11,8 +11,6 @@ FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
-	$(SCRIPTS_DIR)/query-kcc-prof \
-	$(SCRIPTS_DIR)/analyzeProfile.pl \
 	$(SCRIPTS_DIR)/kcc \
 	$(SCRIPTS_DIR)/xml-to-k \
 	$(SCRIPTS_DIR)/program-runner \
