@@ -1,5 +1,6 @@
 require "syntax.k"
 
+require "annotation.k"
 require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
@@ -41,6 +42,7 @@ require "stmt/static-assert.k"
 require "stmt/switch.k"
 
 module C-TRANSLATION
+     imports C-ANNOTATION
      imports C-CHECK-LOC
      imports C-COMPOUND-LITERAL
      imports C-CONFIGURATION

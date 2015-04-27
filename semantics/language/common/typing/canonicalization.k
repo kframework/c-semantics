@@ -1,4 +1,5 @@
 module C-TYPING-CANONICALIZATION-SYNTAX
+     imports LIST
      syntax KItem ::= canonicalizeType(List)
      syntax KItem ::= "canonicalizeType-aux" "(" List "," K "," List "," List "," List ")"
 endmodule

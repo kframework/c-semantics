@@ -1,5 +1,4 @@
 module C-SYMBOLIC-VALUE-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      syntax CSize ::= SymVal
