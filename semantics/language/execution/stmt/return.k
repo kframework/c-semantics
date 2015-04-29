@@ -55,9 +55,12 @@ module C-STMT-RETURN
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           [structural]
+     rule <k> (popBlock => .K) ~> Return'(_:RValue)
+          <local-addresses> .Set </local-addresses>
+          [structural]
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> popBlock ~> Return'(V:RValue) ~> _
+     rule <k> Return'(V:RValue) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
