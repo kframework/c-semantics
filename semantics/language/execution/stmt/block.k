@@ -10,7 +10,7 @@ module C-STMT-BLOCK
      A \emph{compound statement} is a block.
      }*/
      rule BlockStatement(B:K)
-          => pushBlock ~> B ~> popBlock
+          => pushBlock ~> B ~> deleteLocals ~> popBlock
           [structural]
 
      rule <k> pushBlock => .K ...</k>
@@ -28,21 +28,18 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural]
 
-     rule <k> (.K => deleteObject(Base)) ~> popBlock ...</k>
-          <local-addresses>...
-               (SetItem(Base:SymBase) => .Set)
-          ...</local-addresses>
+     rule <k> popBlock => .K ...</k>
+          <local> _ => C </local>
+          <block-stack> ListItem(bag2K(C:Bag)) => .List ...</block-stack>
           [structural]
 
-     rule <k> popBlock => .K ...</k>
-          <local>
-               (_ => C)
-               (<local-addresses> .Set </local-addresses> => .Bag)
-          </local>
-          <block-stack>
-               ListItem(bag2K(C:Bag)) => .List
-          ...</block-stack>
+     rule <k> (.K => deleteObject(Base)) ~> deleteLocals ...</k>
+          <local-addresses>...
+               SetItem(Base:SymBase) => .Set
+          ...</local-addresses>
           [structural]
+     rule <k> deleteLocals => .K ...</k>
+          <local-addresses> .Set </local-addresses>
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
      The expression in an expression statement is evaluated as a void expression
