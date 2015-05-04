@@ -5,7 +5,6 @@ module COMPAT-SYNTAX
 
      //TODO(liyi): must not need the second one
      syntax KItem ::= l(KLabel) [avoid]
-     syntax KItem ::= klist(KList) [function]
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
@@ -194,13 +193,6 @@ module COMPAT
      rule times(0, _) => .List
      rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
           requires N >Int 0
-
-     syntax List ::= klistToList(KList) [function]
-
-     rule klistToList((K:K,, L:KList)) => ListItem(K) klistToList(L)
-     rule klistToList(.KList) => .List
-
-     rule 'klist(L:KList) => 'list(klistToList(L))
 
      syntax Set ::= #filterSet(K, Set, KLabel) [function]
 
