@@ -49,6 +49,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "pushBlock"
      syntax KItem ::= "popBlock"
+     syntax KItem ::= "deleteLocals"
 
      syntax Statement ::= "loopMarked"
      syntax KItem ::= "popLoop"
