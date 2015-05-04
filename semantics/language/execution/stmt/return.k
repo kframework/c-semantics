@@ -48,6 +48,7 @@ module C-STMT-RETURN
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
+                    | "Return''" "(" K ")"
      context Return'(HOLE => reval(HOLE)) [result(RValue)]
 
      /* recursively exist each Block wrapped in BlockStatement */
@@ -60,14 +61,21 @@ module C-STMT-RETURN
      /* exit the topmost Block of the function (which is not wrapped in
       * BlockStatement) */
      rule <k> (.K => exitRestrictScope(BlockNum) ~> deleteLocals)
-               ~> Return'(_:RValue)
+               ~> (Return'(V:RValue) => Return''(V))
           ...</k>
-          <block-history> ListItem(BlockNum:Int) => .List ...</block-history>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <block-stack> .List </block-stack>
+          [structural]
+     /* delete the locals when the function body is not wrapped in Block */
+     rule <k> (.K => deleteLocals)
+               ~> (Return'(V:RValue) => Return''(V))
+          ...</k>
+          <block-history> .List </block-history>
           <block-stack> .List </block-stack>
           [structural]
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> Return'(V:RValue) ~> _
+     rule <k> Return''(V:RValue) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
