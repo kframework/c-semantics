@@ -112,7 +112,6 @@ sub main {
       }
 
       if (defined $ENV{SEARCH}) {
-            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
             push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_DEF;
@@ -121,7 +120,6 @@ sub main {
       }
 
       if (defined $ENV{THREADSEARCH}) {
-            $krun_args{'--output'} = 'raw';
             $krun_args{'--search-final'} = '';
             push @options, 'NOIO';
             $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
