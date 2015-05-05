@@ -232,10 +232,13 @@ sub processResult {
       local $_ = <OUT>;
       print if $verbose;
       parseResult(\%parsed);
-
+      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
+                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
+            print "Error: Execution failed.\n"
             if (defined $parsed{errorMsg}) {
                   print "$parsed{errorMsg}\n";
             }
+      }
       return $parsed{exitCode} if defined $parsed{exitCode};
       return 139; # emulates a segfault in order to avoid reusing any conventionally-valid exit code
 }
