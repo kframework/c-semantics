@@ -58,9 +58,7 @@ sub main {
 
       my %krun_args = (
                   '--output' => 'pretty', 
-                  '--output-file' => $fileOutput, 
                   '-d' => $EXEC_DEF,
-                  '--smt' => 'none',
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '-w' => 'none',
@@ -78,6 +76,7 @@ sub main {
             print "LOGIO --- tell the IO server to create logs.\n";
             print "LTLMC --- LTL model checking.\n";
             print "VERBOSE --- verbose output.\n";
+            print "PROVE=<file> --- enable prover on specification file";
             print "E.g., DEBUG=1 $0\n";
             print "\n";
             print "This message was displayed because the variable HELP was set.  Use HELP=1 $0 to turn off.\n";
@@ -102,6 +101,14 @@ sub main {
 
       if (defined nativeLibraries()) {
             $krun_args{'--native-libraries'} = '"' . nativeLibraries() . '"';
+      }
+
+      if (defined $ENV{PROVE}) {
+            $krun_args{'--prove'} = $ENV{PROVE};
+            $krun_args{'--smt_prelude'} = $ENV{SMT_PRELUDE};
+      } else {
+            $krun_args{'--smt'} = 'none';
+            $krun_args{'--output-file'} = $fileOutput;
       }
 
       if (defined $ENV{SEARCH}) {

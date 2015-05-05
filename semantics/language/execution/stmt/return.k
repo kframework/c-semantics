@@ -48,23 +48,34 @@ module C-STMT-RETURN
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
+                    | "Return''" "(" K ")"
      context Return'(HOLE => reval(HOLE)) [result(RValue)]
 
-     rule <k> (.K => deleteObject(Base)) ~> Return'(_:RValue) ...</k>
-          <local-addresses>... SetItem(Base:SymBase) => .Set ...</local-addresses>
+     /* recursively exist each Block wrapped in BlockStatement */
+     rule <k> (.K => exitRestrictScope(BlockNum) ~> deleteLocals ~> popBlock)
+               ~> Return'(_:RValue)
+          ...</k>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <block-stack> ListItem(_) ...</block-stack>
           [structural]
-     rule <k> (.K => exitRestrictScope(BlockNum)) ~> Return'(_:RValue) ...</k>
-          <local-addresses> .Set => Addresses </local-addresses>
-          <block-stack>
-               ListItem(bag2K(_
-                    <block-history> ListItem(BlockNum:Int) ...</block-history>
-                    <local-addresses> Addresses:Set </local-addresses>))
-               => .List
-          ...</block-stack>
+     /* exit the topmost Block of the function (which is not wrapped in
+      * BlockStatement) */
+     rule <k> (.K => exitRestrictScope(BlockNum) ~> deleteLocals)
+               ~> (Return'(V:RValue) => Return''(V))
+          ...</k>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <block-stack> .List </block-stack>
+          [structural]
+     /* delete the locals when the function body is not wrapped in Block */
+     rule <k> (.K => deleteLocals)
+               ~> (Return'(V:RValue) => Return''(V))
+          ...</k>
+          <block-history> .List </block-history>
+          <block-stack> .List </block-stack>
           [structural]
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> Return'(V:RValue) ~> _
+     rule <k> Return''(V:RValue) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
                ~> checkUse(stripConstants(V))

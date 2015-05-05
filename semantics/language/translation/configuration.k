@@ -143,6 +143,10 @@ module C-CONFIGURATION
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
 
+<annotation> "" </annotation>
+
+<generated-annotations> .List </generated-annotations>
+
 <status> initializing </status>
 
 <options> $OPTIONS:Set </options>

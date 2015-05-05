@@ -1,4 +1,6 @@
 module C-ERROR-SYNTAX
+     imports KAST
+     imports STRING-SYNTAX
      // Deprecated...
      syntax KItem ::= ERROR(String, String)
      syntax KItem ::= ERROR(String, String, KList)
