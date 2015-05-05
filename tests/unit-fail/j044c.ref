@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CCV10
 Description: conversion to or from non-scalar type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.4:2
-=============================================================
-File: j044c.c
-Function: main
-Line: 6
-=============================================================
+  at main(j044c.c:6)
+  at <file-scope>(<unknown>)

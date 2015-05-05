@@ -1,13 +1,7 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: EIO8
 Description: unsequenced side effect on scalar object with value computation of same object.
 Type: Undefined behavior.
 See also: C11 sec. 6.5
-=============================================================
-File: j035e.c
-Function: foo
-Line: 2
-=============================================================
+  at foo(j035e.c:2)
+  at main(j035e.c:7)
+  at <file-scope>(<unknown>)

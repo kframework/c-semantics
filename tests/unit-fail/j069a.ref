@@ -1,13 +1,7 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: EEA2
 Description: Attempt to alias restrict qualified pointers associated with the same block.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4
-=============================================================
-File: j069a.c
-Function: f
-Line: 2
-=============================================================
+  at f(j069a.c:2)
+  at main(j069a.c:9)
+  at <file-scope>(<unknown>)

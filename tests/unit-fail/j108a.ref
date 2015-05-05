@@ -1,13 +1,7 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEER3
 Description: printf: Format string expects type of size 4, but got an argument of size 8.
 Type: Undefined behavior.
 See also: C11 sec. 7.21.6.1:9
-=============================================================
-File: j108a.c
-Function: printf
-Line: 4
-=============================================================
+  at printf(j108a.c:4)
+  at main(j108a.c:4)
+  at <file-scope>(<unknown>)

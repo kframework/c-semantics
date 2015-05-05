@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEM2
 Description: Modulus by 0.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.5:5
-=============================================================
-File: j045f.c
-Function: main
-Line: 4
-=============================================================
+  at main(j045f.c:4)
+  at <file-scope>(<unknown>)

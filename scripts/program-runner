@@ -233,43 +233,9 @@ sub processResult {
       print if $verbose;
       parseResult(\%parsed);
 
-      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
-            print "\n=============================================================\n";
-            print "ERROR! KCC encountered an error while executing this program.\n";
-        
-
             if (defined $parsed{errorMsg}) {
-                  print "=============================================================\n";
                   print "$parsed{errorMsg}\n";
             }
-
-            print "=============================================================\n";
-            print "File: $parsed{errorFile}\n" if defined $parsed{errorFile};
-            print "Function: $parsed{errorFunc}\n" if defined $parsed{errorFunc};
-            print "Line: $parsed{errorLine}\n" if defined $parsed{errorLine};
-
-            if (defined $parsed{finalComp}) {
-                  print "=============================================================\n";
-                  print "Final Computation:\n";
-                  print unindent(substr($parsed{finalComp}, 0, 1000));
-                  print "\n";
-            }
-
-            if (defined $parsed{finalCompGoto}) {
-                  print "=============================================================\n";
-                  print "Final Goto Map Computation:\n";
-                  print unindent(substr($parsed{finalCompGoto}, 0, 1000));
-                  print "\n";
-            }
-
-            if (defined $parsed{finalCompType}) {
-                  print "=============================================================\n";
-                  print "Final Type Computation:\n";
-                  print unindent(substr($parsed{finalCompType}, 0, 1000));
-                  print "\n";
-            }
-      }
       return $parsed{exitCode} if defined $parsed{exitCode};
       return 139; # emulates a segfault in order to avoid reusing any conventionally-valid exit code
 }

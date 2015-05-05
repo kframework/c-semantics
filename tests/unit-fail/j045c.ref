@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEM1
 Description: Division by 0.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.5:5
-=============================================================
-File: j045c.c
-Function: main
-Line: 3
-=============================================================
+  at main(j045c.c:3)
+  at <file-scope>(<unknown>)

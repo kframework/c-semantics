@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: FC1
 Description: attempt to call the function f through a pointer with incompatible type.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:9
-=============================================================
-File: j026b.c
-Function: main
-Line: 8
-=============================================================
+  at main(j026b.c:8)
+  at <file-scope>(<unknown>)
