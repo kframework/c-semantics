@@ -125,7 +125,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= defineAndInit(CId, Type, K, SymBase) [strict(3)]
      rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, K:K), Base:SymBase)
-               => allocObjectIfAbsent(Base, T')
+               => allocObject(Base, T')
                ~> addToEnv(X, Base)
                ~> giveType(X, T')
                ~> allowInit(K)
@@ -135,7 +135,7 @@ module C-DECL-LOCAL
           <should-init> true </should-init>
           [structural]
      rule <k> defineAndInit(X:CId, _, initValue(X:CId, T':Type, _), Base:SymBase)
-               => allocObjectIfAbsent(Base, T')
+               => allocObject(Base, T')
                ~> addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
@@ -143,7 +143,7 @@ module C-DECL-LOCAL
           <should-init> false </should-init>
           [structural]
      rule <k> defineAndInit(X:CId, T:Type, NoInit, Base:SymBase)
-               => allocObjectIfAbsent(Base, T)
+               => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
           ...</k>

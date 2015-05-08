@@ -18,7 +18,6 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax KItem ::= sizeofObject(SymBase)
 
      syntax KItem ::= allocObject(SymBase, Type)
-     syntax KItem ::= allocObjectIfAbsent(SymBase, Type)
 endmodule
 
 module C-MEMORY-ALLOC
@@ -62,16 +61,6 @@ module C-MEMORY-ALLOC
 
      rule allocObject(Base:SymBase, T:Type)
           => alloc(Base, T, byteSizeofType(T))
-          [structural]
-     rule <k> allocObjectIfAbsent(Base:SymBase, T:Type)
-               => alloc(Base, T, byteSizeofType(T))
-          ...</k>
-          <mem> M:Map </mem>
-          requires notBool (Base in (keys(M)))
-          [structural]
-     rule <k> allocObjectIfAbsent(Base:SymBase, _) => .K
-          ...</k>
-          <mem>... Base |-> object(_, _, _, _) ...</mem>
           [structural]
 
      rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
