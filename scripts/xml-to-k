@@ -20,6 +20,8 @@ my $RAT = '#';
 # you may want to configure things inside this section
 use constant KLIST_IDENTITY => ".::KList";
 use constant KLIST_SEPARATOR => ", ";
+use constant LIST_UNIT => "'.List";
+use constant LIST_CONCAT => "'_List_";
 
 my $ltl = "\n";
 
@@ -201,10 +203,15 @@ sub elementToK {
 	$inNextState = 1;
 	
 	my $numElements = scalar @klist;
-	if ($numElements == 0) {
+        my $kterm;
+        if ($label eq 'klist') {
+          return ($inNextState, assocList(@klist));
+        } else {
+	  if ($numElements == 0) {
 		push (@klist, KLIST_IDENTITY);
-	}
-	my $kterm = paren(join(KLIST_SEPARATOR, @klist));
+	  }
+          $kterm = paren(join(KLIST_SEPARATOR, @klist));
+        }
 	
 	if ($label eq 'LTLAnnotation') {
 		$ltl .= "`'LTLAnnotation`(";
@@ -279,12 +286,20 @@ sub escapeWString {
 		}
 		push @str, "#token(\"" . $single . "\", \"Int\")";
 	}
-        if (!@str) {
-          return "`'klist`(.::KList)";
-        }
+        return assocList(@str);
+}
 
-	return "`'klist`"
-            . paren(join(KLIST_SEPARATOR, @str));
+sub assocList {
+  my @str = (@_);
+  if (scalar @str == 0) {
+    return "`'list`(`" . LIST_UNIT . "`(.::KList))";
+  }
+  my @wrapped;
+  for my $elem ( @str ) {
+    push @wrapped, "`'ListItem`($elem)";
+  }
+  return "`'list`(`" . LIST_CONCAT . "`"
+       . paren(join(", `" . LIST_CONCAT . "`(", @wrapped) . ", `" . LIST_UNIT . "`(.::KList)" . (")" x $#str)) . ")";
 }
 
 sub paren {
