@@ -234,7 +234,7 @@ sub processResult {
       parseResult(\%parsed);
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
                   || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
-            print "Error: Execution failed.\n"
+            print "Error: Execution failed.\n";
             if (defined $parsed{errorMsg}) {
                   print "$parsed{errorMsg}\n";
             }
