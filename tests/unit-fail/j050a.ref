@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEA2
 Description: Pointer difference outside the range that can be represented.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.6
-=============================================================
-File: j050a.c
-Function: main
-Line: 11
-=============================================================
+  at main(j050a.c:11)
+  at <file-scope>(<unknown>)

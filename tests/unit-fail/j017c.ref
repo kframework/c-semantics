@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CCV3
 Description: conversion to integer from float outside the range that can be represented.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.1.4:1
-=============================================================
-File: j017c.c
-Function: main
-Line: 4
-=============================================================
+  at main(j017c.c:4)
+  at <file-scope>(<unknown>)

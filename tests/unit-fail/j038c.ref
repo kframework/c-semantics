@@ -1,13 +1,7 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: B3
 Description: function call has more arguments than parameters in function definition.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6
-=============================================================
-File: j038c.c
-Function: foo
-Line: 8
-=============================================================
+  at foo(j038c.c:8)
+  at main(j038c.c:8)
+  at <file-scope>(<unknown>)

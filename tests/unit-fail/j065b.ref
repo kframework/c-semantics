@@ -1,13 +1,7 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: EIO10
 Description: Type of lvalue not compatible with the effective type of the object being accessed.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:7
-=============================================================
-File: j065b.c
-Function: f
-Line: 2
-=============================================================
+  at f(j065b.c:2)
+  at main(j065b.c:6)
+  at <file-scope>(<unknown>)

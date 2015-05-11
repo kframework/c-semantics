@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEB2
 Description: the right operand in a bitwise shift is negative.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:3
-=============================================================
-File: j051a.c
-Function: main
-Line: 4
-=============================================================
+  at main(j051a.c:4)
+  at <file-scope>(<unknown>)

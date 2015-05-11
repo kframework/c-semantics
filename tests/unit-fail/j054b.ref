@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: EEA1
 Description: assignment from non-exactly-overlapping overlapping read.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.16.2
-=============================================================
-File: j054b.c
-Function: main
-Line: 10
-=============================================================
+  at main(j054b.c:10)
+  at <file-scope>(<unknown>)

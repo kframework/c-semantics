@@ -25,8 +25,19 @@ module C-EXECUTION-ERROR
      imports DEBUG-SYNTAX
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> K </final-computation>)
-          (.Bag => <error-cell> Msg </error-cell>)
+          => <final-computation> #write(2, Msg +String printStackTrace(L, Loc, Func) +String "\n") ~> K </final-computation>)
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:K </curr-program-loc>
+          <curr-function> Func:K </curr-function>
+
+     syntax String ::= printStackTrace(List, K, K) [function]
+
+     rule printStackTrace(L:List, Loc:K, file-scope) => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, Loc:K, Identifier(S:String)) => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K) => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
+     rule printStackTrace(L:List, UnknownCabsLoc, .K) => "<unknown>)" +String printStackTrace(L, .K, .K)
+     rule printStackTrace(ListItem(bag2K(<call-stack-frame>... <stack-curr-program-loc> Loc:K </stack-curr-program-loc> <stack-curr-function> Func:K </stack-curr-function> ...</call-stack-frame>)) L:List, .K, .K) => printStackTrace(L, Loc, Func)
+     rule printStackTrace(.List, .K, .K) => ""
 
      rule cast(t(N:Set, T:SimpleType), emptyValue)
           => castHold(t(N, T:SimpleType), emptyValue)

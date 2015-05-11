@@ -1,13 +1,6 @@
-
-=============================================================
-ERROR! KCC encountered an error while executing this program.
-=============================================================
 Error: CEE2
 Description: Indeterminate value used in an expression.
 Type: Undefined behavior.
 See also: C11 sec. 6.2.4, 6.7.9, 6.8
-=============================================================
-File: j021e.c
-Function: main
-Line: 3
-=============================================================
+  at main(j021e.c:3)
+  at <file-scope>(<unknown>)
