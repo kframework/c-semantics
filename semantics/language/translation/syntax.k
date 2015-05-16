@@ -1,9 +1,14 @@
 module C-ABSTRACT-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
+     syntax RValue ::= Hold
+
      syntax KItem ::= "AnonymousName" // new, argument is type
      rule AnonymousName => #NoName [macro, structural]
 
      syntax C ::= Definition
+     syntax C ::= ForClause
      syntax Definition ::= DefinitionLoc(K, K)
      syntax Definition ::= DefinitionLocRange(K, K, K)
      // this wraps all statements with their location in the original file
@@ -12,6 +17,30 @@ module C-ABSTRACT-SYNTAX
      rule DefinitionLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
      rule StatementLoc(K:K, L:K) => CodeLoc(K:K, L:K) [macro, structural]
      rule DefinitionLocRange(K:K, _, L:K) => CodeLoc(K:K, L:K) [macro, structural]
+
+     syntax PureDefinition ::= StaticAssert(K, K)
+
+     /*
+     | CASE of expression * statement * cabsloc
+     | DEFAULT of statement * cabsloc
+     */
+     // unique switch id, unique case id, exp, statement
+     syntax PureStatement ::= Case(Int, Int, K, K)
+     context Case(_, _, (HOLE => reval(HOLE)), _) [result(RValue)]
+     // unique switch id, statement
+     syntax PureStatement ::= Default(Int, K)
+
+     /*
+     | LABEL of String * statement * cabsloc
+     */
+     syntax PureStatement ::= Label(CId, K) [avoid]
+
+     /*
+     and for_clause =
+     FC_EXP of expression
+     | FC_DECL of definition
+     */
+     syntax ForClause ::= ForClauseExpression(K)
 
      syntax Expression ::= Conditional(K, K, K)
      rule Conditional(K1:K, K2:K, K3:K) => K1:K ? K2:K : K3:K [macro, structural]
@@ -104,6 +133,8 @@ module C-ABSTRACT-SYNTAX
      rule Dot(K:K, X:CId) => K:K . X:CId [macro, structural]
      syntax Expression ::= Arrow(K, CId)
      rule Arrow(K:K, X:CId) => K:K -> X:CId [macro, structural]
+
+     syntax KItem ::= CodeLoc(K, K)
 
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run

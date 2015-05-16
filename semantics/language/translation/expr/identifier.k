@@ -7,13 +7,15 @@ module C-EXPR-IDENTIFIER
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
+
      rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           requires notBool isLinkerLoc(Base)
                andBool Base =/=K symVal
           [structural]
-     rule <k> X:CId => lv(symVal, T) ...</k>
+     rule <k> X:CId => e(X, T) ...</k>
           <env>... X |-> symVal ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
@@ -39,11 +41,11 @@ module C-EXPR-IDENTIFIER
           requires isLinkerLoc(Base)
           [structural]
 
-     rule <k> instantiate(Loc:SymLoc, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
+     rule instantiate(Loc:SymLoc, T:Type) => e(instantiate(Loc, T), T)
           requires notBool fromConstantExpr(T)
                orBool notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)
-     rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
+     rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
           requires fromConstantExpr(T)
                andBool isStaticDuration(Loc)
                andBool notBool isLinkerLoc(Loc)

@@ -130,6 +130,8 @@ module C-TYPING-PREDICATES
                orBool isIncompleteStructType(T)
                orBool isIncompleteUnionType(T)
                orBool isVoidType(T))
+     rule isCompletePointerType(t(_, pointerType(T:Type))) => isCompleteType(T)
+     rule isCompletePointerType(_) => false [owise]
 
      rule isIncompleteArrayType(t(_, incompleteArrayType(_))) => true
      rule isIncompleteArrayType(t(_, flexibleArrayType(_))) => true
@@ -213,4 +215,6 @@ module C-TYPING-PREDICATES
      rule isReadFrom(readFrom(_, _)) => true
      rule isReadFrom(_) => false [owise]
 
+     rule isTruthValue(tv(V:K, t(_, T:SimpleType)))
+          => T ==K int andBool (V ==K 0 orBool V ==K 1)
 endmodule

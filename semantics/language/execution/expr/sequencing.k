@@ -3,7 +3,6 @@ module C-EXPR-SEQUENCING
 
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
@@ -13,11 +12,7 @@ module C-EXPR-SEQUENCING
      value.
      }*/
 
-     rule Comma(list(ListItem(K:K) L:List))
-          => toRVal(K) ~> discard ~> sequencePoint ~> Comma(list(L))
-          requires L =/=MSet .List
-          [structural]
-     rule Comma(list(ListItem(K:K))) => toRVal(K)
+     rule _:RValue ~> comma => sequencePoint
           [structural]
 
 endmodule

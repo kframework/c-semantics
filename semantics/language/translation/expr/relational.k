@@ -6,59 +6,52 @@ module C-EXPR-RELATIONAL
      imports C-PROMOTION-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 
-     rule tv(V:CValue, T:Type) < tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+     rule L:RValue < R:RValue => e(stripHold(L) < stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
-     rule tv(V:CValue, T:Type) <= tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+
+     rule L:RValue <= R:RValue => e(stripHold(L) <= stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
-     rule tv(V:CValue, T:Type) > tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+
+     rule L:RValue > R:RValue => e(stripHold(L) > stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
-     rule tv(V:CValue, T:Type) >= tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+
+     rule L:RValue >= R:RValue => e(stripHold(L) >= stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
-     rule tv(V:CValue, T:Type) == tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+
+     rule L:RValue == R:RValue => e(stripHold(L) == stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
-     rule tv(V:CValue, T:Type) != tv(V':CValue, T':Type)
-          => tv(symVal, t(.Set, int))
-          requires ((V ==K symVal) orBool (V' ==K symVal))
+
+     rule L:RValue != R:RValue => e(stripHold(L) != stripHold(R), t(.Set, int))
+          requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(T) andBool isPointerType(T'))
-                    orBool ((T ==Type T') andBool isPromoted(T))
-                    orBool ((T ==Type T') andBool isFloatType(T))
+                    (isPointerType(type(L)) andBool isPointerType(type(R)))
+                    orBool (type(L) ==Type type(R) andBool isPromoted(type(L)))
+                    orBool (type(L) ==Type type(R) andBool isFloatType(type(L)))
                )
-          [structural]
 
 endmodule

@@ -155,23 +155,25 @@ module C-PROMOTION
      implementation-defined.
      }*/
 
-     syntax Bool ::= #isPromoted(Type) [function]
-
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(T:Type) => #isPromoted(T)
-
-     rule #isPromoted(t(_, enumType(_))) => true
-     rule #isPromoted(t(_, int)) => true
-     rule #isPromoted(t(_, unsigned-int)) => true
-     rule #isPromoted(t(_, long-int)) => true
-     rule #isPromoted(t(_, unsigned-long-int)) => true
-     rule #isPromoted(t(_, long-long-int)) => true
-     rule #isPromoted(t(_, unsigned-long-long-int)) => true
-     rule #isPromoted(_) => false [owise]
+     rule isPromoted(t(_, enumType(_))) => true
+     rule isPromoted(t(_, int)) => true
+     rule isPromoted(t(_, unsigned-int)) => true
+     rule isPromoted(t(_, long-int)) => true
+     rule isPromoted(t(_, unsigned-long-int)) => true
+     rule isPromoted(t(_, long-long-int)) => true
+     rule isPromoted(t(_, unsigned-long-long-int)) => true
+     rule isPromoted(_) => false [owise]
 
      rule L:KLabel(
                (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
+          )
+          requires isArithUnaryOp(L)
+               andBool notBool isPromoted(T)
+          [structural]
+     rule L:KLabel(
+               (e(K:K, T:IntegerType) => e(K, promote(T)))
           )
           requires isArithUnaryOp(L)
                andBool notBool isPromoted(T)
@@ -184,8 +186,22 @@ module C-PROMOTION
                andBool notBool isPromoted(T)
           [structural]
      rule L:KLabel(
+               (e(K:K, T:IntegerType) => e(K, promote(T)))
+               ,, _
+          )
+          requires isArithBinOp(L)
+               andBool notBool isPromoted(T)
+          [structural]
+     rule L:KLabel(
                _,,
                (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
+          )
+          requires isArithBinOp(L)
+               andBool notBool isPromoted(T)
+          [structural]
+     rule L:KLabel(
+               _,,
+               (e(K:K, T:IntegerType) => e(K, promote(T)))
           )
           requires isArithBinOp(L)
                andBool notBool isPromoted(T)
@@ -239,19 +255,24 @@ module C-PROMOTION
      the same, and complex otherwise. This pattern is called the usual
      arithmetic conversions:
      }*/
-     rule Lbl:KLabel(tv(V:CValue, T:ArithmeticType),, tv(V':CValue, T':ArithmeticType))
+     rule Lbl:KLabel(L:RValue,, R:RValue)
           => Lbl(cast(
-               usualArithmeticConversion(T, T'), tv(V, T)),,
-               cast(usualArithmeticConversion(T, T'), tv(V', T')))
+               usualArithmeticConversion(type(L), type(R)), L),,
+               cast(usualArithmeticConversion(type(L), type(R)), R))
           requires isArithBinConversionOp(Lbl)
-               andBool (T =/=Type T')
+               andBool isArithmeticType(type(L))
+               andBool isArithmeticType(type(R))
+               andBool (type(L) =/=Type type(R))
           [structural]
 
-     rule Lbl:KLabel(tv(_, (T:Type => stripConstants(T))),, 
-                     tv(_, (T':Type => stripConstants(T'))))
+     rule Lbl:KLabel(L:KLabel(_,, (T:Type => stripConstants(T))),,
+                     R:KLabel(_,, (T':Type => stripConstants(T'))))
           requires isArithBinOp(Lbl)
                andBool (T ==Type T')
                andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
+               andBool (L ==KLabel 'tv orBool L ==KLabel 'e)
+               andBool (R ==KLabel 'tv orBool R ==KLabel 'e)
+          [structural]
 
      /*@
      \begin{itemize}

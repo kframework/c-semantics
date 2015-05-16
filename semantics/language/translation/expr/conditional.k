@@ -1,4 +1,4 @@
-module C-COMMON-EXPR-CONDITIONAL
+module C-EXPR-CONDITIONAL
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -141,8 +141,16 @@ module C-COMMON-EXPR-CONDITIONAL
                andBool areCompatible(T, T')
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
-          => IfThenElse(E, Cast(T, E1), Cast(T, E2))
+          => evalConditional(E, Cast(T, E1), Cast(T, E2))
           [structural]
+
+     syntax KItem ::= evalConditional(K, K, K)
+     context evalConditional(HOLE => reval(HOLE), _, _) [result(RValue)]
+     context evalConditional(_, HOLE => reval(HOLE), _) [result(RValue)]
+     context evalConditional(_, _, HOLE => reval(HOLE)) [result(RValue)]
+
+     rule evalConditional(C:RValue, E1:RValue, E2:RValue)
+          => e(stripHold(C) ? stripHold(E1) : stripHold(E2), type(E1))
 
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))

@@ -5,12 +5,10 @@ module C-EXPR-UNARY
      imports C-PROMOTION-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule + tv(symVal, T:Type) => tv(symVal, T)
+     rule + e(K:K, T:Type) => e( + K, T)
           requires isPromoted(T) orBool isFloatType(T)
-          [structural]
 
-     rule - tv(symVal, T:Type) => tv(symVal, T)
+     rule - e(K:K, T:Type) => e( - K, T)
           requires isPromoted(T) orBool isFloatType(T)
-          [structural]
 
 endmodule

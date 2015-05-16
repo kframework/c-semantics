@@ -8,7 +8,11 @@ module C-EXPR-ASSIGNMENT
           => write(Loc, V, T)
           ~> tv(V, T)
           requires T ==Type T'
-          [structural]
+
+     // TODO(chathhorn): check types and whatnot (2trans)
+     rule e(L:K, T:Type) := e(R:K, _) => e(L := R, T)
+     rule e(L:K, T:Type) := tv(V:CValue, T':Type) => e(L := tv(V, T'), T)
+     rule nclv(Loc:SymLoc, T:Type) := e(R:K, _) => e(nclv(Loc, T) := R, T)
 
 endmodule
 

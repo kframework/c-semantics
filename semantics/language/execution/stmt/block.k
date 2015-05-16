@@ -1,17 +1,17 @@
-module C-STMT-BLOCK
-     imports C-CHECK-LOC-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
-     imports COMPAT-SYNTAX
+module C-STMT-BLOCK-SYNTAX
+     syntax KItem ::= "deleteLocals"
+endmodule
 
-     /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
-     A \emph{compound statement} is a block.
-     }*/
-     rule BlockStatement(B:K)
-          => pushBlock ~> B ~> deleteLocals ~> popBlock
-          [structural]
+module C-STMT-BLOCK
+     imports C-STMT-BLOCK-SYNTAX
+
+     imports C-CHECK-LOC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      rule <k> pushBlock => .K ...</k>
           <local>
@@ -21,16 +21,23 @@ module C-STMT-BLOCK
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
           </local>
           <block-stack> .List
-               => ListItem(bag2K(C
-               <local-vars> Vars </local-vars>
-               <local-addresses> Addresses </local-addresses>
-               <nesting-depth> N </nesting-depth>))
+               => ListItem(bag2K(<local>
+                    C
+                    <local-vars> Vars </local-vars>
+                    <local-addresses> Addresses </local-addresses>
+                    <nesting-depth> N </nesting-depth>
+               </local>))
           ...</block-stack>
           [structural]
 
      rule <k> popBlock => .K ...</k>
-          <local> _ => C </local>
+          (<local>...
+               <local-addresses> .Set </local-addresses>
+          ...</local> => C)
           <block-stack> ListItem(bag2K(C:Bag)) => .List ...</block-stack>
+          [structural]
+     rule <k> (.K => deleteLocals) ~> popBlock ...</k>
+          <local-addresses>... SetItem(_) ...</local-addresses>
           [structural]
 
      rule <k> (.K => deleteObject(Base)) ~> deleteLocals ...</k>
@@ -64,12 +71,12 @@ module C-STMT-BLOCK
      were a statement, and within each declaration in the order that declarators
      appear.
      }*/
-     rule <k> Block(BlockNum:Int, _, list(Statements:List))
-               => enterRestrictScope(BlockNum)
-               ~> listToK(Statements)
-               ~> exitRestrictScope(BlockNum)
-          ...</k>
-          <block-history> .List => ListItem(BlockNum) ...</block-history>
+     rule enterBlock(BlockNum:Int)
+          => addToHistory(BlockNum)
+          ~> enterRestrictScope(BlockNum)
+          [structural]
+
+     rule exitBlock(BlockNum:Int) => exitRestrictScope(BlockNum)
           [structural]
 
 endmodule

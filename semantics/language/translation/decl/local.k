@@ -23,6 +23,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
                => addToEnv(X, Base)
           ...</k>
+          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
@@ -39,6 +40,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
                => addToEnv(X, symVal)
           ...</k>
+          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
@@ -56,6 +58,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
                => addToEnv(X, symVal)
           ...</k>
+          <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types> Types:Map </external-types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -67,19 +70,19 @@ module C-DECL-LOCAL
                andBool notBool (X in keys(Types))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
-     rule declareInternalVariable(X:CId, T:Type, K:K)
-          => initLocalStatic(X,
-               // Need the allowInit here to enable storing compound literals
-               // and again below to enable storing the value of this declared
-               // variable into the actual static memory.
-               allowInit(figureInit(X, T, K)))
+     rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
+               => initLocalStatic(X, toInitValue(X, T, Init))
+          ...</k>
+          <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural]
-     rule declareInternalVariable(X:CId, T:Type, K:K)
-          => addToEnv(X, symVal)
-          ~> defineAndInit(X, T, figureInit(X, T, K))
+     rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
+               => addToEnv(X, symVal)
+               ~> defineAndInit(X, T, toInitValue(X, T, Init))
+          ...</k>
+          <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isNaked(T)
           [structural]
      // This is pretty contrived, but we don't give local extern decls an entry
@@ -109,12 +112,15 @@ module C-DECL-LOCAL
                andBool notBool areCompatible(T, T')
           [structural]
 
-     syntax KItem ::= initLocalStatic(CId, K) [strict(2)]
-     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
+     syntax KResult ::= toInitValue(CId, Type, K) [function]
+     rule toInitValue(X:CId, T:Type, NoInit) => initValue(X, T, .K)
+     rule toInitValue(_, _, Init:K) => Init [owise]
+
+     syntax KItem ::= initLocalStatic(CId, K)
+     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, _))
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> allowInit(K)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -128,7 +134,6 @@ module C-DECL-LOCAL
           </local-types>
           requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural]
      rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
@@ -146,12 +151,9 @@ module C-DECL-LOCAL
                orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
 
-     syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)]
-     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
+     syntax KItem ::= defineAndInit(CId, Type, K)
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
                => giveType(X, T)
-               // Needed because we still need to process the initializers and
-               // we also need to disable e.g. const checks during init.
-               ~> allowInit(K)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>

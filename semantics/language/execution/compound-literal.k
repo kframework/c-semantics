@@ -1,11 +1,9 @@
 module C-COMPOUND-LITERAL
      imports C-ALIGNMENT-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -43,11 +41,6 @@ module C-COMPOUND-LITERAL
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
-     rule CompoundLiteral(N:Int, T:Type, K:K, Init:K)
-          => handleCompoundLiteral(
-               figureInit(compoundLiteral(N), DeclType(T, K), Init))
-          [structural]
-
      rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => handleCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
           ...</k>
@@ -90,16 +83,6 @@ module C-COMPOUND-LITERAL
           ...</k>
           <local-addresses>... SetItem(Base) ...</local-addresses>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
-          [structural]
-
-     // TODO(chathhorn) identical to trans, move these to common.
-     rule stringLiteral(S:String)
-          => lv(lnew(string(S), cfg:alignofSignedChar),
-               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          [structural]
-     rule wstringLiteral(S:List)
-          => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
-               t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           [structural]
 
 endmodule

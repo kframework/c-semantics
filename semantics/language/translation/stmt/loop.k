@@ -1,35 +1,38 @@
 module C-STMT-LOOP
-     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-PROCESS-LABEL-SYNTAX
+     imports C-SYNTAX
+
      imports COMPAT-SYNTAX
 
-     rule ForClauseExpression(K:K) => Computation(K) [structural]
+     rule ForClauseExpression(K:K) => K
+          requires K =/=K .K
+     rule ForClauseExpression(.K) => voidVal
 
-     rule [for]:
-          For(BlockNum:Int, Pre:K, Control:K, Post:K, S:K)
-          => pushBlock
-          ~> addToHistory(BlockNum)
-          ~> Pre
-          ~> Computation(Control)
-          ~> S ~> Computation(Post)
-          ~> popBlock
-          [structural]
+     context For(_, (HOLE => reval(HOLE)), _, _, _) [result(RValue)]
+     context For(_, _, (HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context For(_, _, _, (HOLE => reval(HOLE)), _) [result(RValue)]
+     rule (.K => elaborate(S)) ~> For(_, _:RValue, _:RValue, _:RValue, S:K)
+     rule <k> elaborateDone(S:K)
+               ~> For(BlockNum:Int, Pre:RValue, Control:RValue, Post:RValue, _)
+               => .K
+          ...</k>
+          <elab>... .K => For(BlockNum, Pre, Control, Post, S) </elab>
 
-     rule [while]:
-          While(B:K, S:K)
-          => Computation(B)
-          ~> S
-          [structural]
+     context While((HOLE => reval(HOLE)), _) [result(RValue)]
+     rule (.K => elaborate(S)) ~> While(_:RValue, S:K)
+     rule <k> elaborateDone(S:K) ~> While(B:RValue, _) => .K ...</k>
+          <elab>... .K => While(B, S) </elab>
 
-     rule [do-while-mark]:
-          DoWhile(B:K, S:K)
-          => S
-          ~> Computation(B)
-          [structural]
+     context DoWhile((HOLE => reval(HOLE)), _) [result(RValue)]
+     rule (.K => elaborate(S)) ~> DoWhile(_:RValue, S:K)
+     rule <k> elaborateDone(S:K) ~> DoWhile(B:RValue, _) => .K ...</k>
+          <elab>... .K => DoWhile(B, S) </elab>
 
-     rule [continue]:
-          Continue => .K
-          [structural]
+     rule <k> Continue => .K ...</k>
+          <elab>... .K => Continue </elab>
 
 endmodule

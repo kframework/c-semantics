@@ -5,28 +5,27 @@ module C-EXPR-MULTIPLICATIVE
      imports C-TYPING-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
 
-     rule tv(V:CValue, T:Type) * tv(V':CValue, T':Type)
-          => tv(symVal, T)
-          requires ((V ==K symVal) orBool V' ==K symVal)
-               andBool (isPromoted(T) orBool isFloatType(T))
-               andBool T ==Type T'
+     rule L:RValue * R:RValue => e(stripHold(L) * stripHold(R), type(L))
+          requires (isHold(L) orBool isHold(R))
+               andBool (isPromoted(type(L)) orBool isFloatType(type(L)))
+               andBool type(L) ==Type type(R)
           [structural]
 
-     rule tv(V:CValue, T:Type) / tv(V':CValue, T':Type)
-          => tv(symVal, T)
-          requires ((V ==K symVal) orBool V' ==K symVal)
-               andBool (
-                    (isPromoted(T) andBool V' =/=K 0)
-                    orBool isFloatType(T))
+     rule e(L:K, T:Type) / tv(V:CValue, T':Type) => e(L / tv(V, T'), T)
+          requires ((isPromoted(T) andBool V =/=K 0) orBool isFloatType(T))
                andBool T ==Type T'
-          [structural]
+     rule L:RValue / R:RValue => e(stripHold(L) / stripHold(R), type(L))
+          requires isHold(R)
+               andBool (isPromoted(type(L)) orBool isFloatType(type(L)))
+               andBool type(L) ==Type type(R)
 
-     rule tv(V:CValue, T:Type) % tv(V':CValue, T':Type)
-          => tv(symVal, T)
-          requires ((V ==K symVal) orBool (V' ==K symVal))
-               andBool isPromoted(T)
-               andBool (V' =/=K 0)
+     rule e(L:K, T:Type) % tv(V:CValue, T':Type) => e(L % tv(V, T'), T)
+          requires isPromoted(T)
+               andBool V =/=K 0
                andBool T ==Type T'
-          [structural]
+     rule L:RValue % R:RValue => e(stripHold(L) % stripHold(R), type(L))
+          requires isHold(R)
+               andBool isPromoted(type(L))
+               andBool type(L) ==Type type(R)
 endmodule
 

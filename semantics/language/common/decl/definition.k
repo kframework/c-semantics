@@ -2,7 +2,7 @@ module C-DECL-DEFINITION-SYNTAX
      imports C-SYNTAX
 
      syntax KItem ::= declare(K, K) [strict(1)]
-     syntax KItem ::= declareInternalVariable(CId, Type, K)
+     syntax KItem ::= declareInternalVariable(CId, Type, K) [strict(3)]
 
      // The declare "backend" implemented in the trans or exec semantics.
      syntax KItem ::= "declare'" "(" K "," K ")" [strict(1)]
@@ -15,7 +15,6 @@ endmodule
 
 module C-DECL-DEFINITION
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
 

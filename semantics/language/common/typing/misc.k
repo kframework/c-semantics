@@ -2,7 +2,6 @@ module C-TYPING-MISC
      imports C-TYPING-SYNTAX
 
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX

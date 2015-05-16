@@ -30,10 +30,10 @@ module C-EXPR-FUNCTION-CALL
 
      context Call(_, (HOLE => revalParams(HOLE)))
 
-     rule Call(tv(_, t(_, pointerType(t(_, functionType(T:Type, P:List))))), rvlist(L:List))
-          // Only attempt to bind if we have a prototype.
-          => #if (P =/=K .List) #then bind(.List, P, L) #else dotK #fi
-          ~> tv(symVal, T)
+     rule Call(tv(V:CValue, t(S:Set, pointerType(t(S':Set, functionType(T:Type, P:List))))), rvlist(L:List))
+               // Only attempt to bind if we have a prototype.
+               => #if (P =/=K .List) #then bind(.List, P, L) #else dotK #fi
+               ~> e(Call(tv(V, t(S, pointerType(t(S', functionType(T, P))))), rvlist(L)), T)
           requires (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
           [structural]
@@ -49,4 +49,3 @@ module C-EXPR-FUNCTION-CALL
      rule bindParam(_) => .K
 
 endmodule
-

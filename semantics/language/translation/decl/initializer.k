@@ -4,19 +4,8 @@ module C-DECL-INITIALIZER-SYNTAX
 
      syntax KResult ::= initializer(K)
 
-     // Function id, param ids, prototype, body.
-     syntax RValue ::= functionObject(CId, List, Type, K)
-
      // CId, type, initializer.
      syntax KItem ::= figureInit(CId, K, K) [strict(2)]
-
-     // These are also used by compound literals.
-     //TODO(liyili2): keep kresult in sort
-     syntax KResult ::= initValue(CId, Type, K)
-
-     syntax KItem ::= singleIntInit(K) [strict]
-
-     syntax KItem ::= allowInit(K)
 
 endmodule
 
@@ -24,34 +13,24 @@ module C-DECL-INITIALIZER
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-ZERO-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-BUILTIN-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BUILTIN-SYNTAX
-     imports C-BITSIZE-SYNTAX
 
-     rule <k> allowInit(K:K) => K ~> initDone ...</k>
-          <initializing> I:Int => I +Int 1 </initializing>
-          [structural]
+     imports COMPAT-SYNTAX
 
-     syntax KItem ::= "initDone"
-     rule <k> R:KResult ~> initDone => R ...</k>
-          <initializing> I:Int => I -Int 1 </initializing>
-          [structural]
-     rule <k> initDone => .K ...</k>
-          <initializing> I:Int => I -Int 1 </initializing>
-          [structural]
-
+     // TODO(chathhorn): CodeLoc in figureInit (2trans)
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K))
           => CodeLoc(.K, L) ~> figureInit(X, T, K)
           [structural]
 
-     rule figureInit(X:CId, T:Type, NoInit)
-          => initValue(X, T, .K)
+     rule figureInit(X:CId, T:Type, NoInit) => initValue(X, T, .K)
           [structural]
 
      // aggregates

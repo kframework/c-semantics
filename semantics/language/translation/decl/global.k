@@ -20,6 +20,7 @@ endmodule
 module C-DECL-GLOBAL
      imports C-DECL-GLOBAL-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
@@ -40,7 +41,7 @@ module C-DECL-GLOBAL
 
      syntax KItem ::= "declare''" "(" Type "," K ")"
      rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
-               => declareInternalVariable(X, T, K)
+               => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
@@ -48,7 +49,7 @@ module C-DECL-GLOBAL
                andBool validLocalStorageClass(T)
           [structural]
      rule <k> declare''(typedDeclaration(T:FunctionType, X:CId), K:K)
-               => declareInternalVariable(X, T, K)
+               => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope

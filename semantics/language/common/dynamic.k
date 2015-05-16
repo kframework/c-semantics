@@ -15,6 +15,9 @@ module C-DYNAMIC-SYNTAX
 
      syntax LValue ::= lv(SymLoc, Type)
 
+     syntax Hold ::= e(K, Type)
+     syntax KItem ::= stripHold(K) [function]
+
      syntax RValue ::= "voidVal"
      syntax RValue ::= "emptyValue"
      syntax RValue ::= tv(CValue, Type)
@@ -23,7 +26,7 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= toRVal(K)
 
      syntax Type ::= type(K) [function]
-     syntax KItem ::= value(RValue) [function]
+     syntax KItem ::= value(K) [function]
 
      syntax KItem ::= "discard"
 
@@ -36,20 +39,19 @@ module C-DYNAMIC-SYNTAX
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
-     syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
 
      // TODO(chathhorn): seems excessive to make this an CId. Also, it kinda
      // goes against our naming conventions.
      syntax CId ::= "file-scope"
 
-     //  switchid, value (tv or 'Default)
-     syntax CId ::= genLabel(Int, K)
+     //  switchid, caseid, value (tv or 'Default)
+     syntax CId ::= caseLabel(Int, K)
      syntax CId ::= funLabel(CId)
-     syntax CId ::= case(Int)
 
      syntax KItem ::= "pushBlock"
      syntax KItem ::= "popBlock"
-     syntax KItem ::= "deleteLocals"
+     syntax KItem ::= enterBlock(Int)
+     syntax KItem ::= exitBlock(Int)
 
      syntax Statement ::= "loopMarked"
      syntax KItem ::= "popLoop"
@@ -60,9 +62,18 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-
      syntax KItem ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
+
+     syntax KItem ::= "sequencePoint"
+
+     syntax KItem ::= "comma"
+
+     // Function id, param ids, prototype, body.
+     syntax RValue ::= functionObject(CId, List, Type, K)
+
+     syntax KResult ::= initValue(CId, Type, K)
+     syntax KItem ::= allowInit(K)
 
 endmodule
 
@@ -76,22 +87,20 @@ module C-DYNAMIC
      rule toRVal(V:RValue) => V
           [structural]
 
+     rule stripHold(e(K:K, _)) => K
+     rule stripHold(K:K) => K [owise]
+
      rule value(tv(V:CValue, _)) => V
+     rule value(nclv(Loc:SymLoc, _)) => Loc
+     rule value(e(K:K, _)) => K
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
      rule type(nclv(_, T:Type)) => T
-
-     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
-          => UnknownCabsLoc
-     rule filterCabsLoc(L:CabsLoc) => L [owise]
+     rule type(e(_, T:Type)) => T
 
      rule ExpressionLoc(K:K, _) => K
-
-     rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
-          [structural]
 
      rule _:KResult ~> discard => .K
           [structural]
@@ -142,5 +151,17 @@ module C-DYNAMIC
 
      rule N:CSize => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
+
+     rule <k> allowInit(K:K) => K ~> initDone ...</k>
+          <initializing> I:Int => I +Int 1 </initializing>
+          [structural]
+
+     syntax KItem ::= "initDone"
+     rule <k> R:KResult ~> initDone => R ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
+          [structural]
+     rule <k> initDone => .K ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
+          [structural]
 
 endmodule

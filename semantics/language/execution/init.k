@@ -3,23 +3,23 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
-
 endmodule
 
 module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-CHECK-LOC-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports LIBC-IO-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
@@ -53,6 +53,10 @@ module C-EXECUTION-INIT
 
      \end{itemize}
      }*/
+
+     // TODO(chathhorn): move
+     rule e(K:K, _) => K
+          [structural]
 
      syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
@@ -227,5 +231,10 @@ module C-EXECUTION-INIT
                <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
+
+     rule <k> L:CabsLoc => .K ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+          [structural]
+
 endmodule
 

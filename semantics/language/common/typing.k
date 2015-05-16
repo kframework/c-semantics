@@ -35,6 +35,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
+     syntax Bool ::= isCompletePointerType(Type) [function]
      syntax Bool ::= isIncompleteArrayType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
@@ -217,6 +218,7 @@ module C-TYPING-SYNTAX
      // that offset.
      syntax Type ::= getTypeAtOffset(Type, Int) [function]
 
+     syntax Bool ::= isTruthValue(RValue) [function]
 endmodule
 
 module C-TYPING

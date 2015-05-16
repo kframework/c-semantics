@@ -2,7 +2,6 @@ module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
      imports C-TYPING-STRICTNESS-SYNTAX
 
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX

@@ -1,7 +1,6 @@
 module C-COMMON-EXPR-MEMBERS
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX

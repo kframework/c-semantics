@@ -20,7 +20,6 @@ module C-BITSIZE
      imports C-BITS-SYNTAX
      imports C-ENV-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
 
      imports C-SYNTAX

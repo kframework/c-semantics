@@ -8,8 +8,12 @@ endmodule
 module C-FUNCTION-DEF
      imports C-FUNCTION-DEF-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
+     imports C-ANNOTATION-SYNTAX
+     imports C-BINDING-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -18,8 +22,6 @@ module C-FUNCTION-DEF
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BINDING-SYNTAX
-     imports C-ANNOTATION-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -38,7 +40,6 @@ module C-FUNCTION-DEF
                          Goto(funLabel(X)))
                ))
           )
-          ~> calculateGotoMap(X, Label(funLabel(X), safeBody(X, Blk)))
           ~> processFunDef(X, Blk)
           requires notBool hasDupParams(T)
           [structural]
@@ -173,16 +174,22 @@ module C-FUNCTION-DEF
      syntax KItem ::= "returnToFileScope"
 
      syntax KItem ::= staticEval(CId, List, K)
+     syntax KItem ::= calculateGotoMap(CId)
+
      rule <k> staticEval(X:CId, Params:List, Blk:K)
                => pushBlock
                ~> dummyBind(Params)
                ~> generateRuleAnnotation(X)
-               ~> Blk
+               ~> elaborate(Label(funLabel(X), safeBody(X, Blk)))
+               ~> calculateGotoMap(X)
                ~> popBlock
                ~> returnToFileScope
           ...</k>
           <curr-function> _ => X </curr-function>
           [structural]
+
+     rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
+          => calculateGotoMap(X, K)
 
      rule <k> returnToFileScope => .K ...</k>
           <curr-function> _ => file-scope </curr-function>

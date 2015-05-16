@@ -33,7 +33,7 @@ module C-BUILTIN
           "__fslCloseFile" |-> fun(int, int)
           "__fslFGetC" |-> fun(int, int, unsigned-long-long-int)
           "__fslOpenFile" |-> fun(int, ptr(const(char)), ptr(const(char)))
-          "__fslPutc" |-> fun(int, char, int)
+          "__fslPutc" |-> fun(int, unsigned-char, int)
           "__va_copy" |-> fun(void, ptr(ptr(void)), ptr(void))
           "__va_end" |-> fun(void, ptr(ptr(void)))
           "__va_inc" |-> fun(ptr(void), ptr(ptr(void)), cfg:sizeut)

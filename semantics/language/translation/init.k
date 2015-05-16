@@ -9,6 +9,7 @@ endmodule
 module C-TRANSLATION-INIT
      imports C-TRANSLATION-INIT-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
@@ -67,10 +68,10 @@ module C-TRANSLATION-INIT
           [structural]
 
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-               => (preDeclareStrings(Strings)
+     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
+               => preDeclareStrings(Strings)
                ~> listToK(Decls)
-               ~> allocateIncompleteTentatives))
+               ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
@@ -250,7 +251,7 @@ module C-TRANSLATION-INIT
                </linking-state>
 
                <structs> updateMap(Structs1, Structs2) </structs>
- 
+
                <linkings> updateMap(Links1, Links2) </linkings>
 
                <main-tu> Main1 Main2 </main-tu>
@@ -272,7 +273,7 @@ module C-TRANSLATION-INIT
                   "module " +String replaceAll(S, ".", "-") +String "-SPEC" +String "\n"
           +String "  imports C-VERIFIER\n\n") ~> writeSpecs(Fd) ...</k>
           <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-     
+
      syntax KItem ::= writeSpecs(Int)
      rule <k> (.K => #write(Fd, S +String "\n")) ~> writeSpecs(Fd:Int) ...</k>
           <generated-annotations> ListItem(S:String) => .List ...</generated-annotations>
@@ -282,5 +283,14 @@ module C-TRANSLATION-INIT
      syntax KItem ::= writeEndModule(Int)
      rule <k> writeEndModule(Fd:Int) => #close(Fd) ...</k>
           <result-value> _ => 0 </result-value>
+
+     rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
+          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
+          <elab>... .K => filterCabsLoc(L) </elab>
+
+     syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
+          => UnknownCabsLoc
+     rule filterCabsLoc(L:CabsLoc) => L [owise]
 
 endmodule

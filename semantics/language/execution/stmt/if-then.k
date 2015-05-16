@@ -1,18 +1,6 @@
-module C-STMT-IF-THEN-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-
-     // TODO(chathhorn): I suppose this might not be the best place for this.
-     syntax Bool ::= isTruthValue(RValue) [function]
-endmodule
-
 module C-STMT-IF-THEN
-     imports C-STMT-IF-THEN-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
-
-     rule isTruthValue(tv(V:K, t(_, T:SimpleType)))
-          => T ==K int andBool (V ==K 0 orBool V ==K 1)
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
      \ldots There is a sequence point between the evaluation of a full

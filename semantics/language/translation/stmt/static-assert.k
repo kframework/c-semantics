@@ -1,4 +1,5 @@
 module C-STMT-STATIC-ASSERT
+     imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX

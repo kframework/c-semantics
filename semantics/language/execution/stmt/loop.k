@@ -24,14 +24,12 @@ module C-STMT-LOOP
      omitted $\textit{expression-2}$ is replaced by a nonzero constant.
      }*/
 
-     rule ForClauseExpression(K:K) => Computation(K) [structural]
-
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
           <k> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
                => pushBlock
                ~> addToHistory(ForNum)
-               ~> Pre
+               ~> Computation(Pre)
                ~> loopMarked
                ~> For(ForNum, Pre,
                     (#if Control =/=K emptyValue

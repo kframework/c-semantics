@@ -14,7 +14,6 @@ module C-BINDING
      imports C-BINDING-SYNTAX
 
      imports C-CONVERSION-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -158,8 +157,7 @@ module C-BINDING
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
      syntax RValue ::= argPromote(K) [function]
-     rule argPromote(tv(V:CValue, T:Type))
-          => cast(argPromoteType(T), tv(V, T))
+     rule argPromote(V:RValue) => cast(argPromoteType(type(V)), V)
 
      // "integer promotions" are used when doing arithmetic conversions, and
      // for unary ~, +, - "usual arithmetic conversions" are used when doing

@@ -55,7 +55,6 @@ module C-SYNTAX
      syntax C ::= Statement
      syntax C ::= PureStatement
      syntax C ::= PureEnumItem
-     syntax C ::= ForClause
      syntax C ::= Expression
      syntax C ::= Constant
      syntax C ::= InitExpression
@@ -318,8 +317,6 @@ module C-SYNTAX
      syntax PureDefinition ::= Transformer(K, K )
      syntax PureDefinition ::= ExpressionTransformer(K, K)
 
-     syntax PureDefinition ::= StaticAssert(K, K)
-
      // name
      syntax PureDefinition ::= LTLAnnotation(CId, K)
 
@@ -383,37 +380,22 @@ module C-SYNTAX
 
      /*
      | SWITCH of expression * statement * cabsloc
-     | CASE of expression * statement * cabsloc
      | CASERANGE of expression * expression * statement * cabsloc
-     | DEFAULT of statement * cabsloc
      */
      // unique switch id
      syntax PureStatement ::= Switch(K, K, K)
      context Switch(_, (HOLE => reval(HOLE)), _) [result(RValue)]
 
-     // unique switch id, unique case id, exp, statement
-     syntax PureStatement ::= Case(Int, Int, K, K)
      // gcc extension
      syntax PureStatement ::= CaseRange(K, K, K)
-     // unique switch id, statement
-     syntax PureStatement ::= Default(Int, K)
 
      /*
-     | LABEL of String * statement * cabsloc
      | GOTO of String * cabsloc
      | COMPGOTO of expression * cabsloc (* GCC's "goto *exp" *)
      | DEFINITION of definition (*definition or declaration of a variable or type*)
      */
-     syntax PureStatement ::= Label(CId, K) [avoid]
      syntax PureStatement ::= Goto(K) // CId
      syntax PureStatement ::= CompGoto(K)
-
-     /*
-     and for_clause =
-     FC_EXP of expression
-     | FC_DECL of definition
-     */
-     syntax ForClause ::= ForClauseExpression(K)
 
      /*
      and binary_operator =
@@ -712,7 +694,5 @@ module C-SYNTAX
      */
      // String, List
      syntax C ::= Attribute(String, K)
-
-     syntax KItem ::= CodeLoc(K, K)
 
 endmodule
