@@ -1,10 +1,10 @@
 module C-COMMON-EXPR-BITWISE
-     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

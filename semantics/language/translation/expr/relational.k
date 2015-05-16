@@ -1,10 +1,10 @@
 module C-EXPR-RELATIONAL
-     imports C-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule L:RValue < R:RValue => e(stripHold(L) < stripHold(R), t(.Set, int))
           requires (isHold(L) orBool isHold(R))

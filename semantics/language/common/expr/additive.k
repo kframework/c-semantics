@@ -2,9 +2,9 @@ module C-COMMON-EXPR-ADDITIVE
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

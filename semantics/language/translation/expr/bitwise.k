@@ -1,13 +1,12 @@
 module C-EXPR-BITWISE
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-PROMOTION-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ERROR-SYNTAX
-
-     imports C-ABSTRACT-SYNTAX
 
      rule ~ e(K:K, T:Type) => e(~ K, T)
           requires isPromoted(T)

@@ -2,13 +2,13 @@ module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
      imports C-TYPING-STRICTNESS-SYNTAX
 
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
-     imports C-PROMOTION-SYNTAX
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     imports COMPAT-SYNTAX
 
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>

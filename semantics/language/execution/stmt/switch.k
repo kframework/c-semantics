@@ -1,7 +1,6 @@
 module C-STMT-SWITCH
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
@@ -29,9 +28,10 @@ module C-STMT-SWITCH
      \cinline{default} label, no part of the switch body is executed.
      }*/
 
+     // Promotions already handled.
      rule Switch(SN:Int, tv(V:K, T:IntegerType), _)
           => sequencePoint
-               ~> handleSwitch(SN, cast(promote(T), tv(V, T)))
+               ~> handleSwitch(SN, tv(V, T))
           [structural]
 
      rule <k> handleSwitch(SN:Int, V:KResult)

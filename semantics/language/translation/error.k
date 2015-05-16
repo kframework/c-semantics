@@ -8,7 +8,6 @@ module C-TRANSLATION-ERROR
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX

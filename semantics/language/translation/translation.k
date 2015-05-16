@@ -8,6 +8,7 @@ require "elaborator.k"
 require "error.k"
 require "io-direct.k"
 require "process-label.k"
+require "promotion.k"
 require "function-def.k"
 require "init.k"
 
@@ -56,6 +57,7 @@ module C-TRANSLATION
      imports C-FUNCTION-DEF
      imports C-IO-DIRECT
      imports C-PROCESS-LABEL
+     imports C-PROMOTION
      imports C-TRANSLATION-ERROR
      imports C-TRANSLATION-INIT
 

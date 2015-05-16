@@ -24,7 +24,6 @@ require "decl/zero.k"
 
 require "expr/additive.k"
 require "expr/alignof.k"
-require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
@@ -43,16 +42,16 @@ require "memory/writing.k"
 module C-COMMON
      imports C-ALIGNMENT
      imports C-BINDING
-     imports C-BITSIZE
      imports C-BITS
+     imports C-BITSIZE
      imports C-BUILTIN
-     imports COMPAT
+     imports C-COMMON-PROMOTION
      imports C-CONVERSION
      imports C-DYNAMIC
      imports C-ENV
      imports C-ERROR
      imports C-LITERAL
-     imports C-PROMOTION
+     imports COMPAT
      imports C-SETTINGS
      imports C-SYMLOC
      imports C-SYNTAX
@@ -66,7 +65,6 @@ module C-COMMON
 
      imports C-COMMON-EXPR-ADDITIVE
      imports C-COMMON-EXPR-ALIGNOF
-     imports C-COMMON-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST
      imports C-COMMON-EXPR-EVAL

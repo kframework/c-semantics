@@ -13,11 +13,11 @@ endmodule
 module C-BINDING
      imports C-BINDING-SYNTAX
 
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
