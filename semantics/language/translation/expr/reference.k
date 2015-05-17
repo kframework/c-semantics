@@ -3,9 +3,10 @@ module C-EXPR-REFERENCE
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule &(e(K:K, T:Type)) => e( & K, t(.Set, pointerType(T)))
+     rule &(ncle(K:K, T:Type))
+          => te(& K, t(.Set, pointerType(T)))
 
-     rule * (e(K:K, T:Type)) => e( * K, innerType(T))
+     rule * (te(K:K, T:Type)) => le(* K, innerType(T))
           requires notBool isVoidType(innerType(T))
 
 endmodule

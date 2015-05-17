@@ -23,6 +23,6 @@ module C-EXPR-SEQUENCING
           => toRVal(K) ~> commaListHolder(CL)
 
      rule R:RValue ~> commaListHolder(CL:K)
-          => e(CL ~> toRVal(stripHold(R)), type(R))
+          => te(CL ~> toRVal(stripHold(R)), type(R))
 
 endmodule

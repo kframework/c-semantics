@@ -7,45 +7,25 @@ module C-PROMOTION
      imports COMPAT-SYNTAX
 
      rule L:KLabel(
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
+               (V:RValue => cast(promote(type(V)), V))
           )
-          requires isArithUnaryOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
+          requires isIntegerType(type(V))
+               andBool isArithUnaryOp(L)
+               andBool notBool isPromoted(type(V))
      rule L:KLabel(
-               (e(K:K, T:IntegerType) => e(K, promote(T)))
-          )
-          requires isArithUnaryOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
-     rule L:KLabel(
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
+               (V:RValue => cast(promote(type(V)), V))
                ,, _
           )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
-     rule L:KLabel(
-               (e(K:K, T:IntegerType) => e(K, promote(T)))
-               ,, _
-          )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
+          requires isIntegerType(type(V))
+               andBool isArithBinOp(L)
+               andBool notBool isPromoted(type(V))
      rule L:KLabel(
                _,,
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
+               (V:RValue => cast(promote(type(V)), V))
           )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
-     rule L:KLabel(
-               _,,
-               (e(K:K, T:IntegerType) => e(K, promote(T)))
-          )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
+          requires isIntegerType(type(V))
+               andBool isArithBinOp(L)
+               andBool notBool isPromoted(type(V))
 
      // fixme these could be done more cleanly
 
@@ -68,7 +48,6 @@ module C-PROMOTION
                andBool isArithmeticType(type(L))
                andBool isArithmeticType(type(R))
                andBool (type(L) =/=Type type(R))
-          [structural]
 
      rule Lbl:KLabel(L:KLabel(_,, (T:Type => stripConstants(T))),,
                      R:KLabel(_,, (T':Type => stripConstants(T'))))
@@ -77,6 +56,5 @@ module C-PROMOTION
                andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
                andBool (L ==KLabel 'tv orBool L ==KLabel 'e)
                andBool (R ==KLabel 'tv orBool R ==KLabel 'e)
-          [structural]
 
 endmodule

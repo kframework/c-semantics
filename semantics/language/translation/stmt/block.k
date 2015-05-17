@@ -1,4 +1,5 @@
 module C-STMT-BLOCK
+     imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX

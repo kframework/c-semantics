@@ -2,6 +2,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-BINDING-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-CHECK-LOC-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -164,4 +165,76 @@ module C-EXPR-FUNCTION-CALL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
+     // TODO(chathhorn): copied from translation -- we only need this in the
+     // case of parameter binding.
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
+               andBool (getQualifiers(type(R)) ==K .Set)
+               andBool (type(L) =/=Type type(R))
+
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isStructOrUnionType(type(L))
+               andBool areCompatible(stripQualifiers(type(L)), type(R))
+               andBool (type(L) =/=Type type(R))
+
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool areCompatible(
+                    stripQualifiers(stripAlignas(innerType(type(L)))),
+                    stripQualifiers(stripAlignas(innerType(type(R)))))
+               andBool getQualifiers(innerType(type(R)))
+                    <=Set getQualifiers(innerType(type(L)))
+               andBool getAlignas(innerType(type(L)))
+                    <=Int getAlignas(innerType(type(R)))
+               andBool (type(L) =/=Type type(R))
+
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool (isVoidType(innerType(type(L)))
+                    orBool isVoidType(innerType(type(R))))
+               andBool (getQualifiers(innerType(type(R)))
+                    <=Set getQualifiers(innerType(type(L))))
+               andBool (type(L) =/=Type type(R))
+
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L))
+               andBool isNullPointerConstant(R)
+               andBool (type(L) =/=Type type(R))
+
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isBoolType(type(L)) andBool isPointerType(type(R))
+
+     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
+          requires fromConstantExpr(T)
+     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
+          requires fromConstantExpr(T)
+
+     rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
+          ~> L:KResult := R:RValue
+          requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))
+                    andBool notBool isNullPointerConstant(R))
+               orBool isArithmeticType(type(L))
+                    andBool notBool isArithmeticType(type(R))
+               orBool isStructOrUnionType(type(L))
+                    andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
+               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+               orBool notBool (isPointerType(type(L))
+                    orBool isArithmeticType(type(L))
+                    orBool isStructOrUnionType(type(L))
+                    orBool isBoolType(type(L)))
+
+     rule (.K => CV("EFC2", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
+          ~> L:KResult := R:RValue
+          requires (isPointerType(type(L)) andBool isPointerType(type(R)))
+               andBool notBool isVoidType(innerType(type(L)))
+               andBool notBool isVoidType(innerType(type(R)))
+               andBool (
+                    notBool areCompatible(
+                         stripQualifiers(stripAlignas(innerType(type(L)))),
+                         stripQualifiers(stripAlignas(innerType(type(R)))))
+                    orBool notBool (getQualifiers(innerType(type(R)))
+                         <=Set getQualifiers(innerType(type(L))))
+                    orBool getAlignas(innerType(type(L)))
+                         >Int getAlignas(innerType(type(R)))
+               )
 endmodule

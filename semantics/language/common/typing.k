@@ -58,7 +58,7 @@ module C-TYPING-SYNTAX
      // Basic types
      syntax SimpleCharType ::= "char" [function]
      syntax SimpleSignedType ::= "short-int" | "int"
-     		               | "long-int" | "long-long-int" 
+                               | "long-int" | "long-long-int" 
                                | SimpleSignedCharType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
      syntax SimpleSignedCharType ::= "signed-char"
@@ -158,6 +158,9 @@ module C-TYPING-SYNTAX
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(RestrictTag)
      syntax RestrictTag ::= Int | CId | "global"
+                          // TODO(chathhorn): for restrict added via automatic
+                          // casts -- not sure how to handle.
+                          | "none"
 
      syntax Modifier ::= "IntegerConstant"
 
@@ -170,6 +173,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripFunctionSpecifiers(Type) [function]
+     syntax Type ::= stripAtomic(Type) [function]
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
@@ -185,7 +189,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= typedDeclaration(Type, CId)
           [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
-     syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
      syntax Bool ::= isNullPointerConstant(RValue) [function]

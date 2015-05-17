@@ -21,9 +21,6 @@ module C-STMT-IF-THEN
      rule [if-then-else-false]:
           IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
-     rule IfThenElse((V:RValue => simplifyTruth(V)), _, _)
-          requires notBool isTruthValue(V)
-          [structural]
 
 endmodule
 

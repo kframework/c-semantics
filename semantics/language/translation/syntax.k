@@ -3,6 +3,7 @@ module C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      syntax RValue ::= Hold
+     syntax KResult ::= LHold
 
      syntax KItem ::= "AnonymousName" // new, argument is type
      rule AnonymousName => #NoName [macro, structural]

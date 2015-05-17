@@ -6,7 +6,7 @@ module C-EXPR-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     rule cast(T':Type, e(K:K, _)) => e(K, T')
+     rule cast(T':Type, te(K:K, _)) => te(Cast(T', K), T')
 
 endmodule
 

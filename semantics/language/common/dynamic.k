@@ -15,7 +15,10 @@ module C-DYNAMIC-SYNTAX
 
      syntax LValue ::= lv(SymLoc, Type)
 
-     syntax Hold ::= e(K, Type)
+     syntax KItem ::= le(K, Type)
+     syntax Hold ::= te(K, Type)
+     syntax LHold ::= ncle(K, Type)
+
      syntax KItem ::= stripHold(K) [function]
 
      syntax RValue ::= "voidVal"
@@ -87,18 +90,24 @@ module C-DYNAMIC
      rule toRVal(V:RValue) => V
           [structural]
 
-     rule stripHold(e(K:K, _)) => K
+     rule stripHold(te(K:K, _)) => K
+     rule stripHold(le(K:K, _)) => K
+     rule stripHold(ncle(K:K, _)) => K
      rule stripHold(K:K) => K [owise]
 
      rule value(tv(V:CValue, _)) => V
      rule value(nclv(Loc:SymLoc, _)) => Loc
-     rule value(e(K:K, _)) => K
+     rule value(te(K:K, _)) => K
+     rule value(le(K:K, _)) => K
+     rule value(ncle(K:K, _)) => K
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
      rule type(lv(_, T:Type)) => T
      rule type(nclv(_, T:Type)) => T
-     rule type(e(_, T:Type)) => T
+     rule type(te(_, T:Type)) => T
+     rule type(le(_, T:Type)) => T
+     rule type(ncle(_, T:Type)) => T
 
      rule ExpressionLoc(K:K, _) => K
 

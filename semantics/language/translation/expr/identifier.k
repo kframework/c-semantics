@@ -15,7 +15,7 @@ module C-EXPR-IDENTIFIER
           requires notBool isLinkerLoc(Base)
                andBool Base =/=K symVal
           [structural]
-     rule <k> X:CId => e(X, T) ...</k>
+     rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> symVal ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
@@ -41,7 +41,8 @@ module C-EXPR-IDENTIFIER
           requires isLinkerLoc(Base)
           [structural]
 
-     rule instantiate(Loc:SymLoc, T:Type) => e(instantiate(Loc, T), T)
+     rule instantiate(Loc:SymLoc, T:Type)
+          => te(instantiate(Loc, T), T)
           requires notBool fromConstantExpr(T)
                orBool notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)

@@ -97,11 +97,11 @@ module C-EXPR-CONDITIONAL
      }*/
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
-     rule (types(trItem(T1:IntegerType) ts:: trItem(T2:PointerType)) => convertedType(T2))
-          ~> _ ? tv(0, T1) : _
+     rule (types(trItem(T1:IntegerType) ts:: trItem(T2:PointerType))
+          => convertedType(T2)) ~> _ ? tv(0, T1) : _
           [structural]
-     rule (types(trItem(T1:PointerType) ts:: trItem(T2:IntegerType)) => convertedType(T1))
-          ~> _? _ : tv(0, T2)
+     rule (types(trItem(T1:PointerType) ts:: trItem(T2:IntegerType))
+          => convertedType(T1)) ~> _? _ : tv(0, T2)
           [structural]
 
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
@@ -150,7 +150,7 @@ module C-EXPR-CONDITIONAL
      context evalConditional(_, _, HOLE => reval(HOLE)) [result(RValue)]
 
      rule evalConditional(C:RValue, E1:RValue, E2:RValue)
-          => e(stripHold(C) ? stripHold(E1) : stripHold(E2), type(E1))
+          => te(stripHold(C) ? stripHold(E1) : stripHold(E2), type(E1))
 
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))

@@ -25,8 +25,6 @@ module C-IO-DIRECT
      rule <k> writeBytes(_, _, _) => .K ...</k>
           <initializing> 0 </initializing>
           [structural]
-     rule writeBytes(symVal, _, _) => .K
-          [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
           => writeByte(Loc, V) ~>

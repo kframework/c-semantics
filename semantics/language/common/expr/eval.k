@@ -4,6 +4,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkLoc(SymLoc)
      syntax KItem ::= checkUse(K) [strict]
+     syntax Type ::= arrayToPtrType(Type) [function]
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -42,12 +43,17 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      // Lvalue conversion.
-     rule reval(nclv(Loc:SymLoc, T:Type) => checkUse(instantiate(Loc, T)))
+     rule reval(nclv(Loc:SymLoc, T:Type)
+          => checkUse(unqualify(instantiate(Loc, T))))
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
      rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
           [structural]
+
+     syntax KItem ::= unqualify(K) [strict]
+     rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripAtomic(stripQualifiers(T)))
+     rule unqualify(te(V:K, T:Type)) => te(V, stripAtomic(stripQualifiers(T)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -64,7 +70,6 @@ module C-COMMON-EXPR-EVAL
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
           [structural]
 
-     syntax Type ::= arrayToPtrType(Type) [function]
      rule arrayToPtrType(T:Type)
           => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
 

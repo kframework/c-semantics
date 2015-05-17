@@ -5,10 +5,10 @@ module C-EXPR-UNARY
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule + e(K:K, T:Type) => e( + K, T)
+     rule + te(K:K, T:Type) => te( + K, T)
           requires isPromoted(T) orBool isFloatType(T)
 
-     rule - e(K:K, T:Type) => e( - K, T)
+     rule - te(K:K, T:Type) => te( - K, T)
           requires isPromoted(T) orBool isFloatType(T)
 
 endmodule

@@ -256,24 +256,4 @@ module C-COMMON-EXPR-RELATIONAL
            andBool notBool sameBase(Loc, Loc')
           [structural]
 
-     //- comparison of ints with pointers
-     // fixme there are further restrictions on pointers
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':PointerType)
-          requires isPromoted(T)
-               andBool isNullPointerConstant(tv(N, T))
-          [structural]
-     rule tv(_, T:PointerType) == (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPromoted(T')
-               andBool isNullPointerConstant(tv(N, T'))
-          [structural]
-
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':PointerType)
-          requires isPromoted(T)
-               andBool isNullPointerConstant(tv(N, T))
-          [structural]
-     rule tv(_, T:PointerType) != (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPromoted(T')
-               andBool isNullPointerConstant(tv(N, T'))
-          [structural]
-
 endmodule

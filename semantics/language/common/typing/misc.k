@@ -13,8 +13,6 @@ module C-TYPING-MISC
 
      rule simpleType(t(_, T:SimpleType)) => T
 
-     rule simplifyTruth(V:K) => V != tv(0, t(SetItem(IntegerConstant), int))
-
      rule char => cfg:charAlias
 
      rule correspondingUnsignedType(t(S:Set, signed-char))
@@ -185,6 +183,11 @@ module C-TYPING-MISC
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
+     rule stripAtomic(t(Mods:Set, T:SimpleType))
+          => t(Mods -Set SetItem(Atomic), T)
+     rule stripAtomic(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(stripAtomic(T), X)
+
      rule stripFunctionSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set functionSpecifiers, T)
      rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
@@ -321,6 +324,7 @@ module C-TYPING-MISC
      rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
           requires getKLabel(K) =/=KLabel 'RestrictBlock
                andBool (K =/=K .K)
+     rule getRestrictBlock'(.K, .Set) => none
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 

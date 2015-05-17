@@ -21,10 +21,7 @@ module C-COMMON-EXPR-LOGICAL
      rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
-          => sequencePoint ~> simplifyTruth(E)
-          [structural]
-     rule (V:RValue => simplifyTruth(V)) && _
-          requires notBool isTruthValue(V)
+          => sequencePoint ~> E
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
@@ -38,12 +35,9 @@ module C-COMMON-EXPR-LOGICAL
      is not evaluated.
      }*/
      rule tv(0, t(_, int)) || E:K
-          => sequencePoint ~> simplifyTruth(E)
+          => sequencePoint ~> E
           [structural]
      rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
-          [structural]
-     rule (V:RValue => simplifyTruth(V)) || _
-          requires notBool isTruthValue(V)
           [structural]
 
 endmodule

@@ -4,9 +4,9 @@ module C-EXPR-INC-AND-DEC
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule e(K:K, T:Type) ++ => e(K ++, stripQualifiers(T))
+     rule ncle(K:K, T:Type) ++ => te(K ++, stripQualifiers(T))
 
-     rule e(K:K, T:Type) -- => e(K --, stripQualifiers(T))
+     rule ncle(K:K, T:Type) -- => te(K --, stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{
      The value of the operand of the prefix \cinline{++} operator is

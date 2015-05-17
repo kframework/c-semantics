@@ -3,13 +3,18 @@ module C-STMT-IF-THEN
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-EXPR-LOGICAL-SYNTAX
 
-     rule (.K => elaborate(TrueBr, FalseBr))
-               ~> IfThenElse(_:RValue, TrueBr:K, FalseBr:K)
-     rule <k> (elaborateDone(TrueBr:K, FalseBr:K) ~> IfThenElse(Cond:RValue, _, _))
+     rule IfThenElse(C:RValue, TrueBr:K, FalseBr:K)
+          => #if(simplifyTruth(C), TrueBr, FalseBr)
+
+     syntax KItem ::= #if(K, K, K)
+     context #if((HOLE => reval(HOLE)), _, _)
+     rule (.K => elaborate(TrueBr, FalseBr)) ~> #if(_:RValue, TrueBr:K, FalseBr:K)
+     rule <k> elaborateDone(TrueBr:K, FalseBr:K) ~> #if(C:RValue, _, _)
                => .K
           ...</k>
-          <elab>... .K => IfThenElse(Cond, TrueBr, FalseBr) </elab>
+          <elab>... .K => IfThenElse(C, TrueBr, FalseBr) </elab>
 
 endmodule
 

@@ -6,10 +6,10 @@ module C-STMT-STATIC-ASSERT
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
 
-     context StaticAssert(HOLE, _)
+     context StaticAssert((HOLE => reval(HOLE)), _)
      rule StaticAssert(tv(N:Int, _), _) => .K
           requires N =/=Int 0
-     rule StaticAssert(tv(symVal, _), _)
+     rule StaticAssert(te(_, _), _)
           => CV("SSA1",
                "Non-constant expression in static assertion.",
                "6.7.10:2")

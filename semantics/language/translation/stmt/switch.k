@@ -24,7 +24,7 @@ module C-STMT-SWITCH
      \cinline{default} label, no part of the switch body is executed.
      }*/
      rule <k> Switch(SN:Int, V:RValue, _) => .K ...</k>
-          <elab>... .K => Switch(SN, e(cast(promote(type(V)), V), promote(type(V))), .K) </elab>
+          <elab>... .K => Switch(SN, te(cast(promote(type(V)), V), promote(type(V))), .K) </elab>
           requires isIntegerType(type(V))
 
 endmodule

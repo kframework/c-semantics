@@ -55,7 +55,7 @@ module C-EXECUTION-INIT
      }*/
 
      // TODO(chathhorn): move
-     rule e(K:K, _) => K
+     rule V:Hold => value(V)
           [structural]
 
      syntax RValue ::= "NullPointerConstant" [function]

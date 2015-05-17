@@ -23,6 +23,7 @@ require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/conditional.k"
 require "expr/conversion.k"
+require "expr/eval.k"
 require "expr/function-call.k"
 require "expr/identifier.k"
 require "expr/inc-and-dec.k"
@@ -72,6 +73,7 @@ module C-TRANSLATION
      imports C-EXPR-BITWISE
      imports C-EXPR-CONDITIONAL
      imports C-EXPR-CONVERSION
+     imports C-EXPR-EVAL
      imports C-EXPR-FUNCTION-CALL
      imports C-EXPR-IDENTIFIER
      imports C-EXPR-INC-AND-DEC

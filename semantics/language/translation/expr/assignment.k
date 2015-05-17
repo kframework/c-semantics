@@ -9,10 +9,12 @@ module C-EXPR-ASSIGNMENT
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
@@ -54,42 +56,42 @@ module C-EXPR-ASSIGNMENT
      the right is a pointer.
 
      }*/
-     rule nclv(_, T':ArithmeticType) := (tv(V:CValue, T:ArithmeticType) => cast(T', tv(V, T)))
-          requires (getQualifiers(T) ==K .Set)
-               andBool (T' =/=Type T)
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
+               andBool (getQualifiers(type(R)) ==K .Set)
+               andBool (type(L) =/=Type type(R))
 
-     rule nclv(_, T':StructOrUnionType) := (tv(V:CValue, T:Type) => cast(T', tv(V, T)))
-          requires areCompatible(stripQualifiers(T'), T)
-               andBool (T' =/=Type T)
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isStructOrUnionType(type(L))
+               andBool areCompatible(stripQualifiers(type(L)), type(R))
+               andBool (type(L) =/=Type type(R))
 
-     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
-               := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
-               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          requires areCompatible(
-                    stripQualifiers(stripAlignas(T')),
-                    stripQualifiers(stripAlignas(T)))
-               andBool getQualifiers(T) <=Set getQualifiers(T')
-               andBool t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T))
-               andBool getAlignas(T') <=Int getAlignas(T)
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool areCompatible(
+                    stripQualifiers(stripAlignas(innerType(type(L)))),
+                    stripQualifiers(stripAlignas(innerType(type(R)))))
+               andBool getQualifiers(innerType(type(R)))
+                    <=Set getQualifiers(innerType(type(L)))
+               andBool getAlignas(innerType(type(L)))
+                    <=Int getAlignas(innerType(type(R)))
+               andBool (type(L) =/=Type type(R))
 
-     rule nclv(_, t(Mods':Set, pointerType(T':Type)))
-               := (tv(V:CValue, t(Mods:Set, pointerType(T:Type)))
-               => cast(t(Mods', pointerType(T')), tv(V, t(Mods, pointerType(T)))))
-          requires (isVoidType(T') orBool isVoidType(T))
-               andBool (getQualifiers(T) <=Set getQualifiers(T'))
-               andBool (t(Mods', pointerType(T')) =/=Type t(Mods, pointerType(T)))
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool (isVoidType(innerType(type(L)))
+                    orBool isVoidType(innerType(type(R))))
+               andBool (getQualifiers(innerType(type(R)))
+                    <=Set getQualifiers(innerType(type(L))))
+               andBool (type(L) =/=Type type(R))
 
-     rule nclv(_, T':PointerType) := (V:RValue => cast(T', V))
-          requires isNullPointerConstant(V)
-               andBool (T' =/=Type type(V))
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isPointerType(type(L))
+               andBool isNullPointerConstant(R)
+               andBool (type(L) =/=Type type(R))
 
-     rule nclv(_, T':BoolType) := (tv(V:CValue, T:PointerType) => cast(T', tv(V, T)))
-          [structural]
+     rule L:KResult := (R:RValue => cast(type(L), R))
+          requires isBoolType(type(L)) andBool isPointerType(type(R))
 
      /*@ \fromStandard{\source[n1570]{\para{6.6}{3}}}{
      Constant expressions shall not contain assignment, increment, decrement,
@@ -97,36 +99,44 @@ module C-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule nclv(_, T':Type => stripConstants(T')) := tv(_:CValue, T:Type => stripConstants(T))
-          requires fromConstantExpr(T') orBool fromConstantExpr(T)
+     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
+          requires fromConstantExpr(T)
+     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
+          requires fromConstantExpr(T)
 
-     rule (.K => CV("CEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
-          ~> nclv(_, T':Type) := tv(V:CValue, T:Type)
-          requires (isPointerType(T') andBool notBool isPointerType(T)
-                    andBool notBool isNullPointerConstant(tv(V, T)))
-               orBool isArithmeticType(T') andBool notBool isArithmeticType(T)
-               orBool ((isStructOrUnionType(T'))
-               andBool notBool areCompatible(stripQualifiers(T'), T))
-               orBool (isBoolType(T') andBool notBool isPointerType(T))
-               orBool notBool (isPointerType(T') orBool isArithmeticType(T')
-                    orBool isStructOrUnionType(T') orBool isBoolType(T'))
+     rule (.K => CV("TEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
+          ~> L:KResult := R:RValue
+          requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))
+                    andBool notBool isNullPointerConstant(R))
+               orBool isArithmeticType(type(L))
+                    andBool notBool isArithmeticType(type(R))
+               orBool isStructOrUnionType(type(L))
+                    andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
+               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+               orBool notBool (isPointerType(type(L))
+                    orBool isArithmeticType(type(L))
+                    orBool isStructOrUnionType(type(L))
+                    orBool isBoolType(type(L)))
 
-     rule (.K => CV("CEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
-          ~> nclv(_, T':PointerType) := tv(_, T:PointerType)
-          requires notBool isVoidType(innerType(T'))
-               andBool notBool isVoidType(innerType(T))
+     rule (.K => CV("TEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
+          ~> L:KResult := R:RValue
+          requires (isPointerType(type(L)) andBool isPointerType(type(R)))
+               andBool notBool isVoidType(innerType(type(L)))
+               andBool notBool isVoidType(innerType(type(R)))
                andBool (
                     notBool areCompatible(
-                         stripQualifiers(stripAlignas(innerType(T'))),
-                         stripQualifiers(stripAlignas(innerType(T))))
-                    orBool notBool (getQualifiers(innerType(T)) <=Set getQualifiers(innerType(T')))
-                    orBool getAlignas(innerType(T')) >Int getAlignas(innerType(T))
+                         stripQualifiers(stripAlignas(innerType(type(L)))),
+                         stripQualifiers(stripAlignas(innerType(type(R)))))
+                    orBool notBool (getQualifiers(innerType(type(R)))
+                         <=Set getQualifiers(innerType(type(L))))
+                    orBool getAlignas(innerType(type(L)))
+                         >Int getAlignas(innerType(type(R)))
                )
-     rule (.K => CV("CEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
-          ~> tv(_, _) := tv(_, _)
+     rule (.K => CV("TEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
+          ~> tv(_, _) := _:RValue
 
-     rule (.K => UNDEF("CEAS4", "void value as right operand in assignment", "6.3.2.2"))
-          ~> nclv(_, _) := voidVal
+     rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2"))
+          ~> _ := voidVal
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
      In simple assignment (\cinline{=}), the value of the right operand is
@@ -154,36 +164,28 @@ module C-EXPR-ASSIGNMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
 
-     rule E1:KResult *= E2:KResult => E1 := toRVal(E1) * E2
-          [structural]
-     rule E1:KResult /= E2:KResult => E1 := toRVal(E1) / E2
-          [structural]
-     rule E1:KResult %= E2:KResult => E1 := toRVal(E1) % E2
-          [structural]
-     rule E1:KResult += E2:KResult => E1 := toRVal(E1) + E2
-          [structural]
-     rule E1:KResult -= E2:KResult => E1 := toRVal(E1) - E2
-          [structural]
-     rule E1:KResult <<= E2:KResult => E1 := toRVal(E1) << E2
-          [structural]
-     rule E1:KResult >>= E2:KResult => E1 := toRVal(E1) >> E2
-          [structural]
-     rule E1:KResult &= E2:KResult => E1 := toRVal(E1) & E2
-          [structural]
-     rule E1:KResult ^= E2:KResult => E1 := toRVal(E1) ^ E2
-          [structural]
-     rule E1:KResult |= E2:KResult => E1 := toRVal(E1) | E2
-          [structural]
+     rule E1:KResult *= E2:RValue => E1 := toRVal(E1) * E2
+     rule E1:KResult /= E2:RValue => E1 := toRVal(E1) / E2
+     rule E1:KResult %= E2:RValue => E1 := toRVal(E1) % E2
+     rule E1:KResult += E2:RValue => E1 := toRVal(E1) + E2
+     rule E1:KResult -= E2:RValue => E1 := toRVal(E1) - E2
+     rule E1:KResult <<= E2:RValue => E1 := toRVal(E1) << E2
+     rule E1:KResult >>= E2:RValue => E1 := toRVal(E1) >> E2
+     rule E1:KResult &= E2:RValue => E1 := toRVal(E1) & E2
+     rule E1:KResult ^= E2:RValue => E1 := toRVal(E1) ^ E2
+     rule E1:KResult |= E2:RValue => E1 := toRVal(E1) | E2
 
      rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
           => write(Loc, V, T)
           ~> tv(V, T)
-          requires T ==Type T'
-
-     // TODO(chathhorn): check types and whatnot (2trans)
-     rule e(L:K, T:Type) := e(R:K, _) => e(L := R, T)
-     rule e(L:K, T:Type) := tv(V:CValue, T':Type) => e(L := tv(V, T'), T)
-     rule nclv(Loc:SymLoc, T:Type) := e(R:K, _) => e(nclv(Loc, T) := R, T)
+          requires notBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(T')
+               andBool (T ==Type T')
+     rule L:KResult := R:RValue => te(stripHold(L) := stripHold(R), type(L))
+          requires (isLHold(L) orBool isHold(R))
+               andBool notBool fromConstantExpr(type(L))
+               andBool notBool fromConstantExpr(type(R))
+               andBool (type(L) ==Type type(R))
 
 endmodule
 

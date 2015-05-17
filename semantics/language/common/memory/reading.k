@@ -80,23 +80,23 @@ module C-MEMORY-READING
                andBool (#hasTrap(L) =/=K true)
           [structural]
      rule concretize(T:Type, dataList(L:List))
-          => tv(unknown, stripQualifiers(T))
+          => tv(unknown, T)
           requires (#hasUnknown(L) ==K true)
                andBool (#hasTrap(L) =/=K true)
                andBool notBool isStructOrUnionType(T)
           [structural]
      rule concretize(T:Type, dataList(L:List))
-          => trap(stripQualifiers(T))
+          => trap(T)
           requires (#hasTrap(L) ==K true)
                andBool notBool isUCharType(T)
                andBool notBool isStructOrUnionType(T)
           [structural]
      rule concretize(T:UCharType, dataList(L:List))
-          => tv(unknown, stripQualifiers(T))
+          => tv(unknown, T)
           requires (#hasTrap(L) ==K true)
           [structural]
      rule concretize(T:StructOrUnionType, dataList(L:List))
-          => tv(agg(L), stripQualifiers(T))
+          => tv(agg(L), T)
           [structural]
 
      syntax Bool ::= #hasUnknown(List) [function]
@@ -128,7 +128,7 @@ module C-MEMORY-READING
                ListItem(piece(0, NBits:Int)) L:List)
           => joinFloatBytes(T, 0.0, Len +Int NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
-          => tv(F, stripQualifiers(T))
+          => tv(F, T)
           requires Len ==Int bitSizeofType(T):>Int
 
      syntax RValue ::= joinPointerBytes(Type, List) [function]
@@ -143,13 +143,13 @@ module C-MEMORY-READING
           requires (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
      rule joinPointerBytes-aux(T:Type, .List, subObject(Loc:SymLoc, 0, _))
-          => tv(Loc, stripQualifiers(T))
+          => tv(Loc, T)
      rule joinPointerBytes-aux(T:Type,
                ListItem(piece(0, Len:Int)) L:List, 0)
           => joinPointerBytes-aux(T, L, 0)
           requires (Len ==Int cfg:bitsPerByte)
      rule joinPointerBytes-aux(T:Type, .List, 0)
-          => tv(NullPointer, stripQualifiers(T))
+          => tv(NullPointer, T)
 
      syntax RValue ::= joinIntegerBytes(Type, List) [function]
      syntax RValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -163,7 +163,7 @@ module C-MEMORY-READING
           => joinIntegerBytes-aux(T,
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
      rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int))
-          => interpret(stripQualifiers(T), piece(N, Len))
+          => interpret(T, piece(N, Len))
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
@@ -173,7 +173,7 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(Type, K) [function]
      syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T:IntegerType, I:Int) => tv(I, stripQualifiers(T))
+     rule interpret-aux(T:IntegerType, I:Int) => tv(I, T)
           requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
      rule interpret-aux(T:IntegerType, I:Int)
