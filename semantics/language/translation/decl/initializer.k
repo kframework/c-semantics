@@ -16,6 +16,7 @@ module C-DECL-INITIALIZER
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
@@ -85,16 +86,20 @@ module C-DECL-INITIALIZER
      // base types
      rule figureInit(X:CId, T:Type, SingleInit(K:K))
           => figureInit-aux(X, T,
-               initializer(Computation(X := K)))
+               #initializer(Computation(ncle(X, T) := K)))
           requires notBool isArrayType(T)
           [structural]
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
           => figureInit-aux(X, T,
-               initializer(Computation(X := K)))
+               #initializer(Computation(ncle(X, T) := K)))
           requires notBool isAggregateOrUnionType(T)
           [structural]
+
+     syntax KItem ::= #initializer(K)
+     rule (.K => elaborate(K)) ~> #initializer(K:K)
+     rule elaborateDone(K:K) ~> #initializer(_) => initializer(K)
 
      rule (.K => UNDEF("CDI1",
                "Initializer for scalar contains multiple expressions", "6.7.9:11"))
@@ -129,10 +134,9 @@ module C-DECL-INITIALIZER
                orElseBool (getKLabel(K) =/=KLabel 'handleBuiltinConstant)
           [structural]
 
-     rule <k> figureInit-aux(_:CId, t(_,
-                    (incompleteArrayType(T:Type)
-                    => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T):>Int))), initializer(handleBuiltinConstant(Identifier(S:String), _)))
-          ...</k>
+     rule figureInit-aux(_:CId, t(_, (incompleteArrayType(T:Type)
+          => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T):>Int))),
+               initializer(handleBuiltinConstant(Identifier(S:String), _)))
           requires S in keys(nativeDefinedBuiltins)
           [structural]
 
@@ -150,11 +154,11 @@ module C-DECL-INITIALIZER
                 | fillInits(List)
                 | "fillInit-aux" "(" K ")"
 
-     rule <k> getInit => initializer(K:K) ...</k>
+     rule <k> (.K => elaborate(K)) ~> getInit ...</k>
           <saved-init> K:K => .K </saved-init>
           <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
-          [structural]
+     rule elaborateDone(K:K) ~> getInit => initializer(K)
 
      syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))
@@ -167,8 +171,12 @@ module C-DECL-INITIALIZER
           <curr-object>
                .List => ListItem(te(X, T))
           </curr-object>
-          <saved-init>... .K => zero(X) </saved-init>
+          <saved-init>... .K => #zero(X) </saved-init>
           [structural]
+
+     syntax KItem ::= #zero(CId)
+     rule <k> #zero(X:CId) => .K ...</k>
+          <elab>... .K => zero(X) </elab>
 
      rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
@@ -397,7 +405,7 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               .K => Computation(K := K')
+               .K => Computation(ncle(K, T) := K')
           </saved-init>
           requires (isBasicType(T)
                     orBool isPointerType(T)
@@ -442,13 +450,14 @@ module C-DECL-INITIALIZER
      rule <k> initFromStructRHS(K':K, t(_, structType(S:StructId))) => .K ...</k>
           <curr-subobject>
                ListItem(findStruct(t(_, structType(S:StructId))))
-                    ListItem(te(K:K, t(_, structType(S:StructId)))) => ListItem(next)
+               ListItem(te(K:K, t(Mods:Set, structType(S:StructId))))
+               => ListItem(next)
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               .K => Computation(K := K')
+               .K => Computation(ncle(K, t(Mods, structType(S))) := K')
           </saved-init>
           [structural]
 

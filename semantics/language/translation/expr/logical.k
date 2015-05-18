@@ -13,9 +13,8 @@ module C-EXPR-LOGICAL
      rule simplifyTruth(V:K) => V != tv(0, t(SetItem(IntegerConstant), int))
 
      context _ && (HOLE => reval(HOLE)) [result(RValue)]
-     rule te(L:K, _) && te(R:K, _) => #and(simplifyTruth(L), simplifyTruth(R))
-     rule te(L:K, _) && tv(V:CValue, T:Type)
-          => #and(simplifyTruth(L), simplifyTruth(tv(V, T)))
+     rule L:RValue && R:RValue
+          => #and(simplifyTruth(stripHold(L)), simplifyTruth(stripHold(R)))
 
      syntax KItem ::= #and(K, K)
      context #and((HOLE => reval(HOLE)), _) [result(RValue)]
@@ -24,9 +23,8 @@ module C-EXPR-LOGICAL
           => te(stripHold(L) && stripHold(R), t(.Set, int))
 
      context _ || (HOLE => reval(HOLE)) [result(RValue)]
-     rule te(L:K, _) || te(R:K, _) => #or(simplifyTruth(L), simplifyTruth(R))
-     rule te(L:K, _) || tv(V:CValue, T:Type)
-          => #or(simplifyTruth(L), simplifyTruth(tv(V, T)))
+     rule L:RValue || R:RValue
+          => #or(simplifyTruth(stripHold(L)), simplifyTruth(stripHold(R)))
 
      syntax KItem ::= #or(K, K)
      context #or((HOLE => reval(HOLE)), _) [result(RValue)]

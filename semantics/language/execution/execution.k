@@ -21,6 +21,7 @@ require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/identifier.k"
 require "expr/inc-and-dec.k"
+require "expr/logical.k"
 require "expr/sequencing.k"
 
 require "decl/local.k"
@@ -47,8 +48,9 @@ module C-EXECUTION
      imports C-EXPR-ASSIGNMENT
      imports C-EXPR-CONDITIONAL
      imports C-EXPR-FUNCTION-CALL
-     imports C-EXPR-INC-AND-DEC
      imports C-EXPR-IDENTIFIER
+     imports C-EXPR-INC-AND-DEC
+     imports C-EXPR-LOGICAL
      imports C-EXPR-SEQUENCING
 
      imports C-DECL-LOCAL

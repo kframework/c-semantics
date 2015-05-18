@@ -4,10 +4,6 @@ module C-EXPR-INC-AND-DEC
      imports C-TYPING-SYNTAX
      imports C-MEMORY-READING-SYNTAX
 
-     syntax KItem ::= postOpRef(K, KLabel)
-     syntax KItem ::= postInc(SymLoc, K, Type) [strict(2)]
-     syntax KItem ::= postDec(SymLoc, K, Type) [strict(2)]
-
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{2}}}{
      The result of the postfix \cinline{++} operator is the value of the
      operand. As a side effect, the value of the operand object is incremented
@@ -21,23 +17,17 @@ module C-EXPR-INC-AND-DEC
      with atomic type is a read-modify-write operation with
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
-     rule nclv(Loc:SymLoc, T:Type) ++ => postInc(Loc, read(Loc, T), T)
-          [structural]
-     rule postInc(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
-          => lv(Loc, T') := tv(V, T) + tv(1, t(.Set, int))
-               ~> discard ~> tv(V, T)
-          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{3}}}{
      The postfix \cinline{--} operator is analogous to the postfix \cinline{++}
      operator, except that the value of the operand is decremented (that is,
      the value 1 of the appropriate type is subtracted from it).
      }*/
-     rule nclv(Loc:SymLoc, T:Type) -- => postDec(Loc, read(Loc, T), T)
-          [structural]
-     rule postDec(Loc:SymLoc, tv(V:CValue, T:Type), T':Type)
-          => lv(Loc, T') := tv(V, T) - tv(1, t(.Set, int))
-               ~> discard ~> tv(V, T)
+
+     context postOp((HOLE => reval(HOLE)), _) [result(RValue)]
+     rule postOp(V:RValue, Assign:K)
+          => Assign ~> discard ~> V
           [structural]
 
 endmodule
+

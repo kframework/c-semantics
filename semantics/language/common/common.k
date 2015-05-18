@@ -27,7 +27,6 @@ require "expr/alignof.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
-require "expr/logical.k"
 require "expr/members.k"
 require "expr/multiplicative.k"
 require "expr/reference.k"
@@ -68,7 +67,6 @@ module C-COMMON
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST
      imports C-COMMON-EXPR-EVAL
-     imports C-COMMON-EXPR-LOGICAL
      imports C-COMMON-EXPR-MEMBERS
      imports C-COMMON-EXPR-MULTIPLICATIVE
      imports C-COMMON-EXPR-REFERENCE

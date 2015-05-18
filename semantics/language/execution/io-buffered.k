@@ -309,11 +309,6 @@ module C-IO-BUFFERED
                andBool isNativeLoc(Loc)
           [structural]
 
-     // Resolve a linker address to a real "physical" address.
-     rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
-          <linkings>... LinkBase |-> Base:SymBase ...</linkings>
-          [structural]
-
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc)

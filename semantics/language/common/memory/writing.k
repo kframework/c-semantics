@@ -52,6 +52,7 @@ module C-MEMORY-WRITING
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
+               andBool notBool isLinkerLoc(Loc)
           [ndtrans]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
@@ -59,7 +60,19 @@ module C-MEMORY-WRITING
           <initializing> I:Int </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool I >Int 0
+               andBool notBool isLinkerLoc(Loc)
           [ndtrans]
+     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
+              => write-specific(Loc, V, T)
+          ...</k>
+          requires isNativeLoc(Loc)
+          [ndtrans]
+     rule <k> write(loc((Base:SymBase => Base'), _), _, _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
+     rule <k> write(loc((Base:SymBase => Base'), _, _), _, _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
      rule <k> (.K => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
                ~> write(_, _, T:Type)
           ...</k>
@@ -72,10 +85,6 @@ module C-MEMORY-WRITING
           <initializing> 0 </initializing>
           requires isStringLoc(Loc)
           [structural]
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-              => write-specific(Loc, V, T)
-          ...</k>
-          requires isNativeLoc(Loc)
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)

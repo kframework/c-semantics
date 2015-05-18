@@ -54,8 +54,11 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
 
-     // TODO(chathhorn): move
      rule V:Hold => value(V)
+          [structural]
+     rule L:LHold => value(L)
+          [structural]
+     rule compoundExp(K:K) => K
           [structural]
 
      syntax RValue ::= "NullPointerConstant" [function]

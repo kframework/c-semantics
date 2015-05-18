@@ -19,14 +19,16 @@ endmodule
 
 module C-DECL-GLOBAL
      imports C-DECL-GLOBAL-SYNTAX
-
-     imports C-ABSTRACT-SYNTAX
-     imports C-BITSIZE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
+     imports C-DECL-ZERO-SYNTAX
+
+     imports C-ABSTRACT-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-FUNCTION-DEF-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
@@ -533,7 +535,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(K)
+          ~> allowInit(stripInitHolds(K))
           requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
@@ -544,7 +546,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(K)
+          ~> allowInit(stripInitHolds(K))
           requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
@@ -554,7 +556,7 @@ module C-DECL-GLOBAL
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(K)
+          ~> allowInit(stripInitHolds(K))
           requires isCompleteType(T)
                andBool K =/=K .K
           [structural]
@@ -566,6 +568,15 @@ module C-DECL-GLOBAL
                initialized, _, _)
           requires  K =/=K .K
           [structural]
+
+     syntax K ::= stripInitHolds(K) [function]
+     rule stripInitHolds(Computation(Init:K) ~> K:K)
+          => Computation(stripHold(Init)) ~> stripInitHolds(K)
+     rule stripInitHolds(zero(X:CId) ~> K:K)
+          => zero(X) ~> stripInitHolds(K)
+     rule stripInitHolds(initFunction(Fun:K, B:K) ~> K:K)
+          => initFunction(Fun, B) ~> stripInitHolds(K)
+     rule stripInitHolds(.K) => .K
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)
      rule <k> updateDecl(X:CId, external, S':DeclState)

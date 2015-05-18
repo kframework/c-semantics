@@ -1,12 +1,17 @@
 module C-EXPR-INC-AND-DEC
+     imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule ncle(K:K, T:Type) ++ => te(K ++, stripQualifiers(T))
+     rule (.K => elabExp(L := L + tv(1, t(.Set, int)))) ~> L:KResult ++
+     rule elabExp(V:KResult) ~> L:KResult ++ => postOp(L, V)
 
-     rule ncle(K:K, T:Type) -- => te(K --, stripQualifiers(T))
+     rule (.K => elabExp(L := L - tv(1, t(.Set, int)))) ~> L:KResult --
+     rule elabExp(V:KResult) ~> L:KResult -- => postOp(L, V)
+
+     rule postOp(L:K, V:K) => te(postOp(L, V), type(L))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{
      The value of the operand of the prefix \cinline{++} operator is
@@ -16,12 +21,12 @@ module C-EXPR-INC-AND-DEC
      assignment for information on constraints, types, side effects, and
      conversions and the effects of operations on pointers.
      }*/
-     rule ++ E:K => E += tv(1, t(.Set, int)) [structural]
+     rule ++ E:K => E += tv(1, t(.Set, int))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{3}}}{
      The prefix \cinline{--} operator is analogous to the prefix \cinline{++}
      operator, except that the value of the operand is decremented.
      }*/
-     rule -- E:K => E -= tv(1, t(.Set, int)) [structural]
+     rule -- E:K => E -= tv(1, t(.Set, int))
 
 endmodule

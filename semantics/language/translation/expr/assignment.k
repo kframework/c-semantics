@@ -175,12 +175,25 @@ module C-EXPR-ASSIGNMENT
      rule E1:KResult ^= E2:RValue => E1 := toRVal(E1) ^ E2
      rule E1:KResult |= E2:RValue => E1 := toRVal(E1) | E2
 
-     rule nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
-          => write(Loc, V, T)
-          ~> tv(V, T)
+     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
+               => write(Loc, V, T)
+               ~> tv(V, T)
+          ...</k>
+          <initializing> N:Int </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
+               andBool notBool isLinkerLoc(Loc)
+               andBool (N >Int 0)
                andBool (T ==Type T')
+     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
+               => te(nclv(Loc, T) := tv(V, T'), T)
+          ...</k>
+          <initializing> N:Int </initializing>
+          requires notBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(T')
+               andBool (isLinkerLoc(Loc) orBool (N ==Int 0))
+               andBool (T ==Type T')
+
      rule L:KResult := R:RValue => te(stripHold(L) := stripHold(R), type(L))
           requires (isLHold(L) orBool isHold(R))
                andBool notBool fromConstantExpr(type(L))

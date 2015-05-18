@@ -6,13 +6,23 @@ module C-ELABORATOR-SYNTAX
 
      syntax KItem ::= elaborateDone(K)
      syntax KItem ::= elaborateDone(K, K)
+
+     syntax KItem ::= elabExp(K)
 endmodule
 
 module C-ELABORATOR
      imports C-ELABORATOR-SYNTAX
 
+     imports C-DYNAMIC-SYNTAX
+
      syntax KItem ::= waitingOn(CId)
      syntax CId ::= subElab(Int)
+
+     context elabExp((HOLE => reval(HOLE))) [result(RValue)]
+
+     rule (.K => K) ~> compoundExp(K:K)
+     rule R:KResult ~> compoundExp(K:K)
+          => te(compoundExp(K), type(R))
 
      rule <k> elaborate(K:K) => waitingOn(subElab(!E:Int)) ...</k>
           <control-details> C:Bag </control-details>

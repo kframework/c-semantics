@@ -56,6 +56,7 @@ module C-EXPR-FUNCTION-CALL
      // Resolve a linker loc to a real loc.
      rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
 
      rule <k> Call(
                tv(loc(Base:SymBase, 0), t(_, pointerType(T:FunctionType))),
@@ -69,6 +70,7 @@ module C-EXPR-FUNCTION-CALL
                     | #revalParams(HeatList) [strict]
      //TODO(liyili2): context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
+          [structural]
 
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
           requires isAllKResultInHeatList(HL)

@@ -12,17 +12,16 @@ module C-EXPR-SEQUENCING
           => toRVal(K) ~> comma ~> commaListHolder(CL) ~> Comma(list(L))
           requires L =/=MSet .List
 
-     rule (R:RValue ~> comma => .K)
-          ~> commaListHolder(_ ~> (.K => toRVal(stripHold(R)) ~> comma))
+     rule (toRVal(R:RValue) ~> comma => .K)
+          ~> commaListHolder(_ ~> (.K => stripHold(R) ~> comma))
           requires isHold(R)
-     rule (R:RValue ~> comma => .K)
+     rule (toRVal(R:RValue) ~> comma => .K)
           ~> commaListHolder(_)
           requires notBool isHold(R)
 
      rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K)))
           => toRVal(K) ~> commaListHolder(CL)
-
-     rule R:RValue ~> commaListHolder(CL:K)
-          => te(CL ~> toRVal(stripHold(R)), type(R))
+     rule toRVal(R:RValue) ~> commaListHolder(CL:K)
+          => te(compoundExp(CL ~> stripHold(R)), type(R))
 
 endmodule

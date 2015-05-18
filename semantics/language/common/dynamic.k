@@ -18,6 +18,7 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= le(K, Type)
      syntax Hold ::= te(K, Type)
      syntax LHold ::= ncle(K, Type)
+     syntax CompoundExpression ::= compoundExp(K)
 
      syntax KItem ::= stripHold(K) [function]
 
@@ -77,6 +78,8 @@ module C-DYNAMIC-SYNTAX
 
      syntax KResult ::= initValue(CId, Type, K)
      syntax KItem ::= allowInit(K)
+
+     syntax KItem ::= postOp(K, K)
 
 endmodule
 

@@ -1,4 +1,4 @@
-module C-COMMON-EXPR-LOGICAL
+module C-EXPR-LOGICAL
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

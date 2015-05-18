@@ -45,7 +45,14 @@ module C-MEMORY-READING
           requires notBool isThreadDuration(Loc)
                andBool notBool isAutoDuration(Loc)
                andBool Loc =/=K NullPointer
+               andBool notBool isLinkerLoc(Loc)
           [ndtrans]
+     rule <k> read(loc((Base:SymBase => Base'), _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
+     rule <k> read(loc((Base:SymBase => Base'), _, _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
 
      syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc:SymLoc, T:Type)
