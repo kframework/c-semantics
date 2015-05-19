@@ -119,7 +119,7 @@ module C-FUNCTION-DEF
      rule checkMainDef(t(_, functionType(t(_, int),
                ListItem(t(_, int)) ListItem(T:Type))))
           => .K
-          requires #isArgvType(T) ==K true
+          requires isArgvType(T)
           [structural]
      rule (.K => CV("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1"))
           ~> checkMainDef(T:Type)
@@ -135,7 +135,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (.K => CV("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
-          requires #isArgvType(T) =/=K true
+          requires notBool isArgvType(T)
           [structural]
      rule (.K => CV("FD8", "main must have zero or two parameters.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
@@ -146,14 +146,14 @@ module C-FUNCTION-DEF
           requires T =/=K void
           [structural]
 
-     syntax Bool ::= #isArgvType(Type) [function]
-     rule #isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
+     syntax Bool ::= isArgvType(Type) [function]
+     rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
           requires T ==K char // char is an alias.
-     rule #isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
+     rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
           => true
           requires T ==K char
-     rule #isArgvType(_) => false [owise]
+     rule isArgvType(_) => false [owise]
 
      rule <k> initFunction(
                tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), Fun:KResult)

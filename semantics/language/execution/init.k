@@ -71,20 +71,19 @@ module C-EXECUTION-INIT
 
      syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
-     rule incomingArguments(L:List)
-          => incomingArguments-aux(L, 0)
+     rule incomingArguments(L:List) => incomingArguments-aux(L, 0)
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
           => allocObject(N +Int 1 @ argv, strType(S))
           ~> writeString(lnew(N +Int 1 @ argv, getAlignas(strType(S))), S)
           ~> allowInit(Computation(
-               Identifier("#incomingArgumentsArray")[N]
+               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
                     := lv(lnew(N +Int 1 @ argv, getAlignas(strType(S))), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)
           => allowInit(Computation(
-               Identifier("#incomingArgumentsArray")[N]
+               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
                     := NullPointerConstant))
           [structural]
 

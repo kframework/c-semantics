@@ -53,8 +53,8 @@ module C-PROMOTION
                      R:KLabel(_,, (T':Type => stripConstants(T'))))
           requires isArithBinOp(Lbl)
                andBool (T ==Type T')
-               andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
-               andBool (L ==KLabel 'tv orBool L ==KLabel 'e)
-               andBool (R ==KLabel 'tv orBool R ==KLabel 'e)
+               andBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
+               andBool (L ==KLabel 'tv orBool L ==KLabel 'te)
+               andBool (R ==KLabel 'tv orBool R ==KLabel 'te)
 
 endmodule
