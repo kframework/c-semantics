@@ -150,7 +150,10 @@ module C-EXPR-CONDITIONAL
      context evalConditional(_, _, HOLE => reval(HOLE)) [result(RValue)]
 
      rule evalConditional(C:RValue, E1:RValue, E2:RValue)
-          => te(stripHold(C) ? stripHold(E1) : stripHold(E2), type(E1))
+          => te(stripHold(C) ? stripHold(E1) : stripHold(E2), stripConstants(type(E1)))
+          requires isHold(C)
+     rule evalConditional(tv(1, t(_, int)), E:RValue, _) => E
+     rule evalConditional(tv(0, t(_, int)), _, E:RValue) => E
 
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
           types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))

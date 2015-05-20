@@ -11,7 +11,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax KItem ::= allocString(SymBase, String)
      syntax KItem ::= allocWString(SymBase, List)
 
-     syntax KItem ::= alloc(SymBase, Type, CSize)
+     syntax KItem ::= alloc(SymBase, Type, Int)
 
      syntax KItem ::= zeroObject(SymBase)
 
@@ -59,7 +59,13 @@ module C-MEMORY-ALLOC
           [structural]
 
      rule allocObject(Base:SymBase, T:Type)
-          => alloc(Base, T, byteSizeofType(T))
+          => #allocObject(Base, T, sizeofType(T))
+          [structural]
+
+     syntax KItem ::= #allocObject(SymBase, Type, K)
+     context #allocObject(_, _, (HOLE => reval(HOLE))) [result(RValue)]
+     rule #allocObject(Base:SymBase, T:Type, V:RValue)
+          => alloc(Base, T, value(V))
           [structural]
 
      rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>

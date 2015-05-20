@@ -98,7 +98,7 @@ module C-BINDING
           [structural]
 
      syntax KItem ::= bindVariadics(List, Int)
-     rule (.K => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
+     rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))
           ~> bindVariadics(
                (ListItem(V:RValue) => .List) _,
                (N:Int => N +Int 1))

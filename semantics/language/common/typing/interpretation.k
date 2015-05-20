@@ -28,43 +28,37 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     rule BitFieldType(T:Type, tv(N:CSize, t(SetItem(IntegerConstant) _:Set, _)))
+     rule BitFieldType(T:Type, tv(N:Int, t(SetItem(IntegerConstant) _:Set, _)))
           => t(.Set, bitfieldType(T, N)) [structural]
 
-     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression", "6.7.2.1:4"))
-          ~> BitFieldType(_, tv(N:CValue, t(Modifiers:Set, _)))
-          requires notBool IntegerConstant in Modifiers orBool isCSize(N) =/=K true
+     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
+          ~> BitFieldType(_, tv(N:CValue, T:Type))
+          requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
 
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)
      syntax KItem ::= makePointerType(Set)
      syntax KItem ::= "makeIncompleteArrayType"
-     syntax KItem ::= makeArrayType(K, K)
+     syntax KItem ::= makeArrayType(RValue, K)
      syntax Type ::= pushTypeDown(Type, K) [function]
 
-     rule ArrayType(T:Type, K:K, Spec:K)
-          => ArrayType'(T, K, K, Spec)
-
-     // We need to keep the unevaluated size expression around in the case of
-     // VLA function parameters.
-     syntax KItem ::= "ArrayType'" "(" Type "," K "," K "," K ")"
-     context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat, result(RValue)]
-     rule ArrayType'(T:Type, tv(N:Int, _), _, Spec:K)
-          => pushTypeDown(T, makeArrayType(N, Spec))
+     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat, result(RValue)]
+     rule ArrayType(T:Type, tv(N:Int, T':Type), Spec:K)
+          => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
           [structural]
-     rule ArrayType'(T:Type, tv(N:CSize, _), K:K, Spec:K)
-          => pushTypeDown(T, makeArrayType(K, Spec))
-          requires isInt(N) =/=K true // VLAs.
+     rule ArrayType(T:Type, N:RValue, Spec:K)
+          => pushTypeDown(T, makeArrayType(N, Spec))
+          requires isHold(N) // VLAs.
           [structural]
-     rule ArrayType'(T:Type, emptyValue, _, _)
+     rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
      rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
-          ~> ArrayType'(_, tv(_:Float, _), _, _)
+          ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType'(_, tv(Len:Int, _), _, _)
+          ~> ArrayType(_, tv(Len:Int, _), _)
           requires Len <=Int 0
           [structural]
 
@@ -131,7 +125,7 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
-     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:K)
+     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:K)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
           => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
@@ -164,20 +158,19 @@ module C-TYPING-INTERPRETATION
           => t(getSpecifiers(T),
                incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(N:CSize, Specifier(list(ListItem(Static)))), T:Type)
-          => t(getSpecifiers(T) SetItem(arrayStatic(N)),
-               arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(ListItem(Static)))), T:Type)
+          => t(getSpecifiers(T) SetItem(arrayStatic(value(N))),
+               arrayType(stripSpecifiers(T), value(N)))
+          requires notBool isHold(N)
           [structural, anywhere]
      // TODO(chathhorn): Other qualifiers?
-     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-          requires isInt(N) ==K true
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), value(N)))
+          requires notBool isHold(N)
           [structural, anywhere]
-     // TODO(chathhorn): better VLA support (need to keep around the
-     // un-evaluated size expression).
-     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
-          requires isInt(N) =/=K true
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), value(N)))
+          requires isHold(N)
           [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
@@ -228,13 +221,13 @@ module C-TYPING-INTERPRETATION
           => t(S, structType(X))
      rule extractActualType(t(S:Set, unionType(X:StructId)))
           => t(S, unionType(X))
-     rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))
+     rule extractActualType(t(S:Set, arrayType(T:Type, N:Int)))
           => t(S, arrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))
           => t(S, variableLengthArrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
           => t(S, incompleteArrayType(extractActualType(T)))
-     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize)))
+     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:Int)))
           => t(S, bitfieldType(extractActualType(T), N))
      rule extractActualType(t(S:Set, functionType(T:Type, L:List)))
           => t(S, functionType(extractActualType(T), L))

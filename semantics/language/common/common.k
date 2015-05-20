@@ -31,7 +31,6 @@ require "expr/members.k"
 require "expr/multiplicative.k"
 require "expr/reference.k"
 require "expr/relational.k"
-require "expr/sizeof.k"
 require "expr/unary.k"
 
 require "memory/alloc.k"
@@ -71,7 +70,6 @@ module C-COMMON
      imports C-COMMON-EXPR-MULTIPLICATIVE
      imports C-COMMON-EXPR-REFERENCE
      imports C-COMMON-EXPR-RELATIONAL
-     imports C-COMMON-EXPR-SIZEOF
      imports C-COMMON-EXPR-UNARY
 
      imports C-MEMORY-ALLOC

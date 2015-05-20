@@ -1,5 +1,11 @@
+module C-DECL-ENUM-SYNTAX
+     imports C-SYNTAX
+     syntax KItem ::= enumInit(CId, K)
+endmodule
+
 module C-DECL-ENUM
      imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-ENUM-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
 
      imports C-SYNTAX
@@ -38,7 +44,6 @@ module C-DECL-ENUM
           [structural]
 
 
-     syntax KItem ::= enumInit(CId, K)
      context enumInit(_, HOLE => reval(HOLE)) [result(RValue)]
      rule enumInit(X:CId, V:RValue)
           => Computation(X := V)

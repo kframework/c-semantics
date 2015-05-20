@@ -29,11 +29,15 @@ module C-BITSIZE
      imports COMPAT-SYNTAX
 
      rule sizeofType(T:Type)
-          => cast(t(SetItem(IntegerConstant), cfg:sizeut), tv(byteSizeofType(elideDeclParams(T)), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
-          requires isCompleteType(T) andBool notBool isFunctionType(T)
+          => cast(t(SetItem(IntegerConstant), cfg:sizeut),
+               tv(byteSizeofType(elideDeclParams(T)), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
+          requires notBool isVariableLengthArrayType(T)
           [structural]
-     rule (.K => CV("CBS1", "Trying to compute sizeof of a type that is incomplete or a function type.", "6.5.3.4:1")) ~> sizeofType(T:Type)
-          requires notBool isCompleteType(T) orBool isFunctionType(T)
+     rule sizeofType(t(_, variableLengthArrayType(T:Type, N:K)))
+          => Cast(t(.Set, cfg:sizeut),
+               Cast(t(.Set, cfg:largestUnsigned), sizeofType(elideDeclParams(T)))
+               * Cast(t(.Set, cfg:largestUnsigned), N))
+          [structural]
 
      rule byteSizeofType(T:Type)
           => bitsToBytes(bitSizeofType(T))

@@ -132,7 +132,7 @@ module C-TYPING-CANONICALIZATION
      element type is so-qualified, not the array type. \ldots
      }*/
      /*TODO(liyili2): anywhere rule refactor
-     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
+     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      */
@@ -151,9 +151,9 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(typedDeclaration(T:Type, C:CId))
 //      => typedDeclaration(canonicalizeArrayType(T), C)
 //      rule canonicalizeArrayType(t(SetItem(Const) S:Set,
-//        arrayType(t(S':Set, T:K), N:CSize)))
+//        arrayType(t(S':Set, T:K), N:Int)))
 //      => t(S, arrayType(canonicalizeArrayType(t(SetItem(Const) S', T)), N))
-//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T:Type, N:CSize)))
+//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T:Type, N:Int)))
 //      => t(S, bitfieldType(canonicalizeArrayType(T), N))
 //      rule canonicalizeArrayType(t(S:Set, functionType(T:Type, L:List)))
 //      => t(S, functionType(canonicalizeArrayType(T), canonicalizeArrayTypeInList(L)))

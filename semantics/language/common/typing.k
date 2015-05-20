@@ -30,6 +30,7 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isWCharType(Type) [function]
      syntax Bool ::= isFlexibleArrayType(Type) [function]
+     syntax Bool ::= isVariableLengthArrayType(Type) [function]
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
      syntax Bool ::= isConstType(Type) [function]
@@ -78,7 +79,7 @@ module C-TYPING-SYNTAX
      syntax SimpleType ::= functionType(Type, List)
      syntax SimpleType ::= pointerType(Type)
 
-     syntax SimpleType ::= arrayType(Type, CSize)
+     syntax SimpleType ::= arrayType(Type, Int)
      syntax SimpleType ::= incompleteArrayType(Type)
      syntax SimpleType ::= flexibleArrayType(Type)
      syntax SimpleType ::= variableLengthArrayType(Type, K)

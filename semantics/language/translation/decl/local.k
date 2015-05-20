@@ -3,6 +3,7 @@ module C-DECL-LOCAL
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
+
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -37,9 +38,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
-               => addToEnv(X, symVal)
-          ...</k>
+     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) => .K ...</k>
           <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
@@ -55,9 +54,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
-               => addToEnv(X, symVal)
-          ...</k>
+     rule <k> declareInternalVariable(X:CId, T:Type, NoInit) => .K ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types> Types:Map </external-types>
@@ -79,8 +76,7 @@ module C-DECL-LOCAL
                andBool (notBool isFunctionType(T))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
-               => addToEnv(X, symVal)
-               ~> defineAndInit(X, T, toInitValue(X, T, Init))
+               => defineAndInit(X, T, toInitValue(X, T, Init))
           ...</k>
           <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isNaked(T)

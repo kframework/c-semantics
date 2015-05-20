@@ -166,7 +166,7 @@ module C-TYPING-MISC
      rule constantModifiers =>
           SetItem(IntegerConstant)
 
-     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
+     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
@@ -218,7 +218,7 @@ module C-TYPING-MISC
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
 
-     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:CSize)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:Int)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                arrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
@@ -272,7 +272,7 @@ module C-TYPING-MISC
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
      rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
           => pointerType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, arrayType(T:Type, Sz:CSize))
+     rule tagRestrict(Tag:RestrictTag, arrayType(T:Type, Sz:Int))
           => arrayType(tagRestrict(Tag, T), Sz)
      rule tagRestrict(Tag:RestrictTag, incompleteArrayType(T:Type))
           => incompleteArrayType(tagRestrict(Tag, T))
@@ -353,9 +353,6 @@ module C-TYPING-MISC
           => 36893488147419103232
      rule arrayLength(t(_, incompleteArrayType(_)))
           => 36893488147419103232
-     rule arrayLength(t(_, arrayType(_, N:CSize))) // Also VLA.
-          => 36893488147419103232
-          requires isInt(N) =/=K true
 
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
      rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)

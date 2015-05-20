@@ -18,6 +18,7 @@ module C-EXPR-LOGICAL
      operands. If the first operand compares equal to 0, the second operand is
      not evaluated.
      } */
+     context (HOLE => reval(HOLE)) && _ [ndheat, result(RValue)]
      rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
@@ -34,6 +35,7 @@ module C-EXPR-LOGICAL
      operands. If the first operand compares unequal to 0, the second operand
      is not evaluated.
      }*/
+     context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
      rule tv(0, t(_, int)) || E:K
           => sequencePoint ~> E
           [structural]

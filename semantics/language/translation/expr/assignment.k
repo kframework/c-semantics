@@ -106,17 +106,20 @@ module C-EXPR-ASSIGNMENT
 
      rule (.K => CV("TEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
-          requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))
-                    andBool notBool isNullPointerConstant(R))
-               orBool isArithmeticType(type(L))
-                    andBool notBool isArithmeticType(type(R))
-               orBool isStructOrUnionType(type(L))
-                    andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
-               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
-               orBool notBool (isPointerType(type(L))
+          requires type(L) =/=Type type(R)
+               andBool (
+                    (isPointerType(type(L)) andBool notBool isPointerType(type(R))
+                         andBool notBool isNullPointerConstant(R))
                     orBool isArithmeticType(type(L))
+                         andBool notBool isArithmeticType(type(R))
                     orBool isStructOrUnionType(type(L))
-                    orBool isBoolType(type(L)))
+                         andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
+                    orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+                    orBool notBool (isPointerType(type(L))
+                         orBool isArithmeticType(type(L))
+                         orBool isStructOrUnionType(type(L))
+                         orBool isBoolType(type(L)))
+               )
 
      rule (.K => CV("TEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue

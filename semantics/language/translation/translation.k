@@ -33,6 +33,7 @@ require "expr/multiplicative.k"
 require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sequencing.k"
+require "expr/sizeof.k"
 require "expr/unary.k"
 
 require "symbolic-value.k"
@@ -83,6 +84,7 @@ module C-TRANSLATION
      imports C-EXPR-REFERENCE
      imports C-EXPR-RELATIONAL
      imports C-EXPR-SEQUENCING
+     imports C-EXPR-SIZEOF
      imports C-EXPR-UNARY
 
      imports C-SYMBOLIC-VALUE

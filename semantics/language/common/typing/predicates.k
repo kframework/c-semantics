@@ -112,6 +112,11 @@ module C-TYPING-PREDICATES
           => isFlexibleArrayType(T)
      rule isFlexibleArrayType(_) => false [owise]
 
+     rule isVariableLengthArrayType(t(_, variableLengthArrayType(_, _))) => true
+     rule isVariableLengthArrayType(typedDeclaration(T:Type, _))
+          => isVariableLengthArrayType(T)
+     rule isVariableLengthArrayType(_) => false [owise]
+
      rule isVoidType(t(_, void)) => true
      rule isVoidType(typedDeclaration(_:VoidType, _)) => true
 

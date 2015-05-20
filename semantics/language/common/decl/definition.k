@@ -64,7 +64,7 @@ module C-DECL-DEFINITION
           => typedDeclaration(elideDeclParams(T), X)
      rule elideDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
           => t(Mods, functionType(elideDeclParams(R), elideParams(Params)))
-     rule elideDeclParams(t(Mods:Set, arrayType(T:Type, N:CSize)))
+     rule elideDeclParams(t(Mods:Set, arrayType(T:Type, N:Int)))
           => t(Mods, arrayType(elideDeclParams(T), N))
      rule elideDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, incompleteArrayType(elideDeclParams(T)))

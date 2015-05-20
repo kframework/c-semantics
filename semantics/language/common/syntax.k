@@ -211,14 +211,11 @@ module C-SYNTAX
                 * decl is never a PTR.*)
      */
      syntax KItem ::= "JustBase"
-     syntax DeclType ::= FunctionType(K)
-          [klabel('FunctionType), strict]
+     syntax DeclType ::= FunctionType(K) [strict]
      // third argument should also be strict, but not doing anything with
      // [strict 5] yet
-     syntax DeclType ::= ArrayType(K, K, K)
-          [klabel('ArrayType), strict(1)]
-     syntax DeclType ::= PointerType(Specifier, K)
-          [klabel('PointerType), strict(2)]
+     syntax DeclType ::= ArrayType(K, K, K) [strict(1)]
+     syntax DeclType ::= PointerType(Specifier, K) [strict(2)]
      // K, List, Bool
      syntax DeclType ::= Prototype(K, K, Bool) [strict(1)]
      syntax DeclType ::= NoPrototype(K, K, Bool) [strict(1, 2)]
@@ -229,15 +226,15 @@ module C-SYNTAX
      /*
      and name_group = specifier * name list
      */ // K, List
-     syntax NameGroup ::= NameGroup(K, K) [klabel('NameGroup), strict]
+     syntax NameGroup ::= NameGroup(K, K) [strict]
 
      /*
      (* The optional expression is the bitfield *)
      and field_group = specifier * (name * expression option) list
      */ // K, List
-     syntax FieldGroup ::= FieldGroup(K, K) [klabel('FieldGroup), strict(1)]
-     syntax FieldName ::= FieldName(K) [klabel('FieldName)]
-     syntax FieldName ::= BitFieldName(K, K) [klabel('BitFieldName)]
+     syntax FieldGroup ::= FieldGroup(K, K) [strict(1)]
+     syntax FieldName ::= FieldName(K)
+     syntax FieldName ::= BitFieldName(K, K)
 
      /*
      (* like name_group, except the declared variables are allowed to have
@@ -246,8 +243,7 @@ module C-SYNTAX
      and init_name_group = specifier * init_name list
      */
      // K, List
-     syntax InitNameGroup ::= "InitNameGroup" "(" K "," K ")"
-          [klabel('InitNameGroup), strict(1)]
+     syntax InitNameGroup ::= InitNameGroup(K, K) [strict(1)]
 
      /*
      The decl_type is in the order in which they are printed. Only the name of
@@ -526,10 +522,6 @@ module C-SYNTAX
 
      context (HOLE => reval(HOLE)) | _ [ndheat, result(RValue)]
      context _ | (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-
-     context (HOLE => reval(HOLE)) && _ [ndheat, result(RValue)]
-
-     context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
 
      context HOLE *= _
      context _ *= (HOLE => reval(HOLE)) [result(RValue)]

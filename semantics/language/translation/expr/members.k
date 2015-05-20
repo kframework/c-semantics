@@ -45,5 +45,10 @@ module C-EXPR-MEMBERS
           ...</k>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
+     rule <k> ncle(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
+               => le(K . F, addQualifiers(Mods, T))
+          ...</k>
+          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          requires notBool (Atomic in Mods)
 
 endmodule

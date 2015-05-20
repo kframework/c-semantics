@@ -18,31 +18,37 @@ module C-DECL-GLOBAL-SYNTAX
 endmodule
 
 module C-DECL-GLOBAL
-     imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-ENUM-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
      imports C-DECL-ZERO-SYNTAX
 
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BUILTIN-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-FUNCTION-DEF-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
-     rule declare'(T:Type, K:K)
+     rule declare'(typedDeclaration(T:Type, X:CId), K:K)
           => checkDeclType(T, K)
-          ~> declare''(T, K)
+          // Tentative entries for processing the initializer.
+          ~> addToEnv(X, symVal)
+          ~> giveType(X, T)
+          ~> declare''(T, X, K)
 
-     syntax KItem ::= "declare''" "(" Type "," K ")"
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
+     syntax KItem ::= "declare''" "(" Type "," CId "," K ")"
+     rule <k> declare''(T:Type, X:CId, K:K)
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
@@ -50,7 +56,7 @@ module C-DECL-GLOBAL
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
-     rule <k> declare''(typedDeclaration(T:FunctionType, X:CId), K:K)
+     rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
@@ -58,7 +64,7 @@ module C-DECL-GLOBAL
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
-     rule <k> declare''(typedDeclaration(T:FunctionType, X:CId), K:K)
+     rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit
                     #then NoInit
@@ -69,7 +75,7 @@ module C-DECL-GLOBAL
           requires validGlobalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
-     rule <k> declare''(typedDeclaration(T:Type, X:CId), K:K)
+     rule <k> declare''(T:Type, X:CId, K:K)
                => declareExternalVariable(X, T,
                     #if K ==K NoInit
                     #then NoInit
@@ -85,7 +91,7 @@ module C-DECL-GLOBAL
                "declaration for the function " +String idToString(X) +String
                " appears with type qualifiers.",
                "6.7.3"))
-          ~> declare''(typedDeclaration(T:FunctionType, X:CId), _)
+          ~> declare''(T:FunctionType, X:CId, _)
           requires getQualifiers(T) =/=K .Set
           [structural]
 
@@ -101,7 +107,7 @@ module C-DECL-GLOBAL
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
                "6.7.1:7"))
-               ~> declare''(typedDeclaration(T:FunctionType, X:CId), _)
+               ~> declare''(T:FunctionType, X:CId, _)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
@@ -113,7 +119,7 @@ module C-DECL-GLOBAL
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
                "6.7.1:3"))
-               ~> declare''(typedDeclaration(T:Type, X:CId), _)
+               ~> declare''(T:Type, X:CId, _)
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
@@ -126,7 +132,7 @@ module C-DECL-GLOBAL
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
                "6.9:2"))
-               ~> declare''(typedDeclaration(T:Type, X:CId), _)
+               ~> declare''(T:Type, X:CId, _)
           ...</k>
           <curr-function> file-scope </curr-function>
           requires validStorageClass(T)
@@ -576,6 +582,10 @@ module C-DECL-GLOBAL
           => zero(X) ~> stripInitHolds(K)
      rule stripInitHolds(initFunction(Fun:K, B:K) ~> K:K)
           => initFunction(Fun, B) ~> stripInitHolds(K)
+     rule stripInitHolds(enumInit(X:CId, Init:K) ~> K:K)
+          => enumInit(X, Init) ~> stripInitHolds(K)
+     rule stripInitHolds(handleBuiltinConstant(X:CId, T:Type) ~> K:K)
+          => handleBuiltinConstant(X, T) ~> stripInitHolds(K)
      rule stripInitHolds(.K) => .K
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)
@@ -799,7 +809,8 @@ module C-DECL-GLOBAL
      syntax KItem ::= giveCompositeType(CId, Type)
      syntax KItem ::= "giveCompositeType'" "(" CId "," K ")"
      rule <k> giveCompositeType(X:CId, T':Type)
-               => giveCompositeType'(X, compositeType(T, T'))
+               => giveCompositeType'(X, compositeType(T,
+                    stripStorageSpecifiers(T')))
           ...</k>
           <types>... X |-> T:Type ...</types>
           requires areCompatible(T, T')

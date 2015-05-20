@@ -86,27 +86,27 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, structType(S':StructId)), Cache:Set)
           => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
           requires sameQualifiers(Mods, Mods')
-          andBool #areTagsCompat(getTag(S), getTag(S'))
-          andBool getFieldInfo(S) =/=K #incomplete
-          andBool getFieldInfo(S') =/=K #incomplete
-          andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
+               andBool #areTagsCompat(getTag(S), getTag(S'))
+               andBool getFieldInfo(S) =/=K #incomplete
+               andBool getFieldInfo(S') =/=K #incomplete
+               andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
      rule #areCompat(
                t(Mods:Set, structType(S:StructId)),
                t(Mods':Set, structType(S':StructId)), _)
           => true
           requires sameQualifiers(Mods, Mods')
-          andBool #areTagsCompat(getTag(S), getTag(S'))
-          andBool (getFieldInfo(S) ==K #incomplete
-               orBool getFieldInfo(S') ==K #incomplete)
+               andBool #areTagsCompat(getTag(S), getTag(S'))
+               andBool (getFieldInfo(S) ==K #incomplete
+                    orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
                t(Mods:Set, unionType(S:StructId)),
                t(Mods':Set, unionType(S':StructId)), Cache:Set)
           => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
           requires sameQualifiers(Mods, Mods')
-          andBool #areTagsCompat(getTag(S), getTag(S'))
-          andBool getFieldInfo(S) =/=K #incomplete
-          andBool getFieldInfo(S') =/=K #incomplete
-          andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
+               andBool #areTagsCompat(getTag(S), getTag(S'))
+               andBool getFieldInfo(S) =/=K #incomplete
+               andBool getFieldInfo(S') =/=K #incomplete
+               andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
      syntax Bool ::= #areFieldsCompat(K, K, Set) [function]
      rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _), Cache:Set)
           => #areCompat(Fs, Fs', Cache)
@@ -119,12 +119,12 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, unionType(S':StructId)), _)
           => true
           requires sameQualifiers(Mods, Mods')
-          andBool #areTagsCompat(getTag(S), getTag(S'))
-          andBool (getFieldInfo(S) ==K #incomplete
-               orBool getFieldInfo(S') ==K #incomplete)
+               andBool #areTagsCompat(getTag(S), getTag(S'))
+               andBool (getFieldInfo(S) ==K #incomplete
+                    orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
-               t(Mods:Set, arrayType(T:Type, N:CSize)),
-               t(Mods':Set, arrayType(T':Type, N:CSize)), Cache:Set)
+               t(Mods:Set, arrayType(T:Type, N:Int)),
+               t(Mods':Set, arrayType(T':Type, N)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
@@ -250,18 +250,13 @@ module C-TYPING-COMPATIBILITY
      rule #isAlignas(_) => false [owise]
 
      // We can assume the types are compatible.
-     //TODO(liyi): might not need canonicalizeArrayType later
-     rule compositeType(T:BasicType, T:BasicType) => T
-     rule compositeType(T:StructOrUnionType, T:StructOrUnionType) => T
-     rule compositeType(T:BitfieldType, T:BitfieldType) => T
+     rule compositeType(T:Type, T) => T
      rule compositeType(
                t(Mods:Set, T:SimpleType),
                t(Mods':Set, T:SimpleType))
           // The modifiers might include extra information besides just
           // specifiers and qualifiers, it's probably best to keep it all
           // around for now.
-          // TODO(chathhorn): merging; this really shouldn't be done here.
-          // => canonicalizeArrayType(t(Mods Mods', T))
           => t(Mods Mods', T)
           requires isBasicType(t(.Set, T))
                orBool isStructOrUnionType(t(.Set, T))
@@ -281,59 +276,36 @@ module C-TYPING-COMPATIBILITY
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),
                t(Mods':Set, functionType(T':Type, P':List)))
-          // TODO(chathhorn): merging
-          // => canonicalizeArrayType(t(Mods Mods',
-          //      functionType(compositeType(T, T'), compositeParams(P, P'))))
           => compositeFunctionType(compositeType(T, T'), Mods Mods', .K, P, P', .List)
 
      rule compositeType(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type)))
-          // TODO(chathhorn): merging
-          // => canonicalizeArrayType(
-          //      t(Mods Mods', pointerType(compositeType(T, T'))))
           => t(Mods Mods', pointerType(compositeType(T, T')))
 
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:CSize)),
-               t(Mods':Set, arrayType(T':Type, N:CSize)))
-     // TODO(chathhorn): merging
-     //      => canonicalizeArrayType(
-     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
-     // rule compositeType(
-     //           t(Mods:Set, arrayType(T:Type, N:CSize)),
-     //           t(Mods':Set, incompleteArrayType(T':Type)))
-     //      => canonicalizeArrayType(
-     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
-     // rule compositeType(
-     //           t(Mods:Set, incompleteArrayType(T:Type)),
-     //           t(Mods':Set, arrayType(T':Type, N:CSize)))
-     //      => canonicalizeArrayType(
-     //           t(Mods Mods', arrayType(compositeType(T, T'), N)))
+               t(Mods:Set, arrayType(T:Type, N:Int)),
+               t(Mods':Set, arrayType(T':Type, N)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods:Set, arrayType(T:Type, N:Int)),
                t(Mods':Set, incompleteArrayType(T':Type)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, arrayType(T':Type, N:CSize)))
+               t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:CSize)),
+               t(Mods:Set, arrayType(T:Type, N:Int)),
                t(Mods':Set, variableLengthArrayType(T':Type, _)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Mods:Set, variableLengthArrayType(T:Type, _)),
-               t(Mods':Set, arrayType(T':Type, N:CSize)))
+               t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
-
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
-          // TODO(chathhorn): merging
-          // => canonicalizeArrayType(
-          //      t(Mods Mods', flexibleArrayType(compositeType(T, T'))))
           => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
