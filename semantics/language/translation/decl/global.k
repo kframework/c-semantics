@@ -809,7 +809,7 @@ module C-DECL-GLOBAL
      rule <k> _:ErrorExit ~> giveCompositeType(X:CId, T':Type) => .K
           ...</k>
           <types>... X |-> T:Type ...</types>
-          requires notBool areCompatible(T, T')
+          requires notBool areCompatible(T, T') andBool isErrorRecovery
 
      rule giveCompositeType'(X:CId, T:Type) => giveType(X, T)
           [structural]
