@@ -222,7 +222,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires base(L1) =/=K base(L2)
 
      // ptr1, ptr2, size of ptr type
-     syntax KItem ::= computePointerDifference(Int, CSize)
+     syntax KItem ::= computePointerDifference(Int, Int)
      rule computePointerDifference(Diff:Int, Size:Int)
           => tv(Diff /Int Size, t(.Set, cfg:ptrdiffut))
           requires (Diff %Int Size ==Int 0)

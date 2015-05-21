@@ -1,6 +1,5 @@
 module C-EXPR-FUNCTION-CALL
      imports C-BINDING-SYNTAX
-     imports C-BUILTIN-SYNTAX
      imports C-CHECK-LOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX

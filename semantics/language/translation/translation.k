@@ -48,6 +48,9 @@ require "stmt/return.k"
 require "stmt/static-assert.k"
 require "stmt/switch.k"
 
+require "typing/canonicalization.k"
+require "typing/interpretation.k"
+
 module C-TRANSLATION
      imports C-DYNAMIC-SYNTAX
 
@@ -98,4 +101,7 @@ module C-TRANSLATION
      imports C-STMT-RETURN
      imports C-STMT-STATIC-ASSERT
      imports C-STMT-SWITCH
+
+     imports C-TYPING-CANONICALIZATION
+     imports C-TYPING-INTERPRETATION
 endmodule

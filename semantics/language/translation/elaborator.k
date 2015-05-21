@@ -7,6 +7,10 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateDone(K)
      syntax KItem ::= elaborateDone(K, K)
 
+     // Elaboration for initializers -- copies up the environment.
+     syntax KItem ::= elaborateInit(K)
+     syntax KItem ::= elaborateInitDone(K)
+
      syntax KItem ::= elabExp(K)
 endmodule
 
@@ -17,6 +21,7 @@ module C-ELABORATOR
 
      syntax KItem ::= waitingOn(CId)
      syntax CId ::= subElab(Int)
+     syntax CId ::= initElab(Int)
 
      context elabExp((HOLE => reval(HOLE))) [result(RValue)]
 
@@ -25,33 +30,49 @@ module C-ELABORATOR
           => te(compoundExp(K), type(R))
 
      rule <k> elaborate(K:K) => waitingOn(subElab(!E:Int)) ...</k>
-          <control-details> C:Bag </control-details>
+          <local> L:Bag </local>
           (.Bag => <elaborator>...
                <elab-id> subElab(!E) </elab-id>
                <k> K </k>
-               <control-details> C </control-details>
+               <local> L </local>
           ...</elaborator>)
-     rule <k> waitingOn(E:CId) => elaborateDone(K:K) ...</k>
+     rule <k> waitingOn(subElab(E:Int)) => elaborateDone(K:K) ...</k>
           (<elaborator>...
-               <elab-id> E </elab-id>
+               <elab-id> subElab(E) </elab-id>
                <k> .K </k>
                <elab> K:K </elab>
           ...</elaborator> => .Bag)
+     rule <k> elaborateInit(K:K) => waitingOn(initElab(!E:Int)) ...</k>
+          <local> L:Bag </local>
+          (.Bag => <elaborator>...
+               <elab-id> initElab(!E) </elab-id>
+               <k> K </k>
+               <local> L </local>
+          ...</elaborator>)
+     rule <k> waitingOn(initElab(E:Int)) => elaborateInitDone(K:K) ...</k>
+          <local> _ => L </local>
+          (<elaborator>...
+               <elab-id> initElab(E) </elab-id>
+               <k> .K </k>
+               <elab> K:K </elab>
+               <local> L:Bag </local>
+          ...</elaborator> => .Bag)
+
 
      syntax KItem ::= waitingOn(CId, CId)
 
      rule <k> elaborate(K1:K, K2:K)
                => waitingOn(subElab(!E1:Int), subElab(!E2:Int)) ...</k>
-          <control-details> C:Bag </control-details>
+          <local> L:Bag </local>
           (.Bag => <elaborator>...
                <elab-id> subElab(!E1) </elab-id>
                <k> K1 </k>
-               <control-details> C </control-details>
+               <local> L </local>
           ...</elaborator>)
           (.Bag => <elaborator>...
                <elab-id> subElab(!E2) </elab-id>
                <k> K2 </k>
-               <control-details> C </control-details>
+               <local> L </local>
           ...</elaborator>)
      rule <k> waitingOn(E1:CId, E2:CId) => elaborateDone(K1:K, K2:K) ...</k>
           (<elaborator>...

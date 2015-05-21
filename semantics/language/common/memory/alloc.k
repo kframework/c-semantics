@@ -59,7 +59,7 @@ module C-MEMORY-ALLOC
           [structural]
 
      rule allocObject(Base:SymBase, T:Type)
-          => #allocObject(Base, T, sizeofType(T))
+          => #allocObject(Base, T, sizeof(T))
           [structural]
 
      syntax KItem ::= #allocObject(SymBase, Type, K)

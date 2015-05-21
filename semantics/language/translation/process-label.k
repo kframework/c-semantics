@@ -82,7 +82,7 @@ module C-PROCESS-LABEL
           <goto-block-history>
                (ListItem(_:Int) => .List) ListItem(_:Int)
           ...</goto-block-history>
-          requires I:Int >Int 0
+          requires I >Int 0
 
      rule <computation> L:CabsLoc => .K ...</computation>
           <curr-program-loc> _ => L </curr-program-loc>

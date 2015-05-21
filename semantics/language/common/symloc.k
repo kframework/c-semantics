@@ -55,7 +55,7 @@ module C-SYMLOC-SYNTAX
      syntax SymLoc ::= lnew(SymBase, Int) [function]
      syntax SymLoc ::= restrictedNew(SymBase, Int, RestrictTag) [function]
 
-     syntax SymLoc ::= SymLoc "+bytes" CSize [function]
+     syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
      syntax Bool ::= SymLoc ">bytes" SymLoc [function]
                    | SymLoc ">=bytes" SymLoc [function]
@@ -84,7 +84,7 @@ module C-SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, CSize)
+     syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase, RestrictTag)

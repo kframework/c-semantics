@@ -2,14 +2,13 @@ module C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax CSize ::= bitSizeofType(Type) [function]
-     syntax CSize ::= byteSizeofType(Type) [function]
+     syntax Int ::= bitSizeofType(Type) [function]
+     syntax Int ::= byteSizeofType(Type) [function]
 
      syntax Int ::= bitSizeofStruct(FieldInfo) [function]
      syntax Int ::= bitSizeofUnion(FieldInfo) [function]
 
-     // generates a tv(size, cfg:sizeut)
-     syntax KItem ::= sizeofType(K) [strict]
+     syntax KItem ::= sizeof(K) [strict]
 
      syntax Int ::= maxByteSizeofList(List) [function]
 endmodule
@@ -28,15 +27,12 @@ module C-BITSIZE
 
      imports COMPAT-SYNTAX
 
-     rule sizeofType(T:Type)
-          => cast(t(SetItem(IntegerConstant), cfg:sizeut),
-               tv(byteSizeofType(elideDeclParams(T)), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
-          requires notBool isVariableLengthArrayType(T)
+     rule sizeof(V:KResult => type(V))
+          requires notBool isType(V)
           [structural]
-     rule sizeofType(t(_, variableLengthArrayType(T:Type, N:K)))
-          => Cast(t(.Set, cfg:sizeut),
-               Cast(t(.Set, cfg:largestUnsigned), sizeofType(elideDeclParams(T)))
-               * Cast(t(.Set, cfg:largestUnsigned), N))
+     rule sizeof(T:Type)
+          => Cast(t(SetItem(IntegerConstant), cfg:sizeut),
+               tv(byteSizeofType(T), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
           [structural]
 
      rule byteSizeofType(T:Type)
@@ -79,7 +75,7 @@ module C-BITSIZE
      rule bitSizeofType(t(_, no-type))
           => 0
      rule bitSizeofType(t(_, arrayType(T:Type, N:Int)))
-          => bitSizeofType(T):>Int *Int N
+          => bitSizeofType(T) *Int N
      rule bitSizeofType(t(_, flexibleArrayType(_)))
           => 0
      rule bitSizeofType(t(_, functionType(_, _)))
@@ -103,9 +99,7 @@ module C-BITSIZE
      rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _))
           => NBits
 
-     //- derived
-     syntax CSize ::= bitsToBytes(CSize) [function]
+     syntax Int ::= bitsToBytes(Int) [function]
      rule bitsToBytes(N:Int) => (absInt(N) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
-     rule bitsToBytes(N:CSize) => N [owise] // Pass through sym values.
 
 endmodule

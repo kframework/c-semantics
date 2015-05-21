@@ -187,20 +187,20 @@ module C-EXECUTION-INIT
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => callMain-aux(typeof(Identifier("main")), N,
-                    Identifier("#incomingArgumentsArray"), Args)
+               => #callMain(T, N, Identifier("#incomingArgumentsArray"), Args)
           ...</k>
+          <types>... Identifier("main") |-> T:Type ...</types>
           <status> _ => mainCalled </status>
           [ndtrans]
 
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax KItem ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
-     rule callMain-aux(t(.Set,
+     syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
+     rule #callMain(t(.Set,
           functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _)
           => Call(Identifier("main"), list(.List))
           [structural]
      // int main(int argc, char* argv[])
-     rule callMain-aux(t(.Set, functionType(t(.Set, int),
+     rule #callMain(t(.Set, functionType(t(.Set, int),
                ListItem(t(.Set, int))
                ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))),
                N:Int, X:CId, Args:K)
@@ -208,7 +208,7 @@ module C-EXECUTION-INIT
           requires T ==K t(.Set, char)
           [structural]
      // int main(int argc, char** argv)
-     rule callMain-aux(t(.Set,
+     rule #callMain(t(.Set,
                functionType(t(.Set, int),
                ListItem(t(.Set, int))
                ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))),

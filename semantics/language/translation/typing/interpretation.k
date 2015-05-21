@@ -1,14 +1,8 @@
-module C-TYPING-INTERPRETATION-SYNTAX
-     syntax List ::= adjustParams(List) [function]
-     syntax CId ::= prototype(CId)
-endmodule
-
 module C-TYPING-INTERPRETATION
-     imports C-TYPING-INTERPRETATION-SYNTAX
-
      imports C-BITSIZE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -76,53 +70,35 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      // "Prototype scope."
-     rule <k> Prototype(T:Type, list(L:List), Var:Bool)
-               => pushBlock ~> Prototype'(T, L, .List, Var)
-          ...</k>
-          <curr-function> X:CId => prototype(X) </curr-function>
-          [structural]
+     rule (.K => elaborate(Prototype'(T, L, .List, Var)))
+          ~> Prototype(T:Type, list(L:List), Var:Bool)
+     rule elaborateDone(T:Type) ~> Prototype(_, _, _) => T
 
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.
      syntax KItem ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
      rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
           => K ~> Prototype'(T, L1, L2, Var)
-          [structural]
      rule t(Mods:Set, ST:SimpleType)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(adjustParam(t(Mods, ST))), Var)
-          [structural]
      syntax SymBase ::= vla(CId)
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => declareInternalVariable(X, adjustParam(DT), NoInit)
           ~> Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
           requires X =/=K #NoName
-          [structural]
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
           requires X ==K #NoName
-          [structural]
-     rule Prototype'(T:Type, .List, L2:List, Var:Bool)
-          => Prototype''(T, L2, Var)
-          [structural]
-
-     syntax KItem ::= "Prototype''" "(" Type "," List "," Bool ")"
-     rule <k> Prototype''(T:Type, L:List, false)
-               => popBlock ~> pushTypeDown(T, makeFunctionType(L))
-          ...</k>
-          <curr-function> prototype(X:CId) => X </curr-function>
-          [structural]
-     rule <k> Prototype''(T:Type, L:List, true)
-               => popBlock ~> pushTypeDown(T, makeFunctionType(L ListItem(variadic)))
-          ...</k>
-          <curr-function> prototype(X:CId) => X </curr-function>
-          [structural]
+     rule <k> Prototype'(T:Type, .List, L:List, false) => .K </k>
+          <elab> _ => pushTypeDown(T, makeFunctionType(L)) </elab>
+     rule <k> Prototype'(T:Type, .List, L:List, true) => .K </k>
+          <elab> _ => pushTypeDown(T, makeFunctionType(L ListItem(variadic))) </elab>
 
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(L))
-          [structural]
 
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:K)
@@ -169,7 +145,7 @@ module C-TYPING-INTERPRETATION
           requires notBool isHold(N)
           [structural, anywhere]
      rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), value(N)))
+          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           requires isHold(N)
           [structural, anywhere]
 
@@ -253,22 +229,5 @@ module C-TYPING-INTERPRETATION
      rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K), Size:K))))
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural]
-
-     rule adjustParams(ListItem(T:Type) Params:List)
-          => ListItem(adjustParam(T)) adjustParams(Params)
-     rule adjustParams(.List) => .List
-
-     syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(typedDeclaration(T:Type, X:CId))
-          => typedDeclaration(adjustParam(T), X)
-     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
-          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
-     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(T:Type) => T
-          requires notBool isTypedDeclaration(T)
-               andBool notBool isArrayOrFunctionType(T)
 
 endmodule

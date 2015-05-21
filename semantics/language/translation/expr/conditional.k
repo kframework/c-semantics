@@ -1,4 +1,6 @@
 module C-EXPR-CONDITIONAL
+     imports C-EXPR-LOGICAL-SYNTAX
+
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -6,6 +8,8 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+
+     // TODO(chathhorn): !! REFACTOR (2trans) !!
 
      syntax KItem ::= getTypes(List)
      //TODO(liyili2): overcome the context associative matching
@@ -98,10 +102,12 @@ module C-EXPR-CONDITIONAL
      // fixme, this is too relaxed; could be any integer zero.  need static
      // semantics to handle this properly
      rule (types(trItem(T1:IntegerType) ts:: trItem(T2:PointerType))
-          => convertedType(T2)) ~> _ ? tv(0, T1) : _
+               => convertedType(T2))
+          ~> _ ? tv(0, T1) : _
           [structural]
      rule (types(trItem(T1:PointerType) ts:: trItem(T2:IntegerType))
-          => convertedType(T1)) ~> _? _ : tv(0, T2)
+               => convertedType(T1))
+          ~> _? _ : tv(0, T2)
           [structural]
 
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
@@ -141,7 +147,7 @@ module C-EXPR-CONDITIONAL
                andBool areCompatible(T, T')
           [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
-          => evalConditional(E, Cast(T, E1), Cast(T, E2))
+          => evalConditional(simplifyTruth(E), Cast(T, E1), Cast(T, E2))
           [structural]
 
      syntax KItem ::= evalConditional(K, K, K)

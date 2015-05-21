@@ -5,17 +5,17 @@ module C-MEMORY-READING-SYNTAX
      syntax KItem ::= read(SymLoc, Type)
 
      // Returns the bytes in the order in which they are in memory.
-     syntax KItem ::= readBytes(SymLoc, CSize, Type)
+     syntax KItem ::= readBytes(SymLoc, Int, Type)
 
      syntax KItem ::= concretize(Type, K) [strict(2)]
 
      // data, offset, size in bits
-     syntax KItem ::= extractBitsFromList(K, Int, CSize) [strict(1)]
+     syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
-     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," CSize "," List ")"
+     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
           [function]
 endmodule
 
@@ -69,7 +69,7 @@ module C-MEMORY-READING
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:Type, Len:CSize)), dataList(L:List))
+     rule concretize(t(S:Set, bitfieldType(T:Type, Len:Int)), dataList(L:List))
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L))
           requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)

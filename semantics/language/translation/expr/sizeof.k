@@ -22,31 +22,31 @@ module C-EXPR-SIZEOF
      \header{<stddef.h>} (and other headers).
      }*/
 
-     context SizeofExpression(HOLE => reval(HOLE)) [result(RValue)]
-
-     rule SizeofExpression(V:RValue) => sizeofType(type(V))
+     rule SizeofExpression(V:KResult) => sizeof(V)
           requires notBool isVariableLengthArrayType(type(V))
                andBool isCompleteType(type(V))
                andBool notBool isFunctionType(type(V))
      // Must evaluate the expression if it's a VLA (6.5.3.4p2).
-     rule SizeofExpression(V:RValue)
-          => te(V ~> discard ~> sizeofType(type(V)),
-               t(SetItem(IntegerConstant), cfg:sizeut))
+     rule SizeofExpression(V:KResult) => te(sizeof(stripHold(V)), t(.Set, cfg:sizeut))
           requires isVariableLengthArrayType(type(V))
                andBool isCompleteType(type(V))
                andBool notBool isFunctionType(type(V))
-
-     rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
-
-     syntax KItem ::= #SizeofType(K) [strict]
-     rule #SizeofType(T:Type) => sizeofType(T)
-          requires isCompleteType(T)
-               andBool notBool isFunctionType(T)
-
      rule (.K => CV("TES1", "Trying to compute sizeof of an expression with incomplete or a function type.", "6.5.3.4:1"))
           ~> SizeofExpression(V:RValue)
           requires notBool isCompleteType(type(V))
                orBool isFunctionType(type(V))
+
+     rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
+
+     syntax KItem ::= #SizeofType(K) [strict]
+     rule #SizeofType(T:Type) => sizeof(T)
+          requires notBool isVariableLengthArrayType(T)
+               andBool isCompleteType(T)
+               andBool notBool isFunctionType(T)
+     rule #SizeofType(T:Type) => te(sizeof(T), t(.Set, cfg:sizeut))
+          requires isVariableLengthArrayType(T)
+               andBool isCompleteType(T)
+               andBool notBool isFunctionType(T)
      rule (.K => CV("TES2", "Trying to compute sizeof of an incomplete or function type.", "6.5.3.4:1"))
           ~> #SizeofType(T:Type)
           requires notBool isCompleteType(T)

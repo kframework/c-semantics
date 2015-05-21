@@ -43,12 +43,16 @@ module C-EXPR-MEMBERS
      rule <k> ncle(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
+          <initializing> I:Int </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
+               orBool I >Int 0
      rule <k> ncle(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
+          <initializing> I:Int </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
+               orBool I >Int 0
 
 endmodule

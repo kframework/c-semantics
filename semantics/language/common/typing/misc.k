@@ -404,4 +404,11 @@ module C-TYPING-MISC
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
 
+     // TODO(chathhorn): handle more general VM types.
+     context stabilizeVLA(t(_, variableLengthArrayType(_, (HOLE => reval(HOLE)))))
+          [result(RValue)]
+     rule stabilizeVLA(t(Mods:Set, variableLengthArrayType(T:Type, tv(N:Int, _))))
+          => t(Mods, arrayType(T, N))
+          [structural]
+
 endmodule

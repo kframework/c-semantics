@@ -248,7 +248,7 @@ module C-MEMORY-WRITING
           => splitStructBytes(dataList(L), T,
                byteSizeofType(T))
 
-     syntax List ::= splitUnknown(CSize) [function]
+     syntax List ::= splitUnknown(Int) [function]
      rule splitUnknown(N:Int)
           => ListItem(piece(unknown, cfg:bitsPerByte))
                splitUnknown(N -Int cfg:bitsPerByte)
@@ -256,7 +256,7 @@ module C-MEMORY-WRITING
      rule splitUnknown(N:Int) => .List
           requires N <=Int 0
 
-     syntax DataList ::= splitIntegerBytes(Int, Type, CSize) [function]
+     syntax DataList ::= splitIntegerBytes(Int, Type, Int) [function]
      syntax DataList ::= #splitIntegerBytes(Int, Type, Int, List) [function]
 
      rule splitIntegerBytes(I:Int, T:Type, Len:Int)
@@ -267,7 +267,7 @@ module C-MEMORY-WRITING
           requires Len >Int 0
      rule #splitIntegerBytes(_, _, 0, L:List) => dataList(L)
 
-     syntax DataList ::= splitStructBytes(K, Type, CSize) [function]
+     syntax DataList ::= splitStructBytes(K, Type, Int) [function]
      syntax DataList ::= #splitStructBytes(K, Type, Int, List)  [function]
 
      rule splitStructBytes(dataList(L:List), T:Type, Len:Int)
@@ -299,7 +299,7 @@ module C-MEMORY-WRITING
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 
-     syntax DataList ::= splitPointerBytes(SymLoc, CSize) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Int) [function]
      syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function]
 
      rule splitPointerBytes(Loc:SymLoc, Len:Int)
@@ -310,7 +310,7 @@ module C-MEMORY-WRITING
           requires Len >Int 0
      rule splitPointerBytes(_, 0, _, L:List) => dataList(L:List)
 
-     syntax DataList ::= splitFloatBytes(Float, Type, CSize) [function]
+     syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
      syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
 
      rule splitFloatBytes(F:Float, T:Type, Len:Int)

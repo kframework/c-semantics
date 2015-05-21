@@ -66,7 +66,7 @@ module C-DECL-GLOBAL
           [structural]
      rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareExternalVariable(X, T,
-                    #if K ==K NoInit
+                    #if isNoInit(K)
                     #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
@@ -77,7 +77,7 @@ module C-DECL-GLOBAL
           [structural]
      rule <k> declare''(T:Type, X:CId, K:K)
                => declareExternalVariable(X, T,
-                    #if K ==K NoInit
+                    #if isNoInit(K)
                     #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
@@ -191,7 +191,7 @@ module C-DECL-GLOBAL
           requires (getQualifiers(T) =/=K .Set)
           [structural]
 
-     rule checkComplete(_, NoInit) => .K
+     rule checkComplete(_, _:NoInit) => .K
           [structural]
      rule checkComplete(T:Type, _) => .K
           requires isCompleteType(T) orBool isArrayType(T)
@@ -200,7 +200,7 @@ module C-DECL-GLOBAL
                "declaration has initializer but incomplete type.",
                "6.7.9:3"))
           ~> checkComplete(T:Type, K:K)
-          requires (K =/=K NoInit)
+          requires notBool isNoInit(K)
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
           [structural]
 
@@ -749,8 +749,7 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> completeTagInExtDecl(_, _, X:CId)
-               => declare(
-                    typedDeclaration(T, X), NoInit)
+               => declare(typedDeclaration(T, X), NoInit)
           ...</k>
           <externals>...
                X |-> declState(_, T:Type,
@@ -783,10 +782,8 @@ module C-DECL-GLOBAL
      rule completeTagInIntDecls(_, _, .Set) => .K
           [structural]
 
-     rule <k> (completeTagInIntDecl(_, _, X:CId) => declare(
-               typedDeclaration(
-                    addStorage(Static, T), X),
-                         NoInit))
+     rule <k> completeTagInIntDecl(_, _, X:CId)
+               => declare(typedDeclaration(addStorage(Static, T), X), NoInit)
           ...</k>
           <internals>...
                X |-> declState(_, T:Type,
@@ -796,8 +793,7 @@ module C-DECL-GLOBAL
                andBool isCompleteType(T)
           [structural]
 
-     rule <k> (completeTagInIntDecl(_, _, X:CId) => .K )
-          ...</k>
+     rule <k> completeTagInIntDecl(_, _, X:CId) => .K ...</k>
           <internals>...
                X |-> declState(_, T:Type, DS:DeclState, _)
           ...</internals>

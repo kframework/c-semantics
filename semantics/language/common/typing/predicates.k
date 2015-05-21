@@ -87,9 +87,11 @@ module C-TYPING-PREDICATES
 
      rule isUCharType(t(_, unsigned-char)) => true
      rule isUCharType(typedDeclaration(_:UCharType, _)) => true
+     rule isUCharType(_) => false [owise]
 
      rule isSCharType(t(_, signed-char)) => true
      rule isSCharType(typedDeclaration(_:SCharType, _)) => true
+     rule isSCharType(_) => false [owise]
  
      rule isWCharType(t(_, T:SimpleType)) => true
           requires T ==K cfg:wcharut
@@ -97,15 +99,15 @@ module C-TYPING-PREDICATES
 
      rule isPointerType(t(_, pointerType(_))) => true
      rule isPointerType(typedDeclaration(_:PointerType, _)) => true
+     rule isPointerType(_) => false [owise]
 
      rule isBoolType(t(_, bool)) => true
      rule isBoolType(typedDeclaration(_:BoolType, _)) => true
+     rule isBoolType(_) => false [owise]
 
-     rule isArrayType(t(_, arrayType(_, _))) => true
-     rule isArrayType(t(_, incompleteArrayType(_))) => true
-     rule isArrayType(t(_, flexibleArrayType(_))) => true
-     rule isArrayType(t(_, variableLengthArrayType(_, _))) => true
-     rule isArrayType(typedDeclaration(_:ArrayType, _)) => true
+     rule isFixedLengthArrayType(t(_, arrayType(_, _))) => true
+     rule isFixedLengthArrayType(typedDeclaration(_:FixedLengthArrayType, _)) => true
+     rule isFixedLengthArrayType(_) => false [owise]
 
      rule isFlexibleArrayType(t(_, flexibleArrayType(_))) => true
      rule isFlexibleArrayType(typedDeclaration(T:Type, _))
@@ -119,6 +121,7 @@ module C-TYPING-PREDICATES
 
      rule isVoidType(t(_, void)) => true
      rule isVoidType(typedDeclaration(_:VoidType, _)) => true
+     rule isVoidType(_) => false [owise]
 
      rule isNoType(t(_, no-type)) => true
      rule isNoType(typedDeclaration(_:NoType, _)) => true
@@ -129,6 +132,7 @@ module C-TYPING-PREDICATES
 
      rule isUnionType(t(_, unionType(_))) => true
      rule isUnionType(typedDeclaration(_:UnionType, _)) => true
+     rule isUnionType(_) => false [owise]
 
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
@@ -164,6 +168,7 @@ module C-TYPING-PREDICATES
 
      rule isFunctionType(t(_, functionType(_, _))) => true
      rule isFunctionType(typedDeclaration(_:FunctionType, _)) => true
+     rule isFunctionType(_) => false [owise]
 
      rule isOldStyleFunctionType(T:Type)
           => isFunctionType(T) andBool (oldStyle in getModifiers(T))

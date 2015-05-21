@@ -98,8 +98,8 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= #initializer(K)
-     rule (.K => elaborate(K)) ~> #initializer(K:K)
-     rule elaborateDone(K:K) ~> #initializer(_) => initializer(K)
+     rule (.K => elaborateInit(K)) ~> #initializer(K:K)
+     rule elaborateInitDone(K:K) ~> #initializer(_) => initializer(K)
 
      rule (.K => UNDEF("CDI1",
                "Initializer for scalar contains multiple expressions", "6.7.9:11"))
@@ -152,11 +152,11 @@ module C-DECL-INITIALIZER
                 | fillInits(List)
                 | "fillInit-aux" "(" K ")"
 
-     rule <k> (.K => elaborate(K)) ~> getInit ...</k>
+     rule <k> (.K => elaborateInit(K)) ~> getInit ...</k>
           <saved-init> K:K => .K </saved-init>
           <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
-     rule elaborateDone(K:K) ~> getInit => initializer(K)
+     rule elaborateInitDone(K:K) ~> getInit => initializer(K)
 
      syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))

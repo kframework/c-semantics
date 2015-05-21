@@ -78,6 +78,8 @@ module C-DYNAMIC-SYNTAX
 
      syntax KResult ::= initValue(CId, Type, K)
      syntax KItem ::= allowInit(K)
+     syntax NoInit
+     syntax KResult ::= NoInit
 
      syntax KItem ::= postOp(K, K)
 
@@ -161,9 +163,6 @@ module C-DYNAMIC
      rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
 
-     rule N:CSize => tv(N, t(.Set, cfg:largestUnsigned))
-          [structural] // for internal computations
-
      rule <k> allowInit(K:K) => K ~> initDone ...</k>
           <initializing> I:Int => I +Int 1 </initializing>
           [structural]
@@ -175,5 +174,9 @@ module C-DYNAMIC
      rule <k> initDone => .K ...</k>
           <initializing> I:Int => I -Int 1 </initializing>
           [structural]
+
+     rule isNoInit(NoInit) => true
+     rule isNoInit(initValue(_, _, .K)) => true
+     rule isNoInit(_) => false [owise]
 
 endmodule

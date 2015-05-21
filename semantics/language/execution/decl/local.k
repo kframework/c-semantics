@@ -11,7 +11,7 @@ module C-DECL-LOCAL
 
      imports COMPAT-SYNTAX
 
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
+     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
@@ -25,7 +25,7 @@ module C-DECL-LOCAL
           ...</external-types>
           requires isExternType(T) orBool isFunctionType(T)
           [structural]
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
+     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => giveType(X, T)
           ...</k>
           <curr-tu> TU:String </curr-tu>
@@ -36,7 +36,6 @@ module C-DECL-LOCAL
                andBool notBool X in keys(Defs)
                andBool notBool X in keys(Types)
           [structural]
- 
      rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Base)
                ~> giveType(X, T')
@@ -52,18 +51,23 @@ module C-DECL-LOCAL
           ...</local-types>
           requires isStaticType(T)
           [structural]
-     rule declareInternalVariable(X:CId, T:Type, NoInit)
+     rule declareInternalVariable(X:CId, T:Type, _:NoInit)
           => declareOnly(X, T)
           requires notBool isStaticType(T)
-               andBool (notBool isExternType(T))
-               andBool (notBool isFunctionType(T))
+               andBool notBool isExternType(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isVariableLengthArrayType(T)
           [structural]
      rule declareInternalVariable(X:CId, T:Type, Init:KResult)
           => declareAndDefine(X, T, Init)
           requires notBool isStaticType(T)
-               andBool (notBool isExternType(T))
-               andBool (notBool isFunctionType(T))
-               andBool (Init =/=K NoInit)
+               andBool notBool isExternType(T)
+               andBool notBool isFunctionType(T)
+               andBool notBool isNoInit(Init)
+               andBool notBool isVariableLengthArrayType(T)
+          [structural]
+     // TODO(chathhorn): need to handle general case of VM types.
+     rule declareInternalVariable(_, (T:VariableLengthArrayType => stabilizeVLA(T)), _)
           [structural]
 
      syntax KItem ::= declareOnly(CId, Type)
@@ -137,7 +141,7 @@ module C-DECL-LOCAL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           <should-init> false </should-init>
           [structural]
-     rule <k> defineAndInit(X:CId, T:Type, NoInit, Base:SymBase)
+     rule <k> defineAndInit(X:CId, T:Type, _:NoInit, Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)

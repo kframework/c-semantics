@@ -35,8 +35,8 @@ module C-EXPR-FUNCTION-CALL
 
      context Call(_, (HOLE => revalParams(HOLE)))
      rule Call(Lbl:KLabel(V:K,, t(S:Set, pointerType(t(S':Set, functionType(T:Type, P:List))))), rvlist(L:List))
-               => maybeBind(P, L)
-               ~> elabCall(Lbl(V,, t(S, pointerType(t(S', functionType(T, P))))), L, T, .List)
+          => maybeBind(P, L)
+          ~> elabCall(Lbl(V,, t(S, pointerType(t(S', functionType(T, P))))), L, T, .List)
           requires (Lbl ==KLabel 'tv orBool Lbl ==KLabel 'te)
                andBool (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
@@ -53,14 +53,14 @@ module C-EXPR-FUNCTION-CALL
           requires P =/=K .List
 
      rule elabCall(te(K:K, _), L:List, T:Type, .List)
-          => te(Call(K, list(L)), T)
+          => le(Call(K, list(L)), T)
      rule elabCall(tv(V:CValue, T:Type), L:List, T':Type, .List)
-          => te(Call(tv(V, T), list(L)), T')
+          => le(Call(tv(V, T), list(L)), T')
      rule elabCall(te(K:K, _), _, T:Type, L:List)
-          => te(Call(K, list(L)), T)
+          => le(Call(K, list(L)), T)
           requires L =/=K .List
      rule elabCall(tv(V:CValue, T:Type), _, T':Type, L:List)
-          => te(Call(tv(V, T), list(L)), T')
+          => le(Call(tv(V, T), list(L)), T')
           requires L =/=K .List
 
      syntax KResult ::= "fauxParam"

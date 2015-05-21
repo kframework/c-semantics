@@ -21,7 +21,7 @@ module C-DECL-LOCAL
      // of the current block?
      //
      // Extern, external type and def exist.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
+     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
                => addToEnv(X, Base)
           ...</k>
           <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
@@ -38,7 +38,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit) => .K ...</k>
+     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit) => .K ...</k>
           <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
@@ -54,7 +54,7 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit) => .K ...</k>
+     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit) => .K ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types> Types:Map </external-types>
@@ -85,7 +85,7 @@ module C-DECL-LOCAL
      // in the "local-types" map in order to detect this case.
      rule <k> (.K => CV("TDL1", "Extern declaration of "
                     +String idToString(X) +String " follows one with no linkage.", "6.7:3"))
-               ~> declareInternalVariable(X:CId, T:Type, NoInit)
+               ~> declareInternalVariable(X:CId, T:Type, _:NoInit)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -96,11 +96,11 @@ module C-DECL-LOCAL
      rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer.", "6.7.9:5"))
           ~> declareInternalVariable(X:CId, T:Type, K:K)
-          requires isExternType(T) andBool K =/=K NoInit
+          requires isExternType(T) andBool notBool isNoInit(K)
           [structural]
      rule <k> (.K => CV("TDL3", "Extern declaration of " +String idToString(X)
                     +String " with incompatible type.", "6.7:4"))
-               ~> declareInternalVariable(X:CId, T':Type, NoInit)
+               ~> declareInternalVariable(X:CId, T':Type, _:NoInit)
           ...</k>
           <external-types>... X |-> T:Type ...</external-types>
           requires (isFunctionType(T') orBool isExternType(T'))

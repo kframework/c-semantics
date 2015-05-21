@@ -174,7 +174,7 @@ module C-COMMON-PROMOTION
      rule promote(T:Type) => T
           requires rank(T) >Int rank(t(.Set, int))
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
+     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
           => t(.Set, int)
           requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
                andBool min(t(.Set, int))
@@ -190,7 +190,7 @@ module C-COMMON-PROMOTION
                     andBool max(t(.Set, int)) >=Int max(T)
                )
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
+     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
           => t(.Set, unsigned-int)
           requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
                andBool notBool (

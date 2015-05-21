@@ -6,7 +6,6 @@ endmodule
 
 module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
-     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-SYNTAX
@@ -121,6 +120,12 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(Q) ==KLabel 'alignas)
                orBool (getKLabel(Q) ==KLabel 'atomic)
           [structural]
+
+     //need this to solve array type anywhere rule
+     //syntax Type ::= canonicalizeArrayType(Type) [function]
+     //syntax List ::= canonicalizeArrayTypeInList(List) [function]
+     //syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
+
 // TODO(chathhorn): merging; doesn't make sense to me.
 //     //change this because of anywhere rule
 //     rule canonicalizeType-aux(.List, (t(S:Set, T:SimpleType)
@@ -179,7 +184,6 @@ module C-TYPING-CANONICALIZATION
 
      syntax Bool ::= isGlobalScope(K) [function]
      rule isGlobalScope(file-scope) => true
-     rule isGlobalScope(prototype(K:K)) => isGlobalScope(K)
      rule isGlobalScope(_) => false [owise]
 
      syntax KItem ::= canonicalizeSpecifier(List)

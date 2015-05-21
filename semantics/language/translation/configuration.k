@@ -129,6 +129,13 @@ module C-CONFIGURATION
                     <decl-type-holder color="cyan">
                          .K
                     </decl-type-holder>
+
+                    // Toggle to allow writes and other special treatment for
+                    // initializers.
+                    <initializing> 0 </initializing>
+                    <curr-program-loc color="black">
+                         UnknownCabsLoc
+                    </curr-program-loc>
                </control-details>
 
           </elaborator>
@@ -138,14 +145,6 @@ module C-CONFIGURATION
           <curr-function color="lightgray">
                file-scope
           </curr-function>
-          <curr-program-loc color="black">
-               UnknownCabsLoc
-          </curr-program-loc>
-
-          // Toggle to allow writes and other special treatment for
-          // initializers.
-          <initializing> 0 </initializing>
-
      </control>
 
 </exec>
