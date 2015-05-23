@@ -4,7 +4,7 @@ module C-EXPR-SIZEOF
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{

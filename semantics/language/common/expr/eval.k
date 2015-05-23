@@ -14,7 +14,6 @@ module C-COMMON-EXPR-EVAL
      imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX

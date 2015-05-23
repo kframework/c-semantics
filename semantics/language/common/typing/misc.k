@@ -104,6 +104,9 @@ module C-TYPING-MISC
      rule fmax(t(_, long-double)) => maxValueFloat(64, 15)
 
      rule getParams(t(_, functionType(_, P:List))) => P
+     rule getParams(T:Type) => .List
+          requires notBool isFunctionType(T)
+
      rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
           => t(Mods, functionType(R, P))
      rule getReturn(t(_, functionType(R:Type, _))) => R
@@ -257,59 +260,59 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
 
-     rule tagRestrict(Tag:RestrictTag, t(Mods:Set, T:SimpleType))
+     rule tagRestrict(Tag:BlockTag, t(Mods:Set, T:SimpleType))
           => t(tagRestrict(Tag, Mods), tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, typedDeclaration(T:Type, X:CId))
+     rule tagRestrict(Tag:BlockTag, typedDeclaration(T:Type, X:CId))
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
-     syntax SimpleType ::= tagRestrict(RestrictTag, SimpleType)
+     syntax SimpleType ::= tagRestrict(BlockTag, SimpleType)
           [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
 /*     rule tagRestrict(_, T:SimpleType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
-     rule tagRestrict(Tag:RestrictTag, pointerType(T:Type))
+     rule tagRestrict(Tag:BlockTag, pointerType(T:Type))
           => pointerType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, arrayType(T:Type, Sz:Int))
+     rule tagRestrict(Tag:BlockTag, arrayType(T:Type, Sz:Int))
           => arrayType(tagRestrict(Tag, T), Sz)
-     rule tagRestrict(Tag:RestrictTag, incompleteArrayType(T:Type))
+     rule tagRestrict(Tag:BlockTag, incompleteArrayType(T:Type))
           => incompleteArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, flexibleArrayType(T:Type))
+     rule tagRestrict(Tag:BlockTag, flexibleArrayType(T:Type))
           => flexibleArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:RestrictTag, variableLengthArrayType(T:Type, N:K))
+     rule tagRestrict(Tag:BlockTag, variableLengthArrayType(T:Type, N:K))
           => variableLengthArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(_, incompleteStructType(X:CId))
           => incompleteStructType(X)
-     rule tagRestrict(Tag:RestrictTag, structType(X:CId,
+     rule tagRestrict(Tag:BlockTag, structType(X:CId,
                fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
           => structType(X,
                fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, incompleteUnionType(X:CId))
           => incompleteUnionType(X)
-     rule tagRestrict(Tag:RestrictTag, unionType(X:CId,
+     rule tagRestrict(Tag:BlockTag, unionType(X:CId,
                fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
           => unionType(X,
                fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
 */
-     syntax List ::= tagRestrict(RestrictTag, List)
+     syntax List ::= tagRestrict(BlockTag, List)
           [function, klabel('tagRestrictList)]
-     rule tagRestrict(Tag:RestrictTag, ListItem(T:Type) L:List)
+     rule tagRestrict(Tag:BlockTag, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
-     syntax Map ::= tagRestrict(RestrictTag, Map)
+     syntax Map ::= tagRestrict(BlockTag, Map)
           [function, klabel('tagRestrictMap)]
-     rule tagRestrict(Tag:RestrictTag, X:CId |-> T:Type M:Map)
+     rule tagRestrict(Tag:BlockTag, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
-     syntax Set ::= tagRestrict(RestrictTag, Set)
+     syntax Set ::= tagRestrict(BlockTag, Set)
           [function, klabel('tagRestrictSet)]
-     rule tagRestrict(Tag:RestrictTag, S:Set)
+     rule tagRestrict(Tag:BlockTag, S:Set)
           => SetItem(RestrictBlock(Tag)) S
           requires Restrict in S
      rule tagRestrict(_, S:Set) => S
@@ -318,9 +321,9 @@ module C-TYPING-MISC
      rule getRestrictBlock(t(Mods:Set, _)) => getRestrictBlock'(.K, Mods)
 
      // TODO(chathhorn): more map pattern ugliness.
-     syntax RestrictTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
+     syntax BlockTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
      rule getRestrictBlock'(.K, SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
-     rule getRestrictBlock'(RestrictBlock(Tag:RestrictTag), _) => Tag
+     rule getRestrictBlock'(RestrictBlock(Tag:BlockTag), _) => Tag
      rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
           requires getKLabel(K) =/=KLabel 'RestrictBlock
                andBool (K =/=K .K)
@@ -337,10 +340,13 @@ module C-TYPING-MISC
      rule getReadFrom'(.K, .Set) => noModifier
 
      rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
-     rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
+
      syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
-     syntax Int ::= #getReadFromLen(Modifier) [function]
      rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
+
+     syntax Int ::= #getReadFromLen(Modifier) [function]
+     rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
+
      rule #getReadFromLen(readFrom(_, Len:Int)) => Len
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
@@ -411,4 +417,38 @@ module C-TYPING-MISC
           => t(Mods, arrayType(T, N))
           [structural]
 
+     syntax List ::= elideParams(List) [function]
+     rule elideDeclParams(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(elideDeclParams(T), X)
+     rule elideDeclParams(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(Mods, functionType(elideDeclParams(R), elideParams(Params)))
+     rule elideDeclParams(t(Mods:Set, arrayType(T:Type, N:Int)))
+          => t(Mods, arrayType(elideDeclParams(T), N))
+     rule elideDeclParams(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, incompleteArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, flexibleArrayType(T:Type)))
+          => t(Mods, flexibleArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods, variableLengthArrayType(elideDeclParams(T), N))
+     rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
+          => t(Mods, pointerType(elideDeclParams(T)))
+     rule elideDeclParams(T:Type) => T
+          requires notBool isTypedDeclaration(T)
+               andBool notBool isArrayOrFunctionType(T)
+               andBool notBool isPointerType(T)
+
+     rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
+          => ListItem(elideDeclParams(T)) elideParams(Params)
+     rule elideParams(ListItem(variadic)) => ListItem(variadic)
+     rule elideParams(ListItem(t(Mods:Set, T:SimpleType)) Params:List)
+          => ListItem(elideDeclParams(t(Mods, T))) elideParams(Params)
+     rule elideParams(.List) => .List
+
+     rule elideList(ListItem(T:Type) L:List)
+          => ListItem(elideDeclParams(T)) elideList(L)
+     rule elideList(.List) => .List
+
+     rule elideMap(K:K |-> T:Type M:Map)
+          => K |-> elideDeclParams(T) elideMap(M)
+     rule elideMap(.Map) => .Map
 endmodule

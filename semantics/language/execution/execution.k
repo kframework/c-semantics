@@ -1,9 +1,10 @@
 require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
+require "env.k"
 require "error.k"
 require "io-buffered.k"
-require "ltlmc.k"
+//require "ltlmc.k"
 require "init.k"
 require "sequence-point.k"
 
@@ -25,10 +26,12 @@ require "expr/logical.k"
 require "expr/sequencing.k"
 
 require "decl/local.k"
+require "decl/typedef.k"
 
 module C-EXECUTION
      imports C-CONFIGURATION
-     imports C-LTLMC
+     imports C-ENV
+     //imports C-LTLMC
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
 
@@ -54,6 +57,7 @@ module C-EXECUTION
      imports C-EXPR-SEQUENCING
 
      imports C-DECL-LOCAL
+     imports C-DECL-TYPEDEF
 
      imports C-EXECUTION-EXTENSIONS
 endmodule

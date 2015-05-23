@@ -20,15 +20,6 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T:Type ...</types>
           [structural]
 
-     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
-          <env>... X |-> Base:SymBase ...</env>
-          <types>... X |-> T:Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <internals>... X |-> _ ...</internals>
-          requires isLinkerLoc(Base)
-          [structural]
-
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
      rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>

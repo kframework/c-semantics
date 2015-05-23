@@ -63,9 +63,10 @@ module C-MEMORY-READING
           => concretize(T, fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     rule concretize(T:IntegerType, dataList(L:List))
+     rule concretize(T:Type, dataList(L:List))
           => joinIntegerBytes(T, L)
-          requires notBool isBitfieldType(T)
+          requires isIntegerType(T)
+               andBool notBool isBitfieldType(T)
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]

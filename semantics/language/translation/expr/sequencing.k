@@ -1,6 +1,6 @@
 module C-EXPR-SEQUENCING
+     imports C-ABSTRACT-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 

@@ -54,8 +54,8 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "pushBlock"
      syntax KItem ::= "popBlock"
-     syntax KItem ::= enterBlock(Int)
-     syntax KItem ::= exitBlock(Int)
+     syntax KItem ::= enterBlock(BlockTag)
+     syntax KItem ::= exitBlock(BlockTag)
 
      syntax Statement ::= "loopMarked"
      syntax KItem ::= "popLoop"
@@ -73,6 +73,9 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "comma"
 
+     // these are semantic
+     syntax KItem ::= reval(K)
+
      // Function id, param ids, prototype, body.
      syntax RValue ::= functionObject(CId, List, Type, K)
 
@@ -83,12 +86,45 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= postOp(K, K)
 
+     syntax BlockTag ::= Int | CId | "global"
+                          // TODO(chathhorn): for restrict added via automatic
+                          // casts -- not sure how to handle.
+                          | "none"
+
+     syntax CId ::= compoundLiteral(Int)
+     syntax KItem ::= initCompoundLiteral(K) [strict]
+
+     syntax KItem ::= typedef(CId, Type)
+     syntax KItem ::= declareInternalVariable(CId, K, K) [strict(2,3)]
+
+     //TODO(liyili2): might not need this list in the future.
+     syntax HeatItem ::= hItem(K)
+     context hItem(HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     syntax HeatList ::= List{HeatItem,"hs::"} [strict]
+     syntax KItem ::= hlist(HeatList) [strict]
+     syntax HeatList ::= toHeatList(List) [function]
+     syntax List ::= hListToList(HeatList) [function]
+
+     syntax HeatResult ::= hrItem(K)
+     syntax HeatItem ::= HeatResult
+     syntax KResult ::= HeatResult
+
+     rule hItem(V:KResult) => hrItem(V)
+
+     rule toHeatList(.List) => .HeatList
+     rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
+
+     rule hListToList(.HeatList) => .List
+     rule hListToList(hrItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
+
 endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
@@ -108,42 +144,18 @@ module C-DYNAMIC
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
+     rule type(voidVal) => t(.Set, void)
      rule type(lv(_, T:Type)) => T
      rule type(nclv(_, T:Type)) => T
      rule type(te(_, T:Type)) => T
      rule type(le(_, T:Type)) => T
      rule type(ncle(_, T:Type)) => T
 
-     rule ExpressionLoc(K:K, _) => K
-
      rule _:KResult ~> discard => .K
           [structural]
 
      rule discard => .K
           [structural]
-
-     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
-     A preprocessing directive of the form
-     \cdisplay{# pragma pp-tokensoptnew-line}
-     \broken{where the preprocessing token \cinline{STDC} does not immediately
-     follow pragma in the directive (prior to any macro replacement)} causes the
-     implementation to behave in an implementation-defined manner. The behavior
-     might cause translation to fail or cause the translator or the resulting
-     program to behave in a non-conforming manner. Any such pragma that is not
-     recognized by the implementation is ignored.
-     }*/
-     rule Pragma(_) => .K
-          [structural]
-     rule PragmaKccInv(_) => .K
-          [structural]
-
-     rule AttributeWrapper(K:K, _) => K
-
-     rule ToIdentifier("___missing_field_name") => #NoName
-     rule ToIdentifier(S:String) => Identifier(S)
-          requires S =/=String "___missing_field_name"
-
-     rule NothingExpression => emptyValue:>Expression
 
      rule unwrapObj(<generatedTop>...
                <global> G:Bag </global>

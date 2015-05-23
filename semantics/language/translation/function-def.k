@@ -1,7 +1,7 @@
 module C-FUNCTION-DEF-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= initFunction(K, K) [strict]
+     syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
      syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
@@ -28,8 +28,9 @@ module C-FUNCTION-DEF
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare(
                typedDeclaration(toPrototype(T), X),
-               initializer(initFunction(
+               initializer(Computation(initFunction(
                     &(X),
+                    X,
                     functionObject(X,
                          // The sanitized declared parameters.
                          elideList(getParams(emptyToVoid(T))),
@@ -38,7 +39,7 @@ module C-FUNCTION-DEF
                          // .List if there isn't actually a prototype.
                          toPrototype(T),
                          Goto(funLabel(X)))
-               ))
+               )))
           )
           ~> processFunDef(X, Blk)
           requires notBool hasDupParams(T)
@@ -155,13 +156,16 @@ module C-FUNCTION-DEF
           requires T ==K char
      rule isArgvType(_) => false [owise]
 
+     rule initFunction(tv(Loc:SymLoc, T:Type), X:CId, Fun:KResult)
+          => te(initFunction(&(X), X, Fun), T)
+          requires isLinkerLoc(Loc)
      rule <k> initFunction(
-               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), Fun:KResult)
-               => .K
+               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), _, Fun:KResult)
+               => voidVal
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
           requires (notBool (base(Loc) in keys(M)))
-          [structural]
+               andBool notBool isLinkerLoc(Loc)
 
      syntax KItem ::= safeBody(CId, K) [function]
 
@@ -177,12 +181,9 @@ module C-FUNCTION-DEF
      syntax KItem ::= calculateGotoMap(CId)
 
      rule <k> staticEval(X:CId, Params:List, Blk:K)
-               => pushBlock
-               ~> dummyBind(Params)
-               ~> generateRuleAnnotation(X)
-               ~> elaborate(Label(funLabel(X), safeBody(X, Blk)))
+               => generateRuleAnnotation(X)
+               ~> elaborate(dummyBind(Params) ~> Label(funLabel(X), safeBody(X, Blk)))
                ~> calculateGotoMap(X)
-               ~> popBlock
                ~> returnToFileScope
           ...</k>
           <curr-function> _ => X </curr-function>

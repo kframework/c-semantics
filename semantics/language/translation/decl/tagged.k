@@ -1,5 +1,5 @@
 module C-DECL-TAGGED-SYNTAX
-     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      // Not defined, just used.
      syntax KItem ::= addGlobalTag(CId, FieldInfo)
      syntax KItem ::= addLocalTag(CId, FieldInfo)
@@ -9,7 +9,6 @@ module C-DECL-TAGGED-SYNTAX
 endmodule
 
 module C-DECL-TAGGED
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
 
      imports C-ALIGNMENT-SYNTAX
@@ -49,7 +48,7 @@ module C-DECL-TAGGED
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
      syntax Int ::= structPadding(Int, Int) [function]
-     
+
      rule makeStructFieldInfo'(
                ListItem(typedDeclaration(T:Type, Field:CId)) L:List
                , V:Int
@@ -106,5 +105,17 @@ module C-DECL-TAGGED
           requires F =/=K file-scope
           [structural]
 
+     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
+          <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
+          <curr-tu> Tu:String </curr-tu>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          requires notBool (X in keys(Structs))
+          [structural]
+     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
+               +String idToString(X), "6.7.2.3:1"))
+               ~> addLocalTag(X:CId, _)
+          ...</k>
+          <structs>... X |-> _ ...</structs>
+          [structural]
 endmodule
 

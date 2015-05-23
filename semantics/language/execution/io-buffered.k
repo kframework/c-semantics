@@ -66,7 +66,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type,
-                (Tag:RestrictTag => .K), _)
+                (Tag:BlockTag => .K), _)
            ...</k>
            <activeBlocks>...
                 Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))

@@ -11,7 +11,7 @@ endmodule
 
 module C-DECL-INITIALIZER
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
 
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
@@ -26,7 +26,6 @@ module C-DECL-INITIALIZER
 
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): CodeLoc in figureInit (2trans)
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K))
           => CodeLoc(.K, L) ~> figureInit(X, T, K)
           [structural]
@@ -86,20 +85,16 @@ module C-DECL-INITIALIZER
      // base types
      rule figureInit(X:CId, T:Type, SingleInit(K:K))
           => figureInit-aux(X, T,
-               #initializer(Computation(ncle(X, T) := K)))
+               initializer(Computation(ncle(X, T) := K)))
           requires notBool isArrayType(T)
           [structural]
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
           => figureInit-aux(X, T,
-               #initializer(Computation(ncle(X, T) := K)))
+               initializer(Computation(ncle(X, T) := K)))
           requires notBool isAggregateOrUnionType(T)
           [structural]
-
-     syntax KItem ::= #initializer(K)
-     rule (.K => elaborateInit(K)) ~> #initializer(K:K)
-     rule elaborateInitDone(K:K) ~> #initializer(_) => initializer(K)
 
      rule (.K => UNDEF("CDI1",
                "Initializer for scalar contains multiple expressions", "6.7.9:11"))
@@ -118,13 +113,6 @@ module C-DECL-INITIALIZER
           ~> figureInit(_, t(_, incompleteArrayType(T:Type)), SingleInit(K:K))
           requires notBool isWCharType(T) orBool getKLabel K =/=KLabel 'wstringLiteral
 
-   // id, type, initializer
-     syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
-     rule figureInit-aux(X:CId, T:Type, initializer(K:K))
-          => initValue(X, T, K)
-          requires isCompleteType(T)
-          [structural]
-
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
                     => arrayType(T, N))), initializer(K:K))
@@ -140,6 +128,13 @@ module C-DECL-INITIALIZER
           requires S in keys(nativeDefinedBuiltins)
           [structural]
 
+   // id, type, initializer
+     syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
+     rule figureInit-aux(X:CId, T:Type, initializer(K:K))
+          => giveType(X, T) ~> elaborateInit(K) ~> initValue(X, T, .K)
+          requires isCompleteType(T)
+     rule (elaborateInitDone(K:K) => .K) ~> initValue(_, _, (.K => K))
+
      syntax Int ::= #nativeSymbolLength(String) [function, hook(C-SEMANTICS:nativeSymbolLength), impure]
 
      // Special array designator syntax so that it doesn't get caught by the
@@ -152,11 +147,10 @@ module C-DECL-INITIALIZER
                 | fillInits(List)
                 | "fillInit-aux" "(" K ")"
 
-     rule <k> (.K => elaborateInit(K)) ~> getInit ...</k>
+     rule <k> getInit => initializer(K) ...</k>
           <saved-init> K:K => .K </saved-init>
           <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
-     rule elaborateInitDone(K:K) ~> getInit => initializer(K)
 
      syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))
@@ -169,12 +163,8 @@ module C-DECL-INITIALIZER
           <curr-object>
                .List => ListItem(ncle(ncle(X, T), T))
           </curr-object>
-          <saved-init>... .K => #zero(X) </saved-init>
+          <saved-init>... .K => zero(X) </saved-init>
           [structural]
-
-     syntax KItem ::= #zero(CId)
-     rule <k> #zero(X:CId) => .K ...</k>
-          <elab>... .K => zero(X) </elab>
 
      rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
           => fillInit(InitFragment(K, Exp)) ~> fillInits(L)
@@ -412,14 +402,15 @@ module C-DECL-INITIALIZER
                andBool notBool isStructOrUnionType(T')
           [structural]
 
-     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member",
-               "6.7.9:2"))
-               ~> T:Type ~> initializeSingleInit(_)
-          ...</k>
-          <curr-subobject>
-               ListItem(next)
-          ...</curr-subobject>
-          requires notBool isStructOrUnionType(T)
+     // TODO(chathhorn): not specific enough.
+     // rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member",
+     //           "6.7.9:2"))
+     //           ~> T:Type ~> initializeSingleInit(_)
+     //      ...</k>
+     //      <curr-subobject>
+     //           ListItem(next)
+     //      ...</curr-subobject>
+     //      requires notBool isStructOrUnionType(T)
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
@@ -572,5 +563,102 @@ module C-DECL-INITIALIZER
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]
+
+     // c1x 6.7.9:10 If an object that has automatic storage duration is not
+     // initialized explicitly, its value is indeterminate. If an object that
+     // has static or thread storage duration is not initialized explicitly,
+     // then:
+     // -- if it has pointer type, it is initialized to a null pointer;
+     // -- if it has arithmetic type, it is initialized to (positive or
+     // unsigned) zero;
+     // -- if it is an aggregate, every member is initialized (recursively)
+     // according to these rules, and any padding is initialized to zero bits;
+     // -- if it is a union, the first named member is initialized
+     // (recursively) according to these rules, and any padding is initialized
+     // to zero bits;
+
+     syntax KItem ::= zero(CId)
+     rule <k> zero(X:CId) => zeroType(ncle(X, T), T) ...</k>
+          <types>... X |-> T:Type ...</types>
+
+     syntax KItem ::= zeroType(K, Type)
+     rule zeroType(X:K, T:Type)
+          => Computation(X := tv(getZero(T), stripQualifiers(T)))
+          requires isPointerType(T) orBool isArithmeticType(T)
+          [structural]
+
+     rule (.K => zeroType(X[Len -Int 1], T))
+          ~> zeroType(X:K, t(_, arrayType(T:Type, (Len:Int => Len -Int 1))))
+          requires Len >Int 0
+          [structural]
+     rule zeroType(_, t(_, arrayType(_:Type, 0))) => .K
+          [structural]
+
+     rule <k> zeroType(X:K, t(_, structType(S:StructId)))
+              => zeroStruct(X, Fields) ...</k>
+          <structs>... S |-> fieldInfo(Fields:List, _, _, _) ...</structs>
+          [structural]
+
+     rule <k> zeroType(X:K, t(_, unionType(S:StructId)))
+              => zeroType(X . F, T) ...</k>
+          <structs>... S |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _) ...</structs>
+          [structural]
+
+     rule zeroType(_, _:FunctionType) => .K
+          [structural]
+
+     rule zeroType(_, t(_, flexibleArrayType(_))) => .K
+          [structural]
+
+     syntax KItem ::= zeroStruct(K, List)
+     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List)
+          => zeroType(X . F, T) ~> zeroStruct(X, L)
+          [structural]
+     rule zeroStruct(_, .List) => .K
+          [structural]
+
+     syntax KItem ::= getZero(Type) [function]
+     rule getZero(_:IntegerType) => 0
+     rule getZero(_:FloatType) => 0.0
+     rule getZero(_:PointerType) => NullPointer
+
+     syntax KItem ::= fillEnums(K)
+     syntax KItem ::= "fillEnums-aux" "(" K "," K ")"
+
+     rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
+          [structural]
+
+     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(SetItem(IntegerConstant), int)))
+          [structural]
+
+     rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), K:K)
+          => declare(typedDeclaration(
+               t(SetItem(Static) SetItem(IntegerConstant), int), E),
+               // Skip calculating the initializer so we can force int type.
+               initializer(initEnum(E, K)))
+          ~> fillEnums-aux(
+               EnumDef(X, list(L)), K + tv(1, t(SetItem(IntegerConstant), int)))
+          [structural]
+     rule fillEnums-aux(EnumDef(X:CId, list(
+               ListItem(EnumItemInit(E:CId, Exp:K)) L:List)), _)
+          => declare(typedDeclaration(
+               t(SetItem(Static) SetItem(IntegerConstant), int), E),
+               initializer(initEnum(E, Exp)))
+          ~> fillEnums-aux(
+               EnumDef(X, list(L)), Exp + tv(1, t(SetItem(IntegerConstant), int)))
+          requires Exp =/=K NothingExpression
+          [structural]
+     rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
+          [structural]
+
+
+     syntax KItem ::= initEnum(CId, K)
+     context initEnum(_, HOLE => reval(HOLE)) [result(RValue)]
+     rule initEnum(X:CId, V:RValue)
+          => Computation(ncle(X, t(.Set, int)) := V)
+          requires isIntegerType(type(V)) andBool IntegerConstant in getModifiers(type(V))
+     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
+          ~> initEnum(_, tv(_, T:Type))
+          requires notBool isIntegerType(T) orBool notBool IntegerConstant in getModifiers(T)
 
 endmodule

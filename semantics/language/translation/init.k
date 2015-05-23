@@ -26,6 +26,10 @@ module C-TRANSLATION-INIT
 
      imports COMPAT-SYNTAX
 
+     rule ToIdentifier("___missing_field_name") => #NoName
+     rule ToIdentifier(S:String) => Identifier(S)
+          requires S =/=String "___missing_field_name"
+
      rule <k> link
                => TranslationUnit("builtin", list(.List),
                     list(ListItem(addBuiltins(builtins))))
@@ -105,10 +109,10 @@ module C-TRANSLATION-INIT
 
      rule <k> addBuiltin(B:CId, T:FunctionType) => declare(
                typedDeclaration(T, B),
-               initializer(initFunction(
-                    &(B),
+               initializer(Computation(initFunction(
+                    &(B), B,
                     functionObject(B, .List, T, handleBuiltin)
-               ))) ...</k>
+               )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs))
@@ -125,16 +129,21 @@ module C-TRANSLATION-INIT
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
+          requires notBool (B in keys(Defs))
+               andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses> Uses:Set </external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs))  andBool notBool (B in Uses) andBool notBool isFunctionType(T)
+          requires notBool (B in keys(Defs))
+               andBool notBool (B in Uses)
+               andBool notBool isFunctionType(T)
 
      syntax K ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
-     rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
+     rule handleBuiltinConstant(Identifier(S:String), T:Type)
+          => #nativeConstant(S, T)
+          when S in keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(Bag, Bag)
                     | checkExtTypes(K, Set, Map, Set, Map)
@@ -284,13 +293,36 @@ module C-TRANSLATION-INIT
      rule <k> writeEndModule(Fd:Int) => #close(Fd) ...</k>
           <result-value> _ => 0 </result-value>
 
-     rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
-          <elab>... .K => filterCabsLoc(L) </elab>
+     rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K
+
+     rule <k> L:CabsLoc => .K ...</k>
+          <elab>... .K => L </elab>
+          <curr-program-loc> _ => L </curr-program-loc>
 
      syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
      rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
           => UnknownCabsLoc
      rule filterCabsLoc(L:CabsLoc) => L [owise]
+
+     rule ExpressionLoc(K:K, _) => K
+
+     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
+     A preprocessing directive of the form
+     \cdisplay{# pragma pp-tokensoptnew-line}
+     \broken{where the preprocessing token \cinline{STDC} does not immediately
+     follow pragma in the directive (prior to any macro replacement)} causes the
+     implementation to behave in an implementation-defined manner. The behavior
+     might cause translation to fail or cause the translator or the resulting
+     program to behave in a non-conforming manner. Any such pragma that is not
+     recognized by the implementation is ignored.
+     }*/
+     rule Pragma(_) => .K
+          [structural]
+     rule PragmaKccInv(_) => .K
+          [structural]
+
+     rule AttributeWrapper(K:K, _) => K
+
+     rule NothingExpression => emptyValue:>Expression
 
 endmodule

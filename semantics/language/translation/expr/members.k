@@ -1,5 +1,5 @@
 module C-EXPR-MEMBERS
-     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-TYPING-SYNTAX

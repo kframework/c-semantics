@@ -6,7 +6,7 @@ module C-ENV-SYNTAX
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= "populateFromGlobal"
-     syntax KItem ::= addToHistory(Int)
+     syntax KItem ::= addToHistory(BlockTag)
 
 endmodule
 
@@ -14,12 +14,11 @@ module C-ENV
      imports C-ENV-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
 
      imports COMPAT-SYNTAX
 
-     rule <k> addToHistory(Num:Int) => .K ...</k>
-          <block-history> .List => ListItem(Num) ...</block-history>
+     rule <k> addToHistory(Tag:BlockTag) => .K ...</k>
+          <block-history> .List => ListItem(Tag) ...</block-history>
           [structural]
 
      rule <k> populateFromGlobal => .K ...</k>
@@ -32,11 +31,11 @@ module C-ENV
           [structural]
 
      rule <k> addToEnv(X:CId, Base:SymBase) => addToGlobalEnv(X, Base) ...</k>
-          <curr-function> file-scope </curr-function>
+          <elab-id> .K </elab-id>
           [structural]
      rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
-          <curr-function> F:CId </curr-function>
-          requires F =/=K file-scope
+          <elab-id> E:CId </elab-id>
+          requires E =/=K .K
           [structural]
 
      syntax KItem ::= addToGlobalEnv(K, SymBase)
@@ -53,13 +52,15 @@ module C-ENV
           [structural]
 
      rule <k> giveType(X:CId, T:Type)
-               => #if (Fun ==K file-scope)
-               #then giveGlobalType(X,
-                    tagRestrict(global, stripStorageSpecifiers(T)))
-               #else giveLocalType(X, stripStorageSpecifiers(T))
-               #fi
+               => giveGlobalType(X, tagRestrict(global, stripStorageSpecifiers(T)))
           ...</k>
-          <curr-function> Fun:CId </curr-function>
+          <elab-id> .K </elab-id>
+          [structural]
+     rule <k> giveType(X:CId, T:Type)
+               => giveLocalType(X, stripStorageSpecifiers(T))
+          ...</k>
+          <elab-id> E:CId </elab-id>
+          requires E =/=K .K
           [structural]
 
      syntax KItem ::= giveGlobalType(K, Type)
@@ -67,9 +68,7 @@ module C-ENV
           <types> L:Map => L[X <- T] </types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <gtypes>
-               G:Map => G[X <- T]
-          </gtypes>
+          <gtypes> G:Map => G[X <- T] </gtypes>
           [structural]
 
      syntax KItem ::= giveLocalType(K, Type)

@@ -1,8 +1,8 @@
 module C-CHECK-LOC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= enterRestrictScope(RestrictTag)
-     syntax KItem ::= exitRestrictScope(RestrictTag)
+     syntax KItem ::= enterRestrictScope(BlockTag)
+     syntax KItem ::= exitRestrictScope(BlockTag)
      syntax KItem ::= activity(Int, Map)
 endmodule
 
@@ -16,22 +16,22 @@ module C-CHECK-LOC
 
      imports COMPAT-SYNTAX
 
-     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
+     rule <k> enterRestrictScope(Tag:BlockTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>
           [structural]
-     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
+     rule <k> enterRestrictScope(Tag:BlockTag) => .K ...</k>
           <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
           requires notBool (Tag in keys(Tags))
           [structural]
 
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     rule <k> exitRestrictScope(Tag:BlockTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
           requires N >Int 1
           [structural]
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     rule <k> exitRestrictScope(Tag:BlockTag) => .K ...</k>
           <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>
           [structural]
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     rule <k> exitRestrictScope(Tag:BlockTag) => .K ...</k>
           <activeBlocks> Blocks:Map </activeBlocks>
           requires notBool Tag in keys(Blocks)
           [structural]
@@ -129,18 +129,18 @@ module C-CHECK-LOC
      rule filterUnmodified(_, (.K => K), (SetItem(K:K) => .Set) _, _)
           [structural]
      rule <k> filterUnmodified(Loc:SymLoc,
-               (basedOn(Base:SymBase, Tag:RestrictTag) => .K), _,
+               (basedOn(Base:SymBase, Tag:BlockTag) => .K), _,
                (.Set => SetItem(basedOn(Base, Tag))) _)
           ...</k>
           <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           requires Loc in keys(Modified)
           [structural]
-     rule <k> filterUnmodified(Loc:SymLoc, (basedOn(_, Tag:RestrictTag) => .K), _, _)
+     rule <k> filterUnmodified(Loc:SymLoc, (basedOn(_, Tag:BlockTag) => .K), _, _)
           ...</k>
           <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
           requires notBool (Loc in keys(Modified))
           [structural]
-     rule <k> filterUnmodified(_, (basedOn(_, Tag:RestrictTag) => .K), _, _)
+     rule <k> filterUnmodified(_, (basedOn(_, Tag:BlockTag) => .K), _, _)
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
           requires notBool (Tag in keys(Modified))

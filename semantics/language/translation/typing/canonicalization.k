@@ -8,12 +8,11 @@ module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-BITSIZE-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
-     imports DEBUG-SYNTAX
 
      context canonicalizeType-aux(_, HOLE, _, _, _)
 

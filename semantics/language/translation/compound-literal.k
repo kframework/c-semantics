@@ -1,22 +1,20 @@
 module C-COMPOUND-LITERAL
+     imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
-
-     syntax CId ::= compoundLiteral(Int)
-     syntax KItem ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage
@@ -48,35 +46,12 @@ module C-COMPOUND-LITERAL
 
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
-     // comes back from figureInit as initValue(id, type, inits)
      rule CompoundLiteral(N:Int, T:Type, K:K, Init:K)
-          => handleCompoundLiteral(
-               figureInit(compoundLiteral(N), DeclType(T, K), Init))
-          [structural]
+          => #CompoundLiteral(compoundLiteral(N), DeclType(T, K), Init)
 
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => allocObject(Base, T)
-               ~> addToEnv(X, Base)
-               ~> giveType(X, T)
-               ~> allowInit(Init)
-               ~> X
-          ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
-          <block-history> .List </block-history>
-          [structural]
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => addToEnv(X, symVal)
-               ~> giveType(X, T)
-               ~> Init
-               ~> X
-          ...</k>
-          <block-history> ListItem(_) ...</block-history>
-          [structural]
-
-     // here we start with a local address, put the string in memory, then
-     // change the address to be readonly
+     syntax KItem ::= #CompoundLiteral(CId, K, K) [strict(2)]
+     rule #CompoundLiteral(X:CId, T:Type, Init:K)
+          => declare(typedDeclaration(T, X), Init) ~> X
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.5}{6}}}{For character string
      literals, the array elements have type \cinline{char}, and are initialized

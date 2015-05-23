@@ -71,12 +71,12 @@ module C-STMT-BLOCK
      were a statement, and within each declaration in the order that declarators
      appear.
      }*/
-     rule enterBlock(BlockNum:Int)
-          => addToHistory(BlockNum)
-          ~> enterRestrictScope(BlockNum)
+     rule enterBlock(Tag:BlockTag)
+          => addToHistory(Tag)
+          ~> enterRestrictScope(Tag)
           [structural]
 
-     rule exitBlock(BlockNum:Int) => exitRestrictScope(BlockNum)
+     rule exitBlock(Tag:BlockTag) => exitRestrictScope(Tag)
           [structural]
 
 endmodule

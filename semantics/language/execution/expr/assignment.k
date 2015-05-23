@@ -71,17 +71,17 @@ module C-EXPR-ASSIGNMENT
      syntax Set ::= "getRelevantTags'" "(" K "," SymLoc "," Set ")" [function]
      rule getRelevantTags'((.K => K), _, (SetItem(K:K) => .Set) _)
      rule getRelevantTags'((basedOn(Base, _) => .K), loc(Base:SymBase, _), _)
-     rule getRelevantTags'(basedOn(Base':SymBase, Tag:RestrictTag),
+     rule getRelevantTags'(basedOn(Base':SymBase, Tag:BlockTag),
                loc(Base:SymBase, Offset:Int), Bases:Set)
           => SetItem(Tag) getRelevantTags'(.K, loc(Base:SymBase, Offset), Bases)
           requires Base =/=K Base'
      rule getRelevantTags'(.K, _, .Set) => .Set
 
-     syntax KItem ::= checkRestrictAssign(RestrictTag, Set)
-     rule checkRestrictAssign(Tag:RestrictTag, Tags:Set) => .K
+     syntax KItem ::= checkRestrictAssign(BlockTag, Set)
+     rule checkRestrictAssign(Tag:BlockTag, Tags:Set) => .K
           requires (Tag =/=K global) andBool notBool (Tag in Tags)
                orBool Tag ==K none
-     rule checkRestrictAssign(Tag:RestrictTag, Tags:Set)
+     rule checkRestrictAssign(Tag:BlockTag, Tags:Set)
           => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
           requires Tag in Tags
      rule checkRestrictAssign(global, .Set) => .K

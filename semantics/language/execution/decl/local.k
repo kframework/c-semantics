@@ -1,6 +1,4 @@
 module C-DECL-LOCAL
-     imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
      imports C-ENV-SYNTAX
 
      imports C-MEMORY-ALLOC-SYNTAX
@@ -153,6 +151,7 @@ module C-DECL-LOCAL
      rule justInit(initValue(_, _, K:K)) => allowInit(K) ~> sequencePoint
           [structural]
 
+     syntax KItem ::= addLocalTag(CId, FieldInfo)
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
           <curr-tu> Tu:String </curr-tu>

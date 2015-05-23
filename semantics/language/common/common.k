@@ -7,9 +7,7 @@ require "compat.k"
 require "conversion.k"
 require "debug.k"
 require "dynamic.k"
-require "env.k"
 require "error.k"
-require "literal.k"
 require "promotion.k"
 require "settings.k"
 require "symloc.k"
@@ -17,13 +15,7 @@ require "syntax.k"
 require "type-builder.k"
 require "typing.k"
 
-require "decl/definition.k"
-require "decl/tagged.k"
-require "decl/typedef.k"
-require "decl/zero.k"
-
 require "expr/additive.k"
-require "expr/alignof.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
@@ -46,23 +38,16 @@ module C-COMMON
      imports C-COMMON-PROMOTION
      imports C-CONVERSION
      imports C-DYNAMIC
-     imports C-ENV
      imports C-ERROR
-     imports C-LITERAL
-     imports COMPAT
      imports C-SETTINGS
      imports C-SYMLOC
      imports C-SYNTAX
      imports C-TYPE-BUILDER
      imports C-TYPING
 
-     imports C-DECL-DEFINITION
-     imports C-DECL-TAGGED
-     imports C-DECL-TYPEDEF
-     imports C-DECL-ZERO
+     imports COMPAT
 
      imports C-COMMON-EXPR-ADDITIVE
-     imports C-COMMON-EXPR-ALIGNOF
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST
      imports C-COMMON-EXPR-EVAL

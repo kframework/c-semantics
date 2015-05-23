@@ -41,11 +41,6 @@ module C-IO-DIRECT
           requires (Offset <Int Len) andBool notBool isSymbolic(V)
           [structural]
 
-     rule (.K => CVUB("TIO1", "Non-constant static initializer.", "6.6"))
-          ~> writeByte(_, V:CValue)
-          requires isSymbolic(V)
-          [structural]
-
      syntax KItem ::= readByte(SymLoc)
      // loc, size in bytes, aux list
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List ")"

@@ -50,7 +50,7 @@ module C-CONFIGURATION
      // restrict-qualified pointers.
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
-     // RestrictTag |-> activity(Int, SymLoc |-> Int)
+     // BlockTag |-> activity(Int, SymLoc |-> Int)
      <activeBlocks> .Map </activeBlocks>
 
      // stdlib

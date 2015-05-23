@@ -38,9 +38,10 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit) => .K ...</k>
+     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
+               => giveType(X, T)
+          ...</k>
           <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
-          <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -54,9 +55,11 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit) => .K ...</k>
+     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
+               => addToEnv(X, symVal)
+               ~> giveType(X, T)
+          ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
-          <types> M:Map => M[X <- T] </types>
           <external-types> Types:Map </external-types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -95,7 +98,7 @@ module C-DECL-LOCAL
           [structural]
      rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer.", "6.7.9:5"))
-          ~> declareInternalVariable(X:CId, T:Type, K:K)
+          ~> declareInternalVariable(X:CId, T:Type, K:KResult)
           requires isExternType(T) andBool notBool isNoInit(K)
           [structural]
      rule <k> (.K => CV("TDL3", "Extern declaration of " +String idToString(X)
@@ -149,7 +152,8 @@ module C-DECL-LOCAL
 
      syntax KItem ::= defineAndInit(CId, Type, K)
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => giveType(X, T)
+               => addToEnv(X, symVal)
+               ~> giveType(X, T)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -162,7 +166,8 @@ module C-DECL-LOCAL
           [structural]
      // Only function prototype scope?
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
-               => giveType(X, T)
+               => addToEnv(X, symVal)
+               ~> giveType(X, T)
           ...</k>
           <block-history> .List </block-history>
           requires isCompleteType(T)
@@ -174,17 +179,5 @@ module C-DECL-LOCAL
           requires notBool isCompleteType(T)
           [structural]
 
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
-          <curr-tu> Tu:String </curr-tu>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
-          requires notBool (X in keys(Structs))
-          [structural]
-     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
-               +String idToString(X), "6.7.2.3:1"))
-               ~> addLocalTag(X:CId, _)
-          ...</k>
-          <structs>... X |-> _ ...</structs>
-          [structural]
 endmodule
 

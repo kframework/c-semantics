@@ -242,13 +242,6 @@ module C-TYPING-COMPATIBILITY
           requires getKLabel(K) =/=KLabel 'alignas
                andBool (K =/=K .K)
 
-     syntax Bool ::= "#hasAlignas" "(" Set ")" [function]
-     rule #hasAlignas(Mods:Set) => some(Mods, '#isAlignas)
-
-     syntax Bool ::= "#isAlignas" "(" K ")" [function]
-     rule #isAlignas(alignas(_)) => true
-     rule #isAlignas(_) => false [owise]
-
      // We can assume the types are compatible.
      rule compositeType(T:Type, T) => T
      rule compositeType(

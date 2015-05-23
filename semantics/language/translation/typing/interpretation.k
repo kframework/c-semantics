@@ -1,12 +1,11 @@
 module C-TYPING-INTERPRETATION
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
@@ -228,6 +227,19 @@ module C-TYPING-INTERPRETATION
 
      rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K), Size:K))))
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
+          [structural]
+
+     context Typedef(NameGroup(HOLE, _))
+
+     rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List)))
+          => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))
+          [structural]
+     rule Typedef(NameGroup(_:Type, list(.List))) => .K
+          [structural]
+
+     syntax KItem ::= defineType(K) [strict]
+     rule defineType(typedDeclaration(T:Type, X:CId))
+          => typedef(X, T)
           [structural]
 
 endmodule

@@ -24,7 +24,6 @@ endmodule
 
 module C-TYPE-BUILDER
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX

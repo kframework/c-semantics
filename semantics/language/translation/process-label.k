@@ -10,7 +10,6 @@ module C-PROCESS-LABEL
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -69,25 +68,21 @@ module C-PROCESS-LABEL
                orBool (L ==KLabel 'Continue)
                orBool (L ==KLabel 'Return)
                orBool (L ==KLabel 'Goto)
-               orBool (L ==KLabel 'CompGoto)
-               orBool (L ==KLabel 'exitBlock)
+               orBool (L ==KLabel 'initCompoundLiteral)
 
      rule <computation> pushBlock => .K ...</computation>
           <goto-nesting-depth> N:Int => N +Int 1 </goto-nesting-depth>
-          <goto-block-history> ListItem(_:Int) ...</goto-block-history>
-     rule <computation> enterBlock(Num:Int) => .K ...</computation>
-          <goto-block-history> (.List => ListItem(Num)) ...</goto-block-history>
+     rule <computation> enterBlock(Tag:BlockTag) => .K ...</computation>
+          <goto-block-history> (.List => ListItem(Tag)) ...</goto-block-history>
+     rule <computation> exitBlock(Tag:BlockTag) => .K ...</computation>
+          <goto-block-history> (ListItem(Tag) => .List) ...</goto-block-history>
      rule <computation> popBlock => .K ...</computation>
           <goto-nesting-depth> I:Int => I -Int 1 </goto-nesting-depth>
-          <goto-block-history>
-               (ListItem(_:Int) => .List) ListItem(_:Int)
-          ...</goto-block-history>
           requires I >Int 0
 
      rule <computation> L:CabsLoc => .K ...</computation>
           <curr-program-loc> _ => L </curr-program-loc>
 
-     // TODO(chathhorn): !! typedefs/decls !!
      rule <computation>
                declareInternalVariable(X:CId, T:Type, Init:KResult) => .K
           ...</computation>
@@ -99,16 +94,9 @@ module C-PROCESS-LABEL
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
 
-     rule <computation> OnlyTypedef(K:K) => .K ...</computation>
+     rule <computation> typedef(X:CId, T:Type) => .K ...</computation>
           <decl-stack>... .List
-               => ListItem(frozenDeclaration(Depth, BlockNum, OnlyTypedef(K)))
-          </decl-stack>
-          <goto-nesting-depth> Depth:Int </goto-nesting-depth>
-          <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
-
-     rule <computation> Typedef(K:K) => .K ...</computation>
-          <decl-stack>... .List
-               => ListItem(frozenDeclaration(Depth, BlockNum, Typedef(K)))
+               => ListItem(frozenDeclaration(Depth, BlockNum, typedef(X, T)))
           </decl-stack>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum:Int) ...</goto-block-history>
@@ -116,7 +104,7 @@ module C-PROCESS-LABEL
      // - should do this with a split
      rule <goto-calc>
                <computation>
-                    (For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) => .K)
+                    (For(Pre:K, Control:K, Post:K, S:K) => .K)
                     ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
@@ -133,7 +121,7 @@ module C-PROCESS-LABEL
                     <computation-tail>
                          Computation(Post)
                          ~> loopMarked
-                         ~> For(ForNum, Pre, (
+                         ~> For(Pre, (
                               #if Control =/=K emptyValue
                               #then Control
                               #else tv(1, t(.Set, int))
@@ -145,7 +133,6 @@ module C-PROCESS-LABEL
                     B
                     <goto-nesting-depth> N +Int 1 </goto-nesting-depth>
                     <goto-block-history>
-                         ListItem(ForNum)
                          ListItem(Num) OldBlockHistory
                     </goto-block-history>
                     <goto-loop-stack>

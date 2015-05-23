@@ -1,8 +1,6 @@
 require "typing/compatibility.k"
-require "typing/expr.k"
 require "typing/misc.k"
 require "typing/predicates.k"
-require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
      imports C-SYNTAX
@@ -21,10 +19,6 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map)
-
-     // Represents a type before canonicalization.  as in "int *x", first arg
-     // is "Int", second arg is "PointerType(JustBase)"
-     syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
@@ -154,11 +148,7 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= readFrom(SymLoc, Int)
 
      // Special restrict modifier tagged with a block num.
-     syntax Modifier ::= RestrictBlock(RestrictTag)
-     syntax RestrictTag ::= Int | CId | "global"
-                          // TODO(chathhorn): for restrict added via automatic
-                          // casts -- not sure how to handle.
-                          | "none"
+     syntax Modifier ::= RestrictBlock(BlockTag)
 
      syntax Modifier ::= "IntegerConstant"
 
@@ -200,8 +190,8 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
-     syntax Type ::= tagRestrict(RestrictTag, Type) [function]
-     syntax RestrictTag ::= getRestrictBlock(Type) [function]
+     syntax Type ::= tagRestrict(BlockTag, Type) [function]
+     syntax BlockTag ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]
 
@@ -217,12 +207,15 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isTruthValue(RValue) [function]
 
      syntax KItem ::= stabilizeVLA(Type)
+
+     // Turns typedDeclarations into Types in function params.
+     syntax Type ::= elideDeclParams(Type) [function]
+     syntax List ::= elideList(List) [function]
+     syntax Map ::= elideMap(Map) [function]
 endmodule
 
 module C-TYPING
      imports C-TYPING-COMPATIBILITY
-     imports C-TYPING-EXPR
      imports C-TYPING-MISC
      imports C-TYPING-PREDICATES
-     imports C-TYPING-STRICTNESS
 endmodule

@@ -8,19 +8,22 @@ module C-STMT-LOOP
 
      imports COMPAT-SYNTAX
 
+     rule For(Tag:BlockTag, E1:K, E2:K, E3:K, B:K)
+          => Block(Tag, list(ListItem(For(E1, E2, E3, B))))
+
      rule ForClauseExpression(K:K) => K
           requires K =/=K .K
      rule ForClauseExpression(.K) => voidVal
 
-     context For(_, (HOLE => reval(HOLE)), _, _, _) [result(RValue)]
-     context For(_, _, (HOLE => reval(HOLE)), _, _) [result(RValue)]
-     context For(_, _, _, (HOLE => reval(HOLE)), _) [result(RValue)]
-     rule (.K => elaborate(S)) ~> For(_, _:RValue, _:RValue, _:RValue, S:K)
+     context For((HOLE => reval(HOLE)), _, _, _) [result(RValue)]
+     context For(_, (HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context For(_, _, (HOLE => reval(HOLE)), _) [result(RValue)]
+     rule (.K => elaborate(S)) ~> For(_:RValue, _:RValue, _:RValue, S:K)
      rule <k> elaborateDone(S:K)
-               ~> For(BlockNum:Int, Pre:RValue, Control:RValue, Post:RValue, _)
+               ~> For(Pre:RValue, Control:RValue, Post:RValue, _)
                => .K
           ...</k>
-          <elab>... .K => For(BlockNum, Pre, Control, Post, S) </elab>
+          <elab>... .K => For(Pre, Control, Post, S) </elab>
 
      context While((HOLE => reval(HOLE)), _) [result(RValue)]
      rule (.K => elaborate(S)) ~> While(_:RValue, S:K)

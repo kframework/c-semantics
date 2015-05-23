@@ -15,15 +15,14 @@ module C-DECL-GLOBAL-SYNTAX
      // processing the TU if a tentative def exists and the type is still
      // incomplete.
      syntax KItem ::= declState(SymBase, Type, DeclState, Bool)
+
 endmodule
 
 module C-DECL-GLOBAL
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-ENUM-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
 
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
@@ -42,14 +41,12 @@ module C-DECL-GLOBAL
 
      rule declare'(typedDeclaration(T:Type, X:CId), K:K)
           => checkDeclType(T, K)
-          // Tentative entries for processing the initializer.
-          ~> addToEnv(X, symVal)
-          ~> giveType(X, T)
           ~> declare''(T, X, K)
 
      syntax KItem ::= "declare''" "(" Type "," CId "," K ")"
      rule <k> declare''(T:Type, X:CId, K:K)
-               => declareInternalVariable(X, T, figureInit(X, T, K))
+               => addToEnv(X, symVal)
+               ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
           requires F =/=K file-scope
@@ -204,8 +201,6 @@ module C-DECL-GLOBAL
                andBool notBool (isCompleteType(T) orBool isArrayType(T))
           [structural]
 
-     syntax KItem ::= declareExternalVariable(CId, Type, K)
-
      syntax Bool ::= validStorageClass(Type) [function]
                    | "validStorageClass'" "(" Type "," Set ")" [function]
      syntax Bool ::= validGlobalStorageClass(Type) [function]
@@ -300,12 +295,13 @@ module C-DECL-GLOBAL
      }*/
 
      syntax Storage ::= "Naked"
+     syntax KItem ::= declareExternalVariable(CId, Type, K)
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
-               ~> declareExternalVariable'(
+               ~> declareExternalVariable'(isNoInit(K),
                     allowInit(figureInit(X, T, K)),
                     State, internal,
                     #if isExtern(T) #then Extern #else Static #fi)
@@ -337,7 +333,7 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
-               ~> declareExternalVariable'(
+               ~> declareExternalVariable'(isNoInit(K),
                     allowInit(figureInit(X, T, K)),
                     State, external, Naked)
           ...</k>
@@ -356,7 +352,7 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
-               ~> declareExternalVariable'(
+               ~> declareExternalVariable'(isNoInit(K),
                     allowInit(figureInit(X, T, K)),
                     State, external, Extern)
           ...</k>
@@ -386,7 +382,7 @@ module C-DECL-GLOBAL
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> declareExternalVariable'(
+               ~> declareExternalVariable'(isNoInit(K),
                     allowInit(figureInit(X, T, K)),
                     declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
@@ -407,7 +403,7 @@ module C-DECL-GLOBAL
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
-               ~> declareExternalVariable'(
+               ~> declareExternalVariable'(isNoInit(K),
                     allowInit(figureInit(X, T, K)),
                     declared, internal, Static)
           ...</k>
@@ -446,19 +442,19 @@ module C-DECL-GLOBAL
      // differ in the case of declarations without initializers. A naked
      // declaration without an initializer constitutes a tentative definition,
      // but an extern declaration without an initializer does not.
-     syntax KItem ::= "declareExternalVariable'" "(" K "," DeclState "," Linkage "," Storage ")"
-          [strict(1)]
+     syntax KItem ::= "declareExternalVariable'" "(" Bool "," K "," DeclState "," Linkage "," Storage ")"
+          [strict(2)]
 
      // *** Incomplete ***
 
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
           requires notBool isCompleteType(T)
           [structural]
      // Tentative definition (with incomplete type).
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
@@ -470,14 +466,14 @@ module C-DECL-GLOBAL
      rule ( .K => UNDEF("TDG12",
                "declaration for an object is a tentative definition with internal linkage.",
                "6.9.2:3"))
-          ~> declareExternalVariable'(initValue(_, T:Type, .K),
+          ~> declareExternalVariable'(true, initValue(_, T:Type, .K),
                _, internal, _)
           requires notBool isCompleteType(T)
           [structural]
 
      // *** Extern, already completed.  ***
 
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
@@ -492,7 +488,7 @@ module C-DECL-GLOBAL
 
      // Completed type, no init.
      // declared => allocated
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                declared, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -503,7 +499,7 @@ module C-DECL-GLOBAL
           [structural]
 
      // declared => completed
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                declared, Lnk:Linkage, Extern)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, completed)
@@ -512,7 +508,7 @@ module C-DECL-GLOBAL
 
      // Already encountered a completed decl, no init.
      // completed => allocated
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                completed, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
@@ -522,8 +518,8 @@ module C-DECL-GLOBAL
                andBool Sto =/=K Extern
           [structural]
 
-     // Already encountered a allocated or initialized decl, no init.
-     rule declareExternalVariable'(initValue(X:CId, T:Type, .K),
+     // Already encountered an allocated or initialized decl, no init.
+     rule declareExternalVariable'(true, initValue(X:CId, T:Type, .K),
                State:DeclState, Lnk:Linkage, Sto:Storage)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, State)
@@ -536,56 +532,46 @@ module C-DECL-GLOBAL
      // *** Initializer ***
 
      // declared => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
+     rule declareExternalVariable'(false, initValue(X:CId, T:Type, Init:K),
                declared, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(K))
+          ~> allowInit(stripInitHolds(Init))
           requires isCompleteType(T)
-               andBool K =/=K .K
           [structural]
 
      // completed => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
+     rule declareExternalVariable'(false, initValue(X:CId, T:Type, Init:K),
                completed, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(K))
+          ~> allowInit(stripInitHolds(Init))
           requires isCompleteType(T)
-               andBool K =/=K .K
           [structural]
 
      // allocated => initialized
-     rule declareExternalVariable'(initValue(X:CId, T:Type, K:K),
+     rule declareExternalVariable'(false, initValue(X:CId, T:Type, Init:K),
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(K))
+          ~> allowInit(stripInitHolds(Init))
           requires isCompleteType(T)
-               andBool K =/=K .K
           [structural]
 
      // already initialized
      rule (.K => CV("TDG13", "Redefinition of symbol: "
                +String idToString(X), "6.9:3"))
-          ~> declareExternalVariable'(initValue(X:CId, _, K:K),
+          ~> declareExternalVariable'(false, initValue(X:CId, _, _),
                initialized, _, _)
-          requires  K =/=K .K
           [structural]
 
      syntax K ::= stripInitHolds(K) [function]
      rule stripInitHolds(Computation(Init:K) ~> K:K)
           => Computation(stripHold(Init)) ~> stripInitHolds(K)
-     rule stripInitHolds(zero(X:CId) ~> K:K)
-          => zero(X) ~> stripInitHolds(K)
-     rule stripInitHolds(initFunction(Fun:K, B:K) ~> K:K)
-          => initFunction(Fun, B) ~> stripInitHolds(K)
-     rule stripInitHolds(enumInit(X:CId, Init:K) ~> K:K)
-          => enumInit(X, Init) ~> stripInitHolds(K)
-     rule stripInitHolds(handleBuiltinConstant(X:CId, T:Type) ~> K:K)
-          => handleBuiltinConstant(X, T) ~> stripInitHolds(K)
+     rule stripInitHolds(L:CabsLoc ~> K:K)
+          => L ~> stripInitHolds(K)
      rule stripInitHolds(.K) => .K
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)

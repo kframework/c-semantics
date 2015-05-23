@@ -99,54 +99,51 @@ module C-CONFIGURATION
 
                <elab> .K </elab>
 
-               <control-details> // TODO(chathhorn): dumb name
-                    <local>
-                         // maps from CIds
-                         <env color="red"> .Map </env>
-                         <types color="lightgray"> .Map </types>
-                         <block-history> .List </block-history>
-                    </local>
-                    <block-stack color="violet"> .List </block-stack>
+               <local>
+                    // maps from CIds
+                    <env color="red"> .Map </env>
+                    <types color="lightgray"> .Map </types>
+                    <block-history> .List </block-history>
 
-                    // Used to figure initializers.
-                    <curr-object color="cyan">
-                         .List
-                    </curr-object>
-                    <curr-subobject color="cyan">
-                         .List
-                    </curr-subobject>
-                    <incomplete-length color="cyan">
-                         0
-                    </incomplete-length>
-                    <saved-init color="cyan">
-                         .K
-                    </saved-init>
-
-                    // Used for typing expressions.
-                    <type multiplicity="?" color="cyan"> .K </type>
-                    // Holds the innermost type while we unroll the
-                    // type around it.
-                    <decl-type-holder color="cyan">
-                         .K
-                    </decl-type-holder>
-
-                    // Toggle to allow writes and other special treatment for
-                    // initializers.
+                    // Toggle to allow writes and other special treatment
+                    // for initializers.
                     <initializing> 0 </initializing>
-                    <curr-program-loc color="black">
-                         UnknownCabsLoc
-                    </curr-program-loc>
-               </control-details>
+               </local>
+               <block-stack color="violet"> .List </block-stack>
+
+               // Used to figure initializers.
+               <curr-object color="cyan">
+                    .List
+               </curr-object>
+               <curr-subobject color="cyan">
+                    .List
+               </curr-subobject>
+               <incomplete-length color="cyan">
+                    0
+               </incomplete-length>
+               <saved-init color="cyan">
+                    .K
+               </saved-init>
+
+               // Used for typing expressions.
+               <type multiplicity="?" color="cyan"> .K </type>
+               // Holds the innermost type while we unroll the
+               // type around it.
+               <decl-type-holder color="cyan">
+                    .K
+               </decl-type-holder>
+
+               <curr-program-loc color="black">
+                    UnknownCabsLoc
+               </curr-program-loc>
 
           </elaborator>
      </elab-calc>
-     <control>
-          <curr-tu color="lightgray"> "" </curr-tu>
-          <curr-function color="lightgray">
-               file-scope
-          </curr-function>
-     </control>
 
+     <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-function color="lightgray">
+          file-scope
+     </curr-function>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
