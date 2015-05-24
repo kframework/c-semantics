@@ -1,6 +1,5 @@
 module C-STMT-LABELED
      imports C-SYNTAX
-     imports C-ABSTRACT-SYNTAX
      imports C-ELABORATOR-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
@@ -13,6 +12,7 @@ module C-STMT-LABELED
      rule <k> elaborateDone(K:K) ~> Label(L:CId, _) => .K ...</k>
           <elab>... .K => Label(L, K) </elab>
 
+     context Case(_, _, (HOLE => reval(HOLE)), _) [result(RValue)]
      rule (.K => elaborate(K)) ~> Case(_, _, _:RValue, K:K)
      rule <k> elaborateDone(K:K) ~> Case(SN:Int, CN:Int, Exp:RValue, _) => .K ...</k>
           <elab>... .K => Case(SN, CN, Exp, K) </elab>

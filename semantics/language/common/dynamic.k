@@ -69,8 +69,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
 
-     syntax KItem ::= "sequencePoint"
-
      syntax KItem ::= "comma"
 
      // these are semantic

@@ -9,6 +9,7 @@ module C-STMT-BLOCK
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
 
      imports COMPAT-SYNTAX

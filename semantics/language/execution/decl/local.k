@@ -1,11 +1,10 @@
 module C-DECL-LOCAL
      imports C-ENV-SYNTAX
-
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
-
      imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 

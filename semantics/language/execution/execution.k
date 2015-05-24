@@ -13,6 +13,7 @@ require "stmt/block.k"
 require "stmt/break.k"
 require "stmt/goto.k"
 require "stmt/if-then.k"
+require "stmt/labeled.k"
 require "stmt/loop.k"
 require "stmt/return.k"
 require "stmt/switch.k"
@@ -44,6 +45,7 @@ module C-EXECUTION
      imports C-STMT-BREAK
      imports C-STMT-GOTO
      imports C-STMT-IF-THEN
+     imports C-STMT-LABELED
      imports C-STMT-LOOP
      imports C-STMT-RETURN
      imports C-STMT-SWITCH

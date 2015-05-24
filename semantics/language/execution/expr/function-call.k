@@ -6,6 +6,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX

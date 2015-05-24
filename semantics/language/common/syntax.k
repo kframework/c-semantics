@@ -114,6 +114,21 @@ module C-SYNTAX
      context Switch(_, (HOLE => reval(HOLE)), _) [result(RValue)]
 
      /*
+     | CASE of expression * statement * cabsloc
+     | DEFAULT of statement * cabsloc
+     */
+     // unique switch id, unique case id, exp, statement
+     syntax Statement ::= Case(Int, Int, K, K)
+     // unique switch id, statement
+     syntax Statement ::= Default(Int, K)
+
+     /*
+     | LABEL of String * statement * cabsloc
+     */
+     syntax Statement ::= Label(CId, K) [avoid]
+
+
+     /*
      | GOTO of String * cabsloc
      */
      syntax Statement ::= Goto(CId) // CId

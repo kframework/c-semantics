@@ -6,7 +6,6 @@ module C-TYPING-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= typeof(K)
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
@@ -76,10 +75,10 @@ module C-TYPING-SYNTAX
      syntax StructId ::= global(CId, String)
                        | local(CId, String, Int)
 
-     syntax KItem ::= getFieldInfo(StructId) [function]
-     syntax KItem ::= getFieldInfo(Type) [function]
+     syntax FieldInfo ::= getFieldInfo(StructId) [function]
+     syntax FieldInfo ::= getFieldInfo(Type) [function]
      syntax CId ::= getTag(StructId) [function]
-     syntax KItem ::= "#incomplete"
+     syntax FieldInfo ::= "#incomplete"
 
      // These aren't real types, but are values that can appear in type
      // contexts.
@@ -161,7 +160,6 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripFunctionSpecifiers(Type) [function]
-     syntax Type ::= stripAtomic(Type) [function]
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]

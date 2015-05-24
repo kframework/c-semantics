@@ -186,6 +186,7 @@ module C-SYMLOC
           => loc(Base, Offset +Int N)
      rule loc(Base:SymBase, Offset:Int, Prov:Set) +bytes N:Int
           => loc(Base, Offset +Int N, Prov)
+     rule NullPointer +bytes _ => NullPointer
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B
@@ -199,8 +200,17 @@ module C-SYMLOC
      rule loc(_, A:Int, _) <=bytes loc(_, B:Int, _) => A <=Int B
      rule loc(_, A:Int, _) ==bytes loc(_, B:Int, _) => A ==Int B
 
+     rule _ >bytes _ => false [owise]
+     rule _ >=bytes _ => false [owise]
+     rule _ <bytes _ => false [owise]
+     rule _ <=bytes _ => false [owise]
+     rule _ ==bytes _ => false [owise]
+
      rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _)) => A ==K B
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _)) => A ==K B
+     rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _, _)) => A ==K B
+     rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _)) => A ==K B
+     rule sameBase(_, _) => false [owise]
 
      rule getTU(loc(_ @ static(Tu:String), _)) => Tu
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu

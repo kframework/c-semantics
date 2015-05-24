@@ -152,24 +152,14 @@ module C-TYPING-INTERPRETATION
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
 
      rule giveNamesToArgs(L:List) => giveNamesToArgs-aux(0, L)
-     rule giveNamesToArgs-aux(N:Int,
-               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
-          => ListItem(typedDeclaration(T, X))
-               giveNamesToArgs-aux(N, L)
-          requires X =/=K #NoName
-          [structural]
-     rule giveNamesToArgs-aux(N:Int,
-               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
-          => ListItem(typedDeclaration(T, #NoName(N)))
-               giveNamesToArgs-aux(N +Int 1, L)
-          requires X ==K #NoName
-          [structural]
-     rule giveNamesToArgs-aux(_, ListItem(variadic))
-          => ListItem(variadic)
-          [structural]
-     rule giveNamesToArgs-aux(_, .List)
-          => .List
-          [structural]
+     rule giveNamesToArgs-aux(N:Int, ListItem(T:Type) L:List)
+          => ListItem(nameArg(N, T)) giveNamesToArgs-aux(N +Int 1, L)
+     rule giveNamesToArgs-aux(_, .List) => .List
+
+     syntax Type ::= nameArg(Int, Type) [function]
+     rule nameArg(N:Int, typedDeclaration(T:Type, #NoName))
+          => typedDeclaration(T, #NoName(N))
+     rule nameArg(_, T:Type) => T [owise]
 
      rule <k> JustBase => T ...</k>
           <decl-type-holder> T:Type => .K ...</decl-type-holder>

@@ -12,6 +12,8 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateInitDone(K)
 
      syntax KItem ::= elabExp(K)
+
+     syntax KItem ::= typeof(K) [strict]
 endmodule
 
 module C-ELABORATOR
@@ -85,5 +87,7 @@ module C-ELABORATOR
                <k> .K </k>
                <elab> K2:K </elab>
           ...</elaborator> => .Bag)
+
+     rule typeof(V:KResult) => type(V)
 
 endmodule

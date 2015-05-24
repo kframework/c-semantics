@@ -168,13 +168,6 @@ module C-CONFIGURATION
                               <locs-written color="lightgray">
                                    .List
                               </locs-written>
-                              // used for typing expressions
-                              <type multiplicity="?" color="cyan"> .K </type>
-                              // holds the innermost type while we unroll the
-                              // type around it
-                              <decl-type-holder color="cyan">
-                                   .K
-                              </decl-type-holder>
                          </control-details>
                     </control>
                </thread-local>

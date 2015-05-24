@@ -501,8 +501,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
      rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
-               => fillInit-aux(SingleInit(
-                    wstringLiteral(S ListItem(0))))
+               => fillInit-aux(SingleInit(wstringLiteral(S ListItem(0))))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_:K, T:Type))

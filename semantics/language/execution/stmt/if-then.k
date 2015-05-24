@@ -1,4 +1,5 @@
 module C-STMT-IF-THEN
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 

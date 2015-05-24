@@ -56,6 +56,7 @@ module C-BITSIZE
      rule numBytes(t(_, unsigned-long-long-int))
           => numBytes(t(.Set, long-long-int))
      rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
+     rule numBytes(_) => 0 [owise]
 
      syntax Int ::= byteSizeofList(List) [function]
      syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]

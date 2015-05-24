@@ -186,11 +186,6 @@ module C-TYPING-MISC
      rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
-     rule stripAtomic(t(Mods:Set, T:SimpleType))
-          => t(Mods -Set SetItem(Atomic), T)
-     rule stripAtomic(typedDeclaration(T:Type, X:CId))
-          => typedDeclaration(stripAtomic(T), X)
-
      rule stripFunctionSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set functionSpecifiers, T)
      rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
@@ -242,6 +237,14 @@ module C-TYPING-MISC
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
           => t(Mods' Mods, T)
+     // TODO(chathhorn): !?!!
+     rule addModifiers(Mods':Set, t(.Set, T:SimpleType))
+          => t(Mods', T)
+     rule addModifiers(.Set, t(Mods:Set, T:SimpleType))
+          => t(Mods, T)
+     rule addModifiers(.Set, t(.Set, T:SimpleType))
+          => t(.Set, T)
+     rule addModifiers(_, T:Type) => T [owise]
 
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
@@ -322,32 +325,34 @@ module C-TYPING-MISC
 
      // TODO(chathhorn): more map pattern ugliness.
      syntax BlockTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
-     rule getRestrictBlock'(.K, SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
      rule getRestrictBlock'(RestrictBlock(Tag:BlockTag), _) => Tag
-     rule getRestrictBlock'(K:K, S:Set) => getRestrictBlock'(.K, S)
-          requires getKLabel(K) =/=KLabel 'RestrictBlock
-               andBool (K =/=K .K)
-     rule getRestrictBlock'(.K, .Set) => none
+     rule getRestrictBlock'(_, S:Set) => getRestrictBlock''(S) [owise]
+
+     syntax BlockTag ::= "getRestrictBlock''" "(" Set ")" [function]
+     rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
+     rule getRestrictBlock''(.Set) => none
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 
      syntax Modifier ::= "getReadFrom'" "(" K "," Set ")" [function]
-     rule getReadFrom'(.K, SetItem(K:K) S:Set) => getReadFrom'(K, S)
      rule getReadFrom'(readFrom(Loc:SymLoc, Len:Int), _) => readFrom(Loc, Len)
-     rule getReadFrom'(K:K, S:Set) => getReadFrom'(.K, S)
-          requires getKLabel(K) =/=KLabel 'readFrom
-               andBool (K =/=K .K)
-     rule getReadFrom'(.K, .Set) => noModifier
+     rule getReadFrom'(_, S:Set) => getReadFrom''(S) [owise]
+
+     syntax Modifier ::= "getReadFrom''" "(" Set ")" [function]
+     rule getReadFrom''(SetItem(K:K) S:Set) => getReadFrom'(K, S)
+     rule getReadFrom''(.Set) => noModifier
 
      rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
 
      syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
      rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
+     rule #getReadFromLoc(_) => NullPointer [owise]
 
      syntax Int ::= #getReadFromLen(Modifier) [function]
      rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
 
      rule #getReadFromLen(readFrom(_, Len:Int)) => Len
+     rule #getReadFromLen(_) => 0 [owise]
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
      /*@ these large numbers are used instead of an infinity---the result of
@@ -363,7 +368,8 @@ module C-TYPING-MISC
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
      rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
      rule getFieldInfo(t(_, unionType(S:StructId))) => getFieldInfo(S)
-     syntax KItem ::= #getFieldInfo(StructId, Bag) [function]
+
+     syntax FieldInfo ::= #getFieldInfo(StructId, Bag) [function]
      rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop> _:Bag)
           => F
      rule #getFieldInfo(_, _) => #incomplete [owise]

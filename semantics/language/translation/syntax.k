@@ -416,21 +416,6 @@ module C-ABSTRACT-SYNTAX
      syntax PureDefinition ::= StaticAssert(K, K)
 
      /*
-     | CASE of expression * statement * cabsloc
-     | DEFAULT of statement * cabsloc
-     */
-     // unique switch id, unique case id, exp, statement
-     syntax Statement ::= Case(Int, Int, K, K)
-     context Case(_, _, (HOLE => reval(HOLE)), _) [result(RValue)]
-     // unique switch id, statement
-     syntax Statement ::= Default(Int, K)
-
-     /*
-     | LABEL of String * statement * cabsloc
-     */
-     syntax Statement ::= Label(CId, K) [avoid]
-
-     /*
      and for_clause =
      FC_EXP of expression
      | FC_DECL of definition

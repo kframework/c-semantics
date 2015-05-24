@@ -58,8 +58,10 @@ module C-MEMORY-ALLOC
                := tv(0, t(.Set, cfg:wcharut)))
           [structural]
 
-     rule allocObject(Base:SymBase, T:Type)
-          => #allocObject(Base, T, sizeof(T))
+     rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
+          requires notBool isVoidType(T)
+          [structural]
+     rule allocObject(_, _:VoidType) => .K
           [structural]
 
      syntax KItem ::= #allocObject(SymBase, Type, K)

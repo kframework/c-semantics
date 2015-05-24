@@ -125,8 +125,6 @@ module C-CONFIGURATION
                     .K
                </saved-init>
 
-               // Used for typing expressions.
-               <type multiplicity="?" color="cyan"> .K </type>
                // Holds the innermost type while we unroll the
                // type around it.
                <decl-type-holder color="cyan">

@@ -51,8 +51,10 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax KItem ::= unqualify(K) [strict]
-     rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripAtomic(stripQualifiers(T)))
-     rule unqualify(te(V:K, T:Type)) => te(V, stripAtomic(stripQualifiers(T)))
+     rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripQualifiers(T))
+     rule unqualify(te(V:K, T:Type))
+          => te(Cast(stripQualifiers(T), V), stripQualifiers(T))
+     rule unqualify(trap(T:Type)) => trap(stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -75,11 +77,11 @@ module C-COMMON-EXPR-EVAL
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
-             addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
+             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
+          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
 

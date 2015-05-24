@@ -1,4 +1,5 @@
 module C-EXPR-CONDITIONAL
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 

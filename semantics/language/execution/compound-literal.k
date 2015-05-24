@@ -2,6 +2,7 @@ module C-COMPOUND-LITERAL
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX

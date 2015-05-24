@@ -217,6 +217,7 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= isAlignas(Modifier) [function]
      rule isAlignas(alignas(_)) => true
+     rule isAlignas(.K) => false
      rule isAlignas(_) => false [owise]
 
      rule hasReadFrom(t(Mods:Set, _)) => some(Mods, 'isReadFrom)

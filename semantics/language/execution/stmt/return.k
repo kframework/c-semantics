@@ -5,6 +5,7 @@ module C-STMT-RETURN
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-STMT-BLOCK-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

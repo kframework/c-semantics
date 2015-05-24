@@ -1,7 +1,8 @@
 module C-STMT-SWITCH
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-COMMON-PROMOTION-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
@@ -23,8 +24,10 @@ module C-STMT-SWITCH
      \cinline{case} constant expression matches and there is no
      \cinline{default} label, no part of the switch body is executed.
      }*/
-     rule <k> Switch(SN:Int, V:RValue, _) => .K ...</k>
-          <elab>... .K => Switch(SN, te(cast(promote(type(V)), V), promote(type(V))), .K) </elab>
+
+     rule (.K => elaborate(K)) ~> Switch(_, _:RValue, K:K)
+     rule <k> elaborateDone(K:K) ~> Switch(SN:Int, V:RValue, _) => .K ...</k>
+          <elab>... .K => Switch(SN, cast(promote(type(V)), V), K) </elab>
           requires isIntegerType(type(V))
 
 endmodule

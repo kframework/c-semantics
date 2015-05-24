@@ -117,7 +117,6 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
 
 
-
      rule (.K => CV("CEA3", "Invalid operand types to addition", "6.5.6:2"))
           ~> tv(_, T:Type) + tv(_, T':Type)
           requires notBool ((isArithmeticType(T) andBool isArithmeticType(T'))

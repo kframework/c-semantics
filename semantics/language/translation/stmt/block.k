@@ -28,9 +28,10 @@ module C-STMT-BLOCK
 
      rule <k> Computation(V:RValue) => .K ...</k>
           <elab>... .K => Computation(V) </elab>
-          requires isHold(V)
-     rule Computation(V:RValue) => .K
-          requires notBool isHold(V)
+    // TODO(chathhorn) (2trans)
+    //      requires isHold(V)
+    // rule Computation(V:RValue) => .K
+    //      requires notBool isHold(V)
 
      rule <k> Nop => .K ...</k>
           <elab>... .K => Nop </elab>

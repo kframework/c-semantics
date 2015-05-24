@@ -56,9 +56,7 @@ require "stmt/static-assert.k"
 require "stmt/switch.k"
 
 require "typing/canonicalization.k"
-require "typing/expr.k"
 require "typing/interpretation.k"
-require "typing/strictness.k"
 
 module C-TRANSLATION
      imports C-DYNAMIC-SYNTAX
@@ -119,7 +117,5 @@ module C-TRANSLATION
      imports C-STMT-SWITCH
 
      imports C-TYPING-CANONICALIZATION
-     imports C-TYPING-EXPR
      imports C-TYPING-INTERPRETATION
-     imports C-TYPING-STRICTNESS
 endmodule

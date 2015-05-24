@@ -42,9 +42,9 @@ module C-STMT-LOOP
 
      rule [for]:
           <k> loopMarked ~> For(Pre:K, Control:K, Post:K, S:K)
-               => IfThenElse(Control:K,
-                    (S:K ~> Computation(Post:K) ~> loopMarked
-                    ~> For(Pre:K, Control:K, Post:K, S:K)), Nop)
+               => IfThenElse(Control,
+                    (S ~> Computation(Post) ~> loopMarked
+                    ~> For(Pre, Control, Post, S)), Nop)
           ...</k>
           <block-history> ListItem(_:Int) ...</block-history>
           [structural] // rule so that looping programs see repetition
