@@ -14,6 +14,8 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elabExp(K)
 
      syntax KItem ::= typeof(K) [strict]
+
+     syntax KItem ::= runInit(K)
 endmodule
 
 module C-ELABORATOR
@@ -22,8 +24,7 @@ module C-ELABORATOR
      imports C-DYNAMIC-SYNTAX
 
      syntax KItem ::= waitingOn(CId)
-     syntax CId ::= subElab(Int)
-     syntax CId ::= initElab(Int)
+     syntax CId ::= elab(Int)
 
      context elabExp((HOLE => reval(HOLE))) [result(RValue)]
 
@@ -31,48 +32,63 @@ module C-ELABORATOR
      rule R:KResult ~> compoundExp(K:K)
           => te(compoundExp(K), type(R))
 
-     rule <k> elaborate(K:K) => waitingOn(subElab(!E:Int)) ...</k>
+     rule <k> (.K => waitingOn(elab(!E:Int))) ~> elaborate(K:K) ...</k>
           <local> L:Bag </local>
           (.Bag => <elaborator>...
-               <elab-id> subElab(!E) </elab-id>
+               <elab-id> elab(!E) </elab-id>
                <k> K </k>
                <local> L </local>
           ...</elaborator>)
-     rule <k> waitingOn(subElab(E:Int)) => elaborateDone(K:K) ...</k>
+     rule <k> waitingOn(elab(E:Int)) ~> elaborate(_) => elaborateDone(K:K) ...</k>
           (<elaborator>...
-               <elab-id> subElab(E) </elab-id>
+               <elab-id> elab(E) </elab-id>
                <k> .K </k>
                <elab> K:K </elab>
           ...</elaborator> => .Bag)
-     rule <k> elaborateInit(K:K) => waitingOn(initElab(!E:Int)) ...</k>
+     rule <k> (.K => waitingOn(elab(!E:Int))) ~> elaborateInit(K:K) ...</k>
           <local> L:Bag </local>
           (.Bag => <elaborator>...
-               <elab-id> initElab(!E) </elab-id>
+               <elab-id> elab(!E) </elab-id>
                <k> K </k>
+               <initializing> 1 </initializing>
                <local> L </local>
           ...</elaborator>)
-     rule <k> waitingOn(initElab(E:Int)) => elaborateInitDone(K:K) ...</k>
+     rule <k> waitingOn(elab(E:Int)) ~> elaborateInit(_) => elaborateInitDone(K:K) ...</k>
           <local> _ => L </local>
           (<elaborator>...
-               <elab-id> initElab(E) </elab-id>
+               <elab-id> elab(E) </elab-id>
                <k> .K </k>
                <elab> K:K </elab>
                <local> L:Bag </local>
           ...</elaborator> => .Bag)
-
+     rule <k> (.K => waitingOn(elab(!E:Int))) ~> runInit(K:K) ...</k>
+          <local> L:Bag </local>
+          (.Bag => <elaborator>...
+               <elab-id> elab(!E) </elab-id>
+               <k> K </k>
+               <initializing> 1 </initializing>
+               <local> L </local>
+          ...</elaborator>)
+     rule <k> waitingOn(elab(E:Int)) ~> runInit(_) => .K ...</k>
+          <local> _ => L </local>
+          (<elaborator>...
+               <elab-id> elab(E) </elab-id>
+               <k> .K </k>
+               <elab> _ </elab>
+               <local> L:Bag </local>
+          ...</elaborator> => .Bag)
 
      syntax KItem ::= waitingOn(CId, CId)
 
-     rule <k> elaborate(K1:K, K2:K)
-               => waitingOn(subElab(!E1:Int), subElab(!E2:Int)) ...</k>
+     rule <k> elaborate(K1:K, K2:K) => waitingOn(elab(!E1:Int), elab(!E2:Int)) ...</k>
           <local> L:Bag </local>
           (.Bag => <elaborator>...
-               <elab-id> subElab(!E1) </elab-id>
+               <elab-id> elab(!E1) </elab-id>
                <k> K1 </k>
                <local> L </local>
           ...</elaborator>)
           (.Bag => <elaborator>...
-               <elab-id> subElab(!E2) </elab-id>
+               <elab-id> elab(!E2) </elab-id>
                <k> K2 </k>
                <local> L </local>
           ...</elaborator>)

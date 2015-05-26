@@ -327,12 +327,12 @@ module C-SYMLOC
      syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => true
-          requires (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) >=Int 0)
-               andBool (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) <=Int Len)
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int 0)
+               andBool (Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len)
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => false
-          requires (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) <Int 0)
-               orBool (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) >Int Len)
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
+               orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
           requires getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)

@@ -29,9 +29,13 @@ module C-BITSIZE
      rule sizeof(V:KResult => type(V))
           requires notBool isType(V)
           [structural]
+     rule sizeof(T:Type => stabilizeVLA(T))
+          requires isVariablyModifiedType(T)
+          [structural]
      rule sizeof(T:Type)
           => Cast(t(SetItem(IntegerConstant), cfg:sizeut),
                tv(byteSizeofType(T), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
+          requires notBool isVariablyModifiedType(T)
           [structural]
 
      rule byteSizeofType(T:Type)
@@ -63,13 +67,13 @@ module C-BITSIZE
 
      rule byteSizeofList(L:List) => byteSizeofList'(0, L)
      rule byteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => byteSizeofList'((Sz +Int byteSizeofType(T):>Int), LL)
+          => byteSizeofList'((Sz +Int byteSizeofType(T)), LL)
      rule byteSizeofList'(Sz:Int, .List) => Sz
 
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
      rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(T):>Int), LL)
+          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(T)), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
      rule bitSizeofType(t(_, no-type))

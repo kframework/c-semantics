@@ -6,7 +6,6 @@ module C-EXPR-LOGICAL
      imports C-EXPR-LOGICAL-SYNTAX
 
      imports C-DYNAMIC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 

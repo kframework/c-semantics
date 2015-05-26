@@ -16,6 +16,7 @@ module C-TRANSLATION-INIT
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-FUNCTION-DEF-SYNTAX
@@ -90,7 +91,7 @@ module C-TRANSLATION-INIT
      syntax KItem ::= preDeclareStrings(List)
 
      rule preDeclareStrings(ListItem(K:K) L:List)
-          => allowInit(K ~> discard)
+          => runInit(K ~> discard)
           ~> preDeclareStrings(L)
           [structural]
      rule preDeclareStrings(.List) => .K
@@ -172,7 +173,7 @@ module C-TRANSLATION-INIT
           requires areCompatible(T, T')
      rule checkExtTypes(.K, .Set, _, _, _) => .K
      rule (.K => UNDEF("TIN1",
-               "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
+               "Identifier " +String idToString(X) +String " declared with incompatible types in different translation units.",
                "6.2.7:2"))
           ~> checkExtTypes(X:CId,
                _, X:CId |-> T:Type _,
@@ -294,6 +295,8 @@ module C-TRANSLATION-INIT
           <result-value> _ => 0 </result-value>
 
      rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K
+     rule DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc)
+          => filterCabsLoc(L1) ~> K ~> filterCabsLoc(L2)
 
      rule <k> L:CabsLoc => .K ...</k>
           <elab>... .K => L </elab>
@@ -324,5 +327,13 @@ module C-TRANSLATION-INIT
      rule AttributeWrapper(K:K, _) => K
 
      rule NothingExpression => emptyValue:>Expression
+
+     rule Computation(.K) => .K
+     rule <k> Computation(V:RValue) => .K ...</k>
+          <elab>... .K => Computation(V) </elab>
+    // TODO(chathhorn) (2trans)
+    //      requires isHold(V)
+    // rule Computation(V:RValue) => .K
+    //      requires notBool isHold(V)
 
 endmodule

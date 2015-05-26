@@ -2,7 +2,6 @@ module C-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
@@ -13,10 +12,10 @@ module C-EXPR-IDENTIFIER
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           requires notBool isLinkerLoc(Base)
-               andBool Base =/=K symVal
+               andBool Base =/=K nonStatic
           [structural]
      rule <k> X:CId => le(X, T) ...</k>
-          <env>... X |-> symVal ...</env>
+          <env>... X |-> nonStatic ...</env>
           <types>... X |-> T:Type ...</types>
           [structural]
 

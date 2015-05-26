@@ -103,7 +103,7 @@ module C-PROCESS-LABEL
      // - should do this with a split
      rule <goto-calc>
                <computation>
-                    (For(Pre:K, Control:K, Post:K, S:K) => .K)
+                    (For(Control:K, Post:K, S:K) => .K)
                     ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>
@@ -120,8 +120,7 @@ module C-PROCESS-LABEL
                     <computation-tail>
                          Computation(Post)
                          ~> loopMarked
-                         ~> For(Pre, (
-                              #if Control =/=K emptyValue
+                         ~> For((#if Control =/=K emptyValue
                               #then Control
                               #else tv(1, t(.Set, int))
                               #fi), Post, S)

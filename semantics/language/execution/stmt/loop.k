@@ -26,11 +26,9 @@ module C-STMT-LOOP
 
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
-          <k> For(Pre:K, Control:K, Post:K, S:K) ~> K:K
-               => Computation(Pre)
-               ~> loopMarked
-               ~> For(Pre,
-                    (#if Control =/=K emptyValue
+          <k> For(Control:K, Post:K, S:K) ~> K:K
+               => loopMarked
+               ~> For((#if Control =/=K emptyValue
                     #then Control
                     #else tv(1, t(.Set, int)) #fi),
                     Post, S)
@@ -41,10 +39,10 @@ module C-STMT-LOOP
           [structural]
 
      rule [for]:
-          <k> loopMarked ~> For(Pre:K, Control:K, Post:K, S:K)
+          <k> loopMarked ~> For(Control:K, Post:K, S:K)
                => IfThenElse(Control,
                     (S ~> Computation(Post) ~> loopMarked
-                    ~> For(Pre, Control, Post, S)), Nop)
+                    ~> For(Control, Post, S)), Nop)
           ...</k>
           <block-history> ListItem(_:Int) ...</block-history>
           [structural] // rule so that looping programs see repetition
@@ -141,7 +139,7 @@ module C-STMT-LOOP
      rule [continue-done-for]:
           (Continue => Computation(Post))
           ~> loopMarked
-          ~> For(_, _, Post:K, _)
+          ~> For(_, Post:K, _)
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)

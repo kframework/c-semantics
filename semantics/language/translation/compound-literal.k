@@ -5,10 +5,11 @@ module C-COMPOUND-LITERAL
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -63,33 +64,41 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (.K => allocString(string(S), S))
+     rule <k> (.K => runInit(allocString(string(S), S)))
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (string(S) in keys(Mem))
-          [structural]
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (.K => allocWString(wstring(S), S))
+     rule <k> (.K => runInit(allocWString(wstring(S), S)))
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (wstring(S) in keys(Mem))
-          [structural]
 
      rule <k> stringLiteral(S:String)
                => lv(lnew(string(S), cfg:alignofSignedChar),
                     t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
-          [structural]
      rule <k> wstringLiteral(S:List)
                => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
                     t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
-          [structural]
+
+     syntax KItem ::= allocString(SymBase, String)
+     rule allocString(Base:SymBase, S:String)
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, char), lengthString(S) +Int 1)))
+          ~> writeString(lnew(Base, cfg:alignofSignedChar), S)
+
+     syntax KItem ::= allocWString(SymBase, List)
+     rule allocWString(Base:SymBase, S:List)
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
+          ~> writeWString(lnew(Base, byteAlignofType(t(.Set, cfg:wcharut))), S)
 
 endmodule

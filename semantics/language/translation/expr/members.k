@@ -1,7 +1,6 @@
 module C-EXPR-MEMBERS
      imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
@@ -12,7 +11,7 @@ module C-EXPR-MEMBERS
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K:K -> F:CId => (* K) . F [macro, structural]
+     rule K:K -> F:CId => (* K) . F [macro]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets
@@ -36,8 +35,7 @@ module C-EXPR-MEMBERS
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule E1:K[E2:K] => *(E1 + E2)
-          [macro, structural]
+     rule E1:K[E2:K] => *(E1 + E2) [macro]
 
 
      rule <k> ncle(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
@@ -47,8 +45,23 @@ module C-EXPR-MEMBERS
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
                orBool I >Int 0
+     rule <k> te(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
+               => te(K . F, addQualifiers(Mods, T))
+          ...</k>
+          <initializing> I:Int </initializing>
+          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          requires notBool (Atomic in Mods)
+               orBool I >Int 0
+
      rule <k> ncle(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
+          ...</k>
+          <initializing> I:Int </initializing>
+          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          requires notBool (Atomic in Mods)
+               orBool I >Int 0
+     rule <k> te(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
+               => te(K . F, addQualifiers(Mods, T))
           ...</k>
           <initializing> I:Int </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>

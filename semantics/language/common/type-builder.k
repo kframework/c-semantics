@@ -85,6 +85,8 @@ module C-TYPE-BUILDER
           => t(Mods, pointerType(T))
      rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, variableLengthArrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
      rule adjustParam(T:Type) => T
           requires notBool isTypedDeclaration(T)
                andBool notBool isArrayOrFunctionType(T)

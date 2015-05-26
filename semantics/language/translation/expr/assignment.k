@@ -1,18 +1,16 @@
 module C-EXPR-ASSIGNMENT
-     imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -140,6 +138,15 @@ module C-EXPR-ASSIGNMENT
 
      rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2"))
           ~> _ := voidVal
+     rule <k> (.K => CVUB("TEAS5", "Non-constant static initializer.", "6.6"))
+               ~> nclv(_, _) := te(_, _)
+          ...</k>
+          <initializing> 1 </initializing>
+     rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue.", "6.5.16.1:1"))
+               ~> L:KResult := _:RValue
+          ...</k>
+          <initializing> 0 </initializing>
+          requires isConstType(type(L))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
      In simple assignment (\cinline{=}), the value of the right operand is
@@ -182,26 +189,47 @@ module C-EXPR-ASSIGNMENT
                => write(Loc, V, T)
                ~> tv(V, T)
           ...</k>
-          <initializing> N:Int </initializing>
+          <initializing> 1 </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isLinkerLoc(Loc)
-               andBool (N >Int 0)
                andBool (T ==Type T')
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => te(nclv(Loc, T) := tv(V, T'), T)
           ...</k>
-          <initializing> N:Int </initializing>
+          <initializing> 1 </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
-               andBool (isLinkerLoc(Loc) orBool (N ==Int 0))
+               andBool isLinkerLoc(Loc)
                andBool (T ==Type T')
-
-     rule L:KResult := R:RValue => te(stripHold(L) := stripHold(R), type(L))
-          requires (isLHold(L) orBool isHold(R))
-               andBool notBool fromConstantExpr(type(L))
+     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
+          <initializing> 1 </initializing>
+          requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
-               andBool (type(L) ==Type type(R))
+               andBool (T ==Type type(R))
+
+     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
+               => te(nclv(Loc, T) := tv(V, T'), T)
+          ...</k>
+          <initializing> 0 </initializing>
+          requires notBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(T')
+               andBool notBool isConstType(T)
+               andBool (T ==Type T')
+     rule <k> nclv(Loc:SymLoc, T:Type) := te(K:K, T':Type)
+               => te(nclv(Loc, T) := K, T)
+          ...</k>
+          <initializing> 0 </initializing>
+          requires notBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(T')
+               andBool notBool isConstType(T)
+               andBool (T ==Type T')
+     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
+          <initializing> 0 </initializing>
+          requires notBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(type(R))
+               andBool notBool isConstType(T)
+               andBool (T ==Type type(R))
 
 endmodule
 

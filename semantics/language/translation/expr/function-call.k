@@ -5,7 +5,6 @@ module C-EXPR-FUNCTION-CALL
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -53,14 +52,14 @@ module C-EXPR-FUNCTION-CALL
           requires P =/=K .List
 
      rule elabCall(te(K:K, _), L:List, T:Type, .List)
-          => le(Call(K, list(L)), T)
+          => te(Call(K, list(L)), T)
      rule elabCall(tv(V:CValue, T:Type), L:List, T':Type, .List)
-          => le(Call(tv(V, T), list(L)), T')
+          => te(Call(tv(V, T), list(L)), T')
      rule elabCall(te(K:K, _), _, T:Type, L:List)
-          => le(Call(K, list(L)), T)
+          => te(Call(K, list(L)), T)
           requires L =/=K .List
      rule elabCall(tv(V:CValue, T:Type), _, T':Type, L:List)
-          => le(Call(tv(V, T), list(L)), T')
+          => te(Call(tv(V, T), list(L)), T')
           requires L =/=K .List
 
      syntax KResult ::= "fauxParam"
@@ -70,7 +69,7 @@ module C-EXPR-FUNCTION-CALL
           ~> elabCall(_, _, _, _)
 
      rule bindParam(_, T:Type, V:RValue)
-          => Computation(ncle(fauxParam, T) := V)
+          => runInit(Computation(ncle(fauxParam, T) := V))
      rule bindParam(_) => .K
 
 endmodule

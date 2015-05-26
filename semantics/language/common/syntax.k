@@ -92,8 +92,8 @@ module C-SYNTAX
 
      syntax Statement ::= While(K, K)
      syntax Statement ::= DoWhile(K, K)
-     // id, ...
-     syntax Statement ::= For(K, K, K, K)
+     // Condition, post expression, body
+     syntax Statement ::= For(K, K, K)
      /*
      | BREAK of cabsloc
      | CONTINUE of cabsloc

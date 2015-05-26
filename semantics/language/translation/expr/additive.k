@@ -1,6 +1,4 @@
 module C-EXPR-ADDITIVE
-     imports C-SYMBOLIC-VALUE-SYNTAX
-
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX

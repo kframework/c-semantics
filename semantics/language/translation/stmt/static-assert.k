@@ -3,7 +3,6 @@ module C-STMT-STATIC-ASSERT
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
 
      context StaticAssert((HOLE => reval(HOLE)), _)

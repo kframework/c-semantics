@@ -9,32 +9,35 @@ module C-STMT-LOOP
 
      imports COMPAT-SYNTAX
 
-     rule For(Tag:BlockTag, E1:K, E2:K, E3:K, B:K)
-          => Block(Tag, list(ListItem(For(E1, E2, E3, B))))
+     // This is a little subtle. If the first expression is a declaration, it
+     // must be evaluated at the same scope as the for (and not in a nested
+     // block) for the purposes of detecting conflicts with other declarations,
+     // but it behaves as though it were in a nested block otherwise.
+     rule (.K => elaborate(E1)) ~> For(_, E1:K, _, _, _)
+     rule elaborateDone(E1:K) ~> For(Tag:BlockTag, _, E2:K, E3:K, B:K)
+          => Block(Tag, list(ListItem(E1) ListItem(For(E2, E3, B))))
 
-     rule ForClauseExpression(K:K) => K
-          requires K =/=K .K
-     rule ForClauseExpression(.K) => voidVal
+     // This is the first child of the for if it's not a declaration.
+     rule ForClauseExpression(K:K) => Computation(K)
 
-     context For((HOLE => reval(HOLE)), _, _, _) [result(RValue)]
-     context For(_, (HOLE => reval(HOLE)), _, _) [result(RValue)]
-     context For(_, _, (HOLE => reval(HOLE)), _) [result(RValue)]
+     context For((HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context For(_, (HOLE => reval(HOLE)), _) [result(RValue)]
 
-     rule For(Pre:RValue, Control:RValue, Post:RValue, S:K)
-          => #for(Pre, simplifyTruth(Control), Post, S)
+     rule For(Control:RValue, Post:RValue, S:K)
+          => #for(simplifyTruth(Control), Post, S)
           requires Control =/=K emptyValue
-     rule For(Pre:RValue, emptyValue, Post:RValue, S:K)
-          => #for(Pre, emptyValue, Post, S)
+     rule For(emptyValue, Post:RValue, S:K)
+          => #for(emptyValue, Post, S)
 
-     syntax KItem ::= #for(K, K, K, K)
-     context #for(_, (HOLE => reval(HOLE)), _, _) [result(RValue)]
+     syntax KItem ::= #for(K, RValue, K)
+     context #for((HOLE => reval(HOLE)), _, _) [result(RValue)]
 
-     rule (.K => elaborate(S)) ~> #for(_:RValue, _:RValue, _:RValue, S:K)
+     rule (.K => elaborate(S)) ~> #for(_:RValue, _, S:K)
      rule <k> elaborateDone(S:K)
-               ~> #for(Pre:RValue, Control:RValue, Post:RValue, _)
+               ~> #for(Control:RValue, Post:RValue, _)
                => .K
           ...</k>
-          <elab>... .K => For(Pre, Control, Post, S) </elab>
+          <elab>... .K => For(Control, Post, S) </elab>
 
      context While((HOLE => reval(HOLE)), _) [result(RValue)]
      rule While(B:RValue, S:K) => #while(simplifyTruth(B), S)

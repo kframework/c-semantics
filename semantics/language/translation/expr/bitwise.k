@@ -4,7 +4,6 @@ module C-EXPR-BITWISE
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -14,7 +13,7 @@ module C-EXPR-BITWISE
      rule te(L:K, T:Type) << tv(R:Int, T':Type) => te(L << tv(R, T'), T)
           requires isPromoted(T) andBool isPromoted(T')
                andBool R >=Int 0
-               andBool R <Int bitSizeofType(T):>Int
+               andBool R <Int bitSizeofType(T)
      rule tv(L:Int, T:Type) << te(R:K, T':Type) => te(tv(L, T) << R, T)
           requires isPromoted(T) andBool isPromoted(T')
                andBool L >=Int 0
@@ -27,7 +26,7 @@ module C-EXPR-BITWISE
      rule te(L:K, T:Type) >> tv(R:Int, T':Type) => te(L >> tv(R, T'), T)
           requires isPromoted(T) andBool isPromoted(T')
                andBool R >=Int 0
-               andBool R <Int bitSizeofType(T):>Int
+               andBool R <Int bitSizeofType(T)
      rule tv(L:Int, T:Type) >> te(R:K, T':Type) => te(tv(L, T) >> R, T)
           requires isPromoted(T) andBool isPromoted(T')
                andBool L >=Int 0

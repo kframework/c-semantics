@@ -1,6 +1,5 @@
 module C-STMT-IF-THEN
      imports C-ELABORATOR-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-EXPR-LOGICAL-SYNTAX

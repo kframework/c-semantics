@@ -123,7 +123,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit-aux(_:CId, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T):>Int))),
+          => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))),
                initializer(handleBuiltinConstant(Identifier(S:String), _)))
           requires S in keys(nativeDefinedBuiltins)
           [structural]
@@ -262,7 +262,7 @@ module C-DECL-INITIALIZER
 
      rule <k> (.K => searchInFieldInfoList(T, F, L)) ...</k>
           <curr-subobject>
-               (ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F:CId, T:Type)))
+               ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F:CId, T:Type))
                ListItem(ncle(K:K, t(_, structType(S:StructId))))
           ...</curr-subobject>
           <structs>... S |-> fieldInfo(L:List, _, _, _) ...</structs>
@@ -402,15 +402,17 @@ module C-DECL-INITIALIZER
                andBool notBool isStructOrUnionType(T')
           [structural]
 
-     // TODO(chathhorn): not specific enough.
-     // rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member",
-     //           "6.7.9:2"))
-     //           ~> T:Type ~> initializeSingleInit(_)
-     //      ...</k>
-     //      <curr-subobject>
-     //           ListItem(next)
-     //      ...</curr-subobject>
-     //      requires notBool isStructOrUnionType(T)
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
+               "6.7.9:2"))
+               ~> T':Type ~> initializeSingleInit(_)
+          ...</k>
+          <curr-subobject>
+               ListItem(next) ListItem(ncle(_, T:Type))
+          ...</curr-subobject>
+          requires notBool isBasicType(T)
+               andBool notBool isPointerType(T)
+               andBool notBool isBitfieldType(T)
+               orBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays

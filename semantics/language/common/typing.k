@@ -28,6 +28,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
+     syntax Bool ::= isVariablyModifiedType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
 
@@ -102,10 +103,10 @@ module C-TYPING-SYNTAX
                         | VariableLengthArrayType
 
      syntax BoolType
+     syntax FixedLengthArrayType
      syntax FloatType
      syntax FunctionType
      syntax IncompleteArrayType
-     syntax FixedLengthArrayType
      syntax NoType
      syntax PointerType
      syntax SCharType
@@ -204,12 +205,12 @@ module C-TYPING-SYNTAX
 
      syntax Bool ::= isTruthValue(RValue) [function]
 
-     syntax KItem ::= stabilizeVLA(Type)
-
      // Turns typedDeclarations into Types in function params.
      syntax Type ::= elideDeclParams(Type) [function]
      syntax List ::= elideList(List) [function]
      syntax Map ::= elideMap(Map) [function]
+
+     syntax KItem ::= stabilizeVLA(Type)
 endmodule
 
 module C-TYPING

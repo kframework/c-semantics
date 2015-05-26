@@ -11,11 +11,12 @@ module LIBC-STDIO
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-MEMORY-READING-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
@@ -466,7 +467,7 @@ module LIBC-STDIO
      rule getFormatType-aux("%c", "")
           => t(.Set, int) [structural]
      rule getFormatType-aux("%s", "")
-          => t(.Set, pointerType(t(.Set, char))) [structural]
+          => t(.Set, pointerType(t(SetItem(Const), char))) [structural]
 
      rule getFormatType-aux("%p", "")
           => t(.Set, pointerType(t(.Set, void))) [structural]

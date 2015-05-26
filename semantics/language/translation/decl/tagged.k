@@ -56,7 +56,7 @@ module C-DECL-TAGGED
                , Offsets:Map
                , L':List
           )
-          => makeStructFieldInfo'(L, V +Int byteSizeofType(T):>Int +Int structPadding(V, byteAlignofType(T)),
+          => makeStructFieldInfo'(L, V +Int byteSizeofType(T) +Int structPadding(V, byteAlignofType(T)),
                Types[Field <- T], Offsets[Field <- V +Int structPadding(V, byteAlignofType(T))], L')
      rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))) *Int cfg:bitsPerByte, Types, Offsets)

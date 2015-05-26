@@ -27,12 +27,12 @@ module C-DECL-GLOBAL
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-FUNCTION-DEF-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
@@ -45,7 +45,7 @@ module C-DECL-GLOBAL
 
      syntax KItem ::= "declare''" "(" Type "," CId "," K ")"
      rule <k> declare''(T:Type, X:CId, K:K)
-               => addToEnv(X, symVal)
+               => addToEnv(X, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
@@ -96,7 +96,7 @@ module C-DECL-GLOBAL
                "declaration for " +String idToString(X) +String
                " appears with multiple storage class specifiers.",
                "6.7.1:2"))
-          ~> declare(typedDeclaration(T:Type, X:CId), _)
+          ~> declare''(T:Type, X:CId, _)
           requires notBool validStorageClass(T)
           [structural]
 
@@ -302,7 +302,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
-                    allowInit(figureInit(X, T, K)),
+                    figureInit(X, T, K),
                     State, internal,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -334,7 +334,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
-                    allowInit(figureInit(X, T, K)),
+                    figureInit(X, T, K),
                     State, external, Naked)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -353,7 +353,7 @@ module C-DECL-GLOBAL
                => addToEnv(X, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
-                    allowInit(figureInit(X, T, K)),
+                    figureInit(X, T, K),
                     State, external, Extern)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -383,7 +383,7 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
                ~> declareExternalVariable'(isNoInit(K),
-                    allowInit(figureInit(X, T, K)),
+                    figureInit(X, T, K),
                     declared, external,
                     #if isExtern(T) #then Extern #else Static #fi)
           ...</k>
@@ -404,7 +404,7 @@ module C-DECL-GLOBAL
      rule <k> declareExternalVariable(X:CId, T:Type, K:K)
                => addToEnv(X, Base)
                ~> declareExternalVariable'(isNoInit(K),
-                    allowInit(figureInit(X, T, K)),
+                    figureInit(X, T, K),
                     declared, internal, Static)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -537,7 +537,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(Init))
+          ~> runInit(stripInitHolds(Init))
           requires isCompleteType(T)
           [structural]
 
@@ -547,7 +547,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(Init))
+          ~> runInit(stripInitHolds(Init))
           requires isCompleteType(T)
           [structural]
 
@@ -556,7 +556,7 @@ module C-DECL-GLOBAL
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
-          ~> allowInit(stripInitHolds(Init))
+          ~> runInit(stripInitHolds(Init))
           requires isCompleteType(T)
           [structural]
 

@@ -7,7 +7,6 @@ module C-DECL-LOCAL
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -56,7 +55,7 @@ module C-DECL-LOCAL
           [structural]
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
-               => addToEnv(X, symVal)
+               => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
@@ -152,7 +151,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= defineAndInit(CId, Type, K)
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => addToEnv(X, symVal)
+               => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -166,7 +165,7 @@ module C-DECL-LOCAL
           [structural]
      // Only function prototype scope?
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
-               => addToEnv(X, symVal)
+               => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
           <block-history> .List </block-history>

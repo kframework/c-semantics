@@ -139,7 +139,7 @@ module C-MEMORY-READING
           => joinFloatBytes(T, 0.0, Len +Int NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
           => tv(F, T)
-          requires Len ==Int bitSizeofType(T):>Int
+          requires Len ==Int bitSizeofType(T)
 
      syntax RValue ::= joinPointerBytes(Type, List) [function]
      syntax RValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -187,10 +187,10 @@ module C-MEMORY-READING
           requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T):>Int)))
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int >Int max(T))
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T):>Int)))
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int <Int min(T))
 
      // loc, size in bits

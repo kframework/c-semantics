@@ -115,9 +115,17 @@ module C-TYPING-PREDICATES
      rule isFlexibleArrayType(_) => false [owise]
 
      rule isVariableLengthArrayType(t(_, variableLengthArrayType(_, _))) => true
-     rule isVariableLengthArrayType(typedDeclaration(T:Type, _))
-          => isVariableLengthArrayType(T)
+     rule isVariableLengthArrayType(typedDeclaration(_:VariableLengthArrayType, _)) => true
      rule isVariableLengthArrayType(_) => false [owise]
+
+     rule isVariablyModifiedType(t(_, arrayType(T:Type, _)))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(t(_, pointerType(T:Type)))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(typedDeclaration(T:Type, _))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(_:VariableLengthArrayType) => true
+     rule isVariablyModifiedType(_) => false [owise]
 
      rule isVoidType(t(_, void)) => true
      rule isVoidType(typedDeclaration(_:VoidType, _)) => true
@@ -186,8 +194,7 @@ module C-TYPING-PREDICATES
      // Integer and floating types are collectively called arithmetic types.
      // Each arithmetic type belongs to one type domain: the real type domain
      // comprises the real types, the complex type domain comprises the complex
-     // types.
-     // */
+     // types. */
 
      rule isExternType(T:Type) => (Extern in getStorageSpecifiers(T))
      rule isStaticType(T:Type) => (Static in getStorageSpecifiers(T))

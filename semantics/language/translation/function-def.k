@@ -18,7 +18,6 @@ module C-FUNCTION-DEF
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -164,8 +163,7 @@ module C-FUNCTION-DEF
                => voidVal
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
-          requires (notBool (base(Loc) in keys(M)))
-               andBool notBool isLinkerLoc(Loc)
+          requires notBool isLinkerLoc(Loc)
 
      syntax KItem ::= safeBody(CId, K) [function]
 
@@ -241,7 +239,7 @@ module C-FUNCTION-DEF
      rule dummyBind(ListItem(typedDeclaration(_:VoidType, _))) => .K
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
-          => addToEnv(X, symVal)
+          => addToEnv(X, nonStatic)
           ~> giveType(X, T)
           ~> dummyBind(Params)
           requires notBool isVoidType(T)

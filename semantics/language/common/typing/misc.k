@@ -7,6 +7,8 @@ module C-TYPING-MISC
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
 
+     imports C-ERROR-SYNTAX
+
      imports COMPAT-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
@@ -46,41 +48,41 @@ module C-TYPING-MISC
      rule max(t(_, bool)) => 1
 
      rule min(t(_, signed-char))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)):>Int -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
      rule min(t(_, short-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
      rule max(t(_, short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)):>Int -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
      rule min(t(_, int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
      rule max(t(_, int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, int)):>Int -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
      rule min(t(_, long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
      rule max(t(_, long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)):>Int -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
      rule min(t(_, long-long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1))
+          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)):>Int -Int 1)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char))
-          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char)):>Int) -Int 1
+          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)):>Int)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)):>Int)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)):>Int)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)):>Int)) -Int 1
+          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
      rule min(t(_, enumType(_))) => cfg:enumMin
      rule max(t(_, enumType(_))) => cfg:enumMax
@@ -385,7 +387,7 @@ module C-TYPING-MISC
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int byteSizeofType(T):>Int)
+               Offset %Int byteSizeofType(T))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
@@ -415,13 +417,6 @@ module C-TYPING-MISC
           => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
-
-     // TODO(chathhorn): handle more general VM types.
-     context stabilizeVLA(t(_, variableLengthArrayType(_, (HOLE => reval(HOLE)))))
-          [result(RValue)]
-     rule stabilizeVLA(t(Mods:Set, variableLengthArrayType(T:Type, tv(N:Int, _))))
-          => t(Mods, arrayType(T, N))
-          [structural]
 
      syntax List ::= elideParams(List) [function]
      rule elideDeclParams(typedDeclaration(T:Type, X:CId))
@@ -457,4 +452,47 @@ module C-TYPING-MISC
      rule elideMap(K:K |-> T:Type M:Map)
           => K |-> elideDeclParams(T) elideMap(M)
      rule elideMap(.Map) => .Map
+
+     // TODO(chathhorn): move/refactor?
+     rule (.K => stabilize(T)) ~> stabilizeVLA(T:Type)
+          requires isVariablyModifiedType(T)
+          [structural]
+     rule stabilize(T:Type) ~> stabilizeVLA(_) => T
+          requires notBool isVariablyModifiedType(T)
+          [structural]
+     rule stabilizeVLA(T:Type) => T
+          requires notBool isVariablyModifiedType(T)
+          [structural]
+
+     // Although GCC seems to allow it, I don't think structs/unions are
+     // allowed to have VM types (see 6.7.2.1p9).
+     syntax KItem ::= stabilize(K)
+
+     context stabilize(t(_, variableLengthArrayType(_, (HOLE => reval(HOLE)))))
+          [result(RValue)]
+
+     rule (.K => stabilize(T)) ~> stabilize(t(_, arrayType(T:Type, _)))
+          requires isVariablyModifiedType(T)
+          [structural]
+     rule stabilize(T:Type) ~> stabilize(t(Mods:Set, arrayType(_, N:Int)))
+          => stabilize(t(Mods, arrayType(T, N)))
+          requires notBool isVariablyModifiedType(T)
+          [structural]
+     rule (.K => stabilize(T)) ~> stabilize(t(_, pointerType(T:Type)))
+          requires isVariablyModifiedType(T)
+          [structural]
+     rule stabilize(T:Type) ~> stabilize(t(Mods:Set, pointerType(_)))
+          => stabilize(t(Mods, pointerType(T)))
+          requires notBool isVariablyModifiedType(T)
+          [structural]
+
+     rule stabilize(t(Mods:Set, variableLengthArrayType(T:Type, tv(N:Int, _)))
+               => t(Mods, arrayType(T, N)))
+          requires N >=Int 0
+          [structural]
+     rule (.K => UNDEF("CTM1", "Variable-length array with negative length.", "6.7.6.2:5"))
+          ~> stabilize(t(_, variableLengthArrayType(_, tv(N:Int, _))))
+          requires N <Int 0
+          [structural]
+
 endmodule

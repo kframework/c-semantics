@@ -88,7 +88,7 @@ module C-CONFIGURATION
      </goto-map-calc>
      <elab-calc>
           <elaborator multiplicity="*">
-               <elab-id> .K </elab-id>
+               <elab-id> file-scope </elab-id>
                <k color="green">
                     $PGM:K
                     ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
@@ -99,15 +99,16 @@ module C-CONFIGURATION
 
                <elab> .K </elab>
 
+               // Toggle to allow writes and other special treatment
+               // for initializers.
+               <initializing> 0 </initializing>
+
                <local>
                     // maps from CIds
                     <env color="red"> .Map </env>
                     <types color="lightgray"> .Map </types>
                     <block-history> .List </block-history>
 
-                    // Toggle to allow writes and other special treatment
-                    // for initializers.
-                    <initializing> 0 </initializing>
                </local>
                <block-stack color="violet"> .List </block-stack>
 
@@ -131,10 +132,6 @@ module C-CONFIGURATION
                     .K
                </decl-type-holder>
 
-               <curr-program-loc color="black">
-                    UnknownCabsLoc
-               </curr-program-loc>
-
           </elaborator>
      </elab-calc>
 
@@ -142,6 +139,10 @@ module C-CONFIGURATION
      <curr-function color="lightgray">
           file-scope
      </curr-function>
+     // TODO(chathhorn): won't quite work here (2trans)
+     <curr-program-loc color="black">
+          UnknownCabsLoc
+     </curr-program-loc>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

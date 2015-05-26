@@ -6,7 +6,6 @@ module C-IO-DIRECT
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
@@ -14,16 +13,7 @@ module C-IO-DIRECT
      syntax KItem ::= writeBytes(SymLoc, DataList)
      syntax KItem ::= writeByte(SymLoc, CValue)
 
-     // In the static semantics, we only allow writing to memory during
-     // initialization (of statics).
-     rule <k> writeBytes(Loc:SymLoc, D:DataList, _)
-               => writeBytes(Loc, D)
-          ...</k>
-          <initializing> I:Int </initializing>
-          requires I >Int 0 andBool notBool isSymbolic(Loc)
-          [structural]
-     rule <k> writeBytes(_, _, _) => .K ...</k>
-          <initializing> 0 </initializing>
+     rule writeBytes(Loc:SymLoc, D:DataList, _) => writeBytes(Loc, D)
           [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
@@ -38,7 +28,7 @@ module C-IO-DIRECT
           <mem>...
                Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]), _)
           ...</mem>
-          requires (Offset <Int Len) andBool notBool isSymbolic(V)
+          requires (Offset <Int Len)
           [structural]
 
      syntax KItem ::= readByte(SymLoc)
