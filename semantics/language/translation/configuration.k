@@ -103,16 +103,14 @@ module C-CONFIGURATION
                // for initializers.
                <initializing> 0 </initializing>
 
-               <curr-program-loc color="black">
-                    UnknownCabsLoc
-               </curr-program-loc>
-
                <local>
                     // maps from CIds
                     <env color="red"> .Map </env>
                     <types color="lightgray"> .Map </types>
                     <block-history> .List </block-history>
-
+                    <curr-program-loc color="black">
+                         UnknownCabsLoc
+                    </curr-program-loc>
                </local>
                <block-stack color="violet"> .List </block-stack>
 
