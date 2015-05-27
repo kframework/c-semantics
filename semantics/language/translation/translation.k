@@ -1,7 +1,6 @@
 require "syntax.k"
 
 require "annotation.k"
-require "check-loc.k"
 require "compound-literal.k"
 require "configuration.k"
 require "elaborator.k"
@@ -60,7 +59,6 @@ module C-TRANSLATION
      imports C-DYNAMIC-SYNTAX
 
      imports C-ANNOTATION
-     imports C-CHECK-LOC
      imports C-COMPOUND-LITERAL
      imports C-CONFIGURATION
      imports C-ELABORATOR

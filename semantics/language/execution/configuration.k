@@ -149,19 +149,6 @@ module C-CONFIGURATION
                               <should-init color="lightgray">
                                    true
                               </should-init>
-                              // used to figure initializers
-                              <curr-object color="cyan">
-                                   .List
-                              </curr-object>
-                              <curr-subobject color="cyan">
-                                   .List
-                              </curr-subobject>
-                              <incomplete-length color="cyan">
-                                   0
-                              </incomplete-length>
-                              <saved-init color="cyan">
-                                   .K
-                              </saved-init>
                               <loop-stack color="violet">
                                    .List
                               </loop-stack>

@@ -36,54 +36,6 @@ module C-CHECK-LOC
           requires notBool Tag in keys(Blocks)
           [structural]
 
-     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
-          [structural]
-
-     syntax KItem ::= "checkLoc'" "(" SymLoc ")"
-     rule checkLoc'(NullPointer) => .K
-          [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
-               => checkOffsets(Offset, Len)
-          ...</k>
-          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
-          [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, 0)) => .K ...</k>
-          <functions>... Base |-> _ ...</functions>
-          [structural]
-     rule <k> checkLoc'(loc((Base:SymBase => Base'), _)) ...</k>
-          <linkings>... Base |-> Base':SymBase ...</linkings>
-          [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int)) => errorLocInvalid ...</k>
-          <mem> Mem:Map </mem>
-          <functions> Funs:Map </functions>
-          <linkings> Links:Map </linkings>
-          requires notBool (Base in keys(Mem))
-               andBool notBool (Base in keys(Funs))
-               andBool notBool (Base in keys(Links))
-               andBool notBool isNativeLoc(loc(Base, Offset))
-          [structural]
-     rule checkLoc'(L:SymLoc) => .K
-          requires isNativeLoc(L)
-          [structural]
-
-     syntax KItem ::= checkOffsets(Int, Int) [function]
-     rule checkOffsets(Offset:Int, Len:Int) => .K
-          requires (Offset <=Int Len) andBool (Offset >=Int 0)
-     rule checkOffsets(_, _) => errorLocBounds [owise]
-
-     syntax Error ::= "errorLocInvalid"
-                    | "errorLocBounds"
-     rule errorLocInvalid
-          => UNDEF("ECL1",
-               "Referring to an object outside of its lifetime.",
-               "6.2.4")
-          [structural]
-     rule errorLocBounds
-          => UNDEF("ECL2",
-               "Found pointer that refers outside the bounds of an object + 1.",
-               "6.2.4")
-          [structural]
-
      // Split out the prov to normalize the address.
      rule checkRestrict(loc(Base:SymBase, Offset:Int))
           => checkRestrict(loc(Base, Offset), .Set)

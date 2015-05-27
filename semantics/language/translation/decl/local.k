@@ -4,6 +4,7 @@ module C-DECL-LOCAL
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
 
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -115,10 +116,11 @@ module C-DECL-LOCAL
      rule toInitValue(_, _, Init:K) => Init [owise]
 
      syntax KItem ::= initLocalStatic(CId, K)
-     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, _))
+     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, Init:K))
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
+               ~> runInit(stripInitHolds(Init))
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>

@@ -131,4 +131,45 @@ module C-COMMON-EXPR-EVAL
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
+
+     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
+          [structural]
+
+     syntax KItem ::= "checkLoc'" "(" SymLoc ")"
+     rule checkLoc'(NullPointer) => .K
+          [structural]
+     rule checkLoc'(Loc:SymLoc) => .K
+          requires isStaticDuration(Loc)
+               orBool isNativeLoc(Loc)
+          [structural]
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
+               => checkOffsets(Offset, Len)
+          ...</k>
+          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
+          [structural]
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int)) => errorLocInvalid ...</k>
+          <mem> Mem:Map </mem>
+          requires notBool (Base in keys(Mem))
+               andBool notBool isStaticDuration(loc(Base, Offset))
+               andBool notBool isNativeLoc(loc(Base, Offset))
+          [structural]
+
+     syntax KItem ::= checkOffsets(Int, Int) [function]
+     rule checkOffsets(Offset:Int, Len:Int) => .K
+          requires (Offset <=Int Len) andBool (Offset >=Int 0)
+     rule checkOffsets(_, _) => errorLocBounds [owise]
+
+     syntax Error ::= "errorLocInvalid"
+                    | "errorLocBounds"
+     rule errorLocInvalid
+          => UNDEF("CEE2",
+               "Referring to an object outside of its lifetime.",
+               "6.2.4")
+          [structural]
+     rule errorLocBounds
+          => UNDEF("CEE3",
+               "Found pointer that refers outside the bounds of an object + 1.",
+               "6.2.4")
+          [structural]
+
 endmodule

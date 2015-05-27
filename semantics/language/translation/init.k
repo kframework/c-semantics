@@ -11,6 +11,7 @@ module C-TRANSLATION-INIT
 
      imports C-ABSTRACT-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
@@ -335,5 +336,7 @@ module C-TRANSLATION-INIT
     //      requires isHold(V)
     // rule Computation(V:RValue) => .K
     //      requires notBool isHold(V)
+
+     rule checkRestrict(_) => .K
 
 endmodule

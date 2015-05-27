@@ -165,7 +165,7 @@ module C-EXPR-ASSIGNMENT
      // why doesn't the standard just say that?
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.2}{3}}}{
-     Acompound assignment of the form \cinline{E1 op= E2} is equivalent to the
+     A compound assignment of the form \cinline{E1 op= E2} is equivalent to the
      simple assignment expression \cinline{E1 = E1 op (E2)}, except that the
      lvalue \cinline{E1} is evaluated only once, and with respect to an
      indeterminately-sequenced function call, the operation of a compound

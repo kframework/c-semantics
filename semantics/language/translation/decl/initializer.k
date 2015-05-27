@@ -148,9 +148,9 @@ module C-DECL-INITIALIZER
                 | "fillInit-aux" "(" K ")"
 
      rule <k> getInit => initializer(K) ...</k>
-          <saved-init> K:K => .K </saved-init>
-          <curr-object> _:List => .List </curr-object>
           <curr-subobject> _:List => .List </curr-subobject>
+          <curr-object> _:List => .List </curr-object>
+          <saved-init> K:K => .K </saved-init>
 
      syntax KItem ::= startInit(Type, CId, K)
      rule <k> startInit(T:AggregateOrUnionType, X:CId, CompoundInit(list(L:List)))
@@ -307,13 +307,13 @@ module C-DECL-INITIALIZER
                (ListItem(Remainder:K) => .List)
           </curr-subobject>
           <curr-object>
-               (.List => ListItem(ncle(K, T)))
+               .List => ListItem(ncle(K, T))
           ...</curr-object>
           [structural]
      rule <k> finishCompoundInit(L:List) => .K ...</k>
           <curr-subobject> (_ => L) </curr-subobject>
           <curr-object>
-               (ListItem(ncle(_, _)) => .List)
+               ListItem(ncle(_, _)) => .List
           ...</curr-object>
           [structural]
 
@@ -325,20 +325,20 @@ module C-DECL-INITIALIZER
                => fillInit(InitFragment(buildDesignator(
                     InFieldInit(F, K')), Exp))
           ...</k>
-          <curr-object> ListItem(ncle(K:K, T:StructOrUnionType)) ...</curr-object>
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
+          <curr-object> ListItem(ncle(K:K, T:StructOrUnionType)) ...</curr-object>
           [structural]
      // fixme does this need to worry about incompleteLength_
      rule <k> fillInit(InitFragment(AtIndexInit(Index:K, K':K), Exp:K))
                => fillInit(InitFragment(
                     buildDesignator(AtIndexInit(Index, K')), Exp))
           ...</k>
-          <curr-object> ListItem(ncle(K:K, T:ArrayType)) ...</curr-object>
           <curr-subobject>
                _:List => ListItem(block) ListItem(ncle(K, T))
           </curr-subobject>
+          <curr-object> ListItem(ncle(K:K, T:ArrayType)) ...</curr-object>
           [structural]
 
      syntax KItem ::= buildDesignator(K)

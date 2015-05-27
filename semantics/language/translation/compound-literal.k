@@ -51,8 +51,17 @@ module C-COMPOUND-LITERAL
           => #CompoundLiteral(compoundLiteral(N), DeclType(T, K), Init)
 
      syntax KItem ::= #CompoundLiteral(CId, K, K) [strict(2)]
-     rule #CompoundLiteral(X:CId, T:Type, Init:K)
-          => declare(typedDeclaration(T, X), Init) ~> X
+     // TODO(chathhorn): rather ugly, done this way to avoid clashes with the
+     // initializer cells when a compound literal appears in an initializer.
+     rule <k> (.K => elaborateInit(declare(typedDeclaration(T, X), Init)))
+               ~> #CompoundLiteral(X:CId, T:Type, Init:K)
+          ...</k>
+          <env> Env:Map </env>
+          requires notBool (X in keys(Env))
+     rule <k> (elaborateInitDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
+          <elab>... .K => K </elab>
+     rule <k> #CompoundLiteral(X:CId, _, _) => X ...</k>
+          <env>... X |-> _ ...</env>
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.5}{6}}}{For character string
      literals, the array elements have type \cinline{char}, and are initialized

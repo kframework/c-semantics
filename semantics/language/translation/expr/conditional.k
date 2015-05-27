@@ -65,12 +65,15 @@ module C-EXPR-CONDITIONAL
      rule (types(T1:PointerType, T2:IntegerType) => convertedType(T1))
           ~> _? _ : tv(0, T2)
 
+     // TODO(chathhorn): variably modified types need to be evaluated at
+     // execution and checked for compatibility at that point.
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
                +String " other must be a pointer to void.",
                "6.5.15:3"))
           ~> types(T1:PointerType, T2:PointerType)
           requires notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
-               andBool notBool isVoidType(innerType(T1)) andBool notBool isVoidType(innerType(T2))
+               andBool notBool isVoidType(innerType(T1))
+               andBool notBool isVoidType(innerType(T2))
 
      rule (types(
                t(Mods:Set, pointerType(T:Type)),
@@ -108,7 +111,7 @@ module C-EXPR-CONDITIONAL
           requires T =/=K void
      rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") )
           ~> types(T:StructOrUnionType, T':StructOrUnionType)
-          requires T =/=K T'
+          requires T =/=Type T'
 
      syntax KItem ::= evalConditional(K, K, K)
      context evalConditional(HOLE => reval(HOLE), _, _) [result(RValue)]

@@ -488,11 +488,11 @@ module C-TYPING-MISC
 
      rule stabilize(t(Mods:Set, variableLengthArrayType(T:Type, tv(N:Int, _)))
                => t(Mods, arrayType(T, N)))
-          requires N >=Int 0
+          requires N >Int 0
           [structural]
-     rule (.K => UNDEF("CTM1", "Variable-length array with negative length.", "6.7.6.2:5"))
+     rule (.K => UNDEF("CTM1", "Variable-length array with length less than or equal to zero.", "6.7.6.2:5"))
           ~> stabilize(t(_, variableLengthArrayType(_, tv(N:Int, _))))
-          requires N <Int 0
+          requires N <=Int 0
           [structural]
 
 endmodule

@@ -9,6 +9,8 @@ module C-DECL-GLOBAL-SYNTAX
      syntax DeclState ::= "declared" | "completed"
                         | "allocated" | "initialized"
 
+     syntax K ::= stripInitHolds(K) [function]
+
      // The last bool argument indicates whether a tentative def has been
      // encountered. This is only relevant in the case of symbols with external
      // linkage, which must then be completed and allocated at the end of
@@ -567,7 +569,6 @@ module C-DECL-GLOBAL
                initialized, _, _)
           [structural]
 
-     syntax K ::= stripInitHolds(K) [function]
      rule stripInitHolds(Computation(Init:K) ~> K:K)
           => Computation(stripHold(Init)) ~> stripInitHolds(K)
      rule stripInitHolds(L:CabsLoc ~> K:K)
