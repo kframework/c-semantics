@@ -1,6 +1,6 @@
-Error: CEC1
-Description: If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.
-Type: Constraint violation.
-See also: C11 sec. 6.5.15:3
+Error: EEC1
+Description: Incompatible variably modified types in a conditional expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.1:6
   at main(j076g.c:4)
   at <file-scope>(<unknown>)

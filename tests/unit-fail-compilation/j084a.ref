@@ -1,5 +1,5 @@
 File: j084a.c
-Line: 4
+Line: 5
 Error: TDR2
 Description: no definition for symbol with external linkage: a
 Type: Undefined behavior.

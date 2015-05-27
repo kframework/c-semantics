@@ -1,6 +1,7 @@
-Error: ECL2
+File: j062b.c
+Line: 7
+Error: CEE3
 Description: Found pointer that refers outside the bounds of an object + 1.
 Type: Undefined behavior.
 See also: C11 sec. 6.2.4
-  at main(j062b.c:7)
-  at <file-scope>(<unknown>)
+Translation failed. Run kcc -d j062b.c to see commands run.

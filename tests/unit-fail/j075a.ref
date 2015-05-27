@@ -1,6 +1,6 @@
-Error: CTI2
-Description: Arrays must have positive length.
-Type: Constraint violation.
-See also: C11 sec. 6.7.6.2:1
+Error: CTM1
+Description: Variable-length array with length less than or equal to zero.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.2:5
   at main(j075a.c:3)
   at <file-scope>(<unknown>)

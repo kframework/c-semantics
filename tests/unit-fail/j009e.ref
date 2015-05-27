@@ -1,4 +1,4 @@
-Error: ECL1
+Error: CEE2
 Description: Referring to an object outside of its lifetime.
 Type: Undefined behavior.
 See also: C11 sec. 6.2.4

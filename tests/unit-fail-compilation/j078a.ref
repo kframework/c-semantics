@@ -1,5 +1,5 @@
 File: j078a.c
-Line: 3
+Line: 1
 Error: TDG6
 Description: void parameter appears with a storage class specifier.
 Type: Undefined behavior.
