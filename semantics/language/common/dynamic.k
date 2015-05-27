@@ -116,7 +116,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= "LHOLE" | "RHOLE"
      syntax KItem ::= postOp(K, K) [strict(1)]
      syntax KItem ::= compoundAssign(K, K) [strict(1)]
-     syntax KItem ::= fillHoles(K, K) [function]
      syntax KItem ::= fillLHoles(K, K) [function]
      syntax KItem ::= fillRHoles(RValue, K) [function]
 endmodule
@@ -192,9 +191,6 @@ module C-DYNAMIC
      rule isNoInit(NoInit) => true
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
-
-     rule fillHoles(LV:KResult, K:K)
-          => fillLHoles(LV, fillRHoles(toRVal(LV), K))
 
      rule fillRHoles(V:RValue, RHOLE) => V
      rule fillRHoles(V:RValue, Lbl:KLabel(L:K,, R:K))

@@ -242,13 +242,20 @@ module C-EXPR-ASSIGNMENT
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) | E2)
 
      context compoundAssign(_, (HOLE => reval(HOLE))) [result(RValue)]
-     rule <k> compoundAssign(LV:KResult, V:RValue)
-               => fillHoles(LV, stripHold(V))
+     rule <k> compoundAssign(LV:KResult, AExp:RValue)
+               => #compoundAssign(LV, LV, AExp)
           ...</k>
           <curr-function> file-scope </curr-function>
           requires notBool isLHold(LV)
-     rule <k> compoundAssign(LV:KResult, V:RValue) => te(compoundAssign(LV, V), type(LV)) ...</k>
+     rule <k> compoundAssign(LV:KResult, AExp:RValue)
+               => te(compoundAssign(LV, AExp), type(LV))
+          ...</k>
           <curr-function> F:CId </curr-function>
           requires isLHold(LV) orBool F =/=K file-scope
+
+     syntax KItem ::= #compoundAssign(K, K, RValue)
+     context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     rule #compoundAssign(LV:KResult, V:RValue, AExp:RValue)
+          => fillLHoles(LV, fillRHoles(V, stripHold(AExp)))
 
 endmodule
