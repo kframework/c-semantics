@@ -4,5 +4,5 @@ int main(void){
 }
 
 static int f(void){
-	return 7;
+	return 0;
 }
