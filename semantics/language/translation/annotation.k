@@ -7,6 +7,9 @@ endmodule
 
 module C-ANNOTATION
      imports C-ANNOTATION-SYNTAX
+
+     imports C-ABSTRACT-SYNTAX
+
      rule <k> (PragmaKccRule(S:String) => .K) ~> CodeLoc(FunctionDefinition(_, _), _)  ...</k>
           <annotation> _ => S </annotation>
 

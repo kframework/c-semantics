@@ -1,5 +1,5 @@
 File: j004g.c
-Line: 3
+Line: 1
 Error: FD8
 Description: main must have zero or two parameters.
 Type: Constraint violation.

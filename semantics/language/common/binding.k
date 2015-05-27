@@ -13,12 +13,11 @@ endmodule
 module C-BINDING
      imports C-BINDING-SYNTAX
 
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
@@ -99,7 +98,7 @@ module C-BINDING
           [structural]
 
      syntax KItem ::= bindVariadics(List, Int)
-     rule (.K => bindParam(vararg(N), type(argPromote(V)), argPromote(V)))
+     rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))
           ~> bindVariadics(
                (ListItem(V:RValue) => .List) _,
                (N:Int => N +Int 1))
@@ -158,8 +157,7 @@ module C-BINDING
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
      syntax RValue ::= argPromote(K) [function]
-     rule argPromote(tv(V:CValue, T:Type))
-          => cast(argPromoteType(T), tv(V, T))
+     rule argPromote(V:RValue) => cast(argPromoteType(type(V)), V)
 
      // "integer promotions" are used when doing arithmetic conversions, and
      // for unary ~, +, - "usual arithmetic conversions" are used when doing

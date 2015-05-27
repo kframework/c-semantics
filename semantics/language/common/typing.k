@@ -1,16 +1,11 @@
-require "typing/canonicalization.k"
 require "typing/compatibility.k"
-require "typing/expr.k"
-require "typing/interpretation.k"
 require "typing/misc.k"
 require "typing/predicates.k"
-require "typing/strictness.k"
 
 module C-TYPING-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= typeof(K)
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
@@ -24,21 +19,18 @@ module C-TYPING-SYNTAX
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map)
 
-     // Represents a type before canonicalization.  as in "int *x", first arg
-     // is "Int", second arg is "PointerType(JustBase)"
-     syntax KItem ::= DeclType(K, K) [avoid, strict(1)]
-
-     syntax Bool ::= isWCharType(Type) [function]
-     syntax Bool ::= isFlexibleArrayType(Type) [function]
-     syntax Bool ::= isOldStyleFunctionType(Type) [function]
-     syntax Bool ::= isFunctionPointerType(Type) [function]
-     syntax Bool ::= isConstType(Type) [function]
-     syntax Bool ::= isVolatileType(Type) [function]
+     syntax Bool ::= isCompletePointerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
-     syntax Bool ::= isIncompleteArrayType(Type) [function]
+     syntax Bool ::= isConstType(Type) [function]
+     syntax Bool ::= isFlexibleArrayType(Type) [function]
+     syntax Bool ::= isFunctionPointerType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
+     syntax Bool ::= isOldStyleFunctionType(Type) [function]
      syntax Bool ::= isTypedDeclaration(Type) [function]
+     syntax Bool ::= isVariablyModifiedType(Type) [function]
+     syntax Bool ::= isVolatileType(Type) [function]
+     syntax Bool ::= isWCharType(Type) [function]
 
      // Storage class specifiers.
      syntax Bool ::= isExternType(Type) [function]
@@ -51,13 +43,10 @@ module C-TYPING-SYNTAX
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
 
-     syntax CSize ::= Int
-     syntax CValue ::= CSize
-
      // Basic types
      syntax SimpleCharType ::= "char" [function]
      syntax SimpleSignedType ::= "short-int" | "int"
-     		               | "long-int" | "long-long-int" 
+                               | "long-int" | "long-long-int" 
                                | SimpleSignedCharType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
      syntax SimpleSignedCharType ::= "signed-char"
@@ -73,11 +62,11 @@ module C-TYPING-SYNTAX
 
      // Composite types
      syntax SimpleType ::= enumType(CId)
-     syntax SimpleType ::= bitfieldType(Type, CSize)
+     syntax SimpleType ::= bitfieldType(Type, Int)
      syntax SimpleType ::= functionType(Type, List)
      syntax SimpleType ::= pointerType(Type)
 
-     syntax SimpleType ::= arrayType(Type, CSize)
+     syntax SimpleType ::= arrayType(Type, Int)
      syntax SimpleType ::= incompleteArrayType(Type)
      syntax SimpleType ::= flexibleArrayType(Type)
      syntax SimpleType ::= variableLengthArrayType(Type, K)
@@ -87,10 +76,10 @@ module C-TYPING-SYNTAX
      syntax StructId ::= global(CId, String)
                        | local(CId, String, Int)
 
-     syntax KItem ::= getFieldInfo(StructId) [function]
-     syntax KItem ::= getFieldInfo(Type) [function]
+     syntax FieldInfo ::= getFieldInfo(StructId) [function]
+     syntax FieldInfo ::= getFieldInfo(Type) [function]
      syntax CId ::= getTag(StructId) [function]
-     syntax KItem ::= "#incomplete"
+     syntax FieldInfo ::= "#incomplete"
 
      // These aren't real types, but are values that can appear in type
      // contexts.
@@ -110,22 +99,26 @@ module C-TYPING-SYNTAX
      syntax UnsignedIntegerType ::= UCharType | BoolType | UnsignedBitfieldType
      syntax CharType ::= UCharType | SCharType
      syntax BitfieldType ::= UnsignedBitfieldType | SignedBitfieldType
+     syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
+                        | VariableLengthArrayType
 
-     syntax PointerType
-     syntax UnsignedBitfieldType
-     syntax SignedBitfieldType
-     syntax UnionType
-     syntax ArrayType
-     syntax StructType
-     syntax FunctionType
-     syntax VoidType
-     syntax NoType
-     syntax FloatType
-     syntax UnsignedIntegerType
-     syntax SignedIntegerType
-     syntax UCharType
-     syntax SCharType
      syntax BoolType
+     syntax FixedLengthArrayType
+     syntax FloatType
+     syntax FunctionType
+     syntax IncompleteArrayType
+     syntax NoType
+     syntax PointerType
+     syntax SCharType
+     syntax SignedBitfieldType
+     syntax SignedIntegerType
+     syntax StructType
+     syntax UCharType
+     syntax UnionType
+     syntax UnsignedBitfieldType
+     syntax UnsignedIntegerType
+     syntax VariableLengthArrayType
+     syntax VoidType
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
@@ -148,15 +141,14 @@ module C-TYPING-SYNTAX
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
      // For function array parameters with a static-qualified size.
-     syntax Modifier ::= arrayStatic(CSize) [klabel('arrayStatic)]
-     syntax Modifier ::= atomic(Type) [klabel('atomic)]
-     syntax Modifier ::= alignas(Int) [klabel('alignas)]
+     syntax Modifier ::= arrayStatic(Int)
+     syntax Modifier ::= atomic(Type)
+     syntax Modifier ::= alignas(Int)
 
-     syntax Modifier ::= readFrom(SymLoc, CSize)
+     syntax Modifier ::= readFrom(SymLoc, Int)
 
      // Special restrict modifier tagged with a block num.
-     syntax Modifier ::= RestrictBlock(RestrictTag)
-     syntax RestrictTag ::= Int | CId | "global"
+     syntax Modifier ::= RestrictBlock(BlockTag)
 
      syntax Modifier ::= "IntegerConstant"
 
@@ -184,7 +176,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= typedDeclaration(Type, CId)
           [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
-     syntax KItem ::= simplifyTruth(K) [function]
      syntax Type ::= innerType(Type) [function]
 
      syntax Bool ::= isNullPointerConstant(RValue) [function]
@@ -198,15 +189,10 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
-     syntax Type ::= tagRestrict(RestrictTag, Type) [function]
-     syntax RestrictTag ::= getRestrictBlock(Type) [function]
+     syntax Type ::= tagRestrict(BlockTag, Type) [function]
+     syntax BlockTag ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]
-
-     //need this to solve array type anywhere rule
-     syntax Type ::= canonicalizeArrayType(Type) [function]
-     syntax List ::= canonicalizeArrayTypeInList(List) [function]
-     syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
 
      syntax Bool ::= hasAlignas(Type) [function]
      syntax Bool ::= hasAlignasMod(Set) [function]
@@ -217,14 +203,18 @@ module C-TYPING-SYNTAX
      // that offset.
      syntax Type ::= getTypeAtOffset(Type, Int) [function]
 
+     syntax Bool ::= isTruthValue(RValue) [function]
+
+     // Turns typedDeclarations into Types in function params.
+     syntax Type ::= elideDeclParams(Type) [function]
+     syntax List ::= elideList(List) [function]
+     syntax Map ::= elideMap(Map) [function]
+
+     syntax KItem ::= stabilizeVLA(Type)
 endmodule
 
 module C-TYPING
-     imports C-TYPING-CANONICALIZATION
      imports C-TYPING-COMPATIBILITY
-     imports C-TYPING-EXPR
-     imports C-TYPING-INTERPRETATION
      imports C-TYPING-MISC
      imports C-TYPING-PREDICATES
-     imports C-TYPING-STRICTNESS
 endmodule

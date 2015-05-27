@@ -1,5 +1,5 @@
 File: j004f.c
-Line: 3
+Line: 1
 Error: FD7
 Description: if main has arguments, the type of the second argument must be equivalent to char**.
 Type: Constraint violation.

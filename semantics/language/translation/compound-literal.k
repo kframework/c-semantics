@@ -1,22 +1,21 @@
 module C-COMPOUND-LITERAL
+     imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
-
-     syntax CId ::= compoundLiteral(Int)
-     syntax KItem ::= handleCompoundLiteral(K) [strict]
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage
@@ -48,35 +47,21 @@ module C-COMPOUND-LITERAL
 
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
-     // comes back from figureInit as initValue(id, type, inits)
      rule CompoundLiteral(N:Int, T:Type, K:K, Init:K)
-          => handleCompoundLiteral(
-               figureInit(compoundLiteral(N), DeclType(T, K), Init))
-          [structural]
+          => #CompoundLiteral(compoundLiteral(N), DeclType(T, K), Init)
 
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => allocObject(Base, T)
-               ~> addToEnv(X, Base)
-               ~> giveType(X, T)
-               ~> allowInit(Init)
-               ~> X
+     syntax KItem ::= #CompoundLiteral(CId, K, K) [strict(2)]
+     // TODO(chathhorn): rather ugly, done this way to avoid clashes with the
+     // initializer cells when a compound literal appears in an initializer.
+     rule <k> (.K => elaborateInit(declare(typedDeclaration(T, X), Init)))
+               ~> #CompoundLiteral(X:CId, T:Type, Init:K)
           ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
-          <block-history> .List </block-history>
-          [structural]
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => addToEnv(X, symVal)
-               ~> giveType(X, T)
-               ~> Init
-               ~> X
-          ...</k>
-          <block-history> ListItem(_) ...</block-history>
-          [structural]
-
-     // here we start with a local address, put the string in memory, then
-     // change the address to be readonly
+          <env> Env:Map </env>
+          requires notBool (X in keys(Env))
+     rule <k> (elaborateInitDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
+          <elab>... .K => K </elab>
+     rule <k> #CompoundLiteral(X:CId, _, _) => X ...</k>
+          <env>... X |-> _ ...</env>
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.5}{6}}}{For character string
      literals, the array elements have type \cinline{char}, and are initialized
@@ -88,33 +73,41 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (.K => allocString(string(S), S))
+     rule <k> (.K => runInit(allocString(string(S), S)))
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (string(S) in keys(Mem))
-          [structural]
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (.K => allocWString(wstring(S), S))
+     rule <k> (.K => runInit(allocWString(wstring(S), S)))
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (wstring(S) in keys(Mem))
-          [structural]
 
      rule <k> stringLiteral(S:String)
                => lv(lnew(string(S), cfg:alignofSignedChar),
                     t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
-          [structural]
      rule <k> wstringLiteral(S:List)
                => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
                     t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
-          [structural]
+
+     syntax KItem ::= allocString(SymBase, String)
+     rule allocString(Base:SymBase, S:String)
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, char), lengthString(S) +Int 1)))
+          ~> writeString(lnew(Base, cfg:alignofSignedChar), S)
+
+     syntax KItem ::= allocWString(SymBase, List)
+     rule allocWString(Base:SymBase, S:List)
+          => allocObject(Base, t(.Set,
+               arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
+          ~> writeWString(lnew(Base, byteAlignofType(t(.Set, cfg:wcharut))), S)
 
 endmodule

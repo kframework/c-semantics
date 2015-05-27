@@ -1,5 +1,5 @@
 File: j004a.c
-Line: 2
+Line: 1
 Error: FD5
 Description: main must return an int.
 Type: Constraint violation.

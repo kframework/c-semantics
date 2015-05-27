@@ -1,5 +1,5 @@
 File: j008b.c
-Line: 5
+Line: 3
 Error: TDG11
 Description: static declaration of f follows non-static declaration.
 Type: Undefined behavior.

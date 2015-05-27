@@ -15,6 +15,13 @@ module C-DYNAMIC-SYNTAX
 
      syntax LValue ::= lv(SymLoc, Type)
 
+     syntax KItem ::= le(K, Type)
+     syntax Hold ::= te(K, Type)
+     syntax LHold ::= ncle(K, Type)
+     syntax CompoundExpression ::= compoundExp(K)
+
+     syntax KItem ::= stripHold(K) [function]
+
      syntax RValue ::= "voidVal"
      syntax RValue ::= "emptyValue"
      syntax RValue ::= tv(CValue, Type)
@@ -23,7 +30,7 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= toRVal(K)
 
      syntax Type ::= type(K) [function]
-     syntax KItem ::= value(RValue) [function]
+     syntax KItem ::= value(K) [function]
 
      syntax KItem ::= "discard"
 
@@ -36,20 +43,19 @@ module C-DYNAMIC-SYNTAX
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
-     syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
 
      // TODO(chathhorn): seems excessive to make this an CId. Also, it kinda
      // goes against our naming conventions.
      syntax CId ::= "file-scope"
 
-     //  switchid, value (tv or 'Default)
-     syntax CId ::= genLabel(Int, K)
+     //  switchid, caseid, value (tv or 'Default)
+     syntax CId ::= caseLabel(Int, K)
      syntax CId ::= funLabel(CId)
-     syntax CId ::= case(Int)
 
      syntax KItem ::= "pushBlock"
      syntax KItem ::= "popBlock"
-     syntax KItem ::= "deleteLocals"
+     syntax KItem ::= enterBlock(BlockTag)
+     syntax KItem ::= exitBlock(BlockTag)
 
      syntax Statement ::= "loopMarked"
      syntax KItem ::= "popLoop"
@@ -60,67 +66,97 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-
      syntax KItem ::= loadObj(Bag)
      syntax Bag ::= unwrapObj(Bag) [function]
 
+     syntax KItem ::= "comma"
+
+     // these are semantic
+     syntax KItem ::= reval(K)
+
+     // Function id, param ids, prototype, body.
+     syntax RValue ::= functionObject(CId, List, Type, K)
+
+     syntax KResult ::= initValue(CId, Type, K)
+     syntax KItem ::= allowInit(K)
+     syntax NoInit
+     syntax KResult ::= NoInit
+
+     syntax BlockTag ::= Int | CId | "global"
+                          // TODO(chathhorn): for restrict added via automatic
+                          // casts -- not sure how to handle.
+                          | "none"
+
+     syntax CId ::= compoundLiteral(Int)
+     syntax KItem ::= initCompoundLiteral(K) [strict]
+
+     syntax KItem ::= typedef(CId, Type)
+     syntax KItem ::= declareInternalVariable(CId, K, K) [strict(2,3)]
+
+     //TODO(liyili2): might not need this list in the future.
+     syntax HeatItem ::= hItem(K)
+     context hItem(HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     syntax HeatList ::= List{HeatItem,"hs::"} [strict]
+     syntax KItem ::= hlist(HeatList) [strict]
+     syntax HeatList ::= toHeatList(List) [function]
+     syntax List ::= hListToList(HeatList) [function]
+
+     syntax HeatResult ::= hrItem(K)
+     syntax HeatItem ::= HeatResult
+     syntax KResult ::= HeatResult
+
+     rule hItem(V:KResult) => hrItem(V)
+
+     rule toHeatList(.List) => .HeatList
+     rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
+
+     rule hListToList(.HeatList) => .List
+     rule hListToList(hrItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
+
+     syntax KItem ::= "LHOLE" | "RHOLE"
+     syntax KItem ::= postOp(K, K) [strict(1)]
+     syntax KItem ::= compoundAssign(K, K) [strict(1)]
+     syntax KItem ::= fillLHoles(K, K) [function]
+     syntax KItem ::= fillRHoles(RValue, K) [function]
 endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports COMPAT-SYNTAX
 
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
      rule toRVal(V:RValue) => V
           [structural]
 
+     rule stripHold(te(K:K, _)) => K
+     rule stripHold(le(K:K, _)) => K
+     rule stripHold(ncle(K:K, _)) => K
+     rule stripHold(K:K) => K [owise]
+
      rule value(tv(V:CValue, _)) => V
+     rule value(nclv(Loc:SymLoc, _)) => Loc
+     rule value(te(K:K, _)) => K
+     rule value(le(K:K, _)) => K
+     rule value(ncle(K:K, _)) => K
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T
+     rule type(voidVal) => t(.Set, void)
      rule type(lv(_, T:Type)) => T
      rule type(nclv(_, T:Type)) => T
-
-     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
-          => UnknownCabsLoc
-     rule filterCabsLoc(L:CabsLoc) => L [owise]
-
-     rule ExpressionLoc(K:K, _) => K
-
-     rule <k> CodeLoc(K:K, L:CabsLoc) => K ...</k>
-          <curr-program-loc> _ => filterCabsLoc(L) </curr-program-loc>
-          [structural]
+     rule type(te(_, T:Type)) => T
+     rule type(le(_, T:Type)) => T
+     rule type(ncle(_, T:Type)) => T
 
      rule _:KResult ~> discard => .K
           [structural]
 
      rule discard => .K
           [structural]
-
-     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
-     A preprocessing directive of the form
-     \cdisplay{# pragma pp-tokensoptnew-line}
-     \broken{where the preprocessing token \cinline{STDC} does not immediately
-     follow pragma in the directive (prior to any macro replacement)} causes the
-     implementation to behave in an implementation-defined manner. The behavior
-     might cause translation to fail or cause the translator or the resulting
-     program to behave in a non-conforming manner. Any such pragma that is not
-     recognized by the implementation is ignored.
-     }*/
-     rule Pragma(_) => .K
-          [structural]
-     rule PragmaKccInv(_) => .K
-          [structural]
-
-     rule AttributeWrapper(K:K, _) => K
-
-     rule ToIdentifier("___missing_field_name") => #NoName
-     rule ToIdentifier(S:String) => Identifier(S)
-          requires S =/=String "___missing_field_name"
-
-     rule NothingExpression => emptyValue:>Expression
 
      rule unwrapObj(<generatedTop>...
                <global> G:Bag </global>
@@ -140,7 +176,29 @@ module C-DYNAMIC
      rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
 
-     rule N:CSize => tv(N, t(.Set, cfg:largestUnsigned))
-          [structural] // for internal computations
+     rule <k> allowInit(K:K) => K ~> initDone ...</k>
+          <initializing> I:Int => I +Int 1 </initializing>
+          [structural]
 
+     syntax KItem ::= "initDone"
+     rule <k> R:KResult ~> initDone => R ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
+          [structural]
+     rule <k> initDone => .K ...</k>
+          <initializing> I:Int => I -Int 1 </initializing>
+          [structural]
+
+     rule isNoInit(NoInit) => true
+     rule isNoInit(initValue(_, _, .K)) => true
+     rule isNoInit(_) => false [owise]
+
+     rule fillRHoles(V:RValue, RHOLE) => V
+     rule fillRHoles(V:RValue, Lbl:KLabel(L:K,, R:K))
+          => Lbl(fillRHoles(V, L),, fillRHoles(V, R))
+     rule fillRHoles(_, K:K) => K [owise]
+
+     rule fillLHoles(LV:KResult, LHOLE) => LV
+     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K,, R:K))
+          => Lbl(fillLHoles(LV, L),, fillLHoles(LV, R))
+     rule fillLHoles(_, K:K) => K [owise]
 endmodule

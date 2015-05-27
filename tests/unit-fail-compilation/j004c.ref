@@ -1,5 +1,5 @@
 File: j004c.c
-Line: 2
+Line: 3
 Error: TDR2
 Description: no definition for symbol with external linkage: main
 Type: Undefined behavior.

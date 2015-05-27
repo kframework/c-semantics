@@ -71,16 +71,17 @@ module C-EXPR-ASSIGNMENT
      syntax Set ::= "getRelevantTags'" "(" K "," SymLoc "," Set ")" [function]
      rule getRelevantTags'((.K => K), _, (SetItem(K:K) => .Set) _)
      rule getRelevantTags'((basedOn(Base, _) => .K), loc(Base:SymBase, _), _)
-     rule getRelevantTags'(basedOn(Base':SymBase, Tag:RestrictTag),
+     rule getRelevantTags'(basedOn(Base':SymBase, Tag:BlockTag),
                loc(Base:SymBase, Offset:Int), Bases:Set)
           => SetItem(Tag) getRelevantTags'(.K, loc(Base:SymBase, Offset), Bases)
           requires Base =/=K Base'
      rule getRelevantTags'(.K, _, .Set) => .Set
 
-     syntax KItem ::= checkRestrictAssign(RestrictTag, Set)
-     rule checkRestrictAssign(Tag:RestrictTag, Tags:Set) => .K
+     syntax KItem ::= checkRestrictAssign(BlockTag, Set)
+     rule checkRestrictAssign(Tag:BlockTag, Tags:Set) => .K
           requires (Tag =/=K global) andBool notBool (Tag in Tags)
-     rule checkRestrictAssign(Tag:RestrictTag, Tags:Set)
+               orBool Tag ==K none
+     rule checkRestrictAssign(Tag:BlockTag, Tags:Set)
           => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
           requires Tag in Tags
      rule checkRestrictAssign(global, .Set) => .K
@@ -109,13 +110,13 @@ module C-EXPR-ASSIGNMENT
      rule checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           => .K
-          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T):>Int)
+          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (.K => UNDEF("EEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
-          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T):>Int)
+          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
      syntax KItem ::= getFirstMatch(Set, KLabel) [function]
                     | "getFirstMatch'" "(" K "," Set "," KLabel ")" [function]
@@ -128,6 +129,16 @@ module C-EXPR-ASSIGNMENT
      rule getFirstMatch'(K:K, _, L:KLabel) => K
           requires getKLabel(K) ==KLabel L
      rule getFirstMatch'(.K, .Set, _) => .K
+
+     rule compoundAssign(LV:KResult, AExp:K)
+          => #compoundAssign(LV, LV, AExp)
+          [structural]
+
+     syntax KItem ::= #compoundAssign(K, K, K)
+     context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     rule #compoundAssign(LV:KResult, V:RValue, AExp:K)
+          => fillLHoles(LV, fillRHoles(V, AExp))
+          [structural]
 
 endmodule
 

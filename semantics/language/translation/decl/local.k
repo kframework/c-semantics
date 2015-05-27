@@ -3,10 +3,11 @@ module C-DECL-LOCAL
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
+
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -20,9 +21,10 @@ module C-DECL-LOCAL
      // of the current block?
      //
      // Extern, external type and def exist.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
+     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
                => addToEnv(X, Base)
           ...</k>
+          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
@@ -36,10 +38,10 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
-     rule <k> declareInternalVariable(X:CId, T':Type, NoInit)
-               => addToEnv(X, symVal)
+     rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
+               => giveType(X, T)
           ...</k>
-          <types> M:Map => M[X <- T] </types>
+          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
@@ -53,10 +55,11 @@ module C-DECL-LOCAL
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
-     rule <k> declareInternalVariable(X:CId, T:Type, NoInit)
-               => addToEnv(X, symVal)
+     rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
+               => addToEnv(X, nonStatic)
+               ~> giveType(X, T)
           ...</k>
-          <types> M:Map => M[X <- T] </types>
+          <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
           <external-types> Types:Map </external-types>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -67,26 +70,25 @@ module C-DECL-LOCAL
                andBool notBool (X in keys(Types))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
-     rule declareInternalVariable(X:CId, T:Type, K:K)
-          => initLocalStatic(X,
-               // Need the allowInit here to enable storing compound literals
-               // and again below to enable storing the value of this declared
-               // variable into the actual static memory.
-               allowInit(figureInit(X, T, K)))
+     rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
+               => initLocalStatic(X, toInitValue(X, T, Init))
+          ...</k>
+          <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isStaticType(T)
                andBool (notBool isExternType(T))
                andBool (notBool isFunctionType(T))
           [structural]
-     rule declareInternalVariable(X:CId, T:Type, K:K)
-          => addToEnv(X, symVal)
-          ~> defineAndInit(X, T, figureInit(X, T, K))
+     rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
+               => defineAndInit(X, T, toInitValue(X, T, Init))
+          ...</k>
+          <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isNaked(T)
           [structural]
      // This is pretty contrived, but we don't give local extern decls an entry
      // in the "local-types" map in order to detect this case.
      rule <k> (.K => CV("TDL1", "Extern declaration of "
                     +String idToString(X) +String " follows one with no linkage.", "6.7:3"))
-               ~> declareInternalVariable(X:CId, T:Type, NoInit)
+               ~> declareInternalVariable(X:CId, T:Type, _:NoInit)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -96,12 +98,12 @@ module C-DECL-LOCAL
           [structural]
      rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
                +String " appears at block scope with an initializer.", "6.7.9:5"))
-          ~> declareInternalVariable(X:CId, T:Type, K:K)
-          requires isExternType(T) andBool K =/=K NoInit
+          ~> declareInternalVariable(X:CId, T:Type, K:KResult)
+          requires isExternType(T) andBool notBool isNoInit(K)
           [structural]
      rule <k> (.K => CV("TDL3", "Extern declaration of " +String idToString(X)
                     +String " with incompatible type.", "6.7:4"))
-               ~> declareInternalVariable(X:CId, T':Type, NoInit)
+               ~> declareInternalVariable(X:CId, T':Type, _:NoInit)
           ...</k>
           <external-types>... X |-> T:Type ...</external-types>
           requires (isFunctionType(T') orBool isExternType(T'))
@@ -109,12 +111,16 @@ module C-DECL-LOCAL
                andBool notBool areCompatible(T, T')
           [structural]
 
-     syntax KItem ::= initLocalStatic(CId, K) [strict(2)]
-     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, K:K))
+     syntax KResult ::= toInitValue(CId, Type, K) [function]
+     rule toInitValue(X:CId, T:Type, NoInit) => initValue(X, T, .K)
+     rule toInitValue(_, _, Init:K) => Init [owise]
+
+     syntax KItem ::= initLocalStatic(CId, K)
+     rule <k> initLocalStatic(X:CId, initValue(_, T:Type, Init:K))
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> allowInit(K)
+               ~> runInit(stripInitHolds(Init))
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
@@ -128,7 +134,6 @@ module C-DECL-LOCAL
           </local-types>
           requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
                andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
-          [structural]
      rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
@@ -146,12 +151,10 @@ module C-DECL-LOCAL
                orBool (kpair(X, BlockNum) in keys(LocalTypes))
           [structural]
 
-     syntax KItem ::= defineAndInit(CId, Type, K) [strict(3)]
-     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, K:K))
-               => giveType(X, T)
-               // Needed because we still need to process the initializers and
-               // we also need to disable e.g. const checks during init.
-               ~> allowInit(K)
+     syntax KItem ::= defineAndInit(CId, Type, K)
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
+               => addToEnv(X, nonStatic)
+               ~> giveType(X, T)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -164,7 +167,8 @@ module C-DECL-LOCAL
           [structural]
      // Only function prototype scope?
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
-               => giveType(X, T)
+               => addToEnv(X, nonStatic)
+               ~> giveType(X, T)
           ...</k>
           <block-history> .List </block-history>
           requires isCompleteType(T)
@@ -176,17 +180,5 @@ module C-DECL-LOCAL
           requires notBool isCompleteType(T)
           [structural]
 
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
-          <curr-tu> Tu:String </curr-tu>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
-          requires notBool (X in keys(Structs))
-          [structural]
-     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
-               +String idToString(X), "6.7.2.3:1"))
-               ~> addLocalTag(X:CId, _)
-          ...</k>
-          <structs>... X |-> _ ...</structs>
-          [structural]
 endmodule
 
