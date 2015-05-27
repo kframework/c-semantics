@@ -2,7 +2,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      syntax KItem ::= instantiate(SymLoc, Type)
-     syntax KItem ::= checkLoc(SymLoc)
      syntax KItem ::= checkUse(K) [strict]
      syntax Type ::= arrayToPtrType(Type) [function]
 endmodule
@@ -132,15 +131,17 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
+     syntax KItem ::= checkLoc(SymLoc)
      rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
           [structural]
 
      syntax KItem ::= "checkLoc'" "(" SymLoc ")"
      rule checkLoc'(NullPointer) => .K
           [structural]
-     rule checkLoc'(Loc:SymLoc) => .K
-          requires isStaticDuration(Loc)
-               orBool isNativeLoc(Loc)
+     rule <k> checkLoc'(Loc:SymLoc) => .K ...</k>
+          <mem> Mem:Map </mem>
+          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
+               andBool notBool (base(Loc) in keys(Mem))
           [structural]
      rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
                => checkOffsets(Offset, Len)

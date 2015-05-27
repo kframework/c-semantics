@@ -174,17 +174,6 @@ module C-EXPR-ASSIGNMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
 
-     rule E1:KResult *= E2:RValue => E1 := toRVal(E1) * E2
-     rule E1:KResult /= E2:RValue => E1 := toRVal(E1) / E2
-     rule E1:KResult %= E2:RValue => E1 := toRVal(E1) % E2
-     rule E1:KResult += E2:RValue => E1 := toRVal(E1) + E2
-     rule E1:KResult -= E2:RValue => E1 := toRVal(E1) - E2
-     rule E1:KResult <<= E2:RValue => E1 := toRVal(E1) << E2
-     rule E1:KResult >>= E2:RValue => E1 := toRVal(E1) >> E2
-     rule E1:KResult &= E2:RValue => E1 := toRVal(E1) & E2
-     rule E1:KResult ^= E2:RValue => E1 := toRVal(E1) ^ E2
-     rule E1:KResult |= E2:RValue => E1 := toRVal(E1) | E2
-
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => write(Loc, V, T)
                ~> tv(V, T)
@@ -231,5 +220,35 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isConstType(T)
                andBool (T ==Type type(R))
 
-endmodule
+     rule E1:KResult *= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) * E2)
+     rule E1:KResult /= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) / E2)
+     rule E1:KResult %= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) % E2)
+     rule E1:KResult += E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) + E2)
+     rule E1:KResult -= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) - E2)
+     rule E1:KResult <<= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) << E2)
+     rule E1:KResult >>= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) >> E2)
+     rule E1:KResult &= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) & E2)
+     rule E1:KResult ^= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) ^ E2)
+     rule E1:KResult |= E2:RValue
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) | E2)
 
+     context compoundAssign(_, (HOLE => reval(HOLE))) [result(RValue)]
+     rule <k> compoundAssign(LV:KResult, V:RValue)
+               => fillHoles(LV, stripHold(V))
+          ...</k>
+          <curr-function> file-scope </curr-function>
+          requires notBool isLHold(LV)
+     rule <k> compoundAssign(LV:KResult, V:RValue) => te(compoundAssign(LV, V), type(LV)) ...</k>
+          <curr-function> F:CId </curr-function>
+          requires isLHold(LV) orBool F =/=K file-scope
+
+endmodule

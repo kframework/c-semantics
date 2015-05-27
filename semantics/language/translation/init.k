@@ -332,10 +332,10 @@ module C-TRANSLATION-INIT
      rule Computation(.K) => .K
      rule <k> Computation(V:RValue) => .K ...</k>
           <elab>... .K => Computation(V) </elab>
-    // TODO(chathhorn) (2trans)
-    //      requires isHold(V)
-    // rule Computation(V:RValue) => .K
-    //      requires notBool isHold(V)
+          requires isHold(V)
+     // Totally elide pure expressions from the translated program.
+     rule Computation(V:RValue) => .K
+          requires notBool isHold(V)
 
      rule checkRestrict(_) => .K
 

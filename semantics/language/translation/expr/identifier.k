@@ -13,6 +13,14 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T:Type ...</types>
           requires notBool isLinkerLoc(Base)
                andBool Base =/=K nonStatic
+               andBool notBool isRestrictType(T)
+          [structural]
+     rule <k> X:CId => lv(restrictedNew(Base, getAlignas(T), getRestrictBlock(T)), T) ...</k>
+          <env>... X |-> Base:SymBase ...</env>
+          <types>... X |-> T:Type ...</types>
+          requires notBool isLinkerLoc(Base)
+               andBool Base =/=K nonStatic
+               andBool isRestrictType(T)
           [structural]
      rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> nonStatic ...</env>

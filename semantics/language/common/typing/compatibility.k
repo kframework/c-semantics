@@ -137,6 +137,27 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
+     // TODO(chathhorn): need to rework VLA compatibility.
+     rule #areCompat(
+               t(Mods:Set, arrayType(T:Type, _)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
@@ -266,6 +287,15 @@ module C-TYPING-COMPATIBILITY
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
                t(Mods:Set, incompleteArrayType(T:Type)),
+               t(Mods':Set, arrayType(T':Type, N:Int)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     // TODO(chathhorn): rework VLA composite types.
+     rule compositeType(
+               t(Mods:Set, arrayType(T:Type, N:Int)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(

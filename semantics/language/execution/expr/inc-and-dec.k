@@ -24,9 +24,12 @@ module C-EXPR-INC-AND-DEC
      the value 1 of the appropriate type is subtracted from it).
      }*/
 
-     context postOp((HOLE => reval(HOLE)), _) [result(RValue)]
-     rule postOp(V:RValue, Assign:K)
-          => Assign ~> discard ~> V
+     rule postOp(LV:KResult, Op:K) => #postOp(LV, fillLHoles(LV, Op))
+          [structual]
+
+     syntax KItem ::= #postOp(K, K)
+     context #postOp((HOLE => reval(HOLE)), _) [result(RValue)]
+     rule #postOp(V:RValue, Op:K) => fillRHoles(V, Op) ~> discard ~> V
           [structural]
 
 endmodule

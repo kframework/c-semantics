@@ -130,5 +130,9 @@ module C-EXPR-ASSIGNMENT
           requires getKLabel(K) ==KLabel L
      rule getFirstMatch'(.K, .Set, _) => .K
 
+     rule compoundAssign(LV:KResult, Assign:K)
+          => fillHoles(LV, Assign)
+          [structural]
+
 endmodule
 

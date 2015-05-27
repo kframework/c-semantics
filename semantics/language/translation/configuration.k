@@ -103,6 +103,10 @@ module C-CONFIGURATION
                // for initializers.
                <initializing> 0 </initializing>
 
+               <curr-program-loc color="black">
+                    UnknownCabsLoc
+               </curr-program-loc>
+
                <local>
                     // maps from CIds
                     <env color="red"> .Map </env>
@@ -139,10 +143,6 @@ module C-CONFIGURATION
      <curr-function color="lightgray">
           file-scope
      </curr-function>
-     // TODO(chathhorn): won't quite work here (2trans)
-     <curr-program-loc color="black">
-          UnknownCabsLoc
-     </curr-program-loc>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

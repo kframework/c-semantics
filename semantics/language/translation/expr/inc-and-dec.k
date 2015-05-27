@@ -4,13 +4,13 @@ module C-EXPR-INC-AND-DEC
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule (.K => elabExp(L := L + tv(1, t(.Set, int)))) ~> L:KResult ++
-     rule elabExp(V:KResult) ~> L:KResult ++ => postOp(L, V)
+     rule LV:KResult ++
+          => postOp(LV, ncle(LHOLE, type(LV)) := te(RHOLE, type(LV)) + tv(1, t(.Set, int)))
+     rule LV:KResult --
+          => postOp(LV, ncle(LHOLE, type(LV)) := te(RHOLE, type(LV)) - tv(1, t(.Set, int)))
 
-     rule (.K => elabExp(L := L - tv(1, t(.Set, int)))) ~> L:KResult --
-     rule elabExp(V:KResult) ~> L:KResult -- => postOp(L, V)
-
-     rule postOp(L:K, V:K) => te(postOp(L, V), type(L))
+     context postOp(_, (HOLE => reval(HOLE)))
+     rule postOp(LV:KResult, Op:RValue) => te(postOp(LV, Op), type(LV))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{
      The value of the operand of the prefix \cinline{++} operator is

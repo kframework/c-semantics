@@ -82,8 +82,6 @@ module C-DYNAMIC-SYNTAX
      syntax NoInit
      syntax KResult ::= NoInit
 
-     syntax KItem ::= postOp(K, K)
-
      syntax BlockTag ::= Int | CId | "global"
                           // TODO(chathhorn): for restrict added via automatic
                           // casts -- not sure how to handle.
@@ -115,6 +113,12 @@ module C-DYNAMIC-SYNTAX
      rule hListToList(.HeatList) => .List
      rule hListToList(hrItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
 
+     syntax KItem ::= "LHOLE" | "RHOLE"
+     syntax KItem ::= postOp(K, K) [strict(1)]
+     syntax KItem ::= compoundAssign(K, K) [strict(1)]
+     syntax KItem ::= fillHoles(K, K) [function]
+     syntax KItem ::= fillLHoles(K, K) [function]
+     syntax KItem ::= fillRHoles(RValue, K) [function]
 endmodule
 
 module C-DYNAMIC
@@ -189,4 +193,16 @@ module C-DYNAMIC
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
 
+     rule fillHoles(LV:KResult, K:K)
+          => fillLHoles(LV, fillRHoles(toRVal(LV), K))
+
+     rule fillRHoles(V:RValue, RHOLE) => V
+     rule fillRHoles(V:RValue, Lbl:KLabel(L:K,, R:K))
+          => Lbl(fillRHoles(V, L),, fillRHoles(V, R))
+     rule fillRHoles(_, K:K) => K [owise]
+
+     rule fillLHoles(LV:KResult, LHOLE) => LV
+     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K,, R:K))
+          => Lbl(fillLHoles(LV, L),, fillLHoles(LV, R))
+     rule fillLHoles(_, K:K) => K [owise]
 endmodule

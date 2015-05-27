@@ -11,8 +11,6 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateInit(K)
      syntax KItem ::= elaborateInitDone(K)
 
-     syntax KItem ::= elabExp(K)
-
      syntax KItem ::= typeof(K) [strict]
 
      syntax KItem ::= runInit(K)
@@ -25,8 +23,6 @@ module C-ELABORATOR
 
      syntax KItem ::= waitingOn(CId)
      syntax CId ::= elab(Int)
-
-     context elabExp((HOLE => reval(HOLE))) [result(RValue)]
 
      rule (.K => K) ~> compoundExp(K:K)
      rule R:KResult ~> compoundExp(K:K)
