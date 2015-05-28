@@ -6,6 +6,7 @@ module C-STMT-RETURN
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-STMT-BLOCK-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -51,8 +52,8 @@ module C-STMT-RETURN
                     | "Return''" "(" K ")"
      context Return'(HOLE => reval(HOLE)) [result(RValue)]
 
-     /* recursively exist each Block wrapped in BlockStatement */
-     rule <k> (.K => exitRestrictScope(BlockNum) ~> deleteLocals ~> popBlock)
+     /* recursively exits each Block wrapped in BlockStatement */
+     rule <k> (.K => exitRestrictScope(BlockNum) ~> popBlock)
                ~> Return'(_:RValue)
           ...</k>
           <block-history> ListItem(BlockNum:Int) ...</block-history>

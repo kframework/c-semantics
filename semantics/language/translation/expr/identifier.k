@@ -2,29 +2,29 @@ module C-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports C-ABSTRACT-SYNTAX
 
      rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           requires notBool isLinkerLoc(Base)
-               andBool Base =/=K symVal
+               andBool Base =/=K nonStatic
+               andBool notBool isRestrictType(T)
           [structural]
-     rule <k> X:CId => lv(symVal, T) ...</k>
-          <env>... X |-> symVal ...</env>
-          <types>... X |-> T:Type ...</types>
-          [structural]
-
-     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
+     rule <k> X:CId => lv(restrictedNew(Base, getAlignas(T), getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <internals>... X |-> _ ...</internals>
-          requires isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base)
+               andBool Base =/=K nonStatic
+               andBool isRestrictType(T)
+          [structural]
+     rule <k> X:CId => le(X, T) ...</k>
+          <env>... X |-> nonStatic ...</env>
+          <types>... X |-> T:Type ...</types>
           [structural]
 
      // We need to record uses of external symbols because if an external
@@ -39,11 +39,12 @@ module C-EXPR-IDENTIFIER
           requires isLinkerLoc(Base)
           [structural]
 
-     rule <k> instantiate(Loc:SymLoc, T:Type) => tv(symVal, stripQualifiers(T)) ...</k>
+     rule instantiate(Loc:SymLoc, T:Type)
+          => te(instantiate(Loc, T), T)
           requires notBool fromConstantExpr(T)
                orBool notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)
-     rule <k> instantiate(Loc:SymLoc, T:Type) => read(Loc, T) ...</k>
+     rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
           requires fromConstantExpr(T)
                andBool isStaticDuration(Loc)
                andBool notBool isLinkerLoc(Loc)

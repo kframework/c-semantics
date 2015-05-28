@@ -87,9 +87,11 @@ module C-TYPING-PREDICATES
 
      rule isUCharType(t(_, unsigned-char)) => true
      rule isUCharType(typedDeclaration(_:UCharType, _)) => true
+     rule isUCharType(_) => false [owise]
 
      rule isSCharType(t(_, signed-char)) => true
      rule isSCharType(typedDeclaration(_:SCharType, _)) => true
+     rule isSCharType(_) => false [owise]
  
      rule isWCharType(t(_, T:SimpleType)) => true
           requires T ==K cfg:wcharut
@@ -97,23 +99,37 @@ module C-TYPING-PREDICATES
 
      rule isPointerType(t(_, pointerType(_))) => true
      rule isPointerType(typedDeclaration(_:PointerType, _)) => true
+     rule isPointerType(_) => false [owise]
 
      rule isBoolType(t(_, bool)) => true
      rule isBoolType(typedDeclaration(_:BoolType, _)) => true
+     rule isBoolType(_) => false [owise]
 
-     rule isArrayType(t(_, arrayType(_, _))) => true
-     rule isArrayType(t(_, incompleteArrayType(_))) => true
-     rule isArrayType(t(_, flexibleArrayType(_))) => true
-     rule isArrayType(t(_, variableLengthArrayType(_, _))) => true
-     rule isArrayType(typedDeclaration(_:ArrayType, _)) => true
+     rule isFixedLengthArrayType(t(_, arrayType(_, _))) => true
+     rule isFixedLengthArrayType(typedDeclaration(_:FixedLengthArrayType, _)) => true
+     rule isFixedLengthArrayType(_) => false [owise]
 
      rule isFlexibleArrayType(t(_, flexibleArrayType(_))) => true
      rule isFlexibleArrayType(typedDeclaration(T:Type, _))
           => isFlexibleArrayType(T)
      rule isFlexibleArrayType(_) => false [owise]
 
+     rule isVariableLengthArrayType(t(_, variableLengthArrayType(_, _))) => true
+     rule isVariableLengthArrayType(typedDeclaration(_:VariableLengthArrayType, _)) => true
+     rule isVariableLengthArrayType(_) => false [owise]
+
+     rule isVariablyModifiedType(t(_, arrayType(T:Type, _)))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(t(_, pointerType(T:Type)))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(typedDeclaration(T:Type, _))
+          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(_:VariableLengthArrayType) => true
+     rule isVariablyModifiedType(_) => false [owise]
+
      rule isVoidType(t(_, void)) => true
      rule isVoidType(typedDeclaration(_:VoidType, _)) => true
+     rule isVoidType(_) => false [owise]
 
      rule isNoType(t(_, no-type)) => true
      rule isNoType(typedDeclaration(_:NoType, _)) => true
@@ -124,12 +140,15 @@ module C-TYPING-PREDICATES
 
      rule isUnionType(t(_, unionType(_))) => true
      rule isUnionType(typedDeclaration(_:UnionType, _)) => true
+     rule isUnionType(_) => false [owise]
 
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
                orBool isIncompleteStructType(T)
                orBool isIncompleteUnionType(T)
                orBool isVoidType(T))
+     rule isCompletePointerType(t(_, pointerType(T:Type))) => isCompleteType(T)
+     rule isCompletePointerType(_) => false [owise]
 
      rule isIncompleteArrayType(t(_, incompleteArrayType(_))) => true
      rule isIncompleteArrayType(t(_, flexibleArrayType(_))) => true
@@ -157,6 +176,7 @@ module C-TYPING-PREDICATES
 
      rule isFunctionType(t(_, functionType(_, _))) => true
      rule isFunctionType(typedDeclaration(_:FunctionType, _)) => true
+     rule isFunctionType(_) => false [owise]
 
      rule isOldStyleFunctionType(T:Type)
           => isFunctionType(T) andBool (oldStyle in getModifiers(T))
@@ -174,8 +194,7 @@ module C-TYPING-PREDICATES
      // Integer and floating types are collectively called arithmetic types.
      // Each arithmetic type belongs to one type domain: the real type domain
      // comprises the real types, the complex type domain comprises the complex
-     // types.
-     // */
+     // types. */
 
      rule isExternType(T:Type) => (Extern in getStorageSpecifiers(T))
      rule isStaticType(T:Type) => (Static in getStorageSpecifiers(T))
@@ -205,6 +224,7 @@ module C-TYPING-PREDICATES
 
      syntax Bool ::= isAlignas(Modifier) [function]
      rule isAlignas(alignas(_)) => true
+     rule isAlignas(.K) => false
      rule isAlignas(_) => false [owise]
 
      rule hasReadFrom(t(Mods:Set, _)) => some(Mods, 'isReadFrom)
@@ -213,4 +233,6 @@ module C-TYPING-PREDICATES
      rule isReadFrom(readFrom(_, _)) => true
      rule isReadFrom(_) => false [owise]
 
+     rule isTruthValue(tv(V:K, t(_, T:SimpleType)))
+          => T ==K int andBool (V ==K 0 orBool V ==K 1)
 endmodule

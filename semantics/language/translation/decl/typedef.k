@@ -2,20 +2,7 @@ module C-DECL-TYPEDEF
      imports C-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
-     context Typedef(NameGroup(HOLE, _))
-
-     rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List)))
-          => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))
-          [structural]
-     rule Typedef(NameGroup(_:Type, list(.List))) => .K
-          [structural]
-
-     syntax KItem ::= defineType(K) [strict]
-
-     rule defineType(typedDeclaration(T:Type, X:CId))
-          => giveType(typedef(X), T)
-          [structural]
-
+     rule <k> typedef(X:CId, T:Type) => giveType(typedef(X), T) ...</k>
+          <elab>... .K => typedef(X, T) </elab>
 endmodule

@@ -7,7 +7,6 @@ module C-DECL-RESOLUTION
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-RESOLUTION-SYNTAX
-     imports C-DECL-ZERO-SYNTAX
 
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -78,16 +77,10 @@ module C-DECL-RESOLUTION
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
-          <external-defs>...
-               X |-> Base':SymBase
-          ...</external-defs>
+          <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>...
-               X |-> (Base:SymBase => Base')
-          ...</genv>
-          <linkings>...
-               (.Map => Base |-> Base')
-          ...</linkings>
+          <genv>... X |-> (Base:SymBase => Base') ...</genv>
+          <linkings>... (.Map => Base |-> Base') ...</linkings>
           requires isLinkerLoc(Base)
           [structural]
 
@@ -95,13 +88,9 @@ module C-DECL-RESOLUTION
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
-          <external-defs>...
-               X |-> Base:SymBase
-          ...</external-defs>
+          <external-defs>... X |-> Base:SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>...
-               X |-> Base
-          ...</genv>
+          <genv>... X |-> Base ...</genv>
           requires notBool isLinkerLoc(Base)
           [structural]
 
@@ -109,12 +98,8 @@ module C-DECL-RESOLUTION
           <external-decls>...
                (X:CId |-> set(.Set) => .Map)
           ...</external-decls>
-          <external-defs>...
-               X |-> _
-          ...</external-defs>
-          <external-types>...
-               X |-> _
-          ...</external-types>
+          <external-defs>... X |-> _ ...</external-defs>
+          <external-types>... X |-> _ ...</external-types>
           requires X =/=K Identifier("main")
           [structural]
 
@@ -124,15 +109,9 @@ module C-DECL-RESOLUTION
                      +String idToString(X),
                     "6.9:5")
           ...</k>
-          <external-uses>...
-               (.Set => SetItem(X))
-          ...</external-uses>
-          <external-defs>
-               Defs:Map
-          </external-defs>
-          <external-types>
-               Types:Map
-          </external-types>
+          <external-uses>... (.Set => SetItem(X)) ...</external-uses>
+          <external-defs> Defs:Map </external-defs>
+          <external-types> Types:Map </external-types>
           requires notBool (X in keys(Defs))
                orBool notBool (X in keys(Types))
           [structural]

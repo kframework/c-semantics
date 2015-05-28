@@ -1,59 +1,49 @@
 module C-EXPR-BITWISE
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-PROMOTION-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ERROR-SYNTAX
 
-     rule ~ tv(symVal, T:Type) => tv(symVal, T)
+     rule ~ te(K:K, T:Type) => te(~ K, T)
           requires isPromoted(T)
-          [structural]
 
-     rule tv(symVal, T1:Type) << tv(E2:Int, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-               andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1):>Int
-          [structural]
-     rule tv(E1:Int, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-               andBool E1 >=Int 0
-          [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << tv(symVal, T2:Type)
-          => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-          andBool E1 <Int 0 andBool isErrorRecovery
-     rule tv(symVal, T1:Type) << tv(symVal, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-          [structural]
+     rule te(L:K, T:Type) << tv(R:Int, T':Type) => te(L << tv(R, T'), T)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool R >=Int 0
+               andBool R <Int bitSizeofType(T)
+     rule tv(L:Int, T:Type) << te(R:K, T':Type) => te(tv(L, T) << R, T)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool L >=Int 0
+     rule _:ErrorExit ~> tv(L:Int, T:Type) << te(R:K, T':Type) => te(tv(L, T) << R, T)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool L <Int 0 andBool isErrorRecovery
+     rule te(L:K, T:Type) << te(R:K, T':Type) => te(L << R, T)
+          requires isPromoted(T) andBool isPromoted(T')
 
-     rule tv(symVal, T1:Type) >> tv(E2:Int, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-               andBool E2 >=Int 0
-               andBool E2 <Int bitSizeofType(T1):>Int
-          [structural]
-     rule tv(E1:Int, T1:Type) >> tv(symVal, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-               andBool E1 >=Int 0
-          [structural]
-     rule tv(symVal, T1:Type) >> tv(symVal, T2:Type) => tv(symVal, T1)
-          requires isPromoted(T1) andBool isPromoted(T2)
-          [structural]
+     rule te(L:K, T:Type) >> tv(R:Int, T':Type) => te(L >> tv(R, T'), T)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool R >=Int 0
+               andBool R <Int bitSizeofType(T)
+     rule tv(L:Int, T:Type) >> te(R:K, T':Type) => te(tv(L, T) >> R, T)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool L >=Int 0
+     rule te(L:K, T:Type) >> te(R:K, T':Type) => te(L >> R, T)
+          requires isPromoted(T) andBool isPromoted(T')
 
-     rule tv(E1:CValue, T:Type) & tv(E2:CValue, T':Type) => tv(symVal, T)
-          requires ((E1 ==K symVal) orBool (E2 ==K symVal))
-               andBool isPromoted(T)
-               andBool T ==Type T'
-          [structural]
-     rule tv(E1:CValue, T:Type) ^ tv(E2:CValue, T':Type) => tv(symVal, T)
-          requires ((E1 ==K symVal) orBool (E2 ==K symVal))
-               andBool isPromoted(T)
-               andBool T ==Type T'
-          [structural]
-     rule tv(E1:CValue, T:Type) | tv(E2:CValue, T':Type) => tv(symVal, T)
-          requires ((E1 ==K symVal) orBool (E2 ==K symVal))
-               andBool isPromoted(T)
-               andBool T ==Type T'
-          [structural]
+     rule L:RValue & R:RValue => te(stripHold(L) & stripHold(R), type(L))
+          requires (isHold(L) orBool isHold(R))
+               andBool isPromoted(type(L))
+               andBool type(L) ==Type type(R)
+     rule L:RValue ^ R:RValue => te(stripHold(L) ^ stripHold(R), type(L))
+          requires (isHold(L) orBool isHold(R))
+               andBool isPromoted(type(L))
+               andBool type(L) ==Type type(R)
+     rule L:RValue | R:RValue => te(stripHold(L) | stripHold(R), type(L))
+          requires (isHold(L) orBool isHold(R))
+               andBool isPromoted(type(L))
+               andBool type(L) ==Type type(R)
+
 endmodule

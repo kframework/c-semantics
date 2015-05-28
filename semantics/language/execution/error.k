@@ -7,7 +7,6 @@ module C-EXECUTION-ERROR
      imports C-SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
 

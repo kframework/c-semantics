@@ -1,8 +1,8 @@
 module C-STMT-BREAK
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
-     rule [break]:
-          Break => .K
-          [structural]
+     rule <k> Break => .K ...</k>
+          <elab>... .K => Break </elab>
 
 endmodule

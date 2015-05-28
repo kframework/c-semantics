@@ -1,55 +1,29 @@
-module C-COMMON-EXPR-CONDITIONAL
+module C-EXPR-CONDITIONAL
+     imports C-EXPR-LOGICAL-SYNTAX
+
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= getTypes(List)
-     //TODO(liyili2): overcome the context associative matching
-     //context types(_:List ListItem(HOLE) _:List)
+     syntax KItem ::= getTypes(K, K) [strict]
+     syntax KItem ::= types(Type, Type)
      syntax KItem ::= convertedType(K) [strict]
+     syntax KItem ::= convertedType(Type, Type, K) [strict(3)]
 
-     rule getTypes(L:List) => types(toTypeList(wrapWithTypeOf(L))) [structural]
-
-     syntax KItem ::= types(TypeList) [strict]
-
-     syntax TypeList ::= toTypeList(List) [function]
-     rule toTypeList(.List) => .TypeList
-     rule toTypeList(ListItem(K:K) L:List) => tItem(K) ts:: toTypeList(L)
-
-     syntax KResult ::= TypeResult
-     syntax TypeItem ::= TypeResult
-     syntax TypeItem ::= tItem(K) [strict]
-     rule tItem(V:KResult) => trItem(V)
-
-     syntax TypeResult ::= trItem(K)
-
-     //TODO(liyili2): might not need this list in the future.
-     syntax TypeList ::= List{TypeItem, "ts::"} [seqstrict]
-     syntax List ::= tListToList(TypeList) [function]
-
-     rule tListToList(.TypeList) => .List
-     rule tListToList(trItem(K:K) ts:: HL:TypeList)
-          => ListItem(K) tListToList(HL)
-
-     syntax List ::=  wrapWithTypeOf(List) [function]
-     rule wrapWithTypeOf(ListItem(K:K) L:List)
-          => ListItem(retype(typeof(K))) wrapWithTypeOf(L)
-     rule wrapWithTypeOf(.List) => .List
-
-     syntax KItem ::= retype(K) [strict]
+     rule getTypes(V1:KResult, V2:KResult)
+          => types(retype(type(V1)), retype(type(V2)))
 
      // fixme, not handling qualifiers correctly
+     syntax KItem ::= retype(Type) [function]
      rule retype(T:ArrayType) => t(.Set, pointerType(innerType(T)))
-          [structural]
      rule retype(T:FunctionType) => t(.Set, pointerType(T))
-          [structural]
      rule retype(T:Type) => T
           requires notBool isArrayOrFunctionType(T)
-          [structural]
+
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
      evaluation and the evaluation of the second or third operand (whichever is
@@ -58,8 +32,7 @@ module C-COMMON-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/
-     rule (.K => getTypes(ListItem(E1) ListItem(E2))) ~> _ ? E1:K : E2:K
-          [structural]
+     rule (.K => getTypes(E1, E2)) ~> _ ? E1:K : E2:K
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
      If both the second and third operands have arithmetic type, the result
@@ -68,19 +41,10 @@ module C-COMMON-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(trItem(T1:ArithmeticType) ts:: trItem(T2:ArithmeticType))
+     rule (types(T1:ArithmeticType, T2:ArithmeticType)
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           requires T1 =/=K T2
-          [structural]
-     /*
-     //(liyili2):add this following rule for checking T1 ==K T2
-     rule (types(trItem(T1:ArithmeticType) ts:: trItem(T2:ArithmeticType))
-          => convertedType(T1))
-               ~> _ ? _ : _
-          requires T1 ==K T2
-          [structural]
-     */
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      \broken{If both the second and third operands are pointers or one is a
@@ -95,66 +59,88 @@ module C-COMMON-EXPR-CONDITIONAL
      type is a pointer to an appropriately qualified version of
      \cinline{void}.}
      }*/
-     // fixme, this is too relaxed; could be any integer zero.  need static
-     // semantics to handle this properly
-     rule (types(trItem(T1:IntegerType) ts:: trItem(T2:PointerType)) => convertedType(T2))
-          ~> _ ? tv(0, T1) : _
-          [structural]
-     rule (types(trItem(T1:PointerType) ts:: trItem(T2:IntegerType)) => convertedType(T1))
-          ~> _? _ : tv(0, T2)
-          [structural]
+     rule (types(_:IntegerType, T2:PointerType) => convertedType(T2))
+          ~> _ ? E:K : _
+          requires isNullPointerConstant(E)
+     rule (types(T1:PointerType, _:IntegerType) => convertedType(T1))
+          ~> _? _ : E:K
+          requires isNullPointerConstant(E)
 
+     // TODO(chathhorn): variably modified types need to be evaluated at
+     // execution and checked for compatibility at that point.
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
                +String " other must be a pointer to void.",
                "6.5.15:3"))
-          ~> types(trItem(T1:PointerType) ts:: trItem(T2:PointerType))
+          ~> types(T1:PointerType, T2:PointerType)
           requires notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
-               andBool notBool isVoidType(innerType(T1)) andBool notBool isVoidType(innerType(T2))
+               andBool notBool isVoidType(innerType(T1))
+               andBool notBool isVoidType(innerType(T2))
 
      rule (types(
-               trItem(t(Mods:Set, pointerType(T:Type)))
-               ts:: trItem(t(Mods':Set, pointerType(T':Type)))
+               t(Mods:Set, pointerType(T:Type)),
+               t(Mods':Set, pointerType(T':Type))
           ) => convertedType(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
-          [structural]
+               andBool notBool isVariablyModifiedType(T)
+               andBool notBool isVariablyModifiedType(T')
 
      rule (types(
-               trItem(t(Mods1:Set, pointerType(t(Mods1':Set, void))))
-               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))))
+               T:Type,
+               T':Type
+          ) => convertedType(T, T', compositeType(T, T')))
+          ~> _? _ : _
+          requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
+
+     rule (types(
+               t(Mods1:Set, pointerType(t(Mods1':Set, void))),
+               t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType)))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           requires notBool isFunctionType(t(Mods2', S))
-          [structural]
      rule (types(
-               trItem (t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))))
-               ts:: trItem(t(Mods2:Set, pointerType(t(Mods2':Set, void))))
+               t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))),
+               t(Mods2:Set, pointerType(t(Mods2':Set, void)))
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           requires notBool isFunctionType(t(Mods1', S))
-          [structural]
 
      // this should take care of the void/struct cases
-     rule (types(trItem(T:Type) ts:: trItem(T':Type)) => convertedType(T))
+     rule (types(T:Type, T':Type) => convertedType(T))
           ~> _ ? _ : _
-          when notBool isPointerType(T)
+          requires notBool isPointerType(T)
                andBool areCompatible(T, T')
-          [structural]
      rule convertedType(T:Type) ~> E:K ? E1:K : E2:K
-          => IfThenElse(E, Cast(T, E1), Cast(T, E2))
-          [structural]
+          => evalConditional(simplifyTruth(E), Cast(T, E1), Cast(T, E2), T)
+     rule convertedType(T1:Type, T2:Type, T:Type) ~> E:K ? E1:K : E2:K
+          => evalConditional(simplifyTruth(E), Cast(T1, E1), Cast(T2, E2), T)
 
-     rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(trItem(t(_, void)) ts:: trItem(t(_, T:SimpleType)))
+     rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
+          ~> types(t(_, void), t(_, T:SimpleType))
           requires T =/=K void
-          [structural]
-     rule (.K => CV("CEC3", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") ) ~>
-          types(trItem(t(_, T:SimpleType)) ts:: trItem(t(_, void)))
+     rule (.K => CV("CEC3", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
+          ~> types(t(_, T:SimpleType), t(_, void))
           requires T =/=K void
-          [structural]
-     rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") ) ~>
-          types(trItem(T:StructOrUnionType) ts:: trItem(T':StructOrUnionType))
-          requires (T =/=K T')
-          [structural]
+     rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") )
+          ~> types(T:StructOrUnionType, T':StructOrUnionType)
+          requires T =/=Type T'
+
+     syntax KItem ::= evalConditional(K, K, K, Type)
+     context evalConditional(HOLE => reval(HOLE), _, _, _) [result(RValue)]
+     context evalConditional(_, HOLE => reval(HOLE), _, _) [result(RValue)]
+     context evalConditional(_, _, HOLE => reval(HOLE), _) [result(RValue)]
+
+     rule evalConditional(C:RValue, E1:RValue, E2:RValue, T:Type)
+          => te(stripHold(C) ? E1 : E2, stripConstants(T))
+          requires isHold(C)
+               orBool isVariablyModifiedType(type(E1))
+               orBool isVariablyModifiedType(type(E2))
+     rule evalConditional(tv(1, t(_, int)), E1:RValue, E2:RValue, _) => E1
+          requires notBool isVariablyModifiedType(type(E1))
+               andBool notBool isVariablyModifiedType(type(E2))
+     rule evalConditional(tv(0, t(_, int)), E1:RValue, E2:RValue, _) => E2
+          requires notBool isVariablyModifiedType(type(E1))
+               andBool notBool isVariablyModifiedType(type(E2))
+
 endmodule
 

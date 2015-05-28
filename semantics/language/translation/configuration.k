@@ -61,20 +61,13 @@ module C-CONFIGURATION
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
-     <k color="green" multiplicity="?">
-          $PGM:K
-          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
-                  unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
-          ~> link
-          ~> cleanup
-     </k>
-
      <final-computation multiplicity="?" color="lightgray">
           .K
      </final-computation>
 
      <goto-map-calc color="cyan">
           <goto-calc multiplicity="*" color="cyan">
+               <saved-env> .Map </saved-env>
                <computation color="cyan"> .K </computation>
                <computation-tail color="cyan">
                     .K
@@ -93,25 +86,31 @@ module C-CONFIGURATION
                </goto-loop-stack>
           </goto-calc>
      </goto-map-calc>
-     <control>
-          <curr-tu color="lightgray"> "" </curr-tu>
-          <curr-function color="lightgray">
-               file-scope
-          </curr-function>
-          <curr-program-loc color="black">
-               UnknownCabsLoc
-          </curr-program-loc>
+     <elab-calc>
+          <elaborator multiplicity="*">
+               <elab-id> file-scope </elab-id>
+               <k color="green">
+                    $PGM:K
+                    ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
+                         unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
+                    ~> link
+                    ~> cleanup
+               </k>
 
-          // Toggle to allow writes and other special treatment for
-          // initializers.
-          <initializing> 0 </initializing>
+               <elab> .K </elab>
 
-          <control-details> // TODO(chathhorn): dumb name
+               // Toggle to allow writes and other special treatment
+               // for initializers.
+               <initializing> 0 </initializing>
+
                <local>
                     // maps from CIds
                     <env color="red"> .Map </env>
                     <types color="lightgray"> .Map </types>
                     <block-history> .List </block-history>
+                    <curr-program-loc color="black">
+                         UnknownCabsLoc
+                    </curr-program-loc>
                </local>
                <block-stack color="violet"> .List </block-stack>
 
@@ -129,16 +128,19 @@ module C-CONFIGURATION
                     .K
                </saved-init>
 
-               // Used for typing expressions.
-               <type multiplicity="?" color="cyan"> .K </type>
                // Holds the innermost type while we unroll the
                // type around it.
                <decl-type-holder color="cyan">
                     .K
                </decl-type-holder>
-          </control-details>
-     </control>
 
+          </elaborator>
+     </elab-calc>
+
+     <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-function color="lightgray">
+          file-scope
+     </curr-function>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

@@ -10,7 +10,7 @@ module C-LITERAL
      imports C-CONVERSION-SYNTAX
      imports C-LITERAL-SYNTAX
 
-     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX

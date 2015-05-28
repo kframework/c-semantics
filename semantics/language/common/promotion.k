@@ -1,8 +1,9 @@
-module C-PROMOTION-SYNTAX
+module C-COMMON-PROMOTION-SYNTAX
      imports KAST
      // should be K, but is Type for efficiency reasons
      syntax Type ::= promote(Type) [function]
      syntax Bool ::= isArithBinConversionOp(KLabel) [function]
+     syntax Bool ::= isArithBinOp(KLabel) [function]
      syntax Bool ::= isArithUnaryOp(KLabel) [function]
      syntax Type ::= usualArithmeticConversion(Type, Type) [function]
      syntax Bool ::= isPromoted(Type) [function]
@@ -10,8 +11,8 @@ module C-PROMOTION-SYNTAX
      syntax Int ::= rank(Type) [function]
 endmodule
 
-module C-PROMOTION
-     imports C-PROMOTION-SYNTAX
+module C-COMMON-PROMOTION
+     imports C-COMMON-PROMOTION-SYNTAX
 
      imports C-DYNAMIC-SYNTAX
      imports C-CONVERSION-SYNTAX
@@ -33,8 +34,6 @@ module C-PROMOTION
      Conversion of an operand value to a compatible type causes no change to
      the value or the representation.
      }*/
-
-     syntax Bool ::= isArithBinOp(KLabel) [function]
 
      syntax Set ::= "arithBinOps" [function]
      syntax Set ::= "arithBinConversionOps" [function]
@@ -155,41 +154,16 @@ module C-PROMOTION
      implementation-defined.
      }*/
 
-     syntax Bool ::= #isPromoted(Type) [function]
-
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(T:Type) => #isPromoted(T)
-
-     rule #isPromoted(t(_, enumType(_))) => true
-     rule #isPromoted(t(_, int)) => true
-     rule #isPromoted(t(_, unsigned-int)) => true
-     rule #isPromoted(t(_, long-int)) => true
-     rule #isPromoted(t(_, unsigned-long-int)) => true
-     rule #isPromoted(t(_, long-long-int)) => true
-     rule #isPromoted(t(_, unsigned-long-long-int)) => true
-     rule #isPromoted(_) => false [owise]
-
-     rule L:KLabel(
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
-          )
-          requires isArithUnaryOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
-     rule L:KLabel(
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
-               ,, _
-          )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
-     rule L:KLabel(
-               _,,
-               (tv(V:CValue, T:IntegerType) => tv(V, promote(T)))
-          )
-          requires isArithBinOp(L)
-               andBool notBool isPromoted(T)
-          [structural]
+     rule isPromoted(t(_, enumType(_))) => true
+     rule isPromoted(t(_, int)) => true
+     rule isPromoted(t(_, unsigned-int)) => true
+     rule isPromoted(t(_, long-int)) => true
+     rule isPromoted(t(_, unsigned-long-int)) => true
+     rule isPromoted(t(_, long-long-int)) => true
+     rule isPromoted(t(_, unsigned-long-long-int)) => true
+     rule isPromoted(_) => false [owise]
 
      // <= so enums become ints
      rule promote(T:Type) => t(.Set, int)
@@ -200,7 +174,7 @@ module C-PROMOTION
      rule promote(T:Type) => T
           requires rank(T) >Int rank(t(.Set, int))
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
+     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
           => t(.Set, int)
           requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
                andBool min(t(.Set, int))
@@ -216,7 +190,7 @@ module C-PROMOTION
                     andBool max(t(.Set, int)) >=Int max(T)
                )
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:CSize)))
+     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
           => t(.Set, unsigned-int)
           requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
                andBool notBool (
@@ -226,32 +200,6 @@ module C-PROMOTION
                          >=Int max(t(Mods, bitfieldType(t(Mods', T), Len)))
                )
 
-     // fixme these could be done more cleanly
-
-     /*@ \fromStandard{\source[n1570]{\para{6.3.1.8}{1}}}{
-     Many operators that expect operands of arithmetic type cause conversions
-     and yield result types in a similar way. The purpose is to determine a
-     common real type for the operands and result. For the specified operands,
-     each operand is converted, without change of type domain, to a type whose
-     corresponding real type is the common real type. Unless explicitly stated
-     otherwise, the common real type is also the corresponding real type of the
-     result, whose type domain is the type domain of the operands if they are
-     the same, and complex otherwise. This pattern is called the usual
-     arithmetic conversions:
-     }*/
-     rule Lbl:KLabel(tv(V:CValue, T:ArithmeticType),, tv(V':CValue, T':ArithmeticType))
-          => Lbl(cast(
-               usualArithmeticConversion(T, T'), tv(V, T)),,
-               cast(usualArithmeticConversion(T, T'), tv(V', T')))
-          requires isArithBinConversionOp(Lbl)
-               andBool (T =/=Type T')
-          [structural]
-
-     rule Lbl:KLabel(tv(_, (T:Type => stripConstants(T))),, 
-                     tv(_, (T':Type => stripConstants(T'))))
-          requires isArithBinOp(Lbl)
-               andBool (T ==Type T')
-               andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
 
      /*@
      \begin{itemize}

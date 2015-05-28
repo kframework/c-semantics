@@ -1,9 +1,9 @@
 module C-COMMON-EXPR-RELATIONAL
      imports C-BITS-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -254,26 +254,6 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
            andBool notBool sameBase(Loc, Loc')
-          [structural]
-
-     //- comparison of ints with pointers
-     // fixme there are further restrictions on pointers
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) == tv(_, T':PointerType)
-          requires isPromoted(T)
-               andBool isNullPointerConstant(tv(N, T))
-          [structural]
-     rule tv(_, T:PointerType) == (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPromoted(T')
-               andBool isNullPointerConstant(tv(N, T'))
-          [structural]
-
-     rule (tv(N:Int, T:Type) => tv(NullPointer, T')) != tv(_, T':PointerType)
-          requires isPromoted(T)
-               andBool isNullPointerConstant(tv(N, T))
-          [structural]
-     rule tv(_, T:PointerType) != (tv(N:Int, T':Type) => tv(NullPointer, T))
-          requires isPromoted(T')
-               andBool isNullPointerConstant(tv(N, T'))
           [structural]
 
 endmodule

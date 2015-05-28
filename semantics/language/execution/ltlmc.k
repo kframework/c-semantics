@@ -10,7 +10,6 @@ module C-LTLMC-SYNTAX
                         | #ptr(SymLoc, Type)
                         | #struct(List, FieldInfo)
                         | #union(List, FieldInfo)
-
      syntax CProp ::= ValueProp | CId
                     | "-" CProp
                     | "+" CProp
@@ -35,7 +34,6 @@ endmodule
 module C-LTLMC
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-LTLMC-SYNTAX
@@ -85,6 +83,7 @@ module C-LTLMC
 
      // TODO(chathhorn): Very basic rewrite of C expression semantics. It'd be
      // nice to be able to re-use more of the actual semantics for this...
+     /*TODO(liyili2): cannot handle this, maybe this is not needed */
      rule ltlRVal(_, V:ValueProp) => V
 
      rule ltlRVal(B:Bag, - P:CProp)
@@ -93,17 +92,15 @@ module C-LTLMC
      rule ltlRVal(B:Bag, + P:CProp)
           => ltlRVal(B, P)
 
-     /*TODO(liyili2): cannot handle this, maybe this is not needed
      rule ltlRVal(B:Bag, L:CProp[R:CProp])
           => ltlRVal(B, * (L + R))
-     */
 
      // I don't really think & is necessary.
      // rule ltlRVal(B:Bag, & P:CProp)
      //      => ltlLVal(B, P)
 
      // "strictness"
-     /*TODO(liyili2): cannot handle this cases
+     /*TODO(liyili2): cannot handle this cases */
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
           => ltlRVal(B, L(ltlRVal(B, P)))
           requires notBool (isValueProp(P:CProp) ==K true)
@@ -116,14 +113,12 @@ module C-LTLMC
                // Don't try resolving the field specifier.
                andBool (Lbl =/=KLabel '_._)
                andBool (Lbl =/=KLabel '_->_)
-     */
      rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
-     /*TODO(liyili2): cannot handle this
+     /*TODO(liyili2): cannot handle this */
      rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
-     */
 
      rule ltlRVal(_,
           #struct(V:List,
@@ -160,12 +155,12 @@ module C-LTLMC
      rule ltlRVal(_, L:Int == R:Int) => intify(L ==Int R)
      rule ltlRVal(_, L:Int != R:Int) => intify(L ==Int R)
 
-     syntax ValueProp ::= dumbRead(Bag, SymLoc, Type) [function]
-     syntax ValueProp ::= "dumbRead'" "(" Map "," SymLoc "," Type "," CSize "," List ")"
-          [function]
-     /*TODO(liyili2): cannot handle this cases
      rule ltlRVal(B:Bag, X:CId) => ltlRVal(B, * ltlLVal(B, X))
-     */
+
+     syntax ValueProp ::= dumbRead(Bag, SymLoc, Type) [function]
+     syntax ValueProp ::= "dumbRead'" "(" Map "," SymLoc "," Type "," Int "," List ")"
+          [function]
+
      rule dumbRead(
                <generatedTop>... <T>...
                     <mem> Mem:Map </mem>

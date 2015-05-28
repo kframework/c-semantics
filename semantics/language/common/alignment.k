@@ -48,7 +48,7 @@ module C-ALIGNMENT
      rule byteAlignofList'(Sz:Int, .List) => Sz
 
      syntax Int ::= "maxByteAlignofList'" "(" Int "," List ")" [function]
-     rule maxByteAlignofList(L:List) => maxByteAlignofList'(0, L)
+     rule maxByteAlignofList(L:List) => maxByteAlignofList'(1, L)
      rule maxByteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)
           => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
      rule maxByteAlignofList'(Sz:Int, .List) => Sz
@@ -62,9 +62,9 @@ module C-ALIGNMENT
      rule byteAlignofType(t(_, unionType(S:StructId)))
           => byteAlignofStruct(getFieldInfo(S))
 
-     syntax Int ::= byteAlignofStruct(K) [function]
+     syntax Int ::= byteAlignofStruct(FieldInfo) [function]
 
-     rule byteAlignofStruct(fieldInfo(Decls:List, _, _, _))
+     rule byteAlignofStruct(fieldInfo(Decls:List, _:Int, _:Map, _:Map))
           => maxByteAlignofList(Decls)
 
      // TODO(dwightguth): make sure we correctly handle all the corner cases

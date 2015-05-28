@@ -9,12 +9,15 @@ endmodule
 module C-TRANSLATION-INIT
      imports C-TRANSLATION-INIT-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
      imports C-BUILTIN-SYNTAX
+     imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-FUNCTION-DEF-SYNTAX
@@ -24,6 +27,10 @@ module C-TRANSLATION-INIT
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
+
+     rule ToIdentifier("___missing_field_name") => #NoName
+     rule ToIdentifier(S:String) => Identifier(S)
+          requires S =/=String "___missing_field_name"
 
      rule <k> link
                => TranslationUnit("builtin", list(.List),
@@ -67,10 +74,10 @@ module C-TRANSLATION-INIT
           [structural]
 
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
-     rule <k> (TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-               => (preDeclareStrings(Strings)
+     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
+               => preDeclareStrings(Strings)
                ~> listToK(Decls)
-               ~> allocateIncompleteTentatives))
+               ~> allocateIncompleteTentatives
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
@@ -85,7 +92,7 @@ module C-TRANSLATION-INIT
      syntax KItem ::= preDeclareStrings(List)
 
      rule preDeclareStrings(ListItem(K:K) L:List)
-          => allowInit(K ~> discard)
+          => runInit(K ~> discard)
           ~> preDeclareStrings(L)
           [structural]
      rule preDeclareStrings(.List) => .K
@@ -104,10 +111,10 @@ module C-TRANSLATION-INIT
 
      rule <k> addBuiltin(B:CId, T:FunctionType) => declare(
                typedDeclaration(T, B),
-               initializer(initFunction(
-                    &(B),
+               initializer(Computation(initFunction(
+                    &(B), B,
                     functionObject(B, .List, T, handleBuiltin)
-               ))) ...</k>
+               )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in keys(Defs))
@@ -124,16 +131,21 @@ module C-TRANSLATION-INIT
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs)) andBool notBool isFunctionType(T)
+          requires notBool (B in keys(Defs))
+               andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses> Uses:Set </external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs))  andBool notBool (B in Uses) andBool notBool isFunctionType(T)
+          requires notBool (B in keys(Defs))
+               andBool notBool (B in Uses)
+               andBool notBool isFunctionType(T)
 
      syntax K ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
-     rule handleBuiltinConstant(Identifier(S:String), T:Type) => #nativeConstant(S, T) when S in keys(nativeDefinedBuiltins)
+     rule handleBuiltinConstant(Identifier(S:String), T:Type)
+          => #nativeConstant(S, T)
+          when S in keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(Bag, Bag)
                     | checkExtTypes(K, Set, Map, Set, Map)
@@ -162,7 +174,7 @@ module C-TRANSLATION-INIT
           requires areCompatible(T, T')
      rule checkExtTypes(.K, .Set, _, _, _) => .K
      rule (.K => UNDEF("TIN1",
-               "Identifier " +String idToString(X) +String " declared with incompatble types in different translation units.",
+               "Identifier " +String idToString(X) +String " declared with incompatible types in different translation units.",
                "6.2.7:2"))
           ~> checkExtTypes(X:CId,
                _, X:CId |-> T:Type _,
@@ -250,7 +262,7 @@ module C-TRANSLATION-INIT
                </linking-state>
 
                <structs> updateMap(Structs1, Structs2) </structs>
- 
+
                <linkings> updateMap(Links1, Links2) </linkings>
 
                <main-tu> Main1 Main2 </main-tu>
@@ -272,7 +284,7 @@ module C-TRANSLATION-INIT
                   "module " +String replaceAll(S, ".", "-") +String "-SPEC" +String "\n"
           +String "  imports C-VERIFIER\n\n") ~> writeSpecs(Fd) ...</k>
           <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-     
+
      syntax KItem ::= writeSpecs(Int)
      rule <k> (.K => #write(Fd, S +String "\n")) ~> writeSpecs(Fd:Int) ...</k>
           <generated-annotations> ListItem(S:String) => .List ...</generated-annotations>
@@ -282,5 +294,49 @@ module C-TRANSLATION-INIT
      syntax KItem ::= writeEndModule(Int)
      rule <k> writeEndModule(Fd:Int) => #close(Fd) ...</k>
           <result-value> _ => 0 </result-value>
+
+     rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K
+     rule DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc)
+          => filterCabsLoc(L1) ~> K ~> filterCabsLoc(L2)
+
+     rule <k> L:CabsLoc => .K ...</k>
+          <elab>... .K => L </elab>
+          <curr-program-loc> _ => L </curr-program-loc>
+
+     syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
+          => UnknownCabsLoc
+     rule filterCabsLoc(L:CabsLoc) => L [owise]
+
+     rule ExpressionLoc(K:K, _) => K
+
+     /*@ \fromStandard{\source[n1570]{\para{6.10.6}{1}}}{
+     A preprocessing directive of the form
+     \cdisplay{# pragma pp-tokensoptnew-line}
+     \broken{where the preprocessing token \cinline{STDC} does not immediately
+     follow pragma in the directive (prior to any macro replacement)} causes the
+     implementation to behave in an implementation-defined manner. The behavior
+     might cause translation to fail or cause the translator or the resulting
+     program to behave in a non-conforming manner. Any such pragma that is not
+     recognized by the implementation is ignored.
+     }*/
+     rule Pragma(_) => .K
+          [structural]
+     rule PragmaKccInv(_) => .K
+          [structural]
+
+     rule AttributeWrapper(K:K, _) => K
+
+     rule NothingExpression => emptyValue:>Expression
+
+     rule Computation(.K) => .K
+     rule <k> Computation(V:RValue) => .K ...</k>
+          <elab>... .K => Computation(V) </elab>
+          requires isHold(V)
+     // Totally elide pure expressions from the translated program.
+     rule Computation(V:RValue) => .K
+          requires notBool isHold(V)
+
+     rule checkRestrict(_) => .K
 
 endmodule

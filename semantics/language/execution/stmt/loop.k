@@ -24,17 +24,11 @@ module C-STMT-LOOP
      omitted $\textit{expression-2}$ is replaced by a nonzero constant.
      }*/
 
-     rule ForClauseExpression(K:K) => Computation(K) [structural]
-
      //  fixme fishy interaction with continue i think
      rule [for-mark]:
-          <k> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K) ~> K:K
-               => pushBlock
-               ~> addToHistory(ForNum)
-               ~> Pre
-               ~> loopMarked
-               ~> For(ForNum, Pre,
-                    (#if Control =/=K emptyValue
+          <k> For(Control:K, Post:K, S:K) ~> K:K
+               => loopMarked
+               ~> For((#if Control =/=K emptyValue
                     #then Control
                     #else tv(1, t(.Set, int)) #fi),
                     Post, S)
@@ -45,10 +39,10 @@ module C-STMT-LOOP
           [structural]
 
      rule [for]:
-          <k> loopMarked ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)
-               => IfThenElse(Control:K,
-                    (S:K ~> Computation(Post:K) ~> loopMarked
-                    ~> For(ForNum:Int, Pre:K, Control:K, Post:K, S:K)), Nop)
+          <k> loopMarked ~> For(Control:K, Post:K, S:K)
+               => IfThenElse(Control,
+                    (S ~> Computation(Post) ~> loopMarked
+                    ~> For(Control, Post, S)), Nop)
           ...</k>
           <block-history> ListItem(_:Int) ...</block-history>
           [structural] // rule so that looping programs see repetition
@@ -145,7 +139,7 @@ module C-STMT-LOOP
      rule [continue-done-for]:
           (Continue => Computation(Post))
           ~> loopMarked
-          ~> For(_:Int, _, _, Post:K, _)
+          ~> For(_, Post:K, _)
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)

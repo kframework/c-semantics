@@ -3,23 +3,24 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
-
 endmodule
 
 module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
 
      imports C-CHECK-LOC-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
+
      imports LIBC-IO-SYNTAX
+
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
@@ -54,6 +55,13 @@ module C-EXECUTION-INIT
      \end{itemize}
      }*/
 
+     rule V:Hold => value(V)
+          [structural]
+     rule L:LHold => value(L)
+          [structural]
+     rule compoundExp(K:K) => K
+          [structural]
+
      syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, t(.Set, pointerType(t(.Set, void))))
@@ -64,20 +72,19 @@ module C-EXECUTION-INIT
 
      syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
-     rule incomingArguments(L:List)
-          => incomingArguments-aux(L, 0)
+     rule incomingArguments(L:List) => incomingArguments-aux(L, 0)
           [structural]
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
           => allocObject(N +Int 1 @ argv, strType(S))
           ~> writeString(lnew(N +Int 1 @ argv, getAlignas(strType(S))), S)
           ~> allowInit(Computation(
-               Identifier("#incomingArgumentsArray")[N]
+               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
                     := lv(lnew(N +Int 1 @ argv, getAlignas(strType(S))), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)
           => allowInit(Computation(
-               Identifier("#incomingArgumentsArray")[N]
+               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
                     := NullPointerConstant))
           [structural]
 
@@ -181,20 +188,20 @@ module C-EXECUTION-INIT
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => callMain-aux(typeof(Identifier("main")), N,
-                    Identifier("#incomingArgumentsArray"), Args)
+               => #callMain(T, N, Identifier("#incomingArgumentsArray"), Args)
           ...</k>
+          <types>... Identifier("main") |-> T:Type ...</types>
           <status> _ => mainCalled </status>
           [ndtrans]
 
      // int main(void) -- also, int main() gets normalized to main(void)
-     syntax KItem ::= "callMain-aux" "(" K "," Int "," CId "," K ")" [strict(1)]
-     rule callMain-aux(t(.Set,
+     syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
+     rule #callMain(t(.Set,
           functionType(t(.Set, int), ListItem(t(.Set, void)))), _, _, _)
           => Call(Identifier("main"), list(.List))
           [structural]
      // int main(int argc, char* argv[])
-     rule callMain-aux(t(.Set, functionType(t(.Set, int),
+     rule #callMain(t(.Set, functionType(t(.Set, int),
                ListItem(t(.Set, int))
                ListItem(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type))))))),
                N:Int, X:CId, Args:K)
@@ -202,7 +209,7 @@ module C-EXECUTION-INIT
           requires T ==K t(.Set, char)
           [structural]
      // int main(int argc, char** argv)
-     rule callMain-aux(t(.Set,
+     rule #callMain(t(.Set,
                functionType(t(.Set, int),
                ListItem(t(.Set, int))
                ListItem(t(.Set, pointerType(t(.Set, pointerType(T:Type))))))),
@@ -227,5 +234,10 @@ module C-EXECUTION-INIT
                <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
+
+     rule <k> L:CabsLoc => .K ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+          [structural]
+
 endmodule
 
