@@ -1,7 +1,7 @@
 File: too-many-initializers.c
 Line: 9
 Error: CDI4
-Description: Attempting to initialize nonexistent member
+Description: Attempting to initialize nonexistent member.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:2
 Translation failed. Run kcc -d too-many-initializers.c to see commands run.

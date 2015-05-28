@@ -1,5 +1,5 @@
 File: j086b.c
-Line: 5
+Line: 3
 Error: TDL5
 Description: declaration of an identifier for an object with no linkage and incomplete type.
 Type: Undefined behavior.

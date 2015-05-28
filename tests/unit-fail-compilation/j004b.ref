@@ -1,5 +1,5 @@
 File: j004b.c
-Line: 2
+Line: 1
 Error: FD9
 Description: main must have zero or two parameters.
 Type: Constraint violation.

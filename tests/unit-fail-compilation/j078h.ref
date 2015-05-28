@@ -1,5 +1,5 @@
 File: j078h.c
-Line: 3
+Line: 1
 Error: TDG7
 Description: void parameter appears with qualifiers.
 Type: Undefined behavior.

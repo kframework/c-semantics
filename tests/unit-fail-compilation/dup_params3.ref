@@ -1,5 +1,5 @@
 File: dup_params3.c
-Line: 5
+Line: 1
 Error: FD1
 Description: duplicate parameters in function definition.
 Type: Constraint violation.

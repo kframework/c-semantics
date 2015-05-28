@@ -1,5 +1,5 @@
 File: j070a.c
-Line: 4
+Line: 5
 Error: TDR1
 Description: declaration for inline function not defined in the same translation unit: f
 Type: Undefined behavior.
