@@ -11,11 +11,12 @@ module LIBC-STDIO
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-MEMORY-READING-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
