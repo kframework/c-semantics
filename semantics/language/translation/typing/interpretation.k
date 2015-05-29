@@ -6,7 +6,6 @@ module C-TYPING-INTERPRETATION
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -231,5 +230,26 @@ module C-TYPING-INTERPRETATION
      rule defineType(typedDeclaration(T:Type, X:CId))
           => typedef(X, T)
           [structural]
+
+     // Turn arrays into pointers in function parameters.
+     syntax Type ::= adjustParam(Type) [function]
+     rule adjustParam(typedDeclaration(T:Type, X:CId))
+          => typedDeclaration(adjustParam(T), X)
+     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
+          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
+     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, variableLengthArrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
+     rule adjustParam(T:Type) => T
+          requires notBool isTypedDeclaration(T)
+               andBool notBool isArrayOrFunctionType(T)
+
+     syntax List ::= adjustParams(List) [function]
+     rule adjustParams(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam(T)) adjustParams(Params)
+     rule adjustParams(.List) => .List
 
 endmodule

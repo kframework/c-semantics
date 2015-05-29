@@ -63,50 +63,47 @@ module C-MEMORY-READING
           => concretize(T, fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     syntax List ::= unwrapDataList(DataList) [function]
-     rule unwrapDataList(dataList(L:List)) => L
-
-     rule concretize(T:IntegerType, L:DataList)
-          => joinIntegerBytes(T, unwrapDataList(L))
+     rule concretize(T:IntegerType, dataList(L:List))
+          => joinIntegerBytes(T, L)
           requires notBool isBitfieldType(T)
-               andBool (#hasUnknown(unwrapDataList(L)) =/=K true)
-               andBool (#hasTrap(unwrapDataList(L)) =/=K true)
+               andBool (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:Type, Len:Int)), L:DataList)
-          => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(unwrapDataList(L)))
-          requires (#hasUnknown(unwrapDataList(L)) =/=K true)
-               andBool (#hasTrap(unwrapDataList(L)) =/=K true)
+     rule concretize(t(S:Set, bitfieldType(T:Type, Len:Int)), dataList(L:List))
+          => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L))
+          requires (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(T:FloatType, L:DataList)
-          => joinFloatBytes(T, unwrapDataList(L))
-          requires (#hasUnknown(unwrapDataList(L)) =/=K true)
-               andBool (#hasTrap(unwrapDataList(L)) =/=K true)
+     rule concretize(T:FloatType, dataList(L:List))
+          => joinFloatBytes(T, L)
+          requires (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
 
      // fixme should also check sizes are appropriate
-     rule concretize(T:PointerType, L:DataList)
-          => joinPointerBytes(T, unwrapDataList(L))
-          requires (#hasUnknown(unwrapDataList(L)) =/=K true)
-               andBool (#hasTrap(unwrapDataList(L)) =/=K true)
+     rule concretize(T:PointerType, dataList(L:List))
+          => joinPointerBytes(T, L)
+          requires (#hasUnknown(L) =/=K true)
+               andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(T:Type, L:DataList)
+     rule concretize(T:Type, dataList(L:List))
           => tv(unknown, T)
-          requires (#hasUnknown(unwrapDataList(L)) ==K true)
-               andBool (#hasTrap(unwrapDataList(L)) =/=K true)
+          requires (#hasUnknown(L) ==K true)
+               andBool (#hasTrap(L) =/=K true)
                andBool notBool isStructOrUnionType(T)
           [structural]
-     rule concretize(T:Type, L:DataList)
+     rule concretize(T:Type, dataList(L:List))
           => trap(T)
-          requires (#hasTrap(unwrapDataList(L)) ==K true)
+          requires (#hasTrap(L) ==K true)
                andBool notBool isUCharType(T)
                andBool notBool isStructOrUnionType(T)
           [structural]
-     rule concretize(T:UCharType, L:DataList)
+     rule concretize(T:UCharType, dataList(L:List))
           => tv(unknown, T)
-          requires (#hasTrap(unwrapDataList(L)) ==K true)
+          requires (#hasTrap(L) ==K true)
           [structural]
-     rule concretize(T:StructOrUnionType, L:DataList)
-          => tv(agg(unwrapDataList(L)), T)
+     rule concretize(T:StructOrUnionType, dataList(L:List))
+          => tv(agg(L), T)
           [structural]
 
      syntax Bool ::= #hasUnknown(List) [function]
