@@ -25,7 +25,7 @@ module C-MEMORY-ALLOC
      imports C-TYPING-SYNTAX
      imports C-ERROR-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
           requires notBool isVoidType(T)
@@ -35,8 +35,8 @@ module C-MEMORY-ALLOC
 
      syntax KItem ::= #allocObject(SymBase, Type, K)
      context #allocObject(_, _, (HOLE => reval(HOLE))) [result(RValue)]
-     rule #allocObject(Base:SymBase, T:Type, V:RValue)
-          => alloc(Base, T, value(V))
+     rule #allocObject(Base:SymBase, T:Type, tv(I:Int, _))
+          => alloc(Base, T, I)
           [structural]
 
      rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
@@ -47,9 +47,10 @@ module C-MEMORY-ALLOC
           [structural]
 
      // Used by calloc.
-     syntax Map ::= createMap(KList, Bits) [function]
-     rule createMap(.KList, _:Bits) => .Map
-     rule createMap((I:K,, KL:KList), B:Bits) => (I |-> B) createMap(KL, B)
+     syntax Map ::= createMap(List, Bits) [function]
+     rule createMap(.List, _:Bits) => .Map
+     rule createMap(ListItem(I:K) L:List, B:Bits) => (I |-> B) createMap(L, B)
+
 
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...

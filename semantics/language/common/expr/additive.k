@@ -9,6 +9,7 @@ module C-COMMON-EXPR-ADDITIVE
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
+     imports COMPAT-SYNTAX
      imports C-ERROR-SYNTAX
 
      imports C-SETTINGS-SYNTAX
@@ -155,14 +156,14 @@ module C-COMMON-EXPR-ADDITIVE
                fromArray(ArrOffset +Int I *Int byteSizeofType(innerType(T)), Len)) Prov)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, .Set, Prov:Set, _, _)
           => loc(Base, Offset, SetItem(K) Prov)
-          requires getKLabel(K) =/=KLabel 'fromArray
+          requires getKLabel(K) =/=K #klabel(`fromArray`)
      rule #newFromArray(Base:SymBase, Offset:Int, fromArray(ArrOffset:Int,
                Len:Int), SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(fromArray(ArrOffset +Int
                I *Int byteSizeofType(innerType(T)), Len)) Prov, T, I)
      rule #newFromArray(Base:SymBase, Offset:Int, K:K, SetItem(K':K) S:Set, Prov:Set, T:Type, I:Int)
           => #newFromArray(Base, Offset, K', S, SetItem(K) Prov, T, I)
-          requires getKLabel(K) =/=KLabel 'fromArray
+          requires getKLabel(K) =/=K #klabel(`fromArray`)
 
      rule newFromArray(loc(Base:SymBase, Offset:Int, .Set), _:Type, _:Int)
           => loc(Base, Offset, .Set)

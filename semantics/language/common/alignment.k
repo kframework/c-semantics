@@ -13,6 +13,7 @@ module C-ALIGNMENT
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-ERROR-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule alignofType(T:Type) => tv(byteAlignofType(T), t(SetItem(IntegerConstant), cfg:sizeut))
           requires isCompleteType(T) andBool notBool isFunctionType(T)

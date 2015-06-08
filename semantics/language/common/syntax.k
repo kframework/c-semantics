@@ -4,9 +4,10 @@ module C-SYNTAX
      imports INT-SYNTAX
      imports BOOL-SYNTAX
      imports LIST
-     imports KORE-COMPAT
 
      imports C-DYNAMIC-SYNTAX
+
+     syntax KBott ::= "(" K ")" [bracket]
 
      syntax KResult ::= SpecifierElem
 

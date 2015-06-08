@@ -11,7 +11,7 @@ module C-TRANSLATION-ERROR
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
      imports DEBUG-SYNTAX
 
      rule <k> EXIT(Msg:String)

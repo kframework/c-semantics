@@ -18,7 +18,7 @@ endmodule
 
 module C-ELABORATOR
      imports C-ELABORATOR-SYNTAX
-
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
      syntax KItem ::= elabFrame(K, K, Bag)

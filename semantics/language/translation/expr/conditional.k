@@ -8,6 +8,7 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax KItem ::= getTypes(K, K) [strict]
      syntax KItem ::= types(Type, Type)
@@ -18,7 +19,7 @@ module C-EXPR-CONDITIONAL
           => types(retype(type(V1)), retype(type(V2)))
 
      // fixme, not handling qualifiers correctly
-     syntax KItem ::= retype(Type) [function]
+     syntax Type ::= retype(Type) [function]
      rule retype(T:ArrayType) => t(.Set, pointerType(innerType(T)))
      rule retype(T:FunctionType) => t(.Set, pointerType(T))
      rule retype(T:Type) => T

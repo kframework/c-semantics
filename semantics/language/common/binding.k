@@ -22,7 +22,7 @@ module C-BINDING
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // Construct the function parameters. Takes three lists: (1) the formal
      // parameters (ids and types) from the function definition, (2) the
@@ -45,7 +45,7 @@ module C-BINDING
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:RValue) => .List) _)
-          requires #arePromotedTypesCompat(value(V), T, type(V))
+          requires #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
      rule (.K => UNDEF("B1", "types of function call arguments aren't "
                +String "compatible with declared types after promotions.", "6.5.2.2:6"))
@@ -53,7 +53,7 @@ module C-BINDING
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
                ListItem(V:RValue) _)
-          requires notBool #arePromotedTypesCompat(value(V), T, type(V))
+          requires notBool #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
      rule (.K => UNDEF("B2", "function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6"))
@@ -177,7 +177,7 @@ module C-BINDING
 
      // "are argument-promoted".
      rule areArgPromoted(L:List) => true
-          requires all(L, 'isArgPromoted)
+          requires all(L, #klabel(`isArgPromoted`))
      rule areArgPromoted(_) => false [owise]
 
      syntax Bool ::= isArgPromoted(Type) [function]

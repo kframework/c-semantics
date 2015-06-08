@@ -17,9 +17,11 @@ module C-COMMON-EXPR-EVAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-CONFIGURATION
 
-     rule reval(K:K) => K ~> reval(HOLE) [heat]
-     rule K:K ~> reval(HOLE) => reval(K) [cool, ndlocal]
+     syntax KItem ::= "reval" "(" ")"
+     rule reval(HOLE:KItem) => HOLE ~> reval() [heat]
+     rule HOLE:KItem ~> reval() => reval(HOLE) [cool, ndlocal]
 
      // If the lvalue designates an object of automatic storage duration that
      // could have been declared with the register storage class (never had its
@@ -120,7 +122,7 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      rule checkUse(V:KResult) => V
-          requires getKLabel(V) =/=KLabel 'tv
+          requires getKLabel(V) =/=K #klabel(`tv`)
           [structural]
      rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
           requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true

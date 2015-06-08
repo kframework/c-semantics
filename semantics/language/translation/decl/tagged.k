@@ -19,7 +19,7 @@ module C-DECL-TAGGED
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.

@@ -2,6 +2,7 @@ module C-EXPR-MEMBERS
      imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
      A postfix expression followed by the \cinline{->} operator and an
@@ -11,7 +12,7 @@ module C-EXPR-MEMBERS
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K:K -> F:CId => (* K) . F [macro]
+     rule K::K -> F::CId => (* K) . F [macro]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets
@@ -35,7 +36,7 @@ module C-EXPR-MEMBERS
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule E1:K[E2:K] => *(E1 + E2) [macro]
+     rule E1::K[E2::K] => *(E1 + E2) [macro]
 
 
      rule <k> ncle(K:K, t(Mods:Set, structType(S:StructId))) . F:CId

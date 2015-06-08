@@ -15,7 +15,7 @@ module C-COMPOUND-LITERAL
 
      imports C-SETTINGS-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage

@@ -1,8 +1,6 @@
 module C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     syntax Bits ::= Int
-
      syntax Trap ::= "trap"
      syntax Unknown ::= "unknown"
      syntax Bits ::= Trap
@@ -29,7 +27,7 @@ endmodule
 
 module C-BITS
      imports C-BITS-SYNTAX
-
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
 
      // this maintains byte order

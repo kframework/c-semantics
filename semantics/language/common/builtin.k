@@ -16,6 +16,7 @@ module C-BUILTIN
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule builtins => semanticsDefinedBuiltins nativeDefinedBuiltins
 

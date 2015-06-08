@@ -29,7 +29,7 @@ module C-MEMORY-READING
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */

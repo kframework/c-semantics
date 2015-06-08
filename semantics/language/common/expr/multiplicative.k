@@ -6,6 +6,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
      The usual arithmetic conversions are performed on the operands.

@@ -8,8 +8,8 @@ module C-TYPING-MISC
      imports C-SYNTAX
 
      imports C-ERROR-SYNTAX
-
-     imports COMPAT-SYNTAX
+     imports K-REFLECTION
+     imports C-CONFIGURATION
 
      //TODO(chathhorn): a lot of junk dumped here.
 
@@ -197,14 +197,14 @@ module C-TYPING-MISC
           => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
      rule stripAlignas(t(Mods:Set, T:SimpleType))
-          => t(filterSet(Mods, 'isNotAlignas), T)
+          => t(filterSet(Mods, #klabel(`isNotAlignas`)), T)
 
      syntax Bool ::= isNotAlignas(Modifier) [function]
      rule isNotAlignas(alignas(_)) => false
      rule isNotAlignas(_) => true [owise]
 
      rule stripReadFrom(t(Mods:Set, T:SimpleType))
-          => t(filterSet(Mods, 'isNotReadFrom), T)
+          => t(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
 
      syntax Bool ::= isNotReadFrom(Modifier) [function]
      rule isNotReadFrom(readFrom(_, _)) => false
@@ -213,7 +213,7 @@ module C-TYPING-MISC
      rule stripConstants(T:Type)
           => setModifiers(T, getModifiers(T) -Set constantModifiers)
      rule stripConstants(tv(V:CValue, T:Type)) => tv(V, stripConstants(T))
-     rule stripConstants(V:KItem) => V [owise]
+     rule stripConstants(V:RValue) => V [owise]
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)
@@ -364,8 +364,8 @@ module C-TYPING-MISC
      rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
      rule getFieldInfo(t(_, unionType(S:StructId))) => getFieldInfo(S)
 
-     syntax FieldInfo ::= #getFieldInfo(StructId, Bag) [function]
-     rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop> _:Bag)
+     syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
+     rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop>)
           => F
      rule #getFieldInfo(_, _) => #incomplete [owise]
 
