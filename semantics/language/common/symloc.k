@@ -238,7 +238,7 @@ module C-SYMLOC
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 
-     rule getBases(Prov:Set) => filterSet(Prov, 'isBase)
+     rule getBases(Prov:Set) => filterSet(Prov, #klabel(`isBase`))
 
      syntax Bool ::= isBase(Provenance) [function]
      rule isBase(basedOn(_, _)) => true
@@ -265,7 +265,7 @@ module C-SYMLOC
           [structural]
 
      rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
-          => getKLabel(K) ==KLabel 'fromUnion
+          => getKLabel(K) ==K #klabel(`fromUnion`)
           orBool hasUnionMarker(loc(Base, Offset, S))
      rule hasUnionMarker(_) => false [owise]
 
@@ -273,12 +273,12 @@ module C-SYMLOC
 
      syntax Bool ::= #isFromArray(SymLoc) [function]
      rule #isFromArray(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
-          => getKLabel(K) ==KLabel 'fromArray orBool #isFromArray(loc(Base, Offset, S))
+          => getKLabel(K) ==K #klabel(`fromArray`) orBool #isFromArray(loc(Base, Offset, S))
      rule #isFromArray(_) => false [owise]
 
      rule stripBases(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripBases(loc(Base:SymBase, Offset:Int, Prov:Set))
-          => loc(Base, Offset, filterSet(Prov, 'notBase))
+          => loc(Base, Offset, filterSet(Prov, #klabel(`notBase`)))
      rule stripBases(Loc:SymLoc) => Loc [owise]
 
      syntax Bool ::= notBase(Provenance) [function]
@@ -287,7 +287,7 @@ module C-SYMLOC
 
      rule stripFromArray(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripFromArray(loc(Base:SymBase, Offset:Int, Prov:Set))
-          => loc(Base, Offset, filterSet(Prov, 'notFromArray))
+          => loc(Base, Offset, filterSet(Prov, #klabel(`notFromArray`)))
      rule stripFromArray(Loc:SymLoc) => Loc [owise]
 
      syntax Bool ::= notFromArray(Provenance) [function]
@@ -307,7 +307,7 @@ module C-SYMLOC
      rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
      rule getAlign'(align(I:Int), _) => I
      rule getAlign'(K:K, S:Set) => getAlign'(.K, S)
-          requires getKLabel(K) =/=KLabel 'align
+          requires getKLabel(K) =/=K #klabel(`align`)
                andBool (K =/=K .K)
 
      rule ifFromArrayInBounds(
@@ -327,16 +327,16 @@ module C-SYMLOC
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
                orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
-          requires getKLabel(K) =/=KLabel 'fromArray
+          requires getKLabel(K) =/=K #klabel(`fromArray`)
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
-          requires getKLabel(K) =/=KLabel 'fromArray
+          requires getKLabel(K) =/=K #klabel(`fromArray`)
 
      syntax Bool ::= isAlign(K) [function]
      rule isAlign(align(_)) => true
      rule isAlign(_) => false [owise]
 
-     rule hasAlign(S:Set) => some(S, 'isAlign)
+     rule hasAlign(S:Set) => some(S, #klabel(`isAlign`))
 
      syntax Int ::= #getNativeAlign(Int, Int, Int) [function]
      rule getNativeAlign(Address:Int) => #getNativeAlign(Address, 1, 0)

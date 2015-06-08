@@ -3,6 +3,7 @@ module C-EXPR-MULTIPLICATIVE
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule L:RValue * R:RValue => te(stripHold(L) * stripHold(R), type(L))
           requires (isHold(L) orBool isHold(R))

@@ -20,15 +20,15 @@ my $RAT = '#';
 # you may want to configure things inside this section
 use constant KLIST_IDENTITY => ".::KList";
 use constant KLIST_SEPARATOR => ", ";
-use constant LIST_UNIT => "'.List";
-use constant LIST_CONCAT => "'_List_";
+use constant LIST_UNIT => ".List";
+use constant LIST_CONCAT => "_List_";
 
 my $ltl = "\n";
 
 # might want to return, say, "'$name"
 sub nameToLabel {
 	my ($name) = (@_);
-	return "`'$name`";
+	return "`$name`";
 }
 #########################################################
 my %escapeMap = (
@@ -284,7 +284,7 @@ sub escapeWString {
 		for my $cp (@charPartArray) {
 			$single = ($single << 8) + ord($cp);
 		}
-		push @str, "#token(\"" . $single . "\", \"Int\")";
+		push @str, "#token(\"$single\", \"Int\")";
 	}
         return assocList(@str);
 }
@@ -292,13 +292,13 @@ sub escapeWString {
 sub assocList {
   my @str = (@_);
   if (scalar @str == 0) {
-    return "`'list`(`" . LIST_UNIT . "`(.::KList))";
+    return "`list`(`" . LIST_UNIT . "`(.::KList))";
   }
   my @wrapped;
   for my $elem ( @str ) {
-    push @wrapped, "`'ListItem`($elem)";
+    push @wrapped, "`ListItem`($elem)";
   }
-  return "`'list`(`" . LIST_CONCAT . "`"
+  return "`list`(`" . LIST_CONCAT . "`"
        . paren(join(", `" . LIST_CONCAT . "`(", @wrapped) . ", `" . LIST_UNIT . "`(.::KList)" . (")" x $#str)) . ")";
 }
 

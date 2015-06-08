@@ -1,6 +1,6 @@
 module C-TRANSLATION-INIT-SYNTAX
-     imports KCELLS
-     syntax KItem ::= load(Bag, Bag, Bag, Bag)
+     imports BASIC-K
+     syntax KItem ::= load(K, K, K, K)
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -26,7 +26,7 @@ module C-TRANSLATION-INIT
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S)
@@ -41,27 +41,27 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
 
-     rule load(Obj1:Bag, Obj2:Bag, Obj3:Bag, Obj4:Bag)
+     rule load(Obj1:K, Obj2:K, Obj3:K, Obj4:K)
                => load(mergeObj(Obj1, Obj2), Obj3, Obj4)
                ~> checkMerge(Obj1, Obj2)
 
-     syntax KItem ::= load(Bag, Bag, Bag)
-     syntax KItem ::= load(Bag, Bag)
-     syntax KItem ::= load(Bag)
+     syntax KItem ::= load(K, K, K)
+     syntax KItem ::= load(K, K)
+     syntax KItem ::= load(K)
 
-     rule load(Merged:Bag, Obj3:Bag, Obj4:Bag)
+     rule load(Merged:K, Obj3:K, Obj4:K)
                => load(mergeObj(Merged, Obj3), Obj4)
                ~> checkMerge(Merged, Obj3)
 
-     rule load(Merged:Bag, Obj4:Bag)
+     rule load(Merged:K, Obj4:K)
                => load(mergeObj(Merged, Obj4))
                ~> checkMerge(Merged, Obj4)
 
-     rule <k> load(Merged:Bag)
-               => loadObj(mergeObj(Merged, <global> ThisObj </global>))
-               ~> checkMerge(Merged, <global> ThisObj </global>)
+     rule <k> load(Merged:K)
+               => loadObj(mergeObj(Merged, ThisObj))
+               ~> checkMerge(Merged, ThisObj)
           ...</k>
-          <global> ThisObj:Bag </global>
+          ThisObj:GlobalCell
 
      rule <k> link => reportSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
@@ -147,12 +147,12 @@ module C-TRANSLATION-INIT
           => #nativeConstant(S, T)
           when S in keys(nativeDefinedBuiltins)
 
-     syntax KItem ::= checkMerge(Bag, Bag)
+     syntax KItem ::= checkMerge(K, K)
                     | checkExtTypes(K, Set, Map, Set, Map)
                     | checkExtDefs(K, Set, Set)
 
-     rule checkMerge(_, .Bag) => .K
-     rule checkMerge(.Bag, _) => .K
+     rule checkMerge(_, .K) => .K
+     rule checkMerge(.K, _) => .K
      rule checkMerge(
           (<global>...
                <external-types> Types:Map </external-types>
@@ -190,7 +190,7 @@ module C-TRANSLATION-INIT
                "6.9"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
 
-     syntax Bag ::= mergeObj(Bag, Bag) [function]
+     syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
                   | mergeDecl(K, K, K, Map) [function]
 
@@ -205,8 +205,8 @@ module C-TRANSLATION-INIT
      rule mergeDecl(Key:K, set(S:Set), set(S':Set), M:Map)
           => (Key |-> set(S S')) M
 
-     rule mergeObj(B:Bag, .Bag) => B
-     rule mergeObj(.Bag, B:Bag) => B
+     rule mergeObj(B:K, .K) => B
+     rule mergeObj(.K, B:K) => B
      rule mergeObj(
           (<global>
                <mem> M1:Map </mem>

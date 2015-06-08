@@ -13,7 +13,7 @@ module C-DECL-LOCAL
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // TODO(chathhorn): Totally not sure what to do about these first cases.
      // Should the external types be updated/completed? That appears to be the

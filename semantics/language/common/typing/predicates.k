@@ -220,19 +220,19 @@ module C-TYPING-PREDICATES
 
      rule hasAlignas(t(Mods:Set, _)) => hasAlignasMod(Mods)
 
-     rule hasAlignasMod(Mods:Set) => some(Mods, 'isAlignas)
+     rule hasAlignasMod(Mods:Set) => some(Mods, #klabel(`isAlignas`))
 
      syntax Bool ::= isAlignas(Modifier) [function]
      rule isAlignas(alignas(_)) => true
      rule isAlignas(.K) => false
      rule isAlignas(_) => false [owise]
 
-     rule hasReadFrom(t(Mods:Set, _)) => some(Mods, 'isReadFrom)
+     rule hasReadFrom(t(Mods:Set, _)) => some(Mods, #klabel(`isReadFrom`))
 
      syntax Bool ::= isReadFrom(K) [function]
      rule isReadFrom(readFrom(_, _)) => true
      rule isReadFrom(_) => false [owise]
 
-     rule isTruthValue(tv(V:K, t(_, T:SimpleType)))
+     rule isTruthValue(tv(V::CValue, t(_, T:SimpleType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
 endmodule

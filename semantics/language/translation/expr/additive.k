@@ -4,7 +4,7 @@ module C-EXPR-ADDITIVE
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
 
      rule L:RValue + R:RValue => te(stripHold(L) + stripHold(R), type(L))

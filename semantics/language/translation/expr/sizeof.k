@@ -6,6 +6,7 @@ module C-EXPR-SIZEOF
      imports C-SETTINGS-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,

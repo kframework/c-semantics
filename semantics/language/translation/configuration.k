@@ -29,7 +29,7 @@ module C-CONFIGURATION
      <linkings> .Map </linkings>
 
      <translation-units>
-          <tu multiplicity="*">
+          <tu multiplicity="*" type="Set">
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
@@ -66,7 +66,7 @@ module C-CONFIGURATION
      </final-computation>
 
      <goto-map-calc color="cyan">
-          <goto-calc multiplicity="*" color="cyan">
+          <goto-calc multiplicity="*" color="cyan" type="Set">
                <saved-env> .Map </saved-env>
                <computation color="cyan"> .K </computation>
                <computation-tail color="cyan">
@@ -88,8 +88,8 @@ module C-CONFIGURATION
      </goto-map-calc>
      <k color="green">
           $PGM:K
-          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
-               unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
+          ~> load(unwrapObj($OBJ1:K), unwrapObj($OBJ2:K),
+               unwrapObj($OBJ3:K), unwrapObj($OBJ4:K))
           ~> link
           ~> cleanup
      </k>
@@ -114,7 +114,7 @@ module C-CONFIGURATION
 
      <block-stack color="violet"> .List </block-stack>
 
-     <init-calc multiplicity="+">
+     <init-calc multiplicity="?" initial="">
           // Used to figure initializers.
           <curr-object color="cyan">
                .List

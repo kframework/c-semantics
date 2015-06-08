@@ -22,7 +22,7 @@ module C-FUNCTION-DEF
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare(
@@ -108,7 +108,7 @@ module C-FUNCTION-DEF
 
      syntax Bool ::= areVoidOrComplete(List) [function]
      rule areVoidOrComplete(L:List) => true
-          requires all(L, 'isVoidOrComplete)
+          requires all(L, #klabel(`isVoidOrComplete`))
      rule areVoidOrComplete(_) => false [owise]
 
      syntax KItem ::= checkMainDef(Type)
@@ -155,11 +155,11 @@ module C-FUNCTION-DEF
           requires T ==K char
      rule isArgvType(_) => false [owise]
 
-     rule initFunction(tv(Loc:SymLoc, T:Type), X:CId, Fun:KResult)
+     rule initFunction(tv(Loc:SymLoc, T:Type), X:CId, Fun:RValue)
           => te(initFunction(&(X), X, Fun), T)
           requires isLinkerLoc(Loc)
      rule <k> initFunction(
-               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), _, Fun:KResult)
+               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), _, Fun:RValue)
                => voidVal
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>

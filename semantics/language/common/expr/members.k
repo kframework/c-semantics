@@ -10,6 +10,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -44,7 +45,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic in Mods
-               andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
+               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
      rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
@@ -53,7 +54,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic in Mods
-               andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
+               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
 
      // The last two parameters are for convenience and should be the same.
