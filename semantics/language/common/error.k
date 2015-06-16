@@ -1,5 +1,5 @@
 module C-ERROR-SYNTAX
-     imports KAST
+     imports BASIC-K
      imports STRING-SYNTAX
      // Deprecated...
      syntax KItem ::= ERROR(String, String)
@@ -39,7 +39,7 @@ module C-ERROR
 
      syntax KItem ::= EXITFunc(String) [function, hook(C-SEMANTICS:error), impure]
 
-     syntax String ::= ErrorMsg(String, String, String, KList) [function]
+     syntax String ::= ErrorMsg(String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
           => "Error: "
           +String Title
