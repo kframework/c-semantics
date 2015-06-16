@@ -135,7 +135,6 @@ module C-CONFIGURATION
                .K
           </decl-type-holder>
      </init-calc>
-
      <curr-tu color="lightgray"> "" </curr-tu>
      <curr-scope color="lightgray"> fileScope:>Scope </curr-scope>
 </exec>

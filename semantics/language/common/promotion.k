@@ -1,5 +1,5 @@
 module C-COMMON-PROMOTION-SYNTAX
-     imports KAST
+     imports BASIC-K
      // should be K, but is Type for efficiency reasons
      syntax Type ::= promote(Type) [function]
      syntax Bool ::= isArithBinConversionOp(K) [function]

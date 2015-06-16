@@ -22,8 +22,6 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 $::VERSION="0.1 GNU-compatible";
 
-my $KRUN = "krun";
-
 my @objFiles = ();
 my @srcFiles = ();
 my @tempFiles = ();
@@ -300,10 +298,10 @@ sub pushObj {
      my ($arr, $obj, $i) = (@_);
 
      if (defined $obj) {
-          push(@{$_[0]}, "-pOBJ$i=kast --parser binary");
+          push(@{$_[0]}, "-pOBJ$i=cat");
           push(@{$_[0]}, "-cOBJ$i=$obj");
      } else {
-          push(@{$_[0]}, "-cOBJ$i=.Bag");
+          push(@{$_[0]}, "-cOBJ$i=.K");
      }
 }
    
@@ -312,7 +310,8 @@ sub getKRunCommand {
      my ($output, $obj1, $obj2, $obj3, $obj4, $src, $link) = (@_);
 
      my @krun_args = (
-          '--output', 'binary', 
+          '--kore',
+          '--output', 'kast', 
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
