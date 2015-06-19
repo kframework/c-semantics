@@ -128,6 +128,9 @@ module C-DYNAMIC
 
      imports C-CONFIGURATION
 
+     rule isKResult(.HeatList) => true
+     rule isKResult(S1 hs:: S2) => isKResult(S1) andBool isKResult(S2)
+
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
      rule toRVal(V:RValue) => V
           [structural]
