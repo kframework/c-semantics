@@ -67,12 +67,10 @@ module C-EXPR-ASSIGNMENT
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
                andBool areCompatible(
-                    stripQualifiers(stripAlignas(innerType(type(L)))),
-                    stripQualifiers(stripAlignas(innerType(type(R)))))
+                    stripQualifiers(innerType(type(L))),
+                    stripQualifiers(innerType(type(R))))
                andBool getQualifiers(innerType(type(R)))
                     <=Set getQualifiers(innerType(type(L)))
-               andBool getAlignas(innerType(type(L)))
-                    <=Int getAlignas(innerType(type(R)))
                andBool (type(L) =/=Type type(R))
 
      rule L:KResult := (R:RValue => cast(type(L), R))
@@ -126,12 +124,10 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isVoidType(innerType(type(R)))
                andBool (
                     notBool areCompatible(
-                         stripQualifiers(stripAlignas(innerType(type(L)))),
-                         stripQualifiers(stripAlignas(innerType(type(R)))))
+                         stripQualifiers(innerType(type(L))),
+                         stripQualifiers(innerType(type(R))))
                     orBool notBool (getQualifiers(innerType(type(R)))
                          <=Set getQualifiers(innerType(type(L))))
-                    orBool getAlignas(innerType(type(L)))
-                         >Int getAlignas(innerType(type(R)))
                )
      rule (.K => CV("TEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
           ~> tv(_, _) := _:RValue
