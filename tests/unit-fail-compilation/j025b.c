@@ -2,7 +2,7 @@ int main(void) {
       _Alignas(32) int x;
       _Alignas(32) int *p;
 
-      int y;
+      _Alignas(32) int y;
       int *q;
 
       p = &x;
