@@ -67,9 +67,9 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:RestrictTag => .K), _)
            ...</k>
-           <activeBlocks>...
-                Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
-           ...</activeBlocks>
+           //<activeBlocks>...
+           //     Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
+           //...</activeBlocks>
      rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set)
           => setModified(Loc, T, K, S)
      rule setModified(_, _, .K, .Set) => .K

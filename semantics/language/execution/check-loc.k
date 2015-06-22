@@ -16,25 +16,27 @@ module C-CHECK-LOC
 
      imports COMPAT-SYNTAX
 
-     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
-          <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>
-          [structural]
-     rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
-          <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
-          requires notBool (Tag in keys(Tags))
-          [structural]
+     rule <k> enterRestrictScope(_:RestrictTag) => .K ...</k>
+     //rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
+     //     <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>
+     //     [structural]
+     //rule <k> enterRestrictScope(Tag:RestrictTag) => .K ...</k>
+     //     <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
+     //     requires notBool (Tag in keys(Tags))
+     //     [structural]
 
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
-          <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
-          requires N >Int 1
-          [structural]
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
-          <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>
-          [structural]
-     rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
-          <activeBlocks> Blocks:Map </activeBlocks>
-          requires notBool Tag in keys(Blocks)
-          [structural]
+     rule <k> exitRestrictScope(_:RestrictTag) => .K ...</k>
+     //rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     //     <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
+     //     requires N >Int 1
+     //     [structural]
+     //rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     //     <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>
+     //     [structural]
+     //rule <k> exitRestrictScope(Tag:RestrictTag) => .K ...</k>
+     //     <activeBlocks> Blocks:Map </activeBlocks>
+     //     requires notBool Tag in keys(Blocks)
+     //     [structural]
 
      rule checkLoc(NullPointer) => checkLoc'(NullPointer)
           [structural]
