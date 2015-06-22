@@ -122,15 +122,15 @@ module C-TYPING-MISC
           => setModifiers(T, Mods)
 
      rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+          => filterQualifiers(Mods) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+          => filterQualifiers(Mods) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+          => filterQualifiers(Mods) getQualifiers(T)
      rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, _)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+          => filterQualifiers(Mods) getQualifiers(T)
      rule getQualifiers(T:Type)
-          => intersectSet(getModifiers(T), typeQualifiers)
+          => filterQualifiers(getModifiers(T))
           requires notBool isArrayType(T)
 
      rule getStorageSpecifiers(T:Type)
@@ -145,12 +145,16 @@ module C-TYPING-MISC
      rule getConstants(T:Type)
           => intersectSet(getModifiers(T), constantModifiers)
 
+     rule filterQualifiers(SetItem(M:Modifier) S:Set)
+          => #if isQualifier(M) #then SetItem(M) filterQualifiers(S) #else filterQualifiers(S) #fi
+     rule filterQualifiers(.Set) => .Set
+     rule filterNonQualifiers(SetItem(M:Modifier) S:Set)
+          => #if notBool isQualifier(M) #then SetItem(M) filterQualifiers(S) #else filterQualifiers(S) #fi
+     rule filterNonQualifiers(.Set) => .Set
+     syntax Bool ::= isQualifier(Modifier)    [function]
      // These are the only actual members "type qualifier" syntactic class.
-     rule typeQualifiers =>
-          SetItem(Const)
-          SetItem(Restrict)
-          SetItem(Volatile)
-          SetItem(Atomic)
+     rule isQualifier(M:Modifier)
+          => M ==K Const orBool M ==K Restrict orBool M ==K Volatile orBool M ==K Atomic
 
      rule storageSpecifiers =>
           SetItem(Static)
@@ -170,15 +174,15 @@ module C-TYPING-MISC
           SetItem(IntegerConstant)
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:CSize)))
-          => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
+          => t(filterNonQualifiers(Mods), arrayType(stripQualifiers(T), N))
      rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
+          => t(filterNonQualifiers(Mods), incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
-          => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
+          => t(filterNonQualifiers(Mods), flexibleArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
-          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
+          => t(filterNonQualifiers(Mods), variableLengthArrayType(stripQualifiers(T), N))
      rule stripQualifiers(T:Type)
-          => setModifiers(T, getModifiers(T) -Set typeQualifiers)
+          => setModifiers(T, filterNonQualifiers(getModifiers(T)))
           requires notBool isArrayType(T)
 
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
@@ -217,16 +221,16 @@ module C-TYPING-MISC
           => addQualifiers(SetItem(Q), T)
 
      rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:CSize)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
+          => t(Mods filterQualifiers(Quals),
                arrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
+          => t(Mods filterQualifiers(Quals),
                incompleteArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
+          => t(Mods filterQualifiers(Quals),
                flexibleArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
+          => t(Mods filterQualifiers(Quals),
                variableLengthArrayType(addQualifiers(Quals, T), N))
      rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
           requires notBool isArrayType(T)

@@ -250,7 +250,7 @@ module C-PROMOTION
                      tv(_, (T':Type => stripConstants(T'))))
           requires isArithBinOp(Lbl)
                andBool (T ==Type T')
-               andBool (IntegerConstant in getModifiers(T) xorBool IntegerConstant in getModifiers(T'))
+               andBool ((IntegerConstant in getModifiers(T)) =/=K (IntegerConstant in getModifiers(T')))
 
      /*@
      \begin{itemize}

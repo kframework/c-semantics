@@ -36,7 +36,11 @@ module C-CHECK-LOC
           requires notBool Tag in keys(Blocks)
           [structural]
 
-     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
+     rule checkLoc(NullPointer) => checkLoc'(NullPointer)
+          [structural]
+     rule checkLoc(loc(Base:SymBase, Offset:Int)) => checkLoc'(loc(Base:SymBase, Offset:Int))
+          [structural]
+     rule checkLoc(loc(Base:SymBase, Offset:Int, _)) => checkLoc'(loc(Base:SymBase, Offset:Int))
           [structural]
 
      syntax KItem ::= "checkLoc'" "(" SymLoc ")"
@@ -100,7 +104,7 @@ module C-CHECK-LOC
           ...</k>
           <restrict>
                Restricts:Map
-               (.Map => Loc |-> set(getBases(Prov)))
+               //(.Map => Loc |-> set(getBases(Prov)))
           </restrict>
           requires notBool (Loc in keys(Restricts))
           [structural]
@@ -118,7 +122,7 @@ module C-CHECK-LOC
      // unmodified in the associated block.
      syntax KItem ::= checkRestrict(SymLoc, Set, Set)
      rule checkRestrict(Loc:SymLoc, Bases:Set, Bases':Set)
-          => checkRestrict(
+          => checkRestrict2(
                filterUnmodified(Loc, .K, Bases, .Set),
                filterUnmodified(Loc, .K, Bases', .Set))
           [structural]
@@ -148,23 +152,24 @@ module C-CHECK-LOC
      rule filterUnmodified(_, .K, .Set, Bases:Set) => rset(Bases)
           [structural]
 
-     syntax KItem ::= checkRestrict(K, K) [strict]
-     rule checkRestrict(rset(Bases:Set), rset(Bases':Set))
-          => checkRestrict(Bases Bases', Bases, Bases')
+     // conflicts with checkRestrict(SymLoc, Set) above
+     syntax KItem ::= checkRestrict2(K, K) [seqstrict]
+     rule checkRestrict2(rset(Bases:Set), rset(Bases':Set))
+          => checkRestrict2(Bases Bases', Bases, Bases')
           [structural]
 
      // Finally, do the actual checks.
-     syntax KItem ::= checkRestrict(Set, Set, Set)
+     syntax KItem ::= checkRestrict2(Set, Set, Set)
      rule (.K => checkRestrict'(B))
-          ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
+          ~> checkRestrict2((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]
-     rule checkRestrict(.Set, Bases:Set, Bases':Set) => .K
+     rule checkRestrict2(.Set, Bases:Set, Bases':Set) => .K
           requires Bases ==K Bases'
           [structural]
      rule (.K => UNDEF("ECL3",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
                "6.7.3.1:4"))
-          ~> checkRestrict(.Set, Bases:Set, Bases':Set)
+          ~> checkRestrict2(.Set, Bases:Set, Bases':Set)
           requires Bases =/=K Bases'
           [structural]
 

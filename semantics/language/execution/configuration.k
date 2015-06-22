@@ -80,6 +80,7 @@ module C-CONFIGURATION
                <initializing> 0 </initializing>
 
                <duration color="black"> auto(0) </duration>
+
                <final-computation multiplicity="?" color="lightgray">
                     .K
                </final-computation>
@@ -112,20 +113,22 @@ module C-CONFIGURATION
                                    <compound-lit-map> .Map </compound-lit-map>
 
                                    // printf
-                                   <formatting multiplicity="?">
-                                        <format> .List </format>
-                                        <format-arg> .K </format-arg>
-                                        <format-result>
-                                             .List
-                                        </format-result>
-                                        <format-state>
-                                             "normal"
-                                        </format-state>
-                                        <format-mods>
-                                             .Map
-                                        </format-mods>
-                                        <format-length> "" </format-length>
-                                   </formatting>
+                                   <formatting-wrapper>
+                                        <formatting multiplicity="?">
+                                             <format> .List </format>
+                                             <format-arg> .K </format-arg>
+                                             <format-result>
+                                                  .List
+                                             </format-result>
+                                             <format-state>
+                                                  "normal"
+                                             </format-state>
+                                             <format-mods>
+                                                  .Map
+                                             </format-mods>
+                                             <format-length> "" </format-length>
+                                        </formatting>
+                                   </formatting-wrapper>
                                    // information about the block we're in
                                    <nesting-depth color="lightgray">
                                         0
@@ -169,7 +172,9 @@ module C-CONFIGURATION
                                    .List
                               </locs-written>
                               // used for typing expressions
-                              <type multiplicity="?" color="cyan"> .K </type>
+                              <type-wrapper>
+                                   <type multiplicity="?" color="cyan"> .K </type>
+                              </type-wrapper>
                               // holds the innermost type while we unroll the
                               // type around it
                               <decl-type-holder color="cyan">
@@ -214,7 +219,9 @@ module C-CONFIGURATION
 <output color="lightgray"> .List </output>
 <result-value color="red"> .K </result-value>
 
-<error-cell multiplicity="?" color="black"> .K </error-cell>
+<error-cell-wrapper>
+     <error-cell multiplicity="?" color="black"> .K </error-cell>
+</error-cell-wrapper>
 
 <status> initializing </status>
 

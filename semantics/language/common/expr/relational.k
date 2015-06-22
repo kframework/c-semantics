@@ -8,13 +8,24 @@ module C-COMMON-EXPR-RELATIONAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= makeTruth(Bool, Type, Type) [function]
-     rule makeTruth(B:Bool, T:Type, T':Type)
-          => #if B #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
+//     syntax KItem ::= makeTruth(Bool, Type, Type) [function]
+//     rule makeTruth(B:Bool, T:Type, T':Type)
+//          => #if B #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
+//          requires notBool fromConstantExpr(T) orBool notBool fromConstantExpr(T')
+//     rule makeTruth(B:Bool, T:Type, T':Type)
+//          => #if B #then tv(1, t(SetItem(IntegerConstant), int)) #else tv(0, t(SetItem(IntegerConstant), int)) #fi
+//          requires fromConstantExpr(T) andBool fromConstantExpr(T')
+     syntax KItem ::= makeTruth(Bool, Type, Type)
+     rule makeTruth( true, T:Type, T':Type) => tv(1, t(.Set, int))
           requires notBool fromConstantExpr(T) orBool notBool fromConstantExpr(T')
-     rule makeTruth(B:Bool, T:Type, T':Type)
-          => #if B #then tv(1, t(SetItem(IntegerConstant), int)) #else tv(0, t(SetItem(IntegerConstant), int)) #fi
+     rule makeTruth(false, T:Type, T':Type) => tv(0, t(.Set, int))
+          requires notBool fromConstantExpr(T) orBool notBool fromConstantExpr(T')
+     rule makeTruth( true, T:Type, T':Type) => tv(1, t(SetItem(IntegerConstant), int))
           requires fromConstantExpr(T) andBool fromConstantExpr(T')
+     rule makeTruth(false, T:Type, T':Type) => tv(0, t(SetItem(IntegerConstant), int))
+          requires fromConstantExpr(T) andBool fromConstantExpr(T')
+
+
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.8}{3}}}{
      If both of the operands have arithmetic type, the usual arithmetic

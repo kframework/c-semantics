@@ -48,7 +48,7 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
+     context Call(_:RValue, (HOLE => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
      rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _),
@@ -58,7 +58,16 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
 
-     rule <k> Call(
+     syntax List ::= listStripReadFrom(List)    [function]
+     rule listStripReadFrom(ListItem(tv(V:CValue, T:Type)) L:List)
+          => ListItem(tv(V, stripReadFrom(T))) listStripReadFrom(L) 
+     rule listStripReadFrom(.List) => .List 
+
+     syntax KItem ::= Call1(K, K)
+     rule Call(tv(loc(Base:SymBase, 0), T:Type), rvlist(L:List))
+          => Call1(tv(loc(Base, 0), T), rvlist(listStripReadFrom(L)))
+
+     rule <k> Call1(
                tv(loc(Base:SymBase, 0), t(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)

@@ -5,9 +5,6 @@ module C-IO-BUFFERED-SYNTAX
 
      // deletes the base object from memory, given a location
      syntax KItem ::= deleteObject(SymBase)
-     // deletes the base object from memory, given a location and it size (as a
-     // check)
-     syntax KItem ::= deleteSizedObject(SymBase, Int)
 
      syntax KItem ::= writeByte(SymLoc, CValue)
 endmodule
@@ -57,12 +54,14 @@ module C-IO-BUFFERED
           <activeBlocks> Modified:Map </activeBlocks>
 
      syntax KItem ::= updateModified(K, SymLoc, CSize) [function]
-     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
-          => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
-          requires Loc in keys(M)
-     rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
-          => activity(N, M (Loc |-> I))
-          requires notBool (Loc in keys(M))
+     //rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+     //     => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
+     //     requires Loc in keys(M)
+     //rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
+     //     => activity(N, M (Loc |-> I))
+     //     requires notBool (Loc in keys(M))
+     rule updateModified(activity(N:Int, M:Map), _:SymLoc, _:Int)
+       => activity(N, M)
 
      syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type,
@@ -153,12 +152,6 @@ module C-IO-BUFFERED
           [structural]
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
-          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
-          [structural]
-
-     rule <buffer>
-               (ListItem(bwrite(loc(Base:SymBase, Offset:Int), V:K)) => .List)
-          ...</buffer>
           <mem>...
                Base |-> (K:KItem => updateObject(K, Offset, V))
           ...</mem>
@@ -177,10 +170,6 @@ module C-IO-BUFFERED
           => Offset <Int Len
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
-     rule <buffer>
-               ListItem(bwrite(Loc:SymLoc, V:K)) => #writeNativeByte(Loc, V)
-          ...</buffer>
-          requires isNativeLoc(Loc)
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
@@ -348,7 +337,7 @@ module C-IO-BUFFERED
                => alloc(New, t(.Set, no-type), NewLen)
                ~> copyBytes(minInt(OldLen, NewLen), Old, New)
                ~> copyObjectType(Old, New)
-               ~> deleteSizedObject(Old, OldLen)
+               ~> deleteObject(Old)
           ...</k>
           [structural]
 
@@ -378,16 +367,10 @@ module C-IO-BUFFERED
                New |-> object((_ => T), _, _, _)
           ...</mem>
 
-     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .K
-          ...</k>
-          <mem>... Base |-> object(_, Len, _, _) => .Map ...</mem>
-          // fixme could make this more relaxed by checking of block is in
-          // buffer, not just empty
-          <buffer> .List </buffer>
-          [structural]
-
      rule <k> deleteObject(Base:SymBase) => .K ...</k>
           <mem>... Base |-> object(_, _, _, _) => .Map ...</mem>
+          // fixme could make this more relaxed by checking of block is in
+          // buffer, not just empty
           <buffer> .List </buffer>
           [structural]
 
@@ -484,8 +467,7 @@ module C-IO-BUFFERED
           => effectivelyCompatWithUnion(L, getFieldInfo(X))
           requires notBool (areCompatible(stripQualifiers(L),
                          stripQualifiers(t(Mods, unionType(X))))
-                    andBool intersectSet(Mods, typeQualifiers)
-                         <=Set getQualifiers(L))
+                    andBool filterQualifiers(Mods) <=Set getQualifiers(L))
                andBool notBool isCharType(L:Type)
      // - a character type.
      rule #effectivelyCompat(_:CharType, _) => true

@@ -215,8 +215,7 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(.List, .List, _) => true
 
      rule sameQualifiers(Mods:Set, Mods':Set)
-          => (intersectSet(Mods, typeQualifiers)
-               ==K intersectSet(Mods', typeQualifiers))
+          => filterQualifiers(Mods) ==K filterQualifiers(Mods')
                // TODO(chathhorn): treating alignas like a qualifier for now.
                // It's more complicated than this, too, I think -- e.g.,
                // alignas on a definition implies no alignas should be on any

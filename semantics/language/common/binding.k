@@ -77,15 +77,15 @@ module C-BINDING
           => .K
           [structural]
      // Builtins -- they have a prototype but no def.
-     rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
+     rule <k> (.K => bindParam(unnamed(!N:Int, Tu), T, V))
           ~> bind(
                .List,
                (ListItem(T:Type) => .List) _,
                (ListItem(V:RValue) => .List) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
+          //<tu-id> Tu </tu-id>
+          //<next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
           [structural]
      // Builtins, variadic.

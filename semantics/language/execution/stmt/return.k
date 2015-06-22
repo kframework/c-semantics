@@ -75,10 +75,49 @@ module C-STMT-RETURN
           [structural]
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> Return''(V:RValue) ~> _
+     rule <k> Return''(tv(V:CValue, T:Type)) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
-               ~> checkUse(stripConstants(V))
+               ~> checkUse(stripConstants(tv(V, stripReadFrom(T))))
+               ~> K
+          </k>
+          <control>
+               <curr-tu> _ => OldTU </curr-tu>
+               <curr-function> F:CId => OldFun </curr-function>
+               <curr-function-params> _ => OldFunParams </curr-function-params>
+               <curr-program-loc> _ => OldLoc </curr-program-loc>
+               (<control-details>...
+                    <local>...
+                         <local-addresses> .Set </local-addresses>
+                    ...</local>
+                    <block-stack> .List </block-stack>
+               ...</control-details>  => C)
+          </control>
+          <call-stack>
+               ListItem(bag2K(
+                    <call-stack-frame>...
+                         <continuation> K:K </continuation>
+                         <stack-control>
+                              <curr-tu> OldTU:String </curr-tu>
+                              C:Bag
+                         </stack-control>
+                         <stack-curr-function>
+                              OldFun:CId
+                         </stack-curr-function>
+                         <stack-curr-function-params>
+                              OldFunParams:List
+                         </stack-curr-function-params>
+                         <stack-curr-program-loc>
+                              OldLoc:K
+                         </stack-curr-program-loc>
+                    ...</call-stack-frame>
+               )) => .List
+          ...</call-stack>
+          [structural]
+     rule <k> Return''(voidVal) ~> _
+               => exitRestrictScope(F)
+               ~> sequencePoint
+               ~> checkUse(stripConstants(voidVal))
                ~> K
           </k>
           <control>

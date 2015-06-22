@@ -48,7 +48,9 @@ module C-TYPING-SYNTAX
      // Type qualifiers.
      syntax Bool ::= isRestrictType(Type) [function]
 
-     syntax Set ::= "typeQualifiers" [function]
+     syntax Set ::= filterQualifiers(Set)       [function]
+                  | filterNonQualifiers(Set)    [function]
+
      syntax Set ::= "storageSpecifiers" [function]
 
      syntax CSize ::= Int

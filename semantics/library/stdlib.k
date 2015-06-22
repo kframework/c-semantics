@@ -54,7 +54,6 @@ module LIBC-STDLIB
                ~> tv(addProv(fromArray(0, Len), lnew(Base, cfg:alignofMalloc)),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... .Map => Base |-> Len:Int ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
           [structural]
 
@@ -129,10 +128,9 @@ module LIBC-STDLIB
      rule [free]:
           <k> prepareBuiltin(Identifier("free"),
                     hrItem(tv(loc(Base:SymBase, 0), t(_, pointerType(_)))))
-               => deleteSizedObject(Base, Len:Int)
+               => deleteObject(Base)
                ~> voidVal
           ...</k>
-          <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
 
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX

@@ -212,20 +212,20 @@ module C-EXECUTION-INIT
           [structural]
 
      // fixme I'm not sure threads clean up their memory
-     rule [terminate]:
-          (<exec>...
-               <thread>...
-                    // main's thread, not the global "thread"
-                    <thread-id> 0 </thread-id>
-                    <k> V:RValue </k>
-               ...</thread>
-          ...</exec> => .Bag)
-          <status> _ => mainExited </status>
-          <result-value> .K => value(V) </result-value>
-          <files>...
-               // Flush stdout.
-               <file-commands>... (.K => f-flush(1)) </file-commands>
-          ...</files>
-          [ndtrans]
+//     rule [terminate]:
+//          (<exec>...
+//               <thread>...
+//                    // main's thread, not the global "thread"
+//                    <thread-id> 0 </thread-id>
+//                    <k> V:RValue </k>
+//               ...</thread>
+//          ...</exec> => .Bag)
+//          <status> _ => mainExited </status>
+//          <result-value> .K => value(V) </result-value>
+//          <files>...
+//               // Flush stdout.
+//               <file-commands>... (.K => f-flush(1)) </file-commands>
+//          ...</files>
+//          [ndtrans]
 endmodule
 

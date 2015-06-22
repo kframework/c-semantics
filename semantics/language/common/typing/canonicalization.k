@@ -286,25 +286,25 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule <k> canonicalizeSpecifier(ListItem(
-                StructDef((Identifier("") => unnamed(N, TU)), _)))
+                StructDef((Identifier("") => unnamed(!N:Int, TU)), _)))
            ...</k>
            <curr-tu> TU:String </curr-tu>
-           <tu-id> TU </tu-id>
-           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
+           //<tu-id> TU </tu-id>
+           //<next-unnamed> N:Int => N +Int 1 </next-unnamed>
            [structural]
      rule <k> canonicalizeSpecifier(ListItem(
-               EnumDef((Identifier("") => unnamed(N, TU)), _)))
+               EnumDef((Identifier("") => unnamed(!N:Int, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
+          //<tu-id> TU </tu-id>
+          //<next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(
-               UnionDef((Identifier("") => unnamed(N, TU)), _)))
+               UnionDef((Identifier("") => unnamed(!N:Int, TU)), _)))
           ...</k>
           <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <next-unnamed> N:Int => N +Int 1 </next-unnamed>
+          //<tu-id> TU </tu-id>
+          //<next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
 
      rule (.K => StructDef(X, L))
