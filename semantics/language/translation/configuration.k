@@ -16,7 +16,7 @@ module C-CONFIGURATION
      // CId |-> Loc
      <external-defs> .Map </external-defs>
 
-     <linking-state>
+     <linking-state multiplicity="?" initial="">
           // CId |-> Set(TUs)
           <external-decls> .Map </external-decls>
           // CIds
@@ -39,7 +39,7 @@ module C-CONFIGURATION
                // kpair(CId, BlockNum) |-> Type
                <local-types> .Map </local-types>
 
-               <tu-linking-state>
+               <tu-linking-state multiplicity="?" initial="">
                     <externals> .Map </externals>
                     <internals> .Map </internals>
                     <next-link-loc> .K </next-link-loc>
