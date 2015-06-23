@@ -5,6 +5,7 @@ module COMPAT-SYNTAX
      imports INT
      imports STRING
      imports K-EQUAL
+     imports K-IO
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
