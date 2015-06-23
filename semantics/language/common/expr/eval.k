@@ -20,7 +20,7 @@ module C-COMMON-EXPR-EVAL
      imports C-CONFIGURATION
 
      syntax KItem ::= "reval" "(" ")"
-     rule reval(HOLE:KItem) => HOLE ~> reval() [heat]
+     rule reval(HOLE:K) => HOLE ~> reval() [heat]
      rule HOLE:KItem ~> reval() => reval(HOLE) [cool, ndlocal]
 
      // If the lvalue designates an object of automatic storage duration that
