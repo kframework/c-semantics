@@ -352,8 +352,10 @@ module C-TYPING-COMPATIBILITY
           => t(Mods, functionType(T, P'))
      rule compositeFunctionType(T:Type, Mods:Set, .K, .List, P:List, _)
           => compositeFunctionType(T, Mods, .K, .List, .List, P)
+          requires P =/=K .List
      rule compositeFunctionType(T:Type, Mods:Set, .K, P:List, .List, _)
           => compositeFunctionType(T, Mods, .K, .List, .List, P)
+          requires P =/=K .List
      rule compositeFunctionType(T:Type, Mods:Set, .K,
           ListItem(variadic), ListItem(variadic), P:List)
           => compositeFunctionType(T, Mods, .K, .List, .List,
