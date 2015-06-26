@@ -239,13 +239,6 @@ module C-TYPING-MISC
 
      rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
           => t(Mods' Mods, T)
-     // TODO(chathhorn): !?!!
-     rule addModifiers(Mods':Set, t(.Set, T:SimpleType))
-          => t(Mods', T)
-     rule addModifiers(.Set, t(Mods:Set, T:SimpleType))
-          => t(Mods, T)
-     rule addModifiers(.Set, t(.Set, T:SimpleType))
-          => t(.Set, T)
      rule addModifiers(_, T:Type) => T [owise]
 
      rule innerType(t(_, arrayType(T:Type, _))) => T

@@ -173,13 +173,6 @@ module C-IO-BUFFERED
 
      rule updateObject(object(T:K, Len:Int, Bytes:Map, Types:Map), Offset:Int, V:K)
           => object(T, Len, Bytes[Offset <- V], Types)
-     // !!?!
-     rule updateObject(object(T:K, Len:Int, Bytes:Map, .Map), Offset:Int, V:K)
-          => object(T, Len, Bytes[Offset <- V], .Map)
-     rule updateObject(object(T:K, Len:Int, .Map, .Map), Offset:Int, V:K)
-          => object(T, Len, (Offset |-> V), .Map)
-     rule updateObject(object(T:K, Len:Int, .Map, Types:Map), Offset:Int, V:K)
-          => object(T, Len, (Offset |-> V), Types)
 
      rule objectInBounds(object(_, Len:Int, _, _), Offset:Int)
           => Offset <Int Len
