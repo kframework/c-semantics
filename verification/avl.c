@@ -27,6 +27,29 @@ void update_height(struct node *t)
   t->height = max(height(t->left), height(t->right)) + 1;
 }
 
+int find_min(struct node *t)
+{
+  if (t->left == NULL)
+    return t->value;
+  else
+    return find_min(t->left);
+}
+
+struct node* new_node(int v)
+{
+  struct node *node;
+  node = (struct node *) malloc(sizeof(struct node));
+
+  node->value = v;
+  node->height = 1;
+  node->left = NULL;
+  node->right = NULL;
+
+  return node;
+}
+
+// Balancing tree
+
 struct node* left_rotate(struct node *x)
 {
   struct node *y;
@@ -71,19 +94,19 @@ struct node* balance(struct node *t)
   return t;
 }
 
-struct node* new_node(int v)
+// Tree operations
+
+int find(int v, struct node *t)
 {
-  struct node *node;
-  node = (struct node *) malloc(sizeof(struct node));
-
-  node->value = v;
-  node->height = 1;
-  node->left = NULL;
-  node->right = NULL;
-
-  return node;
+  if (t == NULL)
+    return 0;
+  else if (v == t->value)
+    return 1;
+  else if (v < t->value)
+    return find(v, t->left);
+  else
+    return find(v, t->right);
 }
-
 
 struct node* insert(int v, struct node *t)
 {
@@ -101,15 +124,6 @@ struct node* insert(int v, struct node *t)
   t = balance(t);
 
   return t;
-}
-
-
-int find_min(struct node *t)
-{
-  if (t->left == NULL)
-    return t->value;
-  else
-    return find_min(t->left);
 }
 
 struct node* delete(int v, struct node *t)
@@ -153,8 +167,6 @@ struct node* delete(int v, struct node *t)
   return t;
 }
 
-
 int main() {
   return 0;
 }
-
