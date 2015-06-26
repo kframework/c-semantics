@@ -1,6 +1,6 @@
 require "kernelc.k"
 
-module INSERT-SPEC
+module DELETE-SPEC
 imports C-VERIFIER
 
 rule [func-max]:
@@ -165,7 +165,54 @@ requires avl(LT) andBool avl(RT)
 ensures  tree_height(node(_:Int, LT, RT)) ==K (((((?H3:Int <<Int 8) |Int ?H2:Int) <<Int 8) |Int ?H1:Int) <<Int 8) |Int ?H0:Int
  andBool min(t(.Set, int)) <=Int tree_height(node(_:Int, LT, RT)) andBool tree_height(node(_:Int, LT, RT)) <=Int max(t(.Set, int)) // c-specific
 
-rule [func-insert]:
+rule [func-find-min]:
+  <functions> FUNCTIONS:Map </functions> // <functions>... FUNCTIONS:Map ...</functions>
+  <structs> STRUCTS:Map </structs>       // <structs>... STRUCTS:Map ...</structs>
+  <external-types> EXTERNALTYPES:Map </external-types>
+  <external-defs> EXTERNALDEFS:Map </external-defs>
+  <linkings> LINKINGS:Map </linkings>
+  <translation-units> TRANSLATIONUNITS:Bag </translation-units>
+  <activeBlocks> .Map </activeBlocks>
+  <malloced> _:Map => ?_:Map </malloced>
+  <next-malloced> (_:Int => ?_:Int) @ alloc </next-malloced>
+  <status> mainCalled </status>
+  <mem>... MEM:Map htree(TP)(T:Tree) ...</mem>
+  <restrict> .Map </restrict>
+  <threads>
+    <thread>...
+      <thread-id> 0 </thread-id>
+        <buffer> .List </buffer>
+        <curr-function> _:CId </curr-function>
+        <curr-subobject> .List </curr-subobject>
+        <locs-written> _:List => .List </locs-written>
+      <formatting-wrapper> .Bag </formatting-wrapper>
+      <type-wrapper> .Bag </type-wrapper>
+      <initializing> 0 /* Initializing:Int */ </initializing>
+      <duration> auto(0) </duration>
+      <k> 
+        Call1(
+            tv(loc(3 /* find_min */ @ static("avl.c"), 0),
+               t(.Set, pointerType(t(.Set, functionType(t(.Set, int), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c"))))))))))),
+            rvlist(
+                ListItem(tv(TP:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c")))))))))
+      =>
+        tv(?M:Int, t(.Set, int))
+      ...</k>
+    ...</thread>
+  </threads>
+  <files>
+    <file-commands> .K </file-commands>
+  </files>
+  <error-cell-wrapper> .Bag </error-cell-wrapper>
+requires TP =/=K NullPointer 
+ andBool avl(T)
+ andBool tree_height(T) <=Int max(t(.Set, int)) // c-specific
+// andBool Initializing >=Int 0 // c-specific
+ensures  (?M inIntSet tree_keys(T))
+ andBool ({ ?M } <=IntSet tree_keys(T))
+ andBool min(t(.Set, int)) <=Int ?M andBool ?M <=Int max(t(.Set, int)) // c-specific
+
+rule [func-delete]:
   <functions> FUNCTIONS:Map </functions> // <functions>... FUNCTIONS:Map ...</functions>
   <structs> STRUCTS:Map </structs>       // <structs>... STRUCTS:Map ...</structs>
   <external-types> EXTERNALTYPES:Map </external-types>
@@ -198,7 +245,7 @@ rule [func-insert]:
       <duration> auto(0) </duration>
       <k> 
         Call1(
-            tv(loc(9 /* insert */ @ static("avl.c"), 0),
+            tv(loc(10 /* delete */ @ static("avl.c"), 0),
                 t(.Set, pointerType(t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c"))))), ListItem(t(.Set, int)) ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c"))))))))))),
             rvlist(
                 ListItem(tv(V:Int, t(.Set, int)))
@@ -217,37 +264,7 @@ requires avl(T1)
  andBool min(t(.Set, int)) <=Int V:Int andBool V:Int <=Int max(t(.Set, int)) // c-specific
 // andBool Initializing >=Int 0 // c-specific
 ensures  avl(?T2)
- andBool tree_keys(?T2) ==K { V } U tree_keys(T1)
- andBool tree_height( T1) <=Int tree_height(?T2)
- andBool tree_height(?T2) <=Int tree_height( T1) +Int 1
-// andBool ?TP2 =/=K NullPointer
-
-/*
-rule [aux-checkLoc]:
-  <functions> FUNCTIONS:Map </functions>
-  <structs> STRUCTS:Map </structs>
-  <external-types> EXTERNALTYPES:Map </external-types>
-  <external-defs> EXTERNALDEFS:Map </external-defs>
-  <linkings> LINKINGS:Map </linkings>
-  <translation-units> TRANSLATIONUNITS:Bag </translation-units>
-  <status> mainCalled </status>
-  <mem>... MEM:Map htree(TP)(_:Tree) ...</mem>
-  <threads>
-    <thread>...
-      <thread-id> 0 </thread-id>
-        <buffer> .List </buffer>
-        <curr-function> _:CId </curr-function>
-        <curr-subobject> .List </curr-subobject>
-      <formatting-wrapper> .Bag </formatting-wrapper>
-      <type-wrapper> .Bag </type-wrapper>
-      <duration> auto(0) </duration>
-      <k> checkLoc(TP:CanonicalSymLoc) => .K ...</k>
-    ...</thread>
-  </threads>
-  <files>
-    <file-commands> .K </file-commands>
-  </files>
-  <error-cell-wrapper> .Bag </error-cell-wrapper>
-*/
+ andBool tree_keys(?T2) ==K tree_keys(T1) -IntSet { V }
+ andBool tree_height(T1) -Int 1 <=Int tree_height(?T2) andBool tree_height(?T2) <=Int tree_height(T1)
 
 endmodule

@@ -38,12 +38,15 @@ module C-CHECK-LOC
      //     requires notBool Tag in keys(Blocks)
      //     [structural]
 
+     rule checkLoc(_) => .K
+     /*
      rule checkLoc(NullPointer) => checkLoc'(NullPointer)
           [structural]
      rule checkLoc(loc(Base:SymBase, Offset:Int)) => checkLoc'(loc(Base:SymBase, Offset:Int))
           [structural]
      rule checkLoc(loc(Base:SymBase, Offset:Int, _)) => checkLoc'(loc(Base:SymBase, Offset:Int))
           [structural]
+     */
 
      syntax KItem ::= "checkLoc'" "(" SymLoc ")"
      rule checkLoc'(NullPointer) => .K

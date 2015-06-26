@@ -59,16 +59,17 @@ module TREE-PATTERN
         13 |-> piece(subObject(?RP, 1, 1), 8)
         14 |-> piece(subObject(?RP, 2, 2), 8)
         15 |-> piece(subObject(?RP, 3, 3), 8),
-         0 |-> t(.Set, int)
-         4 |-> t(.Set, int)
+         0 |-> t(.Set, int) // value
+         4 |-> t(.Set, int) // height
          8 |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c")))))
         12 |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("node"), "avl.c"))))))
       htree(?LP:CanonicalSymLoc)(LT)
       htree(?RP:CanonicalSymLoc)(RT)
-  ensures tree_height(node(I, LT, RT)) ==K (((((?I7:Int <<Int 8) |Int ?I6:Int) <<Int 8) |Int ?I5:Int) <<Int 8) |Int ?I4:Int
+  ensures I ==K (((((?I3:Int <<Int 8) |Int ?I2:Int) <<Int 8) |Int ?I1:Int) <<Int 8) |Int ?I0:Int
   andBool min(t(.Set, int)) <=Int I:Int
   andBool I:Int <=Int max(t(.Set, int))
-  andBool I ==K (((((?I3:Int <<Int 8) |Int ?I2:Int) <<Int 8) |Int ?I1:Int) <<Int 8) |Int ?I0:Int
+  //
+  andBool tree_height(node(I, LT, RT)) ==K (((((?I7:Int <<Int 8) |Int ?I6:Int) <<Int 8) |Int ?I5:Int) <<Int 8) |Int ?I4:Int
   andBool min(t(.Set, int)) <=Int tree_height(node(I, LT, RT))
   andBool tree_height(node(I, LT, RT)) <=Int max(t(.Set, int))
     [pattern]
@@ -96,8 +97,8 @@ module TREE-PATTERN
   syntax Bool ::= avl(Tree)   [function, smtlib(smt_avl)]
   rule avl(node(I:Int, TL:Tree, TR:Tree))
     => tree_keys(TL) <IntSet { I } andBool { I } <IntSet tree_keys(TR)
-       andBool absInt(tree_height(TL) -Int tree_height(TR)) <=Int 1
        andBool avl(TL) andBool avl(TR)
+       andBool absInt(tree_height(TL) -Int tree_height(TR)) <=Int 1
   rule avl(leaf) => true
 
 endmodule
