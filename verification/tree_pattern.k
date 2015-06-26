@@ -7,6 +7,16 @@ module TREE-PATTERN
   syntax Tree ::= "node" "(" Int "," Tree "," Tree ")"
                 | "leaf"
 
+  syntax IntSet ::= "tree_keys" "(" Tree ")"    [function, smtlib(smt_tree_keys)]
+  rule tree_keys(node(I:Int, TL:Tree, TR:Tree))
+    => { I } U (tree_keys(TL) U tree_keys(TR))
+  rule tree_keys(leaf) => .IntSet
+
+  syntax Int ::= "tree_height" "(" Tree ")"     [function, smtlib(smt_tree_height)]
+  rule tree_height(node(_, TL:Tree, TR:Tree))
+    => 1 +Int maxInt(tree_height(TL), tree_height(TR))
+  rule tree_height(leaf) => 0
+
   /* bst tree pattern */
   syntax Map ::= "tree" "(" CanonicalSymLoc ")" "(" Tree ")"    [pattern(1)]
   rule
@@ -36,6 +46,12 @@ module TREE-PATTERN
     [pattern]
   rule tree(NullPointer)(leaf) => .Map
     [pattern]
+
+  syntax Bool ::= bst(Tree)   [function, smtlib(smt_bst)]
+  rule bst(node(I:Int, TL:Tree, TR:Tree))
+    => tree_keys(TL) <IntSet { I } andBool { I } <IntSet tree_keys(TR)
+       andBool bst(TL) andBool bst(TR)
+  rule bst(leaf) => true
 
   /* avl tree pattern */
   syntax Map ::= "htree" "(" CanonicalSymLoc ")" "(" Tree ")"    [pattern(1)]
@@ -76,24 +92,6 @@ module TREE-PATTERN
   rule htree(NullPointer)(leaf) => .Map
     [pattern]
 
-  syntax IntSet ::= "tree_keys" "(" Tree ")"    [function, smtlib(smt_tree_keys)]
-  rule tree_keys(node(I:Int, TL:Tree, TR:Tree))
-    => { I } U (tree_keys(TL) U tree_keys(TR))
-  rule tree_keys(leaf) => .IntSet
-
-  syntax Int ::= "tree_height" "(" Tree ")"     [function, smtlib(smt_tree_height)]
-  rule tree_height(node(_, TL:Tree, TR:Tree))
-    => 1 +Int maxInt(tree_height(TL), tree_height(TR))
-  rule tree_height(leaf) => 0
-
-  rule tree_height(_:Tree) >=Int 0 => true    [smt-lemma]
-
-  syntax Bool ::= bst(Tree)   [function, smtlib(smt_bst)]
-  rule bst(node(I:Int, TL:Tree, TR:Tree))
-    => tree_keys(TL) <IntSet { I } andBool { I } <IntSet tree_keys(TR)
-       andBool bst(TL) andBool bst(TR)
-  rule bst(leaf) => true
-
   syntax Bool ::= avl(Tree)   [function, smtlib(smt_avl)]
   rule avl(node(I:Int, TL:Tree, TR:Tree))
     => tree_keys(TL) <IntSet { I } andBool { I } <IntSet tree_keys(TR)
@@ -101,5 +99,6 @@ module TREE-PATTERN
        andBool absInt(tree_height(TL) -Int tree_height(TR)) <=Int 1
   rule avl(leaf) => true
 
-endmodule
+  rule tree_height(_:Tree) >=Int 0 => true    [smt-lemma]
 
+endmodule

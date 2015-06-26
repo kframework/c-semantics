@@ -1,6 +1,8 @@
 require "../semantics/c11.k"
 require "int_set.k"
+require "int_list.k"
 require "tree_pattern.k"
+require "list_pattern.k"
 
 module C-VERIFIER
   imports C11
