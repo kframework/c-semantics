@@ -15,10 +15,13 @@ module C-DYNAMIC-SYNTAX
 
      syntax LValue ::= lv(SymLoc, Type)
 
-     syntax KItem ::= le(K, Type)
-     syntax Hold ::= te(K, Type)
-     syntax LHold ::= ncle(K, Type)
+     // These hold typed frozen computations -- one each for lvalues, rvalues,
+     // and non-converted lvalues.
+     syntax LHold ::= le(K, Type)
+     syntax RHold ::= te(K, Type)
+     syntax NCLHold ::= ncle(K, Type)
      syntax CompoundExpression ::= compoundExp(K)
+     syntax Hold ::= LHold | RHold | NCLHold | CompoundExpression
 
      syntax KItem ::= stripHold(K) [function]
 
@@ -29,8 +32,10 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= toRVal(K)
 
-     syntax Type ::= type(K) [function]
-     syntax KItem ::= value(K) [function]
+     syntax Typed ::= LValue | RValue | Hold | Type
+     syntax Type ::= type(Typed) [function]
+     syntax Valued ::= LValue | RValue | Hold
+     syntax KItem ::= value(Valued) [function]
 
      syntax KItem ::= "discard"
 
@@ -142,6 +147,7 @@ module C-DYNAMIC
      rule value(te(K:K, _)) => K
      rule value(le(K:K, _)) => K
      rule value(ncle(K:K, _)) => K
+     rule value(compoundExp(K:K)) => K
 
      rule type(tv(_, T:Type)) => T
      rule type(T:Type) => T

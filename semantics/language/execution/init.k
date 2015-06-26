@@ -57,10 +57,6 @@ module C-EXECUTION-INIT
 
      rule V:Hold => value(V)
           [structural]
-     rule L:LHold => value(L)
-          [structural]
-     rule compoundExp(K:K) => K
-          [structural]
 
      syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant

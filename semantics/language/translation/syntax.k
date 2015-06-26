@@ -1,8 +1,8 @@
 module C-ABSTRACT-SYNTAX
      imports C-SYNTAX
 
-     syntax RValue ::= Hold
-     syntax KResult ::= LHold
+     syntax RValue ::= RHold
+     syntax KResult ::= NCLHold
 
      syntax SymBase ::= "nonStatic"
 

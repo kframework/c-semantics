@@ -242,12 +242,12 @@ module C-EXPR-ASSIGNMENT
                => #compoundAssign(LV, LV, AExp)
           ...</k>
           <curr-function> file-scope </curr-function>
-          requires notBool isLHold(LV)
+          requires notBool isNCLHold(LV)
      rule <k> compoundAssign(LV:KResult, AExp:RValue)
                => te(compoundAssign(LV, AExp), type(LV))
           ...</k>
           <curr-function> F:CId </curr-function>
-          requires isLHold(LV) orBool F =/=K file-scope
+          requires isNCLHold(LV) orBool F =/=K file-scope
 
      syntax KItem ::= #compoundAssign(K, K, RValue)
      context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
