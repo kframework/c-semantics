@@ -83,7 +83,6 @@ module C-LTLMC
 
      // TODO(chathhorn): Very basic rewrite of C expression semantics. It'd be
      // nice to be able to re-use more of the actual semantics for this...
-     /*TODO(liyili2): cannot handle this, maybe this is not needed */
      rule ltlRVal(_, V:ValueProp) => V
 
      rule ltlRVal(B:Bag, - P:CProp)
@@ -100,7 +99,6 @@ module C-LTLMC
      //      => ltlLVal(B, P)
 
      // "strictness"
-     /*TODO(liyili2): cannot handle this cases */
      rule ltlRVal(B:Bag, L:KLabel(P:CProp))
           => ltlRVal(B, L(ltlRVal(B, P)))
           requires notBool (isValueProp(P:CProp) ==K true)
@@ -116,7 +114,6 @@ module C-LTLMC
      rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 
-     /*TODO(liyili2): cannot handle this */
      rule ltlRVal(B:Bag, P:CProp -> X:CId)
           => ltlRVal(B, (* P) . X)
 
