@@ -113,7 +113,7 @@ module C-CONFIGURATION
      // Toggle to allow writes and other special treatment
      // for initializers.
      <initializing> false </initializing>
-     <init-calc multiplicity="?">
+     <init-calc multiplicity="+">
           // Used to figure initializers.
           <curr-object color="cyan">
                .List
