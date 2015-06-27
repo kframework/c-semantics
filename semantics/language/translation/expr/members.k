@@ -41,31 +41,30 @@ module C-EXPR-MEMBERS
      rule <k> ncle(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
-          requires notBool (Atomic in Mods)
-               orBool I >Int 0
+          requires notBool (Atomic in Mods) orBool Initializing
      rule <k> te(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
                => te(K . F, addQualifiers(Mods, T))
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
-               orBool I >Int 0
+               orBool Initializing
 
      rule <k> ncle(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
-               orBool I >Int 0
+               orBool Initializing
      rule <k> te(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
                => te(K . F, addQualifiers(Mods, T))
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
           requires notBool (Atomic in Mods)
-               orBool I >Int 0
+               orBool Initializing
 
 endmodule

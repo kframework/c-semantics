@@ -22,7 +22,7 @@ module C-ELABORATOR
      imports C-DYNAMIC-SYNTAX
 
      syntax KItem ::= elabFrame(K, K, Bag)
-                    | elabInitFrame(K, K, Int)
+                    | elabInitFrame(K, K, Bag)
 
      rule (.K => K) ~> compoundExp(K:K)
      rule R:KResult ~> compoundExp(K:K)
@@ -41,17 +41,18 @@ module C-ELABORATOR
                ListItem(elabFrame(Cont:K, OldElab:K, L:Bag)) => .List
           ...</elab-stack>
 
-     rule <k> elaborateInit(K:K) ~> Cont:K => K </k>
+     rule <k> elaborateInit(K:K) ~> Cont:K => allowInit(K) </k>
           <elab> OldElab:K => .K </elab>
-          <initializing> I:Int => 1 </initializing>
+          (<init-calc> I:Bag </init-calc>
+               => <init-calc>... .Bag ...</init-calc>)
           <elab-stack>
                .List => ListItem(elabInitFrame(Cont, OldElab, I))
           ...</elab-stack>
      rule <k> .K => elaborateInitDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
-          <initializing> _ => I </initializing>
+          <init-calc> _ => I </init-calc>
           <elab-stack>
-               ListItem(elabInitFrame(Cont:K, OldElab:K, I:Int)) => .List
+               ListItem(elabInitFrame(Cont:K, OldElab:K, I:Bag)) => .List
           ...</elab-stack>
 
      rule (.K => elaborateInit(K)) ~> runInit(K:K)

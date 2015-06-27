@@ -36,22 +36,21 @@ module C-MEMORY-WRITING
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> true </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
-               andBool I >Int 0
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isConstType(T)
                andBool notBool isStringLoc(Loc)
@@ -60,9 +59,8 @@ module C-MEMORY-WRITING
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
                => write-specific(Loc, V, T)
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> true </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
-               andBool I >Int 0
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
@@ -79,13 +77,13 @@ module C-MEMORY-WRITING
      rule <k> (.K => CV("00035", "Trying to write through a const lvalue.", "6.5.16.1:1") )
                ~> write(_, _, T:Type)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires isConstType(T)
           [structural]
      rule <k> (.K => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
                ~> write(Loc:SymLoc, _, _)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires isStringLoc(Loc)
           [structural]
 

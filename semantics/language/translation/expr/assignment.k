@@ -137,11 +137,11 @@ module C-EXPR-ASSIGNMENT
      rule <k> (.K => CVUB("TEAS5", "Non-constant static initializer.", "6.6"))
                ~> nclv(_, _) := te(_, _)
           ...</k>
-          <initializing> 1 </initializing>
+          <initializing> true </initializing>
      rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue.", "6.5.16.1:1"))
                ~> L:KResult := _:RValue
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires isConstType(type(L))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
@@ -174,7 +174,7 @@ module C-EXPR-ASSIGNMENT
                => write(Loc, V, T)
                ~> tv(V, T)
           ...</k>
-          <initializing> 1 </initializing>
+          <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isLinkerLoc(Loc)
@@ -182,13 +182,13 @@ module C-EXPR-ASSIGNMENT
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => te(nclv(Loc, T) := tv(V, T'), T)
           ...</k>
-          <initializing> 1 </initializing>
+          <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool isLinkerLoc(Loc)
                andBool (T ==Type T')
      rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
-          <initializing> 1 </initializing>
+          <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
                andBool (T ==Type type(R))
@@ -196,7 +196,7 @@ module C-EXPR-ASSIGNMENT
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => te(nclv(Loc, T) := tv(V, T'), T)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
@@ -204,13 +204,13 @@ module C-EXPR-ASSIGNMENT
      rule <k> nclv(Loc:SymLoc, T:Type) := te(K:K, T':Type)
                => te(nclv(Loc, T) := K, T)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
                andBool (T ==Type T')
      rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
                andBool notBool isConstType(T)

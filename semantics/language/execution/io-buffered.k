@@ -43,12 +43,11 @@ module C-IO-BUFFERED
                ~> setModified(Loc, T)
                ~> writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> I:Int </initializing>
-          requires I >Int 0
+          <initializing> true </initializing>
 
      syntax KItem ::= setModified(SymLoc, Type)
      rule <k> setModified(Loc:SymLoc, T:Type)

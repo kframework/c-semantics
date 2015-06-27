@@ -180,16 +180,16 @@ module C-DYNAMIC
      rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))
           [structural] // for internal computations
 
-     rule <k> allowInit(K:K) => K ~> initDone ...</k>
-          <initializing> I:Int => I +Int 1 </initializing>
+     rule <k> allowInit(K:K) => K ~> initDone(I) ...</k>
+          <initializing> I:Bool => true </initializing>
           [structural]
 
-     syntax KItem ::= "initDone"
-     rule <k> R:KResult ~> initDone => R ...</k>
-          <initializing> I:Int => I -Int 1 </initializing>
+     syntax KItem ::= initDone(Bool)
+     rule <k> R:KResult ~> initDone(I:Bool) => R ...</k>
+          <initializing> _ => I </initializing>
           [structural]
-     rule <k> initDone => .K ...</k>
-          <initializing> I:Int => I -Int 1 </initializing>
+     rule <k> initDone(I:Bool) => .K ...</k>
+          <initializing> _ => I </initializing>
           [structural]
 
      rule isNoInit(NoInit) => true

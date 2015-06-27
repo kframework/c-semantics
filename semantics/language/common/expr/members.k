@@ -22,27 +22,27 @@ module C-COMMON-EXPR-MEMBERS
                     structType(S:StructId))) . F:CId
                => lookupField(F, Loc, Mods, getTag(S), Fields, Fields)
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> Fields:FieldInfo ...</structs>
           requires notBool (Atomic in Mods)
-               orBool I >Int 0
+               orBool Initializing
           [structural]
      rule <k> nclv(Loc:SymLoc, t(Mods:Set,
                     unionType(S:StructId))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
                     Mods, getTag(S), Fields, Fields)
           ...</k>
-          <initializing> I:Int </initializing>
+          <initializing> Initializing:Bool </initializing>
           <structs>... S |-> Fields:FieldInfo ...</structs>
           requires notBool (Atomic in Mods)
-               orBool I >Int 0
+               orBool Initializing
           [structural]
      rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
                "6.5.2.3:5"))
                ~> Lbl:KLabel(_,, t(Mods:Set, structType(_))) . _:CId
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires Atomic in Mods
                andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
           [structural]
@@ -51,7 +51,7 @@ module C-COMMON-EXPR-MEMBERS
                "6.5.2.3:5"))
                ~> Lbl:KLabel(_,, t(Mods:Set, unionType(_))) . _:CId
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires Atomic in Mods
                andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
           [structural]

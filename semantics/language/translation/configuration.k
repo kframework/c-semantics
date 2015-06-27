@@ -86,57 +86,54 @@ module C-CONFIGURATION
                </goto-loop-stack>
           </goto-calc>
      </goto-map-calc>
-     <elab-calc>
-          <elaborator>
-               <k color="green">
-                    $PGM:K
-                    ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
-                         unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
-                    ~> link
-                    ~> cleanup
-               </k>
+     <k color="green">
+          $PGM:K
+          ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
+               unwrapObj($OBJ3:Bag), unwrapObj($OBJ4:Bag))
+          ~> link
+          ~> cleanup
+     </k>
 
-               <elab> .K </elab>
+     <elab> .K </elab>
 
-               <elab-stack> .List </elab-stack>
+     <elab-stack> .List </elab-stack>
 
-               <local>
-                    // maps from CIds
-                    <env color="red"> .Map </env>
-                    <types color="lightgray"> .Map </types>
-                    <block-history> .List </block-history>
-                    <curr-program-loc color="black">
-                         UnknownCabsLoc
-                    </curr-program-loc>
+     <local>
+          // maps from CIds
+          <env color="red"> .Map </env>
+          <types color="lightgray"> .Map </types>
+          <block-history> .List </block-history>
+          <curr-program-loc color="black">
+               UnknownCabsLoc
+          </curr-program-loc>
+     </local>
 
-                    // Toggle to allow writes and other special treatment
-                    // for initializers.
-                    <initializing> 0 </initializing>
-               </local>
-               <block-stack color="violet"> .List </block-stack>
+     <block-stack color="violet"> .List </block-stack>
 
-               // Used to figure initializers.
-               <curr-object color="cyan">
-                    .List
-               </curr-object>
-               <curr-subobject color="cyan">
-                    .List
-               </curr-subobject>
-               <incomplete-length color="cyan">
-                    0
-               </incomplete-length>
-               <saved-init color="cyan">
-                    .K
-               </saved-init>
+     // Toggle to allow writes and other special treatment
+     // for initializers.
+     <initializing> false </initializing>
+     <init-calc multiplicity="?">
+          // Used to figure initializers.
+          <curr-object color="cyan">
+               .List
+          </curr-object>
+          <curr-subobject color="cyan">
+               .List
+          </curr-subobject>
+          <incomplete-length color="cyan">
+               0
+          </incomplete-length>
+          <saved-init color="cyan">
+               .K
+          </saved-init>
 
-               // Holds the innermost type while we unroll the
-               // type around it.
-               <decl-type-holder color="cyan">
-                    .K
-               </decl-type-holder>
-
-          </elaborator>
-     </elab-calc>
+          // Holds the innermost type while we unroll the
+          // type around it.
+          <decl-type-holder color="cyan">
+               .K
+          </decl-type-holder>
+     </init-calc>
 
      <curr-tu color="lightgray"> "" </curr-tu>
      <curr-function color="lightgray">
