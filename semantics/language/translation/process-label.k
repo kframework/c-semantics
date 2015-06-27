@@ -49,13 +49,13 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:CId => file-scope </curr-function>
+          <curr-function> F:CId => fileScope </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:CId => file-scope </curr-function>
+          <curr-function> F:CId => fileScope </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>

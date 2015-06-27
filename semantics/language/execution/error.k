@@ -31,7 +31,7 @@ module C-EXECUTION-ERROR
 
      syntax String ::= printStackTrace(List, K, K) [function]
 
-     rule printStackTrace(L:List, Loc:K, file-scope) => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, Loc:K, fileScope) => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, Loc:K, Identifier(S:String)) => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K) => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K) => "<unknown>)" +String printStackTrace(L, .K, .K)

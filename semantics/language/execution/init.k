@@ -121,7 +121,7 @@ module C-EXECUTION-INIT
                     <thread-local>...
                          <control>...
                               <curr-function>
-                                   _ => file-scope
+                                   _ => fileScope
                               </curr-function>
                               <curr-program-loc>
                                    _ => UnknownCabsLoc

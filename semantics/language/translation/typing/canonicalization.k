@@ -182,7 +182,7 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(T:BasicType) => T
 
      syntax Bool ::= isGlobalScope(K) [function]
-     rule isGlobalScope(file-scope) => true
+     rule isGlobalScope(fileScope) => true
      rule isGlobalScope(_) => false [owise]
 
      syntax KItem ::= canonicalizeSpecifier(List)

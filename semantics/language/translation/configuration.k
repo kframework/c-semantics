@@ -98,7 +98,7 @@ module C-CONFIGURATION
 
                <elab> .K </elab>
 
-               <elabStack> .List </elabStack>
+               <elab-stack> .List </elab-stack>
 
                <local>
                     // maps from CIds
@@ -140,7 +140,7 @@ module C-CONFIGURATION
 
      <curr-tu color="lightgray"> "" </curr-tu>
      <curr-function color="lightgray">
-          file-scope
+          fileScope
      </curr-function>
 </exec>
 

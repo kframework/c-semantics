@@ -5,6 +5,7 @@ module C-TYPING-INTERPRETATION
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-FUNCTION-DEF-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
@@ -68,9 +69,18 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      // "Prototype scope."
-     rule (.K => elaborate(Prototype'(T, L, .List, Var)))
+     rule (.K => elaborate(
+               enterPrototypeScope
+               ~> Prototype'(T, L, .List, Var)
+               ~> returnToFileScope))
           ~> Prototype(T:Type, list(L:List), Var:Bool)
      rule elaborateDone(T:Type) ~> Prototype(_, _, _) => T
+
+     syntax CId ::= "prototypeScope"
+
+     syntax KItem ::= "enterPrototypeScope"
+     rule <k> enterPrototypeScope => .K ...</k>
+          <curr-function> _ => prototypeScope </curr-function>
 
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.
@@ -90,9 +100,9 @@ module C-TYPING-INTERPRETATION
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
           requires X ==K #NoName
-     rule <k> Prototype'(T:Type, .List, L:List, false) => .K </k>
+     rule <k> Prototype'(T:Type, .List, L:List, false) => .K ...</k>
           <elab> _ => pushTypeDown(T, makeFunctionType(L)) </elab>
-     rule <k> Prototype'(T:Type, .List, L:List, true) => .K </k>
+     rule <k> Prototype'(T:Type, .List, L:List, true) => .K ...</k>
           <elab> _ => pushTypeDown(T, makeFunctionType(L ListItem(variadic))) </elab>
 
      rule NoPrototype(T:Type, krlist(L:List), false)

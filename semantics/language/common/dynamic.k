@@ -49,9 +49,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax CabsLoc ::= "UnknownCabsLoc"
 
-     // TODO(chathhorn): seems excessive to make this an CId. Also, it kinda
-     // goes against our naming conventions.
-     syntax CId ::= "file-scope"
+     syntax CId ::= "fileScope"
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)

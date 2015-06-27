@@ -3,6 +3,7 @@ module C-FUNCTION-DEF-SYNTAX
 
      syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
      syntax Bool ::= hasDupParams(Type) [function]
+     syntax KItem ::= "returnToFileScope"
 endmodule
 
 module C-FUNCTION-DEF
@@ -173,8 +174,6 @@ module C-FUNCTION-DEF
      rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, t(.Set, int)))
 
-     syntax KItem ::= "returnToFileScope"
-
      syntax KItem ::= staticEval(CId, List, K)
      syntax KItem ::= calculateGotoMap(CId)
 
@@ -191,7 +190,7 @@ module C-FUNCTION-DEF
           => calculateGotoMap(X, K)
 
      rule <k> returnToFileScope => .K ...</k>
-          <curr-function> _ => file-scope </curr-function>
+          <curr-function> _ => fileScope </curr-function>
           [structural]
 
      syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]

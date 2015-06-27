@@ -51,7 +51,7 @@ module C-DECL-GLOBAL
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
-          requires F =/=K file-scope
+          requires F =/=K fileScope
                andBool notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
@@ -59,7 +59,7 @@ module C-DECL-GLOBAL
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-function> F:K </curr-function>
-          requires F =/=K file-scope
+          requires F =/=K fileScope
                andBool validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
@@ -69,7 +69,7 @@ module C-DECL-GLOBAL
                     #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
-          <curr-function> file-scope </curr-function>
+          <curr-function> fileScope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires validGlobalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
@@ -80,7 +80,7 @@ module C-DECL-GLOBAL
                     #then NoInit
                     #else CodeLoc(K, L) #fi)
           ...</k>
-          <curr-function> file-scope </curr-function>
+          <curr-function> fileScope </curr-function>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires notBool isFunctionType(T)
                andBool validGlobalStorageClass(T)
@@ -109,7 +109,7 @@ module C-DECL-GLOBAL
                ~> declare''(T:FunctionType, X:CId, _)
           ...</k>
           <curr-function> F:K </curr-function>
-          requires F =/=K file-scope
+          requires F =/=K fileScope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
           [structural]
@@ -121,7 +121,7 @@ module C-DECL-GLOBAL
                ~> declare''(T:Type, X:CId, _)
           ...</k>
           <curr-function> F:K </curr-function>
-          requires F =/=K file-scope
+          requires F =/=K fileScope
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
                andBool notBool isFunctionType(T)
@@ -133,7 +133,7 @@ module C-DECL-GLOBAL
                "6.9:2"))
                ~> declare''(T:Type, X:CId, _)
           ...</k>
-          <curr-function> file-scope </curr-function>
+          <curr-function> fileScope </curr-function>
           requires validStorageClass(T)
                andBool notBool validGlobalStorageClass(T)
           [structural]

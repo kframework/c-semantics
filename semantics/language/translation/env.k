@@ -29,10 +29,10 @@ module C-ENV
           <types> _ => GT </types>
 
      rule <k> addToEnv(X:CId, Base:SymBase) => addToGlobalEnv(X, Base) ...</k>
-          <curr-function> file-scope </curr-function>
+          <curr-function> fileScope </curr-function>
      rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
           <curr-function> E:CId </curr-function>
-          requires E =/=K file-scope
+          requires E =/=K fileScope
 
      syntax KItem ::= addToGlobalEnv(K, SymBase)
      rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
@@ -48,12 +48,12 @@ module C-ENV
      rule <k> giveType(X:CId, T:Type)
                => giveGlobalType(X, tagRestrict(global, stripStorageSpecifiers(T)))
           ...</k>
-          <curr-function> file-scope </curr-function>
+          <curr-function> fileScope </curr-function>
      rule <k> giveType(X:CId, T:Type)
                => giveLocalType(X, stripStorageSpecifiers(T))
           ...</k>
           <curr-function> E:CId </curr-function>
-          requires E =/=K file-scope
+          requires E =/=K fileScope
 
      syntax KItem ::= giveGlobalType(K, Type)
      rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
