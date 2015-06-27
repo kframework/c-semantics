@@ -87,8 +87,7 @@ module C-CONFIGURATION
           </goto-calc>
      </goto-map-calc>
      <elab-calc>
-          <elaborator multiplicity="*">
-               <elab-id> file-scope </elab-id>
+          <elaborator>
                <k color="green">
                     $PGM:K
                     ~> load(unwrapObj($OBJ1:Bag), unwrapObj($OBJ2:Bag),
@@ -99,9 +98,7 @@ module C-CONFIGURATION
 
                <elab> .K </elab>
 
-               // Toggle to allow writes and other special treatment
-               // for initializers.
-               <initializing> 0 </initializing>
+               <elabStack> .List </elabStack>
 
                <local>
                     // maps from CIds
@@ -111,6 +108,10 @@ module C-CONFIGURATION
                     <curr-program-loc color="black">
                          UnknownCabsLoc
                     </curr-program-loc>
+
+                    // Toggle to allow writes and other special treatment
+                    // for initializers.
+                    <initializing> 0 </initializing>
                </local>
                <block-stack color="violet"> .List </block-stack>
 
