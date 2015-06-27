@@ -5,7 +5,6 @@ module C-TYPING-INTERPRETATION
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-FUNCTION-DEF-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
@@ -75,12 +74,6 @@ module C-TYPING-INTERPRETATION
                ~> returnToFileScope))
           ~> Prototype(T:Type, list(L:List), Var:Bool)
      rule elaborateDone(T:Type) ~> Prototype(_, _, _) => T
-
-     syntax CId ::= "prototypeScope"
-
-     syntax KItem ::= "enterPrototypeScope"
-     rule <k> enterPrototypeScope => .K ...</k>
-          <curr-function> _ => prototypeScope </curr-function>
 
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.

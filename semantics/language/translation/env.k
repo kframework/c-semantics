@@ -8,6 +8,9 @@ module C-ENV-SYNTAX
      syntax KItem ::= "populateFromGlobal"
      syntax KItem ::= addToHistory(BlockTag)
 
+     syntax Bool ::= isGlobalScope(K) [function]
+     syntax KItem ::= "enterPrototypeScope"
+     syntax KItem ::= "returnToFileScope"
 endmodule
 
 module C-ENV
@@ -71,4 +74,15 @@ module C-ENV
           <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
           <block-history> .List </block-history>
           <curr-function> Fun:CId </curr-function>
+
+     syntax CId ::= "prototypeScope"
+     rule <k> enterPrototypeScope => .K ...</k>
+          <curr-function> _ => prototypeScope </curr-function>
+     rule <k> returnToFileScope => .K ...</k>
+          <curr-function> _ => fileScope </curr-function>
+
+     rule isGlobalScope(fileScope) => true
+     rule isGlobalScope(prototypeScope) => true
+     rule isGlobalScope(_) => false [owise]
+
 endmodule

@@ -3,7 +3,6 @@ module C-FUNCTION-DEF-SYNTAX
 
      syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
      syntax Bool ::= hasDupParams(Type) [function]
-     syntax KItem ::= "returnToFileScope"
 endmodule
 
 module C-FUNCTION-DEF
@@ -188,10 +187,6 @@ module C-FUNCTION-DEF
 
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
           => calculateGotoMap(X, K)
-
-     rule <k> returnToFileScope => .K ...</k>
-          <curr-function> _ => fileScope </curr-function>
-          [structural]
 
      syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
      rule hasDupParams(T:Type) => #hasDupParams'(T)

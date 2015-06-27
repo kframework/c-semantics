@@ -12,6 +12,7 @@ module C-TYPING-CANONICALIZATION
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
 
      context canonicalizeType-aux(_, HOLE, _, _, _)
@@ -180,10 +181,6 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
 //      => t(S, typedefType(C, canonicalizeArrayType(T)))
 //      rule canonicalizeArrayType(T:BasicType) => T
-
-     syntax Bool ::= isGlobalScope(K) [function]
-     rule isGlobalScope(fileScope) => true
-     rule isGlobalScope(_) => false [owise]
 
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
