@@ -68,10 +68,8 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      // "Prototype scope."
-     rule (.K => elaborate(
-               enterPrototypeScope
-               ~> Prototype'(T, L, .List, Var)
-               ~> returnToFileScope))
+     rule (.K => elaborate(scope(prototypeScope,
+               Prototype'(T, L, .List, Var))))
           ~> Prototype(T:Type, list(L:List), Var:Bool)
      rule elaborateDone(T:Type) ~> Prototype(_, _, _) => T
 

@@ -98,6 +98,10 @@ module C-CONFIGURATION
 
      <elab-stack> .List </elab-stack>
 
+     // Toggle to allow writes and other special treatment
+     // for initializers.
+     <initializing> false </initializing>
+
      <local>
           // maps from CIds
           <env color="red"> .Map </env>
@@ -110,9 +114,6 @@ module C-CONFIGURATION
 
      <block-stack color="violet"> .List </block-stack>
 
-     // Toggle to allow writes and other special treatment
-     // for initializers.
-     <initializing> false </initializing>
      <init-calc multiplicity="+">
           // Used to figure initializers.
           <curr-object color="cyan">

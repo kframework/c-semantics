@@ -9,8 +9,9 @@ module C-ENV-SYNTAX
      syntax KItem ::= addToHistory(BlockTag)
 
      syntax Bool ::= isGlobalScope(K) [function]
-     syntax KItem ::= "enterPrototypeScope"
-     syntax KItem ::= "returnToFileScope"
+
+     syntax CId ::= "prototypeScope"
+     syntax KItem ::= scope(CId, K)
 endmodule
 
 module C-ENV
@@ -75,11 +76,12 @@ module C-ENV
           <block-history> .List </block-history>
           <curr-function> Fun:CId </curr-function>
 
-     syntax CId ::= "prototypeScope"
-     rule <k> enterPrototypeScope => .K ...</k>
-          <curr-function> _ => prototypeScope </curr-function>
-     rule <k> returnToFileScope => .K ...</k>
-          <curr-function> _ => fileScope </curr-function>
+     rule <k> scope(Scope:CId, K:K) => K ~> setScope(OldScope) ...</k>
+          <curr-function> OldScope:CId => Scope </curr-function>
+
+     syntax KItem ::= setScope(CId)
+     rule <k> setScope(Scope:CId) => .K ...</k>
+          <curr-function> _ => Scope </curr-function>
 
      rule isGlobalScope(fileScope) => true
      rule isGlobalScope(prototypeScope) => true

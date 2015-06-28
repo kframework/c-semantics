@@ -176,14 +176,12 @@ module C-FUNCTION-DEF
      syntax KItem ::= staticEval(CId, List, K)
      syntax KItem ::= calculateGotoMap(CId)
 
-     rule <k> staticEval(X:CId, Params:List, Blk:K)
-               => generateRuleAnnotation(X)
-               ~> elaborate(dummyBind(Params) ~> Label(funLabel(X), safeBody(X, Blk)))
-               ~> calculateGotoMap(X)
-               ~> returnToFileScope
-          ...</k>
-          <curr-function> _ => X </curr-function>
-          [structural]
+     rule staticEval(X:CId, Params:List, Blk:K)
+          => scope(X,
+               generateRuleAnnotation(X)
+               ~> elaborate(dummyBind(Params)
+                    ~> Label(funLabel(X), safeBody(X, Blk)))
+               ~> calculateGotoMap(X))
 
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
           => calculateGotoMap(X, K)

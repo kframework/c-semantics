@@ -165,8 +165,7 @@ module C-DECL-LOCAL
           </local-types>
           requires isCompleteType(T)
           [structural]
-     // Only function prototype scope?
-     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, .K))
+     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
                => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
