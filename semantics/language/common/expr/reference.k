@@ -37,7 +37,7 @@ module C-COMMON-EXPR-REFERENCE
           requires notBool isRegisterLoc(Loc)
           [structural]
      rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
-          ~> &(tv(_, _))
+          ~> &(_:RValue)
           [structural]
      rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
           ~> &(nclv(Loc:SymLoc, _))

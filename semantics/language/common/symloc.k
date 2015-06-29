@@ -53,9 +53,9 @@ module C-SYMLOC-SYNTAX
 
      // Base, alignment.
      syntax SymLoc ::= lnew(SymBase, Int) [function]
-     syntax SymLoc ::= restrictedNew(SymBase, Int, RestrictTag) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, Int, BlockTag) [function]
 
-     syntax SymLoc ::= SymLoc "+bytes" CSize [function]
+     syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
      syntax Bool ::= SymLoc ">bytes" SymLoc [function]
                    | SymLoc ">=bytes" SymLoc [function]
@@ -84,10 +84,10 @@ module C-SYMLOC-SYNTAX
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
-     syntax Provenance ::= fromArray(Int, CSize)
+     syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
-     syntax Provenance ::= basedOn(SymBase, RestrictTag)
+     syntax Provenance ::= basedOn(SymBase, BlockTag)
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
@@ -179,13 +179,14 @@ module C-SYMLOC
      rule lnew(Base:SymBase, Align:Int)
           => loc(Base, 0, SetItem(align(Align)))
 
-     rule restrictedNew(Base:SymBase, Align:Int, Tag:RestrictTag)
+     rule restrictedNew(Base:SymBase, Align:Int, Tag:BlockTag)
           => addProv(basedOn(Base, Tag), lnew(Base, Align))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
      rule loc(Base:SymBase, Offset:Int, Prov:Set) +bytes N:Int
           => loc(Base, Offset +Int N, Prov)
+     rule NullPointer +bytes _ => NullPointer
 
      rule loc(_, A:Int) >bytes loc(_, B:Int) => A >Int B
      rule loc(_, A:Int) >=bytes loc(_, B:Int) => A >=Int B
@@ -201,6 +202,8 @@ module C-SYMLOC
 
      rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _)) => A ==K B
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _)) => A ==K B
+     rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _, _)) => A ==K B
+     rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _)) => A ==K B
 
      rule getTU(loc(_ @ static(Tu:String), _)) => Tu
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
@@ -317,12 +320,12 @@ module C-SYMLOC
      syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => true
-          requires (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) >=Int 0)
-               andBool (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) <=Int Len)
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int 0)
+               andBool (Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len)
      rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
           => false
-          requires (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) <Int 0)
-               orBool (Offset +Int (I *Int byteSizeofType(innerType(T)):>Int) >Int Len)
+          requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
+               orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
           requires getKLabel(K) =/=KLabel 'fromArray
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)

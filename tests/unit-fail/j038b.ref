@@ -1,5 +1,5 @@
-Error: CEAS1
-Description: incompatible types in assignment or function call arguments.
+Error: EFC1
+Description: incompatible types in function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
   at foo(j038b.c:4)

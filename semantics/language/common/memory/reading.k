@@ -5,17 +5,17 @@ module C-MEMORY-READING-SYNTAX
      syntax KItem ::= read(SymLoc, Type)
 
      // Returns the bytes in the order in which they are in memory.
-     syntax KItem ::= readBytes(SymLoc, CSize, Type)
+     syntax KItem ::= readBytes(SymLoc, Int, Type)
 
      syntax KItem ::= concretize(Type, K) [strict(2)]
 
      // data, offset, size in bits
-     syntax KItem ::= extractBitsFromList(K, Int, CSize) [strict(1)]
+     syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
      // datalist, offset in bits into list, number of bits to extract,
      // accumulator
      // TODO(chathhorn): used in ltlmc?
-     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," CSize "," List ")"
+     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
           [function]
 endmodule
 
@@ -45,7 +45,14 @@ module C-MEMORY-READING
           requires notBool isThreadDuration(Loc)
                andBool notBool isAutoDuration(Loc)
                andBool Loc =/=K NullPointer
+               andBool notBool isLinkerLoc(Loc)
           [ndtrans]
+     rule <k> read(loc((Base:SymBase => Base'), _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
+     rule <k> read(loc((Base:SymBase => Base'), _, _), _) ...</k>
+          <linkings>... Base |-> Base':SymBase ...</linkings>
+          [structural]
 
      syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc:SymLoc, T:Type)
@@ -62,7 +69,7 @@ module C-MEMORY-READING
                andBool (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
-     rule concretize(t(S:Set, bitfieldType(T:Type, Len:CSize)), dataList(L:List))
+     rule concretize(t(S:Set, bitfieldType(T:Type, Len:Int)), dataList(L:List))
           => joinIntegerBytes(t(S, bitfieldType(T, Len)), reverseList(L))
           requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
@@ -80,23 +87,23 @@ module C-MEMORY-READING
                andBool (#hasTrap(L) =/=K true)
           [structural]
      rule concretize(T:Type, dataList(L:List))
-          => tv(unknown, stripQualifiers(T))
+          => tv(unknown, T)
           requires (#hasUnknown(L) ==K true)
                andBool (#hasTrap(L) =/=K true)
                andBool notBool isStructOrUnionType(T)
           [structural]
      rule concretize(T:Type, dataList(L:List))
-          => trap(stripQualifiers(T))
+          => trap(T)
           requires (#hasTrap(L) ==K true)
                andBool notBool isUCharType(T)
                andBool notBool isStructOrUnionType(T)
           [structural]
      rule concretize(T:UCharType, dataList(L:List))
-          => tv(unknown, stripQualifiers(T))
+          => tv(unknown, T)
           requires (#hasTrap(L) ==K true)
           [structural]
      rule concretize(T:StructOrUnionType, dataList(L:List))
-          => tv(agg(L), stripQualifiers(T))
+          => tv(agg(L), T)
           [structural]
 
      syntax Bool ::= #hasUnknown(List) [function]
@@ -128,8 +135,8 @@ module C-MEMORY-READING
                ListItem(piece(0, NBits:Int)) L:List)
           => joinFloatBytes(T, 0.0, Len +Int NBits, L)
      rule joinFloatBytes(T:Type, F:Float, Len:Int, .List)
-          => tv(F, stripQualifiers(T))
-          requires Len ==Int bitSizeofType(T):>Int
+          => tv(F, T)
+          requires Len ==Int bitSizeofType(T)
 
      syntax RValue ::= joinPointerBytes(Type, List) [function]
      syntax RValue ::= "joinPointerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -143,13 +150,13 @@ module C-MEMORY-READING
           requires (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
      rule joinPointerBytes-aux(T:Type, .List, subObject(Loc:SymLoc, 0, _))
-          => tv(Loc, stripQualifiers(T))
+          => tv(Loc, T)
      rule joinPointerBytes-aux(T:Type,
                ListItem(piece(0, Len:Int)) L:List, 0)
           => joinPointerBytes-aux(T, L, 0)
           requires (Len ==Int cfg:bitsPerByte)
      rule joinPointerBytes-aux(T:Type, .List, 0)
-          => tv(NullPointer, stripQualifiers(T))
+          => tv(NullPointer, T)
 
      syntax RValue ::= joinIntegerBytes(Type, List) [function]
      syntax RValue ::= "joinIntegerBytes-aux" "(" Type "," List "," K ")" [function]
@@ -163,7 +170,7 @@ module C-MEMORY-READING
           => joinIntegerBytes-aux(T,
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
      rule joinIntegerBytes-aux(T:Type, .List, piece(N:Int, Len:Int))
-          => interpret(stripQualifiers(T), piece(N, Len))
+          => interpret(T, piece(N, Len))
 
      // fixme not sure about this
      // interpret is used to "cast" values read from memory
@@ -173,14 +180,14 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(Type, K) [function]
      syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T:IntegerType, I:Int) => tv(I, stripQualifiers(T))
+     rule interpret-aux(T:IntegerType, I:Int) => tv(I, T)
           requires (min(T) <=Int I)
                andBool (max(T) >=Int I)
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T):>Int)))
+          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int >Int max(T))
      rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T):>Int)))
+          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
           requires (I:Int <Int min(T))
 
      // loc, size in bits

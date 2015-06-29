@@ -1,9 +1,6 @@
 module C-COMPOUND-LITERAL
-     imports C-ALIGNMENT-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -12,9 +9,6 @@ module C-COMPOUND-LITERAL
      imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
-
-     syntax CId ::= compoundLiteral(Int)
-     syntax KItem ::= handleCompoundLiteral(K) [strict]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed
@@ -43,28 +37,23 @@ module C-COMPOUND-LITERAL
      /*@ We use \kinline{compoundLiteral(N:Int)} here as the identifier of the
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
-     rule CompoundLiteral(N:Int, T:Type, K:K, Init:K)
-          => handleCompoundLiteral(
-               figureInit(compoundLiteral(N), DeclType(T, K), Init))
-          [structural]
-
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => handleCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
+     rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
+               => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
           ...</k>
           <compound-lit-map> M:Map </compound-lit-map>
           <duration> D:Duration </duration>
           requires notBool (X in keys(M))
           [structural]
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => handleCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
+     rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
+               => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
           ...</k>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           <local-addresses> Addrs:Set </local-addresses>
           <duration> D:Duration </duration>
           requires notBool (Base in Addrs)
           [structural]
-     syntax KItem ::= handleCompoundLiteralHelper(K, SymBase)
-     rule <k> handleCompoundLiteralHelper(
+     syntax KItem ::= initCompoundLiteralHelper(K, SymBase)
+     rule <k> initCompoundLiteralHelper(
                     initValue(X:CId, T:Type, Init:K),
                     Base:SymBase)
                => allocObject(Base, T)
@@ -81,7 +70,7 @@ module C-COMPOUND-LITERAL
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
-     rule <k> handleCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
+     rule <k> initCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
                => addToEnv(X, Base)
                ~> giveType(X, T)
                ~> allowInit(Init)
@@ -90,16 +79,6 @@ module C-COMPOUND-LITERAL
           ...</k>
           <local-addresses>... SetItem(Base) ...</local-addresses>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
-          [structural]
-
-     // TODO(chathhorn) identical to trans, move these to common.
-     rule stringLiteral(S:String)
-          => lv(lnew(string(S), cfg:alignofSignedChar),
-               t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          [structural]
-     rule wstringLiteral(S:List)
-          => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
-               t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           [structural]
 
 endmodule

@@ -1,5 +1,5 @@
 File: j008f.c
-Line: 3
+Line: 1
 Error: TDG2
 Description: declaration for f appears with multiple storage class specifiers.
 Type: Constraint violation.

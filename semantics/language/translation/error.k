@@ -4,12 +4,9 @@ module C-TRANSLATION-ERROR
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-PROMOTION-SYNTAX
-     imports C-SYMBOLIC-VALUE-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

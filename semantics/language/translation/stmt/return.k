@@ -1,7 +1,7 @@
 module C-STMT-RETURN
      imports C-SYNTAX
 
-     rule [return]:
-          Return(_:KResult) => .K
+     rule <k> Return(V:RValue) => .K ...</k>
+          <elab>... .K => Return(V) </elab>
 
 endmodule

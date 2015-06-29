@@ -6,15 +6,14 @@ endmodule
 
 module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
-     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-BITSIZE-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports COMPAT-SYNTAX
-     imports DEBUG-SYNTAX
 
      context canonicalizeType-aux(_, HOLE, _, _, _)
 
@@ -121,6 +120,12 @@ module C-TYPING-CANONICALIZATION
                orBool (getKLabel(Q) ==KLabel 'alignas)
                orBool (getKLabel(Q) ==KLabel 'atomic)
           [structural]
+
+     //need this to solve array type anywhere rule
+     //syntax Type ::= canonicalizeArrayType(Type) [function]
+     //syntax List ::= canonicalizeArrayTypeInList(List) [function]
+     //syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
+
 // TODO(chathhorn): merging; doesn't make sense to me.
 //     //change this because of anywhere rule
 //     rule canonicalizeType-aux(.List, (t(S:Set, T:SimpleType)
@@ -132,7 +137,7 @@ module C-TYPING-CANONICALIZATION
      element type is so-qualified, not the array type. \ldots
      }*/
      /*TODO(liyili2): anywhere rule refactor
-     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:CSize))
+     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
           => t(S, arrayType(t(SetItem(Const) S', T), N))
           [structural, anywhere]
      */
@@ -151,9 +156,9 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(typedDeclaration(T:Type, C:CId))
 //      => typedDeclaration(canonicalizeArrayType(T), C)
 //      rule canonicalizeArrayType(t(SetItem(Const) S:Set,
-//        arrayType(t(S':Set, T:K), N:CSize)))
+//        arrayType(t(S':Set, T:K), N:Int)))
 //      => t(S, arrayType(canonicalizeArrayType(t(SetItem(Const) S', T)), N))
-//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T:Type, N:CSize)))
+//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T:Type, N:Int)))
 //      => t(S, bitfieldType(canonicalizeArrayType(T), N))
 //      rule canonicalizeArrayType(t(S:Set, functionType(T:Type, L:List)))
 //      => t(S, functionType(canonicalizeArrayType(T), canonicalizeArrayTypeInList(L)))
@@ -176,11 +181,6 @@ module C-TYPING-CANONICALIZATION
 //      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
 //      => t(S, typedefType(C, canonicalizeArrayType(T)))
 //      rule canonicalizeArrayType(T:BasicType) => T
-
-     syntax Bool ::= isGlobalScope(K) [function]
-     rule isGlobalScope(file-scope) => true
-     rule isGlobalScope(prototype(K:K)) => isGlobalScope(K)
-     rule isGlobalScope(_) => false [owise]
 
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))

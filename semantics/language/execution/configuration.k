@@ -50,7 +50,7 @@ module C-CONFIGURATION
      // restrict-qualified pointers.
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
-     // RestrictTag |-> activity(Int, SymLoc |-> Int)
+     // BlockTag |-> activity(Int, SymLoc |-> Int)
      <activeBlocks> .Map </activeBlocks>
 
      // stdlib
@@ -77,7 +77,7 @@ module C-CONFIGURATION
                     ~> pgmArgs($ARGV:List)
                     ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
                </k>
-               <initializing> 0 </initializing>
+               <initializing> false </initializing>
 
                <duration color="black"> auto(0) </duration>
                <final-computation multiplicity="?" color="lightgray">
@@ -149,32 +149,12 @@ module C-CONFIGURATION
                               <should-init color="lightgray">
                                    true
                               </should-init>
-                              // used to figure initializers
-                              <curr-object color="cyan">
-                                   .List
-                              </curr-object>
-                              <curr-subobject color="cyan">
-                                   .List
-                              </curr-subobject>
-                              <incomplete-length color="cyan">
-                                   0
-                              </incomplete-length>
-                              <saved-init color="cyan">
-                                   .K
-                              </saved-init>
                               <loop-stack color="violet">
                                    .List
                               </loop-stack>
                               <locs-written color="lightgray">
                                    .List
                               </locs-written>
-                              // used for typing expressions
-                              <type multiplicity="?" color="cyan"> .K </type>
-                              // holds the innermost type while we unroll the
-                              // type around it
-                              <decl-type-holder color="cyan">
-                                   .K
-                              </decl-type-holder>
                          </control-details>
                     </control>
                </thread-local>

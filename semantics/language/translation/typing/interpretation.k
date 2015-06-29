@@ -1,19 +1,11 @@
-module C-TYPING-INTERPRETATION-SYNTAX
-     syntax List ::= adjustParams(List) [function]
-     syntax CId ::= prototype(CId)
-endmodule
-
 module C-TYPING-INTERPRETATION
-     imports C-TYPING-INTERPRETATION-SYNTAX
-
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -28,43 +20,37 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     rule BitFieldType(T:Type, tv(N:CSize, t(SetItem(IntegerConstant) _:Set, _)))
+     rule BitFieldType(T:Type, tv(N:Int, t(SetItem(IntegerConstant) _:Set, _)))
           => t(.Set, bitfieldType(T, N)) [structural]
 
-     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression", "6.7.2.1:4"))
-          ~> BitFieldType(_, tv(N:CValue, t(Modifiers:Set, _)))
-          requires notBool IntegerConstant in Modifiers orBool isCSize(N) =/=K true
+     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
+          ~> BitFieldType(_, tv(N:CValue, T:Type))
+          requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
 
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)
      syntax KItem ::= makePointerType(Set)
      syntax KItem ::= "makeIncompleteArrayType"
-     syntax KItem ::= makeArrayType(K, K)
+     syntax KItem ::= makeArrayType(RValue, K)
      syntax Type ::= pushTypeDown(Type, K) [function]
 
-     rule ArrayType(T:Type, K:K, Spec:K)
-          => ArrayType'(T, K, K, Spec)
-
-     // We need to keep the unevaluated size expression around in the case of
-     // VLA function parameters.
-     syntax KItem ::= "ArrayType'" "(" Type "," K "," K "," K ")"
-     context ArrayType'(_, (HOLE => reval(HOLE)), _, _) [ndheat, result(RValue)]
-     rule ArrayType'(T:Type, tv(N:Int, _), _, Spec:K)
-          => pushTypeDown(T, makeArrayType(N, Spec))
+     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat, result(RValue)]
+     rule ArrayType(T:Type, tv(N:Int, T':Type), Spec:K)
+          => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
           [structural]
-     rule ArrayType'(T:Type, tv(N:CSize, _), K:K, Spec:K)
-          => pushTypeDown(T, makeArrayType(K, Spec))
-          requires isInt(N) =/=K true // VLAs.
+     rule ArrayType(T:Type, N:RValue, Spec:K)
+          => pushTypeDown(T, makeArrayType(N, Spec))
+          requires isHold(N) // VLAs.
           [structural]
-     rule ArrayType'(T:Type, emptyValue, _, _)
+     rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
      rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
-          ~> ArrayType'(_, tv(_:Float, _), _, _)
+          ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType'(_, tv(Len:Int, _), _, _)
+          ~> ArrayType(_, tv(Len:Int, _), _)
           requires Len <=Int 0
           [structural]
 
@@ -82,56 +68,39 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      // "Prototype scope."
-     rule <k> Prototype(T:Type, list(L:List), Var:Bool)
-               => pushBlock ~> Prototype'(T, L, .List, Var)
-          ...</k>
-          <curr-function> X:CId => prototype(X) </curr-function>
-          [structural]
+     rule (.K => elaborate(scope(prototypeScope,
+               Prototype'(T, L, .List, Var))))
+          ~> Prototype(T:Type, list(L:List), Var:Bool)
+     rule elaborateDone(T:Type) ~> Prototype(_, _, _) => T
 
      // We "declare" function prototype parameters in the order they appear,
      // from left to right. This is mostly to (somewhat) handle VLA parameters.
      syntax KItem ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
      rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
           => K ~> Prototype'(T, L1, L2, Var)
-          [structural]
      rule t(Mods:Set, ST:SimpleType)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(adjustParam(t(Mods, ST))), Var)
-          [structural]
      syntax SymBase ::= vla(CId)
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => declareInternalVariable(X, adjustParam(DT), NoInit)
           ~> Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
           requires X =/=K #NoName
-          [structural]
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
           requires X ==K #NoName
-          [structural]
-     rule Prototype'(T:Type, .List, L2:List, Var:Bool)
-          => Prototype''(T, L2, Var)
-          [structural]
-
-     syntax KItem ::= "Prototype''" "(" Type "," List "," Bool ")"
-     rule <k> Prototype''(T:Type, L:List, false)
-               => popBlock ~> pushTypeDown(T, makeFunctionType(L))
-          ...</k>
-          <curr-function> prototype(X:CId) => X </curr-function>
-          [structural]
-     rule <k> Prototype''(T:Type, L:List, true)
-               => popBlock ~> pushTypeDown(T, makeFunctionType(L ListItem(variadic)))
-          ...</k>
-          <curr-function> prototype(X:CId) => X </curr-function>
-          [structural]
+     rule <k> Prototype'(T:Type, .List, L:List, false) => .K ...</k>
+          <elab> _ => pushTypeDown(T, makeFunctionType(L)) </elab>
+     rule <k> Prototype'(T:Type, .List, L:List, true) => .K ...</k>
+          <elab> _ => pushTypeDown(T, makeFunctionType(L ListItem(variadic))) </elab>
 
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(L))
-          [structural]
 
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
-     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:CSize)), Lbl:K)
+     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:K)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
           => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
@@ -164,44 +133,33 @@ module C-TYPING-INTERPRETATION
           => t(getSpecifiers(T),
                incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(N:CSize, Specifier(list(ListItem(Static)))), T:Type)
-          => t(getSpecifiers(T) SetItem(arrayStatic(N)),
-               arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(ListItem(Static)))), T:Type)
+          => t(getSpecifiers(T) SetItem(arrayStatic(value(N))),
+               arrayType(stripSpecifiers(T), value(N)))
+          requires notBool isHold(N)
           [structural, anywhere]
      // TODO(chathhorn): Other qualifiers?
-     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-          requires isInt(N) ==K true
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), value(N)))
+          requires notBool isHold(N)
           [structural, anywhere]
-     // TODO(chathhorn): better VLA support (need to keep around the
-     // un-evaluated size expression).
-     rule applyTypeFunction(makeArrayType(N:K, Specifier(list(.List))), T:Type)
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
           => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
-          requires isInt(N) =/=K true
+          requires isHold(N)
           [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
 
      rule giveNamesToArgs(L:List) => giveNamesToArgs-aux(0, L)
-     rule giveNamesToArgs-aux(N:Int,
-               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
-          => ListItem(typedDeclaration(T, X))
-               giveNamesToArgs-aux(N, L)
-          requires X =/=K #NoName
-          [structural]
-     rule giveNamesToArgs-aux(N:Int,
-               (ListItem(typedDeclaration(T:Type, X:CId)) L:List))
-          => ListItem(typedDeclaration(T, #NoName(N)))
-               giveNamesToArgs-aux(N +Int 1, L)
-          requires X ==K #NoName
-          [structural]
-     rule giveNamesToArgs-aux(_, ListItem(variadic))
-          => ListItem(variadic)
-          [structural]
-     rule giveNamesToArgs-aux(_, .List)
-          => .List
-          [structural]
+     rule giveNamesToArgs-aux(N:Int, ListItem(T:Type) L:List)
+          => ListItem(nameArg(N, T)) giveNamesToArgs-aux(N +Int 1, L)
+     rule giveNamesToArgs-aux(_, .List) => .List
+
+     syntax Type ::= nameArg(Int, Type) [function]
+     rule nameArg(N:Int, typedDeclaration(T:Type, #NoName))
+          => typedDeclaration(T, #NoName(N))
+     rule nameArg(_, T:Type) => T [owise]
 
      rule <k> JustBase => T ...</k>
           <decl-type-holder> T:Type => .K ...</decl-type-holder>
@@ -228,13 +186,13 @@ module C-TYPING-INTERPRETATION
           => t(S, structType(X))
      rule extractActualType(t(S:Set, unionType(X:StructId)))
           => t(S, unionType(X))
-     rule extractActualType(t(S:Set, arrayType(T:Type, N:CSize)))
+     rule extractActualType(t(S:Set, arrayType(T:Type, N:Int)))
           => t(S, arrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))
           => t(S, variableLengthArrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
           => t(S, incompleteArrayType(extractActualType(T)))
-     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:CSize)))
+     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:Int)))
           => t(S, bitfieldType(extractActualType(T), N))
      rule extractActualType(t(S:Set, functionType(T:Type, L:List)))
           => t(S, functionType(extractActualType(T), L))
@@ -261,10 +219,20 @@ module C-TYPING-INTERPRETATION
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural]
 
-     rule adjustParams(ListItem(T:Type) Params:List)
-          => ListItem(adjustParam(T)) adjustParams(Params)
-     rule adjustParams(.List) => .List
+     context Typedef(NameGroup(HOLE, _))
 
+     rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List)))
+          => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))
+          [structural]
+     rule Typedef(NameGroup(_:Type, list(.List))) => .K
+          [structural]
+
+     syntax KItem ::= defineType(K) [strict]
+     rule defineType(typedDeclaration(T:Type, X:CId))
+          => typedef(X, T)
+          [structural]
+
+     // Turn arrays into pointers in function parameters.
      syntax Type ::= adjustParam(Type) [function]
      rule adjustParam(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(adjustParam(T), X)
@@ -274,8 +242,15 @@ module C-TYPING-INTERPRETATION
           => t(Mods, pointerType(T))
      rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
           => t(Mods, pointerType(T))
+     rule adjustParam(t(Mods:Set, variableLengthArrayType(T:Type, _)))
+          => t(Mods, pointerType(T))
      rule adjustParam(T:Type) => T
           requires notBool isTypedDeclaration(T)
                andBool notBool isArrayOrFunctionType(T)
+
+     syntax List ::= adjustParams(List) [function]
+     rule adjustParams(ListItem(T:Type) Params:List)
+          => ListItem(adjustParam(T)) adjustParams(Params)
+     rule adjustParams(.List) => .List
 
 endmodule

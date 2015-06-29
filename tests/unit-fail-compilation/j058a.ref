@@ -1,6 +1,6 @@
 File: j058a.c
 Line: 4
-Error: TIO1
+Error: TEAS5
 Description: Non-constant static initializer.
 Type: Constraint violation or undefined behavior.
 See also: C11 sec. 6.6

@@ -5,15 +5,8 @@ module C-STMT-GOTO
      imports COMPAT-SYNTAX
 
      syntax KItem ::= getIdOfDeclaration(K) [function]
-     syntax KItem ::= getIdOfName(K) [function]
-
-     rule getIdOfDeclaration(
-               DeclarationDefinition(InitNameGroup(_, list(ListItem(K:K)))))
-          => getIdOfName(K)
-
-     rule getIdOfName(InitName(K:K, _)) => getIdOfName(K)
-     rule getIdOfName(SingleName(_, K:K)) => getIdOfName(K)
-     rule getIdOfName(Name(X:CId, _)) => X
+     rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
+     rule getIdOfDeclaration(typedef(X:CId, _)) => X
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement

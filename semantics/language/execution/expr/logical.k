@@ -1,9 +1,8 @@
 module C-EXPR-LOGICAL
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-STMT-IF-THEN-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ Here, we wrapped the controlling expressions with
      \kinline{simplifyTruth} when heating them, so that we are guaranteed
@@ -20,13 +19,11 @@ module C-EXPR-LOGICAL
      operands. If the first operand compares equal to 0, the second operand is
      not evaluated.
      } */
+     context (HOLE => reval(HOLE)) && _ [ndheat, result(RValue)]
      rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
           [structural]
      rule tv(1, t(_, int)) && E:K
-          => sequencePoint ~> simplifyTruth(E)
-          [structural]
-     rule (V:RValue => simplifyTruth(V)) && _
-          requires notBool isTruthValue(V)
+          => sequencePoint ~> E
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
@@ -39,13 +36,11 @@ module C-EXPR-LOGICAL
      operands. If the first operand compares unequal to 0, the second operand
      is not evaluated.
      }*/
+     context (HOLE => reval(HOLE)) || _ [ndheat, result(RValue)]
      rule tv(0, t(_, int)) || E:K
-          => sequencePoint ~> simplifyTruth(E)
+          => sequencePoint ~> E
           [structural]
      rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
-          [structural]
-     rule (V:RValue => simplifyTruth(V)) || _
-          requires notBool isTruthValue(V)
           [structural]
 
 endmodule

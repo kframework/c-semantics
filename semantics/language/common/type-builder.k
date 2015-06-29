@@ -17,36 +17,35 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= union(String) [function]
      syntax Type ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
+
 endmodule
 
 module C-TYPE-BUILDER
      imports C-BITSIZE-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
-     imports C-TYPING-INTERPRETATION-SYNTAX
 
      rule fun(R:FlexType)
           => fun(R, void)
      rule fun(R:FlexType, T:FlexType)
-          => t(.Set, functionType(expand(R), adjustParams(
-               ListItem(expand(T)))))
+          => t(.Set, functionType(expand(R),
+               ListItem(expand(T))))
      rule fun(R:FlexType, T:FlexType, T':FlexType)
-          => t(.Set, functionType(expand(R), adjustParams(
+          => t(.Set, functionType(expand(R),
                ListItem(expand(T))
-               ListItem(expand(T')))))
+               ListItem(expand(T'))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType)
-          => t(.Set, functionType(expand(R), adjustParams(
+          => t(.Set, functionType(expand(R),
                ListItem(expand(T))
                ListItem(expand(T'))
-               ListItem(expand(T'')))))
+               ListItem(expand(T''))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType, T''':FlexType)
-          => t(.Set, functionType(expand(R), adjustParams(
+          => t(.Set, functionType(expand(R),
                ListItem(expand(T))
                ListItem(expand(T'))
                ListItem(expand(T''))
-               ListItem(expand(T''')))))
+               ListItem(expand(T'''))))
 
      rule ptr(T:FlexType) => t(.Set, pointerType(expand(T)))
 
@@ -71,4 +70,5 @@ module C-TYPE-BUILDER
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
      rule expand(T:SimpleType) => t(.Set, T)
+
 endmodule

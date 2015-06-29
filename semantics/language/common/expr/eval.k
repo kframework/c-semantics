@@ -2,8 +2,8 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      syntax KItem ::= instantiate(SymLoc, Type)
-     syntax KItem ::= checkLoc(SymLoc)
      syntax KItem ::= checkUse(K) [strict]
+     syntax Type ::= arrayToPtrType(Type) [function]
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -13,7 +13,6 @@ module C-COMMON-EXPR-EVAL
      imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -42,12 +41,19 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      // Lvalue conversion.
-     rule reval(nclv(Loc:SymLoc, T:Type) => checkUse(instantiate(Loc, T)))
+     rule reval(nclv(Loc:SymLoc, T:Type)
+          => checkUse(unqualify(instantiate(Loc, T))))
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
      rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
           [structural]
+
+     syntax KItem ::= unqualify(K) [strict]
+     rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripQualifiers(T))
+     rule unqualify(te(V:K, T:Type))
+          => te(Cast(stripQualifiers(T), V), stripQualifiers(T))
+     rule unqualify(trap(T:Type)) => trap(stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -64,18 +70,17 @@ module C-COMMON-EXPR-EVAL
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
           [structural]
 
-     syntax Type ::= arrayToPtrType(Type) [function]
      rule arrayToPtrType(T:Type)
           => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
-             addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
+             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc:SymLoc, T:Type)
-          => addProv(fromArray(0, byteSizeofType(innerType(T)):>Int *Int arrayLength(T)),
+          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
 
@@ -99,11 +104,10 @@ module C-COMMON-EXPR-EVAL
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
-          <initializing> I:Int </initializing>
-          requires I >Int 0
+          <initializing> true </initializing>
           [structural]
      rule <k> checkRegister(Loc:SymLoc) => .K ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires notBool isRegisterLoc(Loc)
           [structural]
      rule <k> checkRegister(Loc:SymLoc)
@@ -111,7 +115,7 @@ module C-COMMON-EXPR-EVAL
                     "Address of an array declared with register storage class used in an expression.",
                     "6.3.2.1")
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
           requires isRegisterLoc(Loc)
           [structural]
 
@@ -125,4 +129,47 @@ module C-COMMON-EXPR-EVAL
           [structural]
      rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
+
+     syntax KItem ::= checkLoc(SymLoc)
+     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
+          [structural]
+
+     syntax KItem ::= "checkLoc'" "(" SymLoc ")"
+     rule checkLoc'(NullPointer) => .K
+          [structural]
+     rule <k> checkLoc'(Loc:SymLoc) => .K ...</k>
+          <mem> Mem:Map </mem>
+          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
+               andBool notBool (base(Loc) in keys(Mem))
+          [structural]
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
+               => checkOffsets(Offset, Len)
+          ...</k>
+          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
+          [structural]
+     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int)) => errorLocInvalid ...</k>
+          <mem> Mem:Map </mem>
+          requires notBool (Base in keys(Mem))
+               andBool notBool isStaticDuration(loc(Base, Offset))
+               andBool notBool isNativeLoc(loc(Base, Offset))
+          [structural]
+
+     syntax KItem ::= checkOffsets(Int, Int) [function]
+     rule checkOffsets(Offset:Int, Len:Int) => .K
+          requires (Offset <=Int Len) andBool (Offset >=Int 0)
+     rule checkOffsets(_, _) => errorLocBounds [owise]
+
+     syntax Error ::= "errorLocInvalid"
+                    | "errorLocBounds"
+     rule errorLocInvalid
+          => UNDEF("CEE2",
+               "Referring to an object outside of its lifetime.",
+               "6.2.4")
+          [structural]
+     rule errorLocBounds
+          => UNDEF("CEE3",
+               "Found pointer that refers outside the bounds of an object + 1.",
+               "6.2.4")
+          [structural]
+
 endmodule

@@ -43,12 +43,11 @@ module C-IO-BUFFERED
                ~> setModified(Loc, T)
                ~> writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> 0 </initializing>
+          <initializing> false </initializing>
      rule <k> writeBytes(Loc:SymLoc, dataList(Bytes:List), _)
                => writeBytes(Loc, Bytes)
           ...</k>
-          <initializing> I:Int </initializing>
-          requires I >Int 0
+          <initializing> true </initializing>
 
      syntax KItem ::= setModified(SymLoc, Type)
      rule <k> setModified(Loc:SymLoc, T:Type)
@@ -56,7 +55,7 @@ module C-IO-BUFFERED
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
 
-     syntax KItem ::= updateModified(K, SymLoc, CSize) [function]
+     syntax KItem ::= updateModified(K, SymLoc, Int) [function]
      rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
           => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
           requires Loc in keys(M)
@@ -66,7 +65,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::= setModified(SymLoc, Type, K, Set)
      rule <k> setModified(Loc:SymLoc, T:Type,
-                (Tag:RestrictTag => .K), _)
+                (Tag:BlockTag => .K), _)
            ...</k>
            <activeBlocks>...
                 Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
@@ -173,6 +172,7 @@ module C-IO-BUFFERED
 
      rule updateObject(object(T:K, Len:Int, Bytes:Map, Types:Map), Offset:Int, V:K)
           => object(T, Len, Bytes[Offset <- V], Types)
+
      rule objectInBounds(object(_, Len:Int, _, _), Offset:Int)
           => Offset <Int Len
 
@@ -307,11 +307,6 @@ module C-IO-BUFFERED
           <buffer> Mem:List </buffer>
           requires notBool (Loc in locations(Mem))
                andBool isNativeLoc(Loc)
-          [structural]
-
-     // Resolve a linker address to a real "physical" address.
-     rule <k> readByte(loc((LinkBase:SymBase => Base), _), _) ...</k>
-          <linkings>... LinkBase |-> Base:SymBase ...</linkings>
           [structural]
 
           // TODO(chathhorn): perf, elided

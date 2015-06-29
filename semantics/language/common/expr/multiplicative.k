@@ -1,10 +1,9 @@
 module C-COMMON-EXPR-MULTIPLICATIVE
-
      imports C-BITS-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-PROMOTION-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
