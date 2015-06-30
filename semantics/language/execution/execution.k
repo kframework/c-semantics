@@ -3,7 +3,7 @@ require "compound-literal.k"
 require "configuration.k"
 require "error.k"
 require "io-buffered.k"
-require "ltlmc.k"
+//require "ltlmc.k"
 require "init.k"
 require "sequence-point.k"
 
@@ -28,7 +28,7 @@ require "decl/local.k"
 
 module C-EXECUTION
      imports C-CONFIGURATION
-     imports C-LTLMC
+   //imports C-LTLMC
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
 

@@ -5,6 +5,26 @@ struct listNode {
   struct listNode *next;
 };
 
+struct listNode* reverse(struct listNode *x)
+/*@ rule <k> $ => return ?p; ...</k>
+         <heap>... list(x)(A) => list(?p)(rev(A)) ...</heap> */
+{
+  struct listNode *p;
+
+  p = NULL;
+  //@ inv <heap>... list(p)(?B), list(x)(?C) ...</heap> /\ A = rev(?B) @ ?C
+  while(x != NULL) {
+    struct listNode *y;
+
+    y = x->next;
+    x->next = p;
+    p = x;
+    x = y;
+  }
+
+  return p;
+}
+
 struct listNode* bubble_sort(struct listNode* x)
 /*@ rule <k> $ => return ?x; ...</k>
          <heap>... list(x)(A) => list(?x)(?A) ...</heap>
@@ -218,4 +238,8 @@ struct listNode* quicksort(struct listNode* x)
   x = append(y, append(p, z));
 
   return x;
+}
+
+int main() {
+  return 0;
 }

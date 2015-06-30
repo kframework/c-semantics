@@ -7,6 +7,7 @@ require "list_pattern.k"
 module C-VERIFIER
   imports C11
   imports C-CONFIGURATION
+  imports LIST-PATTERN
   imports TREE-PATTERN
 
   rule cast(t(.Set, T:SimpleType), tv(V:CValue, t(_:Set, T)))
