@@ -33,9 +33,9 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= toRVal(K)
 
      syntax Typed ::= LValue | RValue | Hold | Type
-     syntax Type ::= type(Typed) [function]
+     syntax Type ::= type(K) [function]
      syntax Valued ::= LValue | RValue | Hold
-     syntax KItem ::= value(Valued) [function]
+     syntax KItem ::= value(K) [function]
 
      syntax KItem ::= "discard"
 
@@ -132,8 +132,6 @@ module C-DYNAMIC
      rule isKResult(S1 hs:: S2) => isKResult(S1) andBool isKResult(S2)
 
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
-     rule toRVal(V:RValue) => V
-          [structural]
 
      rule stripHold(te(K:K, _)) => K
      rule stripHold(le(K:K, _)) => K
