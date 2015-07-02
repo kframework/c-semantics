@@ -156,7 +156,7 @@ sub elementToK {
 		$reader->nextElement;
 		$reader->read;
 		my $str = escapeWString($reader->value);
-		my $ident = "`'WStringLiteral`" . paren($str);
+		my $ident = "`WStringLiteral`" . paren($str);
 		return ($inNextState, $ident);
 	} elsif ($label eq 'Variadic') {
 		return ($inNextState, "#token(\"true\", \"Bool\")");
@@ -214,7 +214,7 @@ sub elementToK {
         }
 	
 	if ($label eq 'LTLAnnotation') {
-		$ltl .= "`'LTLAnnotation`(";
+		$ltl .= "`LTLAnnotation`(";
 		$ltl .= join(KLIST_SEPARATOR, @klist) . ") \n";
 		return ($inNextState, ".::K");
 	}
