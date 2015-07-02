@@ -57,5 +57,9 @@ module C-VERIFIER
   rule _ in .List => false
 
   syntax KItem ::= "breakpoint"
-endmodule
 
+  syntax Int ::= "ii" "(" Int "," Int "," Int "," Int ")"
+  rule ii(I3:Int,I2:Int,I1:Int,I0:Int)
+    => ((((((I3:Int <<Int 8) |Int I2:Int) <<Int 8) |Int I1:Int) <<Int 8) |Int I0:Int) [macro]
+
+endmodule

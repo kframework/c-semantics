@@ -3,7 +3,7 @@ require "c-verifier.k"
 module BUBBLE-SORT-SPEC
 imports C-VERIFIER
 
-rule [loop-inv1]:
+rule [outer-loop-inv]:
   <global>
     <mem>...  
       MEM:Map
@@ -185,33 +185,16 @@ rule [loop-inv1]:
     <result-value> _:K </result-value>
     <options> _:Set </options>
   </T>
-
+//
 requires PX =/=K NullPointer
- andBool (sorted(LX) orBool ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) =/=K 0)
- // truth value
- andBool (
-           ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) /* C */ ==K 0
-         orBool
-           ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) /* C */ ==K 1
-         )
- /*
- // overflow
- andBool min(t(.Set, int)) 
-         <=Int
-         ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) // C
-         andBool
-         ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) // C
-         <=Int
-         max(t(.Set, int)) 
- */
-
+ andBool ( sorted(LX) orBool ii(C3,C2,C1,C0) =/=K 0 )
+ andBool ( ii(C3,C2,C1,C0) ==K 0 orBool ii(C3,C2,C1,C0) ==K 1 ) // truth value
+//
 ensures  sorted(?LX2)
  andBool list2set(LX) ==K list2set(?LX2)
 
 
-
-
-rule [loop-inv2]:
+rule [inner-loop-inv]:
   <global>
     <mem>...  
       MEM:Map
@@ -409,59 +392,15 @@ rule [loop-inv2]:
     <result-value> _:K </result-value>
     <options> _:Set </options>
   </T>
-
+//
 requires PX =/=K NullPointer
- andBool (sorted(LXY:List ListItem(/* V */ ((((((V3:Int <<Int 8) |Int V2:Int) <<Int 8) |Int V1:Int) <<Int 8) |Int V0:Int)))
-          orBool ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) /* C */ =/=K 0)
- // truth value
- andBool (
-           ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) /* C */ ==K 0
-         orBool
-           ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) /* C */ ==K 1
-         )
- /*
- // overflow
- andBool min(t(.Set, int)) 
-         <=Int
-         ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) // C
-         andBool
-         ((((((C3:Int <<Int 8) |Int C2:Int) <<Int 8) |Int C1:Int) <<Int 8) |Int C0:Int) // C
-         <=Int
-         max(t(.Set, int)) 
- */
- // overflow
- andBool min(t(.Set, int)) 
-         <=Int
-         ((((((V3:Int <<Int 8) |Int V2:Int) <<Int 8) |Int V1:Int) <<Int 8) |Int V0:Int) // V
-         andBool
-         ((((((V3:Int <<Int 8) |Int V2:Int) <<Int 8) |Int V1:Int) <<Int 8) |Int V0:Int) // V
-         <=Int
-         max(t(.Set, int)) 
-
-ensures  (sorted(?LX2:List) 
-          orBool ((((((?NC3:Int <<Int 8) |Int ?NC2:Int) <<Int 8) |Int ?NC1:Int) <<Int 8) |Int ?NC0:Int) =/=K 0) // ?NC
- andBool list2set(LXY:List)
-         U { ((((((V3:Int <<Int 8) |Int V2:Int) <<Int 8) |Int V1:Int) <<Int 8) |Int V0:Int) } // V
-         U list2set(LYNext:List) ==K list2set(?LX2:List)
- // truth value
- andBool (
-           ((((((?NC3:Int <<Int 8) |Int ?NC2:Int) <<Int 8) |Int ?NC1:Int) <<Int 8) |Int ?NC0:Int) /* ?NC */ ==K 0
-         orBool
-           ((((((?NC3:Int <<Int 8) |Int ?NC2:Int) <<Int 8) |Int ?NC1:Int) <<Int 8) |Int ?NC0:Int) /* ?NC */ ==K 1
-         )
- /*
- // overflow
- andBool min(t(.Set, int)) 
-         <=Int
-         ((((((?NC3:Int <<Int 8) |Int ?NC2:Int) <<Int 8) |Int ?NC1:Int) <<Int 8) |Int ?NC0:Int) // ?NC
-         andBool
-         ((((((?NC3:Int <<Int 8) |Int ?NC2:Int) <<Int 8) |Int ?NC1:Int) <<Int 8) |Int ?NC0:Int) // ?NC
-         <=Int
-         max(t(.Set, int)) 
- */
-
-
-
+ andBool ( sorted(LXY:List ListItem(ii(V3,V2,V1,V0))) orBool ii(C3,C2,C1,C0) =/=K 0 )
+ andBool ( ii(C3,C2,C1,C0) ==K 0 orBool ii(C3,C2,C1,C0) ==K 1 ) // truth value
+ andBool min(t(.Set, int)) <=Int ii(V3,V2,V1,V0) andBool ii(V3,V2,V1,V0) <=Int max(t(.Set, int)) // overflow
+//
+ensures  ( sorted(?LX2:List) orBool ii(?NC3,?NC2,?NC1,?NC0) =/=K 0 )
+ andBool list2set(LXY:List) U { ii(V3,V2,V1,V0) } U list2set(LYNext:List) ==K list2set(?LX2:List)
+ andBool ( ii(?NC3,?NC2,?NC1,?NC0) ==K 0 orBool ii(?NC3,?NC2,?NC1,?NC0) ==K 1 ) // truth value
 
 
 rule [func-bubble-sort]:
