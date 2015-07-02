@@ -33,8 +33,8 @@ module C-BITSIZE
           requires isVariablyModifiedType(T)
           [structural]
      rule sizeof(T:Type)
-          => Cast(t(SetItem(IntegerConstant), cfg:sizeut),
-               tv(byteSizeofType(T), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
+          => Cast(t(.Set, cfg:sizeut),
+               tv(byteSizeofType(T), t(.Set, cfg:largestUnsigned)))
           requires notBool isVariablyModifiedType(T)
           [structural]
 

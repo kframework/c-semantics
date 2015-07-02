@@ -206,11 +206,6 @@ module C-EXPR-FUNCTION-CALL
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
 
-     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
-          requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
-          requires fromConstantExpr(T)
-
      rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
           requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))

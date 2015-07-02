@@ -41,12 +41,10 @@ module C-EXPR-IDENTIFIER
 
      rule instantiate(Loc:SymLoc, T:Type)
           => te(instantiate(Loc, T), T)
-          requires notBool fromConstantExpr(T)
-               orBool notBool isStaticDuration(Loc)
+          requires notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)
      rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
-          requires fromConstantExpr(T)
-               andBool isStaticDuration(Loc)
+          requires isStaticDuration(Loc)
                andBool notBool isLinkerLoc(Loc)
 
 endmodule

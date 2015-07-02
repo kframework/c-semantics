@@ -144,9 +144,6 @@ module C-TYPING-MISC
      rule getSpecifiers(T:Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
 
-     rule getConstants(T:Type)
-          => intersectSet(getModifiers(T), constantModifiers)
-
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
           SetItem(Const)
@@ -166,10 +163,6 @@ module C-TYPING-MISC
      rule functionSpecifiers =>
           SetItem(Noreturn)
           SetItem(Inline)
-
-     syntax Set ::= "constantModifiers" [function]
-     rule constantModifiers =>
-          SetItem(IntegerConstant)
 
      rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
@@ -209,11 +202,6 @@ module C-TYPING-MISC
      syntax Bool ::= isNotReadFrom(Modifier) [function]
      rule isNotReadFrom(readFrom(_, _)) => false
      rule isNotReadFrom(_) => true [owise]
-
-     rule stripConstants(T:Type)
-          => setModifiers(T, getModifiers(T) -Set constantModifiers)
-     rule stripConstants(tv(V:CValue, T:Type)) => tv(V, stripConstants(T))
-     rule stripConstants(V:KItem) => V [owise]
 
      rule addQualifier(Q:CVSpecifier, T:Type)
           => addQualifiers(SetItem(Q), T)

@@ -20,12 +20,14 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     rule BitFieldType(T:Type, tv(N:Int, t(SetItem(IntegerConstant) _:Set, _)))
+     rule BitFieldType(T:Type, tv(N:Int, T':IntegerType))
           => t(.Set, bitfieldType(T, N)) [structural]
 
      rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
           ~> BitFieldType(_, tv(N:CValue, T:Type))
-          requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
+          requires isInt(N) =/=K true orBool isIntegerType(T) =/=K true
+     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
+          ~> BitFieldType(_, _:RHold)
 
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)

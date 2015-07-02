@@ -629,24 +629,24 @@ module C-DECL-INITIALIZER
      rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
           [structural]
 
-     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(SetItem(IntegerConstant), int)))
+     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(.Set, int)))
           [structural]
 
      rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), K:K)
           => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(IntegerConstant), int), E),
+               t(SetItem(Static), int), E),
                // Skip calculating the initializer so we can force int type.
                initializer(initEnum(E, K)))
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), K + tv(1, t(SetItem(IntegerConstant), int)))
+               EnumDef(X, list(L)), K + tv(1, t(.Set, int)))
           [structural]
      rule fillEnums-aux(EnumDef(X:CId, list(
                ListItem(EnumItemInit(E:CId, Exp:K)) L:List)), _)
           => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(IntegerConstant), int), E),
+               t(SetItem(Static), int), E),
                initializer(initEnum(E, Exp)))
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), Exp + tv(1, t(SetItem(IntegerConstant), int)))
+               EnumDef(X, list(L)), Exp + tv(1, t(.Set, int)))
           requires Exp =/=K NothingExpression
           [structural]
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
@@ -657,9 +657,11 @@ module C-DECL-INITIALIZER
      context initEnum(_, HOLE => reval(HOLE)) [result(RValue)]
      rule initEnum(X:CId, V:RValue)
           => Computation(ncle(X, t(.Set, int)) := V)
-          requires isIntegerType(type(V)) andBool IntegerConstant in getModifiers(type(V))
+          requires isIntegerType(type(V))
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
           ~> initEnum(_, tv(_, T:Type))
-          requires notBool isIntegerType(T) orBool notBool IntegerConstant in getModifiers(T)
+          requires notBool isIntegerType(T)
+     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
+          ~> initEnum(_, _:RHold)
 
 endmodule

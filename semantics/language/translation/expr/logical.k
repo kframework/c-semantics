@@ -9,7 +9,7 @@ module C-EXPR-LOGICAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule simplifyTruth(V:K) => V != tv(0, t(SetItem(IntegerConstant), int))
+     rule simplifyTruth(V:K) => V != tv(0, t(.Set, int))
 
      rule L:K && R:K => #and(simplifyTruth(L), simplifyTruth(R))
 

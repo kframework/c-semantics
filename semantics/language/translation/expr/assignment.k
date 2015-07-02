@@ -95,11 +95,6 @@ module C-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
-          requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
-          requires fromConstantExpr(T)
-
      rule (.K => CV("TEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
           requires type(L) =/=Type type(R)
@@ -175,45 +170,33 @@ module C-EXPR-ASSIGNMENT
                ~> tv(V, T)
           ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isLinkerLoc(Loc)
+          requires notBool isLinkerLoc(Loc)
                andBool (T ==Type T')
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => te(nclv(Loc, T) := tv(V, T'), T)
           ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool isLinkerLoc(Loc)
+          requires isLinkerLoc(Loc)
                andBool (T ==Type T')
      rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(type(R))
-               andBool (T ==Type type(R))
+          requires (T ==Type type(R))
 
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => te(nclv(Loc, T) := tv(V, T'), T)
           ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (T ==Type T')
      rule <k> nclv(Loc:SymLoc, T:Type) := te(K:K, T':Type)
                => te(nclv(Loc, T) := K, T)
           ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (T ==Type T')
      rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(type(R))
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (T ==Type type(R))
 
      rule E1:KResult *= E2:RValue

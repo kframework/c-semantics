@@ -9,12 +9,8 @@ module C-COMMON-EXPR-RELATIONAL
      imports C-TYPING-SYNTAX
 
      syntax KItem ::= makeTruth(Bool, Type, Type) [function]
-     rule makeTruth(B:Bool, T:Type, T':Type)
+     rule makeTruth(B:Bool, _, _)
           => #if B #then tv(1, t(.Set, int)) #else tv(0, t(.Set, int)) #fi
-          requires notBool fromConstantExpr(T) orBool notBool fromConstantExpr(T')
-     rule makeTruth(B:Bool, T:Type, T':Type)
-          => #if B #then tv(1, t(SetItem(IntegerConstant), int)) #else tv(0, t(SetItem(IntegerConstant), int)) #fi
-          requires fromConstantExpr(T) andBool fromConstantExpr(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.8}{3}}}{
      If both of the operands have arithmetic type, the usual arithmetic

@@ -56,7 +56,7 @@ module C-TYPING-CANONICALIZATION
                _:List (ListItem(AlignasType(_, _)) => .List), _, _, _,
                _:List (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
-     rule (tv(A:Int, _) => .K)
+     rule (tv(A:Int, _:IntegerType) => .K)
           ~> canonicalizeType-aux(
                _:List (ListItem(AlignasExpression(_)) => .List), _, _, _,
                _:List (.List => ListItem(alignas(A))))
@@ -276,7 +276,9 @@ module C-TYPING-CANONICALIZATION
           <curr-function> F:K </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
+               andBool notBool (global(X, Tu) in keys(Structs))
                andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
                andBool notBool isGlobalScope(F)
           [structural]
