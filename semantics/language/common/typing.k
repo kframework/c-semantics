@@ -150,21 +150,17 @@ module C-TYPING-SYNTAX
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(BlockTag)
 
-     syntax Modifier ::= "IntegerConstant"
-
      syntax Set ::= getStorageSpecifiers(Type) [function]
      syntax Set ::= getFunctionSpecifiers(Type) [function]
      // Gets function and storage specifiers.
      syntax Set ::= getSpecifiers(Type) [function]
      syntax Set ::= getQualifiers(Type) [function]
-     syntax Set ::= getConstants(Type) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripFunctionSpecifiers(Type) [function]
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
      syntax Type ::= stripQualifiers(Type) [function]
-     syntax KItem ::= stripConstants(K) [function]
      syntax Type ::= stripAlignas(Type) [function]
 
      syntax Type ::= addQualifier(CVSpecifier, Type) [function]
@@ -179,7 +175,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= innerType(Type) [function]
 
      syntax Bool ::= isNullPointerConstant(RValue) [function]
-     syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax Bool ::= hasReadFrom(Type) [function]
      syntax Modifier ::= getReadFrom(Type) [function]

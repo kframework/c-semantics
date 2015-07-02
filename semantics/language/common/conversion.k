@@ -432,11 +432,8 @@ module C-CONVERSION
 
      rule cast(T':Type, T:Type) => T'
           requires notBool hasReadFrom(T)
-               andBool notBool fromConstantExpr(T)
      rule cast(T':Type, T:Type)
           => addModifier(getReadFrom(T), stripReadFrom(T'))
           requires hasReadFrom(T)
-     rule cast(T':Type, T:Type) => addModifiers(getConstants(T), T')
-          requires fromConstantExpr(T)
 endmodule
 

@@ -131,7 +131,7 @@ module C-EXPR-CONDITIONAL
      context evalConditional(_, _, HOLE => reval(HOLE), _) [result(RValue)]
 
      rule evalConditional(C:RValue, E1:RValue, E2:RValue, T:Type)
-          => te(stripHold(C) ? E1 : E2, stripConstants(T))
+          => te(stripHold(C) ? E1 : E2, T)
           requires isHold(C)
                orBool isVariablyModifiedType(type(E1))
                orBool isVariablyModifiedType(type(E2))

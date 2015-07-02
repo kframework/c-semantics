@@ -79,7 +79,7 @@ module C-STMT-RETURN
      rule <k> Return''(V:RValue) ~> _
                => exitRestrictScope(F)
                ~> sequencePoint
-               ~> checkUse(stripConstants(V))
+               ~> checkUse(V)
                ~> K
           </k>
           <control>

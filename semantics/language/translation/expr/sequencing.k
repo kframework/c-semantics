@@ -22,6 +22,6 @@ module C-EXPR-SEQUENCING
      rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K)))
           => toRVal(K) ~> commaListHolder(CL)
      rule toRVal(R:RValue) ~> commaListHolder(CL:K)
-          => te(compoundExp(CL ~> stripHold(R)), stripConstants(type(R)))
+          => te(compoundExp(CL ~> stripHold(R)), type(R))
 
 endmodule

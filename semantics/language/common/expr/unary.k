@@ -38,7 +38,7 @@ module C-COMMON-EXPR-UNARY
      compares equal to 0. The result has type \cinline{int}.  The expression
      \cinline{!E} is equivalent to \cinline{(0==E)}.
      }*/
-     rule !(E:K) => tv(0, t(SetItem(IntegerConstant), int)) == E
+     rule !(E:K) => tv(0, t(.Set, int)) == E
           [structural]
 endmodule
 

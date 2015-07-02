@@ -14,7 +14,7 @@ module C-ALIGNMENT
      imports C-SETTINGS-SYNTAX
      imports C-ERROR-SYNTAX
 
-     rule alignofType(T:Type) => tv(byteAlignofType(T), t(SetItem(IntegerConstant), cfg:sizeut))
+     rule alignofType(T:Type) => tv(byteAlignofType(T), t(.Set, cfg:sizeut))
           requires isCompleteType(T) andBool notBool isFunctionType(T)
           [structural]
      rule (.K => CV("CAL1", "Trying to compute alignof of a type that is incomplete or a function type.", "6.5.3.4:1")) ~> alignofType(T:Type)
