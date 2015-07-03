@@ -435,7 +435,7 @@ module C-DECL-INITIALIZER
      rule <curr-subobject>
                ListItem(findStruct(T:Type)) (ListItem(ncle(_, T':Type)) => .List)
           ...</curr-subobject>
-          requires T =/=K T'
+          requires T =/=Type T'
           [structural]
 
      // fixme unsafe, might have started to initialize other things

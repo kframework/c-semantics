@@ -127,6 +127,7 @@ module C-COMMON-PROMOTION
      rule rank(t(_, long-long-int)) => 5
      rule rank(t(_, unsigned-long-long-int)) => 5
      rule rank(t(S:Set, enumType(_))) => rank(t(S:Set, int))
+     rule rank(t(_, bitfieldType(T:Type, _))) => rank(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
      The following may be used in an expression wherever an int or unsigned int
