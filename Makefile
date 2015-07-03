@@ -16,7 +16,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
+.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
 
 default: dist
 
@@ -36,10 +36,10 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(LIBC_DIR)/includes/*) | check-var
 	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/c11-kompiled/c11-kompiled/def.cmx: $(DIST_DIR)/kcc semantics-fast
+$(DIST_DIR)/c11-kompiled/c11-kompiled/def.cmx: $(DIST_DIR)/kcc execution-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/def.cmx: $(DIST_DIR)/kcc semantics-fast
+$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/def.cmx: $(DIST_DIR)/kcc translation-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 
 $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/def.cmx: semantics
@@ -70,8 +70,11 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
-	@$(MAKE) -C $(SEMANTICS_DIR) fast
+translation-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+	@$(MAKE) -C $(SEMANTICS_DIR) translation
+
+execution-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+	@$(MAKE) -C $(SEMANTICS_DIR) execution
 
 $(SEMANTICS_DIR)/settings.k:
 	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)

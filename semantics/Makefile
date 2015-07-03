@@ -34,7 +34,11 @@ c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.cmx: $(C11_FILES)
 
 all: fast nd thread
 
-fast: c11-translation-kompiled/c11-translation-kompiled/def.cmx c11-kompiled/c11-kompiled/def.cmx
+fast: translation execution
+
+translation: c11-translation-kompiled/c11-translation-kompiled/def.cmx
+
+execution: c11-kompiled/c11-kompiled/def.cmx
 
 nd: c11-nd-kompiled/c11-nd-kompiled/def.cmx
 
