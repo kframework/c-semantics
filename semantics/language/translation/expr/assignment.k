@@ -112,7 +112,7 @@ module C-EXPR-ASSIGNMENT
                          andBool notBool isArithmeticType(type(R))
                     orBool isStructOrUnionType(type(L))
                          andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
-                    orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+                    orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
                     orBool notBool (isPointerType(type(L))
                          orBool isArithmeticType(type(L))
                          orBool isStructOrUnionType(type(L))
