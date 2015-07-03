@@ -412,7 +412,7 @@ module C-DECL-INITIALIZER
           requires notBool isBasicType(T)
                andBool notBool isPointerType(T)
                andBool notBool isBitfieldType(T)
-               orBool isStructOrUnionType(T')
+               andBool notBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
