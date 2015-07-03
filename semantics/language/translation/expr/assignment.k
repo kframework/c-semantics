@@ -118,6 +118,7 @@ module C-EXPR-ASSIGNMENT
                          orBool isStructOrUnionType(type(L))
                          orBool isBoolType(type(L)))
                )
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("TEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
