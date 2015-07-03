@@ -99,6 +99,8 @@ module C-EXPR-ASSIGNMENT
           requires fromConstantExpr(T)
      rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
           requires fromConstantExpr(T)
+     rule _:KResult := te(_, T:Type => stripConstants(T))
+          requires fromConstantExpr(T)
 
      rule (.K => CV("TEAS1", "incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
