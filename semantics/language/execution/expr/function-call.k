@@ -210,6 +210,8 @@ module C-EXPR-FUNCTION-CALL
           requires fromConstantExpr(T)
      rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
           requires fromConstantExpr(T)
+     rule _:KResult := te(_, T:Type => stripConstants(T))
+          requires fromConstantExpr(T)
 
      rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
