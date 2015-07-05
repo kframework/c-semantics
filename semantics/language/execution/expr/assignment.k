@@ -78,9 +78,9 @@ module C-EXPR-ASSIGNMENT
      rule getRelevantTags'(.K, _, .Set) => .Set
 
      syntax KItem ::= checkRestrictAssign(Scope, Set)
-     rule checkRestrictAssign(.K, _) => .K
      rule checkRestrictAssign(Tag:Scope, Tags:Set) => .K
           requires (Tag =/=K fileScope) andBool notBool (Tag in Tags)
+               orBool Tag ==K none
      rule checkRestrictAssign(Tag:Scope, Tags:Set)
           => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
           requires Tag in Tags

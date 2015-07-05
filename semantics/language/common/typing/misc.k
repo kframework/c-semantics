@@ -325,7 +325,7 @@ module C-TYPING-MISC
 
      syntax Scope ::= "getRestrictBlock''" "(" Set ")" [function]
      rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
-     rule getRestrictBlock''(.Set) => .K
+     rule getRestrictBlock''(.Set) => none
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 

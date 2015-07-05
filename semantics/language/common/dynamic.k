@@ -52,7 +52,7 @@ module C-DYNAMIC-SYNTAX
      syntax FileScope ::= "fileScope"
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
-     syntax Scope ::= FileScope | PrototypeScope | BlockScope
+     syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
      syntax KItem ::= scope(Scope, K)
 
      //  switchid, caseid, value (tv or 'Default)
