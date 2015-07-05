@@ -22,7 +22,7 @@ module C-SYNTAX
      syntax CId ::= "#NoName" // new
      syntax CId ::= #NoName(Int) // new
 
-     syntax Statement ::= Block(BlockTag, K) [avoid]
+     syntax Statement ::= Block(Int, K) [avoid]
 
      /*
      type cabsloc = {

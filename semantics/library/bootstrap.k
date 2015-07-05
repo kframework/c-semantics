@@ -36,13 +36,13 @@ module LIBC-BOOTSTRAP
      //TODO(liyi): context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
      //use HeatList temporally
      rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(makeVarArgs(P)))) ...</k>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           requires variadic in getParams(T)
           [structural]
      rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(P))) ...</k>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           requires notBool variadic in getParams(T)

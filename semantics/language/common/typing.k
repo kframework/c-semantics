@@ -148,7 +148,7 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= readFrom(SymLoc, Int)
 
      // Special restrict modifier tagged with a block num.
-     syntax Modifier ::= RestrictBlock(BlockTag)
+     syntax Modifier ::= RestrictBlock(Scope)
 
      syntax Modifier ::= "IntegerConstant"
 
@@ -189,8 +189,8 @@ module C-TYPING-SYNTAX
 
      syntax List ::= idsFromParams(List) [function]
 
-     syntax Type ::= tagRestrict(BlockTag, Type) [function]
-     syntax BlockTag ::= getRestrictBlock(Type) [function]
+     syntax Type ::= tagRestrict(Scope, Type) [function]
+     syntax Scope ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]
 

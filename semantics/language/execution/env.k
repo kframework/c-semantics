@@ -6,7 +6,7 @@ module C-ENV-SYNTAX
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= "populateFromGlobal"
-     syntax KItem ::= addToHistory(BlockTag)
+     syntax KItem ::= addToHistory(Int)
 
 endmodule
 
@@ -17,8 +17,8 @@ module C-ENV
 
      imports COMPAT-SYNTAX
 
-     rule <k> addToHistory(Tag:BlockTag) => .K ...</k>
-          <block-history> .List => ListItem(Tag) ...</block-history>
+     rule <k> addToHistory(BlockNum:Int) => .K ...</k>
+          <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]
 
      rule <k> populateFromGlobal => .K ...</k>
@@ -35,13 +35,7 @@ module C-ENV
           [structural]
 
      rule <k> giveType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[X <- tagRestrict(BlockNum, T)] </types>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
-          [structural]
-     // Function parameters.
-     rule <k> giveType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
-          <block-history> .List </block-history>
-          <curr-function> Fun:CId </curr-function>
+          <types> L:Map => L[X <- tagRestrict(S, T)] </types>
+          <curr-scope> S:Scope </curr-scope>
           [structural]
 endmodule

@@ -31,7 +31,6 @@ module C-PROCESS-LABEL
 
      syntax KItem ::= "waitingOnGotoMap"
      rule <k> calculateGotoMap(F:CId, K:K) => waitingOnGotoMap ...</k>
-          <curr-function> _ => F </curr-function>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map> M:Map => M[F <- map(.Map)] </goto-map>
@@ -49,13 +48,13 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:CId => fileScope </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-function> F:CId => fileScope </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
@@ -69,14 +68,12 @@ module C-PROCESS-LABEL
                orBool (L ==KLabel 'Return)
                orBool (L ==KLabel 'Goto)
 
-     rule <computation> pushBlock => .K ...</computation>
+     rule <computation> pushBlock(Tag:Int) => .K ...</computation>
           <goto-nesting-depth> N:Int => N +Int 1 </goto-nesting-depth>
-     rule <computation> enterBlock(Tag:BlockTag) => .K ...</computation>
-          <goto-block-history> (.List => ListItem(Tag)) ...</goto-block-history>
-     rule <computation> exitBlock(Tag:BlockTag) => .K ...</computation>
-          <goto-block-history> (ListItem(Tag) => .List) ...</goto-block-history>
+          <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
      rule <computation> popBlock => .K ...</computation>
           <goto-nesting-depth> I:Int => I -Int 1 </goto-nesting-depth>
+          <goto-block-history> ListItem(_) => .List ...</goto-block-history>
           requires I >Int 0
 
      rule <computation> L:CabsLoc => .K ...</computation>
@@ -222,7 +219,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -241,7 +238,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -260,7 +257,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>

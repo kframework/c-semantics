@@ -90,7 +90,7 @@ module C-STMT-GOTO
                     | preprocessGoto(K, CId) [function]
 
      rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K, Lbl) </k>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
@@ -192,8 +192,7 @@ module C-STMT-GOTO
                andBool subListEqualBack(ActualHistory, BlockNums)
           [structural]
 
-     rule <k> (.K => pushBlock
-               ~> addToHistory(getLastOfList(
+     rule <k> (.K => pushBlock(getLastOfList(
                         getSubListBack(ActualHist, BlockNums)))
                ~> addVariablesForBlock(getLastOfList(
                         getSubListBack(ActualHist, BlockNums)), DeclStk)
@@ -215,8 +214,7 @@ module C-STMT-GOTO
                     DeclStack:List)
                )
                     ~> _
-               => pushBlock
-                    ~> addToHistory(TargetBlock)
+               => pushBlock(TargetBlock)
                     ~> addVariablesForBlock(TargetBlock, DeclStack)
                     ~> K
           </k>

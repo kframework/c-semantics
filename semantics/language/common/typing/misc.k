@@ -258,59 +258,59 @@ module C-TYPING-MISC
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
 
-     rule tagRestrict(Tag:BlockTag, t(Mods:Set, T:SimpleType))
+     rule tagRestrict(Tag:Scope, t(Mods:Set, T:SimpleType))
           => t(tagRestrict(Tag, Mods), tagRestrict(Tag, T))
-     rule tagRestrict(Tag:BlockTag, typedDeclaration(T:Type, X:CId))
+     rule tagRestrict(Tag:Scope, typedDeclaration(T:Type, X:CId))
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
-     syntax SimpleType ::= tagRestrict(BlockTag, SimpleType)
+     syntax SimpleType ::= tagRestrict(Scope, SimpleType)
           [function, klabel('tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
 /*     rule tagRestrict(_, T:SimpleType) => T
      rule tagRestrict(_, enumType(X:CId)) => enumType(X)
      rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
-     rule tagRestrict(Tag:BlockTag, pointerType(T:Type))
+     rule tagRestrict(Tag:Scope, pointerType(T:Type))
           => pointerType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:BlockTag, arrayType(T:Type, Sz:Int))
+     rule tagRestrict(Tag:Scope, arrayType(T:Type, Sz:Int))
           => arrayType(tagRestrict(Tag, T), Sz)
-     rule tagRestrict(Tag:BlockTag, incompleteArrayType(T:Type))
+     rule tagRestrict(Tag:Scope, incompleteArrayType(T:Type))
           => incompleteArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:BlockTag, flexibleArrayType(T:Type))
+     rule tagRestrict(Tag:Scope, flexibleArrayType(T:Type))
           => flexibleArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:BlockTag, variableLengthArrayType(T:Type, N:K))
+     rule tagRestrict(Tag:Scope, variableLengthArrayType(T:Type, N:K))
           => variableLengthArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(_, incompleteStructType(X:CId))
           => incompleteStructType(X)
-     rule tagRestrict(Tag:BlockTag, structType(X:CId,
+     rule tagRestrict(Tag:Scope, structType(X:CId,
                fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
           => structType(X,
                fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, incompleteUnionType(X:CId))
           => incompleteUnionType(X)
-     rule tagRestrict(Tag:BlockTag, unionType(X:CId,
+     rule tagRestrict(Tag:Scope, unionType(X:CId,
                fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
           => unionType(X,
                fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
      rule tagRestrict(_, functionType(T:Type, Params:List))
           => functionType(T, Params)
 */
-     syntax List ::= tagRestrict(BlockTag, List)
+     syntax List ::= tagRestrict(Scope, List)
           [function, klabel('tagRestrictList)]
-     rule tagRestrict(Tag:BlockTag, ListItem(T:Type) L:List)
+     rule tagRestrict(Tag:Scope, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
-     syntax Map ::= tagRestrict(BlockTag, Map)
+     syntax Map ::= tagRestrict(Scope, Map)
           [function, klabel('tagRestrictMap)]
-     rule tagRestrict(Tag:BlockTag, X:CId |-> T:Type M:Map)
+     rule tagRestrict(Tag:Scope, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
-     syntax Set ::= tagRestrict(BlockTag, Set)
+     syntax Set ::= tagRestrict(Scope, Set)
           [function, klabel('tagRestrictSet)]
-     rule tagRestrict(Tag:BlockTag, S:Set)
+     rule tagRestrict(Tag:Scope, S:Set)
           => SetItem(RestrictBlock(Tag)) S
           requires Restrict in S
      rule tagRestrict(_, S:Set) => S
@@ -319,13 +319,13 @@ module C-TYPING-MISC
      rule getRestrictBlock(t(Mods:Set, _)) => getRestrictBlock'(.K, Mods)
 
      // TODO(chathhorn): more map pattern ugliness.
-     syntax BlockTag ::= "getRestrictBlock'" "(" K "," Set ")" [function]
-     rule getRestrictBlock'(RestrictBlock(Tag:BlockTag), _) => Tag
+     syntax Scope ::= "getRestrictBlock'" "(" K "," Set ")" [function]
+     rule getRestrictBlock'(RestrictBlock(Tag:Scope), _) => Tag
      rule getRestrictBlock'(_, S:Set) => getRestrictBlock''(S) [owise]
 
-     syntax BlockTag ::= "getRestrictBlock''" "(" Set ")" [function]
+     syntax Scope ::= "getRestrictBlock''" "(" Set ")" [function]
      rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
-     rule getRestrictBlock''(.Set) => none
+     rule getRestrictBlock''(.Set) => .K
 
      rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
 

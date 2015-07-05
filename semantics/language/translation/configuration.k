@@ -137,9 +137,7 @@ module C-CONFIGURATION
      </init-calc>
 
      <curr-tu color="lightgray"> "" </curr-tu>
-     <curr-function color="lightgray">
-          fileScope
-     </curr-function>
+     <curr-scope color="lightgray"> fileScope:>Scope </curr-scope>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

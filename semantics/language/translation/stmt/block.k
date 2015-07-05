@@ -10,18 +10,22 @@ module C-STMT-BLOCK
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.
      }*/
-     rule BlockStatement(Block(Tag:BlockTag, _, B:K)) => Block(Tag, B)
+     rule BlockStatement(Block(Tag:Int, _, B:K)) => Block(Tag, B)
 
-     rule <k> pushBlock => .K ...</k>
-          <elab>... .K => pushBlock </elab>
+     rule <k> pushBlock(Tag:Int) => addToHistory(Tag) ...</k>
+          <elab>... .K => pushBlock(Tag) </elab>
+          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
           <local> C:Bag </local>
           <block-stack>
-               .List => ListItem(bag2K(C))
+               .List => ListItem(bag2K(<local> C </local>))
           ...</block-stack>
 
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>
-          <local> _:Bag => C </local>
+          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
+          (<local>...
+               <block-history> ListItem(Tag:Int) ...</block-history>
+          ...</local> => C)
           <block-stack>
                ListItem(bag2K(C:Bag)) => .List
           ...</block-stack>
@@ -30,19 +34,12 @@ module C-STMT-BLOCK
           <elab>... .K => Nop </elab>
 
      // First block in a function.
-     rule Block(Tag:BlockTag, _, list(Statements:List))
+     rule Block(Tag:Int, _, list(Statements:List))
           => Block(Tag, list(Statements))
 
-     rule Block(Tag:BlockTag, list(Statements:List))
-          => pushBlock
-          ~> enterBlock(Tag)
+     rule Block(Tag:Int, list(Statements:List))
+          => pushBlock(Tag)
           ~> listToK(Statements)
-          ~> exitBlock(Tag)
           ~> popBlock
-
-     rule <k> enterBlock(Tag:BlockTag) => addToHistory(Tag) ...</k>
-          <elab>... .K => enterBlock(Tag) </elab>
-     rule <k> exitBlock(Tag:BlockTag) => .K ...</k>
-          <elab>... .K => exitBlock(Tag) </elab>
 
 endmodule

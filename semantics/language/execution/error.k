@@ -24,18 +24,26 @@ module C-EXECUTION-ERROR
      imports DEBUG-SYNTAX
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> #write(2, Msg +String printStackTrace(L, Loc, Func) +String "\n") ~> K </final-computation>)
+          => <final-computation> #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
           <call-stack> L:List </call-stack>
-          <curr-program-loc> Loc:K </curr-program-loc>
-          <curr-function> Func:K </curr-function>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
 
-     syntax String ::= printStackTrace(List, K, K) [function]
+     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
-     rule printStackTrace(L:List, Loc:K, fileScope) => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
-     rule printStackTrace(L:List, Loc:K, Identifier(S:String)) => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
-     rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K) => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
-     rule printStackTrace(L:List, UnknownCabsLoc, .K) => "<unknown>)" +String printStackTrace(L, .K, .K)
-     rule printStackTrace(ListItem(bag2K(<call-stack-frame>... <stack-curr-program-loc> Loc:K </stack-curr-program-loc> <stack-curr-function> Func:K </stack-curr-function> ...</call-stack-frame>)) L:List, .K, .K) => printStackTrace(L, Loc, Func)
+     rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
+          => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
+          => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K)
+          => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
+     rule printStackTrace(L:List, UnknownCabsLoc, .K)
+          => "<unknown>)" +String printStackTrace(L, .K, .K)
+     rule printStackTrace(ListItem(bag2K(<call-stack-frame>...
+               <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
+               <stack-curr-scope> S:Scope </stack-curr-scope>
+          ...</call-stack-frame>)) L:List, .K, .K)
+          => printStackTrace(L, Loc, S)
      rule printStackTrace(.List, .K, .K) => ""
 
      rule cast(t(N:Set, T:SimpleType), emptyValue)

@@ -6,12 +6,8 @@ module C-ENV-SYNTAX
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= "populateFromGlobal"
-     syntax KItem ::= addToHistory(BlockTag)
+     syntax KItem ::= addToHistory(Int)
 
-     syntax Bool ::= isGlobalScope(K) [function]
-
-     syntax CId ::= "prototypeScope"
-     syntax KItem ::= scope(CId, K)
 endmodule
 
 module C-ENV
@@ -21,8 +17,8 @@ module C-ENV
 
      imports COMPAT-SYNTAX
 
-     rule <k> addToHistory(Tag:BlockTag) => .K ...</k>
-          <block-history> .List => ListItem(Tag) ...</block-history>
+     rule <k> addToHistory(BlockNum:Int) => .K ...</k>
+          <block-history> .List => ListItem(BlockNum) ...</block-history>
 
      rule <k> populateFromGlobal => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -33,10 +29,10 @@ module C-ENV
           <types> _ => GT </types>
 
      rule <k> addToEnv(X:CId, Base:SymBase) => addToGlobalEnv(X, Base) ...</k>
-          <curr-function> fileScope </curr-function>
+          <curr-scope> fileScope </curr-scope>
      rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
-          <curr-function> E:CId </curr-function>
-          requires E =/=K fileScope
+          <curr-scope> S:Scope </curr-scope>
+          requires S =/=K fileScope
 
      syntax KItem ::= addToGlobalEnv(K, SymBase)
      rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
@@ -50,14 +46,14 @@ module C-ENV
           <env> E:Map => E[X <- Base] </env>
 
      rule <k> giveType(X:CId, T:Type)
-               => giveGlobalType(X, tagRestrict(global, stripStorageSpecifiers(T)))
+               => giveGlobalType(X, tagRestrict(fileScope, stripStorageSpecifiers(T)))
           ...</k>
-          <curr-function> fileScope </curr-function>
+          <curr-scope> fileScope </curr-scope>
      rule <k> giveType(X:CId, T:Type)
-               => giveLocalType(X, stripStorageSpecifiers(T))
+               => giveLocalType(X, tagRestrict(S, stripStorageSpecifiers(T)))
           ...</k>
-          <curr-function> E:CId </curr-function>
-          requires E =/=K fileScope
+          <curr-scope> S:Scope </curr-scope>
+          requires S =/=K fileScope
 
      syntax KItem ::= giveGlobalType(K, Type)
      rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>
@@ -68,23 +64,6 @@ module C-ENV
 
      syntax KItem ::= giveLocalType(K, Type)
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[X <- tagRestrict(BlockNum, T)] </types>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
-     // Function parameters.
-     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
-          <types> L:Map => L[X <- tagRestrict(Fun, T)] </types>
-          <block-history> .List </block-history>
-          <curr-function> Fun:CId </curr-function>
-
-     rule <k> scope(Scope:CId, K:K) => K ~> setScope(OldScope) ...</k>
-          <curr-function> OldScope:CId => Scope </curr-function>
-
-     syntax KItem ::= setScope(CId)
-     rule <k> setScope(Scope:CId) => .K ...</k>
-          <curr-function> _ => Scope </curr-function>
-
-     rule isGlobalScope(fileScope) => true
-     rule isGlobalScope(prototypeScope) => true
-     rule isGlobalScope(_) => false [owise]
+          <types> L:Map => L[X <- T] </types>
 
 endmodule

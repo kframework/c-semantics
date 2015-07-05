@@ -50,7 +50,7 @@ module C-CONFIGURATION
      // restrict-qualified pointers.
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
-     // BlockTag |-> activity(Int, SymLoc |-> Int)
+     // Scope |-> activity(Int, SymLoc |-> Int)
      <activeBlocks> .Map </activeBlocks>
 
      // stdlib
@@ -90,14 +90,14 @@ module C-CONFIGURATION
                     <control>
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
-                         <curr-function color="lightgray">
-                              .K
-                         </curr-function>
+                         <curr-scope color="lightgray">
+                              fileScope:>Scope
+                         </curr-scope>
                          // The identifiers that params are bound to. This
                          // is used for builtins and var-args.
                          <curr-function-params> .List </curr-function-params>
                          <curr-program-loc color="black">
-                              .K
+                              UnknownCabsLoc
                          </curr-program-loc>
 
                          <control-details> // TODO(chathhorn): dumb name
@@ -164,7 +164,7 @@ module C-CONFIGURATION
      // TODO(chathhorn): not sure where to put these.
      <call-stack-frame multiplicity="*">
           <continuation> .K </continuation>
-          <stack-curr-function> .K </stack-curr-function>
+          <stack-curr-scope> .K </stack-curr-scope>
           <stack-curr-function-params> .List </stack-curr-function-params>
           <stack-curr-program-loc> .K </stack-curr-program-loc>
           <stack-control> .Bag </stack-control>
