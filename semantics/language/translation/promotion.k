@@ -3,6 +3,7 @@ module C-PROMOTION
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ABSTRACT-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -71,5 +72,30 @@ module C-PROMOTION
                andBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(L))
                andBool notBool isNullPointerConstant(tv(V, T))
+
+     rule Lbl:KLabel(te(_, (T:Type => stripConstants(T))),, R:RValue)
+          requires isArithBinOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(type(R))
+               andBool (#klabel(Lbl) =/=K #klabel(`_==_`))
+               andBool (#klabel(Lbl) =/=K #klabel(`_!=_`))
+     rule Lbl:KLabel(L:RValue,, te(_, (T:Type => stripConstants(T))))
+          requires isArithBinOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(type(L))
+               andBool (#klabel(Lbl) =/=K #klabel(`_==_`))
+               andBool (#klabel(Lbl) =/=K #klabel(`_!=_`))
+     rule Lbl:KLabel(te(V:K, (T:Type => stripConstants(T))),, R:RValue)
+          requires ((#klabel(Lbl) =/=K #klabel(`_==_`)) orBool (#klabel(Lbl) =/=K #klabel(`_!=_`)))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(type(R))
+               andBool notBool isNullPointerConstant(te(V, T))
+     rule Lbl:KLabel(L:RValue,, te(V:K, (T:Type => stripConstants(T))))
+          requires ((#klabel(Lbl) =/=K #klabel(`_==_`)) orBool (#klabel(Lbl) =/=K #klabel(`_!=_`)))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(type(L))
+               andBool notBool isNullPointerConstant(te(V, T))
+
+
 
 endmodule
