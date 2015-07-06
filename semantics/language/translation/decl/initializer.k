@@ -426,8 +426,10 @@ module C-DECL-INITIALIZER
                => initFromStructRHS(K, t(S, structType(X)))
           ...</k>
           <curr-subobject>
-               .List => ListItem(findStruct(t(S, structType(X))))
-          ...</curr-subobject>
+               (.List => ListItem(findStruct(t(S, structType(X)))))
+               L:List
+          </curr-subobject>
+          requires L[0]<:K =/=K next
           [structural]
 
      syntax KItem ::= findStruct(Type)
