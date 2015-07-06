@@ -5,7 +5,7 @@ module C-STMT-SWITCH
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax KItem ::= handleSwitch(Int, K) [strict(2)]
@@ -36,7 +36,7 @@ module C-STMT-SWITCH
                ~> handleSwitch(SN, tv(V, T))
           [structural]
 
-     rule <k> handleSwitch(SN:Int, V:KResult)
+     rule <k> handleSwitch(SN:Int, V:RValue)
                => #handleSwitch-aux(SN, V, .K, M)
           ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
@@ -61,13 +61,13 @@ module C-STMT-SWITCH
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:K), M:Map)
           => (tryCase(Exp, V, caseLabel(SN, Exp))
           ~> #handleSwitch-aux(SN, V, .K, M))
-          requires Exp =/=K l('Default)
+          requires Exp =/=K #klabel(`Default`)
           [structural]
 
      //  if all that's left is a default, do it
-     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, l('Default)), M:Map)
+     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, #klabel(`Default`)), M:Map)
           => (#handleSwitch-aux(SN, V, .K, M)
-          ~> Goto(caseLabel(SN, l('Default))))
+          ~> Goto(caseLabel(SN, #klabel(`Default`))))
           [structural]
 
      rule #handleSwitch-aux(SN:Int, _, (caseLabel(SN':Int, _:K) => .K), _)
@@ -75,7 +75,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule #handleSwitch-aux(_:Int, _:RValue, (K:K => .K), _)
-          requires getKLabel(K) =/=KLabel 'caseLabel
+          requires getKLabel(K) =/=K #klabel(caseLabel)
           [structural]
 
      rule tryCase(

@@ -6,6 +6,7 @@ module C-EXPR-ASSIGNMENT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
           => checkOverlap(stripProv(Loc), T, T')
@@ -91,7 +92,7 @@ module C-EXPR-ASSIGNMENT
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
-          => (getKLabel(K) ==KLabel 'arrayStatic) orBool fromArrayStatic(t(S, T))
+          => (getKLabel(K) ==K #klabel(arrayStatic)) orBool fromArrayStatic(t(S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
@@ -99,8 +100,8 @@ module C-EXPR-ASSIGNMENT
 
      rule checkArrayStaticAssign(t(Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
           => checkArrayStaticAssign'(T,
-               getFirstMatch(Mods, 'arrayStatic),
-               getFirstMatch(Prov, 'fromArray))
+               getFirstMatch(Mods, #klabel(arrayStatic)),
+               getFirstMatch(Prov, #klabel(fromArray)))
      rule (.K => UNDEF("EEA4",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))
@@ -118,16 +119,16 @@ module C-EXPR-ASSIGNMENT
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
 
-     syntax KItem ::= getFirstMatch(Set, KLabel) [function]
-                    | "getFirstMatch'" "(" K "," Set "," KLabel ")" [function]
+     syntax KItem ::= getFirstMatch(Set, K) [function]
+                    | "getFirstMatch'" "(" K "," Set "," K ")" [function]
 
-     rule getFirstMatch(S:Set, L:KLabel) => getFirstMatch'(.K, S, L)
+     rule getFirstMatch(S:Set, L:K) => getFirstMatch'(.K, S, L)
 
      rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
-     rule getFirstMatch'((K:K => .K), _, L:KLabel)
-          requires getKLabel(K) =/=KLabel L
-     rule getFirstMatch'(K:K, _, L:KLabel) => K
-          requires getKLabel(K) ==KLabel L
+     rule getFirstMatch'((K:K => .K), _, L:K)
+          requires getKLabel(K) =/=K L
+     rule getFirstMatch'(K:K, _, L:K) => K
+          requires getKLabel(K) ==K L
      rule getFirstMatch'(.K, .Set, _) => .K
 
      rule compoundAssign(LV:KResult, AExp:K)

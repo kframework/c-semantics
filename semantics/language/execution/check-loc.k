@@ -14,7 +14,7 @@ module C-CHECK-LOC
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule <k> enterRestrictScope(Tag:Scope) => .K ...</k>
           <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>

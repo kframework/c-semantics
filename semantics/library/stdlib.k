@@ -6,12 +6,13 @@ module LIBC-STDLIB
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports C-CONFIGURATION
 
      syntax KItem ::= printString(K)
 

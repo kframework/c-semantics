@@ -3,7 +3,9 @@ module C-STMT-LOOP
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-ENV-SYNTAX
-     imports COMPAT-SYNTAX
+
+     imports C-CONFIGURATION
+
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement
      \cdisplay{for ( $\textit{clause-1}$ ; $\textit{expression-2}$ ;
@@ -126,10 +128,10 @@ module C-STMT-LOOP
      */
      rule [continue]:
           Continue ~> ((L:KLabel)(_) => .K)
-          requires (L =/=KLabel 'loopMarked)
-               andBool (L =/=KLabel 'popBlock)
-               andBool (L =/=KLabel 'pushBlock)
-               andBool (L =/=KLabel 'popLoop)
+          requires (L =/=K #klabel(loopMarked))
+               andBool (L =/=K #klabel(popBlock))
+               andBool (L =/=K #klabel(pushBlock))
+               andBool (L =/=K #klabel(popLoop))
           [structural]
      rule [continue-through-pop]:
           Continue ~> popBlock
@@ -143,7 +145,7 @@ module C-STMT-LOOP
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> L:KLabel(_)
-          requires L =/=KLabel 'For
+          requires #klabel(L) =/=K #klabel(`For`)
           [structural]
 
      rule [popLoop]:

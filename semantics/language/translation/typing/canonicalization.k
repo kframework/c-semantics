@@ -151,8 +151,8 @@ module C-TYPING-CANONICALIZATION
 //      => (K |-> canonicalizeArrayType(T)) canonicalizeArrayTypeInMap(M)
 //
 //      rule canonicalizeArrayType(T:Type) => T
-//      requires getKLabel(T) =/=KLabel 't
-//          andBool getKLabel(T) =/=KLabel 'typedDeclaration
+//      requires getKLabel(T) =/=K #klabel(t)
+//          andBool getKLabel(T) =/=K #klabel(typedDeclaration)
 //      rule canonicalizeArrayType(typedDeclaration(T:Type, C:CId))
 //      => typedDeclaration(canonicalizeArrayType(T), C)
 //      rule canonicalizeArrayType(t(SetItem(Const) S:Set,

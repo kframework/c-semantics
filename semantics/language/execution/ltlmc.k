@@ -109,8 +109,8 @@ module C-LTLMC
           => ltlRVal(B, Lbl(KL,, ltlRVal(B, R)))
           requires notBool (isValueProp(R:CProp) ==K true)
                // Don't try resolving the field specifier.
-               andBool (Lbl =/=KLabel '_._)
-               andBool (Lbl =/=KLabel '_->_)
+               andBool (#klabel(Lbl) =/=K #klabel(`_._`))
+               andBool (#klabel(Lbl) =/=K #klabel(`_->_`))
      rule ltlRVal(B:Bag, * #ptr(L:SymLoc, T:Type))
           => ltlRVal(B, dumbRead(B, L, T))
 

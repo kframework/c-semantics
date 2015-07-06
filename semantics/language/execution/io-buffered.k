@@ -27,7 +27,7 @@ module C-IO-BUFFERED
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      syntax KItem ::= bwrite(SymLoc, K)
 

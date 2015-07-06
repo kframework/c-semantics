@@ -7,7 +7,7 @@ module C-DECL-LOCAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => addToEnv(X, Base)

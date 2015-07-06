@@ -8,7 +8,7 @@ module C-COMPOUND-LITERAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed

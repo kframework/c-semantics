@@ -12,7 +12,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a

@@ -2,7 +2,8 @@ module C-STMT-GOTO
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports COMPAT-SYNTAX
+
+     imports C-CONFIGURATION
 
      syntax KItem ::= getIdOfDeclaration(K) [function]
      rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
@@ -99,11 +100,11 @@ module C-STMT-GOTO
      rule preprocessGoto(map(M:Map), Lbl:CId)
           => preprocessGoto(lookup(M, Lbl), Lbl)
      rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
-          requires getKLabel(GotoInfo) =/=KLabel 'map
-               andBool getKLabel(Lbl) =/=KLabel 'funLabel
+          requires getKLabel(GotoInfo) =/=K #klabel(map)
+               andBool getKLabel(Lbl) =/=K #klabel(funLabel)
      rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), Lbl:CId)
           => Blk
-          requires getKLabel(Lbl) ==KLabel 'funLabel
+          requires getKLabel(Lbl) ==K #klabel(funLabel)
 
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth:Int,
@@ -118,8 +119,8 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) BlockHistory':List
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==KLabel 'processGoto)
-               orBool (L ==KLabel 'processGotoDown))
+          requires ((L ==K #klabel(processGoto))
+               orBool (L ==K #klabel(processGotoDown)))
                andBool (listEqual(BlockHistory, BlockHistory'))
           [structural]
 
@@ -221,8 +222,8 @@ module C-STMT-GOTO
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==KLabel 'processGoto)
-               orBool (L ==KLabel 'processGotoDown))
+          requires ((L ==K #klabel(processGoto))
+               orBool (L ==K #klabel(processGotoDown)))
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 

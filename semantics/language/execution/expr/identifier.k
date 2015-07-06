@@ -2,7 +2,7 @@ module C-EXPR-IDENTIFIER
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX

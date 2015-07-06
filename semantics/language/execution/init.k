@@ -1,4 +1,5 @@
 module C-EXECUTION-INIT-SYNTAX
+     imports LIST
      syntax KItem ::= pgmArgs(List) [function]
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callMain(Int, K)
@@ -20,7 +21,7 @@ module C-EXECUTION-INIT
 
      imports LIBC-IO-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the
