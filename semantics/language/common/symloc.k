@@ -53,7 +53,7 @@ module C-SYMLOC-SYNTAX
 
      // Base, alignment.
      syntax SymLoc ::= lnew(SymBase, Int) [function]
-     syntax SymLoc ::= restrictedNew(SymBase, Int, BlockTag) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, Int, Scope) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -87,7 +87,7 @@ module C-SYMLOC-SYNTAX
      syntax Provenance ::= fromArray(Int, Int)
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
-     syntax Provenance ::= basedOn(SymBase, BlockTag)
+     syntax Provenance ::= basedOn(SymBase, Scope)
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
@@ -179,7 +179,7 @@ module C-SYMLOC
      rule lnew(Base:SymBase, Align:Int)
           => loc(Base, 0, SetItem(align(Align)))
 
-     rule restrictedNew(Base:SymBase, Align:Int, Tag:BlockTag)
+     rule restrictedNew(Base:SymBase, Align:Int, Tag:Scope)
           => addProv(basedOn(Base, Tag), lnew(Base, Align))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int

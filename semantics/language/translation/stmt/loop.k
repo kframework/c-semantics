@@ -14,7 +14,7 @@ module C-STMT-LOOP
      // block) for the purposes of detecting conflicts with other declarations,
      // but it behaves as though it were in a nested block otherwise.
      rule (.K => elaborate(E1)) ~> For(_, E1:K, _, _, _)
-     rule elaborateDone(E1:K) ~> For(Tag:BlockTag, _, E2:K, E3:K, B:K)
+     rule elaborateDone(E1:K) ~> For(Tag:Int, _, E2:K, E3:K, B:K)
           => Block(Tag, list(ListItem(E1) ListItem(For(E2, E3, B))))
 
      // This is the first child of the for if it's not a declaration.

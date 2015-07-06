@@ -14,7 +14,10 @@ module C-STMT-BLOCK
 
      imports COMPAT-SYNTAX
 
-     rule <k> pushBlock => .K ...</k>
+     rule <k> pushBlock(Tag:Int)
+               => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
+          ...</k>
+          <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
           <local>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
@@ -31,8 +34,10 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural]
 
-     rule <k> popBlock => .K ...</k>
+     rule <k> popBlock => exitRestrictScope(blockScope(F, OldTag)) ...</k>
+          <curr-scope> blockScope(F:CId, (OldTag:Int => Tag)) </curr-scope>
           (<local>...
+               <block-history> ListItem(Tag:Int) ...</block-history>
                <local-addresses> .Set </local-addresses>
           ...</local> => C)
           <block-stack> ListItem(bag2K(C:Bag)) => .List ...</block-stack>
@@ -72,12 +77,5 @@ module C-STMT-BLOCK
      were a statement, and within each declaration in the order that declarators
      appear.
      }*/
-     rule enterBlock(Tag:BlockTag)
-          => addToHistory(Tag)
-          ~> enterRestrictScope(Tag)
-          [structural]
-
-     rule exitBlock(Tag:BlockTag) => exitRestrictScope(Tag)
-          [structural]
 
 endmodule

@@ -255,13 +255,13 @@ module C-ABSTRACT-SYNTAX
      | SEQUENCE of statement * statement * cabsloc
      */
      syntax Statement ::= BlockStatement(K)
-     syntax Statement ::= Block(BlockTag, K, K)
+     syntax Statement ::= Block(Int, K, K)
      syntax Statement ::= Sequence(K, K)
 
      /*
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax Statement ::= For(BlockTag, K, K, K, K)
+     syntax Statement ::= For(Int, K, K, K, K)
 
      // gcc extension
      syntax Statement ::= CaseRange(K, K, K)

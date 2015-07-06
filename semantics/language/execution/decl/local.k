@@ -38,7 +38,7 @@ module C-DECL-LOCAL
                => addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-statics>...
