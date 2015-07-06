@@ -10,7 +10,7 @@ module C-STMT-RETURN
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.4}{2}}}{
      A \cinline{return} statement terminates execution of the current function

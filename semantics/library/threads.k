@@ -7,7 +7,7 @@ module LIBC-THREADS
      imports C-SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      ////////////////////////////--
      // Threads

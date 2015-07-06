@@ -4,7 +4,7 @@ endmodule
 
 module C-SEQUENCE-POINT
      imports C-SEQUENCE-POINT-SYNTAX
-
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
      rule [sequencePoint]:

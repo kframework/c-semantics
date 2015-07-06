@@ -19,7 +19,7 @@ module LIBC-STDIO
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]

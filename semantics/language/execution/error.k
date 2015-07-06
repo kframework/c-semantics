@@ -17,7 +17,7 @@ module C-EXECUTION-ERROR
 
      imports C-IO-BUFFERED-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      imports LIBC-STDIO-SYNTAX
 
@@ -55,14 +55,14 @@ module C-EXECUTION-ERROR
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.", 37) ) ~>
+          (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
           [structural]
 
      rule (.K => UNDEF("CEER3",
                "printf: Format string expects type of size " +String
-               Int2String(value(A)) +String ", but got an argument of size "
+               Int2String(value(A):>Int) +String ", but got an argument of size "
                +String Int2String(value(B)) +String ".", "7.21.6.1:9") ) ~>
           nextvarg-aux(_, _, A:RValue, B:RValue)
           requires value(A) =/=Int value(B)

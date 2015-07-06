@@ -12,7 +12,7 @@ module C-STMT-BLOCK
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule <k> pushBlock(Tag:Int)
                => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
