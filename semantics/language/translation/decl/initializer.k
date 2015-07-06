@@ -408,10 +408,8 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(next) ListItem(ncle(_, T:Type))
-          ...</curr-subobject>
-          requires notBool isBasicType(T)
-               andBool notBool isPointerType(T)
-               andBool notBool isBitfieldType(T)
+          </curr-subobject>
+          requires isAggregateOrUnionType(T) 
                andBool notBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
