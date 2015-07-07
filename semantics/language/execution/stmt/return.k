@@ -85,12 +85,11 @@ module C-STMT-RETURN
                ...</control-details>  => C)
           </control>
           <call-stack>
-               ListItem(bag2K(
+               ListItem(
                     <call-stack-frame>...
                          <continuation> K:K </continuation>
                          <stack-control>
-                              <curr-tu> OldTU:String </curr-tu>
-                              C:Bag
+                              C:ControlDetailsCell
                          </stack-control>
                          <stack-curr-scope>
                               OldScope:Scope
@@ -101,8 +100,9 @@ module C-STMT-RETURN
                          <stack-curr-program-loc>
                               OldLoc:K
                          </stack-curr-program-loc>
+                         <stack-curr-tu> OldTU:String </stack-curr-tu>
                     ...</call-stack-frame>
-               )) => .List
+               ) => .List
           ...</call-stack>
           [structural]
 

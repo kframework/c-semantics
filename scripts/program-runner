@@ -62,7 +62,9 @@ sub main {
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',
                   '-w' => 'none',
-                  '--parser "kast --parser binary"' => $fileInput
+                  '--parser "cat"' => $fileInput,
+                  '--kore' => '',
+                  '--exit-code' => "'<result-value> _:Int </result-value>'"
                   );
 
       my @options = ();
@@ -144,13 +146,13 @@ sub main {
       # Execute krun with the arguments in (flattened) %krun_args.
       my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
       print $cmd . "\n" if defined $ENV{VERBOSE};
-      system($cmd);
+      my $ret = system($cmd) >> 8;
 
       if (defined $ENV{LTLMC} | defined $ENV{DEBUG}) {
             return 0;
       }
 
-      return processResult($fileOutput, defined $ENV{VERBOSE});
+      return processResult($fileOutput, $ret, defined $ENV{VERBOSE});
 }
 
 # TODO(chathhorn): We have two functions here because of the newlines -- the
@@ -222,7 +224,7 @@ sub unindent {
 }
 
 sub processResult {
-      my ($fileOutput, $verbose) = (@_);
+      my ($fileOutput, $ret, $verbose) = (@_);
       my %parsed;
 
       open(OUT, "<$fileOutput");
@@ -231,14 +233,13 @@ sub processResult {
       print if $verbose;
       parseResult(\%parsed);
       if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg} || !defined $parsed{exitCode}) {
+                  || defined $parsed{errorMsg} || $ret) {
             if (defined $parsed{errorMsg}) {
                   print "$parsed{errorMsg}\n";
             }
             print "Error: Execution failed.\n";
       }
-      return $parsed{exitCode} if defined $parsed{exitCode};
-      return 139; # emulates a segfault in order to avoid reusing any conventionally-valid exit code
+      return $ret;
 }
 
 sub getAttribs {

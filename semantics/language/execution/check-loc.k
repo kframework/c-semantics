@@ -68,9 +68,9 @@ module C-CHECK-LOC
 
      // Next, filter out the restrict pointers where the object has been
      // unmodified in the associated block.
-     syntax KItem ::= checkRestrict(SymLoc, Set, Set)
+     syntax KItem ::= checkRestrict(SymLoc, Set, Set) [klabel(checkRestrict3)]
      rule checkRestrict(Loc:SymLoc, Bases:Set, Bases':Set)
-          => checkRestrict(
+          => checkRestrict2(
                filterUnmodified(Loc, .K, Bases, .Set),
                filterUnmodified(Loc, .K, Bases', .Set))
           [structural]
@@ -100,8 +100,8 @@ module C-CHECK-LOC
      rule filterUnmodified(_, .K, .Set, Bases:Set) => rset(Bases)
           [structural]
 
-     syntax KItem ::= checkRestrict(K, K) [strict]
-     rule checkRestrict(rset(Bases:Set), rset(Bases':Set))
+     syntax KItem ::= checkRestrict2(K, K) [strict]
+     rule checkRestrict2(rset(Bases:Set), rset(Bases':Set))
           => checkRestrict(Bases Bases', Bases, Bases')
           [structural]
 

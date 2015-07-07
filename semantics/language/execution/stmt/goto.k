@@ -100,11 +100,11 @@ module C-STMT-GOTO
      rule preprocessGoto(map(M:Map), Lbl:CId)
           => preprocessGoto(lookup(M, Lbl), Lbl)
      rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
-          requires getKLabel(GotoInfo) =/=K #klabel(map)
-               andBool getKLabel(Lbl) =/=K #klabel(funLabel)
+          requires getKLabel(GotoInfo) =/=K #klabel(`map`)
+               andBool getKLabel(Lbl) =/=K #klabel(`funLabel`)
      rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), Lbl:CId)
           => Blk
-          requires getKLabel(Lbl) ==K #klabel(funLabel)
+          requires getKLabel(Lbl) ==K #klabel(`funLabel`)
 
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth:Int,
@@ -119,8 +119,8 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) BlockHistory':List
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==K #klabel(processGoto))
-               orBool (L ==K #klabel(processGotoDown)))
+          requires ((#klabel(L) ==K #klabel(`processGoto`))
+               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
                andBool (listEqual(BlockHistory, BlockHistory'))
           [structural]
 
@@ -194,9 +194,9 @@ module C-STMT-GOTO
           [structural]
 
      rule <k> (.K => pushBlock(getLastOfList(
-                        getSubListBack(ActualHist, BlockNums)))
+                        getSubListBack(ActualHist, BlockNums)):>Int)
                ~> addVariablesForBlock(getLastOfList(
-                        getSubListBack(ActualHist, BlockNums)), DeclStk)
+                        getSubListBack(ActualHist, BlockNums)):>Int, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int,
                     BlockNums:List, _, _,
                     DeclStk:List))
@@ -222,8 +222,8 @@ module C-STMT-GOTO
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==K #klabel(processGoto))
-               orBool (L ==K #klabel(processGotoDown)))
+          requires ((#klabel(L) ==K #klabel(`processGoto`))
+               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 

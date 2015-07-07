@@ -57,7 +57,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::= updateModified(K, SymLoc, Int) [function]
      rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
-          => activity(N, M[Loc <- maxInt(lookup(M, Loc), I)])
+          => activity(N, M[Loc <- maxInt(lookup(M, Loc):>Int, I)])
           requires Loc in keys(M)
      rule updateModified(activity(N:Int, M:Map), Loc:SymLoc, I:Int)
           => activity(N, M (Loc |-> I))
@@ -170,7 +170,7 @@ module C-IO-BUFFERED
      syntax KItem ::= updateObject(K, Int, K) [function]
      syntax Bool ::= objectInBounds(K, Int) [function]
 
-     rule updateObject(object(T:K, Len:Int, Bytes:Map, Types:Map), Offset:Int, V:K)
+     rule updateObject(object(T::Type, Len:Int, Bytes:Map, Types:Map), Offset:Int, V:K)
           => object(T, Len, Bytes[Offset <- V], Types)
 
      rule objectInBounds(object(_, Len:Int, _, _), Offset:Int)
@@ -218,7 +218,7 @@ module C-IO-BUFFERED
           [structural]
 
      syntax List ::= bvalues(List) [function]
-     rule bvalues(ListItem(tv(K:K, _)) L:List) => ListItem(K) bvalues(L)
+     rule bvalues(ListItem(tv(K::CValue, _)) L:List) => ListItem(K) bvalues(L)
      rule bvalues(.List) => .List
 
      syntax Error ::= "errorReadOutOfBounds"
@@ -453,11 +453,11 @@ module C-IO-BUFFERED
      // effective type of the object,
      // - a type that is the signed or unsigned type corresponding to a
      // qualified version of the effective type of the object,
-     rule #effectivelyCompat(L:Type, Eff:Type) => true
+     rule #effectivelyCompat(L:SignedIntegerType, Eff:Type) => true
           requires areCompatible(correspondingUnsignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
-     rule #effectivelyCompat(L:Type, Eff:Type) => true
+     rule #effectivelyCompat(L:UnsignedIntegerType, Eff:Type) => true
           requires areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)

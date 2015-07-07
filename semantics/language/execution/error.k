@@ -39,10 +39,10 @@ module C-EXECUTION-ERROR
           => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K)
           => "<unknown>)" +String printStackTrace(L, .K, .K)
-     rule printStackTrace(ListItem(bag2K(<call-stack-frame>...
+     rule printStackTrace(ListItem(<call-stack-frame>...
                <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
                <stack-curr-scope> S:Scope </stack-curr-scope>
-          ...</call-stack-frame>)) L:List, .K, .K)
+          ...</call-stack-frame>) L:List, .K, .K)
           => printStackTrace(L, Loc, S)
      rule printStackTrace(.List, .K, .K) => ""
 
@@ -63,9 +63,9 @@ module C-EXECUTION-ERROR
      rule (.K => UNDEF("CEER3",
                "printf: Format string expects type of size " +String
                Int2String(value(A):>Int) +String ", but got an argument of size "
-               +String Int2String(value(B)) +String ".", "7.21.6.1:9") ) ~>
+               +String Int2String(value(B):>Int) +String ".", "7.21.6.1:9") ) ~>
           nextvarg-aux(_, _, A:RValue, B:RValue)
-          requires value(A) =/=Int value(B)
+          requires value(A):>Int =/=Int value(B):>Int
           [structural]
 
      // TODO(chathhorn): Silly way to do things. Probably need to allow
