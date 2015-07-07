@@ -31,7 +31,7 @@ module C-STMT-SWITCH
      }*/
 
      // Promotions already handled.
-     rule Switch(SN:Int, tv(V:K, T:IntegerType), _)
+     rule Switch(SN:Int, tv(V::CValue, T:IntegerType), _)
           => sequencePoint
                ~> handleSwitch(SN, tv(V, T))
           [structural]
@@ -75,15 +75,15 @@ module C-STMT-SWITCH
           [structural]
 
      rule #handleSwitch-aux(_:Int, _:RValue, (K:K => .K), _)
-          requires getKLabel(K) =/=K #klabel(caseLabel)
+          requires getKLabel(K) =/=K #klabel(`caseLabel`)
           [structural]
 
      rule tryCase(
-               (tv(V:K, T':Type) => stripConstants(cast(T, tv(V, T')))),
+               (tv(V::CValue, T':Type) => stripConstants(cast(T, tv(V, T')):>RValue)),
                tv(_, T:Type), _)
           requires T =/=Type T'
           [structural]
-     rule tryCase(tv(V':K, T':Type), tv(V:K, T:Type), _) => .K
+     rule tryCase(tv(V'::CValue, T':Type), tv(V::CValue, T:Type), _) => .K
           requires (V =/=K V') andBool (T ==Type T')
           [structural]
      //  match found in value and type, goto it

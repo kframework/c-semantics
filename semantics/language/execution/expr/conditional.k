@@ -4,6 +4,7 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      // Same as IfThenElse (type issues already dealt with).
      context (HOLE => reval(HOLE)) ? _ : _ [result(RValue)]

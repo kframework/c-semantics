@@ -92,7 +92,7 @@ module C-EXPR-ASSIGNMENT
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
-          => (getKLabel(K) ==K #klabel(arrayStatic)) orBool fromArrayStatic(t(S, T))
+          => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
@@ -100,8 +100,8 @@ module C-EXPR-ASSIGNMENT
 
      rule checkArrayStaticAssign(t(Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
           => checkArrayStaticAssign'(T,
-               getFirstMatch(Mods, #klabel(arrayStatic)),
-               getFirstMatch(Prov, #klabel(fromArray)))
+               getFirstMatch(Mods, #klabel(`arrayStatic`)):>Modifier,
+               getFirstMatch(Prov, #klabel(`fromArray`)):>Provenance)
      rule (.K => UNDEF("EEA4",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7"))

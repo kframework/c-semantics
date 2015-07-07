@@ -127,11 +127,11 @@ module C-STMT-LOOP
      }
      */
      rule [continue]:
-          Continue ~> ((L:KLabel)(_) => .K)
-          requires (L =/=K #klabel(loopMarked))
-               andBool (L =/=K #klabel(popBlock))
-               andBool (L =/=K #klabel(pushBlock))
-               andBool (L =/=K #klabel(popLoop))
+          Continue ~> (L:KLabel(_) => .K)
+          requires (#klabel(L) =/=K #klabel(`loopMarked`))
+               andBool (#klabel(L) =/=K #klabel(`popBlock`))
+               andBool (#klabel(L) =/=K #klabel(`pushBlock`))
+               andBool (#klabel(L) =/=K #klabel(`popLoop`))
           [structural]
      rule [continue-through-pop]:
           Continue ~> popBlock

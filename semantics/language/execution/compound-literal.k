@@ -70,7 +70,7 @@ module C-COMPOUND-LITERAL
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
-     rule <k> initCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
+     rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, Base)
                ~> giveType(X, T)
                ~> allowInit(Init)

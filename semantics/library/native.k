@@ -3,6 +3,7 @@ module C-NATIVE-BRIDGE
 
   imports C-SYNTAX
   imports C-BUILTIN-SYNTAX
+  imports COMPAT-SYNTAX
 
   syntax K ::= #nativeCall(String, List) [function, hook(C-SEMANTICS:nativeCall), impure]
 

@@ -26,12 +26,12 @@ module LIBC-THREADS
      rule [thrd-create-start]:
           <k> prepareBuiltin(Identifier("thrd_create"),
                     hrItem(ThIdPointer:KResult) hs::
-                    hrItem(ThFuncPointer:KResult) hs::
-                    hrItem(ThArg:KResult))
+                    hrItem(ThFuncPointer) hs::
+                    hrItem(ThArg))
                => Computation(
                     (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
                     ~> spawn-aux(
-                    Fresh:Int, ThFuncPointer:KResult, ThArg:KResult)
+                    Fresh:Int, ThFuncPointer:RValue, ThArg:RValue)
           ...</k>
           <next-thread-id> Fresh:Int => Fresh:Int +Int 1 </next-thread-id>
           [structural]
@@ -41,7 +41,7 @@ module LIBC-THREADS
      rule [thrd-create]:
           <thread>...
                <k> spawn-aux(
-                         ThId:Int, ThFuncPointer:KResult, ThArg:KResult)
+                         ThId:Int, ThFuncPointer:RValue, ThArg:RValue)
                     => thrd-success
                ...</k>
                <curr-tu> Tu:String </curr-tu>
@@ -51,12 +51,11 @@ module LIBC-THREADS
           <thread-status>
                Status:Map => Status[ThId:Int <- threadRunning]
           </thread-status>
-          <br/>
           (.Bag =>
           <thread>...
                <duration> thread(ThId:Int) </duration>
                <thread-id> ThId:Int </thread-id>
-               <k> Call(ThFuncPointer:KResult, list(ListItem(ThArg:KResult)))
+               <k> Call(ThFuncPointer, list(ListItem(ThArg)))
                </k>
                <env> Env:Map </env>
                <curr-tu> Tu:String </curr-tu>
@@ -75,8 +74,8 @@ module LIBC-THREADS
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
                hrItem(tv(ThId:Int, t(_, int))) hs::
-               hrItem(ResultPointer:KResult))
-          => join-aux(ThId:Int, ResultPointer:KResult)
+               hrItem(ResultPointer))
+          => join-aux(ThId:Int, ResultPointer:RValue)
           [structural]
 
      rule [thrd-join]:
