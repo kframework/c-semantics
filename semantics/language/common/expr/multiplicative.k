@@ -54,9 +54,9 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
           => arithInterpret(T, I1 %Int I2)
           requires isPromoted(T)
+               andBool (I2 =/=Int 0)
                andBool (min(T) <=Int I1 /Int I2)
                andBool (max(T) >=Int I1 /Int I2)
-               andBool (I2 =/=Int 0)
                andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM2", "Modulus by 0.", "6.5.5:5") )
@@ -66,7 +66,8 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           [structural]
      rule (.K => UNSPEC("CEM3", "Signed overflow.", "6.3.1.3:3") ) ~>
           tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
-          requires notBool (min(T) <=Int I1 /Int I2
+          requires I2 =/=Int 0 
+               andBool notBool (min(T) <=Int I1 /Int I2
                     andBool max(T) >=Int I1 /Int I2)
                andBool isPromoted(T)
                andBool I2 =/=Int 0

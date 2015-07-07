@@ -85,6 +85,7 @@ module C-EXPR-ASSIGNMENT
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
                andBool (type(L) =/=Type type(R))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
