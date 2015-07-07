@@ -27,7 +27,7 @@ module C-STMT-RETURN
      }*/
 
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -39,7 +39,7 @@ module C-STMT-RETURN
                     "6.7.4"))
                ~> Return(_)
           ...</k>
-          <curr-function> F:CId </curr-function>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -53,19 +53,9 @@ module C-STMT-RETURN
      context Return'(HOLE => reval(HOLE)) [result(RValue)]
 
      /* recursively exits each Block wrapped in BlockStatement */
-     rule <k> (.K => exitRestrictScope(BlockNum) ~> popBlock)
-               ~> Return'(_:RValue)
-          ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+     rule <k> (.K => popBlock) ~> Return'(_:RValue) ...</k>
+          <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
-          [structural]
-     /* exit the topmost Block of the function (which is not wrapped in
-      * BlockStatement) */
-     rule <k> (.K => exitRestrictScope(BlockNum) ~> deleteLocals)
-               ~> (Return'(V:RValue) => Return''(V))
-          ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
-          <block-stack> .List </block-stack>
           [structural]
      /* delete the locals when the function body is not wrapped in Block */
      rule <k> (.K => deleteLocals)
@@ -77,14 +67,14 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> Return''(V:RValue) ~> _
-               => exitRestrictScope(F)
+               => exitRestrictScope(blockScope(F, 0))
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
                ~> K
           </k>
           <control>
                <curr-tu> _ => OldTU </curr-tu>
-               <curr-function> F:CId => OldFun </curr-function>
+               <curr-scope> blockScope(F:CId, _) => OldScope </curr-scope>
                <curr-function-params> _ => OldFunParams </curr-function-params>
                <curr-program-loc> _ => OldLoc </curr-program-loc>
                (<control-details>...
@@ -102,9 +92,9 @@ module C-STMT-RETURN
                               <curr-tu> OldTU:String </curr-tu>
                               C:Bag
                          </stack-control>
-                         <stack-curr-function>
-                              OldFun:CId
-                         </stack-curr-function>
+                         <stack-curr-scope>
+                              OldScope:Scope
+                         </stack-curr-scope>
                          <stack-curr-function-params>
                               OldFunParams:List
                          </stack-curr-function-params>

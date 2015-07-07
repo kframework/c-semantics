@@ -49,16 +49,18 @@ module C-DYNAMIC-SYNTAX
 
      syntax CabsLoc ::= "UnknownCabsLoc"
 
-     syntax CId ::= "fileScope"
+     syntax FileScope ::= "fileScope"
+     syntax BlockScope ::= blockScope(CId, Int)
+     syntax PrototypeScope ::= "prototypeScope"
+     syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
+     syntax KItem ::= scope(Scope, K)
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)
      syntax CId ::= funLabel(CId)
 
-     syntax KItem ::= "pushBlock"
+     syntax KItem ::= pushBlock(Int)
      syntax KItem ::= "popBlock"
-     syntax KItem ::= enterBlock(BlockTag)
-     syntax KItem ::= exitBlock(BlockTag)
 
      syntax Statement ::= "loopMarked"
      syntax KItem ::= "popLoop"
@@ -84,11 +86,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= allowInit(K)
      syntax NoInit
      syntax KResult ::= NoInit
-
-     syntax BlockTag ::= Int | CId | "global"
-                          // TODO(chathhorn): for restrict added via automatic
-                          // casts -- not sure how to handle.
-                          | "none"
 
      syntax CId ::= compoundLiteral(Int)
      syntax KItem ::= initCompoundLiteral(K) [strict]
@@ -205,4 +202,11 @@ module C-DYNAMIC
      rule fillLHoles(LV:KResult, Lbl:KLabel(L:K,, R:K))
           => Lbl(fillLHoles(LV, L),, fillLHoles(LV, R))
      rule fillLHoles(_, K:K) => K [owise]
+
+     rule <k> scope(Scope:Scope, K:K) => K ~> setScope(OldScope) ...</k>
+          <curr-scope> OldScope:Scope => Scope </curr-scope>
+
+     syntax KItem ::= setScope(Scope)
+     rule <k> setScope(Scope:Scope) => .K ...</k>
+          <curr-scope> _ => Scope </curr-scope>
 endmodule

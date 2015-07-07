@@ -107,7 +107,7 @@ module C-EXPR-FUNCTION-CALL
      rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
                ~> K:K
                => sequencePoint
-               ~> enterRestrictScope(X)
+               ~> enterRestrictScope(blockScope(X, 0))
                ~> populateFromGlobal
                ~> bind(Params, getParams(DefT), L)
                ~> sequencePoint
@@ -116,18 +116,18 @@ module C-EXPR-FUNCTION-CALL
           <call-stack> .List => ListItem(
                bag2K(<call-stack-frame>...
                     <stack-control>
-                         <curr-tu> OldTu:String </curr-tu>
+                         <curr-tu> OldTu </curr-tu>
                          C:Bag
                     </stack-control>
                     <continuation> K:K </continuation>
-                    <stack-curr-function> CurrFun:K </stack-curr-function>
-                    <stack-curr-function-params> CurrFunParams:List </stack-curr-function-params>
-                    <stack-curr-program-loc> CurrLoc:K </stack-curr-program-loc>
+                    <stack-curr-scope> CurrScope </stack-curr-scope>
+                    <stack-curr-function-params> CurrFunParams </stack-curr-function-params>
+                    <stack-curr-program-loc> CurrLoc </stack-curr-program-loc>
                ...</call-stack-frame>)
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:String => Tu </curr-tu>
-               <curr-function> CurrFun:K => X </curr-function>
+               <curr-scope> CurrScope:Scope => blockScope(X, 0) </curr-scope>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
                (C:Bag => <control-details>... .Bag ...</control-details>)

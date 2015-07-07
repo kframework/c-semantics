@@ -114,21 +114,11 @@ module C-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread'(MainTU:String)
-                         => enterRestrictScope(global)
+                         => enterRestrictScope(fileScope)
                          ~> populateFromGlobal
                     ...</k>
                     <duration> _ => auto(0) </duration>
-                    <thread-local>...
-                         <control>...
-                              <curr-function>
-                                   _ => fileScope
-                              </curr-function>
-                              <curr-program-loc>
-                                   _ => UnknownCabsLoc
-                              </curr-program-loc>
-                              <curr-tu> _ => MainTU </curr-tu>
-                         ...</control>
-                    ...</thread-local>
+                    <curr-tu> _ => MainTU </curr-tu>
                ...</thread>
           </threads>
           <files>...

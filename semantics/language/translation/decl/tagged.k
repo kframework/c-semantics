@@ -96,13 +96,13 @@ module C-DECL-TAGGED
                // Elide function parameter names in struct types.
                => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
           ...</k>
-          <curr-function> fileScope </curr-function>
+          <curr-scope> fileScope </curr-scope>
           [structural]
      rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map))
                => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
           ...</k>
-          <curr-function> F:CId </curr-function>
-          requires F =/=K fileScope
+          <curr-scope> Scope:Scope </curr-scope>
+          requires isFileScope(Scope) =/=K true
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>

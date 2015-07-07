@@ -71,22 +71,22 @@ module C-EXPR-ASSIGNMENT
      syntax Set ::= "getRelevantTags'" "(" K "," SymLoc "," Set ")" [function]
      rule getRelevantTags'((.K => K), _, (SetItem(K:K) => .Set) _)
      rule getRelevantTags'((basedOn(Base, _) => .K), loc(Base:SymBase, _), _)
-     rule getRelevantTags'(basedOn(Base':SymBase, Tag:BlockTag),
+     rule getRelevantTags'(basedOn(Base':SymBase, Tag:Scope),
                loc(Base:SymBase, Offset:Int), Bases:Set)
           => SetItem(Tag) getRelevantTags'(.K, loc(Base:SymBase, Offset), Bases)
           requires Base =/=K Base'
      rule getRelevantTags'(.K, _, .Set) => .Set
 
-     syntax KItem ::= checkRestrictAssign(BlockTag, Set)
-     rule checkRestrictAssign(Tag:BlockTag, Tags:Set) => .K
-          requires (Tag =/=K global) andBool notBool (Tag in Tags)
+     syntax KItem ::= checkRestrictAssign(Scope, Set)
+     rule checkRestrictAssign(Tag:Scope, Tags:Set) => .K
+          requires (Tag =/=K fileScope) andBool notBool (Tag in Tags)
                orBool Tag ==K none
-     rule checkRestrictAssign(Tag:BlockTag, Tags:Set)
+     rule checkRestrictAssign(Tag:Scope, Tags:Set)
           => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
           requires Tag in Tags
-     rule checkRestrictAssign(global, .Set) => .K
+     rule checkRestrictAssign(fileScope, .Set) => .K
      // TODO(chathhorn): more cases here we don't catch.
-     rule checkRestrictAssign(global, SetItem(_) _)
+     rule checkRestrictAssign(fileScope, SetItem(_) _)
           => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4")
 
      syntax Bool ::= fromArrayStatic(Type) [function]
