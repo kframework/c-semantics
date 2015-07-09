@@ -217,7 +217,7 @@ module C-EXECUTION-INIT
                ...</thread>
           ...</exec> => .Bag)
           <status> _ => mainExited </status>
-          <result-value> .K => value(V) </result-value>
+          <result-value> _ => value(V) </result-value>
           <files>...
                // Flush stdout.
                <file-commands>... (.K => f-flush(1)) </file-commands>
