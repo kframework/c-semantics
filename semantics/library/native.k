@@ -5,7 +5,7 @@ module C-NATIVE-BRIDGE
   imports C-BUILTIN-SYNTAX
   imports COMPAT-SYNTAX
 
-  syntax K ::= #nativeCall(String, List) [function, hook(C-SEMANTICS:nativeCall), impure]
+  syntax K ::= #nativeCall(String, List) [function, hook(C_SEMANTICS.nativeCall), impure]
 
   rule prepareBuiltin(Identifier(S:String), H:HeatList) => #nativeCall(S, hListToList(H))
      requires S in keys(nativeDefinedBuiltins) andBool isKResult(H) [native-call]

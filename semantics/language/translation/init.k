@@ -142,7 +142,7 @@ module C-TRANSLATION-INIT
                andBool notBool (B in Uses)
                andBool notBool isFunctionType(T)
 
-     syntax K ::= #nativeConstant(String, Type) [function, hook(C-SEMANTICS:nativeConstant), impure]
+     syntax K ::= #nativeConstant(String, Type) [function, hook(C_SEMANTICS.nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type)
           => #nativeConstant(S, T)
           when S in keys(nativeDefinedBuiltins)
