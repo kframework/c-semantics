@@ -176,7 +176,7 @@ module C-IO-BUFFERED
      rule objectInBounds(object(_, Len:Int, _, _), Offset:Int)
           => Offset <Int Len
 
-     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C-SEMANTICS:writeNativeByte), impure]
+     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
      rule <buffer>
                ListItem(bwrite(Loc:SymLoc, V:K)) => #writeNativeByte(Loc, V)
           ...</buffer>
@@ -296,7 +296,7 @@ module C-IO-BUFFERED
           [structural]
 
 
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C-SEMANTICS:readNativeByte), impure]
+     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule <k> (readByte(Loc:SymLoc, T:Type)
                => assert(notBool (Loc in Locs),
                     errorUnseqEffects)

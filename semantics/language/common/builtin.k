@@ -20,7 +20,7 @@ module C-BUILTIN
 
      rule builtins => semanticsDefinedBuiltins nativeDefinedBuiltins
 
-     syntax Map ::= #nativeDefinedBuiltins(Set) [function, hook(C-SEMANTICS:nativeFunctions), impure]
+     syntax Map ::= #nativeDefinedBuiltins(Set) [function, hook(C_SEMANTICS.nativeFunctions), impure]
      rule nativeDefinedBuiltins => #nativeDefinedBuiltins(keys(semanticsDefinedBuiltins))
 
      // defined as a K rule for if the hook is not defined

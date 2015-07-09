@@ -135,7 +135,7 @@ module C-DECL-INITIALIZER
           requires isCompleteType(T)
      rule (elaborateInitDone(K:K) => .K) ~> initValue(_, _, (.K => K))
 
-     syntax Int ::= #nativeSymbolLength(String) [function, hook(C-SEMANTICS:nativeSymbolLength), impure]
+     syntax Int ::= #nativeSymbolLength(String) [function, hook(C_SEMANTICS.nativeSymbolLength), impure]
 
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.

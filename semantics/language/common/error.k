@@ -17,7 +17,7 @@ module C-ERROR-SYNTAX
 
      syntax ErrorExit ::= EXIT(String)
 
-     syntax Bool ::= "isErrorRecovery" [function, hook(C-SEMANTICS:isErrorRecovery), impure]
+     syntax Bool ::= "isErrorRecovery" [function, hook(C_SEMANTICS.isErrorRecovery), impure]
 endmodule
 
 module C-ERROR
@@ -36,8 +36,6 @@ module C-ERROR
      rule assert(true, _) => .K
      rule assert(A:KResult, K::Error) => K
           requires A =/=K true
-
-     syntax KItem ::= EXITFunc(String) [function, hook(C-SEMANTICS:error), impure]
 
      syntax String ::= ErrorMsg(String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
@@ -67,19 +65,18 @@ module C-ERROR
      syntax ErrorRef ::= Int
 
      rule ERROR(Title:String, Msg:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "", ""))
+          => EXIT(ErrorMsg(Title, Msg, "", ""))
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
      rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
      rule CVUB(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
      // defined as a K rule for if the hook is not defined
-     rule EXITFunc(S:String) => EXIT(S)
      rule isErrorRecovery => false
 
      rule <k> (.K => CV("CID1",
