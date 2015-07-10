@@ -202,8 +202,9 @@ sub parseResult {
             $parsed->{exitCode} = $1;
       };
 
-      /<result-value>\s*unknown\s*<\/result-value>/ && do {
+      /`<result-value>`\(unknown\(\.KList\)\)/ && do {
             $parsed->{errorMsg} = "Unspecified value returned from main function.";
+            $parsed->{exitCode} = 139;
       };
 
       /<result-value>\s*NullPointer\s*<\/result-value>/ && do {
@@ -236,6 +237,9 @@ sub processResult {
                   || defined $parsed{errorMsg} || $ret) {
             if (defined $parsed{errorMsg}) {
                   print "$parsed{errorMsg}\n";
+            }
+            if (defined $parsed{exitCode}) {
+                  $ret = $parsed{exitCode};
             }
             print "Error: Execution failed.\n";
       }
