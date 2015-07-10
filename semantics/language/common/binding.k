@@ -133,13 +133,13 @@ module C-BINDING
      rule #arePromotedTypesCompat(_, T:Type, T':Type) => true
           requires areCompatible(argPromoteType(T), argPromoteType(T'))
 
-     rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
+     rule #arePromotedTypesCompat(V:Int, T:Type, T':SignedIntegerType) => true
           requires (argPromoteType(T)
                     ==K correspondingUnsignedType(argPromoteType(T')))
                andBool representable(V, argPromoteType(T))
                andBool representable(V,
                     correspondingUnsignedType(argPromoteType(T')))
-     rule #arePromotedTypesCompat(V:Int, T:Type, T':Type) => true
+     rule #arePromotedTypesCompat(V:Int, T:SignedIntegerType, T':Type) => true
           requires (argPromoteType(T')
                     ==K correspondingUnsignedType(argPromoteType(T)))
                andBool representable(V, argPromoteType(T'))
