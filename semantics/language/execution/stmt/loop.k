@@ -127,11 +127,11 @@ module C-STMT-LOOP
      }
      */
      rule [continue]:
-          Continue ~> (L:KLabel(_) => .K)
-          requires (#klabel(L) =/=K #klabel(`loopMarked`))
-               andBool (#klabel(L) =/=K #klabel(`popBlock`))
-               andBool (#klabel(L) =/=K #klabel(`pushBlock`))
-               andBool (#klabel(L) =/=K #klabel(`popLoop`))
+          Continue ~> (K:KItem => .K)
+          requires (getKLabel(K) =/=K #klabel(`loopMarked`))
+               andBool (getKLabel(K) =/=K #klabel(`popBlock`))
+               andBool (getKLabel(K) =/=K #klabel(`pushBlock`))
+               andBool (getKLabel(K) =/=K #klabel(`popLoop`))
           [structural]
      rule [continue-through-pop]:
           Continue ~> popBlock
@@ -144,8 +144,8 @@ module C-STMT-LOOP
           ~> For(_, Post:K, _)
           [structural]
      rule [continue-done]:
-          (Continue => .K) ~> loopMarked ~> L:KLabel(_)
-          requires #klabel(L) =/=K #klabel(`For`)
+          (Continue => .K) ~> loopMarked ~> K:KItem
+          requires getKLabel(K) =/=K #klabel(`For`)
           [structural]
 
      rule [popLoop]:
