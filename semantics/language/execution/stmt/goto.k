@@ -191,6 +191,7 @@ module C-STMT-GOTO
           <block-history> ActualHist:List </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
                andBool isSuffixOf(ActualHist, BlockNums)
+               andBool notBool (BlockNums ==K ActualHist)
           [structural]
 
      //  We've made it to the block above the target
