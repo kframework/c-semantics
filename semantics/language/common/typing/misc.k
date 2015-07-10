@@ -19,6 +19,8 @@ module C-TYPING-MISC
 
      rule correspondingUnsignedType(t(S:Set, signed-char))
           => t(S, unsigned-char)
+     rule correspondingUnsignedType(t(S:Set, short-int))
+          => t(S, unsigned-short-int)
      rule correspondingUnsignedType(t(S:Set, int))
           => t(S, unsigned-int)
      rule correspondingUnsignedType(t(S:Set, long-int))
@@ -30,6 +32,8 @@ module C-TYPING-MISC
 
      rule correspondingSignedType(t(S:Set, unsigned-char))
           => t(S, signed-char)
+     rule correspondingSignedType(t(S:Set, unsigned-short-int))
+          => t(S, short-int)
      rule correspondingSignedType(t(S:Set, unsigned-int))
           => t(S, int)
      rule correspondingSignedType(t(S:Set, unsigned-long-int))
