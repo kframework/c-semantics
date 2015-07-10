@@ -57,7 +57,7 @@ sub main {
       my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
 
       my %krun_args = (
-                  '--output' => 'pretty', 
+                  '--output' => 'kast', 
                   '-d' => $EXEC_DEF,
                   "-cARGC=$argc" => '',
                   "-cARGV=\"($argv .List)\"" => '',

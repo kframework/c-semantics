@@ -25,6 +25,8 @@ module C-TYPING-MISC
           => t(S, unsigned-long-int)
      rule correspondingUnsignedType(t(S:Set, long-long-int))
           => t(S, unsigned-long-long-int)
+     rule correspondingUnsignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
+          => t(S, bitfieldType(correspondingUnsignedType(T), I))
 
      rule correspondingSignedType(t(S:Set, unsigned-char))
           => t(S, signed-char)
@@ -34,6 +36,8 @@ module C-TYPING-MISC
           => t(S, long-int)
      rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
           => t(S, long-long-int)
+     rule correspondingSignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
+          => t(S, bitfieldType(correspondingSignedType(T), I))
 
      rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
      rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
@@ -385,6 +389,7 @@ module C-TYPING-MISC
      // Structs.
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
           => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
+          requires Offset =/=Int 0
 
      syntax Type ::= getTypeAtOffset(Type, K, Int) [function]
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
