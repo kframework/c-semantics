@@ -180,9 +180,9 @@ module C-STMT-GOTO
           [structural]
 
      rule <k> (.K => pushBlock(
-                        BlockNums[-1 -Int size(ActualHistory)]:>Int)
+                        BlockNums[-1 -Int size(ActualHist)]:>Int)
                ~> addVariablesForBlock(
-                        BlockNums[-1 -Int size(ActualHistory)]:>Int, DeclStk)
+                        BlockNums[-1 -Int size(ActualHist)]:>Int, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int,
                     BlockNums:List, _, _,
                     DeclStk:List))
