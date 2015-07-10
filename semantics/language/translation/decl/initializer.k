@@ -408,11 +408,9 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(next) ListItem(ncle(_, T:Type))
-          ...</curr-subobject>
-          requires notBool isBasicType(T)
-               andBool notBool isPointerType(T)
-               andBool notBool isBitfieldType(T)
-               orBool isStructOrUnionType(T')
+          </curr-subobject>
+          requires isAggregateOrUnionType(T) 
+               andBool notBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
@@ -426,8 +424,10 @@ module C-DECL-INITIALIZER
                => initFromStructRHS(K, t(S, structType(X)))
           ...</k>
           <curr-subobject>
-               .List => ListItem(findStruct(t(S, structType(X))))
-          ...</curr-subobject>
+               (.List => ListItem(findStruct(t(S, structType(X)))))
+               L:List
+          </curr-subobject>
+          requires L[0]<:K =/=K next
           [structural]
 
      syntax KItem ::= findStruct(Type)
@@ -435,7 +435,7 @@ module C-DECL-INITIALIZER
      rule <curr-subobject>
                ListItem(findStruct(T:Type)) (ListItem(ncle(_, T':Type)) => .List)
           ...</curr-subobject>
-          requires T =/=K T'
+          requires T =/=Type T'
           [structural]
 
      // fixme unsafe, might have started to initialize other things
