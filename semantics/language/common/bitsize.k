@@ -90,6 +90,7 @@ module C-BITSIZE
           => N
      rule bitSizeofType(T:BasicType) => numBytes(T) *Int cfg:bitsPerByte
           requires notBool isTypedDeclaration(T)
+               andBool notBool isBitfieldType(T)
      rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 
