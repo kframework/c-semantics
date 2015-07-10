@@ -25,8 +25,6 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= List "==MSet" List [function]
                    | List "=/=MSet" List [function]
-                   //TODO(liyi): might not need this later
-                   | listEqual(List, List) [function]
 
      syntax List ::= removeListItem(List, K) [function]
 
@@ -112,18 +110,6 @@ module COMPAT
      rule removeListItem(ListItem(A:K) M:List, A':K)
           => ListItem(A) removeListItem(M, A')
           requires A =/=K A'
-
-     //TODO(liyi): might not need this later
-     rule listEqual(.List, .List) => true
-     rule listEqual(L:List, .List) => false
-          requires L =/=K .List
-     rule listEqual(.List, L:List) => false
-          requires L =/=K .List
-     rule listEqual(ListItem(A:K) L1:List, ListItem(A:K) L2:List)
-          => listEqual(L1, L2)
-     rule listEqual(ListItem(A1:K) _, ListItem(A2:K) _)
-          => false
-          requires A1 =/=K A2
 
      syntax Bool ::= subset(K, Set, Set) [function]
 
