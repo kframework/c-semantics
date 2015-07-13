@@ -6,6 +6,7 @@ module C-SETTINGS
      imports C-BITS-SYNTAX
 
      rule cfg:charAlias => signed-char
+     rule cfg:enumAlias => int
 
      rule cfg:bitsPerByte => 8
 
@@ -18,7 +19,6 @@ module C-SETTINGS
      rule cfg:sizeofFloat => 4
      rule cfg:sizeofDouble => 8
      rule cfg:sizeofLongDouble => 16
-     rule cfg:sizeofEnum => cfg:sizeofInt
 
      rule cfg:largestUnsigned => unsigned-long-long-int
 
@@ -29,9 +29,6 @@ module C-SETTINGS
      rule cfg:ptrsize => 8
      rule cfg:ptrdiffut => long-int
 
-     rule cfg:enumMin => min(t(.Set, int))
-     rule cfg:enumMax => max(t(.Set, int))
-
      rule cfg:alignofBool => 1
      rule cfg:alignofSignedChar => 1
      rule cfg:alignofShortInt => 2
@@ -41,7 +38,6 @@ module C-SETTINGS
      rule cfg:alignofFloat => 4
      rule cfg:alignofDouble => 8
      rule cfg:alignofLongDouble => 16
-     rule cfg:alignofEnum => cfg:alignofInt
      rule cfg:alignofPointer => 8
      // Max of the above.
      rule cfg:alignofMalloc => 16

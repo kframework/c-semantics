@@ -177,6 +177,7 @@ module C-STMT-GOTO
           </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
                andBool isSuffixOf(ActualHistory, BlockNums)
+               andBool notBool (ListItem(CurrentBlock) ActualHistory ==K BlockNums)
           [structural]
 
      rule <k> (.K => pushBlock(

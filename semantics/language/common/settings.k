@@ -7,6 +7,7 @@ module C-SETTINGS-SYNTAX
      // FIXME I'm not sure what consequence being a separate type entails, so
      // for now it will just be rewritten to the chosen type
      syntax SimpleCharType ::= "cfg:charAlias" [function]
+     syntax SimpleType ::= "cfg:enumAlias" [function]
 
      syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]
@@ -18,16 +19,12 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:sizeofFloat" [function]
      syntax Int ::= "cfg:sizeofDouble" [function]
      syntax Int ::= "cfg:sizeofLongDouble" [function]
-     syntax Int ::= "cfg:sizeofEnum" [function]
      syntax Int ::= "cfg:mtxPlain" [function]
      syntax SimpleType ::= "cfg:sizeut" [function]
      syntax SimpleType ::= "cfg:wcharut" [function]
      syntax SimpleType ::= "cfg:largestUnsigned" [function]
      syntax Int ::= "cfg:ptrsize" [function]
      syntax SimpleType ::= "cfg:ptrdiffut" [function]
-
-     syntax Int ::= "cfg:enumMin" [function]
-     syntax Int ::= "cfg:enumMax" [function]
 
      syntax Int ::= "cfg:alignofBool" [function]
      syntax Int ::= "cfg:alignofSignedChar" [function]
@@ -38,7 +35,6 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofFloat" [function]
      syntax Int ::= "cfg:alignofDouble" [function]
      syntax Int ::= "cfg:alignofLongDouble" [function]
-     syntax Int ::= "cfg:alignofEnum" [function]
      syntax Int ::= "cfg:alignofPointer" [function]
      syntax Int ::= "cfg:alignofMalloc" [function]
 

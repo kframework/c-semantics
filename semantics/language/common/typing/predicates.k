@@ -69,11 +69,12 @@ module C-TYPING-PREDICATES
                (isUnsignedIntegerType(T) andBool isUnsignedIntegerType(T'))
 
      rule isUnsignedIntegerType(t(_, _:SimpleUnsignedType)) => true
+     rule isUnsignedIntegerType(t(S:Set, enumType(_))) => isUnsignedIntegerType(t(S, cfg:enumAlias))
      rule isUnsignedIntegerType(typedDeclaration(_:UnsignedIntegerType, _)) => true
      rule isUnsignedIntegerType(_) => false [owise]
 
      rule isSignedIntegerType(t(_, _:SimpleSignedType)) => true
-     rule isSignedIntegerType(t(_, enumType(_))) => true
+     rule isSignedIntegerType(t(S:Set, enumType(_))) => isSignedIntegerType(t(S, cfg:enumAlias))
      rule isSignedIntegerType(typedDeclaration(_:SignedIntegerType, _)) => true
      rule isSignedIntegerType(_) => false [owise]
 

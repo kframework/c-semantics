@@ -76,6 +76,7 @@ module C-STMT-SWITCH
 
      rule #handleSwitch-aux(_:Int, _:RValue, (K:K => .K), _)
           requires getKLabel(K) =/=K #klabel(`caseLabel`)
+               andBool K =/=K .K
           [structural]
 
      rule tryCase(

@@ -126,7 +126,7 @@ module C-PROCESS-LABEL
                          ~> Tail
                     </computation-tail>
                     B
-                    <goto-nesting-depth> N +Int 1 </goto-nesting-depth>
+                    <goto-nesting-depth> N </goto-nesting-depth>
                     <goto-block-history>
                          ListItem(Num) OldBlockHistory
                     </goto-block-history>
