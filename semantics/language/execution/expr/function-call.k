@@ -202,6 +202,7 @@ module C-EXPR-FUNCTION-CALL
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
                andBool (type(L) =/=Type type(R))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
@@ -209,8 +210,6 @@ module C-EXPR-FUNCTION-CALL
      rule nclv(_, T:Type => stripConstants(T)) := _:RValue
           requires fromConstantExpr(T)
      rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
-          requires fromConstantExpr(T)
-     rule _:KResult := te(_, T:Type => stripConstants(T))
           requires fromConstantExpr(T)
 
      rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
@@ -221,11 +220,12 @@ module C-EXPR-FUNCTION-CALL
                     andBool notBool isArithmeticType(type(R))
                orBool isStructOrUnionType(type(L))
                     andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
-               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
                orBool notBool (isPointerType(type(L))
                     orBool isArithmeticType(type(L))
                     orBool isStructOrUnionType(type(L))
                     orBool isBoolType(type(L)))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("EFC2", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue

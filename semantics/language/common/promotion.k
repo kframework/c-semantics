@@ -18,7 +18,7 @@ module C-COMMON-PROMOTION
      imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
-
+     imports C-SETTINGS-SYNTAX
 
      // \csection{6}{3}{0}{0}{Conversions}
      /*@
@@ -126,7 +126,7 @@ module C-COMMON-PROMOTION
      rule rank(t(_, unsigned-long-int)) => 4
      rule rank(t(_, long-long-int)) => 5
      rule rank(t(_, unsigned-long-long-int)) => 5
-     rule rank(t(S:Set, enumType(_))) => rank(t(S:Set, int))
+     rule rank(t(S:Set, enumType(_))) => rank(t(S:Set, cfg:enumAlias))
      rule rank(t(_, bitfieldType(T:Type, _))) => rank(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{

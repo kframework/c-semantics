@@ -61,14 +61,14 @@ module C-TYPING-COMPATIBILITY
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
                t(Mods:Set, enumType(_)),
-               t(Mods':Set, int), _)
+               t(Mods':Set, T:SimpleType), _)
           => true
-          requires sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, int),
+               t(Mods:Set, T:SimpleType),
                t(Mods':Set, enumType(_)), _)
           => true
-          requires sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
@@ -260,12 +260,14 @@ module C-TYPING-COMPATIBILITY
      // composite types for enums explicitly addressed in the standard.
      rule compositeType(
                t(Mods:Set, enumType(_)),
-               t(Mods':Set, int))
-          => t(Mods Mods', int)
+               t(Mods':Set, T:SimpleType))
+          => t(Mods Mods', T)
+          requires T ==K cfg:enumAlias
      rule compositeType(
-               t(Mods:Set, int),
+               t(Mods:Set, T:SimpleType),
                t(Mods':Set, enumType(_)))
-          => t(Mods Mods', int)
+          => t(Mods Mods', T)
+          requires T ==K cfg:enumAlias
 
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),

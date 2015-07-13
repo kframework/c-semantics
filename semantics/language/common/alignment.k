@@ -38,7 +38,7 @@ module C-ALIGNMENT
      rule byteAlignofType(t(_, unsigned-long-int)) => byteAlignofType(t(.Set, long-int))
      rule byteAlignofType(t(_, unsigned-long-long-int)) => byteAlignofType(t(.Set, long-long-int))
 
-     rule byteAlignofType(t(_, enumType(_))) => cfg:alignofEnum
+     rule byteAlignofType(t(S:Set, enumType(_))) => byteAlignofType(t(S, cfg:enumAlias))
 
      syntax Int ::= byteAlignofList(List) [function]
      syntax Int ::= "byteAlignofList'" "(" Int "," List ")" [function]

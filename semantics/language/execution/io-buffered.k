@@ -458,7 +458,8 @@ module C-IO-BUFFERED
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      rule #effectivelyCompat(L:UnsignedIntegerType, Eff:Type) => true
-          requires areCompatible(correspondingSignedType(stripQualifiers(L)),
+          requires notBool isBoolType(L) 
+               andBool areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      // - an aggregate or union type that includes one of the aforementioned

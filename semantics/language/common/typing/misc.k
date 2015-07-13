@@ -29,6 +29,8 @@ module C-TYPING-MISC
           => t(S, unsigned-long-long-int)
      rule correspondingUnsignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
           => t(S, bitfieldType(correspondingUnsignedType(T), I))
+     rule correspondingUnsignedType(t(S:Set, enumType(_))) 
+          => correspondingUnsignedType(t(S, cfg:enumAlias))
 
      rule correspondingSignedType(t(S:Set, unsigned-char))
           => t(S, signed-char)
@@ -42,6 +44,8 @@ module C-TYPING-MISC
           => t(S, long-long-int)
      rule correspondingSignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
           => t(S, bitfieldType(correspondingSignedType(T), I))
+     rule correspondingSignedType(t(S:Set, enumType(_))) 
+          => correspondingSignedType(t(S, cfg:enumAlias))
 
      rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
      rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
@@ -92,8 +96,8 @@ module C-TYPING-MISC
      rule max(t(_, unsigned-long-long-int))
           => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
-     rule min(t(_, enumType(_))) => cfg:enumMin
-     rule max(t(_, enumType(_))) => cfg:enumMax
+     rule min(t(S:Set, enumType(_))) => min(t(S, cfg:enumAlias))
+     rule max(t(S:Set, enumType(_))) => max(t(S, cfg:enumAlias))
 
      rule inRange(V:Int, T:IntegerType)
           => ((V <=Int max(T)) andBool (V >=Int min(T)))
