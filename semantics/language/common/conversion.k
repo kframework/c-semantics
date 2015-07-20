@@ -368,7 +368,7 @@ module C-CONVERSION
           => castHold(T', tv(V, T))
           requires (isPointerType(T) andBool isFloatType(T'))
                orBool (isFloatType(T) andBool isPointerType(T'))
-               orBool (T =/=Type T') andBool
+               orBool (stripQualifiers(T) =/=Type stripQualifiers(T')) andBool
                ((notBool isPointerType(T)
                     andBool notBool isArithmeticType(T)
                     andBool notBool isVoidType(T'))

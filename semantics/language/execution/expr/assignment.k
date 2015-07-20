@@ -129,6 +129,7 @@ module C-EXPR-ASSIGNMENT
      rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
      rule getFirstMatch'((K:K => .K), _, L:K)
           requires getKLabel(K) =/=K L
+               andBool K =/=K .K
      rule getFirstMatch'(K:K, _, L:K) => K
           requires getKLabel(K) ==K L
      rule getFirstMatch'(.K, .Set, _) => .K

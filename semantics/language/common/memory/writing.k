@@ -171,8 +171,8 @@ module C-MEMORY-WRITING
           => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytes(stripProv(Loc), byteSizeofType(T), T)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
           [structural]
 
