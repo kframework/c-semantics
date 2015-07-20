@@ -16,7 +16,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
+.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build pass fail fail-compile
 
 default: dist
 
@@ -85,9 +85,15 @@ $(SEMANTICS_DIR)/extensions.k:
 semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
-check:	fast
+check:	pass fail fail-compile
+
+pass:	fast
 	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
+
+fail:	fast
 	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
+
+fail-compile:	fast
 	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
 
 clean:

@@ -54,7 +54,7 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= unqualify(K) [strict]
      rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripQualifiers(T))
      rule unqualify(te(V:K, T:Type))
-          => te(Cast(stripQualifiers(T), V), stripQualifiers(T))
+          => te(unqualify(V), stripQualifiers(T))
      rule unqualify(trap(T:Type)) => trap(stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{

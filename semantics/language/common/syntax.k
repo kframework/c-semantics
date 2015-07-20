@@ -299,4 +299,11 @@ module C-SYNTAX
      | NO_INIT
      */
      syntax KItem ::= "NoInit"
+
+     /*
+     and attribute = String * expression list
+     */
+     // String, List
+     syntax C ::= Attribute(String, K)
+
 endmodule

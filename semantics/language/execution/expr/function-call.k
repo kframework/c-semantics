@@ -214,7 +214,7 @@ module C-EXPR-FUNCTION-CALL
 
      rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
-          requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))
+          requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
                     andBool notBool isNullPointerConstant(R))
                orBool isArithmeticType(type(L))
                     andBool notBool isArithmeticType(type(R))
@@ -224,7 +224,7 @@ module C-EXPR-FUNCTION-CALL
                orBool notBool (isPointerType(type(L))
                     orBool isArithmeticType(type(L))
                     orBool isStructOrUnionType(type(L))
-                    orBool isBoolType(type(L)))
+                    orBool isBoolType(type(L))))
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("EFC2", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))

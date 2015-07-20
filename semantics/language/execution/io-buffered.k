@@ -51,7 +51,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::= setModified(SymLoc, Type)
      rule <k> setModified(Loc:SymLoc, T:Type)
-               => setModified(Loc, T, .K, keys(Modified))
+               => setModified(Loc, T, .K, Modified)
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
 
@@ -63,16 +63,16 @@ module C-IO-BUFFERED
           => activity(N, M (Loc |-> I))
           requires notBool (Loc in keys(M))
 
-     syntax KItem ::= setModified(SymLoc, Type, K, Set)
+     syntax KItem ::= setModified(SymLoc, Type, K, Map)
      rule <k> setModified(Loc:SymLoc, T:Type,
                 (Tag:Scope => .K), _)
            ...</k>
            <activeBlocks>...
                 Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
            ...</activeBlocks>
-     rule setModified(Loc:SymLoc, T:Type, .K, SetItem(K:K) S:Set)
-          => setModified(Loc, T, K, S)
-     rule setModified(_, _, .K, .Set) => .K
+     rule setModified(Loc:SymLoc, T:Type, .K, K:K |-> _ M:Map)
+          => setModified(Loc, T, K, M)
+     rule setModified(_, _, .K, .Map) => .K
 
      rule writeBytes(Loc:SymLoc, ListItem(V:CValue) L:List)
           => writeByte(Loc, V)
@@ -273,7 +273,7 @@ module C-IO-BUFFERED
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in (keys(M))))
+               andBool (notBool (Offset in keys(M)))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int), T:Type)
@@ -290,7 +290,7 @@ module C-IO-BUFFERED
           ...</mem>
           <buffer> Mem:List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in (keys(M))))
+               andBool (notBool (Offset in keys(M)))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
           [structural]

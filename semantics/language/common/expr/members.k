@@ -77,7 +77,6 @@ module C-COMMON-EXPR-MEMBERS
 
      rule (.K => CV("CEM3", "attempting to access member but it does not exist", "6.5.2.3:1"))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))
-          requires notBool (F in keys(Types) andBool F in keys(Offsets))
 
      // Same deal as above, only for byte lists.
      rule <k> tv(agg(L:List), t(Mods:Set,
