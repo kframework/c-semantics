@@ -399,7 +399,7 @@ module C-TYPING-MISC
           => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
           requires Offset =/=Int 0
 
-     syntax Type ::= getTypeAtOffset(Type, K, Int) [function]
+     syntax Type ::= getTypeAtOffset(Type, K, Int) [function, klabel(getTypeAtOffset2)]
      rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
                Fields:List (ListItem(typedDeclaration(_, FId:CId))),
                SI:Int,
