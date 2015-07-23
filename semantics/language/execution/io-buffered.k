@@ -496,7 +496,7 @@ module C-IO-BUFFERED
                orElseBool #effectivelyCompatWithUnion(T, L)
      rule #effectivelyCompatWithUnion(_, .List) => false
 
-     syntax Set ::= getQualsAtOffset(Type, Int) [function]
+     syntax Set ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
      rule getQualsAtOffset(T:Type, Offset:Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset))
 

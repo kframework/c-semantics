@@ -121,7 +121,7 @@ module C-MEMORY-READING
 
      // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(Type, List) [function]
-     syntax RValue ::= joinFloatBytes(Type, Float, Int, List) [function]
+     syntax RValue ::= joinFloatBytes(Type, Float, Int, List) [function, klabel(joinFloatBytes2)]
      rule joinFloatBytes(T:Type,
                ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
           => joinFloatBytes(T, F, NBits, L)

@@ -40,7 +40,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)
 
-     syntax KItem ::= listToK(List) [function]
+     syntax K ::= listToK(List) [function]
 
      syntax KItem ::= kpair(K, K)
 

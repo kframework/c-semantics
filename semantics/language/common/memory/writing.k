@@ -301,7 +301,7 @@ module C-MEMORY-WRITING
      rule isNonPaddingOffset(_, .List, _, _) => false
 
      syntax DataList ::= splitPointerBytes(SymLoc, Int) [function]
-     syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function, klabel(splitPointerBytes2)]
 
      rule splitPointerBytes(Loc:SymLoc, Len:Int)
           => splitPointerBytes(Loc, Len, 0, .List)
@@ -312,7 +312,7 @@ module C-MEMORY-WRITING
      rule splitPointerBytes(_, 0, _, L:List) => dataList(L:List)
 
      syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
-     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
+     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function, klabel(splitFloatBytes2)]
 
      rule splitFloatBytes(F:Float, T:Type, Len:Int)
           => splitFloatBytes(F, T, Len -Int 1,
