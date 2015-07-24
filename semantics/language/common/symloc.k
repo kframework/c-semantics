@@ -306,9 +306,8 @@ module C-SYMLOC
      rule getAlign'(.K, .Set) => 1
      rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
      rule getAlign'(align(I:Int), _) => I
-     rule getAlign'(K:K, S:Set) => getAlign'(.K, S)
+     rule getAlign'(K:KItem, S:Set) => getAlign'(.K, S)
           requires getKLabel(K) =/=K #klabel(`align`)
-               andBool (K =/=K .K)
 
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(K:K) S:Set),
