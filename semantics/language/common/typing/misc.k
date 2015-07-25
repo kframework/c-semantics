@@ -125,8 +125,8 @@ module C-TYPING-MISC
           => t(Mods, functionType(R, P))
      rule getReturn(t(_, functionType(R:Type, _))) => R
 
-     rule getModifiers(t(S:Set, _)) => S
-     rule getModifiers(typedDeclaration(T:Type, _)) => getModifiers(T)
+     rule getModifiers(t(S::Set, _)) => S
+     rule getModifiers(typedDeclaration(T::Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
      syntax Type ::= setModifiers(Type, Set) [function]

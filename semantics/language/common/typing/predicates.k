@@ -221,12 +221,8 @@ module C-TYPING-PREDICATES
 
      rule hasAlignas(t(Mods:Set, _)) => hasAlignasMod(Mods)
 
-     rule hasAlignasMod(Mods:Set) => some(Mods, #klabel(`isAlignas`))
-
-     syntax Bool ::= isAlignas(Modifier) [function]
-     rule isAlignas(alignas(_)) => true
-     rule isAlignas(.K) => false
-     rule isAlignas(_) => false [owise]
+     rule hasAlignasMod(SetItem(alignas(_)) Mods:Set) => true
+     rule hasAlignasMod(_) => false [owise]
 
      rule hasReadFrom(t(Mods:Set, _)) => some(Mods, #klabel(`isReadFrom`))
 

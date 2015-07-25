@@ -43,19 +43,19 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      // Lvalue conversion.
-     rule reval(nclv(Loc:SymLoc, T:Type)
+     rule reval(nclv(Loc::SymLoc, T::Type)
           => checkUse(unqualify(instantiate(Loc, T))))
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
-     rule lv(Loc:SymLoc, T:Type) => nclv(Loc, T)
+     rule lv(Loc::SymLoc, T::Type) => nclv(Loc, T)
           [structural]
 
      syntax KItem ::= unqualify(K) [strict]
-     rule unqualify(tv(V:CValue, T:Type)) => tv(V, stripQualifiers(T))
-     rule unqualify(te(V:K, T:Type))
+     rule unqualify(tv(V::CValue, T::Type)) => tv(V, stripQualifiers(T))
+     rule unqualify(te(V:K, T::Type))
           => te(unqualify(V), stripQualifiers(T))
-     rule unqualify(trap(T:Type)) => trap(stripQualifiers(T))
+     rule unqualify(trap(T::Type)) => trap(stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -67,7 +67,7 @@ module C-COMMON-EXPR-EVAL
      undefined.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:ArrayType)
+     rule reval(nclv(Loc::SymLoc, T:ArrayType)
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
           [structural]
@@ -76,12 +76,12 @@ module C-COMMON-EXPR-EVAL
           => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
-     rule arrayToPtrLoc(Loc:SymLoc, T:Type)
+     rule arrayToPtrLoc(Loc::SymLoc, T::Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
              addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
-     rule arrayToPtrLoc(Loc:SymLoc, T:Type)
+     rule arrayToPtrLoc(Loc::SymLoc, T::Type)
           => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
@@ -94,7 +94,7 @@ module C-COMMON-EXPR-EVAL
      expression that has type ``pointer to a function returning T''.
      }*/
 
-     rule reval(nclv(Loc:SymLoc, T:FunctionType)
+     rule reval(nclv(Loc::SymLoc, T:FunctionType)
                => checkUse(tv(Loc, t(.Set, pointerType(T)))))
           [structural]
 
@@ -124,40 +124,40 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(V:KResult) => V
           requires getKLabel(V) =/=K #klabel(`tv`)
           [structural]
-     rule checkUse(tv(V:CValue, T:Type)) => tv(V, T)
+     rule checkUse(tv(V::CValue, T::Type)) => tv(V, T)
           requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
           [structural]
-     rule checkUse(tv(trap, T:Type)) => trap(T)
+     rule checkUse(tv(trap, T::Type)) => trap(T)
           [structural]
-     rule checkUse(tv(V:SymLoc, T:Type)) => checkLoc(V) ~> tv(V, T)
+     rule checkUse(tv(V:SymLoc, T::Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
      syntax KItem ::= checkLoc(SymLoc)
-     rule checkLoc(Loc:SymLoc) => checkLoc'(stripProv(Loc))
+     rule checkLoc(Loc::SymLoc) => checkLoc'(stripProv(Loc))
           [structural]
 
      syntax KItem ::= "checkLoc'" "(" SymLoc ")"
      rule checkLoc'(NullPointer) => .K
           [structural]
-     rule <k> checkLoc'(Loc:SymLoc) => .K ...</k>
-          <mem> Mem:Map </mem>
+     rule <k> checkLoc'(Loc::SymLoc) => .K ...</k>
+          <mem> Mem::Map </mem>
           requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
                andBool notBool (base(Loc) in keys(Mem))
           [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int))
+     rule <k> checkLoc'(loc(Base::SymBase, Offset::Int))
                => checkOffsets(Offset, Len)
           ...</k>
-          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
+          <mem>... Base |-> object(_, Len::Int, _, _) ...</mem>
           [structural]
-     rule <k> checkLoc'(loc(Base:SymBase, Offset:Int)) => errorLocInvalid ...</k>
-          <mem> Mem:Map </mem>
+     rule <k> checkLoc'(loc(Base::SymBase, Offset::Int)) => errorLocInvalid ...</k>
+          <mem> Mem::Map </mem>
           requires notBool (Base in keys(Mem))
                andBool notBool isStaticDuration(loc(Base, Offset))
                andBool notBool isNativeLoc(loc(Base, Offset))
           [structural]
 
      syntax KItem ::= checkOffsets(Int, Int) [function]
-     rule checkOffsets(Offset:Int, Len:Int) => .K
+     rule checkOffsets(Offset::Int, Len::Int) => .K
           requires (Offset <=Int Len) andBool (Offset >=Int 0)
      rule checkOffsets(_, _) => errorLocBounds [owise]
 
