@@ -57,7 +57,7 @@ module C-COMPOUND-LITERAL
                ~> #CompoundLiteral(X:CId, T:Type, Init:K)
           ...</k>
           <env> Env:Map </env>
-          requires notBool (X in keys(Env))
+          requires notBool (X in_keys(Env))
      rule <k> (elaborateInitDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
           <elab>... .K => K </elab>
      rule <k> #CompoundLiteral(X:CId, _, _) => X ...</k>
@@ -77,7 +77,7 @@ module C-COMPOUND-LITERAL
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
-          requires notBool (string(S) in keys(Mem))
+          requires notBool (string(S) in_keys(Mem))
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
@@ -85,7 +85,7 @@ module C-COMPOUND-LITERAL
                ~> wstringLiteral(S:List)
           ...</k>
           <mem> Mem:Map </mem>
-          requires notBool (wstring(S) in keys(Mem))
+          requires notBool (wstring(S) in_keys(Mem))
 
      rule <k> stringLiteral(S:String)
                => lv(lnew(string(S), cfg:alignofSignedChar),

@@ -102,7 +102,7 @@ module LIBC-STDLIB
                     hrItem(tv(_, _)))
           ...</k>
           <malloced> Malloced:Map </malloced>
-          requires notBool Base in keys(Malloced)
+          requires notBool Base in_keys(Malloced)
 
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),

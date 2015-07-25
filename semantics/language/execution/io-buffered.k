@@ -58,10 +58,10 @@ module C-IO-BUFFERED
      syntax KItem ::= updateModified(K, SymLoc, Int) [function]
      rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
           => activity(N, M[Loc <- maxInt(lookup(M, Loc):>Int, I)])
-          requires Loc in keys(M)
+          requires Loc in_keys(M)
      rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
           => activity(N, M (Loc |-> I))
-          requires notBool (Loc in keys(M))
+          requires notBool (Loc in_keys(M))
 
      syntax KItem ::= setModified(SymLoc, Type, K, Map)
      rule <k> setModified(Loc::SymLoc, T::Type,
@@ -261,7 +261,7 @@ module C-IO-BUFFERED
           ...</mem>
           <buffer> Mem::List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in keys(M)))
+               andBool (notBool (Offset in_keys(M)))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
           [structural]
      rule <k> readByte(loc(Base::SymBase, Offset::Int), T::Type)
@@ -278,7 +278,7 @@ module C-IO-BUFFERED
           ...</mem>
           <buffer> Mem::List </buffer>
           requires (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in keys(M)))
+               andBool (notBool (Offset in_keys(M)))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
           [structural]
@@ -344,12 +344,12 @@ module C-IO-BUFFERED
                     _:Map (.Map => (N' -Int 1) |-> (M [ N' -Int 1])<:K),
                     _)
           ...</mem>
-          requires ((N' -Int 1) in keys(M)) andBool (N' >Int 0)
+          requires ((N' -Int 1) in_keys(M)) andBool (N' >Int 0)
           [structural]
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
           <mem>... Old |-> object(_, _, M:Map, _) ...</mem>
-          requires (notBool ((N' -Int 1) in keys(M))) andBool (N' >Int 0)
+          requires (notBool ((N' -Int 1) in_keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .K
           [structural]
@@ -388,11 +388,11 @@ module C-IO-BUFFERED
           [structural]
      rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => T ...</k>
           <mem>... Base |-> object(T:NoType, _, _, EffTypes::Map) ...</mem>
-          requires notBool (Offset in keys(EffTypes))
+          requires notBool (Offset in_keys(EffTypes))
           [structural]
      rule <k> getEffectiveType(Loc::SymLoc) => t(.Set, no-type) ...</k>
           <effective-types> EffTypes::Map </effective-types>
-          requires isNativeLoc(Loc) andBool notBool (Loc in keys(EffTypes))
+          requires isNativeLoc(Loc) andBool notBool (Loc in_keys(EffTypes))
      rule <k> getEffectiveType(Loc::SymLoc) => T ...</k>
           <effective-types>... Loc |-> T::Type ...</effective-types>
           requires isNativeLoc(Loc)

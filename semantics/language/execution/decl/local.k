@@ -31,8 +31,8 @@ module C-DECL-LOCAL
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
           requires isExternType(T) orBool isFunctionType(T)
-               andBool notBool X in keys(Defs)
-               andBool notBool X in keys(Types)
+               andBool notBool X in_keys(Defs)
+               andBool notBool X in_keys(Types)
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, _)
                => addToEnv(X, Base)

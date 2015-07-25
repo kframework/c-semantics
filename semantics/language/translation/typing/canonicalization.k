@@ -218,7 +218,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (global(X, Tu) in keys(Structs))
+               andBool notBool (global(X, Tu) in_keys(Structs))
                andBool (isFileScope(S) ==K true
                     orBool isPrototypeScope(S) ==K true)
           [structural]
@@ -230,8 +230,8 @@ module C-TYPING-CANONICALIZATION
           <curr-tu> Tu:String </curr-tu>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (global(X, Tu) in keys(Structs))
-               andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
+               andBool notBool (global(X, Tu) in_keys(Structs))
+               andBool notBool (local(X, Tu, BlockNum) in_keys(Structs))
           [structural]
      rule canonicalizeSpecifier(ListItem(EnumRef(X:CId)))
           => t(.Set, enumType(X))
@@ -265,7 +265,7 @@ module C-TYPING-CANONICALIZATION
           <tu-id> Tu </tu-id>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (global(X, Tu) in keys(Structs))
+               andBool notBool (global(X, Tu) in_keys(Structs))
                andBool (isFileScope(S) ==K true
                     orBool isPrototypeScope(S) ==K true)
           [structural]
@@ -278,8 +278,8 @@ module C-TYPING-CANONICALIZATION
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
-               andBool notBool (global(X, Tu) in keys(Structs))
-               andBool notBool (local(X, Tu, BlockNum) in keys(Structs))
+               andBool notBool (global(X, Tu) in_keys(Structs))
+               andBool notBool (local(X, Tu, BlockNum) in_keys(Structs))
           [structural]
  
      rule canonicalizeSpecifier(ListItem(EnumDef(X:CId, L:K)))

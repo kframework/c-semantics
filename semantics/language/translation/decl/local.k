@@ -35,7 +35,7 @@ module C-DECL-LOCAL
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
+               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
@@ -51,8 +51,8 @@ module C-DECL-LOCAL
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool (X in keys(Defs))
-               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
+               andBool notBool (X in_keys(Defs))
+               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
@@ -67,8 +67,8 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           requires (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
-               andBool notBool (X in keys(Types))
-               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
+               andBool notBool (X in_keys(Types))
+               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
                => initLocalStatic(X, toInitValue(X, T, Init))
@@ -132,8 +132,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
           </local-types>
-          requires notBool (kpair(X, BlockNum) in keys(LocalStatics))
-               andBool notBool (kpair(X, BlockNum) in keys(LocalTypes))
+          requires notBool (kpair(X, BlockNum) in_keys(LocalStatics))
+               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
      rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
@@ -147,8 +147,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map
           </local-types>
-          requires (kpair(X, BlockNum) in keys(LocalStatics))
-               orBool (kpair(X, BlockNum) in keys(LocalTypes))
+          requires (kpair(X, BlockNum) in_keys(LocalStatics))
+               orBool (kpair(X, BlockNum) in_keys(LocalTypes))
           [structural]
 
      syntax KItem ::= defineAndInit(CId, Type, K)

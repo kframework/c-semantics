@@ -142,7 +142,7 @@ module C-COMMON-EXPR-EVAL
      rule <k> checkLoc'(Loc::SymLoc) => .K ...</k>
           <mem> Mem::Map </mem>
           requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
-               andBool notBool (base(Loc) in keys(Mem))
+               andBool notBool (base(Loc) in_keys(Mem))
           [structural]
      rule <k> checkLoc'(loc(Base::SymBase, Offset::Int))
                => checkOffsets(Offset, Len)
@@ -151,7 +151,7 @@ module C-COMMON-EXPR-EVAL
           [structural]
      rule <k> checkLoc'(loc(Base::SymBase, Offset::Int)) => errorLocInvalid ...</k>
           <mem> Mem::Map </mem>
-          requires notBool (Base in keys(Mem))
+          requires notBool (Base in_keys(Mem))
                andBool notBool isStaticDuration(loc(Base, Offset))
                andBool notBool isNativeLoc(loc(Base, Offset))
           [structural]

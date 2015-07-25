@@ -21,7 +21,7 @@ module C-CHECK-LOC
           [structural]
      rule <k> enterRestrictScope(Tag:Scope) => .K ...</k>
           <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
-          requires notBool (Tag in keys(Tags))
+          requires notBool (Tag in_keys(Tags))
           [structural]
 
      rule <k> exitRestrictScope(Tag:Scope) => .K ...</k>
@@ -33,7 +33,7 @@ module C-CHECK-LOC
           [structural]
      rule <k> exitRestrictScope(Tag:Scope) => .K ...</k>
           <activeBlocks> Blocks:Map </activeBlocks>
-          requires notBool Tag in keys(Blocks)
+          requires notBool Tag in_keys(Blocks)
           [structural]
 
      // Split out the prov to normalize the address.
@@ -54,7 +54,7 @@ module C-CHECK-LOC
                Restricts:Map
                (.Map => Loc |-> set(getBases(Prov)))
           </restrict>
-          requires notBool (Loc in keys(Restricts))
+          requires notBool (Loc in_keys(Restricts))
           [structural]
      // TODO(chathhorn): finer-grain modified detection. This can fail for the
      // case of aggregates.
@@ -85,17 +85,17 @@ module C-CHECK-LOC
                (.Set => SetItem(basedOn(Base, Tag))) _)
           ...</k>
           <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
-          requires Loc in keys(Modified)
+          requires Loc in_keys(Modified)
           [structural]
      rule <k> filterUnmodified(Loc:SymLoc, (basedOn(_, Tag:Scope) => .K), _, _)
           ...</k>
           <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
-          requires notBool (Loc in keys(Modified))
+          requires notBool (Loc in_keys(Modified))
           [structural]
      rule <k> filterUnmodified(_, (basedOn(_, Tag:Scope) => .K), _, _)
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
-          requires notBool (Tag in keys(Modified))
+          requires notBool (Tag in_keys(Modified))
           [structural]
      rule filterUnmodified(_, .K, .Set, Bases:Set) => rset(Bases)
           [structural]

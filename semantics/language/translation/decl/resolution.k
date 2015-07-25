@@ -112,8 +112,8 @@ module C-DECL-RESOLUTION
           <external-uses>... (.Set => SetItem(X)) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
-          requires notBool (X in keys(Defs))
-               orBool notBool (X in keys(Types))
+          requires notBool (X in_keys(Defs))
+               orBool notBool (X in_keys(Types))
           [structural]
 
      // Remember which TU has the definition of main.
