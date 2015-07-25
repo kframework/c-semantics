@@ -42,7 +42,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map> M:Map </compound-lit-map>
           <duration> D:Duration </duration>
-          requires notBool (X in keys(M))
+          requires notBool (X in_keys(M))
           [structural]
      rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)

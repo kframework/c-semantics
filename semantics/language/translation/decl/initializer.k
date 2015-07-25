@@ -125,7 +125,7 @@ module C-DECL-INITIALIZER
      rule figureInit-aux(_:CId, t(_, (incompleteArrayType(T:Type)
           => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))),
                initializer(handleBuiltinConstant(Identifier(S:String), _)))
-          requires S in keys(nativeDefinedBuiltins)
+          requires S in_keys(nativeDefinedBuiltins)
           [structural]
 
    // id, type, initializer

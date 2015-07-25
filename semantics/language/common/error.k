@@ -82,8 +82,8 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          requires (notBool (Identifier(S:String) in keys(Env)))
-               andBool (notBool (Identifier(S:String) in keys(Types)))
+          requires (notBool (Identifier(S:String) in_keys(Env)))
+               andBool (notBool (Identifier(S:String) in_keys(Types)))
           [structural]
      rule <k> (.K => UNDEF("CID2",
                "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
@@ -91,7 +91,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> _ ...</types>
-          requires (notBool (Identifier(S) in keys(Env)))
+          requires (notBool (Identifier(S) in_keys(Env)))
           [structural]
 
 endmodule

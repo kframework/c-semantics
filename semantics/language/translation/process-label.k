@@ -230,7 +230,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
-          requires notBool (Target in keys(M))
+          requires notBool (Target in_keys(M))
 
      rule <computation>
                (Case(SwitchNum:Int, _, Val:K, S:K) => S) ~> K:K
@@ -249,7 +249,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
-          requires notBool (caseLabel(SwitchNum, Val) in keys(M))
+          requires notBool (caseLabel(SwitchNum, Val) in_keys(M))
 
      rule <computation>
                (Default(SwitchNum:Int, S:K) => S) ~> K:K
@@ -268,7 +268,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
-          requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in keys(M))
+          requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in_keys(M))
 
 endmodule
 

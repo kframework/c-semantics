@@ -103,7 +103,7 @@ module LIBC-THREADS
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
-          requires notBool (Loc in keys(M))
+          requires notBool (Loc in_keys(M))
                andBool (Type ==Int cfg:mtxPlain)
           [structural]
 

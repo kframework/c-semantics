@@ -117,13 +117,13 @@ module C-TRANSLATION-INIT
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs))
+          requires notBool (B in_keys(Defs))
 
      rule <k> addBuiltin(B:CId, _) => .K ...</k>
           <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          requires (B in keys(Defs))
-               orBool (notBool (B in keys(Types)))
+          requires (B in_keys(Defs))
+               orBool (notBool (B in_keys(Types)))
 
      rule <k> addBuiltin(B:CId, T:Type) => declare(
                typedDeclaration(T, B),
@@ -131,21 +131,21 @@ module C-TRANSLATION-INIT
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs))
+          requires notBool (B in_keys(Defs))
                andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses> Uses:Set </external-uses>
           <external-defs> Defs:Map </external-defs>
-          requires notBool (B in keys(Defs))
+          requires notBool (B in_keys(Defs))
                andBool notBool (B in Uses)
                andBool notBool isFunctionType(T)
 
      syntax K ::= #nativeConstant(String, Type) [function, hook(C_SEMANTICS.nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type)
           => #nativeConstant(S, T)
-          when S in keys(nativeDefinedBuiltins)
+          when S in_keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(K, K)
                     | checkExtTypes(K, Set, Map, Set, Map)
@@ -199,7 +199,7 @@ module C-TRANSLATION-INIT
           => mergeDecls(M, mergeDecl(Key, Val, .K, M'))
 
      rule mergeDecl(Key:K, Val:K, .K, M:Map) => (Key |-> Val) M
-          requires notBool (Key in keys(M))
+          requires notBool (Key in_keys(M))
      rule mergeDecl(Key:K, Val:K, .K, (Key |-> Val':K) M:Map)
           => mergeDecl(Key, Val, Val', M)
      rule mergeDecl(Key:K, set(S:Set), set(S':Set), M:Map)

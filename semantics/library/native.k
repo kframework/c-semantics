@@ -8,6 +8,6 @@ module C-NATIVE-BRIDGE
   syntax K ::= #nativeCall(String, List) [function, hook(C_SEMANTICS.nativeCall), impure]
 
   rule prepareBuiltin(Identifier(S:String), H:HeatList) => #nativeCall(S, hListToList(H))
-     requires S in keys(nativeDefinedBuiltins) andBool isKResult(H) [native-call]
+     requires S in_keys(nativeDefinedBuiltins) andBool isKResult(H) [native-call]
 
 endmodule

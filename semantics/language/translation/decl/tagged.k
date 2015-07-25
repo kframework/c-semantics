@@ -109,7 +109,7 @@ module C-DECL-TAGGED
           <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
           <curr-tu> Tu:String </curr-tu>
           <block-history> ListItem(BlockNum:Int) ...</block-history>
-          requires notBool (X in keys(Structs))
+          requires notBool (X in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))

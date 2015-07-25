@@ -73,7 +73,7 @@ module C-COMMON-EXPR-MEMBERS
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
                fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
           => lookupFieldHold(F, Loc, Mods, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
-          requires notBool (F in keys(Types) andBool F in keys(Offsets))
+          requires notBool (F in_keys(Types) andBool F in_keys(Offsets))
 
      rule (.K => CV("CEM3", "attempting to access member but it does not exist", "6.5.2.3:1"))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))

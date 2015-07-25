@@ -315,7 +315,7 @@ module C-DECL-GLOBAL
                X |-> declState(Base:SymBase, OldT:Type, State:DeclState, _)
           ...</internals>
           requires notBool isNaked(T)
-               andBool notBool (X in keys(Exts))
+               andBool notBool (X in_keys(Exts))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -346,7 +346,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           requires isNaked(T)
-               andBool notBool (X in keys(Ints))
+               andBool notBool (X in_keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -365,7 +365,7 @@ module C-DECL-GLOBAL
           ...</externals>
           <internals> Ints:Map </internals>
           requires isExtern(T)
-               andBool notBool (X in keys(Ints))
+               andBool notBool (X in_keys(Ints))
                andBool areCompatible(T, OldT)
           [structural]
 
@@ -398,8 +398,8 @@ module C-DECL-GLOBAL
           </externals>
           <internals> Ints:Map </internals>
           requires notBool isStaticType(T)
-               andBool notBool (X in keys(Exts))
-               andBool notBool (X in keys(Ints))
+               andBool notBool (X in_keys(Exts))
+               andBool notBool (X in_keys(Ints))
           [structural]
 
      // Static, not previously declared.
@@ -418,8 +418,8 @@ module C-DECL-GLOBAL
                (.Map => X |-> declState(Base, T, declared, false))
           </internals>
           requires isStaticType(T)
-               andBool notBool (X in keys(Exts))
-               andBool notBool (X in keys(Ints))
+               andBool notBool (X in_keys(Exts))
+               andBool notBool (X in_keys(Ints))
           [structural]
 
      // Static, previously extern.
@@ -432,7 +432,7 @@ module C-DECL-GLOBAL
           <tu-id> Tu </tu-id>
           <externals> Exts:Map </externals>
           requires isStaticType(T)
-               andBool (X in keys(Exts))
+               andBool (X in_keys(Exts))
           [structural]
 
      // Now we just need to handle allocation, initialization, and updating the
@@ -606,7 +606,7 @@ module C-DECL-GLOBAL
           <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
           requires isLinkerLoc(Base')
-               andBool notBool (X in keys(Decls))
+               andBool notBool (X in_keys(Decls))
           [structural]
      // No previous decl, this is a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
@@ -615,7 +615,7 @@ module C-DECL-GLOBAL
           <external-types>... (.Map => X |-> T') ...</external-types>
           <external-defs>... (.Map => X |-> Base') ...</external-defs>
           requires notBool isLinkerLoc(Base')
-               andBool notBool (X in keys(Decls))
+               andBool notBool (X in_keys(Decls))
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
@@ -629,7 +629,7 @@ module C-DECL-GLOBAL
           <external-types>... X |-> (_ => T') ...</external-types>
           <external-defs> Defs:Map (.Map => X |-> Base') </external-defs>
           requires notBool isLinkerLoc(Base')
-               andBool (notBool (X in keys(Defs)))
+               andBool (notBool (X in_keys(Defs)))
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
@@ -699,7 +699,7 @@ module C-DECL-GLOBAL
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          requires notBool (global(X, Tu) in keys(Structs))
+          requires notBool (global(X, Tu) in_keys(Structs))
           [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -707,7 +707,7 @@ module C-DECL-GLOBAL
           <structs> Structs:Map => Structs[global(X, Tu) <- Info] </structs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           requires notBool (X in Incs)
-               andBool notBool (global(X, Tu) in keys(Structs))
+               andBool notBool (global(X, Tu) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15",
                "redefinition of a struct, union, or enum: " +String idToString(X), "6.7.2.3:1"))
@@ -716,7 +716,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <structs> GStructs:Map </structs>
-          requires (global(X, Tu) in keys(GStructs))
+          requires (global(X, Tu) in_keys(GStructs))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
@@ -802,7 +802,7 @@ module C-DECL-GLOBAL
                => giveType(X, T')
           ...</k>
           <types> Types:Map </types>
-          requires notBool (X in keys(Types))
+          requires notBool (X in_keys(Types))
           [structural]
      rule <k> (.K => CV("TDG16",
                "incompatible redeclaration of symbol with internal or external linkage: "
