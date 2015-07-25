@@ -13,7 +13,6 @@ module C-ERROR-SYNTAX
 
      syntax KResult ::= Bool
      syntax Error ::= "errorDummy"
-     syntax KItem ::= assert(K, Error) [strict(1)]
 
      syntax ErrorExit ::= EXIT(String)
 
@@ -32,10 +31,6 @@ module C-ERROR
      imports C-MEMORY-ALLOC-SYNTAX
 
      imports C-CONFIGURATION
-
-     rule assert(true, _) => .K
-     rule assert(A:KResult, K::Error) => K
-          requires A =/=K true
 
      syntax String ::= ErrorMsg(String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
