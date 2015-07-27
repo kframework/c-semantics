@@ -183,17 +183,16 @@ module C-TYPING-MISC
      rule constantModifiers =>
           SetItem(IntegerConstant)
 
-     rule stripQualifiers(t(Mods:Set, arrayType(T:Type, N:Int)))
+     rule stripQualifiers(t(Mods::Set, arrayType(T::Type, N::Int)))
           => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
-     rule stripQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+     rule stripQualifiers(t(Mods::Set, incompleteArrayType(T::Type)))
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+     rule stripQualifiers(t(Mods::Set, flexibleArrayType(T::Type)))
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+     rule stripQualifiers(t(Mods::Set, variableLengthArrayType(T::Type, N:K)))
           => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
-     rule stripQualifiers(T:Type)
-          => setModifiers(T, getModifiers(T) -Set typeQualifiers)
-          requires notBool isArrayType(T)
+     rule stripQualifiers(T::Type)
+          => setModifiers(T, getModifiers(T) -Set typeQualifiers) [owise]
 
      rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
           => t(Mods -Set storageSpecifiers, T)

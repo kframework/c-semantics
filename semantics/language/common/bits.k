@@ -75,7 +75,8 @@ module C-BITS
           [structural, anywhere]
      rule piece(0, 0) bit:: N:Bits => N
           [structural, anywhere]
-     rule piece(piece(N:Bits, Len:Int), Len:Int) => piece(N, Len)
+     rule piece(piece(N::Bits, Len1::Int), Len2::Int) => piece(N, Len1)
+          requires Len1 ==Int Len2
           [structural, anywhere]
 
      rule bitRange(N:Bits bit:: piece(_, Len:Int), Pos:Int, Pos)

@@ -179,16 +179,8 @@ module C-MEMORY-READING
      // interpret the values of reading from mem
      syntax RValue ::= interpret(Type, K) [function]
      syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
-     rule interpret(T:Type, piece(N:Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T:IntegerType, I:Int) => tv(I, T)
-          requires (min(T) <=Int I)
-               andBool (max(T) >=Int I)
-     rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int -Int (2 ^Int absInt(bitSizeofType(T))))
-          requires (I:Int >Int max(T))
-     rule interpret-aux(T:IntegerType, I:Int)
-          => interpret-aux(T, I:Int +Int (2 ^Int absInt(bitSizeofType(T))))
-          requires (I:Int <Int min(T))
+     rule interpret(T::Type, piece(N::Int, _)) => interpret-aux(T, N)
+     rule interpret-aux(T::IntegerType, I::Int) => #if max(T) >=Int I #then tv(I, T) #else interpret-aux(T, I -Int (2 ^Int absInt(bitSizeofType(T)))) #fi
 
      // loc, size in bits
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
