@@ -138,7 +138,7 @@ module C-IO-BUFFERED
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
-     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), ListItem(V::CValue) L::List) => writeBytes(loc(Base, Offset), L) ...</k>
+     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), ListItem(V::CValue) L::List) => writeBytes(loc(Base, Offset +Int 1), L) ...</k>
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
           [structural]
 
@@ -238,7 +238,6 @@ module C-IO-BUFFERED
           requires Size >Int 0  andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M)))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
-          [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
                ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
@@ -256,7 +255,6 @@ module C-IO-BUFFERED
                andBool (notBool (Offset in_keys(M)))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
-          [structural]
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
@@ -268,7 +266,6 @@ module C-IO-BUFFERED
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (Loc in locations(Mem))
                andBool isNativeLoc(Loc)
-          [structural]
 
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
