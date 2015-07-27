@@ -97,12 +97,12 @@ module LIBC-SETJMP
                hrItem(tv(Loc:SymLoc, t(_, pointerType(t(_,
                     structType(global(Identifier("__jmp_buf_tag"), "builtin"))))))))
                => ignoreLocals
-                    ~> writeByte(Loc, bag(
+                    ~> writeBytes(Loc, ListItem(bag(
                          <thread-state>
                               <thread-continuation> K:K </thread-continuation>
                               <saved-thread-local>C</saved-thread-local>
                          </thread-state>
-                    ))
+                    )))
                     ~> tv(0, t(.Set, int))
                )
                ~> K:K
