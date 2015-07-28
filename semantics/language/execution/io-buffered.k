@@ -368,7 +368,7 @@ module C-IO-BUFFERED
           requires isNativeLoc(Loc)
 
      syntax KItem ::= setEffectiveType(SymLoc, Type)
-     rule <k> setEffectiveType(loc(Base::SymBase, Offset::Int), _) => checkEffectiveType(T, getEffectiveType(loc(Base, Offset)))
+     rule <k> setEffectiveType(loc(Base::SymBase, Offset::Int), T'::Type) => checkEffectiveType(T', getEffectiveType(loc(Base, Offset)))
           ...</k>
           <mem>... Base |-> object(T::Type, _, _, _) ...</mem>
           requires notBool isNoType(T)
