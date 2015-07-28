@@ -332,7 +332,7 @@ module C-MEMORY-WRITING
 
      syntax Int ::= "byteMaskSet" [function]
 
-     rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
+     rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
      rule writeString(Loc:SymLoc, S:String)
           => Computation(

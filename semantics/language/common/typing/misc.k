@@ -49,52 +49,52 @@ module C-TYPING-MISC
 
      rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
      rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
-          => (2 ^Int absInt(N)) -Int 1
+          => (1 <<Int absInt(N)) -Int 1
 
      rule min(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
-          => 0 -Int (2 ^Int absInt(N -Int 1))
+          => 0 -Int (1 <<Int absInt(N -Int 1))
      rule max(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
-          => (2 ^Int absInt(N -Int 1)) -Int 1
+          => (1 <<Int absInt(N -Int 1)) -Int 1
 
      rule min(t(_, bool)) => 0
      rule max(t(_, bool)) => 1
 
      rule min(t(_, signed-char))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
      rule max(t(_, signed-char))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
      rule min(t(_, short-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
      rule max(t(_, short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
      rule min(t(_, int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
      rule max(t(_, int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
      rule min(t(_, long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
      rule max(t(_, long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
      rule min(t(_, long-long-int))
-          => 0 -Int (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
      rule max(t(_, long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
 
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char))
-          => 2 ^Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
+          => 1 <<Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
      rule min(t(_, unsigned-int)) => 0
      rule max(t(_, unsigned-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
      rule min(t(_, unsigned-long-int)) => 0
      rule max(t(_, unsigned-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
      rule min(t(_, unsigned-long-long-int)) => 0
      rule max(t(_, unsigned-long-long-int))
-          => (2 ^Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
 
      rule min(t(S:Set, enumType(_))) => min(t(S, cfg:enumAlias))
      rule max(t(S:Set, enumType(_))) => max(t(S, cfg:enumAlias))
@@ -135,17 +135,16 @@ module C-TYPING-MISC
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
-     rule getQualifiers(t(Mods:Set, arrayType(T:Type, _)))
+     rule getQualifiers(t(Mods:Set, arrayType(T::Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, incompleteArrayType(T:Type)))
+     rule getQualifiers(t(Mods:Set, incompleteArrayType(T::Type)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, flexibleArrayType(T:Type)))
+     rule getQualifiers(t(Mods:Set, flexibleArrayType(T::Type)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T:Type, _)))
+     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T::Type, _)))
           => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(T:Type)
-          => intersectSet(getModifiers(T), typeQualifiers)
-          requires notBool isArrayType(T)
+     rule getQualifiers(T::Type)
+          => intersectSet(getModifiers(T), typeQualifiers) [owise]
 
      rule getStorageSpecifiers(T:Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
