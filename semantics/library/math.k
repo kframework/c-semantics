@@ -37,6 +37,12 @@ module LIBC-MATH
           => tv(asinFloat(F:Float), t(.Set, double))
           [structural]
 
+     rule [asinf]:
+          prepareBuiltin(Identifier("asinf"),
+               hrItem(tv(F:Float, t(_, float))))
+          => tv(asinFloat(F:Float), t(.Set, float))
+          [structural]
+
      rule [atan2]:
           prepareBuiltin(Identifier("atan2"),
                hrItem(tv(F:Float, t(_, double))) hs::
@@ -44,10 +50,29 @@ module LIBC-MATH
           => tv(atan2Float(F:Float, F':Float), t(.Set, double))
           [structural]
 
+     rule [atan2f]:
+          prepareBuiltin(Identifier("atan2f"),
+               hrItem(tv(F:Float, t(_, float))) hs::
+               hrItem(tv(F':Float, t(_, float))))
+          => tv(atan2Float(F:Float, F':Float), t(.Set, float))
+          [structural]
+
      rule [tan]:
           prepareBuiltin(Identifier("tan"),
                hrItem(tv(F:Float, t(_, double))))
           => tv(tanFloat(F:Float), t(.Set, double))
+          [structural]
+
+     rule [tanf]:
+          prepareBuiltin(Identifier("tanf"),
+               hrItem(tv(F:Float, t(_, float))))
+          => tv(tanFloat(F:Float), t(.Set, float))
+          [structural]
+
+     rule [fabsf]:
+          prepareBuiltin(Identifier("fabsf"),
+               hrItem(tv(F:Float, t(_, float))))
+          => tv(absFloat(F:Float), t(.Set, float))
           [structural]
 
      rule [floor]:
@@ -62,6 +87,12 @@ module LIBC-MATH
           => tv(cosFloat(F:Float), t(.Set, double))
           [structural]
 
+     rule [cosf]:
+          prepareBuiltin(Identifier("cosf"),
+               hrItem(tv(F:Float, t(_, float))))
+          => tv(cosFloat(F:Float), t(.Set, float))
+          [structural]
+
      rule [fmod]:
           prepareBuiltin(Identifier("fmod"),
                hrItem(tv(F:Float, t(_, double))) hs::
@@ -73,6 +104,12 @@ module LIBC-MATH
           prepareBuiltin(Identifier("sin"),
                hrItem(tv(F:Float, t(_, double))))
           => tv(sinFloat(F:Float), t(.Set, double))
+          [structural]
+
+     rule [sinf]:
+          prepareBuiltin(Identifier("sinf"),
+               hrItem(tv(F:Float, t(_, float))))
+          => tv(sinFloat(F:Float), t(.Set, float))
           [structural]
 
 endmodule
