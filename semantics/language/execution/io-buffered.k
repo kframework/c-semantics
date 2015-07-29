@@ -44,26 +44,25 @@ module C-IO-BUFFERED
 
      syntax KItem ::= setModified(SymLoc, Type)
      rule <k> setModified(Loc::SymLoc, T::Type)
-               => setModified(Loc, T, Modified)
+               => setModified(Loc, byteSizeofType(T), .K, Modified)
           ...</k>
           <activeBlocks> Modified:Map </activeBlocks>
 
      syntax KItem ::= updateModified(K, SymLoc, Int) [function]
      rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
-          => activity(N, M[Loc <- maxInt(lookup(M, Loc):>Int, I)])
-          requires Loc in_keys(M)
-     rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
-          => activity(N, M (Loc |-> I))
-          requires notBool (Loc in_keys(M))
+          => activity(N, M[Loc <- #if Loc in_keys(M) #then maxInt(lookup(M, Loc):>Int, I) #else I #fi])
 
-     syntax KItem ::= setModified(SymLoc, Type, Map)
-     rule <k> setModified(Loc:SymLoc, T:Type, K:K |-> _ M:Map)
-          => setModified(Loc, T, M)
-          ...</k>
-          <activeBlocks>...
-                Tag |-> (Offsets:K => updateModified(Offsets, Loc, byteSizeofType(T)))
-          ...</activeBlocks>
-     rule setModified(_, _, .Map) => .K
+     syntax KItem ::= setModified(SymLoc, Int, K, Map)
+     rule <k> setModified(Loc::SymLoc, Size::Int,
+                (Tag::Scope => .K), _)
+           ...</k>
+           <activeBlocks>...
+                Tag |-> (Offsets:K => updateModified(Offsets, Loc, Size))
+           ...</activeBlocks>
+     rule setModified(Loc::SymLoc, Size::Int, .K, K:K |-> _ M::Map)
+          => setModified(Loc, Size, K, M)
+     rule setModified(_, _, .K, .Map) => .K
+
 
      rule writeBytes(_, .List) => .K
           [structural]
