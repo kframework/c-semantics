@@ -326,7 +326,7 @@ module C-MEMORY-WRITING
 
      syntax Bits ::= lowestByte(Int, Type) [function]
 
-     rule lowestByte(I:Int, _:IntegerType)
+     rule lowestByte(I:Int, _::IntegerType)
           => piece(I &Int byteMaskSet, cfg:bitsPerByte)
           [structural]
 
