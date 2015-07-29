@@ -68,56 +68,14 @@ module C-TYPING-PREDICATES
                orBool
                (isUnsignedIntegerType(T) andBool isUnsignedIntegerType(T'))
 
-     rule isUnsignedIntegerType(t(_, _:SimpleUnsignedType)) => true
-     rule isUnsignedIntegerType(t(S:Set, enumType(_))) => isUnsignedIntegerType(t(S, cfg:enumAlias))
-     rule isUnsignedIntegerType(typedDeclaration(_:UnsignedIntegerType, _)) => true
-     rule isUnsignedIntegerType(_) => false [owise]
-
-     rule isSignedIntegerType(t(_, _:SimpleSignedType)) => true
-     rule isSignedIntegerType(t(S:Set, enumType(_))) => isSignedIntegerType(t(S, cfg:enumAlias))
-     rule isSignedIntegerType(typedDeclaration(_:SignedIntegerType, _)) => true
-     rule isSignedIntegerType(_) => false [owise]
-
-     rule isFloatType(t(_, _:SimpleFloatType)) => true
-     rule isFloatType(typedDeclaration(_:FloatType, _)) => true
-     rule isFloatType(_) => false [owise]
-
-     rule isCharType(t(_, _:SimpleCharType)) => true
-     rule isCharType(typedDeclaration(_:CharType, _)) => true
-     rule isCharType(_) => false [owise]
-
-     rule isUCharType(t(_, unsigned-char)) => true
-     rule isUCharType(typedDeclaration(_:UCharType, _)) => true
-     rule isUCharType(_) => false [owise]
-
-     rule isSCharType(t(_, signed-char)) => true
-     rule isSCharType(typedDeclaration(_:SCharType, _)) => true
-     rule isSCharType(_) => false [owise]
- 
      rule isWCharType(t(_, T:SimpleType)) => true
           requires T ==K cfg:wcharut
      rule isWCharType(_) => false [owise]
-
-     rule isPointerType(t(_, pointerType(_))) => true
-     rule isPointerType(typedDeclaration(_:PointerType, _)) => true
-     rule isPointerType(_) => false [owise]
-
-     rule isBoolType(t(_, bool)) => true
-     rule isBoolType(typedDeclaration(_:BoolType, _)) => true
-     rule isBoolType(_) => false [owise]
-
-     rule isFixedLengthArrayType(t(_, arrayType(_, _))) => true
-     rule isFixedLengthArrayType(typedDeclaration(_:FixedLengthArrayType, _)) => true
-     rule isFixedLengthArrayType(_) => false [owise]
 
      rule isFlexibleArrayType(t(_, flexibleArrayType(_))) => true
      rule isFlexibleArrayType(typedDeclaration(T:Type, _))
           => isFlexibleArrayType(T)
      rule isFlexibleArrayType(_) => false [owise]
-
-     rule isVariableLengthArrayType(t(_, variableLengthArrayType(_, _))) => true
-     rule isVariableLengthArrayType(typedDeclaration(_:VariableLengthArrayType, _)) => true
-     rule isVariableLengthArrayType(_) => false [owise]
 
      rule isVariablyModifiedType(t(_, arrayType(T:Type, _)))
           => isVariablyModifiedType(T)
@@ -128,21 +86,6 @@ module C-TYPING-PREDICATES
      rule isVariablyModifiedType(_:VariableLengthArrayType) => true
      rule isVariablyModifiedType(_) => false [owise]
 
-     rule isVoidType(t(_, void)) => true
-     rule isVoidType(typedDeclaration(_:VoidType, _)) => true
-     rule isVoidType(_) => false [owise]
-
-     rule isNoType(t(_, no-type)) => true
-     rule isNoType(typedDeclaration(_:NoType, _)) => true
-
-     rule isStructType(t(_, structType(_))) => true
-     rule isStructType(typedDeclaration(_:StructType, _)) => true
-     rule isStructType(_) => false [owise]
-
-     rule isUnionType(t(_, unionType(_))) => true
-     rule isUnionType(typedDeclaration(_:UnionType, _)) => true
-     rule isUnionType(_) => false [owise]
-
      rule isCompleteType(T:Type)
           => notBool (isIncompleteArrayType(T)
                orBool isIncompleteStructType(T)
@@ -150,12 +93,6 @@ module C-TYPING-PREDICATES
                orBool isVoidType(T))
      rule isCompletePointerType(t(_, pointerType(T:Type))) => isCompleteType(T)
      rule isCompletePointerType(_) => false [owise]
-
-     rule isIncompleteArrayType(t(_, incompleteArrayType(_))) => true
-     rule isIncompleteArrayType(t(_, flexibleArrayType(_))) => true
-     rule isIncompleteArrayType(typedDeclaration(T:Type, _))
-          => isIncompleteArrayType(T)
-     rule isIncompleteArrayType(_) => false [owise]
 
      rule isIncompleteStructType(t(_, structType(S:StructId))) => getFieldInfo(S) ==K #incomplete
      rule isIncompleteStructType(typedDeclaration(T:Type, _))
@@ -166,18 +103,6 @@ module C-TYPING-PREDICATES
      rule isIncompleteUnionType(typedDeclaration(T:Type, _))
           => isIncompleteUnionType(T)
      rule isIncompleteUnionType(_) => false [owise]
-
-     rule isSignedBitfieldType(t(_, bitfieldType(_:SignedIntegerType, _))) => true
-     rule isSignedBitfieldType(typedDeclaration(_:SignedBitfieldType, _)) => true
-     rule isSignedBitfieldType(_) => false [owise]
-
-     rule isUnsignedBitfieldType(t(_, bitfieldType(_:UnsignedIntegerType, _))) => true
-     rule isUnsignedBitfieldType(typedDeclaration(_:UnsignedBitfieldType, _)) => true
-     rule isUnsignedBitfieldType(_) => false [owise]
-
-     rule isFunctionType(t(_, functionType(_, _))) => true
-     rule isFunctionType(typedDeclaration(_:FunctionType, _)) => true
-     rule isFunctionType(_) => false [owise]
 
      rule isOldStyleFunctionType(T:Type)
           => isFunctionType(T) andBool (oldStyle in getModifiers(T))

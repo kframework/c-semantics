@@ -7,6 +7,8 @@ module C-SETTINGS
      rule cfg:charAlias => signed-char
      rule cfg:enumAlias => int
 
+     syntax SimpleSignedType ::= SimpleEnumType
+
      rule cfg:bitsPerByte => 8
 
      rule cfg:sizeofBool => 1
