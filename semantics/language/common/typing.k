@@ -52,30 +52,48 @@ module C-TYPING-SYNTAX
      syntax SimpleSignedCharType ::= "signed-char"
      syntax SimpleUnsignedCharType ::= "unsigned-char"
      syntax SimpleCharType ::= SimpleSignedCharType | SimpleUnsignedCharType
-     syntax SimpleUnsignedType ::= "bool" | "unsigned-short-int" 
+     syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int" 
                                  | "unsigned-int" | "unsigned-long-int" 
                                  | "unsigned-long-long-int" 
                                  | SimpleUnsignedCharType
-     syntax SimpleType ::= "no-type" | "void" | SimpleCharType 
+     syntax SimpleBoolType ::= "bool"
+     syntax SimpleVoidType ::= "void"
+     syntax SimpleNoType ::= "no-type"
+     syntax SimpleType ::= SimpleNoType | SimpleVoidType | SimpleCharType 
                          | SimpleFloatType | SimpleUnsignedType 
                          | SimpleSignedType
 
      // Composite types
-     syntax SimpleType ::= enumType(CId)
-     syntax SimpleType ::= bitfieldType(Type, Int)
-     syntax SimpleType ::= functionType(Type, List)
-     syntax SimpleType ::= pointerType(Type)
+     syntax SimpleEnumType ::= enumType(CId)
+     syntax SimpleBitfieldType ::= bitfieldType(Type, Int)
+     syntax SimpleFunctionType ::= functionType(Type, List)
+     syntax SimplePointerType ::= pointerType(Type)
 
-     syntax SimpleType ::= arrayType(Type, Int)
-     syntax SimpleType ::= incompleteArrayType(Type)
-     syntax SimpleType ::= flexibleArrayType(Type)
-     syntax SimpleType ::= variableLengthArrayType(Type, K)
+     syntax SimpleFixedArrayType ::= arrayType(Type, Int)
+     syntax SimpleIncompleteArrayType ::= incompleteArrayType(Type)
+     syntax SimpleIncompleteArrayType ::= flexibleArrayType(Type)
+     syntax SimpleVariableArrayType ::= variableLengthArrayType(Type, K)
 
-     syntax SimpleType ::= structType(StructId)
-     syntax SimpleType ::= unionType(StructId)
+     syntax SimpleStructType ::= structType(StructId)
+     syntax SimpleUnionType ::= unionType(StructId)
      syntax StructId ::= global(CId, String)
                        | local(CId, String, Int)
 
+     syntax SimpleType ::= SimpleFixedArrayType
+                         | SimpleEnumType
+                         | SimplePointerType
+                         | SimpleFixedArrayType
+                         | SimpleVariableArrayType
+                         | SimpleIncompleteArrayType
+                         | SimpleStructType
+                         | SimpleUnionType
+                         | SimpleBitfieldType
+                         | SimpleFunctionType
+
+     syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
+     syntax SimpleSignedBitfieldType ::= bitfieldType(SignedIntegerType, Int)
+     syntax SimpleUnsignedBitfieldType ::= bitfieldType(UnsignedIntegerType, Int)
+ 
      syntax FieldInfo ::= getFieldInfo(StructId) [function]
      syntax FieldInfo ::= getFieldInfo(Type) [function]
      syntax CId ::= getTag(StructId) [function]
@@ -102,23 +120,47 @@ module C-TYPING-SYNTAX
      syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
                         | VariableLengthArrayType
 
-     syntax BoolType
-     syntax FixedLengthArrayType
-     syntax FloatType
      syntax FunctionType
      syntax IncompleteArrayType
-     syntax NoType
-     syntax PointerType
-     syntax SCharType
      syntax SignedBitfieldType
-     syntax SignedIntegerType
      syntax StructType
-     syntax UCharType
      syntax UnionType
      syntax UnsignedBitfieldType
-     syntax UnsignedIntegerType
-     syntax VariableLengthArrayType
-     syntax VoidType
+
+     syntax UnsignedIntegerType ::= t(Set, SimpleUnsignedType)
+     syntax UnsignedIntegerType ::= typedDeclaration(UnsignedIntegerType, CId)
+     syntax SignedIntegerType ::= t(Set, SimpleSignedType)
+     syntax SignedIntegerType ::= typedDeclaration(SignedIntegerType, CId)
+     syntax FloatType ::= t(Set, SimpleFloatType)
+     syntax FloatType ::= typedDeclaration(FloatType, CId)
+     syntax UCharType ::= t(Set, SimpleUnsignedCharType)
+     syntax UCharType ::= typedDeclaration(UCharType, CId)
+     syntax SCharType ::= t(Set, SimpleSignedCharType)
+     syntax SCharType ::= typedDeclaration(SCharType, CId)
+     syntax PointerType ::= t(Set, SimplePointerType)
+     syntax PointerType ::= typedDeclaration(PointerType, CId)
+     syntax BoolType ::= t(Set, SimpleBoolType)
+     syntax BoolType ::= typedDeclaration(BoolType, CId)
+     syntax FixedLengthArrayType ::= t(Set, SimpleFixedArrayType)
+     syntax FixedLengthArrayType ::= typedDeclaration(FixedLengthArrayType, CId)
+     syntax VariableLengthArrayType ::= t(Set, SimpleVariableArrayType)
+     syntax VariableLengthArrayType ::= typedDeclaration(VariableLengthArrayType, CId)
+     syntax VoidType ::= t(Set, SimpleVoidType)
+     syntax VoidType ::= typedDeclaration(VoidType, CId)
+     syntax NoType ::= t(Set, SimpleNoType)
+     syntax NoType ::= typedDeclaration(NoType, CId)
+     syntax StructType ::= t(Set, SimpleStructType)
+     syntax StructType ::= typedDeclaration(StructType, CId)
+     syntax UnionType ::= t(Set, SimpleUnionType)
+     syntax UnionType ::= typedDeclaration(UnionType, CId)
+     syntax IncompleteArrayType ::= t(Set, SimpleIncompleteArrayType)
+     syntax IncompleteArrayType ::= typedDeclaration(IncompleteArrayType, CId)
+     syntax SignedBitfieldType ::= t(Set, SimpleSignedBitfieldType)
+     syntax SignedBitfieldType ::= typedDeclaration(SignedBitfieldType, CId)
+     syntax UnsignedBitfieldType ::= t(Set, SimpleUnsignedBitfieldType)
+     syntax UnsignedBitfieldType ::= typedDeclaration(UnsignedBitfieldType, CId)
+     syntax FunctionType ::= t(Set, SimpleFunctionType)
+     syntax FunctionType ::= typedDeclaration(FunctionType, CId)
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
