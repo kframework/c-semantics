@@ -74,11 +74,8 @@ module C-IO-BUFFERED
           <locs-written>
                Locs::List (.List => ListItem(loc(Base, Offset)))
           </locs-written>
-          <locs-read>
-               Read::List
-          </locs-read>
           requires // Sequencing.
-               (notBool loc(Base, Offset) in Locs Read)
+               (notBool loc(Base, Offset) in Locs)
                // Bounds.
                andBool (Offset <Int Len)
                // Const.
@@ -102,13 +99,8 @@ module C-IO-BUFFERED
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <locs-written> Locs::List </locs-written>
-          requires Loc in Locs
+          requires Loc in Locs::List
           [structural]
-     rule <k> (.K => errorUnseqEffects)
-              ~> checkWrite(Loc::SymLoc, _)
-          ...</k>
-          <locs-read> Locs::List </locs-read>
-          requires Loc in Locs
      // TODO(chathhorn): probably redundant.
      rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
@@ -170,13 +162,10 @@ module C-IO-BUFFERED
           => SetItem(Loc) locations(L)
 
      rule <k> readBytes(Loc::SymLoc, Size::Int, T::Type)
-               => #if Loc in Locs #then errorUnseqEffects #else .K #fi
-               ~> checkEffectiveType(T, getEffectiveType(Loc))
+               => checkEffectiveType(T, getEffectiveType(Loc))
                ~> readBytes-aux(Loc, Size, .List, T)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
-          <locs-read> _::List (.List => ListItem(Loc)) </locs-read>
-          <locs-written> Locs::List </locs-written>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
@@ -201,8 +190,8 @@ module C-IO-BUFFERED
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
-               => #if (loc(Base, Offset) in Locs) #then errorUnseqEffects #else
-                    .K #fi
+               => #if notBool (loc(Base, Offset) in Locs) #then .K #else
+                    errorUnseqEffects #fi
                ~> #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
                ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T) #then .K #else
@@ -217,8 +206,8 @@ module C-IO-BUFFERED
           requires Size >Int 0
           [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-               => #if (loc(Base, Offset) in Locs) #then errorUnseqEffects #else
-                    .K #fi
+               => #if notBool (loc(Base, Offset) in Locs) #then .K #else
+                    errorUnseqEffects #fi
                ~> #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
                ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T) #then .K #else
@@ -268,8 +257,8 @@ module C-IO-BUFFERED
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
-               => #if (Loc in Locs) #then errorUnseqEffects #else
-                    .K #fi
+               => #if notBool (Loc in Locs) #then .K #else
+                    errorUnseqEffects #fi
                ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux ListItem(#readNativeByte(Loc, size(Aux), T)), T)
           ...</k>
           <locs-written> Locs::List </locs-written>
