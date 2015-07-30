@@ -162,6 +162,9 @@ module C-CONFIGURATION
                               <locs-written color="lightgray">
                                    .List
                               </locs-written>
+                              <locs-read color="lightgray">
+                                   .List
+                              </locs-read>
                          </control-details>
                     </control>
                </thread-local>
