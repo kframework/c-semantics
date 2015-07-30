@@ -10,6 +10,7 @@ module C-SEQUENCE-POINT
      rule [sequencePoint]:
           <k> sequencePoint => .K ...</k>
           <locs-written> _ => .List </locs-written>
+          <locs-read> _ => .List </locs-read>
           [structural]
 
 endmodule

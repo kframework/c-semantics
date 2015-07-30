@@ -82,7 +82,7 @@ module C-TYPING-MISC
 
      rule min(t(_, unsigned-char)) => 0
      rule max(t(_, unsigned-char))
-          => 1 <<Int absInt(bitSizeofType(t(.Set, unsigned-char))) -Int 1
+          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-char)))) -Int 1
      rule min(t(_, unsigned-short-int)) => 0
      rule max(t(_, unsigned-short-int))
           => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
