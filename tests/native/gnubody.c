@@ -1,4 +1,5 @@
 int main() {
   int x = ({ int y = 0; y; });
-  return x;
+  int z = ({ 0; });
+  return x + z;
 }
