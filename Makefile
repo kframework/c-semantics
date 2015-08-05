@@ -16,7 +16,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build pass fail fail-compile
+.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile
 
 default: dist
 
@@ -70,19 +70,23 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-translation-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+translation-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k
 	@$(MAKE) -C $(SEMANTICS_DIR) translation
 
-execution-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+execution-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-execution.k
 	@$(MAKE) -C $(SEMANTICS_DIR) execution
 
 $(SEMANTICS_DIR)/settings.k:
 	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
 
-$(SEMANTICS_DIR)/extensions.k:
-	@diff $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)/extensions.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-common.k:
+	@diff $(LIBC_DIR)/semantics/extensions-common.k $(SEMANTICS_DIR)/extensions-common.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-common.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-translation.k:
+	@diff $(LIBC_DIR)/semantics/extensions-translation.k $(SEMANTICS_DIR)/extensions-translation.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-translation.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-execution.k:
+	@diff $(LIBC_DIR)/semantics/extensions-execution.k $(SEMANTICS_DIR)/extensions-execution.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-execution.k $(SEMANTICS_DIR)
 
-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 check:	pass fail fail-compile
@@ -104,4 +108,4 @@ clean:
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k

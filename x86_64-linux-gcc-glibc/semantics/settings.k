@@ -4,6 +4,7 @@ module C-SETTINGS
      imports C-TYPING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-BITS-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule cfg:charAlias => signed-char
      rule cfg:enumAlias => int

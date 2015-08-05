@@ -9,4 +9,6 @@ parser/clexer.ml
 parser/cparser.ml
 parser/cparser.mli
 semantics/settings.k
-semantics/extensions.k
+semantics/extensions-common.k
+semantics/extensions-translation.k
+semantics/extensions-execution.k
