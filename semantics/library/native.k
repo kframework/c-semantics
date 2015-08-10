@@ -5,7 +5,7 @@ module C-NATIVE-BRIDGE
   imports C-BUILTIN-SYNTAX
   imports C-CONFIGURATION
 
-  syntax K ::= #nativeCall(String, Type, List) [function, hook(C_SEMANTICS.nativeCall), impure]
+  syntax K ::= #nativeCall(String, Type, List) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
 
   rule <k> prepareBuiltin(Identifier(S:String), H:HeatList) => #nativeCall(S, T, hListToList(H)) ...</k>
        <types>... Identifier(S) |-> T:Type ...</types>
