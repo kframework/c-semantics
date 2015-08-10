@@ -115,17 +115,9 @@ module C-DECL-INITIALIZER
 
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
-                    => arrayType(T, N))), initializer(K:K))
+                    => arrayType(T, N))), _)
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
-          requires notBool isKItem(K)
-               orElseBool (getKLabel(K) =/=K #klabel(`handleBuiltinConstant`))
-          [structural]
-
-     rule figureInit-aux(_:CId, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))),
-               initializer(handleBuiltinConstant(Identifier(S:String), _)))
-          requires S in_keys(nativeDefinedBuiltins)
           [structural]
 
    // id, type, initializer
@@ -134,8 +126,6 @@ module C-DECL-INITIALIZER
           => giveType(X, T) ~> elaborateInit(K) ~> initValue(X, T, .K)
           requires isCompleteType(T)
      rule (elaborateInitDone(K:K) => .K) ~> initValue(_, _, (.K => K))
-
-     syntax Int ::= #nativeSymbolLength(String) [function, hook(C_SEMANTICS.nativeSymbolLength), impure]
 
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.

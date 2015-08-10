@@ -43,4 +43,6 @@ module C-SETTINGS-SYNTAX
      syntax CValue ::= "cfg:intToPointer" "(" CValue "," Type ")" [function]
      syntax CValue ::= "cfg:pointerToInt" "(" CValue "," Type ")" [function]
 
+     syntax Bool ::= "isErrorRecovery" [function]
+
 endmodule

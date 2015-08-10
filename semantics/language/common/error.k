@@ -1,6 +1,7 @@
 module C-ERROR-SYNTAX
      imports BASIC-K
      imports STRING-SYNTAX
+     imports BOOL-SYNTAX
      // Deprecated...
      syntax KItem ::= ERROR(String, String)
      syntax KItem ::= ERROR(String, String, String, String)
@@ -16,7 +17,6 @@ module C-ERROR-SYNTAX
 
      syntax ErrorExit ::= EXIT(String)
 
-     syntax Bool ::= "isErrorRecovery" [function, hook(C_SEMANTICS.isErrorRecovery), impure]
 endmodule
 
 module C-ERROR
@@ -70,9 +70,6 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
-
-     // defined as a K rule for if the hook is not defined
-     rule isErrorRecovery => false
 
      rule <k> (.K => CV("CID1",
                "Trying to look up identifier " +String S +String

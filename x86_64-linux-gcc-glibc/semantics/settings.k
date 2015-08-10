@@ -45,12 +45,16 @@ module C-SETTINGS
      // Max of the above.
      rule cfg:alignofMalloc => 16
 
+     rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(V:Int, _) => loc(0 @ nativeAddress, V, SetItem(align(getNativeAlign(V))))
+          requires V =/=Int 0
      rule cfg:intToPointer(L:SymLoc, _) => L
      rule cfg:intToPointer(_, _) => trap [owise]
      rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int), _) => V
      rule cfg:pointerToInt(loc(0 @ nativeAddress, V:Int, _), _) => V
      rule cfg:pointerToInt(L:SymLoc, _) => L requires notBool isNativeLoc(L)
+
+     rule isErrorRecovery => true
 
 endmodule
 

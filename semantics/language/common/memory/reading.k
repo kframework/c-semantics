@@ -82,7 +82,7 @@ module C-MEMORY-READING
 
      // fixme should also check sizes are appropriate
      rule concretize(T:PointerType, dataList(L::List))
-          => joinPointerBytes(T, L)
+          => joinIntegerBytes(T, L)
           requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
           [structural]
@@ -180,7 +180,8 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(Type, K) [function]
      syntax RValue ::= "interpret-aux" "(" Type "," K ")" [function]
      rule interpret(T::Type, piece(N::Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T::IntegerType, I::Int) => #if max(T) >=Int I #then tv(I, T) #else interpret-aux(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
+     rule interpret-aux(T:IntegerType, I::Int) => #if max(T) >=Int I #then tv(I, T) #else interpret-aux(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
+     rule interpret-aux(T:PointerType, I::Int) => tv(cfg:intToPointer(I, T), T)
 
      // loc, size in bits
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)

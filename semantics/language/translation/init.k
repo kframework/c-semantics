@@ -142,9 +142,8 @@ module C-TRANSLATION-INIT
                andBool notBool (B in Uses)
                andBool notBool isFunctionType(T)
 
-     syntax K ::= #nativeConstant(String, Type) [function, hook(C_SEMANTICS.nativeConstant), impure]
      rule handleBuiltinConstant(Identifier(S:String), T:Type)
-          => #nativeConstant(S, T)
+          => addToEnv(Identifier(S), 0 @ nativeSymbol(S))
           when S in_keys(nativeDefinedBuiltins)
 
      syntax KItem ::= checkMerge(K, K)

@@ -150,7 +150,7 @@ module C-IO-BUFFERED
           requires Offset <Int Len
           [structural]
 
-     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
+     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
      rule <buffer>
                ListItem(bwrite(Loc::SymLoc, V:K)) => #writeNativeByte(Loc, V)
           ...</buffer>
@@ -255,7 +255,7 @@ module C-IO-BUFFERED
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
 
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
+     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
                => #if notBool (Loc in Locs) #then .K #else
                     errorUnseqEffects #fi
