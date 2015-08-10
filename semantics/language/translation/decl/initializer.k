@@ -115,7 +115,7 @@ module C-DECL-INITIALIZER
 
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
-                    => arrayType(T, N))), _)
+                    => arrayType(T, N))), initializer(_))
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
           [structural]
