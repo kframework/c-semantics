@@ -15,8 +15,6 @@ test: ${TEST_RESULTS}
 
 comparison: ${TEST_COMPARISON}
 
-compile: ${KCC_COMPILED_TESTS}
-
 %.out: %.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}

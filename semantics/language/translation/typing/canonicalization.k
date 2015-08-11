@@ -206,7 +206,7 @@ module C-TYPING-CANONICALIZATION
                local(X, Tu, BlockNum) |-> _
           ...</structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
@@ -253,7 +253,7 @@ module C-TYPING-CANONICALIZATION
                local(X, Tu, BlockNum) |-> _
           ...</structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires X =/=K Identifier("")
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
