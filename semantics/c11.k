@@ -2,8 +2,7 @@ require "language/execution/execution.k"
 require "language/common/common.k"
 require "library/library.k"
 require "settings.k"
-require "extensions.k"
-require "kore-compat.k"
+require "domains.k"
 
 module C11-SYNTAX
 endmodule

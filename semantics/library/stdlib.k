@@ -6,12 +6,13 @@ module LIBC-STDLIB
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports C-CONFIGURATION
 
      syntax KItem ::= printString(K)
 
@@ -101,7 +102,7 @@ module LIBC-STDLIB
                     hrItem(tv(_, _)))
           ...</k>
           <malloced> Malloced:Map </malloced>
-          requires notBool Base in keys(Malloced)
+          requires notBool Base in_keys(Malloced)
 
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),

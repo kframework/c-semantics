@@ -11,18 +11,16 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateInit(K)
      syntax KItem ::= elaborateInitDone(K)
 
-     syntax KItem ::= typeof(K) [strict]
-
      syntax KItem ::= runInit(K)
 endmodule
 
 module C-ELABORATOR
      imports C-ELABORATOR-SYNTAX
-
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= elabFrame(K, K, Bag)
-                    | elabInitFrame(K, K, Bag)
+     syntax KItem ::= elabFrame(K, K, K)
+                    | elabInitFrame(K, K, K)
 
      rule (.K => K) ~> compoundExp(K:K)
      rule R:KResult ~> compoundExp(K:K)
@@ -30,29 +28,29 @@ module C-ELABORATOR
 
      rule <k> elaborate(K:K) ~> Cont:K => K </k>
           <elab> OldElab:K => .K </elab>
-          <local> L:Bag </local>
+          L:LocalCell
           <elab-stack>
                .List => ListItem(elabFrame(Cont, OldElab, L))
           ...</elab-stack>
      rule <k> .K => elaborateDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
-          <local> _ => L </local>
+          (<local> _ </local> => L)
           <elab-stack>
-               ListItem(elabFrame(Cont:K, OldElab:K, L:Bag)) => .List
+               ListItem(elabFrame(Cont:K, OldElab:K, L:LocalCell)) => .List
           ...</elab-stack>
 
      rule <k> elaborateInit(K:K) ~> Cont:K => allowInit(K) </k>
           <elab> OldElab:K => .K </elab>
-          (<init-calc> I:Bag </init-calc>
+          (I:InitCalcCell
                => <init-calc>... .Bag ...</init-calc>)
           <elab-stack>
                .List => ListItem(elabInitFrame(Cont, OldElab, I))
           ...</elab-stack>
      rule <k> .K => elaborateInitDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
-          <init-calc> _ => I </init-calc>
+          (<init-calc> _ </init-calc> => I)
           <elab-stack>
-               ListItem(elabInitFrame(Cont:K, OldElab:K, I:Bag)) => .List
+               ListItem(elabInitFrame(Cont:K, OldElab:K, I:InitCalcCell)) => .List
           ...</elab-stack>
 
      rule (.K => elaborateInit(K)) ~> runInit(K:K)
@@ -63,7 +61,5 @@ module C-ELABORATOR
           => elaborate(K2) ~> elaborateDone(K1)
      rule elaborateDone(K2:K) ~> elaborateDone(K1:K)
           => elaborateDone(K1:K, K2:K)
-
-     rule typeof(V:KResult) => type(V)
 
 endmodule

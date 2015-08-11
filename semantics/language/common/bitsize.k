@@ -59,7 +59,7 @@ module C-BITSIZE
      rule numBytes(t(_, unsigned-long-int)) => numBytes(t(.Set, long-int))
      rule numBytes(t(_, unsigned-long-long-int))
           => numBytes(t(.Set, long-long-int))
-     rule numBytes(t(_, enumType(_))) => cfg:sizeofEnum
+     rule numBytes(t(S:Set, enumType(_))) => numBytes(t(S, cfg:enumAlias))
      rule numBytes(_) => 0 [owise]
 
      syntax Int ::= byteSizeofList(List) [function]
@@ -90,6 +90,7 @@ module C-BITSIZE
           => N
      rule bitSizeofType(T:BasicType) => numBytes(T) *Int cfg:bitsPerByte
           requires notBool isTypedDeclaration(T)
+               andBool notBool isBitfieldType(T)
      rule bitSizeofType(typedDeclaration(T:Type, _))
           => bitSizeofType(T)
 

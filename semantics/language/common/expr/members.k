@@ -10,6 +10,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -44,7 +45,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic in Mods
-               andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
+               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
      rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
@@ -53,7 +54,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic in Mods
-               andBool (Lbl ==KLabel 'nclv orBool Lbl ==KLabel 'ncle)
+               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
 
      // The last two parameters are for convenience and should be the same.
@@ -72,11 +73,10 @@ module C-COMMON-EXPR-MEMBERS
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
                fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
           => lookupFieldHold(F, Loc, Mods, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
-          requires notBool (F in keys(Types) andBool F in keys(Offsets))
+          requires notBool (F in_keys(Types) andBool F in_keys(Offsets))
 
      rule (.K => CV("CEM3", "attempting to access member but it does not exist", "6.5.2.3:1"))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))
-          requires notBool (F in keys(Types) andBool F in keys(Offsets))
 
      // Same deal as above, only for byte lists.
      rule <k> tv(agg(L:List), t(Mods:Set,

@@ -30,7 +30,7 @@ module C-MEMORY-WRITING
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
@@ -99,14 +99,14 @@ module C-MEMORY-WRITING
 
      rule keepUnion(.Set) => .Set
      rule keepUnion(SetItem(K:K) S:Set) =>
-          #if (getKLabel(K) ==KLabel 'fromUnion)
+          #if (getKLabel(K) ==K #klabel(`fromUnion`))
           #then (SetItem(K) keepUnion(S))
           #else keepUnion(S)
           #fi
 
      rule stripUnion(.Set) => .Set
      rule stripUnion(SetItem(K:K) S:Set) =>
-          #if (getKLabel(K) ==KLabel 'fromUnion)
+          #if (getKLabel(K) ==K #klabel(`fromUnion`))
           #then stripUnion(S)
           #else (SetItem(K) stripUnion(S))
           #fi
@@ -171,8 +171,8 @@ module C-MEMORY-WRITING
           => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytes(stripProv(Loc), byteSizeofType(T), T)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc))
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
           [structural]
 
@@ -295,13 +295,13 @@ module C-MEMORY-WRITING
      syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
      rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) 
           Decls:List, Types:Map, Offsets:Map)
-          => (Offsets[F] <=Int Offset andBool Offset <Int Offsets[F] +Int
-               byteSizeofType(Types[F]))
+          => (Offsets[F]:>Int <=Int Offset andBool Offset <Int Offsets[F]:>Int +Int
+               byteSizeofType(Types[F]:>Type))
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 
      syntax DataList ::= splitPointerBytes(SymLoc, Int) [function]
-     syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function]
+     syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function, klabel(splitPointerBytes2)]
 
      rule splitPointerBytes(Loc:SymLoc, Len:Int)
           => splitPointerBytes(Loc, Len, 0, .List)
@@ -312,7 +312,7 @@ module C-MEMORY-WRITING
      rule splitPointerBytes(_, 0, _, L:List) => dataList(L:List)
 
      syntax DataList ::= splitFloatBytes(Float, Type, Int) [function]
-     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function]
+     syntax DataList ::= splitFloatBytes(Float, Type, Int, List) [function, klabel(splitFloatBytes2)]
 
      rule splitFloatBytes(F:Float, T:Type, Len:Int)
           => splitFloatBytes(F, T, Len -Int 1,
@@ -326,13 +326,13 @@ module C-MEMORY-WRITING
 
      syntax Bits ::= lowestByte(Int, Type) [function]
 
-     rule lowestByte(I:Int, _:IntegerType)
+     rule lowestByte(I:Int, _::IntegerType)
           => piece(I &Int byteMaskSet, cfg:bitsPerByte)
           [structural]
 
      syntax Int ::= "byteMaskSet" [function]
 
-     rule byteMaskSet => (2 ^Int cfg:bitsPerByte) -Int 1
+     rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
      rule writeString(Loc:SymLoc, S:String)
           => Computation(

@@ -3,11 +3,11 @@ module C-TYPE-BUILDER-SYNTAX
 
      syntax FlexType ::= Type | SimpleType
 
-     syntax Type ::= fun(FlexType) [function]
-                   | fun(FlexType, FlexType) [function]
-                   | fun(FlexType, FlexType, FlexType) [function]
-                   | fun(FlexType, FlexType, FlexType, FlexType) [function]
-                   | fun(FlexType, FlexType, FlexType, FlexType, FlexType) [function]
+     syntax Type ::= fun(FlexType) [function, klabel(fun1)]
+                   | fun(FlexType, FlexType) [function, klabel(fun2)]
+                   | fun(FlexType, FlexType, FlexType) [function, klabel(fun3)]
+                   | fun(FlexType, FlexType, FlexType, FlexType) [function, klabel(fun4)]
+                   | fun(FlexType, FlexType, FlexType, FlexType, FlexType) [function, klabel(fun5)]
 
      syntax Type ::= ptr(FlexType) [function]
      syntax Type ::= arr(FlexType, Int) [function]

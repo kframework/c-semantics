@@ -7,6 +7,7 @@ module C-EXPR-ALIGNOF
 
      rule AlignofExpression(E:K) => alignofType(typeof(E))
      rule AlignofType(T:Type, _) => alignofType(T)
+     rule AlignofType(typeof(T:Type), _) => alignofType(T)
 
 endmodule
 

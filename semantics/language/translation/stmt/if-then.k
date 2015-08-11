@@ -3,6 +3,7 @@ module C-STMT-IF-THEN
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-EXPR-LOGICAL-SYNTAX
+     imports C-CONFIGURATION
 
      rule IfThenElse(C:RValue, TrueBr:K, FalseBr:K)
           => #if(simplifyTruth(C), TrueBr, FalseBr)

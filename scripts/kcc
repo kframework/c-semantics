@@ -22,8 +22,6 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 $::VERSION="0.1 GNU-compatible";
 
-my $KRUN = "krun";
-
 my @objFiles = ();
 my @srcFiles = ();
 my @tempFiles = ();
@@ -300,10 +298,11 @@ sub pushObj {
      my ($arr, $obj, $i) = (@_);
 
      if (defined $obj) {
-          push(@{$_[0]}, "-pOBJ$i=kast --parser binary");
+          push(@{$_[0]}, "-pOBJ$i=cat");
           push(@{$_[0]}, "-cOBJ$i=$obj");
      } else {
-          push(@{$_[0]}, "-cOBJ$i=.Bag");
+          push(@{$_[0]}, "-pOBJ$i=printf");
+          push(@{$_[0]}, "-cOBJ$i=.K");
      }
 }
    
@@ -312,7 +311,8 @@ sub getKRunCommand {
      my ($output, $obj1, $obj2, $obj3, $obj4, $src, $link) = (@_);
 
      my @krun_args = (
-          '--output', 'binary', 
+          '--kore',
+          '--output', 'kast', 
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
@@ -325,9 +325,11 @@ sub getKRunCommand {
      }
 
      if ($link) {
-          push(@krun_args, '-cOPTIONS=.Set');
+          push(@krun_args, '-cOPTIONS=`.Set`(.KList)');
+          push(@krun_args, "-pOPTIONS=printf");
      } else {
-          push(@krun_args, '-cOPTIONS=SetItem(NOLINK)');
+          push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList))');
+          push(@krun_args, "-pOPTIONS=printf");
      }
 
      pushObj(\@krun_args, $obj1, '1');
@@ -339,6 +341,7 @@ sub getKRunCommand {
           push(@krun_args, '--parser', 'cat');
           push(@krun_args, $kast);
      } else {
+          push(@krun_args, '-pPGM=printf');
           push(@krun_args, '-cPGM=.K');
      }
 

@@ -36,13 +36,13 @@ module C-EXPR-FUNCTION-CALL
      rule Call(Lbl:KLabel(V:K,, t(S:Set, pointerType(t(S':Set, functionType(T:Type, P:List))))), rvlist(L:List))
           => maybeBind(P, L)
           ~> elabCall(Lbl(V,, t(S, pointerType(t(S', functionType(T, P))))), L, T, .List)
-          requires (Lbl ==KLabel 'tv orBool Lbl ==KLabel 'te)
+          requires (#klabel(Lbl) ==K #klabel(`tv`) orBool #klabel(Lbl) ==K #klabel(`te`))
                andBool (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
      rule (.K => CV("EFC1", "function call with incomplete or invalid return type.",
                "6.5.2.2:2"))
           ~> Call(Lbl:KLabel(_,, t(_, pointerType(t(_, functionType(T:Type, _))))), rvlist(_))
-          requires (Lbl ==KLabel 'tv orBool Lbl ==KLabel 'te)
+          requires (#klabel(Lbl) ==K #klabel(`tv`) orBool #klabel(Lbl) ==K #klabel(`te`))
                andBool (notBool (isCompleteType(T) orBool isVoidType(T))
                     orBool isArrayType(T))
 

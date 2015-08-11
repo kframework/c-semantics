@@ -24,9 +24,9 @@ module C-DECL-INITIALIZER
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
-     rule figureInit(X:CId, T:Type, CodeLoc(K:K, L:K))
+     rule figureInit(X:CId, T:Type, CodeLoc(K:K, L::CabsLoc))
           => CodeLoc(.K, L) ~> figureInit(X, T, K)
           [structural]
 
@@ -111,21 +111,13 @@ module C-DECL-INITIALIZER
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type", "6.7.9:16"))
           ~> figureInit(_, t(_, incompleteArrayType(T:Type)), SingleInit(K:K))
-          requires notBool isWCharType(T) orBool getKLabel K =/=KLabel 'wstringLiteral
+          requires notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`wstringLiteral`)
 
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
-                    => arrayType(T, N))), initializer(K:K))
+                    => arrayType(T, N))), initializer(_))
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
-          requires notBool isKItem(K)
-               orElseBool (getKLabel(K) =/=KLabel 'handleBuiltinConstant)
-          [structural]
-
-     rule figureInit-aux(_:CId, t(_, (incompleteArrayType(T:Type)
-          => arrayType(T, #nativeSymbolLength(S) /Int byteSizeofType(T)))),
-               initializer(handleBuiltinConstant(Identifier(S:String), _)))
-          requires S in keys(nativeDefinedBuiltins)
           [structural]
 
    // id, type, initializer
@@ -135,12 +127,10 @@ module C-DECL-INITIALIZER
           requires isCompleteType(T)
      rule (elaborateInitDone(K:K) => .K) ~> initValue(_, _, (.K => K))
 
-     syntax Int ::= #nativeSymbolLength(String) [function, hook(C-SEMANTICS:nativeSymbolLength), impure]
-
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.
      syntax KItem ::= K "[[" Int "]]"
-     rule K:K [[ N:Int ]] => K[N]
+     rule K:K [[ N:Int ]] => K[N]::Expression
 
      syntax KItem ::= "getInit"
      syntax KItem ::= fillInit(K)
@@ -240,7 +230,7 @@ module C-DECL-INITIALIZER
           => resultInFieldInfoList(noResultOfSearchType)
      rule searchInFieldInfoList(T:Type, F:CId, ListItem(K:K) L:List)
           => searchInFieldInfoList(T, F, L)
-          requires getKLabel(K) =/=KLabel 'typedDeclaration
+          requires getKLabel(K) =/=K #klabel(`typedDeclaration`)
      rule searchInFieldInfoList(T:Type, F:CId,
                ListItem(typedDeclaration(T':Type, F':CId)) L:List)
           => searchInFieldInfoList(T, F, L)
@@ -293,8 +283,21 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     rule fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp)
+     rule <k> fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) ...</k>
+          <curr-subobject>
+            ListItem(K:K)
+          ...</curr-subobject>
+          requires K =/=K next
           [structural]
+
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
+               "6.7.9:2"))
+               ~> fillInit(InitFragment(NextInit, _))
+          ...</k>
+          <curr-subobject>
+               ListItem(next) ListItem(ncle(_, T:Type))
+          </curr-subobject>
+          requires isAggregateOrUnionType(T) 
 
      syntax KItem ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L:List)))
@@ -347,12 +350,12 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(ncle(K . F, T)))
-                    ListItem('ncle(K:K,, 't(_,, Lbl:KLabel(S:StructId))))
+                    ListItem(`ncle`(K:K,, `t`(_,, Lbl:KLabel(S:StructId))))
           ...</curr-subobject>
           <structs>...
                S |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _)
           ...</structs>
-          requires Lbl ==KLabel 'structType orBool Lbl ==KLabel 'unionType
+          requires #klabel(Lbl) ==K #klabel(`structType`) orBool #klabel(Lbl) ==K #klabel(`unionType`)
           [structural]
 
      rule <k> buildDesignator(NextInit) => NextInit ...</k>
@@ -384,6 +387,8 @@ module C-DECL-INITIALIZER
 
      rule (.K => typeof(K)) ~> initializeSingleInit(K:K)
           [structural]
+     rule (typeof(T:Type) => T) ~> initializeSingleInit(_)
+          [structural]
 
      // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':K) => .K ...</k>
@@ -401,16 +406,6 @@ module C-DECL-INITIALIZER
                     orBool isBitfieldType(T))
                andBool notBool isStructOrUnionType(T')
           [structural]
-
-     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
-               "6.7.9:2"))
-               ~> T':Type ~> initializeSingleInit(_)
-          ...</k>
-          <curr-subobject>
-               ListItem(next) ListItem(ncle(_, T:Type))
-          </curr-subobject>
-          requires isAggregateOrUnionType(T) 
-               andBool notBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
@@ -454,8 +449,8 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
-          requires getKLabel(K) =/=KLabel 'stringLiteral
-               andBool getKLabel(K) =/=KLabel 'wstringLiteral
+          requires getKLabel(K) =/=K #klabel(`stringLiteral`)
+               andBool getKLabel(K) =/=K #klabel(`wstringLiteral`)
           [structural]
 
      rule <k> fillInit(SingleInit(stringLiteral(S:String)))
@@ -588,7 +583,7 @@ module C-DECL-INITIALIZER
           requires isPointerType(T) orBool isArithmeticType(T)
           [structural]
 
-     rule (.K => zeroType(X[Len -Int 1], T))
+     rule (.K => zeroType(X[Len -Int 1]::Expression, T))
           ~> zeroType(X:K, t(_, arrayType(T:Type, (Len:Int => Len -Int 1))))
           requires Len >Int 0
           [structural]
@@ -618,7 +613,7 @@ module C-DECL-INITIALIZER
      rule zeroStruct(_, .List) => .K
           [structural]
 
-     syntax KItem ::= getZero(Type) [function]
+     syntax CValue ::= getZero(Type) [function]
      rule getZero(_:IntegerType) => 0
      rule getZero(_:FloatType) => 0.0
      rule getZero(_:PointerType) => NullPointer

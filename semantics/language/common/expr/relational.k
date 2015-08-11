@@ -7,6 +7,7 @@ module C-COMMON-EXPR-RELATIONAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      syntax KItem ::= makeTruth(Bool, Type, Type) [function]
      rule makeTruth(B:Bool, T:Type, T':Type)

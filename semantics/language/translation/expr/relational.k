@@ -4,6 +4,7 @@ module C-EXPR-RELATIONAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule L:RValue < R:RValue => te(stripHold(L) < stripHold(R), t(.Set, int))
           requires (isHold(L) orBool isHold(R))

@@ -9,7 +9,7 @@ module C-TYPING-INTERPRETATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // Rules that use specifier should be careful to use extractActualType if
      // going to be used in a typed name.
@@ -133,20 +133,17 @@ module C-TYPING-INTERPRETATION
           => t(getSpecifiers(T),
                incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(ListItem(Static)))), T:Type)
-          => t(getSpecifiers(T) SetItem(arrayStatic(value(N))),
-               arrayType(stripSpecifiers(T), value(N)))
-          requires notBool isHold(N)
-          [structural, anywhere]
+     rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(ListItem(Static)))), T:Type)
+          => t(getSpecifiers(T) SetItem(arrayStatic(N)),
+               arrayType(stripSpecifiers(T), N))
+          requires notBool isHold(tv(N, T'))
      // TODO(chathhorn): Other qualifiers?
-     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), value(N)))
-          requires notBool isHold(N)
-          [structural, anywhere]
+     rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+          requires notBool isHold(tv(N, T'))
      rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
           => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           requires isHold(N)
-          [structural, anywhere]
 
      syntax List ::= giveNamesToArgs(List) [function]
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
@@ -198,7 +195,7 @@ module C-TYPING-INTERPRETATION
           => t(S, functionType(extractActualType(T), L))
      rule extractActualType(t(S:Set, pointerType(T:Type)))
           => t(S, pointerType(extractActualType(T)))
-     rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T:K))))
+     rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T::SimpleType))))
           => extractActualType(t(S S', T))
 
      syntax KItem ::= NameAndType(CId, K) [strict(2)]

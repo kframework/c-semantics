@@ -13,7 +13,7 @@ module C-EXPR-ASSIGNMENT
      imports C-TYPING-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left
@@ -85,6 +85,7 @@ module C-EXPR-ASSIGNMENT
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
                andBool (type(L) =/=Type type(R))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
@@ -117,7 +118,8 @@ module C-EXPR-ASSIGNMENT
                          orBool isArithmeticType(type(L))
                          orBool isStructOrUnionType(type(L))
                          orBool isBoolType(type(L)))
-               )
+               ) andBool notBool R ==K voidVal
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("TEAS2", "incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue

@@ -1,4 +1,5 @@
 int main(void) {
       int x = 0;
-      return ++x + x;
+      ++x + x; x + ++x;
+      return 0;
 }

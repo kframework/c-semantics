@@ -1,9 +1,9 @@
 module C-ERROR-SYNTAX
-     imports KAST
+     imports BASIC-K
      imports STRING-SYNTAX
+     imports BOOL-SYNTAX
      // Deprecated...
      syntax KItem ::= ERROR(String, String)
-     syntax KItem ::= ERROR(String, String, KList)
      syntax KItem ::= ERROR(String, String, String, String)
 
      // Error code, desc., C11 citation.
@@ -14,11 +14,9 @@ module C-ERROR-SYNTAX
 
      syntax KResult ::= Bool
      syntax Error ::= "errorDummy"
-     syntax KItem ::= assert(K, Error) [strict(1)]
 
      syntax ErrorExit ::= EXIT(String)
 
-     syntax Bool ::= "isErrorRecovery" [function, hook(C-SEMANTICS:isErrorRecovery), impure]
 endmodule
 
 module C-ERROR
@@ -32,15 +30,9 @@ module C-ERROR
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
-     rule assert(true, _) => .K
-     rule assert(A:KResult, K:K) => K
-          requires A =/=K true
-
-     syntax KItem ::= EXITFunc(String) [function, hook(C-SEMANTICS:error), impure]
-
-     syntax String ::= ErrorMsg(String, String, String, KList) [function]
+     syntax String ::= ErrorMsg(String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
           => "Error: "
           +String Title
@@ -68,22 +60,16 @@ module C-ERROR
      syntax ErrorRef ::= Int
 
      rule ERROR(Title:String, Msg:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "", ""))
-     rule ERROR(Title:String, Msg:String, _:KList)
-          => EXITFunc(ErrorMsg(Title, Msg, "", ""))
+          => EXIT(ErrorMsg(Title, Msg, "", ""))
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
      rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
      rule CVUB(Title:String, Msg:String, Citation:String)
-          => EXITFunc(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
-
-     // defined as a K rule for if the hook is not defined
-     rule EXITFunc(S:String) => EXIT(S)
-     rule isErrorRecovery => false
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
      rule <k> (.K => CV("CID1",
                "Trying to look up identifier " +String S +String
@@ -93,8 +79,8 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types> Types:Map </types>
-          requires (notBool (Identifier(S:String) in keys(Env)))
-               andBool (notBool (Identifier(S:String) in keys(Types)))
+          requires (notBool (Identifier(S:String) in_keys(Env)))
+               andBool (notBool (Identifier(S:String) in_keys(Types)))
           [structural]
      rule <k> (.K => UNDEF("CID2",
                "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
@@ -102,7 +88,7 @@ module C-ERROR
           ...</k>
           <env> Env:Map </env>
           <types>... Identifier(S) |-> _ ...</types>
-          requires (notBool (Identifier(S) in keys(Env)))
+          requires (notBool (Identifier(S) in_keys(Env)))
           [structural]
 
 endmodule

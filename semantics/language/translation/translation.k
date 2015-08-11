@@ -54,6 +54,9 @@ require "stmt/switch.k"
 
 require "typing/canonicalization.k"
 require "typing/interpretation.k"
+require "typing/expr.k"
+
+require "../../extensions-translation.k"
 
 module C-TRANSLATION
      imports C-DYNAMIC-SYNTAX
@@ -112,4 +115,7 @@ module C-TRANSLATION
 
      imports C-TYPING-CANONICALIZATION
      imports C-TYPING-INTERPRETATION
+     imports C-TYPING-EXPR
+
+     imports C-TRANSLATION-EXTENSIONS
 endmodule

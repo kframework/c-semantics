@@ -4,9 +4,10 @@ module C-SYNTAX
      imports INT-SYNTAX
      imports BOOL-SYNTAX
      imports LIST
-     imports KORE-COMPAT
 
      imports C-DYNAMIC-SYNTAX
+
+     syntax KBott ::= "(" K ")" [bracket]
 
      syntax KResult ::= SpecifierElem
 
@@ -298,4 +299,11 @@ module C-SYNTAX
      | NO_INIT
      */
      syntax KItem ::= "NoInit"
+
+     /*
+     and attribute = String * expression list
+     */
+     // String, List
+     syntax C ::= Attribute(String, K)
+
 endmodule

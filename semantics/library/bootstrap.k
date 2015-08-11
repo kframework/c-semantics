@@ -20,7 +20,7 @@ module LIBC-BOOTSTRAP
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      //TODO(liyili): might not need this if we have hybrid label
      rule varg(K:KResult) => vargResult(K)

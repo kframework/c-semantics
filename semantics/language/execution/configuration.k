@@ -16,13 +16,16 @@ module C-CONFIGURATION
      // CId |-> SymBase
      <external-defs> .Map </external-defs>
 
+     // placeholder from translation semantics
+     <linking-state multiplicity="?"> .K </linking-state>
+
      <structs color="lightgray"> .Map </structs>
 
      // dummy link base |-> real base
      <linkings> .Map </linkings>
 
      <translation-units>
-          <tu multiplicity="*">
+          <tu multiplicity="*" type="Set">
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
@@ -31,6 +34,9 @@ module C-CONFIGURATION
                <local-statics> .Map </local-statics>
                // kpair(CId, BlockNum) |-> Type
                <local-types> .Map </local-types>
+
+               // placeholder from translation semantics
+               <tu-linking-state multiplicity="?"> .K </tu-linking-state>
 
                <next-unnamed color="black"> 0 </next-unnamed>
 
@@ -41,8 +47,9 @@ module C-CONFIGURATION
           </tu>
      </translation-units>
 </global>
+<result-value color="red"> 139 </result-value>
 <T>
-<exec>
+<exec multiplicity="?">
      // SymLoc |-> Type
      <effective-types> .Map </effective-types>
 
@@ -67,12 +74,12 @@ module C-CONFIGURATION
           <glocks color="yellow"> .List </glocks>
      </thread-info>
      <threads color="yellow">
-          <thread multiplicity="*" color="yellow">
+          <thread multiplicity="*" color="yellow" type="Set">
                <thread-id color="yellow"> 0 </thread-id>
                <buffer color="lightgray"> .List </buffer>
 
                <k color="green" multiplicity="?">
-                    loadObj(unwrapObj($PGM:Bag))
+                    loadObj(unwrapObj($PGM:K))
                     ~> initMainThread
                     ~> pgmArgs($ARGV:List)
                     ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
@@ -162,24 +169,25 @@ module C-CONFIGURATION
      </threads>
 
      // TODO(chathhorn): not sure where to put these.
-     <call-stack-frame multiplicity="*">
+     <call-stack-frame multiplicity="?">
           <continuation> .K </continuation>
           <stack-curr-scope> .K </stack-curr-scope>
           <stack-curr-function-params> .List </stack-curr-function-params>
           <stack-curr-program-loc> .K </stack-curr-program-loc>
-          <stack-control> .Bag </stack-control>
+          <stack-curr-tu> .K </stack-curr-tu>
+          <stack-control> .K </stack-control>
      </call-stack-frame>
 
-     <thread-state multiplicity="*">
+     <thread-state multiplicity="?">
           <thread-continuation> .K </thread-continuation>
-          <saved-thread-local> .Bag </saved-thread-local>
+          <saved-thread-local> .K </saved-thread-local>
      </thread-state>
 
 </exec>
 
 <files color="lightgray">
      <file-commands> .K </file-commands>
-     <file multiplicity="*">
+     <file multiplicity="*" type="Set">
           <fid> .K </fid>
           <uri> .K </uri>
           <pos> 0 </pos>
@@ -192,7 +200,6 @@ module C-CONFIGURATION
 </files>
 <input color="lightgray"> .List </input>
 <output color="lightgray"> .List </output>
-<result-value color="red"> .K </result-value>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
 

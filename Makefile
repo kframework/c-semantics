@@ -16,11 +16,11 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(PARSER_DIR)/cparser \
 
-.PHONY: default check-vars semantics clean fast semantics-fast $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k test-build
+.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile
 
 default: dist
 
-fast: $(DIST_DIR)/lib/libc.so $(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin
+fast: $(DIST_DIR)/lib/libc.so $(DIST_DIR)/c11-kompiled/c11-kompiled/def.cmx
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
@@ -36,24 +36,24 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(LIBC_DIR)/includes/*) | check-var
 	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/c11-kompiled/c11-kompiled/context.bin: $(DIST_DIR)/kcc semantics-fast
+$(DIST_DIR)/c11-kompiled/c11-kompiled/def.cmx: $(DIST_DIR)/kcc execution-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin: $(DIST_DIR)/kcc semantics-fast
+$(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/def.cmx: $(DIST_DIR)/kcc translation-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin: semantics
+$(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/def.cmx: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin: semantics
+$(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.cmx: semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)
 
-$(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/context.bin $(wildcard $(LIBC_DIR)/src/*) $(SCRIPTS_DIR)/kcc
+$(DIST_DIR)/lib/libc.so: $(DIST_DIR)/c11-translation-kompiled/c11-translation-kompiled/def.cmx $(wildcard $(LIBC_DIR)/src/*) $(SCRIPTS_DIR)/kcc
 	@echo "Translating the standard library... ($(LIBC_DIR))"
 	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/lib/libc.so $(wildcard $(LIBC_DIR)/src/*.c) $(KCCFLAGS) -I $(LIBC_DIR)/src/
 	@echo "Done."
 
-$(DIST_DIR): test-build $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/context.bin $(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/context.bin
+$(DIST_DIR): test-build $(DIST_DIR)/c11-nd-kompiled/c11-nd-kompiled/def.cmx $(DIST_DIR)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.cmx
 
 test-build: fast
 	@echo "Testing kcc..."
@@ -70,21 +70,34 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-semantics-fast: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
-	@$(MAKE) -C $(SEMANTICS_DIR) fast
+translation-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k
+	@$(MAKE) -C $(SEMANTICS_DIR) translation
+
+execution-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-execution.k
+	@$(MAKE) -C $(SEMANTICS_DIR) execution
 
 $(SEMANTICS_DIR)/settings.k:
 	@diff $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/settings.k $(SEMANTICS_DIR)
 
-$(SEMANTICS_DIR)/extensions.k:
-	@diff $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)/extensions.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-common.k:
+	@diff $(LIBC_DIR)/semantics/extensions-common.k $(SEMANTICS_DIR)/extensions-common.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-common.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-translation.k:
+	@diff $(LIBC_DIR)/semantics/extensions-translation.k $(SEMANTICS_DIR)/extensions-translation.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-translation.k $(SEMANTICS_DIR)
+$(SEMANTICS_DIR)/extensions-execution.k:
+	@diff $(LIBC_DIR)/semantics/extensions-execution.k $(SEMANTICS_DIR)/extensions-execution.k > /dev/null 2>&1 || cp $(LIBC_DIR)/semantics/extensions-execution.k $(SEMANTICS_DIR)
 
-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
-check:	fast
+check:	pass fail fail-compile
+
+pass:	fast
 	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
+
+fail:	fast
 	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
+
+fail-compile:	fast
 	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
 
 clean:
@@ -95,4 +108,4 @@ clean:
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions.k
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k
