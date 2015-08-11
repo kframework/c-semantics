@@ -23,19 +23,25 @@ module C-EXPR-SIZEOF
      \header{<stddef.h>} (and other headers).
      }*/
 
-     rule SizeofExpression(V:KResult) => sizeof(V)
-          requires notBool isVariableLengthArrayType(type(V))
-               andBool isCompleteType(type(V))
-               andBool notBool isFunctionType(type(V))
+     rule (.K => typeof(V)) ~> SizeofExpression(V:KItem)
+     rule typeof(T:Type) ~> SizeofExpression(V:KItem) => sizeof(T)
+          requires notBool isVariableLengthArrayType(T)
+               andBool isCompleteType(T)
+               andBool notBool isFunctionType(T)
      // Must evaluate the expression if it's a VLA (6.5.3.4p2).
-     rule SizeofExpression(V:KResult) => te(sizeof(stripHold(V)), t(.Set, cfg:sizeut))
-          requires isVariableLengthArrayType(type(V))
-               andBool isCompleteType(type(V))
-               andBool notBool isFunctionType(type(V))
+     context typeof(T:Type) ~> SizeofExpression(HOLE:KItem)
+          requires isVariableLengthArrayType(T)
+               andBool isCompleteType(T)
+               andBool notBool isFunctionType(T)
+     rule typeof(T:Type) ~> SizeofExpression(V:KResult) => te(sizeof(stripHold(V)), t(.Set, cfg:sizeut))
+          requires isVariableLengthArrayType(T)
+               andBool isCompleteType(T)
+               andBool notBool isFunctionType(T)
      rule (.K => CV("TES1", "Trying to compute sizeof of an expression with incomplete or a function type.", "6.5.3.4:1"))
-          ~> SizeofExpression(V:RValue)
-          requires notBool isCompleteType(type(V))
-               orBool isFunctionType(type(V))
+          ~> typeof(T:Type) ~> SizeofExpression(_)
+          requires notBool isCompleteType(T)
+               orBool isFunctionType(T)
+
 
      rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
 

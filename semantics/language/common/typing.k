@@ -119,6 +119,7 @@ module C-TYPING-SYNTAX
      syntax BitfieldType ::= UnsignedBitfieldType | SignedBitfieldType
      syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
                         | VariableLengthArrayType
+     syntax PointerOrArrayType ::= PointerType | ArrayType
 
      syntax FunctionType
      syntax IncompleteArrayType

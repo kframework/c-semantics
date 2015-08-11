@@ -1,0 +1,3 @@
+module C-TRANSLATION-EXTENSIONS
+
+endmodule
