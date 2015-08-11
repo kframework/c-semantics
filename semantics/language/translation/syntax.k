@@ -318,7 +318,7 @@ module C-ABSTRACT-SYNTAX
      | EXPR_ALIGNOF of expression
      | TYPE_ALIGNOF of specifier * decl_type
      */
-     syntax Expression ::= SizeofExpression(K) [strict]
+     syntax Expression ::= SizeofExpression(K)
      syntax Expression ::= SizeofType(K, K) [strict(1)]
      syntax Expression ::= AlignofExpression(K)
      syntax Expression ::= AlignofType(K, K) [strict(1)]

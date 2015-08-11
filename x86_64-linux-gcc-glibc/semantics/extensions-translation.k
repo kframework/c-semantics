@@ -1,10 +1,13 @@
 module C-TRANSLATION-EXTENSIONS
   imports C-COMMON-EXTENSIONS
+  imports C-ABSTRACT-SYNTAX
+  imports C-TYPING-EXPR-SYNTAX
+  imports C-TYPING-CANONICALIZATION-SYNTAX
 
   syntax KItem ::= GnuBodyDone(Int)
 
   // Statement expressions
-  rule `GnuBody`:KLabel(`Block`(BlockNum:Int, _, list(Stmts:List ListItem(CodeLoc(Computation(Stmt:K), Loc:K)))))
+  rule GnuBody(Block(BlockNum:Int, _, list(Stmts:List ListItem(CodeLoc(Computation(Stmt:K), Loc::CabsLoc)))))
        => elaborate(listToK(Stmts ListItem(CodeLoc(GnuBodyReturn(Stmt), Loc)))) ~> GnuBodyDone(BlockNum)
 
   rule elaborateDone(K:K) ~> GnuBodyDone(BlockNum:Int) => te(pushBlock(BlockNum) ~> K ~> popBlock, gnuBodyType(K))
@@ -18,8 +21,10 @@ module C-TRANSLATION-EXTENSIONS
   rule gnuBodyType(GnuBodyReturn(R:RValue)) => type(R)
 
   // Typeof operator
-  context `canonicalizeType-aux(_,_,_,_,_)`(_:List ListItem(`TypeofExpression`(HOLE:KItem)), _, _, _, _)
+  context canonicalizeType-aux(_:List ListItem(`TypeofExpression`(HOLE:KItem)), _, _, _, _)
 
-  rule `canonicalizeType-aux(_,_,_,_,_)`(_:List (ListItem(`TypeofExpression`(Result:Typed)) => .List), (.K => type(Result)), _, _, _)
+  rule canonicalizeType-aux(_:List (ListItem(`TypeofExpression`(Result:Typed)) => .List), (.K => type(Result)), _, _, _)
+
+  rule typeof(GnuBody(Block(_, _, list(Stmts:List ListItem(CodeLoc(Computation(Stmt:K), _))))) => Stmt)
 
 endmodule

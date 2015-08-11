@@ -283,8 +283,21 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     rule fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp)
+     rule <k> fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) ...</k>
+          <curr-subobject>
+            ListItem(K:K)
+          ...</curr-subobject>
+          requires K =/=K next
           [structural]
+
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
+               "6.7.9:2"))
+               ~> fillInit(InitFragment(NextInit, _))
+          ...</k>
+          <curr-subobject>
+               ListItem(next) ListItem(ncle(_, T:Type))
+          </curr-subobject>
+          requires isAggregateOrUnionType(T) 
 
      syntax KItem ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L:List)))
@@ -374,6 +387,8 @@ module C-DECL-INITIALIZER
 
      rule (.K => typeof(K)) ~> initializeSingleInit(K:K)
           [structural]
+     rule (typeof(T:Type) => T) ~> initializeSingleInit(_)
+          [structural]
 
      // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':K) => .K ...</k>
@@ -391,16 +406,6 @@ module C-DECL-INITIALIZER
                     orBool isBitfieldType(T))
                andBool notBool isStructOrUnionType(T')
           [structural]
-
-     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
-               "6.7.9:2"))
-               ~> T':Type ~> initializeSingleInit(_)
-          ...</k>
-          <curr-subobject>
-               ListItem(next) ListItem(ncle(_, T:Type))
-          </curr-subobject>
-          requires isAggregateOrUnionType(T) 
-               andBool notBool isStructOrUnionType(T')
 
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays

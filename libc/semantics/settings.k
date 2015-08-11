@@ -47,5 +47,7 @@ module C-SETTINGS
      rule cfg:intToPointer(_, _) => trap [owise]
      rule cfg:pointerToInt(_, _) => unknown
 
+     rule isErrorRecovery => false
+
 endmodule
 
