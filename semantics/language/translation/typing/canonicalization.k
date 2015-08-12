@@ -275,7 +275,6 @@ module C-TYPING-CANONICALIZATION
           <structs> Structs:Map </structs>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <incomplete-tags>... .Set => SetItem(X) </incomplete-tags>
           requires (X =/=K Identifier(""))
                andBool notBool (global(X, Tu) in_keys(Structs))
