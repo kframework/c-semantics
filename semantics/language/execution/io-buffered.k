@@ -187,15 +187,14 @@ module C-IO-BUFFERED
                     | "errorNonVolatileLVal"
 
      syntax KItem ::= readByte(SymLoc, Type)
+     //TODO(dwightguth): make these rules look a little better once we have partial compilation
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
-               => #if notBool (loc(Base, Offset) in Locs) #then .K #else
-                    errorUnseqEffects #fi
-               ~> #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
-               ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T) #then .K #else
-                    errorNonVolatileLVal #fi
+               => assert(notBool (loc(Base, Offset) in Locs), errorUnseqEffects)
+               ~> assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
+                    orBool isVolatileType(T), errorNonVolatileLVal)
                ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
           ...</k>
           <mem>...
@@ -206,12 +205,10 @@ module C-IO-BUFFERED
           requires Size >Int 0
           [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-               => #if notBool (loc(Base, Offset) in Locs) #then .K #else
-                    errorUnseqEffects #fi
-               ~> #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
-               ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T) #then .K #else
-                    errorNonVolatileLVal #fi
+               => assert(notBool (loc(Base, Offset) in Locs), errorUnseqEffects)
+               ~> assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
+                    orBool isVolatileType(T), errorNonVolatileLVal)
                ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
           ...</k>
           <mem>...
@@ -222,10 +219,9 @@ module C-IO-BUFFERED
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem))
           [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-               => #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
-               ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T) #then .K #else 
-                    errorNonVolatileLVal #fi
+               => assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert(notBool (Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T), errorNonVolatileLVal)
                ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(piece(trap, cfg:bitsPerByte)), T)
           ...</k>
           <mem>...
@@ -238,10 +234,9 @@ module C-IO-BUFFERED
                andBool (notBool (Offset in_keys(M)))
                andBool (notBool isStaticDuration(loc(Base, Offset)))
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-               => #if Offset <Int Len #then .K #else errorReadOutOfBounds #fi
-               ~> #if (notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T) #then .K #else 
-                    errorNonVolatileLVal #fi
+               => assert(Offset <Int Len, errorReadOutOfBounds)
+               ~> assert(notBool (Volatile in getQualsAtOffset(ObjT, Offset))
+                    orBool isVolatileType(T), errorNonVolatileLVal)
                ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(piece(0, cfg:bitsPerByte)), T)
           ...</k>
           <mem>...
@@ -257,8 +252,7 @@ module C-IO-BUFFERED
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
-               => #if notBool (Loc in Locs) #then .K #else
-                    errorUnseqEffects #fi
+               => assert(Loc in Locs, errorUnseqEffects)
                ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux ListItem(#readNativeByte(Loc, size(Aux), T)), T)
           ...</k>
           <locs-written> Locs::List </locs-written>
@@ -269,7 +263,7 @@ module C-IO-BUFFERED
           // TODO(chathhorn): perf, elided
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc)
-//                  => #if notBool ListItem(Loc) in Locs:List #then .K #else errorUnseqEffects #fi
+//                  => assert(notBool ListItem(Loc) in Locs:List, errorUnseqEffects)
 //                  ~> tv(V:K, t(.Set, no-type))
 //             ...</k>
 //             <locs-written> Locs:List </locs-written>
