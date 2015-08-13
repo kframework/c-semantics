@@ -1,4 +1,4 @@
-export K_OPTS := -Xmx2048m
+export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile
 EXTENSION = cmo
 
