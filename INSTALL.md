@@ -11,7 +11,7 @@ installation process for our C semantics can be summarized as:
 ```
 $ cd ~
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
-$ sudo apt-get install build-essential libxml-libxml-perl ocaml graphviz
+$ sudo apt-get install build-essential libxml-libxml-perl libstring-escape-perl ocaml graphviz
 $ sudo cpan -i Text::Diff DBI Getopt::Declare
 $ cd c-semantics
 $ make
@@ -36,6 +36,7 @@ $ sudo apt-get install build-essential
     - Text::Diff
     - DBI
     - Getopt::Declare
+    - String::Escape
 
 To install these modules using cpan:
 ```
