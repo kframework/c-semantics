@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-remove dependence on GPL
 use strict;
 use warnings;
 
