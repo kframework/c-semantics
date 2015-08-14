@@ -301,7 +301,7 @@ sub pushObj {
           push(@{$_[0]}, "-pOBJ$i=cat");
           push(@{$_[0]}, "-cOBJ$i=$obj");
      } else {
-          push(@{$_[0]}, "-pOBJ$i=printf");
+          push(@{$_[0]}, "-pOBJ$i=printf %s");
           push(@{$_[0]}, "-cOBJ$i=.K");
      }
 }
@@ -326,10 +326,10 @@ sub getKRunCommand {
 
      if ($link) {
           push(@krun_args, '-cOPTIONS=`.Set`(.KList)');
-          push(@krun_args, "-pOPTIONS=printf");
+          push(@krun_args, "-pOPTIONS=printf %s");
      } else {
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList))');
-          push(@krun_args, "-pOPTIONS=printf");
+          push(@krun_args, "-pOPTIONS=printf %s");
      }
 
      pushObj(\@krun_args, $obj1, '1');
@@ -341,7 +341,7 @@ sub getKRunCommand {
           push(@krun_args, '--parser', 'cat');
           push(@krun_args, $kast);
      } else {
-          push(@krun_args, '-pPGM=printf');
+          push(@krun_args, '-pPGM=printf %s');
           push(@krun_args, '-cPGM=.K');
      }
 

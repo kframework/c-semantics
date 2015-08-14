@@ -2,10 +2,12 @@
 use strict;
 use warnings;
 
+use List::Util qw(reduce);
 use File::Spec::Functions qw(catfile);
 use File::Temp;
 use File::Copy;
 use MIME::Base64;
+use String::Escape qw(quote backslash); 
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 setpgrp;
@@ -54,29 +56,18 @@ sub main {
       print $fileInput linkedProgram();
 
       my $argc = $#ARGV + 2;
-      my $argv = join('  ', map {qq|ListItem(\\"$_\\")|} ($0, @ARGV));
+      my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
-      my %krun_args = (
-                  '--output' => 'kast', 
-                  '-d' => $EXEC_DEF,
-                  "-cARGC=#token(\"$argc\", \"Int\")" => '',
-                  '-pARGC=printf' => '',
-                  "-cARGV=\"($argv .List)\"" => '',
-                  '-w' => 'none',
-                  '--parser "cat"' => $fileInput,
-                  '--kore' => '',
-                  '--exit-code' => "'<result-value> _:Int </result-value>'"
-                  );
-
+      my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGC=#token(\"$argc\", \"Int\")",
+                 '-pARGC=printf %s', "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
+                 'cat', $fileInput, '--kore', '--exit-code', "<result-value> _:Int </result-value>");
       my $options = '`.Set`(.KList)';
 
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
             print "DEBUG --- runs krun with the --debug flag.\n";
-            print "GRAPH --- to be used with SEARCH=1; generates a graph of the state space.\n";
             print "TRACE --- runs krun with the --trace flag.\n";
             print "DUMPALL --- leaves all the intermediate files in the current directory.\n";
-            print "LOGIO --- tell the IO server to create logs.\n";
             print "LTLMC --- LTL model checking.\n";
             print "VERBOSE --- verbose output.\n";
             print "PROVE=<file> --- enable prover on specification file";
@@ -87,68 +78,60 @@ sub main {
       }
 
       if (defined $ENV{TRACE}) {
-            $krun_args{'--trace'} = '';
-      }
-
-      if (defined $ENV{LOGIO}) {
-            $krun_args{'--log-io'} = 'on';
+           push @cmd, '--trace';
       }
 
       if (defined $ENV{DEBUG}) {
-            $krun_args{'--debug'} = '';
+           push @cmd, '--debug';
       }
 
       if (defined $ENV{VERBOSE}) {
-            $krun_args{'--verbose'} = '';
+           push @cmd, '--verbose';
       }
 
       if (defined nativeLibraries()) {
-            $krun_args{'--native-libraries'} = '"' . nativeLibraries() . '"';
+           push @cmd, '--native-libraries';
+           push @cmd, nativeLibraries();
       }
 
       if (defined $ENV{PROVE}) {
-            $krun_args{'--prove'} = $ENV{PROVE};
-            $krun_args{'--smt_prelude'} = $ENV{SMT_PRELUDE};
+            push @cmd, '--prove';
+            push @cmd, $ENV{PROVE};
+            push @cmd, '--smt_prelude';
+            push @cmd, $ENV{SMT_PRELUDE};
       } else {
-            $krun_args{'--smt'} = 'none';
-            $krun_args{'--output-file'} = $fileOutput;
+            push @cmd, '--smt';
+            push @cmd, 'none';
+            push @cmd, '--output-file';
+            push @cmd, $fileOutput;
       }
 
       if (defined $ENV{SEARCH}) {
-            $krun_args{'--search-final'} = '';
+            push @cmd, '--search-final';
             $options = '`SetItem`(`NOIO`(.KList))';
-            $krun_args{'-d'} = $EXEC_ND_DEF;
+            push @cmd, '-d';
+            push @cmd, $EXEC_ND_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic expression sequencing)\n";
       }
 
       if (defined $ENV{THREADSEARCH}) {
-            $krun_args{'--search-final'} = '';
+            push @cmd, '--search-final';
             $options = '`SetItem`(`NOIO`(.KList))';
-            $krun_args{'-d'} = $EXEC_ND_THREAD_DEF;
+            push @cmd, '-d';
+            push @cmd, $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';
             print "(with non-deterministic thread interleaving)\n";
       }
 
-      if (defined $ENV{LTLMC}) {
-            $krun_args{'--ltlmc'} = $ENV{LTLMC};
-            $krun_args{'-d'} = $EXEC_ND_DEF;
-            $krun_args{'--output'} = 'pretty';
-	    $options = '`SetItem`(`NOIO`(.KList))';
-            delete $krun_args{'--output-file'};
-            print 'LTL model checking... ';
-            print "(with non-deterministic expression sequencing)\n";
-      }
+      push @cmd, "-cOPTIONS=$options";
+      push @cmd, '-pOPTIONS=printf %s';
 
-      $krun_args{"-cOPTIONS=$options"} = '';
-      $krun_args{'-pOPTIONS=printf'} = '';
+      # Execute krun with the arguments in @cmd
+      print("'krun' '" . join("' '", @cmd) . "'\n") if defined $ENV{VERBOSE};
+      my $ret = system($KRUN, @cmd) >> 8;
 
-      # Execute krun with the arguments in (flattened) %krun_args.
-      my $cmd = "$KRUN " . (join ' ', (grep {$_} %krun_args));
-      print $cmd . "\n" if defined $ENV{VERBOSE};
-      my $ret = system($cmd) >> 8;
-
-      if (defined $ENV{LTLMC} | defined $ENV{DEBUG}) {
+      if (defined $ENV{LTLMC} | defined $ENV{PROVE}) {
             return 0;
       }
 
