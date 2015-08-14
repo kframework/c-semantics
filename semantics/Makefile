@@ -1,6 +1,6 @@
 export K_OPTS := -Xmx2048m -Xss32m
-KOMPILE = kompile
-EXTENSION = cmo
+KOMPILE = kompile --ocamlopt
+EXTENSION = cmx
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
 	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \

@@ -10,7 +10,7 @@ PASS_TESTS_DIR = tests/unit-pass
 FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
-EXTENSION = cmo
+EXTENSION = cmx
 
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
