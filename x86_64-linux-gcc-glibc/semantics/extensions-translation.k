@@ -21,9 +21,9 @@ module C-TRANSLATION-EXTENSIONS
   rule gnuBodyType(GnuBodyReturn(R:RValue)) => type(R)
 
   // Typeof operator
-  context canonicalizeType-aux(_:List ListItem(`TypeofExpression`(HOLE:KItem)), _, _, _, _)
+  context canonicalizeType-aux(_:List ListItem(`TypeofExpression`(HOLE:KItem => typeof(HOLE))), _, _, _, _) [result(Type)]
 
-  rule canonicalizeType-aux(_:List (ListItem(`TypeofExpression`(Result:Typed)) => .List), (.K => type(Result)), _, _, _)
+  rule canonicalizeType-aux(_:List (ListItem(`TypeofExpression`(Result:Type)) => .List), (.K => Result), _, _, _)
 
   rule typeof(GnuBody(Block(_, _, list(Stmts:List ListItem(CodeLoc(Computation(Stmt:K), _))))) => Stmt)
 
