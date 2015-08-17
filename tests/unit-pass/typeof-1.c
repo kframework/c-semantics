@@ -4,5 +4,7 @@ int main() {
     abort();
   if (sizeof(NULL) != sizeof(void *))
     abort();
+  if (sizeof(+ 5.0) != sizeof(double))
+    abort();
   return 0;
 }

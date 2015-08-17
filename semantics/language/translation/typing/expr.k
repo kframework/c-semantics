@@ -118,14 +118,18 @@ module C-TYPING-EXPR
      context typeof(CompoundLiteralType(HOLE:KItem))
      rule typeof(CompoundLiteralType(T:Type) => T)
 
+     syntax Type ::= tryPromote(Type) [function]
+     rule tryPromote(T:IntegerType) => promote(T)
+     rule tryPromote(T) => T [owise]
+
      // prefix expressions
      rule typeof(++ T:Type => T += t(.Set, int))
      rule typeof(-- T:Type => T -= t(.Set, int))
      rule typeof(& T:Type => t(.Set, pointerType(T)))
      rule typeof(* T:Type => innerType(T))
-     rule typeof(+ T:Type => promote(T))
-     rule typeof(- T:Type => promote(T))
-     rule typeof(~ T:Type => promote(T:Type))
+     rule typeof(+ T:Type => tryPromote(T))
+     rule typeof(- T:Type => tryPromote(T))
+     rule typeof(~ T:Type => tryPromote(T:Type))
      rule typeof(! T:Type => t(.Set, int))
 
      rule typeof(SizeofExpression(T:Type) => SizeofType(T, .K))
@@ -162,8 +166,8 @@ module C-TYPING-EXPR
      rule typeof(_:PointerOrArrayType - _:PointerOrArrayType => t(.Set, cfg:ptrdiffut))
 
      // shift expressions
-     rule typeof(T:Type << _ => promote(T))
-     rule typeof(T:Type >> _ => promote(T))
+     rule typeof(T:Type << _ => tryPromote(T))
+     rule typeof(T:Type >> _ => tryPromote(T))
 
      // relational expressions
      rule typeof(_ < _ => t(.Set, int))
