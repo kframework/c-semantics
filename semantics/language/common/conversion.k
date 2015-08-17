@@ -286,7 +286,8 @@ module C-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/
-     rule cast(t(_, void), tv(_,_)) => voidVal
+     rule cast(t(_, void), V:RValue) => voidVal
+          requires notBool isHold(V)
 
      rule cast(t(_, T:SimpleType), emptyValue) => castHold(t(.Set, T), emptyValue)
           requires T =/=K void
