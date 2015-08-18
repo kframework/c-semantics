@@ -230,13 +230,11 @@ sub mergeObjs {
 
           if (scalar @pids >= 4) {
             # finished a round, wait for results
-            while (scalar @pids > 0) {
               my %data = %{shift @pids};
               push(@objFiles, $data{'out'});
               waitpid $data{'pid'}, 0;
 
               checkError($? >> 8);
-            }
           }
      }
 
