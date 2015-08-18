@@ -4,6 +4,7 @@ module C-STMT-SWITCH
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.4.2}{4}}}{
      A \cinline{switch} statement causes control to jump to, into, or past the

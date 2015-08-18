@@ -7,6 +7,7 @@ module LIBC-STRING
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports COMPAT-SYNTAX
 
      // try to use getString
      // fixme should detect overlaps

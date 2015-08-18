@@ -49,9 +49,9 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areCompat(List, List, Set) [function,klabel(#areCompatList)]
 
-     rule areCompatible(T:Type, T':Type) => #areCompat(T, T', .Set)
+     rule areCompatible(T::Type, T'::Type) => #areCompat(T, T', .Set)
 
-     rule #areCompat(T:Type, T, _) => true
+     rule #areCompat(T::Type, T, _) => true
      rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T), _) => true
           requires sameQualifiers(Mods, Mods')
 
@@ -61,14 +61,14 @@ module C-TYPING-COMPATIBILITY
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
                t(Mods:Set, enumType(_)),
-               t(Mods':Set, int), _)
+               t(Mods':Set, T:SimpleType), _)
           => true
-          requires sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, int),
+               t(Mods:Set, T:SimpleType),
                t(Mods':Set, enumType(_)), _)
           => true
-          requires sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
@@ -78,7 +78,7 @@ module C-TYPING-COMPATIBILITY
           requires sameQualifiers(Mods, Mods')
           andBool #areTagsCompat(X, X')
 
-     rule #areCompat(T:Type, T':Type, Cache:Set) => true
+     rule #areCompat(T::Type, T'::Type, Cache::Set) => true
           requires kpair(T, T') in Cache
 
      rule #areCompat(
@@ -123,57 +123,57 @@ module C-TYPING-COMPATIBILITY
                andBool (getFieldInfo(S) ==K #incomplete
                     orBool getFieldInfo(S') ==K #incomplete)
      rule #areCompat(
-               t(Mods:Set, arrayType(T:Type, N:Int)),
-               t(Mods':Set, arrayType(T':Type, N)), Cache:Set)
+               t(Mods:Set, arrayType(T::Type, N:Int)),
+               t(Mods':Set, arrayType(T'::Type, N)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, arrayType(T:Type, _)),
-               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+               t(Mods:Set, arrayType(T::Type, _)),
+               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
           => #areCompat(T, T',  Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
+               t(Mods:Set, incompleteArrayType(T::Type)),
+               t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      // TODO(chathhorn): need to rework VLA compatibility.
      rule #areCompat(
-               t(Mods:Set, arrayType(T:Type, _)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+               t(Mods:Set, arrayType(T::Type, _)),
+               t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T:Type, _)),
-               t(Mods':Set, arrayType(T':Type, _)), Cache:Set)
+               t(Mods:Set, variableLengthArrayType(T::Type, _)),
+               t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)), Cache:Set)
+               t(Mods:Set, incompleteArrayType(T::Type)),
+               t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T:Type, _)),
-               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+               t(Mods:Set, variableLengthArrayType(T::Type, _)),
+               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, incompleteArrayType(T':Type)), Cache:Set)
+               t(Mods:Set, incompleteArrayType(T::Type)),
+               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
 
      rule #areCompat(
-               t(Mods:Set, pointerType(T:Type)),
-               t(Mods':Set, pointerType(T':Type)), Cache:Set)
+               t(Mods:Set, pointerType(T::Type)),
+               t(Mods':Set, pointerType(T'::Type)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
 
      // Struct and union fields.
      rule #areCompat(
-               typedDeclaration(T:Type, X:CId),
-               typedDeclaration(T':Type, X:CId), Cache:Set)
+               typedDeclaration(T::Type, X:CId),
+               typedDeclaration(T'::Type, X:CId), Cache:Set)
           => #areCompat(T, T', Cache)
 
      // A function declaration with no arguments is compatible with a
@@ -183,26 +183,26 @@ module C-TYPING-COMPATIBILITY
      // TODO(chathhorn): not sufficient?!? -- apparently we also need to look
      // at the argument types in a function definition w/no prototype?
      rule #areCompat(
-               t(Mods:Set, functionType(T:Type, .List)),
-               t(Mods':Set, functionType(T':Type, Args':List)), Cache:Set)
+               t(Mods:Set, functionType(T::Type, .List)),
+               t(Mods':Set, functionType(T'::Type, Args':List)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args')
                andBool notBool (variadic in Args')
      rule #areCompat(
-               t(Mods:Set, functionType(T:Type, Args:List)),
-               t(Mods':Set, functionType(T':Type, .List)), Cache:Set)
+               t(Mods:Set, functionType(T::Type, Args:List)),
+               t(Mods':Set, functionType(T'::Type, .List)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
                andBool areArgPromoted(Args)
                andBool notBool (variadic in Args)
      rule #areCompat(
-               t(Mods:Set, functionType(T:Type,  L:List)),
-               t(Mods':Set, functionType(T':Type, L':List)), Cache:Set)
+               t(Mods:Set, functionType(T::Type,  L:List)),
+               t(Mods':Set, functionType(T'::Type, L':List)), Cache:Set)
           => #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
           requires (size(L) ==Int size(L'))
                andBool sameQualifiers(Mods, Mods')
-     rule #areCompat(_:Type, _:Type, _) => false [owise]
+     rule #areCompat(_::Type, _::Type, _) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
@@ -240,7 +240,7 @@ module C-TYPING-COMPATIBILITY
      rule getAlignas'(.K, SetItem(K:K) Mods:Set) => getAlignas'(K, Mods)
      rule getAlignas'(alignas(A:Int), _) => A
      rule getAlignas'(K:K, Mods:Set) => getAlignas'(.K, Mods)
-          requires getKLabel(K) =/=KLabel 'alignas
+          requires getKLabel(K) =/=K #klabel(`alignas`)
                andBool (K =/=K .K)
 
      // We can assume the types are compatible.
@@ -260,12 +260,14 @@ module C-TYPING-COMPATIBILITY
      // composite types for enums explicitly addressed in the standard.
      rule compositeType(
                t(Mods:Set, enumType(_)),
-               t(Mods':Set, int))
-          => t(Mods Mods', int)
+               t(Mods':Set, T:SimpleType))
+          => t(Mods Mods', T)
+          requires T ==K cfg:enumAlias
      rule compositeType(
-               t(Mods:Set, int),
+               t(Mods:Set, T:SimpleType),
                t(Mods':Set, enumType(_)))
-          => t(Mods Mods', int)
+          => t(Mods Mods', T)
+          requires T ==K cfg:enumAlias
 
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),

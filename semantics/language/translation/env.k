@@ -15,7 +15,7 @@ module C-ENV
      imports C-BITSIZE-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      rule <k> addToHistory(BlockNum:Int) => .K ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>

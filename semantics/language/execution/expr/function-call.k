@@ -12,7 +12,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a
@@ -114,23 +114,23 @@ module C-EXPR-FUNCTION-CALL
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
-               bag2K(<call-stack-frame>...
+               <call-stack-frame>...
                     <stack-control>
-                         <curr-tu> OldTu </curr-tu>
-                         C:Bag
+                         C
                     </stack-control>
                     <continuation> K:K </continuation>
                     <stack-curr-scope> CurrScope </stack-curr-scope>
                     <stack-curr-function-params> CurrFunParams </stack-curr-function-params>
                     <stack-curr-program-loc> CurrLoc </stack-curr-program-loc>
-               ...</call-stack-frame>)
+                    <stack-curr-tu> OldTu </stack-curr-tu>
+               ...</call-stack-frame>
           ) ...</call-stack>
           <control>
                <curr-tu> OldTu:String => Tu </curr-tu>
                <curr-scope> CurrScope:Scope => blockScope(X, 0) </curr-scope>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
                <curr-program-loc> CurrLoc:K </curr-program-loc>
-               (C:Bag => <control-details>... .Bag ...</control-details>)
+               (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
 
@@ -202,6 +202,7 @@ module C-EXPR-FUNCTION-CALL
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
                andBool (type(L) =/=Type type(R))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(type(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
@@ -213,17 +214,18 @@ module C-EXPR-FUNCTION-CALL
 
      rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
-          requires (isPointerType(type(L)) andBool notBool isPointerType(type(R))
+          requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
                     andBool notBool isNullPointerConstant(R))
                orBool isArithmeticType(type(L))
                     andBool notBool isArithmeticType(type(R))
                orBool isStructOrUnionType(type(L))
                     andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
-               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R))
+               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
                orBool notBool (isPointerType(type(L))
                     orBool isArithmeticType(type(L))
                     orBool isStructOrUnionType(type(L))
-                    orBool isBoolType(type(L)))
+                    orBool isBoolType(type(L))))
+          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("EFC2", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue

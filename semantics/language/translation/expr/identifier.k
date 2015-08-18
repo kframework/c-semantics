@@ -5,7 +5,7 @@ module C-EXPR-IDENTIFIER
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-
+     imports C-CONFIGURATION
      imports C-ABSTRACT-SYNTAX
 
      rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>

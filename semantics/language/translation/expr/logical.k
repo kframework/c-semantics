@@ -1,4 +1,5 @@
 module C-EXPR-LOGICAL-SYNTAX
+     imports BASIC-K
      syntax KItem ::= simplifyTruth(K) [function]
 endmodule
 

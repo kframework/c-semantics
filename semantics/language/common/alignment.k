@@ -13,6 +13,7 @@ module C-ALIGNMENT
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-ERROR-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule alignofType(T:Type) => tv(byteAlignofType(T), t(SetItem(IntegerConstant), cfg:sizeut))
           requires isCompleteType(T) andBool notBool isFunctionType(T)
@@ -37,7 +38,7 @@ module C-ALIGNMENT
      rule byteAlignofType(t(_, unsigned-long-int)) => byteAlignofType(t(.Set, long-int))
      rule byteAlignofType(t(_, unsigned-long-long-int)) => byteAlignofType(t(.Set, long-long-int))
 
-     rule byteAlignofType(t(_, enumType(_))) => cfg:alignofEnum
+     rule byteAlignofType(t(S:Set, enumType(_))) => byteAlignofType(t(S, cfg:enumAlias))
 
      syntax Int ::= byteAlignofList(List) [function]
      syntax Int ::= "byteAlignofList'" "(" Int "," List ")" [function]

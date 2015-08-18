@@ -8,7 +8,7 @@ module C-COMPOUND-LITERAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed
@@ -42,7 +42,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <compound-lit-map> M:Map </compound-lit-map>
           <duration> D:Duration </duration>
-          requires notBool (X in keys(M))
+          requires notBool (X in_keys(M))
           [structural]
      rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
@@ -70,7 +70,7 @@ module C-COMPOUND-LITERAL
      // gotos. An instance (i.e., syntactic occurance) of a compound literal
      // apparently must always refer to the same object, even if it is
      // encountered multiple times (e.g., when in the body of a loop).
-     rule <k> initCompoundLiteral(initValue(X:CId, T:KResult, Init:K))
+     rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
                => addToEnv(X, Base)
                ~> giveType(X, T)
                ~> allowInit(Init)

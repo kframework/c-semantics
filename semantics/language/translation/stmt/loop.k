@@ -7,7 +7,7 @@ module C-STMT-LOOP
      imports C-PROCESS-LABEL-SYNTAX
      imports C-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
 
      // This is a little subtle. If the first expression is a declaration, it
      // must be evaluated at the same scope as the for (and not in a nested

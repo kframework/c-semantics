@@ -286,7 +286,8 @@ module C-CONVERSION
      expression, its value or designator is discarded. (A void expression is
      evaluated for its side effects.)
      }*/
-     rule cast(t(_, void), _:RValue) => voidVal
+     rule cast(t(_, void), V:RValue) => voidVal
+          requires notBool isHold(V)
 
      rule cast(t(_, T:SimpleType), emptyValue) => castHold(t(.Set, T), emptyValue)
           requires T =/=K void
@@ -368,7 +369,7 @@ module C-CONVERSION
           => castHold(T', tv(V, T))
           requires (isPointerType(T) andBool isFloatType(T'))
                orBool (isFloatType(T) andBool isPointerType(T'))
-               orBool (T =/=Type T') andBool
+               orBool (stripQualifiers(T) =/=Type stripQualifiers(T')) andBool
                ((notBool isPointerType(T)
                     andBool notBool isArithmeticType(T)
                     andBool notBool isVoidType(T'))

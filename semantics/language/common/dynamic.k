@@ -6,7 +6,7 @@ module C-DYNAMIC-SYNTAX
      imports SET
 
      syntax SimpleType // defined in C-TYPING-SYNTAX
-     syntax Bits // defined in C-BITS-SYNTAX
+     syntax Bits ::= Int // defined in C-BITS-SYNTAX
      syntax SymLoc // defined in C-SYMLOC-SYNTAX
 
      syntax Type ::= t(Set, SimpleType)
@@ -33,9 +33,9 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= toRVal(K)
 
      syntax Typed ::= LValue | RValue | Hold | Type
-     syntax Type ::= type(Typed) [function]
+     syntax Type ::= type(K) [function]
      syntax Valued ::= LValue | RValue | Hold
-     syntax KItem ::= value(Valued) [function]
+     syntax KItem ::= value(K) [function]
 
      syntax KItem ::= "discard"
 
@@ -71,8 +71,8 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-     syntax KItem ::= loadObj(Bag)
-     syntax Bag ::= unwrapObj(Bag) [function]
+     syntax KItem ::= loadObj(K)
+     syntax K ::= unwrapObj(K) [function]
 
      syntax KItem ::= "comma"
 
@@ -126,11 +126,12 @@ module C-DYNAMIC
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
-     imports COMPAT-SYNTAX
+     imports C-CONFIGURATION
+
+     rule isKResult(.HeatList) => true
+     rule isKResult(S1 hs:: S2) => isKResult(S1) andBool isKResult(S2)
 
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
-     rule toRVal(V:RValue) => V
-          [structural]
 
      rule stripHold(te(K:K, _)) => K
      rule stripHold(le(K:K, _)) => K
@@ -164,14 +165,14 @@ module C-DYNAMIC
           ...</generatedTop>)
           => <global> G </global>
 
-     rule unwrapObj(.Bag) => .Bag
+     rule unwrapObj(.K) => .K
 
-     rule <k> loadObj(<global> G:Bag </global>) => .K ...</k>
-          <global> (_:Bag => G) </global>
-          requires (G =/=Bag .Bag)
+     rule <k> loadObj(G:GlobalCell) => .K ...</k>
+          (<global> _ </global> => G)
+          requires (G =/=K .K)
           [structural]
 
-     rule loadObj(.Bag) => .K
+     rule loadObj(.K) => .K
           [structural]
 
      rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))

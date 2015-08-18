@@ -2,7 +2,8 @@ module C-STMT-GOTO
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports COMPAT-SYNTAX
+
+     imports C-CONFIGURATION
 
      syntax KItem ::= getIdOfDeclaration(K) [function]
      rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
@@ -99,11 +100,11 @@ module C-STMT-GOTO
      rule preprocessGoto(map(M:Map), Lbl:CId)
           => preprocessGoto(lookup(M, Lbl), Lbl)
      rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
-          requires getKLabel(GotoInfo) =/=KLabel 'map
-               andBool getKLabel(Lbl) =/=KLabel 'funLabel
+          requires getKLabel(GotoInfo) =/=K #klabel(`map`)
+               andBool getKLabel(Lbl) =/=K #klabel(`funLabel`)
      rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), Lbl:CId)
           => Blk
-          requires getKLabel(Lbl) ==KLabel 'funLabel
+          requires getKLabel(Lbl) ==K #klabel(`funLabel`)
 
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth:Int,
@@ -115,38 +116,24 @@ module C-STMT-GOTO
           </k>
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history>
-               ListItem(CurrentBlock:Int) BlockHistory':List
+               ListItem(CurrentBlock:Int) BlockHistory:List
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==KLabel 'processGoto)
-               orBool (L ==KLabel 'processGotoDown))
-               andBool (listEqual(BlockHistory, BlockHistory'))
+          requires ((#klabel(L) ==K #klabel(`processGoto`))
+               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
           [structural]
 
      // - second case, we're in a different block
-     syntax Bool ::= subListEqualBack(List, List) [function]
-     syntax List ::= getSubListBack(List, List) [function]
-                   | getTopOfList(List) [function]
-     syntax KItem ::= getLastOfList(List) [function]
+     // isSuffixOf(A, B) => true if A is a suffix of B
+     syntax Bool ::= isSuffixOf(List, List) [function]
 
-     rule subListEqualBack(.List, _) => true
-     rule subListEqualBack(ListItem(_) _, .List) => false
-     rule subListEqualBack(L:List ListItem(K:K), L':List ListItem(K))
-           => subListEqualBack(L:List, L':List)
-     rule subListEqualBack(_ ListItem(K:K), _ ListItem(K':K))
+     rule isSuffixOf(.List, _) => true
+     rule isSuffixOf(ListItem(_) _, .List) => false
+     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
+           => isSuffixOf(L:List, L':List)
+     rule isSuffixOf(_ ListItem(K:K), _ ListItem(K':K))
            => false
           requires K =/=K K'
-
-     rule getSubListBack(.List, L:List) => L
-     rule getSubListBack(ListItem(_) _:List, .List) => .List
-     rule getSubListBack(L:List ListItem(K:K), L':List ListItem(K))
-           => getSubListBack(L:List, L':List)
-     rule getSubListBack(_:List ListItem(K:K), _:List ListItem(K':K))
-           => .List
-          requires K =/=K K'
-
-     rule getTopOfList(L:List ListItem(_)) => L
-     rule getLastOfList(_:List ListItem(K:K)) => K
 
      //  as long as there are entries in the actual block history that differ
      //  from the target block history, we need to pop
@@ -171,7 +158,7 @@ module C-STMT-GOTO
                ListItem(BlockNum:Int) ActualHistory:List
           </block-history>
           requires BlockNum in BlockNums andBool
-               (notBool subListEqualBack(ListItem(BlockNum) ActualHistory,
+               (notBool isSuffixOf(ListItem(BlockNum) ActualHistory,
                BlockNums))
           [structural]
 
@@ -180,7 +167,7 @@ module C-STMT-GOTO
                     BlockNums:List, K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
                     ~> processGotoDown(gotoObject(TargetDepth,
-                         (getTopOfList(getSubListBack(ActualHistory, BlockNums))
+                         (range(BlockNums, 0, size(ActualHistory) +Int 1)
                          ListItem(CurrentBlock) ActualHistory),
                          K, LoopStack, DeclStack))
           ...</k>
@@ -189,13 +176,14 @@ module C-STMT-GOTO
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool subListEqualBack(ActualHistory, BlockNums)
+               andBool isSuffixOf(ActualHistory, BlockNums)
+               andBool notBool (ActualHistory ==K BlockNums)
           [structural]
 
-     rule <k> (.K => pushBlock(getLastOfList(
-                        getSubListBack(ActualHist, BlockNums)))
-               ~> addVariablesForBlock(getLastOfList(
-                        getSubListBack(ActualHist, BlockNums)), DeclStk)
+     rule <k> (.K => pushBlock(
+                        BlockNums[-1 -Int size(ActualHist)]:>Int)
+               ~> addVariablesForBlock(
+                        BlockNums[-1 -Int size(ActualHist)]:>Int, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int,
                     BlockNums:List, _, _,
                     DeclStk:List))
@@ -203,7 +191,8 @@ module C-STMT-GOTO
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
           requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool subListEqualBack(ActualHist, BlockNums)
+               andBool isSuffixOf(ActualHist, BlockNums)
+               andBool notBool (BlockNums ==K ActualHist)
           [structural]
 
      //  We've made it to the block above the target
@@ -221,8 +210,8 @@ module C-STMT-GOTO
           <nesting-depth> Depth:Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((L ==KLabel 'processGoto)
-               orBool (L ==KLabel 'processGotoDown))
+          requires ((#klabel(L) ==K #klabel(`processGoto`))
+               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 

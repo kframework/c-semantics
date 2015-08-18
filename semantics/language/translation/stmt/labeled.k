@@ -1,6 +1,7 @@
 module C-STMT-LABELED
      imports C-SYNTAX
      imports C-ELABORATOR-SYNTAX
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.1}{4}}}{
      Any statement may be preceded by a prefix that declares an identifier as a

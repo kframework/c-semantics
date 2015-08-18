@@ -4,5 +4,6 @@ int f(int a, int b) {
 
 int main(void) {
       int x = 0;
-      return f(x = 0, x);
+      f(x = 0, x); f(x, x = 0);
+      return 0;
 }

@@ -42,7 +42,6 @@ module C-LITERAL
      // Included for symmetry.
      syntax IntConstant ::= decimalConstant(Int)
      rule DecimalConstant(N:Int) => decimalConstant(N)
-          [anywhere, structural]
      rule StringLiteral(S:String) => stringLiteral(S)
           [anywhere, structural]
      rule WStringLiteral(list(S:List)) => wstringLiteral(S)
@@ -253,7 +252,7 @@ module C-LITERAL
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
-          => cast(t(SetItem(IntegerConstant), int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))))
+          => cast(t(SetItem(IntegerConstant), int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))):>RValue)
           [structral, anywhere]
      rule WCharLiteral(N:Int) => tv(N, t(.Set, cfg:wcharut))
           [structral, anywhere]

@@ -6,6 +6,8 @@ module C-EXPR-BITWISE
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports COMPAT-SYNTAX
 
      rule ~ te(K:K, T:Type) => te(~ K, T)
           requires isPromoted(T)
