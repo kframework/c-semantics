@@ -57,21 +57,29 @@ $ sudo apt-get install libxml-libxml-perl
 For execution the unreleased 4.03 is required, and compiling the semantics
 uses ocamlfind to locate require O'Caml packages.
 This is most easily managed with opam - https://opam.ocaml.org/
-The required O'Caml version can be installed with `opam switch 4.03+trunk`.
-(For the parser alone versions 3.11, 3.12, and 4.00 all work, probably many
-more as well, and no special dependency handling is required.
-Installing with your OS package manger or from https://ocaml.org/ will work.
-On Ubuntu, `apt-get install ocaml`)
+The required O'Caml version can be installed with `opam switch 4.03+trunk`,
+then switch to that environment  by logging back in or running
+`` eval `opam config env` ``, and install further dependencies with
+
+    opam install ocamlfind
+    opam install zarith
+
+Finally, you need to install the mlgmp library by asking Dwight Guth for updated sources which support some extra functions (this will hopefully be merged upstream soon).
 
 To check if OCaml is installed:
 ```
-$ ocaml
+$ ocamlfind ocamlopt -version
         Objective Caml version 4.03.0+dev10-2015-07-29
 
 # 
 ```
 
 (Press ctrl-d to exit.)
+
+(For the parser alone versions 3.11, 3.12, and 4.00 all work, probably many
+more as well, and no special dependency handling is required.
+Installing with your OS package manger or from https://ocaml.org/ will work.
+On Ubuntu, `apt-get install ocaml`)
 
 For modifying the semantics, compilation times can be reduced further by
 modifying the O'Caml compiler to lower some hardcoded optimization settings.
