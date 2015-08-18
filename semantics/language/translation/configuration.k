@@ -44,6 +44,7 @@ module C-CONFIGURATION
                     <internals> .Map </internals>
                     <next-link-loc> .K </next-link-loc>
                     <next-static-loc> .K </next-static-loc>
+                    <uses> SetItem(Identifier("main")) </uses>
                </tu-linking-state>
 
                <next-unnamed color="black"> 0 </next-unnamed>

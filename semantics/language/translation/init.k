@@ -78,6 +78,7 @@ module C-TRANSLATION-INIT
                => preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
+               ~> removeUnusedIdentifiers
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
