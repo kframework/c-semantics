@@ -92,6 +92,7 @@ module C-BITS
      rule bitRange(piece(bitRange(N:Bits, Start:Int, End:Int), Len:Int), 0, 0)
           => bitRange(piece(bitRange(N, Start, Start), 1), 0, 0)
           requires Start +Int Len ==Int End +Int 1
+               andBool (Len =/=Int 1 orBool Start =/=Int End)
           [structural, anywhere]
 
      rule bitRange(N:Int, Pos:Int, Pos:Int) => 1 &Int (N >>Int Pos)
