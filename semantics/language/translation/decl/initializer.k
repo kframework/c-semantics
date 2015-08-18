@@ -619,42 +619,35 @@ module C-DECL-INITIALIZER
      rule getZero(_:PointerType) => NullPointer
 
      syntax KItem ::= fillEnums(K)
-     syntax KItem ::= "fillEnums-aux" "(" K "," K ")"
+     syntax KItem ::= "fillEnums-aux" "(" K "," Int ")"
 
      rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
           [structural]
 
-     rule fillEnums(K:K) => fillEnums-aux(K, tv(0, t(SetItem(IntegerConstant), int)))
+     rule fillEnums(K:K) => fillEnums-aux(K, 0)
           [structural]
 
-     rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), K:K)
-          => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(IntegerConstant), int), E),
-               // Skip calculating the initializer so we can force int type.
-               initializer(initEnum(E, K)))
+     rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), Value:Int)
+          => initEnum(E, tv(Value, t(SetItem(IntegerConstant), int)))
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), K + tv(1, t(SetItem(IntegerConstant), int)))
+               EnumDef(X, list(L)), Value +Int 1)
           [structural]
+     context fillEnums-aux(EnumDef(_, list(ListItem(EnumItemInit(_, HOLE)) _)), _)
      rule fillEnums-aux(EnumDef(X:CId, list(
-               ListItem(EnumItemInit(E:CId, Exp:K)) L:List)), _)
-          => declare(typedDeclaration(
-               t(SetItem(Static) SetItem(IntegerConstant), int), E),
-               initializer(initEnum(E, Exp)))
+               ListItem(EnumItemInit(E:CId, R:RValue)) L:List)), _)
+          => initEnum(E, R)
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), Exp + tv(1, t(SetItem(IntegerConstant), int)))
-          requires Exp =/=K NothingExpression
+               EnumDef(X, list(L)), value(R):>Int)
           [structural]
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
           [structural]
 
 
-     syntax KItem ::= initEnum(CId, K)
-     context initEnum(_, HOLE => reval(HOLE)) [result(RValue)]
-     rule initEnum(X:CId, V:RValue)
-          => Computation(ncle(X, t(.Set, int)) := V)
-          requires isIntegerType(type(V)) andBool IntegerConstant in getModifiers(type(V))
+     syntax KItem ::= initEnum(CId, RValue)
+     rule <k> initEnum(X:CId, tv(Value:Int, T:Type)) => addEnum(X, Value) ...</k>
+          requires isIntegerType(T) andBool IntegerConstant in getModifiers(T)
      rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
-          ~> initEnum(_, tv(_, T:Type))
-          requires notBool isIntegerType(T) orBool notBool IntegerConstant in getModifiers(T)
+          ~> initEnum(_, R:RValue)
+          requires isHold(R) orBool notBool isIntegerType(type(R)) orBool notBool IntegerConstant in getModifiers(type(R))
 
 endmodule

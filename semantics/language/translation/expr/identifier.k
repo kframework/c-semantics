@@ -49,6 +49,12 @@ module C-EXPR-IDENTIFIER
           requires isLinkerLoc(Base)
           [structural]
 
+     // according to C11 sec. 6.5.1, enumeration constants are constants and therefore
+     // not lvalues, which designate an object. Therefore we convert directly to a tv
+     // so that expressions like &x will not work.
+     rule <k> X:CId => tv(Value, t(SetItem(IntegerConstant), int)) ...</k>
+          <enums>... X |-> Value:Int ...</enums>
+
      rule instantiate(Loc:SymLoc, T:Type)
           => te(instantiate(Loc, T), T)
           requires notBool fromConstantExpr(T)

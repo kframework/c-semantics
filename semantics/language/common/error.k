@@ -74,24 +74,4 @@ module C-ERROR
      rule CVUB(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
 
-     rule <k> (.K => CV("CID1",
-               "Trying to look up identifier " +String S +String
-               ", but no such identifier is in scope.",
-               "6.5.1:2") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types> Types:Map </types>
-          requires (notBool (Identifier(S:String) in_keys(Env)))
-               andBool (notBool (Identifier(S:String) in_keys(Types)))
-          [structural]
-     rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types>... Identifier(S) |-> _ ...</types>
-          requires (notBool (Identifier(S) in_keys(Env)))
-          [structural]
-
 endmodule
