@@ -52,22 +52,30 @@ $ sudo apt-get install libxml-libxml-perl
 ### 3. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
-- Install OCaml from <http://caml.inria.fr/> or via your package manager. On
-  Ubuntu:
-```
-$ sudo apt-get install ocaml
-```
-- Versions 3.11, 3.12, and 4.00 all work; probably many others work as well.
+- We also now default to using O'Caml to execute the C semantics.
+
+For execution the unreleased 4.03 is required, and compiling the semantics
+uses ocamlfind to locate require O'Caml packages.
+This is most easily managed with opam - https://opam.ocaml.org/
+The required O'Caml version can be installed with `opam switch 4.03+trunk`.
+(For the parser alone versions 3.11, 3.12, and 4.00 all work, probably many
+more as well, and no special dependency handling is required.
+Installing with your OS package manger or from https://ocaml.org/ will work.
+On Ubuntu, `apt-get install ocaml`)
 
 To check if OCaml is installed:
 ```
 $ ocaml
-        Objective Caml version 4.00.0
+        Objective Caml version 4.03.0+dev10-2015-07-29
 
 # 
 ```
 
 (Press ctrl-d to exit.)
+
+For modifying the semantics, compilation times can be reduced further by
+modifying the O'Caml compiler to lower some hardcoded optimization settings.
+Please contact Dwight Guth or ask the project members for details.
 
 ### 4. Install K.
 - This version of the C semantics should be compatible with the latest version
