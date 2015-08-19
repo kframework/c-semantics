@@ -637,7 +637,7 @@ module C-DECL-INITIALIZER
                ListItem(EnumItemInit(E:CId, R:RValue)) L:List)), _)
           => initEnum(E, R)
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), value(R):>Int)
+               EnumDef(X, list(L)), value(R):>Int +Int 1)
           [structural]
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
           [structural]
