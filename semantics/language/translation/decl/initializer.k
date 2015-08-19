@@ -637,11 +637,14 @@ module C-DECL-INITIALIZER
                ListItem(EnumItemInit(E:CId, R:RValue)) L:List)), _)
           => initEnum(E, R)
           ~> fillEnums-aux(
-               EnumDef(X, list(L)), value(R):>Int +Int 1)
+               EnumDef(X, list(L)), incrementIfInt(value(R)))
           [structural]
      rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
           [structural]
 
+     syntax Int ::= incrementIfInt(K) [function]
+     rule incrementIfInt(I:Int) => I +Int 1
+     rule incrementIfInt(_) => 0 [owise] //in this case, the configuration should be about to get stuck, so it doesn't matter
 
      syntax KItem ::= initEnum(CId, RValue)
      rule <k> initEnum(X:CId, tv(Value:Int, T:Type)) => addEnum(X, Value) ...</k>
