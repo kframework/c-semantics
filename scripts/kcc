@@ -63,7 +63,6 @@ my $spec = q(#
       -l<lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
       <files>...		C files to be compiled. [required] [repeatable]
-      -fnative-libc			Link semantics against native C library.
       --help				Show usage information [undocumented]
                         { $self->usage(0); }
       -v				Show version information [undocumented]
@@ -178,7 +177,7 @@ sub main {
      open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
      print $programRunner "$template\n";
      print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-     if (@stdlib && $args->{'-fnative-libc'}) {
+     if (@stdlib) {
            print $programRunner "sub nativeLibraries {\n return '@stdlib';\n}\n";
      } else {
            print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
@@ -345,7 +344,7 @@ sub getKRunCommand {
           push(@krun_args, '-cPGM=.K');
      }
 
-     if ($args->{'-fnative-libc'} && scalar @stdlib) {
+     if (scalar @stdlib) {
           push(@krun_args, '--native-libraries');
           push(@krun_args, "@stdlib");
      }
