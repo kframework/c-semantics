@@ -82,6 +82,8 @@ my $spec = q(#
       -Wall			Ignored
       -rpath <file>		Ignored
       -soname <file>		Ignored
+      -pthread			Enables pthread library (highly experimental, likely broken)
+{ push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
 
       -Xmx<size>		Passed to underlying JVM
                   
@@ -364,7 +366,7 @@ sub preprocess {
           # no gcc, try clang
           $pp = "clang";
      }
-     my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", "-Wmissing-prototypes",
+     my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,

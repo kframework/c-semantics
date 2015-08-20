@@ -9,6 +9,7 @@ module C-EXECUTION-ERROR
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -28,6 +29,13 @@ module C-EXECUTION-ERROR
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
+          requires notBool isErrorRecovery
+
+     rule <k> EXIT(Msg:String) => #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          requires isErrorRecovery
 
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 

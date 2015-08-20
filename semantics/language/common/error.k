@@ -16,7 +16,8 @@ module C-ERROR-SYNTAX
      syntax Error
      syntax K ::= assert(Bool, Error)
 
-     syntax ErrorExit ::= EXIT(String)
+     syntax KItem ::= EXIT(String)
+     syntax ErrorExit
 
 endmodule
 
@@ -30,10 +31,14 @@ module C-ERROR
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
      rule assert(B, E) => #if B #then .K #else E #fi [macro]
+
+     rule _:ErrorExit ~> _:Error => .K
+          requires isErrorRecovery
 
      syntax String ::= ErrorMsg(String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)

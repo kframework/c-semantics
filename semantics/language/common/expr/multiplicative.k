@@ -30,6 +30,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           => arithInterpret(T, I1 *Int I2)
           requires isPromoted(T)
                andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(F1:Float, T:Type) * tv(F2:Float, T':Type)
           => arithInterpret(T, F1 *Float F2)
@@ -40,15 +41,17 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           => arithInterpret(T, I1 /Int I2)
           requires isPromoted(T:Type) andBool I2 =/=Int 0
                andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule tv(F1:Float, T:Type) / tv(F2:Float, T':Type)
           => arithInterpret(T, F1 /Float F2)
           requires T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM1", "Division by 0.", "6.5.5:5") )
-          ~> tv(_, T:IntegerType) / tv(0, T':Type)
-          requires isPromoted(T)
-               andBool T ==Type T'
+          ~> L:RValue / tv(0, T':Type)
+          requires isIntegerType(type(L)) andBool isPromoted(type(L))
+               andBool type(L) ==Type T'
+               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(T'))
           [structural]
 
      rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
@@ -58,11 +61,13 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool (min(T) <=Int I1 /Int I2)
                andBool (max(T) >=Int I1 /Int I2)
                andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
      rule (.K => UNDEF("CEM2", "Modulus by 0.", "6.5.5:5") )
-          ~> tv(_, T:IntegerType) % tv(0, T':Type)
-          requires isPromoted(T)
-               andBool T ==Type T'
+          ~> L:RValue % tv(0, T':Type)
+          requires isIntegerType(type(L)) andBool isPromoted(type(L))
+               andBool type(L) ==Type T'
+               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(T'))
           [structural]
      rule (.K => UNSPEC("CEM3", "Signed overflow.", "6.3.1.3:3") ) ~>
           tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
@@ -72,6 +77,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool isPromoted(T)
                andBool I2 =/=Int 0
                andBool T ==Type T'
+               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
           [structural]
 
 endmodule

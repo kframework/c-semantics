@@ -110,6 +110,11 @@ module C-IO-BUFFERED
           <mem>... Base |-> object(_, Len::Int, _, _) ...</mem>
           requires Offset >=Int Len orBool Offset <Int 0
           [structural]
+     // if there is an undefined behavior associated with the write, we just eat it
+     // this is somewhat less safe than some of our other error recovery options,
+     // but all error recovery is essentially unsound anyway, so it should be fine
+     rule _:ErrorExit ~> checkWrite(_, _) ~> setEffectiveType(_, _) ~> setModified(_, _) ~> writeBytes(_, _) => .K
+          requires isErrorRecovery
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
                "6.7.3"))
@@ -282,20 +287,21 @@ module C-IO-BUFFERED
 //             // before a read
 //             //[interpRule]
 
-     rule errorReadOutOfBounds
-          => UNDEF("EIO7",
+     rule (.K => UNDEF("EIO7",
                "reading outside the bounds of an object.",
-               "6.2.4")
+               "6.2.4"))
+          ~> errorReadOutOfBounds
           [structural]
-     rule errorUnseqEffects
-          => UNDEF("EIO8",
+     // read outo f bounds becomes a trap by the above rule
+     rule (.K => UNDEF("EIO8",
                "unsequenced side effect on scalar object with value computation of same object.",
-               "6.5")
+               "6.5"))
+          ~> errorUnseqEffects
           [structural]
-     rule errorNonVolatileLVal
-          => UNDEF("EIO9",
+     rule (.K => UNDEF("EIO9",
                "trying to access an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3")
+               "6.7.3"))
+          ~> errorNonVolatileLVal
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)

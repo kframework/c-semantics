@@ -15,6 +15,7 @@ module C-COMMON-EXPR-REFERENCE
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
@@ -74,5 +75,11 @@ module C-COMMON-EXPR-REFERENCE
           requires ifFromArrayInBounds(Loc,
                t(.Set, pointerType(t(.Set, char))), 1) =/=K true
           [structural]
+     rule _:ErrorExit ~> *(tv(Loc:SymLoc, T:PointerType))
+          => lv(stripBases(stripFromArray(Loc)), innerType(T))
+          requires ifFromArrayInBounds(Loc,
+               t(.Set, pointerType(t(.Set, char))), 1) =/=K true
+               andBool isErrorRecovery
+
 endmodule
 

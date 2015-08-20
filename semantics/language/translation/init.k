@@ -25,6 +25,7 @@ module C-TRANSLATION-INIT
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -186,6 +187,10 @@ module C-TRANSLATION-INIT
                _, X:CId |-> T:Type _,
                _, X |-> T':Type _)
           requires notBool areCompatible(T, T')
+     rule (_:ErrorExit => .K) ~> checkExtTypes((X:CId => .K), 
+               _, (X |-> T:Type) _,
+               _, (X |-> T':Type) _)
+          requires isErrorRecovery
 
      rule checkExtDefs((.K => X:CId), (SetItem(X:CId) => .Set) _, _)
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
