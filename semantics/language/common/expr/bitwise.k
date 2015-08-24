@@ -57,20 +57,23 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> _:RValue << tv(E2:Int, _)
-          requires E2 <Int 0
+          ~> L:RValue << tv(E2:Int, T2)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> L:RValue << tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(type(L))
+          ~> L:RValue << tv(E2:Int, T2)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
                "6.5.7:4"))
-          ~> tv(E1:Int, _) << _:RValue
-          requires E1 <Int 0
+          ~> tv(E1:Int, T1) << R:RValue
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
           [structural]
      rule _:ErrorExit ~> L:RValue << tv(E2:Int, T2:Type)
           => L << tv(E2 modInt bitSizeofType(type(L)), T2)
@@ -104,20 +107,23 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> _:RValue >> tv(E2:Int, _)
-          requires E2 <Int 0
+          ~> L:RValue >> tv(E2:Int, T2)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB7",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> L:RValue >> tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(type(L))
+          ~> L:RValue >> tv(E2:Int, T2)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
                "6.5.7:5"))
-          ~> tv(E1:Int, _) >> R:RValue
-          requires E1 <Int 0
+          ~> tv(E1:Int, T1) >> R:RValue
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
           [structural]
      rule _:ErrorExit ~> L:RValue >> tv(E2:Int, T2:Type)
           => L >> tv(E2 modInt bitSizeofType(type(L)), T2)
