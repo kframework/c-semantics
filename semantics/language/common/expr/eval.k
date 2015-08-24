@@ -108,6 +108,7 @@ module C-COMMON-EXPR-EVAL
           requires isErrorRecovery
      rule _:ErrorExit ~> tv(trap, T:FloatType) ~> reval() => tv(0.0, T) ~> reval()
           requires isErrorRecovery
+     rule _:ErrorExit ~> tv(trap, T:PointerType) ~> reval() => tv(NullPointer, T) ~> reval()
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
