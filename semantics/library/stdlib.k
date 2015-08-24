@@ -146,7 +146,7 @@ module LIBC-STDLIB
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
-                    hrItem(tv(N:Int, t(.Set, unsigned-int))))
+                    hrItem(tv(N:Int, t(_, unsigned-int))))
                => srandInt(N) ~> voidVal
           ...</k>
           [structural]
