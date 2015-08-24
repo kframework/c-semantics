@@ -140,18 +140,15 @@ module LIBC-STDLIB
      // fixme should use RAND_MAX
      rule [rand]:
           <k> prepareBuiltin((Identifier("rand")), .HeatList)
-               => tv(absInt(randomRandom(Seed:Int))
-                    %Int max(t(.Set, int)), t(.Set, int))
+               => tv(randInt(max(t(.Set, int)) +Int 1), t(.Set, int))
           ...</k>
-          <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
           [structural]
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
                     hrItem(tv(N:Int, t(.Set, unsigned-int))))
-               => voidVal
+               => srandInt(N) ~> voidVal
           ...</k>
-          <rand-nat> _ => N:Int </rand-nat>
           [structural]
 
 endmodule

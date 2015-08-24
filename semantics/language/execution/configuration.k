@@ -61,8 +61,6 @@ module C-CONFIGURATION
      <activeBlocks> .Map </activeBlocks>
 
      // stdlib
-     <rand-nat color="black"> 0 </rand-nat>
-     // stdlib
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
 
