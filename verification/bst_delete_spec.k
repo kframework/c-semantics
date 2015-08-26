@@ -315,7 +315,7 @@ andBool ({ ?M:Int } <=IntSet tree_keys(T))
 andBool min(t(.Set, int)) <=Int ?M:Int
 andBool ?M:Int <=Int max(t(.Set, int))
 
-
+/*
 rule
   <functions> FUNCTIONS:Map </functions>
   <structs> STRUCTS:Map </structs>
@@ -342,5 +342,6 @@ rule
   </files>
   <error-cell-wrapper> .Bag </error-cell-wrapper>
   [no-pattern-expansion]
+*/
 endmodule
 

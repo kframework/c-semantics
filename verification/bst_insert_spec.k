@@ -99,6 +99,7 @@ requires bst(T1)
  andBool ABC20 >Int 0)
 ensures bst(?T2) andBool tree_keys(?T2) ==K { V } U tree_keys(T1)
 
+/*
 rule
   <functions> FUNCTIONS:Map </functions>
   <structs> STRUCTS:Map </structs>
@@ -124,5 +125,6 @@ rule
     <file-commands> .K </file-commands>
   </files>
   <error-cell-wrapper> .Bag </error-cell-wrapper>
+*/
 endmodule
 

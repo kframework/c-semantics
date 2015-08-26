@@ -95,6 +95,7 @@ requires bst(T)
  andBool ABC20 >Int 0)
 ensures (?B =/=K 0) ==K (V inIntSet tree_keys(T))
 
+/*
 rule
   <functions> FUNCTIONS:Map </functions>
   <structs> STRUCTS:Map </structs>
@@ -120,5 +121,6 @@ rule
     <file-commands> .K </file-commands>
   </files>
   <error-cell-wrapper> .Bag </error-cell-wrapper>
+*/
 endmodule
 
