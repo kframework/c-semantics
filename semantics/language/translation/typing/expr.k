@@ -92,6 +92,8 @@ module C-TYPING-EXPR
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
           <types>... X |-> T ...</types>
+     rule <k> typeof(X:CId => t(SetItem(IntegerConstant), int)) ...</k>
+          <enums>... X |-> _ ...</enums>
 
      rule typeof(T:Typed => type(T))
           requires notBool isType(T)

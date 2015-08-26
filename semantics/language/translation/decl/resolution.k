@@ -1,6 +1,7 @@
 module C-DECL-RESOLUTION-SYNTAX
      syntax KItem ::= "allocateIncompleteTentatives"
      syntax KItem ::= "resolveReferences"
+     syntax KItem ::= "removeUnusedIdentifiers"
 endmodule
 
 module C-DECL-RESOLUTION
@@ -32,9 +33,7 @@ module C-DECL-RESOLUTION
      rule <k> allocateIncompleteTentatives => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          (<tu-linking-state>...
-               <externals> .Map </externals>
-          ...</tu-linking-state> => .Bag)
+          <externals> .Map </externals>
           [structural]
 
      rule allocateIncompleteTentative(X:CId,
@@ -137,5 +136,27 @@ module C-DECL-RESOLUTION
                <external-uses> .Set </external-uses>
           ...</linking-state> => .Bag)
           [structural]
+
+     syntax KItem ::= removeFromExternalDecls(Set)
+
+     rule <k> removeUnusedIdentifiers => removeFromExternalDecls(keys(Env) -Set Uses) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv> Env:Map => removeAll(Env, (keys(Env) -Set Uses)) </genv>
+          <gtypes> Types:Map => removeAll(Types, (keys(Types) -Set Uses)) </gtypes>
+          (<tu-linking-state>...
+               <uses> Uses:Set </uses>
+          ...</tu-linking-state> => .Bag)
+
+     rule <k> removeFromExternalDecls((SetItem(X) => .Set) _) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <external-decls>... X |-> set((SetItem(Tu) => .Set) _) ...</external-decls>
+     rule <k> removeFromExternalDecls((SetItem(X) => .Set) _) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <external-decls> Decls:Map </external-decls>
+          requires notBool (X in_keys(Decls))
+     rule removeFromExternalDecls(.Set) => .K
 
 endmodule

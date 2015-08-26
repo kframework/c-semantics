@@ -44,6 +44,8 @@ module C-CONFIGURATION
                     <internals> .Map </internals>
                     <next-link-loc> .K </next-link-loc>
                     <next-static-loc> .K </next-static-loc>
+                    <uses> SetItem(Identifier("main")) </uses>
+                    <genums> .Map </genums>
                </tu-linking-state>
 
                <next-unnamed color="black"> 0 </next-unnamed>
@@ -106,6 +108,7 @@ module C-CONFIGURATION
           // maps from CIds
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
+          <enums> .Map </enums>
           <block-history> .List </block-history>
           <curr-program-loc color="black">
                UnknownCabsLoc

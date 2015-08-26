@@ -11,6 +11,9 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <uses>... .Set => SetItem(X) ...</uses>
           requires notBool isLinkerLoc(Base)
                andBool Base =/=K nonStatic
                andBool notBool isRestrictType(T)
@@ -18,6 +21,9 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => lv(restrictedNew(Base, getAlignas(T), getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <uses>... .Set => SetItem(X) ...</uses>
           requires notBool isLinkerLoc(Base)
                andBool Base =/=K nonStatic
                andBool isRestrictType(T)
@@ -25,6 +31,9 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> nonStatic ...</env>
           <types>... X |-> T:Type ...</types>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <uses>... .Set => SetItem(X) ...</uses>
           [structural]
 
      // We need to record uses of external symbols because if an external
@@ -36,8 +45,15 @@ module C-EXPR-IDENTIFIER
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
           <external-uses>... (.Set => SetItem(X)) </external-uses>
+          <uses>... .Set => SetItem(X) ...</uses>
           requires isLinkerLoc(Base)
           [structural]
+
+     // according to C11 sec. 6.5.1, enumeration constants are constants and therefore
+     // not lvalues, which designate an object. Therefore we convert directly to a tv
+     // so that expressions like &x will not work.
+     rule <k> X:CId => tv(Value, t(SetItem(IntegerConstant), int)) ...</k>
+          <enums>... X |-> Value:Int ...</enums>
 
      rule instantiate(Loc:SymLoc, T:Type)
           => te(instantiate(Loc, T), T)

@@ -78,6 +78,7 @@ module C-TRANSLATION-INIT
                => preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
+               ~> removeUnusedIdentifiers
           ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
@@ -117,6 +118,9 @@ module C-TRANSLATION-INIT
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-defs> Defs:Map </external-defs>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <uses>... .Set => SetItem(B) ...</uses>
           requires notBool (B in_keys(Defs))
 
      rule <k> addBuiltin(B:CId, _) => .K ...</k>
@@ -131,6 +135,9 @@ module C-TRANSLATION-INIT
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <uses>... .Set => SetItem(B) ...</uses>
           requires notBool (B in_keys(Defs))
                andBool notBool isFunctionType(T)
 
