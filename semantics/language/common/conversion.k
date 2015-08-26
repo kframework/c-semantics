@@ -253,6 +253,10 @@ module C-CONVERSION
           requires notBool inRange(Float2Int(V), T')
           [structural]
 
+     rule _:ErrorExit ~> castHold(T':IntegerType, tv(V:Float, _:FloatType)) 
+          => arithInterpret(T', Float2Int(V))
+          requires notBool inRange(Float2Int(V), T') andBool isErrorRecovery
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
      When a value of integer type is converted to a real floating type, if the
      value being converted can be represented exactly in the new type, it is
@@ -294,6 +298,11 @@ module C-CONVERSION
           requires notBool inRange(V, T')
           [structural]
 
+     rule _:ErrorExit ~> castHold(T':FloatType, tv(V:Float, _:FloatType))
+          => tv(V, cast(T', T))
+          requires notBool inRange(V, T') andBool isErrorRecovery
+
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
      The (nonexistent) value of a void expression (an expression that has type
      \cinline{void}) shall not be used in any way, and implicit or explicit
@@ -318,6 +327,11 @@ module C-CONVERSION
           ~> castHold(t(_, T:SimpleType), voidVal)
           requires (T =/=K void)
           [structural]
+
+     rule _:ErrorExit ~> castHold(t(S:Set, T:SimpleType), emptyValue) => tv(trap, t(S, T))
+          requires T =/=K void andBool isErrorRecovery
+     rule _:ErrorExit ~> castHold(t(S:Set, T:SimpleType), voidVal) => tv(trap, t(S, T))
+          requires T =/=K void andBool isErrorRecovery
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object
@@ -380,6 +394,12 @@ module C-CONVERSION
                andBool notBool isBoolType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
           [structural]
+     rule _:ErrorExit ~> castHold(T':IntegerType, tv(V:CValue, T:PointerType))
+          => checkUse(tv(cfg:pointerToInt(V, T'), cast(T', T)))
+          requires notBool isBoolType(T')
+               andBool (byteSizeofType(T) <=Int byteSizeofType(T')
+                    orBool (V ==K NullPointer))
+               andBool isErrorRecovery
 
      rule cast(T':Type, tv(V:CValue, T:Type))
           => castHold(T', tv(V, T))

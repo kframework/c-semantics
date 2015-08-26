@@ -75,6 +75,11 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
           [structural]
+     rule _:ErrorExit ~> tv(E1:Int, T1) << R:RValue
+          => - (tv(absInt(E1), T1) << R)
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
+               andBool isErrorRecovery
      rule _:ErrorExit ~> L:RValue << tv(E2:Int, T2:Type)
           => L << tv(E2 modInt bitSizeofType(type(L)), T2)
           requires isErrorRecovery
@@ -125,6 +130,11 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
           [structural]
+     rule _:ErrorExit ~> tv(E1:Int, T1) >> R:RValue
+          => - (tv(absInt(E1), T1) << R)
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
+               andBool isErrorRecovery
      rule _:ErrorExit ~> L:RValue >> tv(E2:Int, T2:Type)
           => L >> tv(E2 modInt bitSizeofType(type(L)), T2)
           requires isErrorRecovery

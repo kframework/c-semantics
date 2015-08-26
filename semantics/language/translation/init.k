@@ -200,6 +200,8 @@ module C-TRANSLATION-INIT
                "Multiple external definitions for " +String idToString(X) +String ".",
                "6.9"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
+     rule (_:ErrorExit => .K) ~> checkExtDefs((X:CId => .K), _, _)
+          requires isErrorRecovery 
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]

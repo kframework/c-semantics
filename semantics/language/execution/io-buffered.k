@@ -181,6 +181,12 @@ module C-IO-BUFFERED
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
+     rule <k> _:ErrorExit ~> readBytes(Loc::SymLoc, Size::Int, T::Type)
+               => checkEffectiveType(T, getEffectiveType(Loc))
+               ~> readBytes-aux(Loc, Size, .List, T)
+          ...</k>
+          <thread-id> ThreadId::Int </thread-id>
+          requires isErrorRecovery
 
      // loc, size in bytes, aux list
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
@@ -404,6 +410,8 @@ module C-IO-BUFFERED
           requires (notBool #effectivelyCompat(L, Eff))
                andBool notBool isNoType(Eff)
           [structural]
+     rule _:ErrorExit ~> checkEffective3Type(_, _) => .K
+          requires isErrorRecovery
 
      // An  object shall have its stored value accessed only by an lvalue
      // expression that has one of

@@ -109,6 +109,7 @@ module C-COMMON-EXPR-EVAL
      rule _:ErrorExit ~> tv(trap, T:FloatType) ~> reval() => tv(0.0, T) ~> reval()
           requires isErrorRecovery
      rule _:ErrorExit ~> tv(trap, T:PointerType) ~> reval() => tv(NullPointer, T) ~> reval()
+          requires isErrorRecovery
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
@@ -118,14 +119,16 @@ module C-COMMON-EXPR-EVAL
           <initializing> false </initializing>
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> checkRegister(Loc:SymLoc)
-               => UNDEF("CEE1",
+     rule <k> (.K => UNDEF("CEE1",
                     "Address of an array declared with register storage class used in an expression.",
-                    "6.3.2.1")
+                    "6.3.2.1"))
+              ~> checkRegister(Loc:SymLoc)
           ...</k>
           <initializing> false </initializing>
           requires isRegisterLoc(Loc)
           [structural]
+     rule _:ErrorExit ~> checkRegister(_) => .K
+          requires isErrorRecovery
 
      rule checkUse(V:KResult) => V
           requires getKLabel(V) =/=K #klabel(`tv`)

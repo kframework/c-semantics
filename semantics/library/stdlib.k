@@ -104,6 +104,12 @@ module LIBC-STDLIB
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced)
 
+     rule _:ErrorExit ~> prepareBuiltin(Identifier("realloc"),
+                            hrItem(tv(loc(Base:SymBase, 0), _)) hs::
+                            hrItem(tv(_,_)))
+          => tv(loc(Base, 0), t(.Set, pointerType(t(.Set, void))))
+          requires isErrorRecovery
+
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
                hrItem(tv(NullPointer, _)) hs::

@@ -49,6 +49,8 @@ module C-TYPING-INTERPRETATION
      rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
+     rule (_:ErrorExit => .K) ~> ArrayType(_, tv((V:Float => Float2Int(V)), _), _)
+          requires isErrorRecovery
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
           ~> ArrayType(_, tv(Len:Int, _), _)
           requires Len <=Int 0

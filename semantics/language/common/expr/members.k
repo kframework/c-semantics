@@ -56,6 +56,19 @@ module C-COMMON-EXPR-MEMBERS
           requires Atomic in Mods
                andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
+     rule <k> (_:ErrorExit => .K) 
+              ~> Lbl:KLabel(_,, t((SetItem(Atomic) => .Set) Mods:Set, structType(_))) . _:CId
+          ...</k>
+          <initializing> false </initializing>
+          requires (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
+              andBool isErrorRecovery
+     rule <k> (_:ErrorExit => .K) 
+              ~> Lbl:KLabel(_,, t((SetItem(Atomic) => .Set) Mods:Set, unionType(_))) . _:CId
+          ...</k>
+          <initializing> false </initializing>
+          requires (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
+              andBool isErrorRecovery
+
 
      // The last two parameters are for convenience and should be the same.
      // TODO(chathhorn): anonymous structs/unions.

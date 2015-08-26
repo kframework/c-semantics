@@ -498,5 +498,7 @@ module C-TYPING-MISC
           ~> stabilize(t(_, variableLengthArrayType(_, tv(N:Int, _))))
           requires N <=Int 0
           [structural]
+     rule (_:ErrorExit => .K) ~> stabilize(t(Mods:Set, variableLengthArrayType(T:Type, tv((N:Int => 1), _))))
+          requires N <=Int 0 andBool isErrorRecovery
 
 endmodule
