@@ -80,7 +80,7 @@ module C-CONFIGURATION
                     loadObj(unwrapObj($PGM:K))
                     ~> initMainThread
                     ~> pgmArgs($ARGV:List)
-                    ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
+                    ~> callMain(size($ARGV:List), incomingArguments($ARGV:List))
                </k>
                <initializing> false </initializing>
 

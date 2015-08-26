@@ -3,6 +3,7 @@ module C-BITS-SYNTAX
 
      syntax Trap ::= "trap"
      syntax Unknown ::= "unknown"
+     syntax Unknown ::= unknownAlignedInt(Int)
      syntax Bits ::= Trap
      syntax Bits ::= Unknown
 

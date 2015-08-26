@@ -74,6 +74,7 @@ my $spec = q(#
 { push(@main::cppArgs, '-MP'); }
       -MF <file>		Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MF', $file); }
+      -frunner-script		Compile program to perl script with analysis tool options
 
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
@@ -133,7 +134,9 @@ sub main {
           } else {
             $oval = basename($args->{'<files>'}[0], ".c") . ".o";
           }
-          compile($oval, @{$args->{'<files>'}});
+          my $result = tempFile();
+          compile($result, @{$args->{'<files>'}});
+          move($result, $oval);
           return 0;
      }
 
@@ -169,22 +172,43 @@ sub main {
      my $programConf = join("", <FILE>);
      close(FILE);
 
-     open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
-     my $template = join("", <FILE>);
-     close(FILE);
+     if ($args->{'-frunner-script'}) {
 
-     $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
-     $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
+          open(FILE, catfile($myDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
+          my $template = join("", <FILE>);
+          close(FILE);
 
-     open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
-     print $programRunner "$template\n";
-     print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-     if (@stdlib) {
-           print $programRunner "sub nativeLibraries {\n return '@stdlib';\n}\n";
+          $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+          $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
+
+          open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
+          print $programRunner "$template\n";
+          print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
+          if (@stdlib) {
+                print $programRunner "sub nativeLibraries {\n return '@stdlib';\n}\n";
+          } else {
+                print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
+          }
+          close($programRunner);
+
      } else {
-           print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
+          my @cmd = ('-d', catfile($myDirectory, "c11-kompiled"), 
+                  '-cARGV=`#argv`(.KList)', '-pARGV=printf %s',
+                  '-w', 'none', '--parser', 'cat', $programConfFile,
+                  '--kore', '--exit-code', "<result-value> _:Int </result-value>",
+                  '-cOPTIONS=`.Set`(.KList)', '-pOPTIONS=printf %s',
+                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139');
+
+          if ($args->{'-d'}) {
+               push(@cmd, '--debug');
+          }
+          if (@stdlib) {
+            push @cmd, '--native-libraries';
+            push @cmd, "@stdlib";
+          }
+          my $retval = execute('krun', @cmd);
+          checkError($retval);
      }
-     close($programRunner);
 
      my $numFilesChanged = chmod(0755, $oval);
 

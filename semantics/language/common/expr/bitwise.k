@@ -145,6 +145,15 @@ module C-COMMON-EXPR-BITWISE
                andBool T ==Type T'
           [structural]
 
+     rule tv(unknownAlignedInt(Align:Int), T:Type) & tv(E2:Int, T':Type)
+          => #if Align >Int E2 #then tv(0, T) #else tv(unknown, T) & tv(E2, T') #fi
+          requires isPromoted(T) andBool E2 >=Int 0
+               andBool T ==Type T'
+     rule tv(E1:Int, T:Type) & tv(unknownAlignedInt(Align), T':Type)
+          => #if Align >Int E1 #then tv(0, T) #else tv(E1, T) & tv(unknown, T') #fi
+          requires isPromoted(T) andBool E1 >=Int 0
+               andBool T ==Type T'
+
      rule tv(unknown, T:Type) & tv(E2:Int, T':Type)
           => tv(unknown, T)
           requires isPromoted(T) andBool E2 >=Int 0
