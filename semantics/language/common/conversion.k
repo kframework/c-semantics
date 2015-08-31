@@ -298,7 +298,7 @@ module C-CONVERSION
           requires notBool inRange(V, T')
           [structural]
 
-     rule _:ErrorExit ~> castHold(T':FloatType, tv(V:Float, _:FloatType))
+     rule _:ErrorExit ~> castHold(T':FloatType, tv(V:Float, T:FloatType))
           => tv(V, cast(T', T))
           requires notBool inRange(V, T') andBool isErrorRecovery
 

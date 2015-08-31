@@ -13,6 +13,7 @@ module C-CHECK-LOC
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 

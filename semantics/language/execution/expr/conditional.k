@@ -4,6 +4,7 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      // Same as IfThenElse (type issues already dealt with).

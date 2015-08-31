@@ -6,6 +6,7 @@ module C-EXPR-ASSIGNMENT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)

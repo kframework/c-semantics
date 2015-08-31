@@ -103,7 +103,7 @@ module C-DECL-INITIALIZER
                andBool size(L) >Int 1
      rule (_:ErrorExit => .K) ~> figureInit(_, T:Type, CompoundInit(list(ListItem(_) (_:List => .List))))
           requires notBool isAggregateOrUnionType(T)
-               andBool size(L) >Int 1 andBool isErrorRecovery
+               andBool isErrorRecovery
 
      rule (.K => UNDEF("CDI2",
                "Initializer for scalar contains multiple levels of braces", "6.7.9:11"))

@@ -148,11 +148,11 @@ module C-DECL-RESOLUTION
                <uses> Uses:Set </uses>
           ...</tu-linking-state> => .Bag)
 
-     rule <k> removeFromExternalDecls((SetItem(X) => .Set) _) ...</k>
+     rule <k> removeFromExternalDecls((SetItem(X:CId) => .Set) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <external-decls>... X |-> set((SetItem(Tu) => .Set) _) ...</external-decls>
-     rule <k> removeFromExternalDecls((SetItem(X) => .Set) _) ...</k>
+     rule <k> removeFromExternalDecls((SetItem(X:CId) => .Set) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <external-decls> Decls:Map </external-decls>

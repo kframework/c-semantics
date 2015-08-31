@@ -57,25 +57,25 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> L:RValue << tv(E2:Int, T2)
+          ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> L:RValue << tv(E2:Int, T2)
+          ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
                "6.5.7:4"))
-          ~> tv(E1:Int, T1) << R:RValue
+          ~> tv(E1:Int, T1:Type) << R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
           [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1) << R:RValue
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << R:RValue
           => - (tv(absInt(E1), T1) << R)
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
@@ -112,25 +112,25 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> L:RValue >> tv(E2:Int, T2)
+          ~> L:RValue >> tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB7",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> L:RValue >> tv(E2:Int, T2)
+          ~> L:RValue >> tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
                "6.5.7:5"))
-          ~> tv(E1:Int, T1) >> R:RValue
+          ~> tv(E1:Int, T1:Type) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
           [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1) >> R:RValue
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) >> R:RValue
           => - (tv(absInt(E1), T1) << R)
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
@@ -159,7 +159,7 @@ module C-COMMON-EXPR-BITWISE
           => #if Align >Int E2 #then tv(0, T) #else tv(unknown, T) & tv(E2, T') #fi
           requires isPromoted(T) andBool E2 >=Int 0
                andBool T ==Type T'
-     rule tv(E1:Int, T:Type) & tv(unknownAlignedInt(Align), T':Type)
+     rule tv(E1:Int, T:Type) & tv(unknownAlignedInt(Align:Int), T':Type)
           => #if Align >Int E1 #then tv(0, T) #else tv(E1, T) & tv(unknown, T') #fi
           requires isPromoted(T) andBool E1 >=Int 0
                andBool T ==Type T'

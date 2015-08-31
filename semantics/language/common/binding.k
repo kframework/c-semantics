@@ -21,6 +21,7 @@ module C-BINDING
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 

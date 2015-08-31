@@ -410,7 +410,7 @@ module C-IO-BUFFERED
           requires (notBool #effectivelyCompat(L, Eff))
                andBool notBool isNoType(Eff)
           [structural]
-     rule _:ErrorExit ~> checkEffective3Type(_, _) => .K
+     rule _:ErrorExit ~> checkEffectiveType(_, _) => .K
           requires isErrorRecovery
 
      // An  object shall have its stored value accessed only by an lvalue

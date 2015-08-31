@@ -35,7 +35,7 @@ module C-ERROR
 
      imports C-CONFIGURATION
 
-     rule assert(B, E) => #if B #then .K #else E #fi [macro]
+     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
      rule _:ErrorExit ~> _:Error => .K
           requires isErrorRecovery

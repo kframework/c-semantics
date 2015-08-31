@@ -122,7 +122,7 @@ module C-TYPING-EXPR
 
      syntax Type ::= tryPromote(Type) [function]
      rule tryPromote(T:IntegerType) => promote(T)
-     rule tryPromote(T) => T [owise]
+     rule tryPromote(T::Type) => T [owise]
 
      // prefix expressions
      rule typeof(++ T:Type => T += t(.Set, int))

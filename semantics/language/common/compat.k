@@ -141,7 +141,7 @@ module COMPAT
      syntax SubKRList ::= toSubKRList(List) [function]
 
      rule isKResult(.SubKRList) => true
-     rule isKResult(S1 ss:: S2) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::SubKRItem ss:: S2::SubKRList) => isKResult(S1) andBool isKResult(S2)
 
      syntax SubResult ::= srItem(K)
      syntax SubKRItem ::= SubResult

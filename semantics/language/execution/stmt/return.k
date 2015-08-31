@@ -9,6 +9,7 @@ module C-STMT-RETURN
      imports C-STMT-BLOCK-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 

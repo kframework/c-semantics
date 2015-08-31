@@ -6,6 +6,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
