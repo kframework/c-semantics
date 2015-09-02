@@ -8,7 +8,6 @@ use File::Temp;
 use File::Copy;
 use MIME::Base64;
 use String::Escape qw(quote backslash); 
-use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 setpgrp;
 

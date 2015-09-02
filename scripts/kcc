@@ -7,8 +7,6 @@ use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
 use Getopt::Declare;
-use MIME::Base64;
-use IO::Compress::Gzip qw(gzip $GzipError) ;
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
