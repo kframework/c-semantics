@@ -58,7 +58,9 @@ cparser.cmi: cparser.mli cabs.cmi clexer.ml
 	
 cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmi
 
-cparser: $(MODULES)
+EXEEXT=
+
+cparser$(EXEEXT): $(MODULES)
 	@$(OCAML_LINK) -o $@ unix.cmxa str.cmxa nums.cmxa $^
 	@-strip cparser
 #ioXML.cmx 
