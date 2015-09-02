@@ -37,6 +37,8 @@ module C-EXECUTION-ERROR
           <curr-scope> S:Scope </curr-scope>
           requires isErrorRecovery
 
+     rule <result-value> unknown => 139 ~> #write(2, "Unspecified value returned from main function.\n") </result-value>
+
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
