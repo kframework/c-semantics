@@ -19,7 +19,7 @@ MODULES = base64.cmx errormsg.cmx longarray.cmx growArray.cmx escape.cmx cabshel
 #IOXML = ioxml/ioXML.cmx ioxml/pa_ioXML.cmo
 .PHONY: all cleanOnMakefileChange clean 
 #ioxml
-all: cparser 
+all: cparser$(EXEEXT)
 
 # $(IOXML): ioxml/ioXML.ml ioxml/ioXML.mli ioxml/pa_ioXML.ml
 # make -C ioxml all
