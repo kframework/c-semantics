@@ -190,12 +190,14 @@ sub main {
           close($programRunner);
 
      } else {
+          # add space to end of args with () so that batch scripts work on windows
           my @cmd = ('-d', catfile($myDirectory, "c11-kompiled"), 
-                  '-cARGV=`#argv`(.KList)', '-pARGV=printf %s',
+                  '-cARGV=`#argv`(.KList) ', '-pARGV=printf %s',
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
-                  '-cOPTIONS=`.Set`(.KList)', '-pOPTIONS=printf %s',
-                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139');
+                  '-cOPTIONS=`.Set`(.KList) ', '-pOPTIONS=printf %s',
+                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
+                  '--ocaml-serialize-config', '$PGM');
 
           if ($args->{'-d'}) {
                push(@cmd, '--debug');
@@ -348,10 +350,12 @@ sub getKRunCommand {
      }
 
      if ($link) {
-          push(@krun_args, '-cOPTIONS=`.Set`(.KList)');
+          # add space to end so that batch scripts work on windows
+          push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
           push(@krun_args, "-pOPTIONS=printf %s");
      } else {
-          push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList))');
+          # add space to end so that batch scripts work on windows
+          push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
           push(@krun_args, "-pOPTIONS=printf %s");
      }
 
