@@ -24,7 +24,7 @@ my @objFiles = ();
 my @srcFiles = ();
 my @tempFiles = ();
 
-my $myDirectory = dirname(rel2abs($0));
+my $myDirectory = dirname($0);
 my $xmlToK = catfile($myDirectory, 'xml-to-k');
 my $cparser = catfile($myDirectory, 'cparser');
 
@@ -176,7 +176,8 @@ sub main {
           my $template = join("", <FILE>);
           close(FILE);
 
-          $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
+          my $absDir = rel2abs($myDirectory);
+          $template =~ s?EXTERN_SCRIPTS_DIR?$absDir?g;
           $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
           open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
