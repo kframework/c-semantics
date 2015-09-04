@@ -391,7 +391,11 @@ sub preprocess {
      system("which gcc > /dev/null 2>&1");
      my $pp;
      if ($? >> 8 == 0) {
-          $pp = "gcc";
+          if ($cygwin) {
+            $pp == "x86_64-w64-mingw32-gcc";
+          } else {
+            $pp = "gcc";
+          }
      } else {
           # no gcc, try clang
           $pp = "clang";
