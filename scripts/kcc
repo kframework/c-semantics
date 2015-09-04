@@ -25,7 +25,8 @@ my @srcFiles = ();
 my @tempFiles = ();
 
 my $myDirectory = dirname(rel2abs($0));
-if ($^O eq "cygwin") {
+my $cygwin = $^O eq "cygwin";
+if ($cygwin) {
   $myDirectory = `cygpath -w $myDirectory`;
   chop($myDirectory);
 }
@@ -104,7 +105,7 @@ sub main {
      @originalArgv = @ARGV;
      $args->parse() or die "Failed to parse the command line.\n";
 
-     if (!$args->{'-s'}) {
+     if (!$args->{'-s'} && !$cygwin) {
        push(@stdlib, 'c');
      }
 
