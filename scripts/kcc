@@ -24,7 +24,10 @@ my @objFiles = ();
 my @srcFiles = ();
 my @tempFiles = ();
 
-my $myDirectory = dirname($0);
+my $myDirectory = dirname(rel2abs($0));
+if ($^O eq "cygwin") {
+  $myDirectory = `cygpath -w $myDirectory`;
+}
 my $xmlToK = catfile($myDirectory, 'xml-to-k');
 my $cparser = catfile($myDirectory, 'cparser');
 
@@ -176,8 +179,7 @@ sub main {
           my $template = join("", <FILE>);
           close(FILE);
 
-          my $absDir = rel2abs($myDirectory);
-          $template =~ s?EXTERN_SCRIPTS_DIR?$absDir?g;
+          $template =~ s?EXTERN_SCRIPTS_DIR?$myDirectory?g;
           $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
           open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
@@ -197,8 +199,7 @@ sub main {
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
                   '-cOPTIONS=`.Set`(.KList) ', '-pOPTIONS=printf %s',
-                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
-                  '--ocaml-serialize-config', '$PGM');
+                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139');
 
           if ($args->{'-d'}) {
                push(@cmd, '--debug');
