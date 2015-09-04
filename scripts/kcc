@@ -27,6 +27,7 @@ my @tempFiles = ();
 my $myDirectory = dirname(rel2abs($0));
 if ($^O eq "cygwin") {
   $myDirectory = `cygpath -w $myDirectory`;
+  chop($myDirectory);
 }
 my $xmlToK = catfile($myDirectory, 'xml-to-k');
 my $cparser = catfile($myDirectory, 'cparser');
