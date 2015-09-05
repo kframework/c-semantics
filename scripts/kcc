@@ -400,6 +400,13 @@ sub preprocess {
           # no gcc, try clang
           $pp = "clang";
      }
+     my $std;
+     if ($cygwin) {
+       # mingw does not support c99
+       $std = "-std=c89";
+     } else {
+       $std = "-std=c11";
+     }
      my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
                    "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
