@@ -129,7 +129,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-tu> OldTu:String => Tu </curr-tu>
                <curr-scope> CurrScope:Scope => blockScope(X, 0) </curr-scope>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
-               <curr-program-loc> CurrLoc:K </curr-program-loc>
+               <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]

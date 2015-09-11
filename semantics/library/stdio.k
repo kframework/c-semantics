@@ -450,9 +450,9 @@ module LIBC-STDIO
 
      syntax KItem ::= "getFormatType"
      syntax KItem ::= "getFormatType-aux" "(" K "," K ")"
-     rule <k> getFormatType => getFormatType-aux(State:K, Length:K) ...</k>
-          <format-length> Length:K </format-length>
-          <format-state> State:K </format-state>
+     rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
+          <format-length> Length::String </format-length>
+          <format-state> State::String </format-state>
           [structural]
 
      rule getFormatType-aux("%a", _) => t(.Set, double) [structural]

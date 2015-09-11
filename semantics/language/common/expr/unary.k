@@ -16,7 +16,7 @@ module C-COMMON-EXPR-UNARY
           + tv(I:Int, T:Type) => arithInterpret(T, I)
           requires isPromoted(T)
           [structural]
-     rule [unaryMinus-intptr]:
+     rule [unaryPlus-intptr]:
           + tv(L:SymLoc, T:Type) => tv(L, T)
           requires isPromoted(T)
      rule [unaryPlus-float]:

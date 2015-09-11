@@ -47,7 +47,7 @@ module C-CONFIGURATION
           </tu>
      </translation-units>
 </global>
-<result-value color="red"> 139 </result-value>
+<result-value color="red"> 139:CValue </result-value>
 <T>
 <exec multiplicity="?">
      // SymLoc |-> Type
@@ -96,7 +96,7 @@ module C-CONFIGURATION
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
                          <curr-scope color="lightgray">
-                              fileScope:>Scope
+                              fileScope:Scope
                          </curr-scope>
                          // The identifiers that params are bound to. This
                          // is used for builtins and var-args.

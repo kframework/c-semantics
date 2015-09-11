@@ -201,7 +201,8 @@ sub main {
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
                   '-cOPTIONS=`.Set`(.KList) ', '-pOPTIONS=printf %s',
-                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139');
+                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
+                  );
 
           if ($args->{'-d'}) {
                push(@cmd, '--debug');

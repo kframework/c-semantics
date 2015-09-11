@@ -13,8 +13,8 @@ module C-BITS-SYNTAX
      // original number, from, to inclusive
      syntax Bits ::= bitRange(Bits, Int, Int)
 
-     // loc, size in bytes
-     syntax Bits ::= encodedFloat(Float)
+     // value, (length - byte-offset), type
+     syntax Bits ::= encodedFloat(Float, Int, Type)
      // object, start piece, end piece
      syntax Bits ::= subObject(SymLoc, Int, Int)
 

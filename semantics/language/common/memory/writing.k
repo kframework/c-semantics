@@ -318,11 +318,11 @@ module C-MEMORY-WRITING
 
      rule splitFloatBytes(F:Float, T:Type, Len:Int)
           => splitFloatBytes(F, T, Len -Int 1,
-               ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
+               ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List)
           => splitFloatBytes(F, T, Len -Int 1,
-               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
+               L ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L)
 
