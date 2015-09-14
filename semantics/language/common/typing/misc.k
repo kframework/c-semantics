@@ -458,15 +458,20 @@ module C-TYPING-MISC
      rule elideMap(.Map) => .Map
 
      // TODO(chathhorn): move/refactor?
-     rule (.K => stabilize(T)) ~> stabilizeVLA(T:Type)
-          requires isVariablyModifiedType(T)
+     rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T:Type) ...</k>
+          <curr-scope> S:Scope </curr-scope>
+          requires isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
-     rule stabilize(T:Type) ~> stabilizeVLA(_) => T
-          requires notBool isVariablyModifiedType(T)
+     rule <k> stabilize(T:Type) ~> stabilizeVLA(_) => T ...</k>
+          <curr-scope> S:Scope </curr-scope>
+          requires notBool isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
-     rule stabilizeVLA(T:Type) => T
-          requires notBool isVariablyModifiedType(T)
+     rule <k> stabilizeVLA(T:Type) => T ...</k>
+          <curr-scope> S:Scope </curr-scope>
+          requires notBool isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
+     rule <k> (.K => CV("CTM2", "Variable-length array with file scope.", "6.7.6.2:2")) ~> stabilizeVLA(_) ...</k>
+          <curr-scope> fileScope </curr-scope>
 
      // Although GCC seems to allow it, I don't think structs/unions are
      // allowed to have VM types (see 6.7.2.1p9).

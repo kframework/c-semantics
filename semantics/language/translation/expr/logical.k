@@ -19,6 +19,9 @@ module C-EXPR-LOGICAL
      context #and(_, (HOLE => reval(HOLE))) [result(RValue)]
      rule #and(L:RValue, R:RValue)
           => te(stripHold(L) && stripHold(R), t(.Set, int))
+     requires isHold(L)
+     rule #and(tv(0, t(S:Set, int)), _:RValue) => tv(0, t(S, int))
+     rule #and(tv(1, t(S:Set, int)), R:RValue) => R
 
      rule L:K || R:K => #or(simplifyTruth(L), simplifyTruth(R))
 
@@ -27,5 +30,8 @@ module C-EXPR-LOGICAL
      context #or(_, (HOLE => reval(HOLE))) [result(RValue)]
      rule #or(L:RValue, R:RValue)
           => te(stripHold(L) || stripHold(R), t(.Set, int))
+     requires isHold(L)
+     rule #or(tv(0, t(S:Set, int)), R:RValue) => R
+     rule #or(tv(1, t(S:Set, int)), _:RValue) => tv(1, t(S, int))
 
 endmodule

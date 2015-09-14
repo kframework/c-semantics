@@ -216,7 +216,7 @@ module C-EXPR-FUNCTION-CALL
           ~> L:KResult := R:RValue
           requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
                     andBool notBool isNullPointerConstant(R))
-               orBool isArithmeticType(type(L))
+               orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
                     andBool notBool isArithmeticType(type(R))
                orBool isStructOrUnionType(type(L))
                     andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
