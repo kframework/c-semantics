@@ -29,15 +29,31 @@ module C-EXECUTION-ERROR
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
-          requires notBool isErrorRecovery
+          requires notBool isErrorRecovery andBool notBool isCSV
 
      rule <k> EXIT(Msg:String) => #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
-          requires isErrorRecovery
+          requires isErrorRecovery andBool notBool isCSV
 
      rule <result-value> unknown => (139 ~> #write(2, "Unspecified value returned from main function.\n")):>Int </result-value>
+     requires notBool isCSV
+
+     rule <file-commands> WriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
+     rule <file-commands> writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd) ...</file-commands>
+     rule <file-commands> close(Fd:Int) => #close(Fd) ...</file-commands>
+
+     rule <k> EXIT(Msg:String) => openWriteThenClose(Report, Msg +String ",\"" +String printStackTrace(L, Loc, S) +String "\"\r\n") ~> HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          <options>... SetItem(CSV(Report:String)) ...</options>
+          requires isErrorRecovery
+
+     rule <result-value> unknown => 139 </result-value>
+          <file-commands> .K => openWriteThenClose(Report, "CEER6,Unspecified value returned from main function.,Unspecified value or behavior.,5.1.2.2.3:1,unknown\r\n") ...</file-commands>
+          <options>... SetItem(CSV(Report:String)) ...</options>
 
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
@@ -65,7 +81,7 @@ module C-EXECUTION-ERROR
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
+          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
           [structural]
@@ -82,10 +98,10 @@ module C-EXECUTION-ERROR
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> (.K => ERROR("00048", "Have a read-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
                read(Loc:SymLoc, T:Type)
           ...</k>
-          <k> (.K => ERROR("00048", "Have a read-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
@@ -96,10 +112,10 @@ module C-EXECUTION-ERROR
           [computational]
 
       rule [write-write-race]:
-          <k> (.K => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
                write(Loc:SymLoc, _, T:Type)
           ...</k>
-          <k> (.K => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool

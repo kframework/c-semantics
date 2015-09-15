@@ -3,6 +3,7 @@ module C-DYNAMIC-SYNTAX
      imports BASIC-K
      imports LIST
      imports FLOAT-SYNTAX
+     imports STRING-SYNTAX
      imports SET
 
      syntax SimpleType // defined in C-TYPING-SYNTAX
@@ -118,6 +119,8 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= compoundAssign(K, K) [strict(1)]
      syntax KItem ::= fillLHoles(K, K) [function]
      syntax KItem ::= fillRHoles(RValue, K) [function]
+
+     syntax Opts ::= CSV(String)
 endmodule
 
 module C-DYNAMIC

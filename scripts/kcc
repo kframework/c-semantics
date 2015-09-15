@@ -6,6 +6,7 @@ use File::Basename;
 use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
+use String::Escape qw(quote backslash); 
 use Getopt::Declare;
 
 # Here we trap control-c (and others) so we can clean up when that happens.
@@ -78,6 +79,7 @@ my $spec = q(#
       -MF <file>		Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MF', $file); }
       -frunner-script		Compile program to perl script with analysis tool options
+      -fissue-report=<file>	Write issues to the specified file in CSV format
 
       -O[<level:/0|1|2|3|s/>]	Ignored
       -std <standard>		Ignored
@@ -196,12 +198,21 @@ sub main {
 
      } else {
           # add space to end of args with () so that batch scripts work on windows
+          my $options;
+          if ($args->{'-fissue-report='}) {
+               my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ";
+          } else {
+               $options = '-cOPTIONS=`.Set`(.KList) ';
+          }
+
           my @cmd = ('-d', catfile($myDirectory, "c11-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', '-pARGV=printf %s',
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
-                  '-cOPTIONS=`.Set`(.KList) ', '-pOPTIONS=printf %s',
+                  $options, '-pOPTIONS=printf %s',
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
+                  '--ocaml-serialize-config', '$PGM'
                   );
 
           if ($args->{'-d'}) {
@@ -289,10 +300,11 @@ sub classify {
                push(@objFiles, $_);
           } elsif ($suffix eq '.a') {
                extractStatic($_, $base, $suffix);
-          } else {
+          } elsif ($suffix eq '.c') {
                push(@srcFiles, $_);
+          } else {
+               die "Unsupported option $_";
           }
-
      }
 }
 
@@ -354,15 +366,19 @@ sub getKRunCommand {
           push(@krun_args, '--debug');
      }
 
-     if ($link) {
-          # add space to end so that batch scripts work on windows
+     # add space to end so that batch scripts work on windows
+     if ($link && $args->{'-fissue-report='}) {
+          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ");
+     } elsif ($link) {
           push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
-          push(@krun_args, "-pOPTIONS=printf %s");
+     } elsif ($args->{'-fissue-report='}) {
+          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, \"String\"))),`SetItem`(`NOLINK`(.KList))) ");
      } else {
-          # add space to end so that batch scripts work on windows
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
-          push(@krun_args, "-pOPTIONS=printf %s");
      }
+     push(@krun_args, "-pOPTIONS=printf %s");
 
      pushObj(\@krun_args, $obj1, '1');
      pushObj(\@krun_args, $obj2, '2');

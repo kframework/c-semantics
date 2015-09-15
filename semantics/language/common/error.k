@@ -2,15 +2,11 @@ module C-ERROR-SYNTAX
      imports BASIC-K
      imports STRING-SYNTAX
      imports BOOL-SYNTAX
-     // Deprecated...
-     syntax KItem ::= ERROR(String, String)
-     syntax KItem ::= ERROR(String, String, String, String)
 
      // Error code, desc., C11 citation.
      syntax KItem ::= UNDEF(String, String, String)
      syntax KItem ::= UNSPEC(String, String, String)
      syntax KItem ::= CV(String, String, String)
-     syntax KItem ::= CVUB(String, String, String)
 
      syntax KResult ::= Bool
      syntax Error
@@ -19,6 +15,9 @@ module C-ERROR-SYNTAX
      syntax KItem ::= EXIT(String)
      syntax ErrorExit
 
+     syntax KItem ::= openWriteThenClose(String, String)
+     syntax Bool ::= "isCSV" [function]
+ 
 endmodule
 
 module C-ERROR
@@ -32,7 +31,7 @@ module C-ERROR
      imports C-TYPING-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-
+     imports K-REFLECTION
      imports C-CONFIGURATION
 
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
@@ -53,22 +52,18 @@ module C-ERROR
           +String "\n"
           +String "See also: C11 sec. "
           +String Citation
-          requires Citation =/=String ""
+          requires Citation =/=String "" andBool notBool isCSV
+
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
-          => "Error: "
-          +String Title
-          +String "\n"
-          +String "Description: "
+          => Title
+          +String ",\""
           +String Msg
-          +String "\n"
-          +String "Type: "
+          +String "\","
           +String ErrType
-          requires Citation ==String ""
-
-     syntax ErrorRef ::= Int
-
-     rule ERROR(Title:String, Msg:String)
-          => EXIT(ErrorMsg(Title, Msg, "", ""))
+          +String ",\""
+          +String Citation
+          +String "\""
+          requires Citation =/=String "" andBool isCSV
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
@@ -76,7 +71,17 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
-     rule CVUB(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation or undefined behavior.", Citation))
+
+     syntax KItem ::= writeThenClose(Int, String)
+     syntax KItem ::= close(Int)
+     rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
+     rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd)
+     rule close(Fd:Int) => #close(Fd)
+
+     syntax Bool ::= isCSV(K) [function, klabel(isCSV1)]
+
+     rule isCSV => isCSV(#configuration)
+     rule isCSV(<generatedTop>... <options>... SetItem(CSV(_)) ...</options> ...</generatedTop>) => true
+     rule isCSV(_) => false [owise]
 
 endmodule

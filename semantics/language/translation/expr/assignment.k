@@ -137,7 +137,7 @@ module C-EXPR-ASSIGNMENT
           ~> _ := voidVal
      rule _:ErrorExit ~> _ := voidVal => voidVal //eat the invalid write
           requires isErrorRecovery
-     rule <k> (.K => CVUB("TEAS5", "Non-constant static initializer.", "6.6"))
+     rule <k> (.K => CV("TEAS5", "Non-constant static initializer.", "6.7.9:4"))
                ~> nclv(_, _) := te(_, _)
           ...</k>
           <initializing> true </initializing>
