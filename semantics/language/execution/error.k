@@ -25,13 +25,13 @@ module C-EXECUTION-ERROR
      imports DEBUG-SYNTAX
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
+          => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> K </final-computation>)
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           requires notBool isErrorRecovery andBool notBool isCSV
 
-     rule <k> EXIT(Msg:String) => #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
+     rule <k> EXIT(Msg:String) => #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> HALT ...</k>
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
@@ -58,13 +58,13 @@ module C-EXECUTION-ERROR
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
-          => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
+          => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
-          => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
+          => "  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K)
-          => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
+          => File +String ":" +String Int2String(Line) +String ")\n" +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K)
-          => "<unknown>)" +String printStackTrace(L, .K, .K)
+          => "<unknown>)\n" +String printStackTrace(L, .K, .K)
      rule printStackTrace(ListItem(<call-stack-frame>...
                <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
                <stack-curr-scope> S:Scope </stack-curr-scope>
