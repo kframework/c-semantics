@@ -2,6 +2,6 @@ File: j056b.c
 Line: 2
 Error: TEAS5
 Description: Non-constant static initializer.
-Type: Constraint violation or undefined behavior.
-See also: C11 sec. 6.6
+Type: Constraint violation.
+See also: C11 sec. 6.7.9:4
 Translation failed. Run kcc -d j056b.c to see commands run.
