@@ -77,6 +77,13 @@ module C-EXPR-CONDITIONAL
                andBool notBool isVoidType(innerType(T1))
                andBool notBool isVoidType(innerType(T2))
 
+     rule (.K => CV("CEC5", "If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.", "6.5.15:3")) 
+          ~> types(_:IntegerType, _:PointerType) ~> _ ? E:K : _
+          requires notBool isNullPointerConstant(E)
+     rule (.K => CV("CEC5", "If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.", "6.5.15:3")) 
+          ~> types(_:PointerType, _:IntegerType) ~> _ ? _ : E:K
+          requires notBool isNullPointerConstant(E)
+
      rule (types(
                t(Mods:Set, pointerType(T:Type)),
                t(Mods':Set, pointerType(T':Type))

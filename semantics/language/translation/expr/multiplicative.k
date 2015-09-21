@@ -25,7 +25,6 @@ module C-EXPR-MULTIPLICATIVE
                andBool type(L) ==Type type(R)
      rule _:ErrorExit ~> L:RValue / tv(0, T:Type) => te(stripHold(L) / tv(0, T), type(L))
           requires isPromoted(type(L))
-               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(T))
                andBool type(L) ==Type T
                andBool isErrorRecovery
 
