@@ -201,6 +201,8 @@ module C-CONFIGURATION
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
 
+<previous-errors> .Set </previous-errors>
+
 <status> initializing </status>
 
 <options> $OPTIONS:Set </options>

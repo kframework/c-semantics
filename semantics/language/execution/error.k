@@ -24,6 +24,8 @@ module C-EXECUTION-ERROR
 
      imports DEBUG-SYNTAX
 
+     syntax KItem ::= error(String, String)
+
      rule (<k> EXIT(Msg:String) ~> K:K </k>
           => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> K </final-computation>)
           <call-stack> L:List </call-stack>
@@ -35,7 +37,17 @@ module C-EXECUTION-ERROR
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
+          <previous-errors> Errors:Set => Errors SetItem(error(Msg, printStackTrace(L, Loc, S))) </previous-errors>
           requires isErrorRecovery andBool notBool isCSV
+               andBool notBool error(Msg, printStackTrace(L, Loc, S)) in Errors
+
+     rule <k> EXIT(Msg:String) => HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          <previous-errors> Errors:Set </previous-errors>
+          requires isErrorRecovery andBool notBool isCSV
+               andBool error(Msg, printStackTrace(L, Loc, S)) in Errors
 
      rule <result-value> unknown => (139 ~> #write(2, "Unspecified value returned from main function.\n")):>Int </result-value>
      requires notBool isCSV

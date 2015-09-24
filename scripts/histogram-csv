@@ -1,0 +1,2 @@
+#!/bin/bash
+sed -r ':r;/(^|\r)$/!{$!{N;br}};s/\n/\v/g' $1 | sort | uniq -c | sed 's/ *\([0-9]\+\) /\1,/'
