@@ -355,7 +355,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(ncle(K . F, T)))
-                    ListItem(`ncle`(K:K,, `t`(_,, Lbl:KLabel(S:StructId))))
+                    ListItem(ncle(K:K, t(_, Lbl:KLabel(S:StructId))))
           ...</curr-subobject>
           <structs>...
                S |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _)

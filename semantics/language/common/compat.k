@@ -118,17 +118,17 @@ module COMPAT
      rule subset(K:K, _, S2:Set) => false
           requires notBool (K in S2)
 
-     rule `_==MSet_`(.List ,, .List) => true
-     rule `_==MSet_`(.List ,, ListItem(_) _:List) => false
-     rule `_==MSet_`(ListItem(_) _:List ,, .List) => false
-     rule `_==MSet_`(ListItem(K:K) M:List ,, M':List)
-          => `_==MSet_`(M:List ,, removeListItem(M', K))
+     rule .List ==MSet .List => true
+     rule .List ==MSet (ListItem(_) _:List) => false
+     rule (ListItem(_) _:List) ==MSet .List => false
+     rule (ListItem(K:K) M:List) ==MSet M':List
+          => M:List ==MSet removeListItem(M', K)
           requires K:K in M':List
-     rule `_==MSet_`(ListItem(K:K) _:List ,, M':List)
+     rule (ListItem(K:K) _:List) ==MSet M':List
           => false
           requires notBool (K:K in M':List)
 
-     rule M:List =/=MSet M':List => notBool `_==MSet_`(M ,, M')
+     rule M:List =/=MSet M':List => notBool M ==MSet M'
 
      rule list(L:List) => toKRList(L)
           [structural]

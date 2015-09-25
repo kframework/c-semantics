@@ -198,13 +198,13 @@ module C-DYNAMIC
      rule isNoInit(_) => false [owise]
 
      rule fillRHoles(V:RValue, RHOLE) => V
-     rule fillRHoles(V:RValue, Lbl:KLabel(L:K,, R:K))
-          => Lbl(fillRHoles(V, L),, fillRHoles(V, R))
+     rule fillRHoles(V:RValue, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
      rule fillRHoles(_, K:K) => K [owise]
 
      rule fillLHoles(LV:KResult, LHOLE) => LV
-     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K,, R:K))
-          => Lbl(fillLHoles(LV, L),, fillLHoles(LV, R))
+     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
      rule fillLHoles(_, K:K) => K [owise]
 
      rule <k> scope(Scope:Scope, K:K) => K ~> setScope(OldScope) ...</k>
