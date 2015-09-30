@@ -100,13 +100,10 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      rule reval(trap(T:Type)
-               => UNDEF("CEE2", "Indeterminate value read by an lvalue not of character type.",
-                    "6.2.6.1:5")
+               => UNDEF("CEE2", "Indeterminate value used in an expression.",
+                    "6.2.4, 6.7.9, 6.8")
                ~> tv(trap, T))
-          requires notBool isCharType(T)
           [structural]
-     rule reval(trap(T:Type)) => tv(trap, T)
-          requires isCharType(T)
      rule _:ErrorExit ~> tv(trap, T:IntegerType) ~> reval() => tv(0, T) ~> reval()
           requires isErrorRecovery
      rule _:ErrorExit ~> tv(trap, T:FloatType) ~> reval() => tv(0.0, T) ~> reval()
