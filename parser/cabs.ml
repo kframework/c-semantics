@@ -294,6 +294,7 @@ and expression =
   | MEMBEROF of expression * string
   | MEMBEROFPTR of expression * string
   | GNU_BODY of block
+  | BITMEMBEROF of expression * string
   | EXPR_PATTERN of string     (* pattern variable, and name *)
   | GENERIC of expression * (generic_association list)
   

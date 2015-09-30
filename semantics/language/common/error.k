@@ -8,6 +8,8 @@ module C-ERROR-SYNTAX
      syntax KItem ::= UNSPEC(String, String, String)
      syntax KItem ::= CV(String, String, String)
 
+     syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
+
      syntax KResult ::= Bool
      syntax Error
      syntax K ::= assert(Bool, Error)
@@ -39,8 +41,8 @@ module C-ERROR
      rule _:ErrorExit ~> _:Error => .K
           requires isErrorRecovery
 
-     syntax String ::= ErrorMsg(String, String, String, String) [function]
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
+     syntax String ::= ErrorMsg(String, String, String, String, String) [function]
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)
           => "Error: "
           +String Title
           +String "\n"
@@ -50,27 +52,34 @@ module C-ERROR
           +String "Type: "
           +String ErrType
           +String "\n"
-          +String "See also: C11 sec. "
+          +String "See also: "
+          +String Document
+          +String " sec. "
           +String Citation
           requires Citation =/=String "" andBool notBool isCSV
 
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Citation:String)
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)
           => Title
           +String ",\""
           +String Msg
           +String "\","
           +String ErrType
           +String ",\""
+          +String Document
+          +String " sec. "
           +String Citation
           +String "\""
           requires Citation =/=String "" andBool isCSV
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", "C11", Citation))
      rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", "C11", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Citation))
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", "C11", Citation))
+
+     rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Document, Citation))
 
      syntax KItem ::= writeThenClose(Int, String)
      syntax KItem ::= close(Int)

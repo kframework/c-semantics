@@ -359,7 +359,7 @@ module C-IO-BUFFERED
 
      syntax KItem ::= getEffectiveType(SymLoc)
      rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int))
-               => getTypeAtOffset(T, Offset)
+               => getTypeAtOffset(T, Offset *Int cfg:bitsPerByte)
           ...</k>
           <mem>... Base |-> object(T::Type, _, _, _) ...</mem>
           requires notBool isNoType(T)
@@ -471,7 +471,7 @@ module C-IO-BUFFERED
 
      syntax Set ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
      rule getQualsAtOffset(T::Type, Offset::Int)
-          => getQualsAtOffset(getTypeAtOffset(T, Offset))
+          => getQualsAtOffset(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
 
      syntax Set ::= getQualsAtOffset(Type) [function]
      rule getQualsAtOffset(T::Type) => getQualifiers(T)

@@ -69,6 +69,7 @@ module C-SYMLOC-SYNTAX
      syntax ThreadId ::= getThreadId(SymLoc) [function]
      syntax ThreadId ::= Int | "no-thread"
      syntax Int ::= getAlign(SymLoc) [function]
+     syntax Int ::= getBitOffset(SymLoc) [function]
      syntax Int ::= getNativeAlign(Int) [function]
 
      syntax Set ::= prov(SymLoc) [function]
@@ -92,6 +93,8 @@ module C-SYMLOC-SYNTAX
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
      syntax Provenance ::= align(Int)
+     // used to tag bit fields so that we know how many bits into the current byte they begin
+     syntax Provenance ::= bitOffset(Int)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
      syntax Bool ::= hasAlign(Set) [function]
@@ -308,6 +311,13 @@ module C-SYMLOC
      rule getAlign'(align(I:Int), _) => I
      rule getAlign'(K:KItem, S:Set) => getAlign'(.K, S)
           requires getKLabel(K) =/=K #klabel(`align`)
+
+     syntax Int ::= #getBitOffset(K, Set) [function]
+     rule getBitOffset(loc(_, _, Provs:Set)) => #getBitOffset(.K, Provs)
+     rule #getBitOffset(.K, SetItem(K:K) S:Set) => #getBitOffset(K, S)
+     rule #getBitOffset(bitOffset(I:Int), _) => I
+     rule #getBitOffset(K:KItem, S:Set) => #getBitOffset(.K, S)
+          requires getKLabel(K) =/=K #klabel(`bitOffset`)
 
      rule ifFromArrayInBounds(
                loc(_, _, SetItem(K:K) S:Set),

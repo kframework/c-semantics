@@ -386,25 +386,25 @@ module C-TYPING-MISC
      // Preserve the qualifiers.
      rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
           requires (Offset =/=Int 0)
-               andBool notBool isAggregateType(T)
+               andBool notBool isAggregateOrUnionType(T)
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int byteSizeofType(T))
+               Offset %Int bitSizeofType(T))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs.
-     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(S)), getFieldInfo(S), Offset)
+     rule getTypeAtOffset(T:StructOrUnionType, Offset:Int)
+          => getTypeAtOffset(T, getFieldInfo(T), Offset)
           requires Offset =/=Int 0
 
      syntax Type ::= getTypeAtOffset(Type, K, Int) [function, klabel(getTypeAtOffset2)]
-     rule getTypeAtOffset(t(Mods:Set, structType(S:StructId)), fieldInfo(
+     rule getTypeAtOffset(BaseT:Type, fieldInfo(
                Fields:List (ListItem(typedDeclaration(_, FId:CId))),
                SI:Int,
                Types:Map (FId |-> T:Type),
                Offsets:Map (FId |-> FOffset:Int)
           ), Offset:Int)
-          => getTypeAtOffset(t(Mods, structType(S)), fieldInfo(
+          => getTypeAtOffset(BaseT, fieldInfo(
                Fields,
                SI,
                Types (FId |-> T),
@@ -412,13 +412,13 @@ module C-TYPING-MISC
           ), Offset)
           requires (Offset =/=Int 0)
                andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(t(Mods:Set, structType(_)), fieldInfo(
+     rule getTypeAtOffset(BaseT:Type, fieldInfo(
                _ ListItem(typedDeclaration(_, FId:CId)),
                _,
                _ FId |-> T:Type,
                _ FId |-> FOffset:Int
           ), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T), Offset -Int FOffset)
+          => getTypeAtOffset(addQualifiers(getModifiers(BaseT), T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
 
