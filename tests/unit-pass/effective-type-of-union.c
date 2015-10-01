@@ -27,6 +27,7 @@ union second foo;
 int main() {
   foo.value.value = 0;
   foo.bits._0 = 1;
+  foo.bits._7 = 1;
   printf("%d %d\n", foo.bits._0, foo.value.value);
 
   return 0;

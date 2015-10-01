@@ -252,7 +252,7 @@ module C-IO-BUFFERED
           <buffer> Mem::List </buffer>
           requires Size >Int 0  andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M)))
-               andBool (notBool isStaticDuration(loc(Base, Offset)))
+               andBool ((notBool isStaticDuration(loc(Base, Offset))) orBool isUnnamedStructureField(ObjT, Offset))
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
@@ -268,6 +268,19 @@ module C-IO-BUFFERED
                andBool (notBool (Offset in_keys(M)))
                andBool (isStaticDuration(loc(Base, Offset))
                     orBool isThreadDuration(loc(Base, Offset)))
+               andBool notBool isUnnamedStructureField(ObjT, Offset)
+
+     syntax Bool ::= isUnnamedStructureField(Type, Int) [function]
+     syntax Bool ::= isUnnamedStructureField(Type, FieldInfo, Int) [function, klabel(isUnnamedStructureField2)]
+     rule isUnnamedStructureField(T:StructType, Offset::Int)
+          => isUnnamedStructureField(T, getFieldInfo(T), Offset *Int cfg:bitsPerByte)
+     rule isUnnamedStructureField(_, _) => false [owise]
+     rule isUnnamedStructureField(BaseT::Type, fieldInfo(Fields::List (ListItem(typedDeclaration(_, FId::CId))),
+          SI::Int, Types::Map, Offsets::Map (FId |-> FOffset::Int)), Offset::Int)
+          => isUnnamedStructureField(BaseT, fieldInfo(Fields, SI, Types, Offsets (FId |-> FOffset)), Offset)
+          requires FOffset >Int Offset
+     rule isUnnamedStructureField(BaseT::Type, fieldInfo(_ ListItem(typedDeclaration(_, FId::CId)),
+          _, _, _ FId |-> FOffset::Int), Offset::Int) => FId ==K #NoName [owise]
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
@@ -362,16 +375,17 @@ module C-IO-BUFFERED
                => getTypeAtOffset(T, Offset *Int cfg:bitsPerByte)
           ...</k>
           <mem>... Base |-> object(T::Type, _, _, _) ...</mem>
-          requires notBool isNoType(T)
+          requires notBool isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
      rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => T' ...</k>
           <mem>...
-               Base |-> object(t(_, no-type), _, _, Offset |-> T'::Type _)
+               Base |-> object(T::Type, _, _, Offset |-> T'::Type _)
           ...</mem>
+          requires isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
-     rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => T ...</k>
-          <mem>... Base |-> object(T:NoType, _, _, EffTypes::Map) ...</mem>
-          requires notBool (Offset in_keys(EffTypes))
+     rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => t(getModifiers(T), no-type) ...</k>
+          <mem>... Base |-> object(T::Type, _, _, EffTypes::Map) ...</mem>
+          requires notBool (Offset in_keys(EffTypes)) andBool isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
      rule <k> getEffectiveType(Loc::SymLoc) => t(.Set, no-type) ...</k>
           <effective-types> EffTypes::Map </effective-types>
@@ -384,14 +398,14 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(loc(Base::SymBase, Offset::Int), T'::Type) => checkEffectiveType(T', getEffectiveType(loc(Base, Offset)))
           ...</k>
           <mem>... Base |-> object(T::Type, _, _, _) ...</mem>
-          requires notBool isNoType(T)
+          requires notBool isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
      rule <k> setEffectiveType(loc(Base::SymBase, Offset::Int), T'::Type) => .K
           ...</k>
           <mem>...
-               Base |-> object(t(_, no-type), _, _, M:Map => M [ Offset <- T' ])
+               Base |-> object(T::Type, _, _, M:Map => M [ Offset <- T' ])
           ...</mem>
-          requires notBool isCharType(T')
+          requires notBool isCharType(T') andBool isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
      rule <k> setEffectiveType(Loc::SymLoc, T::Type) => checkEffectiveType(T, getEffectiveType(Loc)) ...</k>
           <effective-types> M:Map => M [ Loc <- T ] </effective-types>

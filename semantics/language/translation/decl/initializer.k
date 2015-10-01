@@ -614,7 +614,10 @@ module C-DECL-INITIALIZER
      syntax KItem ::= zeroStruct(K, List)
      rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List)
           => zeroType(X . F, T) ~> zeroStruct(X, L)
+          requires F =/=K #NoName
           [structural]
+     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, #NoName)) L:List)
+          => zeroStruct(X, L)
      rule zeroStruct(_, .List) => .K
           [structural]
 

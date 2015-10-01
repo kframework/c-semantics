@@ -384,16 +384,16 @@ module C-TYPING-MISC
 
      rule getTypeAtOffset(T:Type, 0) => T
      // Preserve the qualifiers.
-     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type)
+     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
           requires (Offset =/=Int 0)
-               andBool notBool isAggregateOrUnionType(T)
+               andBool notBool isAggregateType(T)
      // Arrays.
      rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
           => getTypeAtOffset(addQualifiers(Mods, T),
                Offset %Int bitSizeofType(T))
           requires Offset =/=Int 0 // We assume the offset must be in range.
-     // Structs.
-     rule getTypeAtOffset(T:StructOrUnionType, Offset:Int)
+     // Structs
+     rule getTypeAtOffset(T:StructType, Offset:Int)
           => getTypeAtOffset(T, getFieldInfo(T), Offset)
           requires Offset =/=Int 0
 

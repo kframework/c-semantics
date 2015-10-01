@@ -172,7 +172,7 @@ module C-MEMORY-WRITING
      rule write-specific(Loc:SymLoc, V:Int, T:Type)
           => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytes(stripProv(Loc), byteSizeofType(T), T), getBitOffset(Loc)), T)
+                    readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T), getBitOffset(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
@@ -297,7 +297,7 @@ module C-MEMORY-WRITING
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset:Int, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))
-          => notBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+          => notBool isNonPaddingOffset(Offset *Int cfg:bitsPerByte, Decls, Types, Offsets)
      syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
      rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) 
           Decls:List, Types:Map, Offsets:Map)

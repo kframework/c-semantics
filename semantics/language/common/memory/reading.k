@@ -188,7 +188,7 @@ module C-MEMORY-READING
 
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
-               readBytes(stripProv(Loc), byteSizeofType(T), T), getBitOffset(Loc), bitSizeofType(T))
+               readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T), getBitOffset(Loc), bitSizeofType(T))
           [structural]
 
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int)

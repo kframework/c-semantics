@@ -426,7 +426,7 @@ sub preprocess {
      }
      my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
-                   "-U", "__GNUC__", "-include", "$myDirectory/includes/kcc_settings.h",
+                   "-U", "__GNUC__", "-D", "__KCC__", "-include", "$myDirectory/includes/kcc_settings.h",
                    @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
                    '-I', "$myDirectory/includes", $inputFile, '-o', $output);
 
