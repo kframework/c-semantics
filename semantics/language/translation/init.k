@@ -25,6 +25,7 @@ module C-TRANSLATION-INIT
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -131,7 +132,7 @@ module C-TRANSLATION-INIT
 
      rule <k> addBuiltin(B:CId, T:Type) => declare(
                typedDeclaration(T, B),
-               initializer(handleBuiltinConstant(B, T))) ...</k>
+               initializer(handleBuiltinConstant(B, T))) ~> deleteObject(0 @ nativeSymbol(idToString(B))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
@@ -152,6 +153,11 @@ module C-TRANSLATION-INIT
      rule handleBuiltinConstant(Identifier(S:String), T:Type)
           => addToEnv(Identifier(S), 0 @ nativeSymbol(S))
           when S in_keys(nativeDefinedBuiltins)
+
+     syntax KItem ::= deleteObject(SymBase)
+
+     rule <k> deleteObject(Base:SymBase) => .K ...</k>
+          <mem>... Base |-> _ => .Map ...</mem>
 
      syntax KItem ::= checkMerge(K, K)
                     | checkExtTypes(K, Set, Map, Set, Map)
@@ -186,6 +192,10 @@ module C-TRANSLATION-INIT
                _, X:CId |-> T:Type _,
                _, X |-> T':Type _)
           requires notBool areCompatible(T, T')
+     rule (_:ErrorExit => .K) ~> checkExtTypes((X:CId => .K), 
+               _, (X |-> T:Type) _,
+               _, (X |-> T':Type) _)
+          requires isErrorRecovery
 
      rule checkExtDefs((.K => X:CId), (SetItem(X:CId) => .Set) _, _)
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
@@ -195,6 +205,8 @@ module C-TRANSLATION-INIT
                "Multiple external definitions for " +String idToString(X) +String ".",
                "6.9"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
+     rule (_:ErrorExit => .K) ~> checkExtDefs((X:CId => .K), _, _)
+          requires isErrorRecovery 
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]

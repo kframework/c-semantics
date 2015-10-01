@@ -8,7 +8,6 @@ use File::Temp;
 use File::Copy;
 use MIME::Base64;
 use String::Escape qw(quote backslash); 
-use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
 
 setpgrp;
 
@@ -55,11 +54,9 @@ sub main {
 
       print $fileInput linkedProgram();
 
-      my $argc = $#ARGV + 2;
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
-      my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGC=#token(\"$argc\", \"Int\")",
-                 '-pARGC=printf %s', "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
+      my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
                  'cat', $fileInput, '--kore', '--exit-code', "<result-value> _:Int </result-value>");
       my $options = '`.Set`(.KList)';
 
@@ -185,11 +182,6 @@ sub parseResult {
             $parsed->{exitCode} = $1;
       };
 
-      /`<result-value>`\(unknown\(\.KList\)\)/ && do {
-            $parsed->{errorMsg} = "Unspecified value returned from main function.";
-            $parsed->{exitCode} = 139;
-      };
-
       /<result-value>\s*NullPointer\s*<\/result-value>/ && do {
             $parsed->{exitCode} = 0;
       };
@@ -215,15 +207,7 @@ sub processResult {
       local $/;
       local $_ = <OUT>;
       print if $verbose;
-      parseResult(\%parsed);
-      if (defined $parsed{finalComp} || defined $parsed{finalCompType} 
-                  || defined $parsed{errorMsg} || $ret) {
-            if (defined $parsed{errorMsg}) {
-                  print "$parsed{errorMsg}\n";
-            }
-            if (defined $parsed{exitCode}) {
-                  $ret = $parsed{exitCode};
-            }
+      if ($ret) {
             print "Error: Execution failed.\n";
       }
       return $ret;

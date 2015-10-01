@@ -9,6 +9,7 @@ module C-EXECUTION-ERROR
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -23,22 +24,59 @@ module C-EXECUTION-ERROR
 
      imports DEBUG-SYNTAX
 
+     syntax KItem ::= error(String, String)
+
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> #write(2, Msg +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
+          => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> K </final-computation>)
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
+          requires notBool isErrorRecovery andBool notBool isCSV
+
+     rule <k> EXIT(Msg:String) => #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          <previous-errors> Errors:Set => Errors SetItem(error(Msg, printStackTrace(L, Loc, S))) </previous-errors>
+          requires isErrorRecovery andBool notBool isCSV
+               andBool notBool error(Msg, printStackTrace(L, Loc, S)) in Errors
+
+     rule <k> EXIT(Msg:String) => HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          <previous-errors> Errors:Set </previous-errors>
+          requires isErrorRecovery andBool notBool isCSV
+               andBool error(Msg, printStackTrace(L, Loc, S)) in Errors
+
+     rule <result-value> unknown => (139 ~> #write(2, "Unspecified value returned from main function.\n")):>Int </result-value>
+     requires notBool isCSV
+
+     rule <file-commands> WriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
+     rule <file-commands> writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd) ...</file-commands>
+     rule <file-commands> close(Fd:Int) => #close(Fd) ...</file-commands>
+
+     rule <k> EXIT(Msg:String) => openWriteThenClose(Report, Msg +String ",\"" +String printStackTrace(L, Loc, S) +String "\"\r\n") ~> HALT ...</k>
+          <call-stack> L:List </call-stack>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          <options>... SetItem(CSV(Report:String)) ...</options>
+          requires isErrorRecovery
+
+     rule <result-value> unknown => 139 </result-value>
+          <file-commands> .K => openWriteThenClose(Report, "CEER6,Unspecified value returned from main function.,Unspecified value or behavior.,5.1.2.2.3:1,unknown\r\n") ...</file-commands>
+          <options>... SetItem(CSV(Report:String)) ...</options>
 
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
-          => "\n  at <file-scope>(" +String printStackTrace(L, Loc, .K)
+          => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
-          => "\n  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
+          => "  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K)
-          => File +String ":" +String Int2String(Line) +String ")" +String printStackTrace(L, .K, .K)
+          => File +String ":" +String Int2String(Line) +String ")\n" +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K)
-          => "<unknown>)" +String printStackTrace(L, .K, .K)
+          => "<unknown>)\n" +String printStackTrace(L, .K, .K)
      rule printStackTrace(ListItem(<call-stack-frame>...
                <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
                <stack-curr-scope> S:Scope </stack-curr-scope>
@@ -55,7 +93,7 @@ module C-EXECUTION-ERROR
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => ERROR("CEER2", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
+          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
           [structural]
@@ -72,10 +110,10 @@ module C-EXECUTION-ERROR
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> (.K => ERROR("00048", "Have a read-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
                read(Loc:SymLoc, T:Type)
           ...</k>
-          <k> (.K => ERROR("00048", "Have a read-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
@@ -86,10 +124,10 @@ module C-EXECUTION-ERROR
           [computational]
 
       rule [write-write-race]:
-          <k> (.K => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
                write(Loc:SymLoc, _, T:Type)
           ...</k>
-          <k> (.K => ERROR("00049", "Have a write-write datarace.")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool

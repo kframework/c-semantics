@@ -30,6 +30,8 @@ module C-DECL-TAGGED
      rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
+     rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
+          requires isErrorRecovery
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           requires L =/=K .List
@@ -37,6 +39,8 @@ module C-DECL-TAGGED
      rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
           [structural]
+     rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
+          requires isErrorRecovery
 
      rule makeStructFieldInfo(L:List)
           => makeStructFieldInfo'(

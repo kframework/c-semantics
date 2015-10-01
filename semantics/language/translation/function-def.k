@@ -21,6 +21,7 @@ module C-FUNCTION-DEF
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -99,6 +100,8 @@ module C-FUNCTION-DEF
           ~> checkFunDefType(_, t(_, functionType(_, P:List)))
           requires notBool areVoidOrComplete(P)
           [structural]
+     rule _:ErrorExit ~> checkFunDefType(_, _) => .K
+          requires isErrorRecovery
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
      rule isVoidOrComplete(T:Type)

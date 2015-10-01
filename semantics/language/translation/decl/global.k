@@ -93,6 +93,8 @@ module C-DECL-GLOBAL
           ~> declare''(T:FunctionType, X:CId, _)
           requires getQualifiers(T) =/=K .Set
           [structural]
+     rule (_:ErrorExit => .K) ~> declare''((T:FunctionType => stripQualifiers(T)), _, _)
+          requires getQualifiers(T) =/=K .Set andBool isErrorRecovery
 
      rule (.K => CV("TDG2",
                "declaration for " +String idToString(X) +String
@@ -113,6 +115,8 @@ module C-DECL-GLOBAL
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
           [structural]
+     rule (_:ErrorExit => .K) ~> declare''((T:Type => stripStorageSpecifiers(T)), _, _)
+          requires notBool validLocalStorageClass(T) andBool isErrorRecovery
 
      rule <k> (.K => CV("TDG18",
                "declaration for " +String idToString(X) +String
@@ -189,6 +193,8 @@ module C-DECL-GLOBAL
           ~> checkParam(T:VoidType)
           requires (getQualifiers(T) =/=K .Set)
           [structural]
+     rule _:ErrorExit ~> checkParam(_) => .K
+          requires isErrorRecovery
 
      rule checkComplete(_, _:NoInit) => .K
           [structural]
@@ -435,6 +441,14 @@ module C-DECL-GLOBAL
                andBool (X in_keys(Exts))
           [structural]
 
+     // eat the declaration
+     rule <k> _:ErrorExit ~> declareExternalVariable(X:CId, T:Type, _) => .K ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals> Exts:Map </externals>
+          requires isStaticType(T)
+               andBool (X in_keys(Exts)) andBool isErrorRecovery
+
      // Now we just need to handle allocation, initialization, and updating the
      // declState, when necessary. The last argument can be thought of as the
      // "true" storage class specifier of the decl, counting functions as
@@ -466,12 +480,15 @@ module C-DECL-GLOBAL
                     orBool (Sto ==K Static andBool Lnk =/=K internal))
           [structural]
      rule ( .K => UNDEF("TDG12",
-               "declaration for an object is a tentative definition with internal linkage.",
+               "declaration for an object is a tentative definition with internal linkage and has an incomplete type.",
                "6.9.2:3"))
           ~> declareExternalVariable'(true, initValue(_, T:Type, .K),
                _, internal, _)
           requires notBool isCompleteType(T)
           [structural]
+     rule _:ErrorExit ~> declareExternalVariable'(true, initValue(_, T:Type, .K),
+               _, internal, _) => .K
+          requires notBool isCompleteType(T) andBool isErrorRecovery
 
      // *** Extern, already completed.  ***
 

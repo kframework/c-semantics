@@ -2,11 +2,8 @@
 use strict;
 my @requiredModules = qw(
 	XML::LibXML::Reader
-	Text::Diff
 	Getopt::Declare
       MIME::Base64
-      IO::Compress::Gzip
-      IO::Uncompress::Gunzip
       String::Escape
 );
 my @missingPackages = ();

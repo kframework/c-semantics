@@ -33,9 +33,9 @@ $ sudo apt-get install build-essential
 - For Windows, see here: <http://www.perl.org/get.html>
 - Install the following Perl modules using `cpan` (or `ppm` with ActiveState
   Perl in Windows):
-    - Text::Diff
-    - DBI
     - Getopt::Declare
+    - MIME::Base64
+    - XML::LibXML::Reader
     - String::Escape
 
 To install these modules using cpan:

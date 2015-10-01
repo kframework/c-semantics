@@ -24,11 +24,28 @@ module C-TRANSLATION-ERROR
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
           <result-value> _ => 1 </result-value>
+          requires notBool isCSV
      rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")
           ~> HALT ...</k>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
+          requires notBool isCSV
+
+     rule <k> EXIT(Msg:String)
+          => openWriteThenClose(Report, Msg +String "," +String File +String ":" +String Int2String(Line) +String "\r\n")
+          ~> HALT ...</k>
+          <curr-program-loc>
+               CabsLoc(File:String, Line:Int, _, _)
+          </curr-program-loc>
+          <result-value> _ => 1 </result-value>
+          <options>... SetItem(CSV(Report:String)) ...</options>
+     rule <k> EXIT(Msg:String)
+          => openWriteThenClose(Report, Msg +String ",unknown\r\n")
+          ~> HALT ...</k>
+          <curr-program-loc> UnknownCabsLoc </curr-program-loc>
+          <result-value> _ => 1 </result-value>
+          <options>... SetItem(CSV(Report:String)) ...</options>
 
      rule <k> (.K => CV("CID1",
                "Trying to look up identifier " +String S +String

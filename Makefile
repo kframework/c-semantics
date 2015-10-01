@@ -16,6 +16,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
 	$(SCRIPTS_DIR)/xml-to-k \
 	$(SCRIPTS_DIR)/program-runner \
+	$(SCRIPTS_DIR)/histogram-csv \
 	$(PARSER_DIR)/cparser \
 
 .PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile

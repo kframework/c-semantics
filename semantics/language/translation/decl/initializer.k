@@ -101,12 +101,17 @@ module C-DECL-INITIALIZER
           ~> figureInit(_, T:Type, CompoundInit(list(L:List)))
           requires notBool isAggregateOrUnionType(T)
                andBool size(L) >Int 1
+     rule (_:ErrorExit => .K) ~> figureInit(_, T:Type, CompoundInit(list(ListItem(_) (L:List => .List))))
+          requires notBool isAggregateOrUnionType(T)
+               andBool isErrorRecovery andBool size(L) >Int 0
 
      rule (.K => UNDEF("CDI2",
                "Initializer for scalar contains multiple levels of braces", "6.7.9:11"))
           ~> figureInit(_, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(_))))))
           requires notBool isAggregateOrUnionType(T)
+     rule (_:ErrorExit => .K) ~> figureInit(_, T:Type, (CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(L:K))))) => CompoundInit(L)))
+          requires notBool isAggregateOrUnionType(T) andBool isErrorRecovery
 
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type", "6.7.9:16"))
@@ -350,7 +355,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(ncle(K . F, T)))
-                    ListItem(`ncle`(K:K,, `t`(_,, Lbl:KLabel(S:StructId))))
+                    ListItem(ncle(K:K, t(_, Lbl:KLabel(S:StructId))))
           ...</curr-subobject>
           <structs>...
                S |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _)

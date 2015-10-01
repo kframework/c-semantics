@@ -24,6 +24,7 @@ module C-CONVERSION
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
@@ -36,13 +37,8 @@ module C-CONVERSION
      // fixme
      rule arithInterpret(T:FloatType, F:Float) => tv(F, T)
      // signed arithmetic isn't supposed to overflow
-     rule arithInterpret(T:UnsignedIntegerType, N:Int) => tv(N %Int (max(T) +Int 1), T)
-          requires (N >Int max(T))
-     rule arithInterpret(T:UnsignedIntegerType, N:Int)
-          => arithInterpret(T, (N %Int (max(T) +Int 1)) +Int (max(T) +Int 1))
-          // must be like this so ((unsigned int)(~((unsigned int)~0)) != 0)
-          // will work, but not sure why
-          requires (N <Int min(T))
+     rule arithInterpret(T:UnsignedIntegerType, N:Int) => tv(N modInt (max(T) +Int 1), T)
+          requires (N >Int max(T)) orBool (N <Int min(T))
      rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
@@ -50,6 +46,9 @@ module C-CONVERSION
           ~> arithInterpretHold(T:SignedIntegerType, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
+     rule _:ErrorExit ~> arithInterpretHold(T:SignedIntegerType, N:Int) 
+          => tv(((N -Int min(T)) modInt (1 <<Int bitSizeofType(T)) +Int min(T)), T)
+          requires ((N >Int max(T)) orBool (N <Int min(T))) andBool isErrorRecovery
 
      rule cast(T':Type, tv(V:CValue, T:Type)) => tv(V, cast(T', T))
           requires stripQualifiers(T) ==Type stripQualifiers(T')
@@ -201,12 +200,29 @@ module C-CONVERSION
 
      rule cast(T':SignedIntegerType, tv(I:Int, T:IntegerType)) => castHold(T', tv(I:Int, T))
           requires notBool inRange(I, T')
+     rule _:ErrorExit ~> castHold(T':SignedIntegerType, tv(I:Int, T:IntegerType)) => cast(T', tv(I:Int, T))
+          requires inRange(I, T') andBool isErrorRecovery
 
      rule (.K => UNSPEC("CCV2",
                "conversion to signed integer outside the range that can be represented.",
                "6.3.1.3:3"))
           ~> castHold(T':SignedIntegerType, tv(I:Int, _:IntegerType))
           requires notBool inRange(I, T')
+          [structural]
+
+     rule _:ErrorExit ~> (castHold(T':SignedIntegerType, tv(I:Int, T:IntegerType))
+          => castHold(T', tv(I +Int (2 ^Int absInt(bitSizeofType(T'))), T)))
+          requires isErrorRecovery
+               andBool (I <Int min(T'))
+               andBool (absInt(I) <=Int (1 <<Int absInt(bitSizeofType(T'))))
+               andBool notBool isBoolType (T')
+          [structural]
+     rule _:ErrorExit ~> (castHold(T':SignedIntegerType, tv(I:Int, T:IntegerType))
+          => castHold(T', tv(I -Int (1 <<Int absInt(bitSizeofType(T'))), T)))
+          requires isErrorRecovery
+               andBool (I >Int max(T'))
+               andBool (absInt(I) <=Int (1 <<Int absInt(bitSizeofType(T'))))
+               andBool notBool isBoolType (T')
           [structural]
 
      // TODO(chathhorn): not sure about this.
@@ -236,6 +252,10 @@ module C-CONVERSION
           ~> castHold(T':IntegerType, tv(V:Float, _:FloatType))
           requires notBool inRange(Float2Int(V), T')
           [structural]
+
+     rule _:ErrorExit ~> castHold(T':IntegerType, tv(V:Float, _:FloatType)) 
+          => arithInterpret(T', Float2Int(V))
+          requires notBool inRange(Float2Int(V), T') andBool isErrorRecovery
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{2}}}{
      When a value of integer type is converted to a real floating type, if the
@@ -278,6 +298,11 @@ module C-CONVERSION
           requires notBool inRange(V, T')
           [structural]
 
+     rule _:ErrorExit ~> castHold(T':FloatType, tv(V:Float, T:FloatType))
+          => tv(V, cast(T', T))
+          requires notBool inRange(V, T') andBool isErrorRecovery
+
+
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.2}{1}}}{
      The (nonexistent) value of a void expression (an expression that has type
      \cinline{void}) shall not be used in any way, and implicit or explicit
@@ -302,6 +327,11 @@ module C-CONVERSION
           ~> castHold(t(_, T:SimpleType), voidVal)
           requires (T =/=K void)
           [structural]
+
+     rule _:ErrorExit ~> castHold(t(S:Set, T:SimpleType), emptyValue) => tv(trap, t(S, T))
+          requires T =/=K void andBool isErrorRecovery
+     rule _:ErrorExit ~> castHold(t(S:Set, T:SimpleType), voidVal) => tv(trap, t(S, T))
+          requires T =/=K void andBool isErrorRecovery
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{1--2}}}{
      A pointer to void may be converted to or from a pointer to any object
@@ -364,6 +394,12 @@ module C-CONVERSION
                andBool notBool isBoolType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
           [structural]
+     rule _:ErrorExit ~> castHold(T':IntegerType, tv(V:CValue, T:PointerType))
+          => checkUse(tv(cfg:pointerToInt(V, T'), cast(T', T)))
+          requires notBool isBoolType(T')
+               andBool (byteSizeofType(T) <=Int byteSizeofType(T')
+                    orBool (V ==K NullPointer))
+               andBool isErrorRecovery
 
      rule cast(T':Type, tv(V:CValue, T:Type))
           => castHold(T', tv(V, T))

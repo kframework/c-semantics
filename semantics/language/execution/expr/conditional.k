@@ -4,6 +4,7 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      // Same as IfThenElse (type issues already dealt with).
@@ -35,6 +36,8 @@ module C-EXPR-CONDITIONAL
           ~> types(T1:PointerType, T2:PointerType)
           requires notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
           [structural]
+     rule _:ErrorExit ~> types(T1:PointerType, _) => convertedType(T1)
+          requires isErrorRecovery
 
      syntax KItem ::= convertedType(Type)
      rule convertedType(T:Type) ~> tv(1, t(_, int)) ? E1:K : _

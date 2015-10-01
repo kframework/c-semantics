@@ -86,6 +86,8 @@ module C-MEMORY-WRITING
           <initializing> false </initializing>
           requires isStringLoc(Loc)
           [structural]
+     rule _:ErrorExit ~> write(Loc:SymLoc, _, _) => .K
+          requires isStringLoc(Loc) andBool isErrorRecovery
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)
@@ -316,11 +318,11 @@ module C-MEMORY-WRITING
 
      rule splitFloatBytes(F:Float, T:Type, Len:Int)
           => splitFloatBytes(F, T, Len -Int 1,
-               ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
+               ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitFloatBytes(F:Float, T:Type, Len:Int, L:List)
           => splitFloatBytes(F, T, Len -Int 1,
-               L ListItem(piece(encodedFloat(F), cfg:bitsPerByte)))
+               L ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitFloatBytes(_, _:Type, 0, L:List) => dataList(L)
 

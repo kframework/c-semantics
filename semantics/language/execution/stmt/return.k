@@ -9,6 +9,7 @@ module C-STMT-RETURN
      imports C-STMT-BLOCK-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -46,6 +47,15 @@ module C-STMT-RETURN
                F:CId |-> t(Mods:Set, _)
           ...</gtypes>
           requires Noreturn in Mods
+          [structural]
+     rule <k> _:ErrorExit ~> Return(V:RValue) => Return'(cast(T, V)) ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-tu> TU:String </curr-tu>
+          <tu-id> TU </tu-id>
+          <gtypes>...
+               F |-> t(Mods:Set, functionType(T:Type, _))
+          ...</gtypes>
+          requires (Noreturn in Mods) andBool isErrorRecovery
           [structural]
 
      syntax KItem ::= "Return'" "(" K ")"

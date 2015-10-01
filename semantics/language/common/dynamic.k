@@ -3,6 +3,7 @@ module C-DYNAMIC-SYNTAX
      imports BASIC-K
      imports LIST
      imports FLOAT-SYNTAX
+     imports STRING-SYNTAX
      imports SET
 
      syntax SimpleType // defined in C-TYPING-SYNTAX
@@ -118,6 +119,8 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= compoundAssign(K, K) [strict(1)]
      syntax KItem ::= fillLHoles(K, K) [function]
      syntax KItem ::= fillRHoles(RValue, K) [function]
+
+     syntax Opts ::= CSV(String)
 endmodule
 
 module C-DYNAMIC
@@ -129,7 +132,7 @@ module C-DYNAMIC
      imports C-CONFIGURATION
 
      rule isKResult(.HeatList) => true
-     rule isKResult(S1 hs:: S2) => isKResult(S1) andBool isKResult(S2)
+     rule isKResult(S1::HeatItem hs:: S2::HeatList) => isKResult(S1) andBool isKResult(S2)
 
      context toRVal(HOLE => reval(HOLE)) [result(RValue)]
 
@@ -195,13 +198,13 @@ module C-DYNAMIC
      rule isNoInit(_) => false [owise]
 
      rule fillRHoles(V:RValue, RHOLE) => V
-     rule fillRHoles(V:RValue, Lbl:KLabel(L:K,, R:K))
-          => Lbl(fillRHoles(V, L),, fillRHoles(V, R))
+     rule fillRHoles(V:RValue, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
      rule fillRHoles(_, K:K) => K [owise]
 
      rule fillLHoles(LV:KResult, LHOLE) => LV
-     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K,, R:K))
-          => Lbl(fillLHoles(LV, L),, fillLHoles(LV, R))
+     rule fillLHoles(LV:KResult, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
      rule fillLHoles(_, K:K) => K [owise]
 
      rule <k> scope(Scope:Scope, K:K) => K ~> setScope(OldScope) ...</k>

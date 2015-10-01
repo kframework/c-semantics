@@ -12,6 +12,7 @@ module C-DECL-LOCAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -178,6 +179,27 @@ module C-DECL-LOCAL
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)
           [structural]
+     rule <k> _:ErrorExit ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
+               => addToEnv(X, nonStatic)
+               ~> giveType(X, T)
+          ...</k>
+          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-types>
+               // TODO(chathhorn): local-types is just a flag in this case.
+               LocalTypes:Map => LocalTypes[kpair(X, BlockNum) <- .K]
+          </local-types>
+          requires isErrorRecovery
+          [structural]
+     rule <k> _:ErrorExit ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
+               => addToEnv(X, nonStatic)
+               ~> giveType(X, T)
+          ...</k>
+          <block-history> .List </block-history>
+          requires isErrorRecovery
+          [structural]
+ 
 
 endmodule
 

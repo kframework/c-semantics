@@ -6,6 +6,7 @@ module C-EXPR-ASSIGNMENT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
@@ -64,6 +65,8 @@ module C-EXPR-ASSIGNMENT
                andBool (getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc
                andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)
           [structural]
+     rule _:ErrorExit ~> checkOverlap(_, _, _) => .K
+          requires isErrorRecovery
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
      rule getRelevantTags(Loc':SymLoc, Loc:SymLoc)
@@ -91,6 +94,8 @@ module C-EXPR-ASSIGNMENT
           => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4")
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
+     rule _:ErrorExit ~> checkRestrictAssign(_, _) => .K
+          requires isErrorRecovery
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
@@ -109,6 +114,8 @@ module C-EXPR-ASSIGNMENT
                "6.7.6.3:7"))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
           requires notBool isFromArray(Loc)
+     rule _:ErrorExit ~> checkArrayStaticAssign(_, _) => .K
+          requires isErrorRecovery
 
      rule checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
@@ -120,6 +127,8 @@ module C-EXPR-ASSIGNMENT
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
+     rule _:ErrorExit ~> checkArrayStaticAssign'(_, _, _) => .K
+          requires isErrorRecovery
 
      syntax KItem ::= getFirstMatch(Set, K) [function]
                     | "getFirstMatch'" "(" K "," Set "," K ")" [function]

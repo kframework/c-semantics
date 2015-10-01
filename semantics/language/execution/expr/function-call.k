@@ -129,7 +129,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-tu> OldTu:String => Tu </curr-tu>
                <curr-scope> CurrScope:Scope => blockScope(X, 0) </curr-scope>
                <curr-function-params> CurrFunParams:List => .List </curr-function-params>
-               <curr-program-loc> CurrLoc:K </curr-program-loc>
+               <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
           [structural]
@@ -216,7 +216,7 @@ module C-EXPR-FUNCTION-CALL
           ~> L:KResult := R:RValue
           requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
                     andBool notBool isNullPointerConstant(R))
-               orBool isArithmeticType(type(L))
+               orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
                     andBool notBool isArithmeticType(type(R))
                orBool isStructOrUnionType(type(L))
                     andBool notBool areCompatible(stripQualifiers(type(L)), type(R))

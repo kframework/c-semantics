@@ -7,6 +7,7 @@ module C-COMMON-EXPR-RELATIONAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      syntax KItem ::= makeTruth(Bool, Type, Type) [function]
@@ -99,6 +100,11 @@ module C-COMMON-EXPR-RELATIONAL
           requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
+     rule _:ErrorExit ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
+          => tv(unknown, t(.Set, int))
+          requires notBool sameBase(Loc, Loc')
+               andBool T ==Type T'
+               andBool isErrorRecovery
      rule tv(Loc:SymLoc, T:PointerType) <= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
@@ -108,6 +114,11 @@ module C-COMMON-EXPR-RELATIONAL
           requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
+     rule _:ErrorExit ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
+          => tv(unknown, t(.Set, int))
+          requires notBool sameBase(Loc, Loc')
+               andBool T ==Type T'
+               andBool isErrorRecovery
      rule tv(Loc:SymLoc, T:PointerType) > tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
@@ -117,6 +128,11 @@ module C-COMMON-EXPR-RELATIONAL
           requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
+     rule _:ErrorExit ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
+          => tv(unknown, t(.Set, int))
+          requires notBool sameBase(Loc, Loc')
+               andBool T ==Type T'
+               andBool isErrorRecovery
      rule tv(Loc:SymLoc, T:PointerType) >= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
@@ -126,6 +142,11 @@ module C-COMMON-EXPR-RELATIONAL
           requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
+     rule _:ErrorExit ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
+          => tv(unknown, t(.Set, int))
+          requires notBool sameBase(Loc, Loc')
+               andBool T ==Type T'
+               andBool isErrorRecovery
 
      rule (.K => CV("CER5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) < tv(_, T':Type)

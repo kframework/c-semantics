@@ -2,16 +2,13 @@ module C-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -109,7 +106,7 @@ module C-EXPR-ASSIGNMENT
                andBool (
                     (isPointerType(type(L)) andBool notBool isPointerType(type(R))
                          andBool notBool isNullPointerConstant(R))
-                    orBool isArithmeticType(type(L))
+                    orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
                          andBool notBool isArithmeticType(type(R))
                     orBool isStructOrUnionType(type(L))
                          andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
@@ -138,7 +135,9 @@ module C-EXPR-ASSIGNMENT
 
      rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2"))
           ~> _ := voidVal
-     rule <k> (.K => CVUB("TEAS5", "Non-constant static initializer.", "6.6"))
+     rule _:ErrorExit ~> _ := voidVal => voidVal //eat the invalid write
+          requires isErrorRecovery
+     rule <k> (.K => CV("TEAS5", "Non-constant static initializer.", "6.7.9:4"))
                ~> nclv(_, _) := te(_, _)
           ...</k>
           <initializing> true </initializing>

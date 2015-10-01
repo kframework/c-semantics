@@ -50,34 +50,41 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => CV("CEB1",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
-          ~> tv(_, T1:Type) << tv(_, T2:Type)
-          requires notBool isIntegerType(T1)
-               orBool notBool isIntegerType(T2)
+          ~> L:RValue << R:RValue
+          requires notBool isIntegerType(type(L))
+               orBool notBool isIntegerType(type(R))
           [structural]
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> tv(_, _) << tv(E2:Int, _)
-          requires E2 <Int 0
+          ~> L:RValue << tv(E2:Int, T2:Type)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> tv(_, T1:Type) << tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)
+          ~> L:RValue << tv(E2:Int, T2:Type)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
                "6.5.7:4"))
-          ~> tv(E1:Int, _) << tv(_, _)
-          requires E1 <Int 0
+          ~> tv(E1:Int, T1:Type) << R:RValue
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
           [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << tv(E2:Int, T2:Type)
-          => bitwiseInterpret(T1, E1 <<Int E2, 
-               isNegZero(E1, T1) orBool isNegZero(E2, T2))
-          requires isPromoted(T1) andBool isPromoted(T2)
-          andBool (E1 <Int 0 orBool E2 <Int 0 orBool E2 >=Int bitSizeofType(T1))
-          andBool isErrorRecovery
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << R:RValue
+          => - (tv(absInt(E1), T1) << R)
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
+               andBool isErrorRecovery
+     rule _:ErrorExit ~> L:RValue << tv(E2:Int, T2:Type)
+          => L << tv(E2 modInt bitSizeofType(type(L)), T2)
+          requires isErrorRecovery
+               andBool isPromoted(type(L)) andBool isPromoted(T2)
+               andBool (E2 <Int 0 orBool E2 >=Int bitSizeofType(type(L)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -98,28 +105,41 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => CV("CEB5",
                "both bitwise shift operands must have integer type.",
                "6.5.7:2"))
-          ~> tv(_, T1:Type) >> tv(_, T2:Type)
-          requires notBool isIntegerType(T1)
-               orBool notBool isIntegerType(T2)
+          ~> L:RValue >> R:RValue
+          requires notBool isIntegerType(type(L))
+               orBool notBool isIntegerType(type(R))
           [structural]
      rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
                "6.5.7:3"))
-          ~> tv(_, _) >> tv(E2:Int, _)
-          requires E2 <Int 0
+          ~> L:RValue >> tv(E2:Int, T2:Type)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB7",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
                "6.5.7:3"))
-          ~> tv(_, T1:Type) >> tv(E2:Int, _)
-          requires E2 >=Int bitSizeofType(T1)
+          ~> L:RValue >> tv(E2:Int, T2:Type)
+          requires isPromoted(type(L)) andBool isPromoted(T2)
+               andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNSPEC("CEB8",
                "the left operand in a bitwise right-shift is negative.",
                "6.5.7:5"))
-          ~> tv(E1:Int, _) >> tv(_, _)
-          requires E1 <Int 0
+          ~> tv(E1:Int, T1:Type) >> R:RValue
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
           [structural]
+     rule _:ErrorExit ~> tv(E1:Int, T1:Type) >> R:RValue
+          => - (tv(absInt(E1), T1) << R)
+          requires isPromoted(T1) andBool isPromoted(type(R))
+               andBool E1 <Int 0
+               andBool isErrorRecovery
+     rule _:ErrorExit ~> L:RValue >> tv(E2:Int, T2:Type)
+          => L >> tv(E2 modInt bitSizeofType(type(L)), T2)
+          requires isErrorRecovery
+               andBool isPromoted(type(L)) andBool isPromoted(T2)
+               andBool (E2 <Int 0 orBool E2 >=Int bitSizeofType(type(L)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
      The usual arithmetic conversions are performed on the operands.
@@ -134,6 +154,15 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
+
+     rule tv(unknownAlignedInt(Align:Int), T:Type) & tv(E2:Int, T':Type)
+          => #if Align >Int E2 #then tv(0, T) #else tv(unknown, T) & tv(E2, T') #fi
+          requires isPromoted(T) andBool E2 >=Int 0
+               andBool T ==Type T'
+     rule tv(E1:Int, T:Type) & tv(unknownAlignedInt(Align:Int), T':Type)
+          => #if Align >Int E1 #then tv(0, T) #else tv(E1, T) & tv(unknown, T') #fi
+          requires isPromoted(T) andBool E1 >=Int 0
+               andBool T ==Type T'
 
      rule tv(unknown, T:Type) & tv(E2:Int, T':Type)
           => tv(unknown, T)
@@ -166,9 +195,9 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => CV("CEB9",
                "both bitwise AND operands must have integer type.",
                "6.5.10:2"))
-          ~> tv(_, T1:Type) & tv(_, T2:Type)
-          requires notBool isIntegerType(T1)
-               orBool notBool isIntegerType(T2)
+          ~> L:RValue & R:RValue
+          requires notBool isIntegerType(type(L))
+               orBool notBool isIntegerType(type(R))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.11}{3--4}}}{
@@ -187,9 +216,9 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => CV("CEB10",
                "both bitwise exclusive OR operands must have integer type.",
                "6.5.11:2"))
-          ~> tv(_, T1:Type) ^ tv(_, T2:Type)
-          requires notBool isIntegerType(T1)
-               orBool notBool isIntegerType(T2)
+          ~> L:RValue ^ R:RValue
+          requires notBool isIntegerType(type(L))
+               orBool notBool isIntegerType(type(R))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.12}{3--4}}}{
@@ -208,9 +237,9 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => CV("CEB11",
                "both bitwise inclusive OR operands must have integer type.",
                "6.5.12:2"))
-          ~> tv(_, T1:Type) | tv(_, T2:Type)
-          requires notBool isIntegerType(T1)
-               orBool notBool isIntegerType(T2)
+          ~> L:RValue | R:RValue
+          requires notBool isIntegerType(type(L))
+               orBool notBool isIntegerType(type(R))
           [structural]
 
      syntax KItem ::= bitwiseInterpret(Type, Int, Bool)

@@ -222,6 +222,9 @@ module C-COMMON-EXPR-ADDITIVE
           ~> tv(L1:SymLoc, _)
                - tv(L2:SymLoc, _)
           requires base(L1) =/=K base(L2)
+     rule _:ErrorExit ~> tv(L1:SymLoc, _) - tv(L2:SymLoc, _)
+          => tv(unknown, t(.Set, cfg:ptrdiffut))
+          requires base(L1) =/=K base(L2) andBool isErrorRecovery
 
      // ptr1, ptr2, size of ptr type
      syntax KItem ::= computePointerDifference(Int, Int)
@@ -237,6 +240,9 @@ module C-COMMON-EXPR-ADDITIVE
           requires (Diff /Int Size) >Int max(t(.Set, cfg:ptrdiffut))
                orBool (Diff /Int Size) <Int min(t(.Set, cfg:ptrdiffut))
           [structural]
+     rule _:ErrorExit ~> computePointerDifference(Diff:Int, Size:Int)
+          => arithInterpret(t(.Set, cfg:ptrdiffut), Diff /Int Size)
+          requires isErrorRecovery
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))

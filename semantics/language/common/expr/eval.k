@@ -18,6 +18,7 @@ module C-COMMON-EXPR-EVAL
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONFIGURATION
+     imports C-SETTINGS-SYNTAX
 
      syntax KItem ::= "reval" "(" ")"
      rule reval(HOLE:K) => HOLE ~> reval() [heat]
@@ -103,6 +104,12 @@ module C-COMMON-EXPR-EVAL
                     "6.2.4, 6.7.9, 6.8")
                ~> tv(trap, T))
           [structural]
+     rule _:ErrorExit ~> tv(trap, T:IntegerType) ~> reval() => tv(0, T) ~> reval()
+          requires isErrorRecovery
+     rule _:ErrorExit ~> tv(trap, T:FloatType) ~> reval() => tv(0.0, T) ~> reval()
+          requires isErrorRecovery
+     rule _:ErrorExit ~> tv(trap, T:PointerType) ~> reval() => tv(NullPointer, T) ~> reval()
+          requires isErrorRecovery
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
@@ -112,14 +119,16 @@ module C-COMMON-EXPR-EVAL
           <initializing> false </initializing>
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> checkRegister(Loc:SymLoc)
-               => UNDEF("CEE1",
+     rule <k> (.K => UNDEF("CEE1",
                     "Address of an array declared with register storage class used in an expression.",
-                    "6.3.2.1")
+                    "6.3.2.1"))
+              ~> checkRegister(Loc:SymLoc)
           ...</k>
           <initializing> false </initializing>
           requires isRegisterLoc(Loc)
           [structural]
+     rule _:ErrorExit ~> checkRegister(_) => .K
+          requires isErrorRecovery
 
      rule checkUse(V:KResult) => V
           requires getKLabel(V) =/=K #klabel(`tv`)
@@ -163,15 +172,15 @@ module C-COMMON-EXPR-EVAL
 
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"
-     rule errorLocInvalid
-          => UNDEF("CEE2",
+     rule (.K => UNDEF("CEE2",
                "Referring to an object outside of its lifetime.",
-               "6.2.4")
+               "6.2.4"))
+          ~> errorLocInvalid
           [structural]
-     rule errorLocBounds
-          => UNDEF("CEE3",
+     rule (.K => UNDEF("CEE3",
                "Found pointer that refers outside the bounds of an object + 1.",
-               "6.2.4")
+               "6.2.4"))
+          ~> errorLocBounds
           [structural]
 
 endmodule

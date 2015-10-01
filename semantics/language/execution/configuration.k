@@ -47,7 +47,7 @@ module C-CONFIGURATION
           </tu>
      </translation-units>
 </global>
-<result-value color="red"> 139 </result-value>
+<result-value color="red"> 139:CValue </result-value>
 <T>
 <exec multiplicity="?">
      // SymLoc |-> Type
@@ -60,8 +60,6 @@ module C-CONFIGURATION
      // Scope |-> activity(Int, SymLoc |-> Int)
      <activeBlocks> .Map </activeBlocks>
 
-     // stdlib
-     <rand-nat color="black"> 0 </rand-nat>
      // stdlib
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
@@ -82,7 +80,7 @@ module C-CONFIGURATION
                     loadObj(unwrapObj($PGM:K))
                     ~> initMainThread
                     ~> pgmArgs($ARGV:List)
-                    ~> callMain($ARGC:Int, incomingArguments($ARGV:List))
+                    ~> callMain(size($ARGV:List), incomingArguments($ARGV:List))
                </k>
                <initializing> false </initializing>
 
@@ -98,7 +96,7 @@ module C-CONFIGURATION
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
                          <curr-scope color="lightgray">
-                              fileScope:>Scope
+                              fileScope:Scope
                          </curr-scope>
                          // The identifiers that params are bound to. This
                          // is used for builtins and var-args.
@@ -202,6 +200,8 @@ module C-CONFIGURATION
 <output color="lightgray"> .List </output>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
+
+<previous-errors> .Set </previous-errors>
 
 <status> initializing </status>
 

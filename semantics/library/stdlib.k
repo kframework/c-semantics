@@ -104,6 +104,12 @@ module LIBC-STDLIB
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced)
 
+     rule _:ErrorExit ~> prepareBuiltin(Identifier("realloc"),
+                            hrItem(tv(loc(Base:SymBase, 0), _)) hs::
+                            hrItem(tv(_,_)))
+          => tv(loc(Base, 0), t(.Set, pointerType(t(.Set, void))))
+          requires isErrorRecovery
+
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
                hrItem(tv(NullPointer, _)) hs::
@@ -138,21 +144,17 @@ module LIBC-STDLIB
 
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
-     // TODO(dwightguth): fix this builtin
-/*     rule [rand]:
+     rule [rand]:
           <k> prepareBuiltin((Identifier("rand")), .HeatList)
-               => tv(absInt(randomRandom(Seed:Int))
-                    %Int max(t(.Set, int)), t(.Set, int))
+               => tv(randInt(max(t(.Set, int)) +Int 1), t(.Set, int))
           ...</k>
-          <rand-nat> Seed:Int => Seed:Int +Int 1 </rand-nat>
-          [structural]*/
+          [structural]
 
      rule [srand]:
           <k> prepareBuiltin(Identifier("srand"),
-                    hrItem(tv(N:Int, t(.Set, unsigned-int))))
-               => voidVal
+                    hrItem(tv(N:Int, t(_, unsigned-int))))
+               => srandInt(N) ~> voidVal
           ...</k>
-          <rand-nat> _ => N:Int </rand-nat>
           [structural]
 
 endmodule

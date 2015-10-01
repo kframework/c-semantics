@@ -6,6 +6,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
@@ -46,9 +47,9 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           requires T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM1", "Division by 0.", "6.5.5:5") )
-          ~> tv(_, T:IntegerType) / tv(0, T':Type)
-          requires isPromoted(T)
-               andBool T ==Type T'
+          ~> L:RValue / tv(0, T':Type)
+          requires isIntegerType(type(L)) andBool isPromoted(type(L))
+               andBool type(L) ==Type T'
           [structural]
 
      rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
@@ -60,9 +61,9 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEM2", "Modulus by 0.", "6.5.5:5") )
-          ~> tv(_, T:IntegerType) % tv(0, T':Type)
-          requires isPromoted(T)
-               andBool T ==Type T'
+          ~> L:RValue % tv(0, T':Type)
+          requires isIntegerType(type(L)) andBool isPromoted(type(L))
+               andBool type(L) ==Type T'
           [structural]
      rule (.K => UNSPEC("CEM3", "Signed overflow.", "6.3.1.3:3") ) ~>
           tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
@@ -73,6 +74,10 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool I2 =/=Int 0
                andBool T ==Type T'
           [structural]
+     rule _:ErrorExit ~> tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
+          => arithInterpret(T, I1 %Int I2)
+          requires isPromoted(T) andBool I2 =/=Int 0 andBool T ==Type T'
+               andBool isErrorRecovery
 
 endmodule
 

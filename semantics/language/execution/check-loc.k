@@ -13,6 +13,7 @@ module C-CHECK-LOC
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -119,6 +120,8 @@ module C-CHECK-LOC
           ~> checkRestrict(.Set, Bases:Set, Bases':Set)
           requires Bases =/=K Bases'
           [structural]
+     rule _:ErrorExit ~> checkRestrict(.Set, Bases:Set, Bases':Set) => .K
+          requires isErrorRecovery andBool Bases =/=K Bases'
 
      syntax KItem ::= "checkRestrict'" "(" Provenance ")"
      rule <k> checkRestrict'(basedOn(Base:SymBase, _)) => .K ...</k>
@@ -133,4 +136,6 @@ module C-CHECK-LOC
           <mem>... Base |-> object(T:Type, _, _, _) ...</mem>
           requires isConstType(innerType(T))
           [structural]
+     rule _:ErrorExit ~> checkRestrict'(_) => .K
+          requires isErrorRecovery
 endmodule

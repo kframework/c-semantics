@@ -123,13 +123,13 @@ module C-MEMORY-READING
      syntax RValue ::= joinFloatBytes(Type, List) [function]
      syntax RValue ::= joinFloatBytes(Type, Float, Int, List) [function, klabel(joinFloatBytes2)]
      rule joinFloatBytes(T::Type,
-               ListItem(piece(encodedFloat(F:Float), NBits:Int)) L:List)
+               ListItem(piece(encodedFloat(F:Float, _, _), NBits:Int)) L:List)
           => joinFloatBytes(T, F, NBits, L)
      rule joinFloatBytes(T::Type,
                ListItem(piece(0, NBits:Int)) L:List)
           => joinFloatBytes(T, 0.0, NBits, L)
      rule joinFloatBytes(T::Type, F:Float, Len:Int,
-               ListItem(piece(encodedFloat(_), NBits:Int)) L:List)
+               ListItem(piece(encodedFloat(_, _, _), NBits:Int)) L:List)
           => joinFloatBytes(T, F, Len +Int NBits, L)
      rule joinFloatBytes(T::Type, 0.0, Len:Int,
                ListItem(piece(0, NBits:Int)) L:List)
