@@ -66,8 +66,9 @@ module C-DECL-TAGGED
      rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets)
 
-     rule structPadding(Offset:Int, T:BitfieldType) => 0
-          requires (Offset +Int bitSizeofType(T) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte <Int byteAlignofType(innerType(T))
+     rule structPadding(Offset:Int, t(Mods:Set, bitfieldType(T:Type, N:Int))) => 0
+          requires (Offset +Int bitSizeofType(t(Mods, bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte <Int byteAlignofType(T)
+                   andBool N >Int 0
           // if we can add the new bits without the new field crossing an alignment boundary, use no padding
      rule structPadding(Offset:Int, T:Type) => structPadding(Offset, byteAlignofType(T)) [owise]
           // otherwise, or if not a bit field, use the alignment of the field as padding

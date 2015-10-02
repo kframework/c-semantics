@@ -242,45 +242,72 @@ module C-IO-BUFFERED
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(piece(trap, cfg:bitsPerByte)), T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
           ...</k>
           <mem>...
                Base |-> object(ObjT::Type, Len::Int,
-                    M::Map => M[Offset <- piece(trap, cfg:bitsPerByte)],
-                    _)
-          ...</mem>
-          <buffer> Mem::List </buffer>
-          requires Size >Int 0  andBool (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in_keys(M)))
-               andBool ((notBool isStaticDuration(loc(Base, Offset))) orBool isUnnamedStructureField(ObjT, Offset))
-     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-               => assertInBounds(Offset, Len)
-               ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(piece(0, cfg:bitsPerByte)), T)
-          ...</k>
-          <mem>...
-               Base |-> object(ObjT::Type, Len::Int,
-                    M::Map => M[Offset <- piece(0, cfg:bitsPerByte)],
+                    M::Map => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)],
                     _)
           ...</mem>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M)))
-               andBool (isStaticDuration(loc(Base, Offset))
-                    orBool isThreadDuration(loc(Base, Offset)))
-               andBool notBool isUnnamedStructureField(ObjT, Offset)
 
-     syntax Bool ::= isUnnamedStructureField(Type, Int) [function]
-     syntax Bool ::= isUnnamedStructureField(Type, FieldInfo, Int) [function, klabel(isUnnamedStructureField2)]
-     rule isUnnamedStructureField(T:StructType, Offset::Int)
-          => isUnnamedStructureField(T, getFieldInfo(T), Offset *Int cfg:bitsPerByte)
-     rule isUnnamedStructureField(_, _) => false [owise]
-     rule isUnnamedStructureField(BaseT::Type, fieldInfo(Fields::List (ListItem(typedDeclaration(_, FId::CId))),
-          SI::Int, Types::Map, Offsets::Map (FId |-> FOffset::Int)), Offset::Int)
-          => isUnnamedStructureField(BaseT, fieldInfo(Fields, SI, Types, Offsets (FId |-> FOffset)), Offset)
-          requires FOffset >Int Offset
-     rule isUnnamedStructureField(BaseT::Type, fieldInfo(_ ListItem(typedDeclaration(_, FId::CId)),
-          _, _, _ FId |-> FOffset::Int), Offset::Int) => FId ==K #NoName [owise]
+     syntax Bits ::= getUninitializedBits(SymLoc, Type) [function]
+     rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
+          requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
+     rule getUninitializedBits(loc(_, Offset::Int), T::Type) => getZeroedBits(Offset *Int cfg:bitsPerByte, cfg:bitsPerByte, T) [owise]
+     syntax Bits ::= getZeroedBits(Int, Int, Type) [function]
+     rule getZeroedBits(_, N::Int, T::Type) => piece(0, N)
+          requires isPointerType(T) orBool isArithmeticType(T) orBool N ==Int 0
+     rule getZeroedBits(Offset::Int, N::Int, t(_, arrayType(T::Type, _))) =>getZeroedBits(Offset %Int bitSizeofType(T), N, T)
+          requires N =/=Int 0
+     rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType) => getZeroedBits(Offset, N, T, getFieldInfo(T))
+          requires N =/=Int 0
+     syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
+     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _)) => getZeroedBits(Offset, N, T)
+     rule getZeroedBits(Offset::Int, N::Int, _:StructType, fieldInfo(
+            ((ListItem(typedDeclaration(_, FId::CId))) => .List) _,
+            _,
+            _::Map (FId |-> T::Type),
+            _::Map (FId |-> FOffset::Int)))
+          requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
+     rule getZeroedBits(Offset, 0, _, _) => piece(0, 0)
+     // this happens when we are reading padding bits, which are zeroed.
+     // bit fields never contain padding in between two bit fields in the same byte, 
+     // so doing this at the end should be safe
+     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _)) => piece(0, N)
+      
+     rule getZeroedBits(Offset::Int, N::Int, BaseT::StructType, fieldInfo(
+            (ListItem(typedDeclaration(_, FId::CId))) Fields::List,
+            SI::Int,
+            Types::Map (FId |-> T::Type),
+            Offsets::Map (FId |-> FOffset::Int)))
+          => #if FId ==K #NoName #then 
+               //the bits of the field in the current byte are traps, because it was unnamed
+               piece(trap, minInt(FOffset +Int bitSizeofType(T), 
+                                  Offset +Int N) -Int 
+                           maxInt(FOffset, Offset)) 
+             #else 
+               // read the bits of the field that overlap the current byte
+               getZeroedBits(maxInt(FOffset, Offset) -Int FOffset,
+                             (minInt(FOffset +Int bitSizeofType(T),
+                                     Offset +Int N) -Int 
+                              maxInt(FOffset, Offset)), T) 
+             #fi:>Bits
+               bit:: 
+                 //read the remaining bits in the byte
+                 getZeroedBits(minInt(FOffset +Int bitSizeofType(T),
+                                      Offset +Int N), N -Int
+                   (minInt(FOffset +Int bitSizeofType(T),
+                           Offset +Int N) -Int
+                    maxInt(FOffset, Offset)), BaseT, fieldInfo(
+                   Fields,
+                   SI, 
+                   Types (FId |-> T),
+                   Offsets (FId |-> FOffset)))
+     [owise]
+            
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
