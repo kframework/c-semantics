@@ -418,22 +418,12 @@ sub preprocess {
      system("which gcc > /dev/null 2>&1");
      my $pp;
      if ($? >> 8 == 0) {
-          if ($cygwin) {
-            $pp = "x86_64-w64-mingw32-gcc";
-          } else {
-            $pp = "gcc";
-          }
+          $pp = "gcc";
      } else {
           # no gcc, try clang
           $pp = "clang";
      }
      my $std;
-     if ($cygwin) {
-       # mingw does not support c99
-       $std = "-std=c89";
-     } else {
-       $std = "-std=c11";
-     }
      my @ppArgs = ($pp, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
                    "-U", "__GNUC__", "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
