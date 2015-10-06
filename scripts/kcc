@@ -117,8 +117,15 @@ sub main {
      @originalArgv = @ARGV;
      $args->parse() or die "Failed to parse the command line.\n";
 
-     if (!$args->{'-s'} && !$cygwin) {
-       push(@stdlib, 'c');
+     my $clib;
+     if ($cygwin) {
+       $clib = 'msvcrt';
+     } else {
+       $clib = 'c';
+     }
+
+     if (!$args->{'-s'}) {
+       push(@stdlib, $clib);
      }
 
      my $heapSize = "2G";
