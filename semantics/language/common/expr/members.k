@@ -76,12 +76,17 @@ module C-COMMON-EXPR-MEMBERS
           [function]
      syntax KItem ::= lookupFieldHold(CId, SymLoc, Set, CId, FieldInfo, FieldInfo)
 
+     syntax SymLoc ::= setBitOffset(Int, SymLoc, Type) [function]
+     rule setBitOffset(Offset:Int, Loc:SymLoc, T:BitfieldType) => addProv(bitOffset(Offset), Loc)
+     rule setBitOffset(_, Loc:SymLoc, _) => Loc [owise]
+
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, _, _,
           fieldInfo(_, _,
                F |-> T:Type _,
                F |-> Offset:Int _))
           // Complete recursive struct/union definitions.
-          => lv(Loc +bytes Offset,
+          => lv(setBitOffset(Offset modInt cfg:bitsPerByte, 
+                    Loc +bytes Offset /Int cfg:bitsPerByte, T),
                addQualifiers(Mods, T))
      rule lookupField(F:CId, Loc:SymLoc, Mods:Set, S:CId, Fields:FieldInfo,
                fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
@@ -112,6 +117,6 @@ module C-COMMON-EXPR-MEMBERS
                F |-> Offset:Int _))
           => concretize(t(Mods Mods', T'),
                fillToBytes(extractBitsFromList(dataList(L),
-                    Offset *Int cfg:bitsPerByte,
+                    Offset,
                     bitSizeofType(t(Mods Mods', T')))))
 endmodule

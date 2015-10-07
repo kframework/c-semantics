@@ -111,11 +111,13 @@ module C-MEMORY-READING
 
      rule #hasUnknown(.List) => false
      rule #hasUnknown(ListItem(piece(unknown, _)) _:List) => true
+     rule #hasUnknown((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
      rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L)
           requires B =/=K unknown
 
      rule #hasTrap(.List) => false
      rule #hasTrap(ListItem(piece(trap, _)) _:List) => true
+     rule #hasTrap((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
      rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L)
           requires B =/=K trap
 
@@ -188,7 +190,7 @@ module C-MEMORY-READING
 
      rule extractBitsFromMem(Loc:SymLoc, T:Type)
           => extractBitsFromList(
-               readBytes(stripProv(Loc), byteSizeofType(T), T), 0, bitSizeofType(T))
+               readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T), getBitOffset(Loc), bitSizeofType(T))
           [structural]
 
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int)

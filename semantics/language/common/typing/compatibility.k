@@ -109,11 +109,22 @@ module C-TYPING-COMPATIBILITY
                andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
      syntax Bool ::= #areFieldsCompat(K, K, Set) [function]
      rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _), Cache:Set)
-          => #areCompat(Fs, Fs', Cache)
+          => #areCompat(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
      syntax Bool ::= #areTagsCompat(K, K) [function]
      rule #areTagsCompat(C:CId, C:CId) => true
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
+     syntax Bool ::= #areBitFieldsCompat(List, List) [function]
+     rule #areBitFieldsCompat(ListItem(typedDeclaration(t(_, bitfieldType(_, Size:Int)), _)) Fs:List, ListItem(typedDeclaration(t(_, bitfieldType(_, Size:Int)), _)) Fs':List) => #areBitFieldsCompat(Fs, Fs')
+     rule #areBitFieldsCompat(ListItem(typedDeclaration(T:Type, _)) Fs:List, ListItem(typedDeclaration(T':Type, _)) Fs':List) => #areBitFieldsCompat(Fs, Fs')
+     requires notBool isBitfieldType(T) andBool notBool isBitfieldType(T')
+     rule #areBitFieldsCompat(.List, .List) => true
+     rule #areBitFieldsCompat(_, _) => false [owise]
+
+     // bit fields aren't really types, so they aren't part of type compatibility. According to the standard, they are part of the compatibility of the type of the struct, hence #areBitFieldsCompat above.
+     rule #areCompat(t(Mods:Set, bitfieldType(T:Type, _)), T':Type, Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
+     rule #areCompat(T':Type, t(Mods:Set, bitfieldType(T:Type, _)), Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
+
      rule #areCompat(
                t(Mods:Set, unionType(S:StructId)),
                t(Mods':Set, unionType(S':StructId)), _)

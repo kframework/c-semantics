@@ -172,27 +172,31 @@ module C-MEMORY-WRITING
      rule write-specific(Loc:SymLoc, V:Int, T:Type)
           => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytes(stripProv(Loc), byteSizeofType(T), T)), T)
+                    readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T), getBitOffset(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
           [structural]
 
-     syntax KItem ::= calculateNewBytes(Bits, K)
+     syntax KItem ::= calculateNewBytes(Bits, K, Int)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]
 
-     rule calculateNewBytes(N:Bits, dataList(L:List))
+     rule calculateNewBytes(N:Bits, dataList(L:List), Offset:Int)
           => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
-               dataList(explodeToBits(L)), .List)
+               dataList(explodeToBits(L)), .List, Offset)
           [structural]
 
-     syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List ")"
-     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List),
-               dataList(ListItem(piece(_, 1)) L':List), Result:List)
+     syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List "," Int ")"
+     rule calculateNewBytes-aux(dataList(L:List),
+               dataList(ListItem(piece(N:Bits, 1)) L':List), Result:List, Offset:Int)
           => calculateNewBytes-aux(dataList(L),
-               dataList(L'), Result ListItem(piece(N, 1)))
+               dataList(L'), Result ListItem(piece(N, 1)), Offset -Int 1)
+     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List),
+               dataList(ListItem(piece(_, 1)) L':List), Result:List, 0)
+          => calculateNewBytes-aux(dataList(L),
+               dataList(L'), Result ListItem(piece(N, 1)), 0)
           [structural]
-     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List)
+     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List, 0)
           => joinBitsToBytes(Result L)
           [structural]
 
@@ -219,6 +223,8 @@ module C-MEMORY-WRITING
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
           requires L =/=MSet .List
+     rule explodeToBits(ListItem(N:Bits bit:: N':Bits))
+          => explodeToBits(ListItem(N)) explodeToBits(ListItem(N'))
      rule explodeToBits(ListItem(piece(N:Bits, Len:Int)))
           => splinter(N, Len)
           requires Len >Int 0
@@ -293,12 +299,12 @@ module C-MEMORY-WRITING
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset:Int, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))
-          => notBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+          => notBool isNonPaddingOffset(Offset *Int cfg:bitsPerByte, Decls, Types, Offsets)
      syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
      rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) 
           Decls:List, Types:Map, Offsets:Map)
           => (Offsets[F]:>Int <=Int Offset andBool Offset <Int Offsets[F]:>Int +Int
-               byteSizeofType(Types[F]:>Type))
+               bitSizeofType(Types[F]:>Type))
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 

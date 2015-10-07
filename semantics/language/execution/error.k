@@ -52,7 +52,7 @@ module C-EXECUTION-ERROR
      rule <result-value> unknown => (139 ~> #write(2, "Unspecified value returned from main function.\n")):>Int </result-value>
      requires notBool isCSV
 
-     rule <file-commands> WriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
+     rule <file-commands> openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
      rule <file-commands> writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd) ...</file-commands>
      rule <file-commands> close(Fd:Int) => #close(Fd) ...</file-commands>
 

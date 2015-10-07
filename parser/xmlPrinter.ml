@@ -488,6 +488,7 @@ and printExpression exp =
 	| MEMBEROF (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "Dot"
 	| MEMBEROFPTR (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "Arrow"
 	| GNU_BODY block -> wrap ((printBlock block) :: []) "GnuBody"
+	| BITMEMBEROF (exp, fld) -> wrap ((printExpression exp) :: (printIdentifier fld) :: []) "DotBit"
 	| EXPR_PATTERN s -> wrap ((printRawString s) :: []) "ExpressionPattern"
 	| LTL_ALWAYS e -> wrap ((printLTLExpression e) :: []) "LTLAlways"
 	| LTL_IMPLIES (e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTLImplies"

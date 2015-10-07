@@ -485,6 +485,9 @@ primary_expression:                     /*(* 6.5.1. *)*/
 		        {PAREN (smooth_expression (fst $1)), snd $1}
 |		LPAREN block RPAREN
 		        { GNU_BODY (fst3 $2), $1 }
+|		IDENT bit_number
+		        {let id = LOCEXP (VARIABLE (fst $1), snd $1), snd $1 in
+                         BITMEMBEROF (fst id, $2), snd id}
 
      /*(* Next is Scott's transformer *)*/
 |               AT_EXPR LPAREN IDENT RPAREN         /* expression pattern variable */
@@ -523,6 +526,10 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 |		OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
 		        { OffsetOf ($3, $5, $1), $1 }
 ;
+
+bit_number: /* Renesas extension for x.0 */
+|		CST_FLOAT
+		        { String.sub (fst $1) 1 (String.length (fst $1) - 1) }
 
 offsetof_member_designator:	/* GCC extension for __builtin_offsetof */
 |		id_or_typename

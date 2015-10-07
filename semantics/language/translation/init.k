@@ -118,6 +118,7 @@ module C-TRANSLATION-INIT
                     functionObject(B, .List, T, handleBuiltin)
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
+          <external-uses>... SetItem(B) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -148,7 +149,6 @@ module C-TRANSLATION-INIT
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in_keys(Defs))
                andBool notBool (B in Uses)
-               andBool notBool isFunctionType(T)
 
      rule handleBuiltinConstant(Identifier(S:String), T:Type)
           => addToEnv(Identifier(S), 0 @ nativeSymbol(S))
