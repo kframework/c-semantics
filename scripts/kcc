@@ -128,12 +128,12 @@ sub main {
        push(@stdlib, $clib);
      }
 
-     my $heapSize = "2G";
+     my $heapSize = "1G";
      if ($args->{'-Xmx'}) {
           $heapSize = $args->{'-Xmx'};
      }
      # Set heap and stack size of krun
-     $ENV{K_OPTS} = "-Xms64m -Xmx$heapSize -Xss32m -XX:+TieredCompilation";
+     $ENV{K_OPTS} = "-Xmx$heapSize";
 
      if ($args->{'-E'}) {
           my $oval = $main::oflag;
