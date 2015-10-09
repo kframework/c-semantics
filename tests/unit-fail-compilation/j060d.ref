@@ -1,6 +1,6 @@
 File: j060d.c
 Line: 2
-Error: TDG2
+Error: TDG3
 Description: declaration for f appears with invalid storage class specifiers.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.1:7
