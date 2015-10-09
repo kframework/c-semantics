@@ -124,27 +124,27 @@ module C-FUNCTION-DEF
           => .K
           requires isArgvType(T)
           [structural]
-     rule (.K => CV("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1"))
+     rule (.K => UNDEF("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1"))
           ~> checkMainDef(T:Type)
           requires isOldStyleFunctionType(T)
           [structural]
-     rule (.K => CV("FD5", "main must return an int.", "5.1.2.2.1:1") )
+     rule (.K => UNDEF("FD5", "main must return an int.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
           requires T =/=K int
           [structural]
-     rule (.K => CV("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", "5.1.2.2.1:1") )
+     rule (.K => UNDEF("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
-     rule (.K => CV("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.", "5.1.2.2.1:1") )
+     rule (.K => UNDEF("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
           requires notBool isArgvType(T)
           [structural]
-     rule (.K => CV("FD8", "main must have zero or two parameters.", "5.1.2.2.1:1") )
+     rule (.K => UNDEF("FD8", "main must have zero or two parameters.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, Params:List)))
           requires size(Params) >Int 2
           [structural]
-     rule (.K => CV("FD9", "main must have zero or two parameters.", "5.1.2.2.1:1") )
+     rule (.K => UNDEF("FD9", "main must have zero or two parameters.", "5.1.2.2.1:1") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
           requires T =/=K void
           [structural]
