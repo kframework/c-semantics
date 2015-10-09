@@ -1,7 +1,7 @@
 File: j060d.c
 Line: 2
 Error: TDG2
-Description: declaration for f appears with invliad storage class specifiers.
+Description: declaration for f appears with invalid storage class specifiers.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.1:7
 Translation failed. Run kcc -d j060d.c to see commands run.
