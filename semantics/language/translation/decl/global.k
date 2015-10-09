@@ -232,9 +232,6 @@ module C-DECL-GLOBAL
                orBool ((Register in Specs) andBool (Static in Specs))
                orBool ((Register in Specs) andBool (Extern in Specs))
                orBool ((Register in Specs) andBool (ThreadLocal in Specs))
-               orBool (isFunctionType(T) andBool (ThreadLocal in Specs))
-               orBool (isFunctionType(T) andBool (Auto in Specs))
-               orBool (isFunctionType(T) andBool (Register in Specs))
           )
 
      rule validGlobalStorageClass(T:Type)
@@ -252,6 +249,9 @@ module C-DECL-GLOBAL
           validStorageClass'(T, Specs)
           andBool notBool (
                (isFunctionType(T) andBool (Static in Specs))
+               orBool (isFunctionType(T) andBool (ThreadLocal in Specs))
+               orBool (isFunctionType(T) andBool (Auto in Specs))
+               orBool (isFunctionType(T) andBool (Register in Specs))
                orBool (notBool isFunctionType(T) andBool ThreadLocal in Specs
                     andBool notBool (Static in Specs orBool Extern in Specs))
           )
