@@ -7,6 +7,8 @@
 typedef void* __builtin_va_list;
 typedef __builtin_va_list __gnuc_va_list;
 typedef __gnuc_va_list va_list;
+typedef va_list va_list_n;
+typedef va_list va_list_f;
 
 /* The va_arg macro expands to an expression that has the specified type and
  * the value of the next argument in the call. The parameter ap shall have been
