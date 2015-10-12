@@ -71,7 +71,6 @@ module C-TYPING-EXPR
 	  SetItem(#klabel(`_:=_`))
 	  SetItem(#klabel(`Call`))
 	  SetItem(#klabel(`_._`))
-          SetItem(#klabel(`SizeofType`))
 
      rule typeStrictBinaryOpsSecond =>
 	  typeStrictBinaryOps
@@ -141,6 +140,7 @@ module C-TYPING-EXPR
      rule typeof(SizeofType(T:Type, _)
           => t(.Set, cfg:sizeut))
           requires isVariablyModifiedType(T)
+     context typeof(SizeofType(HOLE:KItem, _))
 
      rule typeof(AlignofExpression(_) => AlignofType(.K, .K))
      rule typeof(AlignofType(_, _)
