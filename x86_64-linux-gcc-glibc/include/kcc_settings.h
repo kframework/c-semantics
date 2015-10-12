@@ -29,4 +29,6 @@
 #define typeof __kcc_typeof
 #define __typeof__ __kcc_typeof
 
+#define _DEFAULT_SOURCE
+
 #endif
