@@ -451,8 +451,8 @@ module C-CONVERSION
           requires getAlignas(T') <=Int getAlign(Loc) 
           orElseBool isFunctionType(T) andBool isFunctionType(T')
      //TODO(dwightguth): handle pointer alignment
-     rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
-          => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
+     rule cast(t(Mods':Set, pointerType(T':Type)), tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
+          => castHold(t(Mods', pointerType(T':Type)), tv(Loc:SymLoc, t(Mods, pointerType(T))))
           requires getAlignas(T') >Int getAlign(Loc)
      rule (.K => UNDEF("CCV11",
                "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",

@@ -6,5 +6,9 @@ int main() {
     abort();
   if (sizeof(+ 5.0) != sizeof(double))
     abort();
+  if (sizeof(sizeof(int)) != sizeof(size_t))
+    abort();
+  if (sizeof(sizeof(5)) != sizeof(size_t))
+    abort();
   return 0;
 }

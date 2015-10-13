@@ -10,10 +10,14 @@ module C-EXPR-CONDITIONAL
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax KItem ::= getTypes(K, K) [strict]
+     syntax KItem ::= getTypes(K, K)
      syntax KItem ::= types(Type, Type)
      syntax KItem ::= convertedType(K) [strict]
      syntax KItem ::= convertedType(Type, Type, K) [strict(3)]
+
+     // the type of the operands is actually their type after lvalue conversion
+     context getTypes(HOLE => reval(HOLE), _) [result(RValue)]
+     context getTypes(_, HOLE => reval(HOLE)) [result(RValue)]
 
      rule getTypes(V1:KResult, V2:KResult)
           => types(retype(type(V1)), retype(type(V2)))
