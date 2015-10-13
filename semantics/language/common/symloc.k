@@ -51,9 +51,9 @@ module C-SYMLOC-SYNTAX
 
      syntax SymBase ::= linc(SymBase) [function]
 
-     // Base, alignment.
-     syntax SymLoc ::= lnew(SymBase, Int) [function]
-     syntax SymLoc ::= restrictedNew(SymBase, Int, Scope) [function]
+     // Base, type
+     syntax SymLoc ::= lnew(SymBase, Type) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, Type, Scope) [function]
 
      syntax SymLoc ::= SymLoc "+bytes" Int [function]
 
@@ -92,12 +92,12 @@ module C-SYMLOC-SYNTAX
      // Used to tag union members so the rest of the bytes in the union can be
      // marked as undefined upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
-     syntax Provenance ::= align(Int)
+     // Used to tag lvalues with their type so that their alignment can be computed if needed
+     syntax Provenance ::= fromType(Type)
      // used to tag bit fields so that we know how many bits into the current byte they begin
      syntax Provenance ::= bitOffset(Int)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
-     syntax Bool ::= hasAlign(Set) [function]
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
@@ -179,11 +179,11 @@ module C-SYMLOC
 
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
-     rule lnew(Base:SymBase, Align:Int)
-          => loc(Base, 0, SetItem(align(Align)))
+     rule lnew(Base:SymBase, T:Type)
+          => loc(Base, 0, SetItem(fromType(T)))
 
-     rule restrictedNew(Base:SymBase, Align:Int, Tag:Scope)
-          => addProv(basedOn(Base, Tag), lnew(Base, Align))
+     rule restrictedNew(Base:SymBase, T:Type, Tag:Scope)
+          => addProv(basedOn(Base, Tag), lnew(Base, T))
 
      rule loc(Base:SymBase, Offset:Int) +bytes N:Int
           => loc(Base, Offset +Int N)
@@ -308,9 +308,9 @@ module C-SYMLOC
      syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
      rule getAlign'(.K, .Set) => 1
      rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
-     rule getAlign'(align(I:Int), _) => I
+     rule getAlign'(fromType(T:Type), _) => getAlignas(T)
      rule getAlign'(K:KItem, S:Set) => getAlign'(.K, S)
-          requires getKLabel(K) =/=K #klabel(`align`)
+          requires getKLabel(K) =/=K #klabel(`fromType`)
 
      syntax Int ::= #getBitOffset(K, Set) [function]
      rule getBitOffset(loc(_, _, Provs:Set)) => #getBitOffset(.K, Provs)
@@ -340,12 +340,6 @@ module C-SYMLOC
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
           requires getKLabel(K) =/=K #klabel(`fromArray`)
-
-     syntax Bool ::= isAlign(K) [function]
-     rule isAlign(align(_)) => true
-     rule isAlign(_) => false [owise]
-
-     rule hasAlign(S:Set) => some(S, #klabel(`isAlign`))
 
      syntax Int ::= #getNativeAlign(Int, Int, Int) [function]
      rule getNativeAlign(Address:Int) => #getNativeAlign(Address, 1, 0)

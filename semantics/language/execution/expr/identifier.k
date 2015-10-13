@@ -12,12 +12,12 @@ module C-EXPR-IDENTIFIER
      designating an object (in which case it is an lvalue) or a function (in
      which case it is a function designator).
      }*/
-     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
           <env>... X |-> Base::SymBase ...</env>
           <types>... X |-> T::Type ...</types>
           requires notBool isRestrictType(T)
           [structural]
-     rule <k> X:CId => lv(restrictedNew(Base, getAlignas(T), getRestrictBlock(T)), T) ...</k>
+     rule <k> X:CId => lv(restrictedNew(Base, T, getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base::SymBase ...</env>
           <types>... X |-> T::Type ...</types>
           requires isRestrictType(T)

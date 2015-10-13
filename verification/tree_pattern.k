@@ -19,7 +19,7 @@ module TREE-PATTERN
 
   /* bst tree pattern */
   rule
-      tree(loc(BP:Int @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 12))))(node(I:Int, LT:Tree, RT:Tree))
+      tree(loc(BP:Int @ alloc, 0, SetItem(fromType(t(.Set, no-type))) SetItem(fromArray(0, 12))))(node(I:Int, LT:Tree, RT:Tree))
     =>
       BP:Int @ alloc |-> object(t(.Set, no-type), 12,
          0 |-> piece(?B0:Int, 8)

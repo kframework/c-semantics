@@ -8,7 +8,7 @@ module C-EXPR-IDENTIFIER
      imports C-CONFIGURATION
      imports C-ABSTRACT-SYNTAX
 
-     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>
@@ -18,7 +18,7 @@ module C-EXPR-IDENTIFIER
                andBool Base =/=K nonStatic
                andBool notBool isRestrictType(T)
           [structural]
-     rule <k> X:CId => lv(restrictedNew(Base, getAlignas(T), getRestrictBlock(T)), T) ...</k>
+     rule <k> X:CId => lv(restrictedNew(Base, T, getRestrictBlock(T)), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>
@@ -38,7 +38,7 @@ module C-EXPR-IDENTIFIER
 
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
-     rule <k> X:CId => lv(lnew(Base, getAlignas(T)), T) ...</k>
+     rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <types>... X |-> T:Type ...</types>
           <curr-tu> Tu:String </curr-tu>

@@ -26,8 +26,7 @@ module LIBC-BOOTSTRAP
      rule varg(K:KResult) => vargResult(K)
 
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
-          => tv(addProv(align(cfg:alignofMalloc),
-               loc(linc(base(Loc)), offset(Loc))), T)
+          => tv(loc(linc(base(Loc)), offset(Loc)), T)
           [structural]
 
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
