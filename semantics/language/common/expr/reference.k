@@ -37,6 +37,17 @@ module C-COMMON-EXPR-REFERENCE
           => checkUse(tv(addProv(fromArray(0, byteSizeofType(T)), Loc),
                t(.Set, pointerType(T))))
           requires notBool isRegisterLoc(Loc)
+               andBool isCompleteType(T)
+          [structural]
+     // fromArray is used to catch dimension and field boundaries in aggregates and unions.
+     // since incomplete types cannot be included in aggregates or unions, except the
+     // flexible array member, we don't need the fromArray tag in this case and so we
+     // drop it since computing the size of an incomplete type is impossible.
+     rule &(nclv(Loc:SymLoc, T:Type))
+          => checkUse(tv(Loc,
+               t(.Set, pointerType(T))))
+          requires notBool isRegisterLoc(Loc)
+               andBool notBool isCompleteType(T)
           [structural]
      rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
           ~> &(_:RValue)
