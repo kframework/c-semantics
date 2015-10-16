@@ -101,7 +101,7 @@ module C-COMMON-EXPR-EVAL
 
      rule reval(trap(T:Type)
                => UNDEF("CEE2", "Indeterminate value used in an expression.",
-                    "6.2.4, 6.7.9, 6.8")
+                    "6.2.4, 6.7.9, 6.8, J.2:1 item 11")
                ~> tv(trap, T))
           [structural]
      rule _:ErrorExit ~> tv(trap, T:IntegerType) ~> reval() => tv(0, T) ~> reval()
@@ -121,7 +121,7 @@ module C-COMMON-EXPR-EVAL
           [structural]
      rule <k> (.K => UNDEF("CEE1",
                     "Address of an array declared with register storage class used in an expression.",
-                    "6.3.2.1"))
+                    "6.3.2.1, J.2:1 item 22"))
               ~> checkRegister(Loc:SymLoc)
           ...</k>
           <initializing> false </initializing>
@@ -172,14 +172,14 @@ module C-COMMON-EXPR-EVAL
 
      syntax Error ::= "errorLocInvalid"
                     | "errorLocBounds"
-     rule (.K => UNDEF("CEE2",
+     rule (.K => UNDEF("CEE4",
                "Referring to an object outside of its lifetime.",
-               "6.2.4"))
+               "6.2.4, J.2:1 item 9"))
           ~> errorLocInvalid
           [structural]
      rule (.K => UNDEF("CEE3",
                "Found pointer that refers outside the bounds of an object + 1.",
-               "6.2.4"))
+               "6.2.4, J.2:1 item 10"))
           ~> errorLocBounds
           [structural]
 
