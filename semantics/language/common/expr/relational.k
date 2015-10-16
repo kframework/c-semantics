@@ -95,7 +95,7 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(offset(Loc) <Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
           [structural]
-     rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5") )
+     rule (.K => UNDEF("CER1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
           requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
@@ -109,7 +109,7 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
           [structural]
-     rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5") )
+     rule (.K => UNDEF("CER2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
           requires notBool sameBase(Loc, Loc')
                andBool T ==Type T'
@@ -123,7 +123,7 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
           [structural]
-     rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5") )
+     rule (.K => UNDEF("CER3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
           requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
@@ -137,7 +137,7 @@ module C-COMMON-EXPR-RELATIONAL
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
           requires sameBase(Loc, Loc')
           [structural]
-     rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5") )
+     rule (.K => UNDEF("CER4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
           requires notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
