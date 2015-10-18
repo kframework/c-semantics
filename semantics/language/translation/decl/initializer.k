@@ -106,7 +106,7 @@ module C-DECL-INITIALIZER
                andBool isErrorRecovery andBool size(L) >Int 0
 
      rule (.K => UNDEF("CDI2",
-               "Initializer for scalar contains multiple levels of braces", "6.7.9:11"))
+               "Initializer for scalar contains multiple levels of braces", "6.7.9:11, J.2:1 item 81"))
           ~> figureInit(_, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(_))))))
           requires notBool isAggregateOrUnionType(T)

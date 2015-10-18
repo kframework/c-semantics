@@ -27,7 +27,8 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           requires L =/=K .List
           [structural]
-     rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
+    //This is a bug. Structs cannot be empty is a requirement. Structs not having a named member results in undefinedness.  
+     rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1, J.2:1 item 61") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
@@ -36,7 +37,7 @@ module C-DECL-TAGGED
           => addTag(X, makeUnionFieldInfo(L))
           requires L =/=K .List
           [structural]
-     rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1, J:2 item 61") )
           ~> UnionDef(_, krlist(.List))
           [structural]
      rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
