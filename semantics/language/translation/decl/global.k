@@ -89,7 +89,7 @@ module C-DECL-GLOBAL
      rule (.K => UNDEF("TDG1",
                "declaration for the function " +String idToString(X) +String
                " appears with type qualifiers.",
-               "6.7.3"))
+               "6.7.3:9, J.2:1 item 66"))
           ~> declare''(T:FunctionType, X:CId, _)
           requires getQualifiers(T) =/=K .Set
           [structural]
@@ -107,7 +107,7 @@ module C-DECL-GLOBAL
      rule <k> (.K => UNDEF("TDG3",
                "declaration for " +String idToString(X) +String
                " appears with invalid storage class specifiers.",
-               "6.7.1:7"))
+               "6.7.1:7, J.2:1 item 60"))
                ~> declare''(T:FunctionType, X:CId, _)
           ...</k>
           <curr-scope> S:Scope </curr-scope>
@@ -183,13 +183,13 @@ module C-DECL-GLOBAL
           [structural]
      rule (.K => UNDEF("TDG6",
                "void parameter appears with a storage class specifier.",
-               "6.7.6.3:10"))
+               "6.7.6.3:10, J.2:1 item 78"))
           ~> checkParam(T:VoidType)
           requires (getStorageSpecifiers(T) =/=K .Set)
           [structural]
      rule (.K => UNDEF("TDG7",
                "void parameter appears with qualifiers.",
-               "6.7.6.3:10"))
+               "6.7.6.3:10, J.2:1 item 78"))
           ~> checkParam(T:VoidType)
           requires (getQualifiers(T) =/=K .Set)
           [structural]
@@ -431,7 +431,7 @@ module C-DECL-GLOBAL
      // Static, previously extern.
      rule <k> (.K => UNDEF("TDG11",
                "static declaration of " +String idToString(X)
-               +String " follows non-static declaration.", "6.2.2:7"))
+               +String " follows non-static declaration.", "6.2.2:7, J.2:1 item 8"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -481,7 +481,7 @@ module C-DECL-GLOBAL
           [structural]
      rule ( .K => UNDEF("TDG12",
                "declaration for an object is a tentative definition with internal linkage and has an incomplete type.",
-               "6.9.2:3"))
+               "6.9.2:3, J.2:1 item 89"))
           ~> declareExternalVariable'(true, initValue(_, T:Type, .K),
                _, internal, _)
           requires notBool isCompleteType(T)
@@ -834,7 +834,7 @@ module C-DECL-GLOBAL
           [structural]
      rule (.K => UNDEF("TDG17",
                "could not form composite type from declaration.",
-               "6.2.7:3")) // Likely because of VLA params.
+               "6.2.7:3, J.2:1 item 16")) // Likely because of VLA params.
           ~> giveCompositeType'(_, T:K)
           requires isType(T) =/=K true
           [structural]
