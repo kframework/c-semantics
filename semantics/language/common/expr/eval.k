@@ -179,7 +179,7 @@ module C-COMMON-EXPR-EVAL
           [structural]
      rule (.K => UNDEF("CEE3",
                "Found pointer that refers outside the bounds of an object + 1.",
-               "6.2.4, J.2:1 item 10"))
+               "6.7.2.1, J.2:1 item 62"))
           ~> errorLocBounds
           [structural]
 

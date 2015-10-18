@@ -70,7 +70,7 @@ module C-COMMON-EXPR-REFERENCE
           [structural]
      rule (.K => UNDEF("CER4",
                "Dereferencing a pointer past the end of an array.",
-               "6.5.6:8, J.2:1 item 43"))
+               "6.5.6:8, J.2:1 item 19"))
           ~> *(tv(Loc:SymLoc, _))
           requires ifFromArrayInBounds(Loc,
                t(.Set, pointerType(t(.Set, char))), 1) =/=K true
