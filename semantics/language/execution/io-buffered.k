@@ -134,7 +134,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> (.K => UNSPEC("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
-               "6.2.4:4-5, J.2:1 item 9"))
+               "6.2.4:4-5"))
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
