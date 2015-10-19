@@ -93,7 +93,7 @@ module C-EXECUTION-ERROR
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1") ) ~>
+          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
           [structural]

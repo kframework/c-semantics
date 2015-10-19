@@ -132,9 +132,9 @@ module C-IO-BUFFERED
           requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (.K => UNSPEC("EIO5",
+     rule <k> (.K => IMPL("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
-               "6.2.4:4-5"))
+               "6.2.4:4, 6.2.4:5"))
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
@@ -174,7 +174,7 @@ module C-IO-BUFFERED
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
-     rule <k> (.K => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+     rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4, 6.2.4:5"))
                ~> readBytes(Loc::SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>

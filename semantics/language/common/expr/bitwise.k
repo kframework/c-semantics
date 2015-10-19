@@ -123,7 +123,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
-     rule (.K => UNSPEC("CEB8",
+     rule (.K => IMPL("CEB8",
                "the left operand in a bitwise right-shift is negative.",
                "6.5.7:5"))
           ~> tv(E1:Int, T1:Type) >> R:RValue
