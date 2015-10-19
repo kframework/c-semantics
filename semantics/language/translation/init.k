@@ -201,9 +201,9 @@ module C-TRANSLATION-INIT
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _) => .K
-     rule (.K => UNDEF("TIN2",
+     rule (.K => 
                "Multiple external definitions for " +String idToString(X) +String ".",
-               "6.9, J.2:1 item 84"))
+               "6.9:5, J.2:1 item 84"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
      rule (_:ErrorExit => .K) ~> checkExtDefs((X:CId => .K), _, _)
           requires isErrorRecovery 

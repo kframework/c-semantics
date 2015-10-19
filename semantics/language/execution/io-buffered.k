@@ -95,7 +95,7 @@ module C-IO-BUFFERED
           requires notBool Loc in Locs andBool isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO8",
                "Unsequenced side effect on scalar object with side effect of same object.",
-               "6.5, J.2:1 item 35") )
+               "6.5:2, J.2:1 item 35") )
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <locs-written> Locs::List </locs-written>
@@ -117,7 +117,7 @@ module C-IO-BUFFERED
           requires isErrorRecovery
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
-               "6.7.3, J.2:1 item 64"))
+               "6.7.3:6, J.2:1 item 64"))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
@@ -125,7 +125,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3, J.2:1 item 65"))
+               "6.7.3:6, J.2:1 item 65"))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), T::Type)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
@@ -335,13 +335,13 @@ module C-IO-BUFFERED
 
      rule (.K => UNDEF("EIO7",
                "reading outside the bounds of an object.",
-               "6.2.4, J.2:1 item 9"))
+               "6.3.2.1:19, J.2:1 item 19"))
           ~> errorReadOutOfBounds
           [structural]
      // read outo f bounds becomes a trap by the above rule
      rule (.K => UNDEF("EIO8",
                "unsequenced side effect on scalar object with value computation of same object.",
-               "6.5, J.2:1 item 35"))
+               "6.5:2, J.2:1 item 35"))
           ~> errorUnseqEffects
           [structural]
      rule (.K => UNDEF("EIO9",

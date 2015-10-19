@@ -59,7 +59,7 @@ module C-DECL-RESOLUTION
           => UNDEF("TDR1",
                "declaration for inline function not defined in the same translation unit: "
                +String idToString(X),
-               "6.7.4, J.2:1 item 70")
+               "6.7.4:7, J.2:1 item 70")
           requires Inline in Mods
           [structural]
 

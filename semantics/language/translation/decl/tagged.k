@@ -28,7 +28,7 @@ module C-DECL-TAGGED
           requires L =/=K .List
           [structural]
     //Undefinedness occurs when there are no named members in a struct. An empty struct is a contraint Violation. 
-     rule (.K => CV("CDT1", "structs cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT1", "structs must contain a named member.", "6.7.2.1") )
           ~> StructDef(_, krlist(.List))
           [structural]
      rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
@@ -37,7 +37,7 @@ module C-DECL-TAGGED
           => addTag(X, makeUnionFieldInfo(L))
           requires L =/=K .List
           [structural]
-     rule (.K => CV("CDT2", "unions cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT2", "unions must contain a named member.", "6.7.2.1") )
           ~> UnionDef(_, krlist(.List))
           [structural]
      rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
