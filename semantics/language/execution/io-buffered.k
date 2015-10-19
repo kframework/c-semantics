@@ -346,7 +346,7 @@ module C-IO-BUFFERED
           [structural]
      rule (.K => UNDEF("EIO9",
                "trying to access an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3, J.2:1 item 65"))
+               "6.7.3:6, J.2:1 item 65"))
           ~> errorNonVolatileLVal
           [structural]
 
