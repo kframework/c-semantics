@@ -205,7 +205,7 @@ module C-CONVERSION
 
      rule (.K => IMPL("CCV2",
                "conversion to signed integer outside the range that can be represented.",
-               "6.3.1.3:3"))
+               "6.3.1.3:3, J.3.5:1 item 4"))
           ~> castHold(T':SignedIntegerType, tv(I:Int, _:IntegerType))
           requires notBool inRange(I, T')
           [structural]

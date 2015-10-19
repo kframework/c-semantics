@@ -125,7 +125,7 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => IMPL("CEB8",
                "the left operand in a bitwise right-shift is negative.",
-               "6.5.7:5"))
+               "6.5.7:5, J.3.5:1 item 5"))
           ~> tv(E1:Int, T1:Type) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0 andBool isSignedIntegerType(T1)
