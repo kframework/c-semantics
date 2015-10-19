@@ -100,7 +100,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
-               andBool E1 >=Int 0
+               andBool (E1 >=Int 0 orBool notBool isSignedIntegerType(T1))
           [structural]
      rule (.K => CV("CEB5",
                "both bitwise shift operands must have integer type.",
@@ -128,7 +128,7 @@ module C-COMMON-EXPR-BITWISE
                "6.5.7:5"))
           ~> tv(E1:Int, T1:Type) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
-               andBool E1 <Int 0
+               andBool E1 <Int 0 andBool isSignedIntegerType(T1)
           [structural]
      rule _:ErrorExit ~> tv(E1:Int, T1:Type) >> R:RValue
           => - (tv(absInt(E1), T1) << R)
