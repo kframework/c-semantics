@@ -7,7 +7,7 @@ module C-ERROR-SYNTAX
      syntax KItem ::= UNDEF(String, String, String)
      syntax KItem ::= UNSPEC(String, String, String)
      syntax KItem ::= CV(String, String, String)
-
+     syntax KItem ::= IMPL(String, String, String)
      syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
 
      syntax KResult ::= Bool
@@ -77,7 +77,8 @@ module C-ERROR
           => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", "C11", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", "C11", Citation))
-
+     rule IMPL(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg(Title, Msg, "Implementiation defined behavior.", "C11", Citation))
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Document, Citation))
 

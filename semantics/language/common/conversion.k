@@ -42,7 +42,7 @@ module C-CONVERSION
      rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
-     rule (.K => UNSPEC("CCV1", "signed overflow.", "6.3.1.3:3"))
+     rule (.K => UNDEF("CCV1", "signed overflow.", "6.5:5, J.2:1 item 36"))
           ~> arithInterpretHold(T:SignedIntegerType, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
@@ -203,7 +203,7 @@ module C-CONVERSION
      rule _:ErrorExit ~> castHold(T':SignedIntegerType, tv(I:Int, T:IntegerType)) => cast(T', tv(I:Int, T))
           requires inRange(I, T') andBool isErrorRecovery
 
-     rule (.K => UNSPEC("CCV2",
+     rule (.K => IMPL("CCV2",
                "conversion to signed integer outside the range that can be represented.",
                "6.3.1.3:3"))
           ~> castHold(T':SignedIntegerType, tv(I:Int, _:IntegerType))
