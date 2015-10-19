@@ -97,13 +97,13 @@ semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-co
 
 check:	pass fail fail-compile
 
-pass:	fast
+pass:	test-build
 	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
 
-fail:	fast
+fail:	test-build
 	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
 
-fail-compile:	fast
+fail-compile:	test-build
 	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
 
 clean:

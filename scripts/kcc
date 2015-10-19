@@ -61,6 +61,7 @@ my @originalArgv;
 
 our @cppArgs = ();
 our @stdlib = ();
+our @ld_lib = ();
 
 our $oflag;
 
@@ -80,6 +81,7 @@ my $spec = q(#
       -include <file>		Add header to file during preprocessing.
 { push(@main::cppArgs, '-include', $file); }
       -L <dir>			Look for shared libraries in <dir>.
+{ push(@main::ld_lib, $dir) }
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
 { $main::oflag = $file; }
@@ -221,6 +223,11 @@ sub main {
           } else {
                 print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
           }
+          if (@ld_lib) {
+                print $programRunner "sub nativeLibraryPath {\n return '@ld_lib';\n}\n";
+          } else {
+                print $programRunner "sub nativeLibraryPath {\n return undef;\n}\n";
+          }
           close($programRunner);
 
      } else {
@@ -248,6 +255,10 @@ sub main {
           if (@stdlib) {
             push @cmd, '--native-libraries';
             push @cmd, "@stdlib";
+          }
+          if (@ld_lib) {
+            push @cmd, '--native-library-path';
+            push @cmd, "@ld_lib";
           }
           my $retval = execute('krun', @cmd);
           checkError($retval);
@@ -329,7 +340,7 @@ sub classify {
                extractStatic($_, $base, $suffix);
           } elsif ($suffix eq '.c') {
                push(@srcFiles, $_);
-          } else {
+          } elsif ($_ ne '-') {
                die "Unsupported option $_";
           }
      }
@@ -423,6 +434,10 @@ sub getKRunCommand {
      if (scalar @stdlib) {
           push(@krun_args, '--native-libraries');
           push(@krun_args, "@stdlib");
+     }
+     if (scalar @ld_lib) {
+          push(@krun_args, '--native-library-path');
+          push(@krun_args, "@ld_lib");
      }
 
      return @krun_args;

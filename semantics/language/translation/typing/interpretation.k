@@ -52,7 +52,7 @@ module C-TYPING-INTERPRETATION
      rule (_:ErrorExit => .K) ~> ArrayType(_, tv((V:Float => Float2Int(V)), _), _)
           requires isErrorRecovery
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_, tv(Len:Int, _), _)
+          ~> ArrayType(_:Type, tv(Len:Int, _:Type), _)
           requires Len <=Int 0
           [structural]
 

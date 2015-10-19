@@ -23,12 +23,19 @@ module C-STMT-BLOCK
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>
           <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
-          (<local>...
-               <block-history> ListItem(Tag:Int) ...</block-history>
-          ...</local> => C)
+          (_:LocalCell => <local> C <block-history> ListItem(Tag) L </block-history> </local>)
           <block-stack>
-               ListItem(C:LocalCell) => .List
+               ListItem(<local> C:Bag <block-history> ListItem(Tag:Int) L:List </block-history> </local>) => .List
           ...</block-stack>
+
+     rule <k> popBlock => .K ...</k>
+          <elab>... .K => popBlock </elab>
+          <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
+          (_:LocalCell => <local> C <block-history> .List </block-history> </local>)
+          <block-stack>
+               ListItem(<local> C:Bag <block-history> .List </block-history> </local>) => .List
+          ...</block-stack>
+
 
      rule <k> Nop => .K ...</k>
           <elab>... .K => Nop </elab>
