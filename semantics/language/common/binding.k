@@ -49,7 +49,7 @@ module C-BINDING
           requires #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
      rule (.K => UNDEF("B1", "types of function call arguments aren't "
-               +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2.1 item 39"))
+               +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2:1 item 39"))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                .List,
@@ -62,7 +62,7 @@ module C-BINDING
                (ListItem(V:RValue) => .List) _)
           requires isErrorRecovery
      rule (.K => UNDEF("B2", "function call has fewer arguments than "
-               +String "parameters in function definition.", "6.5.2.2:6, J.2.1 item 38"))
+               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                ListItem(T':Type) _,
@@ -74,7 +74,7 @@ module C-BINDING
                .List)
           requires isErrorRecovery
      rule (.K => UNDEF("B3", "function call has more arguments than "
-               +String "parameters in function definition.", "6.5.2.2:6, J.2.1 item 38"))
+               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(.List, .List, ListItem(_) _)
      rule (_:ErrorExit => .K) ~> bind(.List, .List, (ListItem(_) => .List) _)
           requires isErrorRecovery

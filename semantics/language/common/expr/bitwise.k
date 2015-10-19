@@ -56,21 +56,21 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
-               "6.5.7:3 J.2:1 item 51"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
-               "6.5.7:3 J.2:1 item 51"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
-               "6.5.7:4 J.2:1 item 52"))
+               "6.5.7:4, J.2:1 item 52"))
           ~> tv(E1:Int, T1:Type) << R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
