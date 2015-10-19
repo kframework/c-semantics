@@ -101,7 +101,7 @@ module C-COMMON-EXPR-EVAL
 
      rule reval(trap(T:Type)
                => UNDEF("CEE2", "Indeterminate value used in an expression.",
-                    "6.2.4:2, 6.7.9, 6.8, J.2:1 item 11")
+                    "6.2.4, 6.7.9, 6.8, J.2:1 item 11")
                ~> tv(trap, T))
           [structural]
      rule _:ErrorExit ~> tv(trap, T:IntegerType) ~> reval() => tv(0, T) ~> reval()
@@ -174,12 +174,12 @@ module C-COMMON-EXPR-EVAL
                     | "errorLocBounds"
      rule (.K => UNDEF("CEE4",
                "Referring to an object outside of its lifetime.",
-               "6.2.4:4, J.2:1 item 9"))
+               "6.2.4:2, J.2:1 item 9"))
           ~> errorLocInvalid
           [structural]
      rule (.K => UNDEF("CEE3",
                "Found pointer that refers outside the bounds of an object + 1.",
-               "6.3.2.1:1, J.2:1 item 62"))
+               "6.3.2.1:1, J.2:1 item 19"))
           ~> errorLocBounds
           [structural]
 

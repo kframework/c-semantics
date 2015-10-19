@@ -335,7 +335,7 @@ module C-IO-BUFFERED
 
      rule (.K => UNDEF("EIO7",
                "reading outside the bounds of an object.",
-               "6.3.2.1:19, J.2:1 item 19"))
+               "6.3.2.1:1, J.2:1 item 19"))
           ~> errorReadOutOfBounds
           [structural]
      // read outo f bounds becomes a trap by the above rule
