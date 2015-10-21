@@ -34,7 +34,7 @@ my $profileDirectory;
   $profileDirectory = "$distDirectory/$profile";
   close FILE;
 }
-my $cygwin = $^O eq "cygwin";
+my $cygwin = $^O eq "cygwin" || $^O eq "msys";
 if ($cygwin) {
   $distDirectory = `cygpath -w $distDirectory`;
   $profileDirectory = `cygpath -w $profileDirectory`;
