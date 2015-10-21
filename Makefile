@@ -63,7 +63,8 @@ $(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/d
 
 test-build: fast
 	@echo "Testing kcc..."
-	printf "#include <stdio.h>\nint main(void) {printf(\"x\"); return 42;}\n" | $(DIST_DIR)/kcc - -o $(DIST_DIR)/testProgram.compiled
+	printf "#include <stdio.h>\nint main(void) {printf(\"x\"); return 42;}\n" > $(DIST_DIR)/testProgram.c
+	$(DIST_DIR)/kcc $(DIST_DIR)/testProgram.c -o $(DIST_DIR)/testProgram.compiled
 	$(DIST_DIR)/testProgram.compiled 2> /dev/null > $(DIST_DIR)/testProgram.out; test $$? -eq 42
 	grep x $(DIST_DIR)/testProgram.out > /dev/null
 	@echo "Done."
