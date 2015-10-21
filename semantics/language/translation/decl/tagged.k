@@ -46,7 +46,7 @@ module C-DECL-TAGGED
 
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true
-          when F =/=K #NoName
+          requires F =/=K #NoName
      rule hasNamedField((ListItem(typedDeclaration(_, #NoName)) => .List) _)
      rule hasNamedField(.List) => false
 
