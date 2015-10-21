@@ -338,9 +338,9 @@ sub classify {
                push(@objFiles, $_);
           } elsif ($suffix eq '.a') {
                extractStatic($_, $base, $suffix);
-          } elsif ($suffix eq '.c') {
+          } elsif ($suffix eq '.c' or $_ eq '-') {
                push(@srcFiles, $_);
-          } elsif ($_ ne '-') {
+          } else {
                die "Unsupported option $_";
           }
      }
