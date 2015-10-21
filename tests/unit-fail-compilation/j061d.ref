@@ -1,0 +1,7 @@
+File: j061d.c
+Line: 1
+Error: CDT2
+Description: unions cannot be empty.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.2.1
+Translation failed. Run kcc -d j061d.c to see commands run.
