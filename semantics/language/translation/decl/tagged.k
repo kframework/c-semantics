@@ -25,22 +25,30 @@ module C-DECL-TAGGED
      // note that struct defs might appear buried in a type.
      rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
-          requires L =/=K .List
+          requires hasNamedField(L)
           [structural]
      rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
-          ~> StructDef(_, krlist(.List))
+          ~> StructDef(_, krlist(L:List))
+          requires notBool hasNamedField(L)
           [structural]
      rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
           requires isErrorRecovery
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
-          requires L =/=K .List
+          requires hasNamedField(L)
           [structural]
      rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
-          ~> UnionDef(_, krlist(.List))
+          ~> UnionDef(_, krlist(L:List))
+          requires notBool hasNamedField(L)
           [structural]
      rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
           requires isErrorRecovery
+
+     syntax Bool ::= hasNamedField(List) [function]
+     rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true
+          when F =/=K #NoName
+     rule hasNamedField((ListItem(typedDeclaration(_, #NoName)) => .List) _)
+     rule hasNamedField(.List) => false
 
      rule makeStructFieldInfo(L:List)
           => makeStructFieldInfo'(
