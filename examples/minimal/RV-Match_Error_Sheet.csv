@@ -119,7 +119,7 @@ CV-TDG2,declaration for appears with multiple storage class specifiers.,6.7.1:2,
 CV-TDG4,declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
 CV-TDG5,function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
 CV-TDG8,declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
-CV-TDG9,conflicting types for identifier,6.7:4,Constraint Violation
+CV-TDG10,conflicting types for identifier.,6.7:4,Constraint Violation
 CV-TDG13,Redefinition of symbol:,6.9:3,Constraint Violation
 CV-TDL1,Extern declaration follows one with no linkage,6.7:3,Constraint Violation
 CV-TDL2,Extern declaration appears at block scope with an initializer.,6.7.9:5,Constraint Violation

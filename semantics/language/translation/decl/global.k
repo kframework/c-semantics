@@ -325,7 +325,7 @@ module C-DECL-GLOBAL
                andBool areCompatible(T, OldT)
           [structural]
 
-     rule <k> (.K => CV("TDG9",
+     rule <k> (.K => CV("TDG10",
                "conflicting types for " +String idToString(X), "6.7:4"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
