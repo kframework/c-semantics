@@ -42,6 +42,13 @@ if ($cygwin) {
   chop($profileDirectory);
 }
 
+my $krun;
+if ($cygwin) {
+  $krun = 'krun.bat';
+} else {
+  $krun = 'krun';
+}
+
 my $preprocessor;
 {
   local $/=undef;
@@ -199,7 +206,7 @@ sub main {
      # because we need to use different parsers if one of the config vars
      # should be empty.
 
-     my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
+     my $retval = execute($krun, getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
      checkError($retval);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
@@ -260,7 +267,7 @@ sub main {
             push @cmd, '--native-library-path';
             push @cmd, "@ld_lib";
           }
-          my $retval = execute('krun', @cmd);
+          my $retval = execute($krun, @cmd);
           checkError($retval);
      }
 
@@ -297,9 +304,9 @@ sub mergeObjs {
           if (!$pid) {
             my @cmd = getKRunCommand($accum, $obj1, $obj2, $obj3, $obj4, undef, 0);
             if ($args->{'-d'}) {
-              print("krun '" . join("' '", @cmd) . "'\n");
+              print("$krun '" . join("' '", @cmd) . "'\n");
             }
-            exec('krun', @cmd);
+            exec($krun, @cmd);
           }
           my %data = (
             'pid' => $pid,
@@ -370,7 +377,7 @@ sub extractStatic {
 
 sub compile {
      my ($oval, $inputFile) = (@_);
-     my $retval = execute('krun', getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
+     my $retval = execute($krun, getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
      checkError($retval);
 }
 
