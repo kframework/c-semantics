@@ -43,10 +43,13 @@ if ($cygwin) {
 }
 
 my $krun;
+my $printf;
 if ($cygwin) {
   $krun = 'krun.bat';
+  $printf = 'printf %%s';
 } else {
   $krun = 'krun';
+  $printf = 'printf %s';
 }
 
 my $preprocessor;
@@ -248,10 +251,10 @@ sub main {
           }
 
           my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
-                  '-cARGV=`#argv`(.KList) ', '-pARGV=printf %s',
+                  '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
-                  $options, '-pOPTIONS=printf %s',
+                  $options, "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
                   );
@@ -388,7 +391,7 @@ sub pushObj {
           push(@{$_[0]}, "-pOBJ$i=cat");
           push(@{$_[0]}, "-cOBJ$i=$obj");
      } else {
-          push(@{$_[0]}, "-pOBJ$i=printf %s");
+          push(@{$_[0]}, "-pOBJ$i=$printf");
           push(@{$_[0]}, "-cOBJ$i=.K");
      }
 }
@@ -423,7 +426,7 @@ sub getKRunCommand {
      } else {
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
      }
-     push(@krun_args, "-pOPTIONS=printf %s");
+     push(@krun_args, "-pOPTIONS=$printf");
 
      pushObj(\@krun_args, $obj1, '1');
      pushObj(\@krun_args, $obj2, '2');
@@ -434,7 +437,7 @@ sub getKRunCommand {
           push(@krun_args, '--parser', 'cat');
           push(@krun_args, $kast);
      } else {
-          push(@krun_args, '-pPGM=printf %s');
+          push(@krun_args, "-pPGM=$printf");
           push(@krun_args, '-cPGM=.K');
      }
 
