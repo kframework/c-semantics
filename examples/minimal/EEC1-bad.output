@@ -1,0 +1,7 @@
+Error: EEC1
+Description: Incompatible variably modified types in a conditional expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.1:6
+  at main(/Users/manasvi/Documents/examples/unit-fail/j076g.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/unit-fail-compilation/j066a.c
+Line: 2
+Error: TDG1
+Description: declaration for the function f appears with type qualifiers.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.3:9, J.2:1 item 66
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/j066a.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/j066a.out to see commands run.

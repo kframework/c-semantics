@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/unit-fail-compilation/static-assert.c
+Line: 1
+Error: SSA2
+Description: Static assertion failed: fifty minus fifty must be 0
+Type: Constraint violation.
+See also: C11 sec. 6.7.10:2
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/static-assert.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/static-assert.out to see commands run.

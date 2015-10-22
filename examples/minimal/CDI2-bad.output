@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/unit-fail-compilation/j081b.c
+Line: 2
+Error: CDI2
+Description: Initializer for scalar contains multiple levels of braces
+Type: Undefined behavior.
+See also: C11 sec. 6.7.9:11, J.2:1 item 81
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/j081b.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/j081b.out to see commands run.

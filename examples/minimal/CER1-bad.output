@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/unit-fail-compilation/xAddrStruct.c
+Line: 14
+Error: CER1
+Description: Unary '&' operator applied to non-lvalue.
+Type: Constraint violation.
+See also: C11 sec. 6.5.3.2:1
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/xAddrStruct.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/xAddrStruct.out to see commands run.
