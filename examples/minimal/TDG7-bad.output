@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j079g.c
+Line: 1
+Error: TDG7
+Description: void parameter appears with qualifiers.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j079g.c -o /Users/manasvi/Documents/examples/temp/allbad/j079g.out to see commands run.
