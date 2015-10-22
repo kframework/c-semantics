@@ -1,0 +1,9 @@
+Error: EFNC3
+Description: incompatible pointer types in function call arguments.
+Type: Constraint violation.
+See also: C11 sec. 6.5.16.1:1
+  at g(/Users/manasvi/Documents/examples/allbad/j311a.c:5)
+  at f(/Users/manasvi/Documents/examples/allbad/j311a.c:5)
+  at main(/Users/manasvi/Documents/examples/allbad/j311a.c:11)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

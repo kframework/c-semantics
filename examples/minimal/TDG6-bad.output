@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j079a.c
+Line: 1
+Error: TDG6
+Description: void parameter appears with a storage class specifier.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j079a.c -o /Users/manasvi/Documents/examples/temp/allbad/j079a.out to see commands run.

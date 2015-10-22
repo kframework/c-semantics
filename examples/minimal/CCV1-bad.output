@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j036b.c
+Line: 3
+Error: CCV1
+Description: signed overflow.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j036b.c -o /Users/manasvi/Documents/examples/temp/allbad/j036b.out to see commands run.

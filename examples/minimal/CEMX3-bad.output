@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j036a.c
+Line: 4
+Error: CEMX3
+Description: Signed overflow.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j036a.c -o /Users/manasvi/Documents/examples/temp/allbad/j036a.out to see commands run.

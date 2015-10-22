@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j071a.c
+Line: 5
+Error: TDR1
+Description: declaration for inline function not defined in the same translation unit: f
+Type: Undefined behavior.
+See also: C11 sec. 6.7.4:7, J.2:1 item 70
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j071a.c -o /Users/manasvi/Documents/examples/temp/allbad/j071a.out to see commands run.

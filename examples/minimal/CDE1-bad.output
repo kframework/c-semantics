@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j055b.c
+Line: 1
+Error: CDE1
+Description: Enum initializer not an integer constant expression.
+Type: Constraint violation.
+See also: C11 sec. 6.7.2.2:2
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j055b.c -o /Users/manasvi/Documents/examples/temp/allbad/j055b.out to see commands run.

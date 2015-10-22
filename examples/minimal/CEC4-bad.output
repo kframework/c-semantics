@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j502b.c
+Line: 10
+Error: CEC4
+Description: If one of a conditional expression's branches has struct or union type, the other must have the same type.
+Type: Constraint violation.
+See also: C11 sec. 6.5.15:3
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j502b.c -o /Users/manasvi/Documents/examples/temp/allbad/j502b.out to see commands run.

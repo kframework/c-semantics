@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j056a.c
+Line: 5
+Error: TEAS5
+Description: Non-constant static initializer.
+Type: Constraint violation.
+See also: C11 sec. 6.7.9:4
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j056a.c -o /Users/manasvi/Documents/examples/temp/allbad/j056a.out to see commands run.

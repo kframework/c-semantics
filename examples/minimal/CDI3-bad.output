@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j084a.c
+Line: 2
+Error: CDI3
+Description: Invalid initializer for aggregate type
+Type: Undefined behavior.
+See also: C11 sec. 6.7.9:16, J.2:1 item 83
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j084a.c -o /Users/manasvi/Documents/examples/temp/allbad/j084a.out to see commands run.

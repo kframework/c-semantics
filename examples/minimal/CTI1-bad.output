@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j055d.c
+Line: 1
+Error: CTI1
+Description: Arrays must have integer length.
+Type: Undefined behavior.
+See also: C11 sec. 6.6:6, J.2:1 item 55
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j055d.c -o /Users/manasvi/Documents/examples/temp/allbad/j055d.out to see commands run.

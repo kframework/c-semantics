@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j008a.c
+Line: 3
+Error: TDG11
+Description: static declaration of f follows non-static declaration.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.2:7, J.2:1 item 8
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j008a.c -o /Users/manasvi/Documents/examples/temp/allbad/j008a.out to see commands run.

@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j502a.c
+Line: 4
+Error: CEC2
+Description: If one of a conditional expression's branches has void type, the other must also have void type.
+Type: Constraint violation.
+See also: C11 sec. 6.5.15:3
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j502a.c -o /Users/manasvi/Documents/examples/temp/allbad/j502a.out to see commands run.

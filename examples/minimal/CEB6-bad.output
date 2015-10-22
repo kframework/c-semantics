@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/examples/allbad/j321b.c
+Line: 2
+Error: CEB6
+Description: the right operand in a bitwise shift is negative.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.7:3, J.2:1 item 51
+Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j321b.c -o /Users/manasvi/Documents/examples/temp/allbad/j321b.out to see commands run.
