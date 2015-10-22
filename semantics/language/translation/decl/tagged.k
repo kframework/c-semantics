@@ -124,7 +124,7 @@ module C-DECL-TAGGED
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires notBool (X in_keys(Structs))
           [structural]
-     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
+     rule <k> (.K => CV("CDT3", "redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>

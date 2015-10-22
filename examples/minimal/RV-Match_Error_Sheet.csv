@@ -122,9 +122,22 @@ CV-CTM2,Variable-length array with file scope.,6.7.6.2:2,Constraint Violation
 CV-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Constraint Violation
 CV-EFNC2,incompatible types in function call arguments.,6.5.16.1:1,Constraint Violation
 CV-EFNC3,incompatible pointer types in function call arguments.,6.5.16.1:1,Constraint Violation
+CV-TDG2,declaration for appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
+CV-TDG4,declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
 CV-TDG5,function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
 CV-TDG8,declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
+CV-TDG9,conflicting types for identifier,6.7:4,Constraint Violation
+CV-TDG13,Redefinition of symbol:,6.9:3,Constraint Violation
+CV-TDL1,Extern declaration follows one with no linkage,6.7:3,Constraint Violation
+CV-TDL2,Extern declaration appears at block scope with an initializer.,6.7.9:5,Constraint Violation
+CV-TDL3,Extern declaration with incompatible type,6.7:4,Constraint Violation
+CV-TDL4,Redeclaration with no linkage,6.7:3,Constraint Violation
 CV-CDI4,Attempting to initialize nonexistent member.,6.7.9:2,Constraint Violation
+CV-CDT3,"redefinition of a struct, union, or enum",6.7.2.3:1,Constraint Violation
+CV-TDG14,redefinition of symbol with external linkage,"6.9:5""",Constraint Violation
+CV-TDG15,"redefinition of struct, union, or enum",6.7.2.3:1,Constraint Violation
+CV-TDG18,declaration for appears with invalid storage class specifiers.,6.7.1:3,Constraint Violation
+CV-TDG16,incompatible redeclaration of symbol with internal or external linkage,6.7:4,Constraint Violation
 CV-CDE1,Enum initializer not an integer constant expression.,6.7.2.2:2,Constraint Violation
 CV-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Constraint Violation
 CV-TEAS1,incompatible types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation
