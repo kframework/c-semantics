@@ -153,17 +153,17 @@ module C-COMMON-EXPR-RELATIONAL
           requires (isIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
-     rule (.K => CV("CERL6", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) <= tv(_, T':Type)
           requires (isIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
-     rule (.K => CV("CERL7", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) > tv(_, T':Type)
           requires (isIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool isIntegerType(T'))
           [structural]
-     rule (.K => CV("CERL8", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
           ~> tv(_, T:Type) >= tv(_, T':Type)
           requires (isIntegerType(T) andBool isPointerType(T'))
                orBool (isPointerType(T) andBool isIntegerType(T'))
