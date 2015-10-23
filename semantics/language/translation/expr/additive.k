@@ -31,7 +31,9 @@ module C-EXPR-ADDITIVE
                andBool notBool isFunctionPointerType(type(L))
                andBool isCompletePointerType(type(L))
                andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
-               andBool type(L) ==Type type(R)
+               andBool notBool isFunctionPointerType(type(R))
+               andBool isCompletePointerType(type(R))
+               andBool areCompatible(stripQualifiers(innerType(type(L))), stripQualifiers(innerType(type(R))))
 
      rule L:RValue + R:RValue => te(stripHold(L) + stripHold(R), type(L))
           requires (isHold(L) orBool isHold(R))

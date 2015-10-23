@@ -448,12 +448,12 @@ module C-CONVERSION
      rule cast(t(Mods':Set, pointerType(T':Type)),
                tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
           => tv(Loc, cast(t(Mods', pointerType(T')), t(Mods, pointerType(T))))
-          requires getAlignas(T') <=Int getAlign(Loc) 
+          requires Loc ==K NullPointer orElseBool getAlignas(T') <=Int getAlign(Loc)
           orElseBool isFunctionType(T) andBool isFunctionType(T')
      //TODO(dwightguth): handle pointer alignment
-     rule cast(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(T:Type))))
-          => castHold(t(.Set, pointerType(T':Type)), tv(Loc:SymLoc, t(.Set, pointerType(T))))
-          requires getAlignas(T') >Int getAlign(Loc)
+     rule cast(t(Mods':Set, pointerType(T':Type)), tv(Loc:SymLoc, t(Mods:Set, pointerType(T:Type))))
+          => castHold(t(Mods', pointerType(T':Type)), tv(Loc:SymLoc, t(Mods, pointerType(T))))
+          requires Loc =/=K NullPointer andBool getAlignas(T') >Int getAlign(Loc)
      rule (.K => UNDEF("CCV11",
                "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
                "6.3.2.3:7"))

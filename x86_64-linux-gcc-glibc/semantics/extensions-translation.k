@@ -3,6 +3,7 @@ module C-TRANSLATION-EXTENSIONS
   imports C-ABSTRACT-SYNTAX
   imports C-TYPING-EXPR-SYNTAX
   imports C-TYPING-CANONICALIZATION-SYNTAX
+  imports C-ERROR-SYNTAX
 
   syntax KItem ::= GnuBodyDone(Int)
 
@@ -26,5 +27,9 @@ module C-TRANSLATION-EXTENSIONS
   rule canonicalizeType-aux(_:List (ListItem(`TypeofExpression`(Result:Type)) => .List), (.K => Result), _, _, _)
 
   rule typeof(GnuBody(Block(_, _, list(Stmts:List ListItem(CodeLoc(Computation(Stmt:K), _))))) => Stmt)
+
+  // Zero length arrays
+  rule _:ErrorExit ~> ArrayType(T:Type, tv(0, T':Type), Spec:K)
+       => pushTypeDown(T, makeArrayType(tv(0, T'), Spec))
 
 endmodule

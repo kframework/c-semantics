@@ -52,7 +52,7 @@ module C-TYPING-INTERPRETATION
      rule (_:ErrorExit => .K) ~> ArrayType(_, tv((V:Float => Float2Int(V)), _), _)
           requires isErrorRecovery
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_, tv(Len:Int, _), _)
+          ~> ArrayType(_:Type, tv(Len:Int, _:Type), _)
           requires Len <=Int 0
           [structural]
 
@@ -198,7 +198,7 @@ module C-TYPING-INTERPRETATION
      rule extractActualType(t(S:Set, pointerType(T:Type)))
           => t(S, pointerType(extractActualType(T)))
      rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T::SimpleType))))
-          => extractActualType(t(S S', T))
+          => extractActualType(addQualifiers(S, t(S', T)))
 
      syntax KItem ::= NameAndType(CId, K) [strict(2)]
 
