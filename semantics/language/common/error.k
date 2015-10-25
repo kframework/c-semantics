@@ -72,13 +72,13 @@ module C-ERROR
           requires Citation =/=String "" andBool isCSV
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Undefined behavior.", "C11", Citation))
+          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", "C11", Citation))
      rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Unspecified value or behavior.", "C11", Citation))
+          => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior.", "C11", Citation))
      rule CV(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", "C11", Citation))
+          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", "C11", Citation))
      rule IMPL(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Implementiation defined behavior.", "C11", Citation))
+          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementiation defined behavior.", "C11", Citation))
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Document, Citation))
 
