@@ -212,10 +212,14 @@ module C-COMMON-EXPR-ADDITIVE
      rule (.K => CV("CEA9",
                "Computing pointer difference between pointers not to complete object types.",
                "6.5.6:3"))
-          ~> tv(_:SymLoc, T:PointerType)
-               - tv(_:SymLoc, T:PointerType)
-          requires isFunctionType(innerType(T)) 
-               orBool notBool isCompleteType(innerType(T))
+          ~> L:RValue
+               - R:RValue
+          requires isPointerType(type(L)) andThenBool isPointerType(type(R)) andThenBool 
+               (isFunctionType(innerType(type(L))) 
+               orBool notBool isCompleteType(innerType(type(L)))
+               orBool isFunctionType(innerType(type(R)))
+               orBool notBool isCompleteType(innerType(type(R)))
+               orBool notBool areCompatible(innerType(type(L)), innerType(type(R))))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9, J.2:1 item 48"))

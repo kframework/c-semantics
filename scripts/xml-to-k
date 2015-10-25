@@ -75,6 +75,10 @@ my %ignoreThese = (
 	'ForClauseDeclaration' => 1,
 );
 
+if ($input eq 'Parsing error') {
+  exit 1;
+}
+
 my $reader = new XML::LibXML::Reader(string => $input, huge => 1) 
       or die "cannot create XML::LibXML::Reader object\n";
 $reader->read;
