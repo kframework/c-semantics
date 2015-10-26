@@ -1,5 +1,5 @@
-needsInclude.c:2:21: fatal error: include.h: No such file or directory
- #include "include.h"
-                     ^
-compilation terminated.
-Translation failed. Run kcc -d needsInclude.c to see commands run.
+needsInclude.c:2:10: fatal error: 'include.h' file not found
+#include "include.h"
+         ^
+1 error generated.
+Translation failed. Run kcc -d needsInclude.c -o needsInclude.out to see commands run.

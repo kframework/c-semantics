@@ -1,7 +1,7 @@
 File: j501d.c
 Line: 5
-Error: TEAS6
+Error: CV-TEAS6
 Description: Trying to write through a const lvalue.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
-Translation failed. Run kcc -d j501d.c to see commands run.
+Translation failed. Run kcc -d j501d.c -o j501d.out to see commands run.

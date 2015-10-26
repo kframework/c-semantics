@@ -1,7 +1,7 @@
 File: j076b.c
 Line: 2
-Error: TDG10
+Error: CV-TDG10
 Description: conflicting types for a
 Type: Constraint violation.
 See also: C11 sec. 6.7:4
-Translation failed. Run kcc -d j076b.c to see commands run.
+Translation failed. Run kcc -d j076b.c -o j076b.out to see commands run.

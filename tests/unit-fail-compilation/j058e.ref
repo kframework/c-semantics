@@ -1,7 +1,7 @@
 File: j058e.c
 Line: 3
-Error: TEAS5
+Error: CV-TEAS5
 Description: Non-constant static initializer.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:4
-Translation failed. Run kcc -d j058e.c to see commands run.
+Translation failed. Run kcc -d j058e.c -o j058e.out to see commands run.

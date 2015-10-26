@@ -1,8 +1,8 @@
-j027a.c:2:2: error: missing terminating ' character [-Werror]
-  'x
-  ^
-j027a.c:3:2: error: missing terminating ' character [-Werror]
-  ';
-  ^
-cc1: all warnings being treated as errors
-Translation failed. Run kcc -d j027a.c to see commands run.
+j027a.c:2:2: error: missing terminating ' character [-Werror,-Winvalid-pp-token]
+        'x
+        ^
+j027a.c:3:2: error: missing terminating ' character [-Werror,-Winvalid-pp-token]
+        ';
+        ^
+2 errors generated.
+Translation failed. Run kcc -d j027a.c -o j027a.out to see commands run.

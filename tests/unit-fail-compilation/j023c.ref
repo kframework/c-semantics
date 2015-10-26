@@ -1,7 +1,7 @@
 File: j023c.c
 Line: 5
-Error: TEAS1
+Error: CV-TEAS1
 Description: incompatible types in assignment or function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
-Translation failed. Run kcc -d j023c.c to see commands run.
+Translation failed. Run kcc -d j023c.c -o j023c.out to see commands run.
