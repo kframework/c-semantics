@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDL2-bad-static.c
+Line: 2
+Error: CV-TDL2
+Description: Extern declaration of a appears at block scope with an initializer.
+Type: Constraint violation.
+See also: C11 sec. 6.7.9:5
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDL2-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TDL2-bad-static.out to see commands run.

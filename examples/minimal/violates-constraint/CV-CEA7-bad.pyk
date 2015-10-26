@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA7-bad.c
+Line: 4
+Error: CV-CEA7
+Description: Computing pointer addition of a pointer not to a complete object type.
+Type: Constraint violation.
+See also: C11 sec. 6.5.6:2
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA7-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEA7-bad.out to see commands run.

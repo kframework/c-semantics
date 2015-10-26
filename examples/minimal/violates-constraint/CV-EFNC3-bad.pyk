@@ -1,0 +1,9 @@
+Error: CV-EFNC3
+Description: incompatible pointer types in function call arguments.
+Type: Constraint violation.
+See also: C11 sec. 6.5.16.1:1
+  at g(/Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-EFNC3-bad.c:5)
+  at f(/Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-EFNC3-bad.c:5)
+  at main(/Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-EFNC3-bad.c:11)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG15-bad.c
+Line: 5
+Error: CV-TDG15
+Description: redefinition of a struct, union, or enum: foo
+Type: Constraint violation.
+See also: C11 sec. 6.7.2.3:1
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG15-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TDG15-bad.out to see commands run.

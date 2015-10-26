@@ -1,0 +1,7 @@
+Error: CV-CER2
+Description: Unary '&' operator applied to a value with register storage class.
+Type: Constraint violation.
+See also: C11 sec. 6.5.3.2:1
+  at main(/Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CER2-bad.c:3)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

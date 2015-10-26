@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TEAS1-bad-static.c
+Line: 7
+Error: CV-TEAS1
+Description: incompatible types in assignment or function call arguments.
+Type: Constraint violation.
+See also: C11 sec. 6.5.16.1:1
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TEAS1-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TEAS1-bad-static.out to see commands run.

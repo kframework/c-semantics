@@ -1,0 +1,7 @@
+Error: IMPL-CEB8
+Description: the left operand in a bitwise right-shift is negative.
+Type: Implementiation defined behavior.
+See also: C11 sec. 6.5.7:5, J.3.5:1 item 5
+  at main(/Users/manasvi/Documents/c-semantics/examples/minimal/implementation-defined/IMPL-CEB8-bad.c:3)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

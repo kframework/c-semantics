@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA4-bad.c
+Line: 4
+Error: CV-CEA4
+Description: Invalid operand types to subtraction.
+Type: Constraint violation.
+See also: C11 sec. 6.5.6:3
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA4-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEA4-bad.out to see commands run.

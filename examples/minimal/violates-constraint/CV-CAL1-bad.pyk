@@ -1,0 +1,7 @@
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CAL1-bad.c
+Line: 5
+Error: CV-CAL1
+Description: Trying to compute alignof of a type that is incomplete or a function type.
+Type: Constraint violation.
+See also: C11 sec. 6.5.3.4:1
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CAL1-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CAL1-bad.out to see commands run.
