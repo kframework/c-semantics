@@ -29,7 +29,7 @@ module C-DECL-TAGGED
           [structural]
     //Undefinedness occurs when there are no named members in a struct. An empty struct is a contraint Violation. 
      rule (.K => UNDEF("CDT1", "structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
-          ~> StructDef(_, krlist(.List))
+          ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
      rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
