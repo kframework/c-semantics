@@ -3,6 +3,6 @@ int f(int x){
 }
 
 int main(void){
-	int (*x)(double) = (int (*)(double))&f;
+	int (*x)(int) = (int (*)(int))&f;
 	return x(0);
 }

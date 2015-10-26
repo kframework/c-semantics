@@ -1,4 +1,3 @@
-// taken from c1x n1570, 6.7.2.1:19
 #include <stdio.h>
 
 struct v {
@@ -9,8 +8,8 @@ struct v {
 int main(void){
 	// v1.i = 2;
 	// printf("%d\n", v1.i);
-	v1.k = 3; // invalid: inner structure is not anonymous
-	printf("%ld\n", v1.k);
+	v1.w.k = 3; // invalid: inner structure is not anonymous
+	printf("%ld\n", v1.w.k);
 	// v1.w.k = 5;
 	// printf("%d\n", v1.w.k);
 	return 0;
