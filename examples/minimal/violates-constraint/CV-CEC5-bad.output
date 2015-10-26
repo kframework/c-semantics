@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEC5-bad.c
-Line: 3
-Error: CV-CEC5
-Description: If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
-Type: Constraint violation.
-See also: C11 sec. 6.5.15:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEC5-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEC5-bad.out to see commands run.

@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CDE1-bad-static.c
+File: CV-CDE1-bad-static.c
 Line: 1
 Error: CV-CDE1
 Description: Enum initializer not an integer constant expression.
 Type: Constraint violation.
 See also: C11 sec. 6.7.2.2:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CDE1-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CDE1-bad-static.out to see commands run.
+Translation failed. Run kcc -d CV-CDE1-bad-static.c to see commands run.

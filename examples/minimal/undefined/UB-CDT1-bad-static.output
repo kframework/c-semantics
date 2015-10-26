@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CDT1-bad-static.c
+File: UB-CDT1-bad-static.c
 Line: 1
 Error: UB-CDT1
 Description: structs must contain a named member.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.2.1:8, J.2:1 item 61
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CDT1-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/UB-CDT1-bad-static.out to see commands run.
+Translation failed. Run kcc -d UB-CDT1-bad-static.c to see commands run.

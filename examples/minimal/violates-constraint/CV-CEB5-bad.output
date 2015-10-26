@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEB5-bad.c
-Line: 3
-Error: CV-CEB5
-Description: both bitwise shift operands must have integer type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.7:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEB5-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEB5-bad.out to see commands run.

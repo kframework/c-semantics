@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-FD2-bad.c
-Line: 5
-Error: CV-FD2
-Description: invalid return type in function definition.
-Type: Constraint violation.
-See also: C11 sec. 6.7.6.3:1
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-FD2-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-FD2-bad.out to see commands run.

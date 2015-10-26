@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-EFC1-bad.c
-Line: 6
-Error: CV-EFC1
-Description: function call with incomplete or invalid return type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.2.2:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-EFC1-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-EFC1-bad.out to see commands run.
