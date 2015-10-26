@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/unit-fail-compilation/j059a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-TDL5-bad-static.c
 Line: 2
-Error: TDL5
+Error: UB-TDL5
 Description: declaration of an identifier for an object with no linkage and incomplete type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7:7, J.2:1 item 59
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/j059a.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/j059a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-TDL5-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/UB-TDL5-bad-static.out to see commands run.

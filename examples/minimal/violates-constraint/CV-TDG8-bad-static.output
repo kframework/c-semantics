@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/allbad/j020a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG8-bad-static.c
 Line: 4
-Error: TDG8
+Error: CV-TDG8
 Description: declaration has initializer but incomplete type.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j020a.c -o /Users/manasvi/Documents/examples/temp/allbad/j020a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG8-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TDG8-bad-static.out to see commands run.

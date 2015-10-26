@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/unit-fail-compilation/j078k.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG18-bad-static.c
 Line: 2
-Error: TDG18
+Error: CV-TDG18
 Description: declaration for x appears with invalid storage class specifiers.
 Type: Constraint violation.
 See also: C11 sec. 6.7.1:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/j078k.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/j078k.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG18-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TDG18-bad-static.out to see commands run.

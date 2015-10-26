@@ -1,7 +1,7 @@
-File: CV-TES2-bad-static.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TES2-bad-static.c
 Line: 5
-Error: TES2
+Error: CV-TES2
 Description: Trying to compute sizeof of an incomplete or function type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.3.4:1
-Translation failed. Run kcc -d CV-TES2-bad-static.c to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TES2-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TES2-bad-static.out to see commands run.

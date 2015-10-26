@@ -1,7 +1,7 @@
-Error: CID2
+Error: UB-CID2
 Description: No definition found for identifier f.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-  at main(/Users/manasvi/Documents/examples/unit-fail/j060c.c:3)
+  at main(/Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CID2-bad.c:3)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

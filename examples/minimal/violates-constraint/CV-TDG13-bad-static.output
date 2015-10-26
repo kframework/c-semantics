@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/allbad/j306a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG13-bad-static.c
 Line: 2
-Error: TDG13
+Error: CV-TDG13
 Description: Redefinition of symbol: x
 Type: Constraint violation.
 See also: C11 sec. 6.9:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j306a.c -o /Users/manasvi/Documents/examples/temp/allbad/j306a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-TDG13-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-TDG13-bad-static.out to see commands run.

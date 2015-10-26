@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CEE3-bad-static.c
-Line: 7
-Error: UB-CEE3
-Description: Found pointer that refers outside the bounds of an object + 1.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CEE3-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/UB-CEE3-bad-static.out to see commands run.

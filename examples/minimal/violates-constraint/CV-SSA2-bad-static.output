@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/unit-fail-compilation/static-assert.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-SSA2-bad-static.c
 Line: 1
-Error: SSA2
+Error: CV-SSA2
 Description: Static assertion failed: fifty minus fifty must be 0
 Type: Constraint violation.
 See also: C11 sec. 6.7.10:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/static-assert.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/static-assert.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-SSA2-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-SSA2-bad-static.out to see commands run.

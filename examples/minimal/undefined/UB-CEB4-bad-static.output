@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/allbad/j052a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CEB4-bad-static.c
 Line: 3
-Error: CEB4
+Error: UB-CEB4
 Description: the left operand in a bitwise left-shift is negative.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:4, J.2:1 item 52
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j052a.c -o /Users/manasvi/Documents/examples/temp/allbad/j052a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-CEB4-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/UB-CEB4-bad-static.out to see commands run.

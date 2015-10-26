@@ -1,7 +1,0 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEC2-bad-static.c
-Line: 4
-Error: CV-CEC2
-Description: If one of a conditional expression's branches has void type, the other must also have void type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.15:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEC2-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEC2-bad-static.out to see commands run.

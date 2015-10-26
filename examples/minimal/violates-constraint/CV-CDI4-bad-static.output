@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/allbad/j302a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CDI4-bad-static.c
 Line: 9
-Error: CDI4
+Error: CV-CDI4
 Description: Attempting to initialize nonexistent member.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/allbad/j302a.c -o /Users/manasvi/Documents/examples/temp/allbad/j302a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CDI4-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CDI4-bad-static.out to see commands run.

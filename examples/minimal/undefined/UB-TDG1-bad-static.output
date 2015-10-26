@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/examples/unit-fail-compilation/j066a.c
+File: /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-TDG1-bad-static.c
 Line: 2
-Error: TDG1
+Error: UB-TDG1
 Description: declaration for the function f appears with type qualifiers.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3:9, J.2:1 item 66
-Translation failed. Run kcc -d /Users/manasvi/Documents/examples/unit-fail-compilation/j066a.c -o /Users/manasvi/Documents/examples/temp/unit-fail-compilation/j066a.out to see commands run.
+Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/undefined/UB-TDG1-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/UB-TDG1-bad-static.out to see commands run.
