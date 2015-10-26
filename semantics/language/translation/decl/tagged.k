@@ -39,7 +39,7 @@ module C-DECL-TAGGED
           requires hasNamedField(L)
           [structural]
      rule (.K => UNDEF("CDT2", "unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
-          ~> UnionDef(_, krlist(.List))
+          ~> UnionDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
      rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
