@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA8-bad.c
+File: CV-CEA8-bad-static.c
 Line: 4
 Error: CV-CEA8
 Description: Computing pointer minus integer of a pointer not to a complete object type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.6:3
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA8-bad.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEA8-bad.out to see commands run.
+Translation failed. Run kcc -d CV-CEA8-bad-static.c to see commands run.

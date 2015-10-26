@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CID1-bad-static.c
+File: CV-CID1-bad-static.c
 Line: 6
 Error: CV-CID1
 Description: Trying to look up identifier x, but no such identifier is in scope.
 Type: Constraint violation.
 See also: C11 sec. 6.5.1:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CID1-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CID1-bad-static.out to see commands run.
+Translation failed. Run kcc -d CV-CID1-bad-static.c to see commands run.

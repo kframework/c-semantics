@@ -1,7 +1,7 @@
-File: /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA3-bad-static.c
+File: CV-CEA3-bad-static.c
 Line: 4
 Error: CV-CEA3
 Description: Invalid operand types to addition.
 Type: Constraint violation.
 See also: C11 sec. 6.5.6:2
-Translation failed. Run kcc -d /Users/manasvi/Documents/c-semantics/examples/minimal/violates-constraint/CV-CEA3-bad-static.c -o /Users/manasvi/Documents/c-semantics/examples/minimal/pykrunner-outputs/CV-CEA3-bad-static.out to see commands run.
+Translation failed. Run kcc -d CV-CEA3-bad-static.c to see commands run.
