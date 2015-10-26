@@ -43,9 +43,18 @@ module C-COMMON-EXPR-EVAL
      value has the type of the lvalue. \ldots
      }*/
 
+     syntax KItem ::= checkCompleteLValue(Type)
+     rule checkCompleteLValue(T:Type) => .K
+          requires isCompleteType(T)
+     rule (.K => UNDEF("CEE3", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2"))
+          ~> checkCompleteLValue(T:Type)
+          requires notBool isCompleteType(T)
+     rule _:ErrorExit ~> checkCompleteLValue(_) => .K
+          requires isErrorRecovery
+
      // Lvalue conversion.
      rule reval(nclv(Loc::SymLoc, T::Type)
-          => checkUse(unqualify(instantiate(Loc, T))))
+          => checkCompleteLValue(T) ~> checkUse(unqualify(instantiate(Loc, T))))
           requires notBool isArrayOrFunctionType(T)
           [structural]
 

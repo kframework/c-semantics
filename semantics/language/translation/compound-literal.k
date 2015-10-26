@@ -88,12 +88,12 @@ module C-COMPOUND-LITERAL
           requires notBool (wstring(S) in_keys(Mem))
 
      rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S), cfg:alignofSignedChar),
+               => lv(lnew(string(S), t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))),
                     t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
      rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S), byteAlignofType(t(.Set, cfg:wcharut))),
+               => lv(lnew(wstring(S), t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1))),
                     t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
@@ -102,12 +102,12 @@ module C-COMPOUND-LITERAL
      rule allocString(Base:SymBase, S:String)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ~> writeString(lnew(Base, cfg:alignofSignedChar), S)
+          ~> writeString(lnew(Base, t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))), S)
 
      syntax KItem ::= allocWString(SymBase, List)
      rule allocWString(Base:SymBase, S:List)
           => allocObject(Base, t(.Set,
                arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
-          ~> writeWString(lnew(Base, byteAlignofType(t(.Set, cfg:wcharut))), S)
+          ~> writeWString(lnew(Base, t(.Set, arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1)))), S)
 
 endmodule

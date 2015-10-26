@@ -52,7 +52,7 @@ module LIBC-STDLIB
      rule <k> prepareBuiltin(Identifier("malloc"),
                     hrItem(tv(Len:Int, _)))
                => alloc(Base, t(.Set, no-type), Len:Int)
-               ~> tv(addProv(fromArray(0, Len), lnew(Base, cfg:alignofMalloc)),
+               ~> tv(addProv(fromArray(0, Len), lnew(Base, t(.Set, no-type))),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>... .Map => Base |-> Len:Int ...</malloced>

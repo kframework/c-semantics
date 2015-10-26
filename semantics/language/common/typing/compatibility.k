@@ -321,6 +321,17 @@ module C-TYPING-COMPATIBILITY
                typedDeclaration(T':Type, X:CId))
           => typedDeclaration(compositeType(T, T'), X)
 
+     rule compositeType(
+               t(Mods:Set, structType(S:StructId)),
+               t(Mods':Set, structType(S':StructId)))
+          => t(Mods Mods', structType(S:StructId))
+          requires getFieldInfo(S') ==K #incomplete
+     rule compositeType(
+               t(Mods:Set, structType(S:StructId)),
+               t(Mods':Set, structType(S':StructId)))
+          => t(Mods Mods', structType(S':StructId))
+          requires getFieldInfo(S) ==K #incomplete
+
      // TODO(chathhorn): huge hack. Done like this just so things will "break"
      // when we can't form a composite type. Really need a better way to
      // propagate errors up through layers of function calls like this (or

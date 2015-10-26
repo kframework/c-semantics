@@ -136,7 +136,7 @@ module C-TYPING-PREDICATES
           requires fromConstantExpr(T)
      rule isNullPointerConstant(tv(NullPointer, T:PointerType)) => true
           requires (simpleType(innerType(T)) ==K void)
-               andBool fromConstantExpr(T)
+               andBool IntegerConstant in getModifiers(T)
      rule isNullPointerConstant(_) => false [owise]
 
      // TODO(chathhorn): arithmetic and address constants

@@ -10,13 +10,17 @@ module C-EXPR-CONDITIONAL
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax KItem ::= getTypes(K, K) [strict]
-     syntax KItem ::= types(Type, Type)
+     syntax KItem ::= getTypes(K, K)
+     syntax KItem ::= types(Type, Type, Bool, Bool)
      syntax KItem ::= convertedType(K) [strict]
      syntax KItem ::= convertedType(Type, Type, K) [strict(3)]
 
-     rule getTypes(V1:KResult, V2:KResult)
-          => types(retype(type(V1)), retype(type(V2)))
+     // the type of the operands is actually their type after lvalue conversion
+     context getTypes(HOLE => reval(HOLE), _) [result(RValue)]
+     context getTypes(_, HOLE => reval(HOLE)) [result(RValue)]
+
+     rule getTypes(V1:RValue, V2:RValue)
+          => types(retype(type(V1)), retype(type(V2)), isNullPointerConstant(V1), isNullPointerConstant(V2))
 
      // fixme, not handling qualifiers correctly
      syntax Type ::= retype(Type) [function]
@@ -42,7 +46,7 @@ module C-EXPR-CONDITIONAL
      operands have structure or union type, the result has that type. If both
      operands have void type, the result has void type.
      }*/
-     rule (types(T1:ArithmeticType, T2:ArithmeticType)
+     rule (types(T1:ArithmeticType, T2:ArithmeticType, _, _)
           => convertedType(usualArithmeticConversion(T1, T2)))
                ~> _ ? _ : _
           requires T1 =/=K T2
@@ -60,33 +64,27 @@ module C-EXPR-CONDITIONAL
      type is a pointer to an appropriately qualified version of
      \cinline{void}.}
      }*/
-     rule (types(_:IntegerType, T2:PointerType) => convertedType(T2))
-          ~> _ ? E:K : _
-          requires isNullPointerConstant(E)
-     rule (types(T1:PointerType, _:IntegerType) => convertedType(T1))
-          ~> _? _ : E:K
-          requires isNullPointerConstant(E)
+     rule types(_, T2:PointerType, true, _) => convertedType(T2)
+     rule types(T1:PointerType, _, _, true) => convertedType(T1)
 
      // TODO(chathhorn): variably modified types need to be evaluated at
      // execution and checked for compatibility at that point.
      rule (.K => CV("CEC1", "If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
                +String " other must be a pointer to void.",
                "6.5.15:3"))
-          ~> types(T1:PointerType, T2:PointerType)
+          ~> types(T1:PointerType, T2:PointerType, _, _)
           requires notBool areCompatible(stripQualifiers(innerType(T1)), stripQualifiers(innerType(T2)))
                andBool notBool isVoidType(innerType(T1))
                andBool notBool isVoidType(innerType(T2))
 
      rule (.K => CV("CEC5", "If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.", "6.5.15:3")) 
-          ~> types(_:IntegerType, _:PointerType) ~> _ ? E:K : _
-          requires notBool isNullPointerConstant(E)
+          ~> types(_:IntegerType, _:PointerType, false, _) ~> _ ? _ : _
      rule (.K => CV("CEC5", "If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.", "6.5.15:3")) 
-          ~> types(_:PointerType, _:IntegerType) ~> _ ? _ : E:K
-          requires notBool isNullPointerConstant(E)
+          ~> types(_:PointerType, _:IntegerType, _, false) ~> _ ? _ : _
 
      rule (types(
                t(Mods:Set, pointerType(T:Type)),
-               t(Mods':Set, pointerType(T':Type))
+               t(Mods':Set, pointerType(T':Type)), _, _
           ) => convertedType(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
@@ -95,26 +93,26 @@ module C-EXPR-CONDITIONAL
 
      rule (types(
                T:Type,
-               T':Type
+               T':Type, _, _
           ) => convertedType(T, T', compositeType(T, T')))
           ~> _? _ : _
           requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
 
      rule (types(
                t(Mods1:Set, pointerType(t(Mods1':Set, void))),
-               t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType)))
+               t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))), false, _
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           requires notBool isFunctionType(t(Mods2', S))
      rule (types(
                t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))),
-               t(Mods2:Set, pointerType(t(Mods2':Set, void)))
+               t(Mods2:Set, pointerType(t(Mods2':Set, void))), _, false
           ) => convertedType(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void)))))
           ~> _? _ : _
           requires notBool isFunctionType(t(Mods1', S))
 
      // this should take care of the void/struct cases
-     rule (types(T:Type, T':Type) => convertedType(T))
+     rule (types(T:Type, T':Type, _, _) => convertedType(T))
           ~> _ ? _ : _
           requires notBool isPointerType(T)
                andBool areCompatible(T, T')
@@ -124,13 +122,13 @@ module C-EXPR-CONDITIONAL
           => evalConditional(simplifyTruth(E), Cast(T1, E1), Cast(T2, E2), T)
 
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
-          ~> types(t(_, void), t(_, T:SimpleType))
+          ~> types(t(_, void), t(_, T:SimpleType), _, _)
           requires T =/=K void
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
-          ~> types(t(_, T:SimpleType), t(_, void))
+          ~> types(t(_, T:SimpleType), t(_, void), _, _)
           requires T =/=K void
      rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") )
-          ~> types(T:StructOrUnionType, T':StructOrUnionType)
+          ~> types(T:StructOrUnionType, T':StructOrUnionType, _, _)
           requires T =/=Type T'
 
      syntax KItem ::= evalConditional(K, K, K, Type)

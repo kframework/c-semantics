@@ -34,12 +34,22 @@ my $profileDirectory;
   $profileDirectory = "$distDirectory/$profile";
   close FILE;
 }
-my $cygwin = $^O eq "cygwin";
+my $cygwin = $^O eq "cygwin" || $^O eq "msys";
 if ($cygwin) {
   $distDirectory = `cygpath -w $distDirectory`;
   $profileDirectory = `cygpath -w $profileDirectory`;
   chop($distDirectory);
   chop($profileDirectory);
+}
+
+my $krun;
+my $printf;
+if ($cygwin) {
+  $krun = 'krun.bat';
+  $printf = 'printf %%s';
+} else {
+  $krun = 'krun';
+  $printf = 'printf %s';
 }
 
 my $preprocessor;
@@ -61,6 +71,7 @@ my @originalArgv;
 
 our @cppArgs = ();
 our @stdlib = ();
+our @ld_lib = ();
 
 our $oflag;
 
@@ -80,6 +91,7 @@ my $spec = q(#
       -include <file>		Add header to file during preprocessing.
 { push(@main::cppArgs, '-include', $file); }
       -L <dir>			Look for shared libraries in <dir>.
+{ push(@main::ld_lib, $dir) }
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
 { $main::oflag = $file; }
@@ -197,7 +209,7 @@ sub main {
      # because we need to use different parsers if one of the config vars
      # should be empty.
 
-     my $retval = execute('krun', getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
+     my $retval = execute($krun, getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
      checkError($retval);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
@@ -221,6 +233,11 @@ sub main {
           } else {
                 print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
           }
+          if (@ld_lib) {
+                print $programRunner "sub nativeLibraryPath {\n return '@ld_lib';\n}\n";
+          } else {
+                print $programRunner "sub nativeLibraryPath {\n return undef;\n}\n";
+          }
           close($programRunner);
 
      } else {
@@ -234,10 +251,10 @@ sub main {
           }
 
           my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
-                  '-cARGV=`#argv`(.KList) ', '-pARGV=printf %s',
+                  '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--kore', '--exit-code', "<result-value> _:Int </result-value>",
-                  $options, '-pOPTIONS=printf %s',
+                  $options, "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
                   );
@@ -249,7 +266,11 @@ sub main {
             push @cmd, '--native-libraries';
             push @cmd, "@stdlib";
           }
-          my $retval = execute('krun', @cmd);
+          if (@ld_lib) {
+            push @cmd, '--native-library-path';
+            push @cmd, "@ld_lib";
+          }
+          my $retval = execute($krun, @cmd);
           checkError($retval);
      }
 
@@ -286,9 +307,9 @@ sub mergeObjs {
           if (!$pid) {
             my @cmd = getKRunCommand($accum, $obj1, $obj2, $obj3, $obj4, undef, 0);
             if ($args->{'-d'}) {
-              print("krun '" . join("' '", @cmd) . "'\n");
+              print("$krun '" . join("' '", @cmd) . "'\n");
             }
-            exec('krun', @cmd);
+            exec($krun, @cmd);
           }
           my %data = (
             'pid' => $pid,
@@ -327,7 +348,7 @@ sub classify {
                push(@objFiles, $_);
           } elsif ($suffix eq '.a') {
                extractStatic($_, $base, $suffix);
-          } elsif ($suffix eq '.c') {
+          } elsif ($suffix eq '.c' or $_ eq '-') {
                push(@srcFiles, $_);
           } else {
                die "Unsupported option $_";
@@ -359,7 +380,7 @@ sub extractStatic {
 
 sub compile {
      my ($oval, $inputFile) = (@_);
-     my $retval = execute('krun', getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
+     my $retval = execute($krun, getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
      checkError($retval);
 }
 
@@ -370,7 +391,7 @@ sub pushObj {
           push(@{$_[0]}, "-pOBJ$i=cat");
           push(@{$_[0]}, "-cOBJ$i=$obj");
      } else {
-          push(@{$_[0]}, "-pOBJ$i=printf %s");
+          push(@{$_[0]}, "-pOBJ$i=$printf");
           push(@{$_[0]}, "-cOBJ$i=.K");
      }
 }
@@ -405,7 +426,7 @@ sub getKRunCommand {
      } else {
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
      }
-     push(@krun_args, "-pOPTIONS=printf %s");
+     push(@krun_args, "-pOPTIONS=$printf");
 
      pushObj(\@krun_args, $obj1, '1');
      pushObj(\@krun_args, $obj2, '2');
@@ -416,13 +437,17 @@ sub getKRunCommand {
           push(@krun_args, '--parser', 'cat');
           push(@krun_args, $kast);
      } else {
-          push(@krun_args, '-pPGM=printf %s');
+          push(@krun_args, "-pPGM=$printf");
           push(@krun_args, '-cPGM=.K');
      }
 
      if (scalar @stdlib) {
           push(@krun_args, '--native-libraries');
           push(@krun_args, "@stdlib");
+     }
+     if (scalar @ld_lib) {
+          push(@krun_args, '--native-library-path');
+          push(@krun_args, "@ld_lib");
      }
 
      return @krun_args;

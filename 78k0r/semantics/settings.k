@@ -46,7 +46,7 @@ module C-SETTINGS
      rule cfg:alignofMalloc => 8
 
      rule cfg:intToPointer(0, _) => NullPointer
-     rule cfg:intToPointer(V:Int, _) => loc(0 @ nativeAddress, V, SetItem(align(getNativeAlign(V))))
+     rule cfg:intToPointer(V:Int, _) => loc(0 @ nativeAddress, V)
           requires V =/=Int 0
      rule cfg:intToPointer(L:SymLoc, _) => L
      rule cfg:intToPointer(_, _) => trap [owise]

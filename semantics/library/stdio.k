@@ -202,7 +202,7 @@ module LIBC-STDIO
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
-          => writeString(Dest, substrString(S, 0, Len -Int 1))
+          => writeString(Dest, substrString(S, 0, minInt(lengthString(S), Len -Int 1)))
                ~> tv(lengthString(S), t(.Set, int))
           requires Len >Int 0
           [structural]

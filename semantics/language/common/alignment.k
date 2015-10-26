@@ -31,6 +31,7 @@ module C-ALIGNMENT
      rule byteAlignofType(t(_, float)) => cfg:alignofFloat
      rule byteAlignofType(t(_, double)) => cfg:alignofDouble
      rule byteAlignofType(t(_, long-double)) => cfg:alignofLongDouble
+     rule byteAlignofType(t(_, no-type)) => cfg:alignofMalloc
 
      rule byteAlignofType(t(_, unsigned-char)) => byteAlignofType(t(.Set, signed-char))
      rule byteAlignofType(t(_, unsigned-short-int)) => byteAlignofType(t(.Set, short-int))

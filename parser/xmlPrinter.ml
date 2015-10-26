@@ -197,8 +197,7 @@ and printCabsLoc a =
 	in*)
 	let contents = 
 		(printCell "Filename" [] 
-		(* (printRawString a.filename) *)
-		(printRawString !realFilename)
+		(printRawString a.filename)
 		)
 		^ (printCell "Lineno" [] (printRawInt a.lineno))
 		(* ^ (printCell "Byteno" [] (printRawInt a.byteno))

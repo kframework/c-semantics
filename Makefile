@@ -37,8 +37,8 @@ $(DIST_DIR)/kcc $(DIST_DIR)/$(PROFILE)/pp: $(FILES_TO_DIST) $(wildcard $(PROFILE
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
-	@cp $(PROFILE)/pp $(DIST_DIR)/$(PROFILE)
-	@cp -r $(PROFILE)/include $(DIST_DIR)/$(PROFILE)
+	@cp -p $(PROFILE)/pp $(DIST_DIR)/$(PROFILE)
+	@cp -rp $(PROFILE)/include $(DIST_DIR)/$(PROFILE)
 	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
@@ -97,13 +97,13 @@ semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-co
 
 check:	pass fail fail-compile
 
-pass:	fast
+pass:	test-build
 	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
 
-fail:	fast
+fail:	test-build
 	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
 
-fail-compile:	fast
+fail-compile:	test-build
 	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
 
 clean:

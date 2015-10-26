@@ -195,11 +195,13 @@ module C-COMMON-EXPR-ADDITIVE
      }*/
 
      rule tv(L1:SymLoc, t(_, pointerType(T:Type)))
-               - tv(L2:SymLoc, t(_, pointerType(T:Type)))
+               - tv(L2:SymLoc, t(_, pointerType(T':Type)))
           => computePointerDifference(offset(L1) -Int offset(L2),
                byteSizeofType(T))
-          requires base(L1) ==K base(L2) andBool notBool isFunctionType(T)
-               andBool isCompleteType(T)
+          requires base(L1) ==K base(L2)
+            andBool notBool isFunctionType(T) andBool notBool isFunctionType(T')
+            andBool isCompleteType(T) andBool isCompleteType(T')
+            andBool areCompatible(stripQualifiers(T), stripQualifiers(T'))
           [structural]
 
      // uintptr_t
@@ -210,7 +212,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires base(L1) ==K base(L2)
 
      rule (.K => CV("CEA9",
-               "Computing pointer difference between pointers not to complete object types.",
+               "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.",
                "6.5.6:3"))
           ~> L:RValue
                - R:RValue
@@ -219,7 +221,7 @@ module C-COMMON-EXPR-ADDITIVE
                orBool notBool isCompleteType(innerType(type(L)))
                orBool isFunctionType(innerType(type(R)))
                orBool notBool isCompleteType(innerType(type(R)))
-               orBool notBool areCompatible(innerType(type(L)), innerType(type(R))))
+               orBool notBool areCompatible(stripQualifiers(innerType(type(L))), stripQualifiers(innerType(type(R)))))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9, J.2:1 item 48"))
