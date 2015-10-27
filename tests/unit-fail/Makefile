@@ -5,7 +5,7 @@ TEST_RESULTS = ${TESTS:.c=.out}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
-CHECK_RESULT_RUN = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp | head -n -1 > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
+CHECK_RESULT_RUN = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 CHECK_RESULT_DIFF = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 .PHONY: test clean reference comparison
