@@ -1,7 +1,7 @@
 File: j061c.c
 Line: 1
-Error: CDT1
-Description: structs cannot be empty.
+Error: UB-CDT1
+Description: structs must contain a named member.
 Type: Undefined behavior.
-See also: C11 sec. 6.7.2.1
+See also: C11 sec. 6.7.2.1:8, J.2:1 item 61
 Translation failed. Run kcc -d j061c.c to see commands run.

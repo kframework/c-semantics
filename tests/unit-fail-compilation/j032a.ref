@@ -1,6 +1,2 @@
 j032a.c[1:1-4] : syntax error
-Fatal error: exception Frontc.ParseError("Parse error")
-Entity: line 1: parser error : Document is empty
-Parsing error
-^
 Translation failed. Run kcc -d j032a.c to see commands run.
