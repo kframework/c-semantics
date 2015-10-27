@@ -1,7 +1,7 @@
 File: j055e.c
 Line: 2
-Error: CEA6
+Error: UB-CEA6
 Description: Unspecified value in signed addition, possible overflow.
-Type: Unspecified value or behavior.
-See also: C11 sec. 6.3.1.3:3
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
 Translation failed. Run kcc -d j055e.c to see commands run.

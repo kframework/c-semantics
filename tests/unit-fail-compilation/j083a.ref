@@ -1,7 +1,7 @@
 File: j083a.c
 Line: 2
-Error: CDI3
+Error: UB-CDI3
 Description: Invalid initializer for aggregate type
 Type: Undefined behavior.
-See also: C11 sec. 6.7.9:16
+See also: C11 sec. 6.7.9:16, J.2:1 item 83
 Translation failed. Run kcc -d j083a.c to see commands run.

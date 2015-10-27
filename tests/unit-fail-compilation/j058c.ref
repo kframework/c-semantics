@@ -1,6 +1,6 @@
 File: j058c.c
 Line: 7
-Error: TEAS5
+Error: CV-TEAS5
 Description: Non-constant static initializer.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:4
