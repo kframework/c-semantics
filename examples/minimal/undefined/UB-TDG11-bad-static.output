@@ -1,0 +1,7 @@
+File: UB-TDG11-bad-static.c
+Line: 3
+Error: UB-TDG11
+Description: static declaration of f follows non-static declaration.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.2:7, J.2:1 item 8
+Translation failed. Run kcc -d UB-TDG11-bad-static.c to see commands run.

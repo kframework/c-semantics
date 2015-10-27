@@ -1,0 +1,7 @@
+File: UB-FD5-bad-static.c
+Line: 2
+Error: UB-FD5
+Description: main must return an int.
+Type: Undefined behavior.
+See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
+Translation failed. Run kcc -d UB-FD5-bad-static.c to see commands run.

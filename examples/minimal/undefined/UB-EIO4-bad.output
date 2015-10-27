@@ -1,0 +1,7 @@
+Error: UB-EIO4
+Description: Trying to modify an object declared with volatile type through a non-volatile lvalue.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.3:6, J.2:1 item 65
+  at main(UB-EIO4-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)
