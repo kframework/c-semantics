@@ -1,3 +1,4 @@
+needsInclude.c:2:21: fatal error: include.h: No such file or directory
  #include "include.h"
                      ^
 compilation terminated.
