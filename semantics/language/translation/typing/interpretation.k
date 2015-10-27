@@ -46,7 +46,7 @@ module C-TYPING-INTERPRETATION
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
           [structural]
-     rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6"))
+     rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6, J.2:1 item 55"))
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (_:ErrorExit => .K) ~> ArrayType(_, tv((V:Float => Float2Int(V)), _), _)

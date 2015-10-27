@@ -187,7 +187,7 @@ module C-TRANSLATION-INIT
      rule checkExtTypes(.K, .Set, _, _, _) => .K
      rule (.K => UNDEF("TIN1",
                "Identifier " +String idToString(X) +String " declared with incompatible types in different translation units.",
-               "6.2.7:2"))
+               "6.2.7:2, J.2:1 item 15"))
           ~> checkExtTypes(X:CId,
                _, X:CId |-> T:Type _,
                _, X |-> T':Type _)
@@ -201,9 +201,9 @@ module C-TRANSLATION-INIT
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _) => .K
-     rule (.K => UNDEF("TIN2",
+     rule (.K => UNDEF("TIN2", 
                "Multiple external definitions for " +String idToString(X) +String ".",
-               "6.9"))
+               "6.9:5, J.2:1 item 84"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
      rule (_:ErrorExit => .K) ~> checkExtDefs((X:CId => .K), _, _)
           requires isErrorRecovery 
