@@ -56,7 +56,7 @@ module C-EXPR-ASSIGNMENT
           [structural]
      rule (.K => UNDEF("EEA1",
                "assignment from non-exactly-overlapping overlapping read.",
-               "6.5.16.2"))
+               "6.5.16.1:3, J.2:1 item 54"))
           ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
           requires hasReadFrom(T)
                andBool sameBase(getReadFromLoc(T), Loc)
@@ -86,12 +86,12 @@ module C-EXPR-ASSIGNMENT
           requires (Tag =/=K fileScope) andBool notBool (Tag in Tags)
                orBool Tag ==K none
      rule checkRestrictAssign(Tag:Scope, Tags:Set)
-          => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4")
+          => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4, J.2:1 item 69")
           requires Tag in Tags
      rule checkRestrictAssign(fileScope, .Set) => .K
      // TODO(chathhorn): more cases here we don't catch.
      rule checkRestrictAssign(fileScope, Tags:Set)
-          => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4")
+          => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4, J.2:1 item 69")
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
      rule _:ErrorExit ~> checkRestrictAssign(_, _) => .K
@@ -111,7 +111,7 @@ module C-EXPR-ASSIGNMENT
                getFirstMatch(Prov, #klabel(`fromArray`)):>Provenance)
      rule (.K => UNDEF("EEA4",
                "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
-               "6.7.6.3:7"))
+               "6.7.6.3:7, J.2:1 item 77"))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
           requires notBool isFromArray(Loc)
      rule _:ErrorExit ~> checkArrayStaticAssign(_, _) => .K
@@ -123,7 +123,7 @@ module C-EXPR-ASSIGNMENT
           requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (.K => UNDEF("EEA5",
                "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
-               "6.7.6.3:7"))
+               "6.7.6.3:7, J.2:1 item 77"))
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))

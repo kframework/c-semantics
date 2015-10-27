@@ -133,7 +133,7 @@ module C-EXPR-ASSIGNMENT
      rule (.K => CV("TEAS3", "lvalue required as left operand in assignment.", "6.5.16:2"))
           ~> tv(_, _) := _:RValue
 
-     rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2"))
+     rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2:1, J.2:1 item 23"))
           ~> _ := voidVal
      rule _:ErrorExit ~> _ := voidVal => voidVal //eat the invalid write
           requires isErrorRecovery

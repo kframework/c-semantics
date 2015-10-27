@@ -56,21 +56,21 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => UNDEF("CEB2",
                "the right operand in a bitwise shift is negative.",
-               "6.5.7:3"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
-               "6.5.7:3"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue << tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
                "the left operand in a bitwise left-shift is negative.",
-               "6.5.7:4"))
+               "6.5.7:4, J.2:1 item 52"))
           ~> tv(E1:Int, T1:Type) << R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
@@ -100,7 +100,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
-               andBool E1 >=Int 0
+               andBool (E1 >=Int 0 orBool notBool isSignedIntegerType(T1))
           [structural]
      rule (.K => CV("CEB5",
                "both bitwise shift operands must have integer type.",
@@ -111,24 +111,24 @@ module C-COMMON-EXPR-BITWISE
           [structural]
      rule (.K => UNDEF("CEB6",
                "the right operand in a bitwise shift is negative.",
-               "6.5.7:3"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue >> tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB7",
                "the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
-               "6.5.7:3"))
+               "6.5.7:3, J.2:1 item 51"))
           ~> L:RValue >> tv(E2:Int, T2:Type)
           requires isPromoted(type(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
-     rule (.K => UNSPEC("CEB8",
+     rule (.K => IMPL("CEB8",
                "the left operand in a bitwise right-shift is negative.",
-               "6.5.7:5"))
+               "6.5.7:5, J.3.5:1 item 5"))
           ~> tv(E1:Int, T1:Type) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(type(R))
-               andBool E1 <Int 0
+               andBool E1 <Int 0 andBool isSignedIntegerType(T1)
           [structural]
      rule _:ErrorExit ~> tv(E1:Int, T1:Type) >> R:RValue
           => - (tv(absInt(E1), T1) << R)
@@ -256,7 +256,7 @@ module C-COMMON-EXPR-BITWISE
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be trap representation.
                "potential negative zero produced via bitwise operations (this could be a false positive).",
-               "6.2.6.2:4"))
+               "6.2.6.2:4, J.2:1 item 14"))
           ~> bitwiseInterpret(tv(N:Int, T:Type))
           requires isNegZero(N, T)
      rule _:ErrorExit ~> bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
