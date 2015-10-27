@@ -1,5 +1,4 @@
-needsInclude.c:2:10: fatal error: 'include.h' file not found
-#include "include.h"
-         ^
-1 error generated.
+ #include "include.h"
+                     ^
+compilation terminated.
 Translation failed. Run kcc -d needsInclude.c to see commands run.
