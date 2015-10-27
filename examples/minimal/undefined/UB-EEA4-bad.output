@@ -1,0 +1,8 @@
+Error: UB-EEA4
+Description: passing a pointer not to an array object as a function parameter with a static-qualified array size.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:7, J.2:1 item 77
+  at f(UB-EEA4-bad.c:4)
+  at main(UB-EEA4-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

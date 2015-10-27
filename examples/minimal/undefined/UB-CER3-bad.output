@@ -1,0 +1,7 @@
+Error: UB-CER3
+Description: Dereferencing a null pointer.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.3.2:4, J.2:1 item 43
+  at main(UB-CER3-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

@@ -1,0 +1,7 @@
+File: UB-CEE2-bad-static.c
+Line: 2
+Error: UB-CEE2
+Description: Indeterminate value used in an expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+Translation failed. Run kcc -d UB-CEE2-bad-static.c to see commands run.

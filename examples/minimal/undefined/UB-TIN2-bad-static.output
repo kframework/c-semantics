@@ -1,0 +1,7 @@
+File: UB-TIN2-bad-static-link3.c
+Line: 1
+Error: UB-TIN2
+Description: Multiple external definitions for a.
+Type: Undefined behavior.
+See also: C11 sec. 6.9:5, J.2:1 item 84
+Translation failed. Run kcc -d UB-TIN2-bad-static-link1.c UB-TIN2-bad-static-link2.c UB-TIN2-bad-static-link3.c to see commands run.
