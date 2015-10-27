@@ -25,7 +25,6 @@ UB-CEB4,the left operand in a bitwise left-shift is negative.,"6.5.7:4, J.2:1 it
 UB-CEB6,the right operand in a bitwise shift is negative.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
 UB-CEB12,potential negative zero produced via bitwise operations (this could be a false positive).,"6.2.6.2:4, J.2:1 item 14",Undefined Behavior
 UB-CEB7,the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
-UB-CEER3,printf: Format string expects type of size,"7.21.6.1:9, J.2:1 item 153",Undefined Behavior
 UB-CEE2,Indeterminate value used in an expression.,"6.2.4, 6.7.9, 6.8, J.2:1 item 11",Undefined Behavior
 UB-CEE1,Address of an array declared with register storage class used in an expression.,"6.3.2.1:3, J.2:1 item 22",Undefined Behavior
 UB-CEE4,Referring to an object outside of its lifetime.,"6.2.4:2, J.2:1 item 9",Undefined Behavior
@@ -89,6 +88,7 @@ UB-FD7,"if main has arguments, the type of the second argument must be equivalen
 UB-FD8,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD9,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior
+UB-STDIO1,"printf: Format string expects type of size a, but got an argument of size b.","7.21.6.1:9, J.2:1 item 153",Undefined Behavior
 UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed.","7.22.3.5:3, J.2:1 item 179",Undefined Behavior
 USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
 CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
@@ -108,9 +108,6 @@ CV-CEM3,attempting to access member but it does not exist,6.5.2.3:1,Constraint V
 CV-CER1,Unary '&' operator applied to non-lvalue.,6.5.3.2:1,Constraint Violation
 CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3.2:1,Constraint Violation
 CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
-CV-CERL6,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
-CV-CERL7,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
-CV-CERL8,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
 CV-00035,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
 CV-CTM2,Variable-length array with file scope.,6.7.6.2:2,Constraint Violation
 CV-EFNC2,incompatible types in function call arguments.,6.5.16.1:1,Constraint Violation
@@ -126,7 +123,6 @@ CV-TDL2,Extern declaration appears at block scope with an initializer.,6.7.9:5,C
 CV-TDL3,Extern declaration with incompatible type,6.7:4,Constraint Violation
 CV-TDL4,Redeclaration with no linkage,6.7:3,Constraint Violation
 CV-CDI4,Attempting to initialize nonexistent member.,6.7.9:2,Constraint Violation
-CV-CDT3,"redefinition of a struct, union, or enum",6.7.2.3:1,Constraint Violation
 CV-TDG14,redefinition of symbol with external linkage,"6.9:5""",Constraint Violation
 CV-TDG15,"redefinition of struct, union, or enum",6.7.2.3:1,Constraint Violation
 CV-TDG18,declaration for appears with invalid storage class specifiers.,6.7.1:3,Constraint Violation
@@ -141,7 +137,6 @@ CV-TEAS6,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
 CV-CEC1,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation
 CV-CEC5,"If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",6.5.15:3,Constraint Violation
 CV-CEC2,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation
-CV-CEC3,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation
 CV-CEC4,"If one of a conditional expression's branches has struct or union type, the other must have the same type.",6.5.15:3,Constraint Violation
 CV-EFC1,function call with incomplete or invalid return type.,6.5.2.2:2,Constraint Violation
 CV-TES1,Trying to compute sizeof of an expression with incomplete or a function type.,6.5.3.4:1,Constraint Violation
