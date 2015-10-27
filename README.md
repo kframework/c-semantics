@@ -4,6 +4,9 @@ information.
 If this readme isn't enough, consider checking out these papers to better
 understand this project:
 
+- Chris Hathhorn, Chucky Ellison, and Grigore Rosu. Defining the
+  Undefinedness of C. *PLDI'15*.
+  <http://fslweb.cs.illinois.edu/FSL/papers/2015/hathhorn-ellison-rosu-2015-pldi/hathhorn-ellison-rosu-2015-pldi-public.pdf>
 - Chucky Ellison and Grigore Rosu. An Executable Formal Semantics of C with 
   Applications. *POPL'12*. 
   <http://fsl.cs.uiuc.edu/pubs/ellison-rosu-2012-popl.pdf>
@@ -53,13 +56,6 @@ space resulting from non-deterministic interleaving of threads as described in
 the standard. Very experimental.
 
 See [examples/README.md](examples/README.md#search) for more details.
-
-### LTL model checking
-
-We also support LTL model checking of the possible executions resulting from
-considering different expression sequencings.
-
-See [examples/README.md](examples/README.md#ltl-model-checking) for more details.
 
 ### Testing the semantics
 
