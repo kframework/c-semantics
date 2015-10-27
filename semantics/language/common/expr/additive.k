@@ -139,7 +139,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires ifFromArrayInBounds(Loc, T, I) ==K true
      rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
-               "6.5.6:8"))
+               "6.5.6:8, J.2:1 item 46"))
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
      rule _:ErrorExit ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
@@ -214,14 +214,17 @@ module C-COMMON-EXPR-ADDITIVE
      rule (.K => CV("CEA9",
                "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.",
                "6.5.6:3"))
-          ~> tv(_:SymLoc, T:PointerType)
-               - tv(_:SymLoc, T':PointerType)
-          requires notBool (notBool isFunctionType(T) andBool notBool isFunctionType(T')
-            andBool isCompleteType(T) andBool isCompleteType(T')
-            andBool areCompatible(stripQualifiers(T), stripQualifiers(T')))
+          ~> L:RValue
+               - R:RValue
+          requires isPointerType(type(L)) andThenBool isPointerType(type(R)) andThenBool 
+               (isFunctionType(innerType(type(L))) 
+               orBool notBool isCompleteType(innerType(type(L)))
+               orBool isFunctionType(innerType(type(R)))
+               orBool notBool isCompleteType(innerType(type(R)))
+               orBool notBool areCompatible(stripQualifiers(innerType(type(L))), stripQualifiers(innerType(type(R)))))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
-          "6.5.6:9"))
+          "6.5.6:9, J.2:1 item 48"))
           ~> tv(L1:SymLoc, _)
                - tv(L2:SymLoc, _)
           requires base(L1) =/=K base(L2)
@@ -237,8 +240,8 @@ module C-COMMON-EXPR-ADDITIVE
                andBool (Diff /Int Size) <=Int max(t(.Set, cfg:ptrdiffut))
                andBool (Diff /Int Size) >=Int min(t(.Set, cfg:ptrdiffut))
           [structural]
-     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented.",
-               "6.5.6"))
+     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented by object of type ptrdiff_t.",
+               "6.5.6:9, J.2:1 item 50"))
           ~> computePointerDifference(Diff:Int, Size:Int)
           requires (Diff /Int Size) >Int max(t(.Set, cfg:ptrdiffut))
                orBool (Diff /Int Size) <Int min(t(.Set, cfg:ptrdiffut))
@@ -273,13 +276,13 @@ module C-COMMON-EXPR-ADDITIVE
           requires isPromoted(T)
           [structural]
 
-     rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
-               "6.3.1.3:3"))
+     rule (.K => UNDEF("CEA6", "Unspecified value in signed addition, possible overflow.",
+               "6.5:5, J.2:1 item 36"))
           ~> tv(_, T:SignedIntegerType) + tv(unknown, T)
           requires isPromoted(T)
           [structural]
-     rule (.K => UNSPEC("CEA6", "Unspecified value in signed addition, possible overflow.",
-               "6.3.1.3:3"))
+     rule (.K => UNDEF("CEA6", "Unspecified value in signed addition, possible overflow.",
+               "6.5:5, J.2:1 item 36"))
           ~> tv(unknown, T:SignedIntegerType) + tv(_, T)
           requires isPromoted(T)
           [structural]

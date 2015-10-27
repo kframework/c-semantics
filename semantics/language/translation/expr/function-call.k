@@ -39,6 +39,7 @@ module C-EXPR-FUNCTION-CALL
           requires (#klabel(Lbl) ==K #klabel(`tv`) orBool #klabel(Lbl) ==K #klabel(`te`))
                andBool (isCompleteType(T) orBool isVoidType(T))
                andBool notBool isArrayType(T) // Don't think this is possible.
+      /* TODO(manasvi) : This CV clashes with another one. Check if distinct */
      rule (.K => CV("EFC1", "function call with incomplete or invalid return type.",
                "6.5.2.2:2"))
           ~> Call(Lbl:KLabel(_, t(_, pointerType(t(_, functionType(T:Type, _))))), rvlist(_))
