@@ -11,19 +11,20 @@ installation process for our C semantics can be summarized as:
 ```
 $ cd ~
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
-$ sudo apt-get install build-essential libxml-libxml-perl libstring-escape-perl ocaml graphviz
-$ sudo cpan -i Text::Diff DBI Getopt::Declare
+$ sudo apt-get install build-essential diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
+$ k-configure-opam-dev
+$ eval `opam config env`
 $ cd c-semantics
-$ make
+$ make -j4
 $ export PATH=$PATH:~/c-semantics/dist
 ```
 
 ### 1. Install basic dependencies.
-- The GNU C compiler (GCC) and Make. On OSX, these programs are generally part
-  of XCode. On Ubuntu, these programs are part of the "build-essential" package
+- The GNU C compiler (GCC), Make, diff, and patch. On OSX, these programs are generally part
+  of XCode. On Ubuntu, these programs are part of the "build-essential" and "diffutils" packages
   and can be installed with the following:
 ```
-$ sudo apt-get install build-essential
+$ sudo apt-get install build-essential diffutils
 ```
 - If using Windows, you'll probably want to install cygwin.
 
@@ -38,33 +39,44 @@ $ sudo apt-get install build-essential
     - XML::LibXML::Reader
     - String::Escape
 
-To install these modules using cpan:
+You can also insatll them using apt-get with
 ```
-$ sudo cpan -i Text::Diff DBI Getopt::Declare
-```
-
-We also need the XML::LibXML::Reader Perl module. The easiest way to install
-this module seems to be through the package manager. On Ubuntu:
-```
-$ sudo apt-get install libxml-libxml-perl
+$ sudo apt-get install libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl
 ```
 
-### 3. Install OCaml.
+Alternately, to install these modules using cpan:
+```
+$ sudo cpan -i Getopt::Declare MIME::Base64 XML::LibXML::Reader String::Escape
+```
+
+If you are using CPAN to install XML::LibXML::Reader, you will likely also need
+the development packages for libcrypt, zlib, and libxml2.
+
+### 3. Install K.
+- This version of the C semantics should be compatible with the latest version
+  of the K Framework (<https://github.com/kframework/k>). See
+  <http://kframework.org> for download and installation details.
+- Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
+  downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
+  this permanent):
+```
+$ export PATH=$PATH:~/k/bin
+```
+
+### 4. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
-- We also now default to using O'Caml to execute the C semantics.
+- We also now default to using OCaml to execute the C semantics.
 
 For execution the unreleased 4.03 is required, and compiling the semantics
-uses ocamlfind to locate require O'Caml packages.
+uses ocamlfind to locate require OCaml packages.
 This is most easily managed with opam - https://opam.ocaml.org/
-The required O'Caml version can be installed with `opam switch 4.03+trunk`,
-then switch to that environment  by logging back in or running
-`` eval `opam config env` ``, and install further dependencies with
+To install the required dependencies using OPAM, run
 
-    opam install ocamlfind
-    opam install zarith
-
-Finally, you need to install the mlgmp library by asking Dwight Guth for updated sources which support some extra functions (this will hopefully be merged upstream soon).
+```
+k-configure-opam-dev
+eval `opam config env`
+```
 
 To check if OCaml is installed:
 ```
@@ -81,30 +93,7 @@ more as well, and no special dependency handling is required.
 Installing with your OS package manger or from https://ocaml.org/ will work.
 On Ubuntu, `apt-get install ocaml`)
 
-For modifying the semantics, compilation times can be reduced further by
-modifying the O'Caml compiler to lower some hardcoded optimization settings.
-Please contact Dwight Guth or ask the project members for details.
-
-### 4. Install K.
-- This version of the C semantics should be compatible with the latest version
-  of the K Framework (<https://github.com/kframework/k>). See
-  <http://kframework.org> for download and installation details.
-
-### 5. Install optional packages.
-- You may want to install Graphviz (dot), for generating images of the state
-  space when searching programs.
-- You can probably do this with your package manager. On Ubuntu:
-```
-$ sudo apt-get install graphviz
-```
-
-To check if dot is installed:
-```
-$ which dot
-/usr/bin/dot
-```
-
-### 6. Download our C semantics.
+### 5. Download our C semantics.
 Use the following command if `git` is installed:
 ```
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
@@ -112,16 +101,10 @@ $ git clone --depth=1 https://github.com/kframework/c-semantics.git
 Otherwise, download the latest stable version from github here:
 <https://github.com/kframework/c-semantics/releases/tag/latest>
 
-### 7. Build our C tool.
-- Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
-  downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
-  this permanent):
-```
-$ export PATH=$PATH:~/k/dist/bin
-```
-- Run `make` in the project root directory.
-- This should take between 1 and 5 minutes on non-windows machines, and up to
-  10 minutes on windows.
+### 6. Build our C tool.
+- Run `make -j4` in the project root directory.
+- This should take roughly 35 minutes on non-windows machines, and up to
+  60 minutes on windows.
 - The `make` process creates a `dist/` directory which you can copy elsewhere
   to install the C tool, or simply leave it where it is. Either way, you will
   probably want to add it to your `$PATH`:
