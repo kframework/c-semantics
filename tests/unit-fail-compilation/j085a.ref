@@ -1,2 +1,2 @@
 j085a.c[1:5-9] : undeclared identifier in parameter identifier list
-Translation failed. Run kcc -d j085a.c -o j085a.out to see commands run.
+Translation failed. Run kcc -d j085a.c to see commands run.

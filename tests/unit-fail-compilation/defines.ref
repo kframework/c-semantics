@@ -4,4 +4,4 @@ Error: CV-CID1
 Description: Trying to look up identifier FOO, but no such identifier is in scope.
 Type: Constraint violation.
 See also: C11 sec. 6.5.1:2
-Translation failed. Run kcc -d defines.c -o defines.out to see commands run.
+Translation failed. Run kcc -d defines.c to see commands run.

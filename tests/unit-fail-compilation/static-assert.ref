@@ -4,4 +4,4 @@ Error: CV-SSA2
 Description: Static assertion failed: fifty minus fifty must be 0
 Type: Constraint violation.
 See also: C11 sec. 6.7.10:2
-Translation failed. Run kcc -d static-assert.c -o static-assert.out to see commands run.
+Translation failed. Run kcc -d static-assert.c to see commands run.

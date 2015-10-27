@@ -4,4 +4,4 @@ Error: CV-CER1
 Description: Unary '&' operator applied to non-lvalue.
 Type: Constraint violation.
 See also: C11 sec. 6.5.3.2:1
-Translation failed. Run kcc -d enum-lvalue.c -o enum-lvalue.out to see commands run.
+Translation failed. Run kcc -d enum-lvalue.c to see commands run.

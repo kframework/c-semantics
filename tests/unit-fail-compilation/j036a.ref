@@ -4,4 +4,4 @@ Error: UB-CEMX3
 Description: Signed overflow.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:5, J.2:1 item 36
-Translation failed. Run kcc -d j036a.c -o j036a.out to see commands run.
+Translation failed. Run kcc -d j036a.c to see commands run.

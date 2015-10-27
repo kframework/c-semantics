@@ -4,4 +4,4 @@ Error: CV-TDG10
 Description: conflicting types for a
 Type: Constraint violation.
 See also: C11 sec. 6.7:4
-Translation failed. Run kcc -d j076e.c -o j076e.out to see commands run.
+Translation failed. Run kcc -d j076e.c to see commands run.

@@ -1,2 +1,2 @@
 j032a.c[1:1-4] : syntax error
-Translation failed. Run kcc -d j032a.c -o j032a.out to see commands run.
+Translation failed. Run kcc -d j032a.c to see commands run.

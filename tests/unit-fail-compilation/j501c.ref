@@ -4,4 +4,4 @@ Error: CV-TEAS6
 Description: Trying to write through a const lvalue.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
-Translation failed. Run kcc -d j501c.c -o j501c.out to see commands run.
+Translation failed. Run kcc -d j501c.c to see commands run.
