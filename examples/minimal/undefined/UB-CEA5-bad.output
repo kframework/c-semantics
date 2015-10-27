@@ -1,0 +1,7 @@
+Error: UB-CEA5
+Description: Computing pointer difference between two different objects.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.6:9, J.2:1 item 48
+  at main(UB-CEA5-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

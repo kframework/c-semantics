@@ -1,6 +1,6 @@
 File: too-many-initializers.c
 Line: 9
-Error: CDI4
+Error: CV-CDI4
 Description: Attempting to initialize nonexistent member.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:2

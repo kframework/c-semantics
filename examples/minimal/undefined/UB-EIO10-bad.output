@@ -1,0 +1,7 @@
+Error: UB-EIO10
+Description: Type of lvalue not compatible with the effective type of the object being accessed.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:7, J.2:1 item 37
+  at main(UB-EIO10-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

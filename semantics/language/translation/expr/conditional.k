@@ -124,7 +124,7 @@ module C-EXPR-CONDITIONAL
      rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
           ~> types(t(_, void), t(_, T:SimpleType), _, _)
           requires T =/=K void
-     rule (.K => CV("CEC3", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
+     rule (.K => CV("CEC2", "If one of a conditional expression's branches has void type, the other must also have void type.", "6.5.15:3") )
           ~> types(t(_, T:SimpleType), t(_, void), _, _)
           requires T =/=K void
      rule (.K => CV("CEC4", "If one of a conditional expression's branches has struct or union type, the other must have the same type.", "6.5.15:3") )

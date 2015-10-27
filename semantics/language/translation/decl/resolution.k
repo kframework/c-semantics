@@ -59,7 +59,7 @@ module C-DECL-RESOLUTION
           => UNDEF("TDR1",
                "declaration for inline function not defined in the same translation unit: "
                +String idToString(X),
-               "6.7.4")
+               "6.7.4:7, J.2:1 item 70")
           requires Inline in Mods
           [structural]
 
@@ -106,7 +106,7 @@ module C-DECL-RESOLUTION
                => UNDEF("TDR2",
                     "no definition for symbol with external linkage: "
                      +String idToString(X),
-                    "6.9:5")
+                    "6.9:5, J.2:1 item 84")
           ...</k>
           <external-uses>... (.Set => SetItem(X)) ...</external-uses>
           <external-defs> Defs:Map </external-defs>

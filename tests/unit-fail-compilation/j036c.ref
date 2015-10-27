@@ -1,7 +1,7 @@
 File: j036c.c
 Line: 4
-Error: CCV1
+Error: UB-CCV1
 Description: signed overflow.
-Type: Unspecified value or behavior.
-See also: C11 sec. 6.3.1.3:3
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
 Translation failed. Run kcc -d j036c.c to see commands run.
