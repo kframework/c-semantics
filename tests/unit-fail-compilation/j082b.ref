@@ -1,6 +1,6 @@
 File: j082b.c
 Line: 13
-Error: TEAS1
+Error: CV-TEAS1
 Description: incompatible types in assignment or function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1

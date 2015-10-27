@@ -1,7 +1,7 @@
 File: j047c.c
 Line: 3
-Error: CER4
+Error: UB-CER4
 Description: Dereferencing a pointer past the end of an array.
 Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8
+See also: C11 sec. 6.5.6:8, J.2:1 item 47
 Translation failed. Run kcc -d j047c.c to see commands run.

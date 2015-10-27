@@ -1,6 +1,2 @@
 j085c.c[1:5-29] : undeclared identifier in parameter identifier list
-Fatal error: exception Frontc.ParseError("Parse error")
-Entity: line 1: parser error : Document is empty
-Parsing error
-^
 Translation failed. Run kcc -d j085c.c to see commands run.
