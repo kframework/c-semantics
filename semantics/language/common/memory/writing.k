@@ -80,7 +80,7 @@ module C-MEMORY-WRITING
           <initializing> false </initializing>
           requires isConstType(T)
           [structural]
-     rule <k> (.K => UNDEF("EIO4", "Trying to modify a string literal.", "6.4.5:7"))
+     rule <k> (.K => UNDEF("CMW1", "Trying to modify a string literal.", "6.4.5:7, J.2:1 item 33"))
                ~> write(Loc:SymLoc, _, _)
           ...</k>
           <initializing> false </initializing>

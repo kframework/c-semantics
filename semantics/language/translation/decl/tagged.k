@@ -27,7 +27,8 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           requires hasNamedField(L)
           [structural]
-     rule (.K => UNDEF("CDT1", "structs cannot be empty.", "6.7.2.1") )
+    //Undefinedness occurs when there are no named members in a struct. An empty struct is a contraint Violation. 
+     rule (.K => UNDEF("CDT1", "structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
           ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
@@ -37,7 +38,7 @@ module C-DECL-TAGGED
           => addTag(X, makeUnionFieldInfo(L))
           requires hasNamedField(L)
           [structural]
-     rule (.K => UNDEF("CDT2", "unions cannot be empty.", "6.7.2.1") )
+     rule (.K => UNDEF("CDT2", "unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
           ~> UnionDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
@@ -131,7 +132,7 @@ module C-DECL-TAGGED
           <block-history> ListItem(BlockNum:Int) ...</block-history>
           requires notBool (X in_keys(Structs))
           [structural]
-     rule <k> (.K => CV("TDL6", "redefinition of a struct, union, or enum: "
+     rule <k> (.K => CV("TDG15", "redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
