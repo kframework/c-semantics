@@ -1,66 +1,33 @@
-==============================================================================
-The C Semantics in K Release License
-==============================================================================
-University of Illinois/NCSA
-Open Source License
+This Library is distributed under a dual license of the Qt Non-Commercial license version 1.0 (included below) and the Runtime Verification Software License (available for download with an evaluation of RV-Match from http://runtimeverification.com).
 
-Copyright (c) 2009-2013 University of Illinois at Urbana-Champaign.
-All rights reserved.
 
-Developed by:
+Qt Non-Commercial license version 1.0
+-------------------------------------
 
-    K Team (currently by K team member Chris Hathhorn, previously Chucky Ellison)
+Copyright (C) 2001 - Trolltech AS, Norway. Everyone is permitted to copy and distribute this license document.
+This license applies to any software containing a notice placed by the copyright holder saying that it may be distributed under the terms of the Qt Non-Commercial License version 1.0. Such software is herein referred to as the Software. This license covers distribution of the Software, use of third-party application programs based on the Software, and non-commercial development of free software, which uses the Software.
 
-    University of Illinois at Urbana-Champaign
-    University Alexandru-Ioan Cuza, Romania
+Granted Rights
 
-    http://kframework.org
+1. You are granted the non-exclusive rights set forth in this license provided you agree to and comply with any and all conditions in this license. Any use of the Software and/or whole or partial distribution of the Software, or of software items that link with the Software, in any form signifies acceptance of this license.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal with
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
+2. You may copy and distribute the Software in unmodified form provided that the entire package, including - but not restricted to - copyright, trademark notices and disclaimers, as released by the initial developer of the Software, is distributed.
 
-    * Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimers.
+3. You may use the original versions of the Software to compile, link and run application programs legally developed by you or by others. However, if an application program gives you access to functionality of the Software for development of application programs, reusable components or other software components (e.g. an application that is a scripting wrapper), usage of the application program is considered to be usage of the Software and is thus bound by this license.
 
-    * Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimers in the
-      documentation and/or other materials provided with the distribution.
+4. You are as an individual granted a personal, non-exclusive non-transferable license, in a non-commercial setting, to develop application programs, reusable components and other software items that link with or in any other way require the Software. These items, when distributed, are subject to the following requirements:
 
-    * Neither the names of the K Team, the University of Illinois at
-      Urbana-Champaign, the University Alexandru-Ioan Cuza, nor the names of
-      its contributors may be used to endorse or promote products derived from
-      this Software without specific prior written permission.
+   * They must be distributed for free and/or be freely downloadable.
+   * You must ensure that all recipients of machine-executable forms of these items are also able to receive and use the complete machine-readable source code to the items without any charge beyond the costs of data transfer.
+   * You must explicitly license all recipients of your items to use and re-distribute original and modified versions of the items in both machine-executable and source code forms. The recipients must be able to do so without any charges whatsoever, and they must be able to re-distribute to anyone they choose. 
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
-SOFTWARE.
+Limitations of Liability
 
-==============================================================================
-Copyrights and Licenses for Third Party Software Distributed with the C
-Semantics in K:
-==============================================================================
-The C Semantics in K software contains code written by third parties. Such
-software will have its own individual LICENSE file in the directory in which it
-appears. This file will describe the copyrights, license, and restrictions
-which apply to that code.
+In no event shall the initial developers or copyright holders be liable for any damages whatsoever, including - but not restricted to - lost revenue or profits or other direct, indirect, special, incidental or consequential damages, even if they have been advised of the possibility of such damages, except to the extent invariable law, if any, provides otherwise.
 
-The disclaimer of warranty in the University of Illinois Open Source License
-applies to all code in the C Semantics in K Distribution, and nothing in any of
-the other licenses gives permission to use the names of the K Team, the
-University of Illinois, or the University Alexandru-Ioan Cuza to endorse or
-promote products derived from this Software.
+Warranty disclaimer
 
-The following pieces of software have additional or alternate copyrights,
-licenses, and/or restrictions:
+The Software and this license document are provided "AS IS" with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT WITH REGARD TO THE SOFTWARE.
 
-Program             Directory
--------             ---------
-CIL C Parser        c-semantics/parser
+Choice of Law
+This license is governed by the Laws of the United States.
