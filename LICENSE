@@ -12,8 +12,8 @@ Developed by:
     K Team (http://kframework.org)
     with members from:
 
-      * Runtime Verification, Inc (https://www.runtimeverification.com)
       * University of Illinois at Urbana-Champaign (http://fsl.cs.illinois.edu/)
+      * Runtime Verification, Inc (https://www.runtimeverification.com)
       * University Alexandru-Ioan Cuza, Romania (https://fmse.info.uaic.ro)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -49,10 +49,10 @@ SOFTWARE.
 Copyrights and Licenses for Third Party Software Distributed with the C
 Semantics in K:
 ==============================================================================
-The C Semantics in K software contains code written by third parties. Such
-software will have its own individual LICENSE file in the directory in which it
-appears. This file will describe the copyrights, license, and restrictions
-which apply to that code.
+The C Semantics in K software contains code written by third parties. 
+Licenses for this software can be found in the licenses directory organized
+by the name of the copyright holder. These files will describe the copyrights,
+license, and restrictions which apply to that code.
 
 The disclaimer of warranty in the University of Illinois Open Source License
 applies to all code in the C Semantics in K Distribution, and nothing in any of
@@ -63,9 +63,7 @@ to endorse or promote products derived from this Software.
 The following pieces of software have additional or alternate copyrights,
 licenses, and/or restrictions:
 
-Program             Directory
--------             ---------
-CIL C Parser        c-semantics/parser
-
-Portions of the C semantics are based on prior work copyright (c) 2009-2011 Charles M. Ellison III.
-To see the details of how that original work was licensed, refer to OLD_LICENSE in the current directory.
+Program               Directory              License file
+-------               ---------              ------------
+CIL C Parser          c-semantics/parser     c-semantics/licenses/parser
+Original C Semantics  c-semantics/semantics  c-semantics/licenses/chucky
