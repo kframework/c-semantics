@@ -77,6 +77,8 @@ typedef unsigned long long int uint_fast64_t;
 
 
 // intptr_t and uintptr_t are optional
+typedef signed int intptr_t;
+typedef unsigned int uintptr_t;
 
 typedef signed long long int intmax_t;
 typedef unsigned long long int uintmax_t;

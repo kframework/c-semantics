@@ -1,0 +1,7 @@
+File: UB-CEB12-bad-static.c
+Line: 2
+Error: UB-CEB12
+Description: potential negative zero produced via bitwise operations (this could be a false positive).
+Type: Undefined behavior.
+See also: C11 sec. 6.2.6.2:4, J.2:1 item 14
+Translation failed. Run kcc -d UB-CEB12-bad-static.c to see commands run.

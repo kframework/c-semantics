@@ -1,7 +1,7 @@
 File: j004f.c
 Line: 1
-Error: FD7
+Error: UB-FD7
 Description: if main has arguments, the type of the second argument must be equivalent to char**.
 Type: Undefined behavior.
-See also: C11 sec. 5.1.2.2.1:1
+See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
 Translation failed. Run kcc -d j004f.c to see commands run.

@@ -1,7 +1,7 @@
 File: j055d.c
 Line: 1
-Error: CTI1
+Error: UB-CTI1
 Description: Arrays must have integer length.
 Type: Undefined behavior.
-See also: C11 sec. 6.6:6
+See also: C11 sec. 6.6:6, J.2:1 item 55
 Translation failed. Run kcc -d j055d.c to see commands run.

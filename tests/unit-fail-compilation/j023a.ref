@@ -1,6 +1,6 @@
 File: j023a.c
 Line: 4
-Error: CEA3
+Error: CV-CEA3
 Description: Invalid operand types to addition.
 Type: Constraint violation.
 See also: C11 sec. 6.5.6:2

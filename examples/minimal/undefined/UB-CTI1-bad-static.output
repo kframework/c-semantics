@@ -1,0 +1,7 @@
+File: UB-CTI1-bad-static.c
+Line: 1
+Error: UB-CTI1
+Description: Arrays must have integer length.
+Type: Undefined behavior.
+See also: C11 sec. 6.6:6, J.2:1 item 55
+Translation failed. Run kcc -d UB-CTI1-bad-static.c to see commands run.

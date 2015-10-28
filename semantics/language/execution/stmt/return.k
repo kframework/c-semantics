@@ -37,7 +37,7 @@ module C-STMT-RETURN
           requires notBool (Noreturn in Mods)
           [structural]
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
-                    "6.7.4"))
+                    "6.7.4, J.2:1 item 71"))
                ~> Return(_)
           ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>

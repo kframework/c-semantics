@@ -1,6 +1,6 @@
 File: j055a.c
 Line: 1
-Error: CTI3
+Error: CV-CTI3
 Description: The width of a bit field shall be an integer constant expression.
 Type: Constraint violation.
 See also: C11 sec. 6.7.2.1:4

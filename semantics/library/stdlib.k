@@ -96,7 +96,7 @@ module LIBC-STDLIB
           [structural]
 
      rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed.",
-                           "7.22.3.5:3"))
+                           "7.22.3.5:3, J.2:1 item 179"))
               ~> prepareBuiltin(Identifier("realloc"),
                     hrItem(tv(loc(Base:SymBase, 0), _)) hs::
                     hrItem(tv(_, _)))

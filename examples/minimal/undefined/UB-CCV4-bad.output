@@ -1,0 +1,7 @@
+Error: UB-CCV4
+Description: floating-point value outside the range of values that can be represented after conversion.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.1.5:1, J.2:1 item 18
+  at main(UB-CCV4-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

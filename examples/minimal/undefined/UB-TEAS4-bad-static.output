@@ -1,0 +1,7 @@
+File: UB-TEAS4-bad-static.c
+Line: 3
+Error: UB-TEAS4
+Description: void value as right operand in assignment
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
+Translation failed. Run kcc -d UB-TEAS4-bad-static.c to see commands run.

@@ -1,6 +1,6 @@
 File: dup_params1.c
 Line: 1
-Error: FD1
+Error: CV-FD1
 Description: duplicate parameters in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7:3

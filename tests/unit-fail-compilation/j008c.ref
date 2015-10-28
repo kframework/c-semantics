@@ -1,7 +1,7 @@
 File: j008c.c
 Line: 2
-Error: TDG11
+Error: UB-TDG11
 Description: static declaration of x follows non-static declaration.
 Type: Undefined behavior.
-See also: C11 sec. 6.2.2:7
+See also: C11 sec. 6.2.2:7, J.2:1 item 8
 Translation failed. Run kcc -d j008c.c to see commands run.
