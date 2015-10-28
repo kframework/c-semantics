@@ -24,58 +24,51 @@ understand this project:
   with kcc should act the same as one compiled with `gcc`.
 - Take a look at `kcc -h` for some compile-time options. For most programs,
   you only need to run `kcc program.c` and everything will work.
-- After compiling a program and generating an output file `a.out`, running
-  `HELP=1 ./a.out` will display some runtime options, including `SEARCH`,
-  `PROFILE`, and `LTLMC`. Notice that these extra interpreter options are
-  passed via environment variables and not on the command line. This allows us
-  to pass the actual command line parameters straight to the `kcc`-compiled
-  program, unchanged.
+- After compiling a program and generating an output file `a.out`, the
+  resulting program is a native executable and can be run on any platform
+  provided it has access to the runtime libraries required by the dynamic
+  linker.
 - If you try to run a program that is undefined (or one for which we are
   missing semantics), the program will get stuck. The message should tell you
   where it got stuck and may give a hint as to why. If you want help
   deciphering the output, or help understanding why the program is undefined,
-  please send your final configuration to us. This can be generated using
-  either the `DUMPALL` flag on `kcc`-generated executables (e.g., `DUMPALL=1
-  ./a.out`) or via `kcc -d` in the case of "compile-time" errors.
+  please send your final configuration to us. If you are using default settings,
+  this configuration is located in the file `config` in the current directory
+  if the program got stuck while executing, or can be generated using `kcc -d`
+  in case of compile-time errors.
 
 ## Runtime features
 
 Once `kcc` has been run on C source files, it should produce an executable
 script (`a.out` by default).
 
-### Searching the state-space of non-deterministic behaviors
-
-Running `SEARCH=1 ./a.out` will exhaustively search the state space resulting
-from considering all possible expression sequencings (as allowed by the
-standard) and generate a .pdf and .ps of the space (if Graphviz is installed).
-This is the only way to check all possible evaluation orders of a program to
-find undefined behavior.
-
-Likewise, running `THREADSEARCH=1 ./a.out` will exhaustively search the state
-space resulting from non-deterministic interleaving of threads as described in
-the standard. Very experimental.
-
-See [examples/README.md](examples/README.md#search) for more details.
-
 ### Testing the semantics
 
 The [tests][] directory includes many of the tests we've used to build confidence
-in the correctness of our semantics. For example, to run tests from the GCC
-torture test suite, use the following command from the [tests][] directory:
-```
-$ make torture
-```
-And to run the undefinedness test suite:
-```
-$ make undef
-```
+in the correctness of our semantics. To run the basic set of tests, run `make check`
+from the top-level directory. For performance reasons, you may first wish to run 
+`kserver` in the background, and pass a `-j` flag to make to get the desired level
+of parallelism.
+
+## A note on libraries
+
+KCC comes by default with relatively limited support for the C library. If you are
+compiling and linking a program that makes use of many library functions, you may likely
+run into CV-CID1 and UB-TDR2 errors, signifying respectively that the function you are
+calling was not declared in the appropriate header file, or that it was declared, but
+no definition exists currently in the semantics.
+
+We recommend if you wish to execute such programs that you contact Runtime Verification,
+Inc, which sells a tool RV-Match based on this semantics which is capable of executing
+such programs by linking against the native code provided on your system for these libraries.
+For more information, contact https://runtimeverification.com/support.
 
 ## Project structure
 
 Directories:
 
-- [examples][]: some simple example programs for trying out the SEARCH and
-  LTLMC features.
+- [examples][]: some simple example programs for demonstrating the undefinedness that we 
+  can catch.
 
 - [default-profile][]: library headers and some library sources for functions that aren't
   defined directly in the semantics itself.
