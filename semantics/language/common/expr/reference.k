@@ -75,13 +75,13 @@ module C-COMMON-EXPR-REFERENCE
           [structural]
      rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
-               "6.5.3.2:4"))
+               "6.5.3.2:4, J.2:1 item 43"))
           ~> *(tv(Loc:SymLoc, _))
           requires Loc ==K NullPointer
           [structural]
      rule (.K => UNDEF("CER4",
                "Dereferencing a pointer past the end of an array.",
-               "6.5.6:8"))
+               "6.5.6:8, J.2:1 item 47"))
           ~> *(tv(Loc:SymLoc, _))
           requires ifFromArrayInBounds(Loc,
                t(.Set, pointerType(t(.Set, char))), 1) =/=K true

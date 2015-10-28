@@ -89,19 +89,19 @@ module C-EXECUTION-ERROR
           requires T =/=K void
 
      rule [err00037]:
-          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1") ) ~>
+          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
           read(NullPointer, _)
           [structural]
      rule [err00046]:
-          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1") ) ~>
+          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
           [structural]
 
-     rule (.K => UNDEF("CEER3",
+     rule (.K => UNDEF("STDIO1",
                "printf: Format string expects type of size " +String
                Int2String(value(A):>Int) +String ", but got an argument of size "
-               +String Int2String(value(B):>Int) +String ".", "7.21.6.1:9") ) ~>
+               +String Int2String(value(B):>Int) +String ".", "7.21.6.1:9, J.2:1 item 153") ) ~>
           nextvarg-aux(_, _, A:RValue, B:RValue)
           requires value(A):>Int =/=Int value(B):>Int
           [structural]
@@ -110,10 +110,10 @@ module C-EXECUTION-ERROR
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
                read(Loc:SymLoc, T:Type)
           ...</k>
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J:2.1 item 5")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
@@ -124,10 +124,10 @@ module C-EXECUTION-ERROR
           [computational]
 
       rule [write-write-race]:
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
                write(Loc:SymLoc, _, T:Type)
           ...</k>
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
@@ -149,7 +149,7 @@ module C-EXECUTION-ERROR
                andBool (notBool (Identifier(S) in_keys(Types)))
           [structural]
      rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
+               "No definition found for identifier " +String S +String ".", "6.3.2.1:1, J.2:1 item 19") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>

@@ -61,7 +61,7 @@ module C-TRANSLATION-ERROR
                andBool (notBool (Identifier(S) in_keys(Enums)))
           [structural]
      rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1") )
+               "No definition found for identifier " +String S +String ".", "6.3.2.1:1, J.2:1 item 19") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>

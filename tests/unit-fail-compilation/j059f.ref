@@ -1,7 +1,7 @@
 File: j059f.c
 Line: 4
-Error: TDL5
+Error: UB-TDL5
 Description: declaration of an identifier for an object with no linkage and incomplete type.
 Type: Undefined behavior.
-See also: C11 sec. 6.7:7
+See also: C11 sec. 6.7:7, J.2:1 item 59
 Translation failed. Run kcc -d j059f.c to see commands run.

@@ -1,6 +1,6 @@
 File: regehr-int-pointer-comparison.c
 Line: 2
-Error: CER6
+Error: CV-CERL5
 Description: Directly comparing an integer type with a pointer type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.8:2

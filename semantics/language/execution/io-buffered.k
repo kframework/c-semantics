@@ -93,9 +93,9 @@ module C-IO-BUFFERED
                Locs::List (.List => ListItem(Loc))
           </locs-written>
           requires notBool Loc in Locs andBool isNativeLoc(Loc)
-     rule <k> (.K => UNDEF("EIO1",
+     rule <k> (.K => UNDEF("EIO8",
                "Unsequenced side effect on scalar object with side effect of same object.",
-               "6.5") )
+               "6.5:2, J.2:1 item 35") )
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <locs-written> Locs::List </locs-written>
@@ -104,7 +104,7 @@ module C-IO-BUFFERED
      // TODO(chathhorn): probably redundant.
      rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
-               "6.5.6:8"))
+               "6.5.6:8, J.2:1 item 47"))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(_, Len::Int, _, _) ...</mem>
@@ -117,7 +117,7 @@ module C-IO-BUFFERED
           requires isErrorRecovery
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
-               "6.7.3"))
+               "6.7.3:6, J.2:1 item 64"))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
@@ -125,16 +125,16 @@ module C-IO-BUFFERED
           [structural]
      rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3"))
+               "6.7.3:6, J.2:1 item 65"))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), T::Type)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
           requires notBool isVolatileType(T)
                andBool (Volatile in getQualsAtOffset(ObjT, Offset))
           [structural]
-     rule <k> (.K => UNSPEC("EIO5",
+     rule <k> (.K => IMPL("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
-               "6.2.4:4-5"))
+               "6.2.4:4, 6.2.4:5, J.3.13:1 item 2"))
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
@@ -174,7 +174,7 @@ module C-IO-BUFFERED
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
-     rule <k> (.K => UNSPEC("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4-5"))
+     rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4, 6.2.4:5, J.3.13:1 item 2"))
                ~> readBytes(Loc::SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
@@ -335,18 +335,18 @@ module C-IO-BUFFERED
 
      rule (.K => UNDEF("EIO7",
                "reading outside the bounds of an object.",
-               "6.2.4"))
+               "6.3.2.1:1, J.2:1 item 19"))
           ~> errorReadOutOfBounds
           [structural]
      // read outo f bounds becomes a trap by the above rule
      rule (.K => UNDEF("EIO8",
                "unsequenced side effect on scalar object with value computation of same object.",
-               "6.5"))
+               "6.5:2, J.2:1 item 35"))
           ~> errorUnseqEffects
           [structural]
      rule (.K => UNDEF("EIO9",
                "trying to access an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3"))
+               "6.7.3:6, J.2:1 item 65"))
           ~> errorNonVolatileLVal
           [structural]
 
@@ -446,7 +446,7 @@ module C-IO-BUFFERED
           requires (#effectivelyCompat(L, Eff))
                orBool isNoType(Eff)
           [structural]
-     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7"))
+     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7, J.2:1 item 37"))
           ~> checkEffectiveType(L::Type, Eff:Type)
           requires (notBool #effectivelyCompat(L, Eff))
                andBool notBool isNoType(Eff)

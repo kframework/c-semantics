@@ -40,7 +40,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
      rule <k> (.K => UNDEF("CEM1",
                "attempting to access a member in an atomic struct.",
-               "6.5.2.3:5"))
+               "6.5.2.3:5, J.2:1 item 42"))
                ~> Lbl:KLabel(_, t(Mods:Set, structType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>
@@ -49,7 +49,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
      rule <k> (.K => UNDEF("CEM2",
                "attempting to access a member in an atomic union.",
-               "6.5.2.3:5"))
+               "6.5.2.3:5, J.2:1 item 42"))
                ~> Lbl:KLabel(_, t(Mods:Set, unionType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>

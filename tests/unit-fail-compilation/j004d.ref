@@ -1,7 +1,7 @@
 File: j004d.c
 Line: 1
-Error: FD5
+Error: UB-FD5
 Description: main must return an int.
 Type: Undefined behavior.
-See also: C11 sec. 5.1.2.2.1:1
+See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
 Translation failed. Run kcc -d j004d.c to see commands run.

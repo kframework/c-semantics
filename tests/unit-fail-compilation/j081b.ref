@@ -1,7 +1,7 @@
 File: j081b.c
 Line: 2
-Error: CDI2
+Error: UB-CDI2
 Description: Initializer for scalar contains multiple levels of braces
 Type: Undefined behavior.
-See also: C11 sec. 6.7.9:11
+See also: C11 sec. 6.7.9:11, J.2:1 item 81
 Translation failed. Run kcc -d j081b.c to see commands run.
