@@ -19,6 +19,8 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \
 	$(PARSER_DIR)/cparser \
+        LICENSE \
+        licenses
 
 .PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile
 
@@ -39,7 +41,7 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE)/include/*) $(PROFILE)/pp
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@cp -p $(PROFILE)/pp $(DIST_DIR)/$(PROFILE)
 	@cp -rp $(PROFILE)/include $(DIST_DIR)/$(PROFILE)
-	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
+	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
 $(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc execution-semantics

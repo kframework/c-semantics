@@ -10,7 +10,7 @@ opendir (my $DIR, $distDirectory);
 my @profiles = ();
 while ( my $entry = readdir $DIR) {
   next unless -d $distDirectory . '/' . $entry;
-  next if $entry eq '.' or $entry eq '..';
+  next if $entry eq '.' or $entry eq '..' or $entry eq 'licenses';
   push(@profiles, $entry);
 }
 
