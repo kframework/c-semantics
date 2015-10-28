@@ -63,7 +63,7 @@ to endorse or promote products derived from this Software.
 The following pieces of software have additional or alternate copyrights,
 licenses, and/or restrictions:
 
-Program               Directory              License file
--------               ---------              ------------
-CIL C Parser          c-semantics/parser     c-semantics/licenses/parser
-Original C Semantics  c-semantics/semantics  c-semantics/licenses/chucky
+Program               Directory
+-------               ---------
+CIL C Parser          c-semantics/parser
+Original C Semantics  c-semantics/semantics
