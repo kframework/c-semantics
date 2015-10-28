@@ -654,8 +654,8 @@ module C-DECL-GLOBAL
           <external-defs>... X |-> Base' ...</external-defs>
           [structural]
 
-     rule <k> (.K => CV("TDG14",
-               "incompatible redeclaration of a symbol with internal or external linkage: " +String idToString(X), "6.9:5"))
+     rule <k> (.K => CV("TDG13",
+               "Redefinition of symbol: " +String idToString(X), "6.9:3"))
                ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
@@ -821,9 +821,8 @@ module C-DECL-GLOBAL
           <types> Types:Map </types>
           requires notBool (X in_keys(Types))
           [structural]
-     rule <k> (.K => CV("TDG14",
-               "incompatible redeclaration of symbol with internal or external linkage: "
-               +String idToString(X), "6.9:5"))
+     rule <k> (.K => CV("TDG10",
+               "conflicting types for " +String idToString(X), "6.7:4"))
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>

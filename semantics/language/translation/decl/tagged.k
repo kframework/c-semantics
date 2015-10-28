@@ -27,7 +27,6 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           requires hasNamedField(L)
           [structural]
-    //Undefinedness occurs when there are no named members in a struct. An empty struct is a contraint Violation. 
      rule (.K => UNDEF("CDT1", "structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
           ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
