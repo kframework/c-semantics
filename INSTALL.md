@@ -39,7 +39,7 @@ $ sudo apt-get install build-essential diffutils
     - XML::LibXML::Reader
     - String::Escape
 
-You can also insatll them using apt-get with
+You can also install them using apt-get with
 ```
 $ sudo apt-get install libxml-libxml-perl libgetopt-declare-perl libstring-escape-perl
 ```
