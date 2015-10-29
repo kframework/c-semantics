@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 struct node {
 	struct node* p;
 	int v;

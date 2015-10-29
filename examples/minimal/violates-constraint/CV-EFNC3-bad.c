@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 // this example is loosely based on an example in sentence 1509 in http://www.knosof.co.uk/cbook/cbook.html
 int g();
 
