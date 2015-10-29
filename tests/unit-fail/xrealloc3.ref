@@ -1,7 +1,8 @@
-Error: STDLIB1
+Error: UB-STDLIB1
 Description: Called realloc on memory not allocated by malloc, or already freed.
 Type: Undefined behavior.
-See also: C11 sec. 7.22.3.5:3
+See also: C11 sec. 7.22.3.5:3, J.2:1 item 179
   at realloc(xrealloc3.c:4)
   at main(xrealloc3.c:4)
   at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

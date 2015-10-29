@@ -1,7 +1,8 @@
-Error: ECL3
+Error: UB-ECL3
 Description: An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.
 Type: Undefined behavior.
-See also: C11 sec. 6.7.3.1:4
+See also: C11 sec. 6.7.3.1:4, J.2:1 item 68
   at f(j068a.c:3)
   at main(j068a.c:9)
   at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

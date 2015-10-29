@@ -1,6 +1,6 @@
 File: j009f.c
 Line: 6
-Error: CID1
+Error: CV-CID1
 Description: Trying to look up identifier x, but no such identifier is in scope.
 Type: Constraint violation.
 See also: C11 sec. 6.5.1:2

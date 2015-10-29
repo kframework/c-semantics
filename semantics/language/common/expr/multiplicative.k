@@ -46,7 +46,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           => arithInterpret(T, F1 /Float F2)
           requires T ==Type T'
           [structural]
-     rule (.K => UNDEF("CEM1", "Division by 0.", "6.5.5:5") )
+     rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
           ~> L:RValue / tv(0, T':Type)
           requires isIntegerType(type(L)) andBool isPromoted(type(L))
                andBool type(L) ==Type T'
@@ -60,12 +60,12 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool (max(T) >=Int I1 /Int I2)
                andBool T ==Type T'
           [structural]
-     rule (.K => UNDEF("CEM2", "Modulus by 0.", "6.5.5:5") )
+     rule (.K => UNDEF("CEMX2", "Modulus by 0.", "6.5.5:5, J.2:1 item 45") )
           ~> L:RValue % tv(0, T':Type)
           requires isIntegerType(type(L)) andBool isPromoted(type(L))
                andBool type(L) ==Type T'
           [structural]
-     rule (.K => UNSPEC("CEM3", "Signed overflow.", "6.3.1.3:3") ) ~>
+     rule (.K => UNDEF("CEMX3", "Signed overflow.", "6.5:5, J.2:1 item 36") ) ~>
           tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
           requires I2 =/=Int 0 
                andBool notBool (min(T) <=Int I1 /Int I2

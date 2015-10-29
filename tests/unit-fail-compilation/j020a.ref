@@ -1,6 +1,6 @@
 File: j020a.c
 Line: 4
-Error: TDG8
+Error: CV-TDG8
 Description: declaration has initializer but incomplete type.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:3

@@ -1,0 +1,8 @@
+Error: CV-EFNC2
+Description: incompatible types in function call arguments.
+Type: Constraint violation.
+See also: C11 sec. 6.5.16.1:1
+  at foo(CV-EFNC2-bad.c:4)
+  at main(CV-EFNC2-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

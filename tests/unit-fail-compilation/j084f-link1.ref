@@ -1,7 +1,7 @@
 File: j084f-link2.c
 Line: 1
-Error: TIN2
+Error: UB-TIN2
 Description: Multiple external definitions for x.
 Type: Undefined behavior.
-See also: C11 sec. 6.9
+See also: C11 sec. 6.9:5, J.2:1 item 84
 Translation failed. Run kcc -d j084f-link1.c j084f-link2.c to see commands run.
