@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 // taken from c1x n1570, 6.7.2.1:19
 #include <stdio.h>
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 int f(int * restrict p, int * restrict q) {
 	p = q;
 	return 5;
