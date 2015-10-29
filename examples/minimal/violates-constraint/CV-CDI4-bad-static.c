@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 struct S0
 {
   const unsigned f0:((54 > 32) ? (54 % 32) : 54);
