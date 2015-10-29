@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 int f(int* restrict a, int* restrict b) {
       *a = 1;
       *b = 1;
