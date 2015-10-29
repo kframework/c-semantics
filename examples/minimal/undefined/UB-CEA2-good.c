@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>

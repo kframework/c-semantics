@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 int foo (int *p1, int *p2)
 {
  return (*p1)++ + (*p2)++;

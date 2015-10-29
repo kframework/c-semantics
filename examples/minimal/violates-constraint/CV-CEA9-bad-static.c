@@ -1,3 +1,5 @@
+// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+
 #include<stddef.h>
 int main() {
   int x[2] = {0};
