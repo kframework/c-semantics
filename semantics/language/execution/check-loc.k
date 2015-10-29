@@ -116,7 +116,7 @@ module C-CHECK-LOC
           [structural]
      rule (.K => UNDEF("ECL3",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.",
-               "6.7.3.1:4"))
+               "6.7.3.1:4, J.2:1 item 68"))
           ~> checkRestrict(.Set, Bases:Set, Bases':Set)
           requires Bases =/=K Bases'
           [structural]
@@ -130,7 +130,7 @@ module C-CHECK-LOC
           [structural]
      rule <k> (.K => UNDEF("ECL4",
                "An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.",
-               "6.7.3.1:4"))
+               "6.7.3.1:4, J.2:1 item 68"))
                ~> checkRestrict'(basedOn(Base:SymBase, _))
           ...</k>
           <mem>... Base |-> object(T:Type, _, _, _) ...</mem>

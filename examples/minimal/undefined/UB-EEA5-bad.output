@@ -1,0 +1,8 @@
+Error: UB-EEA5
+Description: passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.
+Type: Undefined behavior.
+See also: C11 sec. 6.7.6.3:7, J.2:1 item 77
+  at f(UB-EEA5-bad.c:7)
+  at main(UB-EEA5-bad.c:7)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

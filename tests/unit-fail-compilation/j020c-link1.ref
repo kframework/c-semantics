@@ -1,6 +1,6 @@
 File: j020c-link1.c
 Line: 4
-Error: CEE3
+Error: UB-CEE3
 Description: Trying to convert an incomplete lvalue not of array type.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.1:2

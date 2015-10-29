@@ -1,6 +1,6 @@
 File: j076d.c
 Line: 2
-Error: TDG10
+Error: CV-TDG10
 Description: conflicting types for a
 Type: Constraint violation.
 See also: C11 sec. 6.7:4

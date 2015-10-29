@@ -1,6 +1,6 @@
 File: j055f.c
 Line: 2
-Error: CDE1
+Error: CV-CDE1
 Description: Enum initializer not an integer constant expression.
 Type: Constraint violation.
 See also: C11 sec. 6.7.2.2:2

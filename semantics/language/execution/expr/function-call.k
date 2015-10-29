@@ -96,8 +96,8 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           requires areCompatible(CallT, DefT)
           [structural]
-     rule (.K => UNDEF("FC1", "attempt to call the function " +String
-               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9"))
+     rule (.K => UNDEF("EFNC1", "attempt to call the function " +String
+               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
           ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
           requires notBool areCompatible(CallT, DefT)
           [structural]
@@ -212,7 +212,7 @@ module C-EXPR-FUNCTION-CALL
      rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
           requires fromConstantExpr(T)
 
-     rule (.K => CV("EFC1", "incompatible types in function call arguments.", "6.5.16.1:1"))
+     rule (.K => CV("EFNC2", "incompatible types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
           requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
                     andBool notBool isNullPointerConstant(R))
@@ -227,7 +227,7 @@ module C-EXPR-FUNCTION-CALL
                     orBool isBoolType(type(L))))
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
-     rule (.K => CV("EFC2", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
+     rule (.K => CV("EFNC3", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
           requires (isPointerType(type(L)) andBool isPointerType(type(R)))
                andBool notBool isVoidType(innerType(type(L)))
