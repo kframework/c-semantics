@@ -1,0 +1,7 @@
+Error: UB-CCV3
+Description: conversion to integer from float outside the range that can be represented.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.1.4:1, J.2:1 item 17
+  at main(UB-CCV3-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

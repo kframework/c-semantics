@@ -1,0 +1,7 @@
+File: UB-CEA6-bad-static.c
+Line: 2
+Error: UB-CEA6
+Description: Unspecified value in signed addition, possible overflow.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
+Translation failed. Run kcc -d UB-CEA6-bad-static.c to see commands run.
