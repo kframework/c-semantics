@@ -1,7 +1,0 @@
-File: CV-CER1-bad-static.c
-Line: 14
-Error: CV-CER1
-Description: Unary '&' operator applied to non-lvalue.
-Type: Constraint violation.
-See also: C11 sec. 6.5.3.2:1
-Translation failed. Run kcc -d CV-CER1-bad-static.c to see commands run.
