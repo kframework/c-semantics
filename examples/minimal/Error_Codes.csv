@@ -1,7 +1,7 @@
+,,,
 ,Errors reported by RV-Match follow the template: Error_Type-Error_Code.,,
 ,"The Error_Type can be one of: UB (Undefined Behavior), USP (Unspecified Behavior), CV (Constraint Violation), or IMPL (Implementation Specific Behavior)",,
 ,The Error_Code is a unique code used to identify a particular error.,,
-,,,
 ,,,
 Error,Description ,References,Type
 UB-CB1,types of function call arguments aren't compatible with declared types after promotions.,"6.5.2.2:6, J.2:1 item 39",Undefined Behavior
