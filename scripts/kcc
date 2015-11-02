@@ -35,11 +35,13 @@ my $profileDirectory;
   close FILE;
 }
 my $cygwin = $^O eq "cygwin" || $^O eq "msys";
+my $quoteString = "\"String\"";
 if ($cygwin) {
   $distDirectory = `cygpath -w $distDirectory`;
   $profileDirectory = `cygpath -w $profileDirectory`;
   chop($distDirectory);
   chop($profileDirectory);
+  $quoteString = backslash($quoteString);
 }
 
 my $krun;
@@ -95,8 +97,7 @@ my $spec = q(#
       -s			Do not link against the standard library.
       -o <file>			Place the output into <file>.
 { $main::oflag = $file; }
-      --output <file>		[ditto]
-      -l<lib>			Link semantics against native-compiled so file
+      -l <lib>			Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
       <files>...		C files to be compiled. [required] [repeatable]
       --help				Show usage information [undocumented]
@@ -113,12 +114,12 @@ my $spec = q(#
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
 
-      -O[<level:/0|1|2|3|s/>]	Ignored
-      -std <standard>		Ignored
+      -O [<level:/0|1|2|3|s/>]	Ignored
+      -std=<standard>		Ignored
       -x <language>		Ignored
       -pedantic			Ignored
       -Wall			Ignored
-      -rpath <file>		Ignored
+      -rpath=<file>		Ignored
       -soname <file>		Ignored
       -pthread			Enables pthread library (highly experimental, likely broken)
 { push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
@@ -245,7 +246,10 @@ sub main {
           my $options;
           if ($args->{'-fissue-report='}) {
                my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ";
+               if ($cygwin) {
+                    $file = backslash($file);
+               }
+               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ";
           } else {
                $options = '-cOPTIONS=`.Set`(.KList) ';
           }
@@ -417,12 +421,18 @@ sub getKRunCommand {
      # add space to end so that batch scripts work on windows
      if ($link && $args->{'-fissue-report='}) {
           my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ");
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ");
      } elsif ($link) {
           push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
      } elsif ($args->{'-fissue-report='}) {
           my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, \"String\"))),`SetItem`(`NOLINK`(.KList))) ");
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, $quoteString))),`SetItem`(`NOLINK`(.KList))) ");
      } else {
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
      }
