@@ -35,11 +35,13 @@ my $profileDirectory;
   close FILE;
 }
 my $cygwin = $^O eq "cygwin" || $^O eq "msys";
+my $quoteString = "\"String\"";
 if ($cygwin) {
   $distDirectory = `cygpath -w $distDirectory`;
   $profileDirectory = `cygpath -w $profileDirectory`;
   chop($distDirectory);
   chop($profileDirectory);
+  $quoteString = backslash($quoteString);
 }
 
 my $krun;
@@ -244,7 +246,10 @@ sub main {
           my $options;
           if ($args->{'-fissue-report='}) {
                my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ";
+               if ($cygwin) {
+                    $file = backslash($file);
+               }
+               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ";
           } else {
                $options = '-cOPTIONS=`.Set`(.KList) ';
           }
@@ -416,12 +421,18 @@ sub getKRunCommand {
      # add space to end so that batch scripts work on windows
      if ($link && $args->{'-fissue-report='}) {
           my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, \"String\"))) ");
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ");
      } elsif ($link) {
           push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
      } elsif ($args->{'-fissue-report='}) {
           my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, \"String\"))),`SetItem`(`NOLINK`(.KList))) ");
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, $quoteString))),`SetItem`(`NOLINK`(.KList))) ");
      } else {
           push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
      }
