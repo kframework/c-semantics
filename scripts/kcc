@@ -26,14 +26,24 @@ my @srcFiles = ();
 my @tempFiles = ();
 
 my $distDirectory = dirname(rel2abs($0));
+our $profile;
 my $profileDirectory;
 {
   local $/=undef;
-  open FILE, "$distDirectory/current-profile" or die "Couldn't find current profile: run kcc-switch";
-  my $profile = <FILE>;
+  open FILE, "$distDirectory/current-profile" or die "Couldn't find current profile: please fix $distDirectory/current-profile";
+  $profile = <FILE>;
   $profileDirectory = "$distDirectory/$profile";
   close FILE;
 }
+
+opendir (my $DIR, $distDirectory);
+our @profiles = ();
+while ( my $entry = readdir $DIR) {
+  next unless -d $distDirectory . '/' . $entry;
+  next if $entry eq '.' or $entry eq '..' or $entry eq 'licenses';
+  push(@profiles, $entry);
+}
+
 my $cygwin = $^O eq "cygwin" || $^O eq "msys";
 my $quoteString = "\"String\"";
 if ($cygwin) {
@@ -57,11 +67,13 @@ if ($cygwin) {
 my $preprocessor;
 {
   local $/=undef;
-  open FILE, "$profileDirectory/pp" or die "Couldn't find current profile: run kcc-switch";
+  open FILE, "$profileDirectory/pp" or die "Couldn't find current profile: please fix $distDirectory/current-profile";
   $preprocessor = <FILE>;
   close FILE;
   chop($preprocessor);
 }
+
+our $ourDist = $distDirectory;
 
 my $xmlToK = catfile($distDirectory, 'xml-to-k');
 my $cparser = catfile($distDirectory, 'cparser');
@@ -102,8 +114,19 @@ my $spec = q(#
       <files>...		C files to be compiled. [required] [repeatable]
       --help				Show usage information [undocumented]
                         { $self->usage(0); }
-      -v				Show version information [undocumented]
-                                { $self->version(0); }
+      -version				Show version information [undocumented]
+{ 
+  $self->version(); 
+  print("	Current profile: $main::profile\n	Installed profiles: @main::profiles\n\n");
+  exit 0;
+}
+      -Version			[ditto]
+      -VERSION			[ditto]
+      --version			[ditto]
+      --Version			[ditto]
+      --VERSION			[ditto]
+      -v			[ditto]
+      -V			[ditto]
 
       -MD			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MD'); }
@@ -125,6 +148,19 @@ my $spec = q(#
 { push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
 
       -Xmx<size>		Passed to underlying JVM
+      -profile <name>		Set KCC profile.
+{
+      if ( grep( /^$name$/, @main::profiles ) ) {
+           open(my $file, '>', "$main::ourDist/current-profile") or die "Could not open profile file. Check OS permissions.";
+           print $file $name;
+           close $file;
+           exit 0;
+      } else {
+           print "Profile '$name' is not installed. See kcc -v for list of installed profiles.\n";
+           exit 1;
+      }
+}
+ 
                   
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
