@@ -59,7 +59,7 @@ calling was not declared in the appropriate header file, or that it was declared
 no definition exists currently in the semantics.
 
 We recommend if you wish to execute such programs that you contact Runtime Verification,
-Inc, which sells a tool RV-Match based on this semantics which is capable of executing
+Inc, which licenses a tool RV-Match based on this semantics which is capable of executing
 such programs by linking against the native code provided on your system for these libraries.
 For more information, contact https://runtimeverification.com/support.
 
