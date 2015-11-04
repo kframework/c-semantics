@@ -88,8 +88,7 @@ module C-CONFIGURATION
      </goto-map-calc>
      <k color="green">
           $PGM:K
-          ~> load(unwrapObj($OBJ1:K), unwrapObj($OBJ2:K),
-               unwrapObj($OBJ3:K), unwrapObj($OBJ4:K))
+          ~> load($OBJS:K)
           ~> link
           ~> cleanup
      </k>
