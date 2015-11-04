@@ -200,18 +200,19 @@ module C-TRANSLATION-INIT
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
-                  | mergeDecl(K, K, K, Map) [function]
+                  | #mergeDecls(Map, Map) [function]
 
-     rule mergeDecls(.Map, M:Map) => M
-     rule mergeDecls((Key:K |-> Val:K) M:Map, M':Map)
-          => mergeDecls(M, mergeDecl(Key, Val, .K, M'))
-
-     rule mergeDecl(Key:K, Val:K, .K, M:Map) => (Key |-> Val) M
-          requires notBool (Key in_keys(M))
-     rule mergeDecl(Key:K, Val:K, .K, (Key |-> Val':K) M:Map)
-          => mergeDecl(Key, Val, Val', M)
-     rule mergeDecl(Key:K, set(S:Set), set(S':Set), M:Map)
-          => (Key |-> set(S S')) M
+     syntax Set ::= getSet(K) [function]
+     rule getSet(set(S:Set)) => S
+     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1, M2)
+          requires size(M2) <Int size(M1)
+     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M2, M1) [owise]
+     rule #mergeDecls(M:Map, .Map) => M
+     rule #mergeDecls(M':Map, (Key:K |-> set(S:Set)) M:Map)
+          => mergeDecls(M'[Key <- set(S getSet(M'[Key]<:K))], M)
+          requires Key in_keys(M')
+     rule #mergeDecls(M':Map, (Key:K |-> Val:K) M:Map)
+          => mergeDecls((Key |-> Val) M', M) [owise]
 
      rule mergeObj(B:K, .K) => B
      rule mergeObj(.K, B:K) => B
