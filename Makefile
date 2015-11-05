@@ -18,6 +18,8 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \
 	$(PARSER_DIR)/cparser \
+        LICENSE \
+        licenses
 
 .PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile
 
@@ -32,19 +34,19 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc $(DIST_DIR)/$(PROFILE)/pp: $(FILES_TO_DIST) $(wildcard $(PROFILE)/include/*) $(PROFILE)/pp | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE)/include/*) $(PROFILE)/pp | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@cp -p $(PROFILE)/pp $(DIST_DIR)/$(PROFILE)
 	@cp -rp $(PROFILE)/include $(DIST_DIR)/$(PROFILE)
-	@cp -p $(FILES_TO_DIST) $(DIST_DIR)
+	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc $(DIST_DIR)/$(PROFILE)/pp execution-semantics
+$(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc execution-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc $(DIST_DIR)/$(PROFILE)/pp translation-semantics
+$(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc translation-semantics
 	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION): semantics
