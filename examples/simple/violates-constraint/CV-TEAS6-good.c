@@ -1,4 +1,4 @@
-// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+// Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
 // kcc-assert-error(00035)
 #include <stdio.h>
