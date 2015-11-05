@@ -1,4 +1,4 @@
-// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+// Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
 _Noreturn void f(void){
 	while (1) {}

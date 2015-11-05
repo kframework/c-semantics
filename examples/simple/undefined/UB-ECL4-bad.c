@@ -1,4 +1,4 @@
-// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
+// Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
 int g(const int* restrict a, int* b) {
       *b = 1;
