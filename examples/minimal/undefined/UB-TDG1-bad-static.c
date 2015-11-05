@@ -1,8 +1,0 @@
-// Copyright (c) 2015 RV-Match Team. All Rights Reserved.
-
-typedef int fun();
-const fun f;
-
-int main(void) {
-      return 0;
-}
