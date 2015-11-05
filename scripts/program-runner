@@ -57,7 +57,7 @@ sub main {
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
       my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
-                 'cat', $fileInput, '--kore', '--exit-code', "<result-value> _:Int </result-value>");
+                 'cat', $fileInput, '--exit-code', "<result-value> _:Int </result-value>");
       my $options = '`.Set`(.KList)';
 
       if (defined $ENV{HELP}) {
