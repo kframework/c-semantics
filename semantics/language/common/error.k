@@ -36,8 +36,6 @@ module C-ERROR
      imports K-REFLECTION
      imports C-CONFIGURATION
 
-     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
-
      rule _:ErrorExit ~> _:Error => .K
           requires isErrorRecovery
 
