@@ -43,7 +43,7 @@ module C-TRANSLATION-INIT
           requires notBool (NOLINK in Opts)
 
      rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
-               => load(mergeObj(Obj1, Obj2) ~> Objs)
+               => load(Objs ~> mergeObj(Obj1, Obj2))
                ~> checkMerge(Obj1, Obj2)
 
      rule <k> load(Merged:KItem)
