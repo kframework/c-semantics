@@ -293,7 +293,7 @@ sub main {
           my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
-                  '--kore', '--exit-code', "<result-value> _:Int </result-value>",
+                  '--exit-code', "<result-value> _:Int </result-value>",
                   $options, "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
@@ -441,7 +441,6 @@ sub getKRunCommand {
      my ($output, $obj1, $obj2, $obj3, $obj4, $src, $link) = (@_);
 
      my @krun_args = (
-          '--kore',
           '--output', 'kast', 
           '--output-file', $output,
           '-d', $TRANS_DEF,
