@@ -24,6 +24,8 @@ module C-EXECUTION-ERROR
 
      imports DEBUG-SYNTAX
 
+     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
+
      syntax KItem ::= error(String, String)
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
