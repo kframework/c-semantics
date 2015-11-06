@@ -34,12 +34,21 @@ module C-CONVERSION
                andBool (max(T) >=Int N)
      rule arithInterpret(T:Type, unknown) => tv(unknown, T)
      rule arithInterpret(T:Type, trap) => trap(T)
-     // fixme
      rule arithInterpret(T:FloatType, F:Float) => tv(F, T)
+          requires fmin(T) <=Float F andBool fmax(T) >=Float F
+     rule arithInterpret(T:FloatType, F:Float) => arithInterpretHold(T, F)
+          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
+
+     rule (.K => UNDEF("CCV12", "floating-point overflow.", "6.5:5, J.2:1 item 36"))
+          ~> arithInterpretHold(T:FloatType, F:Float)
+          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
+     rule _:ErrorExit ~> arithInterpretHold(T:FloatType, F:Float) => tv(F, T)
+          requires isErrorRecovery
+
      // signed arithmetic isn't supposed to overflow
      rule arithInterpret(T:UnsignedIntegerType, N:Int) => tv(N modInt (max(T) +Int 1), T)
           requires (N >Int max(T)) orBool (N <Int min(T))
-     rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I:Int)
+     rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
      rule (.K => UNDEF("CCV1", "signed overflow.", "6.5:5, J.2:1 item 36"))
