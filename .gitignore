@@ -2,6 +2,7 @@ parser/*.o
 parser/*.cmi
 parser/*.cmx
 .*.swp
+semantics/.kompile-*
 semantics/c11*-kompiled
 dist
 parser/cparser
