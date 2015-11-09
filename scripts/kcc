@@ -338,7 +338,7 @@ sub mergeObjs {
          my @cmd = getKRunCommand($accum, \@objFiles, undef, 0);
          my $retval = execute($krun, @cmd);
          checkError($retval);
-         push(@objFiles, $accum);
+         @objFiles = ($accum);
      }
 }
 
