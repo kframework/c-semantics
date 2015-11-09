@@ -54,7 +54,8 @@ module C-STMT-LOOP
 
      rule (.K => elaborate(S)) ~> #while(_:RValue, S:K)
      rule <k> elaborateDone(S:K) ~> #while(B:RValue, _) => .K ...</k>
-          <elab>... .K => While(B, S) </elab>
+          <elab>... .K => While(compoundExp(L ~> B), S) </elab>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
 
      context DoWhile((HOLE => reval(HOLE)), _) [result(RValue)]
      rule DoWhile(B:RValue, S:K) => #doWhile(simplifyTruth(B), S)
@@ -64,7 +65,8 @@ module C-STMT-LOOP
 
      rule (.K => elaborate(S)) ~> #doWhile(_:RValue, S:K)
      rule <k> elaborateDone(S:K) ~> #doWhile(B:RValue, _) => .K ...</k>
-          <elab>... .K => DoWhile(B, S) </elab>
+          <elab>... .K => DoWhile(compoundExp(L ~> B), S) </elab>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
 
      rule <k> Continue => .K ...</k>
           <elab>... .K => Continue </elab>
