@@ -48,7 +48,7 @@ module C-CONVERSION
      rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
-     rule (.K => UNDEF("CCV1", "signed overflow.", "6.5:5, J.2:1 item 36"))
+     rule (.K => UNDEF("CCV1", "signed integer overflow.", "6.5:5, J.2:1 item 36"))
           ~> arithInterpretHold(T:SignedIntegerType, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
@@ -289,7 +289,7 @@ module C-CONVERSION
      }*/
      rule cast(T':PointerType, tv(V:CValue, T:IntegerType))
           => checkUse(tv(cfg:intToPointer(V, T), cast(T', T)))
-          requires notBool isIntegerConstant(tv(V, T))
+          requires notBool isNullPointerConstant(tv(V, T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously

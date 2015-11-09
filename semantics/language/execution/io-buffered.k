@@ -77,7 +77,8 @@ module C-IO-BUFFERED
           requires // Sequencing.
                (notBool loc(Base, Offset) in Locs)
                // Bounds.
-               andBool (Offset >=Int 0 andBool Offset +Int Size -Int 1 <Int Len)
+               andBool (Offset +Int Size -Int 1 <Int Len)
+               andBool Offset >=Int 0
                // Const.
                andBool (notBool (Const in getQualsAtOffset(ObjT, Offset)))
                // Volatile.
