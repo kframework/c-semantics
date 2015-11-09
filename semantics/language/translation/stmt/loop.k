@@ -37,7 +37,14 @@ module C-STMT-LOOP
                ~> #for(Control:RValue, Post:RValue, _)
                => .K
           ...</k>
-          <elab>... .K => For(Control, Post, S) </elab>
+          <elab>... .K => For(compoundExp(L ~> Control), Post, S) </elab>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          requires Control =/=K emptyValue
+     rule <k> elaborateDone(S:K)
+               ~> #for(emptyValue, Post:RValue, _)
+               => .K
+          ...</k>
+          <elab>... .K => For(emptyValue, Post, S) </elab>
 
      context While((HOLE => reval(HOLE)), _) [result(RValue)]
      rule While(B:RValue, S:K) => #while(simplifyTruth(B), S)
