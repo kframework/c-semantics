@@ -201,11 +201,11 @@ module C-IO-BUFFERED
      syntax K ::= assertSeq(SymLoc, List)
      syntax K ::= assertVolatile(Type, Int, Type)
 
-     rule assertInBounds(Offset::Int, Len::Int) 
+     rule assertInBounds(Offset::Int, Len::Int)
           => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
-     rule assertSeq(Loc::SymLoc, Locs::List) 
+     rule assertSeq(Loc::SymLoc, Locs::List)
           => assert(notBool (Loc in Locs), errorUnseqEffects) [macro]
-     rule assertVolatile(ObjT::Type, Offset::Int, T::Type) 
+     rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
           => assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                orBool isVolatileType(T), errorNonVolatileLVal) [macro]
 
@@ -274,28 +274,28 @@ module C-IO-BUFFERED
           requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
      rule getZeroedBits(Offset, 0, _, _) => piece(0, 0)
      // this happens when we are reading padding bits, which are zeroed.
-     // bit fields never contain padding in between two bit fields in the same byte, 
+     // bit fields never contain padding in between two bit fields in the same byte,
      // so doing this at the end should be safe
      rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _)) => piece(0, N)
-      
+
      rule getZeroedBits(Offset::Int, N::Int, BaseT::StructType, fieldInfo(
             (ListItem(typedDeclaration(_, FId::CId))) Fields::List,
             SI::Int,
             Types::Map (FId |-> T::Type),
             Offsets::Map (FId |-> FOffset::Int)))
-          => #if FId ==K #NoName #then 
+          => #if FId ==K #NoName #then
                //the bits of the field in the current byte are traps, because it was unnamed
-               piece(trap, minInt(FOffset +Int bitSizeofType(T), 
-                                  Offset +Int N) -Int 
-                           maxInt(FOffset, Offset)) 
-             #else 
+               piece(trap, minInt(FOffset +Int bitSizeofType(T),
+                                  Offset +Int N) -Int
+                           maxInt(FOffset, Offset))
+             #else
                // read the bits of the field that overlap the current byte
                getZeroedBits(maxInt(FOffset, Offset) -Int FOffset,
                              (minInt(FOffset +Int bitSizeofType(T),
-                                     Offset +Int N) -Int 
-                              maxInt(FOffset, Offset)), T) 
+                                     Offset +Int N) -Int
+                              maxInt(FOffset, Offset)), T)
              #fi:>Bits
-               bit:: 
+               bit::
                  //read the remaining bits in the byte
                  getZeroedBits(minInt(FOffset +Int bitSizeofType(T),
                                       Offset +Int N), N -Int
@@ -303,11 +303,10 @@ module C-IO-BUFFERED
                            Offset +Int N) -Int
                     maxInt(FOffset, Offset)), BaseT, fieldInfo(
                    Fields,
-                   SI, 
+                   SI,
                    Types (FId |-> T),
                    Offsets (FId |-> FOffset)))
      [owise]
-            
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
@@ -440,7 +439,6 @@ module C-IO-BUFFERED
      rule <k> setEffectiveType(Loc::SymLoc, T:CharType) => checkEffectiveType(T, getEffectiveType(Loc)) ...</k>
           [structural]
 
-
      syntax KItem ::= checkEffectiveType(Type, K) [strict(2)]
      rule checkEffectiveType(L::Type, Eff:Type) => .K
           requires (#effectivelyCompat(L, Eff))
@@ -455,7 +453,7 @@ module C-IO-BUFFERED
           requires isErrorRecovery
 
      // An  object shall have its stored value accessed only by an lvalue
-     // expression that has one of
+     // expression that has one of the following types:
      syntax Bool ::= #effectivelyCompat(Type, Type) [function]
      // - a type compatible with the effective type of the object,
      // - a qualified version of a type compatible with the effective type of
@@ -472,43 +470,60 @@ module C-IO-BUFFERED
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      rule #effectivelyCompat(L:UnsignedIntegerType, Eff::Type) => true
-          requires notBool isBoolType(L) 
+          requires notBool isBoolType(L)
                andBool areCompatible(correspondingSignedType(stripQualifiers(L)),
                     stripQualifiers(Eff))
                andBool getQualifiers(Eff) <=Set getQualifiers(L)
      // - an aggregate or union type that includes one of the aforementioned
      // types among its members (including, recursively, a member of a
      // subaggregate or contained union), or
+     rule #effectivelyCompat(L:ArrayType, Eff::Type)
+          => #effectivelyCompat(innerType(L), Eff)
+          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+               andBool getQualifiers(Eff) <=Set getQualifiers(L))
+     rule #effectivelyCompat(L:StructOrUnionType, Eff::Type)
+          => effectivelyCompatWithField(getFieldInfo(L), Eff)
+          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+               andBool getQualifiers(Eff) <=Set getQualifiers(L))
+
+     // TODO(chathhorn): should track the active variant of unions.
+     rule #effectivelyCompat(L::Type, Eff:UnionType)
+          => effectivelyCompatWithField(L, getFieldInfo(Eff))
+          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+                    andBool getQualifiers(Eff) <=Set getQualifiers(L))
+               andBool notBool isAggregateOrUnionType(L)
+               andBool notBool isCharType(L)
+     // - a character type.
+     rule #effectivelyCompat(_:CharType, _) => true
+
+     // Included because we can't distinguish the offset of an aggregate or
+     // union from the offset of its first member.
      rule #effectivelyCompat(L::Type, Eff:AggregateType)
           => #effectivelyCompat(L, effInnerType(Eff))
           requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
                     andBool getQualifiers(Eff) <=Set getQualifiers(L))
+               andBool notBool isAggregateOrUnionType(L)
                andBool notBool isCharType(L)
-     // TODO(chathhorn): this is where things get sketchy. Very unclear
-     // about the implications of strict aliasing w/r/t unions. As it is, we
-     // let it pass if we're compatible with one of the union members of the
-     // effective type.
-     rule #effectivelyCompat(L::Type,
-     // TODO(chathhorn): some obnoxious decomposing/recomposing going on here.
-               t(Mods::Set, unionType(X::StructId)))
-          => effectivelyCompatWithUnion(L, getFieldInfo(X))
-          requires notBool (areCompatible(stripQualifiers(L),
-                         stripQualifiers(t(Mods, unionType(X))))
-                    andBool intersectSet(Mods, typeQualifiers)
-                         <=Set getQualifiers(L))
-               andBool notBool isCharType(L)
-     // - a character type.
-     rule #effectivelyCompat(_:CharType, _) => true
+
      rule #effectivelyCompat(_, _) => false [owise]
 
-     syntax Bool ::= effectivelyCompatWithUnion(Type, K) [function]
-     rule effectivelyCompatWithUnion(T::Type, fieldInfo(_, _, Types::Map, _))
-          => #effectivelyCompatWithUnion(T, values(Types))
-     syntax Bool ::= #effectivelyCompatWithUnion(Type, List) [function]
-     rule #effectivelyCompatWithUnion(T::Type, ListItem(T'::Type) L::List)
+     syntax Bool ::= effectivelyCompatWithField(Type, FieldInfo) [function]
+     rule effectivelyCompatWithField(T::Type, fieldInfo(_, _, Types::Map, _))
+          => #effectivelyCompatWithField(T, values(Types))
+     syntax Bool ::= #effectivelyCompatWithField(Type, List) [function]
+     rule #effectivelyCompatWithField(T::Type, ListItem(T'::Type) L::List)
           => #effectivelyCompat(T, T') ==K true
-               orElseBool #effectivelyCompatWithUnion(T, L)
-     rule #effectivelyCompatWithUnion(_, .List) => false
+               orElseBool #effectivelyCompatWithField(T, L)
+     rule #effectivelyCompatWithField(_, .List) => false
+
+     syntax Bool ::= effectivelyCompatWithField(FieldInfo, Type) [function]
+     rule effectivelyCompatWithField(fieldInfo(_, _, Types::Map, _), T::Type)
+          => #effectivelyCompatWithField(values(Types), T)
+     syntax Bool ::= #effectivelyCompatWithField(List, Type) [function]
+     rule #effectivelyCompatWithField(ListItem(T::Type) L::List, T'::Type)
+          => #effectivelyCompat(T, T') ==K true
+               orElseBool #effectivelyCompatWithField(L, T')
+     rule #effectivelyCompatWithField(.List, _) => false
 
      syntax Set ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
      rule getQualsAtOffset(T::Type, Offset::Int)

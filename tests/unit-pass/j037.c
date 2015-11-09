@@ -5,6 +5,8 @@ int main(void) {
 
       int y = 5;
       *((int*)&y);
+      *((struct { int x; }*) &y);
+      *((union { float x; int y; }*) &y);
 
       return 0;
 }
