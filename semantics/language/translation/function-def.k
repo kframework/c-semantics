@@ -85,8 +85,8 @@ module C-FUNCTION-DEF
                andBool areVoidOrComplete(P)
                andBool (X =/=K Identifier("main"))
           [structural]
-     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, _)), P:List)
-          => checkMainDef(t(Mods, functionType(R, P)))
+     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, P':List)), P:List)
+          => checkMainDef(t(Mods, functionType(R, P')))
           requires isVoidOrComplete(R)
                andBool areVoidOrComplete(P)
                andBool (X ==K Identifier("main"))
