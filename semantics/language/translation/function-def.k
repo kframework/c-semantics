@@ -70,7 +70,7 @@ module C-FUNCTION-DEF
 
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
-               => checkFunDefType(X, Proto)
+               => checkFunDefType(X, Proto, Params)
                ~> staticEval(X, Params, Blk)
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
@@ -79,13 +79,13 @@ module C-FUNCTION-DEF
           ...</functions>
           [structural]
 
-     syntax KItem ::= checkFunDefType(CId, Type)
-     rule checkFunDefType(X:CId, t(_, functionType(R:Type, P:List))) => .K
+     syntax KItem ::= checkFunDefType(CId, Type, List)
+     rule checkFunDefType(X:CId, t(_, functionType(R:Type, _)), P:List) => .K
           requires notBool isArrayOrFunctionType(R)
                andBool areVoidOrComplete(P)
                andBool (X =/=K Identifier("main"))
           [structural]
-     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, P:List))) 
+     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, _)), P:List)
           => checkMainDef(t(Mods, functionType(R, P)))
           requires isVoidOrComplete(R)
                andBool areVoidOrComplete(P)
@@ -93,14 +93,14 @@ module C-FUNCTION-DEF
           [structural]
      rule (.K => CV("FD2", "invalid return type in function definition.",
                "6.7.6.3:1"))
-          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)))
+          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)), _)
           [structural]
      rule (.K => CV("FD3", "incomplete parameter type in "
                +String "function definition.", "6.7.6.3:4"))
-          ~> checkFunDefType(_, t(_, functionType(_, P:List)))
+          ~> checkFunDefType(_, _, P:List)
           requires notBool areVoidOrComplete(P)
           [structural]
-     rule _:ErrorExit ~> checkFunDefType(_, _) => .K
+     rule _:ErrorExit ~> checkFunDefType(_, _, _) => .K
           requires isErrorRecovery
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
