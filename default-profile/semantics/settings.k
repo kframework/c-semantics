@@ -48,6 +48,7 @@ module C-SETTINGS
      rule cfg:pointerToInt(_, _) => unknown
 
      rule isErrorRecovery => false
+     rule hasLint => false
 
 endmodule
 

@@ -15,7 +15,7 @@ module C-ERROR-SYNTAX
      syntax K ::= assert(Bool, Error)
 
      syntax KItem ::= EXIT(String)
-     syntax ErrorExit
+     syntax ErrorExit ::= "HALT"
 
      syntax KItem ::= openWriteThenClose(String, String)
      syntax Bool ::= "isCSV" [function]
