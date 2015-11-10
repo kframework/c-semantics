@@ -13,3 +13,6 @@ semantics/settings.k
 semantics/extensions-common.k
 semantics/extensions-translation.k
 semantics/extensions-execution.k
+78k0r
+x86_64-linux-gcc-glibc
+x86_64-osx-10.10-clang
