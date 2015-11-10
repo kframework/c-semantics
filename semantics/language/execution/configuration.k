@@ -30,10 +30,8 @@ module C-CONFIGURATION
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
 
-               // kpair(CId, BlockNum) |-> SymBase
+               // kpair(CId, Scope) |-> kpair(SymBase, Type)
                <local-statics> .Map </local-statics>
-               // kpair(CId, BlockNum) |-> Type
-               <local-types> .Map </local-types>
 
                // placeholder from translation semantics
                <tu-linking-state multiplicity="?"> .K </tu-linking-state>
