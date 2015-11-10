@@ -44,5 +44,6 @@ module C-SETTINGS-SYNTAX
      syntax CValue ::= "cfg:pointerToInt" "(" CValue "," Type ")" [function]
 
      syntax Bool ::= "isErrorRecovery" [function]
+                   | "hasLint" [function]
 
 endmodule

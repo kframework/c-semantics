@@ -149,6 +149,12 @@ module LIBC-STDLIB
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced) orBool I =/=Int 0
 
+     rule _:ErrorExit ~> prepareBuiltin(Identifier("free"), _) => voidVal
+          requires isErrorRecovery
+     rule prepareBuiltin(Identifier("free"),
+               hrItem(tv(NullPointer, t(_, pointerType(_)))))
+          => voidVal
+          requires notBool hasLint
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
