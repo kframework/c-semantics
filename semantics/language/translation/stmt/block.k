@@ -15,9 +15,9 @@ module C-STMT-BLOCK
      rule <k> pushBlock(Tag:Int) => addToHistory(Tag) ...</k>
           <elab>... .K => pushBlock(Tag) </elab>
           <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
-          C:LocalCell
+          <local> C:Bag <local-types> LocalTypes:Map => .Map </local-types> </local>
           <block-stack>
-               .List => ListItem(C)
+               .List => ListItem(<local> C <local-types> LocalTypes </local-types> </local>)
           ...</block-stack>
 
      rule <k> popBlock => .K ...</k>
