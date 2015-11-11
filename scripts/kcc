@@ -136,6 +136,7 @@ my $spec = q(#
 { push(@main::cppArgs, '-MF', $file); }
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
+      -flint			Generate lint errors for potentially undesirable behaviors.*
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -160,7 +161,8 @@ my $spec = q(#
            exit 1;
       }
 }
- 
+      * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
+        to run.
                   
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
@@ -279,22 +281,24 @@ sub main {
 
      } else {
           # add space to end of args with () so that batch scripts work on windows
-          my $options;
+          my @options;
           if ($args->{'-fissue-report='}) {
                my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
                if ($cygwin) {
                     $file = backslash($file);
                }
-               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ";
-          } else {
-               $options = '-cOPTIONS=`.Set`(.KList) ';
+               push(@options, "`CSV`(#token($file, $quoteString))");
           }
+          if ($args->{'-flint'}) {
+               push(@options, "`LINT`(.KList)");
+          }
+          my $opts = makeSet(@options);
 
           my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--exit-code', "<result-value> _:Int </result-value>",
-                  $options, "-pOPTIONS=$printf",
+                  "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
                   );
@@ -418,25 +422,23 @@ sub getKRunCommand {
      if ($args->{'-d'}) {
           push(@krun_args, '--debug');
      }
-
-     # add space to end so that batch scripts work on windows
-     if ($link && $args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ");
-     } elsif ($link) {
-          push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
-     } elsif ($args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, $quoteString))),`SetItem`(`NOLINK`(.KList))) ");
-     } else {
-          push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
+     my @options;
+     if (!$link) {
+          push(@options, "`NOLINK`(.KList)");
      }
+     if ($args->{'-fissue-report='}) {
+          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@options, "`CSV`(#token($file, $quoteString))");
+     }
+     if ($args->{'-flint'}) {
+          push(@options, "`LINT`(.KList)");
+     }
+
+     my $opts = makeSet(@options);
+     push(@krun_args, "-cOPTIONS=$opts ");
      push(@krun_args, "-pOPTIONS=$printf");
 
      if (scalar @objs) {
@@ -540,6 +542,14 @@ sub checkError {
     }
   }
 }
+
+sub makeSet {
+  my $set = '`.Set`(.KList)';
+  foreach my $el (@_) {
+    $set = "`_Set_`(`SetItem`($el), $set)";
+  }
+  return $set;
+} 
 
 sub interruptHandler {
 # Call single cleanup point.
