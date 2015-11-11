@@ -29,14 +29,13 @@ module C-DECL-LOCAL
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
-               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
+               andBool notBool (X in_keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
@@ -45,7 +44,6 @@ module C-DECL-LOCAL
           <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
@@ -53,7 +51,7 @@ module C-DECL-LOCAL
                andBool notBool isStaticType(T')
                andBool areCompatible(T, T')
                andBool notBool (X in_keys(Defs))
-               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
+               andBool notBool (X in_keys(LocalTypes))
           [structural]
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
@@ -62,14 +60,13 @@ module C-DECL-LOCAL
           ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
           <external-types> Types:Map </external-types>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-types> LocalTypes:Map </local-types>
           requires (isFunctionType(T) orBool isExternType(T))
                andBool notBool isStaticType(T)
                andBool notBool (X in_keys(Types))
-               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
+               andBool notBool (X in_keys(LocalTypes))
           [structural]
      rule <k> declareInternalVariable(X:CId, T:Type, Init:KResult)
                => initLocalStatic(X, toInitValue(X, T, Init))
@@ -85,16 +82,15 @@ module C-DECL-LOCAL
           <elab>... .K => declareInternalVariable(X, T, Init) </elab>
           requires isNaked(T)
           [structural]
-     // This is pretty contrived, but we don't give local extern decls an entry
-     // in the "local-types" map in order to detect this case.
+     // We don't give local extern decls an entry in the "local-types" map in
+     // order to detect this case.
      rule <k> (.K => CV("TDL1", "Extern declaration of "
                     +String idToString(X) +String " follows one with no linkage.", "6.7:3"))
                ~> declareInternalVariable(X:CId, T:Type, _:NoInit)
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <local-types>... kpair(X, BlockNum) |-> _ ...</local-types>
+          <local-types>... X |-> _ ...</local-types>
           requires isExternType(T) andBool notBool isStaticType(T)
           [structural]
      rule (.K => CV("TDL2", "Extern declaration of " +String idToString(X)
@@ -123,23 +119,24 @@ module C-DECL-LOCAL
                ~> giveType(X, T)
                ~> runInit(stripInitHolds(Init))
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <local-statics>
-               LocalStatics:Map (.Map =>  kpair(X, BlockNum) |-> Base)
+               LocalStatics:Map (.Map =>  kpair(X, S) |-> kpair(Base, T))
           </local-statics>
           <local-types>
-               LocalTypes:Map (.Map =>  kpair(X, BlockNum) |-> T)
+               LocalTypes:Map (.Map => X |-> T)
           </local-types>
-          requires notBool (kpair(X, BlockNum) in_keys(LocalStatics))
-               andBool notBool (kpair(X, BlockNum) in_keys(LocalTypes))
+          requires notBool ((kpair(X, S) in_keys(LocalStatics))
+               orBool (X in_keys(LocalTypes)))
+          [structural]
      rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-statics>
@@ -148,8 +145,8 @@ module C-DECL-LOCAL
           <local-types>
                LocalTypes:Map
           </local-types>
-          requires (kpair(X, BlockNum) in_keys(LocalStatics))
-               orBool (kpair(X, BlockNum) in_keys(LocalTypes))
+          requires (kpair(X, S) in_keys(LocalStatics))
+               orBool (X in_keys(LocalTypes))
           [structural]
 
      syntax KItem ::= defineAndInit(CId, Type, K)
@@ -157,21 +154,14 @@ module C-DECL-LOCAL
                => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <local-types>
-               // TODO(chathhorn): local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes[kpair(X, BlockNum) <- .K]
+               // local-types is just a flag in this case.
+               LocalTypes:Map => LocalTypes[X <- .K]
           </local-types>
           requires isCompleteType(T)
-          [structural]
-     rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => addToEnv(X, nonStatic)
-               ~> giveType(X, T)
-          ...</k>
-          <block-history> .List </block-history>
-          requires isCompleteType(T)
+               andBool notBool (X in_keys(LocalTypes))
           [structural]
      rule (.K => UNDEF("TDL5",
                "declaration of an identifier for an object with no linkage and incomplete type.",
@@ -179,27 +169,25 @@ module C-DECL-LOCAL
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)
           [structural]
+     rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
+                    +String " with no linkage.", "6.7:3"))
+               ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
+          ...</k>
+          <local-types> LocalTypes:Map </local-types>
+          requires isCompleteType(T) andBool (X in_keys(LocalTypes))
+          [structural]
      rule <k> _:ErrorExit ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
                => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <local-types>
-               // TODO(chathhorn): local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes[kpair(X, BlockNum) <- .K]
+               // local-types is just a flag in this case.
+               LocalTypes:Map => LocalTypes[X <- .K]
           </local-types>
           requires isErrorRecovery
           [structural]
-     rule <k> _:ErrorExit ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => addToEnv(X, nonStatic)
-               ~> giveType(X, T)
-          ...</k>
-          <block-history> .List </block-history>
-          requires isErrorRecovery
-          [structural]
- 
 
 endmodule
 
