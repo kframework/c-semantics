@@ -38,15 +38,12 @@ module C-DECL-LOCAL
                => addToEnv(X, Base)
                ~> giveType(X, T')
           ...</k>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <local-statics>...
-               kpair(X, BlockNum) |-> Base:SymBase
+               kpair(X, S) |-> kpair(Base:SymBase, T':Type)
           ...</local-statics>
-          <local-types>...
-               kpair(X, BlockNum) |-> T':Type
-          ...</local-types>
           requires isStaticType(T)
           [structural]
      rule declareInternalVariable(X:CId, _, initValue(_, T:Type, .K))
@@ -161,7 +158,7 @@ module C-DECL-LOCAL
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
           <curr-tu> Tu:String </curr-tu>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           [structural]
 
 endmodule

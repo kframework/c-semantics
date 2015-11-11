@@ -8,6 +8,7 @@ module C-ENV-SYNTAX
      syntax KItem ::= addEnum(CId, Int)
      syntax KItem ::= "populateFromGlobal"
      syntax KItem ::= addToHistory(Int)
+     syntax KItem ::= scope(Scope, K)
 
 endmodule
 
@@ -86,4 +87,10 @@ module C-ENV
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
           <types> L:Map => L[X <- T] </types>
 
+     rule <k> scope(Scope:Scope, K:K) => K ~> setScope(OldScope) ...</k>
+          <curr-scope> OldScope:Scope => Scope </curr-scope>
+
+     syntax KItem ::= setScope(Scope)
+     rule <k> setScope(Scope:Scope) => .K ...</k>
+          <curr-scope> _ => Scope </curr-scope>
 endmodule

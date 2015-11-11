@@ -54,7 +54,6 @@ module C-DYNAMIC-SYNTAX
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
      syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
-     syntax KItem ::= scope(Scope, K)
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)
@@ -207,10 +206,4 @@ module C-DYNAMIC
           => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
      rule fillLHoles(_, K:K) => K [owise]
 
-     rule <k> scope(Scope:Scope, K:K) => K ~> setScope(OldScope) ...</k>
-          <curr-scope> OldScope:Scope => Scope </curr-scope>
-
-     syntax KItem ::= setScope(Scope)
-     rule <k> setScope(Scope:Scope) => .K ...</k>
-          <curr-scope> _ => Scope </curr-scope>
 endmodule
