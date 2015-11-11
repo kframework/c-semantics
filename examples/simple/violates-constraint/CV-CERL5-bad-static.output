@@ -1,5 +1,5 @@
 File: CV-CERL5-bad-static.c
-Line: 2
+Line: 4
 Error: CV-CERL5
 Description: Directly comparing an integer type with a pointer type.
 Type: Constraint violation.

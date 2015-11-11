@@ -2,6 +2,6 @@ Error: CV-CCV10
 Description: conversion to or from non-scalar type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.4:2
-  at main(CV-CCV10-bad.c:6)
+  at main(CV-CCV10-bad.c:8)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

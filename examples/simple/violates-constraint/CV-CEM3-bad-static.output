@@ -1,5 +1,5 @@
 File: CV-CEM3-bad-static.c
-Line: 12
+Line: 14
 Error: CV-CEM3
 Description: attempting to access member but it does not exist
 Type: Constraint violation.

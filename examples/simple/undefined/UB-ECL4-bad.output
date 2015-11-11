@@ -2,7 +2,7 @@ Error: UB-ECL4
 Description: An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4, J.2:1 item 68
-  at g(UB-ECL4-bad.c:3)
-  at main(UB-ECL4-bad.c:9)
+  at g(UB-ECL4-bad.c:5)
+  at main(UB-ECL4-bad.c:11)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

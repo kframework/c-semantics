@@ -1,5 +1,5 @@
 File: CV-TDG15-bad-static.c
-Line: 5
+Line: 7
 Error: CV-TDG15
 Description: redefinition of a struct, union, or enum: foo
 Type: Constraint violation.

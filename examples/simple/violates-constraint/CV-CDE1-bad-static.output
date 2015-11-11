@@ -1,5 +1,5 @@
 File: CV-CDE1-bad-static.c
-Line: 1
+Line: 3
 Error: CV-CDE1
 Description: Enum initializer not an integer constant expression.
 Type: Constraint violation.

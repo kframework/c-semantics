@@ -1,5 +1,5 @@
 File: CV-CAL1-bad-static.c
-Line: 5
+Line: 7
 Error: CV-CAL1
 Description: Trying to compute alignof of a type that is incomplete or a function type.
 Type: Constraint violation.

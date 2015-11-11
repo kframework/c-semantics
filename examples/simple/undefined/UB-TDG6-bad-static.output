@@ -1,5 +1,5 @@
 File: UB-TDG6-bad-static.c
-Line: 1
+Line: 3
 Error: UB-TDG6
 Description: void parameter appears with a storage class specifier.
 Type: Undefined behavior.

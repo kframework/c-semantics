@@ -1,5 +1,5 @@
 File: UB-CEB2-bad-static.c
-Line: 2
+Line: 4
 Error: UB-CEB2
 Description: the right operand in a bitwise shift is negative.
 Type: Undefined behavior.

@@ -1,5 +1,5 @@
 File: CV-CEA4-bad-static.c
-Line: 4
+Line: 6
 Error: CV-CEA4
 Description: Invalid operand types to subtraction.
 Type: Constraint violation.

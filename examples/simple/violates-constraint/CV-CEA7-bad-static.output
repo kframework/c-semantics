@@ -1,5 +1,5 @@
 File: CV-CEA7-bad-static.c
-Line: 4
+Line: 6
 Error: CV-CEA7
 Description: Computing pointer addition of a pointer not to a complete object type.
 Type: Constraint violation.

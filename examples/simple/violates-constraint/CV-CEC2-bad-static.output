@@ -1,5 +1,5 @@
 File: CV-CEC2-bad-static.c
-Line: 4
+Line: 6
 Error: CV-CEC2
 Description: If one of a conditional expression's branches has void type, the other must also have void type.
 Type: Constraint violation.

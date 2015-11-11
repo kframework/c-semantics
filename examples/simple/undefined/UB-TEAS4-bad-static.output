@@ -1,5 +1,5 @@
 File: UB-TEAS4-bad-static.c
-Line: 3
+Line: 5
 Error: UB-TEAS4
 Description: void value as right operand in assignment
 Type: Undefined behavior.

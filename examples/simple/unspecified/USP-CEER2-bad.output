@@ -2,6 +2,6 @@ Error: USP-CEER2
 Description: Trying to reinterpret integer bytes as floating bytes.
 Type: Unspecified value or behavior.
 See also: C11 sec. 6.2.6.1:1, J.1:1 item 9
-  at main(USP-CEER2-bad.c:8)
+  at main(USP-CEER2-bad.c:10)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

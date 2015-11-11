@@ -1,5 +1,5 @@
 File: CV-TEAS6-bad-static.c
-Line: 6
+Line: 8
 Error: CV-TEAS6
 Description: Trying to write through a const lvalue.
 Type: Constraint violation.

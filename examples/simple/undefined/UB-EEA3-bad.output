@@ -2,6 +2,6 @@ Error: UB-EEA3
 Description: Attempt to alias restrict qualified pointers associated with incompatible blocks.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4, J.2:1 item 69
-  at main(UB-EEA3-bad.c:8)
+  at main(UB-EEA3-bad.c:10)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

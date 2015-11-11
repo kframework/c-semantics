@@ -1,5 +1,5 @@
 File: CV-FD2-bad-static.c
-Line: 5
+Line: 7
 Error: CV-FD2
 Description: invalid return type in function definition.
 Type: Constraint violation.

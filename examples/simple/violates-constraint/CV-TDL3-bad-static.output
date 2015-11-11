@@ -1,5 +1,5 @@
 File: CV-TDL3-bad-static.c
-Line: 4
+Line: 6
 Error: CV-TDL3
 Description: Extern declaration of x with incompatible type.
 Type: Constraint violation.

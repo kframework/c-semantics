@@ -1,8 +1,8 @@
-Error: UB-CEER3
+Error: UB-STDIO1
 Description: printf: Format string expects type of size 4, but got an argument of size 8.
 Type: Undefined behavior.
 See also: C11 sec. 7.21.6.1:9, J.2:1 item 153
-  at printf(UB-CEER3-bad.c:4)
-  at main(UB-CEER3-bad.c:4)
+  at printf(UB-STDIO1-bad.c:6)
+  at main(UB-STDIO1-bad.c:6)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

@@ -1,5 +1,5 @@
 File: UB-FD5-bad-static.c
-Line: 2
+Line: 4
 Error: UB-FD5
 Description: main must return an int.
 Type: Undefined behavior.

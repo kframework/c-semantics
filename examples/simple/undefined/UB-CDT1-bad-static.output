@@ -1,5 +1,5 @@
 File: UB-CDT1-bad-static.c
-Line: 1
+Line: 3
 Error: UB-CDT1
 Description: structs must contain a named member.
 Type: Undefined behavior.
