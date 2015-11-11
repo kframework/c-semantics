@@ -1,6 +1,6 @@
 File: dup_params1.c
 Line: 1
-Error: CV-TDL6
+Error: CV-TDL4
 Description: redeclaration of x with no linkage.
 Type: Constraint violation.
 See also: C11 sec. 6.7:3
