@@ -2,8 +2,8 @@ Error: CV-EFNC3
 Description: incompatible pointer types in function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
-  at g(CV-EFNC3-bad.c:5)
-  at f(CV-EFNC3-bad.c:5)
-  at main(CV-EFNC3-bad.c:11)
+  at g(CV-EFNC3-bad.c:7)
+  at f(CV-EFNC3-bad.c:7)
+  at main(CV-EFNC3-bad.c:13)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

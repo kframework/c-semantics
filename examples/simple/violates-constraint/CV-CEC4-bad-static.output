@@ -1,5 +1,5 @@
 File: CV-CEC4-bad-static.c
-Line: 10
+Line: 12
 Error: CV-CEC4
 Description: If one of a conditional expression's branches has struct or union type, the other must have the same type.
 Type: Constraint violation.

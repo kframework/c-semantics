@@ -1,5 +1,5 @@
 File: UB-CCV1-bad-static.c
-Line: 3
+Line: 5
 Error: UB-CCV1
 Description: signed overflow.
 Type: Undefined behavior.

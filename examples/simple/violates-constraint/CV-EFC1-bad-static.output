@@ -1,5 +1,5 @@
 File: CV-EFC1-bad-static.c
-Line: 6
+Line: 8
 Error: CV-EFC1
 Description: function call with incomplete or invalid return type.
 Type: Constraint violation.

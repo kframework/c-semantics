@@ -1,5 +1,5 @@
 File: CV-TDG4-bad-static.c
-Line: 1
+Line: 3
 Error: CV-TDG4
 Description: declaration for a appears with invalid storage class specifiers.
 Type: Constraint violation.

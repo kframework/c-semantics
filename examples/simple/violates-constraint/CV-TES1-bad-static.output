@@ -1,5 +1,5 @@
 File: CV-TES1-bad-static.c
-Line: 8
+Line: 10
 Error: CV-TES1
 Description: Trying to compute sizeof of an expression with incomplete or a function type.
 Type: Constraint violation.

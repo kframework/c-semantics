@@ -1,5 +1,5 @@
 File: CV-TES2-bad-static.c
-Line: 5
+Line: 7
 Error: CV-TES2
 Description: Trying to compute sizeof of an incomplete or function type.
 Type: Constraint violation.

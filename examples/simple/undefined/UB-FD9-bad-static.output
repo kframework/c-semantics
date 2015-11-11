@@ -1,5 +1,5 @@
 File: UB-FD9-bad-static.c
-Line: 1
+Line: 3
 Error: UB-FD9
 Description: main must have zero or two parameters.
 Type: Undefined behavior.

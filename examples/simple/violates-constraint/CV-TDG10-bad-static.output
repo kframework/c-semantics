@@ -1,5 +1,5 @@
 File: CV-TDG10-bad-static.c
-Line: 3
+Line: 5
 Error: CV-TDG10
 Description: conflicting types for f
 Type: Constraint violation.

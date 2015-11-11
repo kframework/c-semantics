@@ -1,5 +1,5 @@
 File: CV-CEA8-bad-static.c
-Line: 4
+Line: 6
 Error: CV-CEA8
 Description: Computing pointer minus integer of a pointer not to a complete object type.
 Type: Constraint violation.

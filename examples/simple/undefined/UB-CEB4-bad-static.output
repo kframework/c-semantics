@@ -1,5 +1,5 @@
 File: UB-CEB4-bad-static.c
-Line: 3
+Line: 5
 Error: UB-CEB4
 Description: the left operand in a bitwise left-shift is negative.
 Type: Undefined behavior.

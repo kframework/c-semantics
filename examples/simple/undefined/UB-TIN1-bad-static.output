@@ -1,5 +1,5 @@
 File: UB-TIN1-bad-static-link2.c
-Line: 1
+Line: 3
 Error: UB-TIN1
 Description: Identifier a declared with incompatible types in different translation units.
 Type: Undefined behavior.

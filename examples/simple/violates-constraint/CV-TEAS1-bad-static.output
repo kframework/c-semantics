@@ -1,5 +1,5 @@
 File: CV-TEAS1-bad-static.c
-Line: 7
+Line: 9
 Error: CV-TEAS1
 Description: incompatible types in assignment or function call arguments.
 Type: Constraint violation.

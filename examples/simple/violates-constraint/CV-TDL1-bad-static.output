@@ -1,5 +1,5 @@
 File: CV-TDL1-bad-static.c
-Line: 3
+Line: 5
 Error: CV-TDL1
 Description: Extern declaration of a follows one with no linkage.
 Type: Constraint violation.
