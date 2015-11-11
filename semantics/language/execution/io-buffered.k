@@ -272,7 +272,7 @@ module C-IO-BUFFERED
             _::Map (FId |-> T::Type),
             _::Map (FId |-> FOffset::Int)))
           requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
-     rule getZeroedBits(Offset, 0, _, _) => piece(0, 0)
+     rule getZeroedBits(_, 0, _, _) => piece(0, 0)
      // this happens when we are reading padding bits, which are zeroed.
      // bit fields never contain padding in between two bit fields in the same byte,
      // so doing this at the end should be safe

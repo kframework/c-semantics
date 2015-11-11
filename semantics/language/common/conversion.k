@@ -47,7 +47,7 @@ module C-CONVERSION
 
      // unsigned arithmetic isn't supposed to overflow
      rule arithInterpret(T:UnsignedIntegerType, N:Int) => tv(N modInt (max(T) +Int 1), T)
-          requires (N >Int max(T)) orBool (N <Int min(T)) andBool notBool hasLint
+          requires ((N >Int max(T)) orBool (N <Int min(T))) andBool notBool hasLint
      rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
