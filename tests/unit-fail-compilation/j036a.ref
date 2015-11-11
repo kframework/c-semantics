@@ -1,7 +1,7 @@
 File: j036a.c
 Line: 3
 Error: UB-CEMX3
-Description: Signed overflow.
+Description: Signed integer overflow.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:5, J.2:1 item 36
 Translation failed. Run kcc -d j036a.c to see commands run.
