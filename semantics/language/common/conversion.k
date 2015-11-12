@@ -26,7 +26,6 @@ module C-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
 
      rule arithInterpret(T:IntegerType, N:Int) => tv(N, T)
@@ -34,12 +33,21 @@ module C-CONVERSION
                andBool (max(T) >=Int N)
      rule arithInterpret(T:Type, unknown) => tv(unknown, T)
      rule arithInterpret(T:Type, trap) => trap(T)
-     // fixme
      rule arithInterpret(T:FloatType, F:Float) => tv(F, T)
-     // signed arithmetic isn't supposed to overflow
+          requires fmin(T) <=Float F andBool fmax(T) >=Float F
+     rule arithInterpret(T:FloatType, F:Float) => arithInterpretHold(T, F)
+          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
+
+     rule (.K => UNDEF("CCV12", "floating-point overflow.", "6.5:5, J.2:1 item 36"))
+          ~> arithInterpretHold(T:FloatType, F:Float)
+          requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
+     rule _:ErrorExit ~> arithInterpretHold(T:FloatType, F:Float) => tv(F, T)
+          requires isErrorRecovery
+
+     // unsigned arithmetic isn't supposed to overflow
      rule arithInterpret(T:UnsignedIntegerType, N:Int) => tv(N modInt (max(T) +Int 1), T)
-          requires (N >Int max(T)) orBool (N <Int min(T))
-     rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I:Int)
+          requires ((N >Int max(T)) orBool (N <Int min(T))) andBool notBool hasLint
+     rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
      rule (.K => UNDEF("CCV1", "signed overflow.", "6.5:5, J.2:1 item 36"))
@@ -89,65 +97,13 @@ module C-CONVERSION
      be represented in the new type until the value is in the range of the new
      type.
      }*/
-     rule cast(T':BitfieldType, tv(I:Int, T:IntegerType))
+     rule cast(T':UnsignedIntegerType, tv(I:Int, T:IntegerType))
           => cast(T', tv(I +Int max(T') +Int 1, T))
-          requires (I <Int min(T'))
-               andBool isUnsignedIntegerType(innerType(T'))
+          requires (I <Int min(T')) andBool notBool hasLint
 
-     rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:IntegerType))
-          => cast(t(Mods, unsigned-char),
-               tv(I +Int max(t(Mods, unsigned-char)) +Int 1, T))
-          requires (I <Int min(t(Mods, unsigned-char)))
-
-     rule cast(t(Mods:Set, unsigned-short-int), tv(I:Int, T:IntegerType))
-          => cast(t(Mods, unsigned-short-int),
-               tv(I +Int max(t(Mods, unsigned-short-int)) +Int 1, T))
-          requires (I <Int min(t(Mods, unsigned-short-int)))
-
-     rule cast(t(Mods:Set, unsigned-int), tv(I:Int, T:IntegerType))
-          => cast(t(Mods, unsigned-int),
-               tv(I +Int max(t(Mods, unsigned-int)) +Int 1, T))
-          requires (I <Int min(t(Mods, unsigned-int)))
-
-     rule cast(t(Mods:Set, unsigned-long-int), tv(I:Int, T:IntegerType))
-          => cast(t(Mods, unsigned-long-int),
-               tv(I +Int max(t(Mods, unsigned-long-int)) +Int 1, T))
-          requires (I <Int min(t(Mods, unsigned-long-int)))
-
-     rule cast(t(Mods:Set, unsigned-long-long-int), tv(I:Int, T:IntegerType))
-          => cast(t(Mods, unsigned-long-long-int),
-               tv(I +Int max(t(Mods, unsigned-long-long-int)) +Int 1, T))
-          requires (I <Int min(t(Mods, unsigned-long-long-int)))
-
-     rule cast(T':BitfieldType, tv(I:Int, T:IntegerType))
+     rule cast(T':UnsignedIntegerType, tv(I:Int, T:IntegerType))
           => tv(I %Int (max(T') +Int 1), cast(T', T))
-          requires (I >Int max(T'))
-               andBool isUnsignedIntegerType(innerType(T'))
-
-     rule cast(t(Mods:Set, unsigned-char), tv(I:Int, T:IntegerType))
-          => tv(I %Int (max(t(Mods, unsigned-char)) +Int 1),
-               cast(t(Mods, unsigned-char), T))
-          requires (I >Int max(t(Mods, unsigned-char)))
-
-     rule cast(t(Mods:Set, unsigned-short-int), tv(I:Int, T:IntegerType))
-          => tv(I %Int (max(t(Mods, unsigned-short-int)) +Int 1),
-               cast(t(Mods, unsigned-short-int), T))
-          requires (I >Int max(t(Mods, unsigned-short-int)))
-
-     rule cast(t(Mods:Set, unsigned-int), tv(I:Int, T:IntegerType))
-          => tv(I %Int (max(t(Mods, unsigned-int)) +Int 1),
-               cast(t(Mods, unsigned-int), T))
-          requires (I >Int max(t(Mods, unsigned-int)))
-
-     rule cast(t(Mods:Set, unsigned-long-int), tv(I:Int, T:IntegerType))
-          => tv(I %Int (max(t(Mods, unsigned-long-int)) +Int 1),
-               cast(t(Mods, unsigned-long-int), T))
-          requires (I >Int max(t(Mods, unsigned-long-int)))
-
-     rule cast(t(Mods:Set, unsigned-long-long-int), tv(I:Int, T:IntegerType))
-          => tv(I %Int (max(t(Mods, unsigned-long-long-int)) +Int 1),
-               cast(t(Mods, unsigned-long-long-int), T))
-          requires (I >Int max(t(Mods, unsigned-long-long-int)))
+          requires (I >Int max(T')) andBool notBool hasLint
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{3}}}{
      Otherwise, the new type is signed and the value cannot be represented in

@@ -276,12 +276,12 @@ module C-COMMON-EXPR-ADDITIVE
           requires isPromoted(T)
           [structural]
 
-     rule (.K => UNDEF("CEA6", "Unspecified value in signed addition, possible overflow.",
+     rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
                "6.5:5, J.2:1 item 36"))
           ~> tv(_, T:SignedIntegerType) + tv(unknown, T)
           requires isPromoted(T)
           [structural]
-     rule (.K => UNDEF("CEA6", "Unspecified value in signed addition, possible overflow.",
+     rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
                "6.5:5, J.2:1 item 36"))
           ~> tv(unknown, T:SignedIntegerType) + tv(_, T)
           requires isPromoted(T)

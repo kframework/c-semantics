@@ -1,0 +1,7 @@
+Error: UB-CCV12
+Description: floating-point overflow.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
+  at main(UB-CCV12-bad.c:4)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

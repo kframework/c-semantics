@@ -12,7 +12,6 @@ module C-TRANSLATION-ERROR
      imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
-     imports DEBUG-SYNTAX
 
      rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")

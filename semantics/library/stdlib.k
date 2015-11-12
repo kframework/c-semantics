@@ -98,11 +98,11 @@ module LIBC-STDLIB
      rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed.",
                            "7.22.3.5:3, J.2:1 item 179"))
               ~> prepareBuiltin(Identifier("realloc"),
-                    hrItem(tv(loc(Base:SymBase, 0), _)) hs::
+                    hrItem(tv(loc(Base:SymBase, I:Int), _)) hs::
                     hrItem(tv(_, _)))
           ...</k>
           <malloced> Malloced:Map </malloced>
-          requires notBool Base in_keys(Malloced)
+          requires notBool Base in_keys(Malloced) orBool I =/=Int 000
 
      rule _:ErrorExit ~> prepareBuiltin(Identifier("realloc"),
                             hrItem(tv(loc(Base:SymBase, 0), _)) hs::
@@ -141,7 +141,20 @@ module LIBC-STDLIB
           ...</k>
           <malloced>... Base |-> Len:Int => .Map ...</malloced>
           [structural]
+     rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed.",
+                           "7.22.3.3:2, J.2:1 item 179"))
+              ~> prepareBuiltin(Identifier("free"),
+                    hrItem(tv(loc(Base:SymBase, I:Int), t(_, pointerType(_)))))
+          ...</k>
+          <malloced> Malloced:Map </malloced>
+          requires notBool Base in_keys(Malloced) orBool I =/=Int 0
 
+     rule _:ErrorExit ~> prepareBuiltin(Identifier("free"), _) => voidVal
+          requires isErrorRecovery
+     rule prepareBuiltin(Identifier("free"),
+               hrItem(tv(NullPointer, t(_, pointerType(_)))))
+          => voidVal
+          requires notBool hasLint
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:

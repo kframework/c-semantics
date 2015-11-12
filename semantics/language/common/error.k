@@ -15,7 +15,7 @@ module C-ERROR-SYNTAX
      syntax K ::= assert(Bool, Error)
 
      syntax KItem ::= EXIT(String)
-     syntax ErrorExit
+     syntax ErrorExit ::= "HALT"
 
      syntax KItem ::= openWriteThenClose(String, String)
      syntax Bool ::= "isCSV" [function]
@@ -35,8 +35,6 @@ module C-ERROR
      imports C-SETTINGS-SYNTAX
      imports K-REFLECTION
      imports C-CONFIGURATION
-
-     rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
      rule _:ErrorExit ~> _:Error => .K
           requires isErrorRecovery

@@ -305,6 +305,7 @@ module C-SYMLOC
           requires notBool isNativeLoc(loc(Base, Offset, Provs))
      rule getAlign(NullPointer) => cfg:alignofMalloc
      rule getAlign(loc(0 @ nativeAddress, Offset:Int, _)) => getNativeAlign(Offset)
+     rule getAlign(loc(0 @ nativeAddress, Offset:Int)) => getNativeAlign(Offset)
      rule getAlign(_) => 1 [owise]
 
      syntax Int ::= "getAlign'" "(" K "," Set ")" [function]

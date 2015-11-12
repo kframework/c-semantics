@@ -65,7 +65,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           requires isIntegerType(type(L)) andBool isPromoted(type(L))
                andBool type(L) ==Type T'
           [structural]
-     rule (.K => UNDEF("CEMX3", "Signed overflow.", "6.5:5, J.2:1 item 36") ) ~>
+     rule (.K => UNDEF("CEMX3", "Signed integer overflow.", "6.5:5, J.2:1 item 36") ) ~>
           tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
           requires I2 =/=Int 0 
                andBool notBool (min(T) <=Int I1 /Int I2
