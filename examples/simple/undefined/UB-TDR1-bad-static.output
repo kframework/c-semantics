@@ -1,5 +1,5 @@
 File: UB-TDR1-bad-static.c
-Line: 5
+Line: 7
 Error: UB-TDR1
 Description: declaration for inline function not defined in the same translation unit: f
 Type: Undefined behavior.

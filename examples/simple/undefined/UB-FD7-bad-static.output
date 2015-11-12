@@ -1,5 +1,5 @@
 File: UB-FD7-bad-static.c
-Line: 2
+Line: 4
 Error: UB-FD7
 Description: if main has arguments, the type of the second argument must be equivalent to char**.
 Type: Undefined behavior.

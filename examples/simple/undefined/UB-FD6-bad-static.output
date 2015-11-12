@@ -1,5 +1,5 @@
 File: UB-FD6-bad-static.c
-Line: 2
+Line: 4
 Error: UB-FD6
 Description: if main has arguments, the type of the first argument must be equivalent to int.
 Type: Undefined behavior.

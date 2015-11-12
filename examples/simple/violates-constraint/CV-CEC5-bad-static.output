@@ -1,5 +1,5 @@
 File: CV-CEC5-bad-static.c
-Line: 3
+Line: 5
 Error: CV-CEC5
 Description: If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
 Type: Constraint violation.

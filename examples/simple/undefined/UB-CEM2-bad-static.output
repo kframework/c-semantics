@@ -1,5 +1,5 @@
 File: UB-CEM2-bad-static.c
-Line: 6
+Line: 8
 Error: UB-CEM2
 Description: attempting to access a member in an atomic union.
 Type: Undefined behavior.

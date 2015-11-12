@@ -2,6 +2,6 @@ Error: UB-EEA1
 Description: assignment from non-exactly-overlapping overlapping read.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.16.1:3, J.2:1 item 54
-  at main(UB-EEA1-bad.c:3)
+  at main(UB-EEA1-bad.c:5)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

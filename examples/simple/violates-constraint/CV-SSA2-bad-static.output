@@ -1,5 +1,5 @@
 File: CV-SSA2-bad-static.c
-Line: 1
+Line: 3
 Error: CV-SSA2
 Description: Static assertion failed: fifty minus fifty must be 0
 Type: Constraint violation.

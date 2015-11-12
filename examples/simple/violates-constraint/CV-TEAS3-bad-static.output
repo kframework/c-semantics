@@ -1,5 +1,5 @@
 File: CV-TEAS3-bad-static.c
-Line: 2
+Line: 4
 Error: CV-TEAS3
 Description: lvalue required as left operand in assignment.
 Type: Constraint violation.

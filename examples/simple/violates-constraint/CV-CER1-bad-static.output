@@ -1,5 +1,5 @@
 File: CV-CER1-bad-static.c
-Line: 14
+Line: 16
 Error: CV-CER1
 Description: Unary '&' operator applied to non-lvalue.
 Type: Constraint violation.

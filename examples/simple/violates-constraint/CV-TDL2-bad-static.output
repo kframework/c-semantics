@@ -1,5 +1,5 @@
 File: CV-TDL2-bad-static.c
-Line: 2
+Line: 4
 Error: CV-TDL2
 Description: Extern declaration of a appears at block scope with an initializer.
 Type: Constraint violation.

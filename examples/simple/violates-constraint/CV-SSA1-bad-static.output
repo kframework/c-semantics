@@ -1,5 +1,5 @@
 File: CV-SSA1-bad-static.c
-Line: 5
+Line: 7
 Error: CV-SSA1
 Description: Non-constant expression in static assertion.
 Type: Constraint violation.

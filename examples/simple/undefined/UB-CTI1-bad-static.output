@@ -1,5 +1,5 @@
 File: UB-CTI1-bad-static.c
-Line: 1
+Line: 3
 Error: UB-CTI1
 Description: Arrays must have integer length.
 Type: Undefined behavior.

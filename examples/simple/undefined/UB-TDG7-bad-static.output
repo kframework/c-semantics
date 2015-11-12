@@ -1,5 +1,5 @@
 File: UB-TDG7-bad-static.c
-Line: 1
+Line: 3
 Error: UB-TDG7
 Description: void parameter appears with qualifiers.
 Type: Undefined behavior.

@@ -1,5 +1,5 @@
 File: CV-TDG2-bad-static.c
-Line: 1
+Line: 3
 Error: CV-TDG2
 Description: declaration for x appears with multiple storage class specifiers.
 Type: Constraint violation.

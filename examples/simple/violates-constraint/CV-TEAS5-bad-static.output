@@ -1,5 +1,5 @@
 File: CV-TEAS5-bad-static.c
-Line: 5
+Line: 7
 Error: CV-TEAS5
 Description: Non-constant static initializer.
 Type: Constraint violation.

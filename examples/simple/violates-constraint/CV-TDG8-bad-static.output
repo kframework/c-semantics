@@ -1,5 +1,5 @@
 File: CV-TDG8-bad-static.c
-Line: 4
+Line: 6
 Error: CV-TDG8
 Description: declaration has initializer but incomplete type.
 Type: Constraint violation.

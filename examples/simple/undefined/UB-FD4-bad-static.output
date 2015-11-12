@@ -1,5 +1,5 @@
 File: UB-FD4-bad-static.c
-Line: 1
+Line: 3
 Error: UB-FD4
 Description: definition of main requires a prototype.
 Type: Undefined behavior.

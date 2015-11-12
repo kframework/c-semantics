@@ -2,6 +2,6 @@ Error: UB-CCV6
 Description: casting void type to non-void type.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
-  at main(UB-CCV6-bad.c:3)
+  at main(UB-CCV6-bad.c:5)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

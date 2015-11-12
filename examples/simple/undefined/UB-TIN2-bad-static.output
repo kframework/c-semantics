@@ -1,5 +1,5 @@
 File: UB-TIN2-bad-static-link3.c
-Line: 1
+Line: 3
 Error: UB-TIN2
 Description: Multiple external definitions for a.
 Type: Undefined behavior.

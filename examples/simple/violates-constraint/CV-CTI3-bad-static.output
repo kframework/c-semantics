@@ -1,5 +1,5 @@
 File: CV-CTI3-bad-static.c
-Line: 1
+Line: 3
 Error: CV-CTI3
 Description: The width of a bit field shall be an integer constant expression.
 Type: Constraint violation.
