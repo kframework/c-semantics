@@ -58,7 +58,7 @@ module C-COMPOUND-LITERAL
           ...</k>
           <env> Env:Map </env>
           requires notBool (X in_keys(Env))
-     rule <k> (elaborateInitDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
+     rule <k> (elaborateDone(K:K) => .K) ~> #CompoundLiteral(_, _, _) ...</k>
           <elab>... .K => K </elab>
      rule <k> #CompoundLiteral(X:CId, _, _) => X ...</k>
           <env>... X |-> _ ...</env>
