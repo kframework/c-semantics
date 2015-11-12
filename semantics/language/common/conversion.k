@@ -26,7 +26,6 @@ module C-CONVERSION
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     imports DEBUG-SYNTAX
      imports COMPAT-SYNTAX
 
      rule arithInterpret(T:IntegerType, N:Int) => tv(N, T)
