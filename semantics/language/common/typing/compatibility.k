@@ -19,7 +19,6 @@ module C-TYPING-COMPATIBILITY
      imports C-BINDING-SYNTAX
 
      imports COMPAT-SYNTAX
-     imports DEBUG-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional

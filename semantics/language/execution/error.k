@@ -22,8 +22,6 @@ module C-EXECUTION-ERROR
 
      imports LIBC-STDIO-SYNTAX
 
-     imports DEBUG-SYNTAX
-
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
      syntax KItem ::= error(String, String)
