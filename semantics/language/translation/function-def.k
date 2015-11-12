@@ -182,8 +182,7 @@ module C-FUNCTION-DEF
      rule staticEval(X:CId, Params:List, Blk:K)
           => scope(blockScope(X, 0),
                generateRuleAnnotation(X)
-               ~> elaborate(dummyBind(Params)
-                    ~> Label(funLabel(X), safeBody(X, Blk)))
+               ~> elaborate(dummyBind(Params) ~> Label(funLabel(X), safeBody(X, Blk)))
                ~> calculateGotoMap(X))
 
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
