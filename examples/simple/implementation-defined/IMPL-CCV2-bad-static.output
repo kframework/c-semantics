@@ -1,5 +1,5 @@
 File: IMPL-CCV2-bad-static.c
-Line: 4
+Line: 6
 Error: IMPL-CCV2
 Description: conversion to signed integer outside the range that can be represented.
 Type: Implementiation defined behavior.

@@ -1,5 +1,5 @@
 File: UB-CDI3-bad-static.c
-Line: 2
+Line: 4
 Error: UB-CDI3
 Description: Invalid initializer for aggregate type
 Type: Undefined behavior.

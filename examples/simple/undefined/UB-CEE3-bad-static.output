@@ -1,5 +1,5 @@
 File: UB-CEE3-bad-static.c
-Line: 7
+Line: 9
 Error: UB-CEE3
 Description: Found pointer that refers outside the bounds of an object + 1.
 Type: Undefined behavior.

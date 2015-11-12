@@ -2,7 +2,7 @@ Error: UB-CB2
 Description: function call has fewer arguments than parameters in function definition.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
-  at foo(UB-CB2-bad.c:4)
-  at main(UB-CB2-bad.c:4)
+  at foo(UB-CB2-bad.c:6)
+  at main(UB-CB2-bad.c:6)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

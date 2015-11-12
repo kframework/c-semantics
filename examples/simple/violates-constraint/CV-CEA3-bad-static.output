@@ -1,5 +1,5 @@
 File: CV-CEA3-bad-static.c
-Line: 4
+Line: 6
 Error: CV-CEA3
 Description: Invalid operand types to addition.
 Type: Constraint violation.

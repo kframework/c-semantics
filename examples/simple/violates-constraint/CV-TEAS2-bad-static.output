@@ -1,5 +1,5 @@
 File: CV-TEAS2-bad-static.c
-Line: 6
+Line: 8
 Error: CV-TEAS2
 Description: incompatible pointer types in assignment or function call arguments.
 Type: Constraint violation.

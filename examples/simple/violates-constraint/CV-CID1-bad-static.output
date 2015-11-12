@@ -1,5 +1,5 @@
 File: CV-CID1-bad-static.c
-Line: 6
+Line: 8
 Error: CV-CID1
 Description: Trying to look up identifier x, but no such identifier is in scope.
 Type: Constraint violation.

@@ -1,5 +1,5 @@
 File: UB-TDR2-bad-static.c
-Line: 3
+Line: 5
 Error: UB-TDR2
 Description: no definition for symbol with external linkage: main
 Type: Undefined behavior.

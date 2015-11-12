@@ -1,5 +1,5 @@
 File: UB-CEM1-bad-static.c
-Line: 6
+Line: 8
 Error: UB-CEM1
 Description: attempting to access a member in an atomic struct.
 Type: Undefined behavior.

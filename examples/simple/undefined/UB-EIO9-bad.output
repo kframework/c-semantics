@@ -2,6 +2,6 @@ Error: UB-EIO9
 Description: trying to access an object declared with volatile type through a non-volatile lvalue.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3:6, J.2:1 item 65
-  at main(UB-EIO9-bad.c:7)
+  at main(UB-EIO9-bad.c:9)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

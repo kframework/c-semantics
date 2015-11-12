@@ -1,5 +1,5 @@
 File: CV-CEB5-bad-static.c
-Line: 3
+Line: 5
 Error: CV-CEB5
 Description: both bitwise shift operands must have integer type.
 Type: Constraint violation.

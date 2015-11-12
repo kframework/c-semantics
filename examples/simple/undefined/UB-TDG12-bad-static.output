@@ -1,5 +1,5 @@
 File: UB-TDG12-bad-static.c
-Line: 1
+Line: 3
 Error: UB-TDG12
 Description: declaration for an object is a tentative definition with internal linkage and has an incomplete type.
 Type: Undefined behavior.

@@ -2,6 +2,6 @@ Error: UB-CERL4
 Description: Cannot compare pointers with different base objects using '>='.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.8:5, J.2:1 item 53
-  at main(UB-CERL4-bad.c:5)
+  at main(UB-CERL4-bad.c:7)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

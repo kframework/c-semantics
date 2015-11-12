@@ -1,5 +1,5 @@
 File: UB-FD8-bad-static.c
-Line: 2
+Line: 4
 Error: UB-FD8
 Description: main must have zero or two parameters.
 Type: Undefined behavior.

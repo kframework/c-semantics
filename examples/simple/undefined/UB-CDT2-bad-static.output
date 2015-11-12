@@ -1,5 +1,5 @@
 File: UB-CDT2-bad-static.c
-Line: 1
+Line: 3
 Error: UB-CDT2
 Description: unions must contain a named member.
 Type: Undefined behavior.

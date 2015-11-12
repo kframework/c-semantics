@@ -1,5 +1,5 @@
 File: CV-CTM2-bad-static.c
-Line: 2
+Line: 4
 Error: CV-CTM2
 Description: Variable-length array with file scope.
 Type: Constraint violation.
