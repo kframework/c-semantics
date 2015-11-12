@@ -136,6 +136,7 @@ my $spec = q(#
 { push(@main::cppArgs, '-MF', $file); }
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
+      -flint			Generate lint errors for potentially undesirable behaviors.*
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -160,7 +161,8 @@ my $spec = q(#
            exit 1;
       }
 }
- 
+      * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
+        to run.
                   
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
@@ -234,8 +236,8 @@ sub main {
           classify(@{$args->{'<files>'}}, catfile($profileDirectory, 'lib', 'libc.so'));
      }
 
-     # Reduce our objFiles down to at most two.
-     mergeObjs(4, 1);
+     # Reduce our source files down to at most one
+     mergeObjs(0, 1);
 
      my $oval = $main::oflag || 'a.out';
 
@@ -246,7 +248,7 @@ sub main {
      # because we need to use different parsers if one of the config vars
      # should be empty.
 
-     my $retval = execute($krun, getKRunCommand($programConfFile, $objFiles[0], $objFiles[1], $objFiles[2], $objFiles[3], $srcFiles[0], 1));
+     my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, $srcFiles[0], 1));
      checkError($retval);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
@@ -279,22 +281,24 @@ sub main {
 
      } else {
           # add space to end of args with () so that batch scripts work on windows
-          my $options;
+          my @options;
           if ($args->{'-fissue-report='}) {
                my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
                if ($cygwin) {
                     $file = backslash($file);
                }
-               $options = "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ";
-          } else {
-               $options = '-cOPTIONS=`.Set`(.KList) ';
+               push(@options, "`CSV`(#token($file, $quoteString))");
           }
+          if ($args->{'-flint'}) {
+               push(@options, "`LINT`(.KList)");
+          }
+          my $opts = makeSet(@options);
 
           my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--exit-code', "<result-value> _:Int </result-value>",
-                  $options, "-pOPTIONS=$printf",
+                  "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
                   );
@@ -323,7 +327,7 @@ sub main {
 }
 
 sub mergeObjs {
-     my ($numObj, $numSrc) = (@_);
+     my ($mergeObjs, $numSrc) = (@_);
 
      my @pids = ();
 
@@ -333,48 +337,12 @@ sub mergeObjs {
           push(@objFiles, $oval);
      }
 
-     while (scalar @objFiles + scalar @pids > $numObj) {
-          my $obj1 = shift @objFiles;
-          my $obj2 = shift @objFiles;
-          my $obj3 = shift @objFiles;
-          my $obj4 = shift @objFiles;
-
-          my $accum = tempFile();
-          my $pid = fork();
-          if (!defined $pid) {
-            die "Error running process";
-          }
-          if (!$pid) {
-            my @cmd = getKRunCommand($accum, $obj1, $obj2, $obj3, $obj4, undef, 0);
-            if ($args->{'-d'}) {
-              print("$krun '" . join("' '", @cmd) . "'\n");
-            }
-            exec($krun, @cmd);
-          }
-          my %data = (
-            'pid' => $pid,
-            'out' => $accum,
-          );
-          push(@pids, \%data);
-
-          if (scalar @pids >= 4) {
-            # finished a round, wait for results
-            do {
-              my %data = %{shift @pids};
-              push(@objFiles, $data{'out'});
-              waitpid $data{'pid'}, 0;
-
-              checkError($? >> 8);
-            } while(scalar @pids > 0 && scalar @objFiles < 4);
-          }
-     }
-
-     while (scalar @pids > 0) {
-       my %data = %{shift @pids};
-       push(@objFiles, $data{'out'});
-       waitpid $data{'pid'}, 0;
-
-       checkError($? >> 8);
+     if ($mergeObjs) {
+         my $accum = tempFile();
+         my @cmd = getKRunCommand($accum, \@objFiles, undef, 0);
+         my $retval = execute($krun, @cmd);
+         checkError($retval);
+         @objFiles = ($accum);
      }
 }
 
@@ -420,7 +388,8 @@ sub extractStatic {
 
 sub compile {
      my ($oval, $inputFile) = (@_);
-     my $retval = execute($krun, getKRunCommand($oval, undef, undef, undef, undef, $inputFile, 0));
+     my @arr = ();
+     my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0));
      checkError($retval);
 }
 
@@ -438,7 +407,8 @@ sub pushObj {
    
 
 sub getKRunCommand {
-     my ($output, $obj1, $obj2, $obj3, $obj4, $src, $link) = (@_);
+     my ($output, $objsRef, $src, $link) = (@_);
+     my @objs = @$objsRef;
 
      my @krun_args = (
           '--output', 'kast', 
@@ -452,31 +422,44 @@ sub getKRunCommand {
      if ($args->{'-d'}) {
           push(@krun_args, '--debug');
      }
-
-     # add space to end so that batch scripts work on windows
-     if ($link && $args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@krun_args, "-cOPTIONS=`SetItem`(`CSV`(#token($file, $quoteString))) ");
-     } elsif ($link) {
-          push(@krun_args, '-cOPTIONS=`.Set`(.KList) ');
-     } elsif ($args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@krun_args, "-cOPTIONS=`_Set_`(`SetItem`(`CSV`(#token($file, $quoteString))),`SetItem`(`NOLINK`(.KList))) ");
-     } else {
-          push(@krun_args, '-cOPTIONS=`SetItem`(`NOLINK`(.KList)) ');
+     my @options;
+     if (!$link) {
+          push(@options, "`NOLINK`(.KList)");
      }
+     if ($args->{'-fissue-report='}) {
+          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@options, "`CSV`(#token($file, $quoteString))");
+     }
+     if ($args->{'-flint'}) {
+          push(@options, "`LINT`(.KList)");
+     }
+
+     my $opts = makeSet(@options);
+     push(@krun_args, "-cOPTIONS=$opts ");
      push(@krun_args, "-pOPTIONS=$printf");
 
-     pushObj(\@krun_args, $obj1, '1');
-     pushObj(\@krun_args, $obj2, '2');
-     pushObj(\@krun_args, $obj3, '3');
-     pushObj(\@krun_args, $obj4, '4');
+     if (scalar @objs) {
+          my $allObjsFile = tempFile();
+          my @catArgs = ();
+          my @objTexts = ();
+          for (my $i = 0; $i < scalar @objFiles; $i++) {
+               my $thisObj = `cat $objFiles[$i]`;
+               push(@objTexts, "`unwrapObj`($thisObj)");
+          }
+          my $objText = join('~>', @objTexts);
+          open(my $file, '>', "$allObjsFile");
+          print $file $objText;
+          close $file;
+
+          push(@krun_args, "-pOBJS=cat");
+          push(@krun_args, "-cOBJS=$allObjsFile");
+     } else {
+          push(@krun_args, "-pOBJS=$printf");
+          push(@krun_args, "-cOBJS=.K");
+     }
      if (defined $src) {
           my $kast = parse($src);
           push(@krun_args, '--parser', 'cat');
@@ -559,6 +542,14 @@ sub checkError {
     }
   }
 }
+
+sub makeSet {
+  my $set = '`.Set`(.KList)';
+  foreach my $el (@_) {
+    $set = "`_Set_`(`SetItem`($el), $set)";
+  }
+  return $set;
+} 
 
 sub interruptHandler {
 # Call single cleanup point.

@@ -238,15 +238,19 @@ module C-COMMON-EXPR-RELATIONAL
      // if one of the pointers is null, it's straightforward
      rule tv(NullPointer, T:PointerType) == tv(N:SymLoc, T':PointerType)
           => makeTruth(NullPointer ==K N, T, T')
+          requires notBool hasLint
           [structural]
      rule tv(NullPointer, T:PointerType) != tv(N:SymLoc, T':PointerType)
           => makeTruth(NullPointer =/=K N, T, T')
+          requires notBool hasLint
           [structural]
      rule tv(N:SymLoc, T:PointerType) == tv(NullPointer, T':PointerType)
           => makeTruth(NullPointer ==K N, T, T')
+          requires notBool hasLint
           [structural]
      rule tv(N:SymLoc, T:PointerType) != tv(NullPointer, T':PointerType)
           => makeTruth(NullPointer =/=K N, T, T')
+          requires notBool hasLint
           [structural]
 
      // otherwise, there are a number of cases.

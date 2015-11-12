@@ -1,6 +1,6 @@
 module C-TRANSLATION-INIT-SYNTAX
      imports BASIC-K
-     syntax KItem ::= load(K, K, K, K)
+     syntax KItem ::= load(K)
      syntax KItem ::= "link" | "cleanup"
 
      syntax TransOpts ::= "DEBUG" | "NOLINK"
@@ -42,27 +42,17 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (NOLINK in Opts)
 
-     rule load(Obj1:K, Obj2:K, Obj3:K, Obj4:K)
-               => load(mergeObj(Obj1, Obj2), Obj3, Obj4)
+     rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
+               => load(Objs ~> mergeObj(Obj1, Obj2))
                ~> checkMerge(Obj1, Obj2)
 
-     syntax KItem ::= load(K, K, K)
-     syntax KItem ::= load(K, K)
-     syntax KItem ::= load(K)
-
-     rule load(Merged:K, Obj3:K, Obj4:K)
-               => load(mergeObj(Merged, Obj3), Obj4)
-               ~> checkMerge(Merged, Obj3)
-
-     rule load(Merged:K, Obj4:K)
-               => load(mergeObj(Merged, Obj4))
-               ~> checkMerge(Merged, Obj4)
-
-     rule <k> load(Merged:K)
+     rule <k> load(Merged:KItem)
                => loadObj(mergeObj(Merged, ThisObj))
                ~> checkMerge(Merged, ThisObj)
           ...</k>
           ThisObj:GlobalCell
+
+     rule load(.K) => .K
 
      rule <k> link => reportSuccess ...</k>
           <options> SetItem(NOLINK) ...</options>
@@ -210,18 +200,19 @@ module C-TRANSLATION-INIT
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
-                  | mergeDecl(K, K, K, Map) [function]
+                  | #mergeDecls(Map, Map) [function]
 
-     rule mergeDecls(.Map, M:Map) => M
-     rule mergeDecls((Key:K |-> Val:K) M:Map, M':Map)
-          => mergeDecls(M, mergeDecl(Key, Val, .K, M'))
-
-     rule mergeDecl(Key:K, Val:K, .K, M:Map) => (Key |-> Val) M
-          requires notBool (Key in_keys(M))
-     rule mergeDecl(Key:K, Val:K, .K, (Key |-> Val':K) M:Map)
-          => mergeDecl(Key, Val, Val', M)
-     rule mergeDecl(Key:K, set(S:Set), set(S':Set), M:Map)
-          => (Key |-> set(S S')) M
+     syntax Set ::= getSet(K) [function]
+     rule getSet(set(S:Set)) => S
+     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1, M2)
+          requires size(M2) <Int size(M1)
+     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M2, M1) [owise]
+     rule #mergeDecls(M:Map, .Map) => M
+     rule #mergeDecls(M':Map, (Key:K |-> set(S:Set)) M:Map)
+          => mergeDecls(M'[Key <- set(S getSet(M'[Key]<:K))], M)
+          requires Key in_keys(M')
+     rule #mergeDecls(M':Map, (Key:K |-> Val:K) M:Map)
+          => mergeDecls((Key |-> Val) M', M) [owise]
 
      rule mergeObj(B:K, .K) => B
      rule mergeObj(.K, B:K) => B
