@@ -13,6 +13,7 @@ module C-DECL-TAGGED
 
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
@@ -77,9 +78,9 @@ module C-DECL-TAGGED
      rule structPadding(Offset:Int, t(Mods:Set, bitfieldType(T:Type, N:Int))) => 0
           requires (Offset +Int bitSizeofType(t(Mods, bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte <Int byteAlignofType(T)
                    andBool N >Int 0
-          // if we can add the new bits without the new field crossing an alignment boundary, use no padding
+     // if we can add the new bits without the new field crossing an alignment boundary, use no padding
      rule structPadding(Offset:Int, T:Type) => structPadding(Offset, byteAlignofType(T)) [owise]
-          // otherwise, or if not a bit field, use the alignment of the field as padding
+     // otherwise, or if not a bit field, use the alignment of the field as padding
      rule structPadding(Offset:Int, Alignment:Int)
           => (0 -Int Offset) modInt (Alignment *Int cfg:bitsPerByte)
 
@@ -128,7 +129,7 @@ module C-DECL-TAGGED
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
           <curr-tu> Tu:String </curr-tu>
-          <block-history> ListItem(BlockNum:Int) ...</block-history>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           requires notBool (X in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15", "redefinition of a struct, union, or enum: "

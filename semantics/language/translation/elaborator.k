@@ -9,7 +9,6 @@ module C-ELABORATOR-SYNTAX
 
      // Elaboration for initializers -- copies up the environment.
      syntax KItem ::= elaborateInit(K)
-     syntax KItem ::= elaborateInitDone(K)
 
      syntax KItem ::= runInit(K)
 endmodule
@@ -19,7 +18,7 @@ module C-ELABORATOR
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= elabFrame(K, K, K)
+     syntax KItem ::= elabFrame(K, K)
                     | elabInitFrame(K, K, K)
 
      rule (.K => K) ~> compoundExp(K:K)
@@ -28,15 +27,13 @@ module C-ELABORATOR
 
      rule <k> elaborate(K:K) ~> Cont:K => K </k>
           <elab> OldElab:K => .K </elab>
-          L:LocalCell
           <elab-stack>
-               .List => ListItem(elabFrame(Cont, OldElab, L))
+               .List => ListItem(elabFrame(Cont, OldElab))
           ...</elab-stack>
      rule <k> .K => elaborateDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
-          (<local> _ </local> => L)
           <elab-stack>
-               ListItem(elabFrame(Cont:K, OldElab:K, L:LocalCell)) => .List
+               ListItem(elabFrame(Cont:K, OldElab:K)) => .List
           ...</elab-stack>
 
      rule <k> elaborateInit(K:K) ~> Cont:K => allowInit(K) </k>
@@ -46,15 +43,15 @@ module C-ELABORATOR
           <elab-stack>
                .List => ListItem(elabInitFrame(Cont, OldElab, I))
           ...</elab-stack>
-     rule <k> .K => elaborateInitDone(K) ~> Cont </k>
+     rule <k> .K => elaborateDone(K) ~> Cont </k>
           <elab> K:K => OldElab </elab>
-          (<init-calc> _ </init-calc> => I)
+          (_:InitCalcCell => I)
           <elab-stack>
                ListItem(elabInitFrame(Cont:K, OldElab:K, I:InitCalcCell)) => .List
           ...</elab-stack>
 
      rule (.K => elaborateInit(K)) ~> runInit(K:K)
-     rule elaborateInitDone(_) ~> runInit(_) => .K
+     rule elaborateDone(_) ~> runInit(_) => .K
 
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
      rule elaborateDone(K1:K) ~> elaborate(K2:K)
