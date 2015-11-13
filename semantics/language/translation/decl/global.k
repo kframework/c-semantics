@@ -116,8 +116,6 @@ module C-DECL-GLOBAL
           ~> declare''(T:FunctionType, X:CId, _)
           requires getQualifiers(T) =/=K .Set
           [structural]
-     rule (_:ErrorExit => .K) ~> declare''((T:FunctionType => stripQualifiers(T)), _, _)
-          requires getQualifiers(T) =/=K .Set andBool isErrorRecovery
 
      rule (.K => CV("TDG2",
                "declaration for " +String idToString(X) +String
@@ -138,8 +136,6 @@ module C-DECL-GLOBAL
                andBool validStorageClass(T)
                andBool notBool validLocalStorageClass(T)
           [structural]
-     rule (_:ErrorExit => .K) ~> declare''((T:Type => stripStorageSpecifiers(T)), _, _)
-          requires notBool validLocalStorageClass(T) andBool isErrorRecovery
 
      rule <k> (.K => CV("TDG18",
                "declaration for " +String idToString(X) +String
@@ -190,16 +186,6 @@ module C-DECL-GLOBAL
           <curr-scope> prototypeScope </curr-scope>
           requires getQualifiers(T) =/=K .Set
           [structural]
-     rule <k> _:ErrorExit ~> declare''(T:Type, X:CId, K:K)
-               => declare''(stripStorageSpecifiers(T), X, K)
-          ...</k>
-          <curr-scope> prototypeScope </curr-scope>
-          requires isErrorRecovery andBool notBool isVoidType(T)
-     rule <k> _:ErrorExit ~> declare''(T:VoidType, X:CId, K:K)
-               => declare''(stripQualifiers(stripStorageSpecifiers(T)), X, K)
-          ...</k>
-          <curr-scope> prototypeScope </curr-scope>
-          requires isErrorRecovery
 
      // Checks if the type is complete if there's an initializer.
      syntax KItem ::= checkComplete(Type, K)
@@ -451,14 +437,6 @@ module C-DECL-GLOBAL
                andBool (X in_keys(Exts))
           [structural]
 
-     // eat the declaration
-     rule <k> _:ErrorExit ~> declareExternalVariable(X:CId, T:Type, _) => .K ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <externals> Exts:Map </externals>
-          requires isStaticType(T)
-               andBool (X in_keys(Exts)) andBool isErrorRecovery
-
      // Now we just need to handle allocation, initialization, and updating the
      // declState, when necessary. The last argument can be thought of as the
      // "true" storage class specifier of the decl, counting functions as
@@ -496,9 +474,6 @@ module C-DECL-GLOBAL
                _, internal, _)
           requires notBool isCompleteType(T)
           [structural]
-     rule _:ErrorExit ~> declareExternalVariable'(true, initValue(_, T:Type, .K),
-               _, internal, _) => .K
-          requires notBool isCompleteType(T) andBool isErrorRecovery
 
      // *** Extern, already completed.  ***
 

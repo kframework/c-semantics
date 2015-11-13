@@ -113,8 +113,6 @@ module C-IO-BUFFERED
      // if there is an undefined behavior associated with the write, we just eat it
      // this is somewhat less safe than some of our other error recovery options,
      // but all error recovery is essentially unsound anyway, so it should be fine
-     rule _:ErrorExit ~> checkWrite(_, _) ~> setEffectiveType(_, _) ~> setModified(_, _) ~> writeBytes(_, _) => .K
-          requires isErrorRecovery
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type.",
                "6.7.3:6, J.2:1 item 64"))
@@ -181,12 +179,6 @@ module C-IO-BUFFERED
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
-     rule <k> _:ErrorExit ~> readBytes(Loc::SymLoc, Size::Int, T::Type)
-               => checkEffectiveType(T, getEffectiveType(Loc))
-               ~> readBytes-aux(Loc, Size, .List, T)
-          ...</k>
-          <thread-id> ThreadId::Int </thread-id>
-          requires isErrorRecovery
 
      // loc, size in bytes, aux list
      syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
@@ -449,8 +441,6 @@ module C-IO-BUFFERED
           requires (notBool #effectivelyCompat(L, Eff))
                andBool notBool isNoType(Eff)
           [structural]
-     rule _:ErrorExit ~> checkEffectiveType(_, _) => .K
-          requires isErrorRecovery
 
      // An  object shall have its stored value accessed only by an lvalue
      // expression that has one of the following types:

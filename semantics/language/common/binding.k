@@ -56,11 +56,6 @@ module C-BINDING
                ListItem(V:RValue) _)
           requires notBool #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
-     rule (_:ErrorExit => bindParam(X, T, argPromote(V))) ~> bind(
-               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
-               .List,
-               (ListItem(V:RValue) => .List) _)
-          requires isErrorRecovery
      rule (.K => UNDEF("CB2", "function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
@@ -68,16 +63,9 @@ module C-BINDING
                ListItem(T':Type) _,
                .List)
           requires notBool (isVoidType(T) andBool isVoidType(T'))
-     rule (_:ErrorExit => .K) ~> bind(
-               (ListItem(typedDeclaration(T:Type, _)) => .List) _,
-               (ListItem(T':Type) => .List) _,
-               .List)
-          requires isErrorRecovery
      rule (.K => UNDEF("CB3", "function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(.List, .List, ListItem(_) _)
-     rule (_:ErrorExit => .K) ~> bind(.List, .List, (ListItem(_) => .List) _)
-          requires isErrorRecovery
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)

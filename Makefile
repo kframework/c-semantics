@@ -1,7 +1,8 @@
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
-PROFILE = default-profile
+export PROFILE_DIR = $(shell pwd)/default-profile
+export PROFILE=$(shell basename $(PROFILE_DIR))
 TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
@@ -21,7 +22,7 @@ FILES_TO_DIST = \
         LICENSE \
         licenses
 
-.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k test-build pass fail fail-compile
+.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile
 
 default: dist
 
@@ -34,12 +35,12 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE)/include/*) $(PROFILE)/pp | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE_DIR)/pp | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
-	@cp -p $(PROFILE)/pp $(DIST_DIR)/$(PROFILE)
-	@cp -rp $(PROFILE)/include $(DIST_DIR)/$(PROFILE)
+	@cp -p $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
+	@cp -rp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
 	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
@@ -55,9 +56,9 @@ $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION): semanti
 $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION): semantics
 	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION) $(wildcard $(PROFILE)/src/*) $(DIST_DIR)/kcc
-	@echo "Translating the standard library... ($(PROFILE))"
-	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/$(PROFILE)/lib/libc.so $(wildcard $(PROFILE)/src/*.c) $(KCCFLAGS) -I $(PROFILE)/src/
+$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION) $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
+	@echo "Translating the standard library... ($(PROFILE_DIR))"
+	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/$(PROFILE)/lib/libc.so $(wildcard $(PROFILE_DIR)/src/*.c) $(KCCFLAGS) -I $(PROFILE_DIR)/src/
 	@echo "Done."
 
 $(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION) $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION)
@@ -77,23 +78,13 @@ parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
 
-translation-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k
+translation-semantics: check-vars 
 	@$(MAKE) -C $(SEMANTICS_DIR) translation
 
-execution-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-execution.k
+execution-semantics: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) execution
 
-$(SEMANTICS_DIR)/settings.k:
-	@diff $(PROFILE)/semantics/settings.k $(SEMANTICS_DIR)/settings.k > /dev/null 2>&1 || cp $(PROFILE)/semantics/settings.k $(SEMANTICS_DIR)
-
-$(SEMANTICS_DIR)/extensions-common.k:
-	@diff $(PROFILE)/semantics/extensions-common.k $(SEMANTICS_DIR)/extensions-common.k > /dev/null 2>&1 || cp $(PROFILE)/semantics/extensions-common.k $(SEMANTICS_DIR)
-$(SEMANTICS_DIR)/extensions-translation.k:
-	@diff $(PROFILE)/semantics/extensions-translation.k $(SEMANTICS_DIR)/extensions-translation.k > /dev/null 2>&1 || cp $(PROFILE)/semantics/extensions-translation.k $(SEMANTICS_DIR)
-$(SEMANTICS_DIR)/extensions-execution.k:
-	@diff $(PROFILE)/semantics/extensions-execution.k $(SEMANTICS_DIR)/extensions-execution.k > /dev/null 2>&1 || cp $(PROFILE)/semantics/extensions-execution.k $(SEMANTICS_DIR)
-
-semantics: check-vars $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k
+semantics: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) all
 
 check:	pass fail fail-compile
@@ -115,4 +106,4 @@ clean:
 	-$(MAKE) -C $(FAIL_TESTS_DIR) clean
 	-$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) clean
 	@-rm -rf $(DIST_DIR)
-	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre $(SEMANTICS_DIR)/settings.k $(SEMANTICS_DIR)/extensions-common.k $(SEMANTICS_DIR)/extensions-translation.k $(SEMANTICS_DIR)/extensions-execution.k
+	@-rm -f ./*.tmp ./*.log ./*.cil ./*-gen.maude ./*.gen.maude ./*.pre.gen ./*.prepre.gen ./a.out ./*.kdump ./*.pre.pre 

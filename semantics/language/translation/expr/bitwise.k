@@ -21,10 +21,6 @@ module C-EXPR-BITWISE
           requires isPromoted(T) andBool isPromoted(T')
                andBool L >=Int 0
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
-     rule _:ErrorExit ~> tv(L:Int, T:Type) << te(R:K, T':Type) => te(tv(L, T) << R, T)
-          requires isPromoted(T) andBool isPromoted(T')
-               andBool L <Int 0 andBool isErrorRecovery
-               andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
      rule te(L:K, T:Type) << te(R:K, T':Type) => te(L << R, T)
           requires isPromoted(T) andBool isPromoted(T')
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
