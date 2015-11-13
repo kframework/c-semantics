@@ -2,8 +2,8 @@
 
 int f(int x, int y) {
       va_list ap;
-      va_start(ap, y);
-      return 0;
+      int z = va_arg(ap, int);
+      return z;
 }
 int main(void) {
       return f(5, 6);
