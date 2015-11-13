@@ -46,6 +46,8 @@ module C-DECL-GLOBAL
           ~> declare''(T, X, K)
 
      syntax KItem ::= "declare''" "(" Type "," CId "," K ")"
+
+     // Block scope declarations.
      rule <k> declare''(T:Type, X:CId, K:K)
                => addToEnv(X, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
@@ -61,20 +63,29 @@ module C-DECL-GLOBAL
           requires validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
+
+     // Prototype scope declarations (includes both params in prototypes as
+     // well as function defs).
      rule <k> declare''(T:Type, X:CId, NoInit)
                => declareInternalVariable(X, T, NoInit)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires validPrototypeStorageClass(T)
                andBool notBool isVoidType(T)
+               andBool (X =/=K #NoName)
           [structural]
-     rule <k> declare''(T:VoidType, X:CId, NoInit)
-               => declareInternalVariable(X, T, NoInit)
-          ...</k>
+     rule <k> declare''(T:Type, #NoName, NoInit) => .K ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires validPrototypeStorageClass(T)
+               andBool notBool isVoidType(T)
+          [structural]
+     rule <k> declare''(T:VoidType, #NoName, NoInit) => .K ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires (getStorageSpecifiers(T) ==K .Set)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
+
+     // File scope declarations.
      rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareExternalVariable(X, T,
                     #if isNoInit(K)
