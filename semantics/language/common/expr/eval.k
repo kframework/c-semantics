@@ -49,8 +49,6 @@ module C-COMMON-EXPR-EVAL
      rule (.K => UNDEF("CEE3", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2"))
           ~> checkCompleteLValue(T:Type)
           requires notBool isCompleteType(T)
-     rule _:ErrorExit ~> checkCompleteLValue(_) => .K
-          requires isErrorRecovery
 
      // Lvalue conversion.
      rule reval(nclv(Loc::SymLoc, T::Type)
@@ -113,12 +111,6 @@ module C-COMMON-EXPR-EVAL
                     "6.2.4, 6.7.9, 6.8, J.2:1 item 11")
                ~> tv(trap, T))
           [structural]
-     rule _:ErrorExit ~> tv(trap, T:IntegerType) ~> reval() => tv(0, T) ~> reval()
-          requires isErrorRecovery
-     rule _:ErrorExit ~> tv(trap, T:FloatType) ~> reval() => tv(0.0, T) ~> reval()
-          requires isErrorRecovery
-     rule _:ErrorExit ~> tv(trap, T:PointerType) ~> reval() => tv(NullPointer, T) ~> reval()
-          requires isErrorRecovery
 
      syntax KItem ::= checkRegister(SymLoc)
      rule <k> checkRegister(_) => .K ...</k>
@@ -136,8 +128,6 @@ module C-COMMON-EXPR-EVAL
           <initializing> false </initializing>
           requires isRegisterLoc(Loc)
           [structural]
-     rule _:ErrorExit ~> checkRegister(_) => .K
-          requires isErrorRecovery
 
      rule checkUse(V:KResult) => V
           requires getKLabel(V) =/=K #klabel(`tv`)

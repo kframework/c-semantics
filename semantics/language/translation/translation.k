@@ -55,7 +55,7 @@ require "typing/canonicalization.k"
 require "typing/interpretation.k"
 require "typing/expr.k"
 
-require "../../extensions-translation.k"
+require "extensions-translation.k"
 
 module C-TRANSLATION
      imports C-DYNAMIC-SYNTAX

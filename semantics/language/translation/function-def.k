@@ -100,8 +100,6 @@ module C-FUNCTION-DEF
           ~> checkFunDefType(_, _, P:List)
           requires notBool areVoidOrComplete(P)
           [structural]
-     rule _:ErrorExit ~> checkFunDefType(_, _, _) => .K
-          requires isErrorRecovery
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
      rule isVoidOrComplete(T:Type)

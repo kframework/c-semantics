@@ -29,7 +29,7 @@ require "expr/sequencing.k"
 require "decl/local.k"
 require "decl/typedef.k"
 
-require "../../extensions-execution.k"
+require "extensions-execution.k"
 
 module C-EXECUTION
      imports C-CONFIGURATION

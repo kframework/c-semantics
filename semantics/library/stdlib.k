@@ -7,7 +7,6 @@ module LIBC-STDLIB
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -104,12 +103,6 @@ module LIBC-STDLIB
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced) orBool I =/=Int 000
 
-     rule _:ErrorExit ~> prepareBuiltin(Identifier("realloc"),
-                            hrItem(tv(loc(Base:SymBase, 0), _)) hs::
-                            hrItem(tv(_,_)))
-          => tv(loc(Base, 0), t(.Set, pointerType(t(.Set, void))))
-          requires isErrorRecovery
-
      rule [realloc-null]:
           prepareBuiltin(Identifier("realloc"),
                hrItem(tv(NullPointer, _)) hs::
@@ -149,8 +142,6 @@ module LIBC-STDLIB
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced) orBool I =/=Int 0
 
-     rule _:ErrorExit ~> prepareBuiltin(Identifier("free"), _) => voidVal
-          requires isErrorRecovery
      rule prepareBuiltin(Identifier("free"),
                hrItem(tv(NullPointer, t(_, pointerType(_)))))
           => voidVal

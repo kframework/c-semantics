@@ -86,11 +86,6 @@ module C-COMMON-EXPR-REFERENCE
           requires ifFromArrayInBounds(Loc,
                t(.Set, pointerType(t(.Set, char))), 1) =/=K true
           [structural]
-     rule _:ErrorExit ~> *(tv(Loc:SymLoc, T:PointerType))
-          => lv(stripBases(stripFromArray(Loc)), innerType(T))
-          requires ifFromArrayInBounds(Loc,
-               t(.Set, pointerType(t(.Set, char))), 1) =/=K true
-               andBool isErrorRecovery
 
 endmodule
 
