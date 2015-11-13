@@ -5,6 +5,7 @@ require "typing/predicates.k"
 module C-TYPING-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports MAP
 
      syntax CId ::= typedef(CId)
      syntax CId ::= unnamed(Int, String)
@@ -248,11 +249,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= getTypeAtOffset(Type, Int) [function]
 
      syntax Bool ::= isTruthValue(RValue) [function]
-
-     // Turns typedDeclarations into Types in function params.
-     syntax Type ::= elideDeclParams(Type) [function]
-     syntax List ::= elideList(List) [function]
-     syntax Map ::= elideMap(Map) [function]
 
      syntax KItem ::= stabilizeVLA(Type)
 endmodule
