@@ -106,7 +106,7 @@ module LIBC-STDARG
           <gtypes>... F |-> T:Type ...</gtypes>
           requires variadic in getParams(T)
           [structural]
-     rule <k> (.K => UNDEF("STDARG1", "stdargs.h functions used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
+     rule <k> (.K => UNDEF("STDARG1", "stdarg.h functions used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
                 ~> checkVarArgs
           ...</k>
           <call-stack> ListItem(
