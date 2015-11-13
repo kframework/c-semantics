@@ -13,6 +13,7 @@ module C-DECL-TAGGED
 
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX

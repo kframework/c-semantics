@@ -61,14 +61,14 @@ module C-DECL-GLOBAL
           requires validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
-     rule <k> declare''(T:Type, X:CId, .K)
+     rule <k> declare''(T:Type, X:CId, NoInit)
                => declareInternalVariable(X, T, NoInit)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires validPrototypeStorageClass(T)
                andBool notBool isVoidType(T)
           [structural]
-     rule <k> declare''(T:VoidType, X:CId, .K)
+     rule <k> declare''(T:VoidType, X:CId, NoInit)
                => declareInternalVariable(X, T, NoInit)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
@@ -251,7 +251,7 @@ module C-DECL-GLOBAL
           )
 
      rule validPrototypeStorageClass(T:Type)
-          => (Register in getStorageSpecifiers(T))
+          => (getStorageSpecifiers(T) ==K SetItem(Register))
                orBool (getStorageSpecifiers(T) ==K .Set)
 
      // *** External variables ***

@@ -21,71 +21,69 @@ module C-TYPING-EXPR
 
 // chathhorn: hacky custom heating/cooling for type-strictness.
      syntax Set ::= "typeStrictUnaryOps" [function]
-	       | "typeStrictBinaryOps" [function]
-	       | "typeStrictBinaryOpsFirst" [function]
-	       | "typeStrictBinaryOpsSecond" [function]
-	       | "typeStrictTernaryOpsSecond" [function]
-	       | "typeStrictTernaryOpsThird" [function]
+                  | "typeStrictBinaryOps" [function]
+                  | "typeStrictBinaryOpsFirst" [function]
+                  | "typeStrictBinaryOpsSecond" [function]
+                  | "typeStrictTernaryOpsSecond" [function]
+                  | "typeStrictTernaryOpsThird" [function]
 
      rule typeStrictUnaryOps =>
-	  SetItem(#klabel(`-_`))
-	  SetItem(#klabel(`+_`))
-	  SetItem(#klabel(`!_`))
-	  SetItem(#klabel(`~_`))
-	  SetItem(#klabel(`*_`))
-	  SetItem(#klabel(`&_`))
-	  SetItem(#klabel(`++_`))
-	  SetItem(#klabel(`--_`))
-	  SetItem(#klabel(`_++`))
-	  SetItem(#klabel(`_--`))
+          SetItem(#klabel(`-_`))
+          SetItem(#klabel(`+_`))
+          SetItem(#klabel(`!_`))
+          SetItem(#klabel(`~_`))
+          SetItem(#klabel(`*_`))
+          SetItem(#klabel(`&_`))
+          SetItem(#klabel(`++_`))
+          SetItem(#klabel(`--_`))
+          SetItem(#klabel(`_++`))
+          SetItem(#klabel(`_--`))
           SetItem(#klabel(`SizeofExpression`))
 
      rule typeStrictBinaryOps =>
-	  SetItem(#klabel(`_*_`))
-	  SetItem(#klabel(`_/_`))
-	  SetItem(#klabel(`_%_`))
-	  SetItem(#klabel(`_+_`))
-	  SetItem(#klabel(`_-_`))
-	  SetItem(#klabel(`_==_`))
-	  SetItem(#klabel(`_!=_`))
-	  SetItem(#klabel(`_&_`))
-	  SetItem(#klabel(`_^_`))
-	  SetItem(#klabel(`_|_`))
-	  SetItem(#klabel(`_&&_`))
-	  SetItem(#klabel(`_||_`))
+          SetItem(#klabel(`_*_`))
+          SetItem(#klabel(`_/_`))
+          SetItem(#klabel(`_%_`))
+          SetItem(#klabel(`_+_`))
+          SetItem(#klabel(`_-_`))
+          SetItem(#klabel(`_==_`))
+          SetItem(#klabel(`_!=_`))
+          SetItem(#klabel(`_&_`))
+          SetItem(#klabel(`_^_`))
+          SetItem(#klabel(`_|_`))
+          SetItem(#klabel(`_&&_`))
+          SetItem(#klabel(`_||_`))
 
      rule typeStrictBinaryOpsFirst =>
-	  typeStrictBinaryOps
-	  SetItem(#klabel(`_<<_`))
-	  SetItem(#klabel(`_>>_`))
-	  SetItem(#klabel(`_*=_`))
-	  SetItem(#klabel(`_/=_`))
-	  SetItem(#klabel(`_%=_`))
-	  SetItem(#klabel(`_+=_`))
-	  SetItem(#klabel(`_-=_`))
-	  SetItem(#klabel(`_<<=_`))
-	  SetItem(#klabel(`_&=_`))
-	  SetItem(#klabel(`_^=_`))
-	  SetItem(#klabel(`_|=_`))
-	  SetItem(#klabel(`_>>=_`))
-	  SetItem(#klabel(`_:=_`))
-	  SetItem(#klabel(`Call`))
-	  SetItem(#klabel(`_._`))
+          typeStrictBinaryOps
+          SetItem(#klabel(`_<<_`))
+          SetItem(#klabel(`_>>_`))
+          SetItem(#klabel(`_*=_`))
+          SetItem(#klabel(`_/=_`))
+          SetItem(#klabel(`_%=_`))
+          SetItem(#klabel(`_+=_`))
+          SetItem(#klabel(`_-=_`))
+          SetItem(#klabel(`_<<=_`))
+          SetItem(#klabel(`_&=_`))
+          SetItem(#klabel(`_^=_`))
+          SetItem(#klabel(`_|=_`))
+          SetItem(#klabel(`_>>=_`))
+          SetItem(#klabel(`_:=_`))
+          SetItem(#klabel(`Call`))
+          SetItem(#klabel(`_._`))
 
-     rule typeStrictBinaryOpsSecond =>
-	  typeStrictBinaryOps
+     rule typeStrictBinaryOpsSecond => typeStrictBinaryOps
 
      context typeof(Lbl:KLabel(HOLE:KItem => typeof(HOLE)))
-	  requires #klabel(Lbl) in typeStrictUnaryOps [result(Type)]
+          requires #klabel(Lbl) in typeStrictUnaryOps [result(Type)]
 
      context typeof(Lbl:KLabel((HOLE:KItem => typeof(HOLE)), _))
-	  requires #klabel(Lbl) in typeStrictBinaryOpsFirst [result(Type)]
+          requires #klabel(Lbl) in typeStrictBinaryOpsFirst [result(Type)]
      context typeof(Lbl:KLabel(_, (HOLE:KItem => typeof(HOLE))))
-	  requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
+          requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
 
      context typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
      context typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
-
 
 
      // primary expressions
@@ -101,7 +99,7 @@ module C-TYPING-EXPR
           => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
      rule typeof(wstringLiteral(L:List)
           => t(.Set, arrayType(t(.Set, cfg:wcharut), size(L) +Int 1)))
-  
+
      // postfix expressions
      rule typeof(Call(T:Type, _) => innerType(T))
 
