@@ -42,27 +42,50 @@ module C-DECL-GLOBAL
      imports C-CONFIGURATION
 
      rule declare'(typedDeclaration(T:Type, X:CId), K:K)
-          => checkDeclType(T, K)
+          => checkComplete(T, K)
           ~> declare''(T, X, K)
 
      syntax KItem ::= "declare''" "(" Type "," CId "," K ")"
+
+     // Block scope declarations.
      rule <k> declare''(T:Type, X:CId, K:K)
                => addToEnv(X, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
-          <curr-scope> S:Scope </curr-scope>
-          requires S =/=K fileScope
-               andBool notBool isFunctionType(T)
+          <curr-scope> blockScope(_, _) </curr-scope>
+          requires notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
      rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
-          <curr-scope> S:Scope </curr-scope>
-          requires S =/=K fileScope
-               andBool validLocalStorageClass(T)
+          <curr-scope> blockScope(_, _) </curr-scope>
+          requires validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
+
+     // Prototype scope declarations (includes both params in prototypes as
+     // well as function defs).
+     rule <k> declare''(T:Type, X:CId, NoInit)
+               => declareInternalVariable(X, T, NoInit)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires validPrototypeStorageClass(T)
+               andBool notBool isVoidType(T)
+               andBool (X =/=K #NoName)
+          [structural]
+     rule <k> declare''(T:Type, #NoName, NoInit) => .K ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires validPrototypeStorageClass(T)
+               andBool notBool isVoidType(T)
+          [structural]
+     rule <k> declare''(T:VoidType, #NoName, NoInit) => .K ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires (getStorageSpecifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K .Set)
+          [structural]
+
+     // File scope declarations.
      rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareExternalVariable(X, T,
                     #if isNoInit(K)
@@ -142,60 +165,43 @@ module C-DECL-GLOBAL
                andBool notBool validGlobalStorageClass(T)
           [structural]
 
-     syntax KItem ::= checkDeclType(Type, K)
-                    | checkParams(Type)
-                    | checkParam(Type)
-          // Checks if the type is complete if there's an initializer.
-                    | checkComplete(Type, K)
-
-     // TODO(chathhorn): consider checking function init list here (disallowed
-     // in the case of a prototype).
-     rule checkDeclType(T:FunctionType, _) => checkParams(T)
-          [structural]
-     rule checkDeclType(T:Type, K:K) => checkComplete(T, K)
-          requires notBool isFunctionType(T)
-          [structural]
-
-     rule (.K => checkParam(T))
-          ~> checkParams(t(_, functionType(_, (ListItem(T:Type) => .List)  _)))
-          [structural]
-     rule checkParams(t(_, functionType(_, .List))) => .K
-          [structural]
-     rule checkParams(typedDeclaration(T:Type, _)) => checkParams(T)
-          [structural]
-
-     rule checkParam(T:Type) => .K
-          requires notBool (getStorageSpecifiers(T) =/=K .Set
-                    andBool getStorageSpecifiers(T) =/=K SetItem(Register)
-                    andBool notBool isVoidType(T))
-               andBool notBool (getStorageSpecifiers(T) =/=K .Set
-                    andBool isVoidType(T))
-               andBool notBool (getQualifiers(T) =/=K .Set
-                    andBool isVoidType(T))
-          [structural]
-     rule (.K => CV("TDG5",
+     rule <k> (.K => CV("TDG5",
                "function parameter appears with storage class other than register.",
                "6.7.6.3:2"))
-          ~> checkParam(T:Type)
-          requires (getStorageSpecifiers(T) =/=K .Set)
-               andBool (getStorageSpecifiers(T) =/=K SetItem(Register))
-               andBool notBool isVoidType(T)
+               ~> declare''(T:Type, _, _)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires notBool validPrototypeStorageClass(T)
           [structural]
-     rule (.K => UNDEF("TDG6",
+     rule <k> (.K => UNDEF("TDG6",
                "void parameter appears with a storage class specifier.",
                "6.7.6.3:10, J.2:1 item 78"))
-          ~> checkParam(T:VoidType)
-          requires (getStorageSpecifiers(T) =/=K .Set)
+               ~> declare''(T:VoidType, _, _)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires getStorageSpecifiers(T) =/=K .Set
           [structural]
-     rule (.K => UNDEF("TDG7",
+     rule <k> (.K => UNDEF("TDG7",
                "void parameter appears with qualifiers.",
                "6.7.6.3:10, J.2:1 item 78"))
-          ~> checkParam(T:VoidType)
-          requires (getQualifiers(T) =/=K .Set)
+               ~> declare''(T:VoidType, _, _)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires getQualifiers(T) =/=K .Set
           [structural]
-     rule _:ErrorExit ~> checkParam(_) => .K
+     rule <k> _:ErrorExit ~> declare''(T:Type, X:CId, K:K)
+               => declare''(stripStorageSpecifiers(T), X, K)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
+          requires isErrorRecovery andBool notBool isVoidType(T)
+     rule <k> _:ErrorExit ~> declare''(T:VoidType, X:CId, K:K)
+               => declare''(stripQualifiers(stripStorageSpecifiers(T)), X, K)
+          ...</k>
+          <curr-scope> prototypeScope </curr-scope>
           requires isErrorRecovery
 
+     // Checks if the type is complete if there's an initializer.
+     syntax KItem ::= checkComplete(Type, K)
      rule checkComplete(_, _:NoInit) => .K
           [structural]
      rule checkComplete(T:Type, _) => .K
@@ -216,8 +222,7 @@ module C-DECL-GLOBAL
      syntax Bool ::= validLocalStorageClass(Type) [function]
                    | "validLocalStorageClass'" "(" Type "," Set ")" [function]
 
-     // TODO(chathhorn): storage class of function parameters (only register is
-     // allowed).
+     syntax Bool ::= validPrototypeStorageClass(Type) [function]
 
      // TODO(chathhorn): probably cleaner just to check the intersection
      // between the storage class specifiers and the "qualities," but there are
@@ -236,8 +241,8 @@ module C-DECL-GLOBAL
 
      rule validGlobalStorageClass(T:Type)
           => validGlobalStorageClass'(T, getStorageSpecifiers(T))
-     rule validGlobalStorageClass'(T:Type, Specs:Set) =>
-          validStorageClass'(T, Specs)
+     rule validGlobalStorageClass'(T:Type, Specs:Set)
+          => validStorageClass'(T, Specs)
           andBool notBool (
                (Auto in Specs)
                orBool (Register in Specs)
@@ -245,8 +250,8 @@ module C-DECL-GLOBAL
 
      rule validLocalStorageClass(T:Type)
           => validLocalStorageClass'(T, getStorageSpecifiers(T))
-     rule validLocalStorageClass'(T:Type, Specs:Set) =>
-          validStorageClass'(T, Specs)
+     rule validLocalStorageClass'(T:Type, Specs:Set)
+          => validStorageClass'(T, Specs)
           andBool notBool (
                (isFunctionType(T) andBool (Static in Specs))
                orBool (isFunctionType(T) andBool (ThreadLocal in Specs))
@@ -255,6 +260,10 @@ module C-DECL-GLOBAL
                orBool (notBool isFunctionType(T) andBool ThreadLocal in Specs
                     andBool notBool (Static in Specs orBool Extern in Specs))
           )
+
+     rule validPrototypeStorageClass(T:Type)
+          => (getStorageSpecifiers(T) ==K SetItem(Register))
+               orBool (getStorageSpecifiers(T) ==K .Set)
 
      // *** External variables ***
      //

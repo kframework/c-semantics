@@ -1,0 +1,7 @@
+File: paramStorage.c
+Line: 1
+Error: CV-TDG5
+Description: function parameter appears with storage class other than register.
+Type: Constraint violation.
+See also: C11 sec. 6.7.6.3:2
+Translation failed. Run kcc -d paramStorage.c to see commands run.

@@ -130,7 +130,7 @@ module C-DECL-INITIALIZER
      rule figureInit-aux(X:CId, T:Type, initializer(K:K))
           => giveType(X, T) ~> elaborateInit(K) ~> initValue(X, T, .K)
           requires isCompleteType(T)
-     rule (elaborateInitDone(K:K) => .K) ~> initValue(_, _, (.K => K))
+     rule (elaborateDone(K:K) => .K) ~> initValue(_, _, (.K => K))
 
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.

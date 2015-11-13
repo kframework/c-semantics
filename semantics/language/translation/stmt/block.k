@@ -12,30 +12,8 @@ module C-STMT-BLOCK
      }*/
      rule BlockStatement(Block(Tag:Int, _, B:K)) => Block(Tag, B)
 
-     rule <k> pushBlock(Tag:Int) => addToHistory(Tag) ...</k>
-          <elab>... .K => pushBlock(Tag) </elab>
-          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
-          <local> C:Bag <local-types> LocalTypes:Map => .Map </local-types> </local>
-          <block-stack>
-               .List => ListItem(<local> C <local-types> LocalTypes </local-types> </local>)
-          ...</block-stack>
-
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>
-          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
-          (_:LocalCell => <local> C <block-history> ListItem(Tag) L </block-history> </local>)
-          <block-stack>
-               ListItem(<local> C:Bag <block-history> ListItem(Tag:Int) L:List </block-history> </local>) => .List
-          ...</block-stack>
-
-     rule <k> popBlock => .K ...</k>
-          <elab>... .K => popBlock </elab>
-          <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
-          (_:LocalCell => <local> C <block-history> .List </block-history> </local>)
-          <block-stack>
-               ListItem(<local> C:Bag <block-history> .List </block-history> </local>) => .List
-          ...</block-stack>
-
 
      rule <k> Nop => .K ...</k>
           <elab>... .K => Nop </elab>
@@ -44,9 +22,11 @@ module C-STMT-BLOCK
      rule Block(Tag:Int, _, list(Statements:List))
           => Block(Tag, list(Statements))
 
-     rule Block(Tag:Int, list(Statements:List))
-          => pushBlock(Tag)
-          ~> listToK(Statements)
-          ~> popBlock
+     rule <k> Block(Tag:Int, list(Statements:List))
+              => scope(blockScope(F, Tag), listToK(Statements) ~> popBlock)
+          ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <block-history> .List => ListItem(Tag) ...</block-history>
+          <elab>... .K => pushBlock(Tag) </elab>
 
 endmodule
