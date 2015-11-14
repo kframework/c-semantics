@@ -26,7 +26,7 @@ module LIBC-BOOTSTRAP
      rule varg(K:KResult) => vargResult(K)
 
      rule incSymbolic(tv(Loc:SymLoc, T:Type))
-          => tv(loc(linc(base(Loc)), offset(Loc), SetItem(fromType(t(.Set, no-type)))), T)
+          => checkUse(tv(loc(linc(base(Loc)), offset(Loc), SetItem(fromType(t(.Set, no-type)))), T))
           [structural]
 
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
