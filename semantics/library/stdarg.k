@@ -1,8 +1,11 @@
 module LIBC-STDARG
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-SYNTAX
+
+     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{
 
@@ -56,24 +59,24 @@ module LIBC-STDARG
           prepareBuiltin(Identifier("__va_start"),
                hrItem(ApLoc:KResult) hs::
                hrItem(ArgLoc:KResult))
-          => Computation(*(ApLoc) := incSymbolic(ArgLoc))
-               ~> voidVal
+          => checkVarArgs ~> Computation(*(ApLoc) := incSymbolic(ArgLoc)) ~> voidVal
           [structural]
 
      rule [va-inc-start]:
           prepareBuiltin(Identifier("__va_inc"),
-               hrItem(ApLoc:RValue) hs::
-               hrItem(Size:RValue))
+               hrItem(ApLoc:KResult) hs::
+               hrItem(Size:KResult))
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
 
-     syntax KItem ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
+     syntax KItem ::= "va-inc-aux" "(" K "," K "," K ")"
+     context va-inc-aux((HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context va-inc-aux(_, (HOLE => reval(HOLE)), _) [result(RValue)]
      context va-inc-aux(_, _, (HOLE => reval(HOLE))) [result(RValue)]
      // fixme can do lots of checks here too
      rule [va-inc]:
-          va-inc-aux(ApLoc:RValue, _, Ap:KResult)
-          => Computation(*(ApLoc) := incSymbolic(Ap))
-               ~> Ap:KResult
+          va-inc-aux(ApLoc:RValue, _, Ap:RValue)
+          => Computation(*(ApLoc) := incSymbolic(Ap)) ~> Ap
           [structural]
 
      // fixme can do lots of checks here too
@@ -86,7 +89,35 @@ module LIBC-STDARG
 
      // fixme can do lots of checks here too
      rule [va-end]:
-          prepareBuiltin(Identifier("__va_end"),
-               hrItem(_:KResult)) => voidVal
+          prepareBuiltin(Identifier("__va_end"), hrItem(_:KResult))
+          => voidVal
           [structural]
+
+     syntax KItem ::= "checkVarArgs"
+     rule [va-start]:
+          <k> checkVarArgs => .K ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-curr-scope> blockScope(F:CId, _) </stack-curr-scope>
+                    <stack-curr-tu> Tu:String </stack-curr-tu>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <tu-id> Tu </tu-id>
+          <gtypes>... F |-> T:Type ...</gtypes>
+          requires variadic in getParams(T)
+          [structural]
+     rule <k> (.K => UNDEF("STDARG1", "'va_start' used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
+                ~> checkVarArgs
+          ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-curr-scope> blockScope(F:CId, _) </stack-curr-scope>
+                    <stack-curr-tu> Tu:String </stack-curr-tu>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <tu-id> Tu </tu-id>
+          <gtypes>... F |-> T:Type ...</gtypes>
+          requires notBool variadic in getParams(T)
+          [structural]
+
 endmodule
