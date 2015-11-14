@@ -66,7 +66,7 @@ module LIBC-STDARG
           prepareBuiltin(Identifier("__va_inc"),
                hrItem(ApLoc:KResult) hs::
                hrItem(Size:KResult))
-          => checkVarArgs ~> va-inc-aux(ApLoc, Size, *ApLoc)
+          => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
 
      syntax KItem ::= "va-inc-aux" "(" K "," K "," K ")"
@@ -84,13 +84,13 @@ module LIBC-STDARG
           prepareBuiltin(Identifier("__va_copy"),
                hrItem(ApLoc:KResult) hs::
                hrItem(Other:KResult))
-          => checkVarArgs ~> Computation(*(ApLoc) := Other) ~> voidVal
+          => Computation(*(ApLoc) := Other) ~> voidVal
           [structural]
 
      // fixme can do lots of checks here too
      rule [va-end]:
           prepareBuiltin(Identifier("__va_end"), hrItem(_:KResult))
-          => checkVarArgs ~> voidVal
+          => voidVal
           [structural]
 
      syntax KItem ::= "checkVarArgs"
@@ -106,7 +106,7 @@ module LIBC-STDARG
           <gtypes>... F |-> T:Type ...</gtypes>
           requires variadic in getParams(T)
           [structural]
-     rule <k> (.K => UNDEF("STDARG1", "stdarg.h functions used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
+     rule <k> (.K => UNDEF("STDARG1", "'va_start' used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
                 ~> checkVarArgs
           ...</k>
           <call-stack> ListItem(
