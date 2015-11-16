@@ -1,4 +1,4 @@
-int f(_Thread_local void) {
+int f(extern void) {
       return 0;
 }
 
