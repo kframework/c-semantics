@@ -325,7 +325,7 @@ module C-DECL-INITIALIZER
           ...</curr-object>
           [structural]
 
-     context fillInit(InitFragment(HOLE, _))
+     context fillInit(InitFragment(HOLE:KItem, _))
 
      // note that these clear the current subobject cell, because it will be
      // repopulated when building the designator
@@ -367,7 +367,7 @@ module C-DECL-INITIALIZER
           <curr-subobject> (ListItem(block) => .List) ...</curr-subobject>
           [structural]
 
-     context buildDesignator(AtIndexInit((HOLE => reval(HOLE)), _))
+     context buildDesignator(AtIndexInit((HOLE:KItem => reval(HOLE)), _))
           [result(RValue)]
      rule <k> buildDesignator(AtIndexInit(tv(N:Int, _), More:K))
                => buildDesignator(More)
@@ -640,7 +640,7 @@ module C-DECL-INITIALIZER
           ~> fillEnums-aux(
                EnumDef(X, list(L)), Value +Int 1)
           [structural]
-     context fillEnums-aux(EnumDef(_, list(ListItem(EnumItemInit(_, HOLE)) _)), _)
+     context fillEnums-aux(EnumDef(_, list(ListItem(EnumItemInit(_, HOLE:KItem)) _)), _)
      rule fillEnums-aux(EnumDef(X:CId, list(
                ListItem(EnumItemInit(E:CId, R:RValue)) L:List)), _)
           => initEnum(E, R)

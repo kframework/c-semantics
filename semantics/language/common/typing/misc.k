@@ -442,7 +442,7 @@ module C-TYPING-MISC
      // allowed to have VM types (see 6.7.2.1p9).
      syntax KItem ::= stabilize(K)
 
-     context stabilize(t(_, variableLengthArrayType(_, (HOLE => reval(HOLE)))))
+     context stabilize(t(_, variableLengthArrayType(_, (HOLE:KItem => reval(HOLE)))))
           [result(RValue)]
 
      rule (.K => stabilize(T)) ~> stabilize(t(_, arrayType(T:Type, _)))

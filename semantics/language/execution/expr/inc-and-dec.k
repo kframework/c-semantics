@@ -28,7 +28,7 @@ module C-EXPR-INC-AND-DEC
           [structual]
 
      syntax KItem ::= #postOp(K, K)
-     context #postOp((HOLE => reval(HOLE)), _) [result(RValue)]
+     context #postOp((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule #postOp(V:RValue, Op:K) => fillRHoles(V, Op) ~> discard ~> V
           [structural]
 
