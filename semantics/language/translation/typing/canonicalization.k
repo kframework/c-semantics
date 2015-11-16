@@ -15,7 +15,7 @@ module C-TYPING-CANONICALIZATION
      imports C-ENV-SYNTAX
      imports C-CONFIGURATION
 
-     context canonicalizeType-aux(_, HOLE, _, _, _)
+     context canonicalizeType-aux(_, HOLE:KItem, _, _, _)
 
      syntax List ::= deleteUnuseType(List) [function]
 

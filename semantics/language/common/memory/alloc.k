@@ -34,7 +34,7 @@ module C-MEMORY-ALLOC
           [structural]
 
      syntax KItem ::= #allocObject(SymBase, Type, K)
-     context #allocObject(_, _, (HOLE => reval(HOLE))) [result(RValue)]
+     context #allocObject(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule #allocObject(Base:SymBase, T:Type, tv(I:Int, _))
           => alloc(Base, T, I)
           [structural]

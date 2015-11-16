@@ -189,7 +189,7 @@ module C-ABSTRACT-SYNTAX
      and init_name = name * init_expression
      */
      syntax InitName ::= InitName(K, K)
-     context InitName(_, (HOLE => reval(HOLE))) [ndheat, result(RValue)]
+     context InitName(_, (HOLE:KItem => reval(HOLE))) [ndheat, result(RValue)]
 
      /*
      (* Single names are for declarations that cannot come in groups, like
@@ -296,8 +296,8 @@ module C-ABSTRACT-SYNTAX
      | CAST of (specifier * decl_type) * init_expression
      */
      syntax Expression ::= Cast(K, K, K)
-     context Cast(HOLE, _, _)
-     context Cast(_, _, (HOLE => reval(HOLE))) [result(RValue)]
+     context Cast(HOLE:KItem, _, _)
+     context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
      // new // comp-lit id, spec, decl, init
      syntax Expression ::= CompoundLiteral(K, K, K, K) [strict(2)]

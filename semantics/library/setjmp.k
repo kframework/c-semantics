@@ -111,7 +111,7 @@ module LIBC-SETJMP
           [structural]
 
      syntax KItem ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
-     context longjmp-aux(HOLE => reval(HOLE), _) [result(RValue)]
+     context longjmp-aux(HOLE:KItem => reval(HOLE), _) [result(RValue)]
      rule [longjmp-prepare]:
           prepareBuiltin(Identifier("longjmp"),
                hrItem(V:KResult) hs::

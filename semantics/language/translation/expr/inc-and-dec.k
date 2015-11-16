@@ -9,7 +9,7 @@ module C-EXPR-INC-AND-DEC
      rule LV:KResult --
           => postOp(LV, ncle(LHOLE, type(LV)) := te(RHOLE, type(LV)) - tv(1, t(.Set, int)))
 
-     context postOp(_, (HOLE => reval(HOLE))) [result(RValue)]
+     context postOp(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule postOp(LV:KResult, Op:RValue) => te(postOp(LV, Op), type(LV))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{2}}}{

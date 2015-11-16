@@ -16,8 +16,8 @@ module C-EXPR-CONDITIONAL
      syntax KItem ::= convertedType(Type, Type, K) [strict(3)]
 
      // the type of the operands is actually their type after lvalue conversion
-     context getTypes(HOLE => reval(HOLE), _) [result(RValue)]
-     context getTypes(_, HOLE => reval(HOLE)) [result(RValue)]
+     context getTypes(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     context getTypes(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      rule getTypes(V1:RValue, V2:RValue)
           => types(retype(type(V1)), retype(type(V2)), isNullPointerConstant(V1), isNullPointerConstant(V2))
@@ -132,9 +132,9 @@ module C-EXPR-CONDITIONAL
           requires T =/=Type T'
 
      syntax KItem ::= evalConditional(K, K, K, Type)
-     context evalConditional(HOLE => reval(HOLE), _, _, _) [result(RValue)]
-     context evalConditional(_, HOLE => reval(HOLE), _, _) [result(RValue)]
-     context evalConditional(_, _, HOLE => reval(HOLE), _) [result(RValue)]
+     context evalConditional(HOLE:KItem => reval(HOLE), _, _, _) [result(RValue)]
+     context evalConditional(_, HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
+     context evalConditional(_, _, HOLE:KItem => reval(HOLE), _) [result(RValue)]
 
      rule evalConditional(C:RValue, E1:RValue, E2:RValue, T:Type)
           => te(stripHold(C) ? E1 : E2, stripConstants(T))

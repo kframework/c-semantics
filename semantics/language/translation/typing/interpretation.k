@@ -34,7 +34,7 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= makeArrayType(RValue, K)
      syntax Type ::= pushTypeDown(Type, K) [function]
 
-     context ArrayType(_, (HOLE => reval(HOLE)), _) [ndheat, result(RValue)]
+     context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      rule ArrayType(T:Type, tv(N:Int, T':Type), Spec:K)
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
@@ -212,7 +212,7 @@ module C-TYPING-INTERPRETATION
           => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
           [structural]
 
-     context Typedef(NameGroup(HOLE, _))
+     context Typedef(NameGroup(HOLE:KItem, _))
 
      rule Typedef(NameGroup(T:Type, list(ListItem(K:K) L:List)))
           => defineType(SingleName(T, K)) ~> Typedef(NameGroup(T, list(L)))

@@ -9,7 +9,7 @@ module C-STMT-IF-THEN
           => #if(simplifyTruth(C), TrueBr, FalseBr)
 
      syntax KItem ::= #if(K, K, K)
-     context #if((HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context #if((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
      rule (.K => elaborate(TrueBr, FalseBr)) ~> #if(_:RValue, TrueBr:K, FalseBr:K)
      rule <k> elaborateDone(TrueBr:K, FalseBr:K) ~> #if(C:RValue, _, _)
                => .K

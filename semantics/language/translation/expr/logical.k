@@ -15,8 +15,8 @@ module C-EXPR-LOGICAL
      rule L:K && R:K => #and(simplifyTruth(L), simplifyTruth(R))
 
      syntax KItem ::= #and(K, K)
-     context #and((HOLE => reval(HOLE)), _) [result(RValue)]
-     context #and(_, (HOLE => reval(HOLE))) [result(RValue)]
+     context #and((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
+     context #and(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule #and(L:RValue, R:RValue)
           => te(stripHold(L) && stripHold(R), t(.Set, int))
      requires isHold(L)
@@ -26,8 +26,8 @@ module C-EXPR-LOGICAL
      rule L:K || R:K => #or(simplifyTruth(L), simplifyTruth(R))
 
      syntax KItem ::= #or(K, K)
-     context #or((HOLE => reval(HOLE)), _) [result(RValue)]
-     context #or(_, (HOLE => reval(HOLE))) [result(RValue)]
+     context #or((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
+     context #or(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule #or(L:RValue, R:RValue)
           => te(stripHold(L) || stripHold(R), t(.Set, int))
      requires isHold(L)
