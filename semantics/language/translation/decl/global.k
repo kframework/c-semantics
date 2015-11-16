@@ -172,6 +172,7 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires notBool validPrototypeStorageClass(T)
+               andBool notBool isVoidType(T)
           [structural]
      rule <k> (.K => UNDEF("TDG6",
                "void parameter appears with a storage class specifier.",
