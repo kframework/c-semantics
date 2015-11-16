@@ -6,7 +6,7 @@ module LIBC-BOOTSTRAP-SYNTAX
      syntax RValue ::= vargResult(K)
      syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
      syntax KItem ::= incSymbolic(K)
-     context incSymbolic(HOLE => reval(HOLE)) [result(RValue)]
+     context incSymbolic(HOLE:KItem => reval(HOLE)) [result(RValue)]
 endmodule
 
 module LIBC-BOOTSTRAP
@@ -32,7 +32,7 @@ module LIBC-BOOTSTRAP
      // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
      // particular, I don't understand why we should do the consecutive
      // addresses thing.
-     //TODO(liyi): context prepareBuiltin(_, _ ListItem(HOLE => reval(HOLE)) _)
+     //TODO(liyi): context prepareBuiltin(_, _ ListItem(HOLE:KItem => reval(HOLE)) _)
      //use HeatList temporally
      rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(makeVarArgs(P)))) ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>

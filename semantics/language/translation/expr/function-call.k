@@ -15,7 +15,7 @@ module C-EXPR-FUNCTION-CALL
      syntax KItem ::= revalParams(K)
                     | #revalParams(HeatList) [strict]
      //TODO(liyi): overcome the context associative matching
-     //context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _))
+     //context revalParams(list(_ ListItem((HOLE:KItem => reval(HOLE))) _))
 
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
 
@@ -32,7 +32,7 @@ module C-EXPR-FUNCTION-CALL
      syntax KItem ::= maybeBind(List, List)
      syntax KItem ::= elabCall(RValue, List, Type, List)
 
-     context Call(_, (HOLE => revalParams(HOLE)))
+     context Call(_, (HOLE:KItem => revalParams(HOLE)))
      rule Call(Lbl:KLabel(V:K, t(S:Set, pointerType(t(S':Set, functionType(T:Type, P:List))))), rvlist(L:List))
           => maybeBind(P, L)
           ~> elabCall(Lbl(V, t(S, pointerType(t(S', functionType(T, P))))), L, T, .List)

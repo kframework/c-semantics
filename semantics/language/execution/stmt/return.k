@@ -60,7 +60,7 @@ module C-STMT-RETURN
 
      syntax KItem ::= "Return'" "(" K ")"
                     | "Return''" "(" K ")"
-     context Return'(HOLE => reval(HOLE)) [result(RValue)]
+     context Return'(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /* recursively exits each Block wrapped in BlockStatement */
      rule <k> (.K => popBlock) ~> Return'(_:RValue) ...</k>

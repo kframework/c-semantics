@@ -6,7 +6,7 @@ module C-STMT-STATIC-ASSERT
      imports C-SYNTAX
      imports COMPAT-SYNTAX
 
-     context StaticAssert((HOLE => reval(HOLE)), _) [result(RValue)]
+     context StaticAssert((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule StaticAssert(tv(N:Int, _), _) => .K
           requires N =/=Int 0
      rule StaticAssert(te(_, _), _)
