@@ -70,9 +70,9 @@ module LIBC-STDARG
           [structural]
 
      syntax KItem ::= "va-inc-aux" "(" K "," K "," K ")"
-     context va-inc-aux((HOLE => reval(HOLE)), _, _) [result(RValue)]
-     context va-inc-aux(_, (HOLE => reval(HOLE)), _) [result(RValue)]
-     context va-inc-aux(_, _, (HOLE => reval(HOLE))) [result(RValue)]
+     context va-inc-aux((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
+     context va-inc-aux(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
+     context va-inc-aux(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      // fixme can do lots of checks here too
      rule [va-inc]:
           va-inc-aux(ApLoc:RValue, _, Ap:RValue)

@@ -8,7 +8,7 @@ module C-EXPR-CONDITIONAL
      imports COMPAT-SYNTAX
 
      // Same as IfThenElse (type issues already dealt with).
-     context (HOLE => reval(HOLE)) ? _ : _ [result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) ? _ : _ [result(RValue)]
      rule tv(1, t(_, int)) ? E1:K : E2:K => sequencePoint ~> E1
           requires notBool isVariablyModifiedType(type(E1))
                andBool notBool isVariablyModifiedType(type(E2))

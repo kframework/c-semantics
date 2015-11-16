@@ -240,7 +240,7 @@ module C-EXPR-ASSIGNMENT
      rule E1:KResult |= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) | E2)
 
-     context compoundAssign(_, (HOLE => reval(HOLE))) [result(RValue)]
+     context compoundAssign(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule <k> compoundAssign(LV:KResult, AExp:RValue)
                => #compoundAssign(LV, LV, AExp)
           ...</k>
@@ -253,7 +253,7 @@ module C-EXPR-ASSIGNMENT
           requires isNCLHold(LV) orBool S =/=K fileScope
 
      syntax KItem ::= #compoundAssign(K, K, RValue)
-     context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     context #compoundAssign(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule #compoundAssign(LV:KResult, V:RValue, AExp:RValue)
           => fillLHoles(LV, fillRHoles(V, stripHold(AExp)))
 

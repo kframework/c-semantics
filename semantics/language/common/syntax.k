@@ -44,7 +44,7 @@ module C-SYNTAX
      */
      syntax Statement ::= "Nop"
      syntax Statement ::= Computation(K) [latex({{#1}};)]
-     context Computation(HOLE => reval(HOLE)) [result(RValue)]
+     context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /*
      and storage =
@@ -89,7 +89,7 @@ module C-SYNTAX
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
      syntax Statement ::= IfThenElse(K, K, K)
-     context IfThenElse((HOLE => reval(HOLE)), _, _) [result(RValue)]
+     context IfThenElse((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
 
      syntax Statement ::= While(K, K)
      syntax Statement ::= DoWhile(K, K)
@@ -104,7 +104,7 @@ module C-SYNTAX
      syntax Statement ::= "Continue"
 
      syntax Statement ::= Return(K)
-     context Return(HOLE => reval(HOLE)) [result(RValue)]
+     context Return(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /*
      | SWITCH of expression * statement * cabsloc
@@ -112,7 +112,7 @@ module C-SYNTAX
      */
      // unique switch id
      syntax Statement ::= Switch(K, K, K)
-     context Switch(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     context Switch(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
 
      /*
      | CASE of expression * statement * cabsloc
@@ -196,90 +196,90 @@ module C-SYNTAX
                               [prec(53), latex({{#1}}\terminal{$\ll$=}{{#2}})]
                          | K ":=" K [prec(53)]
 
-     context - (HOLE => reval(HOLE)) [result(RValue)]
-     context + (HOLE => reval(HOLE)) [result(RValue)]
-     context ! (HOLE => reval(HOLE)) [result(RValue)]
-     context ~ (HOLE => reval(HOLE)) [result(RValue)]
-     context * (HOLE => reval(HOLE)) [result(RValue)]
+     context - (HOLE:KItem => reval(HOLE)) [result(RValue)]
+     context + (HOLE:KItem => reval(HOLE)) [result(RValue)]
+     context ! (HOLE:KItem => reval(HOLE)) [result(RValue)]
+     context ~ (HOLE:KItem => reval(HOLE)) [result(RValue)]
+     context * (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context (HOLE => reval(HOLE)) * _ [ndheat, result(RValue)]
-     context _ * (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) / _ [ndheat, result(RValue)]
-     context _ / (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) % _ [ndheat, result(RValue)]
-     context _ % (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) * _ [ndheat, result(RValue)]
+     context _ * (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) / _ [ndheat, result(RValue)]
+     context _ / (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) % _ [ndheat, result(RValue)]
+     context _ % (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) + _ [ndheat, result(RValue)]
-     context _ + (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) - _ [ndheat, result(RValue)]
-     context _ - (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) + _ [ndheat, result(RValue)]
+     context _ + (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) - _ [ndheat, result(RValue)]
+     context _ - (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) << _ [ndheat, result(RValue)]
-     context _ << (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) << _ [ndheat, result(RValue)]
+     context _ << (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) >> _ [ndheat, result(RValue)]
-     context _ >> (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) >> _ [ndheat, result(RValue)]
+     context _ >> (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) < _ [ndheat, result(RValue)]
-     context _ < (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) <= _ [ndheat, result(RValue)]
-     context _ <= (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) < _ [ndheat, result(RValue)]
+     context _ < (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) <= _ [ndheat, result(RValue)]
+     context _ <= (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) > _ [ndheat, result(RValue)]
-     context _ > (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) >= _ [ndheat, result(RValue)]
-     context _ >= (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) > _ [ndheat, result(RValue)]
+     context _ > (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) >= _ [ndheat, result(RValue)]
+     context _ >= (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) == _ [ndheat, result(RValue)]
-     context _ == (HOLE => reval(HOLE)) [ndheat, result(RValue)]
-     context (HOLE => reval(HOLE)) != _ [ndheat, result(RValue)]
-     context _ != (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) == _ [ndheat, result(RValue)]
+     context _ == (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) != _ [ndheat, result(RValue)]
+     context _ != (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) & _ [ndheat, result(RValue)]
-     context _ & (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) & _ [ndheat, result(RValue)]
+     context _ & (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) ^ _ [ndheat, result(RValue)]
-     context _ ^ (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) ^ _ [ndheat, result(RValue)]
+     context _ ^ (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context (HOLE => reval(HOLE)) | _ [ndheat, result(RValue)]
-     context _ | (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context (HOLE:KItem => reval(HOLE)) | _ [ndheat, result(RValue)]
+     context _ | (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     context HOLE *= _
-     context _ *= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem *= _
+     context _ *= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE /= _
-     context _ /= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem /= _
+     context _ /= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE %= _
-     context _ %= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem %= _
+     context _ %= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE += _
-     context _ += (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem += _
+     context _ += (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE -= _
-     context _ -= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem -= _
+     context _ -= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE <<= _
-     context _ <<= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem <<= _
+     context _ <<= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE &= _
-     context _ &= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem &= _
+     context _ &= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE ^= _
-     context _ ^= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem ^= _
+     context _ ^= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE |= _
-     context _ |= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem |= _
+     context _ |= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE >>= _
-     context _ >>= (HOLE => reval(HOLE)) [result(RValue)]
+     context HOLE:KItem >>= _
+     context _ >>= (HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     context HOLE := _ [ndheat]
-     context _ := (HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context HOLE:KItem := _ [ndheat]
+     context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
      syntax Expression ::= Cast(K, K)
-     context Cast(HOLE, _)
-     context Cast(_, (HOLE => reval(HOLE))) [result(RValue)]
+     context Cast(HOLE:KItem, _)
+     context Cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
      /*
      (* There is a special form of CALL in which the function called
@@ -288,7 +288,7 @@ module C-SYNTAX
      | CALL of expression * expression list
      */
      syntax Expression ::= Call(K, K)
-     context Call((HOLE => reval(HOLE)), _) [ndheat, result(RValue)]
+     context Call((HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      /*
      | MEMBEROF of expression * string
      */

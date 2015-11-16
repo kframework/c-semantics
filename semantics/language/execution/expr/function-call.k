@@ -47,7 +47,7 @@ module C-EXPR-FUNCTION-CALL
      \end{itemize}
      }}*/
 
-     context Call(_, (HOLE => revalParams(HOLE))) [ndheat]
+     context Call(_, (HOLE:KItem => revalParams(HOLE))) [ndheat]
 
      // Strip prov.
      rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _),
@@ -68,7 +68,7 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KItem ::= revalParams(K)
                     | #revalParams(HeatList) [strict]
-     //TODO(liyili2): context revalParams(list(_ ListItem((HOLE => reval(HOLE))) _)) [ndheat]
+     //TODO(liyili2): context revalParams(list(_ ListItem((HOLE:KItem => reval(HOLE))) _)) [ndheat]
      rule revalParams(list(L:List)) => #revalParams(toHeatList(L))
           [structural]
 
@@ -85,7 +85,7 @@ module C-EXPR-FUNCTION-CALL
      */
 
      syntax KItem ::= application(String, K, Type, List) [strict(2)]
-     context application(_, HOLE, _, _)
+     context application(_, HOLE:KItem, _, _)
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */

@@ -95,7 +95,7 @@ module C-DYNAMIC-SYNTAX
 
      //TODO(liyili2): might not need this list in the future.
      syntax HeatItem ::= hItem(K)
-     context hItem(HOLE => reval(HOLE)) [ndheat, result(RValue)]
+     context hItem(HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
      syntax HeatList ::= List{HeatItem,"hs::"} [strict]
      syntax KItem ::= hlist(HeatList) [strict]
      syntax HeatList ::= toHeatList(List) [function]
@@ -133,7 +133,7 @@ module C-DYNAMIC
      rule isKResult(.HeatList) => true
      rule isKResult(S1::HeatItem hs:: S2::HeatList) => isKResult(S1) andBool isKResult(S2)
 
-     context toRVal(HOLE => reval(HOLE)) [result(RValue)]
+     context toRVal(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      rule stripHold(te(K:K, _)) => K
      rule stripHold(le(K:K, _)) => K
