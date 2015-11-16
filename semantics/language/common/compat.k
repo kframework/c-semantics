@@ -73,6 +73,7 @@ module COMPAT
                => S:String +String listToString(L:List)
 
      rule idToString(Identifier(S:String)) => S
+     rule idToString(#NoName) => "<anonymous>"
 
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)
