@@ -107,6 +107,7 @@ module C-DECL-GLOBAL
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires notBool isFunctionType(T)
                andBool validGlobalStorageClass(T)
+               andBool notBool isVariablyModifiedType(T)
           [structural]
 
      rule (.K => UNDEF("TDG1",
@@ -186,6 +187,13 @@ module C-DECL-GLOBAL
           <curr-scope> prototypeScope </curr-scope>
           requires getQualifiers(T) =/=K .Set
           [structural]
+
+     rule (.K => CV("TDG9",
+          "file-scope declaration of " +String idToString(X)
+          +String " with a variably-modified type.",
+          "6.7.6.2:2"))
+          ~> declare''(T:Type, X:CId, _)
+          requires notBool isFunctionType(T) andBool isVariablyModifiedType(T)
 
      // Checks if the type is complete if there's an initializer.
      syntax KItem ::= checkComplete(Type, K)
@@ -792,10 +800,8 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= giveCompositeType(CId, Type)
-     syntax KItem ::= "giveCompositeType'" "(" CId "," K ")"
      rule <k> giveCompositeType(X:CId, T':Type)
-               => giveCompositeType'(X, compositeType(T,
-                    stripStorageSpecifiers(T')))
+               => giveType(X, compositeType(T, stripStorageSpecifiers(T')))
           ...</k>
           <types>... X |-> T:Type ...</types>
           requires areCompatible(T, T')
@@ -812,14 +818,5 @@ module C-DECL-GLOBAL
           ...</k>
           <types>... X |-> T:Type ...</types>
           requires notBool areCompatible(T, T')
-          [structural]
-
-     rule giveCompositeType'(X:CId, T:Type) => giveType(X, T)
-          [structural]
-     rule (.K => UNDEF("TDG17",
-               "could not form composite type from declaration.",
-               "6.2.7:3, J.2:1 item 16")) // Likely because of VLA params.
-          ~> giveCompositeType'(_, T:K)
-          requires isType(T) =/=K true
           [structural]
 endmodule

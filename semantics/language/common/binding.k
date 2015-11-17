@@ -6,8 +6,8 @@ module C-BINDING-SYNTAX
      syntax KItem ::= bind(List, List, List)
      syntax KItem ::= bindParam(CId, Type, K)
      syntax KItem ::= bindParam(CId)
-     syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
+     syntax Type ::= elideDecl(Type) [function]
 endmodule
 
 module C-BINDING
@@ -27,18 +27,19 @@ module C-BINDING
 
      // Construct the function parameters. Takes three lists: (1) the formal
      // parameters (ids and types) from the function definition, (2) the
-     // prototype from the function definition, if any (as a list of parameter
-     // types), and (3) the actual, evaluated arguments being passed during
-     // this call. If the second list is empty, then the parameters need to be
-     // promoted. If the first list is empty, then we're dealing with a
-     // builtin, so we need to make up identifiers.
+     // prototype for the function, if any (as a list of parameter types), and
+     // (3) the actual, evaluated arguments being passed during this call. If
+     // the second list is empty, then the parameters need to be promoted. If
+     // the first list doesn't have ids, then we're dealing with a builtin, so
+     // we need to make up identifiers.
 
      // Prototype.
      rule (.K => bindParam(X, T, V))
           ~> bind(
-               (ListItem(typedDeclaration(_, X:CId)) => .List) _,
-               (ListItem(T:Type) => .List) _,
+               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
+               (ListItem(_) => .List) _,
                (ListItem(V:RValue) => .List) _)
+          requires notBool isVoidType(T)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (.K => bindParam(X, T, argPromote(V)))
@@ -55,48 +56,48 @@ module C-BINDING
                .List,
                ListItem(V:RValue) _)
           requires notBool #arePromotedTypesCompat(value(V):>CValue, T, type(V))
+               andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("CB2", "function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
-               ListItem(typedDeclaration(T:Type, _)) _,
-               ListItem(T':Type) _,
+               ListItem(T:Type) _,
+               _,
                .List)
-          requires notBool (isVoidType(T) andBool isVoidType(T'))
+          requires notBool isVoidType(T)
      rule (.K => UNDEF("CB3", "function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
-          ~> bind(.List, .List, ListItem(_) _)
+          ~> bind(ListItem(T:Type), .List, ListItem(_) _)
+          requires isVoidType(T)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
-     rule bind(ListItem(typedDeclaration(t(_, void), _)),
-               ListItem(t(_, void)),
-               .List)
-          => .K
+     rule bind(ListItem(T:Type), ListItem(T':Type), .List) => .K
+          requires isVoidType(T) andBool isVoidType(T')
           [structural]
-     // Builtins -- they have a prototype but no def.
+     rule bind(ListItem(T:Type), .List, .List) => .K
+          requires isVoidType(T)
+          [structural]
+     // Builtins -- they don't have named parameters.
      rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
           ~> bind(
-               .List,
                (ListItem(T:Type) => .List) _,
+               (ListItem(_) => .List) _,
                (ListItem(V:RValue) => .List) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
-          [structural]
-     // Builtins, variadic.
-     rule bind(.List, ListItem(variadic), Vs:List)
-          => bindVariadics(Vs, 0)
-          [structural]
-     // Builtins, no params.
-     rule bind(.List, ListItem(t(_, void)), _) => .K
+               andBool notBool isTypedDeclaration(T)
           [structural]
      rule bind(.List, .List, .List) => .K
           [structural]
+
+     rule elideDecl(typedDeclaration(T:Type, _)) => T
+     rule elideDecl(T:Type) => T [owise]
 
      syntax KItem ::= bindVariadics(List, Int)
      rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))
@@ -166,6 +167,7 @@ module C-BINDING
      // is another set of promotions called "default argument promotions" used
      // when calling functions where the type information is not complete. This
      // is equivalent to integer promotions + (float => double)
+     syntax Type ::= argPromoteType(Type) [function]
      rule argPromoteType(t(Mods:Set, float))
           => t(Mods, double)
      rule argPromoteType(t(Mods:Set, double))
@@ -182,7 +184,8 @@ module C-BINDING
      rule areArgPromoted(_) => false [owise]
 
      syntax Bool ::= isArgPromoted(Type) [function]
-     rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))
+     rule isArgPromoted(T:Type)
+          => areCompatible(elideDecl(T), argPromoteType(elideDecl(T)))
 
 endmodule
 
