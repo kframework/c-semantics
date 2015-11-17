@@ -4,4 +4,4 @@ Error: UB-TTE1
 Description: program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.
 Type: Undefined behavior.
 See also: C11 sec. 6.2.7:3, J.2:1 item 15
-Translation failed. Run kcc -d UB-TTE1-bad.c to see commands run.
+Translation failed. Run kcc -d j016b.c to see commands run.
