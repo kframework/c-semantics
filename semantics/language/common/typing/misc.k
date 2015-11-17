@@ -13,6 +13,7 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
+     rule simpleType(typedDeclaration(T:Type, _)) => simpleType(T)
      rule simpleType(t(_, T:SimpleType)) => T
 
      rule char => cfg:charAlias
@@ -135,14 +136,8 @@ module C-TYPING-MISC
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
 
-     rule getQualifiers(t(Mods:Set, arrayType(T::Type, _)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, incompleteArrayType(T::Type)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, flexibleArrayType(T::Type)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
-     rule getQualifiers(t(Mods:Set, variableLengthArrayType(T::Type, _)))
-          => intersectSet(Mods, typeQualifiers) getQualifiers(T)
+     rule getQualifiers(T:ArrayType)
+          => intersectSet(getModifiers(T), typeQualifiers) getQualifiers(innerType(T))
      rule getQualifiers(T::Type)
           => intersectSet(getModifiers(T), typeQualifiers) [owise]
 
@@ -188,6 +183,8 @@ module C-TYPING-MISC
           => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods::Set, flexibleArrayType(T::Type)))
           => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
+     rule stripQualifiers(t(Mods::Set, unspecifiedArrayType(T::Type)))
+          => t(Mods -Set typeQualifiers, unspecifiedArrayType(stripQualifiers(T)))
      rule stripQualifiers(t(Mods::Set, variableLengthArrayType(T::Type, N:K)))
           => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
      rule stripQualifiers(T::Type)
@@ -237,6 +234,9 @@ module C-TYPING-MISC
      rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                flexibleArrayType(addQualifiers(Quals, T)))
+     rule addQualifiers(Quals:Set, t(Mods:Set, unspecifiedArrayType(T:Type)))
+          => t(Mods intersectSet(Quals, typeQualifiers),
+               unspecifiedArrayType(addQualifiers(Quals, T)))
      rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
           => t(Mods intersectSet(Quals, typeQualifiers),
                variableLengthArrayType(addQualifiers(Quals, T), N))
@@ -254,6 +254,7 @@ module C-TYPING-MISC
      rule innerType(t(_, arrayType(T:Type, _))) => T
      rule innerType(t(_, incompleteArrayType(T:Type))) => T
      rule innerType(t(_, flexibleArrayType(T:Type))) => T
+     rule innerType(t(_, unspecifiedArrayType(T:Type))) => T
      rule innerType(t(_, variableLengthArrayType(T:Type, _))) => T
      rule innerType(t(_, pointerType(T:Type))) => T
      rule innerType(t(_, bitfieldType(T:Type, _))) => T
@@ -289,6 +290,8 @@ module C-TYPING-MISC
           => incompleteArrayType(tagRestrict(Tag, T))
      rule tagRestrict(Tag:Scope, flexibleArrayType(T:Type))
           => flexibleArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag:Scope, unspecifiedArrayType(T:Type, N:K))
+          => unspecifiedArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(Tag:Scope, variableLengthArrayType(T:Type, N:K))
           => variableLengthArrayType(tagRestrict(Tag, T), N)
      rule tagRestrict(_, incompleteStructType(X:CId))
@@ -360,15 +363,6 @@ module C-TYPING-MISC
      rule #getReadFromLen(_) => 0 [owise]
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
-     /*@ these large numbers are used instead of an infinity---the result of
-     these rules shouldn't be used later anyway */
-     rule arrayLength(t(_, flexibleArrayType(_)))
-          => 36893488147419103232
-     // Probably should never come up.
-     rule arrayLength(t(_, variableLengthArrayType(_, _)))
-          => 36893488147419103232
-     rule arrayLength(t(_, incompleteArrayType(_)))
-          => 36893488147419103232
 
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
      rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
@@ -435,8 +429,6 @@ module C-TYPING-MISC
           <curr-scope> S:Scope </curr-scope>
           requires notBool isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
-     rule <k> (.K => CV("CTM2", "Variable-length array with file scope.", "6.7.6.2:2")) ~> stabilizeVLA(_) ...</k>
-          <curr-scope> fileScope </curr-scope>
 
      // Although GCC seems to allow it, I don't think structs/unions are
      // allowed to have VM types (see 6.7.2.1p9).
@@ -469,5 +461,11 @@ module C-TYPING-MISC
           ~> stabilize(t(_, variableLengthArrayType(_, tv(N:Int, _))))
           requires N <=Int 0
           [structural]
+
+     rule toPrototype(t(Mods:Set, functionType(R:Type, ListItem(P:Type) Ps:List)))
+          => t(Mods, functionType(R, .List))
+          requires oldStyle in Mods
+               andBool notBool isVoidType(P)
+     rule toPrototype(T:Type) => T [owise]
 
 endmodule

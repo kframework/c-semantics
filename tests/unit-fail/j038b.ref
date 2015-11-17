@@ -1,7 +1,7 @@
-Error: CV-EFNC2
-Description: incompatible types in function call arguments.
-Type: Constraint violation.
-See also: C11 sec. 6.5.16.1:1
+Error: UB-CB3
+Description: function call has more arguments than parameters in function definition.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
   at foo(j038b.c:4)
   at main(j038b.c:4)
   at <file-scope>(<unknown>)
