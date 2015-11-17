@@ -9,15 +9,16 @@ module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
 
+     imports C-ABSTRACT-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
+     imports C-CONFIGURATION
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
-     imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     imports C-CONFIGURATION
-     imports C-ABSTRACT-SYNTAX
 
 // chathhorn: hacky custom heating/cooling for type-strictness.
      syntax Set ::= "typeStrictUnaryOps" [function]
@@ -199,10 +200,19 @@ module C-TYPING-EXPR
      rule typeof(_ ? T:PointerType : _:IntegerType => T)
      rule typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)) => t(Mods Mods', pointerType(compositeType(T, T'))))
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
+               andBool notBool (isVariablyModifiedType(T) orBool isVariablyModifiedType(T'))
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods1', S))
+               andBool notBool isVariablyModifiedType(t(Mods1', S))
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods2', S))
+               andBool notBool isVariablyModifiedType(t(Mods2', S))
+
+     rule (.K => UNDEF("TTE1",
+               "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.",
+               "6.2.7:3, J.2:1 item 15"))
+          ~> typeof(_ ? T:Type : T':Type)
+          requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
 
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>

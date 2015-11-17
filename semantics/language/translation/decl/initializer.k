@@ -388,15 +388,15 @@ module C-DECL-INITIALIZER
      rule getTopArrayUse((K:K[[N:Int]])[[_]]) => getTopArrayUse(K[[N]])
      rule getTopArrayUse((K:K . _:CId)[[_]]) => getTopArrayUse(K)
 
-     syntax KItem ::= initializeSingleInit(K)
+     syntax KItem ::= initializeSingleInit(K) [strict]
 
-     rule (.K => typeof(K)) ~> initializeSingleInit(K:K)
+     rule (.K => typeof(K)) ~> initializeSingleInit(K:KResult)
           [structural]
      rule (typeof(T:Type) => T) ~> initializeSingleInit(_)
           [structural]
 
      // fixme want to exclude strings, but not normal arrays
-     rule <k> T':Type ~> initializeSingleInit(K':K) => .K ...</k>
+     rule <k> T':Type ~> initializeSingleInit(K':KResult) => .K ...</k>
           <curr-subobject>
                (.List => ListItem(next)) ListItem(ncle(K:K, T:Type))
           ...</curr-subobject>
@@ -415,7 +415,7 @@ module C-DECL-INITIALIZER
      // this is used to have an aggregate on the RHS of a compound init
      // fixme want to exclude strings, but not normal arrays
      syntax KItem ::= initFromAggregateRHS(K, Type)
-     rule T:StructOrUnionType ~> initializeSingleInit(K:K)
+     rule T:StructOrUnionType ~> initializeSingleInit(K:KResult)
           => initFromAggregateRHS(K, T)
           [structural]
 

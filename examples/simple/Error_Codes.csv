@@ -68,6 +68,7 @@ UB-TDG7,void parameter appears with qualifiers.,"6.7.6.3:10, J.2:1 item 78",Unde
 UB-TDG11,static declaration of Identifier follows non-static declaration.,"6.2.2:7, J.2:1 item 8",Undefined Behavior
 UB-TDG12,declaration for an object is a tentative definition with internal linkage and has an incomplete type.,"6.9.2:3, J.2:1 item 89",Undefined Behavior
 UB-TDG17,could not form composite type from declaration.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
+UB-TTE1,program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
 UB-CDI1,Initializer for scalar contains multiple expressions,"6.7.9:11, J.2:1 item 81",Undefined Behavior
 UB-CDI2,Initializer for scalar contains multiple levels of braces,"6.7.9:11, J.2:1 item 81",Undefined Behavior
 UB-CDI3,Invalid initializer for aggregate type,"6.7.9:16, J.2:1 item 83",Undefined Behavior
