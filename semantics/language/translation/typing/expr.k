@@ -84,9 +84,17 @@ module C-TYPING-EXPR
           requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
 
      context typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _)
-          requires notBool isNullPointerConstant(HOLE) [result(Type)]
+          requires notBool isNPC(HOLE) [result(Type)]
      context typeof(_ ? _ : (HOLE:KItem => typeof(HOLE)))
-          requires notBool isNullPointerConstant(HOLE) [result(Type)]
+          requires notBool isNPC(HOLE) [result(Type)]
+
+     syntax Bool ::= isNPC(K) [function]
+     rule isNPC(V:RValue) => true
+          requires isNullPointerConstant(V)
+     rule isNPC(Cast(Specifier(list(ListItem(Void))), PointerType(Specifier(list(.List)), JustBase),
+               tv(0, t(_, int))))
+          => true
+     rule isNPC(V:KItem) => false [owise]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
@@ -202,10 +210,17 @@ module C-TYPING-EXPR
      rule typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)) => t(Mods Mods', pointerType(compositeType(T, T'))))
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
                andBool notBool (isVariablyModifiedType(T) andBool isVariablyModifiedType(T'))
-     rule typeof(_ ? V:KItem : T:Type) => addQualifiers(getQualifiers(type(V)), T)
-          requires isNullPointerConstant(V)
-     rule typeof(_ ? T:Type : V:KItem) => addQualifiers(getQualifiers(type(V)), T)
-          requires isNullPointerConstant(V)
+     // If one operand is a NPC, the result has the type of the other operand.
+     rule typeof(_ ? V:KItem : T:Type => T)
+          requires isNPC(V)
+     rule typeof(_ ? T:Type : V:KItem => T)
+          requires isNPC(V)
+     rule typeof(_ ? V:KItem : V:KItem => V)
+          requires isNPC(V)
+     // In this case, both operands are NPCs, but one has type int and the
+     // other has type void*.
+     rule typeof(_ ? V1:KItem : V2:KItem => t(SetItem(IntegerConstant), pointerType(t(.Set, void))))
+          requires isNPC(V1) andBool isNPC(V2)
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods1', S))
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))

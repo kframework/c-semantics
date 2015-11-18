@@ -223,7 +223,7 @@ module C-TYPING-SYNTAX
 
      syntax Type ::= innerType(Type) [function]
 
-     syntax Bool ::= isNullPointerConstant(K) [function]
+     syntax Bool ::= isNullPointerConstant(RValue) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
 
      syntax Bool ::= hasReadFrom(Type) [function]

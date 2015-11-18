@@ -25,5 +25,9 @@ int main(void) {
 
       sizeof(0 ? (void (*) (int (*p)[*])) NULL : (void (*) (int (*p) [*])) NULL);
 
+      sizeof(0 ? NULL : NULL);
+
+      sizeof(0 ? 0 : NULL);
+
       return 0;
 }
