@@ -32,8 +32,6 @@ module C-DECL-TAGGED
           ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
-     rule _:ErrorExit ~> StructDef(X:CId, krlist(.List)) => addTag(X, makeStructFieldInfo(.List))
-          requires isErrorRecovery
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
           requires hasNamedField(L)
@@ -42,8 +40,6 @@ module C-DECL-TAGGED
           ~> UnionDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
-     rule _:ErrorExit ~> UnionDef(X:CId, krlist(.List)) => addTag(X, makeUnionFieldInfo(.List))
-          requires isErrorRecovery
 
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true

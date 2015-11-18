@@ -142,10 +142,6 @@ module C-COMMON-EXPR-ADDITIVE
                "6.5.6:8, J.2:1 item 46"))
           ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
-     rule _:ErrorExit ~> addToPointer(Loc:SymLoc, T:Type, I:Int)
-          => checkUse(tv(newFromArray(Loc, T, I)
-               +bytes (I *Int byteSizeofType(innerType(T))), T))
-          requires notBool ifFromArrayInBounds(Loc, T, I) andBool isErrorRecovery
 
      syntax SymLoc ::= newFromArray(SymLoc, Type, Int) [function]
                      | #newFromArray(SymBase, Int, K, Set, Set, Type, Int) [function]
@@ -228,9 +224,6 @@ module C-COMMON-EXPR-ADDITIVE
           ~> tv(L1:SymLoc, _)
                - tv(L2:SymLoc, _)
           requires base(L1) =/=K base(L2)
-     rule _:ErrorExit ~> tv(L1:SymLoc, _) - tv(L2:SymLoc, _)
-          => tv(unknown, t(.Set, cfg:ptrdiffut))
-          requires base(L1) =/=K base(L2) andBool isErrorRecovery
 
      // ptr1, ptr2, size of ptr type
      syntax KItem ::= computePointerDifference(Int, Int)
@@ -246,9 +239,6 @@ module C-COMMON-EXPR-ADDITIVE
           requires (Diff /Int Size) >Int max(t(.Set, cfg:ptrdiffut))
                orBool (Diff /Int Size) <Int min(t(.Set, cfg:ptrdiffut))
           [structural]
-     rule _:ErrorExit ~> computePointerDifference(Diff:Int, Size:Int)
-          => arithInterpret(t(.Set, cfg:ptrdiffut), Diff /Int Size)
-          requires isErrorRecovery
 
      rule tv(I1:Int, T:Type) + tv(I2:Int, T':Type)
           => arithInterpret(T, (I1 +Int I2))

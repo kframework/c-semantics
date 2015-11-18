@@ -135,8 +135,6 @@ module C-EXPR-ASSIGNMENT
 
      rule (.K => UNDEF("TEAS4", "void value as right operand in assignment", "6.3.2.2:1, J.2:1 item 23"))
           ~> _ := voidVal
-     rule _:ErrorExit ~> _ := voidVal => voidVal //eat the invalid write
-          requires isErrorRecovery
      rule <k> (.K => CV("TEAS5", "Non-constant static initializer.", "6.7.9:4"))
                ~> nclv(_, _) := te(_, _)
           ...</k>

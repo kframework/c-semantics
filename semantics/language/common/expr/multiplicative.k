@@ -74,10 +74,6 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool I2 =/=Int 0
                andBool T ==Type T'
           [structural]
-     rule _:ErrorExit ~> tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
-          => arithInterpret(T, I1 %Int I2)
-          requires isPromoted(T) andBool I2 =/=Int 0 andBool T ==Type T'
-               andBool isErrorRecovery
 
 endmodule
 

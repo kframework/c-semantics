@@ -86,8 +86,6 @@ module C-MEMORY-WRITING
           <initializing> false </initializing>
           requires isStringLoc(Loc)
           [structural]
-     rule _:ErrorExit ~> write(Loc:SymLoc, _, _) => .K
-          requires isStringLoc(Loc) andBool isErrorRecovery
 
      rule write-specific(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(stripProv(Loc), splitBytes(tv(V, T)), T)
