@@ -65,8 +65,6 @@ module C-EXPR-ASSIGNMENT
                andBool (getReadFromLoc(T) +bytes byteSizeofType(T)) >bytes Loc
                andBool (Loc +bytes byteSizeofType(T)) >bytes getReadFromLoc(T)
           [structural]
-     rule _:ErrorExit ~> checkOverlap(_, _, _) => .K
-          requires isErrorRecovery
 
      syntax Set ::= getRelevantTags(SymLoc, SymLoc) [function]
      rule getRelevantTags(Loc':SymLoc, Loc:SymLoc)
@@ -94,8 +92,6 @@ module C-EXPR-ASSIGNMENT
           => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4, J.2:1 item 69")
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
-     rule _:ErrorExit ~> checkRestrictAssign(_, _) => .K
-          requires isErrorRecovery
 
      syntax Bool ::= fromArrayStatic(Type) [function]
      rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
@@ -114,8 +110,6 @@ module C-EXPR-ASSIGNMENT
                "6.7.6.3:7, J.2:1 item 77"))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
           requires notBool isFromArray(Loc)
-     rule _:ErrorExit ~> checkArrayStaticAssign(_, _) => .K
-          requires isErrorRecovery
 
      rule checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
@@ -127,8 +121,6 @@ module C-EXPR-ASSIGNMENT
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
           requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
-     rule _:ErrorExit ~> checkArrayStaticAssign'(_, _, _) => .K
-          requires isErrorRecovery
 
      syntax KItem ::= getFirstMatch(Set, K) [function]
                     | "getFirstMatch'" "(" K "," Set "," K ")" [function]
@@ -148,7 +140,7 @@ module C-EXPR-ASSIGNMENT
           [structural]
 
      syntax KItem ::= #compoundAssign(K, K, K)
-     context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     context #compoundAssign(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule #compoundAssign(LV:KResult, V:RValue, AExp:K)
           => fillLHoles(LV, fillRHoles(V, AExp))
           [structural]

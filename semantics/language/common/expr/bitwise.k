@@ -75,16 +75,6 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0
           [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1:Type) << R:RValue
-          => - (tv(absInt(E1), T1) << R)
-          requires isPromoted(T1) andBool isPromoted(type(R))
-               andBool E1 <Int 0
-               andBool isErrorRecovery
-     rule _:ErrorExit ~> L:RValue << tv(E2:Int, T2:Type)
-          => L << tv(E2 modInt bitSizeofType(type(L)), T2)
-          requires isErrorRecovery
-               andBool isPromoted(type(L)) andBool isPromoted(T2)
-               andBool (E2 <Int 0 orBool E2 >=Int bitSizeofType(type(L)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.7}{5}}}{
      The result of \cinline{E1 >> E2} is \cinline{E1} right-shifted
@@ -130,16 +120,6 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(type(R))
                andBool E1 <Int 0 andBool isSignedIntegerType(T1)
           [structural]
-     rule _:ErrorExit ~> tv(E1:Int, T1:Type) >> R:RValue
-          => - (tv(absInt(E1), T1) << R)
-          requires isPromoted(T1) andBool isPromoted(type(R))
-               andBool E1 <Int 0
-               andBool isErrorRecovery
-     rule _:ErrorExit ~> L:RValue >> tv(E2:Int, T2:Type)
-          => L >> tv(E2 modInt bitSizeofType(type(L)), T2)
-          requires isErrorRecovery
-               andBool isPromoted(type(L)) andBool isPromoted(T2)
-               andBool (E2 <Int 0 orBool E2 >=Int bitSizeofType(type(L)))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{
      The usual arithmetic conversions are performed on the operands.
@@ -259,8 +239,6 @@ module C-COMMON-EXPR-BITWISE
                "6.2.6.2:4, J.2:1 item 14"))
           ~> bitwiseInterpret(tv(N:Int, T:Type))
           requires isNegZero(N, T)
-     rule _:ErrorExit ~> bitwiseInterpret(tv(N:Int, T:Type)) => tv(N, T)
-          requires isNegZero(N, T) andBool isErrorRecovery
 
      // Because of the undefinedness of bit shifting negative numbers, the
      // bitwise operations behave the same regardless of the encoding of

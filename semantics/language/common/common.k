@@ -28,7 +28,7 @@ require "memory/alloc.k"
 require "memory/reading.k"
 require "memory/writing.k"
 
-require "../../extensions-common.k"
+require "extensions-common.k"
 
 module C-COMMON
      imports C-ALIGNMENT

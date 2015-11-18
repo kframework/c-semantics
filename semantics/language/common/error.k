@@ -36,8 +36,6 @@ module C-ERROR
      imports K-REFLECTION
      imports C-CONFIGURATION
 
-     rule _:ErrorExit ~> _:Error => .K
-          requires isErrorRecovery
 
      syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)

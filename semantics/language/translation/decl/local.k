@@ -176,18 +176,6 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           requires isCompleteType(T) andBool (X in_keys(LocalTypes))
           [structural]
-     rule <k> _:ErrorExit ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => addToEnv(X, nonStatic)
-               ~> giveType(X, T)
-          ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <local-types>
-               // local-types is just a flag in this case.
-               LocalTypes:Map => LocalTypes[X <- .K]
-          </local-types>
-          requires isErrorRecovery
-          [structural]
 
 endmodule
 

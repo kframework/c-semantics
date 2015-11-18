@@ -48,15 +48,6 @@ module C-STMT-RETURN
           ...</gtypes>
           requires Noreturn in Mods
           [structural]
-     rule <k> _:ErrorExit ~> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <curr-tu> TU:String </curr-tu>
-          <tu-id> TU </tu-id>
-          <gtypes>...
-               F |-> t(Mods:Set, functionType(T:Type, _))
-          ...</gtypes>
-          requires (Noreturn in Mods) andBool isErrorRecovery
-          [structural]
 
      syntax KItem ::= "Return'" "(" K ")"
                     | "Return''" "(" K ")"

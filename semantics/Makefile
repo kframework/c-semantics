@@ -19,19 +19,19 @@ default: fast
 
 c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION): $(C11_TRANSLATION_FILES)
 	@echo "Kompiling the static C semantics..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11-translation.k -d "c11-translation-kompiled" -w all -v --debug
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11-translation.k -d "c11-translation-kompiled" -w all -v --debug -I $(PROFILE_DIR)/semantics
 
 c11-kompiled/c11-kompiled/def.$(EXTENSION): $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-kompiled" -w all -v --transition "interpRule" --debug
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-kompiled" -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics
 
 c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION): $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics with expression sequencing non-determinism..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal"
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantiocs
 
 c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION): $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-thread-kompiled" --transition "observable ndtrans ndthread"
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-thread-kompiled" --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics
 
 all: fast nd thread
 

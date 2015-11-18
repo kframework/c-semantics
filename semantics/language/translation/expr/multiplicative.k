@@ -23,10 +23,6 @@ module C-EXPR-MULTIPLICATIVE
                andBool (isPromoted(type(L)) orBool isFloatType(type(L)))
                andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
                andBool type(L) ==Type type(R)
-     rule _:ErrorExit ~> L:RValue / tv(0, T:Type) => te(stripHold(L) / tv(0, T), type(L))
-          requires isPromoted(type(L))
-               andBool type(L) ==Type T
-               andBool isErrorRecovery
 
      rule te(L:K, T:Type) % tv(V:CValue, T':Type) => te(L % tv(V, T'), T)
           requires isPromoted(T)
@@ -38,9 +34,5 @@ module C-EXPR-MULTIPLICATIVE
                andBool isPromoted(type(L))
                andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
                andBool type(L) ==Type type(R)
-     rule _:ErrorExit ~> L:RValue % tv(0, T:Type) => te(stripHold(L) % tv(0, T), type(L))
-          requires isPromoted(type(L))
-               andBool type(L) ==Type T
-               andBool isErrorRecovery
 endmodule
 
