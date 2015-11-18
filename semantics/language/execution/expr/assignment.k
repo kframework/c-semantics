@@ -140,7 +140,7 @@ module C-EXPR-ASSIGNMENT
           [structural]
 
      syntax KItem ::= #compoundAssign(K, K, K)
-     context #compoundAssign(_, (HOLE => reval(HOLE)), _) [result(RValue)]
+     context #compoundAssign(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule #compoundAssign(LV:KResult, V:RValue, AExp:K)
           => fillLHoles(LV, fillRHoles(V, AExp))
           [structural]
