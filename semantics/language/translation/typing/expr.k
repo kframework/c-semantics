@@ -83,9 +83,10 @@ module C-TYPING-EXPR
      context typeof(Lbl:KLabel(_, (HOLE:KItem => typeof(HOLE))))
           requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
 
-     context typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
-     context typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
-
+     context typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _)
+          requires notBool isNullPointerConstant(HOLE) [result(Type)]
+     context typeof(_ ? _ : (HOLE:KItem => typeof(HOLE)))
+          requires notBool isNullPointerConstant(HOLE) [result(Type)]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
@@ -200,19 +201,21 @@ module C-TYPING-EXPR
      rule typeof(_ ? T:PointerType : _:IntegerType => T)
      rule typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)) => t(Mods Mods', pointerType(compositeType(T, T'))))
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
-               andBool notBool (isVariablyModifiedType(T) orBool isVariablyModifiedType(T'))
+               andBool notBool (isVariablyModifiedType(T) andBool isVariablyModifiedType(T'))
+     rule typeof(_ ? V:KItem : T:Type) => addQualifiers(getQualifiers(type(V)), T)
+          requires isNullPointerConstant(V)
+     rule typeof(_ ? T:Type : V:KItem) => addQualifiers(getQualifiers(type(V)), T)
+          requires isNullPointerConstant(V)
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods1', S))
-               andBool notBool isVariablyModifiedType(t(Mods1', S))
      rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods2', S))
-               andBool notBool isVariablyModifiedType(t(Mods2', S))
 
      rule (.K => UNDEF("TTE1",
                "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.",
-               "6.2.7:3, J.2:1 item 15"))
+               "6.2.7:3, J.2:1 item 16"))
           ~> typeof(_ ? T:Type : T':Type)
-          requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
+          requires isVariablyModifiedType(T) andBool isVariablyModifiedType(T')
 
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>

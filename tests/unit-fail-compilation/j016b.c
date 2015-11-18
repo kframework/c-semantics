@@ -4,6 +4,6 @@
 
 int main() {
       int x = 5;
-      sizeof(0 ? (int (*) [x]) NULL : NULL);
+      sizeof(0 ? (int (*) [x]) NULL : (int (*) [x]) NULL);
       return 0;
 }
