@@ -3,6 +3,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
 
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkUse(K) [strict]
+     syntax KItem ::= checkLoc(SymLoc)
      syntax Type ::= arrayToPtrType(Type) [function]
 endmodule
 
@@ -140,7 +141,6 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V:SymLoc, T::Type)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
-     syntax KItem ::= checkLoc(SymLoc)
      rule checkLoc(Loc::SymLoc) => checkLoc'(stripProv(Loc))
           [structural]
 

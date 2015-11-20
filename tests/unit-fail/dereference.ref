@@ -1,0 +1,7 @@
+Error: UB-CEE4
+Description: Referring to an object outside of its lifetime.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4:2, J.2:1 item 9
+  at main(dereference.c:7)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)

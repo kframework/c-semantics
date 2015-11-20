@@ -112,14 +112,14 @@ module C-MEMORY-READING
      rule #hasUnknown(.List) => false
      rule #hasUnknown(ListItem(piece(unknown, _)) _:List) => true
      rule #hasUnknown((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L)
-          requires B =/=K unknown
+     rule #hasUnknown(ListItem(piece(bitRange(unknown, _, _), _)) L:List) => true
+     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L) [owise]
 
      rule #hasTrap(.List) => false
      rule #hasTrap(ListItem(piece(trap, _)) _:List) => true
      rule #hasTrap((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L)
-          requires B =/=K trap
+     rule #hasTrap(ListItem(piece(bitRange(trap, _, _), _)) L:List) => true
+     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L) [owise]
 
      // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(Type, List) [function]
