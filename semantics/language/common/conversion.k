@@ -289,7 +289,7 @@ module C-CONVERSION
      }*/
      rule cast(T':PointerType, tv(V:CValue, T:IntegerType))
           => checkUse(tv(cfg:intToPointer(V, T), cast(T', T)))
-          requires (V =/=K 0)
+          requires notBool isIntegerConstant(tv(V, T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{
      Any pointer type may be converted to an integer type. Except as previously
