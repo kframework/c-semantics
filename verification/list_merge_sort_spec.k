@@ -173,14 +173,14 @@ rule [first-loop-inv]:
           ...</thread-local>
         </thread>
       </threads>
-      <effective-types> _:Map </effective-types>
-      <rand-nat> _:KItem </rand-nat>
-      <next-thread-id> _:KItem </next-thread-id>
-      <thread-info>
-        <thread-status> _:Map </thread-status>
-        <mutexes> _:Map </mutexes>
-        <glocks> _:List </glocks>
-      </thread-info>
+    //<effective-types> _:Map </effective-types>
+    //<rand-nat> _:KItem </rand-nat>
+    //<next-thread-id> _:KItem </next-thread-id>
+    //<thread-info>
+    //  <thread-status> _:Map </thread-status>
+    //  <mutexes> _:Map </mutexes>
+    //  <glocks> _:List </glocks>
+    //</thread-info>
     </exec>
     <input> _:List </input>
     <output> _:List </output>
@@ -384,14 +384,14 @@ rule [second-loop-inv]:
           ...</thread-local>
         </thread>
       </threads>
-      <effective-types> _:Map </effective-types>
-      <rand-nat> _:KItem </rand-nat>
-      <next-thread-id> _:KItem </next-thread-id>
-      <thread-info>
-        <thread-status> _:Map </thread-status>
-        <mutexes> _:Map </mutexes>
-        <glocks> _:List </glocks>
-      </thread-info>
+    //<effective-types> _:Map </effective-types>
+    //<rand-nat> _:KItem </rand-nat>
+    //<next-thread-id> _:KItem </next-thread-id>
+    //<thread-info>
+    //  <thread-status> _:Map </thread-status>
+    //  <mutexes> _:Map </mutexes>
+    //  <glocks> _:List </glocks>
+    //</thread-info>
     </exec>
     <input> _:List </input>
     <output> _:List </output>
