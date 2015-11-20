@@ -1,7 +1,7 @@
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
-export PROFILE_DIR = $(shell pwd)/default-profile
+export PROFILE_DIR = $(shell pwd)/x86-gcc-limited-libc
 export PROFILE=$(shell basename $(PROFILE_DIR))
 TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
