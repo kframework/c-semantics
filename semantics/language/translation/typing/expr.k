@@ -1,7 +1,8 @@
 module C-TYPING-EXPR-SYNTAX
-  imports BASIC-K
+     imports BASIC-K
 
-syntax KItem ::= typeof(K)
+     syntax KItem ::= typeof(K)
+     syntax Scope ::= "noEvalScope"
 
 endmodule
 
@@ -20,7 +21,7 @@ module C-TYPING-EXPR
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
 
-// chathhorn: hacky custom heating/cooling for type-strictness.
+     // chathhorn: hacky custom heating/cooling for type-strictness.
      syntax Set ::= "typeStrictUnaryOps" [function]
                   | "typeStrictBinaryOps" [function]
                   | "typeStrictBinaryOpsFirst" [function]
@@ -82,19 +83,6 @@ module C-TYPING-EXPR
           requires #klabel(Lbl) in typeStrictBinaryOpsFirst [result(Type)]
      context typeof(Lbl:KLabel(_, (HOLE:KItem => typeof(HOLE))))
           requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
-
-     context typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _)
-          requires notBool isNPC(HOLE) [result(Type)]
-     context typeof(_ ? _ : (HOLE:KItem => typeof(HOLE)))
-          requires notBool isNPC(HOLE) [result(Type)]
-
-     syntax Bool ::= isNPC(K) [function]
-     rule isNPC(V:RValue) => true
-          requires isNullPointerConstant(V)
-     rule isNPC(Cast(Specifier(list(ListItem(Void))), PointerType(Specifier(list(.List)), JustBase),
-               tv(0, t(_, int))))
-          => true
-     rule isNPC(V:KItem) => false [owise]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
@@ -199,38 +187,130 @@ module C-TYPING-EXPR
      rule typeof(_ || _ => t(.Set, int))
 
      // conditional expression
-     rule typeof(_ ? (T:ArrayOrFunctionType => retype(T)) : _)
-     rule typeof(_ ? _ : (T:ArrayOrFunctionType => retype(T)))
-     rule typeof(_ ? T:ArithmeticType : T':ArithmeticType => usualArithmeticConversion(T, T'))
-     rule typeof(_ ? T:VoidType : _:VoidType => T)
-     rule typeof(_ ? T:StructOrUnionType : T':StructOrUnionType => T)
+     rule (.K => elaborate(scope(noEvalScope, elabResult(E1)), scope(noEvalScope, elabResult(E2))))
+          ~> typeof(_ ? E1:KItem : E2:KItem)
+
+     syntax KItem ::= elabResult(K)
+     context elabResult(HOLE:KItem => reval(HOLE)) [result(RValue)]
+
+     rule <k> elabResult(V:RValue) => .K ...</k>
+          <elab> .K => V ...</elab>
+
+     rule <k> EXIT(_) => recover ...</k>
+          <curr-scope> noEvalScope </curr-scope>
+
+     context elaborateDone(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
+     context elaborateDone(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
+
+     // fixme, not handling qualifiers correctly
+     syntax Type ::= retype(ArrayOrFunctionType) [function]
+     rule retype(T:ArrayType) => t(.Set, pointerType(innerType(T)))
+     rule retype(T:FunctionType) => t(.Set, pointerType(T))
+
+     syntax Bool ::= isNPC(K) [function]
+     rule isNPC(V:RValue) => isNullPointerConstant(V)
+     rule isNPC(_) => false [owise]
+
+     rule elaborateDone(_, _) ~> typeof(_ ? (T:ArrayOrFunctionType => retype(T)) : _)
+     rule elaborateDone(_, _) ~> typeof(_ ? _ : (T:ArrayOrFunctionType => retype(T)))
+
+     /*@ \fromStandard{\source[n1570]{\para{6.5.15}{5}}}{
+     If both the second and third operands have arithmetic type, the result
+     type that would be determined by the usual arithmetic conversions, were
+     they applied to those two operands, is the type of the result. If both the
+     operands have structure or union type, the result has that type. If both
+     operands have void type, the result has void type.
+     }*/
+     rule elaborateDone(_, _) ~> typeof(_ ? T:ArithmeticType : T':ArithmeticType)
+          => typeof(usualArithmeticConversion(T, T'))
+     rule elaborateDone(_, _) ~> typeof(_ ? T:VoidType : _:VoidType)
+          => typeof(T)
+     rule elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
+          => typeof(T)
           requires areCompatible(T, T')
-     rule typeof(_ ? _:IntegerType : T:PointerType => T)
-     rule typeof(_ ? T:PointerType : _:IntegerType => T)
-     rule typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)) => t(Mods Mods', pointerType(compositeType(T, T'))))
+
+     /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
+     If both the second and third operands are pointers or one is a
+     null pointer constant and the other is a pointer, the result type is a
+     pointer to a type qualified with all the type qualifiers of the types
+     referenced by both operands. Furthermore, if both operands are pointers to
+     compatible types or to differently qualified versions of compatible types,
+     the result type is a pointer to an appropriately qualified version of the
+     composite type}; if one operand is a null pointer constant, the result has
+     the type of the other operand; otherwise, one operand is a pointer
+     to void or a qualified version of \cinline{void}, in which case the result
+     type is a pointer to an appropriately qualified version of
+     \cinline{void}.
+     }*/
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)))
+               => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
+          ~> SizeofExpression(_)
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
-               andBool notBool (isVariablyModifiedType(T) andBool isVariablyModifiedType(T'))
-     // If one operand is a NPC, the result has the type of the other operand.
-     rule typeof(_ ? V:KItem : T:Type => T)
+               andBool notBool (isVariablyModifiedType(T) orBool isVariablyModifiedType(T'))
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)))
+               => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
+          ~> K:KItem
+          requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
+               andBool getKLabel(K) =/=K #klabel(`SizeofExpression`)
+
+     rule elaborateDone(V:K, _) ~> typeof(_ ? _ : T:PointerType)
+          => typeof(T)
           requires isNPC(V)
-     rule typeof(_ ? T:Type : V:KItem => T)
+     rule elaborateDone(_, V:K) ~> typeof(_ ? T:PointerType : _)
+          => typeof(T)
           requires isNPC(V)
-     rule typeof(_ ? V:KItem : V:KItem => V)
-          requires isNPC(V)
-     // In this case, both operands are NPCs, but one has type int and the
-     // other has type void*.
-     rule typeof(_ ? V1:KItem : V2:KItem => t(SetItem(IntegerConstant), pointerType(t(.Set, void))))
-          requires isNPC(V1) andBool isNPC(V2)
-     rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
+
+     rule elaborateDone(_, V:K) ~> typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))))
+          => typeof(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods1', S))
-     rule typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))) => t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
+               andBool notBool isNPC(V)
+     rule elaborateDone(V:K, _) ~> typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))))
+          => typeof(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
           requires notBool isFunctionType(t(Mods2', S))
+               andBool notBool isNPC(V)
 
      rule (.K => UNDEF("TTE1",
                "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.",
                "6.2.7:3, J.2:1 item 16"))
-          ~> typeof(_ ? T:Type : T':Type)
-          requires isVariablyModifiedType(T) andBool isVariablyModifiedType(T')
+          ~> elaborateDone(V:K, V':K) ~> typeof(_ ? T:Type : T':Type)
+          ~> SizeofExpression(_)
+          requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
+               andBool notBool (isNPC(V) orBool isNPC(V'))
+
+     rule (.K => CV("TTE2",
+               "if both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
+               +String " other must be a pointer to void.",
+               "6.5.15:3"))
+          ~> elaborateDone(_, _) ~> typeof(_ ? T:PointerType : T':PointerType)
+          requires notBool areCompatible(stripQualifiers(innerType(T)), stripQualifiers(innerType(T')))
+               andBool notBool (isVoidType(innerType(T)) orBool isVoidType(innerType(T')))
+
+     rule (.K => CV("TTE3",
+               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
+               "6.5.15:3")) 
+          ~> elaborateDone(V:K, _) ~> typeof(_ ? _:IntegerType : _:PointerType)
+          requires notBool isNPC(V)
+     rule (.K => CV("TTE3",
+               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
+               "6.5.15:3")) 
+          ~> elaborateDone(_, V:K) ~> typeof(_ ? _:PointerType : _:IntegerType)
+          requires notBool isNPC(V)
+
+     rule (.K => CV("TTE4",
+               "if one of a conditional expression's branches has void type, the other must also have void type.",
+               "6.5.15:3") )
+          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, void) : t(_, T:SimpleType))
+          requires T =/=K void
+     rule (.K => CV("TTE4",
+               "if one of a conditional expression's branches has void type, the other must also have void type.",
+               "6.5.15:3") )
+          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, T:SimpleType) : t(_, void))
+          requires T =/=K void
+     rule (.K => CV("TTE5",
+               "if one of a conditional expression's branches has struct or union type, the other must have the same type.",
+               "6.5.15:3") )
+          ~> elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
+          requires T =/=Type T'
 
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>
