@@ -1,27 +1,52 @@
 require "c-verifier.k"
 
-module REVERSE-SPEC
+module QUICKSORT-SPEC
 imports C-VERIFIER
 
-rule [loop-inv]:
+rule [append-loop-inv]:
   <global>
     <mem>...  
       MEM:Map
-      AX @ auto(0) |-> object(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), 4,
-        0 |-> piece(subObject(PX:CanonicalSymLoc => NullPointer, 0, 0), 8)
-        1 |-> piece(subObject(PX:CanonicalSymLoc => NullPointer, 1, 1), 8)
-        2 |-> piece(subObject(PX:CanonicalSymLoc => NullPointer, 2, 2), 8)
-        3 |-> piece(subObject(PX:CanonicalSymLoc => NullPointer, 3, 3), 8), .Map)
-      AP @ auto(0) |-> object(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), 4,
-        0 |-> piece(subObject(PP:CanonicalSymLoc => ?PP2:CanonicalSymLoc, 0, 0), 8)
-        1 |-> piece(subObject(PP:CanonicalSymLoc => ?PP2:CanonicalSymLoc, 1, 1), 8)
-        2 |-> piece(subObject(PP:CanonicalSymLoc => ?PP2:CanonicalSymLoc, 2, 2), 8)
-        3 |-> piece(subObject(PP:CanonicalSymLoc => ?PP2:CanonicalSymLoc, 3, 3), 8), .Map)
+    '_Map_(
+      AY @ auto(0) |-> object(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), 4,
+        0 |-> piece(subObject(_:CanonicalSymLoc, 0, 0), 8)
+        1 |-> piece(subObject(_:CanonicalSymLoc, 1, 1), 8)
+        2 |-> piece(subObject(_:CanonicalSymLoc, 2, 2), 8)
+        3 |-> piece(subObject(_:CanonicalSymLoc, 3, 3), 8), .Map)
+    ,,AX @ auto(0) |-> object(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), 4,
+        0 |-> piece(subObject(PX:CanonicalSymLoc, 0, 0), 8)
+        1 |-> piece(subObject(PX:CanonicalSymLoc, 1, 1), 8)
+        2 |-> piece(subObject(PX:CanonicalSymLoc, 2, 2), 8)
+        3 |-> piece(subObject(PX:CanonicalSymLoc, 3, 3), 8), .Map)
+    ,,AP @ auto(0) |-> object(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), 4,
+        0 |-> piece(subObject(loc((PP:Int => ?NPP:Int) @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))), 0, 0), 8)
+        1 |-> piece(subObject(loc((PP:Int => ?NPP:Int) @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))), 1, 1), 8)
+        2 |-> piece(subObject(loc((PP:Int => ?NPP:Int) @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))), 2, 2), 8)
+        3 |-> piece(subObject(loc((PP:Int => ?NPP:Int) @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))), 3, 3), 8), .Map)
+    )
     (
-      list(PX:CanonicalSymLoc)(LX:List)
-      list(PP:CanonicalSymLoc)(LP:List)
+      // lseg(x,p)
+      lseg(PX:CanonicalSymLoc,
+           loc(PP:Int @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))))(LXP:List)
+      // lseg(p,null)
+      lseg(loc(PP:Int @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))),
+           NullPointer)(LP:List)
     =>
-      list(?PP2:CanonicalSymLoc)(?LP2:List)
+      // lseg(x,?np)
+      lseg(PX:CanonicalSymLoc,
+           loc(?NPP:Int @ alloc, 0, SetItem(align(16)) SetItem(fromArray(0, 8))))(?NLXP:List)
+      // ?np->null
+      ?NPP:Int @ alloc |-> object(t(.Set, no-type), 8,
+        0 |-> piece(?NVP0:Int, 8) 
+        1 |-> piece(?NVP1:Int, 8) 
+        2 |-> piece(?NVP2:Int, 8) 
+        3 |-> piece(?NVP3:Int, 8) 
+        4 |-> piece(subObject(NullPointer, 0, 0), 8)
+        5 |-> piece(subObject(NullPointer, 1, 1), 8)
+        6 |-> piece(subObject(NullPointer, 2, 2), 8)
+        7 |-> piece(subObject(NullPointer, 3, 3), 8)
+       ,0 |-> t(.Set, int)
+        4 |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))
     )
     ...</mem>
     <functions> FUNCTIONS:Map </functions>
@@ -49,14 +74,10 @@ rule [loop-inv]:
           <buffer> .List </buffer>
           <k> 
             'loopMarked(.KList) ~> 
-            'While('_!=_('Identifier("x"),, 'Cast('Specifier('list(ListItem('Void(.KList))  )),, 'PointerType('Specifier('list(.List)),, 'JustBase(.KList)),, 'tv(0,, 't(SetItem(IntegerConstant),, 'int(.KList))))),,
-                   'BlockStatement('Block(3,, 'list(.List),, 'list(ListItem('CodeLoc('BlockStatement('Block(4,, 'list(.List),, 'list(
-                     ListItem('CodeLoc('DeclarationDefinition('InitNameGroup('Specifier('list(ListItem('StructRef('Identifier("listNode")))  )),, 'list(ListItem('InitName('Name('Identifier("y"),, 'PointerType('Specifier('list(.List)),, 'JustBase(.KList))),, 'NoInit(.KList)))  ))),, _:CabsLoc))  // 'CabsLoc(String(#""list.c""),, Int(#"14"),, Int(#"5"),, Int(#"0"))
-                     ListItem('CodeLoc('Computation('_:=_('Identifier("y"),, '_._('*_('Identifier("x")),, 'Identifier("next")))),, _:CabsLoc))  // 'CabsLoc(String(#""list.c""),, Int(#"16"),, Int(#"5"),, Int(#"0"))
-                     ListItem('CodeLoc('Computation('_:=_('_._('*_('Identifier("x")),, 'Identifier("next")),, 'Identifier("p"))),, _:CabsLoc))  // 'CabsLoc(String(#""list.c""),, Int(#"17"),, Int(#"5"),, Int(#"0"))
-                     ListItem('CodeLoc('Computation('_:=_('Identifier("p"),, 'Identifier("x"))),, _:CabsLoc))  // 'CabsLoc(String(#""list.c""),, Int(#"18"),, Int(#"5"),, Int(#"0"))
-                     ListItem('CodeLoc('Computation('_:=_('Identifier("x"),, 'Identifier("y"))),, _:CabsLoc))  // 'CabsLoc(String(#""list.c""),, Int(#"19"),, Int(#"5"),, Int(#"0"))
-                   ))),, _:CabsLoc))  )))) // 'CabsLoc(String(#""list.c""),, Int(#"13"),, Int(#"27"),, Int(#"0"))
+            'While('_!=_('_._('*_('Identifier("p")),, 'Identifier("next")),, 'Cast('Specifier('list(ListItem('Void(.KList))  )),, 'PointerType('Specifier('list(.List)),, 'JustBase(.KList)),, 'tv(0,, 't(SetItem(IntegerConstant),, 'int(.KList))))),, 
+                   'BlockStatement('Block(70,, 'list(.List),, 'list(ListItem('CodeLoc('BlockStatement('Block(71,, 'list(.List),, 'list(
+                        ListItem('CodeLoc('Computation('_:=_('Identifier("p"),, '_._('*_('Identifier("p")),, 'Identifier("next")))),, _:CabsLoc))  
+                   ))),, _:CabsLoc))  ))))
           =>
             .K
           ...</k>
@@ -78,11 +99,12 @@ rule [loop-inv]:
                 <locs-written> .List </locs-written>
                 <local>
                   <types>
-                    Identifier("x")                         |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))
-                    Identifier("p")                         |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))
-                    //
                   '_Map_(
-                    Identifier("reverse")                   |-> t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))) 
+                    Identifier("x")                         |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))
+                  ,,Identifier("y")                         |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))
+                  ,,Identifier("p")                         |-> t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))
+                    //
+                  ,,Identifier("reverse")                   |-> t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))) 
                   ,,Identifier("bubble_sort")               |-> t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))) 
                   ,,Identifier("insertion_sort")            |-> t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))) 
                   ,,Identifier("merge_sort")                |-> t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))) 
@@ -116,13 +138,14 @@ rule [loop-inv]:
                   <formatting-wrapper> .Bag </formatting-wrapper>
                   <compound-lit-map> .Map </compound-lit-map>
                   <local-vars> ListItem(Identifier("p")) </local-vars>
-                  <local-addresses> SetItem(AX:Int @ auto(0)) SetItem(AP:Int @ auto(0)) </local-addresses>
+                  <local-addresses> SetItem(AX:Int @ auto(0)) SetItem(AY:Int @ auto(0)) SetItem(AP:Int @ auto(0)) </local-addresses>
                   <env>
-                    Identifier("x")                         |-> AX:Int @ auto(0)
-                    Identifier("p")                         |-> AP:Int @ auto(0)
-                    //
                   '_Map_(
-                    Identifier("reverse")                   |-> 0 @ static("list.c") 
+                    Identifier("x")                         |-> AX:Int @ auto(0)
+                  ,,Identifier("y")                         |-> AY:Int @ auto(0)
+                  ,,Identifier("p")                         |-> AP:Int @ auto(0)
+                    //
+                  ,,Identifier("reverse")                   |-> 0 @ static("list.c") 
                   ,,Identifier("bubble_sort")               |-> 1 @ static("list.c") 
                   ,,Identifier("insertion_sort")            |-> 2 @ static("list.c") 
                   ,,Identifier("merge_sort")                |-> 3 @ static("list.c") 
@@ -145,12 +168,12 @@ rule [loop-inv]:
                   ,,Identifier("atoi")                      |-> 9  @ link("list.c") 
                   )
                   </env>
-                  <block-history> ListItem(1) </block-history>
+                  <block-history> ListItem(66) </block-history>
                 </local>
               </control-details>
               <curr-program-loc> _:CabsLoc => ?_:CabsLoc </curr-program-loc>
-              <curr-function-params> ListItem(Identifier("x")) </curr-function-params>
-              <curr-function> Identifier("reverse") </curr-function>
+              <curr-function-params> ListItem(Identifier("x")) ListItem(Identifier("y")) </curr-function-params>
+              <curr-function> Identifier("append") </curr-function>
               <curr-tu> "list.c" </curr-tu>
             </control>
             <call-stack> _:List </call-stack>
@@ -171,16 +194,19 @@ rule [loop-inv]:
     <result-value> _:K </result-value>
     <options> _:Set </options>
   </T>
-ensures  ?LP2 ==K rev(LX) LP
+ensures  (LXP:List LP:List) ==K (?NLXP:List ListItem(ii(?NVP3,?NVP2,?NVP1,?NVP0)))
+ andBool min(t(.Set, int)) <=Int ii(?NVP3,?NVP2,?NVP1,?NVP0) andBool ii(?NVP3,?NVP2,?NVP1,?NVP0) <=Int max(t(.Set, int)) // overflow
 
-rule [func-reverse]:
+
+rule [func-append]:
 //<global>
     <mem>...  
       MEM:Map
     (
-      list( LP1:CanonicalSymLoc)(L:List)
+      lseg( PX:CanonicalSymLoc, NullPointer)(LX:List)
+      lseg( PY:CanonicalSymLoc, NullPointer)(LY:List)
     =>
-      list(?LP2:CanonicalSymLoc)(rev(L))
+      lseg(?NP:CanonicalSymLoc, NullPointer)(LX:List LY:List)
     )
     ...</mem>
     <functions> FUNCTIONS:Map </functions>
@@ -208,12 +234,14 @@ rule [func-reverse]:
           <buffer> .List </buffer>
           <k> 
             Call1(
-                tv(loc(0 @ static("list.c"), 0), // reverse
-                    t(.Set, pointerType(t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))))))),
+                tv(loc(4 @ static("list.c"), 0), // append
+                    t(.Set, pointerType(t(.Set, functionType(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))), ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))
+                                                                                                                                                  ListItem(t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))))))),
                 rvlist(
-                    ListItem(tv(LP1:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))))
+                    ListItem(tv(PX:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))
+                    ListItem(tv(PY:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c")))))))))
           =>
-            tv(?LP2:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))
+            tv(?NP:CanonicalSymLoc, t(.Set, pointerType(t(.Set, structType(global(Identifier("listNode"), "list.c"))))))
           ...</k>
           <initializing> 0 </initializing>
           <duration> auto(0) </duration>

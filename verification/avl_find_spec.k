@@ -47,6 +47,7 @@ requires avl(T)
 // andBool Initializing >=Int 0 // c-specific
 ensures  (?B =/=K 0) ==K (V inIntSet tree_keys(T))
 
+/*
 rule [aux-checkLoc]:
   <functions> FUNCTIONS:Map </functions>
   <structs> STRUCTS:Map </structs>
@@ -72,5 +73,6 @@ rule [aux-checkLoc]:
     <file-commands> .K </file-commands>
   </files>
   <error-cell-wrapper> .Bag </error-cell-wrapper>
+*/
 
 endmodule
