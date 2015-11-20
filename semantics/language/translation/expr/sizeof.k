@@ -42,7 +42,6 @@ module C-EXPR-SIZEOF
           requires notBool isCompleteType(T)
                orBool isFunctionType(T)
 
-
      rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
 
      syntax KItem ::= #SizeofType(K) [strict]

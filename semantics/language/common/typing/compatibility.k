@@ -120,7 +120,10 @@ module C-TYPING-COMPATIBILITY
      rule #areBitFieldsCompat(.List, .List) => true
      rule #areBitFieldsCompat(_, _) => false [owise]
 
-     // bit fields aren't really types, so they aren't part of type compatibility. According to the standard, they are part of the compatibility of the type of the struct, hence #areBitFieldsCompat above.
+     // bit fields aren't really types, so they aren't part of type
+     // compatibility. According to the standard, they are part of the
+     // compatibility of the type of the struct, hence #areBitFieldsCompat
+     // above.
      rule #areCompat(t(Mods:Set, bitfieldType(T:Type, _)), T':Type, Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
      rule #areCompat(T':Type, t(Mods:Set, bitfieldType(T:Type, _)), Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
 
@@ -147,7 +150,6 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
-     // TODO(chathhorn): need to rework VLA compatibility.
      rule #areCompat(
                t(Mods:Set, arrayType(T::Type, _)),
                t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
@@ -156,6 +158,14 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Mods:Set, variableLengthArrayType(T::Type, _)),
                t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
+          => #areCompat(T, T', Cache)
+          requires sameQualifiers(Mods, Mods')
+     // Two variable length arrays are compatible, but it's undefined if
+     // they're used in an expression where they're required to be compat but
+     // they have different sizes.
+     rule #areCompat(
+               t(Mods:Set, variableLengthArrayType(T::Type, _)),
+               t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
      rule #areCompat(
@@ -301,7 +311,6 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
-     // TODO(chathhorn): rework VLA composite types.
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:Int)),
                t(Mods':Set, variableLengthArrayType(T':Type, _)))
@@ -310,6 +319,10 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, variableLengthArrayType(T:Type, _)),
                t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
+     rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type, E:K)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))

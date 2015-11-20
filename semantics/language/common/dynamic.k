@@ -33,7 +33,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= toRVal(K)
 
-     syntax Typed ::= LValue | RValue | Hold | Type
+     syntax Typed ::= LValue | RValue | Hold | Type | Nclv
      syntax Type ::= type(K) [function]
      syntax Valued ::= LValue | RValue | Hold
      syntax KItem ::= value(K) [function]
@@ -44,7 +44,8 @@ module C-DYNAMIC-SYNTAX
      syntax CValue ::= NumValue | SymLoc | Agg
      syntax C ::= NumValue | Type | RValue
 
-     syntax KResult ::= RValue | Type | nclv(SymLoc, Type) | trap(Type)
+     syntax Nclv ::= nclv(SymLoc, Type)
+     syntax KResult ::= RValue | Type | Nclv | trap(Type)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
