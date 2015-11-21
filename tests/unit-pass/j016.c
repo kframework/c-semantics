@@ -1,6 +1,11 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+double maximum(int n, int m, double a[n][m]);
+double maximum(int n, int m, double a[*][*]);
+double maximum(int n, int m, double a[ ][*]);
+double maximum(int n, int m, double a[ ][m]) { return 0.0; }
+
 void foo(int x, int (*y)[*]);
 
 void foo(int x, int (*y)[x + 1]) {
@@ -11,7 +16,7 @@ void foo(int x, int (*y)[x + 1]) {
 void f(int n, int (*)[n]);
 void f(int n, int (*)[n]);
 
-void f(int n, int (*a)[n]) { }
+void f(int n, int a[][n]) { }
 
 int main(void) {
       int a[5] = {0};
@@ -45,6 +50,9 @@ int main(void) {
 
       if ((0 ? (int (*) [u]) NULL : (int (*) [v]) NULL) != (int (*) [u]) NULL)
             abort();
+
+      int as[5];
+      foo(4, &as);
 
       return 0;
 }
