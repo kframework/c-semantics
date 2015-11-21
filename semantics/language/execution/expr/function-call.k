@@ -63,7 +63,7 @@ module C-EXPR-FUNCTION-CALL
                rvlist(L:List))
                => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
-          <functions>... Base |-> Fun:KResult ...</functions>
+          <functions>... Base |-> Fun:RValue ...</functions>
           [structural]
 
      syntax KItem ::= revalParams(K)
@@ -84,8 +84,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      */
 
-     syntax KItem ::= application(String, K, Type, List) [strict(2)]
-     context application(_, HOLE:KItem, _, _)
+     syntax KItem ::= application(String, RValue, Type, List)
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */

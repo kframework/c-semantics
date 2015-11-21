@@ -39,6 +39,7 @@ module C-BINDING
                (ListItem(typedDeclaration(_, X:CId)) => .List) _,
                (ListItem(T:Type) => .List) _,
                (ListItem(V:RValue) => .List) _)
+          requires notBool isVoidType(T)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
      rule (.K => bindParam(X, T, argPromote(V)))
@@ -55,39 +56,47 @@ module C-BINDING
                .List,
                ListItem(V:RValue) _)
           requires notBool #arePromotedTypesCompat(value(V):>CValue, T, type(V))
+               andBool notBool isVoidType(T)
           [structural]
      rule (_:ErrorExit => bindParam(X, T, argPromote(V))) ~> bind(
                (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:RValue) => .List) _)
           requires isErrorRecovery
+               andBool notBool isVoidType(T)
      rule (.K => UNDEF("CB2", "function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
                ListItem(T:Type) _,
-               ListItem(T':Type) _,
+               _,
                .List)
-          requires notBool (isVoidType(T) andBool isVoidType(T'))
+          requires notBool isVoidType(T)
      rule (_:ErrorExit => .K) ~> bind(
                (ListItem(_) => .List) _,
                (ListItem(_) => .List) _,
                .List)
           requires isErrorRecovery
+     rule (_:ErrorExit => .K) ~> bind(
+               (ListItem(_) => .List) _,
+               .List,
+               .List)
+          requires isErrorRecovery
      rule (.K => UNDEF("CB3", "function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
-          ~> bind(.List, .List, ListItem(_) _)
-     rule (_:ErrorExit => .K) ~> bind(.List, .List, (ListItem(_) => .List) _)
-          requires isErrorRecovery
+          ~> bind(ListItem(T:Type), .List, ListItem(_) _)
+          requires isVoidType(T)
+     rule (_:ErrorExit => .K) ~> bind(ListItem(T:Type), .List, (ListItem(_) => .List) _)
+          requires isErrorRecovery andBool isVoidType(T)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
-     rule bind(ListItem(T:Type),
-               ListItem(T':Type),
-               .List)
-          => .K
+     rule bind(ListItem(T:Type), ListItem(T':Type), .List) => .K
           requires isVoidType(T) andBool isVoidType(T')
+          [structural]
+     rule bind(ListItem(T:Type), .List, .List) => .K
+          requires isVoidType(T)
           [structural]
      // Builtins -- they don't have named parameters.
      rule <k> (.K => bindParam(unnamed(N, Tu), T, V))

@@ -318,6 +318,10 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(getModifiers(T) Mods', arrayType(compositeType(innerType(T), T'), N))
      rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type, E:K)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+     rule compositeType(
                t(Mods:Set, unspecifiedArrayType(T:Type)),
                t(Mods':Set, variableLengthArrayType(T':Type, E:K)))
           => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))

@@ -1,8 +1,7 @@
-Error: UB-CB1
-Description: types of function call arguments aren't compatible with declared types after promotions.
+Error: UB-EFNC1
+Description: attempt to call the function f through a pointer with incompatible type.
 Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:6, J.2:1 item 39
-  at f(j040c.c:7)
-  at main(j040c.c:7)
+See also: C11 sec. 6.5.2.2:9, J.2:1 item 41
+  at main(unit-fail/j040c.c:7)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)
