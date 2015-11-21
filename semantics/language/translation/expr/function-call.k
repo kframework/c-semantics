@@ -48,7 +48,7 @@ module C-EXPR-FUNCTION-CALL
 
      // Only attempt to bind if we have a prototype.
      rule maybeBind(.List, _) => .K
-     rule maybeBind(P:List, L:List) => elaborate(bind(.List, P, L))
+     rule maybeBind(P:List, L:List) => elaborate(bind(P, P, L))
           requires P =/=K .List
 
      rule elabCall(te(K:K, _), L:List, T:Type, .List)

@@ -31,14 +31,14 @@ module C-BINDING
      // prototype for the function, if any (as a list of parameter types), and
      // (3) the actual, evaluated arguments being passed during this call. If
      // the second list is empty, then the parameters need to be promoted. If
-     // the first list is empty, then we're dealing with a builtin, so we need
-     // to make up identifiers.
+     // the first list doesn't have ids, then we're dealing with a builtin, so
+     // we need to make up identifiers.
 
      // Prototype.
-     rule (.K => bindParam(X, T, V))
+     rule (.K => bindParam(X, elideDecl(T), V))
           ~> bind(
-               (ListItem(_) => .List) _,
-               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
+               (ListItem(typedDeclaration(_, X:CId)) => .List) _,
+               (ListItem(T:Type) => .List) _,
                (ListItem(V:RValue) => .List) _)
           [structural]
      // No prototype -- but the args must still have ids/types in the def.
@@ -84,30 +84,24 @@ module C-BINDING
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
-     rule bind(ListItem(typedDeclaration(t(_, void), _)),
-               ListItem(typedDeclaration(t(_, void), _)),
+     rule bind(ListItem(T:Type),
+               ListItem(T':Type),
                .List)
           => .K
+          requires isVoidType(T) andBool isVoidType(T')
           [structural]
-     // Builtins -- they have a prototype but no def.
-     rule <k> (.K => bindParam(unnamed(N, Tu), elideDecl(T), V))
+     // Builtins -- they don't have named parameters.
+     rule <k> (.K => bindParam(unnamed(N, Tu), T, V))
           ~> bind(
-               .List,
                (ListItem(T:Type) => .List) _,
+               (ListItem(_) => .List) _,
                (ListItem(V:RValue) => .List) _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
-          [structural]
-     // Builtins, variadic.
-     rule bind(.List, ListItem(variadic), Vs:List)
-          => bindVariadics(Vs, 0)
-          [structural]
-     // Builtins, no params.
-     rule bind(.List, ListItem(T:Type), _) => .K
-          requires isVoidType(T)
+               andBool notBool isTypedDeclaration(T)
           [structural]
      rule bind(.List, .List, .List) => .K
           [structural]
