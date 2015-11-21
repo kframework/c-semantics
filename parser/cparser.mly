@@ -1133,7 +1133,7 @@ direct_decl: /* (* ISO 6.7.5 *) */
 array_insides:
 	| attributes comma_expression_opt	{ ($1, $2, []) }
 	| attributes mycvspec_list comma_expression_opt	{ ($1, $3, $2) }
-	| attributes STAR					{ ($1, NOTHING, []) } /* for [*] */
+	| attributes STAR					{ ($1, UNSPECIFIED, []) } /* for [*] */
 	| attributes error					{ ($1, NOTHING, []) }
 ;
 mycvspec_list:

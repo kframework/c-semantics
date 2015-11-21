@@ -461,6 +461,7 @@ and printExpression exp =
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
 	| BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2
 	| NOTHING -> printCell "NothingExpression" [] ""
+	| UNSPECIFIED -> printCell "UnspecifiedSizeExpression" [] ""
 	| PAREN (exp1) -> wrap ((printExpression exp1) :: []) "Paren"
 	| LABELADDR (s) -> wrap (s :: []) "GCCLabelOperator"
 	| QUESTION (exp1, exp2, exp3) -> wrap ((printExpression exp1) :: (printExpression exp2) :: (printExpression exp3) :: []) "Conditional"
