@@ -114,7 +114,7 @@ module C-MEMORY-READING
      rule #hasUnknown((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
      rule #hasUnknown(ListItem(bitRange(B:Bits, _, _) => B) _:List)
      rule #hasUnknown(ListItem(unknown) _:List) => true
-     rule #hasUnknown(ListItem(B:Bits) L:List) => #hasUnknown(L)
+     rule #hasUnknown(ListItem(B:Bits) L:List) => #hasUnknown(L) [owise]
 
      rule #hasTrap(.List) => false
      rule #hasTrap(ListItem(piece(B:Bits, _) => B) _:List)

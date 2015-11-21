@@ -141,11 +141,6 @@ module LIBC-STDLIB
           ...</k>
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced) orBool I =/=Int 0
-     rule _:ErrorExit ~> prepareBuiltin(Identifier("free"), _) => voidVal
-          requires isErrorRecovery
-     rule prepareBuiltin(Identifier("free"),
-               hrItem(tv(NullPointer, t(_, pointerType(_)))))
-          => voidVal
 
      rule prepareBuiltin(Identifier("free"),
                hrItem(tv(NullPointer, t(_, pointerType(_)))))
