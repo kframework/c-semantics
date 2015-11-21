@@ -6,7 +6,6 @@ module C-BINDING-SYNTAX
      syntax KItem ::= bind(List, List, List)
      syntax KItem ::= bindParam(CId, Type, K)
      syntax KItem ::= bindParam(CId)
-     syntax Type ::= argPromoteType(Type) [function]
      syntax Bool ::= areArgPromoted(List) [function]
      syntax Type ::= elideDecl(Type) [function]
 endmodule
@@ -177,6 +176,7 @@ module C-BINDING
      // is another set of promotions called "default argument promotions" used
      // when calling functions where the type information is not complete. This
      // is equivalent to integer promotions + (float => double)
+     syntax Type ::= argPromoteType(Type) [function]
      rule argPromoteType(t(Mods:Set, float))
           => t(Mods, double)
      rule argPromoteType(t(Mods:Set, double))
@@ -193,7 +193,8 @@ module C-BINDING
      rule areArgPromoted(_) => false [owise]
 
      syntax Bool ::= isArgPromoted(Type) [function]
-     rule isArgPromoted(T:Type) => areCompatible(T, argPromoteType(T))
+     rule isArgPromoted(T:Type)
+          => areCompatible(elideDecl(T), argPromoteType(elideDecl(T)))
 
 endmodule
 
