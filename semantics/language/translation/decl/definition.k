@@ -72,22 +72,22 @@ module C-DECL-DEFINITION
           => t(Mods, flexibleArrayType(elideDeclParams(T)))
      rule elideDeclParams(t(Mods:Set, unspecifiedArrayType(T:Type)))
           => t(Mods, unspecifiedArrayType(elideDeclParams(T)))
-     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type, _)))
-          => t(Mods, unspecifiedArrayType(elideDeclParams(T)))
+     rule elideDeclParams(t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Mods, variableLengthArrayType(elideDeclParams(T), N))
      rule elideDeclParams(t(Mods:Set, pointerType(T:Type)))
           => t(Mods, pointerType(elideDeclParams(T)))
-     rule elideDeclParams(T:Type) => T
-          requires notBool isTypedDeclaration(T)
-               andBool notBool isArrayOrFunctionType(T)
-               andBool notBool isPointerType(T)
+     rule elideDeclParams(T:Type) => T [owise]
 
      syntax List ::= elideParams(List) [function]
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params:List)
           => ListItem(elideDeclParams(T)) elideParams(Params)
      rule elideParams(ListItem(variadic)) => ListItem(variadic)
-     rule elideParams(ListItem(t(Mods:Set, T:SimpleType)) Params:List)
-          => ListItem(elideDeclParams(t(Mods, T))) elideParams(Params)
+     rule elideParams(ListItem(t(Mods:Set, variableLengthArrayType(T:Type, _))) Params:List)
+          => ListItem(elideDeclParams(t(Mods, unspecifiedArrayType(T)))) elideParams(Params)
      rule elideParams(.List) => .List
+     rule elideParams(ListItem(T:Type) Params:List)
+          => ListItem(elideDeclParams(T)) elideParams(Params)
+          [owise]
 
      rule elideList(ListItem(T:Type) L:List)
           => ListItem(elideDeclParams(T)) elideList(L)

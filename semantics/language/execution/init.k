@@ -191,7 +191,7 @@ module C-EXECUTION-INIT
           [structural]
      // int main(int argc, char* argv[])
      rule #callMain(t(.Set, functionType(t(.Set, int),
-               ListItem(t(.Set, int))
+               ListItem(typedDeclaration(t(.Set, int), _))
                ListItem(typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), _)))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
@@ -200,7 +200,7 @@ module C-EXECUTION-INIT
      // int main(int argc, char** argv)
      rule #callMain(t(.Set,
                functionType(t(.Set, int),
-               ListItem(t(.Set, int))
+               ListItem(typedDeclaration(t(.Set, int), _))
                ListItem(typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), _)))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
