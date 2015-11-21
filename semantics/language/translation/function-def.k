@@ -26,18 +26,15 @@ module C-FUNCTION-DEF
      imports C-CONFIGURATION
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
-          => declare(
+          => declare'(
                typedDeclaration(toPrototype(T), X),
                initializer(Computation(initFunction(
                     &(X),
                     X,
                     functionObject(X,
-                         // The sanitized declared parameters.
-                         elideList(getParams(emptyToVoid(T))),
-                         // The "prototype" -- basically a type with the same
-                         // parameters as above, but the parameters are set to
-                         // .List if there isn't actually a prototype.
-                         toPrototype(T),
+                         // The return and parameter types from the definition.
+                         t(.Set, functionType(elideDeclParams(innerType(T)),
+                              elideList(getParams(emptyToVoid(T))))),
                          Goto(funLabel(X)))
                )))
           )
@@ -55,7 +52,7 @@ module C-FUNCTION-DEF
      // Turns empty param list into void and turns an old-style param list into
      // the empty list so that arguments will be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
-     rule toPrototype(T:Type) => elideDeclParams(emptyToVoid(T))
+     rule toPrototype(T:Type) => emptyToVoid(T)
           requires notBool isOldStyleFunctionType(T)
      rule toPrototype(T:Type) => setParams(T, .List)
           requires isOldStyleFunctionType(T)
@@ -70,44 +67,42 @@ module C-FUNCTION-DEF
 
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
-               => checkFunDefType(X, Proto, Params)
-               ~> staticEval(X, Params, Blk)
+               => checkFunDefType(X, elideDeclParams(DefT))
+               ~> staticEval(X, DefT, Blk)
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, Params:List, Proto:Type, _)
+               Base |-> functionObject(_, DefT:Type, _)
           ...</functions>
           [structural]
 
-     syntax KItem ::= checkFunDefType(CId, Type, List)
-     rule checkFunDefType(X:CId, t(_, functionType(R:Type, _)), P:List) => .K
+     syntax KItem ::= checkFunDefType(CId, Type)
+     rule checkFunDefType(X:CId, t(_, functionType(R:Type, P:List))) => .K
           requires notBool isArrayOrFunctionType(R)
                andBool areVoidOrComplete(P)
                andBool (X =/=K Identifier("main"))
           [structural]
-     rule checkFunDefType(X:CId, t(Mods:Set, functionType(R:Type, P':List)), P:List)
-          => checkMainDef(t(Mods, functionType(R, P')))
-          requires isVoidOrComplete(R)
-               andBool areVoidOrComplete(P)
+     rule checkFunDefType(X:CId, T:Type) => checkMainDef(T)
+          requires isVoidOrComplete(innerType(T))
+               andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
           [structural]
      rule (.K => CV("FD2", "invalid return type in function definition.",
                "6.7.6.3:1"))
-          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)), _)
+          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)))
           [structural]
      rule (.K => CV("FD3", "incomplete parameter type in "
                +String "function definition.", "6.7.6.3:4"))
-          ~> checkFunDefType(_, _, P:List)
-          requires notBool areVoidOrComplete(P)
+          ~> checkFunDefType(_, T:Type)
+          requires notBool areVoidOrComplete(getParams(T))
           [structural]
-     rule _:ErrorExit ~> checkFunDefType(_, _, _) => .K
+     rule _:ErrorExit ~> checkFunDefType(_, _) => .K
           requires isErrorRecovery
 
      syntax Bool ::= isVoidOrComplete(Type) [function]
      rule isVoidOrComplete(T:Type)
-          => isCompleteType(T)
-          orBool isVoidType(T)
-          orBool isIncompleteArrayType(T)
+          => isCompleteType(T) orBool isVoidType(T)
+               orBool isIncompleteArrayType(T)
 
      syntax Bool ::= areVoidOrComplete(List) [function]
      rule areVoidOrComplete(L:List) => true
@@ -176,13 +171,13 @@ module C-FUNCTION-DEF
      rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, t(.Set, int)))
 
-     syntax KItem ::= staticEval(CId, List, K)
+     syntax KItem ::= staticEval(CId, Type, K)
      syntax KItem ::= calculateGotoMap(CId)
 
-     rule staticEval(X:CId, Params:List, Blk:K)
+     rule staticEval(X:CId, DefT:Type, Blk:K)
           => scope(blockScope(X, 0),
                generateRuleAnnotation(X)
-               ~> elaborate(dummyBind(Params) ~> Label(funLabel(X), safeBody(X, Blk)))
+               ~> elaborate(dummyBind(getParams(DefT)) ~> Label(funLabel(X), safeBody(X, Blk)))
                ~> calculateGotoMap(X))
 
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)

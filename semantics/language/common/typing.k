@@ -73,6 +73,7 @@ module C-TYPING-SYNTAX
      syntax SimpleFixedArrayType ::= arrayType(Type, Int)
      syntax SimpleIncompleteArrayType ::= incompleteArrayType(Type)
      syntax SimpleIncompleteArrayType ::= flexibleArrayType(Type)
+     syntax SimpleVariableArrayType ::= unspecifiedArrayType(Type)
      syntax SimpleVariableArrayType ::= variableLengthArrayType(Type, K)
 
      syntax SimpleStructType ::= structType(StructId)

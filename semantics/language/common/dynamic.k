@@ -80,8 +80,8 @@ module C-DYNAMIC-SYNTAX
      // these are semantic
      syntax KItem ::= reval(K)
 
-     // Function id, param ids, prototype, body.
-     syntax RValue ::= functionObject(CId, List, Type, K)
+     // Function id, def return type, def params, body.
+     syntax RValue ::= functionObject(CId, Type, K)
 
      syntax KResult ::= initValue(CId, Type, K)
      syntax KItem ::= allowInit(K)

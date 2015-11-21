@@ -246,7 +246,7 @@ module C-TYPING-EXPR
                => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> SizeofExpression(_)
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
-               andBool notBool (isVariablyModifiedType(T) orBool isVariablyModifiedType(T'))
+               andBool notBool (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
      rule (elaborateDone(_, _) ~> typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)))
                => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
@@ -270,11 +270,11 @@ module C-TYPING-EXPR
                andBool notBool isNPC(V)
 
      rule (.K => UNDEF("TTE1",
-               "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.",
+               "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).",
                "6.2.7:3, J.2:1 item 16"))
           ~> elaborateDone(V:K, V':K) ~> typeof(_ ? T:Type : T':Type)
           ~> SizeofExpression(_)
-          requires isVariablyModifiedType(T) orBool isVariablyModifiedType(T')
+          requires isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T')
                andBool notBool (isNPC(V) orBool isNPC(V'))
 
      rule (.K => CV("TTE2",
@@ -332,5 +332,19 @@ module C-TYPING-EXPR
 
      // comma expression
      rule typeof(Comma(list(_:List ListItem(K:K))) => K)
+
+     syntax Bool ::= isSpecifiedVariablyModifiedType(Type) [function]
+     rule isSpecifiedVariablyModifiedType(T:FixedLengthArrayType)
+          => isSpecifiedVariablyModifiedType(innerType(T))
+     rule isSpecifiedVariablyModifiedType(T:IncompleteArrayType)
+          => isSpecifiedVariablyModifiedType(innerType(T))
+     rule isSpecifiedVariablyModifiedType(T:PointerType)
+          => isSpecifiedVariablyModifiedType(innerType(T))
+     rule isSpecifiedVariablyModifiedType(t(_, functionType(T:Type, Params:List)))
+          => isSpecifiedVariablyModifiedType(T) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))
+     rule isSpecifiedVariablyModifiedType(typedDeclaration(T:Type, _))
+          => isSpecifiedVariablyModifiedType(T)
+     rule isSpecifiedVariablyModifiedType(t(_, variableLengthArrayType(_, _))) => true
+     rule isSpecifiedVariablyModifiedType(_) => false [owise]
 
 endmodule

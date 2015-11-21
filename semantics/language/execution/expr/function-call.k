@@ -90,26 +90,13 @@ module C-EXPR-FUNCTION-CALL
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      rule <k> application(Tu:String,
-                    functionObject(X:CId, Params:List, DefT:Type, Blk:K),
+                    functionObject(X:CId, DefT:Type, Blk:K),
                     CallT:Type, L:List)
-               => application'(Tu, functionObject(X, Params, DefT, Blk), L)
-          ...</k>
-          requires areCompatible(CallT, DefT)
-          [structural]
-     rule (.K => UNDEF("EFNC1", "attempt to call the function " +String
-               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
-          ~> application(_, functionObject(X:CId, _, DefT:Type, _), CallT:Type, _)
-          requires notBool areCompatible(CallT, DefT)
-          [structural]
-
-     syntax KItem ::= "application'" "(" String "," K "," List ")"
-
-     rule <k> application'(Tu:String, functionObject(X:CId, Params:List, DefT:Type, Blk:K), L:List)
                ~> K:K
                => sequencePoint
                ~> enterRestrictScope(blockScope(X, 0))
                ~> populateFromGlobal
-               ~> bind(Params, getParams(DefT), L)
+               ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
                ~> Blk
           </k>
@@ -132,6 +119,12 @@ module C-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
+          requires areCompatible(CallT, DefT)
+          [structural]
+     rule (.K => UNDEF("EFNC1", "attempt to call the function " +String
+               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
+          ~> application(_, functionObject(X:CId, DefT:Type, _), CallT:Type, _)
+          requires notBool areCompatible(CallT, DefT)
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
