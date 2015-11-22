@@ -39,6 +39,7 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
+	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
 	@cp -p $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
 	@cp -rp $(PROFILE_DIR)/include/ $(DIST_DIR)/$(PROFILE)
 	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
