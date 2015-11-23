@@ -27,14 +27,14 @@ module C-FUNCTION-DEF
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare'(
-               typedDeclaration(toPrototype(T), X),
+               typedDeclaration(toPrototype(emptyToVoid(T)), X),
                initializer(Computation(initFunction(
                     &(X),
                     X,
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
-                              elideList(emptyToVoid(getParams(T))))),
+                              elideList(getParams(emptyToVoid(T))))),
                          Goto(funLabel(X)))
                )))
           )
@@ -49,10 +49,11 @@ module C-FUNCTION-DEF
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
 
-     syntax List ::= emptyToVoid(List) [function]
-     rule emptyToVoid(.List)
-          => ListItem(typedDeclaration(t(.Set, void), #NoName))
-     rule emptyToVoid(L:List) => L [owise]
+     syntax Type ::= emptyToVoid(Type) [function]
+     rule emptyToVoid(T:FunctionType)
+          => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
+          requires (getParams(T) ==K .List)
+     rule emptyToVoid(T:Type) => T [owise]
 
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
