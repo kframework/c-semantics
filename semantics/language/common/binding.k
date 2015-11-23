@@ -34,10 +34,10 @@ module C-BINDING
      // we need to make up identifiers.
 
      // Prototype.
-     rule (.K => bindParam(X, elideDecl(T), V))
+     rule (.K => bindParam(X, T, V))
           ~> bind(
-               (ListItem(typedDeclaration(_, X:CId)) => .List) _,
-               (ListItem(T:Type) => .List) _,
+               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
+               (ListItem(_) => .List) _,
                (ListItem(V:RValue) => .List) _)
           requires notBool isVoidType(T)
           [structural]
