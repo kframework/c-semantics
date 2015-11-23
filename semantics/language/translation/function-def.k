@@ -33,8 +33,8 @@ module C-FUNCTION-DEF
                     X,
                     functionObject(X,
                          // The return and parameter types from the definition.
-                         t(.Set, functionType(elideDeclParams(innerType(T)),
-                              elideList(getParams(emptyToVoid(T))))),
+                         t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
+                              elideList(getParams(T)))),
                          Goto(funLabel(X)))
                )))
           )
@@ -48,22 +48,6 @@ module C-FUNCTION-DEF
 
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
-
-     // Turns empty param list into void and turns an old-style param list into
-     // the empty list so that arguments will be promoted on call.
-     syntax Type ::= toPrototype(Type) [function]
-     rule toPrototype(T:Type) => emptyToVoid(T)
-          requires notBool isOldStyleFunctionType(T)
-     rule toPrototype(T:Type) => setParams(T, .List)
-          requires isOldStyleFunctionType(T)
-
-     syntax Type ::= emptyToVoid(Type) [function]
-     rule emptyToVoid(T:FunctionType)
-          => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
-          requires (getParams(T) ==K .List)
-     rule emptyToVoid(T:Type) => T
-          requires notBool isFunctionType(T)
-               orBool (getParams(T) =/=K .List)
 
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
@@ -119,19 +103,21 @@ module C-FUNCTION-DEF
           => .K
           requires isArgvType(T)
           [structural]
-     rule (.K => UNDEF("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4"))
-          ~> checkMainDef(T:Type)
-          requires isOldStyleFunctionType(T)
-          [structural]
+     // TODO(chathhorn): enable this.
+     // rule (.K => UNDEF("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4"))
+     //      ~> checkMainDef(T:Type)
+     //      requires isOldStyleFunctionType(T)
+     //      [structural]
+     rule checkMainDef(t(_, functionType(t(_, int), .List))) => .K
      rule (.K => UNDEF("FD5", "main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
           requires T =/=K int
           [structural]
-     rule (.K => UNDEF("FD6", "if main has arguments, the type of the first argument must be equivalent to int.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD6", "if main has parameters, the type of the first parameter must be equivalent to int.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
-     rule (.K => UNDEF("FD7", "if main has arguments, the type of the second argument must be equivalent to char**.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD7", "if main has parameters, the type of the second parameter must be equivalent to char**.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
           requires notBool isArgvType(T)
           [structural]

@@ -464,4 +464,8 @@ module C-TYPING-MISC
      rule (_:ErrorExit => .K) ~> stabilize(t(Mods:Set, variableLengthArrayType(T:Type, tv((N:Int => 1), _))))
           requires N <=Int 0 andBool isErrorRecovery
 
+     rule toPrototype(T:Type) => setParams(T, .List)
+          requires isOldStyleFunctionType(T)
+     rule toPrototype(T:Type) => T [owise]
+
 endmodule

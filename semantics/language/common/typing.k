@@ -252,6 +252,10 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isTruthValue(RValue) [function]
 
      syntax KItem ::= stabilizeVLA(Type)
+
+     // Turns old-style param list into the empty list so that arguments will
+     // be promoted on call.
+     syntax Type ::= toPrototype(Type) [function]
 endmodule
 
 module C-TYPING

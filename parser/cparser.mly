@@ -1123,7 +1123,7 @@ direct_decl: /* (* ISO 6.7.5 *) */
 										let (attrs, exp, qualifiers) = $3 in
                                      (n, ARRAY(decl, attrs, exp, qualifiers)) }
 									 
-|   direct_decl parameter_list_startscope rest_par_list RPAREN
+|   direct_decl parameter_list_startscope rest_par_list_ne RPAREN
                                    { let (n, decl) = $1 in
                                      let (params, isva) = $3 in
                                      !Lexerhack.pop_context ();
@@ -1146,8 +1146,7 @@ mycvspec:
 parameter_list_startscope: 
     LPAREN                         { !Lexerhack.push_context () }
 ;
-rest_par_list:
-|   /* empty */                    { ([], false) }
+rest_par_list_ne:
 |   parameter_decl rest_par_list1  { let (params, isva) = $2 in 
                                      ($1 :: params, isva) 
                                    }
@@ -1186,7 +1185,7 @@ direct_old_proto_decl:
                                    }
 | direct_decl LPAREN                       RPAREN
                                    { let n, decl = $1 in
-                                     (n, PROTO(decl, [], false), [])
+                                     (n, NOPROTO(decl, [], false), [])
                                    }
 
 /* (* appears sometimesm but generates a shift-reduce conflict. *)
@@ -1259,8 +1258,10 @@ abs_direct_decl: /* (* ISO 6.7.6. We do not support optional declarator for
             
 |   abs_direct_decl_opt LBRACKET comma_expression_opt RBRACKET
                                    { ARRAY($1, [], $3, []) }
+|   abs_direct_decl  LPAREN RPAREN
+                                   { NOPROTO ($1, [], false) } 
 /*(* The next should be abs_direct_decl_opt but we get conflicts *)*/
-|   abs_direct_decl  parameter_list_startscope rest_par_list RPAREN
+|   abs_direct_decl  parameter_list_startscope rest_par_list_ne RPAREN
                                    { let (params, isva) = $3 in
                                      !Lexerhack.pop_context ();
                                      PROTO ($1, params, isva)
@@ -1292,7 +1293,7 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                               (snd $1, fst $1, $2)
                             } 
 /* (* New-style function that does not have a return type *) */
-| IDENT parameter_list_startscope rest_par_list RPAREN 
+| IDENT parameter_list_startscope rest_par_list_ne RPAREN 
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
 
 /* (* No return type and old-style parameter list *) */

@@ -118,12 +118,12 @@ module C-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
-          requires areCompatible(CallT, DefT)
+          requires areCompatible(CallT, toPrototype(DefT))
           [structural]
      rule (.K => UNDEF("EFNC1", "attempt to call the function " +String
-               idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
+          idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
           ~> application(_, functionObject(X:CId, DefT:Type, _), CallT:Type, _)
-          requires notBool areCompatible(CallT, DefT)
+          requires notBool areCompatible(CallT, toPrototype(DefT))
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
