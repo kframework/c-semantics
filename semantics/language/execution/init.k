@@ -185,12 +185,12 @@ module C-EXECUTION-INIT
 
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
-     rule #callMain(t(.Set,
+     rule #callMain(t(_,
           functionType(t(.Set, int), ListItem(typedDeclaration(t(.Set, void), _)))), _, _, _)
           => Call(Identifier("main"), list(.List))
           [structural]
      // int main(int argc, char* argv[])
-     rule #callMain(t(.Set, functionType(t(.Set, int),
+     rule #callMain(t(_, functionType(t(.Set, int),
                ListItem(typedDeclaration(t(.Set, int), _))
                ListItem(typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), _)))),
                N:Int, X:CId, Args:K)
@@ -198,7 +198,7 @@ module C-EXECUTION-INIT
           requires T ==K t(.Set, char)
           [structural]
      // int main(int argc, char** argv)
-     rule #callMain(t(.Set,
+     rule #callMain(t(_,
                functionType(t(.Set, int),
                ListItem(typedDeclaration(t(.Set, int), _))
                ListItem(typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), _)))),
