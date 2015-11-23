@@ -2,7 +2,7 @@ Error: UB-CB3
 Description: function call has more arguments than parameters in function definition.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
-  at foo(unit-fail/j038b.c:4)
-  at main(unit-fail/j038b.c:4)
+  at foo(j038b.c:4)
+  at main(j038b.c:4)
   at <file-scope>(<unknown>)
 Execution failed (configuration dumped)
