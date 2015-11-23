@@ -34,7 +34,7 @@ module C-FUNCTION-DEF
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
-                              elideList(getParams(T)))),
+                              elideList(emptyToVoid(getParams(T))))),
                          Goto(funLabel(X)))
                )))
           )
@@ -48,6 +48,11 @@ module C-FUNCTION-DEF
 
      // TODO(chathhorn): possibly check that old-style declarations are
      // promoted types?
+
+     syntax List ::= emptyToVoid(List) [function]
+     rule emptyToVoid(.List)
+          => ListItem(typedDeclaration(t(.Set, void), #NoName))
+     rule emptyToVoid(L:List) => L [owise]
 
      syntax KItem ::= processFunDef(CId, K)
      rule <k> processFunDef(X:CId, Blk:K)
@@ -103,12 +108,6 @@ module C-FUNCTION-DEF
           => .K
           requires isArgvType(T)
           [structural]
-     // TODO(chathhorn): enable this.
-     // rule (.K => UNDEF("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4"))
-     //      ~> checkMainDef(T:Type)
-     //      requires isOldStyleFunctionType(T)
-     //      [structural]
-     rule checkMainDef(t(_, functionType(t(_, int), .List))) => .K
      rule (.K => UNDEF("FD5", "main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
           requires T =/=K int

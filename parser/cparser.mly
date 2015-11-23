@@ -1127,7 +1127,7 @@ direct_decl: /* (* ISO 6.7.5 *) */
                                    { let (n, decl) = $1 in
                                      let (params, isva) = $3 in
                                      !Lexerhack.pop_context ();
-                                     if params = [] then (n, NOPROTO(decl, [], isva))
+                                     if params = [] then (n, NOPROTO(decl, [], false))
                                      else (n, PROTO(decl, params, isva))
                                    }
 ;
@@ -1149,11 +1149,6 @@ parameter_list_startscope:
 ;
 rest_par_list:
     /* empty */                    { ([], false) }
-|   parameter_decl rest_par_list1  { let (params, isva) = $2 in 
-                                     ($1 :: params, isva) 
-                                   }
-;
-rest_par_list_ne:
 |   parameter_decl rest_par_list1  { let (params, isva) = $2 in 
                                      ($1 :: params, isva) 
                                    }
@@ -1190,12 +1185,7 @@ direct_old_proto_decl:
                                      let n, decl = $1 in
                                      (n, NOPROTO(decl, par_decl, isva), [])
                                    }
-| direct_decl LPAREN                       RPAREN
-                                   { let n, decl = $1 in
-                                     (n, NOPROTO(decl, [], false), [])
-                                   }
-
-/* (* appears sometimesm but generates a shift-reduce conflict. *)
+/* (* appears sometimes but generates a shift-reduce conflict. *)
 | LPAREN STAR direct_decl LPAREN old_parameter_list_ne RPAREN RPAREN LPAREN RPAREN old_pardef_list
                                    { let par_decl, isva 
                                              = doOldParDecl $5 $10 in
@@ -1265,13 +1255,12 @@ abs_direct_decl: /* (* ISO 6.7.6. We do not support optional declarator for
             
 |   abs_direct_decl_opt LBRACKET comma_expression_opt RBRACKET
                                    { ARRAY($1, [], $3, []) }
-|   abs_direct_decl  LPAREN RPAREN
-                                   { NOPROTO ($1, [], false) } 
 /*(* The next should be abs_direct_decl_opt but we get conflicts *)*/
-|   abs_direct_decl  parameter_list_startscope rest_par_list_ne RPAREN
+|   abs_direct_decl  parameter_list_startscope rest_par_list RPAREN
                                    { let (params, isva) = $3 in
                                      !Lexerhack.pop_context ();
-                                     PROTO ($1, params, isva)
+                                     if params = [] then NOPROTO ($1, [], false)
+                                     else PROTO ($1, params, isva)
                                    } 
 ;
 abs_direct_decl_opt:
@@ -1300,7 +1289,7 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                               (snd $1, fst $1, $2)
                             } 
 /* (* New-style function that does not have a return type *) */
-| IDENT parameter_list_startscope rest_par_list_ne RPAREN 
+| IDENT parameter_list_startscope rest_par_list RPAREN 
 { parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
 
 /* (* No return type and old-style parameter list *) */
