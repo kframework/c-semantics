@@ -1123,11 +1123,12 @@ direct_decl: /* (* ISO 6.7.5 *) */
 										let (attrs, exp, qualifiers) = $3 in
                                      (n, ARRAY(decl, attrs, exp, qualifiers)) }
 									 
-|   direct_decl parameter_list_startscope rest_par_list_ne RPAREN
+|   direct_decl parameter_list_startscope rest_par_list RPAREN
                                    { let (n, decl) = $1 in
                                      let (params, isva) = $3 in
                                      !Lexerhack.pop_context ();
-                                     (n, PROTO(decl, params, isva))
+                                     if params = [] then (n, NOPROTO(decl, [], isva))
+                                     else (n, PROTO(decl, params, isva))
                                    }
 ;
 array_insides:
@@ -1145,6 +1146,12 @@ mycvspec:
 	
 parameter_list_startscope: 
     LPAREN                         { !Lexerhack.push_context () }
+;
+rest_par_list:
+    /* empty */                    { ([], false) }
+|   parameter_decl rest_par_list1  { let (params, isva) = $2 in 
+                                     ($1 :: params, isva) 
+                                   }
 ;
 rest_par_list_ne:
 |   parameter_decl rest_par_list1  { let (params, isva) = $2 in 
