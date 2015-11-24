@@ -204,33 +204,4 @@ module C-EXPR-FUNCTION-CALL
      rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
           requires fromConstantExpr(T)
 
-     rule (.K => CV("EFNC2", "incompatible types in function call arguments.", "6.5.16.1:1"))
-          ~> L:KResult := R:RValue
-          requires type(L) =/=Type type(R) andBool ((isPointerType(type(L)) andBool notBool isPointerType(type(R))
-                    andBool notBool isNullPointerConstant(R))
-               orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
-                    andBool notBool isArithmeticType(type(R))
-               orBool isStructOrUnionType(type(L))
-                    andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
-               orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
-               orBool notBool (isPointerType(type(L))
-                    orBool isArithmeticType(type(L))
-                    orBool isStructOrUnionType(type(L))
-                    orBool isBoolType(type(L))))
-          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
-
-     rule (.K => CV("EFNC3", "incompatible pointer types in function call arguments.", "6.5.16.1:1"))
-          ~> L:KResult := R:RValue
-          requires (isPointerType(type(L)) andBool isPointerType(type(R)))
-               andBool notBool isVoidType(innerType(type(L)))
-               andBool notBool isVoidType(innerType(type(R)))
-               andBool (
-                    notBool areCompatible(
-                         stripQualifiers(stripAlignas(innerType(type(L)))),
-                         stripQualifiers(stripAlignas(innerType(type(R)))))
-                    orBool notBool (getQualifiers(innerType(type(R)))
-                         <=Set getQualifiers(innerType(type(L))))
-                    orBool getAlignas(innerType(type(L)))
-                         >Int getAlignas(innerType(type(R)))
-               )
 endmodule
