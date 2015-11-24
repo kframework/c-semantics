@@ -67,7 +67,11 @@ module C-BINDING
           requires notBool isVoidType(T)
      rule (.K => UNDEF("CB3", "function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
-          ~> bind(.List, .List, ListItem(_) _)
+          ~> bind(.List, _, ListItem(_) _)
+     rule (.K => UNDEF("CB4", "function defined with no parameters "
+               +String "called with arguments.", "6.5.2.2:6, J.2:1 item 38"))
+          ~> bind(ListItem(T:Type), _, ListItem(_) _)
+          requires isVoidType(T)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
