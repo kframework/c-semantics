@@ -1,8 +1,9 @@
 // Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
-int f(int n) { return n; }
+#include <stddef.h>
 
 int main(void) {
-      1 ? (int(*)[f(5)]) 0 : (int (*)[f(3)]) 0;
+      int x = 5;
+      sizeof(0 ? (int (*) [x]) NULL : (int (*) [x]) NULL);
       return 0;
 }

@@ -1,7 +1,7 @@
 File: CV-CTM2-bad-static.c
 Line: 4
-Error: CV-CTM2
-Description: Variable-length array with file scope.
+Error: CV-TDG9
+Description: file-scope declaration of y with a variably-modified type.
 Type: Constraint violation.
 See also: C11 sec. 6.7.6.2:2
 Translation failed. Run kcc -d CV-CTM2-bad-static.c to see commands run.
