@@ -102,10 +102,14 @@ module C-FUNCTION-DEF
                ListItem(t(_, void)))))
           => .K
           [structural]
-     rule checkMainDef(t(_, functionType(t(_, int),
+     rule checkMainDef(t(Mods:Set, functionType(t(_, int),
                ListItem(t(_, int)) ListItem(T:Type))))
           => .K
-          requires isArgvType(T)
+          requires (notBool oldStyle in Mods) andBool isArgvType(T)
+          [structural]
+     rule (.K => UNDEF("FD4", "definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4") )
+          ~> checkMainDef(t(Mods:Set, functionType(t(_, int), ListItem(T) _)))
+          requires (oldStyle in Mods) andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("FD5", "main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
