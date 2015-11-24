@@ -1,7 +1,7 @@
 File: CV-CEC2-bad-static.c
 Line: 6
-Error: CV-CEC2
-Description: If one of a conditional expression's branches has void type, the other must also have void type.
+Error: CV-TTE4
+Description: if one of a conditional expression's branches has void type, the other must also have void type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.15:3
 Translation failed. Run kcc -d CV-CEC2-bad-static.c to see commands run.
