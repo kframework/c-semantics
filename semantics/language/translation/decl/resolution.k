@@ -58,7 +58,7 @@ module C-DECL-RESOLUTION
                declState(_, t(Mods:Set, _), completed, _))
           => UNDEF("TDR1",
                "Declaration for inline function not defined in the same translation unit: "
-               +String idToString(X),
+               +String idToString(X) +String ".",
                "6.7.4:7, J.2:1 item 70")
           requires Inline in Mods
           [structural]
@@ -105,7 +105,7 @@ module C-DECL-RESOLUTION
      rule <k> resolveReference(X:CId)
                => UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
-                     +String idToString(X),
+                     +String idToString(X) +String ".",
                     "6.9:5, J.2:1 item 84")
           ...</k>
           <external-uses>... (.Set => SetItem(X)) ...</external-uses>

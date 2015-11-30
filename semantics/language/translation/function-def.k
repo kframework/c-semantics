@@ -126,7 +126,7 @@ module C-FUNCTION-DEF
           ~> checkMainDef(T:Type)
           requires isOldStyleFunctionType(T)
           [structural]
-     rule (.K => UNDEF("FD5", "Function Main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD5", "Function main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
           ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
           requires T =/=K int
           [structural]

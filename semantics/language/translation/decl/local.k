@@ -132,7 +132,7 @@ module C-DECL-LOCAL
           requires notBool ((kpair(X, S) in_keys(LocalStatics))
                orBool (X in_keys(LocalTypes)))
           [structural]
-     rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
+     rule <k> (.K => CV("TDL4","Redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> initLocalStatic(X:CId, _)
           ...</k>
@@ -169,7 +169,7 @@ module C-DECL-LOCAL
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)
           [structural]
-     rule <k> (.K => CV("TDL4","redeclaration of " +String idToString(X)
+     rule <k> (.K => CV("TDL4","Redeclaration of " +String idToString(X)
                     +String " with no linkage.", "6.7:3"))
                ~> defineAndInit(X:CId, _, initValue(_, T:Type, _))
           ...</k>

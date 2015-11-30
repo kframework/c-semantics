@@ -322,7 +322,7 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> (.K => CV("TDG10",
-               "Conflicting types for " +String idToString(X), "6.7:4"))
+               "Conflicting types for " +String idToString(X) +String ".", "6.7:4"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -372,7 +372,7 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> (.K => CV("TDG10",
-               "conflicting types for " +String idToString(X), "6.7:4"))
+               "Conflicting types for " +String idToString(X) +String ".", "6.7:4"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -426,7 +426,7 @@ module C-DECL-GLOBAL
 
      // Static, previously extern.
      rule <k> (.K => UNDEF("TDG11",
-               "static declaration of " +String idToString(X)
+               "Static declaration of " +String idToString(X)
                +String " follows non-static declaration.", "6.2.2:7, J.2:1 item 8"))
                ~> declareExternalVariable(X:CId, T:Type, _)
           ...</k>
@@ -566,7 +566,7 @@ module C-DECL-GLOBAL
 
      // already initialized
      rule (.K => CV("TDG13", "Redefinition of symbol: "
-               +String idToString(X), "6.9:3"))
+               +String idToString(X) +String ".", "6.9:3"))
           ~> declareExternalVariable'(false, initValue(X:CId, _, _),
                initialized, _, _)
           [structural]
@@ -640,7 +640,7 @@ module C-DECL-GLOBAL
           [structural]
 
      rule <k> (.K => CV("TDG13",
-               "Redefinition of symbol: " +String idToString(X), "6.9:3"))
+               "Redefinition of symbol: " +String idToString(X) +String ".", "6.9:3"))
                ~> updateLinkState(X:CId, _, Base':SymBase)
           ...</k>
           <external-defs>...
@@ -712,7 +712,7 @@ module C-DECL-GLOBAL
                andBool notBool (global(X, Tu) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15",
-               "Redefinition of a struct, union, or enum: " +String idToString(X), "6.7.2.3:1"))
+               "Redefinition of a struct, union, or enum: " +String idToString(X) +String ".", "6.7.2.3:1"))
                ~> addGlobalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
@@ -807,7 +807,7 @@ module C-DECL-GLOBAL
           requires notBool (X in_keys(Types))
           [structural]
      rule <k> (.K => CV("TDG10",
-               "conflicting types for " +String idToString(X), "6.7:4"))
+               "Conflicting types for " +String idToString(X) +String ".", "6.7:4"))
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
