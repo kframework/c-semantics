@@ -1,5 +1,5 @@
 Error: UB-ESR1
-Desctription: Return from a function declared _Noreturn.
+Description: Return from a function declared _Noreturn.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.4, J.2:1 item 71
   at f(j071a.c:3)

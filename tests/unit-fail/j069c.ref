@@ -1,5 +1,5 @@
 Error: UB-EEA2
-Desctription: Attempt to alias restrict qualified pointers associated with the same block.
+Description: Attempt to alias restrict qualified pointers associated with the same block.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4, J.2:1 item 69
   at main(j069c.c:7)
