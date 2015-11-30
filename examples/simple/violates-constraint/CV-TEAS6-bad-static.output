@@ -1,7 +1,7 @@
 File: CV-TEAS6-bad-static.c
 Line: 8
 Error: CV-TEAS6
-Desctription: Trying to write through a const lvalue.
+Description: Trying to write through a const lvalue.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
 Translation failed. Run kcc -d CV-TEAS6-bad-static.c to see commands run.

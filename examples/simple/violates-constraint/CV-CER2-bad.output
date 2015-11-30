@@ -1,5 +1,5 @@
 Error: CV-CER2
-Desctription: Unary '&' operator applied to a value with register storage class.
+Description: Unary '&' operator applied to a value with register storage class.
 Type: Constraint violation.
 See also: C11 sec. 6.5.3.2:1
   at main(CV-CER2-bad.c:5)
