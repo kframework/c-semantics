@@ -1,5 +1,5 @@
 Error: UB-CEA1
-Description: A pointer (or array subscript) outside the bounds of an object.
+Desctription: A pointer (or array subscript) outside the bounds of an object.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.6:8, J.2:1 item 46
   at main(j049b.c:3)

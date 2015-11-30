@@ -1,5 +1,5 @@
 Error: UB-ECL4
-Description: An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.
+Desctription: An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4, J.2:1 item 68
   at f(j068c.c:9)
