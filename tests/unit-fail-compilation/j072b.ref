@@ -1,7 +1,7 @@
 File: j072b.c
 Line: 4
 Error: CV-TDL3
-Description: Extern declaration of x with incompatible type.
+Desctription: Extern declaration of x with incompatible type.
 Type: Constraint violation.
 See also: C11 sec. 6.7:4
 Translation failed. Run kcc -d j072b.c to see commands run.
