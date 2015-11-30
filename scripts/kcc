@@ -36,6 +36,14 @@ my $profileDirectory;
   close FILE;
 }
 
+our $defaultProfile;
+{
+  local $/=undef;
+  open FILE, "$distDirectory/default-profile" or die "Couldn't find default profile: please fix $distDirectory/default-profile";
+  $defaultProfile = <FILE>;
+  close FILE;
+}
+
 opendir (my $DIR, $distDirectory);
 our @profiles = ();
 while ( my $entry = readdir $DIR) {
@@ -117,7 +125,8 @@ my $spec = q(#
       -version				Show version information [undocumented]
 { 
   $self->version(); 
-  print("	Current profile: $main::profile\n	Installed profiles: @main::profiles\n\n");
+  my $profiles = join("\n	                    ", @main::profiles);
+  print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
   exit 0;
 }
       -Version			[ditto]

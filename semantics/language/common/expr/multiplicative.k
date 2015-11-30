@@ -44,13 +44,19 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           [structural]
      rule tv(F1:Float, T:Type) / tv(F2:Float, T':Type)
           => arithInterpret(T, F1 /Float F2)
-          requires T ==Type T'
+          requires T ==Type T' andBool F2 =/=Float 0.0
           [structural]
      rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
           ~> L:RValue / tv(0, T':Type)
           requires isIntegerType(type(L)) andBool isPromoted(type(L))
                andBool type(L) ==Type T'
           [structural]
+     rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
+          ~> L:RValue / tv(0.0, T':Type)
+          requires isFloatType(type(L))
+               andBool type(L) ==Type T'
+          [structural]
+
 
      rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
           => arithInterpret(T, I1 %Int I2)
