@@ -11,8 +11,6 @@ PASS_TESTS_DIR = tests/unit-pass
 FAIL_TESTS_DIR = tests/unit-fail
 FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
-EXTENSION = cmx
-
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
 	$(SCRIPTS_DIR)/xml-to-k \
@@ -26,7 +24,7 @@ FILES_TO_DIST = \
 
 default: dist
 
-fast: $(DIST_DIR)/$(PROFILE)/lib/libc.so $(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/def.$(EXTENSION)
+fast: $(DIST_DIR)/$(PROFILE)/lib/libc.so $(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/timestamp
 
 check-vars:
 	@if ! ocaml -version > /dev/null 2>&1; then echo "ERROR: You don't seem to have ocaml installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
@@ -45,24 +43,24 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE
 	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
-$(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc execution-semantics
-	@cp -p -r $(SEMANTICS_DIR)/c11-kompiled $(DIST_DIR)/$(PROFILE)
+$(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/timestamp: $(DIST_DIR)/kcc execution-semantics
+	@cp -p -r $(SEMANTICS_DIR)/$(PROFILE)/c11-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION): $(DIST_DIR)/kcc translation-semantics
-	@cp -p -r $(SEMANTICS_DIR)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+$(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp: $(DIST_DIR)/kcc translation-semantics
+	@cp -p -r $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION): semantics
-	@cp -r $(SEMANTICS_DIR)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
+$(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
+	@cp -r $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION): semantics
-	@cp -r $(SEMANTICS_DIR)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
+$(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
+	@cp -r $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/def.$(EXTENSION) $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
+$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
 	@echo "Translating the standard library... ($(PROFILE_DIR))"
 	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/$(PROFILE)/lib/libc.so $(wildcard $(PROFILE_DIR)/src/*.c) $(KCCFLAGS) -I $(PROFILE_DIR)/src/
 	@echo "Done."
 
-$(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION) $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION)
+$(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
 
 test-build: fast
 	@echo "Testing kcc..."
