@@ -110,16 +110,18 @@ module C-MEMORY-READING
      syntax Bool ::= #hasTrap(List) [function]
 
      rule #hasUnknown(.List) => false
-     rule #hasUnknown(ListItem(piece(unknown, _)) _:List) => true
+     rule #hasUnknown(ListItem(piece(B:Bits, _) => B) _:List)
      rule #hasUnknown((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasUnknown(ListItem(piece(B:Bits, _)) L:List) => #hasUnknown(L)
-          requires B =/=K unknown
+     rule #hasUnknown(ListItem(bitRange(B:Bits, _, _) => B) _:List)
+     rule #hasUnknown(ListItem(unknown) _:List) => true
+     rule #hasUnknown(ListItem(B:Bits) L:List) => #hasUnknown(L) [owise]
 
      rule #hasTrap(.List) => false
-     rule #hasTrap(ListItem(piece(trap, _)) _:List) => true
+     rule #hasTrap(ListItem(piece(B:Bits, _) => B) _:List)
      rule #hasTrap((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasTrap(ListItem(piece(B:Bits, _)) L:List) => #hasTrap(L)
-          requires B =/=K trap
+     rule #hasTrap(ListItem(bitRange(B:Bits, _, _) => B) _:List)
+     rule #hasTrap(ListItem(trap) _:List) => true
+     rule #hasTrap(ListItem(B:Bits) L:List) => #hasTrap(L) [owise]
 
      // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(Type, List) [function]
