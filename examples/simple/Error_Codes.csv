@@ -8,7 +8,7 @@ UB-CB1,types of function call arguments aren't compatible with declared types af
 UB-CB2,function call has fewer arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
 UB-CB3,function call has more arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
 UB-CB4,function defined with no parameters called with arguments.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
-UB-CCV1,signed overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
+UB-CCV1,signed integer overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
 UB-CCV3,conversion to integer from float outside the range that can be represented.,"6.3.1.4:1, J.2:1 item 17",Undefined Behavior
 UB-CCV4,floating-point value outside the range of values that can be represented after conversion.,"6.3.1.5:1, J.2:1 item 18",Undefined Behavior
 UB-CCV5,casting empty value to type other than void.,"6.3.2.2:1, J.2:1 item 23",Undefined Behavior
@@ -34,7 +34,7 @@ UB-CEM1,attempting to access a member in an atomic struct.,"6.5.2.3:5, J.2:1 ite
 UB-CEM2,attempting to access a member in an atomic union.,"6.5.2.3:5, J.2:1 item 42",Undefined Behavior
 UB-CEMX1,Division by 0.,"6.5.5:5, J.2:1 item 45",Undefined Behavior
 UB-CEMX2,Modulus by 0.,"6.5.5:5, J.2:1 item 45",Undefined Behavior
-UB-CEMX3,Signed overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
+UB-CEMX3,Signed integer overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
 UB-CER3,Dereferencing a null pointer.,"6.5.3.2:4, J.2:1 item 43",Undefined Behavior
 UB-CER4,Dereferencing a pointer past the end of an array.,"6.5.6:8, J.2:1 item 47",Undefined Behavior
 UB-CERL1,Cannot compare pointers with different base objects using '<'.,"6.5.8:5, J.2:1 item 53",Undefined Behavior
