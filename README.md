@@ -70,7 +70,7 @@ Directories:
 - [examples][]: some simple example programs for demonstrating the undefinedness that we 
   can catch.
 
-- [default-profile][]: library headers and some library sources for functions that aren't
+- [x86-gcc-limited-libc][]: library headers and some library sources for functions that aren't
   defined directly in the semantics itself.
 
 - [parser][]: the lightly modified OCaml CIL C parser.
@@ -89,8 +89,8 @@ During the build process, three versions of the semantics are built using
 `kompile` with different flags: a "deterministic" version, a version for
 supporting non-deterministic expression sequencing, and another with
 non-deterministic thread-interleaving. These all get copied to `dist/` along
-with the contents of [default-profile/include][] and the [scripts/kcc][] script. Finally, make
-runs `kcc -s -shared` on all the libc source files in [default-profile/src][].
+with the contents of [x86-gcc-limited-libc/include][] and the [scripts/kcc][] script. Finally, make
+runs `kcc -s -shared` on all the libc source files in [x86-gcc-limited-libc/src][].
 
 The `kcc` script is the primary interface to our semantics. Invoking `kcc
 myprogram.c` results in the contents of the parameter C source file being piped
@@ -112,8 +112,8 @@ See [semantics/README.md][] for more details.
 [scripts/program-runner]: scripts/program-runner
 [scripts/query-kcc-prof]: scripts/query-kcc-prof
 [examples]: examples
-[default-profile]: default-profile
-[default-profile/src]: default-profile/src
+[x86-gcc-limited-libc]: x86-gcc-limited-libc
+[x86-gcc-limited-libc/src]: x86-gcc-limited-libc/src
 [parser]: parser
 [scripts]: scripts
 [semantics]: semantics
