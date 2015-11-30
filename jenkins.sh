@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 eval `opam config env`
+rm -rf k
 tar xvf k-distribution-*.tar.gz
 rm -rf k-distribution-*.tar.gz
 export PATH=$PATH:`pwd`/k/bin
