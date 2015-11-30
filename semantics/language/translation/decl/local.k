@@ -164,7 +164,7 @@ module C-DECL-LOCAL
                andBool notBool (X in_keys(LocalTypes))
           [structural]
      rule (.K => UNDEF("TDL5",
-               "declaration of an identifier for an object with no linkage and incomplete type.",
+               "Declaration of an identifier for an object with no linkage and incomplete type.",
                "6.7:7, J.2:1 item 59"))
           ~> defineAndInit(_, _, initValue(_, T:Type, _))
           requires notBool isCompleteType(T)

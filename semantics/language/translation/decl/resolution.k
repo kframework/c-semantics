@@ -57,7 +57,7 @@ module C-DECL-RESOLUTION
      rule allocateIncompleteTentative(X:CId,
                declState(_, t(Mods:Set, _), completed, _))
           => UNDEF("TDR1",
-               "declaration for inline function not defined in the same translation unit: "
+               "Declaration for inline function not defined in the same translation unit: "
                +String idToString(X),
                "6.7.4:7, J.2:1 item 70")
           requires Inline in Mods
@@ -104,7 +104,7 @@ module C-DECL-RESOLUTION
 
      rule <k> resolveReference(X:CId)
                => UNDEF("TDR2",
-                    "no definition for symbol with external linkage: "
+                    "No definition for symbol with external linkage: "
                      +String idToString(X),
                     "6.9:5, J.2:1 item 84")
           ...</k>

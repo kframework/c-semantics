@@ -325,18 +325,18 @@ module C-IO-BUFFERED
 //             //[interpRule]
 
      rule (.K => UNDEF("EIO7",
-               "reading outside the bounds of an object.",
+               "Reading outside the bounds of an object.",
                "6.3.2.1:1, J.2:1 item 19"))
           ~> errorReadOutOfBounds
           [structural]
      // read outo f bounds becomes a trap by the above rule
      rule (.K => UNDEF("EIO8",
-               "unsequenced side effect on scalar object with value computation of same object.",
+               "Unsequenced side effect on scalar object with value computation of same object.",
                "6.5:2, J.2:1 item 35"))
           ~> errorUnseqEffects
           [structural]
      rule (.K => UNDEF("EIO9",
-               "trying to access an object declared with volatile type through a non-volatile lvalue.",
+               "Trying to access an object declared with volatile type through a non-volatile lvalue.",
                "6.7.3:6, J.2:1 item 65"))
           ~> errorNonVolatileLVal
           [structural]
