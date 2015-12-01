@@ -19,6 +19,7 @@ module COMPAT-SYNTAX
      syntax String ::= toUpperCase(String) [function]
 
      syntax Bool ::= all(List, K) [function]
+     syntax Bool ::= some(List, K) [function]
 
      //TODO(liyi): this might be able to remove
      syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
@@ -88,6 +89,10 @@ module COMPAT
      rule all(ListItem(K:K) L:List, #klabel(Lbl:KLabel))
           => Lbl(K:K) andBool all(L, #klabel(Lbl))
      rule all(.List, _) => true
+
+     rule some(ListItem(K:K) L:List, #klabel(Lbl:KLabel))
+          => Lbl(K:K) orBool some(L, #klabel(Lbl))
+     rule some(.List, _) => false
 
      rule toUpperCase(S:String)
           => toUpperCase(firstChar(S:String))

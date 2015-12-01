@@ -120,7 +120,10 @@ module C-TYPING-COMPATIBILITY
      rule #areBitFieldsCompat(.List, .List) => true
      rule #areBitFieldsCompat(_, _) => false [owise]
 
-     // bit fields aren't really types, so they aren't part of type compatibility. According to the standard, they are part of the compatibility of the type of the struct, hence #areBitFieldsCompat above.
+     // bit fields aren't really types, so they aren't part of type
+     // compatibility. According to the standard, they are part of the
+     // compatibility of the type of the struct, hence #areBitFieldsCompat
+     // above.
      rule #areCompat(t(Mods:Set, bitfieldType(T:Type, _)), T':Type, Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
      rule #areCompat(T':Type, t(Mods:Set, bitfieldType(T:Type, _)), Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
 
@@ -147,27 +150,32 @@ module C-TYPING-COMPATIBILITY
                t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
           => #areCompat(T, T', Cache)
           requires sameQualifiers(Mods, Mods')
-     // TODO(chathhorn): need to rework VLA compatibility.
      rule #areCompat(
                t(Mods:Set, arrayType(T::Type, _)),
-               t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+               T':VariableLengthArrayType, Cache:Set)
+          => #areCompat(T, innerType(T'), Cache)
+          requires sameQualifiers(Mods, getModifiers(T'))
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T::Type, _)),
+               T:VariableLengthArrayType,
                t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+          => #areCompat(innerType(T), T', Cache)
+          requires sameQualifiers(getModifiers(T), Mods')
+     // Two variable length arrays are compatible, but it's undefined if
+     // they're used in an expression where they're required to be compat but
+     // they have different sizes.
+     rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache:Set)
+          => #areCompat(innerType(T), innerType(T'), Cache)
+          requires sameQualifiers(getModifiers(T), getModifiers(T'))
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T::Type)),
-               t(Mods':Set, variableLengthArrayType(T'::Type, _)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+               T':VariableLengthArrayType, Cache:Set)
+          => #areCompat(T, innerType(T'), Cache)
+          requires sameQualifiers(Mods, getModifiers(T'))
      rule #areCompat(
-               t(Mods:Set, variableLengthArrayType(T::Type, _)),
+               T:VariableLengthArrayType,
                t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+          => #areCompat(innerType(T), T', Cache)
+          requires sameQualifiers(getModifiers(T), Mods')
      rule #areCompat(
                t(Mods:Set, incompleteArrayType(T::Type)),
                t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
@@ -218,7 +226,7 @@ module C-TYPING-COMPATIBILITY
      rule #areParamsCompat(
                ListItem(T:Type) L:List,
                ListItem(T':Type) L':List, Cache:Set)
-          => #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
+          => #areCompat(elideDecl(T), elideDecl(T'), Cache) andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(ListItem(variadic), ListItem(variadic), _) => true
      rule #areParamsCompat(.List, .List, _) => true
 
@@ -282,7 +290,7 @@ module C-TYPING-COMPATIBILITY
      rule compositeType(
                t(Mods:Set, functionType(T:Type, P:List)),
                t(Mods':Set, functionType(T':Type, P':List)))
-          => compositeFunctionType(compositeType(T, T'), Mods Mods', .K, P, P', .List)
+          => compositeFunctionType(compositeType(T, T'), Mods Mods', P, P', .List)
 
      rule compositeType(
                t(Mods:Set, pointerType(T:Type)),
@@ -301,15 +309,30 @@ module C-TYPING-COMPATIBILITY
                t(Mods:Set, incompleteArrayType(T:Type)),
                t(Mods':Set, arrayType(T':Type, N:Int)))
           => t(Mods Mods', arrayType(compositeType(T, T'), N))
-     // TODO(chathhorn): rework VLA composite types.
      rule compositeType(
                t(Mods:Set, arrayType(T:Type, N:Int)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+               T':VariableLengthArrayType)
+          => t(Mods getModifiers(T'), arrayType(compositeType(T, innerType(T')), N))
      rule compositeType(
-               t(Mods:Set, variableLengthArrayType(T:Type, _)),
+               T:VariableLengthArrayType,
                t(Mods':Set, arrayType(T':Type, N:Int)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+          => t(getModifiers(T) Mods', arrayType(compositeType(innerType(T), T'), N))
+     rule compositeType(
+               t(Mods:Set, variableLengthArrayType(T:Type, E:K)),
+               t(Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+     rule compositeType(
+               t(Mods:Set, unspecifiedArrayType(T:Type)),
+               t(Mods':Set, variableLengthArrayType(T':Type, E:K)))
+          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+     rule compositeType(
+               t(Mods':Set, variableLengthArrayType(T:Type, E:K)),
+               t(Mods:Set, unspecifiedArrayType(T':Type)))
+          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+     rule compositeType(
+               t(Mods':Set, unspecifiedArrayType(T:Type)),
+               t(Mods:Set, unspecifiedArrayType(T':Type)))
+          => t(Mods Mods', unspecifiedArrayType(compositeType(T, T')))
      rule compositeType(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
@@ -319,6 +342,16 @@ module C-TYPING-COMPATIBILITY
                typedDeclaration(T:Type, X:CId),
                typedDeclaration(T':Type, X:CId))
           => typedDeclaration(compositeType(T, T'), X)
+     rule compositeType(
+               T:Type,
+               typedDeclaration(T':Type, X:CId))
+          => typedDeclaration(compositeType(T, T'), X)
+          requires notBool isTypedDeclaration(T)
+     rule compositeType(
+               typedDeclaration(T:Type, X:CId),
+               T':Type)
+          => typedDeclaration(compositeType(T, T'), X)
+          requires notBool isTypedDeclaration(T')
 
      rule compositeType(
                t(Mods:Set, structType(S:StructId)),
@@ -331,31 +364,21 @@ module C-TYPING-COMPATIBILITY
           => t(Mods Mods', structType(S':StructId))
           requires getFieldInfo(S) ==K #incomplete
 
-     // TODO(chathhorn): huge hack. Done like this just so things will "break"
-     // when we can't form a composite type. Really need a better way to
-     // propagate errors up through layers of function calls like this (or
-     // maybe just a better mechanism for crawling ASTs...)
-     // TODO(chathhorn): merging; these were anywhere.
-     syntax KItem ::= compositeFunctionType(K, Set, K, List, List, List)
+     syntax KItem ::= compositeFunctionType(Type, Set, List, List, List)
           [function]
-     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, .List, P':List)
-          => t(Mods, functionType(T, P'))
-     rule compositeFunctionType(T:Type, Mods:Set, .K, .List, P:List, _)
-          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+     rule compositeFunctionType(R:Type, Mods:Set, .List, .List, P':List)
+          => t(Mods, functionType(R, P'))
+     rule compositeFunctionType(_, _, .List, (P:List => .List), (_ => P))
           requires P =/=K .List
-     rule compositeFunctionType(T:Type, Mods:Set, .K, P:List, .List, _)
-          => compositeFunctionType(T, Mods, .K, .List, .List, P)
+     rule compositeFunctionType(_, _, (P:List => .List), .List, (_ => P))
           requires P =/=K .List
-     rule compositeFunctionType(T:Type, Mods:Set, .K,
-          ListItem(variadic), ListItem(variadic), P:List)
-          => compositeFunctionType(T, Mods, .K, .List, .List,
-               P ListItem(variadic))
-     rule compositeFunctionType(T:Type, Mods:Set, .K,
-               ListItem(PT:Type) P:List,
-               ListItem(PT':Type) P':List, P'':List)
-          => compositeFunctionType(T, Mods, compositeType(PT, PT'), P, P', P'')
-     rule compositeFunctionType(T:Type, Mods:Set, T':Type, P:List, P':List, P'':List)
-          => compositeFunctionType(T, Mods, .K, P, P', P'' ListItem(T'))
-
+     rule compositeFunctionType(_, _,
+               (ListItem(variadic) => .List),
+               (ListItem(variadic) => .List),
+               _:List (.List => ListItem(variadic)))
+     rule compositeFunctionType(_, _,
+               (ListItem(P:Type) => .List) _:List,
+               (ListItem(P':Type) => .List) _:List,
+               _:List (.List => ListItem(compositeType(P, P'))))
 endmodule
 
