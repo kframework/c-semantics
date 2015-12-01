@@ -1,7 +1,7 @@
 File: CV-TDG18-bad-static.c
 Line: 4
 Error: CV-TDG18
-Description: declaration for x appears with invalid storage class specifiers.
+Description: Declaration for x appears with invalid storage class specifiers.
 Type: Constraint violation.
 See also: C11 sec. 6.7.1:3
 Translation failed. Run kcc -d CV-TDG18-bad-static.c to see commands run.

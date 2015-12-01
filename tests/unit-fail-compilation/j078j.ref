@@ -1,7 +1,7 @@
 File: j078j.c
 Line: 1
 Error: UB-TDG7
-Description: void parameter appears with qualifiers.
+Description: Void parameter appears with qualifiers.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
 Translation failed. Run kcc -d j078j.c to see commands run.

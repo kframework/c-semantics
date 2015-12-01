@@ -48,7 +48,7 @@ module C-BINDING
                (ListItem(V:RValue) => .List) _)
           requires #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
-     rule (.K => UNDEF("CB1", "types of function call arguments aren't "
+     rule (.K => UNDEF("CB1", "Types of function call arguments aren't "
                +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2:1 item 39"))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
@@ -56,14 +56,14 @@ module C-BINDING
                ListItem(V:RValue) _)
           requires notBool #arePromotedTypesCompat(value(V):>CValue, T, type(V))
           [structural]
-     rule (.K => UNDEF("CB2", "function call has fewer arguments than "
+     rule (.K => UNDEF("CB2", "Function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
                ListItem(typedDeclaration(T:Type, _)) _,
                ListItem(T':Type) _,
                .List)
           requires notBool (isVoidType(T) andBool isVoidType(T'))
-     rule (.K => UNDEF("CB3", "function call has more arguments than "
+     rule (.K => UNDEF("CB3", "Function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(.List, .List, ListItem(_) _)
      // Variadic.

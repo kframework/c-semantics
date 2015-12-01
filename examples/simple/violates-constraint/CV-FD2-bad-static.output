@@ -1,7 +1,7 @@
 File: CV-FD2-bad-static.c
 Line: 7
 Error: CV-FD2
-Description: invalid return type in function definition.
+Description: Invalid return type in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7.6.3:1
 Translation failed. Run kcc -d CV-FD2-bad-static.c to see commands run.

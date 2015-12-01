@@ -1,7 +1,7 @@
 File: UB-CEB3-bad-static.c
 Line: 5
 Error: UB-CEB3
-Description: the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
+Description: The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:3, J.2:1 item 51
 Translation failed. Run kcc -d UB-CEB3-bad-static.c to see commands run.

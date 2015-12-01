@@ -1,7 +1,7 @@
 File: CV-TDL4-bad-static.c
 Line: 5
 Error: CV-TDL4
-Description: redeclaration of a with no linkage.
+Description: Redeclaration of a with no linkage.
 Type: Constraint violation.
 See also: C11 sec. 6.7:3
 Translation failed. Run kcc -d CV-TDL4-bad-static.c to see commands run.
