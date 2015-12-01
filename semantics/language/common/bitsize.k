@@ -30,12 +30,12 @@ module C-BITSIZE
           requires notBool isType(V)
           [structural]
      rule sizeof(T:Type => stabilizeVLA(T))
-          requires isVariablyModifiedType(T)
+          requires isVariableLengthArrayType(T)
           [structural]
      rule sizeof(T:Type)
           => Cast(t(SetItem(IntegerConstant), cfg:sizeut),
                tv(byteSizeofType(T), t(SetItem(IntegerConstant), cfg:largestUnsigned)))
-          requires notBool isVariablyModifiedType(T)
+          requires notBool isVariableLengthArrayType(T)
           [structural]
 
      rule byteSizeofType(T:Type)
