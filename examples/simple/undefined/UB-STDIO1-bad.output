@@ -1,5 +1,5 @@
 Error: UB-STDIO1
-Description: printf: Format string expects type of size 4, but got an argument of size 8.
+Description: 'printf': Format string expects type of size 4, but got an argument of size 8.
 Type: Undefined behavior.
 See also: C11 sec. 7.21.6.1:9, J.2:1 item 153
   at printf(UB-STDIO1-bad.c:6)

@@ -1,7 +1,7 @@
 File: UB-CEB6-bad-static.c
 Line: 4
 Error: UB-CEB6
-Description: the right operand in a bitwise shift is negative.
+Description: The right operand in a bitwise shift is negative.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:3, J.2:1 item 51
 Translation failed. Run kcc -d UB-CEB6-bad-static.c to see commands run.

@@ -1,7 +1,7 @@
 File: UB-CEM2-bad-static.c
 Line: 8
 Error: UB-CEM2
-Description: attempting to access a member in an atomic union.
+Description: Attempting to access a member in an atomic union.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.3:5, J.2:1 item 42
 Translation failed. Run kcc -d UB-CEM2-bad-static.c to see commands run.
