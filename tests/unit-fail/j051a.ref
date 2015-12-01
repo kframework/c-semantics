@@ -1,5 +1,5 @@
 Error: UB-CEB2
-Description: the right operand in a bitwise shift is negative.
+Description: The right operand in a bitwise shift is negative.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:3, J.2:1 item 51
   at main(j051a.c:4)

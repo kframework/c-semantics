@@ -1,5 +1,5 @@
 Error: UB-CCV6
-Description: casting void type to non-void type.
+Description: Casting void type to non-void type.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
   at main(j023b.c:4)
