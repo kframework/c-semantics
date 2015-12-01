@@ -1,7 +1,7 @@
 File: CV-CEM3-bad-static.c
 Line: 14
 Error: CV-CEM3
-Description: attempting to access member but it does not exist
+Description: Attempting to access member but it does not exist.
 Type: Constraint violation.
 See also: C11 sec. 6.5.2.3:1
 Translation failed. Run kcc -d CV-CEM3-bad-static.c to see commands run.

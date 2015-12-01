@@ -1,7 +1,7 @@
 File: CV-TDG2-bad-static.c
 Line: 3
 Error: CV-TDG2
-Description: declaration for x appears with multiple storage class specifiers.
+Description: Declaration for x appears with multiple storage class specifiers.
 Type: Constraint violation.
 See also: C11 sec. 6.7.1:2
 Translation failed. Run kcc -d CV-TDG2-bad-static.c to see commands run.

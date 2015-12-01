@@ -1,7 +1,7 @@
 File: CV-TDG15-bad-static.c
 Line: 7
 Error: CV-TDG15
-Description: redefinition of a struct, union, or enum: foo
+Description: Redefinition of a struct, union, or enum: foo.
 Type: Constraint violation.
 See also: C11 sec. 6.7.2.3:1
 Translation failed. Run kcc -d CV-TDG15-bad-static.c to see commands run.

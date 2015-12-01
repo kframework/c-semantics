@@ -1,7 +1,7 @@
 File: CV-TEAS1-bad-static.c
 Line: 9
 Error: CV-TEAS1
-Description: incompatible types in assignment or function call arguments.
+Description: Incompatible types in assignment or function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
 Translation failed. Run kcc -d CV-TEAS1-bad-static.c to see commands run.
