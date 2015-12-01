@@ -1,7 +1,7 @@
 File: j015a.c
 Line: 3
 Error: CV-TDG10
-Description: conflicting types for f
+Description: Conflicting types for f.
 Type: Constraint violation.
 See also: C11 sec. 6.7:4
 Translation failed. Run kcc -d j015a.c to see commands run.

@@ -1,7 +1,7 @@
 File: j504a.c
 Line: 2
 Error: CV-TDG13
-Description: Redefinition of symbol: x
+Description: Redefinition of symbol: x.
 Type: Constraint violation.
 See also: C11 sec. 6.9:3
 Translation failed. Run kcc -d j504a.c to see commands run.

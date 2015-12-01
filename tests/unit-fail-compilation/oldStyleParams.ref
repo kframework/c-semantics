@@ -1,7 +1,7 @@
 File: oldStyleParams.c
 Line: 2
 Error: CV-FD3
-Description: incomplete parameter type in function definition.
+Description: Incomplete parameter type in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7.6.3:4
 Translation failed. Run kcc -d oldStyleParams.c to see commands run.

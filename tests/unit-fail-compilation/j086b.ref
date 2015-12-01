@@ -1,7 +1,7 @@
 File: j086b.c
 Line: 3
 Error: UB-TDL5
-Description: declaration of an identifier for an object with no linkage and incomplete type.
+Description: Declaration of an identifier for an object with no linkage and incomplete type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7:7, J.2:1 item 59
 Translation failed. Run kcc -d j086b.c to see commands run.
