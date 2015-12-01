@@ -1,7 +1,7 @@
 File: CV-FD1-bad-static.c
 Line: 3
 Error: CV-FD1
-Description: duplicate parameters in function definition.
+Description: Duplicate parameters in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7:3
 Translation failed. Run kcc -d CV-FD1-bad-static.c to see commands run.
