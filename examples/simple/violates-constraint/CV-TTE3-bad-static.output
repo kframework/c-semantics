@@ -1,0 +1,7 @@
+File: CV-CEC5-bad-static.c
+Line: 5
+Error: CV-TTE3
+Description: if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
+Type: Constraint violation.
+See also: C11 sec. 6.5.15:3
+Translation failed. Run kcc -d CV-CEC5-bad-static.c to see commands run.

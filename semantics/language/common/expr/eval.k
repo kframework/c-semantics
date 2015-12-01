@@ -85,15 +85,19 @@ module C-COMMON-EXPR-EVAL
           => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
-     rule arrayToPtrLoc(Loc::SymLoc, T::Type)
+     rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
              addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc::SymLoc, T::Type)
+          => addProv(basedOn(base(Loc), getRestrictBlock(T)), Loc)
+          requires isRestrictType(T) andBool notBool isFixedLengthArrayType(T)
+     rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)
           => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
              Loc)
           requires notBool isRestrictType(T)
+     rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{4}}}{
      A function designator is an expression that has function type. Except

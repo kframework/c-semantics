@@ -268,6 +268,7 @@ and unary_operator =
 
 and expression =
     NOTHING
+  | UNSPECIFIED
   | OffsetOf of type_name * expression * cabsloc
   | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
