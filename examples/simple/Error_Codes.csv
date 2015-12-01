@@ -1,5 +1,5 @@
 ,,,
-,Errors reported by RV-Match follow the template: Error_Type-Error_Code.,,
+,The C11 semantic errors follow the template: Error_Type-Error_Code.,,
 ,"The Error_Type can be one of: UB (Undefined Behavior), USP (Unspecified Behavior), CV (Constraint Violation), or IMPL (Implementation Specific Behavior)",,
 ,The Error_Code is a unique code used to identify a particular error.,,
 ,,,
@@ -69,8 +69,8 @@ UB-TDG11,Static declaration of Identifier follows non-static declaration.,"6.2.2
 UB-TDG12,Declaration for an object is a tentative definition with internal linkage and has an incomplete type.,"6.9.2:3, J.2:1 item 89",Undefined Behavior
 UB-TDG17,Could not form composite type from declaration.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
 UB-CDI1,Initializer for scalar contains multiple expressions,"6.7.9:11, J.2:1 item 81",Undefined Behavior
-UB-CDI2,Initializer for scalar contains multiple levels of braces,"6.7.9:11, J.2:1 item 81",Undefined Behavior
-UB-CDI3,Invalid initializer for aggregate type,"6.7.9:16, J.2:1 item 83",Undefined Behavior
+UB-CDI2,Initializer for scalar contains multiple levels of braces.,"6.7.9:11, J.2:1 item 81",Undefined Behavior
+UB-CDI3,Invalid initializer for aggregate type.,"6.7.9:16, J.2:1 item 83",Undefined Behavior
 UB-TDL5,Declaration of an identifier for an object with no linkage and incomplete type.,"6.7:7, J.2:1 item 59",Undefined Behavior
 UB-CDT1,Structs must contain a named member.,"6.7.2.1:8, J.2:1 item 61",Undefined Behavior
 UB-CDT2,Unions must contain a named member.,"6.7.2.1, J.2:1 item 61",Undefined Behavior
