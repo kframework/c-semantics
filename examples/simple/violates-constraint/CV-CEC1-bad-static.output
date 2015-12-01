@@ -1,7 +1,0 @@
-File: CV-CEC1-bad-static.c
-Line: 6
-Error: CV-CEC1
-Description: If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.
-Type: Constraint violation.
-See also: C11 sec. 6.5.15:3
-Translation failed. Run kcc -d CV-CEC1-bad-static.c to see commands run.
