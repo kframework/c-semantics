@@ -1,5 +1,5 @@
 Error: UB-CB2
-Description: function call has fewer arguments than parameters in function definition.
+Description: Function call has fewer arguments than parameters in function definition.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
   at foo(j038a.c:4)

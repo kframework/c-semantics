@@ -1,5 +1,5 @@
 Error: CV-CCV10
-Description: conversion to or from non-scalar type.
+Description: Conversion to or from non-scalar type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.4:2
   at main(j044c.c:6)

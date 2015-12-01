@@ -1,5 +1,5 @@
 Error: UB-EFNC1
-Description: attempt to call the function f through a pointer with incompatible type.
+Description: Attempt to call the function f through a pointer with incompatible type.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:9, J.2:1 item 41
   at main(j039a.c:6)

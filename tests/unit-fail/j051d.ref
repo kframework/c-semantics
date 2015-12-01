@@ -1,5 +1,5 @@
 Error: UB-CEB7
-Description: the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
+Description: The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:3, J.2:1 item 51
   at main(j051d.c:6)
