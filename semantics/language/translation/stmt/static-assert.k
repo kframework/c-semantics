@@ -15,7 +15,7 @@ module C-STMT-STATIC-ASSERT
                "6.7.10:2")
      rule StaticAssert(tv(0, _), stringLiteral(Msg:String))
           => CV("SSA2",
-               "Static assertion failed: " +String Msg,
+               "Static assertion failed: " +String Msg +String ".",
                "6.7.10:2")
 
 

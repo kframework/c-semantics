@@ -28,7 +28,7 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(L))
           requires hasNamedField(L)
           [structural]
-     rule (.K => UNDEF("CDT1", "structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
+     rule (.K => UNDEF("CDT1", "Structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
           ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
@@ -36,7 +36,7 @@ module C-DECL-TAGGED
           => addTag(X, makeUnionFieldInfo(L))
           requires hasNamedField(L)
           [structural]
-     rule (.K => UNDEF("CDT2", "unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
+     rule (.K => UNDEF("CDT2", "Unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
           ~> UnionDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
@@ -128,7 +128,7 @@ module C-DECL-TAGGED
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           requires notBool (X in_keys(Structs))
           [structural]
-     rule <k> (.K => CV("TDG15", "redefinition of a struct, union, or enum: "
+     rule <k> (.K => CV("TDG15", "Redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
