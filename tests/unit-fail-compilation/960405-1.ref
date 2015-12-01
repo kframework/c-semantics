@@ -1,7 +1,7 @@
 File: 960405-1.c
 Line: 4
 Error: UB-CCV12
-Description: floating-point overflow.
+Description: Floating-point overflow.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:5, J.2:1 item 36
 Translation failed. Run kcc -d 960405-1.c to see commands run.

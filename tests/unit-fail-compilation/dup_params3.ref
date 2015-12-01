@@ -1,7 +1,7 @@
 File: dup_params3.c
 Line: 1
 Error: CV-FD1
-Description: duplicate parameters in function definition.
+Description: Duplicate parameters in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7:3
 Translation failed. Run kcc -d dup_params3.c to see commands run.
