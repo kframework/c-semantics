@@ -99,7 +99,7 @@ module C-EXECUTION-ERROR
           [structural]
 
      rule (.K => UNDEF("STDIO1",
-               "printf: Format string expects type of size " +String
+               "'printf': Format string expects type of size " +String
                Int2String(value(A):>Int) +String ", but got an argument of size "
                +String Int2String(value(B):>Int) +String ".", "7.21.6.1:9, J.2:1 item 153") ) ~>
           nextvarg-aux(_, _, A:RValue, B:RValue)

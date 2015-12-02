@@ -1,7 +1,7 @@
 File: j070a.c
 Line: 5
 Error: UB-TDR1
-Description: declaration for inline function not defined in the same translation unit: f
+Description: Declaration for inline function not defined in the same translation unit: f.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.4:7, J.2:1 item 70
 Translation failed. Run kcc -d j070a.c to see commands run.

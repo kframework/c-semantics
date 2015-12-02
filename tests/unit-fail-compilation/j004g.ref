@@ -1,7 +1,7 @@
 File: j004g.c
 Line: 1
 Error: UB-FD8
-Description: main must have zero or two parameters.
+Description: Function main must have zero or two parameters.
 Type: Undefined behavior.
 See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
 Translation failed. Run kcc -d j004g.c to see commands run.

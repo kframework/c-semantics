@@ -1,7 +1,7 @@
 File: j084b.c
 Line: 2
 Error: CV-TDG13
-Description: Redefinition of symbol: a
+Description: Redefinition of symbol: a.
 Type: Constraint violation.
 See also: C11 sec. 6.9:3
 Translation failed. Run kcc -d j084b.c to see commands run.

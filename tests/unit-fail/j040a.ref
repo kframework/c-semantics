@@ -1,5 +1,5 @@
 Error: UB-CB1
-Description: types of function call arguments aren't compatible with declared types after promotions.
+Description: Types of function call arguments aren't compatible with declared types after promotions.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 39
   at f(j040a.c:7)

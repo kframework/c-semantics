@@ -1,7 +1,7 @@
 File: j067b.c
 Line: 2
 Error: CV-TDG10
-Description: conflicting types for p
+Description: Conflicting types for p.
 Type: Constraint violation.
 See also: C11 sec. 6.7:4
 Translation failed. Run kcc -d j067b.c to see commands run.

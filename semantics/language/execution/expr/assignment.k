@@ -55,7 +55,7 @@ module C-EXPR-ASSIGNMENT
                orBool (Loc +bytes byteSizeofType(T)) <=bytes getReadFromLoc(T)
           [structural]
      rule (.K => UNDEF("EEA1",
-               "assignment from non-exactly-overlapping overlapping read.",
+               "Assignment from non-exactly-overlapping overlapping read.",
                "6.5.16.1:3, J.2:1 item 54"))
           ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
           requires hasReadFrom(T)
@@ -106,7 +106,7 @@ module C-EXPR-ASSIGNMENT
                getFirstMatch(Mods, #klabel(`arrayStatic`)):>Modifier,
                getFirstMatch(Prov, #klabel(`fromArray`)):>Provenance)
      rule (.K => UNDEF("EEA4",
-               "passing a pointer not to an array object as a function parameter with a static-qualified array size.",
+               "Passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7, J.2:1 item 77"))
           ~> checkArrayStaticAssign(_, Loc:SymLoc)
           requires notBool isFromArray(Loc)
@@ -116,7 +116,7 @@ module C-EXPR-ASSIGNMENT
           => .K
           requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
      rule (.K => UNDEF("EEA5",
-               "passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
+               "Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.",
                "6.7.6.3:7, J.2:1 item 77"))
           ~> checkArrayStaticAssign'(T:Type,
                arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))

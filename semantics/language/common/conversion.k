@@ -38,7 +38,7 @@ module C-CONVERSION
      rule arithInterpret(T:FloatType, F:Float) => arithInterpretHold(T, F)
           requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
 
-     rule (.K => UNDEF("CCV12", "floating-point overflow.", "6.5:5, J.2:1 item 36"))
+     rule (.K => UNDEF("CCV12", "Floating-point overflow.", "6.5:5, J.2:1 item 36"))
           ~> arithInterpretHold(T:FloatType, F:Float)
           requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
 
@@ -48,7 +48,7 @@ module C-CONVERSION
      rule arithInterpret(T:SignedIntegerType, I:Int) => arithInterpretHold(T, I)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
 
-     rule (.K => UNDEF("CCV1", "signed integer overflow.", "6.5:5, J.2:1 item 36"))
+     rule (.K => UNDEF("CCV1", "Signed integer overflow.", "6.5:5, J.2:1 item 36"))
           ~> arithInterpretHold(T:SignedIntegerType, I:Int)
           requires notBool ((min(T) <=Int I) andBool (max(T) >=Int I))
           [structural]
@@ -153,7 +153,7 @@ module C-CONVERSION
           requires notBool inRange(I, T')
 
      rule (.K => IMPL("CCV2",
-               "conversion to signed integer outside the range that can be represented.",
+               "Conversion to signed integer outside the range that can be represented.",
                "6.3.1.3:3, J.3.5:1 item 4"))
           ~> castHold(T':SignedIntegerType, tv(I:Int, _:IntegerType))
           requires notBool inRange(I, T')
@@ -181,7 +181,7 @@ module C-CONVERSION
           requires notBool inRange(Float2Int(V), T')
 
      rule (.K => UNDEF("CCV3",
-               "conversion to integer from float outside the range that can be represented.",
+               "Conversion to integer from float outside the range that can be represented.",
                "6.3.1.4:1, J.2:1 item 17"))
           ~> castHold(T':IntegerType, tv(V:Float, _:FloatType))
           requires notBool inRange(Float2Int(V), T')
@@ -222,7 +222,7 @@ module C-CONVERSION
           requires notBool inRange(V, T')
 
      rule (.K => UNDEF("CCV4",
-               "floating-point value outside the range of values that can be represented after conversion.",
+               "Floating-point value outside the range of values that can be represented after conversion.",
                "6.3.1.5:1, J.2:1 item 18"))
           ~> castHold(T':FloatType, tv(V:Float, _:FloatType))
           requires notBool inRange(V, T')
@@ -245,11 +245,11 @@ module C-CONVERSION
      rule cast(t(_, T:SimpleType), voidVal) => castHold(t(.Set, T), voidVal)
           requires (T =/=K void)
 
-     rule (.K => UNDEF("CCV5", "casting empty value to type other than void.", "6.3.2.2:1, J.2:1 item 23"))
+     rule (.K => UNDEF("CCV5", "Casting empty value to type other than void.", "6.3.2.2:1, J.2:1 item 23"))
           ~> castHold(t(_, T:SimpleType), emptyValue)
           requires T =/=K void
           [structural]
-     rule (.K => UNDEF("CCV6", "casting void type to non-void type.", "6.3.2.2:1, J.2:1 item 23") )
+     rule (.K => UNDEF("CCV6", "Casting void type to non-void type.", "6.3.2.2:1, J.2:1 item 23") )
           ~> castHold(t(_, T:SimpleType), voidVal)
           requires (T =/=K void)
           [structural]
@@ -308,7 +308,7 @@ module C-CONVERSION
                andBool notBool isBoolType(T')
                andBool byteSizeofType(T) >Int byteSizeofType(T')
      rule (.K => UNDEF("CCV7",
-               "conversion from pointer to integer of a value possibly unrepresentable in the integer type.",
+               "Conversion from pointer to integer of a value possibly unrepresentable in the integer type.",
                "6.3.2.3:6, J.2:1 item 24"))
           ~> castHold(T':IntegerType, tv(V:CValue, T:PointerType))
           requires (V =/=K NullPointer)
@@ -329,14 +329,14 @@ module C-CONVERSION
                     andBool notBool isVoidType(T')))
 
      rule (.K => CV("CCV9",
-          "conversion from pointer to floating point type or from floating point type to pointer.",
+          "Conversion from pointer to floating point type or from floating point type to pointer.",
           "6.5.4:4"))
           ~> castHold(T':Type, tv(_, T:Type))
           requires (isPointerType(T) andBool isFloatType(T'))
                orBool (isFloatType(T) andBool isPointerType(T'))
 
      rule (.K => CV("CCV10",
-          "conversion to or from non-scalar type.",
+          "Conversion to or from non-scalar type.",
           "6.5.4:2"))
           ~> castHold(T':Type, tv(_, T:Type))
           requires notBool isVoidType(T') andBool (
@@ -370,7 +370,7 @@ module C-CONVERSION
           => castHold(t(Mods', pointerType(T':Type)), tv(Loc:SymLoc, t(Mods, pointerType(T))))
           requires Loc =/=K NullPointer andBool getAlignas(T') >Int getAlign(Loc)
      rule (.K => UNDEF("CCV11",
-               "conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
+               "Conversion to a pointer type with a stricter alignment requirement (possibly undefined).",
                "6.3.2.3:7, J.2:1 item 25"))
           ~> castHold(t(_, pointerType(T':Type)), tv(Loc:SymLoc, t(_, pointerType(_))))
           requires getAlignas(T') >Int getAlign(Loc)

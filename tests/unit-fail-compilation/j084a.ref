@@ -1,7 +1,7 @@
 File: j084a.c
 Line: 5
 Error: UB-TDR2
-Description: no definition for symbol with external linkage: a
+Description: No definition for symbol with external linkage: a.
 Type: Undefined behavior.
 See also: C11 sec. 6.9:5, J.2:1 item 84
 Translation failed. Run kcc -d j084a.c to see commands run.

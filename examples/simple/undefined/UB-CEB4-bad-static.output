@@ -1,7 +1,7 @@
 File: UB-CEB4-bad-static.c
 Line: 5
 Error: UB-CEB4
-Description: the left operand in a bitwise left-shift is negative.
+Description: The left operand in a bitwise left-shift is negative.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.7:4, J.2:1 item 52
 Translation failed. Run kcc -d UB-CEB4-bad-static.c to see commands run.

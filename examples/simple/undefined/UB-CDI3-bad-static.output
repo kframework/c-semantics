@@ -1,7 +1,7 @@
 File: UB-CDI3-bad-static.c
 Line: 4
 Error: UB-CDI3
-Description: Invalid initializer for aggregate type
+Description: Invalid initializer for aggregate type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.9:16, J.2:1 item 83
 Translation failed. Run kcc -d UB-CDI3-bad-static.c to see commands run.
