@@ -3,9 +3,10 @@ parser/*.cmi
 parser/*.cmx
 .*.swp
 semantics/.kompile-*
-semantics/c11*-kompiled
+semantics/*/c11*-kompiled
 dist
 parser/cparser
 parser/clexer.ml
 parser/cparser.ml
 parser/cparser.mli
+semantics/.depend*
