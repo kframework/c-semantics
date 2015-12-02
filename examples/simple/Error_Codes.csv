@@ -84,8 +84,8 @@ UB-TIN1,Identifier declared with incompatible types in different translation uni
 UB-TIN2,Multiple external definitions for Identifier.,"6.9:5, J.2:1 item 84",Undefined Behavior
 UB-FD4,Definition of main requires a prototype.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD5,Function main must return an int.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
-UB-FD6,"If main has arguments, the type of the first argument must be equivalent to int.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
-UB-FD7,"If main has arguments, the type of the second argument must be equivalent to char**.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD6,"If main has parameters, the type of the first parameter must be equivalent to int.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD7,"If main has parameters, the type of the second parameter must be equivalent to char**.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD8,Function main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD9,Function main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior
@@ -114,17 +114,12 @@ CV-CER1,Unary '&' operator applied to non-lvalue.,6.5.3.2:1,Constraint Violation
 CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3.2:1,Constraint Violation
 CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
 CV-00035,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
-CV-TDG2,Declaration for appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
+CV-TDG2,Declaration for identifier appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
 CV-TDG4,Declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
 CV-TDG5,Function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
 CV-TDG8,Declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
 CV-TDG10,Conflicting types for identifier.,6.7:4,Constraint Violation
-CV-TDG2,declaration for appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
-CV-TDG4,declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
-CV-TDG5,function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
-CV-TDG8,declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
-CV-TDG9,file-scope declaration with a variably-modified type.,6.7.6.2:2,Constraint Violation
-CV-TDG10,conflicting types for identifier.,6.7:4,Constraint Violation
+CV-TDG9,File-scope declaration with a variably-modified type.,6.7.6.2:2,Constraint Violation
 CV-TDG13,Redefinition of symbol:,6.9:3,Constraint Violation
 CV-TDL1,Extern declaration follows one with no linkage,6.7:3,Constraint Violation
 CV-TDL2,Extern declaration appears at block scope with an initializer.,6.7.9:5,Constraint Violation
@@ -137,7 +132,7 @@ CV-CDE1,Enum initializer not an integer constant expression.,6.7.2.2:2,Constrain
 CV-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Constraint Violation
 CV-TEAS1,Incompatible types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation
 CV-TEAS2,Incompatible pointer types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation
-CV-TEAS3,lvalue' required as left operand in assignment.,6.5.16:2,Constraint Violation
+CV-TEAS3,'lvalue' required as left operand in assignment.,6.5.16:2,Constraint Violation
 CV-TEAS5,Non-constant static initializer.,6.7.9:4,Constraint Violation
 CV-TEAS6,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
 CV-TTE2,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation
