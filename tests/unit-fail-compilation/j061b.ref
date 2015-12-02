@@ -1,7 +1,7 @@
 File: j061b.c
 Line: 1
 Error: UB-CDT2
-Description: unions must contain a named member.
+Description: Unions must contain a named member.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.2.1, J.2:1 item 61
 Translation failed. Run kcc -d j061b.c to see commands run.

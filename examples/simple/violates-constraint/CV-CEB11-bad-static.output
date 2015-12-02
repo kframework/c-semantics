@@ -1,7 +1,7 @@
 File: CV-CEB11-bad-static.c
 Line: 5
 Error: CV-CEB11
-Description: both bitwise inclusive OR operands must have integer type.
+Description: Both bitwise inclusive OR operands must have integer type.
 Type: Constraint violation.
 See also: C11 sec. 6.5.12:2
 Translation failed. Run kcc -d CV-CEB11-bad-static.c to see commands run.

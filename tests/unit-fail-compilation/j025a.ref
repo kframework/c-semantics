@@ -1,7 +1,7 @@
 File: j025a.c
 Line: 3
 Error: CV-TEAS2
-Description: incompatible pointer types in assignment or function call arguments.
+Description: Incompatible pointer types in assignment or function call arguments.
 Type: Constraint violation.
 See also: C11 sec. 6.5.16.1:1
 Translation failed. Run kcc -d j025a.c to see commands run.

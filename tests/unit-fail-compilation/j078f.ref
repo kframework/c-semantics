@@ -1,7 +1,7 @@
 File: j078f.c
 Line: 1
 Error: UB-TDG6
-Description: void parameter appears with a storage class specifier.
+Description: Void parameter appears with a storage class specifier.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
 Translation failed. Run kcc -d j078f.c to see commands run.

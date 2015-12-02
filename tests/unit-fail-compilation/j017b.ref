@@ -1,7 +1,7 @@
 File: j017b.c
 Line: 7
 Error: UB-CCV3
-Description: conversion to integer from float outside the range that can be represented.
+Description: Conversion to integer from float outside the range that can be represented.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.1.4:1, J.2:1 item 17
 Translation failed. Run kcc -d j017b.c to see commands run.

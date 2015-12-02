@@ -1,7 +1,7 @@
 File: j008f.c
 Line: 1
 Error: CV-TDG2
-Description: declaration for f appears with multiple storage class specifiers.
+Description: Declaration for f appears with multiple storage class specifiers.
 Type: Constraint violation.
 See also: C11 sec. 6.7.1:2
 Translation failed. Run kcc -d j008f.c to see commands run.
