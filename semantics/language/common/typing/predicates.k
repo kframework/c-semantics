@@ -18,7 +18,8 @@ module C-TYPING-PREDICATES
      syntax Bool ::= #typesEq(Type, Type) [function]
      rule #typesEq(T:Type, T) => true
      rule #typesEq(T:Type, T':Type) => true
-          requires sameQualifiers(getModifiers(T), getModifiers(T'))
+          requires notBool (isTypedDeclaration(T) orBool isTypedDeclaration(T'))
+               andBool sameQualifiers(getModifiers(T), getModifiers(T'))
                andBool (simpleType(T) ==K simpleType(T'))
      rule #typesEq(
                typedDeclaration(T:Type, X:CId),
@@ -42,6 +43,11 @@ module C-TYPING-PREDICATES
      rule #typesEq(
                t(Mods:Set, flexibleArrayType(T:Type)),
                t(Mods':Set, flexibleArrayType(T':Type)))
+          => #typesEq(T, T')
+          requires sameQualifiers(Mods, Mods')
+     rule #typesEq(
+               t(Mods:Set, unspecifiedArrayType(T:Type)),
+               t(Mods':Set, unspecifiedArrayType(T':Type)))
           => #typesEq(T, T')
           requires sameQualifiers(Mods, Mods')
      rule #typesEq(
@@ -77,10 +83,14 @@ module C-TYPING-PREDICATES
           => isFlexibleArrayType(T)
      rule isFlexibleArrayType(_) => false [owise]
 
-     rule isVariablyModifiedType(t(_, arrayType(T:Type, _)))
-          => isVariablyModifiedType(T)
-     rule isVariablyModifiedType(t(_, pointerType(T:Type)))
-          => isVariablyModifiedType(T)
+     rule isVariablyModifiedType(T:FixedLengthArrayType)
+          => isVariablyModifiedType(innerType(T))
+     rule isVariablyModifiedType(T:IncompleteArrayType)
+          => isVariablyModifiedType(innerType(T))
+     rule isVariablyModifiedType(T:PointerType)
+          => isVariablyModifiedType(innerType(T))
+     rule isVariablyModifiedType(t(_, functionType(T:Type, Params:List)))
+          => isVariablyModifiedType(T) orBool some(Params, #klabel(`isVariablyModifiedType`))
      rule isVariablyModifiedType(typedDeclaration(T:Type, _))
           => isVariablyModifiedType(T)
      rule isVariablyModifiedType(_:VariableLengthArrayType) => true

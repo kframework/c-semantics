@@ -7,6 +7,7 @@ Error,Description ,References,Type
 UB-CB1,types of function call arguments aren't compatible with declared types after promotions.,"6.5.2.2:6, J.2:1 item 39",Undefined Behavior
 UB-CB2,function call has fewer arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
 UB-CB3,function call has more arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
+UB-CB4,function defined with no parameters called with arguments.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
 UB-CCV1,signed integer overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
 UB-CCV3,conversion to integer from float outside the range that can be represented.,"6.3.1.4:1, J.2:1 item 17",Undefined Behavior
 UB-CCV4,floating-point value outside the range of values that can be represented after conversion.,"6.3.1.5:1, J.2:1 item 18",Undefined Behavior
@@ -83,8 +84,8 @@ UB-TIN1,Identifier declared with incompatible types in different translation uni
 UB-TIN2,Multiple external definitions for Identifier.,"6.9:5, J.2:1 item 84",Undefined Behavior
 UB-FD4,definition of main requires a prototype.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD5,main must return an int.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
-UB-FD6,"if main has arguments, the type of the first argument must be equivalent to int.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
-UB-FD7,"if main has arguments, the type of the second argument must be equivalent to char**.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD6,"if main has parameters, the type of the first parameter must be equivalent to int.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD7,"if main has parameters, the type of the second parameter must be equivalent to char**.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD8,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-FD9,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
 UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior
@@ -92,6 +93,7 @@ UB-STDARG1,"'va_start' used in function with fixed args.","6.9.1:8, J.2:1 item 8
 UB-STDIO1,"printf: Format string expects type of size a, but got an argument of size b.","7.21.6.1:9, J.2:1 item 153",Undefined Behavior
 UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed.","7.22.3.5:3, J.2:1 item 179",Undefined Behavior
 UB-STDLIB2,"Called free on memory not allocated by malloc, or already freed.","7.22.3.3:2, J.2:1 item 179",Undefined Behavior
+UB-TTE1,program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
 USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
 CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
 CV-CCV9,conversion from pointer to floating point type or from floating point type to pointer.,6.5.4:4,Constraint Violation
@@ -111,13 +113,11 @@ CV-CER1,Unary '&' operator applied to non-lvalue.,6.5.3.2:1,Constraint Violation
 CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3.2:1,Constraint Violation
 CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
 CV-00035,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
-CV-CTM2,Variable-length array with file scope.,6.7.6.2:2,Constraint Violation
-CV-EFNC2,incompatible types in function call arguments.,6.5.16.1:1,Constraint Violation
-CV-EFNC3,incompatible pointer types in function call arguments.,6.5.16.1:1,Constraint Violation
 CV-TDG2,declaration for appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
 CV-TDG4,declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
 CV-TDG5,function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
 CV-TDG8,declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
+CV-TDG9,file-scope declaration with a variably-modified type.,6.7.6.2:2,Constraint Violation
 CV-TDG10,conflicting types for identifier.,6.7:4,Constraint Violation
 CV-TDG13,Redefinition of symbol:,6.9:3,Constraint Violation
 CV-TDL1,Extern declaration follows one with no linkage,6.7:3,Constraint Violation
@@ -136,10 +136,10 @@ CV-TEAS2,incompatible pointer types in assignment or function call arguments.,6.
 CV-TEAS3,lvalue required as left operand in assignment.,6.5.16:2,Constraint Violation
 CV-TEAS5,Non-constant static initializer.,6.7.9:4,Constraint Violation
 CV-TEAS6,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
-CV-CEC1,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation
-CV-CEC5,"If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",6.5.15:3,Constraint Violation
-CV-CEC2,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation
-CV-CEC4,"If one of a conditional expression's branches has struct or union type, the other must have the same type.",6.5.15:3,Constraint Violation
+CV-TTE2,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation
+CV-TTE3,"If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",6.5.15:3,Constraint Violation
+CV-TTE4,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation
+CV-TTE5,"If one of a conditional expression's branches has struct or union type, the other must have the same type.",6.5.15:3,Constraint Violation
 CV-EFC1,function call with incomplete or invalid return type.,6.5.2.2:2,Constraint Violation
 CV-TES1,Trying to compute sizeof of an expression with incomplete or a function type.,6.5.3.4:1,Constraint Violation
 CV-TES2,Trying to compute sizeof of an incomplete or function type.,6.5.3.4:1,Constraint Violation

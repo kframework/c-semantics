@@ -9,6 +9,7 @@ module C-TRANSLATION-ERROR
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-EXPR-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
@@ -19,57 +20,37 @@ module C-TRANSLATION-ERROR
                +String "\nLine: " +String Int2String(Line)
                +String "\n")
           ~> HALT ...</k>
+          <curr-scope> S:Scope </curr-scope>
           <curr-program-loc>
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
           <result-value> _ => 1 </result-value>
-          requires notBool isCSV
+          requires notBool isCSV andBool S =/=K noEvalScope
      rule <k> EXIT(Msg:String)
           => #write(2, Msg +String "\n")
           ~> HALT ...</k>
+          <curr-scope> S:Scope </curr-scope>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
-          requires notBool isCSV
+          requires notBool isCSV andBool S =/=K noEvalScope
 
      rule <k> EXIT(Msg:String)
           => openWriteThenClose(Report, Msg +String "," +String File +String ":" +String Int2String(Line) +String "\r\n")
           ~> HALT ...</k>
+          <curr-scope> S:Scope </curr-scope>
           <curr-program-loc>
                CabsLoc(File:String, Line:Int, _, _)
           </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <options>... SetItem(CSV(Report:String)) ...</options>
+          requires S =/=K noEvalScope
      rule <k> EXIT(Msg:String)
           => openWriteThenClose(Report, Msg +String ",unknown\r\n")
           ~> HALT ...</k>
+          <curr-scope> S:Scope </curr-scope>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <options>... SetItem(CSV(Report:String)) ...</options>
-
-     rule <k> (.K => CV("CID1",
-               "Trying to look up identifier " +String S +String
-               ", but no such identifier is in scope.",
-               "6.5.1:2") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types> Types:Map </types>
-          <enums> Enums:Map </enums>
-          requires (notBool (Identifier(S) in_keys(Env)))
-               andBool (notBool (Identifier(S) in_keys(Types)))
-               andBool (notBool (Identifier(S) in_keys(Enums)))
-          [structural]
-     rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1, J.2:1 item 19") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <enums> Enums:Map </enums>
-          <types>... Identifier(S) |-> _ ...</types>
-          requires (notBool (Identifier(S) in_keys(Env)))
-               andBool (notBool (Identifier(S) in_keys(Enums)))
-          [structural]
-
-
+          requires S =/=K noEvalScope
 
 endmodule
