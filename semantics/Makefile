@@ -27,7 +27,7 @@ c11-kompiled/c11-kompiled/def.$(EXTENSION): $(C11_FILES)
 
 c11-nd-kompiled/c11-nd-kompiled/def.$(EXTENSION): $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics with expression sequencing non-determinism..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantiocs
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
 
 c11-nd-thread-kompiled/c11-nd-thread-kompiled/def.$(EXTENSION): $(C11_FILES)
 	@echo "Kompiling the dynamic C semantics with thread-interleaving non-determinism..."
