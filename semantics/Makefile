@@ -25,7 +25,7 @@ $(PROFILE)/c11-kompiled/c11-kompiled/timestamp:
 
 $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with expression sequencing non-determinism..."
-	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantiocs
+	$(KOMPILE) --backend ocaml --non-strict --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with thread-interleaving non-determinism..."

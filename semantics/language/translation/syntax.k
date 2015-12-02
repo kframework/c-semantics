@@ -291,6 +291,9 @@ module C-ABSTRACT-SYNTAX
      //otherwise, if then else rule failed in for(;;) cases
      syntax Expression ::= "NothingExpression" [function]
 
+     // For VLAs with unspecified size ([*]).
+     syntax RValue ::= "UnspecifiedSizeExpression"
+
      /*
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression

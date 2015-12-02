@@ -48,7 +48,7 @@ module C-EXPR-FUNCTION-CALL
 
      // Only attempt to bind if we have a prototype.
      rule maybeBind(.List, _) => .K
-     rule maybeBind(P:List, L:List) => elaborate(bind(.List, P, L))
+     rule maybeBind(P:List, L:List) => elaborate(bind(P, P, L))
           requires P =/=K .List
 
      rule elabCall(te(K:K, _), L:List, T:Type, .List)
@@ -65,8 +65,7 @@ module C-EXPR-FUNCTION-CALL
      syntax KResult ::= "fauxParam"
      rule elaborateDone((Computation(te((fauxParam := V:K), _)) => .K) ~> _)
           ~> elabCall(_, _, _, _:List (.List => ListItem(V)))
-     rule (elaborateDone(.K) => .K)
-          ~> elabCall(_, _, _, _)
+     rule (elaborateDone(.K) => .K) ~> elabCall(_, _, _, _)
 
      rule bindParam(_, T:Type, V:RValue)
           => runInit(Computation(ncle(fauxParam, T) := V))

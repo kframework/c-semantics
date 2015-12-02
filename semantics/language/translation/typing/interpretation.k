@@ -39,9 +39,12 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
           [structural]
+     rule ArrayType(T:Type, UnspecifiedSizeExpression, Spec:K)
+          => pushTypeDown(T, makeArrayType(UnspecifiedSizeExpression, Spec))
+          [structural]
      rule ArrayType(T:Type, N:RValue, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
-          requires isHold(N) // VLAs.
+          requires isHold(N) // VLAs
           [structural]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
@@ -96,6 +99,8 @@ module C-TYPING-INTERPRETATION
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:K)
           => t(S, arrayType(pushTypeDown(T, Lbl), N))
+     rule pushTypeDown(t(S:Set, unspecifiedArrayType(T:Type)), Lbl:K)
+          => t(S, unspecifiedArrayType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
           => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
      rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:K)
@@ -128,13 +133,12 @@ module C-TYPING-INTERPRETATION
                incompleteArrayType(stripSpecifiers(T)))
 
      rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(ListItem(Static)))), T:Type)
-          => t(getSpecifiers(T) SetItem(arrayStatic(N)),
-               arrayType(stripSpecifiers(T), N))
-          requires notBool isHold(tv(N, T'))
+          => t(getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
      // TODO(chathhorn): Other qualifiers?
      rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(.List))), T:Type)
           => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-          requires notBool isHold(tv(N, T'))
+     rule applyTypeFunction(makeArrayType(UnspecifiedSizeExpression, Specifier(list(.List))), T:Type)
+          => t(getSpecifiers(T), unspecifiedArrayType(stripSpecifiers(T)))
      rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
           => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           requires isHold(N)
@@ -179,6 +183,8 @@ module C-TYPING-INTERPRETATION
           => t(S, unionType(X))
      rule extractActualType(t(S:Set, arrayType(T:Type, N:Int)))
           => t(S, arrayType(extractActualType(T), N))
+     rule extractActualType(t(S:Set, unspecifiedArrayType(T:Type)))
+          => t(S, unspecifiedArrayType(extractActualType(T)))
      rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))
           => t(S, variableLengthArrayType(extractActualType(T), N))
      rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
@@ -223,25 +229,14 @@ module C-TYPING-INTERPRETATION
           => typedef(X, T)
           [structural]
 
-     // Turn arrays into pointers in function parameters.
+     // Turn array and function types into pointers.
      syntax Type ::= adjustParam(Type) [function]
      rule adjustParam(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(adjustParam(T), X)
      rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
-          => t(.Set, pointerType(t(Mods, functionType(R, adjustParams(Params)))))
-     rule adjustParam(t(Mods:Set, arrayType(T:Type, _)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(t(Mods:Set, variableLengthArrayType(T:Type, _)))
-          => t(Mods, pointerType(T))
-     rule adjustParam(T:Type) => T
-          requires notBool isTypedDeclaration(T)
-               andBool notBool isArrayOrFunctionType(T)
-
-     syntax List ::= adjustParams(List) [function]
-     rule adjustParams(ListItem(T:Type) Params:List)
-          => ListItem(adjustParam(T)) adjustParams(Params)
-     rule adjustParams(.List) => .List
+          => t(.Set, pointerType(t(Mods, functionType(R, Params))))
+     rule adjustParam(T:ArrayType)
+          => t(getModifiers(T), pointerType(innerType(T)))
+     rule adjustParam(T:Type) => T [owise]
 
 endmodule

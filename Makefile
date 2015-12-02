@@ -39,21 +39,21 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
 	@cp -p $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
-	@cp -rp $(PROFILE_DIR)/include/ $(DIST_DIR)/$(PROFILE)
-	@cp -rp $(FILES_TO_DIST) $(DIST_DIR)
+	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
+	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
 $(DIST_DIR)/$(PROFILE)/c11-kompiled/c11-kompiled/timestamp: $(DIST_DIR)/kcc execution-semantics
-	@cp -p -r $(SEMANTICS_DIR)/$(PROFILE)/c11-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp: $(DIST_DIR)/kcc translation-semantics
-	@cp -p -r $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
-	@cp -r $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
-	@cp -r $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
+	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
 	@echo "Translating the standard library... ($(PROFILE_DIR))"
