@@ -47,13 +47,13 @@ clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
 
 .depend-translation:
-	$(KDEP) c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics > .depend-translation
+	$(KDEP) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation
 .depend-execution:
-	$(KDEP) c11.k -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics > .depend-execution
+	$(KDEP) -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-execution
 .depend-nd:
-	$(KDEP) c11.k -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics > .depend-nd
+	$(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd
 .depend-nd-thread:
-	$(KDEP) c11.k -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics > .depend-nd-thread
+	$(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd-thread
 
 include .depend-translation
 include .depend-execution
