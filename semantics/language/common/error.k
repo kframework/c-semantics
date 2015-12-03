@@ -17,6 +17,7 @@ module C-ERROR-SYNTAX
      syntax KItem ::= EXIT(String)
      syntax ErrorExit ::= "HALT"
 
+     syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      syntax KItem ::= openWriteThenClose(String, String)
      syntax Bool ::= "isCSV" [function]
  
@@ -37,7 +38,6 @@ module C-ERROR
      imports C-CONFIGURATION
 
 
-     syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)
           => "Error: "
           +String Title

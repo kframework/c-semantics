@@ -209,13 +209,13 @@ module C-EXECUTION-INIT
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
-          (<exec>...
-               <thread>...
+          <exec>...
+               (<thread>...
                     // main's thread, not the global "thread"
                     <thread-id> 0 </thread-id>
                     <k> V:RValue </k>
-               ...</thread>
-          ...</exec> => .Bag)
+               ...</thread> => .Bag)
+          ...</exec>
           <status> _ => mainExited </status>
           <result-value> _ => value(V):>CValue </result-value>
           <files>...
