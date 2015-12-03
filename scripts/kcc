@@ -146,6 +146,7 @@ my $spec = q(#
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
       -flint			Generate lint errors for potentially undesirable behaviors.*
+      -fheap-size=<size>	Used with -flint
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
