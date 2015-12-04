@@ -1,5 +1,6 @@
 TUS = $(wildcard ./*.c)
-TESTS = $(filter-out %-link2.c, ${TUS})
+EXCLUDES=
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, ${TUS}))
 KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
