@@ -306,6 +306,7 @@ sub main {
                my $size;
                if ($args->{'-fheap-size='}) {
                     $size = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+                    chop($size);
                } else {
                     $size = 1024 * 1024 * 1024;
                }
