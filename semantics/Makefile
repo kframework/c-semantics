@@ -1,8 +1,6 @@
 export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile --ocamlopt
 KDEP = kdep
-EXTENSION = cmx
-FILE=def.$(EXTENSION)
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
@@ -18,7 +16,7 @@ C11_FILES = $(wildcard *.k) \
 
 default: fast
 
-$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp/$(FILE): $(C11_TRANSLATION_FILES)
+$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp/: $(C11_TRANSLATION_FILES)
 	@echo "Kompiling the static C semantics..."
 	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" -w all -v --debug -I $(PROFILE_DIR)/semantics
 
@@ -38,13 +36,13 @@ all: fast nd thread
 
 fast: translation execution
 
-translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp/$(FILE)
+translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp/
 
-execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp/$(FILE)
+execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp/
 
-nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp/$(FILE)
+nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp/
 
-thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp/$(FILE)
+thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp/
 
 clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
