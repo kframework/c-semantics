@@ -255,7 +255,7 @@ module C-ABSTRACT-SYNTAX
      | SEQUENCE of statement * statement * cabsloc
      */
      syntax Statement ::= BlockStatement(K)
-     syntax Statement ::= Block(Int, K, K)
+     syntax Statement ::= Block(Int, K, K) [klabel('Block3)]
      syntax Statement ::= Sequence(K, K)
 
      /*
