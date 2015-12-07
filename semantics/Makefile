@@ -20,19 +20,19 @@ default: fast
 
 $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp/$(FILE): $(C11_TRANSLATION_FILES)
 	@echo "Kompiling the static C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --non-strict --smt none c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" -w all -v --debug -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" -w all -v --debug -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-kompiled/c11-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --non-strict --smt none c11.k -d "$(PROFILE)/c11-kompiled" -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS)  --smt none c11.k -d "$(PROFILE)/c11-kompiled" -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with expression sequencing non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS)--non-strict --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --non-strict --smt none c11.k -d "$(PROFILE)/c11-nd-thread-kompiled" --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-thread-kompiled" --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics
 
 all: fast nd thread
 
