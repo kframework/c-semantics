@@ -44,7 +44,7 @@ module C-SYMLOC-SYNTAX
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int)
      syntax SymLoc ::= CanonicalSymLoc
-     syntax CanonicalSymLoc ::= loc(SymBase, Int, Set)
+     syntax CanonicalSymLoc ::= loc(SymBase, Int, Set) [klabel('loc3)]
      syntax CanonicalSymLoc ::= "NullPointer"
 
      syntax KResult ::= SymLoc
