@@ -1,5 +1,11 @@
+module C-EXECUTION-ERROR-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
+endmodule
+
 module C-EXECUTION-ERROR
      imports C-ERROR-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
 
      imports C-EXECUTION-INIT-SYNTAX
 
@@ -49,7 +55,7 @@ module C-EXECUTION-ERROR
           requires isErrorRecovery andBool notBool isCSV
                andBool error(Msg, printStackTrace(L, Loc, S)) in Errors
 
-     rule <result-value> unknown => (139 ~> #write(2, "Unspecified value returned from main function.\n")):>Int </result-value>
+     rule <result-value> unknown => (139 ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")):>Int </result-value>
      requires notBool isCSV
 
      rule <file-commands> openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
@@ -64,10 +70,8 @@ module C-EXECUTION-ERROR
           requires isErrorRecovery
 
      rule <result-value> unknown => 139 </result-value>
-          <file-commands> .K => openWriteThenClose(Report, "CEER6,Unspecified value returned from main function.,Unspecified value or behavior.,5.1.2.2.3:1,unknown\r\n") ...</file-commands>
+          <file-commands> .K => openWriteThenClose(Report, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String ",unknown\r\n") ...</file-commands>
           <options>... SetItem(CSV(Report:String)) ...</options>
-
-     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
