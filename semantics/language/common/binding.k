@@ -4,7 +4,7 @@ module C-BINDING-SYNTAX
 
      // RValues, Types, CIds
      syntax KItem ::= bind(List, List, List)
-     syntax KItem ::= bindParam(CId, Type, K) [klabel('bindParam3)]
+     syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
      syntax KItem ::= bindParam(CId)
      syntax Bool ::= areArgPromoted(List) [function]
      syntax Type ::= elideDecl(Type) [function]
