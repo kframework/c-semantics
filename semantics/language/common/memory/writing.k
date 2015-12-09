@@ -5,7 +5,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax KItem ::= write(SymLoc, CValue, Type)
 
      // Either buffered or unbuffered depending on whether we're executing.
-     syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2), klabel('writeBytes3)]
+     syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2), klabel(writeBytes3)]
 
      syntax List ::= explodeToBits(List) [function]
 
