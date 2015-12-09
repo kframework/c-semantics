@@ -145,7 +145,8 @@ module C-STMT-LOOP
           [structural]
      rule [continue-done]:
           (Continue => .K) ~> loopMarked ~> K:KItem
-          requires getKLabel(K) =/=K #klabel(`For`)
+          requires (getKLabel(K) =/=K #klabel(`For`))
+               andBool (getKLabel(K) =/= #klabel(`For5`))
           [structural]
 
      rule [popLoop]:
