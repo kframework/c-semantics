@@ -54,12 +54,14 @@ while ( my $entry = readdir $DIR) {
 
 my $cygwin = $^O eq "cygwin" || $^O eq "msys";
 my $quoteString = "\"String\"";
+my $quoteInt = "\"Int\"";
 if ($cygwin) {
   $distDirectory = `cygpath -w $distDirectory`;
   $profileDirectory = `cygpath -w $profileDirectory`;
   chop($distDirectory);
   chop($profileDirectory);
   $quoteString = backslash($quoteString);
+  $quoteInt = backslash($quoteInt);
 }
 
 my $krun;
@@ -146,6 +148,7 @@ my $spec = q(#
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
       -flint			Generate lint errors for potentially undesirable behaviors.*
+      -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -300,6 +303,18 @@ sub main {
           }
           if ($args->{'-flint'}) {
                push(@options, "`LINT`(.KList)");
+               my $size;
+               if ($args->{'-fheap-size='}) {
+                    $size = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+                    chop($size);
+               } else {
+                    $size = 1024 * 1024 * 1024;
+               }
+               $size = quote(backslash($size));
+               if ($cygwin) {
+                    $size = backslash($size);
+               }
+               push(@options, "`HEAP`(#token($size, $quoteInt))");
           }
           my $opts = makeSet(@options);
 
