@@ -255,7 +255,7 @@ module C-ABSTRACT-SYNTAX
      | SEQUENCE of statement * statement * cabsloc
      */
      syntax Statement ::= BlockStatement(K)
-     syntax Statement ::= Block(Int, K, K) 
+     syntax Statement ::= Block(Int, K, K)
      syntax Statement ::= Sequence(K, K)
 
      /*
@@ -298,7 +298,7 @@ module C-ABSTRACT-SYNTAX
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= Cast(K, K, K) 
+     syntax Expression ::= Cast(K, K, K)
      context Cast(HOLE:KItem, _, _)
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
