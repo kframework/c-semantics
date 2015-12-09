@@ -261,7 +261,7 @@ module C-ABSTRACT-SYNTAX
      /*
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax Statement ::= For(Int, K, K, K, K)
+     syntax Statement ::= For(Int, K, K, K, K)  [klabel(For5)]
 
      // gcc extension
      syntax Statement ::= CaseRange(K, K, K)
