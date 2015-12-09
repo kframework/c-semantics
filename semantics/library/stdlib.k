@@ -4,6 +4,7 @@ module LIBC-STDLIB
 
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -41,6 +42,7 @@ module LIBC-STDLIB
                => printString("Aborted") ~> tv(134, t(.Set, int))
           </k>
 
+
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
      The \cinline{malloc} function allocates space for an object whose size is
      specified by \cinline{size} and whose value is indeterminate.
@@ -54,8 +56,9 @@ module LIBC-STDLIB
                ~> tv(addProv(fromArray(0, Len), lnew(Base, t(.Set, no-type))),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
-          <malloced>... .Map => Base |-> Len:Int ...</malloced>
+          <malloced>... .Map => Base |-> Len ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
+          requires notBool hasLint
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
@@ -92,6 +95,7 @@ module LIBC-STDLIB
                (OldBase => NewBase) |-> (OldLen:Int => NewLen)
           ...</malloced>
           <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
+          requires notBool hasLint
           [structural]
 
      rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed.",
@@ -132,7 +136,8 @@ module LIBC-STDLIB
                => deleteSizedObject(Base, Len:Int)
                ~> voidVal
           ...</k>
-          <malloced>... Base |-> Len:Int => .Map ...</malloced>
+          <malloced>... Base |-> Len => .Map ...</malloced>
+          requires notBool hasLint
           [structural]
      rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed.",
                            "7.22.3.3:2, J.2:1 item 179"))
