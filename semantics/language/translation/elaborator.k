@@ -1,11 +1,11 @@
 module C-ELABORATOR-SYNTAX
      imports C-SYNTAX
 
-     syntax KItem ::= elaborate(K)
+     syntax KItem ::= elaborate(K) [klabel(elaborate1)]
      syntax KItem ::= elaborate(K, K)
 
-     syntax KItem ::= elaborateDone(K)
-     syntax KItem ::= elaborateDone(K, K)
+     syntax KItem ::= elaborateDone(K)  [klabel(elaborateDone1)]
+     syntax KItem ::= elaborateDone(K, K) 
 
      // Elaboration for initializers -- copies up the environment.
      syntax KItem ::= elaborateInit(K)
