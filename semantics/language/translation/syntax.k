@@ -261,7 +261,7 @@ module C-ABSTRACT-SYNTAX
      /*
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
-     syntax Statement ::= For(Int, K, K, K, K)  [klabel('For5)]
+     syntax Statement ::= For(Int, K, K, K, K)
 
      // gcc extension
      syntax Statement ::= CaseRange(K, K, K)
@@ -298,7 +298,7 @@ module C-ABSTRACT-SYNTAX
      (* A CAST can actually be a constructor expression *)
      | CAST of (specifier * decl_type) * init_expression
      */
-     syntax Expression ::= Cast(K, K, K)  [klabel('Cast3)]
+     syntax Expression ::= Cast(K, K, K) 
      context Cast(HOLE:KItem, _, _)
      context Cast(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 

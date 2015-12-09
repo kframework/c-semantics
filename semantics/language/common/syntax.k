@@ -94,7 +94,7 @@ module C-SYNTAX
      syntax Statement ::= While(K, K)
      syntax Statement ::= DoWhile(K, K)
      // Condition, post expression, body
-     syntax Statement ::= For(K, K, K)
+     syntax Statement ::= For(K, K, K) [klabel(For3)]
      /*
      | BREAK of cabsloc
      | CONTINUE of cabsloc
@@ -277,7 +277,7 @@ module C-SYNTAX
      context HOLE:KItem := _ [ndheat]
      context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     syntax Expression ::= Cast(K, K)
+     syntax Expression ::= Cast(K, K) [klabel(Cast2)]
      context Cast(HOLE:KItem, _)
      context Cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
