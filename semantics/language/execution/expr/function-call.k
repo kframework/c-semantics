@@ -131,7 +131,7 @@ module C-EXPR-FUNCTION-CALL
           ...</k>
           <duration> D:Duration </duration>
           [structural]
-     syntax KItem ::= bindParamHelper(CId, Type, RValue, SymBase)
+     syntax KItem ::= bindParamHelper(CId, Type, RValue, SymBase) [klabel(bindParamHelper4)]
      rule <k> bindParamHelper(X:CId, T:Type, V:RValue, Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
