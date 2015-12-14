@@ -6,6 +6,7 @@ KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
+CC=gcc-4.9
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
@@ -35,11 +36,11 @@ compile: ${KCC_COMPILED_TESTS}
 
 %-link1.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
-	@gcc-4.9 -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
-	@gcc-4.9 -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.ref: %.gcc
 	@echo -n "Running $<... "
