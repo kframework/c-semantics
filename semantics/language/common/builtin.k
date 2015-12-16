@@ -5,6 +5,7 @@ module C-BUILTIN-SYNTAX
      syntax Map ::= "builtins" [function]
                   | "semanticsDefinedBuiltins" [function]
                   | "nativeDefinedBuiltins"[function]
+                  | "extensionBuiltins" [function]
      syntax KItem ::= "handleBuiltin"
                     | handleBuiltinConstant(CId, Type)
 endmodule
@@ -70,6 +71,7 @@ module C-BUILTIN
           "thrd_create" |-> fun(int, ptr(int), ptr(fun(int, ptr(void))), ptr(void))
           "thrd_current" |-> fun(int)
           "thrd_join" |-> fun(int, int, ptr(int))
+          extensionBuiltins
 
      syntax Type ::= "mtx_t" [function]
      rule mtx_t => struct("mtx_t_")

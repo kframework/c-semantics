@@ -20,6 +20,7 @@ module C-SETTINGS
      rule cfg:sizeofFloat => 4
      rule cfg:sizeofDouble => 8
      rule cfg:sizeofLongDouble => 16
+     rule cfg:thrdut => int
 
      rule cfg:largestUnsigned => unsigned-long-long-int
 
