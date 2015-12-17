@@ -48,7 +48,7 @@ compile: ${KCC_COMPILED_TESTS}
 
 %.cmp: %.out %.ref
 	@echo -n "Comparing $^... "
-	@diff $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
+	@diff --strip-trailing-cr $^ > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
 clean:
 	rm -rf *.out *.kcc *.tmp *.gcc *.ref *.cmp
