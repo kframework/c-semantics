@@ -29,7 +29,7 @@ module LIBC-THREADS
                     hrItem(ThFuncPointer) hs::
                     hrItem(ThArg))
                => Computation(
-                    (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, int)))
+                    (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, cfg:thrdut)))
                     ~> spawn-aux(
                     Fresh:Int, ThFuncPointer:RValue, ThArg:RValue)
           ...</k>
@@ -60,11 +60,12 @@ module LIBC-THREADS
                <env> Env:Map </env>
                <curr-tu> Tu:String </curr-tu>
           ...</thread>)
+          requires notBool hasLint
           [large, ndthread]
 
      rule [thrd-current]:
           <k> prepareBuiltin(Identifier("thrd_current"), .HeatList)
-               => tv(ThId:Int, t(.Set, int))
+               => tv(ThId:Int, t(.Set, cfg:thrdut))
           ...</k>
           <thread-id> ThId:Int </thread-id>
           [structural]
@@ -73,9 +74,10 @@ module LIBC-THREADS
 
      rule [thrd-join-start]:
           prepareBuiltin(Identifier("thrd_join"),
-               hrItem(tv(ThId:Int, t(_, int))) hs::
+               hrItem(tv(ThId:Int, t(_, T:SimpleType))) hs::
                hrItem(ResultPointer))
           => join-aux(ThId:Int, ResultPointer:RValue)
+          requires T ==K cfg:thrdut
           [structural]
 
      rule [thrd-join]:
@@ -114,9 +116,12 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
-          <glocks> B:List (.List => ListItem(Loc)) </glocks>
+          <glocks> M:Map (.Map => Loc |-> printStackTrace(Stack, L, S)) </glocks>
           <locks> .List => ListItem(Loc) ...</locks>
-          requires (notBool (Loc in B))
+          <call-stack> Stack:List </call-stack>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <curr-scope> S:Scope </curr-scope>
+          requires (notBool (Loc in_keys(M)))
                andBool (Type:Int ==Int cfg:mtxPlain)
           [ndthread]
 
@@ -127,7 +132,7 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>
-          <glocks> M:List => removeListItem(M, Loc) </glocks>
+          <glocks> M:Map => M [ Loc <- undef ] </glocks>
           <locks> M':List => removeListItem(M', Loc) </locks>
           requires Type:Int ==Int cfg:mtxPlain
           [ndthread]

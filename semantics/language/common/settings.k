@@ -19,6 +19,7 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:sizeofFloat" [function]
      syntax Int ::= "cfg:sizeofDouble" [function]
      syntax Int ::= "cfg:sizeofLongDouble" [function]
+     syntax SimpleType ::= "cfg:thrdut" [function]
      syntax Int ::= "cfg:mtxPlain" [function]
      syntax SimpleType ::= "cfg:sizeut" [function]
      syntax SimpleType ::= "cfg:wcharut" [function]

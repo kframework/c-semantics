@@ -9,6 +9,7 @@ module C-ERROR-SYNTAX
      syntax KItem ::= CV(String, String, String)
      syntax KItem ::= IMPL(String, String, String)
      syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
+     syntax KItem ::= "EXT-UNDEF" "(" String "," String "," String "," String ")"
 
      syntax KResult ::= Bool
      syntax Error
@@ -76,7 +77,9 @@ module C-ERROR
      rule IMPL(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementiation defined behavior.", "C11", Citation))
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
-          => EXIT(ErrorMsg(Title, Msg, "Constraint violation.", Document, Citation))
+          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", Document, Citation))
+     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
+          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", Document, Citation))
 
      syntax KItem ::= writeThenClose(Int, String)
      syntax KItem ::= close(Int)

@@ -67,9 +67,9 @@ module C-CONFIGURATION
      <thread-info color="yellow">
           <thread-status color="yellow"> .Map </thread-status>
           <mutexes color="yellow"> .Map </mutexes>
-          <glocks color="yellow"> .List </glocks>
+          <glocks color="yellow"> .Map </glocks>
      </thread-info>
-     <threads color="yellow">
+     <threads color="yellow" thread="">
           <thread multiplicity="*" color="yellow" type="Set">
                <thread-id color="yellow"> 0 </thread-id>
                <buffer color="lightgray"> .List </buffer>
