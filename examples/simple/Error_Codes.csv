@@ -99,6 +99,11 @@ UB-PTHREAD1,Initializing an already initialiized mutex,POSIX 2008 sec. pthread_m
 UB-PTHREAD2,Destroying a locked mutex.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior
 UB-PTHREAD3,Called destroy on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior
 UB-PTHREAD4,Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior
+UB-PTHREAD5,Called lock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior
+UB-PTHREAD6,Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior
+UB-PTHREAD7,Called unlock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_unlock,Undefined Behavior
+UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior
+UB-PTHREAD9,Terminating a thread while holding lock on mutexes.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior
 USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
 CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
 CV-CCV9,Conversion from pointer to floating point type or from floating point type to pointer.,6.5.4:4,Constraint Violation
