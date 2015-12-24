@@ -1,0 +1,7 @@
+Error: UB-PTHREAD3
+Description: Called destroy on an object that was not initialized with pthread_mutex_init.
+Type: Undefined behavior.
+See also: POSIX 2008 sec. pthread_mutex_destroy
+  at pthread_mutex_destroy(UB-PTHREAD3-bad.c:15)
+  at main(UB-PTHREAD3-bad.c:15)
+  at <file-scope>(<unknown>)

@@ -95,6 +95,9 @@ UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed."
 UB-STRING1,Null pointer passed to strcpy.,"7.1.4:1, J.2:1 item 108",Undefined Behavior
 UB-STDLIB2,"Called free on memory not allocated by malloc, or already freed.","7.22.3.3:2, J.2:1 item 179",Undefined Behavior
 UB-TTE1,program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
+UB-PTHREAD1,Initializing an already initialiized mutex,POSIX 2008 sec. pthread_mutex_init,Undefined Behavior
+UB-PTHREAD2,Destroying a locked mutex.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior
+UB-PTHREAD3,Called destroy on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior
 UB-PTHREAD4,Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior
 USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
 CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
