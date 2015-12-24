@@ -5,8 +5,6 @@
 
 int main()
 {
-    int * number_ptr = malloc(sizeof(int));
-    *number_ptr = 10;
-    free(number_ptr);
-    printf("No memory Leaks, Execution Successful\n");
+    int * int_ptr = malloc(sizeof(int));
+    free(int_ptr);
 }

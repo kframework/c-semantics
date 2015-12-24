@@ -1,0 +1,6 @@
+Warning: L-STDLIBE1
+Description: Called free() on a null pointer.
+Type: Possible unintended behavior.
+  at free(L-STDLIBE1-bad.c:9)
+  at main(L-STDLIBE1-bad.c:9)
+  at <file-scope>(<unknown>)
