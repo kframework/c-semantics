@@ -103,7 +103,6 @@ UB-PTHREAD5,Called lock on an object that was not initialized with pthread_mutex
 UB-PTHREAD6,Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior
 UB-PTHREAD7,Called unlock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_unlock,Undefined Behavior
 UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior
-UB-PTHREAD9,Terminating a thread while holding lock on mutexes.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior
 USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
 CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
 CV-CCV9,Conversion from pointer to floating point type or from floating point type to pointer.,6.5.4:4,Constraint Violation
@@ -162,3 +161,4 @@ IMPL-CCV2,Conversion to signed integer outside the range that can be represented
 IMPL-CEB8,The left operand in a bitwise right-shift is negative.,"6.5.7:5, J.3.5:1 item 5",Implementation Specific Behavior
 IMPL-EIO5,Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior
 IMPL-EIO6,Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior
+L-PTHREAD9,Terminating a thread while holding lock on mutexes.,,Possible unintended behavior
