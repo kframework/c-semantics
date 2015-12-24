@@ -1,0 +1,5 @@
+Warning: L-EXC3
+Description: Comparing a function pointer to a null pointer constant.
+Type: Possible unintended behavior.
+  at main(UB-EXC3-bad.c:12)
+  at <file-scope>(<unknown>)
