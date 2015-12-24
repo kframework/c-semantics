@@ -1,0 +1,7 @@
+Error: UB-PTHREAD7
+Description: Called unlock on an object that was not initialized with pthread_mutex_init.
+Type: Undefined behavior.
+See also: POSIX 2008 sec. pthread_mutex_unlock
+  at pthread_mutex_unlock(UB-PTHREAD7-bad.c:14)
+  at main(UB-PTHREAD7-bad.c:14)
+  at <file-scope>(<unknown>)
