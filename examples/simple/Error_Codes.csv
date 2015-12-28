@@ -162,3 +162,10 @@ IMPL-CEB8,The left operand in a bitwise right-shift is negative.,"6.5.7:5, J.3.5
 IMPL-EIO5,Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior
 IMPL-EIO6,Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior
 L-PTHREAD9,Terminating a thread while holding lock on mutexes.,,Possible unintended behavior
+L-STDLIBE1,Called free() on a null pointer.,,Possible unintended behavior
+L-STDLIBE2,"Malloc overflows memory bound, returning null pointer.",,Possible unintended behavior
+L-STDLIBE3,"Realloc overflows memory bound, returning null pointer.",,Possible unintended behavior
+L-CEIE1,Memory malloced but never freed.,,Possible unintended behavior
+L-CCVE1,unsigned integer overflow.,,Possible unintended behavior
+L-CCVE2,conversion to unsigned integer outside the range that can be represented.,,Possible unintended behavior
+L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior
