@@ -1,0 +1,5 @@
+Warning: L-CCVE1
+Description: unsigned integer overflow.
+Type: Possible unintended behavior.
+  at main(L-CCVE1-bad.c:9)
+  at <file-scope>(<unknown>)

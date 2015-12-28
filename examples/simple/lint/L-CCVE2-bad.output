@@ -1,0 +1,5 @@
+Warning: L-CCVE2
+Description: conversion to unsigned integer outside the range that can be represented.
+Type: Possible unintended behavior.
+  at main(L-CCVE2-bad.c:9)
+  at <file-scope>(<unknown>)
