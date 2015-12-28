@@ -3,17 +3,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void func(int number)
+void * func()
 {
-    printf("func called with number: %i\n", number);
+    int * retval = malloc(sizeof(int));
+    *retval = 1;
+    return retval; 
 }
 
 int main()
 {
-    void (*func_ptr)(int) = &func;
-    if(func_ptr == &func)
+    void * (*func_ptr)() = &func;
+    if(func_ptr() != NULL)
     {
-        func(1);
+       printf("Hello, World!\n"); 
         
     }
     
