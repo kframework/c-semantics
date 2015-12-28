@@ -11,7 +11,6 @@ pthread_mutex_t lock;
 
 int main(void)
 {
-    //Calling pthread_mutex_lock without a call to pthread_mutex_init
     pthread_mutex_init(&lock, NULL);
     pthread_mutex_lock(&lock);
     
