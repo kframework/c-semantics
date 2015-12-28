@@ -5,9 +5,9 @@
 
 int main()
 {
-    size_t array_size = 1024 * sizeof(int);
+    size_t array_size = 20;
     int * large_int_array = malloc(10 * sizeof(int));
-    int * larger_int_array = realloc(large_int_array, array_size);
+    int * larger_int_array = realloc(large_int_array, array_size * sizeof(int));
     if(larger_int_array != NULL) 
     {
         free(larger_int_array);

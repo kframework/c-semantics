@@ -5,7 +5,7 @@
 
 int main()
 {
-    int array_size = 20;
+    size_t array_size = 20;
     int * small_int_array = malloc(array_size * sizeof(int));
     if(small_int_array != NULL)
     {
