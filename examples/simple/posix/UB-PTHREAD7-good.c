@@ -13,12 +13,8 @@ int main(void)
 {
     pthread_mutex_init(&lock, NULL);
     pthread_mutex_lock(&lock);
-    
     pthread_mutex_unlock(&lock);
-    
     pthread_mutex_destroy(&lock);
-    
-    printf("Succesful Execution\n"); 
     
     return 0;
 }
