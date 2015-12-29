@@ -11,6 +11,7 @@
 // is not what we expected. This again underscores the importance of avoiding
 // undefined behavior in programs, because it can lead to unexpected behaviors
 // like this.
+
 int *foo(int x) {
   int z = x;
   int *y = &z;
