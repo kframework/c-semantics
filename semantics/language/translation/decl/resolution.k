@@ -102,13 +102,12 @@ module C-DECL-RESOLUTION
           requires X =/=K Identifier("main")
           [structural]
 
-     rule <k> resolveReference(X:CId)
-               => UNDEF("TDR2",
+     rule <k> (.K => UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
                      +String idToString(X) +String ".",
-                    "6.9:5, J.2:1 item 84")
+                    "6.9:5, J.2:1 item 84"))
+              ~> resolveReference(X:CId)
           ...</k>
-          <external-uses>... (.Set => SetItem(X)) ...</external-uses>
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
           requires notBool (X in_keys(Defs))

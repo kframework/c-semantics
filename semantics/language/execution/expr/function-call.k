@@ -49,6 +49,9 @@ module C-EXPR-FUNCTION-CALL
 
      context Call(_, (HOLE:KItem => revalParams(HOLE))) [ndheat]
 
+     rule (.K => UNDEF("EFNC2", "Invoking a null pointer.", "6.5.2.2"))
+          ~> Call(tv(NullPointer, _), _)
+
      // Strip prov.
      rule Call(tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _),
                _:KResult)

@@ -177,7 +177,7 @@ module C-EXECUTION-INIT
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => #callMain(T, N, Identifier("#incomingArgumentsArray"), Args)
+               => reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args))
           ...</k>
           <types>... Identifier("main") |-> T:Type ...</types>
           <status> _ => mainCalled </status>
@@ -213,7 +213,7 @@ module C-EXECUTION-INIT
                (<thread>...
                     // main's thread, not the global "thread"
                     <thread-id> 0 </thread-id>
-                    <k> V:RValue </k>
+                    <k> reval(V:RValue) </k>
                ...</thread> => .Bag)
           ...</exec>
           <status> _ => mainExited </status>

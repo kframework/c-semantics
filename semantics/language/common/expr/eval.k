@@ -173,8 +173,8 @@ module C-COMMON-EXPR-EVAL
           requires (Offset <=Int Len) andBool (Offset >=Int 0)
      rule checkOffsets(_, _) => errorLocBounds [owise]
 
-     syntax Error ::= "errorLocInvalid"
-                    | "errorLocBounds"
+     syntax Error ::= "errorLocBounds"
+     syntax KItem ::= "errorLocInvalid"
      rule (.K => UNDEF("CEE4",
                "Referring to an object outside of its lifetime.",
                "6.2.4:2, J.2:1 item 9"))

@@ -149,6 +149,7 @@ my $spec = q(#
       -fissue-report=<file>	Write issues to the specified file in CSV format
       -flint			Generate lint errors for potentially undesirable behaviors.*
       -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
+      -frecover-all-errors	Recover from fatal errors that would normally cause an application to crash.
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -300,6 +301,9 @@ sub main {
                     $file = backslash($file);
                }
                push(@options, "`CSV`(#token($file, $quoteString))");
+          }
+          if ($args->{'-frecover-all-errors'}) {
+               push(@options, "`RECOVER_ALL`(.KList)");
           }
           if ($args->{'-flint'}) {
                push(@options, "`LINT`(.KList)");
@@ -460,6 +464,9 @@ sub getKRunCommand {
      }
      if ($args->{'-flint'}) {
           push(@options, "`LINT`(.KList)");
+     }
+     if ($args->{'-frecover-all-errors'}) {
+          push(@options, "`RECOVER_ALL`(.KList)");
      }
 
      my $opts = makeSet(@options);

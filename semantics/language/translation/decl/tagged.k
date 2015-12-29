@@ -52,7 +52,6 @@ module C-DECL-TAGGED
                incompleteToFlexibleArrayMember(L),
                0, .Map, .Map,
                incompleteToFlexibleArrayMember(L))
-          requires L =/=K .List
 
      syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
                          [function]
