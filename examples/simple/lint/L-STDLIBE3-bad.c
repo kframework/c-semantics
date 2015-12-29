@@ -5,7 +5,7 @@
 
 int main()
 {
-    int array_size = 1024 * 1024 * 1024;
+    size_t array_size = 1024 * 1024 * 1024;
     int * large_int_array = malloc(10 * sizeof(int));
     large_int_array = realloc(large_int_array, array_size * sizeof(int));
     if(large_int_array != NULL) 

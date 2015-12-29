@@ -13,7 +13,6 @@ pthread_mutex_t lock;
 void * locker_thread(void * ptr) 
 {
     pthread_mutex_lock(&lock);
-    //destroying a held lock.
     pthread_mutex_destroy(&lock);
     return NULL;
 }

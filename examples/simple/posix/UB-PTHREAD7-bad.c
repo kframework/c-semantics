@@ -9,7 +9,6 @@ pthread_mutex_t * lock_ptr;
 
 int main(void)
 {
-    //Calling pthread_mutex_unlock without a call to pthread_mutex_init
     lock_ptr = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_unlock(lock_ptr);
     

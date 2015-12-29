@@ -7,7 +7,6 @@
 
 int main(void)
 {
-    
     pthread_mutex_t lock;
     pthread_mutex_t lock_cpy;
     pthread_mutex_init(&lock, NULL);

@@ -4,7 +4,6 @@ Locked here:
   at pthread_mutex_lock(UB-PTHREAD4-bad.c:15)
   at locker_thread(UB-PTHREAD4-bad.c:15)
   at <file-scope>(<unknown>)
-
 Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_lock
   at pthread_mutex_lock(UB-PTHREAD4-bad.c:17)

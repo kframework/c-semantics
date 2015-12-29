@@ -2,6 +2,6 @@ Error: UB-PTHREAD5
 Description: Called lock on an object that was not initialized with pthread_mutex_init.
 Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_lock
-  at pthread_mutex_lock(UB-PTHREAD5-bad.c:15)
-  at main(UB-PTHREAD5-bad.c:15)
+  at pthread_mutex_lock(UB-PTHREAD5-bad.c:14)
+  at main(UB-PTHREAD5-bad.c:14)
   at <file-scope>(<unknown>)

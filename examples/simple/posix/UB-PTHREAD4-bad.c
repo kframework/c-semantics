@@ -13,7 +13,6 @@ pthread_mutex_t lock;
 void * locker_thread(void * ptr) 
 {
     pthread_mutex_lock(&lock);
-    //Locking the same mutex again.
     pthread_mutex_lock(&lock);
     return NULL;
 }

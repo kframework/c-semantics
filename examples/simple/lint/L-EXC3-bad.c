@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int retval;
 void * func()
 {
-    int * retval = malloc(sizeof(int));
-    *retval = 1;
-    return retval; 
+    return &retval; 
 }
 
 int main()
