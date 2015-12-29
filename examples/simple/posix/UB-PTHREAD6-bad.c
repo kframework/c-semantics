@@ -12,7 +12,6 @@ pthread_mutex_t lock;
 
 void * locker_thread(void * ptr) 
 {
-    //unlocking an unlocked thread
     pthread_mutex_unlock(&lock);
     return NULL;
 }
