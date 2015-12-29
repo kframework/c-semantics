@@ -1,6 +1,13 @@
+// KCC is also capable of detecting quite a wide variety of different buffer
+// overflows. Seen here in this example borrowed from the Toyota ITC benchmark
+// (see ISSRE'15 paper by Shiraishi etal) are a wide variety of buffers that
+// are allocated dynamically and accessed in a variety of different ways.
+// In each case, we are able to detect the buffer overflow and print
+// a stack trace on the command line of where it has occurred in the program.
+
 // Copyright (c) 2012-2014 Toyota InfoTechnology Center, U.S.A. Inc.
 // Modified under terms of BSD license, reproduced below:
-
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //
@@ -22,15 +29,6 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
-
-
-// KCC is also capable of detecting quite a wide variety of different buffer
-// overflows. Seen here in this example are a wide variety of buffers that
-// are allocated dynamically and accessed in a variety of different ways.
-// In each case, we are able to detect the buffer overflow and print
-// a stack trace on the command line of where it has occurred in the program.
-
 
 #include<stdlib.h>
 #include<stdio.h>
