@@ -4,12 +4,13 @@
 // an argument less than 9 characters (10 with the null terminator) to the
 // executable, the program is well-defined. However, if we pass a longer
 // string to argv, a buffer overflow occurs.
-
+//
 // We plan to extend RV-Match in the future with technology that can explore
 // the nondeterministic state space of a program based on its input
 // conditions, which would eventually allow errors of this type to be detected
 // even if the user cannot think of an input that exercises the bug. This will
 // be possible still without the need for any false positives.
+
 static void sampleFunc(char *path, char *input) {
   char *argvptr;
   argvptr = input;

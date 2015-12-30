@@ -1,0 +1,8 @@
+Error: UB-CCV11
+Description: Conversion to a pointer type with a stricter alignment requirement (possibly undefined).
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.3:7, J.2:1 item 25
+  at bar(incompleteStruct-link2.c:5)
+  at main(incompleteStruct-link1.c:5)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)
