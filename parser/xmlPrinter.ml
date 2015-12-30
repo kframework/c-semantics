@@ -179,7 +179,7 @@ and printBlock a =
 	let blockNum = ((counter := (!counter + 1); !counter)) in
 	let blockNumCell = (printRawInt blockNum) in
 	let idCell = printCell "BlockId" [] blockNumCell in
-	wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block"
+	wrap (idCell :: (printBlockLabels a.blabels) :: (printStatementList a.bstmts) :: []) "Block3"
 	(* printCell "Block" attribs ((printBlockLabels a.blabels) ^ (printStatementList a.bstmts)) in *)
 
 	(*	
@@ -575,7 +575,7 @@ and printDoWhile exp stat =
 	wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "DoWhile"
 and printFor fc1 exp2 exp3 stat =
 	let newForIdCell = printCell "ForId" [] (printRawInt ((counter := (!counter + 1)); !counter)) in
-	wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For"
+	wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For5"
 and printForClause fc = 
 	match fc with
 	| FC_EXP exp1 -> wrap ((printExpression exp1) :: []) "ForClauseExpression"
