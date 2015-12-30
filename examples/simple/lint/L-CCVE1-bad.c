@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 
-int main() {
+int main()
+{
     unsigned int big_int = UINT_MAX;
     big_int += 1;
-
 }

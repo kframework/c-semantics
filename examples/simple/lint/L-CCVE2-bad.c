@@ -4,8 +4,8 @@
 #include <stdlib.h>
 
 
-int main() {
+int main()
+{
     unsigned long big_long = ULONG_MAX;
     unsigned int big_int = big_long;
-
 }
