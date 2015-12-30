@@ -4,4 +4,15 @@ Type: Undefined behavior.
 See also: C11 sec. 6.2.4:2, J.2:1 item 9
   at main(UB-CEE4-bad.c:9)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)
+Error: UB-CER3
+Description: Dereferencing a null pointer.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.3.2:4, J.2:1 item 43
+  at main(UB-CEE4-bad.c:9)
+  at <file-scope>(<unknown>)
+Error: UB-CEE2
+Description: Indeterminate value used in an expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+  at main(UB-CEE4-bad.c:9)
+  at <file-scope>(<unknown>)

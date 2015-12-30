@@ -5,4 +5,3 @@ See also: C11 sec. 6.7.4, J.2:1 item 71
   at f(UB-ESR1-bad.c:4)
   at main(UB-ESR1-bad.c:8)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

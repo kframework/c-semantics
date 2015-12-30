@@ -4,4 +4,8 @@ Type: Undefined behavior.
 See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
   at main(UB-CCV6-bad.c:5)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)
+Error: UB-CEE2
+Description: Indeterminate value used in an expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+  at <file-scope>(<unknown>)

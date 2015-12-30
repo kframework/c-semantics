@@ -4,4 +4,3 @@ Error: UB-CEMX3
 Description: Signed integer overflow.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:5, J.2:1 item 36
-Translation failed. Run kcc -d UB-CEMX3-bad-static.c to see commands run.

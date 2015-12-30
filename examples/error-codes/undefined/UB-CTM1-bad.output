@@ -4,4 +4,3 @@ Type: Undefined behavior.
 See also: C11 sec. 6.7.6.2:5, J.2:1 item 75
   at main(UB-CTM1-bad.c:5)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

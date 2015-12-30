@@ -5,4 +5,10 @@ See also: C11 sec. 6.5:2, J.2:1 item 35
   at foo(UB-EIO8-bad.c:4)
   at main(UB-EIO8-bad.c:9)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)
+Error: UB-EIO8
+Description: Unsequenced side effect on scalar object with side effect of same object.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:2, J.2:1 item 35
+  at foo(UB-EIO8-bad.c:4)
+  at main(UB-EIO8-bad.c:9)
+  at <file-scope>(<unknown>)

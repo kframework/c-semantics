@@ -4,4 +4,3 @@ Error: UB-TDG7
 Description: Void parameter appears with qualifiers.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
-Translation failed. Run kcc -d UB-TDG7-bad-static.c to see commands run.
