@@ -1,3 +1,4 @@
+,,,
 ,The C11 semantic errors follow the template: Error_Type-Error_Code.,,
 ,"The Error_Type can be one of: UB (Undefined Behavior), USP (Unspecified Behavior), CV (Constraint Violation), or IMPL (Implementation Specific Behavior)",,
 ,The Error_Code is a unique code used to identify a particular error.,,
