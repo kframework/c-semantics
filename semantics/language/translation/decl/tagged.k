@@ -92,7 +92,6 @@ module C-DECL-TAGGED
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
-          requires L =/=K .List
 
      syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
                          [function]
