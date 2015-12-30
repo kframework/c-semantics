@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 void func() {
-  printf("Function Defition\n");
+  printf("Function Definition\n");
 }
 
 int main() {

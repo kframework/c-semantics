@@ -32,14 +32,14 @@ module LIBC-STDLIB
           <k> prepareBuiltin(Identifier("exit"),
                     hrItem(tv(I:Int, t(_, int))))
                ~> _
-               => tv(I:Int, t(.Set, int))
+               => reval(tv(I:Int, t(.Set, int)))
           </k>
           [structural]
 
      rule [abort]:
           <k> prepareBuiltin(Identifier("abort"), .HeatList)
                ~> _
-               => printString("Aborted") ~> tv(134, t(.Set, int))
+               => printString("Aborted") ~> reval(tv(134, t(.Set, int)))
           </k>
 
 
