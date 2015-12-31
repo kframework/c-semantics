@@ -1,12 +1,12 @@
 Warning: L-STDLIBE3
 Description: Realloc overflows memory bound, returning null pointer.
 Type: Possible unintended behavior.
-  at realloc(L-STDLIBE3-bad.c:10)
-  at main(L-STDLIBE3-bad.c:10)
+  at realloc(L-STDLIBE3-bad.c:11)
+  at main(L-STDLIBE3-bad.c:11)
   at <file-scope>(<unknown>)
 Warning: L-CEIE1
 Description: Memory malloced but never freed.
 Type: Possible unintended behavior.
-  at malloc(L-STDLIBE3-bad.c:9)
-  at main(L-STDLIBE3-bad.c:9)
+  at malloc(L-STDLIBE3-bad.c:10)
+  at main(L-STDLIBE3-bad.c:10)
   at <file-scope>(<unknown>)

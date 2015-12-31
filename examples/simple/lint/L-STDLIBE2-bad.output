@@ -1,6 +1,6 @@
 Warning: L-STDLIBE2
 Description: Malloc overflows memory bound, returning null pointer.
 Type: Possible unintended behavior.
-  at malloc(L-STDLIBE2-bad.c:9)
-  at main(L-STDLIBE2-bad.c:9)
+  at malloc(L-STDLIBE2-bad.c:10)
+  at main(L-STDLIBE2-bad.c:10)
   at <file-scope>(<unknown>)

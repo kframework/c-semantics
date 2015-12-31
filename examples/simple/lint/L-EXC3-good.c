@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 int retval;
+
 void * func()
 {
     return &retval; 
@@ -15,7 +17,5 @@ int main()
     if(func_ptr() != NULL)
     {
        printf("Hello, World!\n"); 
-        
     }
-    
 }

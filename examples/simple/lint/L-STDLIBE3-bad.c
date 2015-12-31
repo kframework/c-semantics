@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 int main()
 {
     size_t array_size = 1024 * 1024 * 1024;
