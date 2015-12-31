@@ -1,11 +1,11 @@
 Error: UB-PTHREAD4
 Description: Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.
 Locked here:
-  at pthread_mutex_lock(UB-PTHREAD4-bad.c:15)
-  at locker_thread(UB-PTHREAD4-bad.c:15)
+  at pthread_mutex_lock(UB-PTHREAD4-bad.c:14)
+  at locker_thread(UB-PTHREAD4-bad.c:14)
   at <file-scope>(<unknown>)
 Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_lock
-  at pthread_mutex_lock(UB-PTHREAD4-bad.c:17)
-  at locker_thread(UB-PTHREAD4-bad.c:17)
+  at pthread_mutex_lock(UB-PTHREAD4-bad.c:15)
+  at locker_thread(UB-PTHREAD4-bad.c:15)
   at <file-scope>(<unknown>)

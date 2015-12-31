@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
+
 pthread_mutex_t lock;
 
 int main(void)

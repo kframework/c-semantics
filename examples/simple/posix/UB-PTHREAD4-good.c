@@ -6,14 +6,12 @@
 #include<stdlib.h>
 
 
-
 pthread_t thread_id;
 pthread_mutex_t lock;
 
 void * locker_thread(void * ptr) 
 {
     pthread_mutex_lock(&lock);
-    
     pthread_mutex_unlock(&lock);
     return NULL;
 }
@@ -26,22 +24,14 @@ int main(void)
         printf("\n mutex init failed\n");
         return 1;
     }
-
-
-   
     err = pthread_create(&thread_id, NULL, &locker_thread, NULL);
     if (err != 0) 
     {
         printf("Thread spawning error");
         return 1;
     }
-
-   
-    
     pthread_join(thread_id, NULL);
     pthread_mutex_destroy(&lock);
-    
     printf("Succesful Execution\n");
-    
     return 0;
 }
