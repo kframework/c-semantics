@@ -56,6 +56,7 @@ UB-EEA4,Passing a pointer not to an array object as a function parameter with a 
 UB-EEA5,Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.,"6.7.6.3:7, J.2:1 item 77",Undefined Behavior,
 UB-EEC1,Incompatible variably modified types in a conditional expression.,6.7.6.1:6,Undefined Behavior,
 UB-EFNC1,Attempt to call the function through a pointer with incompatible type.,"6.5.2.2:9, J.2:1 item 41",Undefined Behavior,
+UB-EFNC2,Invoking a null pointer.,6.5.2.2,Undefined Behavior,
 UB-EIO8,Unsequenced side effect on scalar object with side effect of same object.,"6.5:2, J.2:1 item 35",Undefined Behavior,
 UB-EIO2,Trying to write outside the bounds of an object.,"6.5.6:8, J.2:1 item 47",Undefined Behavior,
 UB-EIO3,Trying to modify an object declared with const type.,"6.7.3:6, J.2:1 item 64",Undefined Behavior,
