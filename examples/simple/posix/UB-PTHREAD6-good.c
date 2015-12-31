@@ -32,6 +32,5 @@ int main(void)
     }
     pthread_join(thread_id, NULL);
     pthread_mutex_destroy(&lock);
-    printf("Successful Execution\n");
     return 0;
 }

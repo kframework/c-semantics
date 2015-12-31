@@ -21,13 +21,13 @@ int main(void)
     int err = 0;
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
-        printf("\n mutex init failed\n");
+        printf("\n Mutex initialization failed\n");
         return 1;
     }
     err = pthread_create(&thread_id, NULL, &locker_thread, NULL);
     if (err != 0) 
     {
-        printf("Thread spawning error");
+        printf("Thread spawning failed");
         return 1;
     }
     pthread_join(thread_id, NULL);

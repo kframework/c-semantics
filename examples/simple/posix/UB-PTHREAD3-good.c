@@ -12,6 +12,5 @@ int main(void)
 {
     pthread_mutex_init(&lock, NULL);
     pthread_mutex_destroy(&lock);
-    printf("Successful Execution \n");
     return 0;
 }

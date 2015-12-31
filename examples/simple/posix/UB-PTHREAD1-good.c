@@ -12,10 +12,9 @@ int main(void)
 {
     if (pthread_mutex_init(&lock, NULL) != 0)
     {
-        printf("\n First Initialization of mutex failed\n");
+        printf("\n First initialization of mutex failed\n");
         return 1;
     }
     pthread_mutex_destroy(&lock);
-    printf("Correct Execution");
     return 0;
 }
