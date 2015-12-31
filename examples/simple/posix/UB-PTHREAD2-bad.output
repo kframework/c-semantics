@@ -1,11 +1,11 @@
 Error: UB-PTHREAD2
 Description: Destroying a locked mutex.
 Locked here:
-  at pthread_mutex_lock(UB-PTHREAD2-bad.c:15)
-  at locker_thread(UB-PTHREAD2-bad.c:15)
+  at pthread_mutex_lock(UB-PTHREAD2-bad.c:14)
+  at locker_thread(UB-PTHREAD2-bad.c:14)
   at <file-scope>(<unknown>)
 Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_destroy
-  at pthread_mutex_destroy(UB-PTHREAD2-bad.c:17)
-  at locker_thread(UB-PTHREAD2-bad.c:17)
+  at pthread_mutex_destroy(UB-PTHREAD2-bad.c:15)
+  at locker_thread(UB-PTHREAD2-bad.c:15)
   at <file-scope>(<unknown>)
