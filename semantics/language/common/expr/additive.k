@@ -257,24 +257,24 @@ module C-COMMON-EXPR-ADDITIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(_, T:UnsignedIntegerType) + tv(unknown, T)
+     rule tv(_, T:UnsignedIntegerType) + tv(unknown, T':Type)
           => tv(unknown, T)
-          requires isPromoted(T)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
-     rule tv(unknown, T:UnsignedIntegerType) + tv(_, T)
+     rule tv(unknown, T:UnsignedIntegerType) + tv(_, T':Type)
           => tv(unknown, T)
-          requires isPromoted(T)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
 
      rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
                "6.5:5, J.2:1 item 36"))
-          ~> tv(_, T:SignedIntegerType) + tv(unknown, T)
-          requires isPromoted(T)
+          ~> tv(_, T:SignedIntegerType) + tv(unknown, T':Type)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
                "6.5:5, J.2:1 item 36"))
-          ~> tv(unknown, T:SignedIntegerType) + tv(_, T)
-          requires isPromoted(T)
+          ~> tv(unknown, T:SignedIntegerType) + tv(_, T':Type)
+          requires isPromoted(T) andBool T ==Type T'
           [structural]
 
 endmodule

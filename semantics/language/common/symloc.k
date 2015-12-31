@@ -44,7 +44,7 @@ module C-SYMLOC-SYNTAX
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int)
      syntax SymLoc ::= CanonicalSymLoc
-     syntax CanonicalSymLoc ::= loc(SymBase, Int, Set)
+     syntax CanonicalSymLoc ::= loc(SymBase, Int, Set) [klabel(loc3)]
      syntax CanonicalSymLoc ::= "NullPointer"
 
      syntax KResult ::= SymLoc
@@ -113,6 +113,8 @@ module C-SYMLOC
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports K-REFLECTION
+     imports C-CONFIGURATION
 
      imports COMPAT-SYNTAX
 
@@ -301,18 +303,24 @@ module C-SYMLOC
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(Loc:SymLoc) => Loc [owise]
 
-     rule getAlign(loc(Base:SymBase, Offset:Int, Provs:Set)) => getAlign'(.K, Provs)
+     rule getAlign(loc(Base:SymBase, Offset:Int, Provs:Set)) => getAlign'(.K, Provs, Base, #configuration)
           requires notBool isNativeLoc(loc(Base, Offset, Provs))
      rule getAlign(NullPointer) => cfg:alignofMalloc
      rule getAlign(loc(0 @ nativeAddress, Offset:Int, _)) => getNativeAlign(Offset)
      rule getAlign(loc(0 @ nativeAddress, Offset:Int)) => getNativeAlign(Offset)
      rule getAlign(_) => 1 [owise]
 
-     syntax Int ::= "getAlign'" "(" K "," Set ")" [function]
-     rule getAlign'(.K, .Set) => 1
-     rule getAlign'(.K, SetItem(K:K) S:Set) => getAlign'(K, S)
-     rule getAlign'(fromType(T:Type), _) => getAlignas(T)
-     rule getAlign'(K:KItem, S:Set) => getAlign'(.K, S)
+     syntax Int ::= "getAlign'" "(" K "," Set "," SymBase "," K ")" [function]
+     rule getAlign'(.K, .Set, _, _) => 1
+     rule getAlign'(.K, SetItem(K:K) S:Set, B:SymBase, C:K) => getAlign'(K, S, B, C)
+     rule getAlign'(fromType(T:Type), _, _, _) => getAlignas(T)
+          requires isCompleteType(T)
+     rule getAlign'(fromType(T:Type), _, (Base:SymBase => NewBase), <generatedTop>... <linkings>... Base |-> NewBase:SymBase ...</linkings> ...</generatedTop>)
+          requires notBool isCompleteType(T)
+     rule getAlign'(fromType(T:Type), _, Base, <generatedTop>... <mem>... Base |-> object(DefT:Type, _, _, _) ...</mem> <linkings> Linkings:Map </linkings> ...</generatedTop>)
+          => getAlignas(DefT)
+          requires notBool isCompleteType(T) andBool notBool (Base in_keys(Linkings))
+     rule getAlign'(K:KItem, S:Set, B:SymBase, C:K) => getAlign'(.K, S, B, C)
           requires getKLabel(K) =/=K #klabel(`fromType`)
 
      syntax Int ::= #getBitOffset(K, Set) [function]

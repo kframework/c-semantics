@@ -277,7 +277,7 @@ module C-SYNTAX
      context HOLE:KItem := _ [ndheat]
      context _ := (HOLE:KItem => reval(HOLE)) [ndheat, result(RValue)]
 
-     syntax Expression ::= Cast(K, K)
+     syntax Expression ::= Cast(K, K) [klabel(Cast2)]
      context Cast(HOLE:KItem, _)
      context Cast(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
 

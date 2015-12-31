@@ -83,13 +83,13 @@ module C-EXPR-ASSIGNMENT
      rule checkRestrictAssign(Tag:Scope, Tags:Set) => .K
           requires (Tag =/=K fileScope) andBool notBool (Tag in Tags)
                orBool Tag ==K none
-     rule checkRestrictAssign(Tag:Scope, Tags:Set)
-          => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4, J.2:1 item 69")
+     rule (.K => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4, J.2:1 item 69"))
+          ~> checkRestrictAssign(Tag:Scope, Tags:Set)
           requires Tag in Tags
      rule checkRestrictAssign(fileScope, .Set) => .K
      // TODO(chathhorn): more cases here we don't catch.
-     rule checkRestrictAssign(fileScope, Tags:Set)
-          => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4, J.2:1 item 69")
+     rule (.K => UNDEF("EEA3", "Attempt to alias restrict qualified pointers associated with incompatible blocks.", "6.7.3.1:4, J.2:1 item 69"))
+          ~> checkRestrictAssign(fileScope, Tags:Set)
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
 

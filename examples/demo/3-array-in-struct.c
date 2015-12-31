@@ -5,6 +5,7 @@
 // this array because it was declared with size 32. This means that we are
 // able to detect if a buffer overflow might leak sensitive information
 // contained elsewhere in a struct that also contains an array.
+
 struct foo {
   char buffer[32];
   int secret;

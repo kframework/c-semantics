@@ -382,9 +382,9 @@ module C-TYPING-MISC
           requires (Offset =/=Int 0)
                andBool notBool isAggregateType(T)
      // Arrays.
-     rule getTypeAtOffset(t(Mods:Set, arrayType(T:Type, _)), Offset:Int)
-          => getTypeAtOffset(addQualifiers(Mods, T),
-               Offset %Int bitSizeofType(T))
+     rule getTypeAtOffset(T:ArrayType, Offset:Int)
+          => getTypeAtOffset(addQualifiers(getModifiers(T), innerType(T)),
+               Offset %Int bitSizeofType(innerType(T)))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs
      rule getTypeAtOffset(T:StructType, Offset:Int)
