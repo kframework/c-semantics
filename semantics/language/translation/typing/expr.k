@@ -270,7 +270,7 @@ module C-TYPING-EXPR
                andBool notBool isNPC(V)
 
      rule (.K => UNDEF("TTE1",
-               "program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).",
+               "Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).",
                "6.2.7:3, J.2:1 item 16"))
           ~> elaborateDone(V:K, V':K) ~> typeof(_ ? T:Type : T':Type)
           ~> SizeofExpression(_)
