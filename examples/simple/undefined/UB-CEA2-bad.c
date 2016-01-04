@@ -5,10 +5,10 @@
 #include <stdlib.h>
 
 int main(void) {
-      if (sizeof(ptrdiff_t) == sizeof(int)) {
-            unsigned char *ptr0 = malloc(((unsigned)INT_MAX) + 1);
+      if (sizeof(ptrdiff_t) == sizeof(long)) {
+            unsigned char *ptr0 = malloc(((unsigned long)LONG_MAX) + 1);
 
-            unsigned char *ptr1 = ptr0 + (unsigned)INT_MAX + 1;
+            unsigned char *ptr1 = ptr0 + (unsigned long)LONG_MAX + 1;
 
             ptr1 - ptr0;
       }

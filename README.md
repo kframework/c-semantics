@@ -58,9 +58,11 @@ run into CV-CID1 and UB-TDR2 errors, signifying respectively that the function y
 calling was not declared in the appropriate header file, or that it was declared, but
 no definition exists currently in the semantics.
 
-We recommend if you wish to execute such programs that you contact Runtime Verification,
-Inc, which licenses a tool RV-Match based on this semantics which is capable of executing
-such programs by linking against the native code provided on your system for these libraries.
+We recommend if you wish to execute such programs that you contact
+[Runtime Verification, Inc](https://runtimeverification.com), which licenses a
+tool [RV-Match](https://runtimeverification.com/match/) based on this
+semantics which is capable of executing such programs by linking against the
+native code provided on your system for these libraries.
 For more information, contact https://runtimeverification.com/support.
 
 ## Project structure

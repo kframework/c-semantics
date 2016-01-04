@@ -75,7 +75,7 @@ module C-ERROR
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", "C11", Citation))
      rule IMPL(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementiation defined behavior.", "C11", Citation))
+          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior.", "C11", Citation))
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", Document, Citation))
      rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)

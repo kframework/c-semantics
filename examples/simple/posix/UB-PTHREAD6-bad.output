@@ -1,0 +1,7 @@
+Error: UB-PTHREAD6
+Description: Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.
+Type: Undefined behavior.
+See also: POSIX 2008 sec. pthread_mutex_lock
+  at pthread_mutex_unlock(UB-PTHREAD6-bad.c:14)
+  at locker_thread(UB-PTHREAD6-bad.c:14)
+  at <file-scope>(<unknown>)

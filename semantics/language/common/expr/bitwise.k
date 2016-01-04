@@ -222,7 +222,7 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool isIntegerType(type(R))
           [structural]
 
-     syntax KItem ::= bitwiseInterpret(Type, Int, Bool)
+     syntax KItem ::= bitwiseInterpret(Type, Int, Bool)   [klabel(bitwiseInterpret3)]
      rule bitwiseInterpret(T:UnsignedIntegerType, N:Int, _) => arithInterpret(T, N)
      rule bitwiseInterpret(T:SignedIntegerType, N:Int, true) => arithInterpret(T, N)
      rule bitwiseInterpret(T:SignedIntegerType, N:Int, false)
