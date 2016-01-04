@@ -1,0 +1,7 @@
+Warning: L-PTHREAD9
+Description: Terminating a thread while holding lock on mutexes. Locked here:
+  at pthread_mutex_lock(L-PTHREAD9-bad.c:14)
+  at locker_thread(L-PTHREAD9-bad.c:14)
+  at <file-scope>(<unknown>)
+Type: Possible unintended behavior.
+  at <file-scope>(<unknown>)

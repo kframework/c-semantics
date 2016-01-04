@@ -1,0 +1,6 @@
+Warning: L-CEIE1
+Description: Memory malloced but never freed.
+Type: Possible unintended behavior.
+  at malloc(L-CEIE1-bad.c:9)
+  at main(L-CEIE1-bad.c:9)
+  at <file-scope>(<unknown>)
