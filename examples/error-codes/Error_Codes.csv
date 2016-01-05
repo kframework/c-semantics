@@ -167,6 +167,6 @@ L-STDLIBE1,Called free() on a null pointer.,,Possible unintended behavior,X
 L-STDLIBE2,"Malloc overflows memory bound, returning null pointer.",,Possible unintended behavior,X
 L-STDLIBE3,"Realloc overflows memory bound, returning null pointer.",,Possible unintended behavior,X
 L-CEIE1,Memory malloced but never freed.,,Possible unintended behavior,X
-L-CCVE1,unsigned integer overflow.,,Possible unintended behavior,X
-L-CCVE2,conversion to unsigned integer outside the range that can be represented.,,Possible unintended behavior,X
+L-CCVE1,Unsigned integer overflow.,,Possible unintended behavior,X
+L-CCVE2,Conversion to unsigned integer outside the range that can be represented.,,Possible unintended behavior,X
 L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior,X
