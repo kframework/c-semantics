@@ -33,13 +33,13 @@ module C-EXECUTION-ERROR
      syntax KItem ::= error(String, String)
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> K </final-computation>)
+          => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           requires notBool isErrorRecovery andBool notBool isCSV
 
-     rule <k> EXIT(Msg:String) => #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S)) ~> HALT ...</k>
+     rule <k> EXIT(Msg:String) => #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
@@ -69,6 +69,10 @@ module C-EXECUTION-ERROR
           <options>... SetItem(CSV(Report:String)) ...</options>
           requires isErrorRecovery
 
+     syntax String ::= stackSeparator(List) [function]
+     rule stackSeparator(.List) => ""
+     rule stackSeparator(_) => "\n" [owise]
+
      rule <result-value> unknown => 139 </result-value>
           <file-commands> .K => openWriteThenClose(Report, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String ",unknown\r\n") ...</file-commands>
           <options>... SetItem(CSV(Report:String)) ...</options>
@@ -78,9 +82,9 @@ module C-EXECUTION-ERROR
      rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
           => "  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K)
-          => File +String ":" +String Int2String(Line) +String ")\n" +String printStackTrace(L, .K, .K)
+          => File +String ":" +String Int2String(Line) +String ")" +String stackSeparator(L) +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K)
-          => "<unknown>)\n" +String printStackTrace(L, .K, .K)
+          => "<unknown>)" +String stackSeparator(L) +String printStackTrace(L, .K, .K)
      rule printStackTrace(ListItem(<call-stack-frame>...
                <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
                <stack-curr-scope> S:Scope </stack-curr-scope>
