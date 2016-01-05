@@ -1,4 +1,4 @@
-File: UB-CEE2-bad-static.c
+File: UB-CEE2-bad.c
 Line: 4
 Error: UB-CEE2
 Description: Indeterminate value used in an expression.

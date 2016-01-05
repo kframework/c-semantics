@@ -1,4 +1,4 @@
-File: UB-CEA6-bad-static.c
+File: UB-CEA6-bad.c
 Line: 4
 Error: UB-CEA6
 Description: Unspecified value in signed integer addition, possible overflow.
