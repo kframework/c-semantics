@@ -115,6 +115,7 @@ See [semantics/README.md][] for more details.
 [scripts/query-kcc-prof]: scripts/query-kcc-prof
 [examples]: examples
 [x86-gcc-limited-libc]: x86-gcc-limited-libc
+[x86-gcc-limited-libc/include]: x86-gcc-limited-libc/include
 [x86-gcc-limited-libc/src]: x86-gcc-limited-libc/src
 [parser]: parser
 [scripts]: scripts
