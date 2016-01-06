@@ -1,5 +1,5 @@
 TUS = $(wildcard ./*.c)
-EXCLUDES= ./L-PTHREAD9-good.c ./L-STDLIBE3-good.c ./L-PTHREAD9-bad.c
+EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS})))
 CC=gcc
 TEST_COMPARISON = ${TESTS:.c=.cmp}
@@ -33,11 +33,11 @@ comparison: ${TEST_COMPARISON}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) -pthread -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.gcc: %-good-link1.c %-good-link2.c
 	@echo -n "Compiling $< (reference)... "
-	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@$(CC) -pthread -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.output: %-good.gcc
 	@echo -n "Running $<... "

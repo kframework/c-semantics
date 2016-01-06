@@ -1,5 +1,5 @@
 TUS = $(wildcard ./*.c)
-EXCLUDES =./UB-PTHREAD4-good.c ./UB-PTHREAD2-bad.c ./UB-PTHREAD1-bad.c ./UB-PTHREAD2-good.c ./UB-PTHREAD6-good.c ./UB-PTHREAD4-bad.c ./UB-PTHREAD8-bad.c ./UB-PTHREAD6-bad.c
+EXCLUDES =
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS})))
 CC=gcc
 TEST_COMPARISON = ${TESTS:.c=.cmp}

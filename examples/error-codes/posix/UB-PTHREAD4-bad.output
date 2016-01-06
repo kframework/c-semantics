@@ -9,3 +9,14 @@ See also: POSIX 2008 sec. pthread_mutex_lock
   at pthread_mutex_lock(UB-PTHREAD4-bad.c:15)
   at locker_thread(UB-PTHREAD4-bad.c:15)
   at <file-scope>(<unknown>)
+Error: UB-PTHREAD2
+Description: Destroying a locked mutex.
+Locked here:
+  at pthread_mutex_lock(UB-PTHREAD4-bad.c:14)
+  at locker_thread(UB-PTHREAD4-bad.c:14)
+  at <file-scope>(<unknown>)
+Type: Undefined behavior.
+See also: POSIX 2008 sec. pthread_mutex_destroy
+  at pthread_mutex_destroy(UB-PTHREAD4-bad.c:34)
+  at main(UB-PTHREAD4-bad.c:34)
+  at <file-scope>(<unknown>)
