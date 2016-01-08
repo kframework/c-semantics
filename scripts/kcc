@@ -441,6 +441,7 @@ sub getKRunCommand {
 
      my @krun_args = (
           '--output', 'binary', 
+          '--mini-krun',
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
