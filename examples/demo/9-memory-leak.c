@@ -15,7 +15,7 @@
 // return a null pointer. However, it enables many more checks which can be
 // reported on standard error. Some of these results may be false positives in
 // the sense that the behavior being detected did in fact occur, but this was
-// the intension of the programmer writing the code. However, we still have
+// the intention of the programmer writing the code. However, we still have
 // no false positives in the sense that if a warning is reported as a result of
 // this flag, then there really exists a real code execution for which the specific
 // behavior being detected did occur.
