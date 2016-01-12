@@ -151,6 +151,8 @@ my $spec = q(#
       -Wlint			[ditto]
       -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
       -frecover-all-errors	Recover from fatal errors that would normally cause an application to crash.
+      				WARNING: This can change the semantics of tools like autoconf which analyze
+      				the exit code of the compiler to trigger unexpected or undesirable results.
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -209,6 +211,7 @@ sub main {
      }
      # Set heap and stack size of krun
      $ENV{K_OPTS} = "-Xmx$heapSize";
+     $ENV{OCAMLRUNPARAM} = "s=32M";
 
      if ($args->{'-E'}) {
           my $oval = $main::oflag;
@@ -409,7 +412,7 @@ sub extractStatic {
   my @files = readdir $dir;
   closedir $dir;
   for (@files) {
-    if ($_ ne "$basename$suffix") {
+    if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
       push(@objFiles, "$tempDir/$_");
     }
   }
