@@ -75,4 +75,8 @@ module C-IO-DIRECT
           requires notBool (Offset in (keys(M)))
           [structural]
 
+     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
+     rule readBytesForWriting(Loc:SymLoc, Size:Int, .List, _)
+          => readBytes-aux(Loc, Size, .List)
+
 endmodule

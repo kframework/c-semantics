@@ -415,6 +415,7 @@ module C-TYPING-MISC
           => getTypeAtOffset(addQualifiers(getModifiers(BaseT), T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
+     rule getTypeAtOffset(BaseT:Type, _, _) => t(getModifiers(BaseT), no-type) [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T:Type) ...</k>
