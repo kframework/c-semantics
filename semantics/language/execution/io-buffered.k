@@ -189,10 +189,12 @@ module C-IO-BUFFERED
      syntax Error ::= "errorReadOutOfBounds"
                     | "errorUnseqEffects"
                     | "errorNonVolatileLVal"
+                    | "errorUninit"
 
      syntax K ::= assertInBounds(Int, Int)
      syntax K ::= assertSeq(SymLoc, List)
      syntax K ::= assertVolatile(Type, Int, Type)
+     syntax KItem ::= assertUninit(SymLoc)
 
      rule assertInBounds(Offset::Int, Len::Int)
           => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
@@ -201,6 +203,9 @@ module C-IO-BUFFERED
      rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
           => assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
                orBool isVolatileType(T), errorNonVolatileLVal) [macro]
+     rule assertUninit(L::SymLoc)
+          => assert(notBool hasLint orBool notBool (isStaticDuration(L) orBool isThreadDuration(L)),
+               errorUninit) [macro]
 
      syntax KItem ::= readByte(SymLoc, Type)
      //TODO(dwightguth): make these rules look a little better once we have partial compilation
@@ -235,6 +240,7 @@ module C-IO-BUFFERED
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
+               ~> assertUninit(loc(Base, Offset))
                ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
           ...</k>
           <mem>...
@@ -534,5 +540,23 @@ module C-IO-BUFFERED
           => effInnerType(getFieldInfo(S))
      rule effInnerType(fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _))
           => T
+
+     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
+     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
+          => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
+          ...</k>
+          <mem>...
+               Base |-> object(_, _, (_ Offset::Int |-> V:K), _)
+          ...</mem>
+          requires Size >Int 0 [structural]
+     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
+          => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
+          ...</k>
+          <mem>...
+               Base |-> object(ObjT::Type, _, (M::Map => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]), _)
+          ...</mem>
+          requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
+     rule readBytesForWriting(_, 0, Aux::List, _) => dataList(Aux)
+          [structural]
 
 endmodule

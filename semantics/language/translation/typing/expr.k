@@ -100,6 +100,9 @@ module C-TYPING-EXPR
 
      // postfix expressions
      rule typeof(Call(T:Type, _) => innerType(T))
+          requires isFunctionType(T)
+     rule typeof(Call((T:Type => innerType(T)), _))
+          requires isPointerType(T)
 
      rule <k> typeof(t(_, structType(S:StructId)) . F:CId => T) ...</k>
           <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
