@@ -259,8 +259,10 @@ module C-ABSTRACT-SYNTAX
      syntax Statement ::= Sequence(K, K)
 
      /*
+     | DOWHILE of expression * statement * cabsloc * cabsloc
      | FOR of for_clause * expression * expression * statement * cabsloc
      */
+     syntax Statement ::= DoWhile(K, K, CabsLoc)  [klabel(DoWhile3)]
      syntax Statement ::= For(Int, K, K, K, K)  [klabel(For5)]
 
      // gcc extension
