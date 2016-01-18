@@ -571,8 +571,8 @@ and newBlockStatement s =
 	printBlockStatement (makeBlockStatement s)	
 and printWhile exp stat =
 	wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "While"
-and printDoWhile exp stat =
-	wrap ((printExpression exp) :: (newBlockStatement stat) :: []) "DoWhile"
+and printDoWhile exp stat wloc =
+	wrap ((printExpression exp) :: (newBlockStatement stat) :: (printCabsLoc wloc) :: []) "DoWhile3"
 and printFor fc1 exp2 exp3 stat =
 	let newForIdCell = printCell "ForId" [] (printRawInt ((counter := (!counter + 1)); !counter)) in
 	wrap (newForIdCell :: (printForClause fc1) :: (printExpression exp2) :: (printExpression exp3) :: (newBlockStatement stat) :: []) "For5"
@@ -621,7 +621,7 @@ and printStatement a =
 	| SEQUENCE (s1, s2, loc) -> printStatementLoc (printSeq s1 s2) loc
 	| IF (exp, s1, s2, loc) -> printStatementLoc (printIf exp s1 s2) loc
 	| WHILE (exp, stat, loc) -> printStatementLoc (printWhile exp stat) loc
-	| DOWHILE (exp, stat, loc) -> printStatementLoc (printDoWhile exp stat) loc
+	| DOWHILE (exp, stat, loc, wloc) -> printStatementLoc (printDoWhile exp stat wloc) loc
 	| FOR (fc1, exp2, exp3, stat, loc) -> printStatementLoc (printFor fc1 exp2 exp3 stat) loc
 	| BREAK (loc) -> printStatementLoc (printBreak) loc
 	| CONTINUE (loc) -> printStatementLoc (printContinue) loc

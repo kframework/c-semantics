@@ -52,16 +52,15 @@ module C-STMT-LOOP
           <elab>... .K => While(compoundExp(L ~> B), S) </elab>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
 
-     context DoWhile((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
-     rule DoWhile(B:RValue, S:K) => #doWhile(simplifyTruth(B), S)
+     context DoWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
+     rule DoWhile(B:RValue, S:K, L:CabsLoc) => #doWhile(simplifyTruth(B), S, L)
 
-     syntax KItem ::= #doWhile(K, K)
-     context #doWhile((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
+     syntax KItem ::= #doWhile(K, K, CabsLoc)
+     context #doWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
 
-     rule (.K => elaborate(S)) ~> #doWhile(_:RValue, S:K)
-     rule <k> elaborateDone(S:K) ~> #doWhile(B:RValue, _) => .K ...</k>
+     rule (.K => elaborate(S)) ~> #doWhile(_:RValue, S:K, _)
+     rule <k> elaborateDone(S:K) ~> #doWhile(B:RValue, _, L:CabsLoc) => .K ...</k>
           <elab>... .K => DoWhile(compoundExp(L ~> B), S) </elab>
-          <curr-program-loc> L:CabsLoc </curr-program-loc>
 
      rule <k> Continue => .K ...</k>
           <elab>... .K => Continue </elab>
