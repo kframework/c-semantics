@@ -1,7 +1,7 @@
 export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile --ocamlopt
 KDEP = kdep
-KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict
+KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict -I ./builtin
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
 	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \
@@ -18,19 +18,19 @@ default: fast
 
 $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp:
 	@echo "Kompiling the static C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" -w all -v --debug -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-translation.k -d "$(PROFILE)/c11-translation-kompiled" --no-prelude -w all -v --debug -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-kompiled/c11-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-kompiled" -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-kompiled" --no-prelude -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with expression sequencing non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-kompiled" --no-prelude --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics
 
 $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp:
 	@echo "Kompiling the dynamic C semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-thread-kompiled" --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11.k -d "$(PROFILE)/c11-nd-thread-kompiled" --no-prelude --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics
 
 all: fast nd thread
 

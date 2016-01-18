@@ -364,14 +364,16 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
 
-     rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, unionType(S:StructId))) => getFieldInfo(S)
+     rule getFieldInfo(S::StructId) => #getFieldInfo(S, #configuration)
+     rule getFieldInfo(t(_, structType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, unionType(S::StructId))) => getFieldInfo(S)
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
-     rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop>)
-          => F
-     rule #getFieldInfo(_, _) => #incomplete [owise]
+     rule #getFieldInfo(S::StructId, <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
+          => extractFieldInfo(M[S])
+     syntax FieldInfo ::= extractFieldInfo(K) [function]
+     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map)) => fieldInfo(L, I, M1, M2)
+     rule extractFieldInfo(_) => #incomplete [owise]
 
      rule getTag(global(S:CId, _)) => S
      rule getTag(local(S:CId, _, _)) => S

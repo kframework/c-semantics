@@ -211,7 +211,11 @@ sub main {
      }
      # Set heap and stack size of krun
      $ENV{K_OPTS} = "-Xmx$heapSize";
-     $ENV{OCAMLRUNPARAM} = "s=32M";
+     if ($args->{'-d'}) {
+       $ENV{OCAMLRUNPARAM} = "s=32M,b";
+     } else {
+       $ENV{OCAMLRUNPARAM} = "s=32M";
+     }
 
      if ($args->{'-E'}) {
           my $oval = $main::oflag;
@@ -494,7 +498,7 @@ sub getKRunCommand {
           my $two = chr((scalar @objTexts >> 16) & 0xff);
           my $three = chr((scalar @objTexts >> 8) & 0xff);
           my $four = chr((scalar @objTexts >> 0) & 0xff);
-          $objText = "\x7fKAST\x04\x00\x00$objText\x03$one$two$three$four\x07";
+          $objText = "\x7fKAST\x04\x00\x01$objText\x03$one$two$three$four\x07";
           open(my $file, '>', "$allObjsFile");
           print $file $objText;
           close $file;
