@@ -65,4 +65,4 @@ licenses, and/or restrictions:
 Program               Directory
 -------               ---------
 CIL C Parser          c-semantics/parser
-Original C Semantics  c-semantics/semantics
+Original C Semantics  c-semantics/
