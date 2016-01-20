@@ -2,7 +2,6 @@ Error: UB-CB4
 Description: Function defined with no parameters called with arguments.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
-  at foo(j038b.c:4)
-  at main(j038b.c:4)
+  at foo(UB-CB4-bad.c:4)
+  at main(UB-CB4-bad.c:4)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

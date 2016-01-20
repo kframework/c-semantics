@@ -4,4 +4,3 @@ Error: UB-CDT1
 Description: Structs must contain a named member.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.2.1:8, J.2:1 item 61
-Translation failed. Run kcc -d UB-CDT1-bad-static.c to see commands run.

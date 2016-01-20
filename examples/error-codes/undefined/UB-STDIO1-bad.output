@@ -5,4 +5,11 @@ See also: C11 sec. 7.21.6.1:9, J.2:1 item 153
   at printf(UB-STDIO1-bad.c:6)
   at main(UB-STDIO1-bad.c:6)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)
+Error: UB-EIO10
+Description: Type of lvalue not compatible with the effective type of the object being accessed.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:7, J.2:1 item 37
+  at printf(UB-STDIO1-bad.c:6)
+  at main(UB-STDIO1-bad.c:6)
+  at <file-scope>(<unknown>)
+7

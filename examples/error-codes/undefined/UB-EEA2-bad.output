@@ -5,4 +5,3 @@ See also: C11 sec. 6.7.3.1:4, J.2:1 item 69
   at f(UB-EEA2-bad.c:4)
   at main(UB-EEA2-bad.c:11)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

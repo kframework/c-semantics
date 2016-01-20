@@ -5,4 +5,3 @@ See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
   at foo(UB-CB3-bad.c:10)
   at main(UB-CB3-bad.c:10)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

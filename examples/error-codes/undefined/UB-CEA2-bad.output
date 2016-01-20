@@ -4,4 +4,9 @@ Type: Undefined behavior.
 See also: C11 sec. 6.5.6:9, J.2:1 item 50
   at main(UB-CEA2-bad.c:13)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)
+Error: UB-CCV1
+Description: Signed integer overflow.
+Type: Undefined behavior.
+See also: C11 sec. 6.5:5, J.2:1 item 36
+  at main(UB-CEA2-bad.c:13)
+  at <file-scope>(<unknown>)

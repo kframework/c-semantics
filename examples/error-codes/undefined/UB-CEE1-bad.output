@@ -4,4 +4,3 @@ Type: Undefined behavior.
 See also: C11 sec. 6.3.2.1:3, J.2:1 item 22
   at main(UB-CEE1-bad.c:5)
   at <file-scope>(<unknown>)
-Execution failed (configuration dumped)

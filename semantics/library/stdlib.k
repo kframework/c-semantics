@@ -88,7 +88,7 @@ module LIBC-STDLIB
                     hrItem(tv(loc(OldBase:SymBase, 0), _)) hs::
                     hrItem(tv(NewLen:Int, _)))
                => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
+               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen)) SetItem(fromType(t(.Set, no-type)))),
                     t(.Set, pointerType(t(.Set, void))))
           ...</k>
           <malloced>...
