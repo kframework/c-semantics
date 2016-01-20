@@ -60,10 +60,11 @@ module C-TYPING-SYNTAX
      syntax SimpleBoolType ::= "bool"
      syntax SimpleVoidType ::= "void"
      syntax SimpleNoType ::= "no-type"
-     syntax SimpleType ::= SimpleNoType | SimpleVoidType | SimpleCharType 
-                         | SimpleFloatType | SimpleUnsignedType 
-                         | SimpleSignedType
-
+     syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType | SimpleCharType 
+                              | SimpleFloatType | SimpleUnsignedType 
+                              | SimpleSignedType
+     syntax SimpleType ::= SimpleBasicType
+  
      // Composite types
      syntax SimpleEnumType ::= enumType(CId)
      syntax SimpleBitfieldType ::= bitfieldType(Type, Int)

@@ -276,7 +276,7 @@ module C-TYPING-MISC
      rule tagRestrict(_, variadic) => variadic
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
-          [function, klabel('tagRestrictSimpleType)]
+          [function, klabel(tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
 /*     rule tagRestrict(_, T:SimpleType) => T
@@ -310,19 +310,19 @@ module C-TYPING-MISC
           => functionType(T, Params)
 */
      syntax List ::= tagRestrict(Scope, List)
-          [function, klabel('tagRestrictList)]
+          [function, klabel(tagRestrictList)]
      rule tagRestrict(Tag:Scope, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
      syntax Map ::= tagRestrict(Scope, Map)
-          [function, klabel('tagRestrictMap)]
+          [function, klabel(tagRestrictMap)]
      rule tagRestrict(Tag:Scope, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
      syntax Set ::= tagRestrict(Scope, Set)
-          [function, klabel('tagRestrictSet)]
+          [function, klabel(tagRestrictSet)]
      rule tagRestrict(Tag:Scope, S:Set)
           => SetItem(RestrictBlock(Tag)) S
           requires Restrict in S

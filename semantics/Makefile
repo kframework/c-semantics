@@ -2,6 +2,7 @@ export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile --ocamlopt
 KDEP = kdep
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict -I ./builtin
+KDEP_DEFAULT_FLAGS=-I ./builtin
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
 	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \
@@ -48,9 +49,9 @@ clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
 
 .depend-translation:
-	$(KDEP) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation
 .depend-execution:
-	$(KDEP) -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-execution
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-execution
 .depend-nd:
 	$(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd
 .depend-nd-thread:

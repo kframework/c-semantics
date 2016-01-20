@@ -31,7 +31,7 @@ module C-SYMLOC-SYNTAX
 
      syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
-     syntax Bool ::= isLinkerLoc(SymBase) [function, klabel('isLinkerLoc2)]
+     syntax Bool ::= isLinkerLoc(SymBase) [function, klabel(isLinkerLoc2)]
      syntax Bool ::= isArgvLoc(SymLoc) [function]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
      syntax Bool ::= isNativeLoc(SymLoc) [function]
