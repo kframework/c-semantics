@@ -1,8 +1,8 @@
 export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile --ocamlopt
 KDEP = kdep
-KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict -I ./builtin
-KDEP_DEFAULT_FLAGS=-I ./builtin
+KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict
+KDEP_DEFAULT_FLAGS=
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
 	$(wildcard language/translation/*.k) $(wildcard language/translation/*/*.k) \
