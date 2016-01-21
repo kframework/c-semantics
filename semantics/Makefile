@@ -37,13 +37,13 @@ all: fast nd thread
 
 fast: translation execution
 
-translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp
+translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp .depend-translation
 
-execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp
+execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp .depend-execution
 
-nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp
+nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp .depend-nd
 
-thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
+thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp .depend-nd-thread
 
 clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
