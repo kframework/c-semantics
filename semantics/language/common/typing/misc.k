@@ -364,7 +364,7 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
 
-     rule getFieldInfo(S::StructId) => #getFieldInfo(S, #configuration)
+     rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
      rule getFieldInfo(t(_, structType(S::StructId))) => getFieldInfo(S)
      rule getFieldInfo(t(_, unionType(S::StructId))) => getFieldInfo(S)
 
