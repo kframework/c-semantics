@@ -77,7 +77,7 @@ module C-ABSTRACT-SYNTAX
      | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
      */
      syntax TypeSpecifier ::= StructRef(CId)
-          [klabel('StructRef)] // new
+          [klabel(StructRef)] // new
      // new // CId, List
      syntax C ::= StructDef(CId, K)
           [strict(2)]

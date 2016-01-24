@@ -151,6 +151,7 @@ module C-TRANSLATION-INIT
 
      syntax KItem ::= checkMerge(K, K)
                     | checkExtTypes(K, Set, Map, Set, Map)
+                    | checkExtType(Bool)
                     | checkExtDefs(K, Set, Set)
 
      rule checkMerge(_, .K) => .K
@@ -170,18 +171,17 @@ module C-TRANSLATION-INIT
      rule checkExtTypes((.K => X:CId), (SetItem(X:CId) => .Set) _, _, _, _)
      rule checkExtTypes((X:CId => .K), _, _, Ids':Set, _)
           requires notBool (X in Ids')
-     rule checkExtTypes((X:CId => .K),
+     rule (.K => checkExtType(areCompatible(T, T'))) ~> checkExtTypes(X:CId,
                _, (X |-> T:Type) _,
                _, (X |-> T':Type) _)
-          requires areCompatible(T, T')
+     rule (checkExtType(true) => .K) ~> checkExtTypes((X:CId => .K), _, _, _, _)
      rule checkExtTypes(.K, .Set, _, _, _) => .K
      rule (.K => UNDEF("TIN1",
                "Identifier " +String idToString(X) +String " declared with incompatible types in different translation units.",
                "6.2.7:2, J.2:1 item 15"))
-          ~> checkExtTypes(X:CId,
-               _, X:CId |-> T:Type _,
-               _, X |-> T':Type _)
-          requires notBool areCompatible(T, T')
+          ~> checkExtType(false) ~> checkExtTypes(X:CId,
+               _, _,
+               _, _)
 
      rule checkExtDefs((.K => X:CId), (SetItem(X:CId) => .Set) _, _)
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
@@ -194,19 +194,13 @@ module C-TRANSLATION-INIT
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
-                  | #mergeDecls(Map, Map) [function]
-
+                  | #mergeDecls(Map, Map, Set) [function]
+     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
+     rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:K) CommonKeys:Set)
+          => #mergeDecls(OldValues, NewValues[Key <- set(getSet(OldValues[Key]<:K) getSet(NewValues[Key]<:K))], CommonKeys)
+     rule #mergeDecls(_, NewValues:Map, .Set) => NewValues
      syntax Set ::= getSet(K) [function]
      rule getSet(set(S:Set)) => S
-     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1, M2)
-          requires size(M2) <Int size(M1)
-     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M2, M1) [owise]
-     rule #mergeDecls(M:Map, .Map) => M
-     rule #mergeDecls(M':Map, (Key:K |-> set(S:Set)) M:Map)
-          => mergeDecls(M'[Key <- set(S getSet(M'[Key]<:K))], M)
-          requires Key in_keys(M')
-     rule #mergeDecls(M':Map, (Key:K |-> Val:K) M:Map)
-          => mergeDecls((Key |-> Val) M', M) [owise]
 
      rule mergeObj(B:K, .K) => B
      rule mergeObj(.K, B:K) => B

@@ -99,8 +99,8 @@ module C-BINDING
      rule bind(.List, .List, .List) => .K
           [structural]
 
-     rule elideDecl(typedDeclaration(T:Type, _)) => T
-     rule elideDecl(T:Type) => T [owise]
+     rule elideDecl(typedDeclaration(T::Type, _)) => T
+     rule elideDecl(T::Type) => T [owise]
 
      syntax KItem ::= bindVariadics(List, Int)
      rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))

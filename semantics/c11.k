@@ -1,3 +1,5 @@
+require "kast.k"
+require "domains.k"
 require "language/execution/execution.k"
 require "language/common/common.k"
 require "library/library.k"

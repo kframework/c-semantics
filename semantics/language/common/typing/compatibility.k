@@ -50,72 +50,53 @@ module C-TYPING-COMPATIBILITY
 
      rule areCompatible(T::Type, T'::Type) => #areCompat(T, T', .Set)
 
-     rule #areCompat(T::Type, T, _) => true
-     rule #areCompat(t(Mods:Set, T:SimpleType), t(Mods':Set, T), _) => true
-          requires sameQualifiers(Mods, Mods')
+     rule #areCompat(t(Mods::Set, T:SimpleBasicType), t(Mods'::Set, T:SimpleBasicType), Cache::Set)
+          => sameQualifiers(Mods, Mods')
 
      // TODO(chathhorn): should be a setting.
      // Each enumerated type shall be compatible with char, a signed integer
      // type, or an unsigned integer type. The choice of type is
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
-               t(Mods:Set, enumType(_)),
-               t(Mods':Set, T:SimpleType), _)
-          => true
-          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
+               t(Mods::Set, enumType(_)),
+               t(Mods'::Set, T::SimpleType), _)
+          => sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias
      rule #areCompat(
-               t(Mods:Set, T:SimpleType),
-               t(Mods':Set, enumType(_)), _)
-          => true
-          requires T ==K cfg:enumAlias andBool sameQualifiers(Mods, Mods')
+               t(Mods::Set, T::SimpleType),
+               t(Mods'::Set, enumType(_)), _)
+          => sameQualifiers(Mods, Mods')
+          requires T ==K cfg:enumAlias
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
-               t(Mods:Set, enumType(X:CId)),
-               t(Mods':Set, enumType(X':CId)), _)
-          => true
-          requires sameQualifiers(Mods, Mods')
-          andBool #areTagsCompat(X, X')
-
-     rule #areCompat(T::Type, T'::Type, Cache::Set) => true
-          requires kpair(T, T') in Cache
+               t(Mods::Set, enumType(X::CId)),
+               t(Mods'::Set, enumType(X'::CId)), _)
+          => sameQualifiers(Mods, Mods')
+          requires #areTagsCompat(X, X')
 
      rule #areCompat(
-               t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)), Cache:Set)
-          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
-          requires sameQualifiers(Mods, Mods')
-               andBool #areTagsCompat(getTag(S), getTag(S'))
-               andBool getFieldInfo(S) =/=K #incomplete
-               andBool getFieldInfo(S') =/=K #incomplete
-               andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
+               t(Mods::Set, structType(S::StructId)),
+               t(Mods'::Set, structType(S'::StructId)), Cache::Set)
+          => sameQualifiers(Mods, Mods')
+          requires kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S'))))))
      rule #areCompat(
-               t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)), _)
-          => true
-          requires sameQualifiers(Mods, Mods')
-               andBool #areTagsCompat(getTag(S), getTag(S'))
-               andBool (getFieldInfo(S) ==K #incomplete
-                    orBool getFieldInfo(S') ==K #incomplete)
-     rule #areCompat(
-               t(Mods:Set, unionType(S:StructId)),
-               t(Mods':Set, unionType(S':StructId)), Cache:Set)
-          => #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S')))))
-          requires sameQualifiers(Mods, Mods')
-               andBool #areTagsCompat(getTag(S), getTag(S'))
-               andBool getFieldInfo(S) =/=K #incomplete
-               andBool getFieldInfo(S') =/=K #incomplete
-               andBool notBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache
+               t(Mods::Set, unionType(S::StructId)),
+               t(Mods'::Set, unionType(S'::StructId)), Cache::Set)
+          => sameQualifiers(Mods, Mods')
+          requires kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))))))
      syntax Bool ::= #areFieldsCompat(K, K, Set) [function]
-     rule #areFieldsCompat(fieldInfo(Fs:List, _, _, _), fieldInfo(Fs':List, _, _, _), Cache:Set)
+     rule #areFieldsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
           => #areCompat(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
+     rule #areFieldsCompat(#incomplete, _, _) => true
+     rule #areFieldsCompat(_, #incomplete, _) => true
      syntax Bool ::= #areTagsCompat(K, K) [function]
-     rule #areTagsCompat(C:CId, C:CId) => true
+     rule #areTagsCompat(C::CId, C::CId) => true
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
      syntax Bool ::= #areBitFieldsCompat(List, List) [function]
-     rule #areBitFieldsCompat(ListItem(typedDeclaration(t(_, bitfieldType(_, Size:Int)), _)) Fs:List, ListItem(typedDeclaration(t(_, bitfieldType(_, Size:Int)), _)) Fs':List) => #areBitFieldsCompat(Fs, Fs')
-     rule #areBitFieldsCompat(ListItem(typedDeclaration(T:Type, _)) Fs:List, ListItem(typedDeclaration(T':Type, _)) Fs':List) => #areBitFieldsCompat(Fs, Fs')
+     rule #areBitFieldsCompat(ListItem(typedDeclaration(t(_, bitfieldType(_, Size::Int)), _)) Fs::List, ListItem(typedDeclaration(t(_, bitfieldType(_, Size::Int)), _)) Fs'::List) => #areBitFieldsCompat(Fs, Fs')
+     rule #areBitFieldsCompat(ListItem(typedDeclaration(T::Type, _)) Fs::List, ListItem(typedDeclaration(T'::Type, _)) Fs'::List) => #areBitFieldsCompat(Fs, Fs')
      requires notBool isBitfieldType(T) andBool notBool isBitfieldType(T')
      rule #areBitFieldsCompat(.List, .List) => true
      rule #areBitFieldsCompat(_, _) => false [owise]
@@ -124,74 +105,56 @@ module C-TYPING-COMPATIBILITY
      // compatibility. According to the standard, they are part of the
      // compatibility of the type of the struct, hence #areBitFieldsCompat
      // above.
-     rule #areCompat(t(Mods:Set, bitfieldType(T:Type, _)), T':Type, Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
-     rule #areCompat(T':Type, t(Mods:Set, bitfieldType(T:Type, _)), Cache:Set) => #areCompat(addModifiers(Mods, T), T', Cache)
+     rule #areCompat(t(Mods::Set, bitfieldType(T::Type, _)), T'::Type, Cache::Set) => #areCompat(addModifiers(Mods, T), T', Cache)
+     rule #areCompat(T'::Type, t(Mods::Set, bitfieldType(T::Type, _)), Cache::Set) => #areCompat(addModifiers(Mods, T), T', Cache)
 
      rule #areCompat(
-               t(Mods:Set, unionType(S:StructId)),
-               t(Mods':Set, unionType(S':StructId)), _)
-          => true
-          requires sameQualifiers(Mods, Mods')
-               andBool #areTagsCompat(getTag(S), getTag(S'))
-               andBool (getFieldInfo(S) ==K #incomplete
-                    orBool getFieldInfo(S') ==K #incomplete)
+               t(Mods::Set, arrayType(T::Type, N::Int)),
+               t(Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
+          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
      rule #areCompat(
-               t(Mods:Set, arrayType(T::Type, N:Int)),
-               t(Mods':Set, arrayType(T'::Type, N)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+               t(Mods::Set, arrayType(T::Type, _)),
+               T':IncompleteArrayType, Cache::Set)
+          => sameQualifiers(Mods, getModifiers(T')) andBool #areCompat(T, innerType(T'),  Cache)
      rule #areCompat(
-               t(Mods:Set, arrayType(T::Type, _)),
-               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
-          => #areCompat(T, T',  Cache)
-          requires sameQualifiers(Mods, Mods')
+               T:IncompleteArrayType,
+               t(Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
+          => sameQualifiers(getModifiers(T), Mods') andBool #areCompat(innerType(T), T', Cache)
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T::Type)),
-               t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
-     rule #areCompat(
-               t(Mods:Set, arrayType(T::Type, _)),
-               T':VariableLengthArrayType, Cache:Set)
-          => #areCompat(T, innerType(T'), Cache)
-          requires sameQualifiers(Mods, getModifiers(T'))
+               t(Mods::Set, arrayType(T::Type, _)),
+               T':VariableLengthArrayType, Cache::Set)
+          => sameQualifiers(Mods, getModifiers(T')) andBool #areCompat(T, innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
-               t(Mods':Set, arrayType(T'::Type, _)), Cache:Set)
-          => #areCompat(innerType(T), T', Cache)
-          requires sameQualifiers(getModifiers(T), Mods')
+               t(Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
+          => sameQualifiers(getModifiers(T), Mods') andBool #areCompat(innerType(T), T', Cache)
      // Two variable length arrays are compatible, but it's undefined if
      // they're used in an expression where they're required to be compat but
      // they have different sizes.
-     rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache:Set)
-          => #areCompat(innerType(T), innerType(T'), Cache)
-          requires sameQualifiers(getModifiers(T), getModifiers(T'))
+     rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache::Set)
+          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T::Type)),
-               T':VariableLengthArrayType, Cache:Set)
-          => #areCompat(T, innerType(T'), Cache)
-          requires sameQualifiers(Mods, getModifiers(T'))
+               T:IncompleteArrayType,
+               T':VariableLengthArrayType, Cache::Set)
+          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
-               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
-          => #areCompat(innerType(T), T', Cache)
-          requires sameQualifiers(getModifiers(T), Mods')
+               T':IncompleteArrayType, Cache::Set)
+          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
-               t(Mods:Set, incompleteArrayType(T::Type)),
-               t(Mods':Set, incompleteArrayType(T'::Type)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+               T:IncompleteArrayType,
+               T':IncompleteArrayType, Cache::Set)
+          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
 
      rule #areCompat(
-               t(Mods:Set, pointerType(T::Type)),
-               t(Mods':Set, pointerType(T'::Type)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
+               t(Mods::Set, pointerType(T::Type)),
+               t(Mods'::Set, pointerType(T'::Type)), Cache::Set)
+          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
 
      // Struct and union fields.
      rule #areCompat(
-               typedDeclaration(T::Type, X:CId),
-               typedDeclaration(T'::Type, X:CId), Cache:Set)
+               typedDeclaration(T::Type, X::CId),
+               typedDeclaration(T'::Type, X::CId), Cache::Set)
           => #areCompat(T, T', Cache)
 
      // A function declaration with no arguments is compatible with a
@@ -201,40 +164,37 @@ module C-TYPING-COMPATIBILITY
      // TODO(chathhorn): not sufficient?!? -- apparently we also need to look
      // at the argument types in a function definition w/no prototype?
      rule #areCompat(
-               t(Mods:Set, functionType(T::Type, .List)),
-               t(Mods':Set, functionType(T'::Type, Args':List)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
-               andBool areArgPromoted(Args')
+               t(Mods::Set, functionType(T::Type, .List)),
+               t(Mods'::Set, functionType(T'::Type, Args'::List)), Cache::Set)
+          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
+          requires areArgPromoted(Args')
                andBool notBool (variadic in Args')
      rule #areCompat(
-               t(Mods:Set, functionType(T::Type, Args:List)),
-               t(Mods':Set, functionType(T'::Type, .List)), Cache:Set)
-          => #areCompat(T, T', Cache)
-          requires sameQualifiers(Mods, Mods')
-               andBool areArgPromoted(Args)
+               t(Mods::Set, functionType(T::Type, Args::List)),
+               t(Mods'::Set, functionType(T'::Type, .List)), Cache::Set)
+          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
+          requires areArgPromoted(Args)
                andBool notBool (variadic in Args)
      rule #areCompat(
-               t(Mods:Set, functionType(T::Type,  L:List)),
-               t(Mods':Set, functionType(T'::Type, L':List)), Cache:Set)
-          => #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
+               t(Mods::Set, functionType(T::Type,  L::List)),
+               t(Mods'::Set, functionType(T'::Type, L'::List)), Cache::Set)
+          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
           requires (size(L) ==Int size(L'))
-               andBool sameQualifiers(Mods, Mods')
-     rule #areCompat(_::Type, _::Type, _) => false [owise]
+     rule #areCompat(T::Type, T'::Type, Cache::Set) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
-               ListItem(T:Type) L:List,
-               ListItem(T':Type) L':List, Cache:Set)
+               ListItem(T::Type) L::List,
+               ListItem(T'::Type) L'::List, Cache::Set)
           => #areCompat(elideDecl(T), elideDecl(T'), Cache) andBool #areParamsCompat(L, L', Cache)
-     rule #areParamsCompat(ListItem(variadic), ListItem(variadic), _) => true
+     rule #areCompat(variadic, variadic, _) => true
      rule #areParamsCompat(.List, .List, _) => true
 
-     rule #areCompat(ListItem(T:Type) L:List, ListItem(T':Type) L':List, Cache:Set)
+     rule #areCompat(ListItem(T::Type) L::List, ListItem(T'::Type) L'::List, Cache::Set)
           => #areCompat(T, T', Cache) andBool #areCompat(L, L', Cache)
      rule #areCompat(.List, .List, _) => true
 
-     rule sameQualifiers(Mods:Set, Mods':Set)
+     rule sameQualifiers(Mods::Set, Mods'::Set)
           => (intersectSet(Mods, typeQualifiers)
                ==K intersectSet(Mods', typeQualifiers))
                // TODO(chathhorn): treating alignas like a qualifier for now.

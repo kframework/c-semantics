@@ -276,7 +276,7 @@ module C-TYPING-MISC
      rule tagRestrict(_, variadic) => variadic
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
-          [function, klabel('tagRestrictSimpleType)]
+          [function, klabel(tagRestrictSimpleType)]
      rule tagRestrict(_, T:SimpleType) => T
      //TODO(chathhorn): reimplement
 /*     rule tagRestrict(_, T:SimpleType) => T
@@ -310,19 +310,19 @@ module C-TYPING-MISC
           => functionType(T, Params)
 */
      syntax List ::= tagRestrict(Scope, List)
-          [function, klabel('tagRestrictList)]
+          [function, klabel(tagRestrictList)]
      rule tagRestrict(Tag:Scope, ListItem(T:Type) L:List)
           => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
      rule tagRestrict(_, .List) => .List
 
      syntax Map ::= tagRestrict(Scope, Map)
-          [function, klabel('tagRestrictMap)]
+          [function, klabel(tagRestrictMap)]
      rule tagRestrict(Tag:Scope, X:CId |-> T:Type M:Map)
           => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
      rule tagRestrict(_, .Map) => .Map
 
      syntax Set ::= tagRestrict(Scope, Set)
-          [function, klabel('tagRestrictSet)]
+          [function, klabel(tagRestrictSet)]
      rule tagRestrict(Tag:Scope, S:Set)
           => SetItem(RestrictBlock(Tag)) S
           requires Restrict in S
@@ -365,13 +365,15 @@ module C-TYPING-MISC
      rule arrayLength(t(_, arrayType(_, N:Int))) => N
 
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, structType(S:StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, unionType(S:StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, structType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, unionType(S::StructId))) => getFieldInfo(S)
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
-     rule #getFieldInfo(S:StructId, <generatedTop>... <global>... <structs>... S |-> F:FieldInfo ...</structs> ...</global> ...</generatedTop>)
-          => F
-     rule #getFieldInfo(_, _) => #incomplete [owise]
+     rule #getFieldInfo(S::StructId, <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
+          => extractFieldInfo(M[S])
+     syntax FieldInfo ::= extractFieldInfo(K) [function]
+     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map)) => fieldInfo(L, I, M1, M2)
+     rule extractFieldInfo(_) => #incomplete [owise]
 
      rule getTag(global(S:CId, _)) => S
      rule getTag(local(S:CId, _, _)) => S

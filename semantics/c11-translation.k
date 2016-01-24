@@ -1,3 +1,5 @@
+require "kast.k"
+require "domains.k"
 require "language/translation/translation.k"
 require "language/common/common.k"
 require "settings.k"

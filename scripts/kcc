@@ -151,6 +151,8 @@ my $spec = q(#
       -Wlint			[ditto]
       -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
       -frecover-all-errors	Recover from fatal errors that would normally cause an application to crash.
+      				WARNING: This can change the semantics of tools like autoconf which analyze
+      				the exit code of the compiler to trigger unexpected or undesirable results.
 
       -O [<level:/0|1|2|3|s/>]	Ignored
       -std=<standard>		Ignored
@@ -209,6 +211,11 @@ sub main {
      }
      # Set heap and stack size of krun
      $ENV{K_OPTS} = "-Xmx$heapSize";
+     if ($args->{'-d'}) {
+       $ENV{OCAMLRUNPARAM} = "s=32M,b";
+     } else {
+       $ENV{OCAMLRUNPARAM} = "s=32M";
+     }
 
      if ($args->{'-E'}) {
           my $oval = $main::oflag;
@@ -409,7 +416,7 @@ sub extractStatic {
   my @files = readdir $dir;
   closedir $dir;
   for (@files) {
-    if ($_ ne "$basename$suffix") {
+    if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
       push(@objFiles, "$tempDir/$_");
     }
   }
@@ -440,7 +447,8 @@ sub getKRunCommand {
      my @objs = @$objsRef;
 
      my @krun_args = (
-          '--output', 'kast', 
+          '--output', 'binary', 
+          '--mini-krun',
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
@@ -480,9 +488,17 @@ sub getKRunCommand {
           my @objTexts = ();
           for (my $i = 0; $i < scalar @objFiles; $i++) {
                my $thisObj = `cat $objFiles[$i]`;
-               push(@objTexts, "`unwrapObj`($thisObj)");
+               #push(@objTexts, "`unwrapObj`($thisObj)");
+               $thisObj = substr($thisObj, 8, -1);
+               # wrap $thisObj with `unwrapObj`()
+               push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
           }
-          my $objText = join('~>', @objTexts);
+          my $objText = join('', @objTexts);
+          my $one = chr((scalar @objTexts >> 24) & 0xff);
+          my $two = chr((scalar @objTexts >> 16) & 0xff);
+          my $three = chr((scalar @objTexts >> 8) & 0xff);
+          my $four = chr((scalar @objTexts >> 0) & 0xff);
+          $objText = "\x7fKAST\x04\x00\x01$objText\x03$one$two$three$four\x07";
           open(my $file, '>', "$allObjsFile");
           print $file $objText;
           close $file;

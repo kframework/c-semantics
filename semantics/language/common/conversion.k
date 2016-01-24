@@ -376,7 +376,7 @@ module C-CONVERSION
           requires getAlignas(T') >Int getAlign(Loc)
           [structural]
 
-     syntax Type ::= cast(Type, Type) [function, klabel('castTypes)]
+     syntax Type ::= cast(Type, Type) [function, klabel(castTypes)]
 
      rule cast(T':Type, T:Type) => T'
           requires notBool hasReadFrom(T)
