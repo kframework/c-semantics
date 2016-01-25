@@ -20,21 +20,21 @@ module C-COMMON-EXPR-MEMBERS
      so-qualified version of the type of the designated member.
      }*/
      rule <k> nclv(Loc:SymLoc, t(Mods:Set,
-                    structType(S:StructId))) . F:CId
-               => lookupField(F, Loc, Mods, getTag(S), Fields, Fields)
+                    structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
+               => lookupField(F, Loc, Mods, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> Fields:FieldInfo ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
           requires notBool (Atomic in Mods)
                orBool Initializing
           [structural]
      rule <k> nclv(Loc:SymLoc, t(Mods:Set,
-                    unionType(S:StructId))) . F:CId
+                    unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
-                    Mods, getTag(S), Fields, Fields)
+                    Mods, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> Fields:FieldInfo ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
           requires notBool (Atomic in Mods)
                orBool Initializing
           [structural]
@@ -85,14 +85,14 @@ module C-COMMON-EXPR-MEMBERS
 
      // Same deal as above, only for byte lists.
      rule <k> tv(agg(L:List), t(Mods:Set,
-               structType(S:StructId))) . F:CId
-          => extractField(F, L, Mods, getTag(S), Fields, Fields) ...</k>
-          <structs>... S |-> Fields:FieldInfo ...</structs>
+               structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
+          => extractField(F, L, Mods, X, Fields, Fields) ...</k>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
           [structural]
      rule <k> tv(agg(L:List), t(Mods:Set,
-               unionType(S:StructId))) . F:CId
-          => extractField(F, L, Mods, getTag(S), Fields, Fields) ...</k>
-          <structs>... S |-> Fields:FieldInfo ...</structs>
+               unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
+          => extractField(F, L, Mods, X, Fields, Fields) ...</k>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
           [structural]
 
      syntax KItem ::= extractField(CId, List, Set, CId, FieldInfo, FieldInfo)

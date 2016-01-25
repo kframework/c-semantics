@@ -95,7 +95,7 @@ module LIBC-SETJMP
      rule [setjmp]:
           <k> (prepareBuiltin(Identifier("setjmp"),
                hrItem(tv(Loc:SymLoc, t(_, pointerType(t(_,
-                    structType(global(Identifier("__jmp_buf_tag"), "builtin"))))))))
+                    structType(tag(Identifier("__jmp_buf_tag"), "builtin", global))))))))
                => ignoreLocals
                     ~> writeBytes(Loc, ListItem(bag(
                          <thread-state>
@@ -128,7 +128,7 @@ module LIBC-SETJMP
                          <thread-continuation> K:K </thread-continuation>
                          <saved-thread-local>C:ThreadLocalCell</saved-thread-local>
                     </thread-state>
-               ))), t(_, structType(global(Identifier("__jmp_buf_tag"), "builtin")))),
+               ))), t(_, structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))),
                     tv(I:Int, t(_, int))) ~> _
                => ignoreLocals
                     ~> #if I:Int ==Int 0

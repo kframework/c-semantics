@@ -56,10 +56,10 @@ module C-TYPE-BUILDER
      rule restrict(T:FlexType) => addQualifier(Restrict, expand(T))
 
      rule struct(S:String)
-          => t(.Set, structType(global(Identifier(S), "builtin")))
+          => t(.Set, structType(tag(Identifier(S), "builtin", global)))
 
      rule union(S:String)
-          => t(.Set, unionType(global(Identifier(S), "builtin")))
+          => t(.Set, unionType(tag(Identifier(S), "builtin", global)))
 
      rule decl(T:FlexType, S:String)
           => typedDeclaration(expand(T), Identifier(S))

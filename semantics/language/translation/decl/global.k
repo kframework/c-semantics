@@ -699,25 +699,30 @@ module C-DECL-GLOBAL
 
      // *** TODO(chathhorn) struct/union stuff ***
 
+     rule <k> addGlobalTag(_, _) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <structs> S:Map => S[Tu <- .Map] </structs>
+          requires notBool (Tu in_keys(S))
+
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
                => completeTagInExtDecls(X, Info, keys(Exts))
                ~> completeTagInIntDecls(X, Info, keys(Ints))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs[global(X, Tu) <- Info] </structs>
+          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</structs>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
-          requires notBool (global(X, Tu) in_keys(Structs))
+          requires notBool (tag(X, Tu, global) in_keys(Structs))
           [structural]
      rule <k> addGlobalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> Structs:Map => Structs[global(X, Tu) <- Info] </structs>
+          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</structs>
           <incomplete-tags> Incs:Set </incomplete-tags>
           requires notBool (X in Incs)
-               andBool notBool (global(X, Tu) in_keys(Structs))
+               andBool notBool (tag(X, Tu, global) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15",
                "Redefinition of a struct, union, or enum: " +String idToString(X) +String ".", "6.7.2.3:1"))
@@ -726,7 +731,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <structs> GStructs:Map </structs>
-          requires (global(X, Tu) in_keys(GStructs))
+          requires (tag(X, Tu, global) in_keys(GStructs[Tu]<:K:>Map))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a

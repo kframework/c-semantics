@@ -121,16 +121,21 @@ module C-DECL-TAGGED
           [structural]
 
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs> Structs:Map => Structs[local(X, Tu, BlockNum) <- Info] </structs>
+          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
           <curr-tu> Tu:String </curr-tu>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
-          requires notBool (X in_keys(Structs))
+          requires notBool (tag(X, Tu, global) in_keys(Structs))
+               andBool notBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15", "Redefinition of a struct, union, or enum: "
                +String idToString(X), "6.7.2.3:1"))
                ~> addLocalTag(X:CId, _)
           ...</k>
-          <structs>... X |-> _ ...</structs>
+          <curr-tu> Tu:String </curr-tu>
+          <structs>... Tu |-> Structs:Map ...</structs>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          requires (tag(X, Tu, global) in_keys(Structs))
+               orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
 endmodule
 

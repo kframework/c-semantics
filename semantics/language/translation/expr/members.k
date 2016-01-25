@@ -39,32 +39,32 @@ module C-EXPR-MEMBERS
      rule E1::K[E2::K] => *(E1 + E2) [anywhere]
 
 
-     rule <k> ncle(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
+     rule <k> ncle(K:K, t(Mods:Set, structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
           requires notBool (Atomic in Mods) orBool Initializing
-     rule <k> te(K:K, t(Mods:Set, structType(S:StructId))) . F:CId
+     rule <k> te(K:K, t(Mods:Set, structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => te(K . F, addQualifiers(Mods, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
           requires notBool (Atomic in Mods)
                orBool Initializing
 
-     rule <k> ncle(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
+     rule <k> ncle(K:K, t(Mods:Set, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => le(K . F, addQualifiers(Mods, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
           requires notBool (Atomic in Mods)
                orBool Initializing
-     rule <k> te(K:K, t(Mods:Set, unionType(S:StructId))) . F:CId
+     rule <k> te(K:K, t(Mods:Set, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => te(K . F, addQualifiers(Mods, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... S |-> fieldInfo(_, _, F |-> T:Type _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
           requires notBool (Atomic in Mods)
                orBool Initializing
 
