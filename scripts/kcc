@@ -313,7 +313,7 @@ sub main {
           if ($args->{'-frecover-all-errors'}) {
                push(@options, "`RECOVER_ALL`(.KList)");
           }
-          if ($args->{'-flint'}) {
+          if ($args->{'-flint'} || $args->{'-Wlint'}) {
                push(@options, "`LINT`(.KList)");
                my $size;
                if ($args->{'-fheap-size='}) {
@@ -471,7 +471,7 @@ sub getKRunCommand {
           }
           push(@options, "`CSV`(#token($file, $quoteString))");
      }
-     if ($args->{'-flint'}) {
+     if ($args->{'-flint'} || $args->{'-Wlint'}) {
           push(@options, "`LINT`(.KList)");
      }
      if ($args->{'-frecover-all-errors'}) {
