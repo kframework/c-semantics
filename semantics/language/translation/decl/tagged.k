@@ -120,6 +120,11 @@ module C-DECL-TAGGED
           requires isFileScope(Scope) =/=K true
           [structural]
 
+     rule <k> addLocalTag(_, _) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <structs> S:Map => S[Tu <- .Map] </structs>
+          requires notBool (Tu in_keys(S))
+
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
           <curr-tu> Tu:String </curr-tu>
