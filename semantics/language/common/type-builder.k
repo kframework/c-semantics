@@ -15,6 +15,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= restrict(FlexType) [function]
      syntax Type ::= struct(String) [function]
      syntax Type ::= union(String) [function]
+     syntax Type ::= typdef(String) [function]
      syntax Type ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 
@@ -25,6 +26,9 @@ module C-TYPE-BUILDER
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+     imports K-REFLECTION
+     imports C-CONFIGURATION
+     imports C-SYMLOC-SYNTAX
 
      rule fun(R:FlexType)
           => fun(R, void)
@@ -55,11 +59,11 @@ module C-TYPE-BUILDER
 
      rule restrict(T:FlexType) => addQualifier(Restrict, expand(T))
 
-     rule struct(S:String)
-          => t(.Set, structType(tag(Identifier(S), "builtin", global)))
+     rule struct(S:String) => #struct(Identifier(S), #configuration)
+     rule union(S:String) => #struct(Identifier(S), #configuration)
+     syntax Type ::= #struct(CId, K) [function]
 
-     rule union(S:String)
-          => t(.Set, unionType(tag(Identifier(S), "builtin", global)))
+     rule #struct(X:CId, <generatedTop>... <external-defs>... X |-> Base:SymBase ...</external-defs> <mem>... Base |-> object(T:Type, _, _, _) ...</mem> ...</generatedTop>) => T
 
      rule decl(T:FlexType, S:String)
           => typedDeclaration(expand(T), Identifier(S))

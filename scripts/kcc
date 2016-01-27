@@ -537,7 +537,7 @@ sub preprocess {
      my $directoryname = dirname($inputFile);
      my @ppArgs = ($preprocessor, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
-                   "-U", "__GNUC__", "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
+                   "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
                    @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
                    '-I', "$profileDirectory/include", $inputFile, '-o', $output);
 

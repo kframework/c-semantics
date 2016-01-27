@@ -79,13 +79,13 @@ module C-TYPING-COMPATIBILITY
                t(Mods::Set, structType(S::StructId)),
                t(Mods'::Set, structType(S'::StructId)), Cache::Set)
           => sameQualifiers(Mods, Mods')
-          requires kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S'))))))
+          requires S ==K S' orBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S'))))))
      rule #areCompat(
                t(Mods::Set, unionType(S::StructId)),
                t(Mods'::Set, unionType(S'::StructId)), Cache::Set)
           => sameQualifiers(Mods, Mods')
-          requires kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))))))
-     syntax Bool ::= #areFieldsCompat(K, K, Set) [function]
+          requires S ==K S' orBool kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))))))
+     syntax Bool ::= #areFieldsCompat(K, K, Set) [function, memo]
      rule #areFieldsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
           => #areCompat(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
      rule #areFieldsCompat(#incomplete, _, _) => true
