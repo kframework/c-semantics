@@ -95,7 +95,7 @@ let rec processOneFile (cabs: Cabs.file) =
 		);
 		let inputFilename = 
 			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
-		let data = cabsToXML cabs !fileContents inputFilename in
+		let data = cabsToXML cabs inputFilename in
 			
 		printf "%s\n" data; 
 	(* )) *)

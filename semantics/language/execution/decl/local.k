@@ -156,7 +156,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= addLocalTag(CId, FieldInfo)
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs>... Tu |-> (Structs => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
+          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
           <curr-tu> Tu:String </curr-tu>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           [structural]

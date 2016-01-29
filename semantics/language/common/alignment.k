@@ -57,7 +57,7 @@ module C-ALIGNMENT
 
      rule byteAlignofType(typedDeclaration(T:Type, _)) => byteAlignofType(T)
 
-     rule byteAlignofType(t(_, arrayType(T:Type, _)))  => byteAlignofType(T)
+     rule byteAlignofType(T:ArrayType)  => byteAlignofType(innerType(T))
      rule byteAlignofType(t(_, pointerType(_))) => cfg:alignofPointer
      rule byteAlignofType(t(_, structType(S:StructId)))
           => byteAlignofStruct(getFieldInfo(S))

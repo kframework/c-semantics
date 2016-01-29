@@ -186,7 +186,7 @@ module C-TYPING-COMPATIBILITY
      rule #areParamsCompat(
                ListItem(T::Type) L::List,
                ListItem(T'::Type) L'::List, Cache::Set)
-          => #areCompat(elideDecl(T), elideDecl(T'), Cache) andBool #areParamsCompat(L, L', Cache)
+          => #areCompat(stripQualifiers(elideDecl(T)), stripQualifiers(elideDecl(T')), Cache) andBool #areParamsCompat(L, L', Cache)
      rule #areCompat(variadic, variadic, _) => true
      rule #areParamsCompat(.List, .List, _) => true
 

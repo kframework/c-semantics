@@ -201,9 +201,7 @@ sub main {
        $clib = 'c';
      }
 
-     if (!$args->{'-s'}) {
-       push(@stdlib, $clib);
-     }
+     push(@stdlib, $clib);
 
      my $heapSize = "1G";
      if ($args->{'-Xmx'}) {
@@ -392,7 +390,13 @@ sub classify {
           if (($suffix eq '.o') or ($suffix eq '.so')) {
                push(@objFiles, $_);
           } elsif ($suffix eq '.a') {
-               extractStatic($_, $base, $suffix);
+               my $retval = system("ar t $_ > /dev/null 2>&1") >> 8;
+               if ($retval == 0) {
+                   extractStatic($_, $base, $suffix);
+               } else {
+                   # not actually an ar file, maybe we "kranlib"'d it
+                   push(@objFiles, $_);
+               }
           } elsif ($suffix eq '.c' or $_ eq '-') {
                push(@srcFiles, $_);
           } else {
@@ -537,7 +541,7 @@ sub preprocess {
      my $directoryname = dirname($inputFile);
      my @ppArgs = ($preprocessor, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
                    "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
-                   "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
+                   "-U", "__GNUC__", "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
                    @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
                    '-I', "$profileDirectory/include", $inputFile, '-o', $output);
 

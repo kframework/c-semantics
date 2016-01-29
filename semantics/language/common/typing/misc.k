@@ -135,6 +135,7 @@ module C-TYPING-MISC
 
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
+     rule setModifiers(variadic, .Set) => variadic
 
      rule getQualifiers(T:ArrayType)
           => intersectSet(getModifiers(T), typeQualifiers) getQualifiers(innerType(T))

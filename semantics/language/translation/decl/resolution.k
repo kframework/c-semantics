@@ -87,9 +87,9 @@ module C-DECL-RESOLUTION
           <external-decls>...
                X |-> set((SetItem(Tu:String) => .Set) _)
           ...</external-decls>
-          <external-defs>... X |-> Base:SymBase ...</external-defs>
+          <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Base ...</genv>
+          <genv>... X |-> Base:SymBase ...</genv>
           requires notBool isLinkerLoc(Base)
           [structural]
 
