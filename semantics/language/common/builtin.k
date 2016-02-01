@@ -4,7 +4,7 @@ module C-BUILTIN-SYNTAX
 
      syntax Map ::= "builtins" [function]
                   | "semanticsDefinedBuiltins" [function]
-                  | "nativeDefinedBuiltins"[function]
+                  | "nativeDefinedBuiltins"[function, memo]
                   | "extensionBuiltins" [function]
      syntax KItem ::= "handleBuiltin"
                     | handleBuiltinConstant(CId, Type)

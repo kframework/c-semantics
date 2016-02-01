@@ -64,9 +64,6 @@ let isXML = ref false
 let noscores s = 
 	(replace "_" "-" s)
 
-let fileContents : string ref = ref ""
-
-
 let parse_helper fname =
   let cabs = F.parse_to_cabs fname in
   cabs
@@ -80,19 +77,9 @@ let parseOneFile (fname: string) =
 let trueFilename : string ref = ref ""
   
 let rec processOneFile (cabs: Cabs.file) =
-	fileContents := "";
 	begin (
 		let (inputFilename, _) = cabs in
-		let ic = open_in inputFilename in (
-		try
-			while true do
-				let line = input_line ic in  (* read line from in_channel and discard \n *)
-				if (String.length line < 5 or Str.first_chars line 5 <> "# 1 \"") then
-					fileContents := (!fileContents ^ line ^ "\n");
-			done
-		with e ->                      (* some unexpected exception occurs *)
-			close_in_noerr ic;           (* emergency closing *)
-		);
+		let ic = open_in inputFilename in
 		let inputFilename = 
 			if (compare !trueFilename "" == 0) then inputFilename else !trueFilename in
 		let data = cabsToXML cabs inputFilename in

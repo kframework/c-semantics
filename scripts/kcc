@@ -155,6 +155,9 @@ my $spec = q(#
       				the exit code of the compiler to trigger unexpected or undesirable results.
 
       -O [<level:/0|1|2|3|s/>]	Ignored
+      -fPIC			Ignored
+      -m64			Ignored. Use -profile to select an architecture.
+      -m32			Ignored. Use -profile to select an architecture.
       -std=<standard>		Ignored
       -x <language>		Ignored
       -pedantic			Ignored
