@@ -230,6 +230,7 @@ sub main {
      }
 
      if ($args->{'-c'}) {
+          classify(@{$args->{'<files>'}}); # called to get friendly error message for unknown options
           my $oval = $main::oflag;
           if ($oval) {
             if (scalar @{$args->{'<files>'}} > 1) {
