@@ -13,6 +13,7 @@ FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
+	$(SCRIPTS_DIR)/ignored-flags \
 	$(SCRIPTS_DIR)/xml-to-k \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \

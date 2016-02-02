@@ -1,0 +1,9 @@
+-O[0123sg]?
+-Ofast
+-fPIC
+-m64
+-m32
+-std=.*
+-pedantic
+-W.*
+-f(no-)?omit-frame-pointer

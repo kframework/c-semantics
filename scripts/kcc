@@ -52,6 +52,20 @@ while ( my $entry = readdir $DIR) {
   push(@profiles, $entry);
 }
 
+my $ignoredFlagsRegex = "^(";
+{
+  my $sep = "";
+  open FILE, "$distDirectory/ignored-flags" or die "Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags";
+  while (<FILE>) {
+    chop($_);
+    $ignoredFlagsRegex = "$ignoredFlagsRegex$sep(?:$_)";
+    $sep = "|";
+  }
+  $ignoredFlagsRegex = "$ignoredFlagsRegex)\$";
+  close FILE;
+}
+my $ignoredFlags = qr/$ignoredFlagsRegex/;
+
 my $cygwin = $^O eq "cygwin" || $^O eq "msys";
 my $quoteString = "\"String\"";
 my $quoteInt = "\"Int\"";
@@ -154,16 +168,7 @@ my $spec = q(#
       				WARNING: This can change the semantics of tools like autoconf which analyze
       				the exit code of the compiler to trigger unexpected or undesirable results.
 
-      -O [<level:/0|1|2|3|s/>]	Ignored
-      -fPIC			Ignored
-      -m64			Ignored. Use -profile to select an architecture.
-      -m32			Ignored. Use -profile to select an architecture.
-      -std=<standard>		Ignored
       -x <language>		Ignored
-      -pedantic			Ignored
-      -Wall			Ignored
-      -rpath=<file>		Ignored
-      -soname <file>		Ignored
       -pthread			Enables pthread library (highly experimental, likely broken)
 { push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
 
@@ -182,6 +187,9 @@ my $spec = q(#
 }
       * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
         to run.
+
+      For a complete list of other flags ignored by kcc, refer to ) . $distDirectory . q(/ignored-flags, which contains
+      one regular expression per line.
                   
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
@@ -218,45 +226,43 @@ sub main {
        $ENV{OCAMLRUNPARAM} = "s=32M";
      }
 
+     classify(@{$args->{'<files>'}});
+
      if ($args->{'-E'}) {
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @{$args->{'<files>'}} > 1) {
+            if (scalar @srcFiles > 1) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
             $oval = '-';
           }
-          return preprocess($oval, @{$args->{'<files>'}});
+          return preprocess($oval, $srcFiles[0]);
      }
 
      if ($args->{'-c'}) {
-          classify(@{$args->{'<files>'}}); # called to get friendly error message for unknown options
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @{$args->{'<files>'}} > 1) {
+            if (scalar @srcFiles > 1) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
-            $oval = basename($args->{'<files>'}[0], ".c") . ".o";
+            $oval = basename($srcFiles[0], ".c") . ".o";
           }
           my $result = tempFile();
-          compile($result, @{$args->{'<files>'}});
+          compile($result, $srcFiles[0]);
           move($result, $oval);
           return 0;
      }
 
      if ($args->{'-shared'}) {
-          classify(@{$args->{'<files>'}});
           mergeObjs(1, 0);
           move($objFiles[0], $main::oflag || 'a.out');
           return 0;
      }
 
-     if ($args->{'-s'}) {
-          classify(@{$args->{'<files>'}});
-     } else {
-          classify(@{$args->{'<files>'}}, catfile($profileDirectory, 'lib', 'libc.so'));
+     if (!$args->{'-s'}) {
+          classify(catfile($profileDirectory, 'lib', 'libc.so'));
      }
 
      # Reduce our source files down to at most one
@@ -403,7 +409,12 @@ sub classify {
           } elsif ($suffix eq '.c' or $_ eq '-') {
                push(@srcFiles, $_);
           } else {
-               die "Unsupported option $_";
+               if ($args->{'-d'}) {
+                   print($ignoredFlagsRegex);
+               }
+               if (!($_ =~ $ignoredFlags)) {
+                   die "Unsupported option $_";
+               }
           }
      }
 }
