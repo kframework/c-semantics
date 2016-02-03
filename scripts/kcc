@@ -6,6 +6,7 @@ use File::Basename;
 use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
+use MIME::Base64;
 use String::Escape qw(quote backslash); 
 use Getopt::Declare;
 
@@ -285,7 +286,7 @@ sub main {
      close(FILE);
 
      if ($args->{'-frunner-script'}) {
-
+          $programConf = encode_base64($programConf);
           open(FILE, catfile($distDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
           my $template = join("", <FILE>);
           close(FILE);

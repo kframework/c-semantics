@@ -52,7 +52,7 @@ sub main {
       push(@temporaryFiles, $fileInput);
       push(@temporaryFiles, $fileOutput);
 
-      print $fileInput linkedProgram();
+      print $fileInput decode_base64(linkedProgram());
 
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
