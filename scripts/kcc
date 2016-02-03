@@ -156,10 +156,14 @@ my $spec = q(#
 
       -MD			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MD'); }
+      -MMD			Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MMD'); }
       -MP			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MP'); }
       -MF <file>		Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MF', $file); }
+      -MT <target>		Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MT', $target); }
       -frunner-script		Compile program to perl script with analysis tool options
       -fissue-report=<file>	Write issues to the specified file in CSV format
       -flint			Generate lint errors for potentially undesirable behaviors.*
