@@ -4,7 +4,7 @@ module C-BUILTIN-SYNTAX
 
      syntax Map ::= "builtins" [function]
                   | "semanticsDefinedBuiltins" [function]
-                  | "nativeDefinedBuiltins"[function]
+                  | "nativeDefinedBuiltins"[function, memo]
                   | "extensionBuiltins" [function]
      syntax KItem ::= "handleBuiltin"
                     | handleBuiltinConstant(CId, Type)
@@ -74,9 +74,9 @@ module C-BUILTIN
           extensionBuiltins
 
      syntax Type ::= "mtx_t" [function]
-     rule mtx_t => struct("mtx_t_")
+     rule mtx_t => struct("__typeref_mtx_t")
 
      syntax Type ::= "jmp_buf" [function]
-     rule jmp_buf => arr(struct("__jmp_buf_tag"), 1)
+     rule jmp_buf => arr(struct("__typeref_jmp_buf"), 1)
 
 endmodule

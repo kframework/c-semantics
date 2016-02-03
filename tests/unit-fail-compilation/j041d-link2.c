@@ -1,1 +1,1 @@
-int f(int *p) { return 0; }
+int f(int **p) { return 0; }

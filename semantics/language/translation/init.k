@@ -64,13 +64,17 @@ module C-TRANSLATION-INIT
           requires notBool (DEBUG in Opts)
           [structural]
 
+     syntax KItem ::= makeTu(String)
+
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-               => preDeclareStrings(Strings)
+               => makeTu(TU +String newUUID)
+               ~> preDeclareStrings(Strings)
                ~> listToK(Decls)
                ~> allocateIncompleteTentatives
                ~> removeUnusedIdentifiers
           ...</k>
+     rule <k> makeTu(TU:String) => .K ...</k>
           <curr-tu> _ => TU </curr-tu>
           <translation-units>...
                (.Bag => <tu>...

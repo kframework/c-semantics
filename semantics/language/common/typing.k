@@ -79,8 +79,8 @@ module C-TYPING-SYNTAX
 
      syntax SimpleStructType ::= structType(StructId)
      syntax SimpleUnionType ::= unionType(StructId)
-     syntax StructId ::= global(CId, String)
-                       | local(CId, String, Int)
+     syntax StructId ::= tag(CId, String, BlockRef)
+     syntax BlockRef ::= Int | "global"
 
      syntax SimpleType ::= SimpleFixedArrayType
                          | SimpleEnumType

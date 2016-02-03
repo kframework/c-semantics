@@ -314,7 +314,7 @@ module C-SYMLOC
      rule getAlign'(.K, .Set, _, _) => 1
      rule getAlign'(.K, SetItem(K:K) S:Set, B:SymBase, C:K) => getAlign'(K, S, B, C)
      rule getAlign'(fromType(T:Type), _, _, _) => getAlignas(T)
-          requires isCompleteType(T)
+          requires isCompleteType(T) orBool isIncompleteArrayType(T)
      rule getAlign'(fromType(T:Type), _, (Base:SymBase => NewBase), <generatedTop>... <linkings>... Base |-> NewBase:SymBase ...</linkings> ...</generatedTop>)
           requires notBool isCompleteType(T)
      rule getAlign'(fromType(T:Type), _, Base:SymBase, <generatedTop>... <mem>... Base |-> object(DefT:Type, _, _, _) ...</mem> <linkings> Linkings:Map </linkings> ...</generatedTop>)

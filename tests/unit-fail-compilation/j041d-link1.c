@@ -1,6 +1,7 @@
-int f(int * restrict);
+int f(int * restrict *);
 
 int main(void) {
       int p = 42;
-      return f(&p);
+      int * restrict ptr = &p;
+      return f(&ptr);
 }

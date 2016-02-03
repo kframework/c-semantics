@@ -135,6 +135,7 @@ module C-TYPING-MISC
 
      rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
           => setModifiers(T, Mods)
+     rule setModifiers(variadic, .Set) => variadic
 
      rule getQualifiers(T:ArrayType)
           => intersectSet(getModifiers(T), typeQualifiers) getQualifiers(innerType(T))
@@ -369,14 +370,13 @@ module C-TYPING-MISC
      rule getFieldInfo(t(_, unionType(S::StructId))) => getFieldInfo(S)
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
-     rule #getFieldInfo(S::StructId, <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
-          => extractFieldInfo(M[S])
+     rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
+          => extractFieldInfo(M[Tu]:>Map[tag(X, Tu, B)])
      syntax FieldInfo ::= extractFieldInfo(K) [function]
      rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map)) => fieldInfo(L, I, M1, M2)
      rule extractFieldInfo(_) => #incomplete [owise]
 
-     rule getTag(global(S:CId, _)) => S
-     rule getTag(local(S:CId, _, _)) => S
+     rule getTag(tag(S:CId, _, _)) => S
 
      rule getTypeAtOffset(T:Type, 0) => T
      // Preserve the qualifiers.

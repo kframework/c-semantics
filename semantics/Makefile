@@ -14,6 +14,7 @@ C11_FILES = $(wildcard *.k) \
 	$(wildcard library/*.k)
 
 .PHONY: default all fast nd thread clean .depend-translation .depend-execution .depend-nd .depend-nd-thread
+.NOTPARALLEL:
 
 default: fast
 
@@ -37,13 +38,13 @@ all: fast nd thread
 
 fast: translation execution
 
-translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp .depend-translation
+translation: $(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp
 
-execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp .depend-execution
+execution: $(PROFILE)/c11-kompiled/c11-kompiled/timestamp
 
-nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp .depend-nd
+nd: $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp
 
-thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp .depend-nd-thread
+thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
 
 clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled

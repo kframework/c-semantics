@@ -1,0 +1,2 @@
+#!/bin/sh
+"$(dirname "$0")/kcc" -shared "$1" -o "$1"

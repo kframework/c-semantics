@@ -104,10 +104,10 @@ module C-TYPING-EXPR
      rule typeof(Call((T:Type => innerType(T)), _))
           requires isPointerType(T)
 
-     rule <k> typeof(t(_, structType(S:StructId)) . F:CId => T) ...</k>
-          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
-     rule <k> typeof(t(_, unionType(S:StructId)) . F:CId => T) ...</k>
-          <structs>... S |-> fieldInfo(_, _, (_ F |-> T:Type), _) ...</structs>
+     rule <k> typeof(t(_, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
+     rule <k> typeof(t(_, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
 
      rule typeof(T:Type ++ => T)
      rule typeof(T:Type -- => T)

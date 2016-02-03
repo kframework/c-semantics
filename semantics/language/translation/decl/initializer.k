@@ -177,17 +177,17 @@ module C-DECL-INITIALIZER
           [structural]
      rule <curr-subobject>
                (.List => ListItem(ncle(K . F, T)))
-               ListItem(ncle(K:K, t(_, structType(S:StructId))))
+               ListItem(ncle(K:K, t(_, structType(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
-          <structs>... S |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
           [structural]
 
      // fixme these are terrible!
      rule <curr-subobject>
                (.List => ListItem(ncle(K . F, T)))
-               ListItem(ncle(K:K, t(_, unionType(S:StructId))))
+               ListItem(ncle(K:K, t(_, unionType(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
-          <structs>... S |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
           [structural]
 
      // fixme should i worry about basetype here_
@@ -253,9 +253,9 @@ module C-DECL-INITIALIZER
      rule <k> (.K => searchInFieldInfoList(T, F, L)) ...</k>
           <curr-subobject>
                ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F:CId, T:Type))
-               ListItem(ncle(K:K, t(_, structType(S:StructId))))
+               ListItem(ncle(K:K, t(_, structType(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
-          <structs>... S |-> fieldInfo(L:List, _, _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(L:List, _, _, _)) ...</structs>
           [structural]
 
      rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
@@ -350,10 +350,10 @@ module C-DECL-INITIALIZER
           ...</k>
           <curr-subobject>
                ListItem(block) (.List => ListItem(ncle(K . F, T)))
-                    ListItem(ncle(K:K, t(_, Lbl:KLabel(S:StructId))))
+                    ListItem(ncle(K:K, t(_, Lbl:KLabel(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
           <structs>...
-               S |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _)
+               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _))
           ...</structs>
           requires #klabel(Lbl) ==K #klabel(`structType`) orBool #klabel(Lbl) ==K #klabel(`unionType`)
           [structural]
@@ -590,14 +590,14 @@ module C-DECL-INITIALIZER
      rule zeroType(_, t(_, arrayType(_:Type, 0))) => .K
           [structural]
 
-     rule <k> zeroType(X:K, t(_, structType(S:StructId)))
+     rule <k> zeroType(X:K, t(_, structType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroStruct(X, Fields) ...</k>
-          <structs>... S |-> fieldInfo(Fields:List, _, _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _)) ...</structs>
           [structural]
 
-     rule <k> zeroType(X:K, t(_, unionType(S:StructId)))
+     rule <k> zeroType(X:K, t(_, unionType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroType(X . F, T) ...</k>
-          <structs>... S |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _) ...</structs>
+          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
           [structural]
 
      rule zeroType(_, _:FunctionType) => .K

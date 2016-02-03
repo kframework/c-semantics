@@ -13,6 +13,7 @@ FAIL_COMPILE_TESTS_DIR = tests/unit-fail-compilation
 
 FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/kcc \
+	$(SCRIPTS_DIR)/ignored-flags \
 	$(SCRIPTS_DIR)/xml-to-k \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \
@@ -40,6 +41,7 @@ $(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
 	@cp -p $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
+	@cp -RLp $(PROFILE_DIR)/src $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
 
