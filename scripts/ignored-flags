@@ -7,3 +7,4 @@
 -pedantic
 -W.*
 -f(no-)?omit-frame-pointer
+-g
