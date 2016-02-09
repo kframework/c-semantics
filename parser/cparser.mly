@@ -536,6 +536,8 @@ offsetof_member_designator:	/* GCC extension for __builtin_offsetof */
 		        { VARIABLE ($1) }
 |		offsetof_member_designator DOT IDENT
 			{ MEMBEROF ($1, fst $3) }
+|		offsetof_member_designator ARROW IDENT
+		        { MEMBEROFPTR ($1, fst $3) }
 |		offsetof_member_designator bracket_comma_expression
 			{ INDEX ($1, smooth_expression $2) }
 ;
