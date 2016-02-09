@@ -59,7 +59,7 @@ FLOCK = flock -x .lock
 .depend-nd-thread:
 	$(FLOCK) $(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd-thread
 
-include .depend-translation
-include .depend-execution
-include .depend-nd
-include .depend-nd-thread
+-include .depend-translation
+-include .depend-execution
+-include .depend-nd
+-include .depend-nd-thread
