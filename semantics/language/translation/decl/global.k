@@ -52,14 +52,14 @@ module C-DECL-GLOBAL
                => addToEnv(X, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
-          <curr-scope> blockScope(_, _) </curr-scope>
+          <curr-scope> _:BlockScope </curr-scope>
           requires notBool isFunctionType(T)
                andBool validLocalStorageClass(T)
           [structural]
      rule <k> declare''(T:FunctionType, X:CId, K:K)
                => declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
-          <curr-scope> blockScope(_, _) </curr-scope>
+          <curr-scope> _:BlockScope </curr-scope>
           requires validLocalStorageClass(T)
                andBool (getQualifiers(T) ==K .Set)
           [structural]
