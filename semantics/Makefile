@@ -48,7 +48,7 @@ thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
 clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
 
-FLOCK = flock -x -n .lock 
+FLOCK = flock -x .lock 
 
 .depend-translation:
 	$(FLOCK) $(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation
