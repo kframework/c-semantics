@@ -2,7 +2,7 @@ module C-TYPING-EXPR-SYNTAX
      imports BASIC-K
 
      syntax KItem ::= typeof(K)
-     syntax Scope ::= "noEvalScope"
+     syntax BlockScope ::= "noEvalScope"
 
 endmodule
 
