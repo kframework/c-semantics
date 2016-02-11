@@ -300,7 +300,7 @@ module C-TYPING-COMPATIBILITY
 
      rule compositeType(
                typedDeclaration(T:Type, X:CId),
-               typedDeclaration(T':Type, X:CId))
+               typedDeclaration(T':Type, _:CId))
           => typedDeclaration(compositeType(T, T'), X)
      rule compositeType(
                T:Type,
