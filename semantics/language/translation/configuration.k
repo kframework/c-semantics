@@ -138,6 +138,7 @@ module C-CONFIGURATION
           </decl-type-holder>
      </init-calc>
      <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-function> .K </curr-function>
      <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
 </exec>
 

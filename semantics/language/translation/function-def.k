@@ -64,6 +64,7 @@ module C-FUNCTION-DEF
           <functions>...
                Base |-> functionObject(_, DefT:Type, _, _)
           ...</functions>
+          <curr-function> _ => Base </curr-function>
           [structural]
 
      syntax KItem ::= checkFunDefType(CId, Type)
