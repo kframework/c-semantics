@@ -207,6 +207,7 @@ module C-TYPING-CANONICALIZATION
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
+               andBool notBool (tag(X, Tu, global) in_keys(Structs[Tu]<:K:>Map))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(StructRef(X:CId)))
                => t(.Set, structType(tag(X, Tu, global)))
@@ -242,6 +243,7 @@ module C-TYPING-CANONICALIZATION
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
+               andBool notBool (tag(X, Tu, global) in_keys(Structs[Tu]<:K:>Map))
           [structural]
      rule <k> canonicalizeSpecifier(ListItem(UnionRef(X:CId)))
                => t(.Set, unionType(tag(X, Tu, global)))
