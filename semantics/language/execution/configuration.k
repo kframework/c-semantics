@@ -66,6 +66,7 @@ module C-CONFIGURATION
 
      <thread-info color="yellow">
           <thread-status color="yellow"> .Map </thread-status>
+          <stack-depth> ListItem(0) </stack-depth>
           <mutexes color="yellow"> .Map </mutexes>
           <glocks color="yellow"> .Map </glocks>
      </thread-info>

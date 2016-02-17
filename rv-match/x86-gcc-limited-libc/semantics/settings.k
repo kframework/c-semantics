@@ -53,5 +53,7 @@ module C-SETTINGS
      rule isErrorRecovery => true
      rule hasLint => true
 
+     rule cfg:stackSize(_, _) => 0
+
 endmodule
 

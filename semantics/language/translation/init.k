@@ -109,7 +109,7 @@ module C-TRANSLATION-INIT
                typedDeclaration(T, B),
                initializer(Computation(initFunction(
                     &(B), B,
-                    functionObject(B, T, handleBuiltin)
+                    functionObject(B, T, .List, handleBuiltin)
                )))) ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses>... SetItem(B) ...</external-uses>

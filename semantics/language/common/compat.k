@@ -58,6 +58,8 @@ module COMPAT-SYNTAX
                     | lookup(Map, K) [function]
 
      syntax Bool ::= isKItem(K) [function]
+
+     syntax Int ::= ceilDiv(Int, Int) [function]
 endmodule
 
 module COMPAT
@@ -232,4 +234,6 @@ module COMPAT
 
      rule isKItem(_:KItem) => true
      rule isKItem(_) => false [owise]
+
+     rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 endmodule

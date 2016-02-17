@@ -82,7 +82,14 @@ module C-ENV
 
      syntax KItem ::= giveLocalType(K, Type)
      rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <external-defs>... Fun |-> Base:SymBase ...</external-defs>
+          <curr-scope> blockScope(Fun:CId, _) </curr-scope>
+          <functions>... Base |-> functionObject(_, _, (_:List (.List => ListItem(T))), _) ...</functions>
           <types> L:Map => L[X <- T] </types>
+     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+          <curr-scope> S:Scope </curr-scope> 
+          <types> L:Map => L[X <- T] </types>
+          requires getKLabel(S) =/=K #klabel(`blockScope`)
 
      rule <k> scope(Scope:Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)

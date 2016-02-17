@@ -34,7 +34,7 @@ module C-FUNCTION-DEF
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
-                              elideList(getParams(emptyToVoid(T))))),
+                              elideList(getParams(emptyToVoid(T))))), .List,
                          Goto(funLabel(X)))
                )))
           )
@@ -62,7 +62,7 @@ module C-FUNCTION-DEF
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, DefT:Type, _)
+               Base |-> functionObject(_, DefT:Type, _, _)
           ...</functions>
           [structural]
 
