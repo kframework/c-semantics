@@ -13,7 +13,7 @@ We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
 On Ubuntu, the installation process for our C semantics can be summarized as:
 ```
-$ git clone --depth=1 https://github.com:runtimeverification/k.git
+$ git clone --depth=1 https://github.com/runtimeverification/k.git
 $ cd k
 $ mvn package
 $ export PATH=$PATH:`pwd`/k-distribution/target/release/k/bin
