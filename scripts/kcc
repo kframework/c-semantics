@@ -89,15 +89,6 @@ if ($cygwin) {
   $printf = 'printf %s';
 }
 
-my $preprocessor;
-{
-  local $/=undef;
-  open FILE, "$profileDirectory/pp" or die "Couldn't find current profile: please fix $distDirectory/current-profile";
-  $preprocessor = <FILE>;
-  close FILE;
-  chop($preprocessor);
-}
-
 our $ourDist = $distDirectory;
 
 my $xmlToK = catfile($distDirectory, 'xml-to-k');
@@ -566,11 +557,8 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     my @ppArgs = ($preprocessor, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
-                   "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
-                   "-U", "__GNUC__", "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
-                   @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
-                   '-I', "$profileDirectory/include", $inputFile, '-o', $output);
+     my @ppArgs = ("$profileDirectory/pp",
+                   @main::cppArgs, $inputFile, '-o', $output);
 
      my $retval = execute(@ppArgs);
      return $retval;
