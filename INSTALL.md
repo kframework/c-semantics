@@ -1,5 +1,11 @@
 ## Installation
 
+**NOTE**: A more powerful version of the C semantics capable of recovering from 
+errors and detecting a broader range of undefined and undesirable behaviors 
+can be found at https://runtimeverification.com/match.
+
+---
+
 Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
@@ -66,6 +72,9 @@ $ export PATH=$PATH:~/k/bin
 
 ### 4. Install OCaml K backend.
 - This is a proprietary component used to compile execute programs written in K.
+  It is Copyright Runtime Verification, Inc. and subject to the Runtime Verification
+  Licenses (<https://runtimeverification.com/licensing/>). 
+  A completely free executable version of the C semantics is not available at this time.
   From the K source root, you can install it by running:
 ```
 $ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
