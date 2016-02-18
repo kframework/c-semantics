@@ -89,15 +89,6 @@ if ($cygwin) {
   $printf = 'printf %s';
 }
 
-my $preprocessor;
-{
-  local $/=undef;
-  open FILE, "$profileDirectory/pp" or die "Couldn't find current profile: please fix $distDirectory/current-profile";
-  $preprocessor = <FILE>;
-  close FILE;
-  chop($preprocessor);
-}
-
 our $ourDist = $distDirectory;
 
 my $xmlToK = catfile($distDirectory, 'xml-to-k');
@@ -116,27 +107,35 @@ our $oflag;
 
 my $spec = q(#
       [strict]
-      -c			Compile and assemble, but do not link.
-      -shared			Compile and assemble into a single object file (for
-				faster loading).
-      -d			Print debugging information.
-      -D <name>[=<definition>]	Predefine <name> as a macro, with definition <definition>.
-{ push(@main::cppArgs, defined $definition ? "-D$name=$definition" : "-D$name"); }
-      -U <name>			Undefine <name> as a macro.
+      -c				Compile and assemble, but do not link.
+      -shared				Compile and assemble into a single object file (for
+					faster loading).
+      -d				Print debugging information.
+      -D <name>[=[<definition>]]	Predefine <name> as a macro, with definition <definition>.
+{ 
+  if (defined $definition) {
+    push(@main::cppArgs, "-D$name=$definition");
+  } elsif ($_PUNCT_{"="}) {
+    push(@main::cppArgs, "-D$name=");
+  } else  {
+    push(@main::cppArgs, "-D$name");
+  }
+}
+      -U <name>				Undefine <name> as a macro.
 { push(@main::cppArgs, "-U$name"); }
-      -E			Preprocess only.
-      -I <dir>			Look for headers in <dir>.
+      -E				Preprocess only.
+      -I <dir>				Look for headers in <dir>.
 { push(@main::cppArgs, '-I', $dir); }
-      -include <file>		Add header to file during preprocessing.
+      -include <file>			Add header to file during preprocessing.
 { push(@main::cppArgs, '-include', $file); }
-      -L <dir>			Look for shared libraries in <dir>.
+      -L <dir>				Look for shared libraries in <dir>.
 { push(@main::ld_lib, $dir) }
-      -s			Do not link against the standard library.
-      -o <file>			Place the output into <file>.
+      -s				Do not link against the standard library.
+      -o <file>				Place the output into <file>.
 { $main::oflag = $file; }
-      -l <lib>			Link semantics against native-compiled so file
+      -l <lib>				Link semantics against native-compiled so file
 { push (@main::stdlib, $lib) }
-      <files>...		C files to be compiled. [required] [repeatable]
+      <files>...			C files to be compiled. [required] [repeatable]
       --help				Show usage information [undocumented]
                         { $self->usage(0); }
       -version				Show version information [undocumented]
@@ -146,40 +145,40 @@ my $spec = q(#
   print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
   exit 0;
 }
-      -Version			[ditto]
-      -VERSION			[ditto]
-      --version			[ditto]
-      --Version			[ditto]
-      --VERSION			[ditto]
-      -v			[ditto]
-      -V			[ditto]
+      -Version				[ditto]
+      -VERSION				[ditto]
+      --version				[ditto]
+      --Version				[ditto]
+      --VERSION				[ditto]
+      -v				[ditto]
+      -V				[ditto]
 
-      -MD			Dependency generation. See documentation for GCC preprocessor
+      -MD				Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MD'); }
-      -MMD			Dependency generation. See documentation for GCC preprocessor
+      -MMD				Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MMD'); }
-      -MP			Dependency generation. See documentation for GCC preprocessor
+      -MP				Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MP'); }
-      -MF <file>		Dependency generation. See documentation for GCC preprocessor
+      -MF <file>			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MF', $file); }
-      -MT <target>		Dependency generation. See documentation for GCC preprocessor
+      -MT <target>			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MT', $target); }
-      -frunner-script		Compile program to perl script with analysis tool options
-      -fissue-report=<file>	Write issues to the specified file in CSV format
-      -flint			Generate lint errors for potentially undesirable behaviors.*
-      -Wlint			[ditto]
-      -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
-      -fstack-size=<size>	Used with -flint to detect stack overflow.*
-      -frecover-all-errors	Recover from fatal errors that would normally cause an application to crash.
-      				WARNING: This can change the semantics of tools like autoconf which analyze
-      				the exit code of the compiler to trigger unexpected or undesirable results.
+      -frunner-script			Compile program to perl script with analysis tool options
+      -fissue-report=<file>		Write issues to the specified file in CSV format
+      -flint				Generate lint errors for potentially undesirable behaviors.*
+      -Wlint				[ditto]
+      -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
+      -fstack-size=<size>		Used with -flint to detect stack overflow.*
+      -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
+      					WARNING: This can change the semantics of tools like autoconf which analyze
+      					the exit code of the compiler to trigger unexpected or undesirable results.
 
-      -x <language>		Ignored
-      -pthread			Enables pthread library (highly experimental, likely broken)
+      -x <language>			Ignored
+      -pthread				Enables pthread library (highly experimental, likely broken)
 { push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
 
-      -Xmx<size>		Passed to underlying JVM
-      -profile <name>		Set KCC profile.
+      -Xmx<size>			Passed to underlying JVM
+      -profile <name>			Set KCC profile.
 {
       if ( grep( /^$name$/, @main::profiles ) ) {
            open(my $file, '>', "$main::ourDist/current-profile") or die "Could not open profile file. Check OS permissions.";
@@ -573,11 +572,8 @@ sub preprocess {
      my ($output, $inputFile) = (@_);
 
      my $directoryname = dirname($inputFile);
-     my @ppArgs = ($preprocessor, "-Wall", "-Wextra", "-Werror", '-Wno-error=comment', "-Wmissing-prototypes",
-                   "-pedantic", "-x", "c", "-std=c11", "-nostdlib",
-                   "-U", "__GNUC__", "-D", "__KCC__", "-include", "$profileDirectory/include/kcc_settings.h",
-                   @main::cppArgs, '-E', '-iquote', '.', '-iquote', $directoryname,
-                   '-I', "$profileDirectory/include", $inputFile, '-o', $output);
+     my @ppArgs = ("$profileDirectory/pp",
+                   @main::cppArgs, $inputFile, '-o', $output);
 
      my $retval = execute(@ppArgs);
      return $retval;
