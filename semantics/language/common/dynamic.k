@@ -201,13 +201,13 @@ module C-DYNAMIC
      rule fillRHoles(V:RValue, RHOLE) => V
      rule fillRHoles(V:RValue, Lbl:KLabel(L:K, R:K))
           => Lbl(fillRHoles(V, L), fillRHoles(V, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignment`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillRHoles(_, K:K) => K [owise]
 
      rule fillLHoles(LV:KResult, LHOLE) => LV
      rule fillLHoles(LV:KResult, Lbl:KLabel(L:K, R:K))
           => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
-          requires #klabel(Lbl) =/=K #klabel(`compoundAssignment`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillLHoles(_, K:K) => K [owise]
 
 endmodule
