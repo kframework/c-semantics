@@ -71,7 +71,7 @@ $ export PATH=$PATH:~/k/bin
 ```
 
 ### 4. Install OCaml K backend.
-- This is a proprietary component used to compile execute programs written in K.
+- This is a proprietary component used to compile and execute programs written in K.
   It is Copyright Runtime Verification, Inc. and subject to the Runtime Verification
   Licenses (<https://runtimeverification.com/licensing/>). 
   A completely free executable version of the C semantics is not available at this time.
