@@ -105,6 +105,7 @@ module C-STMT-RETURN
                     ...</call-stack-frame>
                ) => .List
           ...</call-stack>
+          <stack-depth> ListItem(_) => .List ...</stack-depth>
           [structural]
 
 endmodule

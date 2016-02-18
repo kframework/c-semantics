@@ -11,6 +11,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -88,11 +89,14 @@ module C-EXPR-FUNCTION-CALL
      */
 
      syntax KItem ::= application(String, RValue, Type, List)
+     syntax KItem ::= "checkStackDepth"
+     rule checkStackDepth => .K
+          requires notBool hasLint
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      rule <k> application(Tu:String,
-                    functionObject(X:CId, DefT:Type, Blk:K),
+                    functionObject(X:CId, DefT:Type, Locals:List, Blk:K),
                     CallT:Type, L:List)
                ~> K:K
                => sequencePoint
@@ -100,6 +104,7 @@ module C-EXPR-FUNCTION-CALL
                ~> populateFromGlobal
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
+               ~> checkStackDepth
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
@@ -121,11 +126,12 @@ module C-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
+          <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>
           requires areCompatible(CallT, toPrototype(DefT))
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
           idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
-          ~> application(_, functionObject(X:CId, DefT:Type, _), CallT:Type, _)
+          ~> application(_, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _)
           requires notBool areCompatible(CallT, toPrototype(DefT))
           [structural]
 

@@ -1,4 +1,5 @@
 module C-SETTINGS-SYNTAX
+     imports LIST 
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
      // same range, representation, and behavior as either signed char or
      // unsigned char.  37)... Irrespective of the choice made, char is a
@@ -43,6 +44,8 @@ module C-SETTINGS-SYNTAX
 
      syntax CValue ::= "cfg:intToPointer" "(" CValue "," Type ")" [function]
      syntax CValue ::= "cfg:pointerToInt" "(" CValue "," Type ")" [function]
+ 
+     syntax Int ::= "cfg:stackSize" "(" List "," List ")" [function]
 
      syntax Bool ::= "isErrorRecovery" [function]
                    | "hasLint" [function]

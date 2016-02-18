@@ -283,7 +283,7 @@ module C-MEMORY-WRITING
           dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
                T:Type, Len:Int, L:List)
           => #splitStructBytes(dataList(Rest), T, Len -Int 1,
-               L ListItem(piece(N, PieceLen)))
+               ListItem(piece(N, PieceLen)) L)
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(T))
@@ -293,7 +293,7 @@ module C-MEMORY-WRITING
                T:Type, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(T))
                andBool N =/=K unknown
-     rule #splitStructBytes(_, _, 0, L:List) => dataList(L)
+     rule #splitStructBytes(_, _, 0, L:List) => dataList(reverseList(L))
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset:Int, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))

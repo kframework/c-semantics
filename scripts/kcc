@@ -168,6 +168,7 @@ my $spec = q(#
       -flint				Generate lint errors for potentially undesirable behaviors.*
       -Wlint				[ditto]
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
+      -fstack-size=<size>		Used with -flint to detect stack overflow.*
       -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
       					WARNING: This can change the semantics of tools like autoconf which analyze
       					the exit code of the compiler to trigger unexpected or undesirable results.
@@ -327,18 +328,32 @@ sub main {
           }
           if ($args->{'-flint'} || $args->{'-Wlint'}) {
                push(@options, "`LINT`(.KList)");
-               my $size;
+               my $heapSize;
                if ($args->{'-fheap-size='}) {
-                    $size = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
-                    chop($size);
+                    $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+                    chop($heapSize);
                } else {
-                    $size = 1024 * 1024 * 1024;
+                    $heapSize = 1024 * 1024 * 1024;
                }
-               $size = quote(backslash($size));
+               $heapSize = quote(backslash($heapSize));
                if ($cygwin) {
-                    $size = backslash($size);
+                    $heapSize = backslash($heapSize);
                }
-               push(@options, "`HEAP`(#token($size, $quoteInt))");
+               my $stackSize;
+               if ($args->{'-fstack-size='}) {
+                    $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+                    chop($stackSize);
+               } else {
+                    $stackSize = `echo \`ulimit -s\``;
+                    chop($stackSize);
+                    $stackSize = $stackSize * 1024; # result was in kb
+               }
+               $stackSize = quote(backslash($stackSize));
+               if ($cygwin) {
+                    $stackSize = backslash($stackSize);
+               }
+               push(@options, "`HEAP`(#token($heapSize, $quoteInt))");
+               push(@options, "`STACK`(#token($stackSize, $quoteInt))");
           }
           my $opts = makeSet(@options);
 

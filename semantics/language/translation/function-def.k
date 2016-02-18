@@ -34,7 +34,7 @@ module C-FUNCTION-DEF
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
-                              elideList(getParams(emptyToVoid(T))))),
+                              elideList(getParams(emptyToVoid(T))))), .List,
                          Goto(funLabel(X)))
                )))
           )
@@ -62,8 +62,9 @@ module C-FUNCTION-DEF
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, DefT:Type, _)
+               Base |-> functionObject(_, DefT:Type, _, _)
           ...</functions>
+          <curr-function> _ => Base </curr-function>
           [structural]
 
      syntax KItem ::= checkFunDefType(CId, Type)
@@ -217,7 +218,7 @@ module C-FUNCTION-DEF
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
           => addToEnv(X, nonStatic)
-          ~> giveType(X, T)
+          ~> giveParamType(X, T)
           ~> dummyBind(Params)
           requires notBool isVoidType(T)
           [structural]
