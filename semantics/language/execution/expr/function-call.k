@@ -126,7 +126,7 @@ module C-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
                (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
           </control>
-          <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(getParams(DefT), Locals)) ListItem(Old) ...</stack-depth>
+          <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>
           requires areCompatible(CallT, toPrototype(DefT))
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String

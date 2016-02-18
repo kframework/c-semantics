@@ -60,6 +60,7 @@ module COMPAT-SYNTAX
      syntax Bool ::= isKItem(K) [function]
 
      syntax Int ::= ceilDiv(Int, Int) [function]
+     syntax List ::= mapList(List, K) [function]
 endmodule
 
 module COMPAT
@@ -176,9 +177,12 @@ module COMPAT
      rule toKRList'(.SubKRList) => .K
           [structural]
 
-     rule reverseList(.List) => .List
-     rule reverseList(ListItem(K:K) L:List)
-          => reverseList(L:List) ListItem(K:K)
+     syntax List ::= reverseAppendList(List, List) [function]
+     rule reverseAppendList(.List, L::List) => L
+     rule reverseAppendList(ListItem(K:K) L::List, L2::List)
+          => reverseAppendList(L, ListItem(K) L2)
+
+     rule reverseList(L::List) => reverseAppendList(L, .List)
 
      rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
      rule listToK(.List) => .K
@@ -236,4 +240,7 @@ module COMPAT
      rule isKItem(_) => false [owise]
 
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
+
+     rule mapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
+     rule mapList(.List, _) => .List
 endmodule

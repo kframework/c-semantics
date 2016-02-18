@@ -27,7 +27,7 @@ module C-IO-BUFFERED
 
      imports C-CONFIGURATION
 
-     syntax KItem ::= bwrite(SymLoc, K)
+     syntax KItem ::= bwrite(SymLoc, List)
 
      syntax KItem ::=  writeBytes(SymLoc, List)
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
@@ -65,9 +65,6 @@ module C-IO-BUFFERED
           => setModified(Loc, Size, K, M)
      rule setModified(_, _, .K, .Map) => .K
 
-
-     rule writeBytes(_, .List) => .K
-          [structural]
 
      syntax KItem ::= checkWrite(SymLoc, Type)
      syntax KItem ::= checkBounds(SymLoc, Int)
@@ -146,33 +143,38 @@ module C-IO-BUFFERED
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
-     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), ListItem(V::CValue) L::List) => writeBytes(loc(Base, Offset +Int 1), L) ...</k>
-          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), V))) </buffer>
+     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
+          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), L))) </buffer>
           [structural]
 
      rule <buffer>
-               (ListItem(bwrite(loc(Base::SymBase, Offset::Int), V:K)) => .List)
+               ListItem(bwrite(loc(Base::SymBase, (Offset::Int => Offset +Int 1)), (ListItem(V:K) => .List) _:List))
           ...</buffer>
           <mem>...
                Base |-> object(_, Len::Int, (Bytes::Map => Bytes[Offset <- V]), _)
           ...</mem>
           requires Offset <Int Len
           [structural]
+     rule <buffer> ListItem(bwrite(_, .List)) => .List ...</buffer>
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
      rule <buffer>
-               ListItem(bwrite(Loc::SymLoc, V:K)) => #writeNativeByte(Loc, V)
+               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _:List)))
           ...</buffer>
           requires isNativeLoc(Loc)
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
-     rule locations(ListItem(bwrite(Loc::SymLoc, _)) L::List)
-          => SetItem(Loc) locations(L)
+     rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)
+          => #locations(Loc, size(Bytes)) locations(L)
+     syntax Set ::= #locations(SymLoc, Int) [function]
+     rule #locations(Loc::SymLoc, I:Int) => SetItem(Loc) #locations(Loc +bytes 1, I -Int 1)
+          requires I >Int 0
+     rule #locations(Loc::SymLoc, 0) => .Set
 
      rule <k> readBytes(Loc::SymLoc, Size::Int, T::Type)
                => checkEffectiveType(T, getEffectiveType(Loc))
-               ~> readBytes-aux(Loc, Size, .List, T)
+               ~> readBytes-aux(Loc +bytes (Size -Int 1), Size, .List, T)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
@@ -220,7 +222,7 @@ module C-IO-BUFFERED
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(V) Aux, T)
           ...</k>
           <mem>...
                Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K), _)
@@ -233,7 +235,7 @@ module C-IO-BUFFERED
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(V) Aux, T)
           ...</k>
           <mem>...
                Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K), _)
@@ -246,7 +248,7 @@ module C-IO-BUFFERED
                => assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
                ~> assertUninit(loc(Base, Offset))
-               ~> readBytes-aux(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T)
           ...</k>
           <mem>...
                Base |-> object(ObjT::Type, Len::Int,
@@ -315,7 +317,7 @@ module C-IO-BUFFERED
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
      rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
                => assertSeq(Loc, Locs)
-               ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux ListItem(#readNativeByte(Loc, size(Aux), T)), T)
+               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T)
           ...</k>
           <locs-written> Locs::List </locs-written>
           <buffer> Mem::List </buffer>

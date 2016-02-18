@@ -169,6 +169,7 @@ my $spec = q(#
       -flint			Generate lint errors for potentially undesirable behaviors.*
       -Wlint			[ditto]
       -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
+      -fstack-size=<size>	Used with -flint to detect stack overflow.*
       -frecover-all-errors	Recover from fatal errors that would normally cause an application to crash.
       				WARNING: This can change the semantics of tools like autoconf which analyze
       				the exit code of the compiler to trigger unexpected or undesirable results.

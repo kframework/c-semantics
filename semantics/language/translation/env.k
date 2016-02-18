@@ -5,6 +5,7 @@ module C-ENV-SYNTAX
 
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
+     syntax KItem ::= giveParamType(CId, Type)
      syntax KItem ::= addEnum(CId, Int)
      syntax KItem ::= "populateFromGlobal"
      syntax KItem ::= scope(Scope, K)
@@ -68,7 +69,12 @@ module C-ENV
           ...</k>
           <curr-scope> fileScope </curr-scope>
      rule <k> giveType(X:CId, T:Type)
-               => giveLocalType(X, tagRestrict(S, stripStorageSpecifiers(T)))
+               => giveLocalType(X, tagRestrict(S, stripStorageSpecifiers(T)), false)
+          ...</k>
+          <curr-scope> S:Scope </curr-scope>
+          requires S =/=K fileScope
+     rule <k> giveParamType(X:CId, T:Type)
+               => giveLocalType(X, tagRestrict(S, stripStorageSpecifiers(T)), true)
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           requires S =/=K fileScope
@@ -80,15 +86,15 @@ module C-ENV
           <tu-id> Tu </tu-id>
           <gtypes> G:Map => G[X <- T] </gtypes>
 
-     syntax KItem ::= giveLocalType(K, Type)
-     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+     syntax KItem ::= giveLocalType(K, Type, Bool)
+     rule <k> giveLocalType(X:CId, T:Type, false) => .K ...</k>
           <curr-function> Base:SymBase </curr-function>
           <functions>... Base |-> functionObject(_, _, (_:List (.List => ListItem(T))), _) ...</functions>
           <types> L:Map => L[X <- T] </types>
-     rule <k> giveLocalType(X:CId, T:Type) => .K ...</k>
+     rule <k> giveLocalType(X:CId, T:Type, B:Bool) => .K ...</k>
           <curr-scope> S:Scope </curr-scope> 
           <types> L:Map => L[X <- T] </types>
-          requires getKLabel(S) =/=K #klabel(`blockScope`)
+          requires getKLabel(S) =/=K #klabel(`blockScope`) orBool B
 
      rule <k> scope(Scope:Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)
