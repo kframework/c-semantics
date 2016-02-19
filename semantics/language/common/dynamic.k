@@ -121,6 +121,8 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= fillRHoles(RValue, K) [function]
 
      syntax Opts ::= CSV(String)
+
+     syntax KItem ::= "checkStackDepth"
 endmodule
 
 module C-DYNAMIC
