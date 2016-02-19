@@ -335,6 +335,7 @@ sub main {
                } else {
                     $heapSize = 1024 * 1024 * 1024;
                }
+               my $heapSizeInt = $heapSize;
                $heapSize = quote(backslash($heapSize));
                if ($cygwin) {
                     $heapSize = backslash($heapSize);
@@ -344,9 +345,13 @@ sub main {
                     $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
                     chop($stackSize);
                } else {
-                    $stackSize = `echo \`ulimit -s\``;
+                    $stackSize = `bash -c 'ulimit -s'`;
                     chop($stackSize);
-                    $stackSize = $stackSize * 1024; # result was in kb
+                    if ($stackSize eq 'unlimited') {
+                        $stackSize = $heapSizeInt;
+                    } else {
+                        $stackSize = $stackSize * 1024; # result was in kb
+                    }
                }
                $stackSize = quote(backslash($stackSize));
                if ($cygwin) {

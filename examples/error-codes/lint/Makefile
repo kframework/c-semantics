@@ -14,7 +14,7 @@ comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -flint -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -d -flint -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
