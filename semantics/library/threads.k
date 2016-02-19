@@ -24,16 +24,15 @@ module LIBC-THREADS
 
      syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
      rule [thrd-create-start]:
-          <k> prepareBuiltin(Identifier("thrd_create"),
-                    hrItem(ThIdPointer:KResult) hs::
-                    hrItem(ThFuncPointer) hs::
-                    hrItem(ThArg))
+          <k> builtin("thrd_create",
+                    ThIdPtr:RValue,
+                    ThFuncPtr:RValue,
+                    ThArg:RValue)
                => Computation(
-                    (* ThIdPointer:KResult) := tv(Fresh:Int, t(.Set, cfg:thrdut)))
-                    ~> spawn-aux(
-                    Fresh:Int, ThFuncPointer:RValue, ThArg:RValue)
+                    (* ThIdPtr) := tv(Fresh, t(.Set, cfg:thrdut)))
+                    ~> spawn-aux(Fresh, ThFuncPtr, ThArg)
           ...</k>
-          <next-thread-id> Fresh:Int => Fresh:Int +Int 1 </next-thread-id>
+          <next-thread-id> Fresh:Int => Fresh +Int 1 </next-thread-id>
           [structural]
      /*
      See http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1521.htm
@@ -64,7 +63,7 @@ module LIBC-THREADS
           [large, ndthread]
 
      rule [thrd-current]:
-          <k> prepareBuiltin(Identifier("thrd_current"), .HeatList)
+          <k> builtin("thrd_current")
                => tv(ThId:Int, t(.Set, cfg:thrdut))
           ...</k>
           <thread-id> ThId:Int </thread-id>
@@ -73,10 +72,8 @@ module LIBC-THREADS
      syntax KItem ::= "join-aux" "(" Int "," RValue ")"
 
      rule [thrd-join-start]:
-          prepareBuiltin(Identifier("thrd_join"),
-               hrItem(tv(ThId:Int, t(_, T:SimpleType))) hs::
-               hrItem(ResultPointer))
-          => join-aux(ThId:Int, ResultPointer:RValue)
+          builtin("thrd_join", tv(ThId:Int, t(_, T:SimpleType)), ResultPtr:RValue)
+          => join-aux(ThId:Int, ResultPtr)
           requires T ==K cfg:thrdut
           [structural]
 
@@ -84,7 +81,7 @@ module LIBC-THREADS
           <thread>...
                <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
                     => #if (Loc =/=K NullPointer)
-                         #then Computation((* Loc) := V:KResult)
+                         #then Computation((* Loc) := V)
                          #else dotK
                          #fi
                          ~> thrd-success
@@ -92,15 +89,13 @@ module LIBC-THREADS
                <buffer> .List </buffer>
           ...</thread>
           <thread>...
-               <k> V:KResult </k>
+               <k> V:RValue </k>
                <thread-id> ThId:Int </thread-id>
           ...</thread>
           [ndthread]
 
      rule [mtx-init]:
-          <k> prepareBuiltin(Identifier("mtx_init"),
-                    hrItem(tv(Loc:Int, _)) hs::
-                    hrItem(tv(Type:Int, _)))
+          <k> builtin("mtx_init", tv(Loc:Int, _), tv(Type:Int, _))
                => thrd-success
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
@@ -110,8 +105,7 @@ module LIBC-THREADS
           [structural]
 
      rule [mtx-lock]:
-          <k> prepareBuiltin(Identifier("mtx_lock"),
-                    hrItem(tv(Loc:Int, _)))
+          <k> builtin("mtx_lock", tv(Loc:Int, _))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>
@@ -126,8 +120,7 @@ module LIBC-THREADS
           [ndthread]
 
      rule [mtx-unlock]:
-          <k> prepareBuiltin(Identifier("mtx_unlock"),
-                    hrItem(tv(Loc:Int, _)))
+          <k> builtin("mtx_unlock", tv(Loc:Int, _))
                => thrd-success
           ...</k>
           <buffer> .List </buffer>

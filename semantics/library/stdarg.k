@@ -56,22 +56,16 @@ module LIBC-STDARG
      // fixme can add lots of checks here
      // tool fixme, change RValue to K and unquote error
      rule [va-start]:
-          prepareBuiltin(Identifier("__va_start"),
-               hrItem(ApLoc:KResult) hs::
-               hrItem(ArgLoc:KResult))
+          builtin("__va_start", ApLoc:RValue, ArgLoc:RValue)
           => checkVarArgs ~> Computation(*(ApLoc) := incSymbolic(ArgLoc)) ~> voidVal
           [structural]
 
      rule [va-inc-start]:
-          prepareBuiltin(Identifier("__va_inc"),
-               hrItem(ApLoc:KResult) hs::
-               hrItem(Size:KResult))
+          builtin("__va_inc", ApLoc:RValue, Size:RValue)
           => va-inc-aux(ApLoc, Size, *ApLoc)
           [structural]
 
-     syntax KItem ::= "va-inc-aux" "(" K "," K "," K ")"
-     context va-inc-aux((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
-     context va-inc-aux(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
+     syntax KItem ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
      context va-inc-aux(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      // fixme can do lots of checks here too
      rule [va-inc]:
@@ -81,16 +75,13 @@ module LIBC-STDARG
 
      // fixme can do lots of checks here too
      rule [va-copy]:
-          prepareBuiltin(Identifier("__va_copy"),
-               hrItem(ApLoc:KResult) hs::
-               hrItem(Other:KResult))
+          builtin("__va_copy", ApLoc:RValue, Other:RValue)
           => Computation(*(ApLoc) := Other) ~> voidVal
           [structural]
 
      // fixme can do lots of checks here too
      rule [va-end]:
-          prepareBuiltin(Identifier("__va_end"), hrItem(_:KResult))
-          => voidVal
+          builtin("__va_end", _) => voidVal
           [structural]
 
      syntax KItem ::= "checkVarArgs"

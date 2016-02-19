@@ -102,17 +102,17 @@ module C-DYNAMIC-SYNTAX
      syntax HeatList ::= toHeatList(List) [function]
      syntax List ::= hListToList(HeatList) [function]
 
-     syntax HeatResult ::= hrItem(K)
+     syntax HeatResult ::= hrItem(RValue)
      syntax HeatItem ::= HeatResult
      syntax KResult ::= HeatResult
 
-     rule hItem(V:KResult) => hrItem(V)
+     rule hItem(V:RValue) => hrItem(V)
 
      rule toHeatList(.List) => .HeatList
      rule toHeatList(ListItem(K:K) L:List) => hItem(K) hs:: toHeatList(L)
 
      rule hListToList(.HeatList) => .List
-     rule hListToList(hrItem(K:K) hs:: HL:HeatList) => ListItem(K) hListToList(HL)
+     rule hListToList(hrItem(V:RValue) hs:: HL:HeatList) => ListItem(V) hListToList(HL)
 
      syntax KItem ::= "LHOLE" | "RHOLE"
      syntax KItem ::= postOp(K, K) [strict(1)]

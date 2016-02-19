@@ -93,9 +93,9 @@ module LIBC-SETJMP
      }*/
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
-          <k> (prepareBuiltin(Identifier("setjmp"),
-               hrItem(tv(Loc:SymLoc, t(_, pointerType(t(_,
-                    structType(tag(Identifier("__jmp_buf_tag"), "builtin", global))))))))
+          <k> (builtin("setjmp",
+               tv(Loc:SymLoc, t(_, pointerType(t(_,
+                    structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))))))
                => ignoreLocals
                     ~> writeBytes(Loc, ListItem(bag(
                          <thread-state>
@@ -105,7 +105,7 @@ module LIBC-SETJMP
                     )))
                     ~> tv(0, t(.Set, int))
                )
-               ~> K:K
+               ~> K
           </k>
           C:ThreadLocalCell
           [structural]
@@ -113,17 +113,14 @@ module LIBC-SETJMP
      syntax KItem ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
      context longjmp-aux(HOLE:KItem => reval(HOLE), _) [result(RValue)]
      rule [longjmp-prepare]:
-          prepareBuiltin(Identifier("longjmp"),
-               hrItem(V:KResult) hs::
-               hrItem(V':KResult))
+          builtin("longjmp", V:RValue, V':RValue)
           => longjmp-aux(*(V), V')
           [structural]
 
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
-          <k>
-               longjmp-aux(tv(agg(ListItem(bag(
+          <k> longjmp-aux(tv(agg(ListItem(bag(
                     <thread-state>
                          <thread-continuation> K:K </thread-continuation>
                          <saved-thread-local>C:ThreadLocalCell</saved-thread-local>
@@ -134,7 +131,7 @@ module LIBC-SETJMP
                     ~> #if I:Int ==Int 0
                          #then tv(1, t(.Set, int))
                          #else tv(I:Int, t(.Set, int)) #fi
-                    ~> K:K
+                    ~> K
           </k>
           (<thread-local> _ </thread-local> => C)
           [structural]
