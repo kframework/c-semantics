@@ -21,7 +21,7 @@ module C-EXPR-FUNCTION-CALL
 
      //the original rule to write to revalParams(rvlist...) might be wrong
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
-          requires isAllKResultInHeatList(HL)
+          requires allRValueInHeatList(HL)
           [structural]
      /*TODO(liyi): might not need this later
      rule revalParams(list(L:List)) => revalParams(rvlist(L))

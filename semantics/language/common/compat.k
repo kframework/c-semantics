@@ -22,7 +22,7 @@ module COMPAT-SYNTAX
      syntax Bool ::= some(List, K) [function]
 
      //TODO(liyi): this might be able to remove
-     syntax Bool ::= isAllKResultInHeatList(HeatList) [function]
+     syntax Bool ::= allRValueInHeatList(HeatList) [function]
 
      syntax Bool ::= List "==MSet" List [function]
                    | List "=/=MSet" List [function]
@@ -227,10 +227,10 @@ module COMPAT
      rule some'(.K, .Set, _) => false
 
      // TODO(liyi): might be able to remove later
-     rule isAllKResultInHeatList(.HeatList) => true
-     rule isAllKResultInHeatList(hItem(_) hs:: _) => false
-     rule isAllKResultInHeatList(hrItem(_) hs:: HL:HeatList)
-          => isAllKResultInHeatList(HL)
+     rule allRValueInHeatList(.HeatList) => true
+     rule allRValueInHeatList(hItem(_) hs:: _) => false
+     rule allRValueInHeatList(hrItem(_) hs:: HL:HeatList)
+          => allRValueInHeatList(HL)
 
      //TODO(liyi): might not need this
      rule dotK => .K [structural]

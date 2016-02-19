@@ -14,17 +14,17 @@ module LIBC-STRING
      // try to use getString
      // fixme should detect overlaps
      syntax KItem ::= strcpy(SymLoc, SymLoc, SymLoc)
-     rule prepareBuiltin(Identifier("strcpy"),
-               hrItem(tv(Dest:SymLoc, t(_, pointerType(_)))) hs::
-               hrItem(tv(Src:SymLoc, t(_, pointerType(_)))))
+     rule builtin("strcpy",
+               tv(Dest:SymLoc, t(_, pointerType(_))),
+               tv(Src:SymLoc, t(_, pointerType(_))))
           => strcpy(Dest, Src, Dest)
           requires Dest =/=K NullPointer andBool Src =/=K NullPointer
           [structural]
  
      rule (.K => UNDEF("STRING1", "Null pointer passed to strcpy.", "7.1.4:1, J.2:1 item 108"))
-          ~> prepareBuiltin(Identifier("strcpy"),
-               hrItem(tv(Dest:SymLoc, t(_, pointerType(_)))) hs::
-               hrItem(tv(Src:SymLoc, t(_, pointerType(_)))))
+          ~> builtin("strcpy",
+               tv(Dest:SymLoc, t(_, pointerType(_))),
+               tv(Src:SymLoc, t(_, pointerType(_))))
           requires Dest ==K NullPointer orBool Src ==K NullPointer
 
      rule (.K => reval(nclv(Src:SymLoc, t(.Set, char))))

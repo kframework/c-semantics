@@ -77,16 +77,10 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule #revalParams(HL:HeatList) => revalParams(rvlist(hListToList(HL)))
-          requires isAllKResultInHeatList(HL)
+          requires allRValueInHeatList(HL)
           [structural]
 
      syntax KResult ::= rvlist(List)
-
-     /*TODO(liyili2): might need this later
-     rule revalParams(list(L:List)) => revalParams(rvlist(L))
-          requires all(L, isKResult)
-          [structural]
-     */
 
      syntax KItem ::= application(String, RValue, Type, List)
      syntax KItem ::= "checkStackDepth"
