@@ -6,6 +6,7 @@ module C-DECL-LOCAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -69,8 +70,9 @@ module C-DECL-LOCAL
      syntax KItem ::= stabilizeInitType(K)
      rule (.K => stabilizeVLA(T)) ~> stabilizeInitType(initValue(_, T:Type, _))
           [structural]
-     rule T:Type ~> stabilizeInitType(initValue(X:CId, _, K:K))
-          => initValue(X, T, K)
+     rule <k> T:Type ~> stabilizeInitType(initValue(X:CId, _, K:K))
+          => checkStackDepth ~> initValue(X, T, K) ...</k>
+          <stack-depth> ListItem(I:Int => I +Int cfg:stackSize(.List, ListItem(T))) ...</stack-depth>
           [structural]
 
      syntax KItem ::= declareOnly(CId, Type)

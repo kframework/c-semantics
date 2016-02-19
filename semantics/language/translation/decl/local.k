@@ -150,9 +150,19 @@ module C-DECL-LOCAL
           [structural]
 
      syntax KItem ::= defineAndInit(CId, Type, K)
+     syntax KItem ::= addLocalToFunction(Type)
+     rule <k> addLocalToFunction(T:Type) => .K ...</k>
+          <curr-scope> S:Scope </curr-scope>
+          requires notBool isBlockScope(S)
+     rule <k> addLocalToFunction(T:Type) => .K ...</k>
+          <curr-scope> S:BlockScope </curr-scope>
+          <curr-function> Base:SymBase </curr-function>
+          <functions>... Base |-> functionObject(_, _, (_:List (.List => ListItem(T))), _) ...</functions>
+
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
                => addToEnv(X, nonStatic)
                ~> giveType(X, T)
+               ~> addLocalToFunction(T)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

@@ -89,7 +89,6 @@ module C-EXPR-FUNCTION-CALL
      */
 
      syntax KItem ::= application(String, RValue, Type, List)
-     syntax KItem ::= "checkStackDepth"
      rule checkStackDepth => .K
           requires notBool hasLint
 
