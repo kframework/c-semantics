@@ -82,26 +82,30 @@ module LIBC-BOOTSTRAP
                hrItem(A1:RValue) hs:: hrItem(A2:RValue))
           => builtin(F, A1, A2)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue) hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue))
+     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue))
           => builtin(F, A1, A2, A3)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue) hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue) hs:: hrItem(A4:RValue))
+     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
+               hs:: hrItem(A4:RValue))
           => builtin(F, A1, A2, A3, A4)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue) hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue) hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue))
+     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
+               hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue))
           => builtin(F, A1, A2, A3, A4, A5)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue) hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
-               hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue) hs:: hrItem(A6:RValue))
+     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
+               hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue)
+               hs:: hrItem(A6:RValue))
           => builtin(F, A1, A2, A3, A4, A5, A6)
           [structural]
      rule prepareBuiltin(Identifier(F:String), Args:HeatList)
           => builtin*(F, hListToList(Args))
           requires allRValueInHeatList(Args)
+               andBool size(hListToList(Args)) >Int 6
           [structural]
 
 endmodule
