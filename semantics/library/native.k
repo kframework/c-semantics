@@ -45,6 +45,9 @@ module C-NATIVE-BRIDGE
           ...</k>
           <types>... Identifier(S) |-> T:Type ...</types>
           requires S in_keys(nativeDefinedBuiltins) [native-call]
+     rule <k> builtin*(S:String, Args:List) => #nativeCall(S, T, Args) ...</k>
+          <types>... Identifier(S) |-> T:Type ...</types>
+          requires S in_keys(nativeDefinedBuiltins) [native-call]
 
      // Memory allocated by the native heap needs to be freed by a call to
      // native free.

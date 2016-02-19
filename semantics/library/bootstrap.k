@@ -15,6 +15,7 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | builtin(String, RValue, RValue, RValue, RValue) [klabel(builtin4)]
                     | builtin(String, RValue, RValue, RValue, RValue, RValue) [klabel(builtin5)]
                     | builtin(String, RValue, RValue, RValue, RValue, RValue, RValue) [klabel(builtin6)]
+                    | "builtin*" "(" String "," List ")"
 endmodule
 
 module LIBC-BOOTSTRAP
@@ -98,4 +99,9 @@ module LIBC-BOOTSTRAP
                hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue) hs:: hrItem(A6:RValue))
           => builtin(F, A1, A2, A3, A4, A5, A6)
           [structural]
+     rule prepareBuiltin(Identifier(F:String), Args:HeatList)
+          => builtin*(F, hListToList(Args))
+          requires allRValueInHeatList(Args)
+          [structural]
+
 endmodule
