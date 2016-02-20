@@ -56,7 +56,7 @@ module C-CONFIGURATION
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
      // Scope |-> activity(Int, SymLoc |-> Int)
-     <activeBlocks> .Map </activeBlocks>
+     <active-blocks> .Map </active-blocks>
 
      // stdlib
      <malloced color="lightgray"> .Map </malloced>
