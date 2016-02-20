@@ -89,8 +89,10 @@ module LIBC-STDARG
           <k> checkVarArgs => .K ...</k>
           <call-stack> ListItem(
                <call-stack-frame>...
-                    <stack-curr-scope> blockScope(F:CId, _) </stack-curr-scope>
-                    <stack-curr-tu> Tu:String </stack-curr-tu>
+                    <stack-function-control> <function-control>...
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
+                         <curr-tu> Tu:String </curr-tu>
+                    ...</function-control> </stack-function-control>
                ...</call-stack-frame>)
           ...</call-stack>
           <tu-id> Tu </tu-id>
@@ -102,8 +104,10 @@ module LIBC-STDARG
           ...</k>
           <call-stack> ListItem(
                <call-stack-frame>...
-                    <stack-curr-scope> blockScope(F:CId, _) </stack-curr-scope>
-                    <stack-curr-tu> Tu:String </stack-curr-tu>
+                    <stack-function-control> <function-control>...
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
+                         <curr-tu> Tu:String </curr-tu>
+                    ...</function-control> </stack-function-control>
                ...</call-stack-frame>)
           ...</call-stack>
           <tu-id> Tu </tu-id>

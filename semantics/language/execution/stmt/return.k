@@ -73,35 +73,20 @@ module C-STMT-RETURN
                ~> checkUse(stripConstants(V))
                ~> K
           </k>
-          <control>
-               <curr-tu> _ => OldTU </curr-tu>
-               <curr-scope> blockScope(F:CId, _) => OldScope </curr-scope>
-               <curr-function-params> _ => OldFunParams </curr-function-params>
-               <curr-program-loc> _ => OldLoc </curr-program-loc>
-               (<control-details>...
-                    <local>...
-                         <local-addresses> .Set </local-addresses>
-                    ...</local>
-                    <block-stack> .List </block-stack>
-               ...</control-details>  => C)
-          </control>
+          (<function-control>
+               <curr-scope> blockScope(F:CId, _) </curr-scope>
+               <block-control>...
+                    <local-addresses> .Set </local-addresses>
+               ...</block-control>
+               <block-stack> .List </block-stack>
+          ...</function-control> => C)
           <call-stack>
                ListItem(
                     <call-stack-frame>...
                          <continuation> K:K </continuation>
-                         <stack-control>
-                              C:ControlDetailsCell
-                         </stack-control>
-                         <stack-curr-scope>
-                              OldScope:Scope
-                         </stack-curr-scope>
-                         <stack-curr-function-params>
-                              OldFunParams:List
-                         </stack-curr-function-params>
-                         <stack-curr-program-loc>
-                              OldLoc:K
-                         </stack-curr-program-loc>
-                         <stack-curr-tu> OldTU:String </stack-curr-tu>
+                         <stack-function-control>
+                              C:FunctionControlCell
+                         </stack-function-control>
                     ...</call-stack-frame>
                ) => .List
           ...</call-stack>

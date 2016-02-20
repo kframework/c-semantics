@@ -86,8 +86,10 @@ module C-EXECUTION-ERROR
      rule printStackTrace(L:List, UnknownCabsLoc, .K)
           => "<unknown>)" +String stackSeparator(L) +String printStackTrace(L, .K, .K)
      rule printStackTrace(ListItem(<call-stack-frame>...
-               <stack-curr-program-loc> Loc:CabsLoc </stack-curr-program-loc>
-               <stack-curr-scope> S:Scope </stack-curr-scope>
+               <stack-function-control> <function-control>...
+                    <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+                    <curr-scope> S:Scope </curr-scope>
+               ...</function-control> </stack-function-control>
           ...</call-stack-frame>) L:List, .K, .K)
           => printStackTrace(L, Loc, S)
      rule printStackTrace(.List, .K, .K) => ""

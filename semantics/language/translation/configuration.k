@@ -101,7 +101,8 @@ module C-CONFIGURATION
      // for initializers.
      <initializing> false </initializing>
 
-     <local>
+     <block-stack color="violet"> .List </block-stack>
+     <block-control>
           // maps from CIds
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
@@ -112,9 +113,7 @@ module C-CONFIGURATION
           <curr-program-loc color="black">
                UnknownCabsLoc
           </curr-program-loc>
-     </local>
-
-     <block-stack color="violet"> .List </block-stack>
+     </block-control>
 
      <init-calc multiplicity="?" initial="">
           // Used to figure initializers.

@@ -65,9 +65,10 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(
                tv(loc(Base:SymBase, 0), t(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(getTU(loc(Base, 0)), Fun, T, L)
+               => sequencePoint ~> application(CurrLoc, getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
           <functions>... Base |-> Fun:RValue ...</functions>
+          <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
 
      syntax KItem ::= revalParams(K)
@@ -82,13 +83,13 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KResult ::= rvlist(List)
 
-     syntax KItem ::= application(String, RValue, Type, List)
+     syntax KItem ::= application(CabsLoc, String, RValue, Type, List)
      rule checkStackDepth => .K
           requires notBool hasLint
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
-     rule <k> application(Tu:String,
+     rule <k> application(CurrLoc:CabsLoc, Tu:String,
                     functionObject(X:CId, DefT:Type, Locals:List, Blk:K),
                     CallT:Type, L:List)
                ~> K:K
@@ -102,29 +103,24 @@ module C-EXPR-FUNCTION-CALL
           </k>
           <call-stack> .List => ListItem(
                <call-stack-frame>...
-                    <stack-control>
-                         C
-                    </stack-control>
                     <continuation> K:K </continuation>
-                    <stack-curr-scope> CurrScope </stack-curr-scope>
-                    <stack-curr-function-params> CurrFunParams </stack-curr-function-params>
-                    <stack-curr-program-loc> CurrLoc </stack-curr-program-loc>
-                    <stack-curr-tu> OldTu </stack-curr-tu>
+                    <stack-function-control>
+                         C
+                    </stack-function-control>
                ...</call-stack-frame>
           ) ...</call-stack>
-          <control>
-               <curr-tu> OldTu:String => Tu </curr-tu>
-               <curr-scope> CurrScope:Scope => blockScope(X, 0) </curr-scope>
-               <curr-function-params> CurrFunParams:List => .List </curr-function-params>
-               <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
-               (C:ControlDetailsCell => <control-details>... .Bag ...</control-details>)
-          </control>
+          (C:FunctionControlCell
+          => <function-control>...
+               <curr-tu> Tu </curr-tu>
+               <curr-scope> blockScope(X, 0) </curr-scope>
+               <curr-program-loc> CurrLoc </curr-program-loc>
+          ...</function-control>)
           <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>
           requires areCompatible(CallT, toPrototype(DefT))
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
           idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
-          ~> application(_, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _)
+          ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _)
           requires notBool areCompatible(CallT, toPrototype(DefT))
           [structural]
 
