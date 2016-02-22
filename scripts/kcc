@@ -26,6 +26,8 @@ my @objFiles = ();
 my @srcFiles = ();
 my @tempFiles = ();
 
+my $MAGIC = "\x7fKAST";
+
 my $distDirectory = dirname(rel2abs($0));
 our $profile;
 my $profileDirectory;
@@ -123,6 +125,8 @@ my $spec = q(#
 }
       -U <name>				Undefine <name> as a macro.
 { push(@main::cppArgs, "-U$name"); }
+      -P				Inhibit preprocessor line numbers
+{ push(@main::cppArgs, "-P"); }
       -E				Preprocess only.
       -I <dir>				Look for headers in <dir>.
 { push(@main::cppArgs, '-I', $dir); }
@@ -133,7 +137,7 @@ my $spec = q(#
       -s				Do not link against the standard library.
       -o <file>				Place the output into <file>.
 { $main::oflag = $file; }
-      -l <lib>				Link semantics against native-compiled so file
+      -l <lib>				Link semantics against library in search path.
 { push (@main::stdlib, $lib) }
       <files>...			C files to be compiled. [required] [repeatable]
       --help				Show usage information [undocumented]
@@ -414,28 +418,58 @@ sub mergeObjs {
      }
 }
 
+sub isKObj {
+  my $filename = shift;
+  open(my $file, $filename) or return 0;
+  my $buf;
+  read($file, $buf, 5);
+  close($file);
+  return $buf eq $MAGIC;
+}
+
+sub isAr {
+  my $filename = shift;
+  my $retval = system("ar t $filename > /dev/null 2>&1") >> 8;
+  return $retval == 0;
+}
+
 sub classify {
      my @files = @_;
 
-     for (@files) {
-          my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.o', '\.a', '\.so'));
+     my @nativeLibs = ();
+     for (@stdlib) {
+       my $lib = $_;
+       my $isK = 0;
+       for (@ld_lib) {
+         my $candidate = catfile(@ld_lib, "lib$lib.so");
+         if (isKObj($candidate)) {
+           push(@objFiles, $candidate);
+           $isK = 1;
+           last;
+         }
+         $candidate = catfile(@ld_lib, "lib$lib.a");
+         if (isKObj($candidate)) {
+           push(@objFiles, $candidate);
+           $isK = 1;
+           last;
+         }
+       }
+       if (!$isK) {
+         push(@nativeLibs, $lib);
+       }
+     }
+     @stdlib = @nativeLibs;
 
-          if (($suffix eq '.o') or ($suffix eq '.so')) {
+     for (@files) {
+          my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.h', '\.o', '\.a', '\.so'));
+
+          if (isKObj($_)) {
                push(@objFiles, $_);
-          } elsif ($suffix eq '.a') {
-               my $retval = system("ar t $_ > /dev/null 2>&1") >> 8;
-               if ($retval == 0) {
-                   extractStatic($_, $base, $suffix);
-               } else {
-                   # not actually an ar file, maybe we "kranlib"'d it
-                   push(@objFiles, $_);
-               }
-          } elsif ($suffix eq '.c' or $_ eq '-') {
+          } elsif (isAr($_)) {
+               extractStatic($_, $base, $suffix);
+          } elsif ($suffix eq '.c' or $suffix eq '.h' or $_ eq '-') {
                push(@srcFiles, $_);
           } else {
-               if ($args->{'-d'}) {
-                   print($ignoredFlagsRegex);
-               }
                if (!($_ =~ $ignoredFlags)) {
                    die "Unsupported option $_";
                }
@@ -541,7 +575,7 @@ sub getKRunCommand {
           my $two = chr((scalar @objTexts >> 16) & 0xff);
           my $three = chr((scalar @objTexts >> 8) & 0xff);
           my $four = chr((scalar @objTexts >> 0) & 0xff);
-          $objText = "\x7fKAST\x04\x00\x01$objText\x03$one$two$three$four\x07";
+          $objText = "$MAGIC\x04\x00\x01$objText\x03$one$two$three$four\x07";
           open(my $file, '>', "$allObjsFile");
           print $file $objText;
           close $file;
