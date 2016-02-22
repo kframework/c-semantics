@@ -199,14 +199,17 @@ module C-DYNAMIC
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
 
+     // don't fill holes beneath a compound assignment or postOp because that might capture stuff we don't want.
      rule fillRHoles(V:RValue, RHOLE) => V
      rule fillRHoles(V:RValue, Lbl:KLabel(L:K, R:K))
           => Lbl(fillRHoles(V, L), fillRHoles(V, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillRHoles(_, K:K) => K [owise]
 
      rule fillLHoles(LV:KResult, LHOLE) => LV
      rule fillLHoles(LV:KResult, Lbl:KLabel(L:K, R:K))
           => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillLHoles(_, K:K) => K [owise]
 
 endmodule
