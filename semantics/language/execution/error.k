@@ -26,8 +26,6 @@ module C-EXECUTION-ERROR
 
      imports C-CONFIGURATION
 
-     imports LIBC-STDIO-SYNTAX
-
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
      syntax KItem ::= error(String, String)
@@ -106,14 +104,6 @@ module C-EXECUTION-ERROR
           (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
           concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
           requires (N >Int 0)
-          [structural]
-
-     rule (.K => UNDEF("STDIO1",
-               "'printf': Format string expects type of size " +String
-               Int2String(value(A):>Int) +String ", but got an argument of size "
-               +String Int2String(value(B):>Int) +String ".", "7.21.6.1:9, J.2:1 item 153") ) ~>
-          nextvarg-aux(_, _, A:RValue, B:RValue)
-          requires value(A):>Int =/=Int value(B):>Int
           [structural]
 
      // TODO(chathhorn): Silly way to do things. Probably need to allow

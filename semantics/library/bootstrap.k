@@ -15,6 +15,9 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | builtin(String, RValue, RValue, RValue, RValue) [klabel(builtin4)]
                     | builtin(String, RValue, RValue, RValue, RValue, RValue) [klabel(builtin5)]
                     | builtin(String, RValue, RValue, RValue, RValue, RValue, RValue) [klabel(builtin6)]
+                    | "builtin*" "(" String "," RValue "," List ")" [klabel(builtin1+)]
+                    | "builtin*" "(" String "," RValue "," RValue "," List ")" [klabel(builtin2+)]
+                    | "builtin*" "(" String "," RValue "," RValue "," RValue "," List ")" [klabel(builtin3+)]
                     | "builtin*" "(" String "," List ")"
 endmodule
 
@@ -39,73 +42,80 @@ module LIBC-BOOTSTRAP
           => checkUse(tv(loc(linc(base(Loc)), offset(Loc), SetItem(fromType(t(.Set, no-type)))), T))
           [structural]
 
-     // TODO(chathhorn): This is pretty dumb. Should handle var args nicer. In
-     // particular, I don't understand why we should do the consecutive
-     // addresses thing.
-     syntax KItem ::= prepareBuiltin(CId, HeatList) [strict(2)]
-     rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(makeVarArgs(P)))) ...</k>
+     syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
+     rule <k> handleBuiltin
+               => Return(prepareBuiltin(F, variadic in getParams(T),
+                    toHeatList(filterList(P, #klabel(`notVarArg`))),
+                    toHeatList(filterList(P, #klabel(`isVarArg`)))))
+          ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
-          requires variadic in getParams(T)
-          [structural]
-     rule <k> handleBuiltin => Return(prepareBuiltin(F, toHeatList(P))) ...</k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <curr-function-params> P:List </curr-function-params>
-          <types>... F |-> T:Type ...</types>
-          requires notBool variadic in getParams(T)
           [structural]
 
-     syntax List ::= makeVarArgs(List) [function]
-                   | makeVarArgsAux(List) [function]
+     syntax Bool ::= isVarArg(K) [function]
+     rule isVarArg(vararg(_)) => true
+     rule isVarArg(_) => false [owise]
 
-     rule makeVarArgs(L:List) => makeVarArgsAux(L)
-          requires vararg(0) in L
-     rule makeVarArgs(L:List ListItem(X:CId))
-          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
-          requires notBool vararg(0) in (L ListItem(X))
+     syntax Bool ::= notVarArg(K) [function]
+     rule notVarArg(K:K) => notBool isVarArg(K)
 
-     rule makeVarArgsAux(L:List ListItem(X:CId) ListItem(vararg(0)))
-          => L ListItem(X) ListItem(varg(incSymbolic(&(X))))
-     rule makeVarArgsAux(L:List ListItem(X:CId))
-          => makeVarArgsAux(L)
-          requires X =/=K vararg(0)
-
-     rule prepareBuiltin(Identifier(F:String), .HeatList)
+     rule prepareBuiltin(Identifier(F:String), false, .HeatList, _)
           => builtin(F)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue))
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue), _)
           => builtin(F, A1)
           [structural]
-     rule prepareBuiltin(Identifier(F:String),
-               hrItem(A1:RValue) hs:: hrItem(A2:RValue))
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue), _)
           => builtin(F, A1, A2)
           [structural]
-     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
-               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue))
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue), _)
           => builtin(F, A1, A2, A3)
           [structural]
-     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue)
                hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
-               hs:: hrItem(A4:RValue))
+               hs:: hrItem(A4:RValue), _)
           => builtin(F, A1, A2, A3, A4)
           [structural]
-     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue)
                hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
-               hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue))
+               hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue), _)
           => builtin(F, A1, A2, A3, A4, A5)
           [structural]
-     rule prepareBuiltin(Identifier(F:String), hrItem(A1:RValue)
+     rule prepareBuiltin(Identifier(F:String), false, hrItem(A1:RValue)
                hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue)
                hs:: hrItem(A4:RValue) hs:: hrItem(A5:RValue)
-               hs:: hrItem(A6:RValue))
+               hs:: hrItem(A6:RValue), _)
           => builtin(F, A1, A2, A3, A4, A5, A6)
           [structural]
-     rule prepareBuiltin(Identifier(F:String), Args:HeatList)
+
+     rule prepareBuiltin(Identifier(F:String), true, hrItem(A1:RValue), VarArgs:HeatList)
+          => builtin*(F, A1, hListToList(VarArgs))
+          requires allRValueInHeatList(VarArgs)
+          [structural]
+     rule prepareBuiltin(Identifier(F:String), true, hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue), VarArgs:HeatList)
+          => builtin*(F, A1, A2, hListToList(VarArgs))
+          requires allRValueInHeatList(VarArgs)
+          [structural]
+     rule prepareBuiltin(Identifier(F:String), true, hrItem(A1:RValue)
+               hs:: hrItem(A2:RValue) hs:: hrItem(A3:RValue), VarArgs:HeatList)
+          => builtin*(F, A1, A2, A3, hListToList(VarArgs))
+          requires allRValueInHeatList(VarArgs)
+          [structural]
+
+     rule prepareBuiltin(Identifier(F:String), false, Args:HeatList, _)
           => builtin*(F, hListToList(Args))
           requires allRValueInHeatList(Args)
                andBool size(hListToList(Args)) >Int 6
+          [structural]
+     rule prepareBuiltin(Identifier(F:String), true, Args:HeatList, VarArgs:HeatList)
+          => builtin*(F, hListToList(Args) hListToList(VarArgs))
+          requires allRValueInHeatList(Args)
+               andBool allRValueInHeatList(VarArgs)
+               andBool size(hListToList(Args)) >Int 3
           [structural]
 
 endmodule

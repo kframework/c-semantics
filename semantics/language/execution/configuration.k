@@ -62,6 +62,9 @@ module C-CONFIGURATION
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
 
+     // stdarg.h support.
+     <va-lists> .Map </va-lists>
+
      <next-thread-id color="black"> 1 </next-thread-id>
 
      <thread-info color="yellow">

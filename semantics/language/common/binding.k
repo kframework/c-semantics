@@ -108,8 +108,7 @@ module C-BINDING
                (ListItem(V:RValue) => .List) _,
                (N:Int => N +Int 1))
           [structural]
-     // Make one past the last variadic a legal address.
-     rule bindVariadics(.List, N:Int) => bindParam(vararg(N))
+     rule bindVariadics(.List, _) => .K
           [structural]
 
      // n1494 6.5.2.2:6 If the expression that denotes the called function has

@@ -50,6 +50,7 @@ module COMPAT-SYNTAX
      syntax List ::= times(Int, K) [function]
 
      syntax Set ::= filterSet(Set, K) [function]
+     syntax List ::= filterList(List, K) [function]
 
      syntax Bool ::= some(Set, K) [function]
 
@@ -195,8 +196,12 @@ module COMPAT
      rule times(N:Int, K:K) => ListItem(K) times(N -Int 1, K)
           requires N >Int 0
 
-     syntax Set ::= #filterSet(K, Set, K) [function]
+     rule filterSet(SetItem(K:K) S:Set, #klabel(Pred:KLabel))
+          => #filterSet(K, S, #klabel(Pred))
+     rule filterSet(.Set, _)
+          => .Set
 
+     syntax Set ::= #filterSet(K, Set, K) [function]
      rule #filterSet(K:K, .Set, #klabel(Pred:KLabel))
           => SetItem(K)
           requires Pred(K) ==K true
@@ -210,10 +215,24 @@ module COMPAT
           => #filterSet(K', S, #klabel(Pred))
           requires Pred(K) =/=K true
 
-     rule filterSet(SetItem(K:K) S:Set, #klabel(Pred:KLabel))
-          => #filterSet(K, S, #klabel(Pred))
-     rule filterSet(.Set, _)
-          => .Set
+     rule filterList(ListItem(K:K) L:List, #klabel(Pred:KLabel))
+          => #filterList(K, L, #klabel(Pred))
+     rule filterList(.List, _)
+          => .List
+
+     syntax List ::= #filterList(K, List, K) [function]
+     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
+          => ListItem(K)
+          requires Pred(K) ==K true
+     rule #filterList(K:K, .List, #klabel(Pred:KLabel))
+          => .List
+          requires Pred(K) =/=K true
+     rule #filterList(K:K, ListItem(K':K) L:List, #klabel(Pred:KLabel))
+          => ListItem(K) #filterList(K', L, #klabel(Pred))
+          requires Pred(K) ==K true
+     rule #filterList(K:K, ListItem(K':K) L:List, #klabel(Pred:KLabel))
+          => #filterList(K', L, #klabel(Pred))
+          requires Pred(K) =/=K true
 
      rule some(S:Set, Lbl:K) => some'(.K, S, Lbl)
 

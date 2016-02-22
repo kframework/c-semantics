@@ -4,6 +4,7 @@ module LIBC-STDARG
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
+     imports C-BUILTIN-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -54,39 +55,115 @@ module LIBC-STDARG
 
      // va_list __va_start(va_list* ap, void* pN);
      // fixme can add lots of checks here
-     // tool fixme, change RValue to K and unquote error
      rule [va-start]:
-          builtin("__va_start", ApLoc:RValue, ArgLoc:RValue)
-          => checkVarArgs ~> Computation(*(ApLoc) := incSymbolic(ArgLoc)) ~> voidVal
+          // TODO(chathhorn): verify arg is last param and not register.
+          <k> builtin("__va_start", tv(Loc:SymLoc, T:PointerType), _)
+               => checkVarArgs
+               ~> checkDead(read(Loc, innerType(T)))
+               ~> addVaList(!N:Int, tv(Loc, T), filterVarArgs(P))
+               ~> voidVal
+          ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <curr-function-params> P:List </curr-function-params>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
           [structural]
 
-     rule [va-inc-start]:
-          builtin("__va_inc", ApLoc:RValue, Size:RValue)
-          => va-inc-aux(ApLoc, Size, *ApLoc)
+     syntax KItem ::= addVaList(Int, RValue, HeatList) [strict(3)]
+     rule <k> addVaList(N':Int, VaListPtr:RValue, Args:HeatList)
+               => Computation((* VaListPtr) := tv(N', va_list))
+          ...</k>
+          <va-lists> VaLists:Map (.Map => N' |-> hListToList(Args)) </va-lists>
+          requires allRValueInHeatList(Args)
           [structural]
 
-     syntax KItem ::= "va-inc-aux" "(" RValue "," RValue "," K ")"
-     context va-inc-aux(_, _, (HOLE:KItem => reval(HOLE))) [result(RValue)]
-     // fixme can do lots of checks here too
-     rule [va-inc]:
-          va-inc-aux(ApLoc:RValue, _, Ap:RValue)
-          => Computation(*(ApLoc) := incSymbolic(Ap)) ~> Ap
+     syntax KItem ::= checkDead(K) [strict]
+     rule <k> (.K => UNDEF("STDARG2",
+                    "'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.",
+                    "7.16.1.4:3, J.2:1 item 142"))
+               ~> checkDead(tv(N:Int, _))
+          ...</k>
+          <va-lists>... N |-> _ ...</va-lists>
+          [structural]
+     rule <k> checkDead(tv(N:Int, _)) => .K ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool N in_keys(VaLists)
+          [structural]
+     // Avoid triggering errors if it's a trap.
+     rule checkDead(V:KResult) => .K
+          requires getKLabel(V) =/=K #klabel(`tv`)
+          [structural]
+
+     syntax HeatList ::= filterVarArgs(List) [function]
+     rule filterVarArgs(ListItem(vararg(N:Int)) P:List)
+          => hItem(& (lookupInCaller(vararg(N)))) hs:: filterVarArgs(P)
+     rule filterVarArgs(.List) => .HeatList
+     rule filterVarArgs(ListItem(_) P:List) => filterVarArgs(P) [owise]
+
+     syntax KItem ::= lookupInCaller(CId)
+     rule <k> lookupInCaller(X:CId) => lv(lnew(Base, T), T) ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <env>... X |-> Base:SymBase ...</env>
+                         <types>... X |-> T:Type ...</types>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          [structural]
+
+     rule <k> builtin("__va_inc", tv(N:Int, _)) => V ...</k>
+          <va-lists>... N |-> (ListItem(V:RValue) => .List) _:List ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDARG3",
+                    "'va_arg' called on an uninitialized va_list.",
+                    "7.16.1.1:2, J.2:1 item 136"))
+               ~> builtin("__va_inc", tv(N:Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool N in_keys(VaLists)
           [structural]
 
      // fixme can do lots of checks here too
      rule [va-copy]:
-          builtin("__va_copy", ApLoc:RValue, Other:RValue)
-          => Computation(*(ApLoc) := Other) ~> voidVal
+          <k> builtin("__va_copy", Dst:RValue, tv(Src:Int, _))
+               => checkDead(* Dst)
+               ~> Computation((* Dst) := tv(!N:Int, va_list))
+               ~> voidVal
+          ...</k>
+          <va-lists>...
+               Src |-> Args:List
+               (.Map => !N |-> Args)
+          ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDARG4",
+                    "'va_copy' called on uninitialized source va_list.",
+                    "7.16.1.2:2, J.2:1 item 136"))
+               ~> builtin("__va_copy", _, tv(Src:Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool Src in_keys(VaLists)
           [structural]
 
      // fixme can do lots of checks here too
      rule [va-end]:
-          builtin("__va_end", _) => voidVal
+          <k> builtin("va_end", tv(N:Int, _)) => voidVal ...</k>
+          <va-lists>... N |-> _ => .Map ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDARG5",
+                    "'va_end' called on uninitialized va_list.",
+                    "7.16.1.3:2, J.2:1 item 136"))
+               ~> builtin("__va_end", tv(Src:Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool Src in_keys(VaLists)
           [structural]
 
      syntax KItem ::= "checkVarArgs"
-     rule [va-start]:
-          <k> checkVarArgs => .K ...</k>
+     rule <k> checkVarArgs => .K ...</k>
           <call-stack> ListItem(
                <call-stack-frame>...
                     <stack-function-control> <function-control>...
@@ -99,7 +176,9 @@ module LIBC-STDARG
           <gtypes>... F |-> T:Type ...</gtypes>
           requires variadic in getParams(T)
           [structural]
-     rule <k> (.K => UNDEF("STDARG1", "'va_start' used in function with fixed args.", "6.9.1:8, J.2:1 item 87"))
+     rule <k> (.K => UNDEF("STDARG1",
+                    "'va_start' used in function with fixed args.",
+                    "6.9.1:8, J.2:1 item 87"))
                 ~> checkVarArgs
           ...</k>
           <call-stack> ListItem(
