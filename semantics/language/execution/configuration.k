@@ -56,11 +56,14 @@ module C-CONFIGURATION
      // SymLoc |-> set(basedOns)
      <restrict> .Map </restrict>
      // Scope |-> activity(Int, SymLoc |-> Int)
-     <activeBlocks> .Map </activeBlocks>
+     <active-blocks> .Map </active-blocks>
 
      // stdlib
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
+
+     // stdarg.h support.
+     <va-lists> .Map </va-lists>
 
      <next-thread-id color="black"> 1 </next-thread-id>
 
@@ -88,10 +91,10 @@ module C-CONFIGURATION
                     .K
                </final-computation>
                <thread-local>
+                    <locks> .List </locks>
                     // stack of "control" cells
                     <call-stack color="violet"> .List </call-stack>
-                    <locks> .List </locks>
-                    <control>
+                    <function-control>
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
                          <curr-scope color="lightgray">
@@ -104,63 +107,61 @@ module C-CONFIGURATION
                               UnknownCabsLoc
                          </curr-program-loc>
 
-                         <control-details> // TODO(chathhorn): dumb name
-                              // stack of "local" cells
-                              <block-stack color="violet">
-                                   .List
-                              </block-stack>
-                              <local>
-                                   // maps from CIds
-                                   <env color="red"> .Map </env>
-                                   <types color="lightgray"> .Map </types>
-                                   <compound-lit-map> .Map </compound-lit-map>
+                         // stack of "local" cells
+                         <block-stack color="violet">
+                              .List
+                         </block-stack>
+                         <block-control>
+                              // maps from CIds
+                              <env color="red"> .Map </env>
+                              <types color="lightgray"> .Map </types>
+                              <compound-lit-map> .Map </compound-lit-map>
 
-                                   // printf
-                                   <formatting multiplicity="?">
-                                        <format> .List </format>
-                                        <format-arg> .K </format-arg>
-                                        <format-result>
-                                             .List
-                                        </format-result>
-                                        <format-state>
-                                             "normal"
-                                        </format-state>
-                                        <format-mods>
-                                             .Map
-                                        </format-mods>
-                                        <format-length> "" </format-length>
-                                   </formatting>
-                                   // information about the block we're in
-                                   <nesting-depth color="lightgray">
-                                        0
-                                   </nesting-depth>
-                                   <block-history color="lightgray">
+                              // printf
+                              <formatting multiplicity="?">
+                                   <format> .List </format>
+                                   <format-arg> .K </format-arg>
+                                   <format-result>
                                         .List
-                                   </block-history>
-                                   // used to make sure we don't declare a
-                                   // variable twice in the same scope
-                                   <local-vars color="lightgray">
-                                        .List
-                                   </local-vars>
-                                   // used to deallocate memory on leaving a
-                                   // block
-                                   <local-addresses color="lightgray">
-                                        .Set
-                                   </local-addresses>
+                                   </format-result>
+                                   <format-state>
+                                        "normal"
+                                   </format-state>
+                                   <format-mods>
+                                        .Map
+                                   </format-mods>
+                                   <format-length> "" </format-length>
+                              </formatting>
+                              // information about the block we're in
+                              <nesting-depth color="lightgray">
+                                   0
+                              </nesting-depth>
+                              <block-history color="lightgray">
+                                   .List
+                              </block-history>
+                              // used to make sure we don't declare a
+                              // variable twice in the same scope
+                              <local-vars color="lightgray">
+                                   .List
+                              </local-vars>
+                              // used to deallocate memory on leaving a
+                              // block
+                              <local-addresses color="lightgray">
+                                   .Set
+                              </local-addresses>
 
-                              </local>
-                              // used to control initialization when gotoing
-                              <should-init color="lightgray">
-                                   true
-                              </should-init>
-                              <loop-stack color="violet">
-                                   .List
-                              </loop-stack>
-                              <locs-written color="lightgray">
-                                   .List
-                              </locs-written>
-                         </control-details>
-                    </control>
+                         </block-control>
+                         // used to control initialization when gotoing
+                         <should-init color="lightgray">
+                              true
+                         </should-init>
+                         <loop-stack color="violet">
+                              .List
+                         </loop-stack>
+                         <locs-written color="lightgray">
+                              .List
+                         </locs-written>
+                    </function-control>
                </thread-local>
           </thread>
      </threads>
@@ -168,11 +169,7 @@ module C-CONFIGURATION
      // TODO(chathhorn): not sure where to put these.
      <call-stack-frame multiplicity="?">
           <continuation> .K </continuation>
-          <stack-curr-scope> .K </stack-curr-scope>
-          <stack-curr-function-params> .List </stack-curr-function-params>
-          <stack-curr-program-loc> .K </stack-curr-program-loc>
-          <stack-curr-tu> .K </stack-curr-tu>
-          <stack-control> .K </stack-control>
+          <stack-function-control> .K </stack-function-control>
      </call-stack-frame>
 
      <thread-state multiplicity="?">

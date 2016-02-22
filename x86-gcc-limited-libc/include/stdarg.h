@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include <stdlib.h>
-typedef void* va_list;
+typedef ptrdiff_t va_list;
 
 /* The va_arg macro expands to an expression that has the specified type and
  * the value of the next argument in the call. The parameter ap shall have been
@@ -24,24 +24,17 @@ typedef void* va_list;
  * one type is pointer to void and the other is a pointer to a character type.
  */ 
 // type va_arg(va_list ap, type);
-#define __va_argsiz(t)	((sizeof(t)))
-va_list __va_inc(va_list* ap, size_t size); // increments the ap, and returns the current vararg
-#define va_arg(ap, t) \
-	(*((t*)(__va_inc((&(ap)), (__va_argsiz(t))))))
+#define va_arg(ap, t) (*((t*)(__va_inc((ap)))))
+void *__va_inc(va_list ap); // increments the ap, and returns the current vararg
 
 // void va_start(va_list ap, parmN);
-void __va_start(va_list* ap, void* pN);
-#define va_start(ap, pN) \
-	(__va_start((&(ap)), ((void*)(&(pN)))))
+#define va_start(ap, pN) (__va_start((&(ap)), ((void*)(&(pN)))))
+void __va_start(va_list *ap, void *pN);
 
-// void va_end(va_list ap);
-void __va_end(va_list* ap);
-#define va_end(ap) \
-	(__va_end(&(ap)))
+void va_end(va_list ap);
 
-// void va_copy(va_list dest, va_list src);
-void __va_copy(va_list* dst, va_list src);
-#define va_copy(dst, src) \
-	(__va_copy((&(dst)), (src)))
+// void va_copy(va_list dst, va_list src);
+#define va_copy(dst, src) (__va_copy((&(dst)), (src)))
+void __va_copy(va_list *dst, va_list src);
 
 #endif

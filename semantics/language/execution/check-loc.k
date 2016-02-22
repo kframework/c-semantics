@@ -18,22 +18,22 @@ module C-CHECK-LOC
      imports C-CONFIGURATION
 
      rule <k> enterRestrictScope(Tag:Scope) => .K ...</k>
-          <activeBlocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</activeBlocks>
+          <active-blocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</active-blocks>
           [structural]
      rule <k> enterRestrictScope(Tag:Scope) => .K ...</k>
-          <activeBlocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </activeBlocks>
+          <active-blocks> Tags:Map (.Map => Tag |-> activity(1, .Map)) </active-blocks>
           requires notBool (Tag in_keys(Tags))
           [structural]
 
      rule <k> exitRestrictScope(Tag:Scope) => .K ...</k>
-          <activeBlocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</activeBlocks>
+          <active-blocks>... Tag |-> activity((N:Int => N -Int 1), _) ...</active-blocks>
           requires N >Int 1
           [structural]
      rule <k> exitRestrictScope(Tag:Scope) => .K ...</k>
-          <activeBlocks>... Tag |-> activity(1, _) => .Map ...</activeBlocks>
+          <active-blocks>... Tag |-> activity(1, _) => .Map ...</active-blocks>
           [structural]
      rule <k> exitRestrictScope(Tag:Scope) => .K ...</k>
-          <activeBlocks> Blocks:Map </activeBlocks>
+          <active-blocks> Blocks:Map </active-blocks>
           requires notBool Tag in_keys(Blocks)
           [structural]
 
@@ -85,17 +85,17 @@ module C-CHECK-LOC
                (basedOn(Base:SymBase, Tag:Scope) => .K), _,
                (.Set => SetItem(basedOn(Base, Tag))) _)
           ...</k>
-          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
+          <active-blocks>... Tag |-> activity(_, Modified:Map) ...</active-blocks>
           requires Loc in_keys(Modified)
           [structural]
      rule <k> filterUnmodified(Loc:SymLoc, (basedOn(_, Tag:Scope) => .K), _, _)
           ...</k>
-          <activeBlocks>... Tag |-> activity(_, Modified:Map) ...</activeBlocks>
+          <active-blocks>... Tag |-> activity(_, Modified:Map) ...</active-blocks>
           requires notBool (Loc in_keys(Modified))
           [structural]
      rule <k> filterUnmodified(_, (basedOn(_, Tag:Scope) => .K), _, _)
           ...</k>
-          <activeBlocks> Modified:Map </activeBlocks>
+          <active-blocks> Modified:Map </active-blocks>
           requires notBool (Tag in_keys(Modified))
           [structural]
      rule filterUnmodified(_, .K, .Set, Bases:Set) => rset(Bases)

@@ -95,15 +95,15 @@ module C-ENV
 
      syntax KItem ::= "pushLocals" | "popLocals"
      rule <k> pushLocals => .K ...</k>
-          <local> C:Bag <local-types> LocalTypes:Map => .Map </local-types> </local>
+          <block-control> C:Bag <local-types> LocalTypes:Map => .Map </local-types> </block-control>
           <block-stack>
-               .List => ListItem(<local> C <local-types> LocalTypes </local-types> </local>)
+               .List => ListItem(<block-control> C <local-types> LocalTypes </local-types> </block-control>)
           ...</block-stack>
 
      rule <k> popLocals => .K ...</k>
-          (_:LocalCell => L)
+          (_:BlockControlCell => L)
           <block-stack>
-               ListItem(L:LocalCell) => .List
+               ListItem(L:BlockControlCell) => .List
           ...</block-stack>
 
      rule recover ~> (K:KItem => .K)

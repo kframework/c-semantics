@@ -18,29 +18,29 @@ module C-STMT-BLOCK
                => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
           ...</k>
           <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
-          <local>
+          <block-control>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
                <local-addresses> Addresses:Set => .Set </local-addresses>
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
-          </local>
+          </block-control>
           <block-stack> .List
-               => ListItem(<local>
+               => ListItem(<block-control>
                     C
                     <local-vars> Vars </local-vars>
                     <local-addresses> Addresses </local-addresses>
                     <nesting-depth> N </nesting-depth>
-               </local>)
+               </block-control>)
           ...</block-stack>
           [structural]
 
      rule <k> popBlock => exitRestrictScope(blockScope(F, OldTag)) ...</k>
           <curr-scope> blockScope(F:CId, (OldTag:Int => Tag)) </curr-scope>
-          (<local>...
+          (<block-control>...
                <block-history> ListItem(Tag:Int) ...</block-history>
                <local-addresses> .Set </local-addresses>
-          ...</local> => C)
-          <block-stack> ListItem(C:LocalCell) => .List ...</block-stack>
+          ...</block-control> => C)
+          <block-stack> ListItem(C:BlockControlCell) => .List ...</block-stack>
           [structural]
      rule <k> (.K => deleteLocals) ~> popBlock ...</k>
           <local-addresses>... SetItem(_) ...</local-addresses>

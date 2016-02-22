@@ -48,7 +48,7 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc::SymLoc, T::Type)
                => setModified(Loc, byteSizeofType(T), .K, Modified)
           ...</k>
-          <activeBlocks> Modified:Map </activeBlocks>
+          <active-blocks> Modified:Map </active-blocks>
 
      syntax KItem ::= updateModified(K, SymLoc, Int) [function]
      rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
@@ -58,9 +58,9 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc::SymLoc, Size::Int,
                 (Tag::Scope => .K), _)
            ...</k>
-           <activeBlocks>...
+           <active-blocks>...
                 Tag |-> (Offsets:K => updateModified(Offsets, Loc, Size))
-           ...</activeBlocks>
+           ...</active-blocks>
      rule setModified(Loc::SymLoc, Size::Int, .K, K:K |-> _ M::Map)
           => setModified(Loc, Size, K, M)
      rule setModified(_, _, .K, .Map) => .K

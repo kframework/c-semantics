@@ -1,18 +1,10 @@
-module LIBC-STDIO-SYNTAX
-     imports C-SYMLOC-SYNTAX
-
-     // offset, type, length, checklength
-     syntax C ::= "nextvarg-aux" "(" SymLoc "," Type "," K "," K ")"
-          [strict(3, 4)]
-endmodule
-
 module LIBC-STDIO
-     imports LIBC-STDIO-SYNTAX
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -78,24 +70,6 @@ module LIBC-STDIO
           pointerToString(NullPointer) => "NullPointer"
           [structural]
 
-     syntax C ::= nextvarg(SymLoc, K) [strict(2)] // loc, type
-     syntax C ::= vpair(K, RValue)
-     context vpair(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     syntax RValue ::= vpairResult(RValue, RValue)
-
-     rule vpair(K:RValue, K':RValue) => vpairResult(K, K')
-
-     rule [nextvarg-start]:
-          nextvarg(Loc:SymLoc, T:Type)
-          => nextvarg-aux(Loc, T, byteSizeofType(T), sizeofObject(base(Loc)))
-          [structural]
-     rule [nextvarg]:
-          nextvarg-aux(Loc:SymLoc, T:Type, Len:RValue, Len':RValue)
-          => vpair(read(Loc, T),
-               vargResult(tv(loc(linc(base(Loc)), offset(Loc)), t(.Set, pointerType(t(.Set, void))))))
-          requires value(Len):>Int ==Int value(Len'):>Int
-          [structural]
-
      rule [fslPutc]:
           builtin("__fslPutc", tv(N:Int, _), tv(H:Int, _))
           => writeToFD(H, N) ~> tv(N, t(.Set, int))
@@ -157,10 +131,11 @@ module LIBC-STDIO
      // read during evaluation of printf.  should use something like a buffer
      // to do this
      rule [printf]:
-          builtin("printf", Format:RValue, VarArgs:RValue)
+          builtin*("printf", Format:RValue, VarArgs:List)
           => new-printf-aux(formatter(getString(Format), VarArgs))
           [structural]
 
+     syntax KItem ::= "new-printf-aux" "(" K ")" [strict]
      rule [printf-done]:
           new-printf-aux(formattedResult(S:String))
           => writeToFD(1, S)
@@ -170,7 +145,7 @@ module LIBC-STDIO
 
      syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf]:
-          builtin("sprintf", tv(Dest:SymLoc, _), Format:RValue, VarArgs:RValue)
+          builtin*("sprintf", tv(Dest:SymLoc, _), Format:RValue, VarArgs:List)
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
      rule [sprintf-done]:
@@ -181,7 +156,7 @@ module LIBC-STDIO
 
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
-          builtin("snprintf", tv(Dest:SymLoc, _), tv(Len:Int, _), Format:RValue, VarArgs:RValue)
+          builtin*("snprintf", tv(Dest:SymLoc, _), tv(Len:Int, _), Format:RValue, VarArgs:List)
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
@@ -195,22 +170,9 @@ module LIBC-STDIO
           => tv(lengthString(S), t(.Set, int))
           [structural]
 
-     syntax KItem ::= "new-printf-aux" "(" K ")" [strict]
-     syntax KItem ::= formatter(K, RValue) [strict(1)]
-     syntax KItem ::= "formatter-aux" "(" RValue ")"
-     syntax KItem ::= "formatter-next" "(" RValue ")"
-     syntax KItem ::= "formatter-arg" "(" K ")" [strict(1)]
-     rule formatter-next(vargResult(tv(Loc:SymLoc, _)))
-          => formatter-arg(nextvarg(Loc, getFormatType))
-          [structural]
-     rule <k> formatter-arg(vpairResult(tv(K::CValue, _), V':RValue))
-               => formatter-aux(V')
-          ...</k>
-          <format-arg> _ => K </format-arg>
-          [structural]
-
+     syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:
-          <k> formatter(str(S:String), VarArgs:RValue)
+          <k> formatter(str(S:String), VarArgs:List)
                => formatter-aux(VarArgs)
           ...</k>
           (.Bag =>
@@ -222,6 +184,7 @@ module LIBC-STDIO
 
      syntax RValue ::= formattedResult(K)
 
+     syntax KItem ::= "formatter-aux" "(" List ")"
      rule [format-done]:
           <k> formatter-aux(_)
                => formattedResult(listToString(Result:List))
@@ -506,9 +469,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%d-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-state> "%" => "%d" </format-state>
           requires S:String ==String "d" orBool S:String ==String "i"
@@ -537,9 +498,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%o-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("o") => .List ...</format>
           <format-state> "%" => "%o" </format-state>
           [structural]
@@ -552,9 +511,7 @@ module LIBC-STDIO
           <format-state> "%o" => "reset" </format-state>
           [structural]
      rule [format-%u-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("u") => .List ...</format>
           <format-state> "%" => "%u" </format-state>
           [structural]
@@ -567,9 +524,7 @@ module LIBC-STDIO
           <format-state> "%u" => "reset" </format-state>
           [structural]
      rule [format-%x-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("x") => .List ...</format>
           <format-state> "%" => "%x" </format-state>
           [structural]
@@ -582,9 +537,7 @@ module LIBC-STDIO
           <format-state> "%x" => "reset" </format-state>
           [structural]
      rule [format-%X-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("X") => .List ...</format>
           <format-state> "%" => "%X" </format-state>
           [structural]
@@ -621,9 +574,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%f-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("f") => .List ...</format>
           <format-state> "%" => "%f" </format-state>
           [structural]
@@ -636,9 +587,7 @@ module LIBC-STDIO
           <format-state> "%f" => "reset" </format-state>
           [structural]
      rule [format-%F-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("F") => .List ...</format>
           <format-state> "%" => "%F" </format-state>
           [structural]
@@ -701,9 +650,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%g-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("g") => .List ...</format>
           <format-state> "%" => "%g" </format-state>
           [structural]
@@ -716,9 +663,7 @@ module LIBC-STDIO
           <format-state> "%g" => "reset" </format-state>
           [structural]
      rule [format-%G-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("G") => .List ...</format>
           <format-state> "%" => "%G" </format-state>
           [structural]
@@ -754,9 +699,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%c-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("c") => .List ...</format>
           <format-state> "%" => "%c" </format-state>
           [structural]
@@ -798,9 +741,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%s-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("s") => .List ...</format>
           <format-state> "%" => "%s" </format-state>
           [structural]
@@ -830,9 +771,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%p-start]:
-          <k> formatter-aux(V:RValue)
-               => formatter-next(V)
-          ...</k>
+          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("p") => .List ...</format>
           <format-state> "%" => "%p" </format-state>
           [structural]
@@ -880,5 +819,32 @@ module LIBC-STDIO
                Length:String => Length:String +String "l"
           </format-length>
           [structural]
+
+     syntax KItem ::= "formatter-next" "(" List ")"
+     rule formatter-next(ListItem(V:RValue) Args:List)
+          => formatter-arg(nextvarg(V, getFormatType), Args)
+          [structural]
+
+     syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
+     rule <k> formatter-arg(tv(V::CValue, _), Args:List)
+               => formatter-aux(Args)
+          ...</k>
+          <format-arg> _ => V </format-arg>
+          [structural]
+
+     syntax KItem ::= nextvarg(RValue, K) [strict(2)]
+     rule nextvarg(tv(V:CValue, T':Type), T:Type)
+          => tv(V, T)
+          requires byteSizeofType(T) ==Int byteSizeofType(T')
+          [structural]
+     rule (.K => UNDEF("STDIO1",
+               "'printf': Format string expects type of size " +String
+               Int2String(byteSizeofType(T)) +String ", but got an argument of size "
+               +String Int2String(byteSizeofType(T')) +String ".",
+               "7.21.6.1:9, J.2:1 item 153") )
+          ~> nextvarg(tv(V:CValue, T':Type), T:Type)
+          requires byteSizeofType(T) =/=Int byteSizeofType(T')
+          [structural]
+
 endmodule
 
