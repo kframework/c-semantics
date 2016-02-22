@@ -463,11 +463,13 @@ sub classify {
      for (@files) {
           my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.h', '\.o', '\.a', '\.so'));
 
-          if (isKObj($_)) {
+          if ($_ eq '-') {
+               push(@srcFiles, $_);
+          } elsif (isKObj($_)) {
                push(@objFiles, $_);
           } elsif (isAr($_)) {
                extractStatic($_, $base, $suffix);
-          } elsif ($suffix eq '.c' or $suffix eq '.h' or $_ eq '-') {
+          } elsif ($suffix eq '.c' or $suffix eq '.h') {
                push(@srcFiles, $_);
           } else {
                if (!($_ =~ $ignoredFlags)) {
