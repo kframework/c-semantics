@@ -1,15 +1,23 @@
 ## Installation
 
+**NOTE**: A more powerful version of the C semantics capable of recovering from 
+errors and detecting a broader range of undefined and undesirable behaviors 
+can be found at https://runtimeverification.com/match.
+
+---
+
 Please let us know if these instructions are insufficient or if you needed to
 do any installation steps not listed explicitly.
 
 We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
-On Ubuntu, if the K Framework has already been installed (from here:
-<https://github.com/kframework/k/releases/tag/latest>), the
-installation process for our C semantics can be summarized as:
+On Ubuntu, the installation process for our C semantics can be summarized as:
 ```
-$ cd ~
+$ git clone --depth=1 https://github.com/runtimeverification/k.git
+$ cd k
+$ mvn package
+$ export PATH=$PATH:`pwd`/k-distribution/target/release/k/bin
+$ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
 $ sudo apt-get install build-essential diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
 $ k-configure-opam-dev
@@ -54,8 +62,7 @@ the development packages for libcrypt, zlib, and libxml2.
 
 ### 3. Install K.
 - This version of the C semantics should be compatible with the latest version
-  of the K Framework (<https://github.com/kframework/k>). See
-  <http://kframework.org> for download and installation details.
+  of Runtime Verification's version of the K Framework (<https://github.com/runtimeverification/k>).
 - Ensure `kompile` and `krun` are included in your `$PATH`. For example, if you
   downloaded the K Framework to `~/k` (and add this to your `~/.bashrc` to make
   this permanent):
@@ -63,7 +70,17 @@ the development packages for libcrypt, zlib, and libxml2.
 $ export PATH=$PATH:~/k/bin
 ```
 
-### 4. Install OCaml.
+### 4. Install OCaml K backend.
+- This is a proprietary component used to compile and execute programs written in K.
+  It is Copyright Runtime Verification, Inc. and subject to the Runtime Verification
+  Licenses (<https://runtimeverification.com/licensing/>). 
+  A completely free executable version of the C semantics is not available at this time.
+  From the K source root, you can install it by running:
+```
+$ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
+```
+
+### 5. Install OCaml.
 - We use a modified version of the C parser from the CIL project, which is
   written in OCaml.
 - We also now default to using OCaml to execute the C semantics.
@@ -93,7 +110,7 @@ more as well, and no special dependency handling is required.
 Installing with your OS package manger or from https://ocaml.org/ will work.
 On Ubuntu, `apt-get install ocaml`)
 
-### 5. Download our C semantics.
+### 6. Download our C semantics.
 Use the following command if `git` is installed:
 ```
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
@@ -101,9 +118,9 @@ $ git clone --depth=1 https://github.com/kframework/c-semantics.git
 Otherwise, download the latest stable version from github here:
 <https://github.com/kframework/c-semantics/releases/tag/latest>
 
-### 6. Build our C tool.
+### 7. Build our C tool.
 - Run `make -j4` in the project root directory.
-- This should take roughly 35 minutes on non-windows machines, and up to
+- This should take roughly 10 minutes on non-windows machines, and up to
   60 minutes on windows.
 - The `make` process creates a `dist/` directory which you can copy elsewhere
   to install the C tool, or simply leave it where it is. Either way, you will
