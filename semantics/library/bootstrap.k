@@ -1,13 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      imports C-SYNTAX
 
-     syntax KItem ::= varg(K) [strict]
-     context varg(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     //TODO(liyili): might not need this if we have hybrid label
-     syntax RValue ::= vargResult(K)
-     syntax KItem ::= incSymbolic(K)
-     context incSymbolic(HOLE:KItem => reval(HOLE)) [result(RValue)]
-
      syntax KItem ::= builtin(String) [klabel(builtin0)]
                     | builtin(String, RValue) [klabel(builtin1)]
                     | builtin(String, RValue, RValue) [klabel(builtin2)]
@@ -33,14 +26,6 @@ module LIBC-BOOTSTRAP
      imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
-
-     rule varg(K:RValue) => vargResult(K)
-
-     // Need a checkUse everywhere we create an rvalue (somehow based on
-     // memory) without going through lvalue conversion (i.e., reval()).
-     rule incSymbolic(tv(Loc:SymLoc, T:Type))
-          => checkUse(tv(loc(linc(base(Loc)), offset(Loc), SetItem(fromType(t(.Set, no-type)))), T))
-          [structural]
 
      syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
      rule <k> handleBuiltin
