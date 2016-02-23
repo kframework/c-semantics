@@ -147,6 +147,8 @@ module C-CONFIGURATION
 
 <generated-annotations> .List </generated-annotations>
 
+<previous-errors> .Set </previous-errors>
+
 <status> initializing </status>
 
 <options> $OPTIONS:Set </options>
