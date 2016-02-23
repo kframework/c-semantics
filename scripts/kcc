@@ -441,15 +441,15 @@ sub classify {
        my $lib = $_;
        my $isK = 0;
        for (@ld_lib) {
-         my $candidate = catfile(@ld_lib, "lib$lib.so");
-         if (isKObj($candidate)) {
-           push(@objFiles, $candidate);
+         my $candidate = catfile($_, "lib$lib.so");
+         if (-e $candidate) {
+           push(@files, $candidate);
            $isK = 1;
            last;
          }
-         $candidate = catfile(@ld_lib, "lib$lib.a");
-         if (isKObj($candidate)) {
-           push(@objFiles, $candidate);
+         $candidate = catfile($_, "lib$lib.a");
+         if (-e $candidate) {
+           push(@files, $candidate);
            $isK = 1;
            last;
          }
