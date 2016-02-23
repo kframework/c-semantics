@@ -105,6 +105,8 @@ module C-IO-BUFFERED
           requires // Bounds.
                (Offset +Int Size -Int 1 <Int Len)
                andBool Offset >=Int 0
+     rule <k> checkBounds(Loc::SymLoc, _) => .K ...</k>
+          requires isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
                "6.5.6:8, J.2:1 item 47"))
