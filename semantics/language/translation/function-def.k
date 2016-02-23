@@ -164,7 +164,7 @@ module C-FUNCTION-DEF
      syntax KItem ::= calculateGotoMap(CId)
 
      rule staticEval(X:CId, DefT:Type, Blk:K)
-          => scope(blockScope(X, 0),
+          => scope(blockScope(X, 0, false),
                generateRuleAnnotation(X)
                ~> elaborate(dummyBind(getParams(DefT)) ~> Label(funLabel(X), safeBody(X, Blk)))
                ~> calculateGotoMap(X))

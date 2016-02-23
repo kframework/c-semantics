@@ -91,7 +91,7 @@ module C-STMT-GOTO
                     | preprocessGoto(K, CId) [function]
 
      rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K, Lbl) </k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...

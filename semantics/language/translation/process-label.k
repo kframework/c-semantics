@@ -48,13 +48,13 @@ module C-PROCESS-LABEL
 
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>
@@ -219,7 +219,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -238,7 +238,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>
@@ -257,7 +257,7 @@ module C-PROCESS-LABEL
           <computation-tail> Tail:K </computation-tail>
           <goto-loop-stack> LoopStack:List </goto-loop-stack>
           <decl-stack> DeclStack:List </decl-stack>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
           <goto-nesting-depth> Depth:Int </goto-nesting-depth>
           <goto-block-history> BlockHistory:List </goto-block-history>
           <curr-tu> Tu:String </curr-tu>

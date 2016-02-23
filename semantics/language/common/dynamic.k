@@ -52,7 +52,7 @@ module C-DYNAMIC-SYNTAX
      syntax CabsLoc ::= "UnknownCabsLoc"
 
      syntax FileScope ::= "fileScope"
-     syntax BlockScope ::= blockScope(CId, Int)
+     syntax BlockScope ::= blockScope(CId, Int, Bool)
      syntax PrototypeScope ::= "prototypeScope"
      syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
 

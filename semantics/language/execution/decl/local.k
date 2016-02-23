@@ -160,7 +160,7 @@ module C-DECL-LOCAL
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(_, BlockNum:Int, _) </curr-scope>
           [structural]
 
 endmodule

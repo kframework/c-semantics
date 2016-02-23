@@ -128,7 +128,7 @@ module C-DECL-TAGGED
      rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
           <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(_, BlockNum:Int, _) </curr-scope>
           requires notBool (tag(X, Tu, global) in_keys(Structs))
                andBool notBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
@@ -138,7 +138,7 @@ module C-DECL-TAGGED
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <structs>... Tu |-> Structs:Map ...</structs>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <curr-scope> blockScope(_, BlockNum:Int, _) </curr-scope>
           requires (tag(X, Tu, global) in_keys(Structs))
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
