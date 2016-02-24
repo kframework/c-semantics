@@ -167,7 +167,7 @@ module LIBC-STDARG
           <call-stack> ListItem(
                <call-stack-frame>...
                     <stack-function-control> <function-control>...
-                         <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
                          <curr-tu> Tu:String </curr-tu>
                     ...</function-control> </stack-function-control>
                ...</call-stack-frame>)
@@ -184,7 +184,7 @@ module LIBC-STDARG
           <call-stack> ListItem(
                <call-stack-frame>...
                     <stack-function-control> <function-control>...
-                         <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
                          <curr-tu> Tu:String </curr-tu>
                     ...</function-control> </stack-function-control>
                ...</call-stack-frame>)

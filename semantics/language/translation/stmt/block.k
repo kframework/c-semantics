@@ -23,9 +23,9 @@ module C-STMT-BLOCK
           => Block(Tag, list(Statements))
 
      rule <k> Block(Tag:Int, list(Statements:List))
-              => scope(blockScope(F, Tag, false), listToK(Statements) ~> popBlock)
+              => scope(blockScope(F, Tag), listToK(Statements) ~> popBlock)
           ...</k>
-          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <block-history> .List => ListItem(Tag) ...</block-history>
           <elab>... .K => pushBlock(Tag) </elab>
 

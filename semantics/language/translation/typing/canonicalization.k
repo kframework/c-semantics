@@ -204,7 +204,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <structs> Structs:Map </structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int, _) </curr-scope>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys(Structs[Tu]<:K:>Map))
@@ -240,7 +240,7 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <structs> Structs:Map </structs>
           <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int, _) </curr-scope>
+          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           <block-history> BlockHistory:List </block-history>
           requires X =/=K Identifier("")
                andBool notBool (tag(X, Tu, global) in_keys(Structs[Tu]<:K:>Map))

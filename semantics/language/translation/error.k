@@ -40,10 +40,6 @@ module C-TRANSLATION-ERROR
           requires notBool isCSV andBool notBool isNoEvalScope(S)
                andBool notBool error(Msg, UnknownCabsLoc) in Errors
 
-     syntax Bool ::= isNoEvalScope(Scope) [function]
-     rule isNoEvalScope(blockScope(_, _, true)) => true
-     rule isNoEvalScope(_) => false [owise]
-
      rule <k> EXIT(Msg:String) => HALT ...</k>
           <curr-scope> S:Scope </curr-scope>
           <curr-program-loc> C:CabsLoc </curr-program-loc>
@@ -61,7 +57,7 @@ module C-TRANSLATION-ERROR
           </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <options>... SetItem(CSV(Report:String)) ...</options>
-          requires notBool isNoEvalScope(S)
+          requires S =/=K noEvalScope
      rule <k> EXIT(Msg:String)
           => openWriteThenClose(Report, Msg +String ",unknown\r\n")
           ~> HALT ...</k>
@@ -69,6 +65,6 @@ module C-TRANSLATION-ERROR
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <options>... SetItem(CSV(Report:String)) ...</options>
-          requires notBool isNoEvalScope(S)
+          requires S =/=K noEvalScope
 
 endmodule

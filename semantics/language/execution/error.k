@@ -77,7 +77,7 @@ module C-EXECUTION-ERROR
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
-     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _, _))
+     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
           => "  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _), .K)
           => File +String ":" +String Int2String(Line) +String ")" +String stackSeparator(L) +String printStackTrace(L, .K, .K)

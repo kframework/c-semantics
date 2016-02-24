@@ -28,7 +28,7 @@ module C-STMT-RETURN
      }*/
 
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
-          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -40,7 +40,7 @@ module C-STMT-RETURN
                     "6.7.4, J.2:1 item 71"))
                ~> Return(_)
           ...</k>
-          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
@@ -68,13 +68,13 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> Return''(V:RValue) ~> _
-               => exitRestrictScope(blockScope(F, 0, false))
+               => exitRestrictScope(blockScope(F, 0))
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
                ~> K
           </k>
           (<function-control>
-               <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+               <curr-scope> blockScope(F:CId, _) </curr-scope>
                <block-control>...
                     <local-addresses> .Set </local-addresses>
                ...</block-control>

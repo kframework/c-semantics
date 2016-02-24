@@ -39,7 +39,7 @@ module C-STMT-SWITCH
      rule <k> handleSwitch(SN:Int, V:RValue)
                => #handleSwitch-aux(SN, V, .K, M)
           ...</k>
-          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>... F |-> map(M:Map) ...</goto-map>

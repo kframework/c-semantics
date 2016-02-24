@@ -94,7 +94,7 @@ module C-EXPR-FUNCTION-CALL
                     CallT:Type, L:List)
                ~> K:K
                => sequencePoint
-               ~> enterRestrictScope(blockScope(X, 0, false))
+               ~> enterRestrictScope(blockScope(X, 0))
                ~> populateFromGlobal
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
@@ -112,7 +112,7 @@ module C-EXPR-FUNCTION-CALL
           (C:FunctionControlCell
           => <function-control>...
                <curr-tu> Tu </curr-tu>
-               <curr-scope> blockScope(X, 0, false) </curr-scope>
+               <curr-scope> blockScope(X, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
           <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>

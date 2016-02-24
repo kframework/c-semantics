@@ -33,7 +33,7 @@ module LIBC-BOOTSTRAP
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
                     toHeatList(filterList(P, #klabel(`isVarArg`)))))
           ...</k>
-          <curr-scope> blockScope(F:CId, _, _) </curr-scope>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-function-params> P:List </curr-function-params>
           <types>... F |-> T:Type ...</types>
           [structural]

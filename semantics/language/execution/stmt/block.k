@@ -15,9 +15,9 @@ module C-STMT-BLOCK
      imports C-CONFIGURATION
 
      rule <k> pushBlock(Tag:Int)
-               => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag, NoEval))
+               => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
           ...</k>
-          <curr-scope> blockScope(F:CId, (_ => Tag), NoEval:Bool) </curr-scope>
+          <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
           <block-control>
                C:Bag
                <local-vars> Vars:List => .List </local-vars>
@@ -34,8 +34,8 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural]
 
-     rule <k> popBlock => exitRestrictScope(blockScope(F, OldTag, NoEval)) ...</k>
-          <curr-scope> blockScope(F:CId, (OldTag:Int => Tag), NoEval:Bool) </curr-scope>
+     rule <k> popBlock => exitRestrictScope(blockScope(F, OldTag)) ...</k>
+          <curr-scope> blockScope(F:CId, (OldTag:Int => Tag)) </curr-scope>
           (<block-control>...
                <block-history> ListItem(Tag:Int) ...</block-history>
                <local-addresses> .Set </local-addresses>

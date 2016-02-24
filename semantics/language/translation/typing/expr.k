@@ -2,6 +2,7 @@ module C-TYPING-EXPR-SYNTAX
      imports BASIC-K
 
      syntax KItem ::= typeof(K)
+     syntax BlockScope ::= "noEvalScope"
 
 endmodule
 
@@ -189,9 +190,8 @@ module C-TYPING-EXPR
      rule typeof(_ || _ => t(.Set, int))
 
      // conditional expression
-     rule <k> (.K => elaborate(scope(blockScope(F, B, true), elabResult(E1)), scope(blockScope(F, B, true), elabResult(E2))))
-          ~> typeof(_ ? E1:KItem : E2:KItem) ...</k>
-          <curr-scope> blockScope(F:CId, B:Int, _) </curr-scope>
+     rule (.K => elaborate(scope(noEvalScope, elabResult(E1)), scope(noEvalScope, elabResult(E2))))
+          ~> typeof(_ ? E1:KItem : E2:KItem)
 
      syntax KItem ::= elabResult(K)
      context elabResult(HOLE:KItem => reval(HOLE)) [result(RValue)]
@@ -200,7 +200,7 @@ module C-TYPING-EXPR
           <elab> .K => V ...</elab>
 
      rule <k> EXIT(_) => recover ...</k>
-          <curr-scope> blockScope(_, _, true) </curr-scope>
+          <curr-scope> noEvalScope </curr-scope>
 
      context elaborateDone(_, _) ~> typeof(_ ? (HOLE:KItem => typeof(HOLE)) : _) [result(Type)]
      context elaborateDone(_, _) ~> typeof(_ ? _ : (HOLE:KItem => typeof(HOLE))) [result(Type)]
