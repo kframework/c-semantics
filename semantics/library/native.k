@@ -5,56 +5,61 @@ module C-NATIVE-BRIDGE
      imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
 
-     syntax K ::= #nativeCall(String, Type, List) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax K ::= #nativeCall(String, Type, List, List) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax KItem ::= nativeCall(String, List, List)
+     rule <k> nativeCall(S:String, Args:List, VarArgs:List)
+               => #nativeCall(S, T, Args, VarArgs)
+          ...</k>
+          <types>... Identifier(S) |-> T:Type ...</types>
 
-     rule <k> builtin(S:String) => #nativeCall(S, T, .List) ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String) => nativeCall(S, .List, .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue)
-               => #nativeCall(S, T, ListItem(A1))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+
+     rule builtin(S:String) => nativeCall(S, .List, .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue, A2:RValue)
-               => #nativeCall(S, T, ListItem(A1) ListItem(A2))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue)
+          => nativeCall(S, ListItem(A1), .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue, A2:RValue, A3:RValue)
-               => #nativeCall(S, T, ListItem(A1) ListItem(A2) ListItem(A3))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue, A2:RValue)
+          => nativeCall(S, ListItem(A1) ListItem(A2), .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue)
-               => #nativeCall(S, T, ListItem(A1) ListItem(A2) ListItem(A3)
-                    ListItem(A4))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue)
+          => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3),
+               .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
-                    A5:RValue)
-               => #nativeCall(S, T, ListItem(A1) ListItem(A2) ListItem(A3)
-                    ListItem(A4) ListItem(A5))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue)
+          => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
+               ListItem(A4), .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
-                    A5:RValue, A6:RValue)
-               => #nativeCall(S, T, ListItem(A1) ListItem(A2) ListItem(A3)
-                    ListItem(A4) ListItem(A5) ListItem(A6))
-          ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
+               A5:RValue)
+          => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
+               ListItem(A4) ListItem(A5), .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
-     rule <k> builtin*(S:String, Args:List) => #nativeCall(S, T, Args) ...</k>
-          <types>... Identifier(S) |-> T:Type ...</types>
+     rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
+               A5:RValue, A6:RValue)
+          => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
+               ListItem(A4) ListItem(A5) ListItem(A6), .List)
+          requires S in_keys(nativeDefinedBuiltins) [native-call]
+
+     rule builtin*(S:String, A1:RValue, VarArgs:List)
+          => nativeCall(S, ListItem(A1), VarArgs)
+          requires S in_keys(nativeDefinedBuiltins) [native-call]
+     rule builtin*(S:String, A1:RValue, A2:RValue, VarArgs:List)
+          => nativeCall(S, ListItem(A1) ListItem(A2), VarArgs)
+          requires S in_keys(nativeDefinedBuiltins) [native-call]
+     rule builtin*(S:String, A1:RValue, A2:RValue, A3:RValue, VarArgs:List)
+          => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3), VarArgs)
+          requires S in_keys(nativeDefinedBuiltins) [native-call]
+
+     rule builtin*(S:String, Args:List, VarArgs:List)
+          => nativeCall(S, Args, VarArgs)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
 
      // Memory allocated by the native heap needs to be freed by a call to
      // native free.
-     rule <k> builtin("free", tv(Loc:SymLoc, T:Type))
-               => #nativeCall("free", FunType, ListItem(tv(Loc, T)))
-          ...</k>
-          <types>... Identifier("free") |-> FunType:Type ...</types>
+     rule builtin("free", tv(Loc:SymLoc, T:Type))
+          => nativeCall("free", ListItem(tv(Loc, T)), .List)
           requires isNativeLoc(Loc)
 
 endmodule

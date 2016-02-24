@@ -11,7 +11,7 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | "builtin*" "(" String "," RValue "," List ")" [klabel(builtin1+)]
                     | "builtin*" "(" String "," RValue "," RValue "," List ")" [klabel(builtin2+)]
                     | "builtin*" "(" String "," RValue "," RValue "," RValue "," List ")" [klabel(builtin3+)]
-                    | "builtin*" "(" String "," List ")"
+                    | "builtin*" "(" String "," List "," List ")"
 endmodule
 
 module LIBC-BOOTSTRAP
@@ -91,13 +91,13 @@ module LIBC-BOOTSTRAP
           requires allRValueInHeatList(VarArgs)
           [structural]
 
-     rule prepareBuiltin(Identifier(F:String), false, Args:HeatList, _)
-          => builtin*(F, hListToList(Args))
+     rule prepareBuiltin(Identifier(F:String), false, Args:HeatList, .HeatList)
+          => builtin*(F, hListToList(Args), .List)
           requires allRValueInHeatList(Args)
                andBool size(hListToList(Args)) >Int 6
           [structural]
      rule prepareBuiltin(Identifier(F:String), true, Args:HeatList, VarArgs:HeatList)
-          => builtin*(F, hListToList(Args) hListToList(VarArgs))
+          => builtin*(F, hListToList(Args), hListToList(VarArgs))
           requires allRValueInHeatList(Args)
                andBool allRValueInHeatList(VarArgs)
                andBool size(hListToList(Args)) >Int 3
