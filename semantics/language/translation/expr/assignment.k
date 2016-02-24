@@ -210,7 +210,7 @@ module C-EXPR-ASSIGNMENT
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
                andBool (T ==Type T')
-     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stipQualifiers(T)) ...</k>
+     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stripQualifiers(T)) ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
