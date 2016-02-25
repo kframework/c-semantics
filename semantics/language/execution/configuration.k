@@ -25,7 +25,7 @@ module C-CONFIGURATION
      <linkings> .Map </linkings>
 
      <translation-units>
-          <tu multiplicity="*" type="Set">
+          <tu multiplicity="*" type="Map">
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
