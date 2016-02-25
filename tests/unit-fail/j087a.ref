@@ -1,5 +1,5 @@
 Error: UB-STDARG1
-Description: 'va_start' used in function with fixed args.
+Description: 'va_start' used in a function with fixed args.
 Type: Undefined behavior.
 See also: C11 sec. 6.9.1:8, J.2:1 item 87
   at __va_start(j087a.c:5)

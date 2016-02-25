@@ -1,0 +1,8 @@
+Error: UB-STDARG2
+Description: 'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.
+Type: Undefined behavior.
+See also: C11 sec. 7.16.1.4:3, J.2:1 item 142
+  at __va_start(UB-STDARG2-bad.c:8)
+  at f(UB-STDARG2-bad.c:8)
+  at main(UB-STDARG2-bad.c:15)
+  at <file-scope>(<unknown>)

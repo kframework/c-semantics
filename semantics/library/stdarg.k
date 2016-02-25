@@ -37,7 +37,7 @@ module LIBC-STDARG
      ////////////////////////////--
           // ,, "__va_inc"
           // ,, "__va_start"
-          // ,, "__va_end"
+          // ,, "va_end"
           // ,, "__va_copy"
 
 
@@ -140,7 +140,7 @@ module LIBC-STDARG
           ...</va-lists>
           [structural]
      rule <k> (.K => UNDEF("STDARG4",
-                    "'va_copy' called on uninitialized source va_list.",
+                    "'va_copy' called on an uninitialized source va_list.",
                     "7.16.1.2:2, J.2:1 item 136"))
                ~> builtin("__va_copy", _, tv(Src:Int, _))
           ...</k>
@@ -154,9 +154,9 @@ module LIBC-STDARG
           <va-lists>... N |-> _ => .Map ...</va-lists>
           [structural]
      rule <k> (.K => UNDEF("STDARG5",
-                    "'va_end' called on uninitialized va_list.",
+                    "'va_end' called on an uninitialized va_list.",
                     "7.16.1.3:2, J.2:1 item 136"))
-               ~> builtin("__va_end", tv(Src:Int, _))
+               ~> builtin("va_end", tv(Src:Int, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool Src in_keys(VaLists)
@@ -177,7 +177,7 @@ module LIBC-STDARG
           requires variadic in getParams(T)
           [structural]
      rule <k> (.K => UNDEF("STDARG1",
-                    "'va_start' used in function with fixed args.",
+                    "'va_start' used in a function with fixed args.",
                     "6.9.1:8, J.2:1 item 87"))
                 ~> checkVarArgs
           ...</k>
