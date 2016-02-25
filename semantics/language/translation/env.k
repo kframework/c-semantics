@@ -90,7 +90,7 @@ module C-ENV
           ...</k>
           <curr-scope> OldScope:Scope => Scope </curr-scope>
      rule <k> noEval(K:K)
-              => K ~> setEval(OldEval)
+              => pushLocals ~> K ~> popLocals ~> setEval(OldEval)
           ...</k>
           <curr-eval-context> OldEval:EvalContext => noEval </curr-eval-context>
 
