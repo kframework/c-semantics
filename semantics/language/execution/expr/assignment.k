@@ -21,7 +21,7 @@ module C-EXPR-ASSIGNMENT
           => checkOverlap(stripProv(Loc), T, T')
           ~> checkArrayStaticAssign(T', V)
           ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, T))
+          ~> transferProv(Loc, tv(V, stripQualifiers(T)))
           requires notBool isRestrictType(T)
                andBool fromArrayStatic(T')
                andBool (T ==Type T')
