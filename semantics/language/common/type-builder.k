@@ -19,16 +19,18 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 
+     syntax Type ::= "size_t" [function]
 endmodule
 
 module C-TYPE-BUILDER
      imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports K-REFLECTION
-     imports C-CONFIGURATION
-     imports C-SYMLOC-SYNTAX
 
      rule fun(R:FlexType)
           => fun(R, void)
@@ -74,5 +76,7 @@ module C-TYPE-BUILDER
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
      rule expand(T:SimpleType) => t(.Set, T)
+
+     rule size_t => expand(cfg:sizeut)
 
 endmodule

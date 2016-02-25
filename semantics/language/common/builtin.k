@@ -33,14 +33,13 @@ module C-BUILTIN
      rule #nativeDefinedBuiltins(_) => .Map
 
      // Types for library functions defined in the semantics. These are the
-     // "definitive" types against which all calls are checked for
-     // compatibility.
+     // definitive types against which all calls are checked for compatibility.
      rule semanticsDefinedBuiltins =>
           "abort" |-> fun(void)
           "asin" |-> fun(double, double)
           "atan2" |-> fun(double, double, double)
           "atan" |-> fun(double, double)
-          "calloc" |-> fun(ptr(void), cfg:sizeut, cfg:sizeut)
+          "calloc" |-> fun(ptr(void), size_t, size_t)
           "cos" |-> fun(double, double)
           "__debug" |-> fun(void, int)
           "exit" |-> fun(void, int)
@@ -54,16 +53,16 @@ module C-BUILTIN
           "__fslPutc" |-> fun(int, unsigned-char, int)
           "log" |-> fun(double, double)
           "longjmp" |-> fun(void, jmp_buf, int)
-          "malloc" |-> fun(ptr(void), cfg:sizeut)
+          "malloc" |-> fun(ptr(void), size_t)
           "mtx_init" |-> fun(int, ptr(mtx_t), int)
           "mtx_lock" |-> fun(int, ptr(mtx_t))
           "mtx_unlock" |-> fun(int, ptr(mtx_t))
           "printf" |-> fun(int, restrict(ptr(const(char))), variadic)
           "rand" |-> fun(int)
-          "realloc" |-> fun(ptr(void), ptr(void), cfg:sizeut)
+          "realloc" |-> fun(ptr(void), ptr(void), size_t)
           "setjmp" |-> fun(int, jmp_buf)
           "sin" |-> fun(double, double)
-          "snprintf" |-> fun(int, restrict(ptr(char)), cfg:sizeut, restrict(ptr(const(char))), variadic)
+          "snprintf" |-> fun(int, restrict(ptr(char)), size_t, restrict(ptr(const(char))), variadic)
           "sprintf" |-> fun(int, restrict(ptr(char)), restrict(ptr(const(char))), variadic)
           "sqrt" |-> fun(double, double)
           "srand" |-> fun(void, unsigned-int)

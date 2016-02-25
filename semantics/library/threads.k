@@ -1,11 +1,11 @@
 module LIBC-THREADS
      imports LIBC-BOOTSTRAP-SYNTAX
 
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -40,7 +40,7 @@ module LIBC-THREADS
      rule [thrd-create]:
           <thread>...
                <k> spawn-aux(
-                         ThId:Int, ThFuncPointer:RValue, ThArg:RValue)
+                         ThId:Int, ThFuncPtr:RValue, ThArg:RValue)
                     => thrd-success
                ...</k>
                <curr-tu> Tu:String </curr-tu>
@@ -54,7 +54,7 @@ module LIBC-THREADS
           <thread>...
                <duration> thread(ThId:Int) </duration>
                <thread-id> ThId:Int </thread-id>
-               <k> Call(ThFuncPointer, list(ListItem(ThArg)))
+               <k> Call(ThFuncPtr, list(ListItem(ThArg)))
                </k>
                <env> Env:Map </env>
                <curr-tu> Tu:String </curr-tu>
@@ -72,26 +72,28 @@ module LIBC-THREADS
      syntax KItem ::= "join-aux" "(" Int "," RValue ")"
 
      rule [thrd-join-start]:
-          builtin("thrd_join", tv(ThId:Int, t(_, T:SimpleType)), ResultPtr:RValue)
-          => join-aux(ThId:Int, ResultPtr)
+          builtin("thrd_join",
+               tv(ThId:Int, t(_, T:SimpleType)),
+               ResultPtr:RValue)
+          => join-aux(ThId, ResultPtr)
           requires T ==K cfg:thrdut
           [structural]
 
      rule [thrd-join]:
           <thread>...
-               <k> join-aux(ThId:Int, tv(Loc:SymLoc, _))
-                    => #if (Loc =/=K NullPointer)
-                         #then Computation((* Loc) := V)
-                         #else dotK
-                         #fi
-                         ~> thrd-success
+               <k> join-aux(ThId:Int, Ptr:RValue)
+                    => #if (notBool isNull(Ptr))
+                       #then Computation((* Ptr) := V)
+                       #else dotK
+                       #fi
+                    ~> thrd-success
                ...</k>
                <buffer> .List </buffer>
           ...</thread>
-          <thread>...
-               <k> V:RValue </k>
+          (<thread>...
+               <k> V:KResult </k>
                <thread-id> ThId:Int </thread-id>
-          ...</thread>
+          ...</thread> => .Bag)
           [ndthread]
 
      rule [mtx-init]:

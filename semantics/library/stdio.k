@@ -177,7 +177,7 @@ module LIBC-STDIO
           ...</k>
           (.Bag =>
                <formatting>...
-                    <format> stringToList(S:String) </format>
+                    <format> stringToList(S) </format>
                ...</formatting>
           )
           [structural]
@@ -203,9 +203,9 @@ module LIBC-STDIO
      rule [format-normal]:
           <k> formatter-aux(_) ...</k>
           <format> ListItem(S:String) => .List ...</format>
-          <format-result>... .List => ListItem(S:String) </format-result>
+          <format-result>... .List => ListItem(S) </format-result>
           <format-state> "normal" </format-state>
-          requires S:String =/=String "%"
+          requires S =/=String "%"
           [structural]
 
      rule [format-reset]:
@@ -324,6 +324,12 @@ module LIBC-STDIO
                andBool ordChar(C:String) <=Int ordChar("9")
           [structural]
 
+     // ignoring decimal
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(".") => .List ...</format>
+          <format-state> "%" </format-state>
+          [structural]
+
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
      The length modifiers and their meanings are:
      \begin{description}
@@ -395,67 +401,46 @@ module LIBC-STDIO
      */
 
      syntax KItem ::= "getFormatType"
-     syntax KItem ::= "getFormatType-aux" "(" K "," K ")"
+     syntax KItem ::= "getFormatType-aux" "(" K "," K ")" [function]
      rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
           <format-length> Length::String </format-length>
           <format-state> State::String </format-state>
           [structural]
 
-     rule getFormatType-aux("%a", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%A", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%e", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%E", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%f", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%F", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%g", _) => t(.Set, double) [structural]
-     rule getFormatType-aux("%G", _) => t(.Set, double) [structural]
+     rule getFormatType-aux("%a", _) => t(.Set, double)
+     rule getFormatType-aux("%A", _) => t(.Set, double)
+     rule getFormatType-aux("%e", _) => t(.Set, double)
+     rule getFormatType-aux("%E", _) => t(.Set, double)
+     rule getFormatType-aux("%f", _) => t(.Set, double)
+     rule getFormatType-aux("%F", _) => t(.Set, double)
+     rule getFormatType-aux("%g", _) => t(.Set, double)
+     rule getFormatType-aux("%G", _) => t(.Set, double)
 
-     rule getFormatType-aux("%c", "")
-          => t(.Set, int) [structural]
-     rule getFormatType-aux("%s", "")
-          => t(.Set, pointerType(t(.Set, char))) [structural]
+     rule getFormatType-aux("%c", "") => t(.Set, int)
+     rule getFormatType-aux("%s", "") => t(.Set, pointerType(t(.Set, char)))
 
-     rule getFormatType-aux("%p", "")
-          => t(.Set, pointerType(t(.Set, void))) [structural]
+     rule getFormatType-aux("%p", "") => t(.Set, pointerType(t(.Set, void)))
 
-     rule getFormatType-aux("%d", "")
-          => t(.Set, int) [structural]
-     rule getFormatType-aux("%o", "")
-          => t(.Set, int) [structural]
-     rule getFormatType-aux("%u", "")
-          => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%x", "")
-          => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%X", "")
-          => t(.Set, unsigned-int) [structural]
-     rule getFormatType-aux("%n", "")
-          => t(.Set, pointerType(t(.Set, int))) [structural]
+     rule getFormatType-aux("%d", "") => t(.Set, int)
+     rule getFormatType-aux("%o", "") => t(.Set, int)
+     rule getFormatType-aux("%u", "") => t(.Set, unsigned-int)
+     rule getFormatType-aux("%x", "") => t(.Set, unsigned-int)
+     rule getFormatType-aux("%X", "") => t(.Set, unsigned-int)
+     rule getFormatType-aux("%n", "") => t(.Set, pointerType(t(.Set, int)))
 
-     rule getFormatType-aux("%d", "l")
-          => t(.Set, long-int) [structural]
-     rule getFormatType-aux("%o", "l")
-          => t(.Set, long-int) [structural]
-     rule getFormatType-aux("%u", "l")
-          => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%x", "l")
-          => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%X", "l")
-          => t(.Set, unsigned-long-int) [structural]
-     rule getFormatType-aux("%n", "l")
-          => t(.Set, pointerType(t(.Set, long-int))) [structural]
+     rule getFormatType-aux("%d", "l") => t(.Set, long-int)
+     rule getFormatType-aux("%o", "l") => t(.Set, long-int)
+     rule getFormatType-aux("%u", "l") => t(.Set, unsigned-long-int)
+     rule getFormatType-aux("%x", "l") => t(.Set, unsigned-long-int)
+     rule getFormatType-aux("%X", "l") => t(.Set, unsigned-long-int)
+     rule getFormatType-aux("%n", "l") => t(.Set, pointerType(t(.Set, long-int)))
 
-     rule getFormatType-aux("%d", "ll")
-          => t(.Set, long-long-int) [structural]
-     rule getFormatType-aux("%o", "ll")
-          => t(.Set, long-long-int) [structural]
-     rule getFormatType-aux("%u", "ll")
-          => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%x", "ll")
-          => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%X", "ll")
-          => t(.Set, unsigned-long-long-int) [structural]
-     rule getFormatType-aux("%n", "ll")
-          => t(.Set, pointerType(t(.Set, long-long-int))) [structural]
+     rule getFormatType-aux("%d", "ll") => t(.Set, long-long-int)
+     rule getFormatType-aux("%o", "ll") => t(.Set, long-long-int)
+     rule getFormatType-aux("%u", "ll") => t(.Set, unsigned-long-long-int)
+     rule getFormatType-aux("%x", "ll") => t(.Set, unsigned-long-long-int)
+     rule getFormatType-aux("%X", "ll") => t(.Set, unsigned-long-long-int)
+     rule getFormatType-aux("%n", "ll") => t(.Set, pointerType(t(.Set, long-long-int)))
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
@@ -472,13 +457,20 @@ module LIBC-STDIO
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-state> "%" => "%d" </format-state>
-          requires S:String ==String "d" orBool S:String ==String "i"
+          requires S ==String "d" orBool S ==String "i"
           [structural]
      rule [format-%d]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-result>...
                .List => ListItem(Int2String(D:Int))
+          </format-result>
+          <format-state> "%d" => "reset" </format-state>
+          [structural]
+     rule <k> formatter-aux(_) ...</k>
+          <format-arg> NullPointer => .K </format-arg>
+          <format-result>...
+               .List => ListItem("0")
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
@@ -757,7 +749,7 @@ module LIBC-STDIO
                ~> formatter-aux(_)
           ...</k>
           <format-result>...
-               .List => ListItem(S:String)
+               .List => ListItem(S)
           </format-result>
           <format-state> "%s-read" => "reset" </format-state>
           [structural]
@@ -833,17 +825,17 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
-     rule nextvarg(tv(V:CValue, T':Type), T:Type)
-          => tv(V, T)
-          requires byteSizeofType(T) ==Int byteSizeofType(T')
+     rule nextvarg(tv(V:CValue, T':Type), T:Type) => tv(V, T)
+          requires T ==Type T'
           [structural]
-     rule (.K => UNDEF("STDIO1",
-               "'printf': Format string expects type of size " +String
-               Int2String(byteSizeofType(T)) +String ", but got an argument of size "
-               +String Int2String(byteSizeofType(T')) +String ".",
+     rule <k> (.K => UNDEF("STDIO1",
+               "'printf': Mismatch between the type expected by the conversion specifier "
+               +String State +String " and the type of the argument.",
                "7.21.6.1:9, J.2:1 item 153") )
           ~> nextvarg(tv(V:CValue, T':Type), T:Type)
-          requires byteSizeofType(T) =/=Int byteSizeofType(T')
+          ...</k>
+          <format-state> State:String </format-state>
+          requires T =/=Type T'
           [structural]
 
 endmodule

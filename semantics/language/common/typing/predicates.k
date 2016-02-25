@@ -142,17 +142,23 @@ module C-TYPING-PREDICATES
      rule isRestrictType(t(SetItem(Restrict) _, _)) => true
      rule isRestrictType(_) => false [owise]
 
+     // TODO(chathhorn): arithmetic and address constants
+     rule fromConstantExpr(T:IntegerType) => true
+          requires IntegerConstant in getModifiers(T)
+     rule fromConstantExpr(T:PointerType) => true
+          requires IntegerConstant in getModifiers(T)
+     rule fromConstantExpr(_) => false [owise]
+
+     rule isNull(tv(0, _)) => true
+     rule isNull(tv(NullPointer, _)) => true
+     rule isNull(_) => false [owise]
+
      rule isNullPointerConstant(tv(0, T:IntegerType)) => true
           requires fromConstantExpr(T)
      rule isNullPointerConstant(tv(NullPointer, T:PointerType)) => true
           requires (simpleType(innerType(T)) ==K void)
-               andBool IntegerConstant in getModifiers(T)
+               andBool fromConstantExpr(T)
      rule isNullPointerConstant(_) => false [owise]
-
-     // TODO(chathhorn): arithmetic and address constants
-     rule fromConstantExpr(T:IntegerType) => true
-          requires IntegerConstant in getModifiers(T)
-     rule fromConstantExpr(_) => false [owise]
 
      rule hasAlignas(t(Mods:Set, _)) => hasAlignasMod(Mods)
 
