@@ -173,7 +173,7 @@ module C-EXPR-ASSIGNMENT
 
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
                => write(Loc, V, T)
-               ~> tv(V, T)
+               ~> tv(V, stripQualifiers(T))
           ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
@@ -181,21 +181,21 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isLinkerLoc(Loc)
                andBool (T ==Type T')
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
-               => te(nclv(Loc, T) := tv(V, T'), T)
+               => te(nclv(Loc, T) := tv(V, T'), stripQualifiers(T))
           ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool isLinkerLoc(Loc)
                andBool (T ==Type T')
-     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
+     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stripQualifiers(T)) ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
                andBool (T ==Type type(R))
 
      rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
-               => te(nclv(Loc, T) := tv(V, T'), T)
+               => te(nclv(Loc, T) := tv(V, T'), stripQualifiers(T))
           ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
@@ -203,14 +203,14 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isConstType(T)
                andBool (T ==Type T')
      rule <k> nclv(Loc:SymLoc, T:Type) := te(K:K, T':Type)
-               => te(nclv(Loc, T) := K, T)
+               => te(nclv(Loc, T) := K, stripQualifiers(T))
           ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
                andBool (T ==Type T')
-     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), T) ...</k>
+     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stripQualifiers(T)) ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(type(R))
