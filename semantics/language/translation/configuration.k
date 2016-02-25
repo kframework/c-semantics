@@ -139,6 +139,7 @@ module C-CONFIGURATION
      <curr-tu color="lightgray"> "" </curr-tu>
      <curr-function> .K </curr-function>
      <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
+     <curr-eval-context color="lightgray"> eval </curr-eval-context>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
@@ -146,6 +147,8 @@ module C-CONFIGURATION
 <annotation> "" </annotation>
 
 <generated-annotations> .List </generated-annotations>
+
+<previous-errors> .Set </previous-errors>
 
 <status> initializing </status>
 

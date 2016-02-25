@@ -55,6 +55,7 @@ module C-DYNAMIC-SYNTAX
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
      syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
+     syntax EvalContext ::= "eval" | "noEval"
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)

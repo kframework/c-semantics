@@ -8,6 +8,7 @@ module C-ENV-SYNTAX
      syntax KItem ::= addEnum(CId, Int)
      syntax KItem ::= "populateFromGlobal"
      syntax KItem ::= scope(Scope, K)
+     syntax KItem ::= noEval(K)
      syntax KItem ::= "recover"
 endmodule
 
@@ -88,10 +89,17 @@ module C-ENV
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)
           ...</k>
           <curr-scope> OldScope:Scope => Scope </curr-scope>
+     rule <k> noEval(K:K)
+              => pushLocals ~> K ~> popLocals ~> setEval(OldEval)
+          ...</k>
+          <curr-eval-context> OldEval:EvalContext => noEval </curr-eval-context>
 
      syntax KItem ::= setScope(Scope)
      rule <k> setScope(Scope:Scope) => .K ...</k>
           <curr-scope> _ => Scope </curr-scope>
+     syntax KItem ::= setEval(EvalContext)
+     rule <k> setEval(Eval:EvalContext) => .K ...</k>
+          <curr-eval-context> _ => Eval </curr-eval-context>
 
      syntax KItem ::= "pushLocals" | "popLocals"
      rule <k> pushLocals => .K ...</k>
