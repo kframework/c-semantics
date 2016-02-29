@@ -43,7 +43,11 @@ module C-TRANSLATION-ERROR
           <curr-program-loc> C:CabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <previous-errors> Errors:Set </previous-errors>
-          requires notBool isCSV andBool error(Msg, C) in Errors
+          requires notBool isCSV andBool error(Msg, stripColumns(C)) in Errors
+
+     syntax CabsLoc ::= stripColumns(CabsLoc) [function]
+     rule stripColumns(CabsLoc(File:String, Line:Int, _, _)) => CabsLoc(File, Line, .K, .K)
+     rule stripColumns(C:CabsLoc) => C [owise]
 
      rule <k> EXIT(Msg:String)
           => openWriteThenClose(Report, Msg +String "," +String File +String ":" +String Int2String(Line) +String "\r\n")
