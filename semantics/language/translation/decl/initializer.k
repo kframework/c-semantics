@@ -46,7 +46,7 @@ module C-DECL-INITIALIZER
                => CompoundInit(list(ListItem(InitFragment(NextInit,
                     SingleInit(stringLiteral(S)))))))
           )
-          requires (lengthString(S) <=Int Len)
+          requires lengthString(S) <=Int Len
           [structural]
 
      rule figureInit(
@@ -70,7 +70,7 @@ module C-DECL-INITIALIZER
           requires isWCharType(T)
           [structural]
 
-     rule figureInit(X:CId, t(Mods:Set, incompleteArrayType(T:Type)),
+     rule figureInit(X:CId, t(Mods:Set, incompleteArrayType(T:CharType)),
                CompoundInit(list(ListItem(InitFragment(NextInit,
                SingleInit(stringLiteral(S:String)))))))
           => figureInit(X, t(Mods, incompleteArrayType(T)),
@@ -111,7 +111,8 @@ module C-DECL-INITIALIZER
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type.", "6.7.9:16, J.2:1 item 83"))
           ~> figureInit(_, t(_, incompleteArrayType(T:Type)), SingleInit(K:K))
-          requires notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`wstringLiteral`)
+          requires (notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`wstringLiteral`))
+               andBool (notBool isCharType(T) orBool getKLabel(K) =/=K #klabel(`stringLiteral`))
 
      rule <k> figureInit-aux(_:CId, t(_,
                     (incompleteArrayType(T:Type)
