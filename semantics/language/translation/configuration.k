@@ -101,6 +101,14 @@ module C-CONFIGURATION
      // for initializers.
      <initializing> false </initializing>
 
+     <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-function> .K </curr-function>
+     <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
+     <curr-eval-context color="lightgray"> eval </curr-eval-context>
+     <curr-program-loc color="black">
+          UnknownCabsLoc
+     </curr-program-loc>
+
      <block-stack color="violet"> .List </block-stack>
      <block-control>
           // maps from CIds
@@ -110,9 +118,6 @@ module C-CONFIGURATION
           <local-types> .Map </local-types>
           <enums> .Map </enums>
           <block-history> .List </block-history>
-          <curr-program-loc color="black">
-               UnknownCabsLoc
-          </curr-program-loc>
      </block-control>
 
      <init-calc multiplicity="?" initial="">
@@ -136,10 +141,6 @@ module C-CONFIGURATION
                .K
           </decl-type-holder>
      </init-calc>
-     <curr-tu color="lightgray"> "" </curr-tu>
-     <curr-function> .K </curr-function>
-     <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
-     <curr-eval-context color="lightgray"> eval </curr-eval-context>
 </exec>
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>

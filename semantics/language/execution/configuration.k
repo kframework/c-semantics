@@ -92,7 +92,7 @@ module C-CONFIGURATION
                </final-computation>
                <thread-local>
                     <locks> .List </locks>
-                    // stack of "control" cells
+                    // stack of function-control cells
                     <call-stack color="violet"> .List </call-stack>
                     <function-control>
                          // general information
@@ -107,31 +107,14 @@ module C-CONFIGURATION
                               UnknownCabsLoc
                          </curr-program-loc>
 
-                         // stack of "local" cells
-                         <block-stack color="violet">
-                              .List
-                         </block-stack>
+                         // stack of block-control cells
+                         <block-stack color="violet"> .List </block-stack>
                          <block-control>
                               // maps from CIds
                               <env color="red"> .Map </env>
                               <types color="lightgray"> .Map </types>
                               <compound-lit-map> .Map </compound-lit-map>
 
-                              // printf
-                              <formatting multiplicity="?">
-                                   <format> .List </format>
-                                   <format-arg> .K </format-arg>
-                                   <format-result>
-                                        .List
-                                   </format-result>
-                                   <format-state>
-                                        "normal"
-                                   </format-state>
-                                   <format-mods>
-                                        .Map
-                                   </format-mods>
-                                   <format-length> "" </format-length>
-                              </formatting>
                               // information about the block we're in
                               <nesting-depth color="lightgray">
                                    0
@@ -149,8 +132,8 @@ module C-CONFIGURATION
                               <local-addresses color="lightgray">
                                    .Set
                               </local-addresses>
-
                          </block-control>
+
                          // used to control initialization when gotoing
                          <should-init color="lightgray">
                               true
@@ -161,6 +144,22 @@ module C-CONFIGURATION
                          <locs-written color="lightgray">
                               .List
                          </locs-written>
+
+                         // printf
+                         <formatting multiplicity="?">
+                              <format> .List </format>
+                              <format-arg> .K </format-arg>
+                              <format-result>
+                                   .List
+                              </format-result>
+                              <format-state>
+                                   "normal"
+                              </format-state>
+                              <format-mods>
+                                   .Map
+                              </format-mods>
+                              <format-length> "" </format-length>
+                         </formatting>
                     </function-control>
                </thread-local>
           </thread>
