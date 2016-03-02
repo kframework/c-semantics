@@ -74,7 +74,7 @@ module C-CONFIGURATION
           <glocks color="yellow"> .Map </glocks>
      </thread-info>
      <threads color="yellow" thread="">
-          <thread multiplicity="*" color="yellow" type="Set">
+          <thread multiplicity="*" color="yellow" type="Map">
                <thread-id color="yellow"> 0 </thread-id>
                <buffer color="lightgray"> .List </buffer>
 

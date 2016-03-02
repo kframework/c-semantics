@@ -124,6 +124,10 @@ module C-DYNAMIC-SYNTAX
      syntax Opts ::= CSV(String)
 
      syntax KItem ::= "checkStackDepth"
+
+     syntax KItem ::= #Thread(K, K, K, K)
+     syntax KItem ::= "#Bottom"
+     syntax KItem ::= "#ThreadLocal"
 endmodule
 
 module C-DYNAMIC
