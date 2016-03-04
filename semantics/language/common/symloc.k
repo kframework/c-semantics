@@ -101,7 +101,7 @@ module C-SYMLOC-SYNTAX
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
-     syntax Bool ::= ifFromArrayInBounds(SymLoc, Type, Int) [function]
+     syntax Bool ::= ifFromArrayInBounds(SymLoc, UType, Int) [function]
 
      syntax SymLoc ::= stripBases(SymLoc) [function]
      syntax SymLoc ::= stripFromArray(SymLoc) [function]
@@ -249,16 +249,16 @@ module C-SYMLOC
      rule isBase(basedOn(_, _)) => true
      rule isBase(_) => false [owise]
 
-     rule transferProv(From:SymLoc, tv(To:SymLoc, T:Type))
+     rule transferProv(From:SymLoc, tv(To:SymLoc, T::UType))
           => tv(addProv(prov(From), To), T)
           [structural]
-     rule transferProv(_:SymLoc, tv(V:CValue, T:Type)) => tv(V, T)
+     rule transferProv(_:SymLoc, tv(V:CValue, T::UType)) => tv(V, T)
           requires isSymLoc(V:CValue) =/=K true
           [structural]
-     rule transferProv(Prov:Set, tv(Loc:SymLoc, T:Type))
+     rule transferProv(Prov:Set, tv(Loc:SymLoc, T::UType))
           => tv(addProv(Prov, Loc), T)
           [structural]
-     rule transferProv(_:Set, tv(V:CValue, T:Type)) => tv(V, T)
+     rule transferProv(_:Set, tv(V:CValue, T::UType)) => tv(V, T)
           requires isSymLoc(V:CValue) =/=K true
           [structural]
 
@@ -330,25 +330,23 @@ module C-SYMLOC
      rule #getBitOffset(K:KItem, S:Set) => #getBitOffset(.K, S)
           requires getKLabel(K) =/=K #klabel(`bitOffset`)
 
-     rule ifFromArrayInBounds(
-               loc(_, _, SetItem(K:K) S:Set),
-               T:Type, I:Int)
+     rule ifFromArrayInBounds(loc(_, _, SetItem(K:K) S:Set), T::UType, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
      rule ifFromArrayInBounds(Loc:SymLoc, _, _) => true
           requires notBool isFromArray(Loc)
 
-     syntax Bool ::= #ifFromArrayInBounds(K, Set, Type, Int) [function]
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
+     syntax Bool ::= #ifFromArrayInBounds(K, Set, UType, Int) [function]
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T::UType, I:Int)
           => true
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) >=Int 0)
                andBool (Offset +Int (I *Int byteSizeofType(innerType(T))) <=Int Len)
-     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T:Type, I:Int)
+     rule #ifFromArrayInBounds(fromArray(Offset:Int, Len:Int), _, T::UType, I:Int)
           => false
           requires (Offset +Int (I *Int byteSizeofType(innerType(T))) <Int 0)
                orBool (Offset +Int (I *Int byteSizeofType(innerType(T))) >Int Len)
      rule #ifFromArrayInBounds(K:K, .Set, _, _) => true
           requires getKLabel(K) =/=K #klabel(`fromArray`)
-     rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T:Type, I:Int)
+     rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T::UType, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
           requires getKLabel(K) =/=K #klabel(`fromArray`)
 

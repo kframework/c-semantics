@@ -92,8 +92,8 @@ module C-EXECUTION-ERROR
           => printStackTrace(L, Loc, S)
      rule printStackTrace(.List, .K, .K) => ""
 
-     rule cast(t(N:Set, T:SimpleType), emptyValue)
-          => castHold(t(N, T:SimpleType), emptyValue)
+     rule cast(ut(Mods::Set, T::SimpleUType), emptyValue)
+          => castHold(ut(Mods, T), emptyValue)
           requires T =/=K void
 
      rule [err00037]:
@@ -102,8 +102,8 @@ module C-EXECUTION-ERROR
           [structural]
      rule [err00046]:
           (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
-          concretize(_:FloatType, dataList(ListItem(piece(N:Int, _)) _))
-          requires (N >Int 0)
+          concretize(_:FloatUType, dataList(ListItem(piece(N:Int, _)) _))
+          requires N >Int 0
           [structural]
 
      // TODO(chathhorn): Silly way to do things. Probably need to allow

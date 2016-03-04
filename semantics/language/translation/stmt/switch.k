@@ -28,7 +28,7 @@ module C-STMT-SWITCH
 
      rule (.K => elaborate(K)) ~> Switch(_, _:RValue, K:K)
      rule <k> elaborateDone(K:K) ~> Switch(SN:Int, V:RValue, _) => .K ...</k>
-          <elab>... .K => Switch(SN, cast(promote(type(V)), V), K) </elab>
+          <elab>... .K => Switch(SN, cast(promote(utype(V)), V), K) </elab>
           requires isIntegerType(type(V))
 
 endmodule

@@ -58,7 +58,7 @@ module C-NATIVE-BRIDGE
 
      // Memory allocated by the native heap needs to be freed by a call to
      // native free.
-     rule builtin("free", tv(Loc:SymLoc, T:Type))
+     rule builtin("free", tv(Loc:SymLoc, T::UType))
           => nativeCall("free", ListItem(tv(Loc, T)), .List)
           requires isNativeLoc(Loc)
 

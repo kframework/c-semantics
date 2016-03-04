@@ -57,7 +57,7 @@ module LIBC-STDARG
      // fixme can add lots of checks here
      rule [va-start]:
           // TODO(chathhorn): verify arg is last param and not register.
-          <k> builtin("__va_start", tv(Loc:SymLoc, T:PointerType), _)
+          <k> builtin("__va_start", tv(Loc:SymLoc, T:PointerUType), _)
                => checkVarArgs
                ~> checkDead(read(Loc, innerType(T)))
                ~> addVaList(!N:Int, tv(Loc, T), filterVarArgs(P))
@@ -74,7 +74,7 @@ module LIBC-STDARG
 
      syntax KItem ::= addVaList(Int, RValue, HeatList) [strict(3)]
      rule <k> addVaList(N':Int, VaListPtr:RValue, Args:HeatList)
-               => Computation((* VaListPtr) := tv(N', va_list))
+               => Computation((* VaListPtr) := tv(N', utype(va_list)))
           ...</k>
           <va-lists> VaLists:Map (.Map => N' |-> hListToList(Args)) </va-lists>
           requires allRValueInHeatList(Args)
@@ -131,7 +131,7 @@ module LIBC-STDARG
      rule [va-copy]:
           <k> builtin("__va_copy", Dst:RValue, tv(Src:Int, _))
                => checkDead(* Dst)
-               ~> Computation((* Dst) := tv(!N:Int, va_list))
+               ~> Computation((* Dst) := tv(!N:Int, utype(va_list)))
                ~> voidVal
           ...</k>
           <va-lists>...

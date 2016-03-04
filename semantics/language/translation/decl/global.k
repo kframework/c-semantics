@@ -61,7 +61,7 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
           requires validLocalStorageClass(T)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
 
      // Prototype scope declarations (includes both params in prototypes as
@@ -82,7 +82,7 @@ module C-DECL-GLOBAL
      rule <k> declare''(T:VoidType, #NoName, NoInit) => .K ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires (getStorageSpecifiers(T) ==K .Set)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
 
      // File scope declarations.
@@ -95,7 +95,7 @@ module C-DECL-GLOBAL
           <curr-scope> fileScope </curr-scope>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires validGlobalStorageClass(T)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
      rule <k> declare''(T:Type, X:CId, K:K)
                => declareExternalVariable(X, T,
@@ -115,7 +115,7 @@ module C-DECL-GLOBAL
                " appears with type qualifiers.",
                "6.7.3:9, J.2:1 item 66"))
           ~> declare''(T:FunctionType, X:CId, _)
-          requires getQualifiers(T) =/=K .Set
+          requires getQualifiers(T) =/=K noQuals
           [structural]
 
      rule (.K => CV("TDG2",
@@ -185,7 +185,7 @@ module C-DECL-GLOBAL
                ~> declare''(T:VoidType, _, _)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
-          requires getQualifiers(T) =/=K .Set
+          requires getQualifiers(T) =/=K noQuals
           [structural]
 
      rule (.K => CV("TDG9",
@@ -788,8 +788,7 @@ module C-DECL-GLOBAL
                => declare(typedDeclaration(addStorage(Static, T), X), NoInit)
           ...</k>
           <internals>...
-               X |-> declState(_, T:Type,
-                    declared, _)
+               X |-> declState(_, T:Type, declared, _)
           ...</internals>
           requires notBool isFunctionType(T)
                andBool isCompleteType(T)

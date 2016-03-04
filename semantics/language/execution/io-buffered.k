@@ -77,9 +77,9 @@ module C-IO-BUFFERED
           requires // Sequencing.
                (notBool loc(Base, Offset) in Locs)
                // Const.
-               andBool (notBool (Const in getQualsAtOffset(ObjT, Offset)))
+               andBool (notBool (Const inQuals getQualsAtOffset(ObjT, Offset)))
                // Volatile.
-               andBool ((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
+               andBool ((notBool (Volatile inQuals getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T))
                // Cross-thread writes.
                andBool notBool ((isThreadDuration(loc(Base, Offset))
@@ -124,7 +124,7 @@ module C-IO-BUFFERED
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
-          requires (Const in getQualsAtOffset(ObjT, Offset))
+          requires Const inQuals getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
@@ -133,7 +133,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
           requires notBool isVolatileType(T)
-               andBool (Volatile in getQualsAtOffset(ObjT, Offset))
+               andBool (Volatile inQuals getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (.K => IMPL("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
@@ -210,7 +210,7 @@ module C-IO-BUFFERED
      rule assertSeq(Loc::SymLoc, Locs::List)
           => assert(notBool (Loc in Locs), errorUnseqEffects) [macro]
      rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
-          => assert((notBool (Volatile in getQualsAtOffset(ObjT, Offset)))
+          => assert((notBool (Volatile inQuals getQualsAtOffset(ObjT, Offset)))
                orBool isVolatileType(T), errorNonVolatileLVal) [macro]
      rule assertUninit(L::SymLoc)
           => assert(notBool hasLint orBool notBool (isStaticDuration(L) orBool isThreadDuration(L)),
@@ -268,7 +268,7 @@ module C-IO-BUFFERED
      syntax Bits ::= getZeroedBits(Int, Int, Type) [function]
      rule getZeroedBits(_, N::Int, T::Type) => piece(0, N)
           requires isPointerType(T) orBool isArithmeticType(T) orBool N ==Int 0
-     rule getZeroedBits(Offset::Int, N::Int, t(_, arrayType(T::Type, _))) =>getZeroedBits(Offset %Int bitSizeofType(T), N, T)
+     rule getZeroedBits(Offset::Int, N::Int, t(_, _, arrayType(T::Type, _))) => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
           requires N =/=Int 0
      rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType) => getZeroedBits(Offset, N, T, getFieldInfo(T))
           requires N =/=Int 0
@@ -330,7 +330,7 @@ module C-IO-BUFFERED
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc)
 //                  => assertSeq(Loc, Locs)
-//                  ~> tv(V:K, t(.Set, no-type))
+//                  ~> tv(V:K, utype(no-type))
 //             ...</k>
 //             <locs-written> Locs:List </locs-written>
 //             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
@@ -358,7 +358,7 @@ module C-IO-BUFFERED
           [structural]
 
      rule <k> realloc(Old:SymBase, New:SymBase, OldLen:Int, NewLen:Int)
-               => alloc(New, t(.Set, no-type), NewLen)
+               => alloc(New, type(no-type), NewLen)
                ~> copyBytes(minInt(OldLen, NewLen), Old, New)
                ~> copyObjectType(Old, New)
                ~> deleteSizedObject(Old, OldLen)
@@ -417,11 +417,11 @@ module C-IO-BUFFERED
           ...</mem>
           requires isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
-     rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => t(getModifiers(T), no-type) ...</k>
+     rule <k> getEffectiveType(loc(Base::SymBase, Offset::Int)) => t(getQualifiers(T), getModifiers(T), no-type) ...</k>
           <mem>... Base |-> object(T::Type, _, _, EffTypes::Map) ...</mem>
           requires notBool (Offset in_keys(EffTypes)) andBool isNoType(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
           [structural]
-     rule <k> getEffectiveType(Loc::SymLoc) => t(.Set, no-type) ...</k>
+     rule <k> getEffectiveType(Loc::SymLoc) => type(no-type) ...</k>
           <effective-types> EffTypes::Map </effective-types>
           requires isNativeLoc(Loc) andBool notBool (Loc in_keys(EffTypes))
      rule <k> getEffectiveType(Loc::SymLoc) => T ...</k>
@@ -466,37 +466,39 @@ module C-IO-BUFFERED
      // the object,
      rule #effectivelyCompat(L::Type, Eff::Type) => true
           requires areCompatible(stripQualifiers(L), stripQualifiers(Eff))
-               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      // - a type that is the signed or unsigned type corresponding to the
      // effective type of the object,
      // - a type that is the signed or unsigned type corresponding to a
      // qualified version of the effective type of the object,
      rule #effectivelyCompat(L:SignedIntegerType, Eff::Type) => true
-          requires areCompatible(correspondingUnsignedType(stripQualifiers(L)),
+          requires areCompatible(
+                    type(correspondingUnsignedType(utype(L))),
                     stripQualifiers(Eff))
-               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      rule #effectivelyCompat(L:UnsignedIntegerType, Eff::Type) => true
           requires notBool isBoolType(L)
-               andBool areCompatible(correspondingSignedType(stripQualifiers(L)),
+               andBool areCompatible(
+                    type(correspondingSignedType(utype(L))),
                     stripQualifiers(Eff))
-               andBool getQualifiers(Eff) <=Set getQualifiers(L)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      // - an aggregate or union type that includes one of the aforementioned
      // types among its members (including, recursively, a member of a
      // subaggregate or contained union), or
      rule #effectivelyCompat(L:ArrayType, Eff::Type)
           => #effectivelyCompat(innerType(L), Eff)
           requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
-               andBool getQualifiers(Eff) <=Set getQualifiers(L))
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L))
      rule #effectivelyCompat(L:StructOrUnionType, Eff::Type)
           => effectivelyCompatWithField(getFieldInfo(L), Eff)
           requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
-               andBool getQualifiers(Eff) <=Set getQualifiers(L))
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L))
 
      // TODO(chathhorn): should track the active variant of unions.
      rule #effectivelyCompat(L::Type, Eff:UnionType)
           => effectivelyCompatWithField(L, getFieldInfo(Eff))
           requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
-                    andBool getQualifiers(Eff) <=Set getQualifiers(L))
+                    andBool getQualifiers(Eff) <=Quals getQualifiers(L))
                andBool notBool isAggregateOrUnionType(L)
                andBool notBool isCharType(L)
      // - a character type.
@@ -507,7 +509,7 @@ module C-IO-BUFFERED
      rule #effectivelyCompat(L::Type, Eff:AggregateType)
           => #effectivelyCompat(L, effInnerType(Eff))
           requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
-                    andBool getQualifiers(Eff) <=Set getQualifiers(L))
+                    andBool getQualifiers(Eff) <=Quals getQualifiers(L))
                andBool notBool isAggregateOrUnionType(L)
                andBool notBool isCharType(L)
 
@@ -516,36 +518,36 @@ module C-IO-BUFFERED
      syntax Bool ::= effectivelyCompatWithField(Type, FieldInfo) [function]
      rule effectivelyCompatWithField(T::Type, fieldInfo(_, _, Types::Map, _))
           => #effectivelyCompatWithField(T, values(Types))
+
      syntax Bool ::= #effectivelyCompatWithField(Type, List) [function]
      rule #effectivelyCompatWithField(T::Type, ListItem(T'::Type) L::List)
-          => #effectivelyCompat(T, T') ==K true
-               orElseBool #effectivelyCompatWithField(T, L)
-     rule #effectivelyCompatWithField(_, .List) => false
+          => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(T, L)
+     rule #effectivelyCompatWithField(_, .List) => false [owise]
 
      syntax Bool ::= effectivelyCompatWithField(FieldInfo, Type) [function]
      rule effectivelyCompatWithField(fieldInfo(_, _, Types::Map, _), T::Type)
           => #effectivelyCompatWithField(values(Types), T)
+
      syntax Bool ::= #effectivelyCompatWithField(List, Type) [function]
      rule #effectivelyCompatWithField(ListItem(T::Type) L::List, T'::Type)
-          => #effectivelyCompat(T, T') ==K true
-               orElseBool #effectivelyCompatWithField(L, T')
-     rule #effectivelyCompatWithField(.List, _) => false
+          => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(L, T')
+     rule #effectivelyCompatWithField(.List, _) => false [owise]
 
-     syntax Set ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
+     syntax Quals ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
      rule getQualsAtOffset(T::Type, Offset::Int)
           => getQualsAtOffset(getTypeAtOffset(T, Offset *Int cfg:bitsPerByte))
 
-     syntax Set ::= getQualsAtOffset(Type) [function]
+     syntax Quals ::= getQualsAtOffset(Type) [function]
      rule getQualsAtOffset(T::Type) => getQualifiers(T)
           requires notBool isAggregateType(T)
      rule getQualsAtOffset(T:AggregateType)
-          => getQualifiers(T) getQualsAtOffset(effInnerType(T))
+          => getQualifiers(T) +Quals getQualsAtOffset(effInnerType(T))
      // TODO(chathhorn): absolutely no idea what to do about qualifiers on
      // union members -- do we need to get the effective type of the object?
 
      syntax Type ::= effInnerType(K) [function]
      rule effInnerType(T:ArrayType) => innerType(T)
-     rule effInnerType(t(_, structType(S::StructId)))
+     rule effInnerType(t(_, _, structType(S::StructId)))
           => effInnerType(getFieldInfo(S))
      rule effInnerType(fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _))
           => T

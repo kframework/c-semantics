@@ -79,6 +79,6 @@ module C-BUILTIN
 
      rule mtx_t => struct("__typeref_mtx_t")
      rule jmp_buf => arr(struct("__typeref_jmp_buf"), 1)
-     rule va_list => t(.Set, cfg:ptrdiffut)
+     rule va_list => type(cfg:ptrdiffut)
 
 endmodule

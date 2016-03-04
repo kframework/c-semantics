@@ -7,32 +7,32 @@ module C-EXPR-MULTIPLICATIVE
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     rule L:RValue * R:RValue => te(stripHold(L) * stripHold(R), type(L))
+     rule L:RValue * R:RValue => te(stripHold(L) * stripHold(R), utype(L))
           requires (isHold(L) orBool isHold(R))
-               andBool (isPromoted(type(L)) orBool isFloatType(type(L)))
-               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
-               andBool type(L) ==Type type(R)
+               andBool (isPromoted(utype(L)) orBool isFloatType(type(L)))
+               andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
+               andBool utype(L) ==Type utype(R)
           [structural]
 
-     rule te(L:K, T:Type) / tv(V:CValue, T':Type) => te(L / tv(V, T'), T)
-          requires ((isPromoted(T) andBool V =/=K 0) orBool isFloatType(T))
+     rule te(L:K, T::UType) / tv(V:CValue, T'::UType) => te(L / tv(V, T'), T)
+          requires ((isPromoted(T) andBool V =/=K 0) orBool isFloatUType(T))
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
                andBool T ==Type T'
-     rule L:RValue / R:RValue => te(stripHold(L) / stripHold(R), type(L))
+     rule L:RValue / R:RValue => te(stripHold(L) / stripHold(R), utype(L))
           requires isHold(R)
-               andBool (isPromoted(type(L)) orBool isFloatType(type(L)))
-               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
-               andBool type(L) ==Type type(R)
+               andBool (isPromoted(utype(L)) orBool isFloatType(type(L)))
+               andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
+               andBool utype(L) ==Type utype(R)
 
-     rule te(L:K, T:Type) % tv(V:CValue, T':Type) => te(L % tv(V, T'), T)
+     rule te(L:K, T::UType) % tv(V:CValue, T'::UType) => te(L % tv(V, T'), T)
           requires isPromoted(T)
                andBool V =/=K 0
                andBool notBool (fromConstantExpr(T) xorBool fromConstantExpr(T'))
                andBool T ==Type T'
-     rule L:RValue % R:RValue => te(stripHold(L) % stripHold(R), type(L))
+     rule L:RValue % R:RValue => te(stripHold(L) % stripHold(R), utype(L))
           requires isHold(R)
-               andBool isPromoted(type(L))
-               andBool notBool (fromConstantExpr(type(L)) xorBool fromConstantExpr(type(R)))
-               andBool type(L) ==Type type(R)
+               andBool isPromoted(utype(L))
+               andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
+               andBool utype(L) ==Type utype(R)
 endmodule
 

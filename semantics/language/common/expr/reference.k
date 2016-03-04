@@ -33,9 +33,9 @@ module C-COMMON-EXPR-REFERENCE
      its operand.
      }
      */
-     rule &(nclv(Loc:SymLoc, T:Type))
+     rule &(nclv(Loc:SymLoc, T::Type))
           => checkUse(tv(addProv(fromArray(0, byteSizeofType(T)), Loc),
-               t(.Set, pointerType(T))))
+               utype(pointerType(T))))
           requires notBool isRegisterLoc(Loc)
                andBool isCompleteType(T)
           [structural]
@@ -43,9 +43,8 @@ module C-COMMON-EXPR-REFERENCE
      // since incomplete types cannot be included in aggregates or unions, except the
      // flexible array member, we don't need the fromArray tag in this case and so we
      // drop it since computing the size of an incomplete type is impossible.
-     rule &(nclv(Loc:SymLoc, T:Type))
-          => checkUse(tv(Loc,
-               t(.Set, pointerType(T))))
+     rule &(nclv(Loc:SymLoc, T::Type))
+          => checkUse(tv(Loc, utype(pointerType(T))))
           requires notBool isRegisterLoc(Loc)
                andBool notBool isCompleteType(T)
           [structural]
@@ -65,14 +64,14 @@ module C-COMMON-EXPR-REFERENCE
      value has been assigned to the pointer, the behavior of the unary
      \cinline{*} operator is undefined.
      }*/
-     rule *(tv(Loc:SymLoc, T:PointerType))
+     rule *(tv(Loc:SymLoc, T:PointerUType))
           => checkRestrict(Loc)
           ~> checkLoc(Loc)
           ~> lv(stripBases(stripFromArray(Loc)), innerType(T))
           requires notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,
-                    t(.Set, pointerType(t(.Set, char))), 1) ==K true
+                    utype(pointerType(type(char))), 1) ==K true
           [structural]
      rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
@@ -85,7 +84,7 @@ module C-COMMON-EXPR-REFERENCE
                "6.5.6:8, J.2:1 item 47"))
           ~> *(tv(Loc:SymLoc, _))
           requires ifFromArrayInBounds(Loc,
-               t(.Set, pointerType(t(.Set, char))), 1) =/=K true
+               utype(pointerType(type(char))), 1) =/=K true
           [structural]
 
 endmodule

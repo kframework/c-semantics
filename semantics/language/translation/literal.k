@@ -20,9 +20,9 @@ module C-LITERAL
 
      imports COMPAT-SYNTAX
 
-     syntax Bool ::= withinRange(Int, SimpleType) [function]
-     rule withinRange(I:Int, T:SimpleType)
-          => (I <=Int max(t(.Set, T))) andBool (I >=Int min(t(.Set, T)))
+     syntax Bool ::= withinRange(Int, SimpleUType) [function]
+     rule withinRange(I::Int, T::SimpleUType)
+          => inRange(I, utype(T))
 
      syntax String ::= simplifyForHex(String) [function]
      rule simplifyForHex(S:String) => simplifyForHex(butFirstChar(S))
@@ -97,121 +97,121 @@ module C-LITERAL
      }*/
      rule NoSuffix(decimalConstant(I:Int)) =>
           #if withinRange(I, int)
-               #then tv(I, t(SetItem(IntegerConstant), int))
+               #then tv(I, ut(SetItem(IntegerConstant), int))
           #else #if withinRange(I, long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-int))
           #else #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
           [structural, anywhere]
 
      rule NoSuffix(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, int)
-               #then tv(I, t(SetItem(IntegerConstant), int))
+               #then tv(I, ut(SetItem(IntegerConstant), int))
           #else #if withinRange(I, unsigned-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-int))
           #else #if withinRange(I, long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-int))
           #else #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi #fi #fi #fi
           [structural, anywhere]
 
      rule LitU(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-int))
           #else #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
           [structural, anywhere]
 
      rule LitU(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-int))
           #else #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
           [structural, anywhere]
 
      rule LitL(decimalConstant(I:Int)) =>
           #if withinRange(I, long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-int))
           #else #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
           [structural, anywhere]
 
      rule LitL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-int))
           #else #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi #fi
           [structural, anywhere]
 
      rule LitUL(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
           [structural, anywhere]
 
      rule LitUL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
           [structural, anywhere]
 
      rule LitLL(decimalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
           [structural, anywhere]
 
      rule LitLL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), long-long-int))
+               #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
           [structural, anywhere]
 
      rule LitULL(decimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
           [structural, anywhere]
 
      rule LitULL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
-               #then tv(I, t(SetItem(IntegerConstant), unsigned-long-long-int))
-          #else tv(I, t(SetItem(IntegerConstant), no-type))
+               #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
+          #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
           [structural, anywhere]
 
@@ -225,13 +225,13 @@ module C-LITERAL
      rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)
      rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
 
-     rule NoSuffix(reducedFloat(F:Float)) => tv(F, t(.Set, double))
+     rule NoSuffix(reducedFloat(F:Float)) => tv(F, utype(double))
           [structural, anywhere]
 
-     rule LitL(reducedFloat(F:Float)) => tv(F, t(.Set, long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(F, utype(long-double))
           [structural, anywhere]
 
-     rule LitF(reducedFloat(F:Float)) => tv(F, t(.Set, float))
+     rule LitF(reducedFloat(F:Float)) => tv(F, utype(float))
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
@@ -252,9 +252,9 @@ module C-LITERAL
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
-          => cast(t(SetItem(IntegerConstant), int), cast(t(.Set, unsigned-char), tv(N, t(.Set, int))):>RValue)
+          => cast(ut(SetItem(IntegerConstant), int), cast(utype(unsigned-char), tv(N, utype(int))):>RValue)
           [structral, anywhere]
-     rule WCharLiteral(N:Int) => tv(N, t(.Set, cfg:wcharut))
+     rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
           [structral, anywhere]
      rule Constant(V:RValue) => V
           [structral, anywhere]

@@ -94,7 +94,7 @@ module LIBC-SETJMP
      // fixme doesn't check if loc:Int is const
      rule [setjmp]:
           <k> (builtin("setjmp",
-               tv(Loc:SymLoc, t(_, pointerType(t(_,
+               tv(Loc:SymLoc, ut(_, pointerType(t(_, _,
                     structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))))))
                => ignoreLocals
                     ~> writeBytes(Loc, ListItem(bag(
@@ -103,7 +103,7 @@ module LIBC-SETJMP
                               <saved-thread-local>C</saved-thread-local>
                          </thread-state>
                     )))
-                    ~> tv(0, t(.Set, int))
+                    ~> tv(0, utype(int))
                )
                ~> K
           </k>
@@ -125,12 +125,12 @@ module LIBC-SETJMP
                          <thread-continuation> K:K </thread-continuation>
                          <saved-thread-local>C:ThreadLocalCell</saved-thread-local>
                     </thread-state>
-               ))), t(_, structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))),
-                    tv(I:Int, t(_, int))) ~> _
+               ))), ut(_, structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))),
+                    tv(I:Int, ut(_, int))) ~> _
                => ignoreLocals
                     ~> #if I:Int ==Int 0
-                         #then tv(1, t(.Set, int))
-                         #else tv(I:Int, t(.Set, int)) #fi
+                         #then tv(1, ut(.Set, int))
+                         #else tv(I:Int, ut(.Set, int)) #fi
                     ~> K
           </k>
           (<thread-local> _ </thread-local> => C)

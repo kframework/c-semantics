@@ -35,27 +35,27 @@ module C-TYPE-BUILDER
      rule fun(R:FlexType)
           => fun(R, void)
      rule fun(R:FlexType, T:FlexType)
-          => t(.Set, functionType(expand(R),
+          => type(functionType(expandut(R),
                ListItem(expand(T))))
      rule fun(R:FlexType, T:FlexType, T':FlexType)
-          => t(.Set, functionType(expand(R),
+          => type(functionType(expandut(R),
                ListItem(expand(T))
                ListItem(expand(T'))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType)
-          => t(.Set, functionType(expand(R),
+          => type(functionType(expandut(R),
                ListItem(expand(T))
                ListItem(expand(T'))
                ListItem(expand(T''))))
      rule fun(R:FlexType, T:FlexType, T':FlexType, T'':FlexType, T''':FlexType)
-          => t(.Set, functionType(expand(R),
+          => type(functionType(expandut(R),
                ListItem(expand(T))
                ListItem(expand(T'))
                ListItem(expand(T''))
                ListItem(expand(T'''))))
 
-     rule ptr(T:FlexType) => t(.Set, pointerType(expand(T)))
+     rule ptr(T:FlexType) => type(pointerType(expand(T)))
 
-     rule arr(T:FlexType, N:Int) => t(.Set, arrayType(expand(T), N))
+     rule arr(T:FlexType, N:Int) => type(arrayType(expand(T), N))
 
      rule const(T:FlexType) => addQualifier(Const, expand(T))
 
@@ -75,7 +75,11 @@ module C-TYPE-BUILDER
 
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
-     rule expand(T:SimpleType) => t(.Set, T)
+     rule expand(T:SimpleType) => type(T)
+
+     syntax UType ::= expandut(FlexType) [function]
+     rule expandut(T:Type) => utype(T)
+     rule expandut(T:SimpleType) => utype(T)
 
      rule size_t => expand(cfg:sizeut)
 

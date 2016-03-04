@@ -14,6 +14,9 @@ module C-TYPING-SYNTAX
      syntax Bool ::= Type "==Type" Type [function]
      syntax Bool ::= Type "=/=Type" Type [function]
 
+     syntax Bool ::= UType "==Type" UType [function]
+     syntax Bool ::= UType "=/=Type" UType [function]
+
      syntax SimpleType ::= simpleType(Type) [function]
 
      // TODO(chathhorn): move?
@@ -43,32 +46,58 @@ module C-TYPING-SYNTAX
 
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
+     syntax Set ::= "functionSpecifiers" [function]
+
+     // Const, Restrict, Volatile, Atomic
+     syntax Quals ::= "{" Set "}"
+
+     syntax Quals ::= "noQuals" [function]
+     syntax Bool ::= Qualifier "inQuals" Quals [function]
+     syntax Quals ::= toQuals(Set) [function]
+     syntax Quals ::= Quals "+Quals" Quals [function]
+     syntax Quals ::= Quals "+Qual" Qualifier [function]
+     syntax Quals ::= Quals "-Qual" Qualifier [function]
+     syntax Bool ::= Quals "<=Quals" Quals [function]
 
      // Basic types
+     syntax SimpleSignedBitfieldType ::= bitfieldType(SimpleSignedIntType, Int)
+     syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedIntType, Int)
+                                         | bitfieldType(SimpleBoolType, Int)
+
      syntax SimpleCharType ::= "char" [function]
-     syntax SimpleSignedType ::= "short-int" | "int"
-                               | "long-int" | "long-long-int" 
+     syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
+                               | "long-int" | "long-long-int"
                                | SimpleSignedCharType
+                               | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
      syntax SimpleSignedCharType ::= "signed-char"
+     syntax SimpleSignedIntType ::= "int"
      syntax SimpleUnsignedCharType ::= "unsigned-char"
      syntax SimpleCharType ::= SimpleSignedCharType | SimpleUnsignedCharType
-     syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int" 
-                                 | "unsigned-int" | "unsigned-long-int" 
-                                 | "unsigned-long-long-int" 
+     syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
+                                 | SimpleUnsignedIntType | "unsigned-long-int"
+                                 | "unsigned-long-long-int"
                                  | SimpleUnsignedCharType
+                                 | SimpleUnsignedBitfieldType
+     syntax SimpleUnsignedIntType ::= "unsigned-int"
      syntax SimpleBoolType ::= "bool"
      syntax SimpleVoidType ::= "void"
      syntax SimpleNoType ::= "no-type"
-     syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType | SimpleCharType 
-                              | SimpleFloatType | SimpleUnsignedType 
-                              | SimpleSignedType
+     syntax BitfieldFieldType ::= SimpleSignedIntType
+                                | SimpleUnsignedIntType
+                                | SimpleBoolType
+     syntax SimpleIntegerType ::= SimpleSignedType | SimpleUnsignedType
+                                | bitfieldType(BitfieldFieldType, Int)
+                                | BitfieldFieldType
+
+     syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType | SimpleCharType
+                              | SimpleFloatType | SimpleIntegerType
      syntax SimpleType ::= SimpleBasicType
-  
+     syntax SimpleUType ::= SimpleBasicType
+
      // Composite types
      syntax SimpleEnumType ::= enumType(CId)
-     syntax SimpleBitfieldType ::= bitfieldType(Type, Int)
-     syntax SimpleFunctionType ::= functionType(Type, List)
+     syntax SimpleFunctionType ::= functionType(UType, List)
      syntax SimplePointerType ::= pointerType(Type)
 
      syntax SimpleFixedArrayType ::= arrayType(Type, Int)
@@ -77,26 +106,35 @@ module C-TYPING-SYNTAX
      syntax SimpleVariableArrayType ::= unspecifiedArrayType(Type)
      syntax SimpleVariableArrayType ::= variableLengthArrayType(Type, K)
 
+     syntax SimpleFixedArrayUType ::= arrayUType(UType, Int)
+     syntax SimpleIncompleteArrayUType ::= incompleteArrayUType(UType)
+     syntax SimpleIncompleteArrayUType ::= flexibleArrayUType(UType)
+     syntax SimpleVariableArrayUType ::= unspecifiedArrayUType(UType)
+     syntax SimpleVariableArrayUType ::= variableLengthArrayUType(UType, K)
+
      syntax SimpleStructType ::= structType(StructId)
      syntax SimpleUnionType ::= unionType(StructId)
      syntax StructId ::= tag(CId, String, BlockRef)
      syntax BlockRef ::= Int | "global"
 
-     syntax SimpleType ::= SimpleFixedArrayType
+     syntax SimpleType ::= SimpleArrayType
                          | SimpleEnumType
                          | SimplePointerType
-                         | SimpleFixedArrayType
-                         | SimpleVariableArrayType
-                         | SimpleIncompleteArrayType
                          | SimpleStructType
                          | SimpleUnionType
-                         | SimpleBitfieldType
                          | SimpleFunctionType
+     syntax SimpleUType ::= SimpleArrayUType
+                          | SimpleEnumType
+                          | SimplePointerType
+                          | SimpleStructType
+                          | SimpleUnionType
+                          | SimpleFunctionType
 
-     syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
-     syntax SimpleSignedBitfieldType ::= bitfieldType(SignedIntegerType, Int)
-     syntax SimpleUnsignedBitfieldType ::= bitfieldType(UnsignedIntegerType, Int)
- 
+     syntax SimpleArrayType ::= SimpleFixedArrayType | SimpleVariableArrayType | SimpleIncompleteArrayType
+     syntax SimpleArrayUType ::= SimpleFixedArrayUType
+                               | SimpleVariableArrayUType
+                               | SimpleIncompleteArrayUType
+
      syntax FieldInfo ::= getFieldInfo(StructId) [function]
      syntax FieldInfo ::= getFieldInfo(Type) [function]
      syntax CId ::= getTag(StructId) [function]
@@ -104,11 +142,19 @@ module C-TYPING-SYNTAX
 
      // These aren't real types, but are values that can appear in type
      // contexts.
-     syntax SimpleType ::= typedefType(CId, Type)
+     syntax SimpleType ::= SimpleTypedefType
+     syntax SimpleUType ::= SimpleTypedefType
+
+     syntax SimpleTypedefType ::= typedefType(CId, Type)
      syntax Type ::= "variadic"
 
-     syntax Type ::= BasicType | PointerType | AggregateOrUnionType 
+     syntax Type ::= BasicType | PointerType | AggregateOrUnionType
                    | StructOrUnionType | ArrayOrFunctionType
+     syntax UType ::= PointerUType
+                    | ArrayOrFunctionUType
+                    | IntegerUType
+                    | FloatUType
+
      syntax AggregateOrUnionType ::= AggregateType | UnionType
      syntax AggregateType ::= ArrayType | StructType
      syntax StructOrUnionType ::= StructType | UnionType
@@ -124,66 +170,79 @@ module C-TYPING-SYNTAX
                         | VariableLengthArrayType
      syntax PointerOrArrayType ::= PointerType | ArrayType
 
-     syntax FunctionType
-     syntax IncompleteArrayType
-     syntax SignedBitfieldType
-     syntax StructType
-     syntax UnionType
-     syntax UnsignedBitfieldType
+     syntax ArrayOrFunctionUType ::= FunctionUType
+                                   | FixedLengthArrayUType | IncompleteArrayUType
+                                   | VariableLengthArrayUType
+     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType
+     syntax SignedIntegerUType ::= SCharUType | SignedBitfieldUType
+     syntax UnsignedIntegerUType ::= UCharUType | BoolUType | UnsignedBitfieldUType
 
-     syntax UnsignedIntegerType ::= t(Set, SimpleUnsignedType)
+     syntax UnsignedIntegerType ::= t(Quals, Set, SimpleUnsignedType)
      syntax UnsignedIntegerType ::= typedDeclaration(UnsignedIntegerType, CId)
-     syntax SignedIntegerType ::= t(Set, SimpleSignedType)
+     syntax SignedIntegerType ::= t(Quals, Set, SimpleSignedType)
      syntax SignedIntegerType ::= typedDeclaration(SignedIntegerType, CId)
-     syntax FloatType ::= t(Set, SimpleFloatType)
+     syntax FloatType ::= t(Quals, Set, SimpleFloatType)
      syntax FloatType ::= typedDeclaration(FloatType, CId)
-     syntax UCharType ::= t(Set, SimpleUnsignedCharType)
+     syntax UCharType ::= t(Quals, Set, SimpleUnsignedCharType)
      syntax UCharType ::= typedDeclaration(UCharType, CId)
-     syntax SCharType ::= t(Set, SimpleSignedCharType)
+     syntax SCharType ::= t(Quals, Set, SimpleSignedCharType)
      syntax SCharType ::= typedDeclaration(SCharType, CId)
-     syntax PointerType ::= t(Set, SimplePointerType)
+     syntax PointerType ::= t(Quals, Set, SimplePointerType)
      syntax PointerType ::= typedDeclaration(PointerType, CId)
-     syntax BoolType ::= t(Set, SimpleBoolType)
+     syntax BoolType ::= t(Quals, Set, SimpleBoolType)
      syntax BoolType ::= typedDeclaration(BoolType, CId)
-     syntax FixedLengthArrayType ::= t(Set, SimpleFixedArrayType)
+     syntax FixedLengthArrayType ::= t(Quals, Set, SimpleFixedArrayType)
      syntax FixedLengthArrayType ::= typedDeclaration(FixedLengthArrayType, CId)
-     syntax VariableLengthArrayType ::= t(Set, SimpleVariableArrayType)
+     syntax VariableLengthArrayType ::= t(Quals, Set, SimpleVariableArrayType)
      syntax VariableLengthArrayType ::= typedDeclaration(VariableLengthArrayType, CId)
-     syntax VoidType ::= t(Set, SimpleVoidType)
+     syntax VoidType ::= t(Quals, Set, SimpleVoidType)
      syntax VoidType ::= typedDeclaration(VoidType, CId)
-     syntax NoType ::= t(Set, SimpleNoType)
+     syntax NoType ::= t(Quals, Set, SimpleNoType)
      syntax NoType ::= typedDeclaration(NoType, CId)
-     syntax StructType ::= t(Set, SimpleStructType)
+     syntax StructType ::= t(Quals, Set, SimpleStructType)
      syntax StructType ::= typedDeclaration(StructType, CId)
-     syntax UnionType ::= t(Set, SimpleUnionType)
+     syntax UnionType ::= t(Quals, Set, SimpleUnionType)
      syntax UnionType ::= typedDeclaration(UnionType, CId)
-     syntax IncompleteArrayType ::= t(Set, SimpleIncompleteArrayType)
+     syntax IncompleteArrayType ::= t(Quals, Set, SimpleIncompleteArrayType)
      syntax IncompleteArrayType ::= typedDeclaration(IncompleteArrayType, CId)
-     syntax SignedBitfieldType ::= t(Set, SimpleSignedBitfieldType)
+     syntax SignedBitfieldType ::= t(Quals, Set, SimpleSignedBitfieldType)
      syntax SignedBitfieldType ::= typedDeclaration(SignedBitfieldType, CId)
-     syntax UnsignedBitfieldType ::= t(Set, SimpleUnsignedBitfieldType)
+     syntax UnsignedBitfieldType ::= t(Quals, Set, SimpleUnsignedBitfieldType)
      syntax UnsignedBitfieldType ::= typedDeclaration(UnsignedBitfieldType, CId)
-     syntax FunctionType ::= t(Set, SimpleFunctionType)
+     syntax FunctionType ::= t(Quals, Set, SimpleFunctionType)
      syntax FunctionType ::= typedDeclaration(FunctionType, CId)
+
+     syntax UnsignedIntegerUType ::= ut(Set, SimpleUnsignedType)
+     syntax SignedIntegerUType ::= ut(Set, SimpleSignedType)
+     syntax FloatUType ::= ut(Set, SimpleFloatType)
+     syntax UCharUType ::= ut(Set, SimpleUnsignedCharType)
+     syntax SCharUType ::= ut(Set, SimpleSignedCharType)
+     syntax PointerUType ::= ut(Set, SimplePointerType)
+     syntax BoolUType ::= ut(Set, SimpleBoolType)
+     syntax FixedLengthArrayUType ::= ut(Set, SimpleFixedArrayUType)
+     syntax VariableLengthArrayUType ::= ut(Set, SimpleVariableArrayUType)
+     syntax IncompleteArrayUType ::= ut(Set, SimpleIncompleteArrayUType)
+     syntax SignedBitfieldUType ::= ut(Set, SimpleSignedBitfieldType)
+     syntax UnsignedBitfieldUType ::= ut(Set, SimpleUnsignedBitfieldType)
+     syntax FunctionUType ::= ut(Set, SimpleFunctionType)
 
      syntax List ::= getParams(Type) [function]
      syntax Type ::= setParams(Type, List) [function]
-     syntax Type ::= getReturn(Type) [function]
 
-     syntax Bool ::= hasSameSignedness(Type, Type) [function]
-     syntax Type ::= correspondingUnsignedType(Type) [function]
-     syntax Type ::= correspondingSignedType(Type) [function]
+     syntax Bool ::= hasSameSignedness(UType, UType) [function]
+     syntax UType ::= correspondingUnsignedType(UType) [function]
+     syntax UType ::= correspondingSignedType(UType) [function]
 
-     syntax Int ::= min(Type) [function]
-     syntax Int ::= max(Type) [function]
-     syntax Bool ::= inRange(CValue, Type) [function]
+     syntax Int ::= min(UType) [function]
+     syntax Int ::= max(UType) [function]
+     syntax Bool ::= inRange(CValue, UType) [function]
 
-     syntax Modifier ::= Storage | CVSpecifier
      syntax Modifier ::= "noModifier"
 
      // Returns both type qualifiers, storage class specifiers, and any the
      // other information stored in the modifiers list (e.g., oldStyle).
      syntax Set ::= getModifiers(Type) [function]
+     syntax Set ::= getModifiers(UType) [function]
      // Tag for old-style function defs.
      syntax Modifier ::= "oldStyle"
      // For function array parameters with a static-qualified size.
@@ -201,39 +260,51 @@ module C-TYPING-SYNTAX
      syntax Set ::= getStorageSpecifiers(Type) [function]
      syntax Set ::= getFunctionSpecifiers(Type) [function]
      // Gets function and storage specifiers.
+     syntax Quals ::= getQualifiers(Type) [function]
      syntax Set ::= getSpecifiers(Type) [function]
-     syntax Set ::= getQualifiers(Type) [function]
-     syntax Set ::= getConstants(Type) [function]
+     syntax Set ::= getConstants(UType) [function]
 
      syntax Type ::= stripStorageSpecifiers(Type) [function]
      syntax Type ::= stripFunctionSpecifiers(Type) [function]
      // Strips function and storage specifiers.
      syntax Type ::= stripSpecifiers(Type) [function]
+     syntax UType ::= stripSpecifiers(UType) [function]
      syntax Type ::= stripQualifiers(Type) [function]
+
      syntax Type ::= stripConstants(Type) [function]
-     syntax RValue ::= stripConstants(RValue) [function, klabel(stripConstants2)]
+     syntax UType ::= stripConstants(UType) [function]
+     syntax RValue ::= stripConstants(RValue) [function]
+
      syntax Type ::= stripAlignas(Type) [function]
 
-     syntax Type ::= addQualifier(CVSpecifier, Type) [function]
-     syntax Type ::= addQualifiers(Set, Type) [function]
+     syntax Type ::= addQualifier(Qualifier, Type) [function]
+     syntax Type ::= addQualifiers(Quals, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
+
      syntax Type ::= addModifiers(Set, Type) [function]
      syntax Type ::= addModifier(Modifier, Type) [function]
+
+     syntax UType ::= addModifiers(Set, UType) [function]
+     syntax UType ::= addModifier(Modifier, UType) [function]
 
      syntax Type ::= typedDeclaration(Type, CId)
           [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
      syntax Type ::= innerType(Type) [function]
+     syntax Type ::= innerType(UType) [function]
 
+     syntax Bool ::= fromConstantExpr(UType) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
+     syntax Bool ::= fromConstantExpr(RValue) [function]
+
      syntax Bool ::= isNull(RValue) [function]
      syntax Bool ::= isNullPointerConstant(RValue) [function]
 
-     syntax Bool ::= hasReadFrom(Type) [function]
-     syntax Modifier ::= getReadFrom(Type) [function]
-     syntax SymLoc ::= getReadFromLoc(Type) [function]
-     syntax Int ::= getReadFromLen(Type) [function]
-     syntax Type ::= stripReadFrom(Type) [function]
+     syntax Bool ::= hasReadFrom(UType) [function]
+     syntax SymLoc ::= getReadFromLoc(UType) [function]
+     syntax Int ::= getReadFromLen(UType) [function]
+     syntax UType ::= updateReadFrom(UType, SymLoc) [function]
+     syntax UType ::= updateReadFrom(UType, SymLoc, Int) [function, klabel(updateReadFrom3)]
 
      syntax List ::= idsFromParams(List) [function]
 

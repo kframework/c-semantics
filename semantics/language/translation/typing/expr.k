@@ -86,16 +86,16 @@ module C-TYPING-EXPR
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
           <types>... X |-> T ...</types>
-     rule <k> typeof(X:CId => t(SetItem(IntegerConstant), int)) ...</k>
+     rule <k> typeof(X:CId => t(noQuals, SetItem(IntegerConstant), int)) ...</k>
           <enums>... X |-> _ ...</enums>
 
      rule typeof(T:Typed => type(T))
           requires notBool isType(T)
 
      rule typeof(stringLiteral(S:String)
-          => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
+          => type(arrayType(type(char), lengthString(S) +Int 1)))
      rule typeof(wstringLiteral(L:List)
-          => t(.Set, arrayType(t(.Set, cfg:wcharut), size(L) +Int 1)))
+          => type(arrayType(type(cfg:wcharut), size(L) +Int 1)))
 
      // postfix expressions
      rule typeof(Call(T:Type, _) => innerType(T))
@@ -103,9 +103,9 @@ module C-TYPING-EXPR
      rule typeof(Call((T:Type => innerType(T)), _))
           requires isPointerType(T)
 
-     rule <k> typeof(t(_, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
+     rule <k> typeof(t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
-     rule <k> typeof(t(_, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
+     rule <k> typeof(t(_, _, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
 
      rule typeof(T:Type ++ => T)
@@ -118,39 +118,43 @@ module C-TYPING-EXPR
      rule typeof(CompoundLiteralType(T:Type) => T)
 
      syntax Type ::= tryPromote(Type) [function]
-     rule tryPromote(T:IntegerType) => promote(T)
+     rule tryPromote(T:IntegerType) => type(promote(utype(T)))
      rule tryPromote(T::Type) => T [owise]
 
      // prefix expressions
-     rule typeof(++ T:Type => T += t(.Set, int))
-     rule typeof(-- T:Type => T -= t(.Set, int))
-     rule typeof(& T:Type => t(.Set, pointerType(T)))
-     rule typeof(* T:Type => innerType(T))
+     rule typeof(++ T:Type => T += type(int))
+     rule typeof(-- T:Type => T -= type(int))
+     rule typeof(& T:Type => type(pointerType(T)))
+     rule typeof(* T:Type => stripQualifiers(innerType(T)))
      rule typeof(+ T:Type => tryPromote(T))
      rule typeof(- T:Type => tryPromote(T))
      rule typeof(~ T:Type => tryPromote(T:Type))
-     rule typeof(! T:Type => t(.Set, int))
+     rule typeof(! T:Type => type(int))
 
      rule typeof(SizeofExpression(T:Type) => SizeofType(T, .K))
      rule typeof(SizeofType(T:Type, _)
-          => t(SetItem(IntegerConstant), cfg:sizeut))
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
           requires notBool isVariablyModifiedType(T)
      rule typeof(SizeofType(T:Type, _)
-          => t(.Set, cfg:sizeut))
+          => type(cfg:sizeut))
           requires isVariablyModifiedType(T)
      context typeof(SizeofType(HOLE:KItem, _))
 
      rule typeof(AlignofExpression(_) => AlignofType(.K, .K))
      rule typeof(AlignofType(_, _)
-          => t(SetItem(IntegerConstant), cfg:sizeut))
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
      rule typeof(OffsetOf(_, _, _)
-          => t(SetItem(IntegerConstant), cfg:sizeut))
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
 
      // cast expression
      context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]
-     rule typeof(Cast(T:Type,K:K,V:K) => Cast(DeclType(T,K),V))
+     rule typeof(Cast(T:Type, K:K, V:K) => Cast(DeclType(T, K), V))
      context typeof(Cast(HOLE:KItem,_))
-     rule typeof(Cast(T:Type,_) => elideDeclParams(T))
+     rule typeof(Cast(T:Type, _) => elideDeclParams(T))
+
+     syntax Type ::= usualArithmeticConversion(Type, Type) [klabel(usualArithmeticConversionQ), function]
+     rule usualArithmeticConversion(T::Type, T'::Type)
+          => type(usualArithmeticConversion(utype(T), utype(T')))
 
      // multiplicative expressions
      rule typeof(T:Type * T':Type => usualArithmeticConversion(T, T'))
@@ -163,21 +167,21 @@ module C-TYPING-EXPR
      rule typeof(T:PointerOrArrayType + _:IntegerType => T)
      rule typeof(_:IntegerType + T:PointerOrArrayType => T)
      rule typeof(T:PointerOrArrayType - _:IntegerType => T)
-     rule typeof(_:PointerOrArrayType - _:PointerOrArrayType => t(.Set, cfg:ptrdiffut))
+     rule typeof(_:PointerOrArrayType - _:PointerOrArrayType => type(cfg:ptrdiffut))
 
      // shift expressions
      rule typeof(T:Type << _ => tryPromote(T))
      rule typeof(T:Type >> _ => tryPromote(T))
 
      // relational expressions
-     rule typeof(_ < _ => t(.Set, int))
-     rule typeof(_ > _ => t(.Set, int))
-     rule typeof(_ <= _ => t(.Set, int))
-     rule typeof(_ >= _ => t(.Set, int))
+     rule typeof(_ < _ => type(int))
+     rule typeof(_ > _ => type(int))
+     rule typeof(_ <= _ => type(int))
+     rule typeof(_ >= _ => type(int))
 
      // equality expressions
-     rule typeof(_ == _ => t(.Set, int))
-     rule typeof(_ != _ => t(.Set, int))
+     rule typeof(_ == _ => type(int))
+     rule typeof(_ != _ => type(int))
 
      // bitwise expressions
      rule typeof(T:Type & T':Type => usualArithmeticConversion(T, T'))
@@ -185,8 +189,8 @@ module C-TYPING-EXPR
      rule typeof(T:Type | T':Type => usualArithmeticConversion(T, T'))
 
      // logical expressions
-     rule typeof(_ && _ => t(.Set, int))
-     rule typeof(_ || _ => t(.Set, int))
+     rule typeof(_ && _ => type(int))
+     rule typeof(_ || _ => type(int))
 
      // conditional expression
      rule (.K => elaborate(noEval(elabResult(E1)), noEval(elabResult(E2))))
@@ -206,8 +210,8 @@ module C-TYPING-EXPR
 
      // fixme, not handling qualifiers correctly
      syntax Type ::= retype(ArrayOrFunctionType) [function]
-     rule retype(T:ArrayType) => t(.Set, pointerType(innerType(T)))
-     rule retype(T:FunctionType) => t(.Set, pointerType(T))
+     rule retype(T:ArrayType) => type(pointerType(innerType(T)))
+     rule retype(T:FunctionType) => type(pointerType(T))
 
      syntax Bool ::= isNPC(K) [function]
      rule isNPC(V:RValue) => isNullPointerConstant(V)
@@ -244,13 +248,13 @@ module C-TYPING-EXPR
      type is a pointer to an appropriately qualified version of
      \cinline{void}.
      }*/
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)))
-               => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
+               => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> SizeofExpression(_)
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
                andBool notBool (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
-     rule (elaborateDone(_, _) ~> typeof(_ ? t(Mods:Set, pointerType(T:Type)) : t(Mods':Set, pointerType(T':Type)))
-               => typeof(t(Mods Mods', pointerType(compositeType(T, T')))))
+     rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
+               => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
           requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
                andBool getKLabel(K) =/=K #klabel(`SizeofExpression`)
@@ -262,13 +266,15 @@ module C-TYPING-EXPR
           => typeof(T)
           requires isNPC(V)
 
-     rule elaborateDone(_, V:K) ~> typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, S:SimpleType))) : t(Mods2:Set, pointerType(t(Mods2':Set, void))))
-          => typeof(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
-          requires notBool isFunctionType(t(Mods1', S))
+     rule elaborateDone(_, V:K)
+          ~> typeof(_ ? t(Qs1::Quals, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, T::SimpleType))) : t(Qs2::Quals, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, void))))
+          => typeof(t(Qs1 +Quals Qs2, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
+          requires notBool isFunctionType(type(T))
                andBool notBool isNPC(V)
-     rule elaborateDone(V:K, _) ~> typeof(_ ? t(Mods1:Set, pointerType(t(Mods1':Set, void))) : t(Mods2:Set, pointerType(t(Mods2':Set, S:SimpleType))))
-          => typeof(t(Mods1 Mods2, pointerType(t(Mods1' Mods2', void))))
-          requires notBool isFunctionType(t(Mods2', S))
+     rule elaborateDone(V:K, _)
+          ~> typeof(_ ? t(Qs1::Quals, Mods1::Set, pointerType(t(Qs1'::Quals, Mods1'::Set, void))) : t(Qs2::Quals, Mods2::Set, pointerType(t(Qs2'::Quals, Mods2'::Set, T::SimpleType))))
+          => typeof(t(Qs1 +Quals Qs2, Mods1 Mods2, pointerType(t(Qs1' +Quals Qs2', Mods1' Mods2', void))))
+          requires notBool isFunctionType(type(T))
                andBool notBool isNPC(V)
 
      rule (.K => UNDEF("TTE1",
@@ -284,29 +290,31 @@ module C-TYPING-EXPR
                +String " other must be a pointer to void.",
                "6.5.15:3"))
           ~> elaborateDone(_, _) ~> typeof(_ ? T:PointerType : T':PointerType)
-          requires notBool areCompatible(stripQualifiers(innerType(T)), stripQualifiers(innerType(T')))
+          requires notBool areCompatible(
+                    stripQualifiers(innerType(T)),
+                    stripQualifiers(innerType(T')))
                andBool notBool (isVoidType(innerType(T)) orBool isVoidType(innerType(T')))
 
      rule (.K => CV("TTE3",
                "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
-               "6.5.15:3")) 
+               "6.5.15:3"))
           ~> elaborateDone(V:K, _) ~> typeof(_ ? _:IntegerType : _:PointerType)
           requires notBool isNPC(V)
      rule (.K => CV("TTE3",
                "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
-               "6.5.15:3")) 
+               "6.5.15:3"))
           ~> elaborateDone(_, V:K) ~> typeof(_ ? _:PointerType : _:IntegerType)
           requires notBool isNPC(V)
 
      rule (.K => CV("TTE4",
                "if one of a conditional expression's branches has void type, the other must also have void type.",
                "6.5.15:3") )
-          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, void) : t(_, T:SimpleType))
+          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, _, void) : t(_, _, T:SimpleType))
           requires T =/=K void
      rule (.K => CV("TTE4",
                "if one of a conditional expression's branches has void type, the other must also have void type.",
                "6.5.15:3") )
-          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, T:SimpleType) : t(_, void))
+          ~> elaborateDone(_, _) ~> typeof(_ ? t(_, _, T:SimpleType) : t(_, _, void))
           requires T =/=K void
      rule (.K => CV("TTE5",
                "if one of a conditional expression's branches has struct or union type, the other must have the same type.",
@@ -329,7 +337,7 @@ module C-TYPING-EXPR
           SetItem(#klabel(`_|=_`))
 
      // assignment expression
-     rule typeof(Lbl:KLabel(T:Type,_) => stripQualifiers(T))
+     rule typeof(Lbl:KLabel(t(_, Mods::Set, T::SimpleType),_) => t(noQuals, Mods, T))
           requires #klabel(Lbl) in assignmentLabels
 
      // comma expression
@@ -342,11 +350,11 @@ module C-TYPING-EXPR
           => isSpecifiedVariablyModifiedType(innerType(T))
      rule isSpecifiedVariablyModifiedType(T:PointerType)
           => isSpecifiedVariablyModifiedType(innerType(T))
-     rule isSpecifiedVariablyModifiedType(t(_, functionType(T:Type, Params:List)))
-          => isSpecifiedVariablyModifiedType(T) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))
+     rule isSpecifiedVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
+          => isSpecifiedVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))
      rule isSpecifiedVariablyModifiedType(typedDeclaration(T:Type, _))
           => isSpecifiedVariablyModifiedType(T)
-     rule isSpecifiedVariablyModifiedType(t(_, variableLengthArrayType(_, _))) => true
+     rule isSpecifiedVariablyModifiedType(t(_, _, variableLengthArrayType(_, _))) => true
      rule isSpecifiedVariablyModifiedType(_) => false [owise]
 
 endmodule

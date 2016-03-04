@@ -20,11 +20,11 @@ module C-TYPING-INTERPRETATION
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
-     rule BitFieldType(T:Type, tv(N:Int, t(SetItem(IntegerConstant) _:Set, _)))
-          => t(.Set, bitfieldType(T, N)) [structural]
+     rule BitFieldType(t(Qs::Quals, Mods::Set, T:BitfieldFieldType), tv(N:Int, ut(SetItem(IntegerConstant) _, _)))
+          => t(Qs, Mods, bitfieldType(T, N)) [structural]
 
      rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
-          ~> BitFieldType(_, tv(N:CValue, T:Type))
+          ~> BitFieldType(_, tv(N:CValue, T::UType))
           requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
 
      syntax KItem ::= makeFunctionType(List)
@@ -35,7 +35,7 @@ module C-TYPING-INTERPRETATION
      syntax Type ::= pushTypeDown(Type, K) [function]
 
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
-     rule ArrayType(T:Type, tv(N:Int, T':Type), Spec:K)
+     rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:K)
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
           [structural]
@@ -53,14 +53,12 @@ module C-TYPING-INTERPRETATION
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_:Type, tv(Len:Int, _:Type), _)
+          ~> ArrayType(_:Type, tv(Len:Int, _), _)
           requires Len <=Int 0
           [structural]
 
-     syntax Type ::= applyTypeFunction(K, Type) [function]
-
-     rule PointerType(Specifier(list(Quals:List)), T:Type)
-          => pushTypeDown(T, makePointerType(listToSet(Quals)))
+     rule PointerType(Specifier(list(Mods:List)), T:Type)
+          => pushTypeDown(T, makePointerType(listToSet(Mods)))
           [structural]
 
      syntax Set ::= listToSet(List) [function]
@@ -80,9 +78,9 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= "Prototype'" "(" Type "," List "," List "," Bool ")"
      rule Prototype'(T:Type, ListItem(K:K) L1:List, L2:List, Var:Bool)
           => K ~> Prototype'(T, L1, L2, Var)
-     rule t(Mods:Set, ST:SimpleType)
-          ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
-          => Prototype'(T, L1, L2 ListItem(adjustParam(t(Mods, ST))), Var)
+     rule t(Qs::Quals, Mods::Set, ST:SimpleType)
+          ~> Prototype'(T::Type, L1::List, L2::List, Var::Bool)
+          => Prototype'(T, L1, L2 ListItem(adjustParam(t(Qs, Mods, ST))), Var)
      syntax SymBase ::= vla(CId)
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
@@ -97,50 +95,50 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makeOldStyleFunctionType(L))
 
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
-     rule pushTypeDown(t(S:Set, arrayType(T:Type, N:Int)), Lbl:K)
-          => t(S, arrayType(pushTypeDown(T, Lbl), N))
-     rule pushTypeDown(t(S:Set, unspecifiedArrayType(T:Type)), Lbl:K)
-          => t(S, unspecifiedArrayType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, variableLengthArrayType(T:Type, N:K)), Lbl:K)
-          => t(S, variableLengthArrayType(pushTypeDown(T, Lbl), N))
-     rule pushTypeDown(t(S:Set, incompleteArrayType(T:Type)), Lbl:K)
-          => t(S, incompleteArrayType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, pointerType(T:Type)), Lbl:K)
-          => t(S, pointerType(pushTypeDown(T, Lbl)))
-     rule pushTypeDown(t(S:Set, functionType(T:Type, L:List)), Lbl:K)
-          => t(S, functionType(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(S:Set, structType(X:StructId)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, structType(X)))
-     rule pushTypeDown(t(S:Set, unionType(X:StructId)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, unionType(X)))
-     rule pushTypeDown(t(S:Set, typedefType(X:CId, T:Type)), Lbl:K)
-          => applyTypeFunction(Lbl, t(S, typedefType(X, T)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)), Lbl:K)
+          => t(Qs, Mods, arrayType(pushTypeDown(T, Lbl), N))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, unspecifiedArrayType(T::Type)), Lbl:K)
+          => t(Qs, Mods, unspecifiedArrayType(pushTypeDown(T, Lbl)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, N:K)), Lbl:K)
+          => t(Qs, Mods, variableLengthArrayType(pushTypeDown(T, Lbl), N))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), Lbl:K)
+          => t(Qs, Mods, incompleteArrayType(pushTypeDown(T, Lbl)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, pointerType(T::Type)), Lbl:K)
+          => t(Qs, Mods, pointerType(pushTypeDown(T, Lbl)))
+     // TODO(chathhorn): warn about qualifiers on function return type.
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType(T::UType, L:List)), Lbl:K)
+          => t(Qs, Mods, functionType(utype(pushTypeDown(type(T), Lbl)), L))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X:StructId)), Lbl:K)
+          => applyTypeFunction(Lbl, t(Qs, Mods, structType(X)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, unionType(X:StructId)), Lbl:K)
+          => applyTypeFunction(Lbl, t(Qs, Mods, unionType(X)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, typedefType(X:CId, T::Type)), Lbl:K)
+          => applyTypeFunction(Lbl, t(Qs, Mods, typedefType(X, T)))
 
-     rule applyTypeFunction(makeFunctionType(L:List), T:Type)
-          => t(getSpecifiers(T),
-               functionType(stripSpecifiers(T), giveNamesToArgs(L)))
+     syntax Type ::= applyTypeFunction(K, Type) [function]
+     rule applyTypeFunction(makeFunctionType(L:List), T::Type)
+          => t(noQuals, getSpecifiers(T),
+               functionType(utype(stripSpecifiers(T)), giveNamesToArgs(L)))
 
-     rule applyTypeFunction(makeOldStyleFunctionType(L:List), T:Type)
-          => t(getSpecifiers(T) SetItem(oldStyle),
-               functionType(stripSpecifiers(T), giveNamesToArgs(L)))
+     rule applyTypeFunction(makeOldStyleFunctionType(L:List), T::Type)
+          => t(noQuals, getSpecifiers(T) SetItem(oldStyle),
+               functionType(utype(stripSpecifiers(T)), giveNamesToArgs(L)))
 
-     rule applyTypeFunction(makePointerType(Quals:Set), T:Type)
-          => t(Quals getSpecifiers(T),
-               pointerType(stripSpecifiers(T)))
+     rule applyTypeFunction(makePointerType(Mods::Set), T::Type)
+          => t(toQuals(intersectSet(Mods, typeQualifiers)), (Mods -Set typeQualifiers) getSpecifiers(T), pointerType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeIncompleteArrayType, T:Type)
-          => t(getSpecifiers(T),
-               incompleteArrayType(stripSpecifiers(T)))
+     rule applyTypeFunction(makeIncompleteArrayType, T::Type)
+          => t(noQuals, getSpecifiers(T), incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(ListItem(Static)))), T:Type)
-          => t(getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(tv(N:Int, T'::UType), Specifier(list(ListItem(Static)))), T::Type)
+          => t(noQuals, getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
      // TODO(chathhorn): Other qualifiers?
-     rule applyTypeFunction(makeArrayType(tv(N:Int, T':Type), Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-     rule applyTypeFunction(makeArrayType(UnspecifiedSizeExpression, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), unspecifiedArrayType(stripSpecifiers(T)))
-     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T:Type)
-          => t(getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(.List))), T::Type)
+          => t(noQuals, getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(UnspecifiedSizeExpression, Specifier(list(.List))), T::Type)
+          => t(noQuals, getSpecifiers(T), unspecifiedArrayType(stripSpecifiers(T)))
+     rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T::Type)
+          => t(noQuals, getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           requires isHold(N)
 
      syntax List ::= giveNamesToArgs(List) [function]
@@ -177,26 +175,22 @@ module C-TYPING-INTERPRETATION
           [structural]
 
      rule extractActualType(T:BasicType) => T
-     rule extractActualType(t(S:Set, structType(X:StructId)))
-          => t(S, structType(X))
-     rule extractActualType(t(S:Set, unionType(X:StructId)))
-          => t(S, unionType(X))
-     rule extractActualType(t(S:Set, arrayType(T:Type, N:Int)))
-          => t(S, arrayType(extractActualType(T), N))
-     rule extractActualType(t(S:Set, unspecifiedArrayType(T:Type)))
-          => t(S, unspecifiedArrayType(extractActualType(T)))
-     rule extractActualType(t(S:Set, variableLengthArrayType(T:Type, N:K)))
-          => t(S, variableLengthArrayType(extractActualType(T), N))
-     rule extractActualType(t(S:Set, incompleteArrayType(T:Type)))
-          => t(S, incompleteArrayType(extractActualType(T)))
-     rule extractActualType(t(S:Set, bitfieldType(T:Type, N:Int)))
-          => t(S, bitfieldType(extractActualType(T), N))
-     rule extractActualType(t(S:Set, functionType(T:Type, L:List)))
-          => t(S, functionType(extractActualType(T), L))
-     rule extractActualType(t(S:Set, pointerType(T:Type)))
-          => t(S, pointerType(extractActualType(T)))
-     rule extractActualType(t(S:Set, typedefType(_, t(S':Set, T::SimpleType))))
-          => extractActualType(addQualifiers(S, t(S', T)))
+     rule extractActualType(T:StructOrUnionType) => T
+     rule extractActualType(T:BitfieldType) => T
+     rule extractActualType(t(Qs::Quals, S::Set, arrayType(T:Type, N:Int)))
+          => t(Qs, S, arrayType(extractActualType(T), N))
+     rule extractActualType(t(Qs::Quals, S::Set, unspecifiedArrayType(T:Type)))
+          => t(Qs, S, unspecifiedArrayType(extractActualType(T)))
+     rule extractActualType(t(Qs::Quals, S::Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Qs, S, variableLengthArrayType(extractActualType(T), N))
+     rule extractActualType(t(Qs::Quals, S::Set, incompleteArrayType(T:Type)))
+          => t(Qs, S, incompleteArrayType(extractActualType(T)))
+     rule extractActualType(t(Qs::Quals, S::Set, functionType(T::UType, L:List)))
+          => t(Qs, S, functionType(utype(extractActualType(type(T))), L))
+     rule extractActualType(t(Qs::Quals, S::Set, pointerType(T:Type)))
+          => t(Qs, S, pointerType(extractActualType(T)))
+     rule extractActualType(t(Qs::Quals, S::Set, typedefType(_, t(Qs'::Quals, S'::Set, T::SimpleType))))
+          => extractActualType(addQualifiers(Qs, t(Qs', S S', T)))
 
      syntax KItem ::= NameAndType(CId, K) [strict(2)]
 
@@ -231,12 +225,12 @@ module C-TYPING-INTERPRETATION
 
      // Turn array and function types into pointers.
      syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(typedDeclaration(T:Type, X:CId))
+     rule adjustParam(typedDeclaration(T::Type, X::CId))
           => typedDeclaration(adjustParam(T), X)
-     rule adjustParam(t(Mods:Set, functionType(R:Type, Params:List)))
-          => t(.Set, pointerType(t(Mods, functionType(R, Params))))
+     rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
+          => type(pointerType(t(Qs, Mods, functionType(R, Params))))
      rule adjustParam(T:ArrayType)
-          => t(getModifiers(T), pointerType(innerType(T)))
-     rule adjustParam(T:Type) => T [owise]
+          => t(getQualifiers(T), getModifiers(T), pointerType(innerType(T)))
+     rule adjustParam(T::Type) => T [owise]
 
 endmodule

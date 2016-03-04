@@ -32,7 +32,7 @@ module C-STMT-LOOP
                => loopMarked
                ~> For((#if Control =/=K emptyValue
                     #then Control
-                    #else tv(1, t(.Set, int)) #fi),
+                    #else tv(1, utype(int)) #fi),
                     Post, S)
                ~> popLoop
           </k>

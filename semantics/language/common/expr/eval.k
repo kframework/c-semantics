@@ -4,7 +4,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkUse(K) [strict]
      syntax KItem ::= checkLoc(SymLoc)
-     syntax Type ::= arrayToPtrType(Type) [function]
+     syntax UType ::= arrayToPtrType(Type) [function]
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -45,26 +45,21 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      syntax KItem ::= checkCompleteLValue(Type)
-     rule checkCompleteLValue(T:Type) => .K
+     rule checkCompleteLValue(T::Type) => .K
           requires isCompleteType(T)
      rule (.K => UNDEF("CEE3", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2"))
-          ~> checkCompleteLValue(T:Type)
+          ~> checkCompleteLValue(T::Type)
           requires notBool isCompleteType(T)
 
      // Lvalue conversion.
      rule reval(nclv(Loc::SymLoc, T::Type)
-          => checkCompleteLValue(T) ~> checkUse(unqualify(instantiate(Loc, T))))
+          => checkCompleteLValue(T)
+          ~> checkUse(instantiate(Loc, T)))
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
      rule lv(Loc::SymLoc, T::Type) => nclv(Loc, T)
           [structural]
-
-     syntax KItem ::= unqualify(K) [strict]
-     rule unqualify(tv(V::CValue, T::Type)) => tv(V, stripQualifiers(T))
-     rule unqualify(te(V:K, T::Type))
-          => te(unqualify(V), stripQualifiers(T))
-     rule unqualify(trap(T::Type)) => trap(stripQualifiers(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
      Except when it is the operand of the \cinline{sizeof} operator, the
@@ -81,21 +76,19 @@ module C-COMMON-EXPR-EVAL
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
           [structural]
 
-     rule arrayToPtrType(T:Type)
-          => stripQualifiers(t(getModifiers(T), pointerType(innerType(T))))
+     rule arrayToPtrType(T::Type)
+          => ut(getModifiers(T), pointerType(innerType(T)))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)),
-             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
-             Loc))
+             addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)), Loc))
           requires isRestrictType(T)
      rule arrayToPtrLoc(Loc::SymLoc, T::Type)
           => addProv(basedOn(base(Loc), getRestrictBlock(T)), Loc)
           requires isRestrictType(T) andBool notBool isFixedLengthArrayType(T)
      rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)
-          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)),
-             Loc)
+          => addProv(fromArray(0, byteSizeofType(innerType(T)) *Int arrayLength(T)), Loc)
           requires notBool isRestrictType(T)
      rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
@@ -108,10 +101,10 @@ module C-COMMON-EXPR-EVAL
      }*/
 
      rule reval(nclv(Loc::SymLoc, T:FunctionType)
-               => checkUse(tv(Loc, t(.Set, pointerType(T)))))
+               => checkUse(tv(Loc, utype(pointerType(T)))))
           [structural]
 
-     rule reval(trap(T:Type)
+     rule reval(trap(T::UType)
                => UNDEF("CEE2", "Indeterminate value used in an expression.",
                     "6.2.4, 6.7.9, 6.8, J.2:1 item 11")
                ~> tv(trap, T))
@@ -137,12 +130,12 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(V:KResult) => V
           requires getKLabel(V) =/=K #klabel(`tv`)
           [structural]
-     rule checkUse(tv(V::CValue, T::Type)) => tv(V, T)
+     rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
           requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
           [structural]
-     rule checkUse(tv(trap, T::Type)) => trap(T)
+     rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]
-     rule checkUse(tv(V:SymLoc, T::Type)) => checkLoc(V) ~> tv(V, T)
+     rule checkUse(tv(V:SymLoc, T::UType)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
      rule checkLoc(Loc::SymLoc) => checkLoc'(stripProv(Loc))

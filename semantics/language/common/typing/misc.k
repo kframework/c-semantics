@@ -13,145 +13,151 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
-     rule simpleType(typedDeclaration(T:Type, _)) => simpleType(T)
-     rule simpleType(t(_, T:SimpleType)) => T
+     rule simpleType(typedDeclaration(T::Type, _)) => simpleType(T)
+     rule simpleType(t(_, _, T::SimpleType)) => T
 
      rule char => cfg:charAlias
 
-     rule correspondingUnsignedType(t(S:Set, signed-char))
-          => t(S, unsigned-char)
-     rule correspondingUnsignedType(t(S:Set, short-int))
-          => t(S, unsigned-short-int)
-     rule correspondingUnsignedType(t(S:Set, int))
-          => t(S, unsigned-int)
-     rule correspondingUnsignedType(t(S:Set, long-int))
-          => t(S, unsigned-long-int)
-     rule correspondingUnsignedType(t(S:Set, long-long-int))
-          => t(S, unsigned-long-long-int)
-     rule correspondingUnsignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
-          => t(S, bitfieldType(correspondingUnsignedType(T), I))
-     rule correspondingUnsignedType(t(S:Set, enumType(_))) 
-          => correspondingUnsignedType(t(S, cfg:enumAlias))
+     rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
+          => ut(S, flipSignedness(T))
+          requires notBool isSimpleEnumType(T)
+     rule correspondingUnsignedType(ut(S::Set, enumType(_)))
+          => correspondingUnsignedType(ut(S, cfg:enumAlias))
+     rule correspondingUnsignedType(T::UType) => T [owise]
 
-     rule correspondingSignedType(t(S:Set, unsigned-char))
-          => t(S, signed-char)
-     rule correspondingSignedType(t(S:Set, unsigned-short-int))
-          => t(S, short-int)
-     rule correspondingSignedType(t(S:Set, unsigned-int))
-          => t(S, int)
-     rule correspondingSignedType(t(S:Set, unsigned-long-int))
-          => t(S, long-int)
-     rule correspondingSignedType(t(S:Set, unsigned-long-long-int))
-          => t(S, long-long-int)
-     rule correspondingSignedType(t(S:Set, bitfieldType(T:Type, I:Int)))
-          => t(S, bitfieldType(correspondingSignedType(T), I))
-     rule correspondingSignedType(t(S:Set, enumType(_))) 
-          => correspondingSignedType(t(S, cfg:enumAlias))
+     rule correspondingSignedType(ut(S::Set, T:SimpleUnsignedType))
+          => ut(S, flipSignedness(T))
+          requires notBool isSimpleEnumType(T)
+     rule correspondingSignedType(ut(S::Set, enumType(_)))
+          => correspondingSignedType(ut(S, cfg:enumAlias))
+     rule correspondingSignedType(T::UType) => T [owise]
 
-     rule min(t(_, bitfieldType(_:UnsignedIntegerType, _))) => 0
-     rule max(t(_, bitfieldType(_:UnsignedIntegerType, N:Int)))
-          => (1 <<Int absInt(N)) -Int 1
+     syntax SimpleIntegerType ::= flipSignedness(SimpleIntegerType) [function]
+     rule flipSignedness(bitfieldType(T::BitfieldFieldType, N::Int))
+          => bitfieldType(flipSignedness(T:>SimpleIntegerType):>BitfieldFieldType, N)
 
-     rule min(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
+     rule flipSignedness(unsigned-char) => signed-char
+     rule flipSignedness(unsigned-short-int) => short-int
+     rule flipSignedness(unsigned-int) => int
+     rule flipSignedness(unsigned-long-int) => long-int
+     rule flipSignedness(unsigned-long-long-int) => long-long-int
+
+     rule flipSignedness(signed-char) => unsigned-char
+     rule flipSignedness(short-int) => unsigned-short-int
+     rule flipSignedness(int) => unsigned-int
+     rule flipSignedness(long-int) => unsigned-long-int
+     rule flipSignedness(long-long-int) => unsigned-long-long-int
+
+     rule min(ut(_, bitfieldType(int, N:Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
-     rule max(t(_, bitfieldType(_:SignedIntegerType, N:Int)))
+     rule max(ut(_, bitfieldType(int, N:Int)))
           => (1 <<Int absInt(N -Int 1)) -Int 1
 
-     rule min(t(_, bool)) => 0
-     rule max(t(_, bool)) => 1
+     rule min(ut(_, signed-char))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(type(signed-char)) -Int 1))
+     rule max(ut(_, signed-char))
+          => (1 <<Int absInt(bitSizeofType(type(signed-char)) -Int 1)) -Int 1
+     rule min(ut(_, short-int))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(type(short-int)) -Int 1))
+     rule max(ut(_, short-int))
+          => (1 <<Int absInt(bitSizeofType(type(short-int)) -Int 1)) -Int 1
+     rule min(ut(_, int))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(type(int)) -Int 1))
+     rule max(ut(_, int))
+          => (1 <<Int absInt(bitSizeofType(type(int)) -Int 1)) -Int 1
+     rule min(ut(_, long-int))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(type(long-int)) -Int 1))
+     rule max(ut(_, long-int))
+          => (1 <<Int absInt(bitSizeofType(type(long-int)) -Int 1)) -Int 1
+     rule min(ut(_, long-long-int))
+          => 0 -Int (1 <<Int absInt(bitSizeofType(type(long-long-int)) -Int 1))
+     rule max(ut(_, long-long-int))
+          => (1 <<Int absInt(bitSizeofType(type(long-long-int)) -Int 1)) -Int 1
 
-     rule min(t(_, signed-char))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1))
-     rule max(t(_, signed-char))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, signed-char)) -Int 1)) -Int 1
-     rule min(t(_, short-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1))
-     rule max(t(_, short-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, short-int)) -Int 1)) -Int 1
-     rule min(t(_, int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, int)) -Int 1))
-     rule max(t(_, int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, int)) -Int 1)) -Int 1
-     rule min(t(_, long-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1))
-     rule max(t(_, long-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, long-int)) -Int 1)) -Int 1
-     rule min(t(_, long-long-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1))
-     rule max(t(_, long-long-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, long-long-int)) -Int 1)) -Int 1
+     rule min(_:UnsignedIntegerUType) => 0
 
-     rule min(t(_, unsigned-char)) => 0
-     rule max(t(_, unsigned-char))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-char)))) -Int 1
-     rule min(t(_, unsigned-short-int)) => 0
-     rule max(t(_, unsigned-short-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-short-int)))) -Int 1
-     rule min(t(_, unsigned-int)) => 0
-     rule max(t(_, unsigned-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-int)))) -Int 1
-     rule min(t(_, unsigned-long-int)) => 0
-     rule max(t(_, unsigned-long-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-long-int)))) -Int 1
-     rule min(t(_, unsigned-long-long-int)) => 0
-     rule max(t(_, unsigned-long-long-int))
-          => (1 <<Int absInt(bitSizeofType(t(.Set, unsigned-long-long-int)))) -Int 1
+     rule max(ut(_, bool)) => 1
 
-     rule min(t(S:Set, enumType(_))) => min(t(S, cfg:enumAlias))
-     rule max(t(S:Set, enumType(_))) => max(t(S, cfg:enumAlias))
+     rule max(ut(_, bitfieldType(unsigned-int, N:Int)))
+          => (1 <<Int absInt(N)) -Int 1
 
-     rule inRange(V:Int, T:IntegerType)
-          => ((V <=Int max(T)) andBool (V >=Int min(T)))
-     rule inRange(V:Float, T:FloatType)
-          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
+     rule max(ut(_, unsigned-char))
+          => (1 <<Int absInt(bitSizeofType(type(unsigned-char)))) -Int 1
+     rule max(ut(_, unsigned-short-int))
+          => (1 <<Int absInt(bitSizeofType(type(unsigned-short-int)))) -Int 1
+     rule max(ut(_, unsigned-int))
+          => (1 <<Int absInt(bitSizeofType(type(unsigned-int)))) -Int 1
+     rule max(ut(_, unsigned-long-int))
+          => (1 <<Int absInt(bitSizeofType(type(unsigned-long-int)))) -Int 1
+     rule max(ut(_, unsigned-long-long-int))
+          => (1 <<Int absInt(bitSizeofType(type(unsigned-long-long-int)))) -Int 1
+
+     rule min(ut(_, enumType(_) => cfg:enumAlias))
+     rule max(ut(_, enumType(_) => cfg:enumAlias))
+
+     rule inRange(V:Int, T:IntegerUType)
+          => (V <=Int max(T)) andBool (V >=Int min(T))
+     rule inRange(V:Float, T:FloatUType)
+          => (V <=Float fmax(T)) andBool (V >=Float fmin(T))
           orBool isInfinite(V) orBool isNaN(V)
 
-     syntax Float ::= fmax(Type) [function]
-     syntax Float ::= fmin(Type) [function]
+     syntax Float ::= fmax(UType) [function]
+     syntax Float ::= fmin(UType) [function]
 
-     rule fmin(t(_, float)) => 0.0f -Float maxValueFloat(24, 8)
-     rule fmax(t(_, float)) => maxValueFloat(24, 8)
+     rule fmin(ut(_, float)) => 0.0f -Float maxValueFloat(24, 8)
+     rule fmax(ut(_, float)) => maxValueFloat(24, 8)
 
-     rule fmin(t(_, double)) => 0.0 -Float maxValueFloat(53, 11)
-     rule fmax(t(_, double)) => maxValueFloat(53, 11)
+     rule fmin(ut(_, double)) => 0.0 -Float maxValueFloat(53, 11)
+     rule fmax(ut(_, double)) => maxValueFloat(53, 11)
 
-     rule fmin(t(_, long-double)) => Int2Float(0, 64, 15) -Float maxValueFloat(64, 15)
-     rule fmax(t(_, long-double)) => maxValueFloat(64, 15)
+     rule fmin(ut(_, long-double)) => Int2Float(0, 64, 15) -Float maxValueFloat(64, 15)
+     rule fmax(ut(_, long-double)) => maxValueFloat(64, 15)
 
-     rule getParams(t(_, functionType(_, P:List))) => P
-     rule getParams(T:Type) => .List
+     rule getParams(t(_, _, functionType(_, P::List))) => P
+     rule getParams(T::Type) => .List
           requires notBool isFunctionType(T)
 
-     rule setParams(t(Mods:Set, functionType(R:Type, _)), P:List)
-          => t(Mods, functionType(R, P))
-     rule getReturn(t(_, functionType(R:Type, _))) => R
+     rule setParams(t(Qs::Quals, Mods::Set, functionType(R::UType, _)), P::List)
+          => t(Qs, Mods, functionType(R, P))
 
-     rule getModifiers(t(S::Set, _)) => S
+     rule noQuals => { .Set }
+
+     rule Q:Qualifier inQuals { Qs:Set } => Q in Qs
+
+     rule { Qs:Set } +Qual Q:Qualifier => { Qs SetItem(Q) }
+
+     rule { SetItem(Q) Qs:Set } -Qual Q:Qualifier => { Qs }
+     rule Qs:Quals -Qual _ => Qs [owise]
+
+     rule { Qs:Set } <=Quals { Qs':Set } => Qs <=Set Qs'
+
+     rule { Qs:Set } +Quals { Qs':Set } => { Qs Qs' }
+
+     rule toQuals(SetItem(Q:Qualifier) S::Set) => toQuals(S) +Qual Q
+     rule toQuals(SetItem(K::K) S::Set) => toQuals(S)
+          requires notBool isQualifier(K)
+     rule toQuals(.Set) => noQuals
+
+     rule getModifiers(ut(S::Set, _)) => S
+
+     rule getModifiers(t(_, S::Set, _)) => S
      rule getModifiers(typedDeclaration(T::Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
-     syntax Type ::= setModifiers(Type, Set) [function]
-     rule setModifiers(t(_, T:SimpleType), Mods:Set) => t(Mods, T)
+     rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
+          => Qs +Quals getQualifiers(innerType(type(T)))
+     rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
 
-     rule setModifiers(typedDeclaration(T:Type, _), Mods:Set)
-          => setModifiers(T, Mods)
-     rule setModifiers(variadic, .Set) => variadic
-
-     rule getQualifiers(T:ArrayType)
-          => intersectSet(getModifiers(T), typeQualifiers) getQualifiers(innerType(T))
-     rule getQualifiers(T::Type)
-          => intersectSet(getModifiers(T), typeQualifiers) [owise]
-
-     rule getStorageSpecifiers(T:Type)
+     rule getStorageSpecifiers(T::Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
 
-     rule getFunctionSpecifiers(T:Type)
+     rule getFunctionSpecifiers(T::Type)
           => intersectSet(getModifiers(T), functionSpecifiers)
 
-     rule getSpecifiers(T:Type)
+     rule getSpecifiers(T::Type)
           => getStorageSpecifiers(T) getFunctionSpecifiers(T)
 
-     rule getConstants(T:Type)
+     rule getConstants(T::UType)
           => intersectSet(getModifiers(T), constantModifiers)
 
      // These are the only actual members "type qualifier" syntactic class.
@@ -169,7 +175,6 @@ module C-TYPING-MISC
           SetItem(Register)
           // Also typedef, technically.
 
-     syntax Set ::= "functionSpecifiers" [function]
      rule functionSpecifiers =>
           SetItem(Noreturn)
           SetItem(Inline)
@@ -178,159 +183,115 @@ module C-TYPING-MISC
      rule constantModifiers =>
           SetItem(IntegerConstant)
 
-     rule stripQualifiers(t(Mods::Set, arrayType(T::Type, N::Int)))
-          => t(Mods -Set typeQualifiers, arrayType(stripQualifiers(T), N))
-     rule stripQualifiers(t(Mods::Set, incompleteArrayType(T::Type)))
-          => t(Mods -Set typeQualifiers, incompleteArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods::Set, flexibleArrayType(T::Type)))
-          => t(Mods -Set typeQualifiers, flexibleArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods::Set, unspecifiedArrayType(T::Type)))
-          => t(Mods -Set typeQualifiers, unspecifiedArrayType(stripQualifiers(T)))
-     rule stripQualifiers(t(Mods::Set, variableLengthArrayType(T::Type, N:K)))
-          => t(Mods -Set typeQualifiers, variableLengthArrayType(stripQualifiers(T), N))
-     rule stripQualifiers(T::Type)
-          => setModifiers(T, getModifiers(T) -Set typeQualifiers) [owise]
+     rule stripQualifiers(T::Type) => type(utype(T))
 
-     rule stripStorageSpecifiers(t(Mods:Set, T:SimpleType))
-          => t(Mods -Set storageSpecifiers, T)
-     rule stripStorageSpecifiers(typedDeclaration(T:Type, X:CId))
+     rule stripStorageSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, Mods -Set storageSpecifiers, T)
+     rule stripStorageSpecifiers(typedDeclaration(T::Type, X:CId))
           => typedDeclaration(stripStorageSpecifiers(T), X)
 
-     rule stripFunctionSpecifiers(t(Mods:Set, T:SimpleType))
-          => t(Mods -Set functionSpecifiers, T)
+     rule stripFunctionSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, Mods -Set functionSpecifiers, T)
      rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
           => typedDeclaration(stripFunctionSpecifiers(T), X)
 
-     rule stripSpecifiers(T:Type)
-          => stripStorageSpecifiers(stripFunctionSpecifiers(T))
+     rule stripSpecifiers(T:UType) => utype(stripSpecifiers(type(T)))
+     rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
-     rule stripAlignas(t(Mods:Set, T:SimpleType))
-          => t(filterSet(Mods, #klabel(`isNotAlignas`)), T)
+     rule stripAlignas(t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, filterSet(Mods, #klabel(`isNotAlignas`)), T)
 
      syntax Bool ::= isNotAlignas(Modifier) [function]
      rule isNotAlignas(alignas(_)) => false
      rule isNotAlignas(_) => true [owise]
 
-     rule stripReadFrom(t(Mods:Set, T:SimpleType))
-          => t(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
+     syntax UType ::= stripReadFrom(UType) [function]
+     rule stripReadFrom(ut(Mods::Set, T::SimpleUType))
+          => ut(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
 
      syntax Bool ::= isNotReadFrom(Modifier) [function]
      rule isNotReadFrom(readFrom(_, _)) => false
      rule isNotReadFrom(_) => true [owise]
 
-     rule stripConstants(T:Type)
-          => setModifiers(T, getModifiers(T) -Set constantModifiers)
-     rule stripConstants(tv(V:CValue, T:Type)) => tv(V, stripConstants(T))
+     rule stripConstants(ut(Mods::Set, T::SimpleUType)) => ut(Mods -Set constantModifiers, T)
+     rule stripConstants(t(Qs::Quals, Mods::Set, T::SimpleType)) => t(Qs, Mods -Set constantModifiers, T)
+
+     rule stripConstants(tv(V:CValue, T::UType)) => tv(V, stripConstants(T))
      rule stripConstants(V:RValue) => V [owise]
 
-     rule addQualifier(Q:CVSpecifier, T:Type)
-          => addQualifiers(SetItem(Q), T)
+     rule addQualifier(Q:Qualifier, T:Type) => addQualifiers(noQuals +Qual Q, T)
 
-     rule addQualifiers(Quals:Set, t(Mods:Set, arrayType(T:Type, N:Int)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
-               arrayType(addQualifiers(Quals, T), N))
-     rule addQualifiers(Quals:Set, t(Mods:Set, incompleteArrayType(T:Type)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
-               incompleteArrayType(addQualifiers(Quals, T)))
-     rule addQualifiers(Quals:Set, t(Mods:Set, flexibleArrayType(T:Type)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
-               flexibleArrayType(addQualifiers(Quals, T)))
-     rule addQualifiers(Quals:Set, t(Mods:Set, unspecifiedArrayType(T:Type)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
-               unspecifiedArrayType(addQualifiers(Quals, T)))
-     rule addQualifiers(Quals:Set, t(Mods:Set, variableLengthArrayType(T:Type, N:K)))
-          => t(Mods intersectSet(Quals, typeQualifiers),
-               variableLengthArrayType(addQualifiers(Quals, T), N))
-     rule addQualifiers(Quals:Set, T:Type) => addModifiers(Quals, T)
-          requires notBool isArrayType(T)
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, arrayType(T::Type, N:Int)))
+          => t(Qs +Quals Qs', Mods, arrayType(addQualifiers(Qs', T), N))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, incompleteArrayType(T:Type)))
+          => t(Qs +Quals Qs', Mods, incompleteArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, flexibleArrayType(T:Type)))
+          => t(Qs +Quals Qs', Mods, flexibleArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, unspecifiedArrayType(T:Type)))
+          => t(Qs +Quals Qs', Mods, unspecifiedArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, variableLengthArrayType(T:Type, N:K)))
+          => t(Qs +Quals Qs', Mods, variableLengthArrayType(addQualifiers(Qs', T), N))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs +Quals Qs', Mods, T)
+          requires notBool isArrayType(t(Qs, Mods, T))
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
+     rule addModifier(M:Modifier, T:UType) => utype(addModifier(M, type(T)))
+     rule addModifiers(Mods::Set, T:UType) => utype(addModifiers(Mods, type(T)))
+
      rule addModifier(M:Modifier, T:Type) => addModifiers(SetItem(M), T)
+     rule addModifiers(Mods'::Set, t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, Mods' Mods, T)
+     rule addModifiers(_, T::Type) => T [owise]
 
-     rule addModifiers(Mods':Set, t(Mods:Set, T:SimpleType))
-          => t(Mods' Mods, T)
-     rule addModifiers(_, T:Type) => T [owise]
+     rule innerType(T:UType) => innerType(type(T))
 
-     rule innerType(t(_, arrayType(T:Type, _))) => T
-     rule innerType(t(_, incompleteArrayType(T:Type))) => T
-     rule innerType(t(_, flexibleArrayType(T:Type))) => T
-     rule innerType(t(_, unspecifiedArrayType(T:Type))) => T
-     rule innerType(t(_, variableLengthArrayType(T:Type, _))) => T
-     rule innerType(t(_, pointerType(T:Type))) => T
-     rule innerType(t(_, bitfieldType(T:Type, _))) => T
-     rule innerType(t(_, functionType(T:Type, _))) => T
-     rule innerType(typedDeclaration(T:Type, _)) => T
+     rule innerType(t(_, _, arrayType(T::Type, _))) => T
+     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
+     rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
+     rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
+     rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
+     rule innerType(t(_, _, pointerType(T::Type))) => T
+     rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
+     rule innerType(typedDeclaration(T::Type, _)) => T
 
      rule idsFromParams(
-               ListItem(typedDeclaration(t(_, T:SimpleType), X:CId)) L:List )
+               ListItem(typedDeclaration(t(_, _, T::SimpleType), X::CId)) L::List )
           => ListItem(X) idsFromParams(L)
           requires T =/=K void
-     rule idsFromParams(ListItem(typedDeclaration(t(_, void), _))) => .List
+     rule idsFromParams(ListItem(typedDeclaration(t(_, _, void), _))) => .List
      rule idsFromParams(ListItem(variadic)) => .List
      rule idsFromParams(.List) => .List
 
-     rule tagRestrict(Tag:Scope, t(Mods:Set, T:SimpleType))
-          => t(tagRestrict(Tag, Mods), tagRestrict(Tag, T))
-     rule tagRestrict(Tag:Scope, typedDeclaration(T:Type, X:CId))
+     rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, SetItem(RestrictBlock(Tag)) Mods, tagRestrict(Tag, T))
+          requires Restrict inQuals Qs
+     rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs, Mods, tagRestrict(Tag, T))
+          requires notBool (Restrict inQuals Qs)
+     rule tagRestrict(Tag::Scope, typedDeclaration(T::Type, X::CId))
           => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
           [function, klabel(tagRestrictSimpleType)]
-     rule tagRestrict(_, T:SimpleType) => T
-     //TODO(chathhorn): reimplement
-/*     rule tagRestrict(_, T:SimpleType) => T
-     rule tagRestrict(_, enumType(X:CId)) => enumType(X)
-     rule tagRestrict(_, bitfieldType(T:Type, N:Int)) => bitfieldType(T, N)
-     rule tagRestrict(Tag:Scope, pointerType(T:Type))
-          => pointerType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:Scope, arrayType(T:Type, Sz:Int))
-          => arrayType(tagRestrict(Tag, T), Sz)
-     rule tagRestrict(Tag:Scope, incompleteArrayType(T:Type))
+     rule tagRestrict(Tag::Scope, arrayType(T::Type, N::Int))
+          => arrayType(tagRestrict(Tag, T), N)
+     rule tagRestrict(Tag::Scope, incompleteArrayType(T::Type))
           => incompleteArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:Scope, flexibleArrayType(T:Type))
+     rule tagRestrict(Tag::Scope, flexibleArrayType(T::Type))
           => flexibleArrayType(tagRestrict(Tag, T))
-     rule tagRestrict(Tag:Scope, unspecifiedArrayType(T:Type, N:K))
-          => unspecifiedArrayType(tagRestrict(Tag, T), N)
-     rule tagRestrict(Tag:Scope, variableLengthArrayType(T:Type, N:K))
-          => variableLengthArrayType(tagRestrict(Tag, T), N)
-     rule tagRestrict(_, incompleteStructType(X:CId))
-          => incompleteStructType(X)
-     rule tagRestrict(Tag:Scope, structType(X:CId,
-               fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
-          => structType(X,
-               fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
-     rule tagRestrict(_, incompleteUnionType(X:CId))
-          => incompleteUnionType(X)
-     rule tagRestrict(Tag:Scope, unionType(X:CId,
-               fieldInfo(Decls:List, NBits:Int, Types:Map, Offsets:Map)))
-          => unionType(X,
-               fieldInfo(tagRestrict(Tag, Decls), NBits, tagRestrict(Tag, Types), Offsets))
-     rule tagRestrict(_, functionType(T:Type, Params:List))
-          => functionType(T, Params)
-*/
-     syntax List ::= tagRestrict(Scope, List)
-          [function, klabel(tagRestrictList)]
-     rule tagRestrict(Tag:Scope, ListItem(T:Type) L:List)
-          => ListItem(tagRestrict(Tag, T)) tagRestrict(Tag, L)
-     rule tagRestrict(_, .List) => .List
+     rule tagRestrict(Tag::Scope, unspecifiedArrayType(T::Type))
+          => unspecifiedArrayType(tagRestrict(Tag, T))
+     rule tagRestrict(Tag::Scope, variableLengthArrayType(T::Type, K:K))
+          => variableLengthArrayType(tagRestrict(Tag, T), K)
+     rule tagRestrict(Tag::Scope, pointerType(T::Type))
+          => pointerType(tagRestrict(Tag, T))
+     rule tagRestrict(_, T::SimpleType) => T [owise]
+     //TODO(chathhorn): structs/unions?
 
-     syntax Map ::= tagRestrict(Scope, Map)
-          [function, klabel(tagRestrictMap)]
-     rule tagRestrict(Tag:Scope, X:CId |-> T:Type M:Map)
-          => X |-> tagRestrict(Tag, T) tagRestrict(Tag, M)
-     rule tagRestrict(_, .Map) => .Map
-
-     syntax Set ::= tagRestrict(Scope, Set)
-          [function, klabel(tagRestrictSet)]
-     rule tagRestrict(Tag:Scope, S:Set)
-          => SetItem(RestrictBlock(Tag)) S
-          requires Restrict in S
-     rule tagRestrict(_, S:Set) => S
-          requires notBool (Restrict in S)
-
-     rule getRestrictBlock(t(Mods:Set, _)) => getRestrictBlock'(.K, Mods)
+     rule getRestrictBlock(t(_, Mods::Set, _)) => getRestrictBlock'(.K, Mods)
 
      // TODO(chathhorn): more map pattern ugliness.
      syntax Scope ::= "getRestrictBlock'" "(" K "," Set ")" [function]
@@ -341,7 +302,8 @@ module C-TYPING-MISC
      rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
      rule getRestrictBlock''(.Set) => none
 
-     rule getReadFrom(t(Mods:Set, _)) => getReadFrom'(.K, Mods)
+     syntax Modifier ::= getReadFrom(UType) [function]
+     rule getReadFrom(ut(Mods::Set, _::SimpleUType)) => getReadFrom'(.K, Mods)
 
      syntax Modifier ::= "getReadFrom'" "(" K "," Set ")" [function]
      rule getReadFrom'(readFrom(Loc:SymLoc, Len:Int), _) => readFrom(Loc, Len)
@@ -351,23 +313,28 @@ module C-TYPING-MISC
      rule getReadFrom''(SetItem(K:K) S:Set) => getReadFrom'(K, S)
      rule getReadFrom''(.Set) => noModifier
 
-     rule getReadFromLoc(T:Type) => #getReadFromLoc(getReadFrom(T))
+     rule getReadFromLoc(T::UType) => #getReadFromLoc(getReadFrom(T))
 
      syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
      rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
      rule #getReadFromLoc(_) => NullPointer [owise]
 
      syntax Int ::= #getReadFromLen(Modifier) [function]
-     rule getReadFromLen(T:Type) => #getReadFromLen(getReadFrom(T))
+     rule getReadFromLen(T::UType) => #getReadFromLen(getReadFrom(T))
 
      rule #getReadFromLen(readFrom(_, Len:Int)) => Len
      rule #getReadFromLen(_) => 0 [owise]
 
-     rule arrayLength(t(_, arrayType(_, N:Int))) => N
+     rule updateReadFrom(T::UType, Loc::SymLoc)
+          => updateReadFrom(T, Loc, byteSizeofType(T))
+     rule updateReadFrom(T::UType, Loc::SymLoc, Len::Int)
+          => addModifier(readFrom(stripProv(Loc), Len), stripReadFrom(T))
+
+     rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, structType(S::StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, unionType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, _, structType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, _, unionType(S::StructId))) => getFieldInfo(S)
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
      rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
@@ -380,12 +347,13 @@ module C-TYPING-MISC
 
      rule getTypeAtOffset(T::Type, 0) => T
      // Preserve the qualifiers.
-     rule getTypeAtOffset(T::Type, Offset:Int) => t(getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
+     rule getTypeAtOffset(T::Type, Offset:Int)
+          => t(getQualifiers(T), getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
           requires (Offset =/=Int 0)
                andBool notBool isAggregateType(T)
      // Arrays.
      rule getTypeAtOffset(T:ArrayType, Offset:Int)
-          => getTypeAtOffset(addQualifiers(getModifiers(T), innerType(T)),
+          => getTypeAtOffset(addQualifiers(getQualifiers(T), innerType(T)),
                Offset %Int bitSizeofType(innerType(T)))
           requires Offset =/=Int 0 // We assume the offset must be in range.
      // Structs
@@ -395,10 +363,10 @@ module C-TYPING-MISC
 
      syntax Type ::= getTypeAtOffset(Type, K, Int) [function, klabel(getTypeAtOffset2)]
      rule getTypeAtOffset(BaseT::Type, fieldInfo(
-               Fields:List (ListItem(typedDeclaration(_, FId:CId))),
+               Fields:List (ListItem(typedDeclaration(_, FId::CId))),
                SI:Int,
                Types:Map (FId |-> T::Type),
-               Offsets:Map (FId |-> FOffset:Int)
+               Offsets:Map (FId |-> FOffset::Int)
           ), Offset:Int)
           => getTypeAtOffset(BaseT, fieldInfo(
                Fields,
@@ -409,27 +377,28 @@ module C-TYPING-MISC
           requires (Offset =/=Int 0)
                andBool (FOffset >Int Offset)
      rule getTypeAtOffset(BaseT::Type, fieldInfo(
-               _ ListItem(typedDeclaration(_, FId:CId)),
+               _ ListItem(typedDeclaration(_, FId::CId)),
                _,
                _ FId |-> T::Type,
-               _ FId |-> FOffset:Int
-          ), Offset:Int)
-          => getTypeAtOffset(addQualifiers(getModifiers(BaseT), T), Offset -Int FOffset)
+               _ FId |-> FOffset::Int
+          ), Offset::Int)
+          => getTypeAtOffset(addQualifiers(getQualifiers(BaseT), T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
-     rule getTypeAtOffset(BaseT::Type, _, _) => t(getModifiers(BaseT), no-type) [owise]
+     rule getTypeAtOffset(BaseT::Type, _, _)
+          => t(getQualifiers(BaseT), getModifiers(BaseT), no-type) [owise]
 
      // TODO(chathhorn): move/refactor?
-     rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T:Type) ...</k>
-          <curr-scope> S:Scope </curr-scope>
+     rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T::Type) ...</k>
+          <curr-scope> S::Scope </curr-scope>
           requires isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
-     rule <k> stabilize(T:Type) ~> stabilizeVLA(_) => T ...</k>
-          <curr-scope> S:Scope </curr-scope>
+     rule <k> stabilize(T::Type) ~> stabilizeVLA(_) => T ...</k>
+          <curr-scope> S::Scope </curr-scope>
           requires notBool isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
-     rule <k> stabilizeVLA(T:Type) => T ...</k>
-          <curr-scope> S:Scope </curr-scope>
+     rule <k> stabilizeVLA(T::Type) => T ...</k>
+          <curr-scope> S::Scope </curr-scope>
           requires notBool isVariablyModifiedType(T) andBool S =/=K fileScope
           [structural]
 
@@ -437,38 +406,38 @@ module C-TYPING-MISC
      // allowed to have VM types (see 6.7.2.1p9).
      syntax KItem ::= stabilize(K)
 
-     context stabilize(t(_, variableLengthArrayType(_, (HOLE:KItem => reval(HOLE)))))
+     context stabilize(t(_, _, variableLengthArrayType(_, (HOLE:KItem => reval(HOLE)))))
           [result(RValue)]
 
-     rule (.K => stabilize(T)) ~> stabilize(t(_, arrayType(T:Type, _)))
+     rule (.K => stabilize(T)) ~> stabilize(t(_, _, arrayType(T::Type, _)))
           requires isVariablyModifiedType(T)
           [structural]
-     rule stabilize(T:Type) ~> stabilize(t(Mods:Set, arrayType(_, N:Int)))
-          => stabilize(t(Mods, arrayType(T, N)))
+     rule stabilize(T:Type) ~> stabilize(t(Qs::Quals, Mods::Set, arrayType(_, N::Int)))
+          => stabilize(t(Qs, Mods, arrayType(T, N)))
           requires notBool isVariablyModifiedType(T)
           [structural]
-     rule (.K => stabilize(T)) ~> stabilize(t(_, pointerType(T:Type)))
+     rule (.K => stabilize(T)) ~> stabilize(t(_, _, pointerType(T:Type)))
           requires isVariablyModifiedType(T)
           [structural]
-     rule stabilize(T:Type) ~> stabilize(t(Mods:Set, pointerType(_)))
-          => stabilize(t(Mods, pointerType(T)))
+     rule stabilize(T:Type) ~> stabilize(t(Qs::Quals, Mods::Set, pointerType(_)))
+          => stabilize(t(Qs, Mods, pointerType(T)))
           requires notBool isVariablyModifiedType(T)
           [structural]
 
-     rule stabilize(t(Mods:Set, variableLengthArrayType(T:Type, tv(N:Int, _)))
-               => t(Mods, arrayType(T, N)))
+     rule stabilize(t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, tv(N:Int, _)))
+               => t(Qs, Mods, arrayType(T, N)))
           requires N >Int 0
           [structural]
-     rule (.K => UNDEF("CTM1", "Variable-length array with length that evaluates to non-positive value at execution.", 
+     rule (.K => UNDEF("CTM1", "Variable-length array with length that evaluates to non-positive value at execution.",
                        "6.7.6.2:5, J.2:1 item 75"))
-          ~> stabilize(t(_, variableLengthArrayType(_, tv(N:Int, _))))
+          ~> stabilize(t(_, _, variableLengthArrayType(_, tv(N:Int, _))))
           requires N <=Int 0
           [structural]
 
-     rule toPrototype(t(Mods:Set, functionType(R:Type, ListItem(P:Type) Ps:List)))
-          => t(Mods, functionType(R, .List))
+     rule toPrototype(t(Qs::Quals, Mods::Set, functionType(R::UType, ListItem(P::Type) Ps::List)))
+          => t(Qs, Mods, functionType(R, .List))
           requires oldStyle in Mods
                andBool notBool isVoidType(P)
-     rule toPrototype(T:Type) => T [owise]
+     rule toPrototype(T::Type) => T [owise]
 
 endmodule
