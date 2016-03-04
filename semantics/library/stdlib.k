@@ -29,14 +29,14 @@ module LIBC-STDLIB
           [interpRule]
 
      rule [exit]:
-          <k> builtin("exit", tv(I:Int, t(_, int))) ~> _
-               => reval(tv(I:Int, t(.Set, int)))
+          <k> builtin("exit", tv(I:Int, ut(_, int))) ~> _
+               => reval(tv(I:Int, utype(int)))
           </k>
           [structural]
 
      rule [abort]:
           <k> builtin("abort") ~> _
-               => printString("Aborted") ~> reval(tv(134, t(.Set, int)))
+               => printString("Aborted") ~> reval(tv(134, utype(int)))
           </k>
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
@@ -47,9 +47,9 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> builtin("malloc", tv(Len:Int, _))
-               => alloc(Base, t(.Set, no-type), Len:Int)
-               ~> tv(addProv(fromArray(0, Len), lnew(Base, t(.Set, no-type))),
-                    t(.Set, pointerType(t(.Set, void))))
+               => alloc(Base, type(no-type), Len:Int)
+               ~> tv(addProv(fromArray(0, Len), lnew(Base, type(no-type))),
+                    utype(pointerType(type(void))))
           ...</k>
           <malloced>... .Map => Base |-> Len ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
@@ -80,8 +80,8 @@ module LIBC-STDLIB
      rule [realloc]:
           <k> builtin("realloc", tv(loc(OldBase:SymBase, 0), _), tv(NewLen:Int, _))
                => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen)) SetItem(fromType(t(.Set, no-type)))),
-                    t(.Set, pointerType(t(.Set, void))))
+               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen)) SetItem(fromType(type(no-type)))),
+                    utype(pointerType(type(void))))
           ...</k>
           <malloced>...
                (OldBase => NewBase) |-> (OldLen:Int => NewLen)
@@ -105,17 +105,17 @@ module LIBC-STDLIB
      syntax KItem ::= "calloc-aux"
      rule [calloc]:
           builtin("calloc", tv(N:Int, _), tv(Size:Int, _))
-          => builtin("malloc", tv(N:Int *Int Size:Int, t(.Set, cfg:sizeut)))
+          => builtin("malloc", tv(N:Int *Int Size:Int, utype(cfg:sizeut)))
           ~> calloc-aux
           [structural]
      rule (.K => zeroObject(base(Loc)) )
-          ~> tv(Loc:SymLoc, t(_, pointerType(t(_, void))))
+          ~> tv(Loc:SymLoc, ut(_, pointerType(t(_, _, void))))
           ~> (calloc-aux => .K)
           [structural]
 
      rule builtin("free", tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _))
      rule [free]:
-          <k> builtin("free", tv(loc(Base:SymBase, 0), t(_, pointerType(_))))
+          <k> builtin("free", tv(loc(Base:SymBase, 0), ut(_, pointerType(_))))
                => deleteSizedObject(Base, Len:Int)
                ~> voidVal
           ...</k>
@@ -124,22 +124,22 @@ module LIBC-STDLIB
           [structural]
      rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed.",
                            "7.22.3.3:2, J.2:1 item 179"))
-              ~> builtin("free", tv(loc(Base:SymBase, I:Int), t(_, pointerType(_))))
+              ~> builtin("free", tv(loc(Base:SymBase, I:Int), ut(_, pointerType(_))))
           ...</k>
           <malloced> Malloced:Map </malloced>
           requires notBool Base in_keys(Malloced) orBool I =/=Int 0
 
-     rule builtin("free", tv(NullPointer, t(_, pointerType(_))))
+     rule builtin("free", tv(NullPointer, ut(_, pointerType(_))))
           => voidVal
           requires notBool hasLint
      // Returns a pseudo-random integral number in the range 0 to RAND_MAX
      // fixme should use RAND_MAX
      rule [rand]:
-          builtin("rand") => tv(randInt(max(t(.Set, int)) +Int 1), t(.Set, int))
+          builtin("rand") => tv(randInt(max(utype(int)) +Int 1), utype(int))
           [structural]
 
      rule [srand]:
-          builtin("srand", tv(N:Int, t(_, unsigned-int)))
+          builtin("srand", tv(N:Int, ut(_, unsigned-int)))
           => srandInt(N) ~> voidVal
           [structural]
 

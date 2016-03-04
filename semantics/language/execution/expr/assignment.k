@@ -9,44 +9,44 @@ module C-EXPR-ASSIGNMENT
      imports C-SETTINGS-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+     rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
           ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, stripQualifiers(T)))
-          requires notBool isRestrictType(T)
+          ~> transferProv(Loc, tv(V, T))
+          requires notBool isRestrictType(T')
                andBool notBool fromArrayStatic(T')
-               andBool (T ==Type T')
+               andBool (T ==Type utype(T'))
           [structural]
-     rule nclv(Loc:SymLoc, T':Type) := tv(V:CValue, T:Type)
+     rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
           ~> checkArrayStaticAssign(T', V)
           ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, stripQualifiers(T)))
-          requires notBool isRestrictType(T)
+          ~> transferProv(Loc, tv(V, T))
+          requires notBool isRestrictType(T')
                andBool fromArrayStatic(T')
-               andBool (T ==Type T')
+               andBool (T ==Type utype(T'))
           [structural]
-     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+     rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
-          ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+          ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, stripQualifiers(T)))
-          requires isRestrictType(T)
-               andBool (T ==Type T')
+          ~> transferProv(Loc, tv(V, T))
+          requires isRestrictType(T')
+               andBool (T ==Type utype(T'))
           [structural]
-     rule nclv(Loc:SymLoc, T':Type) := tv(V:SymLoc, T:Type)
+     rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
           ~> checkArrayStaticAssign(T', V)
-          ~> checkRestrictAssign(getRestrictBlock(T), getRelevantTags(Loc, V))
+          ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
-          ~> transferProv(Loc, tv(V, stripQualifiers(T)))
-          requires isRestrictType(T)
+          ~> transferProv(Loc, tv(V, T))
+          requires isRestrictType(T')
                andBool fromArrayStatic(T')
-               andBool (T ==Type T')
+               andBool (T ==Type utype(T'))
           [structural]
 
-     syntax KItem ::= checkOverlap(SymLoc, Type, Type)
-     rule checkOverlap(Loc:SymLoc, T:Type, T':Type) => .K
+     syntax KItem ::= checkOverlap(SymLoc, UType, Type)
+     rule checkOverlap(Loc:SymLoc, T::UType, T'::Type) => .K
           requires notBool hasReadFrom(T)
                orBool (getReadFromLoc(T) ==K Loc
                    andBool getReadFromLen(T) ==K byteSizeofType(T'))
@@ -57,7 +57,7 @@ module C-EXPR-ASSIGNMENT
      rule (.K => UNDEF("EEA1",
                "Assignment from non-exactly-overlapping overlapping read.",
                "6.5.16.1:3, J.2:1 item 54"))
-          ~> checkOverlap(Loc:SymLoc, T:Type, T':Type)
+          ~> checkOverlap(Loc:SymLoc, T::UType, T'::Type)
           requires hasReadFrom(T)
                andBool sameBase(getReadFromLoc(T), Loc)
                andBool (getReadFromLoc(T) =/=K Loc
@@ -94,14 +94,14 @@ module C-EXPR-ASSIGNMENT
                andBool Tags =/=K .Set
 
      syntax Bool ::= fromArrayStatic(Type) [function]
-     rule fromArrayStatic(t(SetItem(K:K) S:Set, T:SimpleType))
-          => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(S, T))
+     rule fromArrayStatic(t(Qs::Quals, SetItem(K:K) S:Set, T::SimpleType))
+          => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(Qs, S, T))
      rule fromArrayStatic(_) => false [owise]
 
      syntax KItem ::= checkArrayStaticAssign(Type, CValue)
                     | "checkArrayStaticAssign'" "(" Type "," Modifier "," Provenance ")"
 
-     rule checkArrayStaticAssign(t(Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
+     rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
           => checkArrayStaticAssign'(T,
                getFirstMatch(Mods, #klabel(`arrayStatic`)):>Modifier,
                getFirstMatch(Prov, #klabel(`fromArray`)):>Provenance)

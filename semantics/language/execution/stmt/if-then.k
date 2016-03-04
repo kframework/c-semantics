@@ -17,10 +17,10 @@ module C-STMT-IF-THEN
      }*/
 
      rule [if-then-else-true]:
-          IfThenElse(tv(1, t(_, int)), S:K, _) => sequencePoint ~> S
+          IfThenElse(tv(1, ut(_, int)), S:K, _) => sequencePoint ~> S
           [structural]
      rule [if-then-else-false]:
-          IfThenElse(tv(0, t(_, int)), _, S:K) => sequencePoint ~> S
+          IfThenElse(tv(0, ut(_, int)), _, S:K) => sequencePoint ~> S
           [structural]
 
 endmodule

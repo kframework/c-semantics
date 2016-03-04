@@ -27,38 +27,38 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      \cinline{a\%b} is undefined.
      }*/
 
-     rule tv(I1:Int, T:Type) * tv(I2:Int, T':Type)
+     rule tv(I1:Int, T::UType) * tv(I2:Int, T'::UType)
           => arithInterpret(T, I1 *Int I2)
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) * tv(F2:Float, T':Type)
+     rule tv(F1:Float, T::UType) * tv(F2:Float, T'::UType)
           => arithInterpret(T, F1 *Float F2)
           requires T ==Type T'
           [structural]
 
-     rule tv(I1:Int, T:Type) / tv(I2:Int, T':Type)
+     rule tv(I1:Int, T::UType) / tv(I2:Int, T'::UType)
           => arithInterpret(T, I1 /Int I2)
-          requires isPromoted(T:Type) andBool I2 =/=Int 0
+          requires isPromoted(T) andBool I2 =/=Int 0
                andBool T ==Type T'
           [structural]
-     rule tv(F1:Float, T:Type) / tv(F2:Float, T':Type)
+     rule tv(F1:Float, T::UType) / tv(F2:Float, T'::UType)
           => arithInterpret(T, F1 /Float F2)
           requires T ==Type T' andBool F2 =/=Float 0.0
           [structural]
      rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
-          ~> L:RValue / tv(0, T':Type)
-          requires isIntegerType(type(L)) andBool isPromoted(type(L))
-               andBool type(L) ==Type T'
+          ~> L:RValue / tv(0, T'::UType)
+          requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
+               andBool utype(L) ==Type T'
           [structural]
      rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
-          ~> L:RValue / tv(0.0, T':Type)
-          requires isFloatType(type(L))
-               andBool type(L) ==Type T'
+          ~> L:RValue / tv(0.0, T'::UType)
+          requires isFloatUType(utype(L))
+               andBool utype(L) ==Type T'
           [structural]
 
 
-     rule tv(I1:Int, T:Type) % tv(I2:Int, T':Type)
+     rule tv(I1:Int, T::UType) % tv(I2:Int, T'::UType)
           => arithInterpret(T, I1 %Int I2)
           requires isPromoted(T)
                andBool (I2 =/=Int 0)
@@ -67,13 +67,13 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEMX2", "Modulus by 0.", "6.5.5:5, J.2:1 item 45") )
-          ~> L:RValue % tv(0, T':Type)
-          requires isIntegerType(type(L)) andBool isPromoted(type(L))
-               andBool type(L) ==Type T'
+          ~> L:RValue % tv(0, T'::UType)
+          requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
+               andBool utype(L) ==Type T'
           [structural]
      rule (.K => UNDEF("CEMX3", "Signed integer overflow.", "6.5:5, J.2:1 item 36") ) ~>
-          tv(I1:Int, T:IntegerType) % tv(I2:Int, T':Type)
-          requires I2 =/=Int 0 
+          tv(I1:Int, T:IntegerUType) % tv(I2:Int, T'::UType)
+          requires I2 =/=Int 0
                andBool notBool (min(T) <=Int I1 /Int I2
                     andBool max(T) >=Int I1 /Int I2)
                andBool isPromoted(T)

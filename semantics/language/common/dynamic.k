@@ -6,11 +6,14 @@ module C-DYNAMIC-SYNTAX
      imports STRING-SYNTAX
      imports SET
 
+     syntax Quals // defined in C-TYPING-SYNTAX
      syntax SimpleType // defined in C-TYPING-SYNTAX
+     syntax SimpleUType // defined in C-TYPING-SYNTAX
      syntax Bits ::= Int // defined in C-BITS-SYNTAX
      syntax SymLoc // defined in C-SYMLOC-SYNTAX
 
-     syntax Type ::= t(Set, SimpleType)
+     syntax Type ::= t(Quals, Set, SimpleType) // type: ualifiers, modifiers.
+     syntax UType ::= ut(Set, SimpleUType)    // unqual type: modifiers.
 
      syntax Agg ::= agg(List)
 
@@ -19,7 +22,7 @@ module C-DYNAMIC-SYNTAX
      // These hold typed frozen computations -- one each for lvalues, rvalues,
      // and non-converted lvalues.
      syntax LHold ::= le(K, Type)
-     syntax RHold ::= te(K, Type)
+     syntax RHold ::= te(K, UType)
      syntax NCLHold ::= ncle(K, Type)
      syntax CompoundExpression ::= compoundExp(K)
      syntax Hold ::= LHold | RHold | NCLHold | CompoundExpression
@@ -28,13 +31,14 @@ module C-DYNAMIC-SYNTAX
 
      syntax RValue ::= "voidVal"
      syntax RValue ::= "emptyValue"
-     syntax RValue ::= tv(CValue, Type)
+     syntax RValue ::= tv(CValue, UType)
           [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
 
      syntax KItem ::= toRVal(K)
 
      syntax Typed ::= LValue | RValue | Hold | Type | Nclv
      syntax Type ::= type(K) [function]
+     syntax UType ::= utype(K) [function]
      syntax Valued ::= LValue | RValue | Hold
      syntax KItem ::= value(K) [function]
 
@@ -45,7 +49,7 @@ module C-DYNAMIC-SYNTAX
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
-     syntax KResult ::= RValue | Type | Nclv | trap(Type)
+     syntax KResult ::= RValue | Type | Nclv | trap(UType)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
@@ -151,14 +155,56 @@ module C-DYNAMIC
      rule value(ncle(K:K, _)) => K
      rule value(compoundExp(K:K)) => K
 
-     rule type(tv(_, T:Type)) => T
+     rule type(tv(_, T::UType)) => type(T)
+     rule type(voidVal) => type(void)
+     rule type(lv(_, T::Type)) => T
+     rule type(nclv(_, T::Type)) => T
+     rule type(te(_, T::UType)) => type(T)
+     rule type(le(_, T::Type)) => T
+     rule type(ncle(_, T::Type)) => T
      rule type(T:Type) => T
-     rule type(voidVal) => t(.Set, void)
-     rule type(lv(_, T:Type)) => T
-     rule type(nclv(_, T:Type)) => T
-     rule type(te(_, T:Type)) => T
-     rule type(le(_, T:Type)) => T
-     rule type(ncle(_, T:Type)) => T
+     rule type(T:SimpleType) => t(noQuals, .Set, T)
+     rule type(T:SimpleArrayUType) => t(noQuals, .Set, qualSimple(T))
+     rule type(ut(Mods::Set, T::SimpleUType)) => t(noQuals, Mods, qualSimple(T))
+
+     rule utype(tv(_, T::UType)) => T
+     rule utype(voidVal) => utype(void)
+     rule utype(lv(_, T::Type)) => utype(T)
+     rule utype(nclv(_, T::Type)) => utype(T)
+     rule utype(te(_, T:UType)) => T
+     rule utype(le(_, T::Type)) => utype(T)
+     rule utype(ncle(_, T::Type)) => utype(T)
+     rule utype(t(_, Mods::Set, T::SimpleType)) => ut(Mods, unqualSimple(T))
+     rule utype(typedDeclaration(T::Type, _)) => utype(T)
+     rule utype(T:SimpleType) => ut(.Set, unqualSimple(T))
+     rule utype(T:SimpleArrayUType) => ut(.Set, T)
+     rule utype(T:UType) => T
+
+     syntax SimpleUType ::= unqualSimple(SimpleType) [function]
+     rule unqualSimple(arrayType(T::Type, N::Int))
+          => arrayUType(utype(T), N)
+     rule unqualSimple(incompleteArrayType(T::Type))
+          => incompleteArrayUType(utype(T))
+     rule unqualSimple(flexibleArrayType(T::Type))
+          => flexibleArrayUType(utype(T))
+     rule unqualSimple(unspecifiedArrayType(T::Type))
+          => unspecifiedArrayUType(utype(T))
+     rule unqualSimple(variableLengthArrayType(T::Type, N:K))
+          => variableLengthArrayUType(utype(T), N)
+     rule unqualSimple(T::SimpleType) => T [owise]
+
+     syntax SimpleType ::= qualSimple(SimpleUType) [function]
+     rule qualSimple(arrayUType(T::UType, N::Int))
+          => arrayType(type(T), N)
+     rule qualSimple(incompleteArrayUType(T::UType))
+          => incompleteArrayType(type(T))
+     rule qualSimple(flexibleArrayUType(T::UType))
+          => flexibleArrayType(type(T))
+     rule qualSimple(unspecifiedArrayUType(T::UType))
+          => unspecifiedArrayType(type(T))
+     rule qualSimple(variableLengthArrayUType(T::UType, N:K))
+          => variableLengthArrayType(type(T), N)
+     rule qualSimple(T::SimpleUType) => T [owise]
 
      rule _:KResult ~> discard => .K
           [structural]
@@ -181,7 +227,7 @@ module C-DYNAMIC
      rule loadObj(.K) => .K
           [structural]
 
-     rule N:Int => tv(N, t(.Set, cfg:largestUnsigned))
+     rule N:Int => tv(N, utype(cfg:largestUnsigned))
           [structural] // for internal computations
 
      rule <k> allowInit(K:K) => K ~> initDone(I) ...</k>

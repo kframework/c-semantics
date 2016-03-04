@@ -63,11 +63,11 @@ module C-EXECUTION-INIT
 
      syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
-          => tv(NullPointer, t(.Set, pointerType(t(.Set, void))))
+          => tv(NullPointer, utype(pointerType(type(void))))
 
      syntax Type ::= strType(String) [function]
      rule strType(S:String)
-          => t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))
+          => type(arrayType(type(char), lengthString(S) +Int 1))
 
      syntax KItem ::= "incomingArguments-aux" "(" List "," Int ")"
 
@@ -77,21 +77,21 @@ module C-EXECUTION-INIT
           => allocObject(N +Int 1 @ argv, strType(S))
           ~> writeString(lnew(N +Int 1 @ argv, strType(S)), S)
           ~> allowInit(Computation(
-               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
+               *(Identifier("#incomingArgumentsArray") + tv(N, utype(int)))
                     := lv(lnew(N +Int 1 @ argv, strType(S)), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)
           => allowInit(Computation(
-               *(Identifier("#incomingArgumentsArray") + tv(N, t(.Set, int)))
+               *(Identifier("#incomingArgumentsArray") + tv(N, utype(int)))
                     := NullPointerConstant))
           [structural]
 
      rule pgmArgs(L:List)
           => makeArgv(
                Identifier("#incomingArgumentsArray"),
-               t(.Set, arrayType(t(.Set, pointerType(t(.Set, char))),
-               (size(L)) +Int 1)))
+               type(arrayType(type(pointerType(type(char))),
+               size(L) +Int 1)))
           [structural]
 
      syntax KItem ::= makeArgv(CId, Type)
@@ -179,32 +179,33 @@ module C-EXECUTION-INIT
           <k> callMain(N:Int, Args:K)
                => reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args))
           ...</k>
-          <types>... Identifier("main") |-> T:Type ...</types>
+          <types>... Identifier("main") |-> T::Type ...</types>
           <status> _ => mainCalled </status>
           [ndtrans]
 
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
-     rule #callMain(t(_,
-          functionType(t(.Set, int), ListItem(typedDeclaration(t(.Set, void), _)))), _, _, _)
+     rule #callMain(t(_, _,
+          functionType(ut(.Set, int), ListItem(typedDeclaration(t(Qs:Quals, .Set, void), _)))), _, _, _)
           => Call(Identifier("main"), list(.List))
+          requires Qs ==K noQuals
           [structural]
      // int main(int argc, char* argv[])
-     rule #callMain(t(_, functionType(t(.Set, int),
-               ListItem(typedDeclaration(t(.Set, int), _))
-               ListItem(typedDeclaration(t(.Set, incompleteArrayType(t(.Set, pointerType(T:Type)))), _)))),
+     rule #callMain(t(_, _, functionType(ut(_, int),
+               ListItem(typedDeclaration(t(Qs:Quals, _, int), _))
+               ListItem(typedDeclaration(t(Qs, _, incompleteArrayType(t(Qs, _, pointerType(T::Type)))), _)))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          requires T ==K t(.Set, char)
+          requires T ==K type(char) andBool Qs ==K noQuals
           [structural]
      // int main(int argc, char** argv)
-     rule #callMain(t(_,
-               functionType(t(.Set, int),
-               ListItem(typedDeclaration(t(.Set, int), _))
-               ListItem(typedDeclaration(t(.Set, pointerType(t(.Set, pointerType(T:Type)))), _)))),
+     rule #callMain(t(_, _,
+               functionType(ut(.Set, int),
+               ListItem(typedDeclaration(t(Qs:Quals, _, int), _))
+               ListItem(typedDeclaration(t(Qs, _, pointerType(t(Qs, _, pointerType(T::Type)))), _)))),
                N:Int, X:CId, Args:K)
           => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          requires T ==K t(.Set, char)
+          requires T ==K type(char) andBool Qs ==K noQuals
           [structural]
 
      // fixme I'm not sure threads clean up their memory

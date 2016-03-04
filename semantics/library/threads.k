@@ -14,11 +14,11 @@ module LIBC-THREADS
      ////////////////////////////--
      syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout"
                     | "thrd-busy" | "thrd-nomem"
-     rule thrd-success => tv(0, t(.Set, int)) [macro, structural]
-     rule thrd-error => tv(1, t(.Set, int)) [macro, structural]
-     rule thrd-timeout => tv(2, t(.Set, int)) [macro, structural]
-     rule thrd-busy => tv(3, t(.Set, int)) [macro, structural]
-     rule thrd-nomem => tv(4, t(.Set, int)) [macro, structural]
+     rule thrd-success => tv(0, utype(int)) [macro, structural]
+     rule thrd-error => tv(1, utype(int)) [macro, structural]
+     rule thrd-timeout => tv(2, utype(int)) [macro, structural]
+     rule thrd-busy => tv(3, utype(int)) [macro, structural]
+     rule thrd-nomem => tv(4, utype(int)) [macro, structural]
 
      syntax KItem ::= "threadRunning"
 
@@ -29,7 +29,7 @@ module LIBC-THREADS
                     ThFuncPtr:RValue,
                     ThArg:RValue)
                => Computation(
-                    (* ThIdPtr) := tv(Fresh, t(.Set, cfg:thrdut)))
+                    (* ThIdPtr) := tv(Fresh, utype(cfg:thrdut)))
                     ~> spawn-aux(Fresh, ThFuncPtr, ThArg)
           ...</k>
           <next-thread-id> Fresh:Int => Fresh +Int 1 </next-thread-id>
@@ -64,7 +64,7 @@ module LIBC-THREADS
 
      rule [thrd-current]:
           <k> builtin("thrd_current")
-               => tv(ThId:Int, t(.Set, cfg:thrdut))
+               => tv(ThId:Int, utype(cfg:thrdut))
           ...</k>
           <thread-id> ThId:Int </thread-id>
           [structural]
@@ -73,7 +73,7 @@ module LIBC-THREADS
 
      rule [thrd-join-start]:
           builtin("thrd_join",
-               tv(ThId:Int, t(_, T:SimpleType)),
+               tv(ThId:Int, ut(_, T::SimpleUType)),
                ResultPtr:RValue)
           => join-aux(ThId, ResultPtr)
           requires T ==K cfg:thrdut

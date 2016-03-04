@@ -13,7 +13,7 @@ module C-ABSTRACT-SYNTAX
 
      syntax C ::= TypeSpecifier
      syntax C ::= Specifier
-     syntax C ::= DeclType
+     syntax C ::= DeclTypeSyntax
      syntax C ::= NameGroup
      syntax C ::= FieldGroup
      syntax C ::= InitNameGroup
@@ -138,14 +138,14 @@ module C-ABSTRACT-SYNTAX
                 * decl is never a PTR.*)
      */
      syntax KItem ::= "JustBase"
-     syntax DeclType ::= FunctionType(K) [strict]
+     syntax DeclTypeSyntax ::= FunctionType(K) [strict]
      // third argument should also be strict, but not doing anything with
      // [strict 5] yet
-     syntax DeclType ::= ArrayType(K, K, K) [strict(1)]
-     syntax DeclType ::= PointerType(Specifier, K) [strict(2)]
+     syntax DeclTypeSyntax ::= ArrayType(K, K, K) [strict(1)]
+     syntax DeclTypeSyntax ::= PointerType(Specifier, K) [strict(2)]
      // K, List, Bool
-     syntax DeclType ::= Prototype(K, K, Bool) [strict(1)]
-     syntax DeclType ::= NoPrototype(K, K, Bool) [strict(1, 2)]
+     syntax DeclTypeSyntax ::= Prototype(K, K, Bool) [strict(1)]
+     syntax DeclTypeSyntax ::= NoPrototype(K, K, Bool) [strict(1, 2)]
 
      syntax KItem ::= "NotVariadic"
      syntax KItem ::= "Variadic"
