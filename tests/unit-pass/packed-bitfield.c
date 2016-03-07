@@ -2,13 +2,13 @@
 #include<stdlib.h>
 struct first {
   char a;
-  unsigned int b : 6;
-  unsigned int c : 1;
-  unsigned int d : 2;
+  unsigned b : 6;
+  unsigned c : 1;
+  unsigned d : 2;
   int e;
-  unsigned short f : 2;
-  unsigned short g : 6;
-  unsigned short h : 2;
+  unsigned f : 2;
+  unsigned g : 6;
+  unsigned h : 2;
   char i;
 };
 

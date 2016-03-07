@@ -1,9 +1,9 @@
 #include<stdlib.h>
 struct foo {
-  char x : 5;
-  char : 1;
-  char : 0;
-  char z : 2;
+  int x : 5;
+  int : 1;
+  int : 0;
+  int z : 2;
 };
 
 int main() {
