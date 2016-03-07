@@ -27,6 +27,11 @@ module C-TYPING-INTERPRETATION
           ~> BitFieldType(_, tv(N:CValue, T::UType))
           requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
 
+     rule (.K => IMPL("CTI4", "Bitfield with type other than signed int, unsigned int, or _Bool.", "6.7.2.1:5"))
+          ~> BitFieldType(t(_, _, T'::SimpleType), tv(N:CValue, T::UType))
+          requires fromConstantExpr(T) andBool isInt(N)
+               andBool notBool isBitfieldFieldType(T')
+
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)
      syntax KItem ::= makePointerType(Set)
