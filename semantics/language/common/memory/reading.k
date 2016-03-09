@@ -111,18 +111,18 @@ module C-MEMORY-READING
      syntax Bool ::= #hasTrap(List) [function]
 
      rule #hasUnknown(.List) => false
-     rule #hasUnknown(ListItem(piece(B:Bits, _) => B) _:List)
-     rule #hasUnknown((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasUnknown(ListItem(bitRange(B:Bits, _, _) => B) _:List)
+     rule #hasUnknown(ListItem(piece(B::Bits, _) => B) _:List)
+     rule #hasUnknown((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule #hasUnknown(ListItem(bitRange(B::Bits, _, _) => B) _:List)
      rule #hasUnknown(ListItem(unknown) _:List) => true
-     rule #hasUnknown(ListItem(B:Bits) L:List) => #hasUnknown(L) [owise]
+     rule #hasUnknown(ListItem(B::Bits) L:List) => #hasUnknown(L) [owise]
 
      rule #hasTrap(.List) => false
-     rule #hasTrap(ListItem(piece(B:Bits, _) => B) _:List)
-     rule #hasTrap((ListItem(B:Bits bit:: B':Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasTrap(ListItem(bitRange(B:Bits, _, _) => B) _:List)
+     rule #hasTrap(ListItem(piece(B::Bits, _) => B) _:List)
+     rule #hasTrap((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule #hasTrap(ListItem(bitRange(B::Bits, _, _) => B) _:List)
      rule #hasTrap(ListItem(trap) _:List) => true
-     rule #hasTrap(ListItem(B:Bits) L:List) => #hasTrap(L) [owise]
+     rule #hasTrap(ListItem(B::Bits) L:List) => #hasTrap(L) [owise]
 
      // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(Type, List) [function]
