@@ -150,14 +150,14 @@ module C-TYPING-INTERPRETATION
      syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
 
      rule giveNamesToArgs(L:List) => giveNamesToArgs-aux(0, L)
-     rule giveNamesToArgs-aux(N:Int, ListItem(T:Type) L:List)
-          => ListItem(nameArg(N, T)) giveNamesToArgs-aux(N +Int 1, L)
+     rule giveNamesToArgs-aux(N:Int, ListItem(K::K) L:List)
+          => ListItem(nameArg(N, K)) giveNamesToArgs-aux(N +Int 1, L)
      rule giveNamesToArgs-aux(_, .List) => .List
 
-     syntax Type ::= nameArg(Int, Type) [function]
+     syntax K ::= nameArg(Int, K) [function]
      rule nameArg(N:Int, typedDeclaration(T:Type, #NoName))
           => typedDeclaration(T, #NoName(N))
-     rule nameArg(_, T:Type) => T [owise]
+     rule nameArg(_, T::K) => T [owise]
 
      rule <k> JustBase => T ...</k>
           <decl-type-holder> T:Type => .K ...</decl-type-holder>
@@ -230,8 +230,6 @@ module C-TYPING-INTERPRETATION
 
      // Turn array and function types into pointers.
      syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(typedDeclaration(T::Type, X::CId))
-          => typedDeclaration(adjustParam(T), X)
      rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
           => type(pointerType(t(Qs, Mods, functionType(R, Params))))
      rule adjustParam(T:ArrayType)

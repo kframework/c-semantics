@@ -109,7 +109,7 @@ module C-FUNCTION-DEF
           requires (notBool oldStyle in Mods) andBool isArgvType(T)
           [structural]
      rule (.K => UNDEF("FD4", "Definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int), ListItem(T::Type) _)))
+          ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int), ListItem(T:Type) _)))
           requires (oldStyle in Mods) andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("FD5", "Function main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
@@ -121,7 +121,7 @@ module C-FUNCTION-DEF
           requires T =/=K int andBool T =/=K void
           [structural]
      rule (.K => UNDEF("FD7", "If main has parameters, the type of the second parameter must be equivalent to char**.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, _, functionType(_, ListItem(_) ListItem(T::Type))))
+          ~> checkMainDef(t(_, _, functionType(_, ListItem(_) ListItem(T:Type))))
           requires notBool isArgvType(T)
           [structural]
      rule (.K => UNDEF("FD8", "Function main must have zero or two parameters.", "5.1.2.2.1:1, J.2:1 item 4") )
@@ -172,16 +172,12 @@ module C-FUNCTION-DEF
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
           => calculateGotoMap(X, K)
 
-     syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
-     rule hasDupParams(T::Type) => #hasDupParams'(T)
-     rule #hasDupParams'(typedDeclaration(T::Type, _)) => #hasDupParams'(T)
-     rule #hasDupParams'(t(_, _, functionType(_, P::List))) => #hasDupIds'(P)
-     rule #hasDupParams'(_) => false [owise]
+     rule hasDupParams(t(_, _, functionType(_, P::List))) => hasDupIds(P)
+     rule hasDupParams(_) => false [owise]
 
      // TODO(liyili2): no associative matching in Java currently, we will do it once we
      // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
-     syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
      syntax Bool ::= cIdIsInList(CId, List) [function]
 
      rule cIdIsInList(_:CId, .List) => false
@@ -193,21 +189,19 @@ module C-FUNCTION-DEF
      rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
           => cIdIsInList(X, Tail) [owise]
 
-     rule hasDupIds(P:List) => #hasDupIds'(P)
-
-     rule #hasDupIds'(.List) => false
-     rule #hasDupIds'(
+     rule hasDupIds(.List) => false
+     rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
           => true
           requires cIdIsInList(X, Tail)
 
-     rule #hasDupIds'(
+     rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
-          => #hasDupIds'(Tail)
+          => hasDupIds(Tail)
           requires notBool cIdIsInList(X, Tail)
-     rule #hasDupIds'(ListItem(_) Tail:List) => #hasDupIds'(Tail) [owise]
+     rule hasDupIds(ListItem(_) Tail:List) => hasDupIds(Tail) [owise]
 
      syntax KItem ::= dummyBind(List)
      rule dummyBind(.List) => .K

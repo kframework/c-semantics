@@ -217,12 +217,13 @@ module C-DECL-INITIALIZER
      // define a extra constructor in List to get the
      // information of next T' and F' if we have next operator
      // TODO(liyi): no associative matching. increase speed
-     syntax Type ::= "noResultOfSearchType" | "matchResultOfSearchType"
+     syntax SearchResult ::= "noResultOfSearchType" | "matchResultOfSearchType"
+                           | DType
+
+     syntax KItem ::= resultInFieldInfoList(SearchResult)
 
      syntax KItem ::= searchInFieldInfoList(Type, CId, List) [function]
                     | continueInFieldInfoList(List) [function]
-
-     syntax KItem ::= resultInFieldInfoList(Type)
 
      rule searchInFieldInfoList(T:Type, F:CId,
                ListItem(typedDeclaration(T, F)) L:List)

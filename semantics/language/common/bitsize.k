@@ -78,6 +78,8 @@ module C-BITSIZE
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
      rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
           => maxByteSizeofList'(maxInt(Sz, byteSizeofType(utype(T))), LL)
+     rule maxByteSizeofList'(Sz:Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
+          => maxByteSizeofList'(maxInt(Sz, byteSizeofType(utype(T))), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
      rule bitSizeofType(ut(_, no-type)) => 0

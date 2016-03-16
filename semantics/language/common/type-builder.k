@@ -16,7 +16,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= struct(String) [function]
      syntax Type ::= union(String) [function]
      syntax Type ::= typdef(String) [function]
-     syntax Type ::= decl(FlexType, String) [function]
+     syntax DType ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 
      syntax Type ::= "size_t" [function]

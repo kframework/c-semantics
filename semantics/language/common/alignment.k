@@ -60,9 +60,9 @@ module C-ALIGNMENT
      rule maxByteAlignofList(L:List) => maxByteAlignofList'(1, L)
      rule maxByteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)
           => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
+     rule maxByteAlignofList'(Sz:Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
+          => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
      rule maxByteAlignofList'(Sz:Int, .List) => Sz
-
-     rule byteAlignofType(typedDeclaration(T:Type, _)) => byteAlignofType(T)
 
      rule byteAlignofType(T:ArrayType)  => byteAlignofType(innerType(T))
      rule byteAlignofType(t(_, _, pointerType(_))) => cfg:alignofPointer

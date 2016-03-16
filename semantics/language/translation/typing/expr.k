@@ -352,8 +352,6 @@ module C-TYPING-EXPR
           => isSpecifiedVariablyModifiedType(innerType(T))
      rule isSpecifiedVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
           => isSpecifiedVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isSpecifiedVariablyModifiedType`))
-     rule isSpecifiedVariablyModifiedType(typedDeclaration(T:Type, _))
-          => isSpecifiedVariablyModifiedType(T)
      rule isSpecifiedVariablyModifiedType(t(_, _, variableLengthArrayType(_, _))) => true
      rule isSpecifiedVariablyModifiedType(_) => false [owise]
 

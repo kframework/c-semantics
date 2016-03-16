@@ -520,7 +520,9 @@ module C-IO-BUFFERED
           => #effectivelyCompatWithField(T, values(Types))
 
      syntax Bool ::= #effectivelyCompatWithField(Type, List) [function]
-     rule #effectivelyCompatWithField(T::Type, ListItem(T'::Type) L::List)
+     rule #effectivelyCompatWithField(T::Type, ListItem(T':Type) L::List)
+          => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(T, L)
+     rule #effectivelyCompatWithField(T::Type, ListItem(typedDeclaration(T':Type, _)) L::List)
           => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(T, L)
      rule #effectivelyCompatWithField(_, .List) => false [owise]
 
@@ -529,7 +531,9 @@ module C-IO-BUFFERED
           => #effectivelyCompatWithField(values(Types), T)
 
      syntax Bool ::= #effectivelyCompatWithField(List, Type) [function]
-     rule #effectivelyCompatWithField(ListItem(T::Type) L::List, T'::Type)
+     rule #effectivelyCompatWithField(ListItem(T:Type) L::List, T'::Type)
+          => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(L, T')
+     rule #effectivelyCompatWithField(ListItem(typedDeclaration(T:Type, _)) L::List, T'::Type)
           => #effectivelyCompat(T, T') orBool #effectivelyCompatWithField(L, T')
      rule #effectivelyCompatWithField(.List, _) => false [owise]
 

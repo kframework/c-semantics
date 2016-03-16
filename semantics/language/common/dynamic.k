@@ -14,6 +14,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax Type ::= t(Quals, Set, SimpleType) // type: ualifiers, modifiers.
      syntax UType ::= ut(Set, SimpleUType)    // unqual type: modifiers.
+     syntax DType ::= typedDeclaration(Type, CId)
 
      syntax Agg ::= agg(List)
 
@@ -49,7 +50,7 @@ module C-DYNAMIC-SYNTAX
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
-     syntax KResult ::= RValue | Type | Nclv | trap(UType)
+     syntax KResult ::= RValue | Type | DType | Nclv | trap(UType)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 
