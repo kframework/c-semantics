@@ -31,7 +31,6 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
-     syntax Bool ::= isTypedDeclaration(Type) [function]
      syntax Bool ::= isVariablyModifiedType(Type) [function]
      syntax Bool ::= isVolatileType(Type) [function]
      syntax Bool ::= isWCharType(Type) [function]
@@ -178,39 +177,22 @@ module C-TYPING-SYNTAX
      syntax UnsignedIntegerUType ::= UCharUType | BoolUType | UnsignedBitfieldUType
 
      syntax UnsignedIntegerType ::= t(Quals, Set, SimpleUnsignedType)
-     syntax UnsignedIntegerType ::= typedDeclaration(UnsignedIntegerType, CId)
      syntax SignedIntegerType ::= t(Quals, Set, SimpleSignedType)
-     syntax SignedIntegerType ::= typedDeclaration(SignedIntegerType, CId)
      syntax FloatType ::= t(Quals, Set, SimpleFloatType)
-     syntax FloatType ::= typedDeclaration(FloatType, CId)
      syntax UCharType ::= t(Quals, Set, SimpleUnsignedCharType)
-     syntax UCharType ::= typedDeclaration(UCharType, CId)
      syntax SCharType ::= t(Quals, Set, SimpleSignedCharType)
-     syntax SCharType ::= typedDeclaration(SCharType, CId)
      syntax PointerType ::= t(Quals, Set, SimplePointerType)
-     syntax PointerType ::= typedDeclaration(PointerType, CId)
      syntax BoolType ::= t(Quals, Set, SimpleBoolType)
-     syntax BoolType ::= typedDeclaration(BoolType, CId)
      syntax FixedLengthArrayType ::= t(Quals, Set, SimpleFixedArrayType)
-     syntax FixedLengthArrayType ::= typedDeclaration(FixedLengthArrayType, CId)
      syntax VariableLengthArrayType ::= t(Quals, Set, SimpleVariableArrayType)
-     syntax VariableLengthArrayType ::= typedDeclaration(VariableLengthArrayType, CId)
      syntax VoidType ::= t(Quals, Set, SimpleVoidType)
-     syntax VoidType ::= typedDeclaration(VoidType, CId)
      syntax NoType ::= t(Quals, Set, SimpleNoType)
-     syntax NoType ::= typedDeclaration(NoType, CId)
      syntax StructType ::= t(Quals, Set, SimpleStructType)
-     syntax StructType ::= typedDeclaration(StructType, CId)
      syntax UnionType ::= t(Quals, Set, SimpleUnionType)
-     syntax UnionType ::= typedDeclaration(UnionType, CId)
      syntax IncompleteArrayType ::= t(Quals, Set, SimpleIncompleteArrayType)
-     syntax IncompleteArrayType ::= typedDeclaration(IncompleteArrayType, CId)
      syntax SignedBitfieldType ::= t(Quals, Set, SimpleSignedBitfieldType)
-     syntax SignedBitfieldType ::= typedDeclaration(SignedBitfieldType, CId)
      syntax UnsignedBitfieldType ::= t(Quals, Set, SimpleUnsignedBitfieldType)
-     syntax UnsignedBitfieldType ::= typedDeclaration(UnsignedBitfieldType, CId)
      syntax FunctionType ::= t(Quals, Set, SimpleFunctionType)
-     syntax FunctionType ::= typedDeclaration(FunctionType, CId)
 
      syntax UnsignedIntegerUType ::= ut(Set, SimpleUnsignedType)
      syntax SignedIntegerUType ::= ut(Set, SimpleSignedType)
@@ -286,9 +268,6 @@ module C-TYPING-SYNTAX
 
      syntax UType ::= addModifiers(Set, UType) [function]
      syntax UType ::= addModifier(Modifier, UType) [function]
-
-     syntax Type ::= typedDeclaration(Type, CId)
-          [latex(\terminal{typedDecl}\!({#1},{#2}\!))]
 
      syntax Type ::= innerType(Type) [function]
      syntax Type ::= innerType(UType) [function]

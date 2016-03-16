@@ -18,12 +18,7 @@ module C-TYPING-PREDICATES
      syntax Bool ::= typesEq(Type, Type) [function]
      rule typesEq(T:Type, T) => true
      rule typesEq(T:Type, T':Type) => typesEq(simpleType(T), simpleType(T'))
-          requires notBool (isTypedDeclaration(T) orBool isTypedDeclaration(T'))
-               andBool getQualifiers(T) ==K getQualifiers(T')
-     rule typesEq(
-               typedDeclaration(T::Type, X::CId),
-               typedDeclaration(T'::Type, X::CId))
-          => typesEq(T, T')
+          requires getQualifiers(T) ==K getQualifiers(T')
      rule typesEq(_:Type, _) => false [owise]
 
      syntax Bool ::= typesEq(SimpleType, SimpleType) [function]
@@ -55,8 +50,6 @@ module C-TYPING-PREDICATES
      rule isWCharType(_) => false [owise]
 
      rule isFlexibleArrayType(t(_, _, flexibleArrayType(_))) => true
-     rule isFlexibleArrayType(typedDeclaration(T::Type, _))
-          => isFlexibleArrayType(T)
      rule isFlexibleArrayType(_) => false [owise]
 
      rule isVariablyModifiedType(T:FixedLengthArrayType)
@@ -67,8 +60,6 @@ module C-TYPING-PREDICATES
           => isVariablyModifiedType(innerType(T))
      rule isVariablyModifiedType(t(_, _, functionType(T::UType, Params:List)))
           => isVariablyModifiedType(type(T)) orBool some(Params, #klabel(`isVariablyModifiedType`))
-     rule isVariablyModifiedType(typedDeclaration(T:Type, _))
-          => isVariablyModifiedType(T)
      rule isVariablyModifiedType(_:VariableLengthArrayType) => true
      rule isVariablyModifiedType(_) => false [owise]
 
@@ -84,14 +75,10 @@ module C-TYPING-PREDICATES
 
      rule isIncompleteStructType(t(_, _, structType(S::StructId)))
           => getFieldInfo(S) ==K #incomplete
-     rule isIncompleteStructType(typedDeclaration(T::Type, _))
-          => isIncompleteStructType(T)
      rule isIncompleteStructType(_) => false [owise]
 
      rule isIncompleteUnionType(t(_, _, unionType(S:StructId)))
           => getFieldInfo(S) ==K #incomplete
-     rule isIncompleteUnionType(typedDeclaration(T:Type, _))
-          => isIncompleteUnionType(T)
      rule isIncompleteUnionType(_) => false [owise]
 
      rule isOldStyleFunctionType(T::Type)
@@ -99,12 +86,7 @@ module C-TYPING-PREDICATES
 
      rule isFunctionPointerType(t(_, _, pointerType(t(_, _, functionType(_, _)))))
           => true
-     rule isFunctionPointerType(typedDeclaration(T:Type, _))
-          => isFunctionPointerType(T)
      rule isFunctionPointerType(_) => false [owise]
-
-     rule isTypedDeclaration(typedDeclaration(_, _)) => true
-     rule isTypedDeclaration(_) => false [owise]
 
      rule isExternType(T::Type) => Extern in getStorageSpecifiers(T)
      rule isStaticType(T::Type) => Static in getStorageSpecifiers(T)

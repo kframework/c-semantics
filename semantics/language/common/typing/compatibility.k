@@ -5,7 +5,7 @@ module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Bool ::= areCompatible(UType, UType) [function]
      syntax Type ::= compositeType(Type, Type) [function]
-     syntax UType ::= compositeType(UType, UType) [function, klabel(compositeTypeU)]
+     syntax UType ::= compositeType(UType, UType) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -83,7 +83,7 @@ module C-TYPING-COMPATIBILITY
           requires S ==K S'
                orBool kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))) in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
                     Cache SetItem(kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))))))
      rule #areCompat(
                t(Qs::Quals, Mods::Set, unionType(S::StructId)),
@@ -92,14 +92,14 @@ module C-TYPING-COMPATIBILITY
           requires S ==K S'
                orBool kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))) in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
                     Cache SetItem(kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))))))
 
-     syntax Bool ::= #areFieldsCompat(K, K, Set) [function, memo]
-     rule #areFieldsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
-          => #areCompat(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
-     rule #areFieldsCompat(#incomplete, _, _) => true
-     rule #areFieldsCompat(_, #incomplete, _) => true
+     syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
+     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
+          => #areCompatFields(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
+     rule #areStructsCompat(#incomplete, _, _) => true
+     rule #areStructsCompat(_, #incomplete, _) => true
 
      syntax Bool ::= #areTagsCompat(K, K) [function]
      rule #areTagsCompat(C::CId, C::CId) => true
@@ -183,12 +183,6 @@ module C-TYPING-COMPATIBILITY
                t(Qs, Mods'::Set, pointerType(T'::Type)), Cache::Set)
           => sameAlignas(Mods, Mods') andBool #areCompat(T, T', Cache)
 
-     // Struct and union fields.
-     rule #areCompat(
-               typedDeclaration(T::Type, X::CId),
-               typedDeclaration(T'::Type, X::CId), Cache::Set)
-          => #areCompat(T, T', Cache)
-
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments, as long as they're all
      // promoted.
@@ -218,22 +212,44 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
-               ListItem(T::Type) L::List,
-               ListItem(T'::Type) L'::List, Cache::Set)
+               ListItem(T:K) L::List,
+               ListItem(T':K) L'::List, Cache::Set)
           => T ==K T' andBool #areParamsCompat(L, L', Cache)
           requires T ==K variadic orBool T' ==K variadic
      rule #areParamsCompat(
-               ListItem(T::Type) L::List,
-               ListItem(T'::Type) L'::List, Cache::Set)
-          => #areCompat(stripQualifiers(elideDecl(T)), stripQualifiers(elideDecl(T')), Cache)
+               ListItem(typedDeclaration(T::Type, _)) L::List,
+               ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+     rule #areParamsCompat(
+               ListItem(T:Type) L::List,
+               ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+          requires T =/=K variadic
+     rule #areParamsCompat(
+               ListItem(typedDeclaration(T::Type, _)) L::List,
+               ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+          requires T' =/=K variadic
+     rule #areParamsCompat(
+               ListItem(T:Type) L::List,
+               ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
           requires T =/=K variadic andBool T' =/=K variadic
      rule #areParamsCompat(_, _, _) => true [owise]
 
-     syntax Bool ::= #areCompat(List, List, Set) [function,klabel(#areCompatList)]
-     rule #areCompat(ListItem(T::Type) L::List, ListItem(T'::Type) L'::List, Cache::Set)
-          => #areCompat(T, T', Cache) andBool #areCompat(L, L', Cache)
-     rule #areCompat(_:List, _:List, _) => true [owise]
+     syntax Bool ::= #areCompatFields(List, List, Set) [function]
+     rule #areCompatFields(ListItem(T:Type) L::List, ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
+     rule #areCompatFields(
+               ListItem(typedDeclaration(T::Type, X:CId)) L::List,
+               ListItem(typedDeclaration(T'::Type, X)) L'::List, Cache::Set)
+          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
+     rule #areCompatFields(.List, .List, _) => true
+     rule #areCompatFields(_:List, _, _) => false [owise]
 
      // TODO(chathhorn): treating alignas like a qualifier for now. It's more
      // complicated than this, too, I think -- e.g., alignas on a definition
@@ -331,21 +347,6 @@ module C-TYPING-COMPATIBILITY
           => t(Qs +Quals Qs', Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
-               typedDeclaration(T:Type, X:CId),
-               typedDeclaration(T':Type, _:CId))
-          => typedDeclaration(compositeType(T, T'), X)
-     rule compositeType(
-               T:Type,
-               typedDeclaration(T':Type, X:CId))
-          => typedDeclaration(compositeType(T, T'), X)
-          requires notBool isTypedDeclaration(T)
-     rule compositeType(
-               typedDeclaration(T:Type, X:CId),
-               T':Type)
-          => typedDeclaration(compositeType(T, T'), X)
-          requires notBool isTypedDeclaration(T')
-
-     rule compositeType(
                t(Qs::Quals, Mods:Set, structType(S:StructId)),
                t(Qs'::Quals, Mods':Set, structType(S':StructId)))
           => t(Qs +Quals Qs', Mods Mods', structType(S:StructId))
@@ -372,5 +373,17 @@ module C-TYPING-COMPATIBILITY
                (ListItem(P:Type) => .List) _:List,
                (ListItem(P':Type) => .List) _:List,
                _:List (.List => ListItem(compositeType(P, P'))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(P:Type) => .List) _:List,
+               (ListItem(typedDeclaration(P'::Type, X::CId)) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(typedDeclaration(P::Type, X::CId)) => .List) _:List,
+               (ListItem(P':Type) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(typedDeclaration(P::Type, X:CId)) => .List) _:List,
+               (ListItem(typedDeclaration(P'::Type, X)) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
 endmodule
 

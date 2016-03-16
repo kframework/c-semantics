@@ -13,7 +13,6 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
-     rule simpleType(typedDeclaration(T::Type, _)) => simpleType(T)
      rule simpleType(t(_, _, T::SimpleType)) => T
 
      rule char => cfg:charAlias
@@ -141,7 +140,6 @@ module C-TYPING-MISC
      rule getModifiers(ut(S::Set, _)) => S
 
      rule getModifiers(t(_, S::Set, _)) => S
-     rule getModifiers(typedDeclaration(T::Type, _)) => getModifiers(T)
      rule getModifiers(variadic) => .Set
 
      rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
@@ -187,13 +185,9 @@ module C-TYPING-MISC
 
      rule stripStorageSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods -Set storageSpecifiers, T)
-     rule stripStorageSpecifiers(typedDeclaration(T::Type, X:CId))
-          => typedDeclaration(stripStorageSpecifiers(T), X)
 
      rule stripFunctionSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods -Set functionSpecifiers, T)
-     rule stripFunctionSpecifiers(typedDeclaration(T:Type, X:CId))
-          => typedDeclaration(stripFunctionSpecifiers(T), X)
 
      rule stripSpecifiers(T:UType) => utype(stripSpecifiers(type(T)))
      rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))
@@ -254,7 +248,6 @@ module C-TYPING-MISC
      rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
      rule innerType(t(_, _, pointerType(T::Type))) => T
      rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
-     rule innerType(typedDeclaration(T::Type, _)) => T
 
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, _, T::SimpleType), X::CId)) L::List )
@@ -270,8 +263,6 @@ module C-TYPING-MISC
      rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods, tagRestrict(Tag, T))
           requires notBool (Restrict inQuals Qs)
-     rule tagRestrict(Tag::Scope, typedDeclaration(T::Type, X::CId))
-          => typedDeclaration(tagRestrict(Tag, T), X)
      rule tagRestrict(_, variadic) => variadic
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
@@ -434,7 +425,11 @@ module C-TYPING-MISC
           requires N <=Int 0
           [structural]
 
-     rule toPrototype(t(Qs::Quals, Mods::Set, functionType(R::UType, ListItem(P::Type) Ps::List)))
+     rule toPrototype(t(Qs::Quals, Mods::Set, functionType(R::UType, ListItem(typedDeclaration(P::Type, _)) Ps::List)))
+          => t(Qs, Mods, functionType(R, .List))
+          requires oldStyle in Mods
+               andBool notBool isVoidType(P)
+     rule toPrototype(t(Qs::Quals, Mods::Set, functionType(R::UType, ListItem(P:Type) Ps::List)))
           => t(Qs, Mods, functionType(R, .List))
           requires oldStyle in Mods
                andBool notBool isVoidType(P)

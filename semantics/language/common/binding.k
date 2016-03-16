@@ -7,7 +7,7 @@ module C-BINDING-SYNTAX
      syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
      syntax KItem ::= bindParam(CId)
      syntax Bool ::= areArgPromoted(List) [function]
-     syntax Type ::= elideDecl(Type) [function]
+
 endmodule
 
 module C-BINDING
@@ -36,7 +36,7 @@ module C-BINDING
      // Prototype.
      rule (.K => bindParam(X, T, V))
           ~> bind(
-               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
+               (ListItem(typedDeclaration(T::Type, X:CId)) => .List) _,
                (ListItem(_) => .List) _,
                (ListItem(V:RValue) => .List) _)
           requires notBool isVoidType(T)
@@ -44,7 +44,7 @@ module C-BINDING
      // No prototype -- but the args must still have ids/types in the def.
      rule (.K => bindParam(X, T, argPromote(V)))
           ~> bind(
-               (ListItem(typedDeclaration(T:Type, X:CId)) => .List) _,
+               (ListItem(typedDeclaration(T::Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:RValue) => .List) _)
           requires #arePromotedTypesCompat(value(V):>CValue, utype(T), utype(V))
@@ -52,7 +52,7 @@ module C-BINDING
      rule (.K => UNDEF("CB1", "Types of function call arguments aren't "
                +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2:1 item 39"))
           ~> bind(
-               ListItem(typedDeclaration(T:Type, _)) _,
+               ListItem(typedDeclaration(T::Type, _)) _,
                .List,
                ListItem(V:RValue) _)
           requires notBool #arePromotedTypesCompat(value(V):>CValue, utype(T), utype(V))
@@ -61,7 +61,7 @@ module C-BINDING
      rule (.K => UNDEF("CB2", "Function call has fewer arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(
-               ListItem(T:Type) _,
+               ListItem(typedDeclaration(T::Type, _)) _,
                _,
                .List)
           requires notBool isVoidType(T)
@@ -70,17 +70,19 @@ module C-BINDING
           ~> bind(.List, _, ListItem(_) _)
      rule (.K => UNDEF("CB4", "Function defined with no parameters "
                +String "called with arguments.", "6.5.2.2:6, J.2:1 item 38"))
-          ~> bind(ListItem(T:Type), _, ListItem(_) _)
+          ~> bind(ListItem(typedDeclaration(T::Type, _)), _, ListItem(_) _)
           requires isVoidType(T)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
-     rule bind(ListItem(T:Type), ListItem(T':Type), .List) => .K
+     rule bind(ListItem(typedDeclaration(T::Type, _)),
+               ListItem(typedDeclaration(T'::Type, _)), .List) => .K
           requires isVoidType(T) andBool isVoidType(T')
           [structural]
-     rule bind(ListItem(T:Type), .List, .List) => .K
+     rule bind(ListItem(typedDeclaration(T::Type, _)),
+               .List, .List) => .K
           requires isVoidType(T)
           [structural]
      // Builtins -- they don't have named parameters.
@@ -94,13 +96,13 @@ module C-BINDING
           <tu-id> Tu </tu-id>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           requires T =/=K variadic
-               andBool notBool isTypedDeclaration(T)
+          [structural]
+     rule bind(ListItem(T:Type),
+               ListItem(T':Type), .List) => .K
+          requires isVoidType(T) andBool isVoidType(T')
           [structural]
      rule bind(.List, .List, .List) => .K
           [structural]
-
-     rule elideDecl(typedDeclaration(T::Type, _)) => T
-     rule elideDecl(T::Type) => T [owise]
 
      syntax KItem ::= bindVariadics(List, Int)
      rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))
@@ -184,11 +186,12 @@ module C-BINDING
           requires all(L, #klabel(`isArgPromoted`))
      rule areArgPromoted(_) => false [owise]
 
-     syntax Bool ::= isArgPromoted(Type) [function]
+     syntax Bool ::= isArgPromoted(K) [function]
      rule isArgPromoted(variadic) => true
-     rule isArgPromoted(T::Type)
-          => areCompatible(utype(elideDecl(T)), argPromoteType(utype(elideDecl(T))))
-          [owise]
+     rule isArgPromoted(typedDeclaration(T::Type, _))
+          => areCompatible(utype(T), argPromoteType(utype(T)))
+     rule isArgPromoted(T:Type)
+          => areCompatible(utype(T), argPromoteType(utype(T)))
 
 endmodule
 
