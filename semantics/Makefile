@@ -48,16 +48,18 @@ thread: $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
 clean:
 	@-rm -rf */c11-translation-kompiled */c11-kompiled */c11-nd-kompiled */c11-nd-thread-kompiled
 
-FLOCK = flock -x .lock 
-
 .depend-translation:
-	$(FLOCK) $(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-translation-kompiled" -I $(PROFILE_DIR)/semantics -- c11-translation.k > .depend-translation-tmp
+	mv .depend-translation-tmp .depend-translation
 .depend-execution:
-	$(FLOCK) $(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-execution
+	$(KDEP) $(KDEP_DEFAULT_FLAGS) -d "$(PROFILE)/c11-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-execution-tmp
+	mv .depend-execution-tmp .depend-execution
 .depend-nd:
-	$(FLOCK) $(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd
+	$(KDEP) -d "$(PROFILE)/c11-nd-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd-tmp
+	mv .depend-nd-tmp .depend-nd
 .depend-nd-thread:
-	$(FLOCK) $(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd-thread
+	$(KDEP) -d "$(PROFILE)/c11-nd-thread-kompiled" -I $(PROFILE_DIR)/semantics -- c11.k > .depend-nd-thread-tmp
+	mv .depend-nd-thread-tmp .depend-nd-thread
 
 -include .depend-translation
 -include .depend-execution
