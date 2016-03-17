@@ -134,7 +134,7 @@ my $spec = q(#
 { push(@main::cppArgs, '-include', $file); }
       -L <dir>				Look for shared libraries in <dir>.
 { push(@main::ld_lib, $dir) }
-      -s				Do not link against the standard library.
+      -nodefaultlibs			Do not link against the standard library.
       -o <file>				Place the output into <file>.
 { $main::oflag = $file; }
       -l <lib>				Link semantics against library in search path.
