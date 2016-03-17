@@ -23,6 +23,6 @@ module C-EXPR-OFFSETOF
      rule offsetOf'(K:K, F:CId) => K . F
 
      syntax KItem ::= toOffset(K) [strict]
-     rule toOffset(nclv(Loc:SymLoc, _)) => tv(offset(Loc), t(.Set, cfg:sizeut))
+     rule toOffset(nclv(Loc:SymLoc, _)) => tv(offset(Loc), utype(cfg:sizeut))
           [structural]
 endmodule

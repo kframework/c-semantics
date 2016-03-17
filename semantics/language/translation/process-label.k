@@ -119,7 +119,7 @@ module C-PROCESS-LABEL
                          ~> loopMarked
                          ~> For((#if Control =/=K emptyValue
                               #then Control
-                              #else tv(1, t(.Set, int))
+                              #else tv(1, utype(int))
                               #fi), Post, S)
                          ~> popLoop
                          ~> K

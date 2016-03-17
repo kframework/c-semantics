@@ -9,9 +9,9 @@ module C-EXPR-IDENTIFIER
      imports C-ABSTRACT-SYNTAX
 
      rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
-          <env>... X |-> Base:SymBase ...</env>
-          <types>... X |-> T:Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
+          <env>... X |-> Base::SymBase ...</env>
+          <types>... X |-> T::Type ...</types>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
           requires notBool isLinkerLoc(Base)
@@ -19,9 +19,9 @@ module C-EXPR-IDENTIFIER
                andBool notBool isRestrictType(T)
           [structural]
      rule <k> X:CId => lv(restrictedNew(Base, T, getRestrictBlock(T)), T) ...</k>
-          <env>... X |-> Base:SymBase ...</env>
-          <types>... X |-> T:Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
+          <env>... X |-> Base::SymBase ...</env>
+          <types>... X |-> T::Type ...</types>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
           requires notBool isLinkerLoc(Base)
@@ -30,8 +30,8 @@ module C-EXPR-IDENTIFIER
           [structural]
      rule <k> X:CId => le(X, T) ...</k>
           <env>... X |-> nonStatic ...</env>
-          <types>... X |-> T:Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
+          <types>... X |-> T::Type ...</types>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
           [structural]
@@ -39,8 +39,8 @@ module C-EXPR-IDENTIFIER
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
      rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
-          <env>... X |-> Base:SymBase ...</env>
-          <types>... X |-> T:Type ...</types>
+          <env>... X |-> Base::SymBase ...</env>
+          <types>... X |-> T::Type ...</types>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
@@ -52,15 +52,15 @@ module C-EXPR-IDENTIFIER
      // according to C11 sec. 6.5.1, enumeration constants are constants and therefore
      // not lvalues, which designate an object. Therefore we convert directly to a tv
      // so that expressions like &x will not work.
-     rule <k> X:CId => tv(Value, t(SetItem(IntegerConstant), int)) ...</k>
-          <enums>... X |-> Value:Int ...</enums>
+     rule <k> X:CId => tv(Value, ut(SetItem(IntegerConstant), int)) ...</k>
+          <enums>... X |-> Value::Int ...</enums>
 
-     rule instantiate(Loc:SymLoc, T:Type)
-          => te(instantiate(Loc, T), T)
+     rule instantiate(Loc::SymLoc, T::Type)
+          => te(instantiate(Loc, T), utype(T))
           requires notBool fromConstantExpr(T)
                orBool notBool isStaticDuration(Loc)
                orBool isLinkerLoc(Loc)
-     rule instantiate(Loc:SymLoc, T:Type) => read(Loc, T)
+     rule instantiate(Loc::SymLoc, T::Type) => read(Loc, T)
           requires fromConstantExpr(T)
                andBool isStaticDuration(Loc)
                andBool notBool isLinkerLoc(Loc)

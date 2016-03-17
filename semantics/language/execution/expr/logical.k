@@ -20,9 +20,9 @@ module C-EXPR-LOGICAL
      not evaluated.
      } */
      context (HOLE:KItem => reval(HOLE)) && _ [ndheat, result(RValue)]
-     rule tv(0, t(_, int)) && _ => tv(0, t(.Set, int))
+     rule tv(0, ut(_, int)) && _ => tv(0, utype(int))
           [structural]
-     rule tv(1, t(_, int)) && E:K
+     rule tv(1, ut(_, int)) && E:K
           => sequencePoint ~> E
           [structural]
 
@@ -37,10 +37,10 @@ module C-EXPR-LOGICAL
      is not evaluated.
      }*/
      context (HOLE:KItem => reval(HOLE)) || _ [ndheat, result(RValue)]
-     rule tv(0, t(_, int)) || E:K
+     rule tv(0, ut(_, int)) || E:K
           => sequencePoint ~> E
           [structural]
-     rule tv(1, t(_, int)) || _ => tv(1, t(.Set, int))
+     rule tv(1, ut(_, int)) || _ => tv(1, utype(int))
           [structural]
 
 endmodule

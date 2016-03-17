@@ -7,58 +7,58 @@ module LIBC-MATH
      imports COMPAT-SYNTAX
 
      rule [sqrt]:
-          builtin("sqrt", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), sqrtFloat(F:Float))
+          builtin("sqrt", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), sqrtFloat(F))
           [structural]
 
      rule [log]:
-          builtin("log", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), logFloat(F:Float))
+          builtin("log", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), logFloat(F))
           [structural]
 
      rule [exp]:
-          builtin("exp", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), expFloat(F:Float))
+          builtin("exp", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), expFloat(F))
           [structural]
 
      rule [atan]:
-          builtin("atan", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), atanFloat(F:Float))
+          builtin("atan", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), atanFloat(F))
           [structural]
 
      rule [asin]:
-          builtin("asin", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), asinFloat(F:Float))
+          builtin("asin", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), asinFloat(F))
           [structural]
 
      rule [atan2]:
-          builtin("atan2", tv(F:Float, t(_, double)), tv(F':Float, t(_, double)))
-          => arithInterpret(t(.Set, double), atan2Float(F:Float, F':Float))
+          builtin("atan2", tv(F:Float, ut(_, double)), tv(F':Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), atan2Float(F, F'))
           [structural]
 
      rule [tan]:
-          builtin("tan", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), tanFloat(F:Float))
+          builtin("tan", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), tanFloat(F))
           [structural]
 
      rule [floor]:
-          builtin("floor", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), floorFloat(F:Float))
+          builtin("floor", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), floorFloat(F))
           [structural]
 
      rule [cos]:
-          builtin("cos", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), cosFloat(F:Float))
+          builtin("cos", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), cosFloat(F))
           [structural]
 
      rule [fmod]:
-          builtin("fmod", tv(F:Float, t(_, double)), tv(F':Float, t(_, double)))
-          => arithInterpret(t(.Set, double), F:Float %Float F':Float)
+          builtin("fmod", tv(F:Float, ut(_, double)), tv(F':Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), F %Float F')
           [structural]
 
      rule [sin]:
-          builtin("sin", tv(F:Float, t(_, double)))
-          => arithInterpret(t(.Set, double), sinFloat(F:Float))
+          builtin("sin", tv(F:Float, ut(_, double)))
+          => arithInterpret(ut(.Set, double), sinFloat(F))
           [structural]
 
 endmodule

@@ -88,26 +88,24 @@ module C-COMPOUND-LITERAL
           requires notBool (wstring(S) in_keys(Mem))
 
      rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S), t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))),
-                    t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1)))
+               => lv(lnew(string(S), type(arrayType(type(char), lengthString(S) +Int 1))),
+                    type(arrayType(type(char), lengthString(S) +Int 1)))
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
      rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S), t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1))),
-                    t(.Set, arrayType(t(.Set, cfg:wcharut), size(S) +Int 1)))
+               => lv(lnew(wstring(S), type(arrayType(type(cfg:wcharut), size(S) +Int 1))),
+                    type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
 
      syntax KItem ::= allocString(SymBase, String)
      rule allocString(Base:SymBase, S:String)
-          => allocObject(Base, t(.Set,
-               arrayType(t(.Set, char), lengthString(S) +Int 1)))
-          ~> writeString(lnew(Base, t(.Set, arrayType(t(.Set, char), lengthString(S) +Int 1))), S)
+          => allocObject(Base, type(arrayType(type(char), lengthString(S) +Int 1)))
+          ~> writeString(lnew(Base, type(arrayType(type(char), lengthString(S) +Int 1))), S)
 
      syntax KItem ::= allocWString(SymBase, List)
      rule allocWString(Base:SymBase, S:List)
-          => allocObject(Base, t(.Set,
-               arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1))))
-          ~> writeWString(lnew(Base, t(.Set, arrayType(t(.Set, cfg:wcharut), 4 *Int (size(S) +Int 1)))), S)
+          => allocObject(Base, type(arrayType(type(cfg:wcharut), 4 *Int (size(S) +Int 1))))
+          ~> writeWString(lnew(Base, type(arrayType(type(cfg:wcharut), 4 *Int (size(S) +Int 1)))), S)
 
 endmodule

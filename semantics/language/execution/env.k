@@ -30,11 +30,11 @@ module C-ENV
           <types> _ => GT </types>
           [structural]
 
-     rule <k> addToEnv(X:CId, Base:SymBase) => .K ...</k>
+     rule <k> addToEnv(X::CId, Base::SymBase) => .K ...</k>
           <env> E:Map => E[X <- Base] </env>
           [structural]
 
-     rule <k> giveType(X:CId, T:Type) => .K ...</k>
+     rule <k> giveType(X::CId, T::Type) => .K ...</k>
           <types> L:Map => L[X <- tagRestrict(S, T)] </types>
           <curr-scope> S:Scope </curr-scope>
           [structural]

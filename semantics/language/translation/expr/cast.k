@@ -20,7 +20,7 @@ module C-EXPR-CAST
      rule T:Type ~> Cast(_, _, V:RValue) => Cast(elideDeclParams(T), V)
           [structural]
 
-     rule cast(T':Type, te(K:K, _)) => te(Cast(T', K), T')
+     rule cast(T'::UType, te(K:K, _)) => te(Cast(type(T'), K), T')
 
 endmodule
 

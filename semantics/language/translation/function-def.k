@@ -33,7 +33,7 @@ module C-FUNCTION-DEF
                     X,
                     functionObject(X,
                          // The return and parameter types from the definition.
-                         t(getModifiers(T), functionType(elideDeclParams(innerType(T)),
+                         t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
                               elideList(getParams(emptyToVoid(T))))), .List,
                          Goto(funLabel(X)))
                )))
@@ -51,7 +51,7 @@ module C-FUNCTION-DEF
 
      syntax Type ::= emptyToVoid(Type) [function]
      rule emptyToVoid(T:FunctionType)
-          => setParams(T, ListItem(typedDeclaration(t(.Set, void), #NoName)))
+          => setParams(T, ListItem(typedDeclaration(type(void), #NoName)))
           requires (getParams(T) ==K .List)
      rule emptyToVoid(T:Type) => T [owise]
 
@@ -62,14 +62,14 @@ module C-FUNCTION-DEF
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, DefT:Type, _, _)
+               Base |-> functionObject(_, DefT::Type, _, _)
           ...</functions>
           <curr-function> _ => Base </curr-function>
           [structural]
 
      syntax KItem ::= checkFunDefType(CId, Type)
-     rule checkFunDefType(X:CId, t(_, functionType(R:Type, P:List))) => .K
-          requires notBool isArrayOrFunctionType(R)
+     rule checkFunDefType(X:CId, t(_, _, functionType(R::UType, P:List))) => .K
+          requires notBool isArrayOrFunctionUType(R)
                andBool areVoidOrComplete(P)
                andBool (X =/=K Identifier("main"))
           [structural]
@@ -80,7 +80,7 @@ module C-FUNCTION-DEF
           [structural]
      rule (.K => CV("FD2", "Invalid return type in function definition.",
                "6.7.6.3:1"))
-          ~> checkFunDefType(_, t(_, functionType(_:ArrayOrFunctionType, _)))
+          ~> checkFunDefType(_, t(_, _, functionType(_:ArrayOrFunctionUType, _)))
           [structural]
      rule (.K => CV("FD3", "Incomplete parameter type in "
                +String "function definition.", "6.7.6.3:4"))
@@ -99,54 +99,54 @@ module C-FUNCTION-DEF
      rule areVoidOrComplete(_) => false [owise]
 
      syntax KItem ::= checkMainDef(Type)
-     rule checkMainDef(t(_, functionType(t(_, int),
-               ListItem(t(_, void)))))
+     rule checkMainDef(t(_, _, functionType(ut(_, int),
+               ListItem(t(_, _, void)))))
           => .K
           [structural]
-     rule checkMainDef(t(Mods:Set, functionType(t(_, int),
-               ListItem(t(_, int)) ListItem(T:Type))))
+     rule checkMainDef(t(_, Mods:Set, functionType(ut(_, int),
+               ListItem(t(_, _, int)) ListItem(T:Type))))
           => .K
           requires (notBool oldStyle in Mods) andBool isArgvType(T)
           [structural]
      rule (.K => UNDEF("FD4", "Definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(Mods:Set, functionType(t(_, int), ListItem(T:Type) _)))
+          ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int), ListItem(T:Type) _)))
           requires (oldStyle in Mods) andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("FD5", "Function main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, functionType(t(_, T:SimpleType), _)))
+          ~> checkMainDef(t(_, _, functionType(ut(_, T::SimpleUType), _)))
           requires T =/=K int
           [structural]
      rule (.K => UNDEF("FD6", "If main has parameters, the type of the first parameter must be equivalent to int.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)) _)))
+          ~> checkMainDef(t(_, _, functionType(_, ListItem(t(_, _, T::SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
      rule (.K => UNDEF("FD7", "If main has parameters, the type of the second parameter must be equivalent to char**.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, functionType(_, ListItem(_:Type) ListItem(T:Type))))
+          ~> checkMainDef(t(_, _, functionType(_, ListItem(_) ListItem(T:Type))))
           requires notBool isArgvType(T)
           [structural]
      rule (.K => UNDEF("FD8", "Function main must have zero or two parameters.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, functionType(_, Params:List)))
+          ~> checkMainDef(t(_, _, functionType(_, Params::List)))
           requires size(Params) >Int 2
           [structural]
      rule (.K => UNDEF("FD9", "Function main must have zero or two parameters.", "5.1.2.2.1:1, J.2:1 item 4") )
-          ~> checkMainDef(t(_, functionType(_, ListItem(t(_, T:SimpleType)))))
+          ~> checkMainDef(t(_, _, functionType(_, ListItem(t(_, _, T::SimpleType)))))
           requires T =/=K void
           [structural]
 
      syntax Bool ::= isArgvType(Type) [function]
-     rule isArgvType(t(_, incompleteArrayType(t(_, pointerType(t(_, T:SimpleType))))))
+     rule isArgvType(t(_, _, incompleteArrayType(t(_, _, pointerType(t(_, _, T:SimpleType))))))
           => true
           requires T ==K char // char is an alias.
-     rule isArgvType(t(_, pointerType(t(_, pointerType(t(_, T:SimpleType))))))
+     rule isArgvType(t(_, _, pointerType(t(_, _, pointerType(t(_, _, T:SimpleType))))))
           => true
           requires T ==K char
      rule isArgvType(_) => false [owise]
 
-     rule initFunction(tv(Loc:SymLoc, T:Type), X:CId, Fun:RValue)
+     rule initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue)
           => te(initFunction(&(X), X, Fun), T)
           requires isLinkerLoc(Loc)
      rule <k> initFunction(
-               tv(Loc:SymLoc, t(_, pointerType(_:FunctionType))), _, Fun:RValue)
+               tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
                => voidVal
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
@@ -158,7 +158,7 @@ module C-FUNCTION-DEF
           => Blk ~> Return(NothingExpression)
           requires X =/=K Identifier("main")
      rule safeBody(Identifier("main"), Blk:K)
-          => Blk ~> Return(tv(0, t(.Set, int)))
+          => Blk ~> Return(tv(0, utype(int)))
 
      syntax KItem ::= staticEval(CId, Type, K)
      syntax KItem ::= calculateGotoMap(CId)
@@ -172,16 +172,12 @@ module C-FUNCTION-DEF
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
           => calculateGotoMap(X, K)
 
-     syntax Bool ::= "#hasDupParams'" "(" Type ")" [function]
-     rule hasDupParams(T:Type) => #hasDupParams'(T)
-     rule #hasDupParams'(typedDeclaration(T:Type, _)) => #hasDupParams'(T)
-     rule #hasDupParams'(t(_, functionType(_, P:List))) => #hasDupIds'(P)
-     rule #hasDupParams'(_) => false [owise]
+     rule hasDupParams(t(_, _, functionType(_, P::List))) => hasDupIds(P)
+     rule hasDupParams(_) => false [owise]
 
      // TODO(liyili2): no associative matching in Java currently, we will do it once we
      // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
-     syntax Bool ::= "#hasDupIds'" "(" List ")" [function]
      syntax Bool ::= cIdIsInList(CId, List) [function]
 
      rule cIdIsInList(_:CId, .List) => false
@@ -193,21 +189,19 @@ module C-FUNCTION-DEF
      rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
           => cIdIsInList(X, Tail) [owise]
 
-     rule hasDupIds(P:List) => #hasDupIds'(P)
-
-     rule #hasDupIds'(.List) => false
-     rule #hasDupIds'(
+     rule hasDupIds(.List) => false
+     rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
           => true
           requires cIdIsInList(X, Tail)
 
-     rule #hasDupIds'(
+     rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
-          => #hasDupIds'(Tail)
+          => hasDupIds(Tail)
           requires notBool cIdIsInList(X, Tail)
-     rule #hasDupIds'(ListItem(_) Tail:List) => #hasDupIds'(Tail) [owise]
+     rule hasDupIds(ListItem(_) Tail:List) => hasDupIds(Tail) [owise]
 
      syntax KItem ::= dummyBind(List)
      rule dummyBind(.List) => .K

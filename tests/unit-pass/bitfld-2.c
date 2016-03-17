@@ -4,15 +4,15 @@ extern void abort (void);
 extern void exit (int);
 
 struct A {
-  unsigned short a : 5;
-  unsigned short b : 5;
-  unsigned short c : 6;
+  unsigned a : 5;
+  unsigned b : 5;
+  unsigned c : 6;
 };
 
 struct B {
-  unsigned short a : 5;
-  unsigned short b : 3;
-  unsigned short c : 8;
+  unsigned a : 5;
+  unsigned b : 3;
+  unsigned c : 8;
 };
 
 int main ()

@@ -191,7 +191,7 @@ module C-TRANSLATION-INIT
      rule checkExtDefs((X:CId => .K), _, Defs':Set)
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _) => .K
-     rule (.K => UNDEF("TIN2", 
+     rule (.K => UNDEF("TIN2",
                "Multiple external definitions for " +String idToString(X) +String ".",
                "6.9:5, J.2:1 item 84"))
           ~> checkExtDefs(X:CId, _, SetItem(X) _)
@@ -281,7 +281,7 @@ module C-TRANSLATION-INIT
           requires size(L) >Int 0
 
      syntax KItem ::= writeSpecModule(Int)
-     rule <k> writeSpecModule(Fd:Int) => #write(Fd, 
+     rule <k> writeSpecModule(Fd:Int) => #write(Fd,
                   "module " +String replaceAll(S, ".", "-") +String "-SPEC" +String "\n"
           +String "  imports C-VERIFIER\n\n") ~> writeSpecs(Fd) ...</k>
           <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
