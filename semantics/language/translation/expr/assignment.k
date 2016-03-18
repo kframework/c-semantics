@@ -54,21 +54,15 @@ module C-EXPR-ASSIGNMENT
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isArithmeticType(type(L))
                andBool isArithmeticType(type(R))
-               andBool (utype(L) =/=Type utype(R))
-
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isStructOrUnionType(type(L))
-               andBool areCompatible(type(L), type(R))
-               andBool (utype(L) =/=Type utype(R))
+               andBool utype(L) =/=Type utype(R)
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool areCompatible(
-                    stripQualifiers(innerType(type(L))),
-                    stripQualifiers(innerType(type(R))))
+               andBool stripQualifiers(innerType(type(L)))
+                    ==Type stripQualifiers(innerType(type(R)))
                andBool getQualifiers(innerType(type(R)))
                     <=Quals getQualifiers(innerType(type(L)))
-               andBool (utype(L) =/=Type utype(R))
+               andBool utype(L) =/=Type utype(R)
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
@@ -76,12 +70,12 @@ module C-EXPR-ASSIGNMENT
                     orBool isVoidType(innerType(type(R))))
                andBool (getQualifiers(innerType(type(R)))
                     <=Quals getQualifiers(innerType(type(L))))
-               andBool (utype(L) =/=Type utype(R))
+               andBool utype(L) =/=Type utype(R)
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
-               andBool (utype(L) =/=Type utype(R))
+               andBool utype(L) =/=Type utype(R)
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
@@ -109,7 +103,7 @@ module C-EXPR-ASSIGNMENT
                     orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
                          andBool notBool isArithmeticType(type(R))
                     orBool isStructOrUnionType(type(L))
-                         andBool notBool areCompatible(type(L), type(R))
+                         andBool type(L) =/=Type type(R)
                     orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
                     orBool notBool (isPointerType(type(L))
                          orBool isArithmeticType(type(L))
@@ -124,9 +118,8 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isVoidType(innerType(type(L)))
                andBool notBool isVoidType(innerType(type(R)))
                andBool (
-                    notBool areCompatible(
-                         stripQualifiers(innerType(type(L))),
-                         stripQualifiers(innerType(type(R))))
+                    stripQualifiers(innerType(type(L)))
+                         =/=Type stripQualifiers(innerType(type(R)))
                     orBool notBool (getQualifiers(innerType(type(R)))
                          <=Quals getQualifiers(innerType(type(L))))
                )

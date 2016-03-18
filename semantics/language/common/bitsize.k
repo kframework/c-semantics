@@ -66,14 +66,6 @@ module C-BITSIZE
      rule numBytes(ut(Mods::Set, enumType(_))) => numBytes(ut(Mods, cfg:enumAlias))
      rule numBytes(_) => 0 [owise]
 
-     syntax Int ::= byteSizeofList(List) [function]
-     syntax Int ::= "byteSizeofList'" "(" Int "," List ")" [function]
-
-     rule byteSizeofList(L:List) => byteSizeofList'(0, L)
-     rule byteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => byteSizeofList'((Sz +Int byteSizeofType(utype(T))), LL)
-     rule byteSizeofList'(Sz:Int, .List) => Sz
-
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
      rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)

@@ -1,7 +1,7 @@
 module C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax FlexType ::= Type | SimpleType
+     syntax FlexType ::= Type | SimpleType | Variadic
 
      syntax Type ::= fun(FlexType) [function, klabel(fun1)]
                    | fun(FlexType, FlexType) [function, klabel(fun2)]
@@ -75,6 +75,7 @@ module C-TYPE-BUILDER
 
      syntax Type ::= expand(FlexType) [function]
      rule expand(T:Type) => T
+     rule expand(T:Variadic) => T
      rule expand(T:SimpleType) => type(T)
 
      syntax UType ::= expandut(FlexType) [function]

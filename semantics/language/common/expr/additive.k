@@ -196,7 +196,7 @@ module C-COMMON-EXPR-ADDITIVE
           requires base(L1) ==K base(L2)
                andBool notBool isFunctionType(T) andBool notBool isFunctionType(T')
                andBool isCompleteType(T) andBool isCompleteType(T')
-               andBool areCompatible(stripQualifiers(T), stripQualifiers(T'))
+               andBool stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
 
      // uintptr_t
@@ -213,10 +213,8 @@ module C-COMMON-EXPR-ADDITIVE
                andBool (isFunctionType(innerType(utype(L))) orBool isFunctionType(innerType(utype(R)))
                     orBool notBool isCompleteType(innerType(utype(L)))
                     orBool notBool isCompleteType(innerType(utype(R)))
-                    orBool notBool
-                    areCompatible(
-                         stripQualifiers(innerType(utype(L))),
-                         stripQualifiers(innerType(utype(R)))))
+                    orBool stripQualifiers(innerType(utype(L)))
+                         =/=Type stripQualifiers(innerType(utype(R))))
 
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9, J.2:1 item 48"))

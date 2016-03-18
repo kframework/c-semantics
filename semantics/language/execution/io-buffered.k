@@ -465,39 +465,37 @@ module C-IO-BUFFERED
      // - a qualified version of a type compatible with the effective type of
      // the object,
      rule #effectivelyCompat(L::Type, Eff::Type) => true
-          requires areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires stripQualifiers(L) ==Type stripQualifiers(Eff)
                andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      // - a type that is the signed or unsigned type corresponding to the
      // effective type of the object,
      // - a type that is the signed or unsigned type corresponding to a
      // qualified version of the effective type of the object,
      rule #effectivelyCompat(L:SignedIntegerType, Eff::Type) => true
-          requires areCompatible(
-                    type(correspondingUnsignedType(utype(L))),
-                    stripQualifiers(Eff))
+          requires type(correspondingUnsignedType(utype(L)))
+                    ==Type stripQualifiers(Eff)
                andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      rule #effectivelyCompat(L:UnsignedIntegerType, Eff::Type) => true
           requires notBool isBoolType(L)
-               andBool areCompatible(
-                    type(correspondingSignedType(utype(L))),
-                    stripQualifiers(Eff))
+               andBool type(correspondingSignedType(utype(L)))
+                    ==Type stripQualifiers(Eff)
                andBool getQualifiers(Eff) <=Quals getQualifiers(L)
      // - an aggregate or union type that includes one of the aforementioned
      // types among its members (including, recursively, a member of a
      // subaggregate or contained union), or
      rule #effectivelyCompat(L:ArrayType, Eff::Type)
           => #effectivelyCompat(innerType(L), Eff)
-          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires notBool (stripQualifiers(L) ==Type stripQualifiers(Eff)
                andBool getQualifiers(Eff) <=Quals getQualifiers(L))
      rule #effectivelyCompat(L:StructOrUnionType, Eff::Type)
           => effectivelyCompatWithField(getFieldInfo(L), Eff)
-          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires notBool (stripQualifiers(L) ==Type stripQualifiers(Eff)
                andBool getQualifiers(Eff) <=Quals getQualifiers(L))
 
      // TODO(chathhorn): should track the active variant of unions.
      rule #effectivelyCompat(L::Type, Eff:UnionType)
           => effectivelyCompatWithField(L, getFieldInfo(Eff))
-          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires notBool (stripQualifiers(L) ==Type stripQualifiers(Eff)
                     andBool getQualifiers(Eff) <=Quals getQualifiers(L))
                andBool notBool isAggregateOrUnionType(L)
                andBool notBool isCharType(L)
@@ -508,7 +506,7 @@ module C-IO-BUFFERED
      // union from the offset of its first member.
      rule #effectivelyCompat(L::Type, Eff:AggregateType)
           => #effectivelyCompat(L, effInnerType(Eff))
-          requires notBool (areCompatible(stripQualifiers(L), stripQualifiers(Eff))
+          requires notBool (stripQualifiers(L) ==Type stripQualifiers(Eff)
                     andBool getQualifiers(Eff) <=Quals getQualifiers(L))
                andBool notBool isAggregateOrUnionType(L)
                andBool notBool isCharType(L)

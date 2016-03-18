@@ -71,7 +71,7 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => UNDEF("CEB4",
                "The left operand in a bitwise left-shift is negative.",
                "6.5.7:4, J.2:1 item 52"))
-          ~> tv(E1:Int, T1::UType) << R:RValue
+          ~> tv(E1:Int, T1:SignedIntegerUType) << R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
                andBool E1 <Int 0
           [structural]
@@ -90,7 +90,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T1) andBool isPromoted(T2)
                andBool E2 >=Int 0
                andBool E2 <Int bitSizeofType(T1)
-               andBool (E1 >=Int 0 orBool notBool isSignedIntegerType(T1))
+               andBool E1 >=Int 0
           [structural]
      rule (.K => CV("CEB5",
                "Both bitwise shift operands must have integer type.",
@@ -116,9 +116,9 @@ module C-COMMON-EXPR-BITWISE
      rule (.K => IMPL("CEB8",
                "The left operand in a bitwise right-shift is negative.",
                "6.5.7:5, J.3.5:1 item 5"))
-          ~> tv(E1:Int, T1::UType) >> R:RValue
+          ~> tv(E1:Int, T1:SignedIntegerUType) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
-               andBool E1 <Int 0 andBool isSignedIntegerType(T1)
+               andBool E1 <Int 0
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.10}{3--4}}}{

@@ -104,13 +104,13 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule canonicalizeType-aux(.List,
-               T::Type => addQualifier(Q, T),
+               T:Type => addQualifier(Q, T),
                .List, .List, _:List (ListItem(Q:K) => .List))
           requires (Q in typeQualifiers)
                orBool (getKLabel(Q) ==K #klabel(`atomic`))
           [structural]
      rule canonicalizeType-aux(.List,
-               T::Type => addModifier(S, T),
+               T:Type => addModifier(S, T),
                .List, .List, _:List (ListItem(S:K) => .List))
           requires (S in storageSpecifiers)
                orBool (S in functionSpecifiers)

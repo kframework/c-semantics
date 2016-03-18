@@ -8,39 +8,6 @@ module C-TYPING-PREDICATES
 
      imports COMPAT-SYNTAX
 
-     // TODO(chathhorn): doesn't handle functions very gracefully.
-     rule T:Type ==Type T':Type => typesEq(T, T')
-     rule T:Type =/=Type T':Type => notBool typesEq(T, T')
-
-     rule T:UType ==Type T':UType => typesEq(type(T), type(T'))
-     rule T:UType =/=Type T':UType => notBool typesEq(type(T), type(T'))
-
-     syntax Bool ::= typesEq(Type, Type) [function]
-     rule typesEq(T:Type, T) => true
-     rule typesEq(T:Type, T':Type) => typesEq(simpleType(T), simpleType(T'))
-          requires getQualifiers(T) ==K getQualifiers(T')
-     rule typesEq(_:Type, _) => false [owise]
-
-     syntax Bool ::= typesEq(SimpleType, SimpleType) [function]
-     rule typesEq(T:SimpleType, T) => true
-     rule typesEq(pointerType(T::Type), pointerType(T'::Type))
-          => typesEq(T, T')
-     rule typesEq(arrayType(T::Type, Len::Int), arrayType(T'::Type, Len))
-          => typesEq(T, T')
-     rule typesEq(incompleteArrayType(T::Type), incompleteArrayType(T':Type))
-          => typesEq(T, T')
-     rule typesEq(flexibleArrayType(T::Type), flexibleArrayType(T':Type))
-          => typesEq(T, T')
-     rule typesEq(unspecifiedArrayType(T::Type), unspecifiedArrayType(T':Type))
-          => typesEq(T, T')
-     rule typesEq(variableLengthArrayType(T::Type, K:K), variableLengthArrayType(T':Type, K':K))
-          => typesEq(T, T')
-     rule typesEq(structType(X::StructId), structType(X'::StructId))
-          => getTag(X) ==K getTag(X')
-     rule typesEq(unionType(X::StructId), unionType(X'::StructId))
-          => getTag(X) ==K getTag(X')
-     rule typesEq(_:SimpleType, _) => false [owise]
-
      rule hasSameSignedness(T:SignedIntegerUType, T':SignedIntegerUType) => true
      rule hasSameSignedness(T:UnsignedIntegerUType, T':UnsignedIntegerUType) => true
      rule hasSameSignedness(_, _) => false [owise]

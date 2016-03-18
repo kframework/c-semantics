@@ -175,7 +175,7 @@ module C-TRANSLATION-INIT
      rule checkExtTypes((.K => X:CId), (SetItem(X:CId) => .Set) _, _, _, _)
      rule checkExtTypes((X:CId => .K), _, _, Ids':Set, _)
           requires notBool (X in Ids')
-     rule (.K => checkExtType(areCompatible(T, T'))) ~> checkExtTypes(X:CId,
+     rule (.K => checkExtType(areDeclCompat(T,T'))) ~> checkExtTypes(X:CId,
                _, (X |-> T:Type) _,
                _, (X |-> T':Type) _)
      rule (checkExtType(true) => .K) ~> checkExtTypes((X:CId => .K), _, _, _, _)

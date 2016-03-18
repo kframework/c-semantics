@@ -48,14 +48,6 @@ module C-ALIGNMENT
      rule byteAlignofType(t(Qs::Quals, Mods::Set, enumType(_)))
           => byteAlignofType(t(Qs, Mods, cfg:enumAlias))
 
-     syntax Int ::= byteAlignofList(List) [function]
-     syntax Int ::= "byteAlignofList'" "(" Int "," List ")" [function]
-
-     rule byteAlignofList(L:List) => byteAlignofList'(0, L)
-     rule byteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => byteAlignofList'((Sz +Int byteAlignofType(T)), LL)
-     rule byteAlignofList'(Sz:Int, .List) => Sz
-
      syntax Int ::= "maxByteAlignofList'" "(" Int "," List ")" [function]
      rule maxByteAlignofList(L:List) => maxByteAlignofList'(1, L)
      rule maxByteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)

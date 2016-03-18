@@ -47,9 +47,9 @@ module C-TYPING-MISC
      rule flipSignedness(long-int) => unsigned-long-int
      rule flipSignedness(long-long-int) => unsigned-long-long-int
 
-     rule min(ut(_, bitfieldType(int, N:Int)))
+     rule min(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
-     rule max(ut(_, bitfieldType(int, N:Int)))
+     rule max(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
           => (1 <<Int absInt(N -Int 1)) -Int 1
 
      rule min(ut(_, signed-char))
@@ -77,7 +77,7 @@ module C-TYPING-MISC
 
      rule max(ut(_, bool)) => 1
 
-     rule max(ut(_, bitfieldType(unsigned-int, N:Int)))
+     rule max(ut(_, bitfieldType(_:UnsignedBitfieldFieldType, N::Int)))
           => (1 <<Int absInt(N)) -Int 1
 
      rule max(ut(_, unsigned-char))
@@ -138,9 +138,7 @@ module C-TYPING-MISC
      rule toQuals(.Set) => noQuals
 
      rule getModifiers(ut(S::Set, _)) => S
-
      rule getModifiers(t(_, S::Set, _)) => S
-     rule getModifiers(variadic) => .Set
 
      rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
           => Qs +Quals getQualifiers(innerType(type(T)))
@@ -263,7 +261,6 @@ module C-TYPING-MISC
      rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods, tagRestrict(Tag, T))
           requires notBool (Restrict inQuals Qs)
-     rule tagRestrict(_, variadic) => variadic
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
           [function, klabel(tagRestrictSimpleType)]

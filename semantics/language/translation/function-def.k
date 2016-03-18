@@ -2,7 +2,6 @@ module C-FUNCTION-DEF-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
-     syntax Bool ::= hasDupParams(Type) [function]
 endmodule
 
 module C-FUNCTION-DEF
@@ -88,10 +87,11 @@ module C-FUNCTION-DEF
           requires notBool areVoidOrComplete(getParams(T))
           [structural]
 
-     syntax Bool ::= isVoidOrComplete(Type) [function]
+     syntax Bool ::= isVoidOrComplete(K) [function]
      rule isVoidOrComplete(T:Type)
           => isCompleteType(T) orBool isVoidType(T)
                orBool isIncompleteArrayType(T)
+     rule isVoidOrComplete(_) => true [owise]
 
      syntax Bool ::= areVoidOrComplete(List) [function]
      rule areVoidOrComplete(L:List) => true
@@ -172,36 +172,35 @@ module C-FUNCTION-DEF
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)
           => calculateGotoMap(X, K)
 
-     rule hasDupParams(t(_, _, functionType(_, P::List))) => hasDupIds(P)
+     syntax Bool ::= hasDupParams(Type) [function]
+     rule hasDupParams(t(_, _, functionType(_, P:List))) => hasDupIds(P)
      rule hasDupParams(_) => false [owise]
 
      // TODO(liyili2): no associative matching in Java currently, we will do it once we
      // have the associative matching.
      syntax Bool ::= hasDupIds(List) [function]
-     syntax Bool ::= cIdIsInList(CId, List) [function]
+     syntax Bool ::= idInList(CId, List) [function]
 
-     rule cIdIsInList(_:CId, .List) => false
-     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, X:CId)) _:List))
+     rule idInList(_, .List) => false
+     rule idInList(X:CId, ListItem(typedDeclaration(_, X)) _)
           => true
-     rule cIdIsInList(X:CId, (ListItem(typedDeclaration(_, Y:CId)) Tail:List))
-          => cIdIsInList(X, Tail)
+     rule idInList(X:CId, ListItem(typedDeclaration(_, Y:CId)) Tail:List => Tail)
           requires X =/=K Y
-     rule cIdIsInList(X:CId, (ListItem(_:K) Tail:List))
-          => cIdIsInList(X, Tail) [owise]
+     rule idInList(_, ListItem(_:Type) Tail:List => Tail)
+     rule idInList(_, ListItem(_:Variadic) Tail:List => Tail)
 
      rule hasDupIds(.List) => false
      rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
                Tail:List)
           => true
-          requires cIdIsInList(X, Tail)
-
+          requires idInList(X, Tail)
      rule hasDupIds(
                ListItem(typedDeclaration(_, X:CId))
-               Tail:List)
-          => hasDupIds(Tail)
-          requires notBool cIdIsInList(X, Tail)
-     rule hasDupIds(ListItem(_) Tail:List) => hasDupIds(Tail) [owise]
+               Tail:List => Tail)
+          requires notBool idInList(X, Tail)
+     rule hasDupIds(ListItem(_:Type) Tail:List => Tail)
+     rule hasDupIds(ListItem(_:Variadic) Tail:List => Tail)
 
      syntax KItem ::= dummyBind(List)
      rule dummyBind(.List) => .K

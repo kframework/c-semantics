@@ -59,9 +59,10 @@ module C-TYPING-SYNTAX
      syntax Bool ::= Quals "<=Quals" Quals [function]
 
      // Basic types
-     syntax SimpleSignedBitfieldType ::= bitfieldType(SimpleSignedIntType, Int)
-     syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedIntType, Int)
-                                         | bitfieldType(SimpleBoolType, Int)
+     syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
+                                 | bitfieldType(BitfieldFieldType, Int)
+     syntax SimpleSignedBitfieldType ::= bitfieldType(SignedBitfieldFieldType, Int)
+     syntax SimpleUnsignedBitfieldType ::= bitfieldType(UnsignedBitfieldFieldType, Int)
 
      syntax SimpleCharType ::= "char" [function]
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
@@ -82,11 +83,11 @@ module C-TYPING-SYNTAX
      syntax SimpleBoolType ::= "bool"
      syntax SimpleVoidType ::= "void"
      syntax SimpleNoType ::= "no-type"
-     syntax BitfieldFieldType ::= SimpleSignedIntType
-                                | SimpleUnsignedIntType
-                                | SimpleBoolType
+     syntax BitfieldFieldType ::= SignedBitfieldFieldType | UnsignedBitfieldFieldType
+     syntax SignedBitfieldFieldType ::= SimpleSignedIntType
+     syntax UnsignedBitfieldFieldType ::= SimpleUnsignedIntType | SimpleBoolType
      syntax SimpleIntegerType ::= SimpleSignedType | SimpleUnsignedType
-                                | bitfieldType(BitfieldFieldType, Int)
+                                | SimpleBitfieldType
                                 | BitfieldFieldType
 
      syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType | SimpleCharType
@@ -145,7 +146,8 @@ module C-TYPING-SYNTAX
      syntax SimpleUType ::= SimpleTypedefType
 
      syntax SimpleTypedefType ::= typedefType(CId, Type)
-     syntax Type ::= "variadic"
+     syntax Variadic ::= "variadic"
+     syntax DType ::= Variadic
 
      syntax Type ::= BasicType | PointerType | AggregateOrUnionType
                    | StructOrUnionType | ArrayOrFunctionType
@@ -165,6 +167,7 @@ module C-TYPING-SYNTAX
      syntax UnsignedIntegerType ::= UCharType | BoolType | UnsignedBitfieldType
      syntax CharType ::= UCharType | SCharType
      syntax BitfieldType ::= UnsignedBitfieldType | SignedBitfieldType
+                           | t(Quals, Set, SimpleBitfieldType)
      syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
                         | VariableLengthArrayType
      syntax PointerOrArrayType ::= PointerType | ArrayType
@@ -172,9 +175,11 @@ module C-TYPING-SYNTAX
      syntax ArrayOrFunctionUType ::= FunctionUType
                                    | FixedLengthArrayUType | IncompleteArrayUType
                                    | VariableLengthArrayUType
-     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType
+     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType | BitfieldUType
      syntax SignedIntegerUType ::= SCharUType | SignedBitfieldUType
      syntax UnsignedIntegerUType ::= UCharUType | BoolUType | UnsignedBitfieldUType
+     syntax BitfieldUType ::= SignedBitfieldUType | UnsignedBitfieldUType
+                            | ut(Set, SimpleBitfieldType)
 
      syntax UnsignedIntegerType ::= t(Quals, Set, SimpleUnsignedType)
      syntax SignedIntegerType ::= t(Quals, Set, SimpleSignedType)
@@ -308,6 +313,7 @@ module C-TYPING-SYNTAX
      // Turns old-style param list into the empty list so that arguments will
      // be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
+
 endmodule
 
 module C-TYPING

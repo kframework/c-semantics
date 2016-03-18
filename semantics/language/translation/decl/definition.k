@@ -75,12 +75,13 @@ module C-DECL-DEFINITION
           => t(Qs, Mods, variableLengthArrayType(elideDeclParams(T), N))
      rule elideDeclParams(t(Qs::Quals, Mods::Set, pointerType(T::Type)))
           => t(Qs, Mods, pointerType(elideDeclParams(T)))
-     rule elideDeclParams(T:Type) => T [owise]
+     rule elideDeclParams(T::Type) => T [owise]
 
      syntax List ::= elideParams(List) [function]
      rule elideParams(ListItem(typedDeclaration(T:Type, _)) Params::List)
           => ListItem(elideDeclParams(T)) elideParams(Params)
-     rule elideParams(ListItem(variadic)) => ListItem(variadic)
+     rule elideParams(ListItem(variadic) Params::List)
+          => ListItem(variadic) elideParams(Params)
      rule elideParams(ListItem(t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, _))) Params::List)
           => ListItem(elideDeclParams(t(Qs, Mods, unspecifiedArrayType(T)))) elideParams(Params)
      rule elideParams(.List) => .List
@@ -92,6 +93,8 @@ module C-DECL-DEFINITION
           => ListItem(typedDeclaration(elideDeclParams(T), X)) elideList(L)
      rule elideList(ListItem(T:Type) L::List)
           => ListItem(elideDeclParams(T)) elideList(L)
+     rule elideList(ListItem(variadic) L::List)
+          => ListItem(variadic) elideList(L)
      rule elideList(.List) => .List
 
      rule elideMap(K::K |-> T::Type M::Map)

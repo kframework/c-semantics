@@ -233,7 +233,7 @@ module C-TYPING-EXPR
           => typeof(T)
      rule elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
           => typeof(T)
-          requires areCompatible(T, T')
+          requires T ==Type T'
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{6}}}{
      If both the second and third operands are pointers or one is a
@@ -251,12 +251,12 @@ module C-TYPING-EXPR
      rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
                => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> SizeofExpression(_)
-          requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
+          requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool notBool (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
      rule (elaborateDone(_, _) ~> typeof(_ ? t(Qs::Quals, Mods::Set, pointerType(T::Type)) : t(Qs'::Quals, Mods'::Set, pointerType(T'::Type)))
                => typeof(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> K:KItem
-          requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
+          requires stripQualifiers(T) ==Type stripQualifiers(T')
                andBool getKLabel(K) =/=K #klabel(`SizeofExpression`)
 
      rule elaborateDone(V:K, _) ~> typeof(_ ? _ : T:PointerType)
@@ -290,9 +290,7 @@ module C-TYPING-EXPR
                +String " other must be a pointer to void.",
                "6.5.15:3"))
           ~> elaborateDone(_, _) ~> typeof(_ ? T:PointerType : T':PointerType)
-          requires notBool areCompatible(
-                    stripQualifiers(innerType(T)),
-                    stripQualifiers(innerType(T')))
+          requires stripQualifiers(innerType(T)) =/=Type stripQualifiers(innerType(T'))
                andBool notBool (isVoidType(innerType(T)) orBool isVoidType(innerType(T')))
 
      rule (.K => CV("TTE3",

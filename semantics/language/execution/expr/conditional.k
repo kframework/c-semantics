@@ -30,13 +30,11 @@ module C-EXPR-CONDITIONAL
                t(Qs'::Quals, Mods'::Set, pointerType(T'::Type))
           ) => convertedType(t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))))
           ~> _? _ : _
-          requires areCompatible(stripQualifiers(T), stripQualifiers(T'))
+          requires stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
      rule (.K => UNDEF("EEC1", "variably modified types in a conditional expression with unequal size expressions.", "6.7.6.1:6"))
           ~> types(T1:PointerType, T2:PointerType)
-          requires notBool areCompatible(
-               stripQualifiers(innerType(T1)),
-               stripQualifiers(innerType(T2)))
+          requires stripQualifiers(innerType(T1)) =/=Type stripQualifiers(innerType(T2))
           [structural]
 
      syntax KItem ::= convertedType(Type)

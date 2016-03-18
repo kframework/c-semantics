@@ -2,10 +2,10 @@ module C-TYPING-COMPATIBILITY-SYNTAX
      imports SET
      syntax Int ::= getAlignas(Type) [function]
 
-     syntax Bool ::= areCompatible(Type, Type) [function]
-     syntax Bool ::= areCompatible(UType, UType) [function]
      syntax Type ::= compositeType(Type, Type) [function]
      syntax UType ::= compositeType(UType, UType) [function]
+
+     syntax Bool ::= sameAlignas(Set, Set) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -19,6 +19,12 @@ module C-TYPING-COMPATIBILITY
      imports C-BINDING-SYNTAX
 
      imports COMPAT-SYNTAX
+
+     rule T:Type ==Type T':Type => areCompatible(T, T')
+     rule T:Type =/=Type T':Type => notBool areCompatible(T, T')
+
+     rule T:UType ==Type T':UType => areCompatible(type(T), type(T'))
+     rule T:UType =/=Type T':UType => notBool areCompatible(type(T), type(T'))
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -46,14 +52,17 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
+     syntax Bool ::= areCompatible(Type, Type) [function]
      rule areCompatible(T:Type, T':Type) => #areCompat(T, T', .Set)
+
+     syntax Bool ::= areCompatible(UType, UType) [function]
      rule areCompatible(T:UType, T':UType) => #areCompat(type(T), type(T'), .Set)
 
      syntax Bool ::= #areCompat(Type, Type, Set) [function]
      rule #areCompat(
                t(Qs::Quals, Mods::Set, T:SimpleBasicType),
                t(Qs, Mods'::Set, T), _)
-          => sameAlignas(Mods, Mods')
+          => true
 
      // TODO(chathhorn): should be a setting.
      // Each enumerated type shall be compatible with char, a signed integer
@@ -62,12 +71,12 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Qs::Quals, Mods::Set, enumType(_)),
                t(Qs, Mods'::Set, T::SimpleType), _)
-          => sameAlignas(Mods, Mods')
+          => true
           requires T ==K cfg:enumAlias
      rule #areCompat(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs, Mods'::Set, enumType(_)), _)
-          => sameAlignas(Mods, Mods')
+          => true
           requires T ==K cfg:enumAlias
 
      // TODO(chathhorn): should also check for equivalent members
@@ -79,7 +88,7 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Qs::Quals, Mods::Set, structType(S::StructId)),
                t(Qs, Mods'::Set, structType(S'::StructId)), Cache::Set)
-          => sameAlignas(Mods, Mods')
+          => true
           requires S ==K S'
                orBool kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))) in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
@@ -88,7 +97,7 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Qs::Quals, Mods::Set, unionType(S::StructId)),
                t(Qs, Mods'::Set, unionType(S'::StructId)), Cache::Set)
-          => sameAlignas(Mods, Mods')
+          => true
           requires S ==K S'
                orBool kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))) in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
@@ -135,7 +144,7 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)),
                t(Qs, Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
-          => sameAlignas(Mods, Mods') andBool #areCompat(T, T', Cache)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
                t(Qs::Quals, Mods::Set, arrayType(T::Type, _)),
                T':IncompleteArrayType, Cache::Set)
@@ -157,31 +166,27 @@ module C-TYPING-COMPATIBILITY
      // they have different sizes.
      rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache::Set)
           => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool sameAlignas(getModifiers(T), getModifiers(T'))
                andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:IncompleteArrayType,
                T':VariableLengthArrayType, Cache::Set)
           => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool sameAlignas(getModifiers(T), getModifiers(T'))
                andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
                T':IncompleteArrayType, Cache::Set)
           => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool sameAlignas(getModifiers(T), getModifiers(T'))
                andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:IncompleteArrayType,
                T':IncompleteArrayType, Cache::Set)
           => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool sameAlignas(getModifiers(T), getModifiers(T'))
                andBool #areCompat(innerType(T), innerType(T'), Cache)
 
      rule #areCompat(
                t(Qs::Quals, Mods::Set, pointerType(T::Type)),
                t(Qs, Mods'::Set, pointerType(T'::Type)), Cache::Set)
-          => sameAlignas(Mods, Mods') andBool #areCompat(T, T', Cache)
+          => #areCompat(T, T', Cache)
 
      // A function declaration with no arguments is compatible with a
      // declaration with any number of arguments, as long as they're all
@@ -192,28 +197,27 @@ module C-TYPING-COMPATIBILITY
      rule #areCompat(
                t(Qs::Quals, Mods::Set, functionType(T::UType, .List)),
                t(Qs, Mods'::Set, functionType(T'::UType, Args'::List)), Cache::Set)
-          => sameAlignas(Mods, Mods') andBool #areCompat(type(T), type(T'), Cache)
+          => #areCompat(type(T), type(T'), Cache)
           requires areArgPromoted(Args')
                andBool notBool (variadic in Args')
      rule #areCompat(
                t(Qs::Quals, Mods::Set, functionType(T::UType, Args::List)),
                t(Qs, Mods'::Set, functionType(T'::UType, .List)), Cache::Set)
-          => sameAlignas(Mods, Mods') andBool #areCompat(type(T), type(T'), Cache)
+          => #areCompat(type(T), type(T'), Cache)
           requires areArgPromoted(Args)
                andBool notBool (variadic in Args)
      rule #areCompat(
                t(Qs::Quals, Mods::Set, functionType(T::UType,  L::List)),
                t(Qs, Mods'::Set, functionType(T'::UType, L'::List)), Cache::Set)
-          => sameAlignas(Mods, Mods') andBool #areCompat(type(T), type(T'), Cache)
+          => #areCompat(type(T), type(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
           requires size(L) ==Int size(L')
-     rule #areCompat(variadic, variadic, _) => true
      rule #areCompat(_:Type, _:Type, _) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
-               ListItem(T:K) L::List,
-               ListItem(T':K) L'::List, Cache::Set)
+               ListItem(T::K) L::List,
+               ListItem(T'::K) L'::List, Cache::Set)
           => T ==K T' andBool #areParamsCompat(L, L', Cache)
           requires T ==K variadic orBool T' ==K variadic
      rule #areParamsCompat(
@@ -226,20 +230,18 @@ module C-TYPING-COMPATIBILITY
                ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
-          requires T =/=K variadic
      rule #areParamsCompat(
                ListItem(typedDeclaration(T::Type, _)) L::List,
                ListItem(T':Type) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
-          requires T' =/=K variadic
      rule #areParamsCompat(
                ListItem(T:Type) L::List,
                ListItem(T':Type) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
-          requires T =/=K variadic andBool T' =/=K variadic
-     rule #areParamsCompat(_, _, _) => true [owise]
+     rule #areParamsCompat(.List, .List, _) => true
+     rule #areParamsCompat(_, _, _) => false [owise]
 
      syntax Bool ::= #areCompatFields(List, List, Set) [function]
      rule #areCompatFields(ListItem(T:Type) L::List, ListItem(T':Type) L'::List, Cache::Set)
@@ -251,10 +253,6 @@ module C-TYPING-COMPATIBILITY
      rule #areCompatFields(.List, .List, _) => true
      rule #areCompatFields(_:List, _, _) => false [owise]
 
-     // TODO(chathhorn): treating alignas like a qualifier for now. It's more
-     // complicated than this, too, I think -- e.g., alignas on a definition
-     // implies no alignas should be on any declaration.
-     syntax Bool ::= sameAlignas(Set, Set) [function]
      rule sameAlignas(Mods:Set, Mods':Set)
           => getAlignasMod(Mods) ==Int getAlignasMod(Mods')
 
@@ -267,11 +265,11 @@ module C-TYPING-COMPATIBILITY
      rule getAlignasMod(SetItem(alignas(N::Int)) _) => N
      rule getAlignasMod(_) => -1 [owise]
 
-     rule compositeType(T::UType, T'::UType)
+     rule compositeType(T:UType, T':UType)
           => utype(compositeType(type(T), type(T')))
 
      // We can assume the types are compatible.
-     rule compositeType(T::Type, T) => T
+     rule compositeType(T:Type, T) => T
      rule compositeType(
                t(Qs::Quals, Mods::Set, T::SimpleType),
                t(Qs'::Quals, Mods'::Set, T::SimpleType))
