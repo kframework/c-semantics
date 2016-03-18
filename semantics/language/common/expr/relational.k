@@ -129,24 +129,24 @@ module C-COMMON-EXPR-RELATIONAL
           [structural]
 
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T:Type) < tv(_, T':Type)
-          requires (isIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool isIntegerType(T'))
+          ~> L:RValue < R:RValue
+          requires (isIntegerType(type(L)) andBool isPointerType(type(R)))
+               orBool (isPointerType(type(L)) andBool isIntegerType(type(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T:Type) <= tv(_, T':Type)
-          requires (isIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool isIntegerType(T'))
+          ~> L:RValue <= R:RValue
+          requires (isIntegerType(type(L)) andBool isPointerType(type(R)))
+               orBool (isPointerType(type(L)) andBool isIntegerType(type(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T:Type) > tv(_, T':Type)
-          requires (isIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool isIntegerType(T'))
+          ~> L:RValue > R:RValue
+          requires (isIntegerType(type(L)) andBool isPointerType(type(R)))
+               orBool (isPointerType(type(L)) andBool isIntegerType(type(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T:Type) >= tv(_, T':Type)
-          requires (isIntegerType(T) andBool isPointerType(T'))
-               orBool (isPointerType(T) andBool isIntegerType(T'))
+          ~> L:RValue >= R:RValue
+          requires (isIntegerType(type(L)) andBool isPointerType(type(R)))
+               orBool (isPointerType(type(L)) andBool isIntegerType(type(R)))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
