@@ -378,9 +378,9 @@ module C-TYPING-MISC
 
      rule getTag(tag(S:CId, _, _)) => S
 
-     rule getTypeAtOffset(T:Type, 0) => T
+     rule getTypeAtOffset(T::Type, 0) => T
      // Preserve the qualifiers.
-     rule getTypeAtOffset(T:Type, Offset:Int) => t(getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
+     rule getTypeAtOffset(T::Type, Offset:Int) => t(getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
           requires (Offset =/=Int 0)
                andBool notBool isAggregateType(T)
      // Arrays.
@@ -394,10 +394,10 @@ module C-TYPING-MISC
           requires Offset =/=Int 0
 
      syntax Type ::= getTypeAtOffset(Type, K, Int) [function, klabel(getTypeAtOffset2)]
-     rule getTypeAtOffset(BaseT:Type, fieldInfo(
+     rule getTypeAtOffset(BaseT::Type, fieldInfo(
                Fields:List (ListItem(typedDeclaration(_, FId:CId))),
                SI:Int,
-               Types:Map (FId |-> T:Type),
+               Types:Map (FId |-> T::Type),
                Offsets:Map (FId |-> FOffset:Int)
           ), Offset:Int)
           => getTypeAtOffset(BaseT, fieldInfo(
@@ -408,16 +408,16 @@ module C-TYPING-MISC
           ), Offset)
           requires (Offset =/=Int 0)
                andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(BaseT:Type, fieldInfo(
+     rule getTypeAtOffset(BaseT::Type, fieldInfo(
                _ ListItem(typedDeclaration(_, FId:CId)),
                _,
-               _ FId |-> T:Type,
+               _ FId |-> T::Type,
                _ FId |-> FOffset:Int
           ), Offset:Int)
           => getTypeAtOffset(addQualifiers(getModifiers(BaseT), T), Offset -Int FOffset)
           requires (Offset =/=Int 0)
                andBool (FOffset <=Int Offset)
-     rule getTypeAtOffset(BaseT:Type, _, _) => t(getModifiers(BaseT), no-type) [owise]
+     rule getTypeAtOffset(BaseT::Type, _, _) => t(getModifiers(BaseT), no-type) [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T:Type) ...</k>

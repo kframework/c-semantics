@@ -554,17 +554,20 @@ module C-IO-BUFFERED
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
           => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
           ...</k>
+          <buffer> Mem::List </buffer>
           <mem>...
                Base |-> object(_, _, (_ Offset::Int |-> V:K), _)
           ...</mem>
-          requires Size >Int 0 [structural]
+          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) [structural]
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
           => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
           ...</k>
+          <buffer> Mem::List </buffer>
           <mem>...
                Base |-> object(ObjT::Type, _, (M::Map => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]), _)
           ...</mem>
           requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
+               andBool notBool (loc(Base, Offset) in locations(Mem))
      rule readBytesForWriting(_, 0, Aux::List, _) => dataList(Aux)
           [structural]
 

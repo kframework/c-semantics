@@ -61,22 +61,22 @@ module C-BITS
           [structural]
 
      // coallesce bitranges that are adjacent
-     rule piece(bitRange(N:Bits, SuccTo:Int, To':Int), Len:Int)
+     rule piece(bitRange(N::Bits, SuccTo:Int, To':Int), Len:Int)
                bit:: piece(bitRange(N, From:Int, To:Int), Len':Int)
           => piece(bitRange(N, From, To'), Len +Int Len')
           requires (Len +Int Len' <=Int cfg:bitsPerByte)
                andBool (SuccTo ==Int To +Int 1)
           [structural, anywhere]
 
-     rule piece(N:Bits bit:: N':Bits, Len:Int) bit:: piece(N'':Bits, Len':Int)
+     rule piece(N::Bits bit:: N'::Bits, Len:Int) bit:: piece(N''::Bits, Len':Int)
           => piece((N bit:: N') bit:: piece(N'', Len'), Len +Int Len')
           [structural, anywhere]
-     rule piece(N'':Bits, Len':Int) bit:: piece(N:Bits bit:: N':Bits, Len:Int)
+     rule piece(N''::Bits, Len':Int) bit:: piece(N::Bits bit:: N'::Bits, Len:Int)
           => piece((piece(N'', Len') bit:: N) bit:: N', Len +Int Len')
           [structural, anywhere]
-     rule piece(0, 0) bit:: N:Bits => N
+     rule piece(0, 0) bit:: N::Bits => N
           [structural, anywhere]
-     rule N:Bits bit:: piece(0, 0) => N
+     rule N::Bits bit:: piece(0, 0) => N
           [structural, anywhere]
      rule piece(piece(N::Bits, Len1::Int), Len2::Int) => piece(N, Len1)
           requires Len1 ==Int Len2
