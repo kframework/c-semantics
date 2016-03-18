@@ -209,6 +209,7 @@ module C-SYMLOC
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _, _)) => A ==K B
      rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _, _)) => A ==K B
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _)) => A ==K B
+     rule sameBase(_, _) => false [owise]
 
      rule getTU(loc(_ @ static(Tu:String), _)) => Tu
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu

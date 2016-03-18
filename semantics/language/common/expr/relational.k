@@ -90,41 +90,70 @@ module C-COMMON-EXPR-RELATIONAL
           requires T ==Type T'
           [structural]
 
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) < tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) <= tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) > tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) >= tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+
      //- comparison of pointers
      rule tv(Loc:SymLoc, T:PointerType) < tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) <Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) < tv(Loc':SymLoc, T':Type)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) <= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) <= tv(Loc':SymLoc, T':Type)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) > tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) > tv(Loc':SymLoc, T':Type)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
      rule tv(Loc:SymLoc, T:PointerType) >= tv(Loc':SymLoc, T':PointerType)
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T:Type) >= tv(Loc':SymLoc, T':Type)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool (T ==Type T')
           [structural]
 

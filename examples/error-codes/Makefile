@@ -7,7 +7,7 @@ clean:
 	$(MAKE) -C unspecified clean
 	$(MAKE) -C posix clean
 	$(MAKE) -C lint clean
-	$(MAKE) -C violates-constraint/nontfatal clean
+	$(MAKE) -C violates-constraint/nonfatal clean
 
 implementation-defined undefined unspecified posix lint violates-constraint/nonfatal:
 	$(MAKE) -C $@ comparison
