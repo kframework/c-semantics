@@ -294,6 +294,9 @@ module C-SYNTAX
      */
      syntax Expression ::= K "." CId [left, strict(1)]
 
+
+     syntax Expression ::= GnuBody(K)
+
      /*
      and init_expression =
      | NO_INIT

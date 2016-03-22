@@ -90,10 +90,6 @@ sub main {
            push @cmd, '--native-libraries';
            push @cmd, nativeLibraries();
       }
-      if (defined nativeLibraryPath()) {
-           push @cmd, '--native-library-path';
-           push @cmd, nativeLibraryPath();
-      }
 
       if (defined $ENV{PROVE}) {
             push @cmd, '--prove';

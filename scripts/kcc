@@ -104,6 +104,7 @@ my @originalArgv;
 our @cppArgs = ();
 our @stdlib = ();
 our @ld_lib = ();
+our @ldArgs = ();
 
 our $oflag;
 
@@ -305,15 +306,10 @@ sub main {
           open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
           print $programRunner "$template\n";
           print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-          if (@stdlib) {
-                print $programRunner "sub nativeLibraries {\n return '@stdlib';\n}\n";
+          if (@ldArgs) {
+                print $programRunner "sub nativeLibraries {\n return '@ldArgs';\n}\n";
           } else {
                 print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
-          }
-          if (@ld_lib) {
-                print $programRunner "sub nativeLibraryPath {\n return '@ld_lib';\n}\n";
-          } else {
-                print $programRunner "sub nativeLibraryPath {\n return undef;\n}\n";
           }
           close($programRunner);
 
@@ -378,13 +374,9 @@ sub main {
           if ($args->{'-d'}) {
                push(@cmd, '--debug');
           }
-          if (@stdlib) {
+          if (@ldArgs) {
             push @cmd, '--native-libraries';
-            push @cmd, "@stdlib";
-          }
-          if (@ld_lib) {
-            push @cmd, '--native-library-path';
-            push @cmd, "@ld_lib";
+            push @cmd, "@ldArgs";
           }
           my $retval = execute($krun, @cmd);
           checkError($retval);
@@ -458,7 +450,15 @@ sub classify {
          push(@nativeLibs, $lib);
        }
      }
-     @stdlib = @nativeLibs;
+     @stdlib = ();
+     # todo: interleaving correctly
+     for (@ld_lib) {
+       push(@ldArgs, "-L$_");
+     }
+     @ld_lib = ();
+     for (@nativeLibs) {
+       push(@ldArgs, "-l$_");
+     }
 
      for (@files) {
           my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.h', '\.o', '\.a', '\.so'));
@@ -471,12 +471,23 @@ sub classify {
                extractStatic($_, $base, $suffix);
           } elsif ($suffix eq '.c' or $suffix eq '.h') {
                push(@srcFiles, $_);
+          } elsif (isNativeObj($_)) {
+               push(@ldArgs, $_);
           } else {
                if (!($_ =~ $ignoredFlags)) {
                    die "Unsupported option $_";
                }
           }
      }
+}
+
+sub isNativeObj {
+  my ($file) = (@_);
+  system("nm $file > /dev/null 2>&1");
+  if ($? >> 8) {
+    return 0;
+  }
+  return 1;
 }
 
 sub extractStatic {
@@ -597,13 +608,9 @@ sub getKRunCommand {
           push(@krun_args, '-cPGM=.K');
      }
 
-     if (scalar @stdlib) {
+     if (scalar @ldArgs) {
           push(@krun_args, '--native-libraries');
-          push(@krun_args, "@stdlib");
-     }
-     if (scalar @ld_lib) {
-          push(@krun_args, '--native-library-path');
-          push(@krun_args, "@ld_lib");
+          push(@krun_args, "@ldArgs");
      }
 
      return @krun_args;
