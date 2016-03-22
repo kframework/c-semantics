@@ -79,6 +79,7 @@ module C-MEMORY-READING
           => joinFloatBytes(T, L)
           requires (#hasUnknown(L) =/=K true)
                andBool (#hasTrap(L) =/=K true)
+               andBool (#hasInt(L) =/=K true)
           [structural]
 
      // fixme should also check sizes are appropriate
@@ -109,6 +110,7 @@ module C-MEMORY-READING
 
      syntax Bool ::= #hasUnknown(List) [function]
      syntax Bool ::= #hasTrap(List) [function]
+     syntax Bool ::= #hasInt(List) [function]
 
      rule #hasUnknown(.List) => false
      rule #hasUnknown(ListItem(piece(B::Bits, _) => B) _:List)
@@ -123,6 +125,13 @@ module C-MEMORY-READING
      rule #hasTrap(ListItem(bitRange(B::Bits, _, _) => B) _:List)
      rule #hasTrap(ListItem(trap) _:List) => true
      rule #hasTrap(ListItem(B::Bits) L:List) => #hasTrap(L) [owise]
+
+     rule #hasInt(.List) => false
+     rule #hasInt(ListItem(piece(B::Bits, _) => B) _:List)
+     rule #hasInt((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule #hasInt(ListItem(bitRange(B::Bits, _, _) => B) _:List)
+     rule #hasInt(ListItem(B:Int) _:List) => true
+     rule #hasInt(ListItem(B::Bits) L:List) => #hasInt(L) [owise]
 
      // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(Type, List) [function]
