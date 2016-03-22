@@ -131,6 +131,7 @@ module C-MEMORY-READING
      rule #hasInt((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
      rule #hasInt(ListItem(bitRange(B::Bits, _, _) => B) _:List)
      rule #hasInt(ListItem(B:Int) _:List) => true
+          requires B =/=Int 0
      rule #hasInt(ListItem(B::Bits) L:List) => #hasInt(L) [owise]
 
      // TODO(chathhorn): half-assed floating point support.
