@@ -24,7 +24,7 @@ module LIBC-STDIO
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
 
      rule [getString-pre]:
-          (.K => read(Loc, type(char)))
+          (.K => read(Loc, type(unsigned-char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 

@@ -10,3 +10,4 @@
 -W.*
 -f(no-)?omit-frame-pointer
 -g
+-rdynamic

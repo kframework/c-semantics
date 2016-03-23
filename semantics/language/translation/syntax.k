@@ -339,7 +339,6 @@ module C-ABSTRACT-SYNTAX
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
-     syntax Expression ::= GnuBody(K)
      syntax Expression ::= ExpressionPattern(String)
 
      /*
