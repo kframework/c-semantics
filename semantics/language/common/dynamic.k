@@ -12,8 +12,8 @@ module C-DYNAMIC-SYNTAX
      syntax Bits ::= Int // defined in C-BITS-SYNTAX
      syntax SymLoc // defined in C-SYMLOC-SYNTAX
 
-     syntax Type ::= t(Quals, Set, SimpleType) // type: ualifiers, modifiers.
-     syntax UType ::= ut(Set, SimpleUType)    // unqual type: modifiers.
+     syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
+     syntax UType ::= ut(Set, SimpleUType)     // unqualified type
      syntax DType ::= typedDeclaration(Type, CId)
 
      syntax Agg ::= agg(List)

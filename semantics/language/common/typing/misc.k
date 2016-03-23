@@ -119,18 +119,18 @@ module C-TYPING-MISC
      rule setParams(t(Qs::Quals, Mods::Set, functionType(R::UType, _)), P::List)
           => t(Qs, Mods, functionType(R, P))
 
-     rule noQuals => { .Set }
+     rule noQuals => quals(.Set)
 
-     rule Q:Qualifier inQuals { Qs:Set } => Q in Qs
+     rule Q::Qualifier inQuals quals(Qs::Set) => Q in Qs
 
-     rule { Qs:Set } +Qual Q:Qualifier => { Qs SetItem(Q) }
+     rule quals(Qs::Set) +Qual Q::Qualifier => quals(Qs SetItem(Q))
 
-     rule { SetItem(Q) Qs:Set } -Qual Q:Qualifier => { Qs }
-     rule Qs:Quals -Qual _ => Qs [owise]
+     rule quals(SetItem(Q) Qs::Set) -Qual Q::Qualifier => quals(Qs)
+     rule Qs::Quals -Qual _ => Qs [owise]
 
-     rule { Qs:Set } <=Quals { Qs':Set } => Qs <=Set Qs'
+     rule quals(Qs::Set) <=Quals quals(Qs'::Set) => Qs <=Set Qs'
 
-     rule { Qs:Set } +Quals { Qs':Set } => { Qs Qs' }
+     rule quals(Qs::Set) +Quals quals(Qs'::Set) => quals(Qs Qs')
 
      rule toQuals(SetItem(Q:Qualifier) S::Set) => toQuals(S) +Qual Q
      rule toQuals(SetItem(K::K) S::Set) => toQuals(S)

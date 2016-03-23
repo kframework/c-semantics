@@ -48,7 +48,7 @@ module C-TYPING-SYNTAX
      syntax Set ::= "functionSpecifiers" [function]
 
      // Const, Restrict, Volatile, Atomic
-     syntax Quals ::= "{" Set "}"
+     syntax Quals ::= quals(Set)
 
      syntax Quals ::= "noQuals" [function]
      syntax Bool ::= Qualifier "inQuals" Quals [function]
