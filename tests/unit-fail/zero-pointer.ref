@@ -1,0 +1,7 @@
+Error: IMPL-CCV8
+Description: Conversion of a null pointer fragment to an integer type.
+Type: Implementation defined behavior.
+See also: C11 sec. 6.3.2.3:6, J.3.7:1 item 1
+  at main(zero-pointer.c:36)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)
