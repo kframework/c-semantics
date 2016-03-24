@@ -13,7 +13,7 @@ module C-SYNTAX
 
      syntax C ::= CabsLoc
      syntax C ::= CId
-     syntax C ::= CVSpecifier
+     syntax C ::= Qualifier
      syntax C ::= Expression
      syntax C ::= SpecifierElem
      syntax C ::= Statement
@@ -51,7 +51,6 @@ module C-SYNTAX
      NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
      */
      // this will be used as the actual atomic modifier
-     syntax Storage ::= "Atomic"
      syntax Storage ::= "NoStorage"
      syntax Storage ::= "Auto"
      syntax Storage ::= "Static"
@@ -63,9 +62,10 @@ module C-SYNTAX
      and cvspec =
      CV_CONST | CV_VOLATILE | CV_RESTRICT
      */
-     syntax CVSpecifier ::= "Const"
-     syntax CVSpecifier ::= "Volatile"
-     syntax CVSpecifier ::= "Restrict"
+     syntax Qualifier ::= "Const"
+     syntax Qualifier ::= "Volatile"
+     syntax Qualifier ::= "Restrict"
+     syntax Qualifier ::= "Atomic"
 
      /*
      and spec_elem =
@@ -77,10 +77,12 @@ module C-SYNTAX
      */
      syntax SpecifierElem ::= "SpecTypedef"
      // the following are because I flattened SpecifierElem
-     syntax SpecifierElem ::= CVSpecifier
-     syntax SpecifierElem ::= Storage
-     syntax SpecifierElem ::= "Inline"
-     syntax SpecifierElem ::= "Noreturn"
+     syntax SpecifierElem ::= Modifier
+
+     syntax Modifier ::= Qualifier
+     syntax Modifier ::= Storage
+     syntax Modifier ::= "Inline"
+     syntax Modifier ::= "Noreturn"
 
      /*
      | IF of expression * statement * statement * cabsloc
@@ -293,6 +295,9 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      */
      syntax Expression ::= K "." CId [left, strict(1)]
+
+
+     syntax Expression ::= GnuBody(K)
 
      /*
      and init_expression =

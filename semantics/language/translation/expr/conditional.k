@@ -21,24 +21,24 @@ module C-EXPR-CONDITIONAL
      rule (.K => typeof(E1 ? E2 : E3)) ~> E1:K ? E2:K : E3:K
 
      rule typeof(T:Type) ~> E:K ? E1:K : E2:K
-          => evalConditional(simplifyTruth(E), Cast(T, E1), Cast(T, E2), T)
+          => evalConditional(simplifyTruth(E), Cast(T, E1), Cast(T, E2), utype(T))
           requires notBool isVariablyModifiedType(T)
      rule typeof(T:Type) ~> E:K ? E1:K : E2:K
-          => evalConditional(simplifyTruth(E), E1, E2, T)
+          => evalConditional(simplifyTruth(E), E1, E2, utype(T))
           requires isVariablyModifiedType(T)
 
-     syntax KItem ::= evalConditional(K, K, K, Type)
+     syntax KItem ::= evalConditional(K, K, K, UType)
      context evalConditional(HOLE:KItem => reval(HOLE), _, _, _) [result(RValue)]
      context evalConditional(_, HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
      context evalConditional(_, _, HOLE:KItem => reval(HOLE), _) [result(RValue)]
 
-     rule evalConditional(C:RValue, E1:RValue, E2:RValue, T:Type)
+     rule evalConditional(C:RValue, E1:RValue, E2:RValue, T::UType)
           => te(stripHold(C) ? E1 : E2, stripConstants(T))
-          requires isHold(C) orBool isVariablyModifiedType(T)
-     rule evalConditional(tv(1, t(_, int)), E1:RValue, _, T:Type) => E1
-          requires notBool isVariablyModifiedType(T)
-     rule evalConditional(tv(0, t(_, int)), _, E2:RValue, T:Type) => E2
-          requires notBool isVariablyModifiedType(T)
+          requires isHold(C) orBool isVariablyModifiedType(type(T))
+     rule evalConditional(tv(1, ut(_, int)), E1:RValue, _, T::UType) => E1
+          requires notBool isVariablyModifiedType(type(T))
+     rule evalConditional(tv(0, ut(_, int)), _, E2:RValue, T::UType) => E2
+          requires notBool isVariablyModifiedType(type(T))
 
 endmodule
 

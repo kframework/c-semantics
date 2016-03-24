@@ -35,7 +35,7 @@ module LIBC-IO
           [observable]
      rule [readFromFD-char]:
           <k> readFromFD(FD:Int)
-               => tv(ordChar(firstChar(S:String)), t(.Set, int))
+               => tv(ordChar(firstChar(S:String)), ut(.Set, int))
           ...</k>
           <fid> FD </fid>
           <buff> S:String => butFirstChar(S:String) </buff>
@@ -52,13 +52,13 @@ module LIBC-IO
      rule <next-byte> Byte:String => .K </next-byte>
           <buff> Buff:String => Buff +String Byte </buff>
           [structural]
-     rule <k> readFromFD(FD:Int) => tv(-1, t(.Set, int)) ...</k>
+     rule <k> readFromFD(FD:Int) => tv(-1, ut(.Set, int)) ...</k>
           <fid> FD </fid>
           <next-byte> #EOF </next-byte>
           [observable]
-     rule <k> readFromFD(FD:Int) => tv(-2, t(.Set, int)) ...</k>
+     rule <k> readFromFD(FD:Int) => tv(-2, ut(.Set, int)) ...</k>
           <fid> FD </fid>
-          <next-byte> E:IOError </next-byte> 
+          <next-byte> E:IOError </next-byte>
           requires E =/=K #EOF
      rule chrChar(E:IOError :>Int) => E
 // TODO(chathhorn): java port.

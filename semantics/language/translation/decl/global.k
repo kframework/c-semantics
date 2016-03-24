@@ -11,6 +11,8 @@ module C-DECL-GLOBAL-SYNTAX
 
      syntax K ::= stripInitHolds(K) [function]
 
+     syntax Bool ::= areDeclCompat(Type, Type) [function]
+
      // The last bool argument indicates whether a tentative def has been
      // encountered. This is only relevant in the case of symbols with external
      // linkage, which must then be completed and allocated at the end of
@@ -61,7 +63,7 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
           requires validLocalStorageClass(T)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
 
      // Prototype scope declarations (includes both params in prototypes as
@@ -82,7 +84,7 @@ module C-DECL-GLOBAL
      rule <k> declare''(T:VoidType, #NoName, NoInit) => .K ...</k>
           <curr-scope> prototypeScope </curr-scope>
           requires (getStorageSpecifiers(T) ==K .Set)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
 
      // File scope declarations.
@@ -95,7 +97,7 @@ module C-DECL-GLOBAL
           <curr-scope> fileScope </curr-scope>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires validGlobalStorageClass(T)
-               andBool (getQualifiers(T) ==K .Set)
+               andBool (getQualifiers(T) ==K noQuals)
           [structural]
      rule <k> declare''(T:Type, X:CId, K:K)
                => declareExternalVariable(X, T,
@@ -115,7 +117,7 @@ module C-DECL-GLOBAL
                " appears with type qualifiers.",
                "6.7.3:9, J.2:1 item 66"))
           ~> declare''(T:FunctionType, X:CId, _)
-          requires getQualifiers(T) =/=K .Set
+          requires getQualifiers(T) =/=K noQuals
           [structural]
 
      rule (.K => CV("TDG2",
@@ -185,7 +187,7 @@ module C-DECL-GLOBAL
                ~> declare''(T:VoidType, _, _)
           ...</k>
           <curr-scope> prototypeScope </curr-scope>
-          requires getQualifiers(T) =/=K .Set
+          requires getQualifiers(T) =/=K noQuals
           [structural]
 
      rule (.K => CV("TDG9",
@@ -326,7 +328,7 @@ module C-DECL-GLOBAL
           ...</internals>
           requires notBool isNaked(T)
                andBool notBool (X in_keys(Exts))
-               andBool areCompatible(T, OldT)
+               andBool areDeclCompat(T, OldT)
           [structural]
 
      rule <k> (.K => CV("TDG10",
@@ -338,7 +340,7 @@ module C-DECL-GLOBAL
           <internals>...
                X |-> declState(_, OldT:Type, _, _)
           ...</internals>
-          requires notBool areCompatible(T, OldT)
+          requires notBool areDeclCompat(T, OldT)
           [structural]
 
      // Naked, previously declared extern.
@@ -357,7 +359,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           requires isNaked(T)
                andBool notBool (X in_keys(Ints))
-               andBool areCompatible(T, OldT)
+               andBool areDeclCompat(T, OldT)
           [structural]
 
      // Extern, previously declared extern.
@@ -376,7 +378,7 @@ module C-DECL-GLOBAL
           <internals> Ints:Map </internals>
           requires isExtern(T)
                andBool notBool (X in_keys(Ints))
-               andBool areCompatible(T, OldT)
+               andBool areDeclCompat(T, OldT)
           [structural]
 
      rule <k> (.K => CV("TDG10",
@@ -388,7 +390,7 @@ module C-DECL-GLOBAL
           <externals>...
                X |-> declState(_, OldT:Type, _, _)
           ...</externals>
-          requires notBool areCompatible(T, OldT)
+          requires notBool areDeclCompat(T, OldT)
           [structural]
 
      // Naked or extern, not previously declared.
@@ -788,8 +790,7 @@ module C-DECL-GLOBAL
                => declare(typedDeclaration(addStorage(Static, T), X), NoInit)
           ...</k>
           <internals>...
-               X |-> declState(_, T:Type,
-                    declared, _)
+               X |-> declState(_, T:Type, declared, _)
           ...</internals>
           requires notBool isFunctionType(T)
                andBool isCompleteType(T)
@@ -809,7 +810,7 @@ module C-DECL-GLOBAL
                => giveType(X, compositeType(T, stripStorageSpecifiers(T')))
           ...</k>
           <types>... X |-> T:Type ...</types>
-          requires areCompatible(T, T')
+          requires areDeclCompat(T, T')
           [structural]
      rule <k> giveCompositeType(X:CId, T':Type)
                => giveType(X, T')
@@ -822,6 +823,9 @@ module C-DECL-GLOBAL
                ~> giveCompositeType(X:CId, T':Type)
           ...</k>
           <types>... X |-> T:Type ...</types>
-          requires notBool areCompatible(T, T')
+          requires notBool areDeclCompat(T, T')
           [structural]
+
+     rule areDeclCompat(T::Type, T'::Type) => T ==Type T' andBool sameAlignas(getModifiers(T), getModifiers(T'))
+
 endmodule

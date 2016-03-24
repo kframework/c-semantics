@@ -4,7 +4,10 @@
 -m64
 -m32
 -std=.*
+-soname=.*
+-rpath=.*
 -pedantic
 -W.*
 -f(no-)?omit-frame-pointer
 -g
+-rdynamic

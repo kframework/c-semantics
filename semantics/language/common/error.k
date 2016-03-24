@@ -21,7 +21,7 @@ module C-ERROR-SYNTAX
      syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      syntax KItem ::= openWriteThenClose(String, String)
      syntax Bool ::= "isCSV" [function]
- 
+
 endmodule
 
 module C-ERROR

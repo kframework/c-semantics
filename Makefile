@@ -59,7 +59,7 @@ $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: 
 
 $(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
 	@echo "Translating the standard library... ($(PROFILE_DIR))"
-	$(DIST_DIR)/kcc -s -shared -o $(DIST_DIR)/$(PROFILE)/lib/libc.so $(wildcard $(PROFILE_DIR)/src/*.c) $(KCCFLAGS) -I $(PROFILE_DIR)/src/
+	$(DIST_DIR)/kcc -nodefaultlibs -shared -o $(DIST_DIR)/$(PROFILE)/lib/libc.so $(wildcard $(PROFILE_DIR)/src/*.c) $(KCCFLAGS) -I $(PROFILE_DIR)/src/
 	@echo "Done."
 
 $(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp

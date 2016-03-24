@@ -1,11 +1,11 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
      imports SET
-     syntax Bool ::= #areCompat(Type, Type, Set) [function]
-     syntax Bool ::= sameQualifiers(Set, Set) [function]
      syntax Int ::= getAlignas(Type) [function]
 
-     syntax Bool ::= areCompatible(Type, Type) [function]
      syntax Type ::= compositeType(Type, Type) [function]
+     syntax UType ::= compositeType(UType, UType) [function]
+
+     syntax Bool ::= sameAlignas(Set, Set) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -19,6 +19,12 @@ module C-TYPING-COMPATIBILITY
      imports C-BINDING-SYNTAX
 
      imports COMPAT-SYNTAX
+
+     rule T:Type ==Type T':Type => areCompatible(T, T')
+     rule T:Type =/=Type T':Type => notBool areCompatible(T, T')
+
+     rule T:UType ==Type T':UType => areCompatible(type(T), type(T'))
+     rule T:UType =/=Type T':UType => notBool areCompatible(type(T), type(T'))
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -46,57 +52,78 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= #areCompat(List, List, Set) [function,klabel(#areCompatList)]
+     syntax Bool ::= areCompatible(Type, Type) [function]
+     rule areCompatible(T:Type, T':Type) => #areCompat(T, T', .Set)
 
-     rule areCompatible(T::Type, T'::Type) => #areCompat(T, T', .Set)
+     syntax Bool ::= areCompatible(UType, UType) [function]
+     rule areCompatible(T:UType, T':UType) => #areCompat(type(T), type(T'), .Set)
 
-     rule #areCompat(t(Mods::Set, T:SimpleBasicType), t(Mods'::Set, T:SimpleBasicType), Cache::Set)
-          => sameQualifiers(Mods, Mods')
+     syntax Bool ::= #areCompat(Type, Type, Set) [function]
+     rule #areCompat(
+               t(Qs::Quals, Mods::Set, T:SimpleBasicType),
+               t(Qs, Mods'::Set, T), _)
+          => true
 
      // TODO(chathhorn): should be a setting.
      // Each enumerated type shall be compatible with char, a signed integer
      // type, or an unsigned integer type. The choice of type is
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
-               t(Mods::Set, enumType(_)),
-               t(Mods'::Set, T::SimpleType), _)
-          => sameQualifiers(Mods, Mods')
+               t(Qs::Quals, Mods::Set, enumType(_)),
+               t(Qs, Mods'::Set, T::SimpleType), _)
+          => true
           requires T ==K cfg:enumAlias
      rule #areCompat(
-               t(Mods::Set, T::SimpleType),
-               t(Mods'::Set, enumType(_)), _)
-          => sameQualifiers(Mods, Mods')
+               t(Qs::Quals, Mods::Set, T::SimpleType),
+               t(Qs, Mods'::Set, enumType(_)), _)
+          => true
           requires T ==K cfg:enumAlias
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
-               t(Mods::Set, enumType(X::CId)),
-               t(Mods'::Set, enumType(X'::CId)), _)
-          => sameQualifiers(Mods, Mods')
-          requires #areTagsCompat(X, X')
+               t(Qs::Quals, Mods::Set, enumType(X::CId)),
+               t(Qs, Mods'::Set, enumType(X'::CId)), _)
+          => #areTagsCompat(X, X')
 
      rule #areCompat(
-               t(Mods::Set, structType(S::StructId)),
-               t(Mods'::Set, structType(S'::StructId)), Cache::Set)
-          => sameQualifiers(Mods, Mods')
-          requires S ==K S' orBool kpair(t(Mods, structType(S)), t(Mods', structType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, structType(S)), t(Mods', structType(S'))))))
+               t(Qs::Quals, Mods::Set, structType(S::StructId)),
+               t(Qs, Mods'::Set, structType(S'::StructId)), Cache::Set)
+          => true
+          requires S ==K S'
+               orBool kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))) in Cache
+               orBool (#areTagsCompat(getTag(S), getTag(S'))
+                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    Cache SetItem(kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))))))
      rule #areCompat(
-               t(Mods::Set, unionType(S::StructId)),
-               t(Mods'::Set, unionType(S'::StructId)), Cache::Set)
-          => sameQualifiers(Mods, Mods')
-          requires S ==K S' orBool kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))) in Cache orBool (#areTagsCompat(getTag(S), getTag(S')) andBool #areFieldsCompat(getFieldInfo(S), getFieldInfo(S'), Cache SetItem(kpair(t(Mods, unionType(S)), t(Mods', unionType(S'))))))
-     syntax Bool ::= #areFieldsCompat(K, K, Set) [function, memo]
-     rule #areFieldsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
-          => #areCompat(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
-     rule #areFieldsCompat(#incomplete, _, _) => true
-     rule #areFieldsCompat(_, #incomplete, _) => true
+               t(Qs::Quals, Mods::Set, unionType(S::StructId)),
+               t(Qs, Mods'::Set, unionType(S'::StructId)), Cache::Set)
+          => true
+          requires S ==K S'
+               orBool kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))) in Cache
+               orBool (#areTagsCompat(getTag(S), getTag(S'))
+                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    Cache SetItem(kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))))))
+
+     syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
+     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
+          => #areCompatFields(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
+     rule #areStructsCompat(#incomplete, _, _) => true
+     rule #areStructsCompat(_, #incomplete, _) => true
+
      syntax Bool ::= #areTagsCompat(K, K) [function]
      rule #areTagsCompat(C::CId, C::CId) => true
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
+
      syntax Bool ::= #areBitFieldsCompat(List, List) [function]
-     rule #areBitFieldsCompat(ListItem(typedDeclaration(t(_, bitfieldType(_, Size::Int)), _)) Fs::List, ListItem(typedDeclaration(t(_, bitfieldType(_, Size::Int)), _)) Fs'::List) => #areBitFieldsCompat(Fs, Fs')
-     rule #areBitFieldsCompat(ListItem(typedDeclaration(T::Type, _)) Fs::List, ListItem(typedDeclaration(T'::Type, _)) Fs'::List) => #areBitFieldsCompat(Fs, Fs')
+     rule #areBitFieldsCompat(
+               ListItem(typedDeclaration(t(_, _, bitfieldType(_::BitfieldFieldType, Size::Int)), _)) Fs::List,
+               ListItem(typedDeclaration(t(_, _, bitfieldType(_::BitfieldFieldType, Size::Int)), _)) Fs'::List)
+          => #areBitFieldsCompat(Fs, Fs')
+     rule #areBitFieldsCompat(
+               ListItem(typedDeclaration(T::Type, _)) Fs::List,
+               ListItem(typedDeclaration(T'::Type, _)) Fs'::List)
+          => #areBitFieldsCompat(Fs, Fs')
      requires notBool isBitfieldType(T) andBool notBool isBitfieldType(T')
      rule #areBitFieldsCompat(.List, .List) => true
      rule #areBitFieldsCompat(_, _) => false [owise]
@@ -105,56 +132,60 @@ module C-TYPING-COMPATIBILITY
      // compatibility. According to the standard, they are part of the
      // compatibility of the type of the struct, hence #areBitFieldsCompat
      // above.
-     rule #areCompat(t(Mods::Set, bitfieldType(T::Type, _)), T'::Type, Cache::Set) => #areCompat(addModifiers(Mods, T), T', Cache)
-     rule #areCompat(T'::Type, t(Mods::Set, bitfieldType(T::Type, _)), Cache::Set) => #areCompat(addModifiers(Mods, T), T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, _)),
+               T'::Type, Cache::Set)
+          => #areCompat(t(Qs, Mods, T), T', Cache)
+     rule #areCompat(
+               T'::Type,
+               t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, _)), Cache::Set)
+          => #areCompat(t(Qs, Mods, T), T', Cache)
 
      rule #areCompat(
-               t(Mods::Set, arrayType(T::Type, N::Int)),
-               t(Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
-          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
+               t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)),
+               t(Qs, Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               t(Mods::Set, arrayType(T::Type, _)),
+               t(Qs::Quals, Mods::Set, arrayType(T::Type, _)),
                T':IncompleteArrayType, Cache::Set)
-          => sameQualifiers(Mods, getModifiers(T')) andBool #areCompat(T, innerType(T'),  Cache)
+          => (Qs ==K getQualifiers(T')) andBool #areCompat(T, innerType(T'),  Cache)
      rule #areCompat(
                T:IncompleteArrayType,
-               t(Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
-          => sameQualifiers(getModifiers(T), Mods') andBool #areCompat(innerType(T), T', Cache)
+               t(Qs'::Quals, Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
+          => (getQualifiers(T) ==K Qs') andBool #areCompat(innerType(T), T', Cache)
      rule #areCompat(
-               t(Mods::Set, arrayType(T::Type, _)),
+               t(Qs::Quals, Mods::Set, arrayType(T::Type, _)),
                T':VariableLengthArrayType, Cache::Set)
-          => sameQualifiers(Mods, getModifiers(T')) andBool #areCompat(T, innerType(T'), Cache)
+          => (Qs ==K getQualifiers(T')) andBool #areCompat(T, innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
-               t(Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
-          => sameQualifiers(getModifiers(T), Mods') andBool #areCompat(innerType(T), T', Cache)
+               t(Qs'::Quals, Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
+          => (getQualifiers(T) ==K Qs') andBool #areCompat(innerType(T), T', Cache)
      // Two variable length arrays are compatible, but it's undefined if
      // they're used in an expression where they're required to be compat but
      // they have different sizes.
      rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache::Set)
-          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+          => (getQualifiers(T) ==K getQualifiers(T'))
+               andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:IncompleteArrayType,
                T':VariableLengthArrayType, Cache::Set)
-          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+          => (getQualifiers(T) ==K getQualifiers(T'))
+               andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
                T':IncompleteArrayType, Cache::Set)
-          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+          => (getQualifiers(T) ==K getQualifiers(T'))
+               andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:IncompleteArrayType,
                T':IncompleteArrayType, Cache::Set)
-          => sameQualifiers(getModifiers(T), getModifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+          => (getQualifiers(T) ==K getQualifiers(T'))
+               andBool #areCompat(innerType(T), innerType(T'), Cache)
 
      rule #areCompat(
-               t(Mods::Set, pointerType(T::Type)),
-               t(Mods'::Set, pointerType(T'::Type)), Cache::Set)
-          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
-
-     // Struct and union fields.
-     rule #areCompat(
-               typedDeclaration(T::Type, X::CId),
-               typedDeclaration(T'::Type, X::CId), Cache::Set)
+               t(Qs::Quals, Mods::Set, pointerType(T::Type)),
+               t(Qs, Mods'::Set, pointerType(T'::Type)), Cache::Set)
           => #areCompat(T, T', Cache)
 
      // A function declaration with no arguments is compatible with a
@@ -164,181 +195,193 @@ module C-TYPING-COMPATIBILITY
      // TODO(chathhorn): not sufficient?!? -- apparently we also need to look
      // at the argument types in a function definition w/no prototype?
      rule #areCompat(
-               t(Mods::Set, functionType(T::Type, .List)),
-               t(Mods'::Set, functionType(T'::Type, Args'::List)), Cache::Set)
-          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
+               t(Qs::Quals, Mods::Set, functionType(T::UType, .List)),
+               t(Qs, Mods'::Set, functionType(T'::UType, Args'::List)), Cache::Set)
+          => #areCompat(type(T), type(T'), Cache)
           requires areArgPromoted(Args')
                andBool notBool (variadic in Args')
      rule #areCompat(
-               t(Mods::Set, functionType(T::Type, Args::List)),
-               t(Mods'::Set, functionType(T'::Type, .List)), Cache::Set)
-          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache)
+               t(Qs::Quals, Mods::Set, functionType(T::UType, Args::List)),
+               t(Qs, Mods'::Set, functionType(T'::UType, .List)), Cache::Set)
+          => #areCompat(type(T), type(T'), Cache)
           requires areArgPromoted(Args)
                andBool notBool (variadic in Args)
      rule #areCompat(
-               t(Mods::Set, functionType(T::Type,  L::List)),
-               t(Mods'::Set, functionType(T'::Type, L'::List)), Cache::Set)
-          => sameQualifiers(Mods, Mods') andBool #areCompat(T, T', Cache) andBool #areParamsCompat(L, L', Cache)
-          requires (size(L) ==Int size(L'))
-     rule #areCompat(T::Type, T'::Type, Cache::Set) => false [owise]
+               t(Qs::Quals, Mods::Set, functionType(T::UType,  L::List)),
+               t(Qs, Mods'::Set, functionType(T'::UType, L'::List)), Cache::Set)
+          => #areCompat(type(T), type(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+          requires size(L) ==Int size(L')
+     rule #areCompat(_:Type, _:Type, _) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
-               ListItem(T::Type) L::List,
-               ListItem(T'::Type) L'::List, Cache::Set)
-          => #areCompat(stripQualifiers(elideDecl(T)), stripQualifiers(elideDecl(T')), Cache) andBool #areParamsCompat(L, L', Cache)
-     rule #areCompat(variadic, variadic, _) => true
+               ListItem(T::K) L::List,
+               ListItem(T'::K) L'::List, Cache::Set)
+          => T ==K T' andBool #areParamsCompat(L, L', Cache)
+          requires T ==K variadic orBool T' ==K variadic
+     rule #areParamsCompat(
+               ListItem(typedDeclaration(T::Type, _)) L::List,
+               ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+     rule #areParamsCompat(
+               ListItem(T:Type) L::List,
+               ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+     rule #areParamsCompat(
+               ListItem(typedDeclaration(T::Type, _)) L::List,
+               ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
+     rule #areParamsCompat(
+               ListItem(T:Type) L::List,
+               ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
+               andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(.List, .List, _) => true
+     rule #areParamsCompat(_, _, _) => false [owise]
 
-     rule #areCompat(ListItem(T::Type) L::List, ListItem(T'::Type) L'::List, Cache::Set)
-          => #areCompat(T, T', Cache) andBool #areCompat(L, L', Cache)
-     rule #areCompat(.List, .List, _) => true
+     syntax Bool ::= #areCompatFields(List, List, Set) [function]
+     rule #areCompatFields(ListItem(T:Type) L::List, ListItem(T':Type) L'::List, Cache::Set)
+          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
+     rule #areCompatFields(
+               ListItem(typedDeclaration(T::Type, X:CId)) L::List,
+               ListItem(typedDeclaration(T'::Type, X)) L'::List, Cache::Set)
+          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
+     rule #areCompatFields(.List, .List, _) => true
+     rule #areCompatFields(_:List, _, _) => false [owise]
 
-     rule sameQualifiers(Mods::Set, Mods'::Set)
-          => (intersectSet(Mods, typeQualifiers)
-               ==K intersectSet(Mods', typeQualifiers))
-               // TODO(chathhorn): treating alignas like a qualifier for now.
-               // It's more complicated than this, too, I think -- e.g.,
-               // alignas on a definition implies no alignas should be on any
-               // declaration.
-               andBool ((notBool hasAlignasMod(Mods) andBool notBool hasAlignasMod(Mods'))
-                    orElseBool (getAlignasMod(Mods) ==Int getAlignasMod(Mods')))
+     rule sameAlignas(Mods:Set, Mods':Set)
+          => getAlignasMod(Mods) ==Int getAlignasMod(Mods')
 
-     rule getAlignas(T:Type) => getAlignasMod(getModifiers(T))
+     rule getAlignas(T::Type) => getAlignasMod(getModifiers(T))
           requires hasAlignasMod(getModifiers(T))
-     rule getAlignas(T:Type) => byteAlignofType(T)
+     rule getAlignas(T::Type) => byteAlignofType(T)
           requires notBool hasAlignasMod(getModifiers(T))
 
      syntax Int ::= getAlignasMod(Set) [function]
-     rule getAlignasMod(Mods:Set) => getAlignas'(.K, Mods)
+     rule getAlignasMod(SetItem(alignas(N::Int)) _) => N
+     rule getAlignasMod(_) => -1 [owise]
 
-     // TODO(chathhorn): obnoxious unsupported map patterns thing.
-     syntax Int ::= "getAlignas'" "(" K "," Set ")" [function]
-     rule getAlignas'(.K, .Set) => 1
-     rule getAlignas'(.K, SetItem(K:K) Mods:Set) => getAlignas'(K, Mods)
-     rule getAlignas'(alignas(A:Int), _) => A
-     rule getAlignas'(K:K, Mods:Set) => getAlignas'(.K, Mods)
-          requires getKLabel(K) =/=K #klabel(`alignas`)
-               andBool (K =/=K .K)
+     rule compositeType(T:UType, T':UType)
+          => utype(compositeType(type(T), type(T')))
 
      // We can assume the types are compatible.
      rule compositeType(T:Type, T) => T
      rule compositeType(
-               t(Mods:Set, T:SimpleType),
-               t(Mods':Set, T:SimpleType))
+               t(Qs::Quals, Mods::Set, T::SimpleType),
+               t(Qs'::Quals, Mods'::Set, T::SimpleType))
           // The modifiers might include extra information besides just
-          // specifiers and qualifiers, it's probably best to keep it all
-          // around for now.
-          => t(Mods Mods', T)
-          requires isBasicType(t(.Set, T))
-               orBool isStructOrUnionType(t(.Set, T))
-               orBool isBitfieldType(t(.Set, T))
+          // specifiers, it's probably best to keep it all around for now.
+          => t(Qs +Quals Qs', Mods Mods', T)
+          requires isBasicType(type(T))
+               orBool isStructOrUnionType(type(T))
+               orBool isBitfieldType(type(T))
 
      // TODO(chathhorn): surely implementation defined, although I don't see
      // composite types for enums explicitly addressed in the standard.
      rule compositeType(
-               t(Mods:Set, enumType(_)),
-               t(Mods':Set, T:SimpleType))
-          => t(Mods Mods', T)
+               t(Qs::Quals, Mods::Set, enumType(_)),
+               t(Qs'::Quals, Mods'::Set, T::SimpleType))
+          => t(Qs +Quals Qs', Mods Mods', T)
           requires T ==K cfg:enumAlias
      rule compositeType(
-               t(Mods:Set, T:SimpleType),
-               t(Mods':Set, enumType(_)))
-          => t(Mods Mods', T)
+               t(Qs::Quals, Mods::Set, T::SimpleType),
+               t(Qs'::Quals, Mods'::Set, enumType(_)))
+          => t(Qs +Quals Qs', Mods Mods', T)
           requires T ==K cfg:enumAlias
 
      rule compositeType(
-               t(Mods:Set, functionType(T:Type, P:List)),
-               t(Mods':Set, functionType(T':Type, P':List)))
-          => compositeFunctionType(compositeType(T, T'), Mods Mods', P, P', .List)
+               t(Qs::Quals, Mods:Set, functionType(T::UType, P:List)),
+               t(Qs'::Quals, Mods'::Set, functionType(T'::UType, P':List)))
+          => compositeFunctionType(compositeType(T, T'), Qs +Quals Qs', Mods Mods', P, P', .List)
 
      rule compositeType(
-               t(Mods:Set, pointerType(T:Type)),
-               t(Mods':Set, pointerType(T':Type)))
-          => t(Mods Mods', pointerType(compositeType(T, T')))
+               t(Qs::Quals, Mods::Set, pointerType(T:Type)),
+               t(Qs'::Quals, Mods'::Set, pointerType(T':Type)))
+          => t(Qs +Quals Qs', Mods Mods', pointerType(compositeType(T, T')))
 
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:Int)),
-               t(Mods':Set, arrayType(T':Type, N)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+               t(Qs::Quals, Mods::Set, arrayType(T:Type, N:Int)),
+               t(Qs'::Quals, Mods'::Set, arrayType(T':Type, N)))
+          => t(Qs +Quals Qs', Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:Int)),
-               t(Mods':Set, incompleteArrayType(T':Type)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+               t(Qs::Quals, Mods::Set, arrayType(T:Type, N:Int)),
+               t(Qs'::Quals, Mods'::Set, incompleteArrayType(T':Type)))
+          => t(Qs +Quals Qs', Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
-               t(Mods:Set, incompleteArrayType(T:Type)),
-               t(Mods':Set, arrayType(T':Type, N:Int)))
-          => t(Mods Mods', arrayType(compositeType(T, T'), N))
+               t(Qs::Quals, Mods::Set, incompleteArrayType(T:Type)),
+               t(Qs'::Quals, Mods'::Set, arrayType(T':Type, N:Int)))
+          => t(Qs +Quals Qs', Mods Mods', arrayType(compositeType(T, T'), N))
      rule compositeType(
-               t(Mods:Set, arrayType(T:Type, N:Int)),
+               t(Qs::Quals, Mods:Set, arrayType(T:Type, N:Int)),
                T':VariableLengthArrayType)
-          => t(Mods getModifiers(T'), arrayType(compositeType(T, innerType(T')), N))
+          => t(Qs +Quals getQualifiers(T'), Mods getModifiers(T'), arrayType(compositeType(T, innerType(T')), N))
      rule compositeType(
                T:VariableLengthArrayType,
-               t(Mods':Set, arrayType(T':Type, N:Int)))
-          => t(getModifiers(T) Mods', arrayType(compositeType(innerType(T), T'), N))
+               t(Qs'::Quals, Mods':Set, arrayType(T':Type, N:Int)))
+          => t(getQualifiers(T) +Quals Qs', getModifiers(T) Mods', arrayType(compositeType(innerType(T), T'), N))
      rule compositeType(
-               t(Mods:Set, variableLengthArrayType(T:Type, E:K)),
-               t(Mods':Set, variableLengthArrayType(T':Type, _)))
-          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+               t(Qs::Quals, Mods:Set, variableLengthArrayType(T:Type, E:K)),
+               t(Qs'::Quals, Mods':Set, variableLengthArrayType(T':Type, _)))
+          => t(Qs +Quals Qs', Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
      rule compositeType(
-               t(Mods:Set, unspecifiedArrayType(T:Type)),
-               t(Mods':Set, variableLengthArrayType(T':Type, E:K)))
-          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+               t(Qs::Quals, Mods:Set, unspecifiedArrayType(T:Type)),
+               t(Qs'::Quals, Mods':Set, variableLengthArrayType(T':Type, E:K)))
+          => t(Qs +Quals Qs', Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
      rule compositeType(
-               t(Mods':Set, variableLengthArrayType(T:Type, E:K)),
-               t(Mods:Set, unspecifiedArrayType(T':Type)))
-          => t(Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
+               t(Qs'::Quals, Mods':Set, variableLengthArrayType(T:Type, E:K)),
+               t(Qs::Quals, Mods:Set, unspecifiedArrayType(T':Type)))
+          => t(Qs +Quals Qs', Mods Mods', variableLengthArrayType(compositeType(T, T'), E))
      rule compositeType(
-               t(Mods':Set, unspecifiedArrayType(T:Type)),
-               t(Mods:Set, unspecifiedArrayType(T':Type)))
-          => t(Mods Mods', unspecifiedArrayType(compositeType(T, T')))
+               t(Qs'::Quals, Mods':Set, unspecifiedArrayType(T:Type)),
+               t(Qs::Quals, Mods:Set, unspecifiedArrayType(T':Type)))
+          => t(Qs +Quals Qs', Mods Mods', unspecifiedArrayType(compositeType(T, T')))
      rule compositeType(
-               t(Mods:Set, flexibleArrayType(T:Type)),
-               t(Mods':Set, flexibleArrayType(T':Type)))
-          => t(Mods Mods', flexibleArrayType(compositeType(T, T')))
+               t(Qs::Quals, Mods:Set, flexibleArrayType(T:Type)),
+               t(Qs'::Quals, Mods':Set, flexibleArrayType(T':Type)))
+          => t(Qs +Quals Qs', Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
-               typedDeclaration(T:Type, X:CId),
-               typedDeclaration(T':Type, _:CId))
-          => typedDeclaration(compositeType(T, T'), X)
-     rule compositeType(
-               T:Type,
-               typedDeclaration(T':Type, X:CId))
-          => typedDeclaration(compositeType(T, T'), X)
-          requires notBool isTypedDeclaration(T)
-     rule compositeType(
-               typedDeclaration(T:Type, X:CId),
-               T':Type)
-          => typedDeclaration(compositeType(T, T'), X)
-          requires notBool isTypedDeclaration(T')
-
-     rule compositeType(
-               t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)))
-          => t(Mods Mods', structType(S:StructId))
+               t(Qs::Quals, Mods:Set, structType(S:StructId)),
+               t(Qs'::Quals, Mods':Set, structType(S':StructId)))
+          => t(Qs +Quals Qs', Mods Mods', structType(S:StructId))
           requires getFieldInfo(S') ==K #incomplete
      rule compositeType(
-               t(Mods:Set, structType(S:StructId)),
-               t(Mods':Set, structType(S':StructId)))
-          => t(Mods Mods', structType(S':StructId))
+               t(Qs::Quals, Mods:Set, structType(S:StructId)),
+               t(Qs'::Quals, Mods':Set, structType(S':StructId)))
+          => t(Qs +Quals Qs', Mods Mods', structType(S':StructId))
           requires getFieldInfo(S) ==K #incomplete
 
-     syntax KItem ::= compositeFunctionType(Type, Set, List, List, List)
+     syntax KItem ::= compositeFunctionType(UType, Quals, Set, List, List, List)
           [function]
-     rule compositeFunctionType(R:Type, Mods:Set, .List, .List, P':List)
-          => t(Mods, functionType(R, P'))
-     rule compositeFunctionType(_, _, .List, (P:List => .List), (_ => P))
+     rule compositeFunctionType(R::UType, Qs::Quals, Mods::Set, .List, .List, P'::List)
+          => t(Qs, Mods, functionType(R, P'))
+     rule compositeFunctionType(_, _, _, .List, (P::List => .List), (_ => P))
           requires P =/=K .List
-     rule compositeFunctionType(_, _, (P:List => .List), .List, (_ => P))
+     rule compositeFunctionType(_, _, _, (P::List => .List), .List, (_ => P))
           requires P =/=K .List
-     rule compositeFunctionType(_, _,
+     rule compositeFunctionType(_, _, _,
                (ListItem(variadic) => .List),
                (ListItem(variadic) => .List),
                _:List (.List => ListItem(variadic)))
-     rule compositeFunctionType(_, _,
+     rule compositeFunctionType(_, _, _,
                (ListItem(P:Type) => .List) _:List,
                (ListItem(P':Type) => .List) _:List,
                _:List (.List => ListItem(compositeType(P, P'))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(P:Type) => .List) _:List,
+               (ListItem(typedDeclaration(P'::Type, X::CId)) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(typedDeclaration(P::Type, X::CId)) => .List) _:List,
+               (ListItem(P':Type) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
+     rule compositeFunctionType(_, _, _,
+               (ListItem(typedDeclaration(P::Type, X:CId)) => .List) _:List,
+               (ListItem(typedDeclaration(P'::Type, X)) => .List) _:List,
+               _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
 endmodule
 

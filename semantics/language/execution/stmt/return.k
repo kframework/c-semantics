@@ -32,7 +32,7 @@ module C-STMT-RETURN
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
-               F |-> t(Mods:Set, functionType(T:Type, _))
+               F |-> t(_, Mods:Set, functionType(T::UType, _))
           ...</gtypes>
           requires notBool (Noreturn in Mods)
           [structural]
@@ -44,7 +44,7 @@ module C-STMT-RETURN
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
           <gtypes>...
-               F:CId |-> t(Mods:Set, _)
+               F:CId |-> t(_, Mods:Set, _)
           ...</gtypes>
           requires Noreturn in Mods
           [structural]

@@ -1,14 +1,13 @@
 module C-COMMON-PROMOTION-SYNTAX
      imports BASIC-K
      // should be K, but is Type for efficiency reasons
-     syntax Type ::= promote(Type) [function]
+     syntax UType ::= promote(UType) [function]
      syntax Bool ::= isArithBinConversionOp(K) [function]
      syntax Bool ::= isArithBinOp(K) [function]
      syntax Bool ::= isArithUnaryOp(K) [function]
-     syntax Type ::= usualArithmeticConversion(Type, Type) [function]
-     syntax Bool ::= isPromoted(Type) [function]
+     syntax UType ::= usualArithmeticConversion(UType, UType) [function]
+     syntax Bool ::= isPromoted(UType) [function]
 
-     syntax Int ::= rank(Type) [function]
 endmodule
 
 module C-COMMON-PROMOTION
@@ -115,19 +114,20 @@ module C-COMMON-PROMOTION
 
      \end{itemize}%
      }*/
-     rule rank(t(_, bool)) => 0
-     rule rank(t(_, signed-char)) => 1
-     rule rank(t(_, unsigned-char)) => 1
-     rule rank(t(_, short-int)) => 2
-     rule rank(t(_, unsigned-short-int)) => 2
-     rule rank(t(_, int)) => 3
-     rule rank(t(_, unsigned-int)) => 3
-     rule rank(t(_, long-int)) => 4
-     rule rank(t(_, unsigned-long-int)) => 4
-     rule rank(t(_, long-long-int)) => 5
-     rule rank(t(_, unsigned-long-long-int)) => 5
-     rule rank(t(S:Set, enumType(_))) => rank(t(S:Set, cfg:enumAlias))
-     rule rank(t(_, bitfieldType(T:Type, _))) => rank(T)
+     syntax Int ::= rank(UType) [function]
+     rule rank(ut(_, bool)) => 0
+     rule rank(ut(_, signed-char)) => 1
+     rule rank(ut(_, unsigned-char)) => 1
+     rule rank(ut(_, short-int)) => 2
+     rule rank(ut(_, unsigned-short-int)) => 2
+     rule rank(ut(_, int)) => 3
+     rule rank(ut(_, unsigned-int)) => 3
+     rule rank(ut(_, long-int)) => 4
+     rule rank(ut(_, unsigned-long-int)) => 4
+     rule rank(ut(_, long-long-int)) => 5
+     rule rank(ut(_, unsigned-long-long-int)) => 5
+     rule rank(ut(Mods::Set, enumType(_))) => rank(ut(Mods, cfg:enumAlias))
+     rule rank(ut(_, bitfieldType(T::BitfieldFieldType, _))) => rank(utype(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
      The following may be used in an expression wherever an int or unsigned int
@@ -157,48 +157,48 @@ module C-COMMON-PROMOTION
 
      // Although isPromoted doesn't make sense for non-integer types, it makes
      // things more convenient if it's total.
-     rule isPromoted(t(_, enumType(_))) => true
-     rule isPromoted(t(_, int)) => true
-     rule isPromoted(t(_, unsigned-int)) => true
-     rule isPromoted(t(_, long-int)) => true
-     rule isPromoted(t(_, unsigned-long-int)) => true
-     rule isPromoted(t(_, long-long-int)) => true
-     rule isPromoted(t(_, unsigned-long-long-int)) => true
+     rule isPromoted(ut(_, enumType(_))) => true
+     rule isPromoted(ut(_, int)) => true
+     rule isPromoted(ut(_, unsigned-int)) => true
+     rule isPromoted(ut(_, long-int)) => true
+     rule isPromoted(ut(_, unsigned-long-int)) => true
+     rule isPromoted(ut(_, long-long-int)) => true
+     rule isPromoted(ut(_, unsigned-long-long-int)) => true
      rule isPromoted(_) => false [owise]
 
      // <= so enums become ints
-     rule promote(T:Type) => t(.Set, int)
-          requires rank(T) <=Int rank(t(.Set, int))
-               andBool min(t(.Set, int)) <=Int min(T)
-               andBool max(t(.Set, int)) >=Int max(T)
+     rule promote(T::UType) => utype(int)
+          requires rank(T) <=Int rank(utype(int))
+               andBool min(utype(int)) <=Int min(T)
+               andBool max(utype(int)) >=Int max(T)
 
-     rule promote(T:Type) => T
-          requires rank(T) >Int rank(t(.Set, int))
+     rule promote(T::UType) => T
+          requires rank(T) >Int rank(utype(int))
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
-          => t(.Set, int)
+     rule promote(ut(Mods::Set, bitfieldType(T::BitfieldFieldType, Len::Int)))
+          => utype(int)
           requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
-               andBool min(t(.Set, int))
-                    <=Int min(t(Mods, bitfieldType(t(Mods', T), Len)))
-               andBool max(t(.Set, int))
-                    >=Int max(t(Mods, bitfieldType(t(Mods', T), Len)))
+               andBool min(utype(int))
+                    <=Int min(utype(bitfieldType(T, Len)))
+               andBool max(utype(int))
+                    >=Int max(utype(bitfieldType(T, Len)))
      // fixme unclear what 6.3.1.1:3 means
 
-     rule promote(T:Type) => t(.Set, unsigned-int)
-          requires rank(T) <=Int rank(t(.Set, int))
+     rule promote(T::UType) => utype(unsigned-int)
+          requires rank(T) <=Int rank(utype(int))
                andBool notBool (
-                    min(t(.Set, int)) <=Int min(T)
-                    andBool max(t(.Set, int)) >=Int max(T)
+                    min(utype(int)) <=Int min(T)
+                    andBool max(utype(int)) >=Int max(T)
                )
 
-     rule promote(t(Mods:Set, bitfieldType(t(Mods':Set, T:SimpleType), Len:Int)))
-          => t(.Set, unsigned-int)
+     rule promote(ut(Mods::Set, bitfieldType(T::BitfieldFieldType, Len::Int)))
+          => utype(unsigned-int)
           requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
                andBool notBool (
-                    min(t(.Set, int))
-                         <=Int min(t(Mods, bitfieldType(t(Mods', T), Len)))
-                    andBool max(t(.Set, int))
-                         >=Int max(t(Mods, bitfieldType(t(Mods', T), Len)))
+                    min(utype(int))
+                         <=Int min(utype(bitfieldType(T, Len)))
+                    andBool max(utype(int))
+                         >=Int max(utype(bitfieldType(T, Len)))
                )
 
 
@@ -209,10 +209,10 @@ module C-COMMON-PROMOTION
      a type whose corresponding real type is long double.
      \end{itemize}%
      */
-     rule usualArithmeticConversion(t(_, long-double), _)
-          => t(.Set, long-double)
-     rule usualArithmeticConversion(_, t(_, long-double))
-          => t(.Set, long-double)
+     rule usualArithmeticConversion(ut(_, long-double), _)
+          => utype(long-double)
+     rule usualArithmeticConversion(_, ut(_, long-double))
+          => utype(long-double)
 
      /*@
      \begin{itemize}
@@ -221,11 +221,11 @@ module C-COMMON-PROMOTION
      a type whose corresponding real type is double.
      \end{itemize}%
      */
-     rule usualArithmeticConversion(t(_, double), t(_, T:SimpleType))
-          => t(.Set, double)
+     rule usualArithmeticConversion(ut(_, double), ut(_, T::SimpleUType))
+          => utype(double)
           requires long-double =/=K T
-     rule usualArithmeticConversion(t(_, T:SimpleType), t(_, double))
-          => t(.Set, double)
+     rule usualArithmeticConversion(ut(_, T::SimpleUType), ut(_, double))
+          => utype(double)
           requires long-double =/=K T
 
      /*@
@@ -235,12 +235,12 @@ module C-COMMON-PROMOTION
      type whose corresponding real type is float.
      \end{itemize}%
      */
-     rule usualArithmeticConversion(t(_, float), t(_, T:SimpleType)) => t(.Set, float)
-          requires long-double =/=K T
-               andBool double =/=K T
-     rule usualArithmeticConversion(t(_, T:SimpleType), t(_, float)) => t(.Set, float)
-          requires long-double =/=K T
-               andBool double =/=K T
+     rule usualArithmeticConversion(ut(_, float), ut(_, T::SimpleUType))
+          => utype(float)
+          requires long-double =/=K T andBool double =/=K T
+     rule usualArithmeticConversion(ut(_, T::SimpleUType), ut(_, float))
+          => utype(float)
+          requires long-double =/=K T andBool double =/=K T
 
      /*@
      \begin{itemize}
@@ -248,13 +248,13 @@ module C-COMMON-PROMOTION
      Then the following rules are applied to the promoted operands:
      \end{itemize}%
      */
-     syntax Type ::= "usualArithmeticConversion-aux" "(" Type "," Type ")"
+     syntax UType ::= "usualArithmeticConversion-aux" "(" UType "," UType ")"
           [function]
 
-     rule usualArithmeticConversion(T:Type, T':Type)
+     rule usualArithmeticConversion(T::UType, T'::UType)
           => usualArithmeticConversion-aux(promote(T), promote(T'))
-          requires notBool isFloatType(T)
-               andBool notBool isFloatType(T')
+          requires notBool isFloatUType(T)
+               andBool notBool isFloatUType(T')
 
      /*@
      \begin{itemize}
@@ -264,16 +264,14 @@ module C-COMMON-PROMOTION
      \end{itemize}\end{itemize}%
      */
      rule [arithConversion-int-done]:
-          usualArithmeticConversion-aux(T:Type, T:Type)
-          => T
-     rule usualArithmeticConversion-aux(T:Type, T':Type)
+          usualArithmeticConversion-aux(T::UType, T'::UType)
           => stripConstants(T)
-          requires T =/=K T' andBool stripConstants(T) ==K stripConstants(T')
+          requires T ==Type T'
 
-     syntax Type ::= maxType(Type, Type) [function]
-     rule maxType(T:Type, T':Type) => T
+     syntax UType ::= maxType(UType, UType) [function]
+     rule maxType(T::UType, T'::UType) => T
           requires rank(T) >=Int rank(T')
-     rule maxType(T:Type, T':Type) => T'
+     rule maxType(T::UType, T'::UType) => T'
           requires rank(T') >=Int rank(T)
 
      /*@
@@ -285,7 +283,7 @@ module C-COMMON-PROMOTION
      conversion rank is converted to the type of the operand with greater rank.
      \end{itemize}\end{itemize}
      */
-     rule usualArithmeticConversion-aux(T:Type, T':Type)
+     rule usualArithmeticConversion-aux(T::UType, T'::UType)
           => maxType(T, T')
           requires T =/=Type T' andBool hasSameSignedness(T, T')
 
@@ -299,9 +297,9 @@ module C-COMMON-PROMOTION
      with unsigned integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType) => T'
+     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType) => T'
           requires rank(T') >=Int rank(T)
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType) => T
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType) => T
           requires rank(T) >=Int rank(T')
 
      /*@
@@ -314,11 +312,11 @@ module C-COMMON-PROMOTION
      the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType) => T
+     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType) => T
           requires rank(T') <Int rank(T)
                andBool min(T) <=Int min(T')
                andBool max(T) >=Int max(T')
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType) => T'
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType) => T'
           requires rank(T) <Int rank(T')
                andBool min(T') <=Int min(T)
                andBool max(T') >=Int max(T)
@@ -331,12 +329,12 @@ module C-COMMON-PROMOTION
      corresponding to the type of the operand with signed integer type.
      \end{itemize}\end{itemize}%
      */
-     rule usualArithmeticConversion-aux(T:SignedIntegerType, T':UnsignedIntegerType)
+     rule usualArithmeticConversion-aux(T:SignedIntegerUType, T':UnsignedIntegerUType)
           => correspondingUnsignedType(T)
           requires rank(T') <Int rank(T)
                andBool (min(T) >Int min(T')
                     orBool max(T) <Int max(T'))
-     rule usualArithmeticConversion-aux(T:UnsignedIntegerType, T':SignedIntegerType)
+     rule usualArithmeticConversion-aux(T:UnsignedIntegerUType, T':SignedIntegerUType)
           => correspondingUnsignedType(T')
           requires rank(T) <Int rank(T')
                andBool (min(T') >Int min(T)

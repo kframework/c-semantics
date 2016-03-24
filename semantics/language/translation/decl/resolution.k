@@ -38,11 +38,11 @@ module C-DECL-RESOLUTION
 
      rule allocateIncompleteTentative(X:CId,
                declState(_,
-                    t(Mods:Set, incompleteArrayType(T:Type)), declared, true))
-          => declare(typedDeclaration(t(Mods, arrayType(T, 1)), X), NoInit)
+                    t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), declared, true))
+          => declare(typedDeclaration(t(Qs, Mods, arrayType(T, 1)), X), NoInit)
           [structural]
      rule allocateIncompleteTentative(_,
-               declState(_, t(Mods:Set, _), State:DeclState, _))
+               declState(_, t(_, Mods::Set, _), State:DeclState, _))
           => .K
           requires State =/=K declared
                // TODO(chathhorn): ... and we do this inline function check in
@@ -50,12 +50,12 @@ module C-DECL-RESOLUTION
                andBool notBool (State ==K completed andBool Inline in Mods)
           [structural]
      rule allocateIncompleteTentative(_,
-               declState(_, t(Mods:Set, _), _, false))
+               declState(_, t(_, Mods::Set, _), _, false))
           => .K
           requires notBool (Inline in Mods)
           [structural]
-     rule allocateIncompleteTentative(X:CId,
-               declState(_, t(Mods:Set, _), completed, _))
+     rule allocateIncompleteTentative(X::CId,
+               declState(_, t(_, Mods::Set, _), completed, _))
           => UNDEF("TDR1",
                "Declaration for inline function not defined in the same translation unit: "
                +String idToString(X) +String ".",

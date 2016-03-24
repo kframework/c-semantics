@@ -51,40 +51,34 @@ module C-EXPR-ASSIGNMENT
      the right is a pointer.
 
      }*/
-     rule L:KResult := (R:RValue => cast(type(L), R))
-          requires (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
-               andBool (getQualifiers(type(R)) ==K .Set)
-               andBool (type(L) =/=Type type(R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
+          requires isArithmeticType(type(L))
+               andBool isArithmeticType(type(R))
+               andBool utype(L) =/=Type utype(R)
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
-          requires isStructOrUnionType(type(L))
-               andBool areCompatible(stripQualifiers(type(L)), type(R))
-               andBool (type(L) =/=Type type(R))
-
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool areCompatible(
-                    stripQualifiers(innerType(type(L))),
-                    stripQualifiers(innerType(type(R))))
+               andBool stripQualifiers(innerType(type(L)))
+                    ==Type stripQualifiers(innerType(type(R)))
                andBool getQualifiers(innerType(type(R)))
-                    <=Set getQualifiers(innerType(type(L)))
-               andBool (type(L) =/=Type type(R))
+                    <=Quals getQualifiers(innerType(type(L)))
+               andBool utype(L) =/=Type utype(R)
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
                andBool (isVoidType(innerType(type(L)))
                     orBool isVoidType(innerType(type(R))))
                andBool (getQualifiers(innerType(type(R)))
-                    <=Set getQualifiers(innerType(type(L))))
-               andBool (type(L) =/=Type type(R))
+                    <=Quals getQualifiers(innerType(type(L))))
+               andBool utype(L) =/=Type utype(R)
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
-               andBool (type(L) =/=Type type(R))
+               andBool utype(L) =/=Type utype(R)
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
 
      /*@ \fromStandard{\source[n1570]{\para{6.6}{3}}}{
@@ -93,23 +87,23 @@ module C-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
+     rule nclv(_, T::Type => stripConstants(T)) := _:RValue
           requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
+     rule _:KResult := tv(_:CValue, T::UType => stripConstants(T))
           requires fromConstantExpr(T)
-     rule _:KResult := te(_, T:Type => stripConstants(T))
+     rule _:KResult := te(_, T::UType => stripConstants(T))
           requires fromConstantExpr(T)
 
      rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
           ~> L:KResult := R:RValue
-          requires type(L) =/=Type type(R)
+          requires utype(L) =/=Type utype(R)
                andBool (
                     (isPointerType(type(L)) andBool notBool isPointerType(type(R))
                          andBool notBool isNullPointerConstant(R))
                     orBool (isArithmeticType(type(L)) andBool notBool isBoolType(type(L)))
                          andBool notBool isArithmeticType(type(R))
                     orBool isStructOrUnionType(type(L))
-                         andBool notBool areCompatible(stripQualifiers(type(L)), type(R))
+                         andBool type(L) =/=Type type(R)
                     orBool isBoolType(type(L)) andBool notBool isPointerType(type(R)) andBool notBool isArithmeticType(type(R))
                     orBool notBool (isPointerType(type(L))
                          orBool isArithmeticType(type(L))
@@ -124,11 +118,10 @@ module C-EXPR-ASSIGNMENT
                andBool notBool isVoidType(innerType(type(L)))
                andBool notBool isVoidType(innerType(type(R)))
                andBool (
-                    notBool areCompatible(
-                         stripQualifiers(innerType(type(L))),
-                         stripQualifiers(innerType(type(R))))
+                    stripQualifiers(innerType(type(L)))
+                         =/=Type stripQualifiers(innerType(type(R)))
                     orBool notBool (getQualifiers(innerType(type(R)))
-                         <=Set getQualifiers(innerType(type(L))))
+                         <=Quals getQualifiers(innerType(type(L))))
                )
      rule (.K => CV("TEAS3", "'lvalue' required as left operand in assignment.", "6.5.16:2"))
           ~> tv(_, _) := _:RValue
@@ -171,72 +164,76 @@ module C-EXPR-ASSIGNMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
 
-     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
+     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
                => write(Loc, V, T)
-               ~> tv(V, stripQualifiers(T))
+               ~> tv(V, utype(T))
           ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isLinkerLoc(Loc)
-               andBool (T ==Type T')
-     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
-               => te(nclv(Loc, T) := tv(V, T'), stripQualifiers(T))
+               andBool (utype(T) ==Type T')
+     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
+               => te(nclv(Loc, T) := tv(V, T'), utype(T))
           ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool isLinkerLoc(Loc)
-               andBool (T ==Type T')
-     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stripQualifiers(T)) ...</k>
+               andBool (utype(T) ==Type T')
+     rule <k> ncle(L:K, T::Type) := R:RValue
+               => te(L := stripHold(R), utype(T))
+          ...</k>
           <initializing> true </initializing>
           requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(type(R))
-               andBool (T ==Type type(R))
+               andBool notBool fromConstantExpr(R)
+               andBool (utype(T) ==Type utype(R))
 
-     rule <k> nclv(Loc:SymLoc, T:Type) := tv(V:CValue, T':Type)
-               => te(nclv(Loc, T) := tv(V, T'), stripQualifiers(T))
+     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
+               => te(nclv(Loc, T) := tv(V, T'), utype(T))
           ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
-               andBool (T ==Type T')
-     rule <k> nclv(Loc:SymLoc, T:Type) := te(K:K, T':Type)
-               => te(nclv(Loc, T) := K, stripQualifiers(T))
+               andBool (utype(T) ==Type T')
+     rule <k> nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
+               => te(nclv(Loc, T) := K, utype(T))
           ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
                andBool notBool fromConstantExpr(T')
                andBool notBool isConstType(T)
-               andBool (T ==Type T')
-     rule <k> ncle(L:K, T:Type) := R:RValue => te(L := stripHold(R), stripQualifiers(T)) ...</k>
+               andBool (utype(T) ==Type T')
+     rule <k> ncle(L:K, T::Type) := R:RValue
+               => te(L := stripHold(R), utype(T))
+          ...</k>
           <initializing> false </initializing>
           requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(type(R))
+               andBool notBool fromConstantExpr(R)
                andBool notBool isConstType(T)
-               andBool (T ==Type type(R))
+               andBool (utype(T) ==Type utype(R))
 
      rule E1:KResult *= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) * E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) * E2)
      rule E1:KResult /= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) / E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) / E2)
      rule E1:KResult %= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) % E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) % E2)
      rule E1:KResult += E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) + E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) + E2)
      rule E1:KResult -= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) - E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) - E2)
      rule E1:KResult <<= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) << E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) << E2)
      rule E1:KResult >>= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) >> E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) >> E2)
      rule E1:KResult &= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) & E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) & E2)
      rule E1:KResult ^= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) ^ E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) ^ E2)
      rule E1:KResult |= E2:RValue
-          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, type(E1)) | E2)
+          => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) | E2)
 
      context compoundAssign(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
      rule <k> compoundAssign(LV:KResult, AExp:RValue)
@@ -245,7 +242,7 @@ module C-EXPR-ASSIGNMENT
           <curr-scope> fileScope </curr-scope>
           requires notBool isNCLHold(LV)
      rule <k> compoundAssign(LV:KResult, AExp:RValue)
-               => te(compoundAssign(LV, AExp), type(LV))
+               => te(compoundAssign(LV, AExp), utype(LV))
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           requires isNCLHold(LV) orBool S =/=K fileScope

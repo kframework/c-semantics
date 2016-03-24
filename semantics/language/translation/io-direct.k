@@ -17,8 +17,7 @@ module C-IO-DIRECT
           [structural]
 
      rule writeBytes(Loc:SymLoc, dataList(ListItem(V:CValue) L:List))
-          => writeByte(Loc, V) ~>
-               writeBytes(Loc +bytes 1, dataList(L))
+          => writeByte(Loc, V) ~> writeBytes(Loc +bytes 1, dataList(L))
           [structural]
 
      rule writeBytes(_, dataList(.List)) => .K
@@ -26,7 +25,7 @@ module C-IO-DIRECT
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <mem>...
-               Base |-> object(_, Len:Int, (M:Map => M:Map[Offset <- V]), _)
+               Base |-> object(_, Len:Int, (M:Map => M[Offset <- V]), _)
           ...</mem>
           requires (Offset <Int Len)
           [structural]
@@ -45,27 +44,26 @@ module C-IO-DIRECT
           ~> readBytes-aux(Loc +bytes 1, Size -Int 1, Aux)
           requires Size:Int >Int 0
           [structural]
-     rule (tv(V:CValue, T:Type) => .K)
+     rule (tv(V:CValue, T::UType) => .K)
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
           [structural]
 
      syntax List ::= values(List) [function]
-     rule values(ListItem(tv(K::CValue, _)) L:List) => ListItem(K) values(L:List)
+     rule values(ListItem(tv(K::CValue, _)) L:List) => ListItem(K) values(L)
      rule values(.List) => .List
 
-     rule readBytes-aux(_, 0, Aux:List)
-          => dataList(values(Aux:List))
+     rule readBytes-aux(_, 0, Aux:List) => dataList(values(Aux))
           [structural]
 
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
-               => tv(V, t(.Set, no-type))
+               => tv(V, utype(no-type))
           ...</k>
           <mem>...
                Base |-> object(_, _, (_ Offset:Int |-> V:K), _)
           ...</mem>
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
-               => tv(piece(0, cfg:bitsPerByte), t(.Set, no-type))
+               => tv(piece(0, cfg:bitsPerByte), utype(no-type))
           ...</k>
           <mem>...
                Base |-> object(_, _,

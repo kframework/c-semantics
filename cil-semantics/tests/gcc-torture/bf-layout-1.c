@@ -1,6 +1,6 @@
 #include <stdlib.h>
-struct { long f8:8; long f24:24; } a;
-struct { long f32:32; } b;
+struct { int f8:8; int f24:24; } a;
+struct { int f32:32; } b;
 
 int main ()
 {
