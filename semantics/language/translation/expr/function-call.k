@@ -30,35 +30,35 @@ module C-EXPR-FUNCTION-CALL
      */
 
      syntax KItem ::= maybeBind(List, List)
-     syntax KItem ::= elabCall(RValue, List, Type, List)
 
      context Call(_, (HOLE:KItem => revalParams(HOLE)))
-     rule Call(Lbl:KLabel(V:K, t(S:Set, pointerType(t(S':Set, functionType(T:Type, P:List))))), rvlist(L:List))
+     rule Call(Lbl:KLabel(V:K, ut(S::Set, pointerType(t(Qs'::Quals, S'::Set, functionType(T::UType, P:List))))), rvlist(L:List))
           => maybeBind(P, L)
-          ~> elabCall(Lbl(V, t(S, pointerType(t(S', functionType(T, P))))), L, T, .List)
+          ~> elabCall(Lbl(V, ut(S, pointerType(t(Qs', S', functionType(T, P))))), L, T, .List)
           requires (#klabel(Lbl) ==K #klabel(`tv`) orBool #klabel(Lbl) ==K #klabel(`te`))
-               andBool (isCompleteType(T) orBool isVoidType(T))
-               andBool notBool isArrayType(T) // Don't think this is possible.
+               andBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
+               andBool notBool isArrayType(type(T)) // Don't think this is possible.
      rule (.K => CV("EFC1", "Function call with incomplete or invalid return type.",
                "6.5.2.2:2"))
-          ~> Call(Lbl:KLabel(_, t(_, pointerType(t(_, functionType(T:Type, _))))), rvlist(_))
+          ~> Call(Lbl:KLabel(_, ut(_, pointerType(t(_, _, functionType(T::UType, _))))), rvlist(_))
           requires (#klabel(Lbl) ==K #klabel(`tv`) orBool #klabel(Lbl) ==K #klabel(`te`))
-               andBool (notBool (isCompleteType(T) orBool isVoidType(T))
-                    orBool isArrayType(T))
+               andBool (notBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
+                    orBool isArrayType(type(T)))
 
      // Only attempt to bind if we have a prototype.
      rule maybeBind(.List, _) => .K
      rule maybeBind(P:List, L:List) => elaborate(bind(P, P, L))
           requires P =/=K .List
 
-     rule elabCall(te(K:K, _), L:List, T:Type, .List)
+     syntax KItem ::= elabCall(RValue, List, UType, List)
+     rule elabCall(te(K:K, _), L::List, T::UType, .List)
           => te(Call(K, list(L)), T)
-     rule elabCall(tv(V:CValue, T:Type), L:List, T':Type, .List)
+     rule elabCall(tv(V::CValue, T::UType), L::List, T'::UType, .List)
           => te(Call(tv(V, T), list(L)), T')
-     rule elabCall(te(K:K, _), _, T:Type, L:List)
+     rule elabCall(te(K:K, _), _, T::UType, L::List)
           => te(Call(K, list(L)), T)
           requires L =/=K .List
-     rule elabCall(tv(V:CValue, T:Type), _, T':Type, L:List)
+     rule elabCall(tv(V::CValue, T::UType), _, T'::UType, L::List)
           => te(Call(tv(V, T), list(L)), T')
           requires L =/=K .List
 

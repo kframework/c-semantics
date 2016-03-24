@@ -34,7 +34,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool areCompatible(T, T')
+               andBool areDeclCompat(T, T')
                andBool notBool (X in_keys(LocalTypes))
           [structural]
      // Extern, external type exists but no def.
@@ -49,7 +49,7 @@ module C-DECL-LOCAL
           <local-types> LocalTypes:Map </local-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool areCompatible(T, T')
+               andBool areDeclCompat(T, T')
                andBool notBool (X in_keys(Defs))
                andBool notBool (X in_keys(LocalTypes))
           [structural]
@@ -105,7 +105,7 @@ module C-DECL-LOCAL
           <external-types>... X |-> T:Type ...</external-types>
           requires (isFunctionType(T') orBool isExternType(T'))
                andBool notBool isStaticType(T')
-               andBool notBool areCompatible(T, T')
+               andBool notBool areDeclCompat(T, T')
           [structural]
 
      syntax KResult ::= toInitValue(CId, Type, K) [function]

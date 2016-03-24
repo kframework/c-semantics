@@ -1,13 +1,29 @@
 #include<stdlib.h>
+
 struct foo {
-  char x : 5;
-  char : 1;
-  char : 0;
-  char z : 2;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int : 1;
+  int : 0;
+  int z : 1;
 };
 
 int main() {
-  if(sizeof(struct foo) != 2)
-    abort();
+  if(sizeof(struct foo) < 10)
+      abort();
   return 0;
 }

@@ -24,7 +24,7 @@ module LIBC-STDIO
      rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
 
      rule [getString-pre]:
-          (.K => read(Loc, t(.Set, unsigned-char)))
+          (.K => read(Loc, type(unsigned-char)))
           ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
           [structural]
 
@@ -72,7 +72,7 @@ module LIBC-STDIO
 
      rule [fslPutc]:
           builtin("__fslPutc", tv(N:Int, _), tv(H:Int, _))
-          => writeToFD(H, N) ~> tv(N, t(.Set, int))
+          => writeToFD(H, N) ~> tv(N, utype(int))
           [structural]
 
      rule [fslFGetC]:
@@ -81,8 +81,8 @@ module LIBC-STDIO
           [structural]
 
      rule [fslCloseFile]:
-          <k> builtin("__fslCloseFile", tv(FD:Int, t(_, int)))
-               => tv(0, t(.Set, int))
+          <k> builtin("__fslCloseFile", tv(FD:Int, ut(_, int)))
+               => tv(0, utype(int))
           ...</k>
           (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
           [structural]
@@ -103,7 +103,7 @@ module LIBC-STDIO
 
      rule [fslOpenFile]:
           <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _))
-               => tv(FD, t(.Set, int))
+               => tv(FD, utype(int))
           ...</k>
           <files>...
                (.Bag =>
@@ -140,7 +140,7 @@ module LIBC-STDIO
           new-printf-aux(formattedResult(S:String))
           => writeToFD(1, S)
                ~> flush(1)
-               ~> tv(lengthString(S), t(.Set, int))
+               ~> tv(lengthString(S), utype(int))
           [structural]
 
      syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
@@ -151,7 +151,7 @@ module LIBC-STDIO
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
           => writeString(Dest, S)
-               ~> tv(lengthString(S), t(.Set, int))
+               ~> tv(lengthString(S), utype(int))
           [structural]
 
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
@@ -162,12 +162,12 @@ module LIBC-STDIO
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, minInt(lengthString(S), Len -Int 1)))
-               ~> tv(lengthString(S), t(.Set, int))
+               ~> tv(lengthString(S), utype(int))
           requires Len >Int 0
           [structural]
      rule [snprintf-done-0]:
           snprintf(formattedResult(S:String), _, 0)
-          => tv(lengthString(S), t(.Set, int))
+          => tv(lengthString(S), utype(int))
           [structural]
 
      syntax KItem ::= formatter(K, List) [strict(1)]
@@ -407,40 +407,40 @@ module LIBC-STDIO
           <format-state> State::String </format-state>
           [structural]
 
-     rule getFormatType-aux("%a", _) => t(.Set, double)
-     rule getFormatType-aux("%A", _) => t(.Set, double)
-     rule getFormatType-aux("%e", _) => t(.Set, double)
-     rule getFormatType-aux("%E", _) => t(.Set, double)
-     rule getFormatType-aux("%f", _) => t(.Set, double)
-     rule getFormatType-aux("%F", _) => t(.Set, double)
-     rule getFormatType-aux("%g", _) => t(.Set, double)
-     rule getFormatType-aux("%G", _) => t(.Set, double)
+     rule getFormatType-aux("%a", _) => type(double)
+     rule getFormatType-aux("%A", _) => type(double)
+     rule getFormatType-aux("%e", _) => type(double)
+     rule getFormatType-aux("%E", _) => type(double)
+     rule getFormatType-aux("%f", _) => type(double)
+     rule getFormatType-aux("%F", _) => type(double)
+     rule getFormatType-aux("%g", _) => type(double)
+     rule getFormatType-aux("%G", _) => type(double)
 
-     rule getFormatType-aux("%c", "") => t(.Set, int)
-     rule getFormatType-aux("%s", "") => t(.Set, pointerType(t(.Set, char)))
+     rule getFormatType-aux("%c", "") =>type(int)
+     rule getFormatType-aux("%s", "") =>type(pointerType(type(char)))
 
-     rule getFormatType-aux("%p", "") => t(.Set, pointerType(t(.Set, void)))
+     rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
 
-     rule getFormatType-aux("%d", "") => t(.Set, int)
-     rule getFormatType-aux("%o", "") => t(.Set, int)
-     rule getFormatType-aux("%u", "") => t(.Set, unsigned-int)
-     rule getFormatType-aux("%x", "") => t(.Set, unsigned-int)
-     rule getFormatType-aux("%X", "") => t(.Set, unsigned-int)
-     rule getFormatType-aux("%n", "") => t(.Set, pointerType(t(.Set, int)))
+     rule getFormatType-aux("%d", "") => type(int)
+     rule getFormatType-aux("%o", "") => type(int)
+     rule getFormatType-aux("%u", "") => type(unsigned-int)
+     rule getFormatType-aux("%x", "") => type(unsigned-int)
+     rule getFormatType-aux("%X", "") => type(unsigned-int)
+     rule getFormatType-aux("%n", "") => type(pointerType(type(int)))
 
-     rule getFormatType-aux("%d", "l") => t(.Set, long-int)
-     rule getFormatType-aux("%o", "l") => t(.Set, long-int)
-     rule getFormatType-aux("%u", "l") => t(.Set, unsigned-long-int)
-     rule getFormatType-aux("%x", "l") => t(.Set, unsigned-long-int)
-     rule getFormatType-aux("%X", "l") => t(.Set, unsigned-long-int)
-     rule getFormatType-aux("%n", "l") => t(.Set, pointerType(t(.Set, long-int)))
+     rule getFormatType-aux("%d", "l") => type(long-int)
+     rule getFormatType-aux("%o", "l") => type(long-int)
+     rule getFormatType-aux("%u", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%x", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%X", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%n", "l") => type(pointerType(type(long-int)))
 
-     rule getFormatType-aux("%d", "ll") => t(.Set, long-long-int)
-     rule getFormatType-aux("%o", "ll") => t(.Set, long-long-int)
-     rule getFormatType-aux("%u", "ll") => t(.Set, unsigned-long-long-int)
-     rule getFormatType-aux("%x", "ll") => t(.Set, unsigned-long-long-int)
-     rule getFormatType-aux("%X", "ll") => t(.Set, unsigned-long-long-int)
-     rule getFormatType-aux("%n", "ll") => t(.Set, pointerType(t(.Set, long-long-int)))
+     rule getFormatType-aux("%d", "ll") => type(long-long-int)
+     rule getFormatType-aux("%o", "ll") => type(long-long-int)
+     rule getFormatType-aux("%u", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%x", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%X", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%n", "ll") => type(pointerType(type(long-long-int)))
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
@@ -825,17 +825,17 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
-     rule nextvarg(tv(V:CValue, T':Type), T:Type) => tv(V, T)
-          requires T ==Type T'
+     rule nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T))
+          requires utype(T) ==Type T'
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
                +String State +String " and the type of the argument.",
                "7.21.6.1:9, J.2:1 item 153") )
-          ~> nextvarg(tv(V:CValue, T':Type), T:Type)
+          ~> nextvarg(tv(V:CValue, T'::UType), T:Type)
           ...</k>
           <format-state> State:String </format-state>
-          requires T =/=Type T'
+          requires utype(T) =/=Type T'
           [structural]
 
 endmodule

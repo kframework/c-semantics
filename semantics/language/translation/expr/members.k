@@ -39,33 +39,26 @@ module C-EXPR-MEMBERS
      rule E1::K[E2::K] => *(E1 + E2) [anywhere]
 
 
-     rule <k> ncle(K:K, t(Mods:Set, structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => le(K . F, addQualifiers(Mods, T))
+     rule <k> ncle(K:K, t(Qs::Quals, _, structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
+               => le(K . F, addQualifiers(Qs, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
-          requires notBool (Atomic in Mods) orBool Initializing
-     rule <k> te(K:K, t(Mods:Set, structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => te(K . F, addQualifiers(Mods, T))
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
+          requires notBool (Atomic inQuals Qs) orBool Initializing
+     rule <k> te(K:K, ut(_, structType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
+               => te(K . F, utype(T))
           ...</k>
-          <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
-          requires notBool (Atomic in Mods)
-               orBool Initializing
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
 
-     rule <k> ncle(K:K, t(Mods:Set, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => le(K . F, addQualifiers(Mods, T))
+     rule <k> ncle(K:K, t(Qs::Quals, _, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
+               => le(K . F, addQualifiers(Qs, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
-          requires notBool (Atomic in Mods)
-               orBool Initializing
-     rule <k> te(K:K, t(Mods:Set, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => te(K . F, addQualifiers(Mods, T))
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
+          requires notBool (Atomic inQuals Qs) orBool Initializing
+     rule <k> te(K:K, ut(_, unionType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
+               => te(K . F, utype(T))
           ...</k>
-          <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T:Type _, _)) ...</structs>
-          requires notBool (Atomic in Mods)
-               orBool Initializing
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
 
 endmodule

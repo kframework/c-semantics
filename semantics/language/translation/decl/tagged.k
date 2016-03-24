@@ -70,11 +70,12 @@ module C-DECL-TAGGED
      rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
           => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets)
 
-     rule structPadding(Offset:Int, t(Mods:Set, bitfieldType(T:Type, N:Int))) => 0
-          requires (Offset +Int bitSizeofType(t(Mods, bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte <Int byteAlignofType(T)
-                   andBool N >Int 0
+     rule structPadding(Offset::Int, t(_, _, bitfieldType(T::BitfieldFieldType, N::Int))) => 0
+          requires (Offset +Int bitSizeofType(type(bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte
+                    <Int byteAlignofType(type(T))
+               andBool N >Int 0
      // if we can add the new bits without the new field crossing an alignment boundary, use no padding
-     rule structPadding(Offset:Int, T:Type) => structPadding(Offset, byteAlignofType(T)) [owise]
+     rule structPadding(Offset:Int, T::Type) => structPadding(Offset, byteAlignofType(T)) [owise]
      // otherwise, or if not a bit field, use the alignment of the field as padding
      rule structPadding(Offset:Int, Alignment:Int)
           => (0 -Int Offset) modInt (Alignment *Int cfg:bitsPerByte)
@@ -87,8 +88,8 @@ module C-DECL-TAGGED
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
           requires isCompleteType(T)
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(t(Mods:Set, incompleteArrayType(T:Type)), X:CId)))
-          => ListItem(typedDeclaration(t(Mods, flexibleArrayType(T)), X))
+          ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), X:CId)))
+          => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)

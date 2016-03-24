@@ -63,7 +63,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> Call(
-               tv(loc(Base:SymBase, 0), t(_, pointerType(T:FunctionType))),
+               tv(loc(Base:SymBase, 0), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint ~> application(CurrLoc, getTU(loc(Base, 0)), Fun, T, L)
           ...</k>
@@ -116,12 +116,12 @@ module C-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
           <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>
-          requires areCompatible(CallT, toPrototype(DefT))
+          requires CallT ==Type toPrototype(DefT)
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
           idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
           ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _)
-          requires notBool areCompatible(CallT, toPrototype(DefT))
+          requires CallT =/=Type toPrototype(DefT)
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
@@ -147,9 +147,9 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      syntax KItem ::= bindParamHelper(CId, SymBase)
      rule <k> bindParamHelper(X:CId, Base:SymBase)
-               => allocObject(Base, t(.Set, no-type))
+               => allocObject(Base, type(no-type))
                ~> addToEnv(X, Base)
-               ~> giveType(X, t(.Set, no-type))
+               ~> giveType(X, type(no-type))
           ...</k>
           <curr-function-params>...
                (.List => ListItem(X))
@@ -159,47 +159,40 @@ module C-EXPR-FUNCTION-CALL
 
      // TODO(chathhorn): copied from translation -- we only need this in the
      // case of parameter binding.
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
-               andBool (getQualifiers(type(R)) ==K .Set)
-               andBool (type(L) =/=Type type(R))
+               andBool (utype(L) =/=Type utype(R))
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
-          requires isStructOrUnionType(type(L))
-               andBool areCompatible(stripQualifiers(type(L)), type(R))
-               andBool (type(L) =/=Type type(R))
-
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool areCompatible(
-                    stripQualifiers(stripAlignas(innerType(type(L)))),
-                    stripQualifiers(stripAlignas(innerType(type(R)))))
+               andBool stripQualifiers(stripAlignas(innerType(type(L))))
+                    ==Type stripQualifiers(stripAlignas(innerType(type(R))))
                andBool getQualifiers(innerType(type(R)))
-                    <=Set getQualifiers(innerType(type(L)))
+                    <=Quals getQualifiers(innerType(type(L)))
                andBool getAlignas(innerType(type(L)))
                     <=Int getAlignas(innerType(type(R)))
-               andBool (type(L) =/=Type type(R))
+               andBool utype(L) =/=Type utype(R)
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
                andBool (isVoidType(innerType(type(L)))
                     orBool isVoidType(innerType(type(R))))
                andBool (getQualifiers(innerType(type(R)))
-                    <=Set getQualifiers(innerType(type(L))))
-               andBool (type(L) =/=Type type(R))
+                    <=Quals getQualifiers(innerType(type(L))))
+               andBool utype(L) =/=Type utype(R)
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L))
                andBool isNullPointerConstant(R)
-               andBool (type(L) =/=Type type(R))
+               andBool utype(L) =/=Type utype(R)
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
-     rule L:KResult := (R:RValue => cast(type(L), R))
+     rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
 
-     rule nclv(_, T:Type => stripConstants(T)) := _:RValue
+     rule nclv(_, T::Type => stripConstants(T)) := _:RValue
           requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T:Type => stripConstants(T))
+     rule _:KResult := tv(_:CValue, T::UType => stripConstants(T))
           requires fromConstantExpr(T)
 
 endmodule

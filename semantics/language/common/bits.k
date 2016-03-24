@@ -14,7 +14,7 @@ module C-BITS-SYNTAX
      syntax Bits ::= bitRange(Bits, Int, Int)
 
      // value, (length - byte-offset), type
-     syntax Bits ::= encodedFloat(Float, Int, Type)
+     syntax Bits ::= encodedFloat(Float, Int, UType)
      // object, start piece, end piece
      syntax Bits ::= subObject(SymLoc, Int, Int)
 

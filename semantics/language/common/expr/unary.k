@@ -13,14 +13,14 @@ module C-COMMON-EXPR-UNARY
      and the result has the promoted type.
      }*/
      rule [unaryPlus-int]:
-          + tv(I:Int, T:Type) => arithInterpret(T, I)
+          + tv(I:Int, T::UType) => arithInterpret(T, I)
           requires isPromoted(T)
           [structural]
      rule [unaryPlus-intptr]:
-          + tv(L:SymLoc, T:Type) => tv(L, T)
+          + tv(L:SymLoc, T::UType) => tv(L, T)
           requires isPromoted(T)
      rule [unaryPlus-float]:
-          + tv(F:Float, T:Type) => tv(F, T)
+          + tv(F:Float, T::UType) => tv(F, T)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{3}}}{
@@ -29,14 +29,14 @@ module C-COMMON-EXPR-UNARY
      and the result has the promoted type.
      }*/
      rule [unaryMinus-int]:
-          - tv(I:Int, T:Type) => arithInterpret(T, 0 -Int I)
+          - tv(I:Int, T::UType) => arithInterpret(T, 0 -Int I)
           requires isPromoted(T)
           [structural]
      rule [unaryMinus-intptr]:
-          - tv(L:SymLoc, T:Type) => tv(unknownAlignedInt(getAlign(L)), T)
+          - tv(L:SymLoc, T::UType) => tv(unknownAlignedInt(getAlign(L)), T)
           requires isPromoted(T)
      rule [unaryMinus-float]:
-          - tv(F:Float, T:Type) => arithInterpret(T, 0.0 -Float F)
+          - tv(F:Float, T::UType) => arithInterpret(T, 0.0 -Float F)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{
@@ -45,7 +45,7 @@ module C-COMMON-EXPR-UNARY
      compares equal to 0. The result has type \cinline{int}.  The expression
      \cinline{!E} is equivalent to \cinline{(0==E)}.
      }*/
-     rule !(E:K) => tv(0, t(SetItem(IntegerConstant), int)) == E
+     rule !(E:K) => tv(0, ut(SetItem(IntegerConstant), int)) == E
           [structural]
 endmodule
 

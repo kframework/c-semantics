@@ -61,7 +61,7 @@ module C-MEMORY-ALLOC
           [structural]
 
      rule <k> sizeofObject(Base:SymBase)
-               => tv(Len, t(.Set, cfg:sizeut))
+               => tv(Len, utype(cfg:sizeut))
           ...</k>
           <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
           [structural]
