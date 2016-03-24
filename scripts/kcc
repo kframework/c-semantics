@@ -158,6 +158,10 @@ my $spec = q(#
       -v				[ditto]
       -V				[ditto]
 
+      -M				Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-M'); }
+      -MM				Dependency generation. See documentation for GCC preprocessor
+{ push(@main::cppArgs, '-MM'); }
       -MD				Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MD'); }
       -MMD				Dependency generation. See documentation for GCC preprocessor
@@ -238,7 +242,7 @@ sub main {
 
      classify(@{$args->{'<files>'}});
 
-     if ($args->{'-E'}) {
+     if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
           my $oval = $main::oflag;
           if ($oval) {
             if (scalar @srcFiles > 1) {
