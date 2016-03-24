@@ -50,7 +50,7 @@ module C-DYNAMIC-SYNTAX
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
-     syntax KResult ::= RValue | Type | DType | Nclv | trap(UType)
+     syntax KResult ::= RValue | Type | UType | DType | Nclv | trap(UType)
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited"
 

@@ -71,6 +71,13 @@ module C-BINDING
                _,
                .List)
           requires notBool isVoidType(T)
+     rule (.K => UNDEF("CB2", "Function call has fewer arguments than "
+               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
+          ~> bind(
+               ListItem(T:Type) _,
+               _,
+               .List)
+          requires notBool isVoidType(T)
      rule (.K => UNDEF("CB3", "Function call has more arguments than "
                +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
           ~> bind(.List, _, ListItem(_) _)
