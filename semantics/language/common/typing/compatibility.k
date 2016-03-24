@@ -381,7 +381,7 @@ module C-TYPING-COMPATIBILITY
                _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
      rule compositeFunctionType(_, _, _,
                (ListItem(typedDeclaration(P::Type, X:CId)) => .List) _:List,
-               (ListItem(typedDeclaration(P'::Type, X)) => .List) _:List,
+               (ListItem(typedDeclaration(P'::Type, _)) => .List) _:List,
                _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
 endmodule
 
