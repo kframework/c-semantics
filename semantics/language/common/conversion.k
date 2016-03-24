@@ -84,6 +84,13 @@ module C-CONVERSION
           => tv(V, cast(T', T))
           requires notBool isBoolUType(T')
                andBool inRange(V, T')
+     rule cast(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
+          => castHold(T', tv(subObject(NullPointer, N, M), T))
+          requires notBool isBoolType(T')
+               andBool M -Int N <Int byteSizeofType(T')
+
+     rule (.K => IMPL("CCV8", "Conversion of a null pointer fragment to an integer type.", "6.3.2.3:6, J.3.7:1 item 1") )
+          ~> castHold(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
