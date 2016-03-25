@@ -1,5 +1,7 @@
 #include<stdlib.h>
 
+typedef unsigned int t;
+
 struct foo {
   int : 1;
   int : 0;
@@ -19,7 +21,7 @@ struct foo {
   int : 0;
   int : 1;
   int : 0;
-  int z : 1;
+  t z : 1;
 };
 
 int main() {
