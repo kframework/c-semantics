@@ -90,63 +90,92 @@ module C-COMMON-EXPR-RELATIONAL
           requires T ==Type T'
           [structural]
 
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) < tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) <= tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) > tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+          ~> tv(L:SymLoc, _) >= tv(R:SymLoc, _)
+          requires L ==K NullPointer orBool R ==K NullPointer
+
      //- comparison of pointers
      rule tv(Loc:SymLoc, T:PointerUType) < tv(Loc':SymLoc, T':PointerUType)
           => makeTruth(offset(Loc) <Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) < tv(Loc':SymLoc, T'::UType)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerUType) <= tv(Loc':SymLoc, T':PointerUType)
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) <= tv(Loc':SymLoc, T'::UType)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerUType) > tv(Loc':SymLoc, T':PointerUType)
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) > tv(Loc':SymLoc, T'::UType)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
      rule tv(Loc:SymLoc, T:PointerUType) >= tv(Loc':SymLoc, T':PointerUType)
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
-          requires sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool sameBase(Loc, Loc')
           [structural]
      rule (.K => UNDEF("CERL4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) >= tv(Loc':SymLoc, T'::UType)
-          requires notBool sameBase(Loc, Loc')
+          requires Loc  =/=K NullPointer
+           andBool Loc' =/=K NullPointer
+           andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
 
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T::UType) < tv(_, T'::UType)
-          requires (isIntegerUType(T) andBool isPointerUType(T'))
-               orBool (isPointerUType(T) andBool isIntegerUType(T'))
+          ~> L:RValue < R:RValue
+          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
+               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T::UType) <= tv(_, T'::UType)
-          requires (isIntegerUType(T) andBool isPointerUType(T'))
-               orBool (isPointerUType(T) andBool isIntegerUType(T'))
+          ~> L:RValue <= R:RValue
+          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
+               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T::UType) > tv(_, T'::UType)
-          requires (isIntegerUType(T) andBool isPointerUType(T'))
-               orBool (isPointerUType(T) andBool isIntegerUType(T'))
+          ~> L:RValue > R:RValue
+          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
+               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
           [structural]
      rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
-          ~> tv(_, T::UType) >= tv(_, T'::UType)
-          requires (isIntegerUType(T) andBool isPointerUType(T'))
-               orBool (isPointerUType(T) andBool isIntegerUType(T'))
+          ~> L:RValue >= R:RValue
+          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
+               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{

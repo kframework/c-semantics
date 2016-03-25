@@ -252,7 +252,7 @@ module C-LITERAL
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
-          => cast(ut(SetItem(IntegerConstant), int), cast(utype(unsigned-char), tv(N, utype(int))):>RValue)
+          => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))):>RValue)
           [structral, anywhere]
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
           [structral, anywhere]
