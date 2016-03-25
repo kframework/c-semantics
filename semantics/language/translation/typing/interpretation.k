@@ -15,22 +15,21 @@ module C-TYPING-INTERPRETATION
      // going to be used in a typed name.
      syntax Type ::= extractActualType(Type) [function]
 
-     syntax KItem ::= BitFieldType(K, K) [strict]
-
      rule Specifier(list(L:List)) => canonicalizeType(L)
           [structural]
 
+     syntax KItem ::= BitFieldType(K, K) [strict]
      rule BitFieldType(t(Qs::Quals, Mods::Set, T:BitfieldFieldType), tv(N:Int, ut(SetItem(IntegerConstant) _, _)))
           => t(Qs, Mods, bitfieldType(T, N)) [structural]
-
+     rule BitFieldType(t(Qs::Quals, Mods::Set, T:SimpleTypedefType) => extractActualType(t(Qs, Mods, T)), _)
      rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
           ~> BitFieldType(_, tv(N:CValue, T::UType))
           requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
-
      rule (.K => IMPL("CTI4", "Bitfield with type other than signed int, unsigned int, or _Bool.", "6.7.2.1:5"))
           ~> BitFieldType(t(_, _, T'::SimpleType), tv(N:CValue, T::UType))
           requires fromConstantExpr(T) andBool isInt(N)
                andBool notBool isBitfieldFieldType(T')
+               andBool notBool isSimpleTypedefType(T')
 
      syntax KItem ::= makeFunctionType(List)
      syntax KItem ::= makeOldStyleFunctionType(List)
