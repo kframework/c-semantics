@@ -6,6 +6,7 @@ use File::Basename;
 use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
+use File::Path qw(remove_tree);
 use MIME::Base64;
 use String::Escape qw(quote backslash); 
 use Getopt::Declare;
@@ -700,7 +701,11 @@ sub interruptHandler {
 sub finalCleanup {
      if (!$args->{'-d'}) {
           for (@tempFiles) {
-               unlink;
+               if (-d $_) {
+                    remove_tree($_);
+               } else {
+                    unlink;
+               }
           }
      }
 }

@@ -62,6 +62,11 @@ module COMPAT-SYNTAX
 
      syntax Int ::= ceilDiv(Int, Int) [function]
      syntax List ::= mapList(List, K) [function]
+
+     syntax SSList ::= toSSList(List) [function]
+     syntax List ::= ofSSList(SSList) [function]
+
+     syntax KItem ::= seqstrict(K)
 endmodule
 
 module COMPAT
@@ -143,9 +148,22 @@ module COMPAT
      rule list(L:List) => toKRList(L)
           [structural]
 
+     syntax KItem ::= "seqstrict()"
+     rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
+     rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
+
+     syntax SSList ::= K "seqstrict::" SSList [seqstrict]
+                     | ".SSList"
+     rule isKResult(.SSList) => true
+     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
+     rule toSSList(ListItem(K:K) L::List) => K seqstrict:: toSSList(L)
+     rule toSSList(.List) => .SSList
+     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L)
+     rule ofSSList(.SSList) => .List
+
      syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
 
-     // TODO(liyi): might not need this after associative matching
+     // TODO(dwightguth): refactor the below into a strict() operator
      syntax SubKRItem ::= sItem(K) [strict]
      syntax SubKRList ::= List{SubKRItem, "ss::"} [strict]
      syntax SubKRList ::= toSubKRList(List) [function]

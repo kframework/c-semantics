@@ -80,11 +80,9 @@ module C-ABSTRACT-SYNTAX
           [klabel(StructRef)] // new
      // new // CId, List
      syntax C ::= StructDef(CId, K)
-          [strict(2)]
      syntax TypeSpecifier ::= UnionRef(CId) // new
      // new // CId, List
      syntax C ::= UnionDef(CId, K)
-          [strict(2)]
      syntax TypeSpecifier ::= EnumRef(CId) // new
      // new // CId, List
      syntax C ::= EnumDef(CId, K)
