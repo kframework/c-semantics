@@ -3,6 +3,7 @@ module C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-CONFIGURATION-EXTENSIONS
 
      configuration
 <global>
@@ -58,12 +59,15 @@ module C-CONFIGURATION
      // Scope |-> activity(Int, SymLoc |-> Int)
      <active-blocks> .Map </active-blocks>
 
-     // stdlib
+     // stdlib.h support
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
+     <atexit> .K </atexit>
 
      // stdarg.h support.
      <va-lists> .Map </va-lists>
+
+     <extensions-global/>
 
      <next-thread-id color="black"> 1 </next-thread-id>
 

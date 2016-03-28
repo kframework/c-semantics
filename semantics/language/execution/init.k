@@ -4,6 +4,7 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
+     syntax KItem ::= "callAtExit" 
 endmodule
 
 module C-EXECUTION-INIT
@@ -177,7 +178,7 @@ module C-EXECUTION-INIT
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args))
+               => reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
           ...</k>
           <types>... Identifier("main") |-> T::Type ...</types>
           <status> _ => mainCalled </status>
@@ -208,6 +209,13 @@ module C-EXECUTION-INIT
           requires T ==K type(char) andBool Qs ==K noQuals
           [structural]
 
+     rule <k> reval(V:RValue) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
+          <atexit> AtExit:KItem => .K ...</atexit>
+          <status> _ => mainExited </status>
+     rule <k> reval(V:RValue) ~> callAtExit => reval(V) ...</k>
+          <atexit> .K </atexit>
+          <status> _ => mainExited </status>
+
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
           <exec>...
@@ -217,7 +225,7 @@ module C-EXECUTION-INIT
                     <k> reval(V:RValue) </k>
                ...</thread> => .Bag)
           ...</exec>
-          <status> _ => mainExited </status>
+          <status> _ => terminated </status>
           <result-value> _ => value(V):>CValue </result-value>
           <files>...
                // Flush stdout.

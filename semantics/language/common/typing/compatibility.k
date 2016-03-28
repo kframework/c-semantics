@@ -145,22 +145,25 @@ module C-TYPING-COMPATIBILITY
                t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)),
                t(Qs, Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
           => #areCompat(T, T', Cache)
+     // here we use a T:FixedArrayType instead of a t(_, _, arrayType(_, _)) because
+     // we want to use T':IncompleteArrayType, but getQualifiers(T) and t(Quals, _, _) do
+     // not behave identically (one adds the qualifiers of the component type, one does not.
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, arrayType(T::Type, _)),
+               T:FixedLengthArrayType,
                T':IncompleteArrayType, Cache::Set)
-          => (Qs ==K getQualifiers(T')) andBool #areCompat(T, innerType(T'),  Cache)
+          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'),  Cache)
      rule #areCompat(
                T:IncompleteArrayType,
-               t(Qs'::Quals, Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
-          => (getQualifiers(T) ==K Qs') andBool #areCompat(innerType(T), T', Cache)
+               T':FixedLengthArrayType, Cache::Set)
+          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, arrayType(T::Type, _)),
+               T:FixedLengthArrayType,
                T':VariableLengthArrayType, Cache::Set)
-          => (Qs ==K getQualifiers(T')) andBool #areCompat(T, innerType(T'), Cache)
+          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
                T:VariableLengthArrayType,
-               t(Qs'::Quals, Mods'::Set, arrayType(T'::Type, _)), Cache::Set)
-          => (getQualifiers(T) ==K Qs') andBool #areCompat(innerType(T), T', Cache)
+               T':FixedLengthArrayType, Cache::Set)
+          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
      // Two variable length arrays are compatible, but it's undefined if
      // they're used in an expression where they're required to be compat but
      // they have different sizes.

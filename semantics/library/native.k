@@ -5,13 +5,12 @@ module C-NATIVE-BRIDGE
      imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
 
-     syntax K ::= #nativeCall(String, Type, List, List) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax K ::= #nativeCall(String, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
      syntax KItem ::= nativeCall(String, List, List)
      rule <generatedTop>... 
-            <k> nativeCall(S:String, Args:List, VarArgs:List)
-            ...</k>
+            <k> nativeCall(S:String, Args:List, VarArgs:List) ~> Rest:K </k>
             <types>... Identifier(S) |-> T:Type ...</types>
-          ...</generatedTop> => #nativeCall(S, T, Args, VarArgs)
+          ...</generatedTop> => #nativeCall(S, T, Args, VarArgs, Rest)
 
      rule builtin(S:String) => nativeCall(S, .List, .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]

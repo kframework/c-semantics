@@ -73,6 +73,20 @@ let addLexeme lexbuf =
 let clear_lexeme () = lexeme := ""
 let get_extra_lexeme () = !lexeme 
 
+let utf8_encode value =
+  let i = Int64.to_int value in
+  let uchar = CamomileLibrary.UChar.of_int i in
+  let utf8_str = CamomileLibrary.UTF8.init 1 (fun _ -> uchar) in
+  let char_to_int64 idx = 
+    Int64.of_int (Char.code (String.get utf8_str idx)) in
+  match String.length utf8_str with
+  | 1 -> char_to_int64 0 :: []
+  | 2 -> char_to_int64 0 :: char_to_int64 1 :: []
+  | 3 -> char_to_int64 0 :: char_to_int64 1 :: char_to_int64 2 :: []
+  | 4 -> char_to_int64 0 :: char_to_int64 1 :: char_to_int64 2 :: char_to_int64 3 :: []
+  | _ -> let msg = Printf.sprintf "clexer:utf8_encode: character 0x%Lx too big" value in
+         E.parse_error msg
+  
 let int64_to_char value =
   if (compare value (Int64.of_int 255) > 0) || (compare value Int64.zero < 0) then
     begin
@@ -276,10 +290,21 @@ let scan_hex_escape str =
 let scan_oct_escape str =
   let radix = Int64.of_int 8 in
   let the_value = ref Int64.zero in
-  (* start at character 1 to skip the \x *)
+  (* start at character 1 to skip the \ *)
   for i = 1 to (String.length str) - 1 do
     let thisDigit = Cabshelper.valueOfDigit (String.get str i) in
     (* the_value := !the_value * 8 + thisDigit *)
+    the_value := Int64.add (Int64.mul !the_value radix) thisDigit
+  done;
+  !the_value
+
+let scan_u_escape str =
+  let radix = Int64.of_int 16 in
+  let the_value = ref Int64.zero in
+  (* start at character 2 to skip the \u *)
+  for i = 2 to (String.length str) - 1 do
+    let thisDigit = Cabshelper.valueOfDigit (String.get str i) in
+    (* the_value := !the_value * 16 + thisDigit *)
     the_value := Int64.add (Int64.mul !the_value radix) thisDigit
   done;
   !the_value
@@ -291,6 +316,11 @@ let lex_hex_escape remainder lexbuf =
 let lex_oct_escape remainder lexbuf =
   let prefix = scan_oct_escape (Lexing.lexeme lexbuf) in
   prefix :: remainder lexbuf
+
+let lex_u_escape remainder lexbuf =
+  let prefix = scan_u_escape (Lexing.lexeme lexbuf) in 
+  let bytes = utf8_encode prefix in
+  bytes @ remainder lexbuf
 
 let lex_simple_escape remainder lexbuf =
   let lexchar = Lexing.lexeme_char lexbuf 1 in
@@ -390,6 +420,8 @@ let blank = [' ' '\t' '\012' '\r']+
 let escape = '\\' _
 let hex_escape = '\\' ['x' 'X'] hexdigit+
 let oct_escape = '\\' octdigit octdigit? octdigit? 
+let hexquad = hexdigit hexdigit hexdigit hexdigit
+let u_escape = '\\' (('u' hexquad)|('U' hexquad hexquad))
 
 (* Pragmas that are not parsed by CIL.  We lex them as PRAGMA_LINE tokens *)
 let no_parse_pragma =
@@ -585,9 +617,7 @@ and hash = parse
                 (* For pragmas with irregular syntax, like #pragma warning, 
                  * we parse them as a whole line. *)
 | "pragma" blank (no_parse_pragma as pragmaName)
-                { let here = currentLoc () in
-                  PRAGMA_LINE (pragmaName ^ pragma lexbuf, here)
-                }
+                { addWhite lexbuf; hash lexbuf }
 | "pragma" blank "KCC" blank "inv"  { PRAGMA_KCC_INV (pragma lexbuf, currentLoc ()) }
 | "pragma" blank "KCC" blank "rule" { PRAGMA_KCC_RULE (pragma lexbuf, currentLoc ()) }
 | "pragma"                          { pragmaLine := true; PRAGMA (currentLoc ()) }
@@ -619,6 +649,7 @@ and str = parse
         '"'             {[]} (* no nul terminiation in CST_STRING '"' *)
 |	hex_escape	{addLexeme lexbuf; lex_hex_escape str lexbuf}
 |	oct_escape	{addLexeme lexbuf; lex_oct_escape str lexbuf}
+|	u_escape	{addLexeme lexbuf; lex_u_escape str lexbuf}
 |	escape		{addLexeme lexbuf; lex_simple_escape str lexbuf}
 |	_		{addLexeme lexbuf; lex_unescaped str lexbuf}
 
@@ -626,6 +657,7 @@ and chr =  parse
 	'\''	        {[]}
 |	hex_escape	{lex_hex_escape chr lexbuf}
 |	oct_escape	{lex_oct_escape chr lexbuf}
+|	u_escape	{lex_u_escape chr lexbuf}
 |	escape		{lex_simple_escape chr lexbuf}
 |	_		{lex_unescaped chr lexbuf}
 	

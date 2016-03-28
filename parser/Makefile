@@ -7,11 +7,11 @@ OCAMLOPT_FLAGS = -w a -warn-error a
 
 # CIL = $(CIL_BASE)/obj/$(CIL_PLATFORM)
 
-OCAML_COMPILE = ocamlopt $(OCAMLOPT_FLAGS) -c
+OCAML_COMPILE = ocamlfind ocamlopt -package camomile $(OCAMLOPT_FLAGS) -c
 
 OCAML_LEX = ocamllex
 OCAML_YACC = ocamlyacc
-OCAML_LINK = ocamlopt $(OCAMLOPT_FLAGS)
+OCAML_LINK = ocamlfind ocamlopt -package camomile -linkpkg $(OCAMLOPT_FLAGS)
 
 # these are partially ordered by inclusion.  don't know how to avoid manually ordering these
 MODULES = base64.cmx errormsg.cmx longarray.cmx growArray.cmx escape.cmx cabshelper.cmx whitetrack.cmx cprint.cmx lexerhack.cmx cabs.cmx clexer.cmx cparser.cmx frontc.cmx xmlPrinter.cmx cabsDriver.cmx
@@ -61,7 +61,7 @@ cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmi
 EXEEXT=
 
 cparser$(EXEEXT): $(MODULES)
-	$(OCAML_LINK) -o $@ unix.cmxa str.cmxa nums.cmxa $^
+	$(OCAML_LINK) -o $@ str.cmxa nums.cmxa $^
 	@-strip cparser
 #ioXML.cmx 
 

@@ -30,9 +30,15 @@ module LIBC-STDLIB
 
      rule [exit]:
           <k> builtin("exit", tv(I:Int, ut(_, int))) ~> _
-               => reval(tv(I:Int, utype(int)))
+               => reval(tv(I:Int, utype(int))) ~> callAtExit
           </k>
+          <status> mainCalled => mainExited </status>
           [structural]
+
+     rule <k> (.K => UNDEF("STDLIB4", "Called the exit function more than once (from a call to atexit).", "7.22.4.4:2, J.2:1 item 182"))
+              ~> builtin("exit", tv(_, _))
+          ...</k>
+          <status> mainExited </status>
 
      rule [abort]:
           <k> builtin("abort") ~> _
@@ -143,4 +149,15 @@ module LIBC-STDLIB
           => srandInt(N) ~> voidVal
           [structural]
 
+     rule [atexit]:
+          <k> builtin("atexit", tv(Loc:SymLoc, T:PointerUType))
+              => tv(0, utype(int))
+          ...</k>
+          <atexit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</atexit>
+          <status> mainCalled </status>
+
+     rule <k> (.K => UNSPEC("STDLIB3", "Called the atexit function after normal program termination has begun.", "7.22.4.2:2, J.1:1 item 44"))
+              ~> builtin("atexit", _)
+          ...</k>
+          <status> mainExited </status>
 endmodule

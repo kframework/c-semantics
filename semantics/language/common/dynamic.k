@@ -52,7 +52,7 @@ module C-DYNAMIC-SYNTAX
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax KResult ::= RValue | Type | UType | DType | Nclv | trap(UType)
 
-     syntax Status ::= "initializing" | "mainCalled" | "mainExited"
+     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
 
      syntax CabsLoc ::= "UnknownCabsLoc"
 

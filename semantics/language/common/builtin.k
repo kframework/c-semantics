@@ -39,6 +39,7 @@ module C-BUILTIN
           "asin" |-> fun(double, double)
           "atan2" |-> fun(double, double, double)
           "atan" |-> fun(double, double)
+          "atexit" |-> fun(int, ptr(fun(void)))
           "calloc" |-> fun(ptr(void), size_t, size_t)
           "cos" |-> fun(double, double)
           "__debug" |-> fun(void, int)

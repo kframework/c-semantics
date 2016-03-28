@@ -5,3 +5,9 @@ module C-EXECUTION-EXTENSIONS
   imports CORE-EXTENSIONS-EXECUTION
   imports CORE-EXTENSIONS-LIBRARY
 endmodule
+
+module C-CONFIGURATION-EXTENSIONS
+  
+configuration <extensions-global> .K </extensions-global>
+
+endmodule
