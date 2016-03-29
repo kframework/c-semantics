@@ -10,6 +10,7 @@ module LIBC-STDIO
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-SETTINGS-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -450,6 +451,13 @@ module LIBC-STDIO
      rule getFormatType-aux("%X", "ll") => type(unsigned-long-long-int)
      rule getFormatType-aux("%n", "ll") => type(pointerType(type(long-long-int)))
 
+     rule getFormatType-aux("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType-aux("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType-aux("%u", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%x", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%X", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{d},\texttt{i}]
@@ -813,11 +821,16 @@ module LIBC-STDIO
 
      rule [format-%l]:
           <k> formatter-aux(_) ...</k>
-          <format> ListItem("l") => .List ...</format>
+          <format> ListItem(Char:String) => .List ...</format>
           <format-state> "%" </format-state>
           <format-length>
-               Length:String => Length:String +String "l"
+               Length:String => Length:String +String Char
           </format-length>
+          requires Char ==String "l" 
+               orBool Char ==String "h"
+	       orBool Char ==String "j"
+               orBool Char ==String "z"
+               orBool Char ==String "t"
           [structural]
 
      syntax KItem ::= "formatter-next" "(" List ")"

@@ -2,6 +2,7 @@
 #define _KCC_STDIO_H
 #include <kcc_settings.h>
 #include <stddef.h>
+#include <stdarg.h>
 
 typedef struct FILE_ {
 	unsigned long long int offset;
@@ -27,6 +28,7 @@ int printf(const char * restrict format, ...);
 int fprintf(FILE *stream, const char *format, ...);
 int sprintf(char * restrict s, const char * restrict format, ...);
 int snprintf(char * restrict s, size_t n, const char * restrict format, ...);
+int vsnprintf(char * restrict s, size_t n, const char * restrict format, va_list);
 int puts(const char * str);
 
 int getc(FILE *stream);

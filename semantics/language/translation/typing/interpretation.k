@@ -201,7 +201,7 @@ module C-TYPING-INTERPRETATION
      rule SingleName(T:Type, Name(X:CId, K:K))
           => NameAndType(X, DeclType(T, K))
           [structural]
-     rule FieldGroup(K:K, list(ListItem(C:K) ListItem(C':K) L:List))
+     rule FieldGroup(K:KResult, list(ListItem(C:K) ListItem(C':K) L:List))
           => list(ListItem(FieldGroup(K, list(ListItem(C))))
                ListItem(FieldGroup(K, list(ListItem(C') L))))
           [structural]
