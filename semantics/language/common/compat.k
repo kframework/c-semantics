@@ -158,8 +158,9 @@ module COMPAT
      rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
      rule toSSList(ListItem(K:K) L::List) => K seqstrict:: toSSList(L)
      rule toSSList(.List) => .SSList
-     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L)
+     rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
      rule ofSSList(.SSList) => .List
+     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
 
      syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
 

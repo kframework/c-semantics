@@ -170,6 +170,14 @@ module LIBC-STDIO
           => tv(lengthString(S), utype(int))
           [structural]
 
+     rule [vsnprintf]:
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*_`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs::List ...</va-lists>
+     rule H:HeatList ~> builtin("vsnprintf", tv(Dest::SymLoc, _), tv(Len::Int, _), Format::RValue, _)
+          => snprintf(formatter(getString(Format), hListToList(H)), Dest,  Len)
+          requires isKResult(H)
+
      syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:
           <k> formatter(str(S:String), VarArgs:List)

@@ -76,6 +76,7 @@ module C-BUILTIN
           "va_end" |-> fun(void, va_list)
           "__va_inc" |-> fun(ptr(void), va_list)
           "__va_start" |-> fun(void, ptr(va_list), ptr(void))
+          "vsnprintf" |-> fun(int, restrict(ptr(char)), size_t, restrict(ptr(const(char))), va_list)
           extensionBuiltins
 
      rule mtx_t => struct("__typeref_mtx_t")
