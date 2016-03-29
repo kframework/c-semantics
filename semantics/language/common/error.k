@@ -21,6 +21,11 @@ module C-ERROR-SYNTAX
      syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      syntax KItem ::= openWriteThenClose(String, String)
      syntax Bool ::= "isCSV" [function]
+                   | "isUndef" [function]
+                   | "isUnspec" [function]
+                   | "isImpl" [function]
+
+     syntax Opts ::= "NO-UNDEF" | "NO-UNSPEC" | "NO-IMPL"
 
 endmodule
 
@@ -70,16 +75,29 @@ module C-ERROR
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", "C11", Citation))
+          requires isUndef
      rule UNSPEC(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior.", "C11", Citation))
+          requires isUnspec
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", "C11", Citation))
      rule IMPL(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior.", "C11", Citation))
+          requires isImpl
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", Document, Citation))
      rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", Document, Citation))
+          requires isUndef
+
+     rule UNDEF(_, _, _) => HALT
+          requires notBool isUndef
+     rule UNSPEC(_, _, _) => HALT
+          requires notBool isUnspec
+     rule IMPL(_, _, _) => HALT
+          requires notBool isImpl
+     rule EXT-UNDEF(_, _, _) => HALT
+          requires notBool isUndef
 
      syntax KItem ::= writeThenClose(Int, String)
      syntax KItem ::= close(Int)
@@ -88,9 +106,21 @@ module C-ERROR
      rule close(Fd:Int) => #close(Fd)
 
      syntax Bool ::= isCSV(K) [function, klabel(isCSV1)]
-
      rule isCSV => isCSV(#configuration)
      rule isCSV(<generatedTop>... <options>... SetItem(CSV(_)) ...</options> ...</generatedTop>) => true
      rule isCSV(_) => false [owise]
+
+     syntax Bool ::= isUndef(K) [function, klabel(isUndef1)]
+     rule isUndef => isUndef(#configuration)
+     rule isUndef(<generatedTop>... <options>... SetItem(NO-UNDEF) ...</options> ...</generatedTop>) => false
+     rule isUndef(_) => true [owise]
+     syntax Bool ::= isUnspec(K) [function, klabel(isUnspec1)]
+     rule isUnspec => isUnspec(#configuration)
+     rule isUnspec(<generatedTop>... <options>... SetItem(NO-UNSPEC) ...</options> ...</generatedTop>) => false
+     rule isUnspec(_) => true [owise]
+     syntax Bool ::= isImpl(K) [function, klabel(isImpl1)]
+     rule isImpl => isImpl(#configuration)
+     rule isImpl(<generatedTop>... <options>... SetItem(NO-IMPL) ...</options> ...</generatedTop>) => false
+     rule isImpl(_) => true [owise]
 
 endmodule

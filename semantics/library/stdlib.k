@@ -133,7 +133,8 @@ module LIBC-STDLIB
               ~> builtin("free", tv(loc(Base:SymBase, I:Int), ut(_, pointerType(_))))
           ...</k>
           <malloced> Malloced:Map </malloced>
-          requires notBool Base in_keys(Malloced) orBool I =/=Int 0
+          requires notBool isNativeLoc(loc(Base, I)) 
+              andBool (notBool Base in_keys(Malloced) orBool I =/=Int 0)
 
      rule builtin("free", tv(NullPointer, ut(_, pointerType(_))))
           => voidVal

@@ -175,8 +175,11 @@ my $spec = q(#
 { push(@main::cppArgs, '-MT', $target); }
       -frunner-script			Compile program to perl script with analysis tool options
       -fissue-report=<file>		Write issues to the specified file in CSV format
-      -flint				Generate lint errors for potentially undesirable behaviors.*
-      -Wlint				[ditto]
+      -Wlint				Generate lint errors for potentially undesirable behaviors.*
+      -flint				[ditto]
+      -Wno-undefined			Do not output undefined behaviors.
+      -Wno-unspecified			Do not output unspecified behaviors.
+      -Wno-implementation-defined	Do not output implementation-defined behaviors.
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
       -fstack-size=<size>		Used with -flint to detect stack overflow.*
       -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
@@ -293,7 +296,7 @@ sub main {
      # should be empty.
 
      my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, $srcFiles[0], 1));
-     checkError($retval);
+     checkError($retval, $programConfFile, 1);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
      my $programConf = join("", <FILE>);
@@ -330,6 +333,15 @@ sub main {
           }
           if ($args->{'-frecover-all-errors'}) {
                push(@options, "`RECOVER_ALL`(.KList)");
+          }
+          if ($args->{'-Wno-undefined'}) {
+               push(@options, "`NO-UNDEF`(.KList)");
+          }
+          if ($args->{'-Wno-unspecified'}) {
+               push(@options, "`NO-UNSPEC`(.KList)");
+          }
+          if ($args->{'-Wno-implementation-defined'}) {
+               push(@options, "`NO-IMPL`(.KList)");
           }
           if ($args->{'-flint'} || $args->{'-Wlint'}) {
                push(@options, "`LINT`(.KList)");
@@ -384,7 +396,7 @@ sub main {
             push @cmd, "@ldArgs";
           }
           my $retval = execute($krun, @cmd);
-          checkError($retval);
+          checkError($retval, $programConfFile, 1);
      }
 
      my $numFilesChanged = chmod(0755, $oval);
@@ -410,7 +422,7 @@ sub mergeObjs {
          my $accum = tempFile();
          my @cmd = getKRunCommand($accum, \@objFiles, undef, 0);
          my $retval = execute($krun, @cmd);
-         checkError($retval);
+         checkError($retval, $accum, 1);
          @objFiles = ($accum);
      }
 }
@@ -521,7 +533,7 @@ sub compile {
      my ($oval, $inputFile) = (@_);
      my @arr = ();
      my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0));
-     checkError($retval);
+     checkError($retval, $oval, 1);
 }
 
 sub pushObj {
@@ -571,6 +583,15 @@ sub getKRunCommand {
      }
      if ($args->{'-frecover-all-errors'}) {
           push(@options, "`RECOVER_ALL`(.KList)");
+     }
+     if ($args->{'-Wno-undefined'}) {
+          push(@options, "`NO-UNDEF`(.KList)");
+     }
+     if ($args->{'-Wno-unspecified'}) {
+          push(@options, "`NO-UNSPEC`(.KList)");
+     }
+     if ($args->{'-Wno-implementation-defined'}) {
+          push(@options, "`NO-IMPL`(.KList)");
      }
 
      my $opts = makeSet(@options);
@@ -655,26 +676,31 @@ sub parse {
 
      my $ppResult = tempFile();
      my $kast = tempFile();
-     checkError(preprocess($ppResult, $inputFile));
+     checkError(preprocess($ppResult, $inputFile), $ppResult, 0);
 
      my $cmd = ("$cparser $ppResult --trueName '$inputFile' | $xmlToK > $kast");
      if ($args->{'-d'}) {
        print("$cmd\n");
      }
      system($cmd);
-     checkError($? >> 8);
+     checkError($? >> 8, $kast, 0);
 
      return $kast;
 }
 
 sub checkError {
-  my ($retval) = (@_);
+  my ($retval, $output, $isBinary) = (@_);
   if ($retval) {
+    if ($isBinary) {
+      system("k-bin-to-text", $output, 'config');
+    } else {
+      copy($output, 'config');
+    }
     if ($args->{'-d'}) {
-      print STDERR "Translation failed. Refer to last command run for details.\n";
+      print STDERR "Translation failed (config dumped). Refer to last command run for details.\n";
       exit $retval;
     } else {
-      print STDERR "Translation failed. Run kcc -d @originalArgv to see commands run.\n";
+      print STDERR "Translation failed (config dumped). Run kcc -d @originalArgv to see commands run.\n";
       exit $retval;
     }
   }

@@ -163,11 +163,20 @@ module C-COMMON-EXPR-BITWISE
 
      rule tv(L:SymLoc, T::UType) & tv(E2:Int, T'::UType)
           => tv(L, T)
-          requires ~Int (getAlign(L) -Int 1) &Int value(arithInterpret(T', ~Int E2)):>Int ==Int 0
+          requires ~Int (getAlign(L) -Int 1) &Int ~Int E2 ==Int 0
                andBool isPromoted(T) andBool T ==Type T'
      rule tv(E2:Int, T::UType) & tv(L:SymLoc, T'::UType)
           => tv(L, T)
           requires ~Int (getAlign(L) -Int 1) &Int ~Int E2 ==Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+
+     rule tv(L:SymLoc, T::UType) & tv(E2:Int, T'::UType)
+          => tv(0, T)
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+     rule tv(E2:Int, T::UType) & tv(L:SymLoc, T'::UType)
+          => tv(0, T)
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
                andBool isPromoted(T) andBool T ==Type T'
 
 
