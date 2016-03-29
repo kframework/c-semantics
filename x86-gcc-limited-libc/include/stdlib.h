@@ -20,5 +20,6 @@ void srand (unsigned int seed);
 int rand (void);
 void abort(void);
 int atoi (const char * str);
+int atexit(void (*func)(void));
 
 #endif
