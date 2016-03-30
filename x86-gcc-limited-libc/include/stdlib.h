@@ -14,12 +14,14 @@ void *malloc(size_t size);
 void *realloc(void *ptr, size_t size);
 void free(void *pointer);
 void *calloc(size_t nelem, size_t elsize);
-void exit(int status);
+_Noreturn void exit(int status);
+_Noreturn void quick_exit(int status);
 void __debug(int i);
 void srand (unsigned int seed);
 int rand (void);
-void abort(void);
+_Noreturn void abort(void);
 int atoi (const char * str);
 int atexit(void (*func)(void));
+int at_quick_exit(void (*func)(void));
 
 #endif

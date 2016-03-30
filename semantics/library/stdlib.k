@@ -40,6 +40,20 @@ module LIBC-STDLIB
           ...</k>
           <status> mainExited </status>
 
+     //TODO(dwightguth): handle other differences between exit and quick_exit
+     rule [quick-exit]:
+          <k> builtin("quick_exit", tv(I:Int, ut(_, int))) ~> _
+               => reval(tv(I:Int, utype(int))) ~> callAtQuickExit
+          </k>
+          <status> mainCalled => mainExited </status>
+          [structural]
+
+     rule <k> (.K => UNDEF("STDLIB5", "Called the quick_exit function more than once (from a call to at_quick_exit).", "7.22.4.7:2, J.2:1 item 182"))
+              ~> builtin("quick_exit", tv(_, _))
+          ...</k>
+          <status> mainExited </status>
+
+
      rule [abort]:
           <k> builtin("abort") ~> _
                => printString("Aborted") ~> reval(tv(134, utype(int)))
@@ -159,6 +173,18 @@ module LIBC-STDLIB
 
      rule <k> (.K => UNSPEC("STDLIB3", "Called the atexit function after normal program termination has begun.", "7.22.4.2:2, J.1:1 item 44"))
               ~> builtin("atexit", _)
+          ...</k>
+          <status> mainExited </status>
+
+     rule [at-quick-exit]:
+          <k> builtin("at_quick_exit", tv(Loc:SymLoc, T:PointerUType))
+              => tv(0, utype(int))
+          ...</k>
+          <at-quick-exit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</at-quick-exit>
+          <status> mainCalled </status>
+
+     rule <k> (.K => UNSPEC("STDLIB6", "Called the at_quick_exit function after normal program termination has begun.", "7.22.4.3:2, J.1:1 item 45"))
+              ~> builtin("at_quick_exit", _)
           ...</k>
           <status> mainExited </status>
 endmodule

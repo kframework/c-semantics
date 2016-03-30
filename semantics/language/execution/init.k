@@ -4,7 +4,7 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= incomingArguments(List)
      syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
-     syntax KItem ::= "callAtExit" 
+     syntax KItem ::= "callAtExit" | "callAtQuickExit"
 endmodule
 
 module C-EXECUTION-INIT
@@ -215,6 +215,15 @@ module C-EXECUTION-INIT
      rule <k> reval(V:RValue) ~> callAtExit => reval(V) ...</k>
           <atexit> .K </atexit>
           <status> _ => mainExited </status>
+
+     rule <k> reval(V:RValue) ~> callAtQuickExit => AtExit:KItem ~> reval(V) ~> callAtQuickExit ...</k>
+          <at-quick-exit> AtExit:KItem => .K ...</at-quick-exit>
+          <status> _ => mainExited </status>
+     rule <k> reval(V:RValue) ~> callAtQuickExit => reval(V) ...</k>
+          <at-quick-exit> .K </at-quick-exit>
+          <status> _ => mainExited </status>
+
+
 
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:

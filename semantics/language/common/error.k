@@ -96,7 +96,7 @@ module C-ERROR
           requires notBool isUnspec
      rule IMPL(_, _, _) => HALT
           requires notBool isImpl
-     rule EXT-UNDEF(_, _, _) => HALT
+     rule EXT-UNDEF(_, _, _, _) => HALT
           requires notBool isUndef
 
      syntax KItem ::= writeThenClose(Int, String)

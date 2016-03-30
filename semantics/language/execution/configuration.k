@@ -63,6 +63,7 @@ module C-CONFIGURATION
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
      <atexit> .K </atexit>
+     <at-quick-exit> .K </at-quick-exit>
 
      // stdarg.h support.
      <va-lists> .Map </va-lists>
