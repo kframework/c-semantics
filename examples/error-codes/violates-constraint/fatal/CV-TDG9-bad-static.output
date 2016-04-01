@@ -4,4 +4,4 @@ Error: CV-TDG9
 Description: file-scope declaration of y with a variably-modified type.
 Type: Constraint violation.
 See also: C11 sec. 6.7.6.2:2
-Translation failed. Run kcc -d CV-CTM2-bad-static.c to see commands run.
+Translation failed (config dumped). Run kcc -d CV-CTM2-bad-static.c to see commands run.

@@ -4,4 +4,4 @@ Error: UB-CEMX1
 Description: Division by 0.
 Type: Undefined behavior.
 See also: C11 sec. 6.5.5:5, J.2:1 item 45
-Translation failed. Run kcc -d j045a.c to see commands run.
+Translation failed (config dumped). Run kcc -d j045a.c to see commands run.

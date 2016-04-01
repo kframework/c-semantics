@@ -4,4 +4,4 @@ Error: CV-TDG8
 Description: Declaration has initializer but incomplete type.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:3
-Translation failed. Run kcc -d CV-TDG8-bad-static.c to see commands run.
+Translation failed (config dumped). Run kcc -d CV-TDG8-bad-static.c to see commands run.

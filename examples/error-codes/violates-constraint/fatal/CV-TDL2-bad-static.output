@@ -4,4 +4,4 @@ Error: CV-TDL2
 Description: Extern declaration of a appears at block scope with an initializer.
 Type: Constraint violation.
 See also: C11 sec. 6.7.9:5
-Translation failed. Run kcc -d CV-TDL2-bad-static.c to see commands run.
+Translation failed (config dumped). Run kcc -d CV-TDL2-bad-static.c to see commands run.

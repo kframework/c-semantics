@@ -1,2 +1,2 @@
 no-return.c[1:1-4] : In C99 and higher, functions must have a return type
-Translation failed. Run kcc -d no-return.c to see commands run.
+Translation failed (config dumped). Run kcc -d no-return.c to see commands run.

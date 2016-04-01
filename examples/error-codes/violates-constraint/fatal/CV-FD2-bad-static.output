@@ -4,4 +4,4 @@ Error: CV-FD2
 Description: Invalid return type in function definition.
 Type: Constraint violation.
 See also: C11 sec. 6.7.6.3:1
-Translation failed. Run kcc -d CV-FD2-bad-static.c to see commands run.
+Translation failed (config dumped). Run kcc -d CV-FD2-bad-static.c to see commands run.

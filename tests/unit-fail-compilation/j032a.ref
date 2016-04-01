@@ -1,2 +1,2 @@
 j032a.c[1:1-4] : syntax error
-Translation failed. Run kcc -d j032a.c to see commands run.
+Translation failed (config dumped). Run kcc -d j032a.c to see commands run.
