@@ -4,7 +4,7 @@
 void bar() {}
 
 void foo() {
-  fprintf(stderr, "%s", "Hello World!");
+  fprintf(stderr, "%s", "Hello World!\n");
 }
 
 int main() {
