@@ -1,0 +1,25 @@
+File: L-TRZERO-bad-static.c
+Line: 4
+Warning: L-TRZERO
+Description: Test in an if, for, or while will always evaluate to zero.
+Type: Possible unintended behavior.
+File: L-TRZERO-bad-static.c
+Line: 6
+Warning: L-TRZERO
+Description: Test in an if, for, or while will always evaluate to zero.
+Type: Possible unintended behavior.
+File: L-TRZERO-bad-static.c
+Line: 7
+Warning: L-TRZERO
+Description: Test in an if, for, or while will always evaluate to zero.
+Type: Possible unintended behavior.
+File: L-TRZERO-bad-static.c
+Line: 8
+Warning: L-TRZERO
+Description: Test in an if, for, or while will always evaluate to zero.
+Type: Possible unintended behavior.
+File: L-TRZERO-bad-static.c
+Line: 9
+Warning: L-TRZERO
+Description: Test in an if, for, or while will always evaluate to zero.
+Type: Possible unintended behavior.

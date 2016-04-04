@@ -6,6 +6,7 @@ module C-STMT-LOOP
      imports C-EXPR-LOGICAL-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
      imports C-SYNTAX
+     imports C-TRANSLATION-ERROR-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -29,18 +30,17 @@ module C-STMT-LOOP
      syntax KItem ::= #for(K, RValue, K, CabsLoc) [klabel(#for4)]
                     | #for(RValue, K)             [klabel(#for2)]
      context #for((HOLE:KItem => reval(HOLE)), _, _, _) [result(RValue)]
-
      rule (.K => elaborate(S)) ~> #for(_:RValue, _, S:K, _)
      rule <k> elaborateDone(S:K)
                ~> #for(Control:RValue, Post:RValue, _, L::CabsLoc)
-               => .K
+               => lintZero(Control) ~> lintEmpty(S)
           ...</k>
           <elab>... .K => For(compoundExp(L ~> Control), Post, S) </elab>
 
      rule (.K => elaborate(S)) ~> #for(_, S:K)
      rule <k> elaborateDone(S:K)
                ~> #for(Post:RValue, _)
-               => .K
+               => lintEmpty(S)
           ...</k>
           <elab>... .K => For(emptyValue, Post, S) </elab>
 
@@ -50,9 +50,10 @@ module C-STMT-LOOP
 
      syntax KItem ::= #while(K, K, CabsLoc)
      context #while((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
-
      rule (.K => elaborate(S)) ~> #while(_:RValue, S:K, _)
-     rule <k> elaborateDone(S:K) ~> #while(B:RValue, _, L::CabsLoc) => .K ...</k>
+     rule <k> elaborateDone(S:K) ~> #while(B:RValue, _, L::CabsLoc)
+               => lintZero(B) ~> lintEmpty(S)
+          ...</k>
           <elab>... .K => While(compoundExp(L ~> B), S) </elab>
 
      context DoWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
@@ -60,9 +61,10 @@ module C-STMT-LOOP
 
      syntax KItem ::= #doWhile(K, K, CabsLoc)
      context #doWhile((HOLE:KItem => reval(HOLE)), _, _) [result(RValue)]
-
      rule (.K => elaborate(S)) ~> #doWhile(_:RValue, S:K, _)
-     rule <k> elaborateDone(S:K) ~> #doWhile(B:RValue, _, L:CabsLoc) => .K ...</k>
+     rule <k> elaborateDone(S:K) ~> #doWhile(B:RValue, _, L:CabsLoc)
+               => lintZero(B) ~> lintEmpty(S)
+          ...</k>
           <elab>... .K => DoWhile(compoundExp(L ~> B), S) </elab>
 
      rule <k> Continue => .K ...</k>

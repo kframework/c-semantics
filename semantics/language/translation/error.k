@@ -1,5 +1,13 @@
+module C-TRANSLATION-ERROR-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
+     syntax KItem ::= lintZero(RValue) [function]
+                    | lintEmpty(K) [function]
+endmodule
+
 module C-TRANSLATION-ERROR
      imports C-ERROR-SYNTAX
+     imports C-TRANSLATION-ERROR-SYNTAX
 
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
@@ -7,6 +15,7 @@ module C-TRANSLATION-ERROR
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
@@ -65,5 +74,10 @@ module C-TRANSLATION-ERROR
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>
           <result-value> _ => 1 </result-value>
           <options>... SetItem(CSV(Report:String)) ...</options>
+
+     rule lintZero(_) => .K
+          requires notBool hasLint
+     rule lintEmpty(_) => .K
+          requires notBool hasLint
 
 endmodule
