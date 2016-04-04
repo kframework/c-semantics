@@ -36,7 +36,6 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= makePointerType(Set)
      syntax KItem ::= "makeIncompleteArrayType"
      syntax KItem ::= makeArrayType(RValue, K)
-     syntax Type ::= pushTypeDown(Type, K) [function]
 
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:K)
@@ -85,7 +84,6 @@ module C-TYPING-INTERPRETATION
      rule t(Qs::Quals, Mods::Set, ST:SimpleType)
           ~> Prototype'(T::Type, L1::List, L2::List, Var::Bool)
           => Prototype'(T, L1, L2 ListItem(adjustParam(t(Qs, Mods, ST))), Var)
-     syntax SymBase ::= vla(CId)
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
           => declare(typedDeclaration(adjustParam(DT), X), NoInit)
@@ -98,6 +96,7 @@ module C-TYPING-INTERPRETATION
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(L))
 
+     syntax Type ::= pushTypeDown(Type, K) [function]
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)), Lbl:K)
           => t(Qs, Mods, arrayType(pushTypeDown(T, Lbl), N))
@@ -109,9 +108,8 @@ module C-TYPING-INTERPRETATION
           => t(Qs, Mods, incompleteArrayType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, pointerType(T::Type)), Lbl:K)
           => t(Qs, Mods, pointerType(pushTypeDown(T, Lbl)))
-     // TODO(chathhorn): warn about qualifiers on function return type.
-     rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType(T::UType, L:List)), Lbl:K)
-          => t(Qs, Mods, functionType(utype(pushTypeDown(type(T), Lbl)), L))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType'(T::Type, L:List)), Lbl:K)
+          => t(Qs, Mods, functionType'(pushTypeDown(T, Lbl), L))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X:StructId)), Lbl:K)
           => applyTypeFunction(Lbl, t(Qs, Mods, structType(X)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, unionType(X:StructId)), Lbl:K)
@@ -120,16 +118,17 @@ module C-TYPING-INTERPRETATION
           => applyTypeFunction(Lbl, t(Qs, Mods, typedefType(X, T)))
 
      syntax Type ::= applyTypeFunction(K, Type) [function]
+     syntax SimpleType ::= "functionType'" "(" Type "," List ")"
      rule applyTypeFunction(makeFunctionType(L:List), T::Type)
           => t(noQuals, getSpecifiers(T),
-               functionType(utype(stripSpecifiers(T)), giveNamesToArgs(L)))
+               functionType'(stripSpecifiers(T), giveNamesToArgs(L)))
 
      rule applyTypeFunction(makeOldStyleFunctionType(L:List), T::Type)
           => t(noQuals, getSpecifiers(T) SetItem(oldStyle),
-               functionType(utype(stripSpecifiers(T)), giveNamesToArgs(L)))
+               functionType'(stripSpecifiers(T), giveNamesToArgs(L)))
 
      rule applyTypeFunction(makePointerType(Mods::Set), T::Type)
-          => t(toQuals(intersectSet(Mods, typeQualifiers)), (Mods -Set typeQualifiers) getSpecifiers(T), pointerType(stripSpecifiers(T)))
+          => t(toQuals(Mods), (Mods -Set typeQualifiers) getSpecifiers(T), pointerType(stripSpecifiers(T)))
 
      rule applyTypeFunction(makeIncompleteArrayType, T::Type)
           => t(noQuals, getSpecifiers(T), incompleteArrayType(stripSpecifiers(T)))
@@ -191,6 +190,8 @@ module C-TYPING-INTERPRETATION
           => t(Qs, S, incompleteArrayType(extractActualType(T)))
      rule extractActualType(t(Qs::Quals, S::Set, functionType(T::UType, L:List)))
           => t(Qs, S, functionType(utype(extractActualType(type(T))), L))
+     rule extractActualType(t(Qs::Quals, S::Set, functionType'(T::Type, L:List)))
+          => t(Qs, S, functionType(utype(extractActualType(T)), L))
      rule extractActualType(t(Qs::Quals, S::Set, pointerType(T:Type)))
           => t(Qs, S, pointerType(extractActualType(T)))
      rule extractActualType(t(Qs::Quals, S::Set, typedefType(_, t(Qs'::Quals, S'::Set, T::SimpleType))))

@@ -105,9 +105,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeType-aux(.List,
                T:Type => addQualifier(Q, T),
-               .List, .List, _:List (ListItem(Q:K) => .List))
-          requires (Q in typeQualifiers)
-               orBool (getKLabel(Q) ==K #klabel(`atomic`))
+               .List, .List, _:List (ListItem(Q:Qualifier) => .List))
           [structural]
      rule canonicalizeType-aux(.List,
                T:Type => addModifier(S, T),
@@ -116,67 +114,6 @@ module C-TYPING-CANONICALIZATION
                orBool (S in functionSpecifiers)
                orBool (getKLabel(S) ==K #klabel(`alignas`))
           [structural]
-
-     //need this to solve array type anywhere rule
-     //syntax Type ::= canonicalizeArrayType(Type) [function]
-     //syntax List ::= canonicalizeArrayTypeInList(List) [function]
-     //syntax Map ::= canonicalizeArrayTypeInMap(Map) [function]
-
-// TODO(chathhorn): merging; doesn't make sense to me.
-//     //change this because of anywhere rule
-//     rule canonicalizeType-aux(.List, (t(S:Set, T:SimpleType)
-//          => canonicalizeArrayType(t(SetItem(Const) S, T))),
-//               .List, .List, (_:List (ListItem(Const) => .List)))
-//          [structural]
-     /*@ \fromStandard{\source[n1570]{\para{6.7.3}{9}}}{
-     If the specification of an array type includes any type qualifiers, the
-     element type is so-qualified, not the array type. \ldots
-     }*/
-     /*TODO(liyili2): anywhere rule refactor
-     rule t(SetItem(Const) S:Set, arrayType(t(S':Set, T:K), N:Int))
-          => t(S, arrayType(t(SetItem(Const) S', T), N))
-          [structural, anywhere]
-     */
-// TODO(chathhorn): merging; rework.
-//      rule canonicalizeArrayTypeInList(.List) => .List
-//      rule canonicalizeArrayTypeInList(ListItem(T:Type) L:List)
-//      => ListItem(canonicalizeArrayType(T)) canonicalizeArrayTypeInList(L)
-//
-//      rule canonicalizeArrayTypeInMap(.Map) => .Map
-//      rule canonicalizeArrayTypeInMap((K:K |-> T:Type) M:Map)
-//      => (K |-> canonicalizeArrayType(T)) canonicalizeArrayTypeInMap(M)
-//
-//      rule canonicalizeArrayType(T:Type) => T
-//      requires getKLabel(T) =/=K #klabel(t)
-//          andBool getKLabel(T) =/=K #klabel(typedDeclaration)
-//      rule canonicalizeArrayType(typedDeclaration(T:Type, C:CId))
-//      => typedDeclaration(canonicalizeArrayType(T), C)
-//      rule canonicalizeArrayType(t(SetItem(Const) S:Set,
-//        arrayType(t(S':Set, T:K), N:Int)))
-//      => t(S, arrayType(canonicalizeArrayType(t(SetItem(Const) S', T)), N))
-//      rule canonicalizeArrayType(t(S:Set, bitfieldType(T::SimpleType, N:Int)))
-//      => t(S, bitfieldType(T, N))
-//      rule canonicalizeArrayType(t(S:Set, functionType(T::UType, L:List)))
-//      => t(S, functionType(utype(canonicalizeArrayType(type(T))), canonicalizeArrayTypeInList(L)))
-//      rule canonicalizeArrayType(t(S:Set, pointerType(T:Type)))
-//      => t(S, pointerType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set, incompleteArrayType(T:Type)))
-//      => t(S, incompleteArrayType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set, flexibleArrayType(T:Type)))
-//      => t(S, flexibleArrayType(canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(t(S:Set, structType(C:CId, N:Int, fieldInfo(L:List, M1:Map, M2:Map))))
-//      => t(S, structType(C, N, fieldInfo(canonicalizeArrayTypeInList(L),
-//                canonicalizeArrayTypeInMap(M1), M2)))
-//      rule canonicalizeArrayType(t(S:Set, incompleteStructType(C:CId)))
-//      => t(S, incompleteStructType(C))
-//      rule canonicalizeArrayType(t(S:Set, unionType(C:CId, N:Int, fieldInfo(L:List, M1:Map, M2:Map))))
-//      => t(S, unionType(C, N, fieldInfo(canonicalizeArrayTypeInList(L),
-//                canonicalizeArrayTypeInMap(M1), M2)))
-//      rule canonicalizeArrayType(t(S:Set, incompleteUnionType(C:CId)))
-//      => t(S, incompleteUnionType(C))
-//      rule canonicalizeArrayType(t(S:Set, typedefType(C:CId, T:Type)))
-//      => t(S, typedefType(C, canonicalizeArrayType(T)))
-//      rule canonicalizeArrayType(T:BasicType) => T
 
      syntax KItem ::= canonicalizeSpecifier(List)
      rule <k> canonicalizeSpecifier(ListItem(Named(X:CId)))
