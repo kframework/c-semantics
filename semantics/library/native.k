@@ -12,6 +12,15 @@ module C-NATIVE-BRIDGE
             <types>... Identifier(S) |-> T:Type ...</types>
           ...</generatedTop> => #nativeCall(S, T, Args, VarArgs, Rest)
 
+     syntax K ::= #nativeCall(Int, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax KItem ::= nativeCall(Int, List, List)
+     rule <generatedTop>... 
+            <k> nativeCall(I:Int, Args:List, VarArgs:List) ~> Rest:K </k>
+            <types>... nativeFunction(I) |-> T:Type ...</types>
+          ...</generatedTop> => #nativeCall(I, T, Args, VarArgs, Rest)
+
+
+
      rule builtin(S:String) => nativeCall(S, .List, .List)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
 
@@ -55,6 +64,9 @@ module C-NATIVE-BRIDGE
      rule builtin*(S:String, Args:List, VarArgs:List)
           => nativeCall(S, Args, VarArgs)
           requires S in_keys(nativeDefinedBuiltins) [native-call]
+
+     rule builtin*(I:Int, Args:List, VarArgs:List)
+          => nativeCall(I, Args, VarArgs) [native-call]
 
      // Memory allocated by the native heap needs to be freed by a call to
      // native free.

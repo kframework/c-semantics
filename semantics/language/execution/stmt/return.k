@@ -36,6 +36,16 @@ module C-STMT-RETURN
           ...</gtypes>
           requires notBool (Noreturn in Mods)
           [structural]
+
+     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-tu> "native" </curr-tu>
+          <types>...
+               F |-> t(_, Mods:Set, functionType(T::UType, _))
+          ...</types>
+          requires notBool (Noreturn in Mods)
+          [structural]
+
      rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
                     "6.7.4, J.2:1 item 71"))
                ~> Return(_)
@@ -48,6 +58,19 @@ module C-STMT-RETURN
           ...</gtypes>
           requires Noreturn in Mods
           [structural]
+
+     rule <k> (.K => UNDEF("ESR1", "Return from a function declared _Noreturn.",
+                    "6.7.4, J.2:1 item 71"))
+               ~> Return(_)
+          ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-tu> "native" </curr-tu>
+          <types>...
+               F:CId |-> t(_, Mods:Set, _)
+          ...</types>
+          requires Noreturn in Mods
+          [structural]
+
 
      syntax KItem ::= "Return'" "(" K ")"
                     | "Return''" "(" K ")"

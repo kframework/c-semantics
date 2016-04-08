@@ -119,7 +119,7 @@ module C-EXECUTION-INIT
                <thread>...
                     <k> initMainThread'(MainTU:String)
                          => enterRestrictScope(fileScope)
-                         ~> populateFromGlobal
+                         ~> populateFromGlobal(.K)
                     ...</k>
                     <duration> _ => auto(0) </duration>
                     <curr-tu> _ => MainTU </curr-tu>

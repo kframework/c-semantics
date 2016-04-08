@@ -12,6 +12,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-BUILTIN-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -71,6 +72,30 @@ module C-EXPR-FUNCTION-CALL
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
 
+     rule <k> Call(
+               tv(loc(0 @ nativeAddress, Address:Int), ut(_, pointerType(T:FunctionType))),
+               rvlist(L:List))
+               => sequencePoint ~> application(CurrLoc, "native", functionObject(nativeFunction(Address), makeNativeDecl(T), .List, handleBuiltin), T, L)
+          ...</k>
+          <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
+          [structural]
+
+     rule <k> populateFromGlobal(T::Type) => .K ...</k>
+          <curr-tu> "native" </curr-tu>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <types> _ => F |-> T </types>
+          <env> _ => .Map </env>
+
+     syntax CId ::= nativeFunction(Int)
+     rule idToString(nativeFunction(Address:Int)) => "<native function at 0x" +String Base2String(Address, 16) +String ">"
+
+     syntax Type ::= makeNativeDecl(Type) [function]
+     rule makeNativeDecl(t(Quals::Quals, Mods::Set, functionType(R::UType, L::List)))
+          => t(Quals, Mods, functionType(R, makeNativeDeclArgs(L, 0)))
+     syntax List ::= makeNativeDeclArgs(List, Int) [function]
+     rule makeNativeDeclArgs(ListItem(T::Type) L::List, I::Int) => ListItem(typedDeclaration(T, Identifier("_" +String Int2String(I)))) makeNativeDeclArgs(L, I +Int 1)
+     rule makeNativeDeclArgs(.List, _) => .List
+
      syntax KItem ::= revalParams(K)
                     | #revalParams(HeatList) [strict]
      //TODO(liyili2): context revalParams(list(_ ListItem((HOLE:KItem => reval(HOLE))) _)) [ndheat]
@@ -95,7 +120,7 @@ module C-EXPR-FUNCTION-CALL
                ~> K:K
                => sequencePoint
                ~> enterRestrictScope(blockScope(X, 0))
-               ~> populateFromGlobal
+               ~> populateFromGlobal(DefT)
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
                ~> checkStackDepth

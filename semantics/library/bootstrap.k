@@ -12,6 +12,7 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | "builtin*" "(" String "," RValue "," RValue "," List ")" [klabel(builtin2+)]
                     | "builtin*" "(" String "," RValue "," RValue "," RValue "," List ")" [klabel(builtin3+)]
                     | "builtin*" "(" String "," List "," List ")"
+                    | "builtin*" "(" Int "," List "," List ")"
 endmodule
 
 module LIBC-BOOTSTRAP
@@ -103,4 +104,9 @@ module LIBC-BOOTSTRAP
                andBool size(hListToList(Args)) >Int 3
           [structural]
 
+     rule prepareBuiltin(nativeFunction(Address:Int), _, Args:HeatList, VarArgs:HeatList)
+          => builtin*(Address, hListToList(Args), hListToList(VarArgs))
+          requires allRValueInHeatList(Args)
+               andBool allRValueInHeatList(VarArgs)
+          
 endmodule

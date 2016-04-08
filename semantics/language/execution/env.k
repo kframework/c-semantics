@@ -5,7 +5,7 @@ module C-ENV-SYNTAX
 
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
-     syntax KItem ::= "populateFromGlobal"
+     syntax KItem ::= populateFromGlobal(K)
      syntax KItem ::= addToHistory(Int)
 
 endmodule
@@ -21,7 +21,7 @@ module C-ENV
           <block-history> .List => ListItem(BlockNum) ...</block-history>
           [structural]
 
-     rule <k> populateFromGlobal => .K ...</k>
+     rule <k> populateFromGlobal(_) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>

@@ -84,6 +84,7 @@ module COMPAT
 
      rule idToString(Identifier(S:String)) => S
      rule idToString(#NoName) => "<anonymous>"
+     rule idToString(_) => "<unknown>" [owise]
 
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)
