@@ -196,14 +196,13 @@ module LIBC-STDIO
      syntax KItem ::= "formatter-aux" "(" List ")"
      rule [format-done]:
           <k> formatter-aux(_)
-               => formattedResult(listToString(Result:List))
+               => formattedResult(listToString(Result))
           ...</k>
           (
                <formatting>...
                     <format> .List </format>
                     <format-result> Result:List </format-result>
                     <format-state> "normal" </format-state>
-                    <format-mods> .Map </format-mods>
                ...</formatting>
                => .Bag
           )
@@ -219,7 +218,9 @@ module LIBC-STDIO
 
      rule [format-reset]:
           <k> formatter-aux(_) ...</k>
-          <format-mods> _ => .Map </format-mods>
+          <format-pad-zero> _ => false </format-pad-zero>
+          <format-field-width> _ => "" </format-field-width>
+          <format-precision> _ => "" </format-precision>
           <format-length> _ => "" </format-length>
           <format-state> "reset" => "normal" </format-state>
           [structural]
@@ -317,146 +318,49 @@ module LIBC-STDIO
      For other conversions, the behavior is undefined.
      }*/
 
-     // fixme ignoring 0 flag for now
      rule [format-%0]:
           <k> formatter-aux(_) ...</k>
+          <format-pad-zero> _ => true </format-pad-zero>
+          <format-field-width> "" </format-field-width>
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
           [structural]
-
-     // ignoring num width
-     rule [format-width]:
-          <k> formatter-aux(_) ...</k>
-          <format> ListItem(C:String) => .List ...</format>
+     rule <k> formatter-aux(_) ...</k>
+          <format-field-width> W:String => W +String "0" </format-field-width>
+          <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
-          requires ordChar(C:String) >Int ordChar("0")
-               andBool ordChar(C:String) <=Int ordChar("9")
+          requires W =/=K ""
           [structural]
 
-     // ignoring decimal
+
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(C:String) => .List ...</format>
+          <format-field-width> W:String => W +String C </format-field-width>
+          <format-state> "%" </format-state>
+          requires C ==K "-" orBool ordChar(C) >Int ordChar("0")
+               andBool ordChar(C) <=Int ordChar("9")
+          [structural]
+
      rule <k> formatter-aux(_) ...</k>
           <format> ListItem(".") => .List ...</format>
-          <format-state> "%" </format-state>
+          <format-state> "%" => "%." </format-state>
           [structural]
 
-     /*@ \source[n1570]{\para{7.21.6.1}{7}}
-     The length modifiers and their meanings are:
-     \begin{description}
-     \item[\texttt{hh}]
-     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
-     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
-     \cinline{signed char} or \cinline{unsigned char} argument (the argument
-     will have been promoted according to the integer promotions, but its value
-     shall be converted to \cinline{signed char} or \cinline{unsigned char}
-     before printing); or that a following \texttt{n} conversion specifier
-     applies to a pointer to a \cinline{signed char} argument.}
-
-     \item[\texttt{h}]
-     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
-     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
-     \cinline{short int} or \cinline{unsigned short int} argument (the argument
-     will have been promoted according to the integer promotions, but its value
-     shall be converted to \cinline{short int} or \cinline{unsigned short int}
-     before printing); or that a following \texttt{n} conversion specifier
-     applies to a pointer to a \cinline{short int} argument.}
-
-     \item[\texttt{l} (ell)]
-     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
-     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
-     int} or \cinline{unsigned long int} argument; that a following \texttt{n}
-     conversion specifier applies to a pointer to a \cinline{long int}
-     argument; \broken{that a following \texttt{c} conversion specifier applies
-     to a \cinline{wint_t} argument; that a following \texttt{s} conversion
-     specifier applies to a pointer to a \cinline{wchar_t} argument}; or has no
-     effect on a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E},
-     \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier.
-
-     \item[\texttt{ll} (ell-ell)]
-     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
-     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
-     long int} or \cinline{unsigned long long int} argument; or that a
-     following \texttt{n} conversion specifier applies to a pointer to a
-     \cinline{long long int} argument.
-
-     \item[\texttt{j}]
-     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
-     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to an
-     \cinline{intmax_t} or \cinline{uintmax_t} argument; or that a following
-     \texttt{n} conversion specifier applies to a pointer to an
-     \cinline{intmax_t} argument.}
-
-     \item[\texttt{z}]
-     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
-     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
-     \cinline{size_t} or the corresponding signed integer type argument; or
-     that a following \texttt{n} conversion specifier applies to a pointer to a
-     signed integer type corresponding to \cinline{size_t} argument.}
-
-     \item[\texttt{t}]
-     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
-     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
-     \cinline{ptrdiff_t} or the corresponding unsigned integer type argument;
-     or that a following \texttt{n} conversion specifier applies to a pointer
-     to a \cinline{ptrdiff_t} argument.}
-
-     \item[\texttt{L}]
-     \broken{Specifies that a following \texttt{a}, \texttt{A}, \texttt{e},
-     \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion
-     specifier applies to a \cinline{long double} argument.}
-
-     \end{description}
-     If a length modifier appears with any conversion specifier other than as
-     specified above, the behavior is undefined.
-     */
-
-     syntax KItem ::= "getFormatType"
-     syntax KItem ::= "getFormatType-aux" "(" K "," K ")" [function]
-     rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
-          <format-length> Length::String </format-length>
-          <format-state> State::String </format-state>
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(C:String) => .List ...</format>
+          <format-precision> P:String => P +String C </format-precision>
+          <format-state> "%." </format-state>
+          requires ordChar(C) >=Int ordChar("0")
+               andBool ordChar(C) <=Int ordChar("9")
           [structural]
 
-     rule getFormatType-aux("%a", _) => type(double)
-     rule getFormatType-aux("%A", _) => type(double)
-     rule getFormatType-aux("%e", _) => type(double)
-     rule getFormatType-aux("%E", _) => type(double)
-     rule getFormatType-aux("%f", _) => type(double)
-     rule getFormatType-aux("%F", _) => type(double)
-     rule getFormatType-aux("%g", _) => type(double)
-     rule getFormatType-aux("%G", _) => type(double)
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(C:String) ...</format>
+          <format-state> "%." => "%" </format-state>
+          requires ordChar(C) <Int ordChar("0")
+               orBool ordChar(C) >Int ordChar("9")
+          [structural]
 
-     rule getFormatType-aux("%c", "") =>type(int)
-     rule getFormatType-aux("%s", "") =>type(pointerType(type(char)))
-
-     rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
-
-     rule getFormatType-aux("%d", "") => type(int)
-     rule getFormatType-aux("%o", "") => type(int)
-     rule getFormatType-aux("%u", "") => type(unsigned-int)
-     rule getFormatType-aux("%x", "") => type(unsigned-int)
-     rule getFormatType-aux("%X", "") => type(unsigned-int)
-     rule getFormatType-aux("%n", "") => type(pointerType(type(int)))
-
-     rule getFormatType-aux("%d", "l") => type(long-int)
-     rule getFormatType-aux("%o", "l") => type(long-int)
-     rule getFormatType-aux("%u", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%x", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%X", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%n", "l") => type(pointerType(type(long-int)))
-
-     rule getFormatType-aux("%d", "ll") => type(long-long-int)
-     rule getFormatType-aux("%o", "ll") => type(long-long-int)
-     rule getFormatType-aux("%u", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%x", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%X", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%n", "ll") => type(pointerType(type(long-long-int)))
-
-     rule getFormatType-aux("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType-aux("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType-aux("%u", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%x", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%X", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
@@ -475,18 +379,19 @@ module LIBC-STDIO
           <format-state> "%" => "%d" </format-state>
           requires S ==String "d" orBool S ==String "i"
           [structural]
-     rule [format-%d]:
-          <k> formatter-aux(_) ...</k>
-          <format-arg> D:Int => .K </format-arg>
-          <format-result>...
-               .List => ListItem(Int2String(D:Int))
-          </format-result>
-          <format-state> "%d" => "reset" </format-state>
-          [structural]
+
      rule <k> formatter-aux(_) ...</k>
-          <format-arg> NullPointer => .K </format-arg>
+          <format-arg> NullPointer => 0 </format-arg>
+          <format-state> "%d" </format-state>
+          [structural]
+
+     rule <k> formatter-aux(_) ...</k>
+          <format-arg> D:Int => .K </format-arg>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem("0")
+               .List => ListItem(pad(Int2String(D), String2Int(W),
+                  #if Z #then "0" #else " " #fi:>String))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
@@ -589,8 +494,14 @@ module LIBC-STDIO
      rule [format-%f]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(Float2String(D:Float))
+               .List => ListItem(pad(
+                    Float2String(setPrecision(D, String2Int(P))),
+                    String2Int(W),
+                    #if Z #then "0" #else " " #fi:>String))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
           [structural]
@@ -602,8 +513,14 @@ module LIBC-STDIO
      rule [format-%F]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(toUpperCase(Float2String(D:Float)))
+               .List => ListItem(pad(
+                    toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
+                    String2Int(W),
+                    #if Z #then "0" #else " " #fi:>String))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
           [structural]
@@ -665,8 +582,14 @@ module LIBC-STDIO
      rule [format-%g]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(Float2String(D:Float))
+               .List => ListItem(pad(
+                    Float2String(setPrecision(D, String2Int(P))),
+                    String2Int(W),
+                    #if Z #then "0" #else " " #fi:>String))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
           [structural]
@@ -678,8 +601,14 @@ module LIBC-STDIO
      rule [format-%G]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(toUpperCase(Float2String(D:Float)))
+               .List => ListItem(pad(
+                    toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
+                    String2Int(W),
+                    #if Z #then "0" #else " " #fi:>String))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
           [structural]
@@ -824,11 +753,11 @@ module LIBC-STDIO
           <format> ListItem(Char:String) => .List ...</format>
           <format-state> "%" </format-state>
           <format-length>
-               Length:String => Length:String +String Char
+               Length:String => Length +String Char
           </format-length>
-          requires Char ==String "l" 
+          requires Char ==String "l"
                orBool Char ==String "h"
-	       orBool Char ==String "j"
+               orBool Char ==String "j"
                orBool Char ==String "z"
                orBool Char ==String "t"
           [structural]
@@ -858,6 +787,148 @@ module LIBC-STDIO
           <format-state> State:String </format-state>
           requires utype(T) =/=Type T'
           [structural]
+
+     /*@ \source[n1570]{\para{7.21.6.1}{7}}
+     The length modifiers and their meanings are:
+     \begin{description}
+     \item[\texttt{hh}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{signed char} or \cinline{unsigned char} argument (the argument
+     will have been promoted according to the integer promotions, but its value
+     shall be converted to \cinline{signed char} or \cinline{unsigned char}
+     before printing); or that a following \texttt{n} conversion specifier
+     applies to a pointer to a \cinline{signed char} argument.}
+
+     \item[\texttt{h}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{short int} or \cinline{unsigned short int} argument (the argument
+     will have been promoted according to the integer promotions, but its value
+     shall be converted to \cinline{short int} or \cinline{unsigned short int}
+     before printing); or that a following \texttt{n} conversion specifier
+     applies to a pointer to a \cinline{short int} argument.}
+
+     \item[\texttt{l} (ell)]
+     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
+     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
+     int} or \cinline{unsigned long int} argument; that a following \texttt{n}
+     conversion specifier applies to a pointer to a \cinline{long int}
+     argument; \broken{that a following \texttt{c} conversion specifier applies
+     to a \cinline{wint_t} argument; that a following \texttt{s} conversion
+     specifier applies to a pointer to a \cinline{wchar_t} argument}; or has no
+     effect on a following \texttt{a}, \texttt{A}, \texttt{e}, \texttt{E},
+     \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion specifier.
+
+     \item[\texttt{ll} (ell-ell)]
+     Specifies that a following \texttt{d}, \texttt{i}, \texttt{o}, \texttt{u},
+     \texttt{x}, or \texttt{X} conversion specifier applies to a \cinline{long
+     long int} or \cinline{unsigned long long int} argument; or that a
+     following \texttt{n} conversion specifier applies to a pointer to a
+     \cinline{long long int} argument.
+
+     \item[\texttt{j}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to an
+     \cinline{intmax_t} or \cinline{uintmax_t} argument; or that a following
+     \texttt{n} conversion specifier applies to a pointer to an
+     \cinline{intmax_t} argument.}
+
+     \item[\texttt{z}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{size_t} or the corresponding signed integer type argument; or
+     that a following \texttt{n} conversion specifier applies to a pointer to a
+     signed integer type corresponding to \cinline{size_t} argument.}
+
+     \item[\texttt{t}]
+     \broken{Specifies that a following \texttt{d}, \texttt{i}, \texttt{o},
+     \texttt{u}, \texttt{x}, or \texttt{X} conversion specifier applies to a
+     \cinline{ptrdiff_t} or the corresponding unsigned integer type argument;
+     or that a following \texttt{n} conversion specifier applies to a pointer
+     to a \cinline{ptrdiff_t} argument.}
+
+     \item[\texttt{L}]
+     \broken{Specifies that a following \texttt{a}, \texttt{A}, \texttt{e},
+     \texttt{E}, \texttt{f}, \texttt{F}, \texttt{g}, or \texttt{G} conversion
+     specifier applies to a \cinline{long double} argument.}
+
+     \end{description}
+     If a length modifier appears with any conversion specifier other than as
+     specified above, the behavior is undefined.
+     */
+
+     syntax String ::= pad(String, Int, String) [function]
+                     | "pad'" "(" String "," Int "," String ")" [function]
+
+     rule pad(X::String, W::Int, _) => X
+          requires lengthString(X) >=Int absInt(W)
+     rule pad(X::String, W::Int, P::String)
+          => pad'(X, (absInt(W) -Int lengthString(X)) *Int signInt(W), P)
+          requires lengthString(X) <Int absInt(W)
+
+     rule pad'(X::String, W::Int, P::String) => pad'(X +String " ", W +Int 1, P)
+          requires W <Int 0
+     rule pad'(X::String, W::Int, P::String) => pad'(P +String X, W -Int 1, P)
+          requires W >Int 0
+     rule pad'(X::String, W::Int, _) => X
+          requires W ==Int 0
+
+     syntax Int ::= signInt(Int) [function]
+     rule signInt(X::Int) => X /Int absInt(X)
+
+     syntax Float ::= setPrecision(Float, Int) [function]
+     // TODO(chathhorn)
+     rule setPrecision(F::Float, _) => F
+
+     syntax KItem ::= "getFormatType"
+     syntax KItem ::= "getFormatType-aux" "(" K "," K ")" [function]
+     rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
+          <format-length> Length::String </format-length>
+          <format-state> State::String </format-state>
+          [structural]
+
+     rule getFormatType-aux("%a", _) => type(double)
+     rule getFormatType-aux("%A", _) => type(double)
+     rule getFormatType-aux("%e", _) => type(double)
+     rule getFormatType-aux("%E", _) => type(double)
+     rule getFormatType-aux("%f", _) => type(double)
+     rule getFormatType-aux("%F", _) => type(double)
+     rule getFormatType-aux("%g", _) => type(double)
+     rule getFormatType-aux("%G", _) => type(double)
+
+     rule getFormatType-aux("%c", "") =>type(int)
+     rule getFormatType-aux("%s", "") =>type(pointerType(type(char)))
+
+     rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
+
+     rule getFormatType-aux("%d", "") => type(int)
+     rule getFormatType-aux("%o", "") => type(int)
+     rule getFormatType-aux("%u", "") => type(unsigned-int)
+     rule getFormatType-aux("%x", "") => type(unsigned-int)
+     rule getFormatType-aux("%X", "") => type(unsigned-int)
+     rule getFormatType-aux("%n", "") => type(pointerType(type(int)))
+
+     rule getFormatType-aux("%d", "l") => type(long-int)
+     rule getFormatType-aux("%o", "l") => type(long-int)
+     rule getFormatType-aux("%u", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%x", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%X", "l") => type(unsigned-long-int)
+     rule getFormatType-aux("%n", "l") => type(pointerType(type(long-int)))
+
+     rule getFormatType-aux("%d", "ll") => type(long-long-int)
+     rule getFormatType-aux("%o", "ll") => type(long-long-int)
+     rule getFormatType-aux("%u", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%x", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%X", "ll") => type(unsigned-long-long-int)
+     rule getFormatType-aux("%n", "ll") => type(pointerType(type(long-long-int)))
+
+     rule getFormatType-aux("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType-aux("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType-aux("%u", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%x", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%X", "z") => type(cfg:sizeut)
+     rule getFormatType-aux("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
 
 endmodule
 

@@ -160,10 +160,10 @@ module C-CONFIGURATION
                               <format-state>
                                    "normal"
                               </format-state>
-                              <format-mods>
-                                   .Map
-                              </format-mods>
+                              <format-pad-zero> false </format-pad-zero>
+                              <format-field-width> "" </format-field-width>
                               <format-length> "" </format-length>
+                              <format-precision> "" </format-precision>
                          </formatting>
                     </function-control>
                </thread-local>
