@@ -1,7 +1,6 @@
-File: bitfield-type.c
+File: IMPL-CTI4-bad-static.c
 Line: 1
 Error: IMPL-CTI4
 Description: Bitfield with type other than signed int, unsigned int, or _Bool.
 Type: Implementation defined behavior.
 See also: C11 sec. 6.7.2.1:5, J.3.9:1 item 2
-Translation failed (config dumped). Run kcc -d bitfield-type.c to see commands run.

@@ -1,0 +1,7 @@
+File: CV-FD3-bad-static.c
+Line: 1
+Error: CV-FD3
+Description: Incomplete parameter type in function definition.
+Type: Constraint violation.
+See also: C11 sec. 6.7.6.3:4
+Translation failed (config dumped). Run kcc -d CV-FD3-bad-static.c to see commands run.

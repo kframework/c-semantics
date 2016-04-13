@@ -1,0 +1,5 @@
+Error: USP-CEER6
+Description: Unspecified value returned from main function.
+Type: Unspecified value or behavior.
+See also: C11 sec. 5.1.2.2.3:1
+Execution failed (configuration dumped)

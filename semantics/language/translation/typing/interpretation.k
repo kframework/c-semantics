@@ -25,7 +25,7 @@ module C-TYPING-INTERPRETATION
      rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
           ~> BitFieldType(_, tv(N:CValue, T::UType))
           requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
-     rule (.K => IMPL("CTI4", "Bitfield with type other than signed int, unsigned int, or _Bool.", "6.7.2.1:5"))
+     rule (.K => IMPL("CTI4", "Bitfield with type other than signed int, unsigned int, or _Bool.", "6.7.2.1:5, J.3.9:1 item 2"))
           ~> BitFieldType(t(_, _, T'::SimpleType), tv(N:CValue, T::UType))
           requires fromConstantExpr(T) andBool isInt(N)
                andBool notBool isBitfieldFieldType(T')

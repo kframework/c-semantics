@@ -6,6 +6,7 @@ TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
+CHECK_RESULT_RUN_FATAL = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp > $@; rm $@.tmp; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
@@ -30,6 +31,11 @@ comparison: ${TEST_COMPARISON}
 %-bad.out: %-bad.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
+
+# we handle this case specially because unlike the others, it by necessity returns an error code on the command line
+USP-CEER6-bad.out: USP-CEER6-bad.kcc
+	@echo -n "Running $<... "
+	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN_FATAL}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "

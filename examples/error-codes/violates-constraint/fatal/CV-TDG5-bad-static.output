@@ -1,0 +1,7 @@
+File: CV-TDG5-bad-static.c
+Line: 1
+Error: CV-TDG5
+Description: Function parameter appears with storage class other than register.
+Type: Constraint violation.
+See also: C11 sec. 6.7.6.3:2
+Translation failed (config dumped). Run kcc -d CV-TDG5-bad-static.c to see commands run.

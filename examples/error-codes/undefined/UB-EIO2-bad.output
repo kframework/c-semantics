@@ -1,0 +1,6 @@
+Error: UB-EIO2
+Description: Trying to write outside the bounds of an object.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.6:8, J.2:1 item 47
+  at main(UB-EIO2-bad.c:6)
+  at <file-scope>(<unknown>)
