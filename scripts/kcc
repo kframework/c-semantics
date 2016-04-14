@@ -555,7 +555,6 @@ sub getKRunCommand {
 
      my @krun_args = (
           '--output', 'binary', 
-          '--mini-krun',
           '--output-file', $output,
           '-d', $TRANS_DEF,
           '-w', 'none',
@@ -570,6 +569,9 @@ sub getKRunCommand {
      my @options;
      if (!$link) {
           push(@options, "`NOLINK`(.KList)");
+          push(@krun_args, "--interpret");
+     } else {
+          push(@krun_args, '--mini-krun');
      }
      if ($args->{'-fissue-report='}) {
           my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));

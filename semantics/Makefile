@@ -1,7 +1,7 @@
 export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile -O2
 KDEP = kdep
-KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict
+KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --exit-code "<result-value> _:Int </result-value>"
 KDEP_DEFAULT_FLAGS=
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
