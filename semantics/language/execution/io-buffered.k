@@ -150,7 +150,7 @@ module C-IO-BUFFERED
           [structural]
 
      rule <buffer>
-               ListItem(bwrite(loc(Base::SymBase, (Offset::Int => Offset +Int 1)), (ListItem(V:K) => .List) _:List))
+               ListItem(bwrite(loc(Base::SymBase, (Offset::Int => Offset +Int 1)), (ListItem(V:K) => .List) _::List))
           ...</buffer>
           <mem>...
                Base |-> object(_, Len::Int, (Bytes::Map => Bytes[Offset <- V]), _)
@@ -161,7 +161,7 @@ module C-IO-BUFFERED
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
      rule <buffer>
-               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _:List)))
+               ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
           requires isNativeLoc(Loc)
 

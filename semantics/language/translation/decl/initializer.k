@@ -168,47 +168,47 @@ module C-DECL-INITIALIZER
 
      rule <curr-subobject>
                (.List => ListItem(ncle(K[[0]], T)))
-               ListItem(ncle(K:K, t(_, _, arrayType(T:Type, _))))
+               ListItem(ncle(K:K, t(_, _, arrayType(T::Type, _))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
                (.List => ListItem(ncle(K[[0]], T)))
-               ListItem(ncle(K:K, t(_, _, incompleteArrayType(T:Type))))
+               ListItem(ncle(K:K, t(_, _, incompleteArrayType(T::Type))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
                (.List => ListItem(ncle(K . F, T)))
-               ListItem(ncle(K:K, t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef)))))
+               ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _)) ...</structs>
           [structural]
 
      // fixme these are terrible!
      rule <curr-subobject>
                (.List => ListItem(ncle(K . F, T)))
-               ListItem(ncle(K:K, t(_, _, unionType(tag(X:CId, Tu:String, B:BlockRef)))))
+               ListItem(ncle(K:K, t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _)) ...</structs>
           [structural]
 
      // fixme should i worry about basetype here_
      rule <curr-subobject>
-               (ListItem(next) ListItem(ncle(K:K[[N:Int]], T:Type))
+               (ListItem(next) ListItem(ncle(K:K[[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
-               ListItem(ncle(K, t(_, _, arrayType(_, Len:Int))))
+               ListItem(ncle(K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
           requires Len >Int N +Int 1
           [structural]
      rule <curr-subobject>
                ListItem(next)
-               (ListItem(ncle(K:K[[N:Int]], _:Type)) => .List)
-               ListItem(ncle(K:K, t(_, _, arrayType(_, Len:Int))))
+               (ListItem(ncle(K:K[[N::Int]], _)) => .List)
+               ListItem(ncle(K:K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
           requires notBool Len >Int N +Int 1
           [structural]
 
      rule <curr-subobject>
-               (ListItem(next) ListItem(ncle(K:K[[N:Int]], T:Type))
+               (ListItem(next) ListItem(ncle(K:K[[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, incompleteArrayType(_))))
           ...</curr-subobject>
@@ -254,10 +254,10 @@ module C-DECL-INITIALIZER
 
      rule <k> (.K => searchInFieldInfoList(T, F, L)) ...</k>
           <curr-subobject>
-               ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F:CId, T:Type))
-               ListItem(ncle(K:K, t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef)))))
+               ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F::CId, T::Type))
+               ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(L:List, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _)) ...</structs>
           [structural]
 
      rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
@@ -395,10 +395,10 @@ module C-DECL-INITIALIZER
      // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':KResult) => .K ...</k>
           <curr-subobject>
-               (.List => ListItem(next)) ListItem(ncle(K:K, T:Type))
+               (.List => ListItem(next)) ListItem(ncle(K:K, T::Type))
           ...</curr-subobject>
           <incomplete-length>
-               N:Int => maxInt(N, getTopArrayUse(K))
+               N::Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
                .K => Computation(K := K')
@@ -430,7 +430,7 @@ module C-DECL-INITIALIZER
      syntax KItem ::= findStruct(Type)
 
      rule <curr-subobject>
-               ListItem(findStruct(T:Type)) (ListItem(ncle(_, T':Type)) => .List)
+               ListItem(findStruct(T::Type)) (ListItem(ncle(_, T'::Type)) => .List)
           ...</curr-subobject>
           requires T =/=Type T'
           [structural]

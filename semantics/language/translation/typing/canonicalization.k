@@ -46,15 +46,15 @@ module C-TYPING-CANONICALIZATION
 
      rule (T:Type => .K)
           ~> canonicalizeType-aux(
-               _:List (ListItem(TAtomic(_, _)) => .List), _, _, _,
-               _:List (.List => ListItem(atomic(T))))
+               _::List (ListItem(TAtomic(_, _)) => .List), _, _, _,
+               _::List (.List => ListItem(atomic(T))))
           [structural]
 
      //might need to change this later
      rule (T:Type => .K)
           ~> canonicalizeType-aux(
-               _:List (ListItem(AlignasType(_, _)) => .List), _, _, _,
-               _:List (.List => ListItem(alignas(byteAlignofType(T)))))
+               _::List (ListItem(AlignasType(_, _)) => .List), _, _, _,
+               _::List (.List => ListItem(alignas(byteAlignofType(T)))))
           [structural]
      rule (tv(A:Int, _) => .K)
           ~> canonicalizeType-aux(

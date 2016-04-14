@@ -41,7 +41,7 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
           <env>... X |-> Base::SymBase ...</env>
           <types>... X |-> T::Type ...</types>
-          <curr-tu> Tu:String </curr-tu>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
           <external-uses>... (.Set => SetItem(X)) </external-uses>

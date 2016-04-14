@@ -107,16 +107,16 @@ module C-STMT-GOTO
           requires getKLabel(Lbl) ==K #klabel(`funLabel`)
 
      // - first case, when we're in the same block
-     rule <k> (L:KLabel(gotoObject(Depth:Int,
-                    (ListItem(CurrentBlock:Int) BlockHistory:List),
-                    K:K, LoopStack:List, DeclStack:List))
+     rule <k> (L:KLabel(gotoObject(Depth::Int,
+                    (ListItem(CurrentBlock::Int) BlockHistory::List),
+                    K:K, LoopStack::List, DeclStack::List))
                     ~> _:K)
                => (addVariablesForBlock(CurrentBlock, DeclStack)
                     ~> K)
           </k>
-          <nesting-depth> Depth:Int </nesting-depth>
+          <nesting-depth> Depth </nesting-depth>
           <block-history>
-               ListItem(CurrentBlock:Int) BlockHistory:List
+               ListItem(CurrentBlock) BlockHistory
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
           requires ((#klabel(L) ==K #klabel(`processGoto`))
@@ -196,18 +196,18 @@ module C-STMT-GOTO
           [structural]
 
      //  We've made it to the block above the target
-     rule <k> L:KLabel(gotoObject(SIntDepth:Int,
-                    (ListItem(TargetBlock:Int) BlockHistory:List),
+     rule <k> L:KLabel(gotoObject(SIntDepth::Int,
+                    (ListItem(TargetBlock::Int) BlockHistory:List),
                     K:K,
-                    LoopStack:List,
-                    DeclStack:List)
+                    LoopStack::List,
+                    DeclStack::List)
                )
                     ~> _
                => pushBlock(TargetBlock)
                     ~> addVariablesForBlock(TargetBlock, DeclStack)
                     ~> K
           </k>
-          <nesting-depth> Depth:Int </nesting-depth>
+          <nesting-depth> Depth::Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
           requires ((#klabel(L) ==K #klabel(`processGoto`))

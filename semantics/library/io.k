@@ -50,7 +50,7 @@ module LIBC-IO
           <buff> "" </buff>
           [structural]
      rule <next-byte> Byte:String => .K </next-byte>
-          <buff> Buff:String => Buff +String Byte </buff>
+          <buff> Buff::String => Buff +String Byte </buff>
           [structural]
      rule <k> readFromFD(FD:Int) => tv(-1, ut(.Set, int)) ...</k>
           <fid> FD </fid>
@@ -76,24 +76,24 @@ module LIBC-IO
           [structural]
      rule [f-flush]:
           <file-commands>
-               f-flush(FD:Int)
+               f-flush(FD::Int)
                => f-sendString(FD, S)
                ~> f-sent(FD, S)
           ...</file-commands>
           <file>...
-               <fid> FD:Int </fid>
-               <buff> S:String => "" </buff>
+               <fid> FD::Int </fid>
+               <buff> S::String => "" </buff>
                <sending>... .List => ListItem(S) </sending>
           ...</file>
           [structural]
 
      rule [sendString-one]:
           <file-commands>
-               f-sendString(FD:Int, S:String)
+               f-sendString(FD::Int, S::String)
                => (#putc(FD, ordChar(firstChar(S)))
                     ~> f-sendString(FD, butFirstChar(S)))
           ...</file-commands>
-          <options> Opts:Set </options>
+          <options> Opts::Set </options>
           requires (S =/=String "")
                andBool notBool (NOIO  in Opts)
           [structural]
@@ -107,7 +107,7 @@ module LIBC-IO
           [structural]
 
      rule [f-sent]:
-          <file-commands> f-sent(FD:Int, S:String) => .K ...</file-commands>
+          <file-commands> f-sent(FD::Int, S::String) => .K ...</file-commands>
           <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>
@@ -117,7 +117,7 @@ module LIBC-IO
 
      rule [combine-done]:
           <done>
-               ListItem(S:String) ListItem(S':String)
+               ListItem(S::String) ListItem(S'::String)
                => ListItem(S +String S')
           ...</done>
           [structural]

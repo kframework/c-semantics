@@ -240,10 +240,10 @@ module C-DYNAMIC
           [structural]
 
      syntax KItem ::= initDone(Bool)
-     rule <k> R:KResult ~> initDone(I:Bool) => R ...</k>
+     rule <k> R:KResult ~> initDone(I::Bool) => R ...</k>
           <initializing> _ => I </initializing>
           [structural]
-     rule <k> initDone(I:Bool) => .K ...</k>
+     rule <k> initDone(I::Bool) => .K ...</k>
           <initializing> _ => I </initializing>
           [structural]
 

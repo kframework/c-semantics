@@ -56,9 +56,9 @@ module C-EXECUTION-ERROR
      rule <result-value> unknown => (139 ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")):>Int </result-value>
      requires notBool isCSV
 
-     rule <file-commands> openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
-     rule <file-commands> writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd) ...</file-commands>
-     rule <file-commands> close(Fd:Int) => #close(Fd) ...</file-commands>
+     rule <file-commands> openWriteThenClose(File::String, Line::String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
+     rule <file-commands> writeThenClose(Fd::Int, Line::String) => #write(Fd, Line) ~> close(Fd) ...</file-commands>
+     rule <file-commands> close(Fd::Int) => #close(Fd) ...</file-commands>
 
      rule <k> EXIT(Msg:String) => openWriteThenClose(Report, Msg +String ",\"" +String printStackTrace(L, Loc, S) +String "\"\r\n") ~> HALT ...</k>
           <call-stack> L:List </call-stack>
@@ -73,7 +73,7 @@ module C-EXECUTION-ERROR
 
      rule <result-value> unknown => 139 </result-value>
           <file-commands> .K => openWriteThenClose(Report, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String ",unknown\r\n") ...</file-commands>
-          <options>... SetItem(CSV(Report:String)) ...</options>
+          <options>... SetItem(CSV(Report::String)) ...</options>
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)

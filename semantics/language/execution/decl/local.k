@@ -70,9 +70,9 @@ module C-DECL-LOCAL
      syntax KItem ::= stabilizeInitType(K)
      rule (.K => stabilizeVLA(T)) ~> stabilizeInitType(initValue(_, T:Type, _))
           [structural]
-     rule <k> T:Type ~> stabilizeInitType(initValue(X:CId, _, K:K))
+     rule <k> T:Type ~> stabilizeInitType(initValue(X::CId, _, K:K))
           => checkStackDepth ~> initValue(X, T, K) ...</k>
-          <stack-depth> ListItem(I:Int => I +Int cfg:stackSize(.List, ListItem(T))) ...</stack-depth>
+          <stack-depth> ListItem(I::Int => I +Int cfg:stackSize(.List, ListItem(T))) ...</stack-depth>
           [structural]
 
      syntax KItem ::= declareOnly(CId, Type)
