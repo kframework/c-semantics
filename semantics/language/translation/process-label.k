@@ -42,9 +42,10 @@ module C-PROCESS-LABEL
                     ...</goto-calc>)
           </goto-map-calc>
 
-     rule (<goto-calc>
+     rule <k> waitingOnGotoMap ...</k>
+          ((<goto-calc>
                <computation> .K </computation>
-          ...</goto-calc>) => .Bag
+          ...</goto-calc>) => .Bag)
 
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
@@ -61,22 +62,31 @@ module C-PROCESS-LABEL
           requires M =/=K .Map
 
      rule <computation> Nop => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> Computation(_) => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> Break => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> Continue => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> Return(_) => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> Goto(_) => .K ...</computation>
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation> pushBlock(Tag::Int) => .K ...</computation>
           <goto-nesting-depth> N::Int => N +Int 1 </goto-nesting-depth>
           <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
+          <k> waitingOnGotoMap ...</k>
      rule <computation> popBlock => .K ...</computation>
           <goto-nesting-depth> I::Int => I -Int 1 </goto-nesting-depth>
           <goto-block-history> ListItem(_) => .List ...</goto-block-history>
+          <k> waitingOnGotoMap ...</k>
           requires I >Int 0
 
      rule <computation> L:CabsLoc => .K ...</computation>
           <curr-program-loc> _ => L </curr-program-loc>
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation>
                declareInternalVariable(X::CId, T::Type, Init::KResult) => .K
@@ -88,6 +98,7 @@ module C-PROCESS-LABEL
           </decl-stack>
           <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation> typedef(X::CId, T::Type) => .K ...</computation>
           <decl-stack>... .List
@@ -95,6 +106,7 @@ module C-PROCESS-LABEL
           </decl-stack>
           <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
+          <k> waitingOnGotoMap ...</k>
 
      // - should do this with a split
      rule <goto-calc>
@@ -135,6 +147,7 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
+          <k> waitingOnGotoMap ...</k>
 
      rule <goto-calc>
                <computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
@@ -164,6 +177,7 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation>
                (.K => S ~> loopMarked)
@@ -176,9 +190,11 @@ module C-PROCESS-LABEL
           <goto-loop-stack>
                (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
+          <k> waitingOnGotoMap ...</k>
      rule <computation>
                (loopMarked ~> While(_, _) => .K) ~> popLoop ~> _
           </computation>
+          <k> waitingOnGotoMap ...</k>
 
      rule <goto-calc>
                <computation>
@@ -201,6 +217,7 @@ module C-PROCESS-LABEL
                     B
                </goto-calc>
           )
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation>
                (Switch(_, _, S:K) => S ~> popLoop) ~> K:K
@@ -210,9 +227,11 @@ module C-PROCESS-LABEL
           <goto-loop-stack>
                (.List => ListItem(kpair(Num, (K ~> Tail))))
           ...</goto-loop-stack>
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation> popLoop => .K ...</computation>
           <goto-loop-stack> (ListItem(_:K) => .List) ...</goto-loop-stack>
+          <k> waitingOnGotoMap ...</k>
 
      rule <computation> (Label(Target::CId, S:K) => S) ~> K:K </computation>
           <computation-tail> Tail:K </computation-tail>
@@ -229,6 +248,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
+          <k> waitingOnGotoMap ...</k>
           requires notBool (Target in_keys(M))
 
      rule <computation>
@@ -248,6 +268,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
+          <k> waitingOnGotoMap ...</k>
           requires notBool (caseLabel(SwitchNum, Val) in_keys(M))
 
      rule <computation>
@@ -267,6 +288,7 @@ module C-PROCESS-LABEL
                          <- gotoObject(Depth, BlockHistory,
                          (S ~> K ~> Tail), LoopStack, DeclStack)]))
           ...</goto-map>
+          <k> waitingOnGotoMap ...</k>
           requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in_keys(M))
 
 endmodule

@@ -707,8 +707,8 @@ module C-DECL-GLOBAL
           requires notBool (Tu in_keys(S))
 
      rule <k> addGlobalTag(X:CId, Info:FieldInfo)
-               => completeTagInExtDecls(X, Info, keys(Exts))
-               ~> completeTagInIntDecls(X, Info, keys(Ints))
+               => completeTagInExtDecls(X, Info, keys_list(Exts))
+               ~> completeTagInIntDecls(X, Info, keys_list(Ints))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -739,51 +739,51 @@ module C-DECL-GLOBAL
      // TODO(chathhorn): This is all a mess, I really need to come up with a
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
-     syntax KItem ::= completeTagInExtDecls(CId, FieldInfo, Set)
+     syntax KItem ::= completeTagInExtDecls(CId, FieldInfo, List)
                     | completeTagInExtDecl(CId, FieldInfo, CId)
 
      rule <k> ( .K => completeTagInExtDecl(Tag, Info, X))
                ~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
-                    (SetItem(X:CId) => .Set) _) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu:String </tu-id>
+                    (ListItem(X:CId) => .List) _) ...</k>
           [structural]
 
-     rule completeTagInExtDecls(_, _, .Set) => .K
+     rule completeTagInExtDecls(_, _, .List) => .K
           [structural]
 
-     rule <k> completeTagInExtDecl(_, _, X:CId)
+     rule <k> completeTagInExtDecl(_, _, X::CId)
                => declare(typedDeclaration(T, X), NoInit)
           ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
           <externals>...
-               X |-> declState(_, T:Type,
+               X |-> declState(_, T::Type,
                          declared, _)
           ...</externals>
           requires notBool isFunctionType(T)
                andBool isCompleteType(T)
           [structural]
 
-     rule <k> (completeTagInExtDecl(_, _, X:CId) => .K )
+     rule <k> (completeTagInExtDecl(_, _, X::CId) => .K )
           ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
           <externals>...
-               X |-> declState(_, T:Type, DS:DeclState, _)
+               X |-> declState(_, T::Type, DS:DeclState, _)
           ...</externals>
           requires isFunctionType(T)
                orBool notBool isCompleteType(T)
                orBool DS =/=K declared
           [structural]
 
-     syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, Set)
+     syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, List)
                     | completeTagInIntDecl(CId, FieldInfo, CId)
 
      rule <k> ( .K => completeTagInIntDecl(Tag, Info, X))
                ~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
-                    (SetItem(X:CId) => .Set) _) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu:String </tu-id>
+                    (ListItem(X:CId) => .List) _) ...</k>
           [structural]
 
-     rule completeTagInIntDecls(_, _, .Set) => .K
+     rule completeTagInIntDecls(_, _, .List) => .K
           [structural]
 
      rule <k> completeTagInIntDecl(_, _, X:CId)

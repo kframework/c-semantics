@@ -136,9 +136,9 @@ module C-DECL-RESOLUTION
           ...</linking-state> => .Bag)
           [structural]
 
-     syntax KItem ::= removeFromExternalDecls(Set)
+     syntax KItem ::= removeFromExternalDecls(List)
 
-     rule <k> removeUnusedIdentifiers => removeFromExternalDecls(keys(Env) -Set Uses) ...</k>
+     rule <k> removeUnusedIdentifiers => removeFromExternalDecls(Set2List(keys(Env) -Set Uses)) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env:Map => removeAll(Env, (keys(Env) -Set Uses)) </genv>
@@ -147,15 +147,15 @@ module C-DECL-RESOLUTION
                <uses> Uses:Set </uses>
           ...</tu-linking-state> => .Bag)
 
-     rule <k> removeFromExternalDecls((SetItem(X:CId) => .Set) _) ...</k>
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <external-decls>... X |-> set((SetItem(Tu) => .Set) _) ...</external-decls>
-     rule <k> removeFromExternalDecls((SetItem(X:CId) => .Set) _) ...</k>
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <external-decls> Decls:Map </external-decls>
           requires notBool (X in_keys(Decls))
-     rule removeFromExternalDecls(.Set) => .K
+     rule removeFromExternalDecls(.List) => .K
 
 endmodule
