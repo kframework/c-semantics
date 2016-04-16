@@ -94,7 +94,6 @@ if ($cygwin) {
 
 our $ourDist = $distDirectory;
 
-my $xmlToK = catfile($distDirectory, 'xml-to-k');
 my $cparser = catfile($distDirectory, 'cparser');
 
 my $TRANS_DEF =
@@ -680,7 +679,7 @@ sub parse {
      my $kast = tempFile();
      checkError(preprocess($ppResult, $inputFile), $ppResult, 0);
 
-     my $cmd = ("$cparser $ppResult --trueName '$inputFile' | $xmlToK > $kast");
+     my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
      if ($args->{'-d'}) {
        print("$cmd\n");
      }

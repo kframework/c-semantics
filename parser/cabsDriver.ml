@@ -179,7 +179,7 @@ begin
   try 
     theMain (); 
   with F.CabsOnly -> (* this is OK *) ()
-  | Frontc.ParseError _ -> ()
+  | Frontc.ParseError _ -> failed := true
 end;
 cleanup ();
 exit (if !failed then 1 else 0)

@@ -100,8 +100,7 @@ through, consecutively:
 
 1. the GNU C preprocessor, resulting in the C program with all preprocessor
    macros expanded;
-2. the CIL C parser (cparser), resulting in an XML AST;
-3. and finally the `xml-to-k` script, resulting in a K-ified AST.
+2. the CIL C parser (cparser), resulting in a KAST term;
 
 The root of this AST is a single `TranslationUnit` term, which is then
 interpreted by our "translation" semantics.
