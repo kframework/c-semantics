@@ -105,7 +105,7 @@ sub main {
 
       if (defined $ENV{SEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NOIO`(.KList))';
+            $options = '`SetItem`(`NoIO`(.KList))';
             push @cmd, '-d';
             push @cmd, $EXEC_ND_DEF;
             print 'Searching reachable states... ';
@@ -114,7 +114,7 @@ sub main {
 
       if (defined $ENV{THREADSEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NOIO`(.KList))';
+            $options = '`SetItem`(`NoIO`(.KList))';
             push @cmd, '-d';
             push @cmd, $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';

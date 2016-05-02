@@ -2,6 +2,7 @@ module C-EXPR-ALIGNOF
      imports C-ABSTRACT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-EXPR-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-ELABORATOR-SYNTAX
 

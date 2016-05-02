@@ -3,7 +3,7 @@ module C-TRANSLATION-INIT-SYNTAX
      syntax KItem ::= load(K)
      syntax KItem ::= "link" | "cleanup"
 
-     syntax TransOpts ::= "DEBUG" | "NOLINK"
+     syntax TransOpts ::= Debug() | NoLink()
 endmodule
 
 module C-TRANSLATION-INIT
@@ -40,7 +40,7 @@ module C-TRANSLATION-INIT
                ~> reportSuccess
           ...</k>
           <options> Opts:Set </options>
-          requires notBool (NOLINK in Opts)
+          requires notBool (NoLink() in Opts)
 
      rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
                => load(Objs ~> mergeObj(Obj1, Obj2))
@@ -55,13 +55,13 @@ module C-TRANSLATION-INIT
      rule load(.K) => .K
 
      rule <k> link => reportSuccess ...</k>
-          <options> SetItem(NOLINK) ...</options>
+          <options> SetItem(NoLink()) ...</options>
 
      rule (<T>...
                <k> cleanup </k>
                <options> Opts:Set </options>
           ...</T> => .Bag)
-          requires notBool (DEBUG in Opts)
+          requires notBool (Debug() in Opts)
           [structural]
 
      syntax KItem ::= makeTu(String)
@@ -328,7 +328,7 @@ module C-TRANSLATION-INIT
 
      rule AttributeWrapper(K:K, _) => K
 
-     rule NothingExpression => emptyValue:>Expression
+     rule NothingExpression() => emptyValue:>Expression
 
      rule Computation(.K) => .K
      rule <k> Computation(V:RValue) => .K ...</k>

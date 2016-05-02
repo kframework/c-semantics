@@ -25,7 +25,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> Initializing:Bool </initializing>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
-          requires notBool (Atomic inQuals Qs) orBool Initializing
+          requires notBool (Atomic() inQuals Qs) orBool Initializing
           [structural]
      rule <k> nclv(Loc:SymLoc, t(Qs::Quals, _,
                     unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
@@ -34,7 +34,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> Initializing:Bool </initializing>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
-          requires notBool (Atomic inQuals Qs) orBool Initializing
+          requires notBool (Atomic() inQuals Qs) orBool Initializing
           [structural]
      rule <k> (.K => UNDEF("CEM1",
                "Attempting to access a member in an atomic struct.",
@@ -42,7 +42,7 @@ module C-COMMON-EXPR-MEMBERS
                ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>
-          requires Atomic inQuals Qs
+          requires Atomic() inQuals Qs
                andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
      rule <k> (.K => UNDEF("CEM2",
@@ -51,7 +51,7 @@ module C-COMMON-EXPR-MEMBERS
                ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>
-          requires Atomic inQuals Qs
+          requires Atomic() inQuals Qs
                andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
           [structural]
 

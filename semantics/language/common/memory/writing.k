@@ -220,7 +220,7 @@ module C-MEMORY-WRITING
 
      rule explodeToBits(ListItem(K:Bits) L:List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
-          requires L =/=MSet .List
+          requires L =/=K .List
      rule explodeToBits(ListItem(N:Bits bit:: N':Bits))
           => explodeToBits(ListItem(N)) explodeToBits(ListItem(N'))
      rule explodeToBits(ListItem(piece(N:Bits, Len:Int)))

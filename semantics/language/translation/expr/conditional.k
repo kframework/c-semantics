@@ -8,6 +8,7 @@ module C-EXPR-CONDITIONAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-EXPR-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{

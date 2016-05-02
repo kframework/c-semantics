@@ -44,7 +44,7 @@ module C-STMT-LOOP
           <k> loopMarked ~> For(Control:K, Post:K, S:K)
                => IfThenElse(Control,
                     (S ~> Computation(Post) ~> loopMarked
-                    ~> For(Control, Post, S)), Nop)
+                    ~> For(Control, Post, S)), Nop())
           ...</k>
           <block-history> ListItem(_:Int) ...</block-history>
           [structural] // rule so that looping programs see repetition
@@ -66,7 +66,7 @@ module C-STMT-LOOP
           [structural]
      rule [while]:
           loopMarked ~> While(B:K, S:K)
-          => IfThenElse(B, (S ~> loopMarked ~> While(B, S)), Nop)
+          => IfThenElse(B, (S ~> loopMarked ~> While(B, S)), Nop())
           [structural]  // rule so that looping programs see repetition
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
@@ -86,7 +86,7 @@ module C-STMT-LOOP
           [structural]
      rule [do-while]:
           loopMarked ~> DoWhile(B:K, S:K)
-          => S ~> IfThenElse(B, (loopMarked ~> DoWhile(B, S)), Nop)
+          => S ~> IfThenElse(B, (loopMarked ~> DoWhile(B, S)), Nop())
           [structural]  // rule so that looping programs see repetition
 
      /*@
@@ -127,24 +127,24 @@ module C-STMT-LOOP
      }
      */
      rule [continue]:
-          Continue ~> (K:KItem => .K)
-          requires (getKLabel(K) =/=K #klabel(`loopMarked`))
-               andBool (getKLabel(K) =/=K #klabel(`popBlock`))
-               andBool (getKLabel(K) =/=K #klabel(`pushBlock`))
-               andBool (getKLabel(K) =/=K #klabel(`popLoop`))
+          Continue() ~> (K:KItem => .K)
+          requires (getKLabel(K) =/=K #klabel(`loopMarked_C-DYNAMIC-SYNTAX`))
+               andBool (getKLabel(K) =/=K #klabel(`popBlock_C-DYNAMIC-SYNTAX`))
+               andBool (getKLabel(K) =/=K #klabel(`pushBlock_C-DYNAMIC-SYNTAX`))
+               andBool (getKLabel(K) =/=K #klabel(`popLoop_C-DYNAMIC-SYNTAX`))
           [structural]
      rule [continue-through-pop]:
-          Continue ~> popBlock
-          => popBlock ~> Continue
+          Continue() ~> popBlock
+          => popBlock ~> Continue()
           [structural]
 
      rule [continue-done-for]:
-          (Continue => Computation(Post))
+          (Continue() => Computation(Post))
           ~> loopMarked
           ~> For(_, Post:K, _)
           [structural]
      rule [continue-done]:
-          (Continue => .K) ~> loopMarked ~> K:KItem
+          (Continue() => .K) ~> loopMarked ~> K:KItem
           requires getKLabel(K) =/=K #klabel(`For`)
           [structural]
 

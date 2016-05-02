@@ -7,7 +7,12 @@ module C-TYPING-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports MAP
 
-     syntax CId ::= typedef(CId)
+     syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
+     syntax UType ::= ut(Set, SimpleUType)     // unqualified type
+
+     // --------------
+
+     syntax CId ::= typedef(CId) [klabel(typedef1)]
      syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
 
@@ -222,6 +227,8 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= min(UType) [function]
      syntax Int ::= max(UType) [function]
+     syntax Float ::= fmax(UType) [function]
+     syntax Float ::= fmin(UType) [function]
      syntax Bool ::= inRange(CValue, UType) [function]
 
      syntax Modifier ::= "noModifier"

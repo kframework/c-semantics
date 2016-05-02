@@ -48,7 +48,7 @@ module C-IO-DIRECT
           ~> readBytes-aux(_, _, (Aux:List => Aux ListItem(tv(V, T))))
           [structural]
 
-     syntax List ::= values(List) [function]
+     syntax List ::= values(List) [function, klabel(valuesRValue)]
      rule values(ListItem(tv(K::CValue, _)) L:List) => ListItem(K) values(L)
      rule values(.List) => .List
 
@@ -73,7 +73,6 @@ module C-IO-DIRECT
           requires notBool (Offset in (keys(M)))
           [structural]
 
-     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
      rule readBytesForWriting(Loc:SymLoc, Size:Int, .List, _)
           => readBytes-aux(Loc, Size, .List)
 

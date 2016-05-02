@@ -155,13 +155,13 @@ module C-FUNCTION-DEF
      syntax KItem ::= safeBody(CId, K) [function]
 
      rule safeBody(X:CId, Blk:K)
-          => Blk ~> Return(NothingExpression)
+          => Blk ~> Return(NothingExpression())
           requires X =/=K Identifier("main")
      rule safeBody(Identifier("main"), Blk:K)
           => Blk ~> Return(tv(0, utype(int)))
 
      syntax KItem ::= staticEval(CId, Type, K)
-     syntax KItem ::= calculateGotoMap(CId)
+     syntax KItem ::= calculateGotoMap(CId) [klabel(calculateGotoMap1)]
 
      rule staticEval(X:CId, DefT:Type, Blk:K)
           => scope(blockScope(X, 0),

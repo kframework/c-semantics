@@ -61,13 +61,13 @@ module C-PROCESS-LABEL
           <goto-map>... F |-> map(M:Map) ...</goto-map>
           requires M =/=K .Map
 
-     rule <computation> Nop => .K ...</computation>
+     rule <computation> Nop() => .K ...</computation>
           <k> waitingOnGotoMap ...</k>
      rule <computation> Computation(_) => .K ...</computation>
           <k> waitingOnGotoMap ...</k>
-     rule <computation> Break => .K ...</computation>
+     rule <computation> Break() => .K ...</computation>
           <k> waitingOnGotoMap ...</k>
-     rule <computation> Continue => .K ...</computation>
+     rule <computation> Continue() => .K ...</computation>
           <k> waitingOnGotoMap ...</k>
      rule <computation> Return(_) => .K ...</computation>
           <k> waitingOnGotoMap ...</k>
@@ -162,7 +162,7 @@ module C-PROCESS-LABEL
                <goto-calc>
                     <computation> S </computation>
                     <computation-tail>
-                         IfThenElse(E, (loopMarked ~> DoWhile(E, S)), Nop)
+                         IfThenElse(E, (loopMarked ~> DoWhile(E, S)), Nop())
                          ~> popLoop
                          ~> K
                          ~> Tail

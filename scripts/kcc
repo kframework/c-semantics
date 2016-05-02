@@ -331,19 +331,19 @@ sub main {
                push(@options, "`CSV`(#token($file, $quoteString))");
           }
           if ($args->{'-frecover-all-errors'}) {
-               push(@options, "`RECOVER_ALL`(.KList)");
+               push(@options, "`RecoverAll`(.KList)");
           }
           if ($args->{'-Wno-undefined'}) {
-               push(@options, "`NO-UNDEF`(.KList)");
+               push(@options, "`NoUndef`(.KList)");
           }
           if ($args->{'-Wno-unspecified'}) {
-               push(@options, "`NO-UNSPEC`(.KList)");
+               push(@options, "`NoUnspec`(.KList)");
           }
           if ($args->{'-Wno-implementation-defined'}) {
-               push(@options, "`NO-IMPL`(.KList)");
+               push(@options, "`NoImpl`(.KList)");
           }
           if ($args->{'-flint'} || $args->{'-Wlint'}) {
-               push(@options, "`LINT`(.KList)");
+               push(@options, "`Lint`(.KList)");
                my $heapSize;
                if ($args->{'-fheap-size='}) {
                     $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
@@ -373,8 +373,8 @@ sub main {
                if ($cygwin) {
                     $stackSize = backslash($stackSize);
                }
-               push(@options, "`HEAP`(#token($heapSize, $quoteInt))");
-               push(@options, "`STACK`(#token($stackSize, $quoteInt))");
+               push(@options, "`Heap`(#token($heapSize, $quoteInt))");
+               push(@options, "`Stack`(#token($stackSize, $quoteInt))");
           }
           my $opts = makeSet(@options);
 
@@ -487,7 +487,7 @@ sub classify {
                extractStatic($_, $base, $suffix);
           } elsif ($suffix eq '.c' or $suffix eq '.h') {
                push(@srcFiles, $_);
-          } elsif (isNativeObj($_)) {
+          } elsif (isNativeObj($_) or -e $_) {
                push(@ldArgs, $_);
           } else {
                if (!($_ =~ $ignoredFlags)) {
@@ -567,7 +567,7 @@ sub getKRunCommand {
      }
      my @options;
      if (!$link) {
-          push(@options, "`NOLINK`(.KList)");
+          push(@options, "`NoLink`(.KList)");
           push(@krun_args, "--interpret");
      } else {
           push(@krun_args, '--mini-krun');
@@ -580,19 +580,19 @@ sub getKRunCommand {
           push(@options, "`CSV`(#token($file, $quoteString))");
      }
      if ($args->{'-flint'} || $args->{'-Wlint'}) {
-          push(@options, "`LINT`(.KList)");
+          push(@options, "`Lint`(.KList)");
      }
      if ($args->{'-frecover-all-errors'}) {
-          push(@options, "`RECOVER_ALL`(.KList)");
+          push(@options, "`RecoverAll`(.KList)");
      }
      if ($args->{'-Wno-undefined'}) {
-          push(@options, "`NO-UNDEF`(.KList)");
+          push(@options, "`NoUndef`(.KList)");
      }
      if ($args->{'-Wno-unspecified'}) {
-          push(@options, "`NO-UNSPEC`(.KList)");
+          push(@options, "`NoUnspec`(.KList)");
      }
      if ($args->{'-Wno-implementation-defined'}) {
-          push(@options, "`NO-IMPL`(.KList)");
+          push(@options, "`NoImpl`(.KList)");
      }
 
      my $opts = makeSet(@options);

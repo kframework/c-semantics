@@ -7,10 +7,10 @@ module C-EXPR-SEQUENCING
      syntax KItem ::= commaListHolder(K)
      rule Comma(list(ListItem(K:K) L:List))
           => toRVal(K) ~> comma ~> commaListHolder(.K) ~> Comma(list(L))
-          requires L =/=MSet .List
+          requires L =/=K .List
      rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K) L:List))
           => toRVal(K) ~> comma ~> commaListHolder(CL) ~> Comma(list(L))
-          requires L =/=MSet .List
+          requires L =/=K .List
 
      rule (toRVal(R:RValue) ~> comma => .K)
           ~> commaListHolder(_ ~> (.K => stripHold(R) ~> comma))

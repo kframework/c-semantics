@@ -1,4 +1,11 @@
+module C-EXPR-SIZEOF-SYNTAX
+     imports BASIC-K
+
+     syntax KItem ::= #SizeofType(K) [strict]
+endmodule
+
 module C-EXPR-SIZEOF
+     imports C-EXPR-SIZEOF-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -6,6 +13,7 @@ module C-EXPR-SIZEOF
      imports C-SETTINGS-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-EXPR-SYNTAX
      imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
@@ -45,7 +53,6 @@ module C-EXPR-SIZEOF
 
      rule SizeofType(T:Type, K:K) => #SizeofType(DeclType(T, K))
 
-     syntax KItem ::= #SizeofType(K) [strict]
      rule #SizeofType(T:Type) => sizeof(T)
           requires notBool isVariableLengthArrayType(T)
                andBool isCompleteType(T)

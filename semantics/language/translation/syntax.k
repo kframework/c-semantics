@@ -52,16 +52,16 @@ module C-ABSTRACT-SYNTAX
      | Tunsigned
      | Tnamed of string
      */
-     syntax TypeSpecifier ::= "Void"
-     syntax TypeSpecifier ::= "Char"
-     syntax TypeSpecifier ::= "Bool"
-     syntax TypeSpecifier ::= "Short"
-     syntax TypeSpecifier ::= "Int"
-     syntax TypeSpecifier ::= "Long"
-     syntax TypeSpecifier ::= "Float"
-     syntax TypeSpecifier ::= "Double"
-     syntax TypeSpecifier ::= "Signed"
-     syntax TypeSpecifier ::= "Unsigned"
+     syntax TypeSpecifier ::= Void()
+     syntax TypeSpecifier ::= Char()
+     syntax TypeSpecifier ::= Bool()
+     syntax TypeSpecifier ::= Short()
+     syntax TypeSpecifier ::= Int()
+     syntax TypeSpecifier ::= Long()
+     syntax TypeSpecifier ::= Float()
+     syntax TypeSpecifier ::= Double()
+     syntax TypeSpecifier ::= Signed()
+     syntax TypeSpecifier ::= Unsigned()
      syntax Float ::= "inf"
      syntax TypeSpecifier ::= Named(CId)
      /*
@@ -91,8 +91,8 @@ module C-ABSTRACT-SYNTAX
 
      syntax TypeSpecifier ::= TypeofType(K, K)
 
-     syntax TypeSpecifier ::= "Complex"
-     syntax TypeSpecifier ::= "Imaginary"
+     syntax TypeSpecifier ::= Complex()
+     syntax TypeSpecifier ::= Imaginary()
      syntax TypeSpecifier ::= TAtomic(K, K)
      syntax TypeSpecifier ::= AlignasExpression(K)
      syntax TypeSpecifier ::= AlignasType(K, K)
@@ -135,7 +135,7 @@ module C-ABSTRACT-SYNTAX
                (* Prints "decl (args[, ...])".
                 * decl is never a PTR.*)
      */
-     syntax KItem ::= "JustBase"
+     syntax KItem ::= JustBase()
      syntax DeclTypeSyntax ::= FunctionType(K) [strict]
      // third argument should also be strict, but not doing anything with
      // [strict 5] yet
@@ -289,10 +289,10 @@ module C-ABSTRACT-SYNTAX
 
      //must be declared as function,
      //otherwise, if then else rule failed in for(;;) cases
-     syntax Expression ::= "NothingExpression" [function]
+     syntax Expression ::= NothingExpression() [function]
 
      // For VLAs with unspecified size ([*]).
-     syntax RValue ::= "UnspecifiedSizeExpression"
+     syntax RValue ::= UnspecifiedSizeExpression()
 
      /*
      (* A CAST can actually be a constructor expression *)
@@ -392,7 +392,7 @@ module C-ABSTRACT-SYNTAX
      | ATINDEX_INIT of expression * initwhat
      | ATINDEXRANGE_INIT of expression * expression
      */
-     syntax KResult ::= "NextInit"
+     syntax KResult ::= NextInit()
                       | InFieldInit(CId, K)
                       | AtIndexInit(K, K)
                       | AtIndexRangeInit(K, K)
@@ -401,10 +401,9 @@ module C-ABSTRACT-SYNTAX
      and attribute = String * expression list
      */
      // String, List
-     syntax C ::= Attribute(String, K)
 
-     syntax KItem ::= "AnonymousName" // new, argument is type
-     rule AnonymousName => #NoName [anywhere]
+     syntax KItem ::= AnonymousName() // new, argument is type
+     rule AnonymousName() => #NoName [anywhere]
 
      syntax C ::= Definition
      syntax C ::= ForClause

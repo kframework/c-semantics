@@ -24,7 +24,7 @@ module C-EXECUTION-INIT
 
      imports C-CONFIGURATION
 
-     syntax TCell ::= ".TCell"
+     syntax TCell ::= ".TCell" [klabel(.TCell)]
 
      /*@ \fromStandard{\source[n1570]{\para{5.1.2.2.1}{2}}}{
      If they are declared, the parameters to the main function shall obey the

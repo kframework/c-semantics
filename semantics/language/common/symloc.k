@@ -20,7 +20,7 @@ module C-SYMLOC-SYNTAX
      // is how we keep track of register-ness.
      syntax Duration ::= register(Int)
 
-     syntax Duration ::= "nativeAddress"
+     syntax Duration ::= nativeAddress()
      syntax Duration ::= nativeSymbol(String)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
@@ -38,14 +38,14 @@ module C-SYMLOC-SYNTAX
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
-     syntax SymBase ::= Int "@" Duration
+     syntax SymBase ::= Int "@" Duration [klabel(_@_)]
 
 
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int)
      syntax SymLoc ::= CanonicalSymLoc
      syntax CanonicalSymLoc ::= loc(SymBase, Int, Set) [klabel(loc3)]
-     syntax CanonicalSymLoc ::= "NullPointer"
+     syntax CanonicalSymLoc ::= "NullPointer" [klabel(NullPointer)]
 
      syntax KResult ::= SymLoc
 
@@ -111,9 +111,10 @@ endmodule
 module C-SYMLOC
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports K-REFLECTION
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-CONFIGURATION
 
      imports COMPAT-SYNTAX
@@ -165,8 +166,8 @@ module C-SYMLOC
      rule isRegisterLoc(loc(_ @ register(_), _, _)) => true
      rule isRegisterLoc(_) => false [owise]
 
-     rule isNativeLoc(loc(_ @ nativeAddress, _)) => true
-     rule isNativeLoc(loc(_ @ nativeAddress, _, _)) => true
+     rule isNativeLoc(loc(_ @ nativeAddress(), _)) => true
+     rule isNativeLoc(loc(_ @ nativeAddress(), _, _)) => true
      rule isNativeLoc(loc(_ @ nativeSymbol(_), _)) => true
      rule isNativeLoc(loc(_ @ nativeSymbol(_), _, _)) => true
      rule isNativeLoc(_) => false [owise]
@@ -307,8 +308,8 @@ module C-SYMLOC
      rule getAlign(loc(Base:SymBase, Offset:Int, Provs:Set)) => getAlign'(.K, Provs, Base, #configuration)
           requires notBool isNativeLoc(loc(Base, Offset, Provs))
      rule getAlign(NullPointer) => cfg:alignofMalloc
-     rule getAlign(loc(0 @ nativeAddress, Offset:Int, _)) => getNativeAlign(Offset)
-     rule getAlign(loc(0 @ nativeAddress, Offset:Int)) => getNativeAlign(Offset)
+     rule getAlign(loc(0 @ nativeAddress(), Offset:Int, _)) => getNativeAlign(Offset)
+     rule getAlign(loc(0 @ nativeAddress(), Offset:Int)) => getNativeAlign(Offset)
      rule getAlign(_) => 1 [owise]
 
      syntax Int ::= "getAlign'" "(" K "," Set "," SymBase "," K ")" [function]

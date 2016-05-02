@@ -6,6 +6,7 @@ module LIBC-THREADS
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
 
      imports C-CONFIGURATION
 

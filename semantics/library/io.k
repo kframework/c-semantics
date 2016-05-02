@@ -8,7 +8,7 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= flush(Int)
      syntax KItem ::= "f-flush" "(" Int ")"
 
-     syntax ExecOpts ::= "NOIO"
+     syntax ExecOpts ::= NoIO()
 endmodule
 
 module LIBC-IO
@@ -95,12 +95,12 @@ module LIBC-IO
           ...</file-commands>
           <options> Opts::Set </options>
           requires (S =/=String "")
-               andBool notBool (NOIO  in Opts)
+               andBool notBool (NoIO()  in Opts)
           [structural]
      rule <file-commands>
                f-sendString(_, _) => .K
           ...</file-commands>
-          <options> SetItem(NOIO) ...</options>
+          <options> SetItem(NoIO()) ...</options>
           [structural]
      rule [sendString-done]:
           <file-commands> f-sendString(_, "") => .K ...</file-commands>

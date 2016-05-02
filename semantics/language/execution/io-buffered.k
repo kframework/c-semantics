@@ -8,6 +8,8 @@ module C-IO-BUFFERED-SYNTAX
      // deletes the base object from memory, given a location and it size (as a
      // check)
      syntax KItem ::= deleteSizedObject(SymBase, Int)
+
+     syntax KItem ::= writeBytes(SymLoc, List)
 endmodule
 
 module C-IO-BUFFERED
@@ -29,7 +31,6 @@ module C-IO-BUFFERED
 
      syntax KItem ::= bwrite(SymLoc, List)
 
-     syntax KItem ::=  writeBytes(SymLoc, List)
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
                => checkWrite(Loc, T)
                ~> checkBounds(Loc, size(Bytes))
@@ -77,9 +78,9 @@ module C-IO-BUFFERED
           requires // Sequencing.
                (notBool loc(Base, Offset) in Locs)
                // Const.
-               andBool (notBool (Const inQuals getQualsAtOffset(ObjT, Offset)))
+               andBool (notBool (Const() inQuals getQualsAtOffset(ObjT, Offset)))
                // Volatile.
-               andBool ((notBool (Volatile inQuals getQualsAtOffset(ObjT, Offset)))
+               andBool ((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T))
                // Cross-thread writes.
                andBool notBool ((isThreadDuration(loc(Base, Offset))
@@ -124,7 +125,7 @@ module C-IO-BUFFERED
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
-          requires Const inQuals getQualsAtOffset(ObjT, Offset)
+          requires Const() inQuals getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
@@ -133,7 +134,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _, _) ...</mem>
           requires notBool isVolatileType(T)
-               andBool (Volatile inQuals getQualsAtOffset(ObjT, Offset))
+               andBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (.K => IMPL("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
@@ -210,7 +211,7 @@ module C-IO-BUFFERED
      rule assertSeq(Loc::SymLoc, Locs::List)
           => assert(notBool (Loc in Locs), errorUnseqEffects) [macro]
      rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
-          => assert((notBool (Volatile inQuals getQualsAtOffset(ObjT, Offset)))
+          => assert((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
                orBool isVolatileType(T), errorNonVolatileLVal) [macro]
      rule assertUninit(L::SymLoc)
           => assert(notBool hasLint orBool notBool (isStaticDuration(L) orBool isThreadDuration(L)),
@@ -554,7 +555,6 @@ module C-IO-BUFFERED
      rule effInnerType(fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _))
           => T
 
-     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
           => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
           ...</k>

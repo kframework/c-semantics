@@ -100,9 +100,6 @@ module C-TYPING-MISC
           => (V <=Float fmax(T)) andBool (V >=Float fmin(T))
           orBool isInfinite(V) orBool isNaN(V)
 
-     syntax Float ::= fmax(UType) [function]
-     syntax Float ::= fmin(UType) [function]
-
      rule fmin(ut(_, float)) => 0.0f -Float maxValueFloat(24, 8)
      rule fmax(ut(_, float)) => maxValueFloat(24, 8)
 
@@ -158,22 +155,22 @@ module C-TYPING-MISC
 
      // These are the only actual members "type qualifier" syntactic class.
      rule typeQualifiers =>
-          SetItem(Const)
-          SetItem(Restrict)
-          SetItem(Volatile)
-          SetItem(Atomic)
+          SetItem(Const())
+          SetItem(Restrict())
+          SetItem(Volatile())
+          SetItem(Atomic())
 
      rule storageSpecifiers =>
-          SetItem(Static)
-          SetItem(Extern)
-          SetItem(Auto)
-          SetItem(ThreadLocal)
-          SetItem(Register)
+          SetItem(Static())
+          SetItem(Extern())
+          SetItem(Auto())
+          SetItem(ThreadLocal())
+          SetItem(Register())
           // Also typedef, technically.
 
      rule functionSpecifiers =>
-          SetItem(Noreturn)
-          SetItem(Inline)
+          SetItem(Noreturn())
+          SetItem(Inline())
 
      syntax Set ::= "constantModifiers" [function]
      rule constantModifiers =>
@@ -225,7 +222,7 @@ module C-TYPING-MISC
           => t(Qs +Quals Qs', Mods, variableLengthArrayType(addQualifiers(Qs', T), N))
      rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs +Quals Qs', Mods, T)
-          requires notBool isArrayType(t(Qs, Mods, T))
+          [owise]
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 
@@ -257,10 +254,10 @@ module C-TYPING-MISC
 
      rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, SetItem(RestrictBlock(Tag)) Mods, tagRestrict(Tag, T))
-          requires Restrict inQuals Qs
+          requires Restrict() inQuals Qs
      rule tagRestrict(Tag::Scope, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods, tagRestrict(Tag, T))
-          requires notBool (Restrict inQuals Qs)
+          requires notBool (Restrict() inQuals Qs)
 
      syntax SimpleType ::= tagRestrict(Scope, SimpleType)
           [function, klabel(tagRestrictSimpleType)]

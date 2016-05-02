@@ -1,10 +1,11 @@
 module LIBC-STDARG
      imports LIBC-BOOTSTRAP-SYNTAX
 
+     imports C-BUILTIN-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-MEMORY-READING-SYNTAX
      imports C-SYNTAX
-     imports C-BUILTIN-SYNTAX
 
      imports C-CONFIGURATION
 

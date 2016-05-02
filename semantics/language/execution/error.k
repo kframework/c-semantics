@@ -1,6 +1,7 @@
 module C-EXECUTION-ERROR-SYNTAX
      imports C-DYNAMIC-SYNTAX
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
+     syntax KItem ::= error(String, String)
 endmodule
 
 module C-EXECUTION-ERROR
@@ -28,7 +29,6 @@ module C-EXECUTION-ERROR
 
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
-     syntax KItem ::= error(String, String)
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
           => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)

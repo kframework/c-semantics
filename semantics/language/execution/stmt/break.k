@@ -6,7 +6,7 @@ module C-STMT-BREAK
      iteration statement.
      }*/
      rule [break]:
-          Break => popLoop
+          Break() => popLoop
           [structural]
 
 endmodule

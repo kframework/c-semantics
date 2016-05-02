@@ -1,12 +1,22 @@
+module C-TYPING-INTERPRETATION-SYNTAX
+     imports BASIC-K
+     imports C-DYNAMIC-SYNTAX
+
+     syntax Type ::= pushTypeDown(Type, K) [function]
+     syntax KItem ::= makeArrayType(RValue, K)
+endmodule
+
 module C-TYPING-INTERPRETATION
      imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
@@ -35,15 +45,14 @@ module C-TYPING-INTERPRETATION
      syntax KItem ::= makeOldStyleFunctionType(List)
      syntax KItem ::= makePointerType(Set)
      syntax KItem ::= "makeIncompleteArrayType"
-     syntax KItem ::= makeArrayType(RValue, K)
 
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:K)
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
           requires N >Int 0
           [structural]
-     rule ArrayType(T:Type, UnspecifiedSizeExpression, Spec:K)
-          => pushTypeDown(T, makeArrayType(UnspecifiedSizeExpression, Spec))
+     rule ArrayType(T:Type, UnspecifiedSizeExpression(), Spec:K)
+          => pushTypeDown(T, makeArrayType(UnspecifiedSizeExpression(), Spec))
           [structural]
      rule ArrayType(T:Type, N:RValue, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
@@ -86,7 +95,7 @@ module C-TYPING-INTERPRETATION
           => Prototype'(T, L1, L2 ListItem(adjustParam(t(Qs, Mods, ST))), Var)
      rule typedDeclaration(DT:Type, X:CId)
           ~> Prototype'(T:Type, L1:List, L2:List, Var:Bool)
-          => declare(typedDeclaration(adjustParam(DT), X), NoInit)
+          => declare(typedDeclaration(adjustParam(DT), X), NoInit())
           ~> Prototype'(T, L1, L2 ListItem(typedDeclaration(adjustParam(DT), X)), Var)
      rule <k> Prototype'(T:Type, .List, L:List, false) => .K ...</k>
           <elab> _ => pushTypeDown(T, makeFunctionType(L)) </elab>
@@ -96,7 +105,6 @@ module C-TYPING-INTERPRETATION
      rule NoPrototype(T:Type, krlist(L:List), false)
           => pushTypeDown(T, makeOldStyleFunctionType(L))
 
-     syntax Type ::= pushTypeDown(Type, K) [function]
      rule pushTypeDown(T:BasicType, Lbl:K) => applyTypeFunction(Lbl, T)
      rule pushTypeDown(t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)), Lbl:K)
           => t(Qs, Mods, arrayType(pushTypeDown(T, Lbl), N))
@@ -133,12 +141,12 @@ module C-TYPING-INTERPRETATION
      rule applyTypeFunction(makeIncompleteArrayType, T::Type)
           => t(noQuals, getSpecifiers(T), incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(tv(N:Int, T'::UType), Specifier(list(ListItem(Static)))), T::Type)
+     rule applyTypeFunction(makeArrayType(tv(N:Int, T'::UType), Specifier(list(ListItem(Static())))), T::Type)
           => t(noQuals, getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
      // TODO(chathhorn): Other qualifiers?
      rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), arrayType(stripSpecifiers(T), N))
-     rule applyTypeFunction(makeArrayType(UnspecifiedSizeExpression, Specifier(list(.List))), T::Type)
+     rule applyTypeFunction(makeArrayType(UnspecifiedSizeExpression(), Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), unspecifiedArrayType(stripSpecifiers(T)))
      rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
@@ -157,7 +165,7 @@ module C-TYPING-INTERPRETATION
           => typedDeclaration(T, #NoName(N))
      rule nameArg(_, T::K) => T [owise]
 
-     rule <k> JustBase => T ...</k>
+     rule <k> JustBase() => T ...</k>
           <decl-type-holder> T:Type => .K ...</decl-type-holder>
           [structural]
 
@@ -177,9 +185,7 @@ module C-TYPING-INTERPRETATION
      rule NameAndType(X:CId, T:Type) => typedDeclaration(T, X)
           [structural]
 
-     rule extractActualType(T:BasicType) => T
-     rule extractActualType(T:StructOrUnionType) => T
-     rule extractActualType(T:BitfieldType) => T
+     rule extractActualType(T::Type) => T [owise]
      rule extractActualType(t(Qs::Quals, S::Set, arrayType(T:Type, N:Int)))
           => t(Qs, S, arrayType(extractActualType(T), N))
      rule extractActualType(t(Qs::Quals, S::Set, unspecifiedArrayType(T:Type)))

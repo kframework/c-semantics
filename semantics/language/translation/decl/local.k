@@ -25,7 +25,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
                => addToEnv(X, Base)
           ...</k>
-          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
+          <elab>... .K => declareInternalVariable(X, T', NoInit()) </elab>
           <types> M:Map => M[X <- T] </types>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
@@ -41,7 +41,7 @@ module C-DECL-LOCAL
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
                => giveType(X, T)
           ...</k>
-          <elab>... .K => declareInternalVariable(X, T', NoInit) </elab>
+          <elab>... .K => declareInternalVariable(X, T', NoInit()) </elab>
           <external-types>... X |-> T:Type ...</external-types>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> TU:String </curr-tu>
@@ -58,7 +58,7 @@ module C-DECL-LOCAL
                => addToEnv(X, nonStatic)
                ~> giveType(X, T)
           ...</k>
-          <elab>... .K => declareInternalVariable(X, T, NoInit) </elab>
+          <elab>... .K => declareInternalVariable(X, T, NoInit()) </elab>
           <external-types> Types:Map </external-types>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
@@ -109,7 +109,7 @@ module C-DECL-LOCAL
           [structural]
 
      syntax KResult ::= toInitValue(CId, Type, K) [function]
-     rule toInitValue(X:CId, T:Type, NoInit) => initValue(X, T, .K)
+     rule toInitValue(X:CId, T:Type, NoInit()) => initValue(X, T, .K)
      rule toInitValue(_, _, Init:K) => Init [owise]
 
      syntax KItem ::= initLocalStatic(CId, K)

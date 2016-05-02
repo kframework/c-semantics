@@ -73,7 +73,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> Call(
-               tv(loc(0 @ nativeAddress, Address:Int), ut(_, pointerType(T:FunctionType))),
+               tv(loc(0 @ nativeAddress(), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint ~> application(CurrLoc, "native", functionObject(nativeFunction(Address), makeNativeDecl(T), .List, handleBuiltin), T, L)
           ...</k>
@@ -86,7 +86,6 @@ module C-EXPR-FUNCTION-CALL
           <types> _ => F |-> T </types>
           <env> _ => .Map </env>
 
-     syntax CId ::= nativeFunction(Int)
      rule idToString(nativeFunction(Address:Int)) => "<native function at 0x" +String Base2String(Address, 16) +String ">"
 
      syntax Type ::= makeNativeDecl(Type) [function]

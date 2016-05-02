@@ -2,6 +2,7 @@ module C-ERROR-SYNTAX
      imports BASIC-K
      imports STRING-SYNTAX
      imports BOOL-SYNTAX
+     imports INT-SYNTAX
 
      // Error code, desc., C11 citation.
      syntax KItem ::= UNDEF(String, String, String)
@@ -20,12 +21,14 @@ module C-ERROR-SYNTAX
 
      syntax String ::= ErrorMsg(String, String, String, String, String) [function]
      syntax KItem ::= openWriteThenClose(String, String)
+     syntax KItem ::= writeThenClose(Int, String)
+     syntax KItem ::= close(Int)
      syntax Bool ::= "isCSV" [function]
                    | "isUndef" [function]
                    | "isUnspec" [function]
                    | "isImpl" [function]
 
-     syntax Opts ::= "NO-UNDEF" | "NO-UNSPEC" | "NO-IMPL"
+     syntax Opts ::= NoUndef() | NoUnspec() | NoImpl()
 
 endmodule
 
@@ -99,8 +102,6 @@ module C-ERROR
      rule EXT-UNDEF(_, _, _, _) => HALT
           requires notBool isUndef
 
-     syntax KItem ::= writeThenClose(Int, String)
-     syntax KItem ::= close(Int)
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
      rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd)
      rule close(Fd:Int) => #close(Fd)
@@ -112,15 +113,15 @@ module C-ERROR
 
      syntax Bool ::= isUndef(K) [function, klabel(isUndef1)]
      rule isUndef => isUndef(#configuration)
-     rule isUndef(<generatedTop>... <options>... SetItem(NO-UNDEF) ...</options> ...</generatedTop>) => false
+     rule isUndef(<generatedTop>... <options>... SetItem(NoUndef()) ...</options> ...</generatedTop>) => false
      rule isUndef(_) => true [owise]
      syntax Bool ::= isUnspec(K) [function, klabel(isUnspec1)]
      rule isUnspec => isUnspec(#configuration)
-     rule isUnspec(<generatedTop>... <options>... SetItem(NO-UNSPEC) ...</options> ...</generatedTop>) => false
+     rule isUnspec(<generatedTop>... <options>... SetItem(NoUnspec()) ...</options> ...</generatedTop>) => false
      rule isUnspec(_) => true [owise]
      syntax Bool ::= isImpl(K) [function, klabel(isImpl1)]
      rule isImpl => isImpl(#configuration)
-     rule isImpl(<generatedTop>... <options>... SetItem(NO-IMPL) ...</options> ...</generatedTop>) => false
+     rule isImpl(<generatedTop>... <options>... SetItem(NoImpl()) ...</options> ...</generatedTop>) => false
      rule isImpl(_) => true [owise]
 
 endmodule

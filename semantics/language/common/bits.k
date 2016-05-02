@@ -1,8 +1,8 @@
 module C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     syntax Trap ::= "trap"
-     syntax Unknown ::= "unknown"
+     syntax Trap ::= "trap" [klabel(trap)]
+     syntax Unknown ::= "unknown" [klabel(unknown)]
      syntax Unknown ::= unknownAlignedInt(Int)
      syntax Bits ::= Trap
      syntax Bits ::= Unknown

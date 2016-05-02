@@ -7,13 +7,16 @@ endmodule
 
 module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
 
      imports C-ABSTRACT-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONFIGURATION
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
@@ -29,49 +32,49 @@ module C-TYPING-EXPR
                   | "typeStrictTernaryOpsThird" [function]
 
      rule typeStrictUnaryOps =>
-          SetItem(#klabel(`-_`))
-          SetItem(#klabel(`+_`))
-          SetItem(#klabel(`!_`))
-          SetItem(#klabel(`~_`))
-          SetItem(#klabel(`*_`))
-          SetItem(#klabel(`&_`))
-          SetItem(#klabel(`++_`))
-          SetItem(#klabel(`--_`))
-          SetItem(#klabel(`_++`))
-          SetItem(#klabel(`_--`))
+          SetItem(#klabel(`-__C-SYNTAX`))
+          SetItem(#klabel(`+__C-SYNTAX`))
+          SetItem(#klabel(`!__C-SYNTAX`))
+          SetItem(#klabel(`~__C-SYNTAX`))
+          SetItem(#klabel(`*__C-SYNTAX`))
+          SetItem(#klabel(`&__C-SYNTAX`))
+          SetItem(#klabel(`++__C-SYNTAX`))
+          SetItem(#klabel(`--__C-SYNTAX`))
+          SetItem(#klabel(`_++_C-SYNTAX`))
+          SetItem(#klabel(`_--_C-SYNTAX`))
           SetItem(#klabel(`SizeofExpression`))
 
      rule typeStrictBinaryOps =>
-          SetItem(#klabel(`_*_`))
-          SetItem(#klabel(`_/_`))
-          SetItem(#klabel(`_%_`))
-          SetItem(#klabel(`_+_`))
-          SetItem(#klabel(`_-_`))
-          SetItem(#klabel(`_==_`))
-          SetItem(#klabel(`_!=_`))
-          SetItem(#klabel(`_&_`))
-          SetItem(#klabel(`_^_`))
-          SetItem(#klabel(`_|_`))
-          SetItem(#klabel(`_&&_`))
-          SetItem(#klabel(`_||_`))
+          SetItem(#klabel(`_*__C-SYNTAX`))
+          SetItem(#klabel(`_/__C-SYNTAX`))
+          SetItem(#klabel(`_%__C-SYNTAX`))
+          SetItem(#klabel(`_+__C-SYNTAX`))
+          SetItem(#klabel(`_-__C-SYNTAX`))
+          SetItem(#klabel(`_==__C-SYNTAX`))
+          SetItem(#klabel(`_!=__C-SYNTAX`))
+          SetItem(#klabel(`_&__C-SYNTAX`))
+          SetItem(#klabel(`_^__C-SYNTAX`))
+          SetItem(#klabel(`_|__C-SYNTAX`))
+          SetItem(#klabel(`_&&__C-SYNTAX`))
+          SetItem(#klabel(`_||__C-SYNTAX`))
 
      rule typeStrictBinaryOpsFirst =>
           typeStrictBinaryOps
-          SetItem(#klabel(`_<<_`))
-          SetItem(#klabel(`_>>_`))
-          SetItem(#klabel(`_*=_`))
-          SetItem(#klabel(`_/=_`))
-          SetItem(#klabel(`_%=_`))
-          SetItem(#klabel(`_+=_`))
-          SetItem(#klabel(`_-=_`))
-          SetItem(#klabel(`_<<=_`))
-          SetItem(#klabel(`_&=_`))
-          SetItem(#klabel(`_^=_`))
-          SetItem(#klabel(`_|=_`))
-          SetItem(#klabel(`_>>=_`))
-          SetItem(#klabel(`_:=_`))
+          SetItem(#klabel(`_<<__C-SYNTAX`))
+          SetItem(#klabel(`_>>__C-SYNTAX`))
+          SetItem(#klabel(`_*=__C-SYNTAX`))
+          SetItem(#klabel(`_/=__C-SYNTAX`))
+          SetItem(#klabel(`_%=__C-SYNTAX`))
+          SetItem(#klabel(`_+=__C-SYNTAX`))
+          SetItem(#klabel(`_-=__C-SYNTAX`))
+          SetItem(#klabel(`_<<=__C-SYNTAX`))
+          SetItem(#klabel(`_&=__C-SYNTAX`))
+          SetItem(#klabel(`_^=__C-SYNTAX`))
+          SetItem(#klabel(`_|=__C-SYNTAX`))
+          SetItem(#klabel(`_>>=__C-SYNTAX`))
+          SetItem(#klabel(`_:=__C-SYNTAX`))
           SetItem(#klabel(`Call`))
-          SetItem(#klabel(`_._`))
+          SetItem(#klabel(`_.__C-SYNTAX`))
 
      rule typeStrictBinaryOpsSecond => typeStrictBinaryOps
 
@@ -322,17 +325,17 @@ module C-TYPING-EXPR
 
      syntax Set ::= "assignmentLabels" [function]
      rule assignmentLabels =>
-          SetItem(#klabel(`_:=_`))
-          SetItem(#klabel(`_*=_`))
-          SetItem(#klabel(`_/=_`))
-          SetItem(#klabel(`_%=_`))
-          SetItem(#klabel(`_+=_`))
-          SetItem(#klabel(`_-=_`))
-          SetItem(#klabel(`_<<=_`))
-          SetItem(#klabel(`_>>=_`))
-          SetItem(#klabel(`_&=_`))
-          SetItem(#klabel(`_^=_`))
-          SetItem(#klabel(`_|=_`))
+          SetItem(#klabel(`_:=__C-SYNTAX`))
+          SetItem(#klabel(`_*=__C-SYNTAX`))
+          SetItem(#klabel(`_/=__C-SYNTAX`))
+          SetItem(#klabel(`_%=__C-SYNTAX`))
+          SetItem(#klabel(`_+=__C-SYNTAX`))
+          SetItem(#klabel(`_-=__C-SYNTAX`))
+          SetItem(#klabel(`_<<=__C-SYNTAX`))
+          SetItem(#klabel(`_>>=__C-SYNTAX`))
+          SetItem(#klabel(`_&=__C-SYNTAX`))
+          SetItem(#klabel(`_^=__C-SYNTAX`))
+          SetItem(#klabel(`_|=__C-SYNTAX`))
 
      // assignment expression
      rule typeof(Lbl:KLabel(t(_, Mods::Set, T::SimpleType),_) => t(noQuals, Mods, T))

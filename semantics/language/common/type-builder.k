@@ -26,6 +26,7 @@ module C-TYPE-BUILDER
      imports C-BITSIZE-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -57,9 +58,9 @@ module C-TYPE-BUILDER
 
      rule arr(T:FlexType, N:Int) => type(arrayType(expand(T), N))
 
-     rule const(T:FlexType) => addQualifier(Const, expand(T))
+     rule const(T:FlexType) => addQualifier(Const(), expand(T))
 
-     rule restrict(T:FlexType) => addQualifier(Restrict, expand(T))
+     rule restrict(T:FlexType) => addQualifier(Restrict(), expand(T))
 
      rule struct(S:String) => #struct(Identifier(S), #configuration)
      rule union(S:String) => #struct(Identifier(S), #configuration)

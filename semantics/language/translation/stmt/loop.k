@@ -67,7 +67,7 @@ module C-STMT-LOOP
           ...</k>
           <elab>... .K => DoWhile(compoundExp(L ~> B), S) </elab>
 
-     rule <k> Continue => .K ...</k>
-          <elab>... .K => Continue </elab>
+     rule <k> Continue() => .K ...</k>
+          <elab>... .K => Continue() </elab>
 
 endmodule

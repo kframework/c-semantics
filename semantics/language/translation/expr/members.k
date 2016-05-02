@@ -44,7 +44,7 @@ module C-EXPR-MEMBERS
           ...</k>
           <initializing> Initializing:Bool </initializing>
           <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
-          requires notBool (Atomic inQuals Qs) orBool Initializing
+          requires notBool (Atomic() inQuals Qs) orBool Initializing
      rule <k> te(K:K, ut(_, structType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
                => te(K . F, utype(T))
           ...</k>
@@ -55,7 +55,7 @@ module C-EXPR-MEMBERS
           ...</k>
           <initializing> Initializing:Bool </initializing>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, F |-> T::Type _, _)) ...</structs>
-          requires notBool (Atomic inQuals Qs) orBool Initializing
+          requires notBool (Atomic() inQuals Qs) orBool Initializing
      rule <k> te(K:K, ut(_, unionType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
                => te(K . F, utype(T))
           ...</k>

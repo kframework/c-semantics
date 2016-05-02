@@ -15,8 +15,8 @@ module C-STMT-BLOCK
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>
 
-     rule <k> Nop => .K ...</k>
-          <elab>... .K => Nop </elab>
+     rule <k> Nop() => .K ...</k>
+          <elab>... .K => Nop() </elab>
 
      // First block in a function.
      rule Block(Tag:Int, _, list(Statements:List))

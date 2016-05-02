@@ -45,7 +45,7 @@ module C-CHECK-LOC
 
      // First, associate the restrict-qual'd pointer of this access with the
      // object.
-     syntax KItem ::= checkRestrict(SymLoc, Set)
+     syntax KItem ::= checkRestrict(SymLoc, Set) [klabel(checkRestrictLoc)]
      rule <k> checkRestrict(Loc:SymLoc, Prov:Set)
                // If no accesses have occured previously, we should still check
                // for const violations.
@@ -69,7 +69,7 @@ module C-CHECK-LOC
 
      // Next, filter out the restrict pointers where the object has been
      // unmodified in the associated block.
-     syntax KItem ::= checkRestrict(SymLoc, Set, Set) [klabel(checkRestrict3)]
+     syntax KItem ::= checkRestrict(SymLoc, Set, Set) [klabel(checkRestrictLoc2)]
      rule checkRestrict(Loc:SymLoc, Bases:Set, Bases':Set)
           => checkRestrict2(
                filterUnmodified(Loc, .K, Bases, .Set),
@@ -107,7 +107,7 @@ module C-CHECK-LOC
           [structural]
 
      // Finally, do the actual checks.
-     syntax KItem ::= checkRestrict(Set, Set, Set)
+     syntax KItem ::= checkRestrict(Set, Set, Set) [klabel(checkRestrictSet)]
      rule (.K => checkRestrict'(B))
           ~> checkRestrict((SetItem(B:Provenance) => .Set) _, _, _)
           [structural]

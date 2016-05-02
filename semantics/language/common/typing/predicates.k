@@ -55,13 +55,13 @@ module C-TYPING-PREDICATES
           => true
      rule isFunctionPointerType(_) => false [owise]
 
-     rule isExternType(T::Type) => Extern in getStorageSpecifiers(T)
-     rule isStaticType(T::Type) => Static in getStorageSpecifiers(T)
-     rule isRegisterType(T::Type) => Register in getStorageSpecifiers(T)
+     rule isExternType(T::Type) => Extern() in getStorageSpecifiers(T)
+     rule isStaticType(T::Type) => Static() in getStorageSpecifiers(T)
+     rule isRegisterType(T::Type) => Register() in getStorageSpecifiers(T)
 
-     rule isConstType(T::Type) => Const inQuals getQualifiers(T)
-     rule isVolatileType(T::Type) => Volatile inQuals getQualifiers(T)
-     rule isRestrictType(T::Type) => Restrict inQuals getQualifiers(T)
+     rule isConstType(T::Type) => Const() inQuals getQualifiers(T)
+     rule isVolatileType(T::Type) => Volatile() inQuals getQualifiers(T)
+     rule isRestrictType(T::Type) => Restrict() inQuals getQualifiers(T)
 
      rule fromConstantExpr(T:Type) => fromConstantExpr(utype(T))
      rule fromConstantExpr(V:RValue) => fromConstantExpr(utype(V))

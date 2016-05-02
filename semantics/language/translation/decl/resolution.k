@@ -39,7 +39,7 @@ module C-DECL-RESOLUTION
      rule allocateIncompleteTentative(X:CId,
                declState(_,
                     t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), declared, true))
-          => declare(typedDeclaration(t(Qs, Mods, arrayType(T, 1)), X), NoInit)
+          => declare(typedDeclaration(t(Qs, Mods, arrayType(T, 1)), X), NoInit())
           [structural]
      rule allocateIncompleteTentative(_,
                declState(_, t(_, Mods::Set, _), State:DeclState, _))
@@ -47,12 +47,12 @@ module C-DECL-RESOLUTION
           requires State =/=K declared
                // TODO(chathhorn): ... and we do this inline function check in
                // addition to completing tentatives.
-               andBool notBool (State ==K completed andBool Inline in Mods)
+               andBool notBool (State ==K completed andBool Inline() in Mods)
           [structural]
      rule allocateIncompleteTentative(_,
                declState(_, t(_, Mods::Set, _), _, false))
           => .K
-          requires notBool (Inline in Mods)
+          requires notBool (Inline() in Mods)
           [structural]
      rule allocateIncompleteTentative(X::CId,
                declState(_, t(_, Mods::Set, _), completed, _))
@@ -60,7 +60,7 @@ module C-DECL-RESOLUTION
                "Declaration for inline function not defined in the same translation unit: "
                +String idToString(X) +String ".",
                "6.7.4:7, J.2:1 item 70")
-          requires Inline in Mods
+          requires Inline() in Mods
           [structural]
 
      // Add the real location at which an external reference is defined to the

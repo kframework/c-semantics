@@ -7,13 +7,10 @@ module C-DYNAMIC-SYNTAX
      imports SET
 
      syntax Quals // defined in C-TYPING-SYNTAX
-     syntax SimpleType // defined in C-TYPING-SYNTAX
-     syntax SimpleUType // defined in C-TYPING-SYNTAX
      syntax Bits ::= Int // defined in C-BITS-SYNTAX
      syntax SymLoc // defined in C-SYMLOC-SYNTAX
-
-     syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
-     syntax UType ::= ut(Set, SimpleUType)     // unqualified type
+     syntax Type // defined in C-TYPING-SYNTAX
+     syntax UType // defined in C-TYPING-SYNTAX
      syntax DType ::= typedDeclaration(Type, CId)
 
      syntax Agg ::= agg(List)
@@ -30,7 +27,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= stripHold(K) [function]
 
-     syntax RValue ::= "voidVal"
+     syntax RValue ::= "voidVal" [klabel(voidVal)]
      syntax RValue ::= "emptyValue"
      syntax RValue ::= tv(CValue, UType)
           [latex(renameTo \\ensuremath{{_}\\mathop{:}{_}})]
@@ -50,7 +47,7 @@ module C-DYNAMIC-SYNTAX
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
-     syntax KResult ::= RValue | Type | UType | DType | Nclv | trap(UType)
+     syntax KResult ::= RValue | Type | UType | DType | Nclv | trap(UType) [klabel(trap1)]
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
 
@@ -66,7 +63,9 @@ module C-DYNAMIC-SYNTAX
      syntax CId ::= caseLabel(Int, K)
      syntax CId ::= funLabel(CId)
 
-     syntax KItem ::= pushBlock(Int)
+     syntax CId ::= nativeFunction(Int)
+
+     syntax KItem ::= pushBlock(Int) [klabel(pushBlock_C-DYNAMIC-SYNTAX)]
      syntax KItem ::= "popBlock"
 
      syntax Statement ::= "loopMarked"
@@ -129,10 +128,6 @@ module C-DYNAMIC-SYNTAX
      syntax Opts ::= CSV(String)
 
      syntax KItem ::= "checkStackDepth"
-
-     syntax KItem ::= #Thread(K, K, K, K)
-     syntax KItem ::= "#Bottom"
-     syntax KItem ::= "#ThreadLocal"
 endmodule
 
 module C-DYNAMIC
@@ -247,7 +242,7 @@ module C-DYNAMIC
           <initializing> _ => I </initializing>
           [structural]
 
-     rule isNoInit(NoInit) => true
+     rule isNoInit(NoInit()) => true
      rule isNoInit(initValue(_, _, .K)) => true
      rule isNoInit(_) => false [owise]
 

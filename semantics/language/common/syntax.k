@@ -42,7 +42,7 @@ module C-SYNTAX
      | BLOCK of block * cabsloc
      | SEQUENCE of statement * statement * cabsloc
      */
-     syntax Statement ::= "Nop"
+     syntax Statement ::= Nop()
      syntax Statement ::= Computation(K) [latex({{#1}};)]
      context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
@@ -51,21 +51,21 @@ module C-SYNTAX
      NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
      */
      // this will be used as the actual atomic modifier
-     syntax Storage ::= "NoStorage"
-     syntax Storage ::= "Auto"
-     syntax Storage ::= "Static"
-     syntax Storage ::= "Extern"
-     syntax Storage ::= "Register"
-     syntax Storage ::= "ThreadLocal"
+     syntax Storage ::= NoStorage()
+     syntax Storage ::= Auto()
+     syntax Storage ::= Static()
+     syntax Storage ::= Extern()
+     syntax Storage ::= Register()
+     syntax Storage ::= ThreadLocal()
 
      /*
      and cvspec =
      CV_CONST | CV_VOLATILE | CV_RESTRICT
      */
-     syntax Qualifier ::= "Const"
-     syntax Qualifier ::= "Volatile"
-     syntax Qualifier ::= "Restrict"
-     syntax Qualifier ::= "Atomic"
+     syntax Qualifier ::= Const()
+     syntax Qualifier ::= Volatile()
+     syntax Qualifier ::= Restrict()
+     syntax Qualifier ::= Atomic()
 
      /*
      and spec_elem =
@@ -75,14 +75,14 @@ module C-SYNTAX
      | SpecStorage of storage
      | SpecInline
      */
-     syntax SpecifierElem ::= "SpecTypedef"
+     syntax SpecifierElem ::= SpecTypedef()
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
      syntax Modifier ::= Qualifier
      syntax Modifier ::= Storage
-     syntax Modifier ::= "Inline"
-     syntax Modifier ::= "Noreturn"
+     syntax Modifier ::= Inline()
+     syntax Modifier ::= Noreturn()
 
      /*
      | IF of expression * statement * statement * cabsloc
@@ -102,8 +102,8 @@ module C-SYNTAX
      | CONTINUE of cabsloc
      | RETURN of expression * cabsloc
      */
-     syntax Statement ::= "Break"
-     syntax Statement ::= "Continue"
+     syntax Statement ::= Break()
+     syntax Statement ::= Continue()
 
      syntax Statement ::= Return(K)
      context Return(HOLE:KItem => reval(HOLE)) [result(RValue)]
@@ -303,7 +303,7 @@ module C-SYNTAX
      and init_expression =
      | NO_INIT
      */
-     syntax KItem ::= "NoInit"
+     syntax KItem ::= NoInit()
 
      /*
      and attribute = String * expression list

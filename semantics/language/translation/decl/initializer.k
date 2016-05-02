@@ -23,6 +23,7 @@ module C-DECL-INITIALIZER
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-EXPR-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -30,7 +31,7 @@ module C-DECL-INITIALIZER
           => CodeLoc(.K, L) ~> figureInit(X, T, K)
           [structural]
 
-     rule figureInit(X:CId, T:Type, NoInit) => initValue(X, T, .K)
+     rule figureInit(X:CId, T:Type, NoInit()) => initValue(X, T, .K)
           [structural]
 
      // aggregates
@@ -43,7 +44,7 @@ module C-DECL-INITIALIZER
                _,
                t(_, _, arrayType(_:CharType, Len:Int)),
                (SingleInit(stringLiteral(S:String))
-               => CompoundInit(list(ListItem(InitFragment(NextInit,
+               => CompoundInit(list(ListItem(InitFragment(NextInit(),
                     SingleInit(stringLiteral(S)))))))
           )
           requires lengthString(S) <=Int Len
@@ -53,7 +54,7 @@ module C-DECL-INITIALIZER
                _,
                t(_, _, arrayType(T:Type, Len:Int)),
                (SingleInit(wstringLiteral(S:List))
-               => CompoundInit(list(ListItem(InitFragment(NextInit,
+               => CompoundInit(list(ListItem(InitFragment(NextInit(),
                     SingleInit(wstringLiteral(S)))))))
           )
           requires isWCharType(T) andBool (size(S) <=Int Len)
@@ -71,7 +72,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule figureInit(X:CId, t(Qs::Quals, Mods::Set, incompleteArrayType(T:CharType)),
-               CompoundInit(list(ListItem(InitFragment(NextInit,
+               CompoundInit(list(ListItem(InitFragment(NextInit(),
                SingleInit(stringLiteral(S:String)))))))
           => figureInit(X, t(Qs, Mods, incompleteArrayType(T)),
                SingleInit(stringLiteral(S)))
@@ -90,7 +91,7 @@ module C-DECL-INITIALIZER
           [structural]
      // c1x 6.7.8:11
      rule figureInit(X:CId, T:Type,
-               CompoundInit(list(ListItem(InitFragment(NextInit, SingleInit(K:K))))))
+               CompoundInit(list(ListItem(InitFragment(NextInit(), SingleInit(K:K))))))
           => figureInit-aux(X, T,
                initializer(Computation(ncle(X, T) := K)))
           requires notBool isAggregateOrUnionType(T)
@@ -105,7 +106,7 @@ module C-DECL-INITIALIZER
      rule (.K => UNDEF("CDI2",
                "Initializer for scalar contains multiple levels of braces.", "6.7.9:11, J.2:1 item 81"))
           ~> figureInit(_, T:Type,
-               CompoundInit(list(ListItem(InitFragment(NextInit, CompoundInit(_))))))
+               CompoundInit(list(ListItem(InitFragment(NextInit(), CompoundInit(_))))))
           requires notBool isAggregateOrUnionType(T)
 
      rule (.K => UNDEF("CDI3",
@@ -285,7 +286,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
 
-     rule <k> fillInit(InitFragment(NextInit, Exp:K)) => fillInit(Exp) ...</k>
+     rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
           <curr-subobject>
             ListItem(K:K)
           ...</curr-subobject>
@@ -294,7 +295,7 @@ module C-DECL-INITIALIZER
 
      rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
                "6.7.9:2"))
-               ~> fillInit(InitFragment(NextInit, _))
+               ~> fillInit(InitFragment(NextInit(), _))
           ...</k>
           <curr-subobject>
                ListItem(next) ListItem(ncle(_, T:Type))
@@ -360,7 +361,7 @@ module C-DECL-INITIALIZER
           requires #klabel(Lbl) ==K #klabel(`structType`) orBool #klabel(Lbl) ==K #klabel(`unionType`)
           [structural]
 
-     rule <k> buildDesignator(NextInit) => NextInit ...</k>
+     rule <k> buildDesignator(NextInit()) => NextInit() ...</k>
           <curr-subobject> (ListItem(block) => .List) ...</curr-subobject>
           [structural]
 

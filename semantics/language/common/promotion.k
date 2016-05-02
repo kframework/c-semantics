@@ -38,22 +38,22 @@ module C-COMMON-PROMOTION
      syntax Set ::= "arithBinConversionOps" [function]
 
      rule arithBinOps
-          => arithBinConversionOps (SetItem(#klabel(`_<<_`)) SetItem(#klabel(`_>>_`)))
+          => arithBinConversionOps (SetItem(#klabel(`_<<__C-SYNTAX`)) SetItem(#klabel(`_>>__C-SYNTAX`)))
      rule arithBinConversionOps =>
-               SetItem(#klabel(`_*_`))
-               SetItem(#klabel(`_/_`))
-               SetItem(#klabel(`_%_`))
-               SetItem(#klabel(`_+_`))
-               SetItem(#klabel(`_-_`))
-               SetItem(#klabel(`_<_`))
-               SetItem(#klabel(`_>_`))
-               SetItem(#klabel(`_<=_`))
-               SetItem(#klabel(`_>=_`))
-               SetItem(#klabel(`_==_`))
-               SetItem(#klabel(`_!=_`))
-               SetItem(#klabel(`_&_`))
-               SetItem(#klabel(`_|_`))
-               SetItem(#klabel(`_^_`))
+               SetItem(#klabel(`_*__C-SYNTAX`))
+               SetItem(#klabel(`_/__C-SYNTAX`))
+               SetItem(#klabel(`_%__C-SYNTAX`))
+               SetItem(#klabel(`_+__C-SYNTAX`))
+               SetItem(#klabel(`_-__C-SYNTAX`))
+               SetItem(#klabel(`_<__C-SYNTAX`))
+               SetItem(#klabel(`_>__C-SYNTAX`))
+               SetItem(#klabel(`_<=__C-SYNTAX`))
+               SetItem(#klabel(`_>=__C-SYNTAX`))
+               SetItem(#klabel(`_==__C-SYNTAX`))
+               SetItem(#klabel(`_!=__C-SYNTAX`))
+               SetItem(#klabel(`_&__C-SYNTAX`))
+               SetItem(#klabel(`_|__C-SYNTAX`))
+               SetItem(#klabel(`_^__C-SYNTAX`))
 
      rule isArithBinOp(Lbl:K)
           => #if (Lbl in arithBinOps) #then true #else false #fi
@@ -64,9 +64,9 @@ module C-COMMON-PROMOTION
 
      syntax Set ::= "arithUnaryOps" [function]// [memo]
      rule arithUnaryOps =>
-          SetItem(#klabel(`-_`))
-          SetItem(#klabel(`+_`))
-          SetItem(#klabel(`~_`))
+          SetItem(#klabel(`-__C-SYNTAX`))
+          SetItem(#klabel(`+__C-SYNTAX`))
+          SetItem(#klabel(`~__C-SYNTAX`))
 
      rule isArithUnaryOp(Lbl:K)
           => #if (Lbl in arithUnaryOps) #then true #else false #fi

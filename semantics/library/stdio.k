@@ -172,7 +172,7 @@ module LIBC-STDIO
           [structural]
 
      rule [vsnprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*_`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs::List ...</va-lists>
      rule H:HeatList ~> builtin("vsnprintf", tv(Dest::SymLoc, _), tv(Len::Int, _), Format::RValue, _)

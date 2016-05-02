@@ -64,7 +64,7 @@ module C-STMT-BLOCK
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
      A null statement (consisting of just a semicolon) performs no operations.
      }*/
-     rule Nop => .K
+     rule Nop() => .K
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{

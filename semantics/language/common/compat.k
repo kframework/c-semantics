@@ -6,6 +6,7 @@ module COMPAT-SYNTAX
      imports STRING
      imports K-EQUAL
      imports K-IO
+     imports K-REFLECTION
      imports COLLECTIONS
 
      syntax String ::= firstChar(String) [function]
@@ -24,9 +25,6 @@ module COMPAT-SYNTAX
 
      //TODO(liyi): this might be able to remove
      syntax Bool ::= allRValueInHeatList(HeatList) [function]
-
-     syntax Bool ::= List "==MSet" List [function]
-                   | List "=/=MSet" List [function]
 
      syntax List ::= removeListItem(List, K) [function]
 
@@ -135,17 +133,9 @@ module COMPAT
      rule subset(K:K, _, S2:Set) => false
           requires notBool (K in S2)
 
-     rule .List ==MSet .List => true
-     rule .List ==MSet (ListItem(_) _:List) => false
-     rule (ListItem(_) _:List) ==MSet .List => false
-     rule (ListItem(K:K) M:List) ==MSet M':List
-          => M:List ==MSet removeListItem(M', K)
-          requires K:K in M':List
-     rule (ListItem(K:K) _:List) ==MSet M':List
-          => false
-          requires notBool (K:K in M':List)
-
-     rule M:List =/=MSet M':List => notBool M ==MSet M'
+     syntax Map ::= removeBagItemFromMap(Map, K) [function]
+     rule removeBagItemFromMap(K |-> 1 M::Map, K:K) => M
+     rule removeBagItemFromMap(K |-> I::Int M::Map, K:K) => K |-> (I -Int 1) M
 
      rule list(L:List) => toKRList(L)
           [structural]
