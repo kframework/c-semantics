@@ -162,12 +162,12 @@ module C-COMMON-EXPR-BITWISE
                andBool T ==Type T'
 
      rule tv(L:SymLoc, T::UType) & tv(E2:Int, T'::UType)
-          => tv(L, T)
-          requires ~Int (getAlign(L) -Int 1) &Int ~Int E2 ==Int 0
+          => tv(L, T) + tv((offset(L) &Int E2) -Int offset(L), T')
+          requires (~Int (getAlign(L) -Int 1) &Int ~Int E2) &Int max(correspondingUnsignedType(T)) ==Int 0
                andBool isPromoted(T) andBool T ==Type T'
      rule tv(E2:Int, T::UType) & tv(L:SymLoc, T'::UType)
-          => tv(L, T)
-          requires ~Int (getAlign(L) -Int 1) &Int ~Int E2 ==Int 0
+          => tv((offset(L) &Int E2) -Int offset(L), T) + tv(L, T')
+          requires (~Int (getAlign(L) -Int 1) &Int ~Int E2) &Int max(correspondingUnsignedType(T)) ==Int 0
                andBool isPromoted(T) andBool T ==Type T'
 
      rule tv(L:SymLoc, T::UType) & tv(E2:Int, T'::UType)
@@ -178,6 +178,22 @@ module C-COMMON-EXPR-BITWISE
           => tv(0, T)
           requires getAlign(L) >Int E2 andBool E2 >=Int 0
                andBool isPromoted(T) andBool T ==Type T'
+
+     rule tv(L:SymLoc, T::UType) | tv(E2:Int, T'::UType)
+          => tv(L, T) + tv((offset(L) |Int E2) -Int offset(L), T')
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+               andBool L =/=K NullPointer
+     rule tv(E2:Int, T::UType) | tv(L:SymLoc, T'::UType)
+          => tv((offset(L) |Int E2) -Int offset(L), T) + tv(L, T')
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+               andBool L =/=K NullPointer
+     rule tv(NullPointer, T::UType) | tv(E2:Int, T'::UType)
+          => tv(E2, T')
+          requires isPromoted(T) andBool T ==Type T'
+     rule tv(E2:Int, T::UType) | tv(NullPointer, T'::UType)
+          => tv(E2, T')
 
 
      rule (.K => CV("CEB9",

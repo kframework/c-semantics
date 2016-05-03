@@ -95,6 +95,19 @@ module C-COMMON-EXPR-ADDITIVE
                andBool isCompleteType(innerType(T'))
           [structural]
 
+     rule tv(Loc:SymLoc, T::UType) + tv(I:Int, T'::UType)
+          => addToIntptr(Loc, T, I)
+          requires isPromoted(T) andBool T ==Type T'
+          [structural]
+     rule tv(I:Int, T::UType) + tv(Loc:SymLoc, T'::UType)
+          => addToIntptr(Loc, T, I)
+          requires isPromoted(T) andBool T ==Type T'
+          [structural]
+     rule tv(Loc:SymLoc, T::UType) - tv(I:Int, T'::UType)
+          => addToIntptr(Loc, T, 0 -Int I)
+          requires isPromoted(T) andBool T ==Type T'
+          [structural]
+
      rule (.K => CV("CEA7",
                "Computing pointer addition of a pointer not to a complete object type.",
                "6.5.6:2"))
@@ -142,6 +155,17 @@ module C-COMMON-EXPR-ADDITIVE
                "6.5.6:8, J.2:1 item 46"))
           ~> addToPointer(Loc:SymLoc, T::UType, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
+
+     syntax KItem ::= addToIntptr(SymLoc, UType, Int)
+     rule addToIntptr(Loc:SymLoc, T::UType, I:Int)
+          => checkUse(tv(newFromArray(Loc, utype(pointerType(type(char))), I)
+               +bytes I, T))
+          requires ifFromArrayInBounds(Loc, utype(pointerType(type(char))), I) ==K true
+     rule (.K => UNDEF("CEA1",
+               "A pointer (or array subscript) outside the bounds of an object.",
+               "6.5.6:8, J.2:1 item 46"))
+          ~> addToIntptr(Loc:SymLoc, T::UType, I:Int)
+          requires notBool ifFromArrayInBounds(Loc, utype(pointerType(type(char))), I)
 
      syntax SymLoc ::= newFromArray(SymLoc, UType, Int) [function]
                      | #newFromArray(SymBase, Int, K, Set, Set, UType, Int) [function]

@@ -86,11 +86,16 @@ module C-CONVERSION
                andBool inRange(V, T')
      rule cast(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
           => castHold(T', tv(subObject(NullPointer, N, M), T))
-          requires notBool isBoolType(T')
+          requires notBool isBoolUType(T')
                andBool M -Int N <Int byteSizeofType(T')
 
      rule (.K => IMPL("CCV8", "Conversion of a null pointer fragment to an integer type.", "6.3.2.3:6, J.3.7:1 item 1") )
           ~> castHold(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
+
+     rule cast(T':IntegerUType, tv(subObject(L:SymLoc, N:Int, M:Int), T:IntegerUType)) => tv(subObject(L, N, M), T')
+          requires notBool isBoolUType(T')
+               andBool L =/=K NullPointer
+               andBool M -Int N <Int byteSizeofType(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
      Otherwise, if the new type is unsigned, the value is converted by
@@ -166,13 +171,8 @@ module C-CONVERSION
           requires notBool inRange(I, T')
           [structural]
 
-     // TODO(chathhorn): not sure about this.
      rule cast(T'::UType, tv(unknown, T::UType))
           => tv(unknown, cast(T', T))
-          requires bitSizeofType(T') >=Int bitSizeofType(T)
-     rule cast(T'::UType, tv(unknown, T::UType))
-          => trap(cast(T', T))
-          requires bitSizeofType(T') <Int bitSizeofType(T)
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type

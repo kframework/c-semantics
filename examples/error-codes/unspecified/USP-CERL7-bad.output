@@ -1,0 +1,6 @@
+Error: USP-CERL7
+Description: Comparison of unspecified value.
+Type: Unspecified value or behavior.
+See also: C11 sec. 6.5.9
+  at main(USP-CERL7-bad.c:9)
+  at <file-scope>(<unknown>)

@@ -7,7 +7,5 @@ int main(void) {
       int* p = &a.x;
       int* q = &b.x;
 
-      if (&p < &q) {
-            return 0;
-      }
+      _Bool _b = &p < &q;
 }

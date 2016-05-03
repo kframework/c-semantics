@@ -1,6 +1,7 @@
 module C-STMT-IF-THEN
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
+     imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
@@ -15,6 +16,7 @@ module C-STMT-IF-THEN
      substatement is reached via a label, the second substatement is not
      executed.
      }*/
+     rule IfThenElse(tv((unknown => 0), ut(_, int)), _, _)
 
      rule [if-then-else-true]:
           IfThenElse(tv(1, ut(_, int)), S:K, _) => sequencePoint ~> S

@@ -3,8 +3,5 @@
 int main() {
   int x;
   int y;
-  if (&x > &y) {
-    return 0;
-  }
-  return 1;
+  _Bool b = &x > &y;
 }

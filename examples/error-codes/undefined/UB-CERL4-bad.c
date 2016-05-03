@@ -4,7 +4,5 @@
 int main(void) {
 	int a;
 	int b;
-	if (&a >= &b) {
-		return 0;
-	}
+	_Bool _b = &a >= &b;
 }

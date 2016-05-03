@@ -2,6 +2,7 @@ module LIBC-STDIO
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
 
+     imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -59,13 +60,19 @@ module LIBC-STDIO
      rule [sub-pointerToString-static]:
           symBaseToString(B:Int @ static(Tu:String))
           => Int2String(B) +String " @ "
-          +String "static(" +String Tu +String ")"
+          +String "static(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
           [structural]
      rule [sub-pointerToString-link]:
           symBaseToString(B:Int @ link(Tu:String))
           => Int2String(B) +String " @ "
-          +String "link(" +String Tu +String ")"
+          +String "link(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
           [structural]
+     rule [symBaseToString-auto]:
+          symBaseToString(B:Int @ auto(Th:Int))
+          => Int2String(B) +String " @ "
+          +String "auto(" +String Int2String(Th) +String ")"
+          [structural]
+ 
 
      rule [pointerToString-done]:
           pointerToString(NullPointer) => "NullPointer"
@@ -384,6 +391,15 @@ module LIBC-STDIO
           <format-arg> NullPointer => 0 </format-arg>
           <format-state> "%d" </format-state>
           [structural]
+
+     rule <k> formatter-aux(_) ...</k>
+          <format-arg> S:SymLoc => unknown </format-arg>
+          <format-state> State::String </format-state>
+          requires S =/=K NullPointer
+               andBool (State ==String "%d" orBool State ==String "%x")
+
+     rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.", "7.21.6.1:8")) ~> formatter-aux(_) ...</k>
+          <format-arg> unknown </format-arg>
 
      rule <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
@@ -882,7 +898,7 @@ module LIBC-STDIO
      rule setPrecision(F::Float, _) => F
 
      syntax KItem ::= "getFormatType"
-     syntax KItem ::= "getFormatType-aux" "(" K "," K ")" [function]
+     syntax Type ::= "getFormatType-aux" "(" K "," K ")" [function]
      rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
           <format-length> Length::String </format-length>
           <format-state> State::String </format-state>

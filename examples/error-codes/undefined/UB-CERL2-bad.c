@@ -7,7 +7,5 @@ int main(void) {
       int *p = &a[0] + 3;
       int *q = &b;
 
-      if (&p <= &q) {
-            return 0;
-      }
+      _Bool _b = &p <= &q;
 }

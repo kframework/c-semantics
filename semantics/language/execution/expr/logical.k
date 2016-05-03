@@ -1,4 +1,5 @@
 module C-EXPR-LOGICAL
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
@@ -25,6 +26,7 @@ module C-EXPR-LOGICAL
      rule tv(1, ut(_, int)) && E:K
           => sequencePoint ~> E
           [structural]
+     rule tv((unknown => 0), ut(_, int)) && _
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
      The \cinline{||} operator shall yield 1 if either of its operands compare
@@ -42,5 +44,6 @@ module C-EXPR-LOGICAL
           [structural]
      rule tv(1, ut(_, int)) || _ => tv(1, utype(int))
           [structural]
+     rule tv((unknown => 0), ut(_, int)) || _
 
 endmodule

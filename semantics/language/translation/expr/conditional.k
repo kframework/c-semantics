@@ -1,6 +1,7 @@
 module C-EXPR-CONDITIONAL
      imports C-EXPR-LOGICAL-SYNTAX
 
+     imports C-BITS-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -39,6 +40,8 @@ module C-EXPR-CONDITIONAL
      rule evalConditional(tv(1, ut(_, int)), E1:RValue, _, T::UType) => E1
           requires notBool isVariablyModifiedType(type(T))
      rule evalConditional(tv(0, ut(_, int)), _, E2:RValue, T::UType) => E2
+          requires notBool isVariablyModifiedType(type(T))
+     rule evalConditional(tv((unknown => 0), ut(_, int)), _, _, T::UType)
           requires notBool isVariablyModifiedType(type(T))
 
 endmodule

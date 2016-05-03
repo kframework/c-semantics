@@ -6,6 +6,7 @@ endmodule
 module C-EXPR-LOGICAL
      imports C-EXPR-LOGICAL-SYNTAX
 
+     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -22,6 +23,7 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #and(tv(0, ut(S:Set, int)), _:RValue) => tv(0, ut(S, int))
      rule #and(tv(1, ut(S:Set, int)), R:RValue) => R
+     rule #and(tv((unknown => 0), ut(_, int)), _)
 
      rule L:K || R:K => #or(simplifyTruth(L), simplifyTruth(R))
 
@@ -33,5 +35,6 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #or(tv(0, ut(S:Set, int)), R:RValue) => R
      rule #or(tv(1, ut(S:Set, int)), _:RValue) => tv(1, ut(S, int))
+     rule #or(tv((unknown => 0), ut(_, int)), _)
 
 endmodule
