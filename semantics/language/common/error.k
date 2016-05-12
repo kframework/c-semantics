@@ -8,6 +8,7 @@ module C-ERROR-SYNTAX
      syntax KItem ::= UNDEF(String, String, String)
      syntax KItem ::= UNSPEC(String, String, String)
      syntax KItem ::= CV(String, String, String)
+     syntax KItem ::= SE(String, String, String)
      syntax KItem ::= IMPL(String, String, String)
      syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
      syntax KItem ::= "EXT-UNDEF" "(" String "," String "," String "," String ")"
@@ -84,6 +85,8 @@ module C-ERROR
           requires isUnspec
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", "C11", Citation))
+     rule SE(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg("SE-" +String Title, Msg, "Syntax error.", "C11", Citation))
      rule IMPL(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior.", "C11", Citation))
           requires isImpl

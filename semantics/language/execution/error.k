@@ -137,7 +137,7 @@ module C-EXECUTION-ERROR
                     andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
           [computational]
 
-     rule <k> (.K => CV("CID1",
+     rule <k> (.K => SE("CID1",
                "Trying to look up identifier " +String S +String
                ", but no such identifier is in scope.",
                "6.5.1:2") )

@@ -118,7 +118,7 @@ module C-ENV
           requires K =/=K popLocals
      rule (recover => .K) ~> popLocals
 
-     rule <k> (.K => CV("CID1",
+     rule <k> (.K => SE("CID1",
                "Trying to look up identifier " +String S +String
                ", but no such identifier is in scope.",
                "6.5.1:2") )

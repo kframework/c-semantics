@@ -1,7 +1,7 @@
-File: j009f.c
-Line: 6
+File: SE-CID1-bad-static.c
+Line: 8
 Error: SE-CID1
 Description: Trying to look up identifier x, but no such identifier is in scope.
 Type: Syntax error.
 See also: C11 sec. 6.5.1:2
-Translation failed (config dumped). Run kcc -d j009f.c to see commands run.
+Translation failed (config dumped). Run kcc -d SE-CID1-bad-static.c to see commands run.
