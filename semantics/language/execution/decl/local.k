@@ -31,7 +31,7 @@ module C-DECL-LOCAL
           <tu-id> TU </tu-id>
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
-          requires isExternType(T) orBool isFunctionType(T)
+          requires (isExternType(T) orBool isFunctionType(T))
                andBool notBool X in_keys(Defs)
                andBool notBool X in_keys(Types)
           [structural]
