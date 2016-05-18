@@ -285,7 +285,7 @@ module C-TYPING-EXPR
                "6.2.7:3, J.2:1 item 16"))
           ~> elaborateDone(V:K, V':K) ~> typeof(_ ? T:Type : T':Type)
           ~> SizeofExpression(_)
-          requires isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T')
+          requires (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
                andBool notBool (isNPC(V) orBool isNPC(V'))
 
      rule (.K => CV("TTE2",

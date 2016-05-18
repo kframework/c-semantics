@@ -81,7 +81,7 @@ module C-EXPR-ASSIGNMENT
 
      syntax KItem ::= checkRestrictAssign(Scope, Set)
      rule checkRestrictAssign(Tag:Scope, Tags:Set) => .K
-          requires (Tag =/=K fileScope) andBool notBool (Tag in Tags)
+          requires ((Tag =/=K fileScope) andBool notBool (Tag in Tags))
                orBool Tag ==K none
      rule (.K => UNDEF("EEA2", "Attempt to alias restrict qualified pointers associated with the same block.", "6.7.3.1:4, J.2:1 item 69"))
           ~> checkRestrictAssign(Tag:Scope, Tags:Set)

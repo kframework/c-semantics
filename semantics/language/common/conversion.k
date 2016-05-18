@@ -332,13 +332,13 @@ module C-CONVERSION
           => castHold(T', tv(V, T))
           requires (isPointerUType(T) andBool isFloatUType(T'))
                orBool (isFloatUType(T) andBool isPointerUType(T'))
-               orBool T =/=Type T'
+               orBool (T =/=Type T'
                     andBool ((notBool isPointerUType(T)
                               andBool notBool isArithmeticType(type(T))
                               andBool notBool isVoidType(type(T')))
                          orBool (notBool isPointerUType(T')
                               andBool notBool isArithmeticType(type(T'))
-                              andBool notBool isVoidType(type(T'))))
+                              andBool notBool isVoidType(type(T')))))
 
      rule (.K => CV("CCV9",
           "Conversion from pointer to floating point type or from floating point type to pointer.",
@@ -378,7 +378,7 @@ module C-CONVERSION
           requires notBool isCompleteType(T')
                orBool type(pointerType(T')) ==Type type(pointerType(T))
                orBool getAlignas(T') <=Int getAlign(Loc)
-               orBool isFunctionType(T) andBool isFunctionType(T')
+               orBool (isFunctionType(T) andBool isFunctionType(T'))
      //TODO(dwightguth): handle pointer alignment
      rule cast(ut(Mods'::Set, pointerType(T'::Type)), tv(Loc:SymLoc, ut(Mods::Set, pointerType(T::Type))))
           => castHold(ut(Mods', pointerType(T':Type)), tv(Loc, ut(Mods, pointerType(T))))

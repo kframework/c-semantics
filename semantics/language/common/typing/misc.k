@@ -97,7 +97,7 @@ module C-TYPING-MISC
      rule inRange(V:Int, T:IntegerUType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
      rule inRange(V:Float, T:FloatUType)
-          => (V <=Float fmax(T)) andBool (V >=Float fmin(T))
+          => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
 
      rule fmin(ut(_, float)) => 0.0f -Float maxValueFloat(24, 8)

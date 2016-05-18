@@ -59,22 +59,22 @@ module C-COMMON-EXPR-RELATIONAL
 
      rule tv(I1:Int, T::UType) < tv(I2:Int, T'::UType)
           => makeTruth(I1 <Int I2, T, T')
-          requires isPromoted(T) orBool isPointerType(T)
+          requires (isPromoted(T) orBool isPointerType(T))
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) <= tv(I2:Int, T'::UType)
           => makeTruth(I1 <=Int I2, T, T')
-          requires isPromoted(T) orBool isPointerType(T)
+          requires (isPromoted(T) orBool isPointerType(T))
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) > tv(I2:Int, T'::UType)
           => makeTruth(I1 >Int I2, T, T')
-          requires isPromoted(T) orBool isPointerType(T)
+          requires (isPromoted(T) orBool isPointerType(T))
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) >= tv(I2:Int, T'::UType)
           => makeTruth(I1 >=Int I2, T, T')
-          requires isPromoted(T) orBool isPointerType(T)
+          requires (isPromoted(T) orBool isPointerType(T))
                andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) < tv(F2:Float, T'::UType)

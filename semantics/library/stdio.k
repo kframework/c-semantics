@@ -344,8 +344,8 @@ module LIBC-STDIO
           <format> ListItem(C:String) => .List ...</format>
           <format-field-width> W:String => W +String C </format-field-width>
           <format-state> "%" </format-state>
-          requires C ==K "-" orBool ordChar(C) >Int ordChar("0")
-               andBool ordChar(C) <=Int ordChar("9")
+          requires C ==K "-"
+             orBool (ordChar(C) >Int ordChar("0") andBool ordChar(C) <=Int ordChar("9"))
           [structural]
 
      rule <k> formatter-aux(_) ...</k>
