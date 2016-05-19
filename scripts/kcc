@@ -172,6 +172,8 @@ my $spec = q(#
 { push(@main::cppArgs, '-MF', $file); }
       -MT <target>			Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-MT', $target); }
+      -d<chars>				Debugging info from preprocessor. See documentation for GCC
+{ push(@main::cppArgs, "-d$chars"); }
       -frunner-script			Compile program to perl script with analysis tool options
       -fissue-report=<file>		Write issues to the specified file in CSV format
       -Wlint				Generate lint errors for potentially undesirable behaviors.*
