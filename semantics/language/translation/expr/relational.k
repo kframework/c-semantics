@@ -1,5 +1,6 @@
 module C-EXPR-RELATIONAL
      imports C-COMMON-PROMOTION-SYNTAX
+     imports C-COMMON-EXPR-RELATIONAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -41,17 +42,13 @@ module C-EXPR-RELATIONAL
      rule L:RValue == R:RValue => te(stripHold(L) == stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(type(L)) andBool isPointerType(type(R)))
-                    orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
-                    orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
+                    isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
                )
 
      rule L:RValue != R:RValue => te(stripHold(L) != stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))
                andBool (
-                    (isPointerType(type(L)) andBool isPointerType(type(R)))
-                    orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
-                    orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
+                    isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
                )
 
      //- comparison of ints with pointers

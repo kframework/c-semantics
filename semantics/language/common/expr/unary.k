@@ -32,9 +32,6 @@ module C-COMMON-EXPR-UNARY
           - tv(I:Int, T::UType) => arithInterpret(T, 0 -Int I)
           requires isPromoted(T)
           [structural]
-     rule [unaryMinus-intptr]:
-          - tv(L:SymLoc, T::UType) => tv(unknownAlignedInt(getAlign(L)), T)
-          requires isPromoted(T)
      rule [unaryMinus-float]:
           - tv(F:Float, T::UType) => arithInterpret(T, 0.0 -Float F)
           [structural]

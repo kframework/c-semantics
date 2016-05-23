@@ -1,7 +1,7 @@
 module C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax SymBase ::= base(SymLoc) [function]
+     syntax SymBase ::= base(IntPtr) [function]
      syntax Int ::= offset(SymLoc) [function]
 
      // Allocated duration.
@@ -48,6 +48,8 @@ module C-SYMLOC-SYNTAX
      syntax CanonicalSymLoc ::= "NullPointer" [klabel(NullPointer)]
 
      syntax KResult ::= SymLoc
+     syntax CValue ::= IntPtr
+     syntax IntPtr ::= SymLoc
 
      syntax SymBase ::= linc(SymBase) [function]
 
@@ -63,7 +65,7 @@ module C-SYMLOC-SYNTAX
                    | SymLoc "<=bytes" SymLoc [function]
                    | SymLoc "==bytes" SymLoc [function]
 
-     syntax Bool ::= sameBase(SymLoc, SymLoc) [function]
+     syntax Bool ::= sameBase(IntPtr, IntPtr) [function]
 
      syntax String ::= getTU(SymLoc) [function]
      syntax ThreadId ::= getThreadId(SymLoc) [function]

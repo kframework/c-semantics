@@ -31,7 +31,7 @@ module C-CONVERSION
      rule arithInterpret(T:IntegerUType, N:Int) => tv(N, T)
           requires (min(T) <=Int N)
                andBool (max(T) >=Int N)
-     rule arithInterpret(T::UType, unknown) => tv(unknown, T)
+     rule arithInterpret(T::UType, unknown(I:Int)) => makeUnknown(arithInterpret(T, I))
      rule arithInterpret(T::UType, trap) => trap(T)
      rule arithInterpret(T:FloatUType, F:Float) => tv(F, T)
           requires fmin(T) <=Float F andBool fmax(T) >=Float F
@@ -84,17 +84,9 @@ module C-CONVERSION
           => tv(V, cast(T', T))
           requires notBool isBoolUType(T')
                andBool inRange(V, T')
-     rule cast(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
-          => castHold(T', tv(subObject(NullPointer, N, M), T))
-          requires notBool isBoolUType(T')
-               andBool M -Int N <Int byteSizeofType(T')
-
-     rule (.K => IMPL("CCV8", "Conversion of a null pointer fragment to an integer type.", "6.3.2.3:6, J.3.7:1 item 1") )
-          ~> castHold(T':IntegerUType, tv(subObject(NullPointer, N:Int, M:Int), T:IntegerUType))
 
      rule cast(T':IntegerUType, tv(subObject(L:SymLoc, N:Int, M:Int), T:IntegerUType)) => tv(subObject(L, N, M), T')
           requires notBool isBoolUType(T')
-               andBool L =/=K NullPointer
                andBool M -Int N <Int byteSizeofType(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.3}{2}}}{
@@ -171,8 +163,9 @@ module C-CONVERSION
           requires notBool inRange(I, T')
           [structural]
 
-     rule cast(T'::UType, tv(unknown, T::UType))
-          => tv(unknown, cast(T', T))
+     rule cast(T'::UType, tv(unknown(I:Int), T::UType))
+          => makeUnknown(cast(T', tv(I, T)))
+          requires notBool isPointerUType(T')
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.4}{1}}}{
      When a finite value of real floating type is converted to an integer type

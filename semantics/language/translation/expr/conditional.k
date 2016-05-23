@@ -37,11 +37,11 @@ module C-EXPR-CONDITIONAL
      rule evalConditional(C:RValue, E1:RValue, E2:RValue, T::UType)
           => te(stripHold(C) ? E1 : E2, stripConstants(T))
           requires isHold(C) orBool isVariablyModifiedType(type(T))
-     rule evalConditional(tv(1, ut(_, int)), E1:RValue, _, T::UType) => E1
+     rule evalConditional(tv(1, ut(_, int)), E1:RValue, _:RValue, T::UType) => E1
           requires notBool isVariablyModifiedType(type(T))
-     rule evalConditional(tv(0, ut(_, int)), _, E2:RValue, T::UType) => E2
+     rule evalConditional(tv(0, ut(_, int)), _:RValue, E2:RValue, T::UType) => E2
           requires notBool isVariablyModifiedType(type(T))
-     rule evalConditional(tv((unknown => 0), ut(_, int)), _, _, T::UType)
+     rule evalConditional(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)), _, _, T::UType)
           requires notBool isVariablyModifiedType(type(T))
 
 endmodule

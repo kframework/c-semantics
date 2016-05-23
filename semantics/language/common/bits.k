@@ -2,8 +2,7 @@ module C-BITS-SYNTAX
      imports C-SYMLOC-SYNTAX
 
      syntax Trap ::= "trap" [klabel(trap)]
-     syntax Unknown ::= "unknown" [klabel(unknown)]
-     syntax Unknown ::= unknownAlignedInt(Int)
+     syntax Unknown ::= unknown(Int)
      syntax Bits ::= Trap
      syntax Bits ::= Unknown
 
@@ -14,9 +13,11 @@ module C-BITS-SYNTAX
      syntax Bits ::= bitRange(Bits, Int, Int)
 
      // value, (length - byte-offset), type
-     syntax Bits ::= encodedFloat(Float, Int, UType)
+     syntax Bits ::= encodedFloat(Float, Int, Int, UType)
      // object, start piece, end piece
-     syntax Bits ::= subObject(SymLoc, Int, Int)
+     syntax SubObject ::= subObject(SymLoc, Int, Int)
+     syntax Bits ::= SubObject
+     syntax IntPtr ::= SubObject
 
      syntax KItem ::= fillToBytes(K) [strict]
      syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
@@ -24,12 +25,24 @@ module C-BITS-SYNTAX
      syntax DataList ::= dataList(List)
      syntax KResult ::= DataList
 
+     syntax KItem ::= makeUnknown(K) [function, klabel(makeUnknown1)]
+     syntax KItem ::= makeUnknown2(K) [strict]
+     syntax KItem ::= stripUnknown(K) [function]
+
+     syntax Int ::= maxIntPtrValue(IntPtr) [function]
+     syntax SymLoc ::= locOf(SubObject) [function]
+
 endmodule
 
 module C-BITS
      imports C-BITS-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
+
+     rule base(subObject(S:SymLoc, _, _)) => base(S)
+     rule sameBase((subObject(S:SymLoc, _, _) => S), _)
+     rule sameBase(_, (subObject(S:SymLoc, _, _) => S))
+     rule locOf(subObject(S:SymLoc, _, _)) => S
 
      // this maintains byte order
      rule fillToBytes(dataList(L:List))
@@ -59,6 +72,16 @@ module C-BITS
 
      rule fillToBytes-aux(dataList(.List), L:List) => dataList(L)
           [structural]
+
+     rule makeUnknown(tv(I:Int, T::UType)) => tv(unknown(I), T)
+     rule makeUnknown(R::RValue) => R [owise]
+     rule makeUnknown2(R:RValue) => makeUnknown(R)
+     rule stripUnknown(tv(unknown(I:Int), T::UType)) => tv(I, T)
+     rule stripUnknown(tv(V::CValue, T::UType)) => tv(V, T)
+          requires notBool isUnknown(V)
+
+     rule maxIntPtrValue(_:SymLoc) => (1 <<Int (cfg:bitsPerByte *Int cfg:ptrsize -Int 1)) -Int 1
+     rule maxIntPtrValue(subObject(_, N:Int, M:Int)) => (1 <<Int (cfg:bitsPerByte *Int (M -Int N +Int 1) -Int 1)) -Int 1
 
      // coallesce bitranges that are adjacent
      rule piece(bitRange(N::Bits, SuccTo:Int, To':Int), Len:Int)

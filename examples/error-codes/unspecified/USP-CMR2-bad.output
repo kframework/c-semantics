@@ -1,0 +1,6 @@
+Error: USP-CMR2
+Description: Trying to reinterpret floating bytes as integer bytes.
+Type: Unspecified value or behavior.
+See also: C11 sec. 6.2.6.1:1, J.1:1 item 9
+  at main(USP-CMR2-bad.c:10)
+  at <file-scope>(<unknown>)

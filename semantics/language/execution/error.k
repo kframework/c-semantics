@@ -53,7 +53,7 @@ module C-EXECUTION-ERROR
           requires isErrorRecovery andBool notBool isCSV
                andBool error(Msg, printStackTrace(L, Loc, S)) in Errors
 
-     rule <result-value> unknown => (139 ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")):>Int </result-value>
+     rule <result-value> unknown(I:Int) => (I ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")):>Int </result-value>
      requires notBool isCSV
 
      rule <file-commands> openWriteThenClose(File::String, Line::String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
@@ -71,7 +71,7 @@ module C-EXECUTION-ERROR
      rule stackSeparator(.List) => ""
      rule stackSeparator(_) => "\n" [owise]
 
-     rule <result-value> unknown => 139 </result-value>
+     rule <result-value> unknown(I:Int) => I </result-value>
           <file-commands> .K => openWriteThenClose(Report, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String ",unknown\r\n") ...</file-commands>
           <options>... SetItem(CSV(Report::String)) ...</options>
 
@@ -99,11 +99,6 @@ module C-EXECUTION-ERROR
      rule [err00037]:
           (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
           read(NullPointer, _)
-          [structural]
-     rule [err00046]:
-          (.K => UNSPEC("CEER2", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
-          concretize(_:FloatUType, dataList(ListItem(piece(N:Int, _)) _))
-          requires N >Int 0
           [structural]
 
      // TODO(chathhorn): Silly way to do things. Probably need to allow

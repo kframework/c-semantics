@@ -107,6 +107,9 @@ module C-COMMON-EXPR-ADDITIVE
           => addToIntptr(Loc, T, 0 -Int I)
           requires isPromoted(T) andBool T ==Type T'
           [structural]
+     rule tv(_:SymLoc, T::UType) + tv((Loc':SymLoc => unknown(maxIntPtrValue(Loc'))), T'::UType)
+          requires isPromoted(T) andBool T ==Type T'
+          [structural]
 
      rule (.K => CV("CEA7",
                "Computing pointer addition of a pointer not to a complete object type.",
@@ -216,18 +219,18 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(L1:SymLoc, ut(_, pointerType(T::Type)))
                - tv(L2:SymLoc, ut(_, pointerType(T'::Type)))
-          => computePointerDifference(offset(L1) -Int offset(L2), byteSizeofType(T))
-          requires base(L1) ==K base(L2)
+          => computePointerDifference(offset(L1) -Int offset(L2), byteSizeofType(T), utype(cfg:ptrdiffut), "ptrdiff_t")
+          requires sameBase(L1, L2)
                andBool notBool isFunctionType(T) andBool notBool isFunctionType(T')
                andBool isCompleteType(T) andBool isCompleteType(T')
                andBool stripQualifiers(T) ==Type stripQualifiers(T')
           [structural]
 
-     // uintptr_t
-     rule tv(L1:SymLoc, _:IntegerUType)
-               - tv(L2:SymLoc, _:IntegerUType)
-          => computePointerDifference(offset(L1) -Int offset(L2), 1)
-          requires base(L1) ==K base(L2)
+     rule tv(L1:SymLoc, T:IntegerUType)
+               - tv(L2:SymLoc, T':IntegerUType)
+          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi:>String)
+          requires sameBase(L1, L2)
+               andBool isPromoted(T) andBool T ==Type T'
 
      rule (.K => CV("CEA9",
                "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.",
@@ -243,21 +246,21 @@ module C-COMMON-EXPR-ADDITIVE
      rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
           "6.5.6:9, J.2:1 item 48"))
           ~> tv(L1:SymLoc, _) - tv(L2:SymLoc, _)
-          requires base(L1) =/=K base(L2)
+          requires notBool sameBase(L1, L2)
 
      // ptr1, ptr2, size of ptr type
-     syntax KItem ::= computePointerDifference(Int, Int)
-     rule computePointerDifference(Diff:Int, Size:Int)
-          => tv(Diff /Int Size, utype(cfg:ptrdiffut))
+     syntax KItem ::= computePointerDifference(Int, Int, UType, String)
+     rule computePointerDifference(Diff:Int, Size:Int, T::UType, _)
+          => tv(Diff /Int Size, T)
           requires (Diff %Int Size ==Int 0)
-               andBool (Diff /Int Size) <=Int max(utype(cfg:ptrdiffut))
-               andBool (Diff /Int Size) >=Int min(utype(cfg:ptrdiffut))
+               andBool (Diff /Int Size) <=Int max(T)
+               andBool (Diff /Int Size) >=Int min(T)
           [structural]
-     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented by object of type ptrdiff_t.",
+     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented by object of type " +String S +String ".",
                "6.5.6:9, J.2:1 item 50"))
-          ~> computePointerDifference(Diff:Int, Size:Int)
-          requires (Diff /Int Size) >Int max(utype(cfg:ptrdiffut))
-               orBool (Diff /Int Size) <Int min(utype(cfg:ptrdiffut))
+          ~> computePointerDifference(Diff:Int, Size:Int, T::UType, S::String)
+          requires (Diff /Int Size) >Int max(T)
+               orBool (Diff /Int Size) <Int min(T)
           [structural]
 
      rule tv(I1:Int, T::UType) + tv(I2:Int, T'::UType)
@@ -277,24 +280,11 @@ module C-COMMON-EXPR-ADDITIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(_, T:UnsignedIntegerUType) + tv(unknown, T'::UType)
-          => tv(unknown, T)
-          requires isPromoted(T) andBool T ==Type T'
-          [structural]
-     rule tv(unknown, T:UnsignedIntegerUType) + tv(_, T'::UType)
-          => tv(unknown, T)
-          requires isPromoted(T) andBool T ==Type T'
-          [structural]
-
-     rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
-               "6.5:5, J.2:1 item 36"))
-          ~> tv(_, T:SignedIntegerUType) + tv(unknown, T'::UType)
-          requires isPromoted(T) andBool T ==Type T'
-          [structural]
-     rule (.K => UNDEF("CEA6", "Unspecified value in signed integer addition, possible overflow.",
-               "6.5:5, J.2:1 item 36"))
-          ~> tv(unknown, T:SignedIntegerUType) + tv(_, T'::UType)
-          requires isPromoted(T) andBool T ==Type T'
-          [structural]
+     rule tv(V:CValue, T::UType) + tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V:CValue, T::UType) - tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
 
 endmodule

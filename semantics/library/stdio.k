@@ -4,6 +4,7 @@ module LIBC-STDIO
 
      imports C-BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -45,7 +46,13 @@ module LIBC-STDIO
           pointerToString(Loc:SymLoc)
           => "[sym(" +String symBaseToString(base(Loc)) +String ") + "
                +String Int2String(offset(Loc)) +String "]"
+          requires notBool isNativeLoc(Loc)
           [structural]
+
+     rule pointerToString(Loc:SymLoc => stripProv(Loc))
+          requires isNativeLoc(Loc)
+     rule pointerToString(loc(0 @ nativeAddress(), Addr:Int))
+          => "0x" +String Base2String(Addr, 16)
 
      rule [symBaseToString-thread]:
           symBaseToString(B:Int @ thread(Th:Int))
@@ -388,18 +395,12 @@ module LIBC-STDIO
           [structural]
 
      rule <k> formatter-aux(_) ...</k>
-          <format-arg> NullPointer => 0 </format-arg>
-          <format-state> "%d" </format-state>
-          [structural]
-
-     rule <k> formatter-aux(_) ...</k>
-          <format-arg> S:SymLoc => unknown </format-arg>
+          <format-arg> S:SymLoc => unknown(0) </format-arg>
           <format-state> State::String </format-state>
-          requires S =/=K NullPointer
-               andBool (State ==String "%d" orBool State ==String "%x")
+          requires (State ==String "%d" orBool State ==String "%x" orBool State ==String "%X" orBool State ==String "%u" orBool State ==String "%o")
 
      rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.", "7.21.6.1:8")) ~> formatter-aux(_) ...</k>
-          <format-arg> unknown </format-arg>
+          <format-arg> unknown(_) </format-arg>
 
      rule <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
@@ -792,7 +793,7 @@ module LIBC-STDIO
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
      rule nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T))
-          requires utype(T) ==Type T'
+          requires utype(T) ==Type T' orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
@@ -801,7 +802,7 @@ module LIBC-STDIO
           ~> nextvarg(tv(V:CValue, T'::UType), T:Type)
           ...</k>
           <format-state> State:String </format-state>
-          requires utype(T) =/=Type T'
+          requires utype(T) =/=Type T' andBool notBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
@@ -918,6 +919,20 @@ module LIBC-STDIO
 
      rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
 
+     rule getFormatType-aux("%d", "hh") => type(signed-char)
+     rule getFormatType-aux("%o", "hh") => type(signed-char)
+     rule getFormatType-aux("%u", "hh") => type(unsigned-char)
+     rule getFormatType-aux("%x", "hh") => type(unsigned-char)
+     rule getFormatType-aux("%X", "hh") => type(unsigned-char)
+     rule getFormatType-aux("%n", "hh") => type(pointerType(type(signed-char)))
+
+     rule getFormatType-aux("%d", "h") => type(short-int)
+     rule getFormatType-aux("%o", "h") => type(short-int)
+     rule getFormatType-aux("%u", "h") => type(unsigned-short-int)
+     rule getFormatType-aux("%x", "h") => type(unsigned-short-int)
+     rule getFormatType-aux("%X", "h") => type(unsigned-short-int)
+     rule getFormatType-aux("%n", "h") => type(pointerType(type(short-int)))
+
      rule getFormatType-aux("%d", "") => type(int)
      rule getFormatType-aux("%o", "") => type(int)
      rule getFormatType-aux("%u", "") => type(unsigned-int)
@@ -945,6 +960,13 @@ module LIBC-STDIO
      rule getFormatType-aux("%x", "z") => type(cfg:sizeut)
      rule getFormatType-aux("%X", "z") => type(cfg:sizeut)
      rule getFormatType-aux("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
+
+     rule getFormatType-aux("%d", "t") => type(cfg:ptrdiffut)
+     rule getFormatType-aux("%o", "t") => type(cfg:ptrdiffut)
+     rule getFormatType-aux("%u", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType-aux("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType-aux("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType-aux("%n", "t") => type(pointerType(type(cfg:sizeut)))
 
 endmodule
 

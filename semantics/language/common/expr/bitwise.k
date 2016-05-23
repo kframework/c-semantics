@@ -47,6 +47,12 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
+
+     rule tv((L:IntPtr => unknown(maxIntPtrValue(L))), T::UType) << tv(E2:Int, T'::UType)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T)
+
      rule (.K => CV("CEB1",
                "Both bitwise shift operands must have integer type.",
                "6.5.7:2"))
@@ -92,6 +98,12 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T1)
                andBool E1 >=Int 0
           [structural]
+
+     rule tv((L:IntPtr => unknown(maxIntPtrValue(L))), T::UType) >> tv(E2:Int, T'::UType)
+          requires isPromoted(T) andBool isPromoted(T')
+               andBool E2 >=Int 0
+               andBool E2 <Int bitSizeofType(T)
+
      rule (.K => CV("CEB5",
                "Both bitwise shift operands must have integer type.",
                "6.5.7:2"))
@@ -134,33 +146,6 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T) andBool T ==Type T'
           [structural]
 
-     rule tv(unknownAlignedInt(Align:Int), T::UType) & tv(E2:Int, T'::UType)
-          => #if Align >Int E2 #then tv(0, T) #else tv(unknown, T) & tv(E2, T') #fi
-          requires isPromoted(T) andBool E2 >=Int 0
-               andBool T ==Type T'
-     rule tv(E1:Int, T::UType) & tv(unknownAlignedInt(Align:Int), T'::UType)
-          => #if Align >Int E1 #then tv(0, T) #else tv(E1, T) & tv(unknown, T') #fi
-          requires isPromoted(T) andBool E1 >=Int 0
-               andBool T ==Type T'
-
-     rule tv(unknown, T::UType) & tv(E2:Int, T'::UType)
-          => tv(unknown, T)
-          requires isPromoted(T) andBool E2 >=Int 0
-               andBool T ==Type T'
-     rule tv(E1:Int, T::UType) & tv(unknown, T'::UType)
-          => tv(unknown, T)
-          requires isPromoted(T) andBool E1 >=Int 0
-               andBool T ==Type T'
-
-     rule tv(unknown, T::UType) & tv(E2:Int, T'::UType)
-          => trap(T)
-          requires isPromoted(T) andBool E2 <Int 0
-               andBool T ==Type T'
-     rule tv(E1:Int, T::UType) & tv(unknown, T'::UType)
-          => trap(T)
-          requires isPromoted(T) andBool E1 <Int 0
-               andBool T ==Type T'
-
      rule tv(L:SymLoc, T::UType) & tv(E2:Int, T'::UType)
           => tv(L, T) + tv((offset(L) &Int E2) -Int offset(L), T')
           requires (~Int (getAlign(L) -Int 1) &Int ~Int E2) &Int max(correspondingUnsignedType(T)) ==Int 0
@@ -179,22 +164,14 @@ module C-COMMON-EXPR-BITWISE
           requires getAlign(L) >Int E2 andBool E2 >=Int 0
                andBool isPromoted(T) andBool T ==Type T'
 
-     rule tv(L:SymLoc, T::UType) | tv(E2:Int, T'::UType)
-          => tv(L, T) + tv((offset(L) |Int E2) -Int offset(L), T')
-          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+     rule tv((L:SymLoc => unknown(maxIntPtrValue(L))), T::UType) & tv(E2:Int, T'::UType)
+          requires notBool (getAlign(L) >Int E2 andBool E2 >=Int 0)
+               andBool notBool ((~Int (getAlign(L) -Int 1) &Int ~Int E2) &Int max(correspondingUnsignedType(T)) ==Int 0)
                andBool isPromoted(T) andBool T ==Type T'
-               andBool L =/=K NullPointer
-     rule tv(E2:Int, T::UType) | tv(L:SymLoc, T'::UType)
-          => tv((offset(L) |Int E2) -Int offset(L), T) + tv(L, T')
-          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+     rule tv(E2:Int, T::UType) & tv((L:SymLoc => unknown(maxIntPtrValue(L))), T'::UType)
+          requires notBool (getAlign(L) >Int E2 andBool E2 >=Int 0)
+               andBool notBool ((~Int (getAlign(L) -Int 1) &Int ~Int E2) &Int max(correspondingUnsignedType(T)) ==Int 0)
                andBool isPromoted(T) andBool T ==Type T'
-               andBool L =/=K NullPointer
-     rule tv(NullPointer, T::UType) | tv(E2:Int, T'::UType)
-          => tv(E2, T')
-          requires isPromoted(T) andBool T ==Type T'
-     rule tv(E2:Int, T::UType) | tv(NullPointer, T'::UType)
-          => tv(E2, T')
-
 
      rule (.K => CV("CEB9",
                "Both bitwise AND operands must have integer type.",
@@ -216,6 +193,23 @@ module C-COMMON-EXPR-BITWISE
                isNegZero(E1, T) orBool isNegZero(E2, T'))
           requires isPromoted(T) andBool T ==Type T'
           [structural]
+
+
+     rule tv(_:IntPtr, T::UType) ^ tv(I::CValue, T'::UType)
+          => tv(unknown(0), T)
+          requires isPromoted(T) andBool T ==Type T'
+               andBool I =/=K 0
+     rule tv(I::CValue, T::UType) ^ tv(_:IntPtr, T'::UType)
+          => tv(unknown(0), T)
+          requires isPromoted(T) andBool T ==Type T'
+               andBool I =/=K 0
+     rule tv(0, T::UType) ^ tv(I:IntPtr, T'::UType)
+          => tv(I, T)
+          requires isPromoted(T) andBool T ==Type T'
+     rule tv(I:IntPtr, T::UType) ^ tv(0, T'::UType)
+          => tv(I, T)
+          requires isPromoted(T) andBool T ==Type T'
+
      rule (.K => CV("CEB10",
                "Both bitwise exclusive OR operands must have integer type.",
                "6.5.11:2"))
@@ -236,6 +230,24 @@ module C-COMMON-EXPR-BITWISE
                isNegZero(E1, T) orBool isNegZero(E2, T'))
           requires isPromoted(T) andBool T ==Type T'
           [structural]
+
+     rule tv(L:SymLoc, T::UType) | tv(E2:Int, T'::UType)
+          => tv(L, T) + tv((offset(L) |Int E2) -Int offset(L), T')
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+               andBool L =/=K NullPointer
+     rule tv(E2:Int, T::UType) | tv(L:SymLoc, T'::UType)
+          => tv((offset(L) |Int E2) -Int offset(L), T) + tv(L, T')
+          requires getAlign(L) >Int E2 andBool E2 >=Int 0
+               andBool isPromoted(T) andBool T ==Type T'
+               andBool L =/=K NullPointer
+     rule tv(NullPointer, T::UType) | tv(E2:Int, T'::UType)
+          => tv(E2, T')
+          requires isPromoted(T) andBool T ==Type T'
+     rule tv(E2:Int, T::UType) | tv(NullPointer, T'::UType)
+          => tv(E2, T')
+          requires isPromoted(T) andBool T ==Type T'
+
      rule (.K => CV("CEB11",
                "Both bitwise inclusive OR operands must have integer type.",
                "6.5.12:2"))
@@ -244,15 +256,17 @@ module C-COMMON-EXPR-BITWISE
                orBool notBool isIntegerType(type(R))
           [structural]
 
-     syntax KItem ::= bitwiseInterpret(UType, Int, Bool)   [klabel(bitwiseInterpret3)]
-     rule bitwiseInterpret(T:UnsignedIntegerUType, N:Int, _) => arithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N:Int, true) => arithInterpret(T, N)
-     rule bitwiseInterpret(T:SignedIntegerUType, N:Int, false)
+     syntax KItem ::= bitwiseInterpret(UType, NumValue, Bool)   [klabel(bitwiseInterpret3)]
+     rule bitwiseInterpret(T:UnsignedIntegerUType, N::NumValue, _) => arithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerUType, N::NumValue, true) => arithInterpret(T, N)
+     rule bitwiseInterpret(T:SignedIntegerUType, N::NumValue, false)
           => bitwiseInterpret(arithInterpret(T, N))
 
      syntax KItem ::= bitwiseInterpret(K) [strict]
      rule bitwiseInterpret(tv(N:Int, T::UType)) => tv(N, T)
           requires notBool isNegZero(N, T)
+     rule bitwiseInterpret(tv(N::NumValue, T::UType)) => tv(N, T)
+          requires notBool isInt(N)
      rule (.K => UNDEF("CEB12",
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
@@ -276,5 +290,22 @@ module C-COMMON-EXPR-BITWISE
           requires N ==Int -1 // Ones' complement.
      rule isNegZero(N::Int, T::UType) => false
           requires N =/=Int min(T) andBool N =/=Int -1
+
+
+     rule tv(V:CValue, T::UType) ^ tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) ^ stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V:CValue, T::UType) & tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) & stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V:CValue, T::UType) | tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) | stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V:CValue, T::UType) >> tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) >> stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V:CValue, T::UType) << tv(V':CValue, T'::UType)
+          => makeUnknown2(stripUnknown(tv(V, T)) << stripUnknown(tv(V', T')))
+          requires (isUnknown(V) orBool isUnknown(V'))
 
 endmodule

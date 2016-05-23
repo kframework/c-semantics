@@ -18,7 +18,7 @@ module C-EXPR-CONDITIONAL
           requires notBool isVariablyModifiedType(type(E1))
                andBool notBool isVariablyModifiedType(type(E2))
           [structural]
-     rule tv((unknown => 0), ut(_, int)) ? _ : _
+     rule tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)) ? _ : _
 
      syntax KItem ::= types(K, K) [strict]
      rule (.K => types(stabilizeVLA(type(E1)), stabilizeVLA(type(E2))))
@@ -46,6 +46,6 @@ module C-EXPR-CONDITIONAL
      rule convertedType(T:Type) ~> tv(0, ut(_, int)) ? _ : E2:K
           => sequencePoint ~> Cast(T, E2)
           [structural]
-     rule convertedType(_) ~> tv((unknown => 0), ut(_, int)) ? _ : _
+     rule convertedType(_) ~> tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)) ? _ : _
 
 endmodule

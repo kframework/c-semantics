@@ -1,12 +1,12 @@
 // Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
-int x;
 union {
-  short x;
-  int y;
+  int x;
+  float y;
 } foo;
-int main(void){
-  foo.x = 1;
-  int y = 5 + foo.y;
+
+int main() {
+  foo.y = 1.0;
+  int x = foo.x;
   return 0;
 }

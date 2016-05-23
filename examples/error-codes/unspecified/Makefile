@@ -32,11 +32,6 @@ comparison: ${TEST_COMPARISON}
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
-# we handle this case specially because unlike the others, it by necessity returns an error code on the command line
-USP-CEER6-bad.out: USP-CEER6-bad.kcc
-	@echo -n "Running $<... "
-	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN_FATAL}
-
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "
 	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

@@ -34,7 +34,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= toRVal(K)
 
-     syntax Typed ::= LValue | RValue | Hold | Type | Nclv
+     syntax Typed ::= LValue | RValue | Hold | Type | Nclv | TrapLValue
      syntax Type ::= type(K) [function]
      syntax UType ::= utype(K) [function]
      syntax Valued ::= LValue | RValue | Hold
@@ -47,7 +47,8 @@ module C-DYNAMIC-SYNTAX
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
-     syntax KResult ::= RValue | Type | UType | DType | Nclv | trap(UType) [klabel(trap1)]
+     syntax TrapLValue ::= trap(UType) [klabel(trap1)]
+     syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
 
@@ -162,6 +163,7 @@ module C-DYNAMIC
      rule type(te(_, T::UType)) => type(T)
      rule type(le(_, T::Type)) => T
      rule type(ncle(_, T::Type)) => T
+     rule type(trap(T::UType)) => type(T)
      rule type(T:Type) => T
      rule type(T:SimpleType) => t(noQuals, .Set, T)
      rule type(T:SimpleArrayUType) => t(noQuals, .Set, qualSimple(T))
@@ -174,6 +176,7 @@ module C-DYNAMIC
      rule utype(te(_, T:UType)) => T
      rule utype(le(_, T::Type)) => utype(T)
      rule utype(ncle(_, T::Type)) => utype(T)
+     rule utype(trap(T::UType)) => T
      rule utype(t(_, Mods::Set, T::SimpleType)) => ut(Mods, unqualSimple(T))
      rule utype(typedDeclaration(T::Type, _)) => utype(T)
      rule utype(T:SimpleType) => ut(.Set, unqualSimple(T))

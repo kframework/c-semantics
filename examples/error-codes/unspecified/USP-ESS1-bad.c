@@ -6,5 +6,8 @@ union U {
 int main(void){
 	u.b = 0;
 	u.a = 0;
-	return u.b + 139;	
+	switch(u.b) {
+        case 1:
+            break;
+        }
 }

@@ -45,6 +45,9 @@ module C-SETTINGS-SYNTAX
      syntax CValue ::= "cfg:intToPointer" "(" CValue "," UType ")" [function]
      syntax CValue ::= "cfg:pointerToInt" "(" CValue "," UType ")" [function]
 
+     syntax Float ::= "cfg:floatFromBits" "(" Int "," UType ")" [function]
+     syntax Int ::= "cfg:floatRepr" "(" Float "," Int "," Int "," UType "," UType ")" [function]
+
      syntax Int ::= "cfg:stackSize" "(" List "," List ")" [function]
 
      syntax Bool ::= "isErrorRecovery" [function]

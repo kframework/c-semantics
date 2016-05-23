@@ -46,7 +46,7 @@ module C-SETTINGS
 
      rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(_, _) => trap [owise]
-     rule cfg:pointerToInt(_, _) => unknown
+     rule cfg:pointerToInt(_, T::UType) => unknown(max(T))
 
      rule isErrorRecovery => false
      rule hasLint => false

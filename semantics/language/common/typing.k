@@ -180,7 +180,8 @@ module C-TYPING-SYNTAX
      syntax ArrayOrFunctionUType ::= FunctionUType
                                    | FixedLengthArrayUType | IncompleteArrayUType
                                    | VariableLengthArrayUType
-     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType | BitfieldUType
+     syntax CharUType ::= SCharUType | UCharUType
+     syntax IntegerUType ::= UnsignedIntegerUType | SignedIntegerUType | BitfieldUType | CharUType
      syntax SignedIntegerUType ::= SCharUType | SignedBitfieldUType
      syntax UnsignedIntegerUType ::= UCharUType | BoolUType | UnsignedBitfieldUType
      syntax BitfieldUType ::= SignedBitfieldUType | UnsignedBitfieldUType

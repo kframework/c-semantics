@@ -1,4 +1,11 @@
+module C-COMMON-EXPR-RELATIONAL-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+
+     syntax Bool ::= isCompatibleEqualityTypes(UType, UType, K, K) [function]
+endmodule
+
 module C-COMMON-EXPR-RELATIONAL
+     imports C-COMMON-EXPR-RELATIONAL-SYNTAX
      imports C-BITS-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -108,7 +115,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires L ==K NullPointer orBool R ==K NullPointer
 
      //- comparison of pointers
-     rule tv(Loc:SymLoc, T:PointerUType) < tv(Loc':SymLoc, T':PointerUType)
+     rule tv(Loc:SymLoc, T::UType) < tv(Loc':SymLoc, T'::UType)
           => makeTruth(offset(Loc) <Int offset(Loc'), T, T')
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -121,7 +128,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(Loc:SymLoc, T:PointerUType) <= tv(Loc':SymLoc, T':PointerUType)
+     rule tv(Loc:SymLoc, T::UType) <= tv(Loc':SymLoc, T'::UType)
           => makeTruth(offset(Loc) <=Int offset(Loc'), T, T')
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -134,7 +141,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(Loc:SymLoc, T:PointerUType) > tv(Loc':SymLoc, T':PointerUType)
+     rule tv(Loc:SymLoc, T::UType) > tv(Loc':SymLoc, T'::UType)
           => makeTruth(offset(Loc) >Int offset(Loc'), T, T')
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -147,7 +154,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool notBool sameBase(Loc, Loc')
                andBool T ==Type T'
           [structural]
-     rule tv(Loc:SymLoc, T:PointerUType) >= tv(Loc':SymLoc, T':PointerUType)
+     rule tv(Loc:SymLoc, T::UType) >= tv(Loc':SymLoc, T'::UType)
           => makeTruth(offset(Loc) >=Int offset(Loc'), T, T')
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -220,12 +227,32 @@ module C-COMMON-EXPR-RELATIONAL
      rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
           ~> tv(V:CValue, T::UType) == tv(V':CValue, T'::UType)
           requires T ==Type T'
-               andBool (V ==K unknown orBool V' ==K unknown)
+               andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
      rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
           ~> tv(V:CValue, T::UType) != tv(V':CValue, T'::UType)
           requires T ==Type T'
-               andBool (V ==K unknown orBool V' ==K unknown)
+               andBool (isUnknown(V) orBool isUnknown(V'))
+          [structural]
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+          ~> tv(V:CValue, T::UType) < tv(V':CValue, T'::UType)
+          requires T ==Type T'
+               andBool (isUnknown(V) orBool isUnknown(V'))
+          [structural]
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+          ~> tv(V:CValue, T::UType) <= tv(V':CValue, T'::UType)
+          requires T ==Type T'
+               andBool (isUnknown(V) orBool isUnknown(V'))
+          [structural]
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+          ~> tv(V:CValue, T::UType) > tv(V':CValue, T'::UType)
+          requires T ==Type T'
+               andBool (isUnknown(V) orBool isUnknown(V'))
+          [structural]
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+          ~> tv(V:CValue, T::UType) >= tv(V':CValue, T'::UType)
+          requires T ==Type T'
+               andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{5--7}}}{
@@ -279,11 +306,45 @@ module C-COMMON-EXPR-RELATIONAL
      rule tv(subObject(Loc:SymLoc, N:Int, M:Int), T::UType) >= tv(subObject(Loc':SymLoc, N:Int, M:Int), T'::UType)
           => tv(Loc, T) >= tv(Loc', T')
 
-     rule tv((subObject(_, _, _) => unknown), T::UType) == tv(I:Int, T'::UType)
-     rule tv(I:Int, T::UType) == tv((subObject(_, _, _) => unknown), T'::UType)
-     rule tv((subObject(_, _, _) => unknown), T::UType) != tv(I:Int, T'::UType)
-     rule tv(I:Int, T::UType) != tv((subObject(_, _, _) => unknown), T'::UType)
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) == tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) == tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) != tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) != tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
 
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) < tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) < tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) <= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) <= tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
+
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) > tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) > tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
+     rule tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T::UType) >= tv(I:Int, T'::UType)
+          requires L =/=K NullPointer
+     rule tv(I:Int, T::UType) >= tv((subObject(L::SymLoc, N::Int, M::Int) => unknown(maxIntPtrValue(subObject(L, N, M)))), T'::UType)
+          requires L =/=K NullPointer
+
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) == tv(_:Int, _)
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) != tv(_:Int, _)
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) < tv(_:Int, _)
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) <= tv(_:Int, _)
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) > tv(_:Int, _)
+     rule tv((subObject(NullPointer, _, _) => unknown(0)), _) >= tv(_:Int, _)
+     rule tv(_:Int, _) == tv((subObject(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) != tv((subObject(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) < tv((subObject(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) <= tv((subObject(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) > tv((subObject(NullPointer, _, _) => unknown(0)), _)
+     rule tv(_:Int, _) >= tv((subObject(NullPointer, _, _) => unknown(0)), _)
 
      // otherwise, there are a number of cases.
      // First, they are part of the same object
@@ -292,12 +353,14 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
                andBool Loc' =/=K NullPointer
                andBool sameBase(Loc, Loc')
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T::UType) != tv(Loc':SymLoc, T'::UType)
           => makeTruth(offset(Loc) =/=K offset(Loc'), T, T')
           requires Loc  =/=K NullPointer
                andBool Loc' =/=K NullPointer
                andBool sameBase(Loc, Loc')
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
 
      // next, they are part of different objects.
@@ -307,6 +370,7 @@ module C-COMMON-EXPR-RELATIONAL
                andBool Loc' =/=K NullPointer
                andBool notBool sameBase(Loc, Loc')
                andBool notBool isAdjacent(stripProv(Loc), stripProv(Loc'), #configuration)
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
      rule tv(Loc:SymLoc, T::UType) != tv(Loc':SymLoc, T'::UType)
           => makeTruth(true, T, T')
@@ -314,15 +378,48 @@ module C-COMMON-EXPR-RELATIONAL
                andBool Loc' =/=K NullPointer
                andBool notBool sameBase(Loc, Loc')
                andBool notBool isAdjacent(stripProv(Loc), stripProv(Loc'), #configuration)
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
           [structural]
 
      rule tv(Loc:SymLoc, T::UType) == tv(Loc':SymLoc, T'::UType)
-          => tv(unknown, makeTruthType(T, T'))
+          => tv(unknown(1), makeTruthType(T, T'))
           requires isAdjacent(stripProv(Loc), stripProv(Loc'), #configuration)
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
      rule tv(Loc:SymLoc, T::UType) != tv(Loc':SymLoc, T'::UType)
-          => tv(unknown, makeTruthType(T, T'))
+          => tv(unknown(0), makeTruthType(T, T'))
           requires isAdjacent(stripProv(Loc), stripProv(Loc'), #configuration)
+               andBool isCompatibleEqualityTypes(T, T', Loc, Loc')
 
+     // arithmetic types
+     rule isCompatibleEqualityTypes(T1::UType, T2::UType, _, _) => true
+          requires (isPromoted(T1) orBool isFloatUType(T1))
+               andBool T1 ==Type T2
+     // pointers to qualified or unqualified versions of compatible types
+     rule isCompatibleEqualityTypes(T1:PointerUType, T2:PointerUType, _, _) => true
+          requires utype(innerType(T1)) ==Type utype(innerType(T2))
+     // pointer to object and pointer to void
+     rule isCompatibleEqualityTypes(T1:PointerUType, T2:PointerUType, _, _) => true
+          requires (notBool isFunctionType(innerType(T1)) andBool isVoidType(innerType(T2)))
+               orBool (notBool isFunctionType(innerType(T2)) andBool isVoidType(innerType(T1)))
+     // null pointer
+     rule isCompatibleEqualityTypes(_:PointerUType, _, _, NullPointer) => true
+     rule isCompatibleEqualityTypes(_, _:PointerUType, NullPointer, _) => true
+     rule isCompatibleEqualityTypes(_, _, _, _) => false [owise]
+
+     // we check also that they aren't both arithmetic types because arithmetic types must be promoted
+     // so it's not technically a constraint violation if the types don't match.
+     rule (.K => CV("CERL8", "Invalid operand types to ==.", "6.5.9:2"))
+          ~> L:RValue == R:RValue
+          requires notBool isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
+               andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
+               andBool notBool (isPointerType(type(L)) andBool isNullPointerConstant(R))
+               andBool notBool (isPointerType(type(R)) andBool isNullPointerConstant(L))
+     rule (.K => CV("CERL9", "Invalid operand types to !=.", "6.5.9:2"))
+          ~> L:RValue != R:RValue
+          requires notBool isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
+               andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
+               andBool notBool (isPointerType(type(L)) andBool isNullPointerConstant(R))
+               andBool notBool (isPointerType(type(R)) andBool isNullPointerConstant(L))
 
      syntax Bool ::= isAdjacent(SymLoc, SymLoc, K) [function]
      rule isAdjacent(loc(S::SymBase, Size:Int), loc(_, 0), <generatedTop>... <mem>... S |-> object(_, Size, _, _) ...</mem> ...</generatedTop>)

@@ -138,7 +138,7 @@ module C-MEMORY-WRITING
           => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T),
-                    piece(unknown, cfg:bitsPerByte))), T)
+                    piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
      rule makeUnknown(_, F:CId, fieldInfo(L:List, _, F |-> T:Type _, _)) => .K
@@ -244,8 +244,8 @@ module C-MEMORY-WRITING
           => dataList(ListItem(piece(N, cfg:bitsPerByte)))
           requires isCharType(type(T))
                andBool (isInt(N:Bits) =/=K true)
-     rule splitBytes(tv(unknown, T::UType))
-          => dataList(splitUnknown(bitSizeofType(T)))
+     rule splitBytes(tv(unknown(I:Int), T::UType))
+          => makeUnknown(splitBytes(tv(I, T)))
      rule splitBytes(tv(I:Int, T::UType))
           => splitIntegerBytes(I, T, byteSizeofType(T))
      rule splitBytes(tv(F:Float, T::UType))
@@ -257,13 +257,11 @@ module C-MEMORY-WRITING
                byteSizeofType(T))
           requires isStructOrUnionType(type(T))
 
-     syntax List ::= splitUnknown(Int) [function]
-     rule splitUnknown(N:Int)
-          => ListItem(piece(unknown, cfg:bitsPerByte))
-               splitUnknown(N -Int cfg:bitsPerByte)
-          requires N >Int 0
-     rule splitUnknown(N:Int) => .List
-          requires N <=Int 0
+     syntax KItem ::= makeUnknownAux(List, List) [function]
+     rule makeUnknown(dataList(L::List)) => makeUnknownAux(L, .List)
+     rule makeUnknownAux((ListItem(piece(I:Int, PieceLen:Int)) => .List) L::List, _:List (.List => ListItem(piece(unknown(I), PieceLen))))
+     rule makeUnknownAux(.List, L::List) => dataList(L)
+     rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]
 
      syntax DataList ::= splitIntegerBytes(Int, UType, Int) [function]
      syntax DataList ::= #splitIntegerBytes(Int, UType, Int, List) [function]
@@ -289,12 +287,12 @@ module C-MEMORY-WRITING
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
-                    orBool N ==K unknown)
+                    orBool isUnknown(N))
      rule #splitStructBytes(
-          dataList(ListItem(piece((N:Bits => unknown), _:Int)) _:List),
+          dataList(ListItem(piece((N:Bits => unknown(#if isInt(N) #then N #else 0 #fi:>Int)), _:Int)) _:List),
                T::UType, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
-               andBool N =/=K unknown
+               andBool notBool isUnknown(N)
      rule #splitStructBytes(_, _, 0, L:List) => dataList(reverseList(L))
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
@@ -323,11 +321,11 @@ module C-MEMORY-WRITING
 
      rule splitFloatBytes(F:Float, T::UType, Len:Int)
           => splitFloatBytes(F, T, Len -Int 1,
-               ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
+               ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)))
           requires Len >Int 0
      rule splitFloatBytes(F:Float, T::UType, Len:Int, L:List)
           => splitFloatBytes(F, T, Len -Int 1,
-               L ListItem(piece(encodedFloat(F, Len, T), cfg:bitsPerByte)))
+               ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)) L)
           requires Len >Int 0
      rule splitFloatBytes(_, _, 0, L:List) => dataList(L)
 

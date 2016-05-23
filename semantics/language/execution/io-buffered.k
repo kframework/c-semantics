@@ -400,7 +400,10 @@ module C-IO-BUFFERED
           <buffer> .List </buffer>
           [structural]
 
-     rule <k> deleteObject(Base:SymBase) => .K ...</k>
+     syntax K ::= #freeNativeObject(SymBase) [function, hook(C_SEMANTICS.freeNativeObject)]
+     rule #freeNativeObject(_) => .K [owise]
+
+     rule <k> deleteObject(Base:SymBase) => #freeNativeObject(Base) ...</k>
           <mem>... Base |-> object(_, _, _, _) => .Map ...</mem>
           <buffer> .List </buffer>
           [structural]

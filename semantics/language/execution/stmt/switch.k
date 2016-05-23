@@ -1,6 +1,8 @@
 module C-STMT-SWITCH
+     imports C-BITS-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -60,8 +62,15 @@ module C-STMT-SWITCH
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:K), M:Map)
           => (tryCase(Exp, V, caseLabel(SN, Exp))
           ~> #handleSwitch-aux(SN, V, .K, M))
-          requires Exp =/=K #klabel(`Default`)
+          requires Exp =/=K #klabel(`Default`) andBool notBool (isUnknown(value(V))  orBool isIntPtr(value(V)))
           [structural]
+
+     rule #handleSwitch-aux(_, tv((I:IntPtr => unknown(maxIntPtrValue(I))), T::UType), caseLabel(_, Exp:K), _)
+          requires Exp =/=K #klabel(`Default`)
+
+     rule (.K => UNSPEC("ESS1", "Switching on an unspecified controlling expression.", "6.8.4.2:5"))
+          ~> #handleSwitch-aux(_, tv(unknown(_), _), caseLabel(_, Exp:K), _)
+          requires Exp =/=K #klabel(`Default`)
 
      //  if all that's left is a default, do it
      rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN:Int, #klabel(`Default`)), M:Map)
