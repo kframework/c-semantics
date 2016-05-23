@@ -34,10 +34,18 @@ module C-STMT-BLOCK
           ...</block-stack>
           [structural]
 
-     rule <k> popBlock => exitRestrictScope(blockScope(F, OldTag)) ...</k>
-          <curr-scope> blockScope(F:CId, (OldTag:Int => Tag)) </curr-scope>
+     syntax KItem ::= "updateScope"
+
+     rule <k> updateScope => .K ...</k>
+          <curr-scope> blockScope(_, (_ => Tag)) </curr-scope>
+          <block-history> ListItem(Tag:Int) ...</block-history>
+     rule <k> updateScope => .K ...</k>
+          <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
+          <block-history> .List </block-history>
+
+     rule <k> popBlock => updateScope ~> exitRestrictScope(blockScope(F, OldTag)) ...</k>
+          <curr-scope> blockScope(F:CId, OldTag:Int) </curr-scope>
           (<block-control>...
-               <block-history> ListItem(Tag:Int) ...</block-history>
                <local-addresses> .Set </local-addresses>
           ...</block-control> => C)
           <block-stack> ListItem(C:BlockControlCell) => .List ...</block-stack>
