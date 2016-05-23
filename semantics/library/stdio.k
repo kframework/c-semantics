@@ -79,7 +79,7 @@ module LIBC-STDIO
           => Int2String(B) +String " @ "
           +String "auto(" +String Int2String(Th) +String ")"
           [structural]
- 
+
 
      rule [pointerToString-done]:
           pointerToString(NullPointer) => "NullPointer"
@@ -370,9 +370,20 @@ module LIBC-STDIO
 
      rule <k> formatter-aux(_) ...</k>
           <format> ListItem(C:String) ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%." => "%" </format-state>
-          requires ordChar(C) <Int ordChar("0")
-               orBool ordChar(C) >Int ordChar("9")
+          requires P =/=K ""
+               andBool (ordChar(C) <Int ordChar("0")
+               orBool ordChar(C) >Int ordChar("9"))
+          [structural]
+
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(C:String) ...</format>
+          <format-precision> P:String => "0" </format-precision>
+          <format-state> "%." => "%" </format-state>
+          requires P ==K ""
+               andBool (ordChar(C) <Int ordChar("0")
+               orBool ordChar(C) >Int ordChar("9"))
           [structural]
 
 
@@ -387,11 +398,23 @@ module LIBC-STDIO
      characters.}
      \end{description}
      */
+
+     rule <k> formatter-aux(_) ...</k>
+          <format> ListItem(S:String) ...</format>
+          <format-precision> P:String => "1" </format-precision>
+          <format-state> "%" </format-state>
+          requires P ==K ""
+               andBool (S ==String "d" orBool S ==String "i" orBool S ==String "u"
+                        orBool S ==String "x" orBool S ==String "X"
+                        orBool S ==String "o")
+          [structural]
+
      rule [format-%d-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%" => "%d" </format-state>
-          requires S ==String "d" orBool S ==String "i"
+          requires P =/=K "" andBool S ==String "d" orBool S ==String "i"
           [structural]
 
      rule <k> formatter-aux(_) ...</k>
@@ -404,11 +427,15 @@ module LIBC-STDIO
 
      rule <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
+          <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pad(Int2String(D), String2Int(W),
-                  #if Z #then "0" #else " " #fi:>String))
+               .List => ListItem(
+                        formatPrecisionWidth(Int2String(D:Int),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
           [structural]
@@ -430,52 +457,88 @@ module LIBC-STDIO
      rule [format-%o-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("o") => .List ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%" => "%o" </format-state>
+          requires P =/=K ""
           [structural]
      rule [format-%o]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(Base2String(D:Int, 8))
+               .List => ListItem(
+                        formatPrecisionWidth(Base2String(D:Int, 8),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
           [structural]
      rule [format-%u-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("u") => .List ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%" => "%u" </format-state>
+          requires P =/=K ""
           [structural]
      rule [format-%u]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(Int2String(D:Int))
+               .List => ListItem(
+                        formatPrecisionWidth(Int2String(D:Int),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
           [structural]
      rule [format-%x-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("x") => .List ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%" => "%x" </format-state>
+          requires P =/=K ""
           [structural]
      rule [format-%x]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(Base2String(D:Int, 16))
+               .List => ListItem(
+                        formatPrecisionWidth(Base2String(D:Int, 16),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
           [structural]
      rule [format-%X-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("X") => .List ...</format>
+          <format-precision> P:String </format-precision>
           <format-state> "%" => "%X" </format-state>
+          requires P =/=K ""
           [structural]
      rule [format-%X]:
           <k> formatter-aux(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(toUpperCase(Base2String(D:Int, 16)))
+               .List => ListItem(
+                        formatPrecisionWidth(toUpperCase(Base2String(D:Int, 16)),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -890,6 +953,27 @@ module LIBC-STDIO
           requires W >Int 0
      rule pad'(X::String, W::Int, _) => X
           requires W ==Int 0
+
+    syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," Int ")" [function]
+                    | "formatPrecisionWidth'" "(" String "," Int "," Bool "," Int ")" [function]
+                    | "formatPrecisionWidth''" "(" String "," Int "," Int "," String ")" [function]
+
+    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
+         => formatPrecisionWidth'(V, P, Z, W)
+         requires V =/=String "0" orBool P =/=Int 0
+    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
+         => formatPrecisionWidth'("", P, Z, W)
+         requires V ==String "0" andBool P ==Int 0
+
+    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
+         => formatPrecisionWidth''(V, P, W, "0")
+         requires Z ==Bool true
+    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
+         => formatPrecisionWidth''(V, P, W, " ")
+         requires Z ==Bool false
+
+    rule formatPrecisionWidth''(V::String, P::Int, W::Int, PZ::String)
+         => pad(pad(V, P, "0"), W, PZ)
 
      syntax Int ::= signInt(Int) [function]
      rule signInt(X::Int) => X /Int absInt(X)
