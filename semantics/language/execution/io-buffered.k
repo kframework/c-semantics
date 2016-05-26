@@ -49,19 +49,27 @@ module C-IO-BUFFERED
      rule <k> setModified(Loc::SymLoc, T::Type)
                => setModified(Loc, byteSizeofType(T), .K, Modified)
           ...</k>
-          <active-blocks> Modified:Map </active-blocks>
+          <active-blocks> Modified::Map </active-blocks>
 
-     syntax KItem ::= updateModified(K, SymLoc, Int) [function]
-     rule updateModified(activity(N::Int, M::Map), Loc::SymLoc, I::Int)
-          => activity(N, M[Loc <- #if Loc in_keys(M) #then maxInt(lookup(M, Loc):>Int, I) #else I #fi])
+     syntax Map ::= updateModified(K, K, Map, SymLoc, Int) [function, klabel(updateModified5)]
+     rule updateModified(activity(N::Int, Offsets::Map), Tag::Scope, M::Map, Loc::SymLoc, I::Int)
+          => M[Tag <- activity(N, updateModified(Offsets, Loc, I))]
+     syntax Map ::= updateModified(Map, SymLoc, Int) [function]
+     rule updateModified(M::Map, Loc::SymLoc, I::Int)
+          => updateModified(M, Loc, I, M[Loc])
+     syntax Map ::= updateModified(Map, SymLoc, Int, K) [function, klabel(updateModified4)]
+     rule updateModified(M::Map, Loc::SymLoc, I::Int, I2:Int)
+          => M[Loc <- maxInt(I, I2)]
+     rule updateModified(M::Map, Loc::SymLoc, I::Int, _)
+          => M[Loc <- I] [owise]
 
-     syntax KItem ::= setModified(SymLoc, Int, K, Map)
+     syntax KItem ::= setModified(SymLoc, Int, K, Map) [klabel(setModified4)]
      rule <k> setModified(Loc::SymLoc, Size::Int,
-                (Tag::Scope => .K), _)
+                (Tag:KItem => .K), _)
            ...</k>
-           <active-blocks>...
-                Tag |-> (Offsets:K => updateModified(Offsets, Loc, Size))
-           ...</active-blocks>
+           <active-blocks>
+             M::Map => updateModified(M[Tag], Tag, M, Loc, Size)
+           </active-blocks>
      rule setModified(Loc::SymLoc, Size::Int, .K, K:K |-> _ M::Map)
           => setModified(Loc, Size, K, M)
      rule setModified(_, _, .K, .Map) => .K
@@ -73,7 +81,7 @@ module C-IO-BUFFERED
           <thread-id> ThreadId::Int </thread-id>
           <mem>... Base |-> object(ObjT::Type, Len::Int, _, _) ...</mem>
           <locs-written>
-               Locs::List (.List => ListItem(loc(Base, Offset)))
+               Locs::Set (.Set => SetItem(loc(Base, Offset)))
           </locs-written>
           requires // Sequencing.
                (notBool loc(Base, Offset) in Locs)
@@ -89,7 +97,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> checkWrite(Loc::SymLoc, _) => .K ...</k>
           <locs-written>
-               Locs::List (.List => ListItem(Loc))
+               Locs::Set (.Set => SetItem(Loc))
           </locs-written>
           requires notBool Loc in Locs andBool isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO8",
@@ -97,8 +105,8 @@ module C-IO-BUFFERED
                "6.5:2, J.2:1 item 35") )
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
-          <locs-written> Locs::List </locs-written>
-          requires Loc in Locs::List
+          <locs-written> Locs::Set </locs-written>
+          requires Loc in Locs
           [structural]
      // TODO(chathhorn): probably redundant.
      rule <k> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int) => .K ...</k>
@@ -202,13 +210,13 @@ module C-IO-BUFFERED
                     | "errorUninit"
 
      syntax K ::= assertInBounds(Int, Int)
-     syntax K ::= assertSeq(SymLoc, List)
+     syntax K ::= assertSeq(SymLoc, Set)
      syntax K ::= assertVolatile(Type, Int, Type)
      syntax KItem ::= assertUninit(SymLoc)
 
      rule assertInBounds(Offset::Int, Len::Int)
           => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
-     rule assertSeq(Loc::SymLoc, Locs::List)
+     rule assertSeq(Loc::SymLoc, Locs::Set)
           => assert(notBool (Loc in Locs), errorUnseqEffects) [macro]
      rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
           => assert((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
@@ -230,7 +238,7 @@ module C-IO-BUFFERED
           <mem>...
                Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K), _)
           ...</mem>
-          <locs-written> Locs::List </locs-written>
+          <locs-written> Locs::Set </locs-written>
           <buffer> .List </buffer>
           requires Size >Int 0
           [structural]
@@ -243,7 +251,7 @@ module C-IO-BUFFERED
           <mem>...
                Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K), _)
           ...</mem>
-          <locs-written> Locs::List </locs-written>
+          <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem))
           [structural]
@@ -322,7 +330,7 @@ module C-IO-BUFFERED
                => assertSeq(Loc, Locs)
                ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T)
           ...</k>
-          <locs-written> Locs::List </locs-written>
+          <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (Loc in locations(Mem))
                andBool isNativeLoc(Loc)
@@ -333,7 +341,7 @@ module C-IO-BUFFERED
 //                  => assertSeq(Loc, Locs)
 //                  ~> tv(V:K, utype(no-type))
 //             ...</k>
-//             <locs-written> Locs:List </locs-written>
+//             <locs-written> Locs:Set </locs-written>
 //             <buffer>... ListItem(bwrite(Loc, V:K)) Mem:List </buffer>
 //             requires notBool (Loc in locations(Mem:List))
 //             [structural]
@@ -404,7 +412,7 @@ module C-IO-BUFFERED
      rule #freeNativeObject(_) => .K [owise]
 
      rule <k> deleteObject(Base:SymBase) => #freeNativeObject(Base) ...</k>
-          <mem>... Base |-> object(_, _, _, _) => .Map ...</mem>
+          <mem> M::Map => M[Base <- undef] </mem>
           <buffer> .List </buffer>
           [structural]
 

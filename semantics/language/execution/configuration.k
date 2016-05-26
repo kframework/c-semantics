@@ -147,7 +147,7 @@ module C-CONFIGURATION
                               .List
                          </loop-stack>
                          <locs-written color="lightgray">
-                              .List
+                              .Set
                          </locs-written>
 
                          // printf
