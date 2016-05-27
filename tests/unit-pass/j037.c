@@ -4,9 +4,11 @@ int main(void) {
       *p;
 
       int y = 5;
+      struct { int x; } s = { 0 };
+      union { int x; float y; } u = { 0 };
       *((int*)&y);
-      *((struct { int x; }*) &y);
-      *((union { float x; int y; }*) &y);
+      *((int*)&s);
+      *((int*)&u);
 
       return 0;
 }

@@ -13,7 +13,7 @@ module C-EXPR-SEQUENCING
           requires L =/=K .List
 
      rule (toRVal(R:RValue) ~> comma => .K)
-          ~> commaListHolder(_ ~> (.K => stripHold(R) ~> comma))
+          ~> commaListHolder(_ ~> (.K => toRVal(stripHold(R)) ~> comma))
           requires isHold(R)
      rule (toRVal(R:RValue) ~> comma => .K)
           ~> commaListHolder(_)
@@ -22,6 +22,6 @@ module C-EXPR-SEQUENCING
      rule commaListHolder(CL:K) ~> Comma(list(ListItem(K:K)))
           => toRVal(K) ~> commaListHolder(CL)
      rule toRVal(R:RValue) ~> commaListHolder(CL:K)
-          => te(compoundExp(CL ~> stripHold(R)), stripConstants(utype(R)))
+          => te(compoundExp(CL ~> toRVal(stripHold(R))), stripConstants(utype(R)))
 
 endmodule

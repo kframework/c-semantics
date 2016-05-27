@@ -62,6 +62,9 @@ module C-EXECUTION-INIT
      rule V:Hold => value(V)
           [structural]
 
+     rule toRVal(R:RValue) => R
+          [structural]
+
      syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, utype(pointerType(type(void))))

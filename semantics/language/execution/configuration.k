@@ -49,7 +49,7 @@ module C-CONFIGURATION
 <result-value color="red"> 139:CValue </result-value>
 <T>
 <exec multiplicity="?">
-     // SymLoc |-> Type
+     // SymBase |-> Type
      <effective-types> .Map </effective-types>
 
      // These are used for verifying the aliasing restrictions on

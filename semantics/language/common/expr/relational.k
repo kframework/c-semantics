@@ -422,9 +422,9 @@ module C-COMMON-EXPR-RELATIONAL
                andBool notBool (isPointerType(type(R)) andBool isNullPointerConstant(L))
 
      syntax Bool ::= isAdjacent(SymLoc, SymLoc, K) [function]
-     rule isAdjacent(loc(S::SymBase, Size:Int), loc(_, 0), <generatedTop>... <mem>... S |-> object(_, Size, _, _) ...</mem> ...</generatedTop>)
+     rule isAdjacent(loc(S::SymBase, Size:Int), loc(_, 0), <generatedTop>... <mem>... S |-> object(_, Size, _) ...</mem> ...</generatedTop>)
           => true
-     rule isAdjacent(loc(_, 0), loc(S::SymBase, Size:Int), <generatedTop>... <mem>... S |-> object(_, Size, _, _) ...</mem> ...</generatedTop>)
+     rule isAdjacent(loc(_, 0), loc(S::SymBase, Size:Int), <generatedTop>... <mem>... S |-> object(_, Size, _) ...</mem> ...</generatedTop>)
           => true
      rule isAdjacent(_, _, _) => false [owise]
 endmodule

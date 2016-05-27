@@ -5,6 +5,6 @@ volatile struct {
 } foo;
 
 int main() {
-  int *y = (int *)&foo.x;
+  char *y = (char *)&foo.x;
   return *y;
 }

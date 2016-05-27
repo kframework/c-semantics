@@ -1,5 +1,6 @@
 module C-IO-DIRECT
      imports C-BITS-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -8,6 +9,7 @@ module C-IO-DIRECT
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+
      imports C-CONFIGURATION
 
      syntax KItem ::= writeBytes(SymLoc, DataList)
@@ -25,7 +27,7 @@ module C-IO-DIRECT
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <mem>...
-               Base |-> object(_, Len:Int, (M:Map => M[Offset <- V]), _)
+               Base |-> object(_, Len:Int, (M:Map => M[Offset <- V]))
           ...</mem>
           requires (Offset <Int Len)
           [structural]
@@ -59,7 +61,7 @@ module C-IO-DIRECT
                => tv(V, utype(no-type))
           ...</k>
           <mem>...
-               Base |-> object(_, _, (_ Offset:Int |-> V:K), _)
+               Base |-> object(_, _, (_ Offset:Int |-> V:K))
           ...</mem>
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
@@ -67,8 +69,7 @@ module C-IO-DIRECT
           ...</k>
           <mem>...
                Base |-> object(_, _,
-                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)],
-                    _)
+                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
           requires notBool (Offset in (keys(M)))
           [structural]

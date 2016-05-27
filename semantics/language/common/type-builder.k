@@ -66,7 +66,7 @@ module C-TYPE-BUILDER
      rule union(S:String) => #struct(Identifier(S), #configuration)
      syntax Type ::= #struct(CId, K) [function]
 
-     rule #struct(X:CId, <generatedTop>... <external-defs>... X |-> Base:SymBase ...</external-defs> <mem>... Base |-> object(T:Type, _, _, _) ...</mem> ...</generatedTop>) => T
+     rule #struct(X:CId, <generatedTop>... <external-defs>... X |-> Base:SymBase ...</external-defs> <mem>... Base |-> object(T:Type, _, _) ...</mem> ...</generatedTop>) => T
 
      rule decl(T:FlexType, S:String)
           => typedDeclaration(expand(T), Identifier(S))

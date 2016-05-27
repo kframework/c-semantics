@@ -318,8 +318,8 @@ module C-TYPING-MISC
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
      rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, _, structType(S::StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, _, unionType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, Mods::Set, structType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(t(_, Mods::Set, unionType(S::StructId))) => getFieldInfo(S)
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
      rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
@@ -330,48 +330,86 @@ module C-TYPING-MISC
 
      rule getTag(tag(S:CId, _, _)) => S
 
-     rule getTypeAtOffset(T::Type, 0) => T
-     // Preserve the qualifiers.
-     rule getTypeAtOffset(T::Type, Offset:Int)
-          => t(getQualifiers(T), getModifiers(T), no-type) //unions go here and keep track of the effective type set by the write
-          requires (Offset =/=Int 0)
-               andBool notBool isAggregateType(T)
-     // Arrays.
-     rule getTypeAtOffset(T:ArrayType, Offset:Int)
-          => getTypeAtOffset(addQualifiers(getQualifiers(T), innerType(T)),
-               Offset %Int bitSizeofType(innerType(T)))
-          requires Offset =/=Int 0 // We assume the offset must be in range.
-     // Structs
-     rule getTypeAtOffset(T:StructType, Offset:Int)
-          => getTypeAtOffset(T, getFieldInfo(T), Offset)
-          requires Offset =/=Int 0
+     rule getTypesAtOffset(T::Type, 0) => ListItem(T)
+          requires notBool isAggregateOrUnionType(T) andBool notBool isBitfieldType(T)
+     rule getTypesAtOffset(t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, N::Int)), 0)
+          => ListItem(t(Qs, Mods, bitfieldType(T, N))) ListItem(addQualifiers(Qs, type(T)))
+     rule getTypesAtOffset(T:ArrayType, 0)
+          => ListItem(T) getTypesAtOffset(addQualifiers(getQualifiers(T), innerType(T)), 0)
+          requires isNoType(getLock(0, T))
+     rule getTypesAtOffset(T:StructType, 0)
+          => ListItem(T) getTypesAtOffsetInStruct(T, getFieldInfo(T), 0)
+          requires isCompleteType(T) andBool isNoType(getLock(0, T))
+     rule getTypesAtOffset(T:UnionType, 0)
+          => ListItem(T) getTypesAtOffsetInUnion(T, getFieldInfo(T), 0)
+          requires isCompleteType(T) andBool isNoType(getLock(0, T))
+     rule getTypesAtOffset(T::Type, 0)
+          => ListItem(T) getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)), 0)
+          requires notBool isNoType(getLock(0, T))
 
-     syntax Type ::= getTypeAtOffset(Type, K, Int) [function, klabel(getTypeAtOffset2)]
-     rule getTypeAtOffset(BaseT::Type, fieldInfo(
-               Fields:List (ListItem(typedDeclaration(_, FId::CId))),
-               SI:Int,
-               Types:Map (FId |-> T::Type),
-               Offsets:Map (FId |-> FOffset::Int)
-          ), Offset:Int)
-          => getTypeAtOffset(BaseT, fieldInfo(
-               Fields,
-               SI,
-               Types (FId |-> T),
-               Offsets (FId |-> FOffset)
-          ), Offset)
-          requires (Offset =/=Int 0)
-               andBool (FOffset >Int Offset)
-     rule getTypeAtOffset(BaseT::Type, fieldInfo(
-               _ ListItem(typedDeclaration(_, FId::CId)),
+     rule getTypesAtOffset(T:ArrayType, Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), innerType(T)),
+               Offset %Int bitSizeofType(innerType(T)))
+          requires Offset >Int 0 andBool isCompleteType(innerType(T))
+               andBool bitSizeofType(innerType(T)) >Int 0
+               andBool isNoType(getLock(0, T))
+     rule getTypesAtOffset(T:ArrayType, Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)),
+               Offset %Int bitSizeofType(innerType(T)))
+          requires Offset >Int 0 andBool notBool isNoType(getLock(0, T))
+     rule getTypesAtOffset(T:StructType, Offset::Int)
+          => getTypesAtOffsetInStruct(T, getFieldInfo(T), Offset)
+          requires Offset >Int 0 andBool isCompleteType(T)
+     rule getTypesAtOffset(T:UnionType, Offset::Int)
+          => getTypesAtOffsetInUnion(T, getFieldInfo(T), Offset)
+          requires Offset >Int 0 andBool isCompleteType(T)
+               andBool isNoType(getLock(0, T))
+     rule getTypesAtOffset(T:UnionType, Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)), Offset)
+          requires Offset >Int 0 andBool isCompleteType(T)
+               andBool notBool isNoType(getLock(0, T))
+
+     rule getTypesAtOffset(_, _) => .List [owise]
+
+     syntax List ::= getTypesAtOffsetInStruct(Type, FieldInfo, Int) [function]
+     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
+               Ds:List ListItem(typedDeclaration(_, FId::CId)),
+               N::Int,
+               Ts:Map,
+               Offs:Map FId |-> FOffset::Int
+          ), Offset::Int)
+          => getTypesAtOffsetInStruct(T, fieldInfo(Ds, N, Ts, Offs), Offset)
+          requires FOffset >Int Offset
+     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
+               _ ListItem(typedDeclaration(T'::Type, FId::CId)),
                _,
-               _ FId |-> T::Type,
+               _,
                _ FId |-> FOffset::Int
           ), Offset::Int)
-          => getTypeAtOffset(addQualifiers(getQualifiers(BaseT), T), Offset -Int FOffset)
-          requires (Offset =/=Int 0)
-               andBool (FOffset <=Int Offset)
-     rule getTypeAtOffset(BaseT::Type, _, _)
-          => t(getQualifiers(BaseT), getModifiers(BaseT), no-type) [owise]
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset -Int FOffset)
+          requires FOffset <=Int Offset
+               andBool isNoType(getLock(FOffset, T))
+     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
+               _ ListItem(typedDeclaration(_, FId::CId)),
+               _,
+               _,
+               _ FId |-> FOffset::Int
+          ), Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(FOffset, T)), Offset -Int FOffset)
+          requires FOffset <=Int Offset
+               andBool notBool isNoType(getLock(FOffset, T))
+     rule getTypesAtOffsetInStruct(_, _, _) => .List [owise]
+
+     syntax List ::= getTypesAtOffsetInUnion(Type, FieldInfo, Int) [function]
+     rule getTypesAtOffsetInUnion(T::Type, fieldInfo(
+               ListItem(typedDeclaration(T'::Type, FId::CId)) Ds:List,
+               N::Int,
+               Ts:Map,
+               Offs:Map
+          ), Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset)
+               getTypesAtOffsetInUnion(T, fieldInfo(Ds, N, Ts, Offs), Offset)
+     rule getTypesAtOffsetInUnion(_, _, _) => .List [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T::Type) ...</k>
@@ -410,7 +448,7 @@ module C-TYPING-MISC
           [structural]
 
      rule stabilize(t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, tv(N:Int, _)))
-               => t(Qs, Mods, arrayType(T, N)))
+          => t(Qs, Mods, arrayType(T, N)))
           requires N >Int 0
           [structural]
      rule (.K => UNDEF("CTM1", "Variable-length array with length that evaluates to non-positive value at execution.",
@@ -428,5 +466,13 @@ module C-TYPING-MISC
           requires oldStyle in Mods
                andBool notBool isVoidType(P)
      rule toPrototype(T::Type) => T [owise]
+
+     rule unlock(Offset::Int, t(Qs::Quals, Mods::Set SetItem(lock(Offset, _)), T::SimpleType))
+          => unlock(Offset, t(Qs, Mods, T))
+     rule unlock(_, T::Type) => T [owise]
+
+     syntax Type ::= getLock(Int, Type) [function]
+     rule getLock(Offset::Int, t(_, _:Set SetItem(lock(Offset, T::Type)), _)) => T
+     rule getLock(_, _) => type(no-type) [owise]
 
 endmodule

@@ -24,6 +24,7 @@ module C-SYMLOC-SYNTAX
      syntax Duration ::= nativeSymbol(String)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
+     syntax Bool ::= isAllocatedDuration(SymBase) [function, klabel(isAllocatedDuration2)]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
@@ -35,6 +36,7 @@ module C-SYMLOC-SYNTAX
      syntax Bool ::= isArgvLoc(SymLoc) [function]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
      syntax Bool ::= isNativeLoc(SymLoc) [function]
+     syntax Bool ::= isNativeLoc(SymBase) [function, klabel(isNativeLoc2)]
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
@@ -75,14 +77,14 @@ module C-SYMLOC-SYNTAX
      syntax Int ::= getNativeAlign(Int) [function]
 
      syntax Set ::= prov(SymLoc) [function]
-     //TODO: why it is nessary here
      syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
      syntax SymLoc ::= addProv(Set, SymLoc) [function]
      // From, to.
-     syntax KItem ::= transferProv(SymLoc, K) [strict(2)]
      syntax KItem ::= transferProv(Set, K) [strict(2)]
+
+     syntax SymLoc ::= stripLastAccessType(CValue) [function]
 
      // Pointers from an array need to be checked that they don't go out of
      // bounds of that array, even if that array happens to be part of a larger
@@ -92,10 +94,10 @@ module C-SYMLOC-SYNTAX
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase, Scope)
      // Used to tag union members so the rest of the bytes in the union can be
-     // marked as undefined upon write.
+     // marked as unspecified upon write.
      syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
      // Used to tag lvalues with their type so that their alignment can be computed if needed
-     syntax Provenance ::= fromType(Type)
+     syntax Provenance ::= objectType(Type)
      // used to tag bit fields so that we know how many bits into the current byte they begin
      syntax Provenance ::= bitOffset(Int)
 
@@ -121,9 +123,11 @@ module C-SYMLOC
 
      imports COMPAT-SYNTAX
 
-     rule isAllocatedDuration(loc(_ @ alloc, _)) => true
-     rule isAllocatedDuration(loc(_ @ alloc, _, _)) => true
-     rule isAllocatedDuration(_) => false [owise]
+     rule isAllocatedDuration(_ @ alloc) => true
+     rule isAllocatedDuration(_:SymBase) => false [owise]
+
+     rule isAllocatedDuration(NullPointer) => false
+     rule isAllocatedDuration(Loc:SymLoc) => isAllocatedDuration(base(Loc)) [owise]
 
      rule isStaticDuration(loc(_ @ static(_), _)) => true
      rule isStaticDuration(loc(_ @ static(_), _, _)) => true
@@ -156,9 +160,8 @@ module C-SYMLOC
      rule isLinkerLoc(_ @ link(_)) => true
      rule isLinkerLoc(_:SymBase) => false [owise]
 
-     rule isLinkerLoc(Loc:SymLoc) => true
-          requires isLinkerLoc(base(Loc))
-     rule isLinkerLoc(_:SymLoc) => false [owise]
+     rule isLinkerLoc(NullPointer) => false
+     rule isLinkerLoc(Loc:SymLoc) => isLinkerLoc(base(Loc)) [owise]
 
      rule isArgvLoc(loc(_ @ argv, _)) => true
      rule isArgvLoc(loc(_ @ argv, _, _)) => true
@@ -168,11 +171,12 @@ module C-SYMLOC
      rule isRegisterLoc(loc(_ @ register(_), _, _)) => true
      rule isRegisterLoc(_) => false [owise]
 
-     rule isNativeLoc(loc(_ @ nativeAddress(), _)) => true
-     rule isNativeLoc(loc(_ @ nativeAddress(), _, _)) => true
-     rule isNativeLoc(loc(_ @ nativeSymbol(_), _)) => true
-     rule isNativeLoc(loc(_ @ nativeSymbol(_), _, _)) => true
-     rule isNativeLoc(_) => false [owise]
+     rule isNativeLoc(_ @ nativeAddress()) => true
+     rule isNativeLoc(_ @ nativeSymbol(_)) => true
+     rule isNativeLoc(_:SymBase) => false [owise]
+
+     rule isNativeLoc(NullPointer) => false
+     rule isNativeLoc(Loc:SymLoc) => isNativeLoc(base(Loc)) [owise]
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
@@ -185,7 +189,7 @@ module C-SYMLOC
      rule linc(X:Int @ D:Duration) => (X +Int 1 @ D)
 
      rule lnew(Base:SymBase, T:Type)
-          => loc(Base, 0, SetItem(fromType(T)))
+          => loc(Base, 0, .Set)
 
      rule restrictedNew(Base:SymBase, T:Type, Tag:Scope)
           => addProv(basedOn(Base, Tag), lnew(Base, T))
@@ -253,21 +257,11 @@ module C-SYMLOC
      rule isBase(basedOn(_, _)) => true
      rule isBase(_) => false [owise]
 
-     rule transferProv(From:SymLoc, tv(To:SymLoc, T::UType))
-          => tv(addProv(prov(From), To), T)
-          [structural]
-     rule transferProv(_:SymLoc, tv(V:CValue, T::UType)) => tv(V, T)
-          requires isSymLoc(V:CValue) =/=K true
-          [structural]
      rule transferProv(Prov:Set, tv(Loc:SymLoc, T::UType))
           => tv(addProv(Prov, Loc), T)
           [structural]
      rule transferProv(_:Set, tv(V:CValue, T::UType)) => tv(V, T)
           requires isSymLoc(V:CValue) =/=K true
-          [structural]
-
-     rule transferProv(From:SymLoc, nclv(To:SymLoc, T:Type))
-          => lv(addProv(prov(From), To), T)
           [structural]
      rule transferProv(Prov:Set, nclv(Loc:SymLoc, T:Type))
           => lv(addProv(Prov, Loc), T)
@@ -307,32 +301,33 @@ module C-SYMLOC
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(Loc:SymLoc) => Loc [owise]
 
-     rule getAlign(loc(Base:SymBase, Offset:Int, Provs:Set)) => getAlign'(.K, Provs, Base, #configuration)
-          requires notBool isNativeLoc(loc(Base, Offset, Provs))
+     // Gets the alignment requirement of the type with the strictest alignment
+     // at the offset in the effective type of a location.
+     // TODO(chathhorn): This means alignment of a pointer could change if the
+     // effective type changes -- probably offsets (and padding) just need to
+     // be set initially based on alignment requirements (and then that
+     // _Alignas modifier can be forgotten).
+     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration)
+          requires notBool isNativeLoc(Loc) andBool Loc =/=K NullPointer
      rule getAlign(NullPointer) => cfg:alignofMalloc
-     rule getAlign(loc(0 @ nativeAddress(), Offset:Int, _)) => getNativeAlign(Offset)
-     rule getAlign(loc(0 @ nativeAddress(), Offset:Int)) => getNativeAlign(Offset)
-     rule getAlign(_) => 1 [owise]
+     rule getAlign(Loc::SymLoc) => getNativeAlign(offset(Loc))
+          requires isNativeLoc(Loc)
 
-     syntax Int ::= "getAlign'" "(" K "," Set "," SymBase "," K ")" [function]
-     rule getAlign'(.K, .Set, _, _) => 1
-     rule getAlign'(.K, SetItem(K:K) S:Set, B:SymBase, C:K) => getAlign'(K, S, B, C)
-     rule getAlign'(fromType(T:Type), _, _, _) => getAlignas(T)
-          requires isCompleteType(T) orBool isIncompleteArrayType(T)
-     rule getAlign'(fromType(T:Type), _, (Base:SymBase => NewBase), <generatedTop>... <linkings>... Base |-> NewBase:SymBase ...</linkings> ...</generatedTop>)
-          requires notBool isCompleteType(T)
-     rule getAlign'(fromType(T:Type), _, Base:SymBase, <generatedTop>... <mem>... Base |-> object(DefT:Type, _, _, _) ...</mem> <linkings> Linkings:Map </linkings> ...</generatedTop>)
-          => getAlignas(DefT)
-          requires notBool isCompleteType(T) andBool notBool (Base in_keys(Linkings))
-     rule getAlign'(K:KItem, S:Set, B:SymBase, C:K) => getAlign'(.K, S, B, C)
-          requires getKLabel(K) =/=K #klabel(`fromType`)
+     syntax Int ::= "getAlign'" "(" SymBase "," Int "," K ")" [function]
+     rule getAlign'(Base::SymBase, Offset::Int, <generatedTop>... <mem>... Base |-> object(T::Type, _, _) ...</mem> ...</generatedTop>)
+          => getAlign''(1, getTypesAtOffset(T, Offset *Int cfg:bitsPerByte))
+     rule getAlign'(Base::SymBase => Base', _, <generatedTop>... <linkings>... Base |-> Base':SymBase ...</linkings> ...</generatedTop>)
+     rule getAlign'(_, _, _) => 1 [owise]
 
-     syntax Int ::= #getBitOffset(K, Set) [function]
-     rule getBitOffset(loc(_, _, Provs:Set)) => #getBitOffset(.K, Provs)
-     rule #getBitOffset(.K, SetItem(K:K) S:Set) => #getBitOffset(K, S)
-     rule #getBitOffset(bitOffset(I:Int), _) => I
-     rule #getBitOffset(K:KItem, S:Set) => #getBitOffset(.K, S)
-          requires getKLabel(K) =/=K #klabel(`bitOffset`)
+     syntax Int ::= "getAlign''" "(" Int "," List ")" [function]
+     rule getAlign''(N::Int, ListItem(T:Type) Ts:List) => getAlign''(N, Ts)
+          requires N >=Int getAlignas(T)
+     rule getAlign''(N::Int, ListItem(T:Type) Ts:List) => getAlign''(getAlignas(T), Ts)
+          requires N <Int getAlignas(T)
+     rule getAlign''(N::Int, _) => N [owise]
+
+     rule getBitOffset(loc(_, _, _:Set SetItem(bitOffset(I::Int)))) => I
+     rule getBitOffset(_) => 0 [owise]
 
      rule ifFromArrayInBounds(loc(_, _, SetItem(K:K) S:Set), T::UType, I:Int)
           => #ifFromArrayInBounds(K, S, T, I)
@@ -359,5 +354,10 @@ module C-SYMLOC
      rule #getNativeAlign(Address:Int, Accum:Int, I:Int) => #getNativeAlign(Address /Int 2, Accum *Int 2, I +Int 1)
           requires Address %Int 2 ==Int 0 andBool I <Int cfg:ptrsize *Int cfg:bitsPerByte
      rule #getNativeAlign(_, Accum:Int, _) => Accum [owise]
+
+     rule stripLastAccessType(loc(Base::SymBase, Offset::Int, Prov:Set SetItem(objectType(_))))
+          => stripLastAccessType(loc(Base, Offset, Prov))
+     rule stripLastAccessType(V::CValue) => V [owise]
+
 endmodule
 

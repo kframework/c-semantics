@@ -2,8 +2,8 @@ module C-MEMORY-ALLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
 
-     /* object(type, size, byte map, effective type map) */
-     syntax KItem ::= object(Type, Int, Map, Map)
+     /* object(effective type, size, byte map) */
+     syntax KItem ::= object(Type, Int, Map)
 
      syntax KItem ::= alloc(SymBase, Type, Int)
 
@@ -12,6 +12,7 @@ module C-MEMORY-ALLOC-SYNTAX
      syntax KItem ::= sizeofObject(SymBase)
 
      syntax KItem ::= allocObject(SymBase, Type)
+
 endmodule
 
 module C-MEMORY-ALLOC
@@ -39,9 +40,9 @@ module C-MEMORY-ALLOC
           => alloc(Base, T, I)
           [structural]
 
-     rule <k> alloc(Base:SymBase, T:Type, Len:Int) => .K ...</k>
+     rule <k> alloc(Base::SymBase, T::Type, Len::Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map, .Map)
+               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
           ...</mem>
           requires notBool isLinkerLoc(Base)
           [structural]
@@ -51,19 +52,15 @@ module C-MEMORY-ALLOC
      rule createMap(.List, _:Bits) => .Map
      rule createMap(ListItem(I:K) L:List, B:Bits) => (I |-> B) createMap(L, B)
 
-
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int,
-                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)),
-                    .Map)
+                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
 
-     rule <k> sizeofObject(Base:SymBase)
-               => tv(Len, utype(cfg:sizeut))
-          ...</k>
-          <mem>... Base |-> object(_, Len:Int, _, _) ...</mem>
+     rule <k> sizeofObject(Base:SymBase) => tv(Len, utype(cfg:sizeut)) ...</k>
+          <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
 
 endmodule

@@ -14,6 +14,8 @@ module C-MEMORY-WRITING-SYNTAX
 
      syntax KItem ::= writeString(SymLoc, String)
      syntax KItem ::= writeWString(SymLoc, List)
+
+     syntax KItem ::= setEffectiveType(SymLoc, Type)
 endmodule
 
 module C-MEMORY-WRITING
@@ -33,21 +35,21 @@ module C-MEMORY-WRITING
 
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => write-specific(Loc, V, T)
+               => writeSpecific(Loc, V, T)
           ...</k>
           <initializing> false </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool notBool isConstType(T)
           [structural]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => write-specific(Loc, V, T)
+               => writeSpecific(Loc, V, T)
           ...</k>
           <initializing> true </initializing>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
           [structural]
      // Write global, shared data, or "allocated" duration.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => write-specific(Loc, V, T)
+               => writeSpecific(Loc, V, T)
           ...</k>
           <initializing> false </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
@@ -56,15 +58,13 @@ module C-MEMORY-WRITING
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-               => write-specific(Loc, V, T)
+               => writeSpecific(Loc, V, T)
           ...</k>
           <initializing> true </initializing>
           requires (isStaticDuration(Loc) orBool isAllocatedDuration(Loc))
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
-     rule <k> write(Loc:SymLoc, V:CValue, T:Type)
-              => write-specific(Loc, V, T)
-          ...</k>
+     rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T)
           requires isNativeLoc(Loc)
           [ndtrans]
      rule <k> write(loc((Base:SymBase => Base'), _), _, _) ...</k>
@@ -86,8 +86,13 @@ module C-MEMORY-WRITING
           requires isStringLoc(Loc)
           [structural]
 
-     syntax KItem ::= "write-specific" "(" SymLoc "," CValue "," Type ")"
-     rule write-specific(Loc:SymLoc, V:CValue, T:Type)
+     syntax KItem ::= writeSpecific(SymLoc, CValue, Type) [function]
+     rule writeSpecific(Loc::SymLoc, V::CValue, T::Type)
+          => updateEffectiveType(Loc)
+          ~> writeSpecific'(Loc, stripLastAccessType(V), T)
+
+     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
+     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(stripProv(Loc), splitBytes(tv(V, utype(T))), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
@@ -112,7 +117,7 @@ module C-MEMORY-WRITING
           #fi
 
      rule (.K => makeUnionUnknown(.K, keepUnion(S)))
-          ~> write-specific(
+          ~> writeSpecific'(
                loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
           requires hasUnionMarker(loc(Base, Offset, S))
           [structural]
@@ -160,14 +165,14 @@ module C-MEMORY-WRITING
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
 
-     rule write-specific(Loc::SymLoc, I:Int, T::Type)
-          => write-specific(Loc, justBits(I, utype(T)), T)
+     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
+          => writeSpecific'(Loc, justBits(I, utype(T)), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
                orBool isBitfieldType(T))
                andBool (I <Int 0)
           [structural]
 
-     rule write-specific(Loc::SymLoc, V:Int, T::Type)
+     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
           => writeBytes(stripProv(Loc),
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
@@ -361,5 +366,30 @@ module C-MEMORY-WRITING
                * tv(Loc, utype(pointerType(type(cfg:wcharut))))
                := tv(0, utype(cfg:wcharut)))
           [structural]
+
+     // Set the new effective type to a last-access type attached to the
+     // lvalue, if it exists.
+     syntax KItem ::= updateEffectiveType(SymLoc)
+     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(stripProv(Loc), getObjectType(Loc))
+          requires hasObjectType(Loc)
+          [structural]
+     rule updateEffectiveType(Loc::SymLoc) => .K
+          requires notBool hasObjectType(Loc)
+          [structural]
+
+     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
+          <mem>... Base |-> object(_ => T', _, _) ...</mem>
+          [structural]
+     rule <k> setEffectiveType(Loc::SymLoc, _) => .K ...</k>
+          <mem> Mem:Map </mem>
+          requires notBool isNativeLoc(Loc) andBool notBool base(Loc) in_keys(Mem)
+          [structural]
+
+     syntax Bool ::= hasObjectType(SymLoc) [function]
+     rule hasObjectType(loc(_, _, _:Set SetItem(objectType(_)))) => true
+     rule hasObjectType(_) => false [owise]
+
+     syntax Type ::= getObjectType(SymLoc) [function]
+     rule getObjectType(loc(_, _, _:Set SetItem(objectType(T::Type)))) => T
 
 endmodule

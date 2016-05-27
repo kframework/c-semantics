@@ -105,7 +105,7 @@ module C-COMPOUND-LITERAL
 
      syntax KItem ::= allocWString(SymBase, List)
      rule allocWString(Base:SymBase, S:List)
-          => allocObject(Base, type(arrayType(type(cfg:wcharut), 4 *Int (size(S) +Int 1))))
-          ~> writeWString(lnew(Base, type(arrayType(type(cfg:wcharut), 4 *Int (size(S) +Int 1)))), S)
+          => allocObject(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
+          ~> writeWString(lnew(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1))), S)
 
 endmodule

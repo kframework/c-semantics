@@ -5,6 +5,9 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= checkUse(K) [strict]
      syntax KItem ::= checkLoc(SymLoc)
      syntax UType ::= arrayToPtrType(Type) [function]
+
+     syntax KItem ::= getEffectiveType(SymBase)
+
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -18,8 +21,9 @@ module C-COMMON-EXPR-EVAL
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONFIGURATION
      imports C-SETTINGS-SYNTAX
+
+     imports C-CONFIGURATION
 
      syntax KItem ::= "reval" "(" ")"
      rule reval(HOLE:K) => HOLE ~> reval() [heat]
@@ -58,7 +62,8 @@ module C-COMMON-EXPR-EVAL
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
-     rule lv(Loc::SymLoc, T::Type) => nclv(Loc, T)
+     rule lv(Loc::SymLoc, T::Type)
+          => checkEffectiveType(Loc, T)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{
@@ -152,7 +157,7 @@ module C-COMMON-EXPR-EVAL
      rule <k> checkLoc'(loc(Base::SymBase, Offset::Int))
                => checkOffsets(Offset, Len)
           ...</k>
-          <mem>... Base |-> object(_, Len::Int, _, _) ...</mem>
+          <mem>... Base |-> object(_, Len::Int, _) ...</mem>
           [structural]
      rule <k> checkLoc'(loc(Base::SymBase, Offset::Int)) => errorLocInvalid ...</k>
           <mem> Mem::Map </mem>
@@ -178,5 +183,213 @@ module C-COMMON-EXPR-EVAL
                "6.3.2.1:1, J.2:1 item 19"))
           ~> errorLocBounds
           [structural]
+
+     syntax KItem ::= checkEffectiveType(SymLoc, Type)
+     rule <k> checkEffectiveType(Loc::SymLoc, T::Type)
+              => checkEffectiveType'(Loc, T,
+                   offset(Loc) *Int cfg:bitsPerByte +Int getBitOffset(Loc),
+                   base(Loc), getLastAccessType(Loc))
+          ...</k>
+          requires notBool isLinkerLoc(Loc)
+               andBool Loc =/=K NullPointer
+          [structural]
+     rule <k> checkEffectiveType(loc(Base::SymBase => Base', _, _), _) ...</k>
+          <linkings>... Base |-> Base'::SymBase ...</linkings>
+          [structural]
+     rule <k> checkEffectiveType(loc(Base::SymBase => Base', _), _) ...</k>
+          <linkings>... Base |-> Base'::SymBase ...</linkings>
+          [structural]
+     rule <k> checkEffectiveType(Loc::SymLoc, T::Type) => nclv(Loc, T) ...</k>
+          <linkings> Linkings:Map </linkings>
+          requires isLinkerLoc(Loc) andBool notBool base(Loc) in_keys(Linkings)
+          [structural]
+     rule checkEffectiveType(NullPointer, T::Type) => nclv(NullPointer, T)
+          [structural]
+
+     // The lvalue SymLoc carries with it a last-access object type which, in a
+     // sense, is a composite type formed from the current effective type plus
+     // the type of compatible lvalue expressions based on it (which may only
+     // refer to a part of the object). By composite type, we just mean the
+     // effective type with extra annotations for tracking locked union
+     // variants. When a write occurs through a SymLoc, its attached
+     // last-access type becomes the effective type of the object.
+
+     // First we check the lvalue for compatibility with the last access type.
+     syntax KItem ::= "checkEffectiveType'" "(" SymLoc "," Type "," Int "," SymBase "," K ")" [strict(5)]
+     rule checkEffectiveType'(Loc::SymLoc, L::Type, _, _, _) => nclv(Loc, L)
+          requires isNoType(L)
+          [structural]
+     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, LAT:Type)
+          // If compatible, the new last access type becomes a composite of the
+          // current last-access object type and the type of the current lvalue
+          // expression.
+          => nclv(setLastAccessType(Loc, newLastAccessType(LAT, L, Offset)), L)
+          requires notBool isNoType(L) andBool notBool isNoType(LAT)
+               // An lvalue is compatible if it's compatible with at least one
+               // of the types at the given offset into the object.
+               andBool effectivelyCompat(L, getTypesAtOffset(LAT, Offset))
+          [structural]
+     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, LAT:Type)
+          => checkEffectiveType''(Loc, L, Offset, Base, getEffectiveType(Base))
+          requires notBool isNoType(L)
+               andBool (notBool effectivelyCompat(L, getTypesAtOffset(LAT, Offset)) orBool isNoType(LAT))
+          [structural]
+
+     // If the lvalue isn't compatible with the last access type, then we try
+     // the current effective type.
+     syntax KItem ::= "checkEffectiveType''" "(" SymLoc "," Type "," Int "," SymBase "," K ")" [strict(5)]
+     rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, Eff:Type)
+          => nclv(setLastAccessType(Loc, newLastAccessType(Eff, L, Offset)), L)
+          requires (effectivelyCompat(L, getTypesAtOffset(Eff, Offset)))
+               orBool isNoType(Eff)
+          [structural]
+     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7, J.2:1 item 37"))
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, Eff:Type)
+          requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
+               andBool notBool isNoType(Eff)
+          [structural]
+
+     syntax Type ::= newLastAccessType(Type, Type, Int) [function]
+     rule newLastAccessType(Eff::Type, L::Type, _) => Eff
+          requires isCharType(L)
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => L
+          requires notBool isCharType(L) andBool isNoType(tracePath(Eff, L, Offset))
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset) [owise]
+
+     // We form a composite type by locating the lvalue type in the (larger)
+     // object type and tracing the path (i.e., union variants) that gets us
+     // there. We lock unions to a particular variant when we pick a variant
+     // and unlock them when the path ends in a union type (as opposed to the
+     // type of a paricular variant).
+     syntax Type ::= tracePath(Type, Type, Int) [function]
+     rule tracePath(T::Type, L::Type, 0) => unlock(0, T)
+          requires #effectivelyCompat(L, T)
+     rule tracePath(t(Qs::Quals, Mods::Set, bitfieldType(T'::BitfieldFieldType, N::Int)), L::Type, Offset::Int)
+          => t(Qs, Mods, bitfieldType(T', N))
+          requires notBool #effectivelyCompat(L, t(Qs, Mods, bitfieldType(T', N)))
+               andBool #effectivelyCompat(L, addQualifiers(Qs, type(T')))
+
+     // In the case of aggregates, the type might be the type of the aggregate
+     // or its first element if the offset is 0.
+     rule tracePath(T:ArrayType, L::Type, Offset::Int)
+          => addModifier(lock(0, tracePath(innerType(T), L, Offset %Int bitSizeofType(innerType(T)))), unlock(0, T))
+          requires notBool #effectivelyCompat(L, T)
+               andBool bitSizeofType(innerType(T)) >Int 0
+               andBool notBool isNoType(tracePath(innerType(T), L, Offset %Int bitSizeofType(innerType(T))))
+
+     rule tracePath(T:StructType, L::Type, Offset::Int)
+          => tracePathInStructOrUnion(T, L, Offset)
+          requires notBool #effectivelyCompat(L, T)
+     rule tracePath(T:UnionType, L::Type, Offset::Int)
+          => tracePathInStructOrUnion(T, L, Offset)
+          requires notBool #effectivelyCompat(L, T)
+
+     rule tracePath(_, _, _) => type(no-type) [owise]
+
+     syntax Type ::= tracePathInStructOrUnion(StructOrUnionType, Type, Int) [function]
+     rule tracePathInStructOrUnion(T:StructType, L::Type, Offset::Int)
+          => tracePathInStruct(getFieldInfo(T), T, L, Offset)
+     rule tracePathInStructOrUnion(T:UnionType, L::Type, Offset::Int)
+          => tracePathInUnion(getFieldInfo(T), T, L, Offset)
+
+     syntax Type ::= tracePathInStruct(FieldInfo, StructType, Type, Int) [function]
+     rule tracePathInStruct(fieldInfo(
+                    Ds':List ListItem(typedDeclaration(_, FId::CId)),
+                    N::Int,
+                    Ts:Map,
+                    Offs:Map FId |-> FOffset::Int
+               ), T::StructType, L::Type, Offset::Int)
+          => tracePathInStruct(fieldInfo(Ds', N, Ts, Offs FId |-> FOffset), T, L, Offset)
+          requires FOffset >Int Offset
+     rule tracePathInStruct(fieldInfo(
+                    _:List ListItem(typedDeclaration(_, FId::CId)),
+                    _,
+                    _:Map FId |-> T'::Type,
+                    _:Map FId |-> FOffset::Int
+               ), T::StructType, L::Type, Offset::Int)
+          => addModifier(lock(FOffset, tracePath(T', L, Offset -Int FOffset)), unlock(FOffset, T))
+          requires FOffset <=Int Offset
+               andBool notBool isNoType(tracePath(T', L, Offset -Int FOffset))
+     rule tracePathInStruct(_, _, _, _) => type(no-type) [owise]
+
+     // In the case of unions, we make the first compatible variant active (via
+     // the "lock" modifier) and continue from the type of the variant.
+     syntax Type ::= tracePathInUnion(FieldInfo, UnionType, Type, Int) [function]
+     rule tracePathInUnion(fieldInfo(
+                    ListItem(typedDeclaration(_, FId::CId)) _:List,
+                    _,
+                    _:Map FId |-> T'::Type,
+                    _
+               ), T::UnionType, L::Type, Offset::Int)
+          => addModifier(lock(0, tracePath(T', L, Offset)), unlock(0, T))
+          requires notBool isNoType(tracePath(T', L, Offset))
+     rule tracePathInUnion(fieldInfo(
+                    ListItem(typedDeclaration(_, FId::CId)) Ds':List,
+                    N::Int,
+                    Ts:Map FId |-> T'::Type,
+                    Offs::Map
+               ), T::UnionType, L::Type, Offset::Int)
+          => tracePathInUnion(fieldInfo(Ds', N, Ts, Offs), T, L, Offset)
+          requires isNoType(tracePath(T', L, Offset))
+     rule tracePathInUnion(_, _, _, _) => type(no-type) [owise]
+
+     syntax Bool ::= effectivelyCompat(Type, List) [function]
+     rule effectivelyCompat(_:CharType, _) => true
+     rule effectivelyCompat(L::Type, ListItem(Eff:Type) _) => true
+          requires #effectivelyCompat(L, Eff)
+     rule effectivelyCompat(L::Type, (ListItem(Eff:Type) => .List) _)
+          requires notBool #effectivelyCompat(L, Eff)
+     rule effectivelyCompat(_, _) => false [owise]
+
+     // An  object shall have its stored value accessed only by an lvalue
+     // expression that has one of the following types:
+     syntax Bool ::= #effectivelyCompat(Type, Type) [function]
+     // - a type compatible with the effective type of the object,
+     // - a qualified version of a type compatible with the effective type of
+     // the object,
+     rule #effectivelyCompat(L::Type, Eff::Type) => true
+          requires stripQualifiers(L) ==Type stripQualifiers(Eff)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
+     // - a type that is the signed or unsigned type corresponding to the
+     // effective type of the object,
+     // - a type that is the signed or unsigned type corresponding to a
+     // qualified version of the effective type of the object,
+     rule #effectivelyCompat(L:SignedIntegerType, Eff::Type) => true
+          requires type(correspondingUnsignedType(utype(L)))
+                    ==Type stripQualifiers(Eff)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
+     rule #effectivelyCompat(L:UnsignedIntegerType, Eff::Type) => true
+          requires notBool isBoolType(L)
+               andBool type(correspondingSignedType(utype(L)))
+                    ==Type stripQualifiers(Eff)
+               andBool getQualifiers(Eff) <=Quals getQualifiers(L)
+     // - an aggregate or union type that includes one of the aforementioned
+     // types among its members (including, recursively, a member of a
+     // subaggregate or contained union), or
+
+     // (We're assuming the standard is talking about subobjects at this point,
+     // which we handle by considering the set of subobject types at a
+     // particular offset.)
+
+     // - a character type.
+     rule #effectivelyCompat(_:CharType, _) => true
+
+     rule #effectivelyCompat(_, _) => false [owise]
+
+     rule <k> getEffectiveType(Base::SymBase) => T ...</k>
+          <mem>... Base |-> object(T::Type, _, _) ...</mem>
+          [structural]
+     rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
+          <mem> Mem:Map </mem>
+          requires notBool Base in_keys(Mem) andBool notBool isNativeLoc(Base)
+          [structural]
+
+     syntax SymLoc ::= setLastAccessType(SymLoc, Type) [function]
+     rule setLastAccessType(Loc::SymLoc, T::Type)
+          => addProv(objectType(T), stripLastAccessType(Loc))
+
+     syntax Type ::= getLastAccessType(SymLoc) [function]
+     rule getLastAccessType(loc(_, _, _:Set SetItem(objectType(T::Type)))) => T
+     rule getLastAccessType(_) => type(no-type) [owise]
 
 endmodule

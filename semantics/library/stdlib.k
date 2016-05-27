@@ -100,7 +100,7 @@ module LIBC-STDLIB
      rule [realloc]:
           <k> builtin("realloc", tv(loc(OldBase:SymBase, 0), _), tv(NewLen:Int, _))
                => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen)) SetItem(fromType(type(no-type)))),
+               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
                     utype(pointerType(type(void))))
           ...</k>
           <malloced>...

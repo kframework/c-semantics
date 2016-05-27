@@ -119,6 +119,7 @@ module C-TYPING-SYNTAX
 
      syntax SimpleStructType ::= structType(StructId)
      syntax SimpleUnionType ::= unionType(StructId)
+
      syntax StructId ::= tag(CId, String, BlockRef)
      syntax BlockRef ::= Int | "global"
 
@@ -246,6 +247,12 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= alignas(Int)
 
      syntax Modifier ::= readFrom(SymLoc, Int)
+     // Lock an offset into a type to a certain type, for the purposes of
+     // setting active union variants for getTypesAtOffset. Note that we
+     // propagate these locks up through aggregates (which is the reason for
+     // the offset) because we need copies of the type information for fields
+     // stored in the global <structs> cell.
+     syntax Modifier ::= lock(Int, Type)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(Scope)
@@ -308,11 +315,12 @@ module C-TYPING-SYNTAX
      syntax Bool ::= hasAlignas(Type) [function]
      syntax Bool ::= hasAlignasMod(Set) [function]
 
-     // Returns the "biggest" type at that offset -- i.e., for a struct, union,
-     // or array, it'll return the struct/union/array type and not the type of
-     // its first member. Returns no-type when nothing seems to be aligned at
-     // that offset.
-     syntax Type ::= getTypeAtOffset(Type, Int) [function]
+     // Returns all types at an offset -- i.e., for a struct, union, or array,
+     // it'll return the struct/union/array type in addition to the type or
+     // types of its members. It only returns the type of the active variant of
+     // a union, if there is one. Otherwise, it returns the types of all
+     // variants.
+     syntax List ::= getTypesAtOffset(Type, Int) [function]
 
      syntax Bool ::= isTruthValue(RValue) [function]
 
@@ -321,6 +329,8 @@ module C-TYPING-SYNTAX
      // Turns old-style param list into the empty list so that arguments will
      // be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
+
+     syntax Type ::= unlock(Int, Type) [function]
 
 endmodule
 

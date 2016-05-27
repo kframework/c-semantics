@@ -414,7 +414,7 @@ module LIBC-STDIO
           <format> ListItem(S:String) => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%d" </format-state>
-          requires P =/=K "" andBool S ==String "d" orBool S ==String "i"
+          requires P =/=K "" andBool (S ==String "d" orBool S ==String "i")
           [structural]
 
      rule <k> formatter-aux(_) ...</k>
