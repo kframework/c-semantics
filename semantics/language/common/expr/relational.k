@@ -66,22 +66,22 @@ module C-COMMON-EXPR-RELATIONAL
 
      rule tv(I1:Int, T::UType) < tv(I2:Int, T'::UType)
           => makeTruth(I1 <Int I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) <= tv(I2:Int, T'::UType)
           => makeTruth(I1 <=Int I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) > tv(I2:Int, T'::UType)
           => makeTruth(I1 >Int I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(I1:Int, T::UType) >= tv(I2:Int, T'::UType)
           => makeTruth(I1 >=Int I2, T, T')
-          requires (isPromoted(T) orBool isPointerType(T))
+          requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) < tv(F2:Float, T'::UType)
@@ -120,6 +120,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
            andBool sameBase(Loc, Loc')
+           andBool isCompatibleRelationalTypes(T, T')
           [structural]
      rule (.K => UNDEF("CERL1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) < tv(Loc':SymLoc, T'::UType)
@@ -133,6 +134,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
            andBool sameBase(Loc, Loc')
+           andBool isCompatibleRelationalTypes(T, T')
           [structural]
      rule (.K => UNDEF("CERL2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) <= tv(Loc':SymLoc, T'::UType)
@@ -146,6 +148,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
            andBool sameBase(Loc, Loc')
+           andBool isCompatibleRelationalTypes(T, T')
           [structural]
      rule (.K => UNDEF("CERL3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) > tv(Loc':SymLoc, T'::UType)
@@ -159,6 +162,7 @@ module C-COMMON-EXPR-RELATIONAL
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
            andBool sameBase(Loc, Loc')
+           andBool isCompatibleRelationalTypes(T, T')
           [structural]
      rule (.K => UNDEF("CERL4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5, J.2:1 item 53") )
           ~> tv(Loc:SymLoc, T::UType) >= tv(Loc':SymLoc, T'::UType)
@@ -168,26 +172,38 @@ module C-COMMON-EXPR-RELATIONAL
                andBool T ==Type T'
           [structural]
 
-     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
           ~> L:RValue < R:RValue
-          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
-               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
+          requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
+           andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
           ~> L:RValue <= R:RValue
-          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
-               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
+          requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
+           andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
           ~> L:RValue > R:RValue
-          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
-               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
+          requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
+           andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Directly comparing an integer type with a pointer type.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
           ~> L:RValue >= R:RValue
-          requires (isIntegerUType(utype(L)) andBool isPointerUType(utype(R)))
-               orBool (isPointerUType(utype(L)) andBool isIntegerUType(utype(R)))
+          requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
+           andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
+
+     syntax Bool ::= isCompatibleRelationalTypes(UType, UType) [function]
+     // real types
+     // TODO(dwightguth): distinguish between real and complex types
+     rule isCompatibleRelationalTypes(T1::UType, T2::UType) => true
+          requires (isPromoted(T1) orBool isFloatUType(T1))
+               andBool T1 ==Type T2
+     // pointers to qualified or unqualified versions of compatible object types
+     rule isCompatibleRelationalTypes(T1:PointerUType, T2:PointerUType) => true
+          requires utype(innerType(T1)) ==Type utype(innerType(T2))
+               andBool notBool isFunctionType(innerType(T1))
+     rule isCompatibleRelationalTypes(_, _) => false [owise]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.9}{3--4}}}{
      The \cinline{==} (equal to) and \cinline{!=} (not equal to) operators are

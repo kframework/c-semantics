@@ -47,6 +47,7 @@ module LIBC-STDIO
           => "[sym(" +String symBaseToString(base(Loc)) +String ") + "
                +String Int2String(offset(Loc)) +String "]"
           requires notBool isNativeLoc(Loc)
+               andBool Loc =/=K NullPointer
           [structural]
 
      rule pointerToString(Loc:SymLoc => stripProv(Loc))

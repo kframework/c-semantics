@@ -1,7 +1,7 @@
 File: regehr-int-pointer-comparison.c
 Line: 2
 Error: CV-CERL5
-Description: Directly comparing an integer type with a pointer type.
+Description: Incompatible types in relational expression.
 Type: Constraint violation.
 See also: C11 sec. 6.5.8:2
 Translation failed (config dumped). Run kcc -d regehr-int-pointer-comparison.c to see commands run.
