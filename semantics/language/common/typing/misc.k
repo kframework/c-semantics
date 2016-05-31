@@ -187,13 +187,6 @@ module C-TYPING-MISC
      rule stripSpecifiers(T:UType) => utype(stripSpecifiers(type(T)))
      rule stripSpecifiers(T:Type) => stripStorageSpecifiers(stripFunctionSpecifiers(T))
 
-     rule stripAlignas(t(Qs::Quals, Mods::Set, T::SimpleType))
-          => t(Qs, filterSet(Mods, #klabel(`isNotAlignas`)), T)
-
-     syntax Bool ::= isNotAlignas(Modifier) [function]
-     rule isNotAlignas(alignas(_)) => false
-     rule isNotAlignas(_) => true [owise]
-
      syntax UType ::= stripReadFrom(UType) [function]
      rule stripReadFrom(ut(Mods::Set, T::SimpleUType))
           => ut(filterSet(Mods, #klabel(`isNotReadFrom`)), T)
@@ -470,6 +463,10 @@ module C-TYPING-MISC
      rule unlock(Offset::Int, t(Qs::Quals, Mods::Set SetItem(lock(Offset, _)), T::SimpleType))
           => unlock(Offset, t(Qs, Mods, T))
      rule unlock(_, T::Type) => T [owise]
+
+     rule unlockAll(t(Qs::Quals, Mods::Set SetItem(lock(_, _)), T::SimpleType))
+          => unlockAll(t(Qs, Mods, T))
+     rule unlockAll(T::Type) => T [owise]
 
      syntax Type ::= getLock(Int, Type) [function]
      rule getLock(Offset::Int, t(_, _:Set SetItem(lock(Offset, T::Type)), _)) => T

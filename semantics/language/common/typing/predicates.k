@@ -86,11 +86,6 @@ module C-TYPING-PREDICATES
                andBool fromConstantExpr(T)
      rule isNullPointerConstant(_) => false [owise]
 
-     rule hasAlignas(t(_, Mods:Set, _)) => hasAlignasMod(Mods)
-
-     rule hasAlignasMod(SetItem(alignas(_)) Mods:Set) => true
-     rule hasAlignasMod(_) => false [owise]
-
      rule hasReadFrom(ut(Mods:Set, _)) => some(Mods, #klabel(`isReadFrom`))
 
      syntax Bool ::= isReadFrom(K) [function]

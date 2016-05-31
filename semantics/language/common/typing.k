@@ -277,8 +277,6 @@ module C-TYPING-SYNTAX
      syntax UType ::= stripConstants(UType) [function]
      syntax RValue ::= stripConstants(RValue) [function]
 
-     syntax Type ::= stripAlignas(Type) [function]
-
      syntax Type ::= addQualifier(Qualifier, Type) [function]
      syntax Type ::= addQualifiers(Quals, Type) [function]
      syntax Type ::= addStorage(Storage, Type) [function]
@@ -312,9 +310,6 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
 
-     syntax Bool ::= hasAlignas(Type) [function]
-     syntax Bool ::= hasAlignasMod(Set) [function]
-
      // Returns all types at an offset -- i.e., for a struct, union, or array,
      // it'll return the struct/union/array type in addition to the type or
      // types of its members. It only returns the type of the active variant of
@@ -331,6 +326,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= toPrototype(Type) [function]
 
      syntax Type ::= unlock(Int, Type) [function]
+     syntax Type ::= unlockAll(Type) [function]
 
 endmodule
 

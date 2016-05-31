@@ -1,4 +1,5 @@
 module C-COMMON-EXPR-BITWISE
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX

@@ -15,16 +15,17 @@ endmodule
 module C-CONVERSION
      imports C-CONVERSION-SYNTAX
 
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      imports COMPAT-SYNTAX
 

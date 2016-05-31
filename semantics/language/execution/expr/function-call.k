@@ -1,5 +1,7 @@
 module C-EXPR-FUNCTION-CALL
+     imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
+     imports C-BUILTIN-SYNTAX
      imports C-CHECK-LOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -7,12 +9,11 @@ module C-EXPR-FUNCTION-CALL
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-BUILTIN-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -189,8 +190,8 @@ module C-EXPR-FUNCTION-CALL
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool stripQualifiers(stripAlignas(innerType(type(L))))
-                    ==Type stripQualifiers(stripAlignas(innerType(type(R))))
+               andBool stripQualifiers(innerType(type(L)))
+                    ==Type stripQualifiers(innerType(type(R)))
                andBool getQualifiers(innerType(type(R)))
                     <=Quals getQualifiers(innerType(type(L)))
                andBool getAlignas(innerType(type(L)))

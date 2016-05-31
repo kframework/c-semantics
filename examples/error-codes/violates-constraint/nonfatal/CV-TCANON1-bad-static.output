@@ -1,0 +1,6 @@
+File: CV-TCANON1-bad-static.c
+Line: 3
+Error: CV-TCANON1
+Description: Alignas attribute specifying an alignment less strict than would otherwise be required.
+Type: Constraint violation.
+See also: C11 sec. 6.7.5:4

@@ -11,9 +11,10 @@ module C-TYPING-CANONICALIZATION
      imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-CONFIGURATION
+     imports C-ERROR-SYNTAX
 
      context canonicalizeType-aux(_, HOLE:KItem, _, _, _)
 
@@ -244,6 +245,13 @@ module C-TYPING-CANONICALIZATION
           [structural]
 
      rule canonicalizeType-aux(.List, T:Type, .List, .List, .List) => T
+          requires notBool isCompleteType(T)
+               orBool getAlignas(T) >=Int byteAlignofType(T)
+          [structural]
+     rule (.K => CV("TCANON1", "Alignas attribute specifying an alignment less strict than would otherwise be required.", "6.7.5:4"))
+          ~> canonicalizeType-aux(.List, T:Type, .List, .List, .List)
+          requires isCompleteType(T)
+               andBool getAlignas(T) <Int byteAlignofType(T)
           [structural]
 
      // C99 6.7.2:2

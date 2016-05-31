@@ -1,11 +1,9 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
      imports SET
-     syntax Int ::= getAlignas(Type) [function]
 
      syntax Type ::= compositeType(Type, Type) [function]
      syntax UType ::= compositeType(UType, UType) [function]
 
-     syntax Bool ::= sameAlignas(Set, Set) [function]
 endmodule
 
 module C-TYPING-COMPATIBILITY
@@ -255,18 +253,6 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
      rule #areCompatFields(.List, .List, _) => true
      rule #areCompatFields(_:List, _, _) => false [owise]
-
-     rule sameAlignas(Mods:Set, Mods':Set)
-          => getAlignasMod(Mods) ==Int getAlignasMod(Mods')
-
-     rule getAlignas(T::Type) => getAlignasMod(getModifiers(T))
-          requires hasAlignasMod(getModifiers(T))
-     rule getAlignas(T::Type) => byteAlignofType(T)
-          requires notBool hasAlignasMod(getModifiers(T))
-
-     syntax Int ::= getAlignasMod(Set) [function]
-     rule getAlignasMod(SetItem(alignas(N::Int)) _) => N
-     rule getAlignasMod(_) => -1 [owise]
 
      rule compositeType(T:UType, T':UType)
           => utype(compositeType(type(T), type(T')))

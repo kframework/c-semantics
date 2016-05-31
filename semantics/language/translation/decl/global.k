@@ -40,6 +40,7 @@ module C-DECL-GLOBAL
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
 
      imports C-CONFIGURATION
 

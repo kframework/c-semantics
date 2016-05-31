@@ -10,5 +10,5 @@ union U {
 int main(void){
 	u.b = 0;
 	u.t.a = 0;
-	return u.b;	
+	return u.b + 139;	
 }

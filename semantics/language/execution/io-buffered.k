@@ -449,7 +449,7 @@ module C-IO-BUFFERED
           <effective-types>... Base |-> T::Type ...</effective-types>
           requires isNativeLoc(Base)
 
-     rule <k> setEffectiveType(loc(Base, _), T'::Type) => .K ...</k>
+     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
           <effective-types> M:Map => M [ Base <- T' ] </effective-types>
           requires isNativeLoc(Base)
           [structural]
