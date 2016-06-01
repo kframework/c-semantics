@@ -472,4 +472,15 @@ module C-TYPING-MISC
      rule getLock(Offset::Int, t(_, _:Set SetItem(lock(Offset, T::Type)), _)) => T
      rule getLock(_, _) => type(no-type) [owise]
 
+     rule lockFlexibleStruct(T:StructType, N::Int) => lockFlexibleStruct'(T, getFieldInfo(T), N)
+     rule lockFlexibleStruct(T::Type, _) => T [owise]
+
+     syntax Type ::= "lockFlexibleStruct'" "(" Type "," FieldInfo "," Int ")" [function]
+     rule lockFlexibleStruct'(T::Type, fieldInfo(
+               _:List ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, flexibleArrayType(T::Type)), FId::CId)),
+               _, _,
+               _:Map FId |-> FOffset:Int), N::Int)
+          => addModifier(lock(FOffset, t(Qs, Mods, arrayType(T, N /Int byteSizeofType(T)))), T)
+     rule lockFlexibleStruct'(T::Type, _, _) => T [owise]
+
 endmodule
