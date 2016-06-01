@@ -116,29 +116,36 @@ module C-MEMORY-WRITING
           #else (SetItem(K) stripUnion(S))
           #fi
 
-     rule (.K => makeUnionUnknown(.K, keepUnion(S)))
+     rule (.K => makeUnknown(.K, keepUnion(S)))
           ~> writeSpecific'(
                loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
           requires hasUnionMarker(loc(Base, Offset, S))
           [structural]
 
-     syntax KItem ::= makeUnknown(SymLoc, CId, FieldInfo)
-                    | makeUnionUnknown(K, Set)
+     syntax KItem ::= makeUnionUnknown(SymLoc, CId, FieldInfo)
+                    | makeStructUnknown(SymLoc, CId, FieldInfo, Int)
+                    | makeUnknown(K, Set)
 
-     rule makeUnionUnknown(.K, .Set) => .K
+     rule makeUnknown(.K, .Set) => .K
           [structural]
-     rule makeUnionUnknown(.K, SetItem(K:K) S:Set)
-          => makeUnionUnknown(K, S)
+     rule makeUnknown(.K, SetItem(K:K) S:Set)
+          => makeUnknown(K, S)
           [structural]
-     rule makeUnionUnknown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo),
+     // unions
+     rule makeUnknown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo, true),
                S:Set)
-          => allowInit(makeUnknown(UnionLoc, F, Fields))
-          ~> makeUnionUnknown(.K, S)
+          => allowInit(makeUnionUnknown(UnionLoc, F, Fields))
+          ~> makeUnknown(.K, S)
           [structural]
-
+     // structs
+     rule makeUnknown(fromUnion(StructLoc:SymLoc, F:CId, Fields:FieldInfo, false),
+               S:Set)
+          => allowInit(makeStructUnknown(StructLoc, F, Fields, 0))
+          ~> makeUnknown(.K, S)
+ 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
-     rule makeUnknown(Loc:SymLoc, F:CId, fieldInfo(L:List, _,
+     rule makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
                F |-> T::Type _, _))
           => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
@@ -146,9 +153,27 @@ module C-MEMORY-WRITING
                     piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
-     rule makeUnknown(_, F:CId, fieldInfo(L:List, _, F |-> T:Type _, _)) => .K
+     rule makeUnionUnknown(_, F::CId, fieldInfo(L::List, _, F |-> T::Type _, _)) => .K
           requires maxByteSizeofList(L) <=Int byteSizeofType(T)
           [structural]
+
+     rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
+               F |-> T::Type M::Map, Offsets::Map), I::Int)
+          => writeBytes(stripProv(Loc) +bytes I,
+               dataList(ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
+          ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets), I +Int 1)
+          requires isPaddingOffset(I, fieldInfo(L, N, F |-> T M, Offsets))
+               andBool I *Int cfg:bitsPerByte <Int N
+     rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
+               Types::Map, Offsets::Map), I::Int)
+          => makeStructUnknown(Loc, F, fieldInfo(L, N, Types, Offsets), I +Int 1)
+          requires notBool isPaddingOffset(I, fieldInfo(L, N, Types, Offsets))
+               andBool I *Int cfg:bitsPerByte <Int N
+     rule makeStructUnknown(_, _, fieldInfo(_, N::Int, _, _), I::Int)
+          => .K
+          requires I *Int cfg:bitsPerByte >=Int N
+
+
 
      syntax Int ::= justBits(Int, UType) [function]
      syntax Int ::= "justBits-aux" "(" Int "," UType ")" [function]

@@ -91,9 +91,9 @@ module C-SYMLOC-SYNTAX
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase, Scope)
-     // Used to tag union members so the rest of the bytes in the union can be
-     // marked as unspecified upon write.
-     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo)
+     // Used to tag union and struct members so the rest of the bytes in the union 
+     // (or the padding bytes of the struct) can be marked as unspecified upon write.
+     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo, Bool)
      // Used to tag lvalues with their last-access type for checking and
      // updating the effective types of accesses.
      syntax Provenance ::= objectType(Type)

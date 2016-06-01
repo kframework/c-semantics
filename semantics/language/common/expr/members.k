@@ -21,7 +21,8 @@ module C-COMMON-EXPR-MEMBERS
      }*/
      rule <k> nclv(Loc:SymLoc, t(Qs::Quals, _,
                     structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => lookupField(F, Loc, Qs, X, Fields, Fields)
+               => lookupField(F, addProv(fromUnion(Loc, F, Fields, false), Loc),
+                    Qs, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
           <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
@@ -29,7 +30,7 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
      rule <k> nclv(Loc:SymLoc, t(Qs::Quals, _,
                     unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
-               => lookupField(F, addProv(fromUnion(Loc, F, Fields), Loc),
+               => lookupField(F, addProv(fromUnion(Loc, F, Fields, true), Loc),
                     Qs, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
