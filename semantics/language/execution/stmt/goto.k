@@ -106,6 +106,11 @@ module C-STMT-GOTO
           => Blk
           requires getKLabel(Lbl) ==K #klabel(`funLabel`)
 
+     syntax Bool ::= isGotoKLabel(K) [function, klabelPredicate]
+     rule isGotoKLabel(#klabel(`processGoto`)) => true
+     rule isGotoKLabel(#klabel(`processGotoDown`)) => true
+     rule isGotoKLabel(_) => false [owise]
+
      // - first case, when we're in the same block
      rule <k> (L:KLabel(gotoObject(Depth::Int,
                     (ListItem(CurrentBlock::Int) BlockHistory::List),
@@ -119,8 +124,7 @@ module C-STMT-GOTO
                ListItem(CurrentBlock) BlockHistory
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((#klabel(L) ==K #klabel(`processGoto`))
-               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
+          requires isGotoKLabel(#klabel(L))
           [structural]
 
      // - second case, we're in a different block
@@ -210,8 +214,7 @@ module C-STMT-GOTO
           <nesting-depth> Depth::Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires ((#klabel(L) ==K #klabel(`processGoto`))
-               orBool (#klabel(L) ==K #klabel(`processGotoDown`)))
+          requires isGotoKLabel(#klabel(L))
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 

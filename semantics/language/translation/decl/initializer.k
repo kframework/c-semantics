@@ -358,7 +358,7 @@ module C-DECL-INITIALIZER
           <structs>...
                Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _))
           ...</structs>
-          requires #klabel(Lbl) ==K #klabel(`structType`) orBool #klabel(Lbl) ==K #klabel(`unionType`)
+          requires isStructOrUnionKLabel(#klabel(Lbl))
           [structural]
 
      rule <k> buildDesignator(NextInit()) => NextInit() ...</k>

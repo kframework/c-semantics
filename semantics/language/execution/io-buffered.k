@@ -5,9 +5,6 @@ module C-IO-BUFFERED-SYNTAX
 
      // deletes the base object from memory, given a location
      syntax KItem ::= deleteObject(SymBase)
-     // deletes the base object from memory, given a location and it size (as a
-     // check)
-     syntax KItem ::= deleteSizedObject(SymBase, Int)
 
      syntax KItem ::= writeBytes(SymLoc, List)
 endmodule
@@ -158,15 +155,19 @@ module C-IO-BUFFERED
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), L))) </buffer>
           [structural]
 
+     //TODO(dwightguth): when we do symbolic execution we need to rework this stuff to obey the C11 memory model
      rule <buffer>
-               ListItem(bwrite(loc(Base::SymBase, (Offset::Int => Offset +Int 1)), (ListItem(V:K) => .List) _::List))
+               ListItem(bwrite(loc(Base::SymBase, Offset::Int), L::List)) => .List
           ...</buffer>
-          <mem>...
-               Base |-> object(_, Len::Int, (Bytes::Map => Bytes[Offset <- V]))
-          ...</mem>
-          requires Offset <Int Len
+          <mem> M::Map => writeBuffer(M, Base, M[Base], Offset, L) </mem>
           [structural]
-     rule <buffer> ListItem(bwrite(_, .List)) => .List ...</buffer>
+
+     syntax Map ::= writeBuffer(Map, SymBase, K, Int, List) [function]
+     rule writeBuffer(M::Map, Base::SymBase, object(T::Type, Len::Int, Bytes::Map), Offset::Int, Buffer::List)
+          => M[Base <- object(T, Len, updateMap(Bytes, makeBufferBytes(Offset, Buffer)))]
+     syntax Map ::= makeBufferBytes(Int, List) [function]
+     rule makeBufferBytes(Offset::Int, ListItem(V:K) L::List) => (makeBufferBytes(Offset +Int 1, L))[Offset <- V]
+     rule makeBufferBytes(_, .List) => .Map
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
      rule <buffer>
@@ -368,7 +369,7 @@ module C-IO-BUFFERED
                => alloc(New, type(no-type), NewLen)
                ~> copyBytes(minInt(OldLen, NewLen), Old, New)
                ~> copyObjectType(Old, New)
-               ~> deleteSizedObject(Old, OldLen)
+               ~> deleteObject(Old)
           ...</k>
           [structural]
 
@@ -397,21 +398,18 @@ module C-IO-BUFFERED
                New |-> object((_ => T), _, _)
           ...</mem>
 
-     rule <k> deleteSizedObject(Base:SymBase, Len:Int) => .K
-          ...</k>
-          <mem>... Base |-> object(_, Len, _) => .Map ...</mem>
-          // fixme could make this more relaxed by checking of block is in
-          // buffer, not just empty
-          <buffer> .List </buffer>
-          [structural]
-
      syntax K ::= #freeNativeObject(SymBase) [function, hook(C_SEMANTICS.freeNativeObject)]
      rule #freeNativeObject(_) => .K [owise]
 
      rule <k> deleteObject(Base:SymBase) => #freeNativeObject(Base) ...</k>
           <mem> M::Map => M[Base <- undef] </mem>
-          <buffer> .List </buffer>
+          <buffer> L::List => filterBuffer(L, Base) </buffer>
           [structural]
+
+     syntax List ::= filterBuffer(List, SymBase) [function]
+     rule filterBuffer(.List, _) => .List
+     rule filterBuffer(ListItem(bwrite(loc(Base::SymBase, _), _)) L::List, Base) => filterBuffer(L, Base)
+     rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
               => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)

@@ -129,6 +129,9 @@ module C-DYNAMIC-SYNTAX
      syntax Opts ::= CSV(String)
 
      syntax KItem ::= "checkStackDepth"
+
+     syntax Bool ::= isNCLKLabel(K) [function, klabelPredicate]
+                   | isRKLabel(K) [function, klabelPredicate]
 endmodule
 
 module C-DYNAMIC
@@ -261,5 +264,13 @@ module C-DYNAMIC
           => Lbl(fillLHoles(LV, L), fillLHoles(LV, R))
           requires #klabel(Lbl) =/=K #klabel(`compoundAssign`) andBool #klabel(Lbl) =/=K #klabel(`postOp`)
      rule fillLHoles(_, K:K) => K [owise]
+
+     rule isNCLKLabel(#klabel(`nclv`)) => true
+     rule isNCLKLabel(#klabel(`ncle`)) => true
+     rule isNCLKLabel(_) => false [owise]
+
+     rule isRKLabel(#klabel(`tv`)) => true
+     rule isRKLabel(#klabel(`te`)) => true
+     rule isRKLabel(_) => false [owise]
 
 endmodule

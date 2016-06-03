@@ -300,7 +300,7 @@ module C-MEMORY-WRITING
           => #splitIntegerBytes(I, T, Len, .List)
      rule #splitIntegerBytes(I:Int, T::UType, Len:Int, L:List)
           => #splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1,
-               L ListItem(lowestByte(I)))
+               L ListItem(piece(I &Int byteMaskSet, cfg:bitsPerByte)))
           requires Len >Int 0
      rule #splitIntegerBytes(_, _, 0, L:List) => dataList(L)
 
@@ -358,10 +358,6 @@ module C-MEMORY-WRITING
                ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)) L)
           requires Len >Int 0
      rule splitFloatBytes(_, _, 0, L:List) => dataList(L)
-
-     syntax Bits ::= lowestByte(Int) [function]
-     rule lowestByte(I:Int) => piece(I &Int byteMaskSet, cfg:bitsPerByte)
-          [structural]
 
      syntax Int ::= "byteMaskSet" [function]
 

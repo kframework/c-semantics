@@ -74,6 +74,7 @@ module C-EXECUTION-ERROR
      rule <result-value> unknown(I:Int) => I </result-value>
           <file-commands> .K => openWriteThenClose(Report, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String ",unknown\r\n") ...</file-commands>
           <options>... SetItem(CSV(Report::String)) ...</options>
+          <status> terminated </status>
 
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)

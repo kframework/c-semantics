@@ -44,7 +44,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic() inQuals Qs
-               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
+               andBool isNCLKLabel(#klabel(Lbl))
           [structural]
      rule <k> (.K => UNDEF("CEM2",
                "Attempting to access a member in an atomic union.",
@@ -53,7 +53,7 @@ module C-COMMON-EXPR-MEMBERS
           ...</k>
           <initializing> false </initializing>
           requires Atomic() inQuals Qs
-               andBool (#klabel(Lbl) ==K #klabel(`nclv`) orBool #klabel(Lbl) ==K #klabel(`ncle`))
+               andBool isNCLKLabel(#klabel(Lbl))
           [structural]
 
      // The last two parameters are for convenience and should be the same.

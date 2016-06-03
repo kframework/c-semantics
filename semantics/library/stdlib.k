@@ -136,10 +136,10 @@ module LIBC-STDLIB
      rule builtin("free", tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _))
      rule [free]:
           <k> builtin("free", tv(loc(Base:SymBase, 0), ut(_, pointerType(_))))
-               => deleteSizedObject(Base, Len:Int)
+               => deleteObject(Base)
                ~> voidVal
           ...</k>
-          <malloced>... Base |-> Len => .Map ...</malloced>
+          <malloced>... Base |-> _ => .Map ...</malloced>
           requires notBool hasLint
           [structural]
      rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed.",

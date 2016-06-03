@@ -4,6 +4,8 @@ module C-BITSIZE-SYNTAX
 
      syntax Int ::= bitSizeofType(UType) [function]
      syntax Int ::= bitSizeofType(Type) [function]
+     syntax Int ::= bitSizeofType(SimpleType) [function, klabel(bitSizeofSimpleType)]
+     syntax Int ::= bitSizeofType(SimpleUType) [function, klabel(bitSizeofSimpleType)]
 
      syntax Int ::= byteSizeofType(UType) [function]
      syntax Int ::= byteSizeofType(Type) [function]
@@ -41,29 +43,30 @@ module C-BITSIZE
           requires notBool isVariableLengthArrayType(T)
           [structural]
 
-     rule bitSizeofType(T:Type) => bitSizeofType(utype(T))
+     rule bitSizeofType(t(_, _, T::SimpleType)) => bitSizeofType(T)
+     rule bitSizeofType(ut(_, T::SimpleUType)) => bitSizeofType(T)
 
-     rule byteSizeofType(T:Type) => byteSizeofType(utype(T))
-     rule byteSizeofType(T:UType) => bitsToBytes(bitSizeofType(T))
+     rule byteSizeofType(t(_, _, T::SimpleType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
+     rule byteSizeofType(ut(_, T::SimpleUType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
 
-     syntax Int ::= numBytes(UType) [function]
-     rule numBytes(ut(_, bool)) => cfg:sizeofBool
-     rule numBytes(ut(_, signed-char)) => cfg:sizeofSignedChar
-     rule numBytes(ut(_, short-int)) => cfg:sizeofShortInt
-     rule numBytes(ut(_, int)) => cfg:sizeofInt
-     rule numBytes(ut(_, long-int)) => cfg:sizeofLongInt
-     rule numBytes(ut(_, long-long-int)) => cfg:sizeofLongLongInt
+     syntax Int ::= numBytes(SimpleType) [function]
+     rule numBytes(bool) => cfg:sizeofBool
+     rule numBytes(signed-char) => cfg:sizeofSignedChar
+     rule numBytes(short-int) => cfg:sizeofShortInt
+     rule numBytes(int) => cfg:sizeofInt
+     rule numBytes(long-int) => cfg:sizeofLongInt
+     rule numBytes(long-long-int) => cfg:sizeofLongLongInt
 
-     rule numBytes(ut(_, float)) => cfg:sizeofFloat
-     rule numBytes(ut(_, double)) => cfg:sizeofDouble
-     rule numBytes(ut(_, long-double)) => cfg:sizeofLongDouble
+     rule numBytes(float) => cfg:sizeofFloat
+     rule numBytes(double) => cfg:sizeofDouble
+     rule numBytes(long-double) => cfg:sizeofLongDouble
 
-     rule numBytes(ut(_, unsigned-char)) => numBytes(utype(signed-char))
-     rule numBytes(ut(_, unsigned-short-int)) => numBytes(utype(short-int))
-     rule numBytes(ut(_, unsigned-int)) => numBytes(utype(int))
-     rule numBytes(ut(_, unsigned-long-int)) => numBytes(utype(long-int))
-     rule numBytes(ut(_, unsigned-long-long-int)) => numBytes(utype(long-long-int))
-     rule numBytes(ut(Mods::Set, enumType(_))) => numBytes(ut(Mods, cfg:enumAlias))
+     rule numBytes(unsigned-char) => numBytes(signed-char)
+     rule numBytes(unsigned-short-int) => numBytes(short-int)
+     rule numBytes(unsigned-int) => numBytes(int)
+     rule numBytes(unsigned-long-int) => numBytes(long-int)
+     rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
+     rule numBytes(enumType(_)) => numBytes(cfg:enumAlias)
      rule numBytes(_) => 0 [owise]
 
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
@@ -74,25 +77,22 @@ module C-BITSIZE
           => maxByteSizeofList'(maxInt(Sz, byteSizeofType(utype(T))), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
-     rule bitSizeofType(ut(_, no-type)) => 0
-     rule bitSizeofType(ut(_, arrayUType(T::UType, N::Int))) => bitSizeofType(T) *Int N
-     rule bitSizeofType(ut(_, flexibleArrayUType(_))) => 0
-     rule bitSizeofType(ut(_, functionType(_, _))) => cfg:bitsPerByte
-     rule bitSizeofType(ut(_, pointerType(_))) => cfg:ptrsize *Int cfg:bitsPerByte
-     rule bitSizeofType(ut(_, bitfieldType(_, N::Int))) => N
-     rule bitSizeofType(T:UType) => numBytes(T) *Int cfg:bitsPerByte
-          requires isBasicType(type(T))
-               andBool notBool isBitfieldType(type(T))
+     rule bitSizeofType(no-type) => 0
+     rule bitSizeofType(arrayUType(T::UType, N::Int)) => bitSizeofType(T) *Int N
+     rule bitSizeofType(arrayType(T::Type, N::Int)) => bitSizeofType(T) *Int N
+     rule bitSizeofType(flexibleArrayType(_)) => 0
+     rule bitSizeofType(flexibleArrayUType(_)) => 0
+     rule bitSizeofType(functionType(_, _)) => cfg:bitsPerByte
+     rule bitSizeofType(pointerType(_)) => cfg:ptrsize *Int cfg:bitsPerByte
+     rule bitSizeofType(bitfieldType(_, N::Int)) => N
+     rule bitSizeofType(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte [owise]
 
-     rule bitSizeofType(ut(_, structType(S::StructId)))
+     rule bitSizeofType(structType(S::StructId))
           => bitSizeofStruct(getFieldInfo(S))
-     rule bitSizeofType(ut(_, unionType(S::StructId)))
+     rule bitSizeofType(unionType(S::StructId))
           => bitSizeofUnion(getFieldInfo(S))
 
      rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _)) => NBits
      rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _)) => NBits
-
-     syntax Int ::= bitsToBytes(Int) [function]
-     rule bitsToBytes(N:Int) => (absInt(N) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
 
 endmodule

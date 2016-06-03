@@ -483,4 +483,8 @@ module C-TYPING-MISC
           => addModifier(lock(FOffset, t(Qs, Mods, arrayType(T, N /Int byteSizeofType(T)))), T)
      rule lockFlexibleStruct'(T::Type, _, _) => T [owise]
 
+     rule isStructOrUnionKLabel(#klabel(`structType`)) => true
+     rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
+     rule isStructOrUnionKLabel(_) => false [owise]
+
 endmodule

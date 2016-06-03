@@ -2,9 +2,10 @@ module C-COMMON-PROMOTION-SYNTAX
      imports BASIC-K
      // should be K, but is Type for efficiency reasons
      syntax UType ::= promote(UType) [function]
-     syntax Bool ::= isArithBinConversionOp(K) [function]
-     syntax Bool ::= isArithBinOp(K) [function]
-     syntax Bool ::= isArithUnaryOp(K) [function]
+     syntax Bool ::= isArithBinConversionOp(K) [function, klabelPredicate]
+     syntax Bool ::= isArithBinOp(K) [function, klabelPredicate]
+     syntax Bool ::= isArithBinNonEqualityOp(K) [function, klabelPredicate]
+     syntax Bool ::= isArithUnaryOp(K) [function, klabelPredicate]
      syntax UType ::= usualArithmeticConversion(UType, UType) [function]
      syntax Bool ::= isPromoted(UType) [function]
 
@@ -34,43 +35,62 @@ module C-COMMON-PROMOTION
      the value or the representation.
      }*/
 
-     syntax Set ::= "arithBinOps" [function]
-     syntax Set ::= "arithBinConversionOps" [function]
+     rule isArithBinNonEqualityOp(#klabel(`_*__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_/__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_%__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_+__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_-__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_<__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_>__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_<=__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_>=__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_&__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_|__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_^__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_<<__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(#klabel(`_>>__C-SYNTAX`)) => true
+     rule isArithBinNonEqualityOp(_) => false [owise]
 
-     rule arithBinOps
-          => arithBinConversionOps (SetItem(#klabel(`_<<__C-SYNTAX`)) SetItem(#klabel(`_>>__C-SYNTAX`)))
-     rule arithBinConversionOps =>
-               SetItem(#klabel(`_*__C-SYNTAX`))
-               SetItem(#klabel(`_/__C-SYNTAX`))
-               SetItem(#klabel(`_%__C-SYNTAX`))
-               SetItem(#klabel(`_+__C-SYNTAX`))
-               SetItem(#klabel(`_-__C-SYNTAX`))
-               SetItem(#klabel(`_<__C-SYNTAX`))
-               SetItem(#klabel(`_>__C-SYNTAX`))
-               SetItem(#klabel(`_<=__C-SYNTAX`))
-               SetItem(#klabel(`_>=__C-SYNTAX`))
-               SetItem(#klabel(`_==__C-SYNTAX`))
-               SetItem(#klabel(`_!=__C-SYNTAX`))
-               SetItem(#klabel(`_&__C-SYNTAX`))
-               SetItem(#klabel(`_|__C-SYNTAX`))
-               SetItem(#klabel(`_^__C-SYNTAX`))
 
-     rule isArithBinOp(Lbl:K)
-          => #if (Lbl in arithBinOps) #then true #else false #fi
-          [structural]
-     rule isArithBinConversionOp(Lbl:K)
-          => #if (Lbl in arithBinConversionOps) #then true #else false #fi
-          [structural]
 
-     syntax Set ::= "arithUnaryOps" [function]// [memo]
-     rule arithUnaryOps =>
-          SetItem(#klabel(`-__C-SYNTAX`))
-          SetItem(#klabel(`+__C-SYNTAX`))
-          SetItem(#klabel(`~__C-SYNTAX`))
+     rule isArithBinOp(#klabel(`_*__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_/__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_%__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_+__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_-__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_<__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_>__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_<=__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_>=__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_==__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_!=__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_&__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_|__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_^__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_<<__C-SYNTAX`)) => true
+     rule isArithBinOp(#klabel(`_>>__C-SYNTAX`)) => true
+     rule isArithBinOp(_) => false [owise]
 
-     rule isArithUnaryOp(Lbl:K)
-          => #if (Lbl in arithUnaryOps) #then true #else false #fi
-          [structural]
+     rule isArithBinConversionOp(#klabel(`_*__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_/__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_%__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_+__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_-__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_<__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_>__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_<=__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_>=__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_==__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_!=__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_&__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_|__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_^__C-SYNTAX`)) => true
+     rule isArithBinConversionOp(_) => false [owise]
+
+     rule isArithUnaryOp(#klabel(`-__C-SYNTAX`)) => true
+     rule isArithUnaryOp(#klabel(`+__C-SYNTAX`)) => true
+     rule isArithUnaryOp(#klabel(`~__C-SYNTAX`)) => true
+     rule isArithUnaryOp(_) => false [owise]
 
      // \csection{6}{3}{1}{0}{Arithmetic operands}
      // \csection{6}{3}{1}{1}{Boolean, characters, and integers}

@@ -23,68 +23,73 @@ module C-TYPING-EXPR
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
 
-     // chathhorn: hacky custom heating/cooling for type-strictness.
-     syntax Set ::= "typeStrictUnaryOps" [function]
-                  | "typeStrictBinaryOps" [function]
-                  | "typeStrictBinaryOpsFirst" [function]
-                  | "typeStrictBinaryOpsSecond" [function]
-                  | "typeStrictTernaryOpsSecond" [function]
-                  | "typeStrictTernaryOpsThird" [function]
+     syntax Bool ::= isTypeStrictUnaryKLabel(K) [function, klabelPredicate]
+                   | isTypeStrictBinaryFirstKLabel(K) [function, klabelPredicate]
+                   | isTypeStrictBinarySecondKLabel(K) [function, klabelPredicate]
 
-     rule typeStrictUnaryOps =>
-          SetItem(#klabel(`-__C-SYNTAX`))
-          SetItem(#klabel(`+__C-SYNTAX`))
-          SetItem(#klabel(`!__C-SYNTAX`))
-          SetItem(#klabel(`~__C-SYNTAX`))
-          SetItem(#klabel(`*__C-SYNTAX`))
-          SetItem(#klabel(`&__C-SYNTAX`))
-          SetItem(#klabel(`++__C-SYNTAX`))
-          SetItem(#klabel(`--__C-SYNTAX`))
-          SetItem(#klabel(`_++_C-SYNTAX`))
-          SetItem(#klabel(`_--_C-SYNTAX`))
-          SetItem(#klabel(`SizeofExpression`))
+     rule isTypeStrictUnaryKLabel(#klabel(`-__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`+__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`!__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`~__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`*__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`&__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`++__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`--__C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`_++_C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`_--_C-SYNTAX`)) => true
+     rule isTypeStrictUnaryKLabel(#klabel(`SizeofExpression`)) => true
+     rule isTypeStrictUnaryKLabel(_) => false [owise]
 
-     rule typeStrictBinaryOps =>
-          SetItem(#klabel(`_*__C-SYNTAX`))
-          SetItem(#klabel(`_/__C-SYNTAX`))
-          SetItem(#klabel(`_%__C-SYNTAX`))
-          SetItem(#klabel(`_+__C-SYNTAX`))
-          SetItem(#klabel(`_-__C-SYNTAX`))
-          SetItem(#klabel(`_==__C-SYNTAX`))
-          SetItem(#klabel(`_!=__C-SYNTAX`))
-          SetItem(#klabel(`_&__C-SYNTAX`))
-          SetItem(#klabel(`_^__C-SYNTAX`))
-          SetItem(#klabel(`_|__C-SYNTAX`))
-          SetItem(#klabel(`_&&__C-SYNTAX`))
-          SetItem(#klabel(`_||__C-SYNTAX`))
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_*__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_/__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_%__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_+__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_-__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_==__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_!=__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_&__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_^__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_|__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_&&__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(#klabel(`_||__C-SYNTAX`)) => true
+     rule isTypeStrictBinarySecondKLabel(_) => false [owise]
 
-     rule typeStrictBinaryOpsFirst =>
-          typeStrictBinaryOps
-          SetItem(#klabel(`_<<__C-SYNTAX`))
-          SetItem(#klabel(`_>>__C-SYNTAX`))
-          SetItem(#klabel(`_*=__C-SYNTAX`))
-          SetItem(#klabel(`_/=__C-SYNTAX`))
-          SetItem(#klabel(`_%=__C-SYNTAX`))
-          SetItem(#klabel(`_+=__C-SYNTAX`))
-          SetItem(#klabel(`_-=__C-SYNTAX`))
-          SetItem(#klabel(`_<<=__C-SYNTAX`))
-          SetItem(#klabel(`_&=__C-SYNTAX`))
-          SetItem(#klabel(`_^=__C-SYNTAX`))
-          SetItem(#klabel(`_|=__C-SYNTAX`))
-          SetItem(#klabel(`_>>=__C-SYNTAX`))
-          SetItem(#klabel(`_:=__C-SYNTAX`))
-          SetItem(#klabel(`Call`))
-          SetItem(#klabel(`_.__C-SYNTAX`))
-
-     rule typeStrictBinaryOpsSecond => typeStrictBinaryOps
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_*__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_/__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_%__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_+__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_-__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_==__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_!=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_^__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_|__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&&__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_||__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_<<__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_>>__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_*=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_/=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_%=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_+=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_-=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_<<=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_&=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_^=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_|=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_>>=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_:=__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`Call`)) => true
+     rule isTypeStrictBinaryFirstKLabel(#klabel(`_.__C-SYNTAX`)) => true
+     rule isTypeStrictBinaryFirstKLabel(_) => false [owise]
 
      context typeof(Lbl:KLabel(HOLE:KItem => typeof(HOLE)))
-          requires #klabel(Lbl) in typeStrictUnaryOps [result(Type)]
+          requires isTypeStrictUnaryKLabel(#klabel(Lbl)) [result(Type)]
 
      context typeof(Lbl:KLabel((HOLE:KItem => typeof(HOLE)), _))
-          requires #klabel(Lbl) in typeStrictBinaryOpsFirst [result(Type)]
+          requires isTypeStrictBinaryFirstKLabel(#klabel(Lbl)) [result(Type)]
      context typeof(Lbl:KLabel(_, (HOLE:KItem => typeof(HOLE))))
-          requires #klabel(Lbl) in typeStrictBinaryOpsSecond [result(Type)]
+          requires isTypeStrictBinarySecondKLabel(#klabel(Lbl)) [result(Type)]
 
      // primary expressions
      rule <k> typeof(X:CId => T:Type) ...</k>
@@ -323,23 +328,23 @@ module C-TYPING-EXPR
           ~> elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
           requires T =/=Type T'
 
-     syntax Set ::= "assignmentLabels" [function]
-     rule assignmentLabels =>
-          SetItem(#klabel(`_:=__C-SYNTAX`))
-          SetItem(#klabel(`_*=__C-SYNTAX`))
-          SetItem(#klabel(`_/=__C-SYNTAX`))
-          SetItem(#klabel(`_%=__C-SYNTAX`))
-          SetItem(#klabel(`_+=__C-SYNTAX`))
-          SetItem(#klabel(`_-=__C-SYNTAX`))
-          SetItem(#klabel(`_<<=__C-SYNTAX`))
-          SetItem(#klabel(`_>>=__C-SYNTAX`))
-          SetItem(#klabel(`_&=__C-SYNTAX`))
-          SetItem(#klabel(`_^=__C-SYNTAX`))
-          SetItem(#klabel(`_|=__C-SYNTAX`))
+     syntax Bool ::= isAssignmentKLabel(K) [function, klabelPredicate]
+     rule isAssignmentKLabel(#klabel(`_:=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_*=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_/=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_%=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_+=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_-=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_<<=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_>>=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_&=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_^=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(#klabel(`_|=__C-SYNTAX`)) => true
+     rule isAssignmentKLabel(_) => false [owise]
 
      // assignment expression
      rule typeof(Lbl:KLabel(t(_, Mods::Set, T::SimpleType),_) => t(noQuals, Mods, T))
-          requires #klabel(Lbl) in assignmentLabels
+          requires isAssignmentKLabel(#klabel(Lbl))
 
      // comma expression
      rule typeof(Comma(list(_:List ListItem(K:K))) => K)
