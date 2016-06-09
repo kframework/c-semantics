@@ -25,11 +25,11 @@ module C-ERROR-SYNTAX
      syntax KItem ::= writeThenClose(Int, String)
      syntax KItem ::= close(Int)
      syntax Bool ::= "isCSV" [function]
-                   | "isUndef" [function]
-                   | "isUnspec" [function]
-                   | "isImpl" [function]
+                   | checkOptions(K, String, Bool) [function]
 
-     syntax Opts ::= NoUndef() | NoUnspec() | NoImpl()
+     syntax Opts ::= Undef() | Unspec() | Impl()
+                   | No(Opts)
+                   | Warn(String)
 
 endmodule
 
@@ -79,31 +79,31 @@ module C-ERROR
 
      rule UNDEF(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", "C11", Citation))
-          requires isUndef
+          requires checkOptions(Undef(), Title, true)
      rule UNSPEC(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior.", "C11", Citation))
-          requires isUnspec
+          requires checkOptions(Unspec(), Title, true)
      rule CV(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", "C11", Citation))
      rule SE(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("SE-" +String Title, Msg, "Syntax error.", "C11", Citation))
      rule IMPL(Title:String, Msg:String, Citation:String)
           => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior.", "C11", Citation))
-          requires isImpl
+          requires checkOptions(Impl(), Title, true)
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", Document, Citation))
      rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", Document, Citation))
-          requires isUndef
+          requires checkOptions(Undef(), Title, true)
 
-     rule UNDEF(_, _, _) => HALT
-          requires notBool isUndef
-     rule UNSPEC(_, _, _) => HALT
-          requires notBool isUnspec
-     rule IMPL(_, _, _) => HALT
-          requires notBool isImpl
-     rule EXT-UNDEF(_, _, _, _) => HALT
-          requires notBool isUndef
+     rule UNDEF(Title:String, _, _) => HALT
+          requires notBool checkOptions(Undef(), Title, true)
+     rule UNSPEC(Title:String, _, _) => HALT
+          requires notBool checkOptions(Unspec(), Title, true)
+     rule IMPL(Title:String, _, _) => HALT
+          requires notBool checkOptions(Impl(), Title, true)
+     rule EXT-UNDEF(Title:String, _, _, _) => HALT
+          requires notBool checkOptions(Undef(), Title, true)
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
      rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd)
@@ -114,17 +114,14 @@ module C-ERROR
      rule isCSV(<generatedTop>... <options>... SetItem(CSV(_)) ...</options> ...</generatedTop>) => true
      rule isCSV(_) => false [owise]
 
-     syntax Bool ::= isUndef(K) [function, klabel(isUndef1)]
-     rule isUndef => isUndef(#configuration)
-     rule isUndef(<generatedTop>... <options>... SetItem(NoUndef()) ...</options> ...</generatedTop>) => false
-     rule isUndef(_) => true [owise]
-     syntax Bool ::= isUnspec(K) [function, klabel(isUnspec1)]
-     rule isUnspec => isUnspec(#configuration)
-     rule isUnspec(<generatedTop>... <options>... SetItem(NoUnspec()) ...</options> ...</generatedTop>) => false
-     rule isUnspec(_) => true [owise]
-     syntax Bool ::= isImpl(K) [function, klabel(isImpl1)]
-     rule isImpl => isImpl(#configuration)
-     rule isImpl(<generatedTop>... <options>... SetItem(NoImpl()) ...</options> ...</generatedTop>) => false
-     rule isImpl(_) => true [owise]
+     syntax Bool ::= checkOptions(K, String, Bool, K) [function, klabel(checkOptions1)]
+                   | checkOptionsCateg(K, Bool, K) [function, klabel(checkOptions2)]
+     rule checkOptions(Opt:Opts, S:String, B:Bool) => checkOptions(Opt, S, B, #configuration)
+     rule checkOptions(_, S:String, _, <generatedTop>... <options>... SetItem(Warn(S))...</options> ...</generatedTop>) => true
+     rule checkOptions(_, S:String, _, <generatedTop>... <options>... SetItem(No(Warn(S)))...</options> ...</generatedTop>) => false
+     rule checkOptions(Opt:Opts, _, B:Bool, Config:K) => checkOptionsCateg(Opt, B, Config) [owise]
 
+     rule checkOptionsCateg(Opt:Opts, _, <generatedTop>... <options>... SetItem(No(Opt))...</options> ...</generatedTop>) => false
+     rule checkOptionsCateg(Opt:Opts, _, <generatedTop>... <options>... SetItem(Opt)...</options> ...</generatedTop>) => true
+     rule checkOptionsCateg(_, B:Bool, _) => B [owise]
 endmodule

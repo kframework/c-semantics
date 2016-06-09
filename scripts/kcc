@@ -105,6 +105,8 @@ our @cppArgs = ();
 our @stdlib = ();
 our @ld_lib = ();
 our @ldArgs = ();
+our @warns = ();
+our @nowarns = ();
 
 our $oflag;
 
@@ -181,6 +183,14 @@ my $spec = q(#
       -Wno-undefined			Do not output undefined behaviors.
       -Wno-unspecified			Do not output unspecified behaviors.
       -Wno-implementation-defined	Do not output implementation-defined behaviors.
+      -Wno-<errcode>			Ignore specified error code
+{
+  push(@main::nowarns, $errcode);
+}
+      -W<errcode>				Do not ignore specified error code
+{
+  push(@main::warns, $errcode);
+}
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
       -fstack-size=<size>		Used with -flint to detect stack overflow.*
       -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
@@ -324,28 +334,8 @@ sub main {
 
      } else {
           # add space to end of args with () so that batch scripts work on windows
-          my @options;
-          if ($args->{'-fissue-report='}) {
-               my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-               if ($cygwin) {
-                    $file = backslash($file);
-               }
-               push(@options, "`CSV`(#token($file, $quoteString))");
-          }
-          if ($args->{'-frecover-all-errors'}) {
-               push(@options, "`RecoverAll`(.KList)");
-          }
-          if ($args->{'-Wno-undefined'}) {
-               push(@options, "`NoUndef`(.KList)");
-          }
-          if ($args->{'-Wno-unspecified'}) {
-               push(@options, "`NoUnspec`(.KList)");
-          }
-          if ($args->{'-Wno-implementation-defined'}) {
-               push(@options, "`NoImpl`(.KList)");
-          }
+          my @options = initOptions();
           if ($args->{'-flint'} || $args->{'-Wlint'}) {
-               push(@options, "`Lint`(.KList)");
                my $heapSize;
                if ($args->{'-fheap-size='}) {
                     $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
@@ -550,6 +540,41 @@ sub pushObj {
 }
    
 
+sub initOptions {
+     my @options = ();
+     if ($args->{'-fissue-report='}) {
+          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+          if ($cygwin) {
+               $file = backslash($file);
+          }
+          push(@options, "`CSV`(#token($file, $quoteString))");
+     }
+     if ($args->{'-frecover-all-errors'}) {
+          push(@options, "`RecoverAll`(.KList)");
+     }
+     if ($args->{'-Wno-undefined'}) {
+          push(@options, "`No`(`Undef`(.KList))");
+     }
+     if ($args->{'-Wno-unspecified'}) {
+          push(@options, "`No`(`Unspec`(.KList))");
+     }
+     if ($args->{'-Wno-implementation-defined'}) {
+          push(@options, "`No`(`Impl`(.KList))");
+     }
+     foreach (@main::warns) {
+          my $word = quote(backslash(quote(backslash($_))));
+          push(@options, "`Warn`(#token($word, $quoteString))");
+     }
+     foreach (@main::nowarns) {
+          my $word = quote(backslash(quote(backslash($_))));
+          push(@options, "`No`(`Warn`(#token($word, $quoteString)))");
+     }
+     if ($args->{'-flint'} || $args->{'-Wlint'}) {
+          push(@options, "`Lint`(.KList)");
+     }
+     @options
+}
+
 sub getKRunCommand {
      my ($output, $objsRef, $src, $link) = (@_);
      my @objs = @$objsRef;
@@ -567,34 +592,12 @@ sub getKRunCommand {
      if ($args->{'-d'}) {
           push(@krun_args, '--debug');
      }
-     my @options;
+     my @options = initOptions();
      if (!$link) {
           push(@options, "`NoLink`(.KList)");
           push(@krun_args, "--interpret");
      } else {
           push(@krun_args, '--mini-krun');
-     }
-     if ($args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@options, "`CSV`(#token($file, $quoteString))");
-     }
-     if ($args->{'-flint'} || $args->{'-Wlint'}) {
-          push(@options, "`Lint`(.KList)");
-     }
-     if ($args->{'-frecover-all-errors'}) {
-          push(@options, "`RecoverAll`(.KList)");
-     }
-     if ($args->{'-Wno-undefined'}) {
-          push(@options, "`NoUndef`(.KList)");
-     }
-     if ($args->{'-Wno-unspecified'}) {
-          push(@options, "`NoUnspec`(.KList)");
-     }
-     if ($args->{'-Wno-implementation-defined'}) {
-          push(@options, "`NoImpl`(.KList)");
      }
 
      my $opts = makeSet(@options);
