@@ -48,6 +48,8 @@ module C-SETTINGS-SYNTAX
      syntax Float ::= "cfg:floatFromBits" "(" Int "," UType ")" [function]
      syntax Int ::= "cfg:floatRepr" "(" Float "," Int "," Int "," UType "," UType ")" [function]
 
+     syntax Int ::= "cfg:maxHeapBound" [function]
+
      syntax Int ::= "cfg:stackSize" "(" List "," List ")" [function]
 
      syntax Bool ::= "isErrorRecovery" [function]

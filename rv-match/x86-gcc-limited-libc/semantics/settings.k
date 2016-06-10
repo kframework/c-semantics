@@ -5,6 +5,7 @@ module C-SETTINGS
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-BITS-SYNTAX
+     imports INT
 
      rule cfg:charAlias => signed-char
      rule cfg:enumAlias => int
@@ -49,6 +50,8 @@ module C-SETTINGS
      rule cfg:intToPointer(0, _) => NullPointer
      rule cfg:intToPointer(_, _) => trap [owise]
      rule cfg:pointerToInt(_, T::UType) => unknown(max(T))
+
+     rule cfg:maxHeapBound => (1 <<Int 32) -Int 2
 
      rule isErrorRecovery => true
      rule hasLint => true

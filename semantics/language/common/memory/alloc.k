@@ -1,9 +1,10 @@
 module C-MEMORY-ALLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports ARRAY
 
      /* object(effective type, size, byte map) */
-     syntax KItem ::= object(Type, Int, Map)
+     syntax KItem ::= object(Type, Int, Array)
 
      syntax KItem ::= alloc(SymBase, Type, Int)
 
@@ -42,7 +43,7 @@ module C-MEMORY-ALLOC
 
      rule <k> alloc(Base::SymBase, T::Type, Len::Int) => .K ...</k>
           <mem>...
-               .Map => Base |-> object(stripStorageSpecifiers(T), Len, .Map)
+               .Map => Base |-> object(stripStorageSpecifiers(T), Len, makeEmptyArray(Len))
           ...</mem>
           requires notBool isLinkerLoc(Base)
           [structural]
@@ -55,7 +56,7 @@ module C-MEMORY-ALLOC
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int,
-                    _ => createMap((0 to Len), piece(0, cfg:bitsPerByte)))
+                    _ => makeArray(Len, piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
 

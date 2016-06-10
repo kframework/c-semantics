@@ -73,8 +73,15 @@ module LIBC-STDLIB
           ...</k>
           <malloced>... .Map => Base |-> Len ...</malloced>
           <next-malloced> Base:SymBase => linc(Base) </next-malloced>
-          requires notBool hasLint
+          requires notBool hasLint andBool Len <=Int cfg:maxHeapBound
           [structural]
+
+     rule <k> builtin("malloc", tv(Len:Int, _))
+               => tv(NullPointer, utype(pointerType(type(void))))
+          ...</k>
+          requires notBool hasLint andBool Len >Int cfg:maxHeapBound
+          [structural]
+
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.5}{2--4}}}{
      The \cinline{realloc} function deallocates the old object pointed to by

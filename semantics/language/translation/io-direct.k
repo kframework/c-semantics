@@ -27,7 +27,7 @@ module C-IO-DIRECT
 
      rule <k> writeByte(loc(Base:SymBase, Offset:Int), V:CValue) => .K ...</k>
           <mem>...
-               Base |-> object(_, Len:Int, (M:Map => M[Offset <- V]))
+               Base |-> object(_, Len:Int, (M::Array => M[Offset <- V]))
           ...</mem>
           requires (Offset <Int Len)
           [structural]
@@ -58,20 +58,21 @@ module C-IO-DIRECT
           [structural]
 
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
-               => tv(V, utype(no-type))
+               => tv(M[Offset]:>Bits, utype(no-type))
           ...</k>
           <mem>...
-               Base |-> object(_, _, (_ Offset:Int |-> V:K))
+               Base |-> object(_, _, M::Array)
           ...</mem>
+          requires Offset in_keys(M)
           [structural]
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
                => tv(piece(0, cfg:bitsPerByte), utype(no-type))
           ...</k>
           <mem>...
                Base |-> object(_, _,
-                    M:Map => M[Offset <- piece(0, cfg:bitsPerByte)])
+                    M::Array => M[Offset <- piece(0, cfg:bitsPerByte)])
           ...</mem>
-          requires notBool (Offset in (keys(M)))
+          requires notBool (Offset in_keys(M))
           [structural]
 
      rule readBytesForWriting(Loc:SymLoc, Size:Int, .List, _)

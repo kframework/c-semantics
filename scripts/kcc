@@ -335,9 +335,9 @@ sub main {
      # Set heap and stack size of krun
      $ENV{K_OPTS} = "-Xmx$heapSize";
      if ($args->{'-d'}) {
-       $ENV{OCAMLRUNPARAM} = "s=32M,b";
+       $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
      } else {
-       $ENV{OCAMLRUNPARAM} = "s=32M";
+       $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
      }
 
      classify(@{$args->{'<files>'}});

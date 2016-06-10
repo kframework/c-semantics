@@ -163,11 +163,8 @@ module C-IO-BUFFERED
           [structural]
 
      syntax Map ::= writeBuffer(Map, SymBase, K, Int, List) [function]
-     rule writeBuffer(M::Map, Base::SymBase, object(T::Type, Len::Int, Bytes::Map), Offset::Int, Buffer::List)
-          => M[Base <- object(T, Len, updateMap(Bytes, makeBufferBytes(Offset, Buffer)))]
-     syntax Map ::= makeBufferBytes(Int, List) [function]
-     rule makeBufferBytes(Offset::Int, ListItem(V:K) L::List) => (makeBufferBytes(Offset +Int 1, L))[Offset <- V]
-     rule makeBufferBytes(_, .List) => .Map
+     rule writeBuffer(M::Map, Base::SymBase, object(T::Type, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
+          => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
      rule <buffer>
@@ -233,27 +230,27 @@ module C-IO-BUFFERED
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(V) Aux, T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
           ...</k>
           <mem>...
-               Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K))
+               Base |-> object(ObjT::Type, Len::Int, M::Array)
           ...</mem>
           <locs-written> Locs::Set </locs-written>
           <buffer> .List </buffer>
-          requires Size >Int 0
+          requires Size >Int 0 andBool Offset in_keys(M)
           [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(V) Aux, T)
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
           ...</k>
           <mem>...
-               Base |-> object(ObjT::Type, Len::Int, (_ Offset::Int |-> V:K))
+               Base |-> object(ObjT::Type, Len::Int, M::Array)
           ...</mem>
           <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
-          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem))
+          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
           [structural]
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                => assertInBounds(Offset, Len)
@@ -263,7 +260,7 @@ module C-IO-BUFFERED
           ...</k>
           <mem>...
                Base |-> object(ObjT::Type, Len::Int,
-                    M::Map => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
+                    M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
           ...</mem>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
@@ -377,15 +374,15 @@ module C-IO-BUFFERED
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, New:SymBase)
           ...</k>
           <mem>...
-               Old |-> object(_, _, M:Map)
+               Old |-> object(_, _, M::Array)
                New |-> object(_, _,
-                    _:Map (.Map => (N' -Int 1) |-> (M [ N' -Int 1])<:K))
+                    M'::Array => M'[N' -Int 1 <- M[N' -Int 1]])
           ...</mem>
           requires ((N' -Int 1) in_keys(M)) andBool (N' >Int 0)
           [structural]
      rule <k> copyBytes((N':Int => N' -Int 1), Old:SymBase, _)
           ...</k>
-          <mem>... Old |-> object(_, _, M:Map) ...</mem>
+          <mem>... Old |-> object(_, _, M::Array) ...</mem>
           requires (notBool ((N' -Int 1) in_keys(M))) andBool (N' >Int 0)
           [structural]
      rule copyBytes(0, _, _) => .K
@@ -412,19 +409,19 @@ module C-IO-BUFFERED
      rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(V), T)
+              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(M[Offset]), T)
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
-               Base |-> object(_, _, (_ Offset::Int |-> V:K))
+               Base |-> object(_, _, M::Array)
           ...</mem>
-          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) [structural]
+          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M) [structural]
      rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
               => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
-               Base |-> object(ObjT::Type, _, (M::Map => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]))
+               Base |-> object(ObjT::Type, _, (M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]))
           ...</mem>
           requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
                andBool notBool (loc(Base, Offset) in locations(Mem))
