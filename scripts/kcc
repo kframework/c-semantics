@@ -101,6 +101,81 @@ my $TRANS_DEF =
 
 my @originalArgv;
 
+my @cppWarnsList = (
+  "import",
+  "char-subscripts",
+  "comment",
+  "format",
+  "format-y3k",
+  "format-extra-args",
+  "format-zero-length",
+  "format-nonliteral",
+  "format-security",
+  "format=3",
+  "nonnull",
+  "init-self",
+  "implicit-int",
+  "implicit-function-declaration",
+  "error-implicit-function-declaration",
+  "implicit",
+  "main",
+  "missing-braces",
+  "parentheses",
+  "sequence-point",
+  "return-type",
+  "switch",
+  "switch-default",
+  "switch-enum",
+  "trigraphs",
+  "unused-function",
+  "unused-label",
+  "unused-parameter",
+  "unused-variable",
+  "unused-value",
+  "unused",
+  "uninitialized",
+  "unknown-pragmas",
+  "strict-aliasing",
+  "all",
+  "extra",
+  "div-by-zero",
+  "system-headers",
+  "float-equal",
+  "traditional",
+  "declaration-after-statement",
+  "undef",
+  "endif-labels",
+  "shadow",
+  "larger-than-len",
+  "pointer-arith",
+  "bad-function-cast",
+  "cast-qual",
+  "cast-align",
+  "write-strings",
+  "conversion",
+  "sign-compare",
+  "aggregate-return",
+  "strict-prototypes",
+  "old-style-definition",
+  "missing-prototypes",
+  "missing-declarations",
+  "missing-noreturn",
+  "missing-format-attribute",
+  "multichar",
+  "deprecated-declarations",
+  "packed",
+  "padded",
+  "redundant-decls",
+  "nested-externs",
+  "unreachable-code",
+  "inline",
+  "invalid-pch",
+  "long-long",
+  "disabled-optimization",
+  "error"
+);
+our %cppWarns =  map { $_ => 1 } @cppWarnsList;
+
 our @cppArgs = ();
 our @stdlib = ();
 our @ld_lib = ();
@@ -185,12 +260,22 @@ my $spec = q(#
       -Wno-implementation-defined	Do not output implementation-defined behaviors.
       -Wno-<errcode>			Ignore specified error code
 {
-  push(@main::nowarns, $errcode);
+  if ($main::cppWarns{$errcode}) {
+    push(@main::cppArgs, "-Wno-$errcode");
+  } else {
+    push(@main::nowarns, $errcode);
+  }
 }
       -W<errcode>				Do not ignore specified error code
 {
-  push(@main::warns, $errcode);
+  if ($main::cppWarns{$errcode}) {
+    push(@main::cppArgs, "-W$errcode");
+  } else {
+    push(@main::warns, $errcode);
+  }
 }
+      -w						Ignore all preprocessor warnings
+{  push(@main::cppArgs, "-w"); }
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
       -fstack-size=<size>		Used with -flint to detect stack overflow.*
       -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
