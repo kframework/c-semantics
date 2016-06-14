@@ -297,15 +297,17 @@ module C-COMMON-EXPR-EVAL
                     Ds':List ListItem(typedDeclaration(_, FId::CId)),
                     N::Int,
                     Ts:Map,
-                    Offs:Map FId |-> FOffset::Int
+                    Offs:Map FId |-> FOffset::Int,
+                    PaddingOffs:Set
                ), T::StructType, L::Type, Offset::Int)
-          => tracePathInStruct(fieldInfo(Ds', N, Ts, Offs FId |-> FOffset), T, L, Offset)
+          => tracePathInStruct(fieldInfo(Ds', N, Ts, Offs FId |-> FOffset, PaddingOffs), T, L, Offset)
           requires FOffset >Int Offset
      rule tracePathInStruct(fieldInfo(
                     _:List ListItem(typedDeclaration(_, FId::CId)),
                     _,
                     _:Map FId |-> T'::Type,
-                    _:Map FId |-> FOffset::Int
+                    _:Map FId |-> FOffset::Int,
+                    _
                ), T::StructType, L::Type, Offset::Int)
           => addModifier(lock(FOffset, tracePath(T', L, Offset -Int FOffset)), unlock(FOffset, T))
           requires FOffset <=Int Offset
@@ -319,7 +321,7 @@ module C-COMMON-EXPR-EVAL
                     ListItem(typedDeclaration(_, FId::CId)) _:List,
                     _,
                     _:Map FId |-> T'::Type,
-                    _
+                    _, _
                ), T::UnionType, L::Type, Offset::Int)
           => addModifier(lock(0, tracePath(T', L, Offset)), unlock(0, T))
           requires notBool isNoType(tracePath(T', L, Offset))
@@ -327,9 +329,10 @@ module C-COMMON-EXPR-EVAL
                     ListItem(typedDeclaration(_, FId::CId)) Ds':List,
                     N::Int,
                     Ts:Map FId |-> T'::Type,
-                    Offs::Map
+                    Offs::Map,
+                    PaddingOffs::Set
                ), T::UnionType, L::Type, Offset::Int)
-          => tracePathInUnion(fieldInfo(Ds', N, Ts, Offs), T, L, Offset)
+          => tracePathInUnion(fieldInfo(Ds', N, Ts, Offs, PaddingOffs), T, L, Offset)
           requires isNoType(tracePath(T', L, Offset))
      rule tracePathInUnion(_, _, _, _) => type(no-type) [owise]
 

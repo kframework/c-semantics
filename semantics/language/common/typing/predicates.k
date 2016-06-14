@@ -99,7 +99,7 @@ module C-TYPING-PREDICATES
      rule isFlexibleStruct(_) => false [owise]
 
      syntax Bool ::= "isFlexibleStruct'" "(" FieldInfo ")" [function]
-     rule isFlexibleStruct'(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _)) => true
+     rule isFlexibleStruct'(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
           requires isFlexibleArrayType(T)
      rule isFlexibleStruct'(_) => false [owise]
 

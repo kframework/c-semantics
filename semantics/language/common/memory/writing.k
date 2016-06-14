@@ -146,30 +146,30 @@ module C-MEMORY-WRITING
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
-               F |-> T::Type _, _))
+               F |-> T::Type _, _, _))
           => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T),
                     piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
-     rule makeUnionUnknown(_, F::CId, fieldInfo(L::List, _, F |-> T::Type _, _)) => .K
+     rule makeUnionUnknown(_, F::CId, fieldInfo(L::List, _, F |-> T::Type _, _, _)) => .K
           requires maxByteSizeofList(L) <=Int byteSizeofType(T)
           [structural]
 
      rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
-               F |-> T::Type M::Map, Offsets::Map), I::Int)
+               F |-> T::Type M::Map, Offsets::Map, PaddingOffs::Set), I::Int)
           => writeBytes(stripProv(Loc) +bytes I,
                dataList(ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
-          ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets), I +Int 1)
-          requires isPaddingOffset(I, fieldInfo(L, N, F |-> T M, Offsets))
+          ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs), I +Int 1)
+          requires isPaddingOffset(I, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs))
                andBool I *Int cfg:bitsPerByte <Int N
      rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
-               Types::Map, Offsets::Map), I::Int)
-          => makeStructUnknown(Loc, F, fieldInfo(L, N, Types, Offsets), I +Int 1)
-          requires notBool isPaddingOffset(I, fieldInfo(L, N, Types, Offsets))
+               Types::Map, Offsets::Map, PaddingOffs::Set), I::Int)
+          => makeStructUnknown(Loc, F, fieldInfo(L, N, Types, Offsets, PaddingOffs), I +Int 1)
+          requires notBool isPaddingOffset(I, fieldInfo(L, N, Types, Offsets, PaddingOffs))
                andBool I *Int cfg:bitsPerByte <Int N
-     rule makeStructUnknown(_, _, fieldInfo(_, N::Int, _, _), I::Int)
+     rule makeStructUnknown(_, _, fieldInfo(_, N::Int, _, _, _), I::Int)
           => .K
           requires I *Int cfg:bitsPerByte >=Int N
 
@@ -326,14 +326,8 @@ module C-MEMORY-WRITING
      rule #splitStructBytes(_, _, 0, L:List) => dataList(reverseList(L))
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
-     rule isPaddingOffset(Offset:Int, fieldInfo(Decls:List, _, Types:Map, Offsets:Map))
-          => notBool isNonPaddingOffset(Offset *Int cfg:bitsPerByte, Decls, Types, Offsets)
-     syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
-     rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
-          => (Offsets[F]:>Int <=Int Offset andBool Offset <Int Offsets[F]:>Int +Int
-               bitSizeofType(Types[F]:>Type))
-          orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
-     rule isNonPaddingOffset(_, .List, _, _) => false
+     rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))
+          => Offset *Int cfg:bitsPerByte in PaddingOffs
 
      syntax DataList ::= splitPointerBytes(SymLoc, Int) [function]
      syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function, klabel(splitPointerBytes2)]

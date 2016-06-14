@@ -278,24 +278,25 @@ module C-IO-BUFFERED
      rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType) => getZeroedBits(Offset, N, T, getFieldInfo(T))
           requires N =/=Int 0
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
-     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _)) => getZeroedBits(Offset, N, T)
+     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _)) => getZeroedBits(Offset, N, T)
      rule getZeroedBits(Offset::Int, N::Int, _:StructType, fieldInfo(
             ((ListItem(typedDeclaration(_, FId::CId))) => .List) _,
             _,
             _::Map (FId |-> T::Type),
-            _::Map (FId |-> FOffset::Int)))
+            _::Map (FId |-> FOffset::Int), _))
           requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
      rule getZeroedBits(_, 0, _, _) => piece(0, 0)
      // this happens when we are reading padding bits, which are zeroed.
      // bit fields never contain padding in between two bit fields in the same byte,
      // so doing this at the end should be safe
-     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _)) => piece(0, N)
+     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _)) => piece(0, N)
 
      rule getZeroedBits(Offset::Int, N::Int, BaseT::StructType, fieldInfo(
             (ListItem(typedDeclaration(_, FId::CId))) Fields::List,
             SI::Int,
             Types::Map (FId |-> T::Type),
-            Offsets::Map (FId |-> FOffset::Int)))
+            Offsets::Map (FId |-> FOffset::Int),
+            PaddingOffs::Set))
           => #if FId ==K #NoName #then
                //the bits of the field in the current byte are traps, because it was unnamed
                piece(trap, minInt(FOffset +Int bitSizeofType(T),
@@ -318,7 +319,8 @@ module C-IO-BUFFERED
                    Fields,
                    SI,
                    Types (FId |-> T),
-                   Offsets (FId |-> FOffset)))
+                   Offsets (FId |-> FOffset),
+                   PaddingOffs))
      [owise]
 
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]

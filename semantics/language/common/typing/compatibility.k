@@ -103,7 +103,7 @@ module C-TYPING-COMPATIBILITY
                     Cache SetItem(kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))))))
 
      syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
-     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _), fieldInfo(Fs'::List, _, _, _), Cache::Set)
+     rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _), Cache::Set)
           => #areCompatFields(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
      rule #areStructsCompat(#incomplete, _, _) => true
      rule #areStructsCompat(_, #incomplete, _) => true

@@ -318,7 +318,7 @@ module C-TYPING-MISC
      rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
           => extractFieldInfo(M[Tu]:>Map[tag(X, Tu, B)])
      syntax FieldInfo ::= extractFieldInfo(K) [function]
-     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map)) => fieldInfo(L, I, M1, M2)
+     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
      rule extractFieldInfo(_) => #incomplete [owise]
 
      rule getTag(tag(S:CId, _, _)) => S
@@ -369,15 +369,17 @@ module C-TYPING-MISC
                Ds:List ListItem(typedDeclaration(_, FId::CId)),
                N::Int,
                Ts:Map,
-               Offs:Map FId |-> FOffset::Int
+               Offs:Map FId |-> FOffset::Int,
+               PaddingOffs:Set
           ), Offset::Int)
-          => getTypesAtOffsetInStruct(T, fieldInfo(Ds, N, Ts, Offs), Offset)
+          => getTypesAtOffsetInStruct(T, fieldInfo(Ds, N, Ts, Offs, PaddingOffs), Offset)
           requires FOffset >Int Offset
      rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
                _ ListItem(typedDeclaration(T'::Type, FId::CId)),
                _,
                _,
-               _ FId |-> FOffset::Int
+               _ FId |-> FOffset::Int,
+               _
           ), Offset::Int)
           => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -386,7 +388,8 @@ module C-TYPING-MISC
                _ ListItem(typedDeclaration(_, FId::CId)),
                _,
                _,
-               _ FId |-> FOffset::Int
+               _ FId |-> FOffset::Int,
+               _
           ), Offset::Int)
           => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(FOffset, T)), Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -398,10 +401,11 @@ module C-TYPING-MISC
                ListItem(typedDeclaration(T'::Type, FId::CId)) Ds:List,
                N::Int,
                Ts:Map,
-               Offs:Map
+               Offs:Map,
+               PaddingOffs:Set
           ), Offset::Int)
           => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset)
-               getTypesAtOffsetInUnion(T, fieldInfo(Ds, N, Ts, Offs), Offset)
+               getTypesAtOffsetInUnion(T, fieldInfo(Ds, N, Ts, Offs, PaddingOffs), Offset)
      rule getTypesAtOffsetInUnion(_, _, _) => .List [owise]
 
      // TODO(chathhorn): move/refactor?
@@ -479,7 +483,7 @@ module C-TYPING-MISC
      rule lockFlexibleStruct'(T::Type, fieldInfo(
                _:List ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, flexibleArrayType(T::Type)), FId::CId)),
                _, _,
-               _:Map FId |-> FOffset:Int), N::Int)
+               _:Map FId |-> FOffset:Int, _), N::Int)
           => addModifier(lock(FOffset, t(Qs, Mods, arrayType(T, N /Int byteSizeofType(T)))), T)
      rule lockFlexibleStruct'(T::Type, _, _) => T [owise]
 

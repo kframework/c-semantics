@@ -26,7 +26,7 @@ module C-TYPING-SYNTAX
 
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
-     syntax FieldInfo ::= fieldInfo(List, Int, Map, Map)
+     syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
 
      syntax Bool ::= isCompletePointerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]

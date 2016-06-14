@@ -92,7 +92,7 @@ module C-BITSIZE
      rule bitSizeofType(unionType(S::StructId))
           => bitSizeofUnion(getFieldInfo(S))
 
-     rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _)) => NBits
-     rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _)) => NBits
+     rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _, _)) => NBits
+     rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _, _)) => NBits
 
 endmodule

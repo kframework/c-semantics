@@ -69,18 +69,19 @@ module C-COMMON-EXPR-MEMBERS
      rule lookupField(F:CId, Loc:SymLoc, Qs::Quals, _, _,
           fieldInfo(_, _,
                F |-> T::Type _,
-               F |-> Offset:Int _))
+               F |-> Offset:Int _,
+               _))
           // Complete recursive struct/union definitions.
           => lv(setBitOffset(Offset modInt cfg:bitsPerByte,
                     Loc +bytes Offset /Int cfg:bitsPerByte, T),
                addQualifiers(Qs, T))
      rule lookupField(F:CId, Loc:SymLoc, Qs::Quals, S:CId, Fields:FieldInfo,
-               fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map))
-          => lookupFieldHold(F, Loc, Qs, S, Fields, fieldInfo(Decls, Size, Types, Offsets))
+               fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map, PaddingOffs:Set))
+          => lookupFieldHold(F, Loc, Qs, S, Fields, fieldInfo(Decls, Size, Types, Offsets, PaddingOffs))
           requires notBool (F in_keys(Types) andBool F in_keys(Offsets))
 
      rule (.K => CV("CEM3", "Attempting to access member but it does not exist.", "6.5.2.3:1"))
-          ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map))
+          ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map, _))
 
      // Same deal as above, only for byte lists.
      rule <k> tv(agg(L:List), ut(Mods::Set,
@@ -100,7 +101,8 @@ module C-COMMON-EXPR-MEMBERS
      rule extractField(F:CId, L:List, Mods:Set, _, _,
           fieldInfo(_, _,
                F |-> t(_, Mods'::Set, T'::SimpleType) _,
-               F |-> Offset:Int _))
+               F |-> Offset:Int _,
+               _))
           => concretize(addModifiers(Mods Mods', utype(T')),
                fillToBytes(extractBitsFromList(dataList(L),
                     Offset,

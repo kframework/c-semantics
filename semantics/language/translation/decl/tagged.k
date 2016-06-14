@@ -71,7 +71,7 @@ module C-DECL-TAGGED
           => makeStructFieldInfo'(L, V +Int bitSizeofType(T) +Int structPadding(V, T),
                Types[Field <- T], Offsets[Field <- V +Int structPadding(V, T)], L')
      rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets)
+          => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets, computePaddingOffsets(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets, 0))
 
      rule structPadding(Offset::Int, t(_, _, bitfieldType(T::BitfieldFieldType, N::Int))) => 0
           requires (Offset +Int bitSizeofType(type(bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte
@@ -108,17 +108,33 @@ module C-DECL-TAGGED
           => makeUnionFieldInfo'(L,
                Types[Field <- T], Offsets[Field <- 0], L')
      rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets)
+          => fieldInfo(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets, computePaddingOffsets(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets, 0))
+
+     syntax Set ::= computePaddingOffsets(List, Int, Map, Map, Int) [function]
+     rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, Offset::Int)
+          => SetItem(Offset) computePaddingOffsets(L, Len, Types, Offsets, Offset +Int cfg:bitsPerByte)
+          requires notBool isNonPaddingOffset(Offset, L, Types, Offsets) andBool Offset <Int Len
+     rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, (Offset::Int => Offset +Int cfg:bitsPerByte))
+          requires isNonPaddingOffset(Offset, L, Types, Offsets) andBool Offset <Int Len
+     rule computePaddingOffsets(_, Len::Int, _, _, Offset::Int) => .Set
+          requires Offset >=Int Len
+
+     syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
+     rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
+          => (Offsets[F]<:K:>Int <=Int Offset andBool Offset <Int Offsets[F]<:K:>Int +Int
+               bitSizeofType(Types[F]<:K:>Type))
+          orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
+     rule isNonPaddingOffset(_, .List, _, _) => false
 
      syntax KItem ::= addTag(CId, FieldInfo)
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
                // Elide function parameter names in struct types.
-               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
+               => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
-     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map))
-               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs))
+     rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
+               => addLocalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
           ...</k>
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true

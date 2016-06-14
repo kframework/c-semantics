@@ -112,9 +112,9 @@ module C-TYPING-EXPR
           requires isPointerType(T)
 
      rule <k> typeof(t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</structs>
      rule <k> typeof(t(_, _, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _)) ...</structs>
+          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</structs>
 
      rule typeof(T:Type ++ => T)
      rule typeof(T:Type -- => T)

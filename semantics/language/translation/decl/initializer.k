@@ -181,7 +181,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(ncle(K . F, T)))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</structs>
           [structural]
 
      // fixme these are terrible!
@@ -189,7 +189,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(ncle(K . F, T)))
                ListItem(ncle(K:K, t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</structs>
           [structural]
 
      // fixme should i worry about basetype here_
@@ -258,7 +258,7 @@ module C-DECL-INITIALIZER
                ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F::CId, T::Type))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</structs>
           [structural]
 
      rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
@@ -356,7 +356,7 @@ module C-DECL-INITIALIZER
                     ListItem(ncle(K:K, t(_, _, Lbl:KLabel(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
           <structs>...
-               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _))
+               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _, _))
           ...</structs>
           requires isStructOrUnionKLabel(#klabel(Lbl))
           [structural]
@@ -595,12 +595,12 @@ module C-DECL-INITIALIZER
 
      rule <k> zeroType(X:K, t(_, _, structType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroStruct(X, Fields) ...</k>
-          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _, _)) ...</structs>
           [structural]
 
      rule <k> zeroType(X:K, t(_, _, unionType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroType(X . F, T) ...</k>
-          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _)) ...</structs>
+          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _, _)) ...</structs>
           [structural]
 
      rule zeroType(_, _:FunctionType) => .K

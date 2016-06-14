@@ -67,7 +67,7 @@ module C-ALIGNMENT
 
      syntax Int ::= byteAlignofStruct(FieldInfo) [function]
 
-     rule byteAlignofStruct(fieldInfo(Decls:List, _:Int, _:Map, _:Map))
+     rule byteAlignofStruct(fieldInfo(Decls:List, _, _, _, _))
           => maxByteAlignofList(Decls)
 
      // TODO(dwightguth): make sure we correctly handle all the corner cases
