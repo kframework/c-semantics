@@ -1,0 +1,2 @@
+module CPP-LIBRARY
+endmodule

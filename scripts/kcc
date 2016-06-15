@@ -455,7 +455,7 @@ sub main {
           }
           my $opts = makeSet(@options);
 
-          my @cmd = ('-d', catfile($profileDirectory, "c11-kompiled"), 
+          my @cmd = ('-d', catfile($profileDirectory, "c11-cpp14-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
                   '--exit-code', "<result-value> _:Int </result-value>",
