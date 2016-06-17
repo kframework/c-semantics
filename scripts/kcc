@@ -24,7 +24,8 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 $::VERSION="0.1 GNU-compatible";
 
 my @objFiles = ();
-my @srcFiles = ();
+my @cSrcFiles = ();
+my @cppSrcFiles = ();
 my @tempFiles = ();
 
 my $MAGIC = "\x7fKAST";
@@ -95,6 +96,7 @@ if ($cygwin) {
 our $ourDist = $distDirectory;
 
 my $cparser = catfile($distDirectory, 'cparser');
+my $cppparser = catfile($distDirectory, 'clang-kast');
 
 my $TRANS_DEF =
       catfile($profileDirectory, "c11-translation-kompiled");
@@ -182,6 +184,8 @@ our @ld_lib = ();
 our @ldArgs = ();
 our @warns = ();
 our @nowarns = ();
+our $xLang = "none";
+my $hasStdin;
 
 our $oflag;
 
@@ -218,6 +222,7 @@ my $spec = q(#
       -l <lib>				Link semantics against library in search path.
 { push (@main::stdlib, $lib) }
       <files>...			C files to be compiled. [required] [repeatable]
+{ classify(@files); }
       --help				Show usage information [undocumented]
                         { $self->usage(0); }
       -version				Show version information [undocumented]
@@ -282,7 +287,8 @@ my $spec = q(#
       					WARNING: This can change the semantics of tools like autoconf which analyze
       					the exit code of the compiler to trigger unexpected or undesirable results.
 
-      -x <language>			Ignored
+      -x <language>			Set language for input files.
+{ $main::xLang = $language; }
       -pthread				Enables pthread library (highly experimental, likely broken)
 { push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
 
@@ -340,31 +346,33 @@ sub main {
        $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
      }
 
-     classify(@{$args->{'<files>'}});
+     my @allSources = (@cSrcFiles, @cppSrcFiles);
 
      if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @srcFiles > 1) {
+            if (scalar @allSources > 1) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
             $oval = '-';
           }
-          return preprocess($oval, $srcFiles[0]);
+          return preprocess($oval, $allSources[0], scalar @cppSrcFiles);
+     } elsif ($hasStdin) {
+       die "-E or -x required when input is from standard input";
      }
 
      if ($args->{'-c'}) {
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @srcFiles > 1) {
+            if (scalar @allSources > 1) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
-            $oval = basename($srcFiles[0], ".c") . ".o";
+            $oval = basename($allSources[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
           }
           my $result = tempFile();
-          compile($result, $srcFiles[0]);
+          compile($result, $allSources[0], scalar @cppSrcFiles);
           move($result, $oval);
           return 0;
      }
@@ -376,22 +384,20 @@ sub main {
      }
 
      if (!$args->{'-s'}) {
+          $xLang = "none";
           classify(catfile($profileDirectory, 'lib', 'libc.so'));
      }
 
-     # Reduce our source files down to at most one
-     mergeObjs(0, 1);
+     # Reduce our remaining source files to object files
+     mergeObjs(0, 0);
 
      my $oval = $main::oflag || 'a.out';
 
      my $programConfFile = tempFile(); 
 
-     # At this point, we have 0-1 source files and 0-2 object files left for
-     # the final call(s) to kcc. Setting up the arguments is kinda difficult
-     # because we need to use different parsers if one of the config vars
-     # should be empty.
-
-     my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, $srcFiles[0], 1));
+     # At this point, we have 0 source files and 1 object file left for
+     # the final calls to krun.
+     my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 1));
      checkError($retval, $programConfFile, 1);
 
      open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
@@ -488,15 +494,20 @@ sub mergeObjs {
 
      my @pids = ();
 
-     while (scalar @srcFiles > $numSrc) {
+     while (scalar @cSrcFiles > $numSrc) {
           my $oval = tempFile();
-          compile($oval, shift @srcFiles);
+          compile($oval, shift @cSrcFiles, 0);
+          push(@objFiles, $oval);
+     }
+     while (scalar @cppSrcFiles > $numSrc) {
+          my $oval = tempFile();
+          compile($oval, shift @cppSrcFiles, 1);
           push(@objFiles, $oval);
      }
 
      if ($mergeObjs) {
          my $accum = tempFile();
-         my @cmd = getKRunCommand($accum, \@objFiles, undef, 0);
+         my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 1);
          my $retval = execute($krun, @cmd);
          checkError($retval, $accum, 1);
          @objFiles = ($accum);
@@ -554,16 +565,35 @@ sub classify {
      }
 
      for (@files) {
-          my ($base, $dir, $suffix) = fileparse($_, ('\.c', '\.h', '\.o', '\.a', '\.so'));
+          my $lang = $xLang;
+          if ($lang eq 'none') {
+            if ($_ eq '-') {
+              $hasStdin = 1;
+              $lang = 'c';
+            } else {
+              my ($base, $dir, $suffix) = fileparse($_, 
+                ('\.c', '\.cc', '\.cp', '\.cxx', '\.cpp', '\.CPP', '\.c++',
+                 '\.C', '\.h', '\.hh', '\.hp', '\.hxx', '\.hpp', '\.HPP', 
+                 '\.h++', '\.H', '\.tcc'));
+              if ($suffix eq '.c' or $suffix eq '.h') {
+                $lang = 'c';
+              } elsif ($suffix ne '') {
+                $lang = 'c++';
+              }
+            }
+          }
 
-          if ($_ eq '-') {
-               push(@srcFiles, $_);
+          if ($lang eq 'c' or $lang eq 'c-header') {
+            push(@cSrcFiles, $_);
+          } elsif ($lang eq 'c++' or $lang eq 'c++-header') {
+            push(@cppSrcFiles, $_);
+          } elsif ($lang ne 'none') {
+            die "Unsupported -x option: $lang";
           } elsif (isKObj($_)) {
                push(@objFiles, $_);
           } elsif (isAr($_)) {
+               my ($base, $dir, $suffix) = fileparse($_);
                extractStatic($_, $base, $suffix);
-          } elsif ($suffix eq '.c' or $suffix eq '.h') {
-               push(@srcFiles, $_);
           } elsif (isNativeObj($_) or -e $_) {
                push(@ldArgs, $_);
           } else {
@@ -606,9 +636,9 @@ sub extractStatic {
 }
 
 sub compile {
-     my ($oval, $inputFile) = (@_);
+     my ($oval, $inputFile, $isCPP) = (@_);
      my @arr = ();
-     my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0));
+     my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $isCPP));
      checkError($retval, $oval, 1);
 }
 
@@ -661,7 +691,7 @@ sub initOptions {
 }
 
 sub getKRunCommand {
-     my ($output, $objsRef, $src, $link) = (@_);
+     my ($output, $objsRef, $src, $link, $isCPP) = (@_);
      my @objs = @$objsRef;
 
      my @krun_args = (
@@ -717,7 +747,7 @@ sub getKRunCommand {
           push(@krun_args, "-cOBJS=.K");
      }
      if (defined $src) {
-          my $kast = parse($src);
+          my $kast = parse($src, $isCPP);
           push(@krun_args, '--parser', 'cat');
           push(@krun_args, $kast);
      } else {
@@ -734,9 +764,16 @@ sub getKRunCommand {
 }
 
 sub preprocess {
-     my ($output, $inputFile) = (@_);
-
+     my ($output, $inputFile, $isCPP) = (@_);
      my $directoryname = dirname($inputFile);
+     if ($isCPP) {
+       my @ppArgs = ("$profileDirectory/cpp-pp",
+                     @main::cppArgs, $inputFile, '-o', $output);
+
+       my $retval = execute(@ppArgs);
+       return $retval;
+     }
+
      my @ppArgs = ("$profileDirectory/pp",
                    @main::cppArgs, $inputFile, '-o', $output);
 
@@ -763,12 +800,22 @@ sub tempFile {
 }
 
 sub parse {
-     my ($inputFile) = (@_);
+     my ($inputFile, $isCPP) = (@_);
 
      my $ppResult = tempFile();
      my $kast = tempFile();
-     checkError(preprocess($ppResult, $inputFile), $ppResult, 0);
+     checkError(preprocess($ppResult, $inputFile, $isCPP), $ppResult, 0);
 
+     if ($isCPP) {
+       my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output > $kast");
+       if ($args->{'-d'}) {
+         print("$cmd\n");
+       }
+       system($cmd);
+       checkError($? >> 8, $kast, 0);
+
+       return $kast;
+     }
      my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
      if ($args->{'-d'}) {
        print("$cmd\n");

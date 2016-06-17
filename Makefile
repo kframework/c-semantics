@@ -1,6 +1,7 @@
 SEMANTICS_DIR = semantics
 SCRIPTS_DIR = scripts
 PARSER_DIR = parser
+CPPPARSER_DIR = cpp-parser
 export PROFILE_DIR = $(shell pwd)/x86-gcc-limited-libc
 export PROFILE=$(shell basename $(PROFILE_DIR))
 TESTS_DIR = tests
@@ -18,6 +19,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \
 	$(PARSER_DIR)/cparser \
+	$(CPPPARSER_DIR)/clang-kast \
         LICENSE \
         licenses
 
@@ -34,16 +36,19 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE_DIR)/pp | check-vars
+$(DIST_DIR)/kcc: $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/default-profile
 	@cp -Lp $(PROFILE_DIR)/pp $(DIST_DIR)/$(PROFILE)
+	@-cp -Lp $(PROFILE_DIR)/cpp-pp $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/src $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
 	@cp -p $(SCRIPTS_DIR)/kcc $(DIST_DIR)/kclang
+
+$(PROFILE_DIR)/cpp-pp:
 
 $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp: $(DIST_DIR)/kcc execution-semantics
 	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
@@ -78,6 +83,11 @@ test-build: fast
 parser/cparser:
 	@echo "Building the C parser..."
 	@$(MAKE) -C $(PARSER_DIR)
+
+cpp-parser/clang-kast:
+	@echo "Building the C++ parser..."
+	@cd $(CPPPARSER_DIR) && cmake .
+	@$(MAKE) -C $(CPPPARSER_DIR)
 
 translation-semantics: check-vars 
 	@$(MAKE) -C $(SEMANTICS_DIR) translation
