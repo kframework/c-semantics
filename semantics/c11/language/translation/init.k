@@ -1,13 +1,5 @@
-module C-TRANSLATION-INIT-SYNTAX
-     imports BASIC-K
-     syntax KItem ::= load(K)
-     syntax KItem ::= "link" | "cleanup"
-
-     syntax TransOpts ::= Debug() | NoLink()
-endmodule
-
 module C-TRANSLATION-INIT
-     imports C-TRANSLATION-INIT-SYNTAX
+     imports C-LINKING-INIT
 
      imports C-ABSTRACT-SYNTAX
      imports C-BUILTIN-SYNTAX
@@ -29,42 +21,20 @@ module C-TRANSLATION-INIT
 
      imports C-CONFIGURATION
 
+     syntax Opts ::= XBuiltins()
+
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"
 
-     rule <k> link
-               => TranslationUnit("builtin", list(.List),
-                    list(ListItem(addBuiltins(builtins))))
-               ~> resolveReferences
-               ~> reportSuccess
+     rule <k> builtinTu => TranslationUnit("builtin", list(.List),
+                   list(ListItem(addBuiltins(builtins, true))))
           ...</k>
+          <options>... SetItem(XBuiltins()) ...</options>
+
+     rule <k> builtinTu => .K ...</k>
           <options> Opts:Set </options>
-          requires notBool (NoLink() in Opts)
-
-     rule load(Obj1:KItem ~> Obj2:KItem ~> Objs:K)
-               => load(Objs ~> mergeObj(Obj1, Obj2))
-               ~> checkMerge(Obj1, Obj2)
-
-     rule <k> load(Merged:KItem)
-               => loadObj(mergeObj(Merged, ThisObj))
-               ~> checkMerge(Merged, ThisObj)
-          ...</k>
-          ThisObj:GlobalCell
-
-     rule load(.K) => .K
-
-     rule <k> link => reportSuccess ...</k>
-          <options> SetItem(NoLink()) ...</options>
-
-     rule (<T>...
-               <k> cleanup </k>
-               <options> Opts:Set </options>
-          ...</T> => .Bag)
-          requires notBool (Debug() in Opts)
-          [structural]
-
-     syntax KItem ::= makeTu(String)
+          requires notBool (XBuiltins() in Opts)
 
      // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
@@ -74,16 +44,6 @@ module C-TRANSLATION-INIT
                ~> allocateIncompleteTentatives
                ~> removeUnusedIdentifiers
           ...</k>
-     rule <k> makeTu(TU:String) => .K ...</k>
-          <curr-tu> _ => TU </curr-tu>
-          <translation-units>...
-               (.Bag => <tu>...
-                    <tu-id> TU </tu-id>
-                    <next-link-loc> 0 @ link(TU) </next-link-loc>
-                    <next-static-loc> 0 @ static(TU) </next-static-loc>
-               ...</tu>)
-          ...</translation-units>
-          [structural]
 
      syntax KItem ::= preDeclareStrings(List)
 
@@ -93,207 +53,9 @@ module C-TRANSLATION-INIT
           [structural]
      rule preDeclareStrings(.List) => .K
           [structural]
-     syntax KItem ::= addBuiltins(Map)
-                    | addBuiltin(CId, Type)
-     // Only add a builtin if it has an external type (that is, it's been
-     // declared somewhere) and if it doesn't already have a definition.
-     // Therefore, if someone redefines a builtin, we won't co-opt it (although
-     // redefining it should probably be an error).
 
-     rule <k> (.K => addBuiltin(Identifier(B), T))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _) ...</k>
 
-     rule addBuiltins(.Map) => .K
-
-     rule <k> addBuiltin(B:CId, T:FunctionType) => declare(
-               typedDeclaration(T, B),
-               initializer(Computation(initFunction(
-                    &(B), B,
-                    functionObject(B, T, .List, handleBuiltin)
-               )))) ...</k>
-          <external-types>... B |-> _ ...</external-types>
-          <external-uses>... SetItem(B) ...</external-uses>
-          <external-defs> Defs:Map </external-defs>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <uses>... .Set => SetItem(B) ...</uses>
-          requires notBool (B in_keys(Defs))
-
-     rule <k> addBuiltin(B:CId, _) => .K ...</k>
-          <external-types> Types:Map </external-types>
-          <external-defs> Defs:Map </external-defs>
-          requires (B in_keys(Defs))
-               orBool (notBool (B in_keys(Types)))
-
-     rule <k> addBuiltin(B:CId, T:Type) => declare(
-               typedDeclaration(T, B),
-               initializer(handleBuiltinConstant(B, T))) ~> deleteObject(0 @ nativeSymbol(idToString(B))) ...</k>
-          <external-types>... B |-> _ ...</external-types>
-          <external-uses>... SetItem(B) ...</external-uses>
-          <external-defs> Defs:Map </external-defs>
-          <curr-tu> Tu:String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <uses>... .Set => SetItem(B) ...</uses>
-          requires notBool (B in_keys(Defs))
-               andBool notBool isFunctionType(T)
-
-     rule <k> addBuiltin(B:CId, T:Type) => .K ...</k>
-          <external-types>... B |-> _ ...</external-types>
-          <external-uses> Uses:Set </external-uses>
-          <external-defs> Defs:Map </external-defs>
-          requires notBool (B in_keys(Defs))
-               andBool notBool (B in Uses)
-
-     rule handleBuiltinConstant(Identifier(S:String), T:Type)
-          => addToEnv(Identifier(S), 0 @ nativeSymbol(S))
-          when S in_keys(nativeDefinedBuiltins)
-
-     syntax KItem ::= deleteObject(SymBase)
-
-     rule <k> deleteObject(Base:SymBase) => .K ...</k>
-          <mem>... Base |-> _ => .Map ...</mem>
-
-     syntax KItem ::= checkMerge(K, K)
-                    | checkExtTypes(K, Set, Map, Set, Map)
-                    | checkExtType(Bool)
-                    | checkExtDefs(K, Set, Set)
-
-     rule checkMerge(_, .K) => .K
-     rule checkMerge(.K, _) => .K
-     rule checkMerge(
-          (<global>...
-               <external-types> Types:Map </external-types>
-               <external-defs> Defs:Map </external-defs>
-          ...</global>),
-          (<global>...
-               <external-types> Types':Map </external-types>
-               <external-defs> Defs':Map </external-defs>
-          ...</global>))
-          => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types')
-          ~> checkExtDefs(.K, keys(Defs), keys(Defs'))
-
-     rule checkExtTypes((.K => X:CId), (SetItem(X:CId) => .Set) _, _, _, _)
-     rule checkExtTypes((X:CId => .K), _, _, Ids':Set, _)
-          requires notBool (X in Ids')
-     rule (.K => checkExtType(areDeclCompat(T,T'))) ~> checkExtTypes(X:CId,
-               _, (X |-> T:Type) _,
-               _, (X |-> T':Type) _)
-     rule (checkExtType(true) => .K) ~> checkExtTypes((X:CId => .K), _, _, _, _)
-     rule checkExtTypes(.K, .Set, _, _, _) => .K
-     rule (.K => UNDEF("TIN1",
-               "Identifier " +String idToString(X) +String " declared with incompatible types in different translation units.",
-               "6.2.7:2, J.2:1 item 15"))
-          ~> checkExtType(false) ~> checkExtTypes(X:CId,
-               _, _,
-               _, _)
-
-     rule checkExtDefs((.K => X:CId), (SetItem(X:CId) => .Set) _, _)
-     rule checkExtDefs((X:CId => .K), _, Defs':Set)
-          requires notBool (X in Defs')
-     rule checkExtDefs(.K, .Set, _) => .K
-     rule (.K => UNDEF("TIN2",
-               "Multiple external definitions for " +String idToString(X) +String ".",
-               "6.9:5, J.2:1 item 84"))
-          ~> checkExtDefs(X:CId, _, SetItem(X) _)
-
-     syntax K ::= mergeObj(K, K) [function]
-     syntax Map ::= mergeDecls(Map, Map) [function]
-                  | #mergeDecls(Map, Map, Set) [function]
-     rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
-     rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:K) CommonKeys:Set)
-          => #mergeDecls(OldValues, NewValues[Key <- set(getSet(OldValues[Key]<:K) getSet(NewValues[Key]<:K))], CommonKeys)
-     rule #mergeDecls(_, NewValues:Map, .Set) => NewValues
-     syntax Set ::= getSet(K) [function]
-     rule getSet(set(S:Set)) => S
-
-     rule mergeObj(B:K, .K) => B
-     rule mergeObj(.K, B:K) => B
-     rule mergeObj(
-          (<global>
-               <mem> M1:Map </mem>
-               <functions> F1:Map </functions>
-
-               <external-types> ExtTypes1:Map </external-types>
-               <external-defs> ExtDefs1:Map </external-defs>
-
-               <linking-state>
-                    <external-decls> ExtDecls1:Map </external-decls>
-                    <external-uses> ExtUses1:Set </external-uses>
-               </linking-state>
-
-               <structs> Structs1:Map </structs>
-
-               <linkings> Links1:Map </linkings>
-
-               <main-tu> Main1:Set </main-tu>
-
-               <translation-units> TUs1:Bag </translation-units>
-          </global>),
-          (<global>
-               <mem> M2:Map </mem>
-               <functions> F2:Map </functions>
-
-               <external-types> ExtTypes2:Map </external-types>
-               <external-defs> ExtDefs2:Map </external-defs>
-
-               <linking-state>
-                    <external-decls> ExtDecls2:Map </external-decls>
-                    <external-uses> ExtUses2:Set </external-uses>
-               </linking-state>
-
-               <structs> Structs2:Map </structs>
-
-               <linkings> Links2:Map </linkings>
-
-               <main-tu> Main2:Set </main-tu>
-
-               <translation-units> TUs2:Bag </translation-units>
-          </global>))
-          =>
-          <global>
-               <mem> updateMap(M1, M2) </mem>
-               <functions> updateMap(F1, F2) </functions>
-
-               <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
-               <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
-
-               <linking-state>
-                    <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
-                    <external-uses> ExtUses1 ExtUses2 </external-uses>
-               </linking-state>
-
-               <structs> updateMap(Structs1, Structs2) </structs>
-
-               <linkings> updateMap(Links1, Links2) </linkings>
-
-               <main-tu> Main1 Main2 </main-tu>
-
-               <translation-units> TUs1 TUs2 </translation-units>
-          </global>
-
-     syntax KItem ::= "reportSuccess"
      rule <k> reportSuccess => .K ...</k>
-          <result-value> _ => 0 </result-value>
-          <generated-annotations> .List </generated-annotations>
-     rule <k> reportSuccess => writeSpecModule(#open(S +String ".spec.k")) ...</k>
-          <generated-annotations> L:List </generated-annotations>
-          <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-          requires size(L) >Int 0
-
-     syntax KItem ::= writeSpecModule(Int)
-     rule <k> writeSpecModule(Fd:Int) => #write(Fd,
-                  "module " +String replaceAll(S, ".", "-") +String "-SPEC" +String "\n"
-          +String "  imports C-VERIFIER\n\n") ~> writeSpecs(Fd) ...</k>
-          <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-
-     syntax KItem ::= writeSpecs(Int)
-     rule <k> (.K => #write(Fd, S +String "\n")) ~> writeSpecs(Fd:Int) ...</k>
-          <generated-annotations> ListItem(S:String) => .List ...</generated-annotations>
-     rule <k> writeSpecs(Fd:Int) => #write(Fd, "\nendmodule") ~> writeEndModule(Fd) ...</k>
-          <generated-annotations> .List </generated-annotations>
-
-     syntax KItem ::= writeEndModule(Int)
-     rule <k> writeEndModule(Fd:Int) => #close(Fd) ...</k>
           <result-value> _ => 0 </result-value>
 
      rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K

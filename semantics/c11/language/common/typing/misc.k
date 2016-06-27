@@ -47,53 +47,6 @@ module C-TYPING-MISC
      rule flipSignedness(long-int) => unsigned-long-int
      rule flipSignedness(long-long-int) => unsigned-long-long-int
 
-     rule min(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
-          => 0 -Int (1 <<Int absInt(N -Int 1))
-     rule max(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
-          => (1 <<Int absInt(N -Int 1)) -Int 1
-
-     rule min(ut(_, signed-char))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(type(signed-char)) -Int 1))
-     rule max(ut(_, signed-char))
-          => (1 <<Int absInt(bitSizeofType(type(signed-char)) -Int 1)) -Int 1
-     rule min(ut(_, short-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(type(short-int)) -Int 1))
-     rule max(ut(_, short-int))
-          => (1 <<Int absInt(bitSizeofType(type(short-int)) -Int 1)) -Int 1
-     rule min(ut(_, int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(type(int)) -Int 1))
-     rule max(ut(_, int))
-          => (1 <<Int absInt(bitSizeofType(type(int)) -Int 1)) -Int 1
-     rule min(ut(_, long-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(type(long-int)) -Int 1))
-     rule max(ut(_, long-int))
-          => (1 <<Int absInt(bitSizeofType(type(long-int)) -Int 1)) -Int 1
-     rule min(ut(_, long-long-int))
-          => 0 -Int (1 <<Int absInt(bitSizeofType(type(long-long-int)) -Int 1))
-     rule max(ut(_, long-long-int))
-          => (1 <<Int absInt(bitSizeofType(type(long-long-int)) -Int 1)) -Int 1
-
-     rule min(_:UnsignedIntegerUType) => 0
-
-     rule max(ut(_, bool)) => 1
-
-     rule max(ut(_, bitfieldType(_:UnsignedBitfieldFieldType, N::Int)))
-          => (1 <<Int absInt(N)) -Int 1
-
-     rule max(ut(_, unsigned-char))
-          => (1 <<Int absInt(bitSizeofType(type(unsigned-char)))) -Int 1
-     rule max(ut(_, unsigned-short-int))
-          => (1 <<Int absInt(bitSizeofType(type(unsigned-short-int)))) -Int 1
-     rule max(ut(_, unsigned-int))
-          => (1 <<Int absInt(bitSizeofType(type(unsigned-int)))) -Int 1
-     rule max(ut(_, unsigned-long-int))
-          => (1 <<Int absInt(bitSizeofType(type(unsigned-long-int)))) -Int 1
-     rule max(ut(_, unsigned-long-long-int))
-          => (1 <<Int absInt(bitSizeofType(type(unsigned-long-long-int)))) -Int 1
-
-     rule min(ut(_, enumType(_) => cfg:enumAlias))
-     rule max(ut(_, enumType(_) => cfg:enumAlias))
-
      rule inRange(V:Int, T:IntegerUType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
      rule inRange(V:Float, T:FloatUType)
@@ -115,31 +68,6 @@ module C-TYPING-MISC
 
      rule setParams(t(Qs::Quals, Mods::Set, functionType(R::UType, _)), P::List)
           => t(Qs, Mods, functionType(R, P))
-
-     rule noQuals => quals(.Set)
-
-     rule Q::Qualifier inQuals quals(Qs::Set) => Q in Qs
-
-     rule quals(Qs::Set) +Qual Q::Qualifier => quals(Qs SetItem(Q))
-
-     rule quals(SetItem(Q) Qs::Set) -Qual Q::Qualifier => quals(Qs)
-     rule Qs::Quals -Qual _ => Qs [owise]
-
-     rule quals(Qs::Set) <=Quals quals(Qs'::Set) => Qs <=Set Qs'
-
-     rule quals(Qs::Set) +Quals quals(Qs'::Set) => quals(Qs Qs')
-
-     rule toQuals(SetItem(Q:Qualifier) S::Set) => toQuals(S) +Qual Q
-     rule toQuals(SetItem(K::K) S::Set) => toQuals(S)
-          requires notBool isQualifier(K)
-     rule toQuals(.Set) => noQuals
-
-     rule getModifiers(ut(S::Set, _)) => S
-     rule getModifiers(t(_, S::Set, _)) => S
-
-     rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
-          => Qs +Quals getQualifiers(innerType(type(T)))
-     rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
 
      rule getStorageSpecifiers(T::Type)
           => intersectSet(getModifiers(T), storageSpecifiers)
@@ -175,8 +103,6 @@ module C-TYPING-MISC
      syntax Set ::= "constantModifiers" [function]
      rule constantModifiers =>
           SetItem(IntegerConstant)
-
-     rule stripQualifiers(T::Type) => type(utype(T))
 
      rule stripStorageSpecifiers(t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods -Set storageSpecifiers, T)
@@ -226,16 +152,6 @@ module C-TYPING-MISC
      rule addModifiers(Mods'::Set, t(Qs::Quals, Mods::Set, T::SimpleType))
           => t(Qs, Mods' Mods, T)
      rule addModifiers(_, T::Type) => T [owise]
-
-     rule innerType(T:UType) => innerType(type(T))
-
-     rule innerType(t(_, _, arrayType(T::Type, _))) => T
-     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
-     rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
-     rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
-     rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
-     rule innerType(t(_, _, pointerType(T::Type))) => T
-     rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
 
      rule idsFromParams(
                ListItem(typedDeclaration(t(_, _, T::SimpleType), X::CId)) L::List )
@@ -309,19 +225,6 @@ module C-TYPING-MISC
           => addModifier(readFrom(stripProv(Loc), Len), stripReadFrom(T))
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
-
-     rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, Mods::Set, structType(S::StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, Mods::Set, unionType(S::StructId))) => getFieldInfo(S)
-
-     syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
-     rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
-          => extractFieldInfo(M[Tu]:>Map[tag(X, Tu, B)])
-     syntax FieldInfo ::= extractFieldInfo(K) [function]
-     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
-     rule extractFieldInfo(_) => #incomplete [owise]
-
-     rule getTag(tag(S:CId, _, _)) => S
 
      rule getTypesAtOffset(T::Type, 0) => ListItem(T)
           requires notBool isAggregateOrUnionType(T) andBool notBool isBitfieldType(T)

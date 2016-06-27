@@ -1,7 +1,5 @@
 module CPP-ABSTRACT-SYNTAX
-     imports STRING-SYNTAX
-
-     syntax CId ::= Identifier(String)
+     imports COMPAT-SYNTAX
 
      syntax Decl ::= TranslationUnit(List)
                    | LinkageSpec(String, List)
@@ -21,11 +19,12 @@ module CPP-ABSTRACT-SYNTAX
                     | LongDouble()
 
      syntax AType ::= Qualifier(Qualifier, AType)
-     syntax Qualifier ::= Const() | Volatile() | Restrict()
 
      syntax Namespace ::= NoNamespace()
 
      syntax Stmt ::= CompoundStmt(List)
+                   | LabelStmt(CId, List)
+                   | GotoStmt(CId)
                    | Expr //expression statement, handled later
 
      syntax Expr ::= CallExpr(Expr, List)

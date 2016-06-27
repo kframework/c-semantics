@@ -1,13 +1,19 @@
 module COMPAT-SYNTAX
-     imports C-SYNTAX // Would like to get rid of this.
-     imports MAP
+     imports COMMON-SYNTAX
+
+     imports ARRAY
+     imports BASIC-K
+     imports BOOL
+     imports COLLECTIONS
      imports FLOAT
      imports INT
-     imports STRING
      imports K-EQUAL
      imports K-IO
      imports K-REFLECTION
-     imports COLLECTIONS
+     imports LIST
+     imports MAP
+     imports SET
+     imports STRING
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
@@ -22,9 +28,6 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= all(List, K) [function]
      syntax Bool ::= some(List, K) [function]
-
-     //TODO(liyi): this might be able to remove
-     syntax Bool ::= allRValueInHeatList(HeatList) [function]
 
      syntax List ::= removeListItem(List, K) [function]
 
@@ -255,12 +258,6 @@ module COMPAT
           requires Lbl(K) =/=K true
                andBool (K =/=K .K)
      rule some'(.K, .Set, _) => false
-
-     // TODO(liyi): might be able to remove later
-     rule allRValueInHeatList(.HeatList) => true
-     rule allRValueInHeatList(hItem(_) hs:: _) => false
-     rule allRValueInHeatList(hrItem(_) hs:: HL:HeatList)
-          => allRValueInHeatList(HL)
 
      //TODO(liyi): might not need this
      rule dotK => .K [structural]

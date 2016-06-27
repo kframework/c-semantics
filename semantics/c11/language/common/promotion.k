@@ -1,21 +1,18 @@
 module C-COMMON-PROMOTION-SYNTAX
      imports BASIC-K
+     imports LIST
+
      // should be K, but is Type for efficiency reasons
      syntax UType ::= promote(UType) [function]
-     syntax Bool ::= isArithBinConversionOp(K) [function, klabelPredicate]
-     syntax Bool ::= isArithBinOp(K) [function, klabelPredicate]
-     syntax Bool ::= isArithBinNonEqualityOp(K) [function, klabelPredicate]
-     syntax Bool ::= isArithUnaryOp(K) [function, klabelPredicate]
      syntax UType ::= usualArithmeticConversion(UType, UType) [function]
      syntax Bool ::= isPromoted(UType) [function]
-
+     syntax Bool ::= areArgPromoted(List) [function]
+     syntax UType ::= argPromoteType(UType) [function]
 endmodule
 
 module C-COMMON-PROMOTION
      imports C-COMMON-PROMOTION-SYNTAX
 
-     imports C-DYNAMIC-SYNTAX
-     imports C-CONVERSION-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -34,63 +31,6 @@ module C-COMMON-PROMOTION
      Conversion of an operand value to a compatible type causes no change to
      the value or the representation.
      }*/
-
-     rule isArithBinNonEqualityOp(#klabel(`_*__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_/__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_%__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_+__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_-__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_<__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_>__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_<=__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_>=__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_&__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_|__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_^__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_<<__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(#klabel(`_>>__C-SYNTAX`)) => true
-     rule isArithBinNonEqualityOp(_) => false [owise]
-
-
-
-     rule isArithBinOp(#klabel(`_*__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_/__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_%__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_+__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_-__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_<__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_>__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_<=__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_>=__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_==__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_!=__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_&__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_|__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_^__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_<<__C-SYNTAX`)) => true
-     rule isArithBinOp(#klabel(`_>>__C-SYNTAX`)) => true
-     rule isArithBinOp(_) => false [owise]
-
-     rule isArithBinConversionOp(#klabel(`_*__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_/__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_%__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_+__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_-__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_<__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_>__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_<=__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_>=__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_==__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_!=__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_&__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_|__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(#klabel(`_^__C-SYNTAX`)) => true
-     rule isArithBinConversionOp(_) => false [owise]
-
-     rule isArithUnaryOp(#klabel(`-__C-SYNTAX`)) => true
-     rule isArithUnaryOp(#klabel(`+__C-SYNTAX`)) => true
-     rule isArithUnaryOp(#klabel(`~__C-SYNTAX`)) => true
-     rule isArithUnaryOp(_) => false [owise]
 
      // \csection{6}{3}{1}{0}{Arithmetic operands}
      // \csection{6}{3}{1}{1}{Boolean, characters, and integers}
@@ -359,5 +299,33 @@ module C-COMMON-PROMOTION
           requires rank(T) <Int rank(T')
                andBool (min(T') >Int min(T)
                     orBool max(T') <Int max(T))
+
+     // "integer promotions" are used when doing arithmetic conversions, and
+     // for unary ~, +, - "usual arithmetic conversions" are used when doing
+     // binary arithmetic on numbers, and are used to find a common type there
+     // is another set of promotions called "default argument promotions" used
+     // when calling functions where the type information is not complete. This
+     // is equivalent to integer promotions + (float => double)
+     rule argPromoteType(ut(Mods:Set, float))
+          => ut(Mods, double)
+     rule argPromoteType(ut(Mods:Set, double))
+          => ut(Mods, double)
+     rule argPromoteType(ut(Mods:Set, long-double))
+          => ut(Mods, long-double)
+     rule argPromoteType(T:IntegerUType)
+          => promote(T)
+     rule argPromoteType(T::UType) => T [owise]
+
+     // "are argument-promoted".
+     rule areArgPromoted(L:List) => true
+          requires all(L, #klabel(`isArgPromoted`))
+     rule areArgPromoted(_) => false [owise]
+
+     syntax Bool ::= isArgPromoted(K) [function]
+     rule isArgPromoted(variadic) => true
+     rule isArgPromoted(typedDeclaration(T::Type, _))
+          => utype(T) ==Type argPromoteType(utype(T))
+     rule isArgPromoted(T:Type)
+          => utype(T) ==Type argPromoteType(utype(T))
 
 endmodule

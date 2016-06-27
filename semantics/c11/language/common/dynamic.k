@@ -1,17 +1,8 @@
 module C-DYNAMIC-SYNTAX
-     imports INT-SYNTAX
-     imports BASIC-K
-     imports LIST
-     imports FLOAT-SYNTAX
-     imports STRING-SYNTAX
-     imports SET
-
-     syntax Quals // defined in C-TYPING-SYNTAX
-     syntax Bits ::= Int // defined in C-BITS-SYNTAX
-     syntax SymLoc // defined in C-SYMLOC-SYNTAX
-     syntax Type // defined in C-TYPING-SYNTAX
-     syntax UType // defined in C-TYPING-SYNTAX
-     syntax DType ::= typedDeclaration(Type, CId)
+     imports BITS-SYNTAX
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax Agg ::= agg(List)
 
@@ -35,8 +26,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= toRVal(K)
 
      syntax Typed ::= LValue | RValue | Hold | Type | Nclv | TrapLValue
-     syntax Type ::= type(K) [function]
-     syntax UType ::= utype(K) [function]
      syntax Valued ::= LValue | RValue | Hold
      syntax KItem ::= value(K) [function]
 
@@ -52,13 +41,10 @@ module C-DYNAMIC-SYNTAX
 
      syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
 
-     syntax CabsLoc ::= "UnknownCabsLoc"
-
      syntax FileScope ::= "fileScope"
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
      syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
-     syntax EvalContext ::= "eval" | "noEval"
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)
@@ -78,16 +64,9 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= gotoObject(Int, List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
-     syntax KItem ::= loadObj(K)
-     syntax K ::= unwrapObj(K) [function]
-
      syntax KItem ::= "comma"
-
      // these are semantic
      syntax KItem ::= reval(K)
-
-     // Function id, def return type, def params, local declarations, body.
-     syntax RValue ::= functionObject(CId, Type, List, K)
 
      syntax KResult ::= initValue(CId, Type, K)
      syntax KItem ::= allowInit(K)
@@ -108,6 +87,8 @@ module C-DYNAMIC-SYNTAX
      syntax HeatList ::= toHeatList(List) [function]
      syntax List ::= hListToList(HeatList) [function]
 
+     syntax Bool ::= allRValueInHeatList(HeatList) [function]
+
      syntax HeatResult ::= hrItem(RValue)
      syntax HeatItem ::= HeatResult
      syntax KResult ::= HeatResult
@@ -125,8 +106,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= compoundAssign(K, K) [strict(1)]
      syntax KItem ::= fillLHoles(K, K) [function]
      syntax KItem ::= fillRHoles(RValue, K) [function]
-
-     syntax Opts ::= CSV(String)
 
      syntax KItem ::= "checkStackDepth"
 
@@ -167,10 +146,6 @@ module C-DYNAMIC
      rule type(le(_, T::Type)) => T
      rule type(ncle(_, T::Type)) => T
      rule type(trap(T::UType)) => type(T)
-     rule type(T:Type) => T
-     rule type(T:SimpleType) => t(noQuals, .Set, T)
-     rule type(T:SimpleArrayUType) => t(noQuals, .Set, qualSimple(T))
-     rule type(ut(Mods::Set, T::SimpleUType)) => t(noQuals, Mods, qualSimple(T))
 
      rule utype(tv(_, T::UType)) => T
      rule utype(voidVal) => utype(void)
@@ -180,57 +155,11 @@ module C-DYNAMIC
      rule utype(le(_, T::Type)) => utype(T)
      rule utype(ncle(_, T::Type)) => utype(T)
      rule utype(trap(T::UType)) => T
-     rule utype(t(_, Mods::Set, T::SimpleType)) => ut(Mods, unqualSimple(T))
-     rule utype(typedDeclaration(T::Type, _)) => utype(T)
-     rule utype(T:SimpleType) => ut(.Set, unqualSimple(T))
-     rule utype(T:SimpleArrayUType) => ut(.Set, T)
-     rule utype(T:UType) => T
-
-     syntax SimpleUType ::= unqualSimple(SimpleType) [function]
-     rule unqualSimple(arrayType(T::Type, N::Int))
-          => arrayUType(utype(T), N)
-     rule unqualSimple(incompleteArrayType(T::Type))
-          => incompleteArrayUType(utype(T))
-     rule unqualSimple(flexibleArrayType(T::Type))
-          => flexibleArrayUType(utype(T))
-     rule unqualSimple(unspecifiedArrayType(T::Type))
-          => unspecifiedArrayUType(utype(T))
-     rule unqualSimple(variableLengthArrayType(T::Type, N:K))
-          => variableLengthArrayUType(utype(T), N)
-     rule unqualSimple(T::SimpleType) => T [owise]
-
-     syntax SimpleType ::= qualSimple(SimpleUType) [function]
-     rule qualSimple(arrayUType(T::UType, N::Int))
-          => arrayType(type(T), N)
-     rule qualSimple(incompleteArrayUType(T::UType))
-          => incompleteArrayType(type(T))
-     rule qualSimple(flexibleArrayUType(T::UType))
-          => flexibleArrayType(type(T))
-     rule qualSimple(unspecifiedArrayUType(T::UType))
-          => unspecifiedArrayType(type(T))
-     rule qualSimple(variableLengthArrayUType(T::UType, N:K))
-          => variableLengthArrayType(type(T), N)
-     rule qualSimple(T::SimpleUType) => T [owise]
 
      rule _:KResult ~> discard => .K
           [structural]
 
      rule discard => .K
-          [structural]
-
-     rule unwrapObj(<generatedTop>...
-               <global> G:Bag </global>
-          ...</generatedTop>)
-          => <global> G </global>
-
-     rule unwrapObj(.K) => .K
-
-     rule <k> loadObj(G:GlobalCell) => .K ...</k>
-          (<global> _ </global> => G)
-          requires (G =/=K .K)
-          [structural]
-
-     rule loadObj(.K) => .K
           [structural]
 
      rule N:Int => tv(N, utype(cfg:largestUnsigned))
@@ -273,4 +202,8 @@ module C-DYNAMIC
      rule isRKLabel(#klabel(`te`)) => true
      rule isRKLabel(_) => false [owise]
 
+     rule allRValueInHeatList(.HeatList) => true
+     rule allRValueInHeatList(hItem(_) hs:: _) => false
+     rule allRValueInHeatList(hrItem(_) hs:: HL:HeatList)
+          => allRValueInHeatList(HL)
 endmodule

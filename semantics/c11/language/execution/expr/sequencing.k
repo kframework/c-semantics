@@ -1,6 +1,7 @@
 module C-EXPR-SEQUENCING
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{
      The left operand of a comma operator is evaluated as a void expression;

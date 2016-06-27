@@ -411,6 +411,19 @@ public:
     return false;
   }
 
+  bool VisitLabelStmt(LabelStmt *Statement) {
+    AddKApplyNode("LabelStmt", 2);
+    TRY_TO(TraverseDeclarationName(Statement->getDecl()->getDeclName()));
+    AddStmtChildrenNode(Statement);
+    return false;
+  }
+
+  bool VisitGotoStmt(GotoStmt *Statement) {
+    AddKApplyNode("GotoStmt", 1);
+    TRY_TO(TraverseDeclarationName(Statement->getLabel()->getDeclName()));
+    return false;
+  }
+
   bool TraverseCallExpr(CallExpr *Expression) {
     AddKApplyNode("CallExpr", 2);
     int i = 0;

@@ -1,4 +1,5 @@
 module C-SETTINGS-SYNTAX
+     imports SETTINGS-SYNTAX
      imports LIST
      // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
      // same range, representation, and behavior as either signed char or
@@ -10,7 +11,6 @@ module C-SETTINGS-SYNTAX
      syntax SimpleCharType ::= "cfg:charAlias" [function]
      syntax SimpleBasicType ::= "cfg:enumAlias" [function]
 
-     syntax Int ::= "cfg:bitsPerByte" [function]
      syntax Int ::= "cfg:sizeofBool" [function]
      syntax Int ::= "cfg:sizeofSignedChar" [function]
      syntax Int ::= "cfg:sizeofShortInt" [function]
@@ -51,8 +51,5 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:maxHeapBound" [function]
 
      syntax Int ::= "cfg:stackSize" "(" List "," List ")" [function]
-
-     syntax Bool ::= "isErrorRecovery" [function]
-                   | "hasLint" [function]
 
 endmodule

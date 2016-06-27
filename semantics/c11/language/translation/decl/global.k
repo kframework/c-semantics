@@ -11,8 +11,6 @@ module C-DECL-GLOBAL-SYNTAX
 
      syntax K ::= stripInitHolds(K) [function]
 
-     syntax Bool ::= areDeclCompat(Type, Type) [function]
-
      // The last bool argument indicates whether a tentative def has been
      // encountered. This is only relevant in the case of symbols with external
      // linkage, which must then be completed and allocated at the end of
@@ -826,7 +824,5 @@ module C-DECL-GLOBAL
           <types>... X |-> T:Type ...</types>
           requires notBool areDeclCompat(T, T')
           [structural]
-
-     rule areDeclCompat(T::Type, T'::Type) => T ==Type T' andBool sameAlignas(getModifiers(T), getModifiers(T'))
 
 endmodule

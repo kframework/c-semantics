@@ -160,6 +160,7 @@ module C-IO-BUFFERED
                ListItem(bwrite(loc(Base::SymBase, Offset::Int), L::List)) => .List
           ...</buffer>
           <mem> M::Map => writeBuffer(M, Base, M[Base], Offset, L) </mem>
+          requires notBool isNativeLoc(loc(Base, Offset))
           [structural]
 
      syntax Map ::= writeBuffer(Map, SymBase, K, Int, List) [function]
@@ -171,6 +172,11 @@ module C-IO-BUFFERED
                ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
           requires isNativeLoc(Loc)
+     rule <buffer>
+               ListItem(bwrite(Loc::SymLoc, .List)) => .List
+          ...</buffer>
+          requires isNativeLoc(Loc)
+
 
      syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set

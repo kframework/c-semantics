@@ -1,9 +1,7 @@
-module CPP-CONFIGURATION
+module C-CONFIGURATION
+     imports COMPAT-SYNTAX
+     imports C-LINKING-INIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports SET
-     imports MAP
-     imports STRING
-     imports INT
 
      configuration
 <global>
@@ -58,7 +56,25 @@ module CPP-CONFIGURATION
 </global>
 <result-value color="red"> 1 </result-value>
 <T multiplicity="?">
-<k> $PGM:K </k>
+<exec>
+     <k color="green">
+          $PGM:K
+          ~> load($OBJS:K)
+          ~> link
+          ~> cleanup
+     </k>
+     <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-eval-context color="lightgray"> eval </curr-eval-context>
+     <curr-program-loc color="black">
+          UnknownCabsLoc
+     </curr-program-loc>
+</exec>
+
+<generated-annotations> .List </generated-annotations>
+
+<previous-errors> .Set </previous-errors>
+
+<options> $OPTIONS:Set </options>
 </T>
 
 endmodule

@@ -11,6 +11,8 @@ require "cpp14/language/common/common.k"
 require "cpp14/library/library.k"
 require "cpp-settings.k"
 
+require "common/common.k"
+
 module C11-SYNTAX
 endmodule
 
@@ -19,6 +21,7 @@ module C11
      imports C-EXECUTION
      imports C-COMMON
      imports C-LIBRARY
+     imports COMMON
 endmodule
 
 module CPP14-SYNTAX
@@ -29,6 +32,7 @@ module CPP14
      imports CPP-EXECUTION
      imports CPP-COMMON
      imports CPP-LIBRARY
+     imports COMMON
 endmodule
 
 module C11-CPP14-SYNTAX

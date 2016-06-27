@@ -1,5 +1,6 @@
 module C-ABSTRACT-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      syntax RValue ::= RHold
      syntax KResult ::= NCLHold

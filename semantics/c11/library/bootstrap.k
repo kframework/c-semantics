@@ -1,5 +1,6 @@
 module LIBC-BOOTSTRAP-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      syntax KItem ::= builtin(String) [klabel(builtin0)]
                     | builtin(String, RValue) [klabel(builtin1)]

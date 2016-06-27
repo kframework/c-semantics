@@ -1,7 +1,7 @@
 module C-CONFIGURATION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TRANSLATION-INIT-SYNTAX
+     imports C-LINKING-INIT-SYNTAX
      imports COMPAT-SYNTAX
 
      configuration
@@ -88,8 +88,8 @@ module C-CONFIGURATION
      </goto-map-calc>
      <k color="green">
           $PGM:K
-          ~> load($OBJS:K)
-          ~> link
+          ~> builtinTu
+          ~> reportSuccess
           ~> cleanup
      </k>
 

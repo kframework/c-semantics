@@ -4,8 +4,6 @@ module C-ALIGNMENT-SYNTAX
      syntax Int ::= getAlign(SymLoc) [function]
      syntax Int ::= getNativeAlign(Int) [function]
 
-     syntax Bool ::= sameAlignas(Set, Set) [function]
-
      syntax Int ::= getAlignas(Type) [function]
 
      syntax Int ::= byteAlignofType(Type) [function]
@@ -73,17 +71,10 @@ module C-ALIGNMENT
      // TODO(dwightguth): make sure we correctly handle all the corner cases
      rule byteAlignofType(_) => 1 [owise]
 
-     rule sameAlignas(Mods:Set, Mods':Set)
-          => getAlignasMod(Mods) ==Int getAlignasMod(Mods')
-
      rule getAlignas(T::Type) => getAlignasMod(getModifiers(T))
           requires hasAlignasMod(getModifiers(T))
      rule getAlignas(T::Type) => byteAlignofType(T)
           requires notBool hasAlignasMod(getModifiers(T))
-
-     syntax Int ::= getAlignasMod(Set) [function]
-     rule getAlignasMod(SetItem(alignas(N::Int)) _) => N
-     rule getAlignasMod(_) => -1 [owise]
 
      syntax Bool ::= hasAlignasMod(Set) [function]
      rule hasAlignasMod(SetItem(alignas(_)) _) => true

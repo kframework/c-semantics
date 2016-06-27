@@ -1,13 +1,6 @@
 module C-SYNTAX
+     imports COMMON-SYNTAX
      imports BASIC-K
-     imports STRING-SYNTAX
-     imports INT-SYNTAX
-     imports BOOL-SYNTAX
-     imports LIST
-
-     imports C-DYNAMIC-SYNTAX
-
-     syntax KBott ::= "(" K ")" [bracket]
 
      syntax KResult ::= SpecifierElem
 
@@ -19,10 +12,6 @@ module C-SYNTAX
      syntax C ::= Statement
      syntax C ::= Storage
 
-     syntax CId ::= Identifier(String) // new
-     syntax CId ::= "#NoName" // new
-     syntax CId ::= #NoName(Int) // new
-
      syntax Statement ::= Block(Int, K) [avoid]
 
      /*
@@ -33,7 +22,6 @@ module C-SYNTAX
           lineOffsetEnd : int;
      }
      */
-     syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
 
      /*
      and statement =
@@ -62,9 +50,6 @@ module C-SYNTAX
      and cvspec =
      CV_CONST | CV_VOLATILE | CV_RESTRICT
      */
-     syntax Qualifier ::= Const()
-     syntax Qualifier ::= Volatile()
-     syntax Qualifier ::= Restrict()
      syntax Qualifier ::= Atomic()
 
      /*

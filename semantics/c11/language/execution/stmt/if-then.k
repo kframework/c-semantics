@@ -1,6 +1,7 @@
 module C-STMT-IF-THEN
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX
      imports COMPAT-SYNTAX

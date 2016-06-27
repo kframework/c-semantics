@@ -1,10 +1,10 @@
 module C-SETTINGS
      // Note: This profile will cause the C semantics to work incorrectly unless built with
      // proprietary RV-Match code.
+     imports BITS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BITS-SYNTAX
      imports INT
 
      rule cfg:charAlias => signed-char

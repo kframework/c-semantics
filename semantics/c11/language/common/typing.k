@@ -1,14 +1,18 @@
-require "typing/compatibility.k"
-require "typing/misc.k"
-require "typing/predicates.k"
-
 module C-TYPING-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports STRING-SYNTAX
      imports MAP
+
+     syntax CValue ::= Int // defined in C-DYNAMIC-SYNTAX
+     syntax Qualifier // defined in C-SYNTAX
+     syntax Storage // defined in C-SYNTAX
 
      syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
      syntax UType ::= ut(Set, SimpleUType)     // unqualified type
+     syntax DType ::= typedDeclaration(Type, CId)
+
+     syntax Type ::= type(K) [function]
+     syntax UType ::= utype(K) [function]
 
      // --------------
 
@@ -246,6 +250,9 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= atomic(Type)
      syntax Modifier ::= alignas(Int)
 
+     syntax Bool ::= sameAlignas(Set, Set) [function]
+     syntax Int ::= getAlignasMod(Set) [function]
+
      syntax Modifier ::= readFrom(SymLoc, Int)
      // Lock an offset into a type to a certain type, for the purposes of
      // setting active union variants for getTypesAtOffset. Note that we
@@ -336,10 +343,6 @@ module C-TYPING-SYNTAX
      // Locks the type of the flexible array member to a fixed array.
      syntax Type ::= lockFlexibleStruct(Type, Int) [function]
 
-endmodule
-
-module C-TYPING
-     imports C-TYPING-COMPATIBILITY
-     imports C-TYPING-MISC
-     imports C-TYPING-PREDICATES
+     // moved from BITSIZE because type compatibility depends on it quite indirectly
+     syntax Int ::= numBytes(SimpleType) [function]
 endmodule

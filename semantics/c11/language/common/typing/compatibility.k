@@ -4,17 +4,16 @@ module C-TYPING-COMPATIBILITY-SYNTAX
      syntax Type ::= compositeType(Type, Type) [function]
      syntax UType ::= compositeType(UType, UType) [function]
 
+     syntax Bool ::= areDeclCompat(Type, Type) [function]
+
 endmodule
 
 module C-TYPING-COMPATIBILITY
      imports C-TYPING-COMPATIBILITY-SYNTAX
-
-     imports C-SYNTAX
-     imports C-ALIGNMENT-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-BINDING-SYNTAX
+     imports C-TYPING-SYNTAX
 
      imports COMPAT-SYNTAX
 
@@ -372,5 +371,7 @@ module C-TYPING-COMPATIBILITY
                (ListItem(typedDeclaration(P::Type, X:CId)) => .List) _:List,
                (ListItem(typedDeclaration(P'::Type, _)) => .List) _:List,
                _:List (.List => ListItem(typedDeclaration(compositeType(P, P'), X))))
+
+     rule areDeclCompat(T::Type, T'::Type) => T ==Type T' andBool sameAlignas(getModifiers(T), getModifiers(T'))
 endmodule
 

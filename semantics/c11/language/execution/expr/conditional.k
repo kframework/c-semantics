@@ -3,6 +3,7 @@ module C-EXPR-CONDITIONAL
      imports C-ERROR-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX

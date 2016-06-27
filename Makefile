@@ -23,7 +23,7 @@ FILES_TO_DIST = \
         LICENSE \
         licenses
 
-.PHONY: default check-vars semantics clean fast translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile
+.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile
 
 default: dist
 
@@ -56,15 +56,18 @@ $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp: $(DIST_D
 $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp: $(DIST_DIR)/kcc translation-semantics
 	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
 
+$(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp: $(DIST_DIR)/kcc cpp-semantics
+	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
+
 $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
 	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
 	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
+$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
 	@echo "Translating the standard library... ($(PROFILE_DIR))"
-	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libc.so *.c $(KCCFLAGS) -I .
+	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libc.so *.c $(KCCFLAGS) -I .
 	@echo "Done."
 
 $(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
@@ -94,6 +97,9 @@ translation-semantics: check-vars
 
 execution-semantics: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) execution
+
+cpp-semantics: check-vars
+	@$(MAKE) -C $(SEMANTICS_DIR) cpp
 
 semantics: check-vars
 	@$(MAKE) -C $(SEMANTICS_DIR) all

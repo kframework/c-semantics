@@ -6,7 +6,6 @@ module C-BINDING-SYNTAX
      syntax KItem ::= bind(List, List, List)
      syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
      syntax KItem ::= bindParam(CId)
-     syntax Bool ::= areArgPromoted(List) [function]
 
 endmodule
 
@@ -169,35 +168,6 @@ module C-BINDING
 
      syntax RValue ::= argPromote(RValue) [function]
      rule argPromote(V::RValue) => cast(argPromoteType(utype(V)), V)
-
-     // "integer promotions" are used when doing arithmetic conversions, and
-     // for unary ~, +, - "usual arithmetic conversions" are used when doing
-     // binary arithmetic on numbers, and are used to find a common type there
-     // is another set of promotions called "default argument promotions" used
-     // when calling functions where the type information is not complete. This
-     // is equivalent to integer promotions + (float => double)
-     syntax UType ::= argPromoteType(UType) [function]
-     rule argPromoteType(ut(Mods:Set, float))
-          => ut(Mods, double)
-     rule argPromoteType(ut(Mods:Set, double))
-          => ut(Mods, double)
-     rule argPromoteType(ut(Mods:Set, long-double))
-          => ut(Mods, long-double)
-     rule argPromoteType(T:IntegerUType)
-          => promote(T)
-     rule argPromoteType(T::UType) => T [owise]
-
-     // "are argument-promoted".
-     rule areArgPromoted(L:List) => true
-          requires all(L, #klabel(`isArgPromoted`))
-     rule areArgPromoted(_) => false [owise]
-
-     syntax Bool ::= isArgPromoted(K) [function]
-     rule isArgPromoted(variadic) => true
-     rule isArgPromoted(typedDeclaration(T::Type, _))
-          => utype(T) ==Type argPromoteType(utype(T))
-     rule isArgPromoted(T:Type)
-          => utype(T) ==Type argPromoteType(utype(T))
 
 endmodule
 

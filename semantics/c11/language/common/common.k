@@ -3,11 +3,11 @@ require "binding.k"
 require "bitsize.k"
 require "bits.k"
 require "builtin.k"
-require "compat.k"
 require "conversion.k"
 require "dynamic.k"
 require "error.k"
 require "promotion.k"
+require "promotion-context.k"
 require "settings.k"
 require "symloc.k"
 require "syntax.k"
@@ -28,6 +28,11 @@ require "memory/alloc.k"
 require "memory/reading.k"
 require "memory/writing.k"
 
+require "typing/common.k"
+require "typing/compatibility.k"
+require "typing/misc.k"
+require "typing/predicates.k"
+
 require "c-extensions-common.k"
 
 module C-COMMON
@@ -37,6 +42,7 @@ module C-COMMON
      imports C-BITSIZE
      imports C-BUILTIN
      imports C-COMMON-PROMOTION
+     imports C-COMMON-PROMOTION-CONTEXT
      imports C-CONVERSION
      imports C-DYNAMIC
      imports C-ERROR
@@ -44,9 +50,6 @@ module C-COMMON
      imports C-SYMLOC
      imports C-SYNTAX
      imports C-TYPE-BUILDER
-     imports C-TYPING
-
-     imports COMPAT
 
      imports C-COMMON-EXPR-ADDITIVE
      imports C-COMMON-EXPR-BITWISE
@@ -61,6 +64,11 @@ module C-COMMON
      imports C-MEMORY-ALLOC
      imports C-MEMORY-READING
      imports C-MEMORY-WRITING
+
+     imports C-TYPING-COMMON
+     imports C-TYPING-COMPATIBILITY
+     imports C-TYPING-MISC
+     imports C-TYPING-PREDICATES
 
      imports C-COMMON-EXTENSIONS
 endmodule

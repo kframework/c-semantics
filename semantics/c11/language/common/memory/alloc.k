@@ -1,10 +1,7 @@
 module C-MEMORY-ALLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports ARRAY
-
-     /* object(effective type, size, byte map) */
-     syntax KItem ::= object(Type, Int, Array)
+     imports MEMORY-SYNTAX
 
      syntax KItem ::= alloc(SymBase, Type, Int)
 

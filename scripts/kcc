@@ -98,8 +98,10 @@ our $ourDist = $distDirectory;
 my $cparser = catfile($distDirectory, 'cparser');
 my $cppparser = catfile($distDirectory, 'clang-kast');
 
-my $TRANS_DEF =
+my $C_TRANS_DEF =
       catfile($profileDirectory, "c11-translation-kompiled");
+my $CPP_TRANS_DEF =
+      catfile($profileDirectory, "cpp14-translation-kompiled");
 
 my @originalArgv;
 
@@ -186,6 +188,7 @@ our @warns = ();
 our @nowarns = ();
 our $xLang = "none";
 my $hasStdin;
+my $hasBuiltins;
 
 our $oflag;
 
@@ -305,6 +308,7 @@ my $spec = q(#
            exit 1;
       }
 }
+      -Xbuiltins			[undocumented]
       * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
         to run.
 
@@ -697,7 +701,7 @@ sub getKRunCommand {
      my @krun_args = (
           '--output', 'binary', 
           '--output-file', $output,
-          '-d', $TRANS_DEF,
+          '-d', $isCPP ? $CPP_TRANS_DEF : $C_TRANS_DEF,
           '-w', 'none',
           '--smt', 'none',
           '--exit-code',
@@ -708,6 +712,10 @@ sub getKRunCommand {
           push(@krun_args, '--debug');
      }
      my @options = initOptions();
+     if (!$isCPP && !$hasBuiltins && $args->{'-Xbuiltins'}) {
+          push(@options, "`XBuiltins`(.KList)");
+          $hasBuiltins = 1;
+     }
      if (!$link) {
           push(@options, "`NoLink`(.KList)");
           push(@krun_args, "--interpret");

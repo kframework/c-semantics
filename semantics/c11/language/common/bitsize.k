@@ -49,26 +49,6 @@ module C-BITSIZE
      rule byteSizeofType(t(_, _, T::SimpleType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
      rule byteSizeofType(ut(_, T::SimpleUType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
 
-     syntax Int ::= numBytes(SimpleType) [function]
-     rule numBytes(bool) => cfg:sizeofBool
-     rule numBytes(signed-char) => cfg:sizeofSignedChar
-     rule numBytes(short-int) => cfg:sizeofShortInt
-     rule numBytes(int) => cfg:sizeofInt
-     rule numBytes(long-int) => cfg:sizeofLongInt
-     rule numBytes(long-long-int) => cfg:sizeofLongLongInt
-
-     rule numBytes(float) => cfg:sizeofFloat
-     rule numBytes(double) => cfg:sizeofDouble
-     rule numBytes(long-double) => cfg:sizeofLongDouble
-
-     rule numBytes(unsigned-char) => numBytes(signed-char)
-     rule numBytes(unsigned-short-int) => numBytes(short-int)
-     rule numBytes(unsigned-int) => numBytes(int)
-     rule numBytes(unsigned-long-int) => numBytes(long-int)
-     rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
-     rule numBytes(enumType(_)) => numBytes(cfg:enumAlias)
-     rule numBytes(_) => 0 [owise]
-
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
      rule maxByteSizeofList'(Sz:Int, ListItem(T:Type) LL:List)

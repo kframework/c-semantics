@@ -2,6 +2,7 @@ module C-CONFIGURATION
      imports C-EXECUTION-INIT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
+     imports COMMON-INIT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-CONFIGURATION-EXTENSIONS
 

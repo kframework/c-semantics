@@ -1,8 +1,8 @@
 module C-SETTINGS
+     imports BITS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-BITS-SYNTAX
      imports INT
 
      rule cfg:charAlias => signed-char

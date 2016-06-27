@@ -1,5 +1,7 @@
 module C-PROMOTION
      imports C-COMMON-PROMOTION-SYNTAX
+
+     imports C-COMMON-PROMOTION-CONTEXT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX

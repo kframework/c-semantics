@@ -1,13 +1,10 @@
 module C-BUILTIN-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports COMMON-BUILTIN-SYNTAX
 
      syntax Map ::= "builtins" [function]
-                  | "semanticsDefinedBuiltins" [function]
-                  | "nativeDefinedBuiltins"[function, memo]
                   | "extensionBuiltins" [function]
-     syntax KItem ::= "handleBuiltin"
-                    | handleBuiltinConstant(CId, Type)
 
      syntax Type ::= "mtx_t" [function]
                    | "jmp_buf" [function]
@@ -24,17 +21,9 @@ module C-BUILTIN
      imports C-TYPE-BUILDER-SYNTAX
      imports COMPAT-SYNTAX
 
-     rule builtins => semanticsDefinedBuiltins nativeDefinedBuiltins
-
-     syntax Map ::= #nativeDefinedBuiltins(Set) [function, hook(C_SEMANTICS.nativeFunctions), impure]
-     rule nativeDefinedBuiltins => #nativeDefinedBuiltins(keys(semanticsDefinedBuiltins))
-
-     // defined as a K rule for if the hook is not defined
-     rule #nativeDefinedBuiltins(_) => .Map
-
      // Types for library functions defined in the semantics. These are the
      // definitive types against which all calls are checked for compatibility.
-     rule semanticsDefinedBuiltins =>
+     rule builtins =>
           "abort" |-> fun(void)
           "asin" |-> fun(double, double)
           "atan2" |-> fun(double, double, double)
