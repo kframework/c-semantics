@@ -191,9 +191,10 @@ and printCabsLoc a =
 		:: Attrib ("lineno", string_of_int a.lineno )
 		:: Attrib ("byteno", string_of_int a.byteno )
 		:: Attrib ("ident", string_of_int a.ident )
+		:: Attrib ("systemHeader", string_of_bool a.systemHeader )
 		:: []
 	in*)
-        wrap ((printRawString a.filename) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawInt 0) :: []) "CabsLoc"
+        wrap ((printRawString a.filename) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawInt 0) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
 
 and hasInformation l =
 	l.lineno <> -10
@@ -296,6 +297,10 @@ and printRawInt i =
 	printRawIntString (string_of_int i)
 and printRawIntString s =
 	printBuiltin "Int" s
+and printRawBool b =
+	printRawBoolString (string_of_bool b)
+and printRawBoolString s =
+	printBuiltin "Bool" s
 (* and printRawInt64 i =
 	printBuiltin "Int" (Int64.to_string i) *)
 and string_of_list_of_int64 (xs : int64 list) =

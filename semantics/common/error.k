@@ -5,6 +5,7 @@ module ERROR-SYNTAX
                      | ErrorMsg(List) [function, klabel(ErrorMsg1)]
 
      syntax Bool ::= "isCSV" [function]
+                   | "warnSystemHeaders" [function]
                    | checkOptions(K, String, Bool) [function]
 
      syntax Opts ::= Undef() | Unspec() | Impl()
@@ -76,6 +77,8 @@ module ERROR
      rule isCSV => isCSV(#configuration)
      rule isCSV(<generatedTop>... <options>... SetItem(CSV(_)) ...</options> ...</generatedTop>) => true
      rule isCSV(_) => false [owise]
+
+     rule warnSystemHeaders => checkOptionsCateg(Warn("system-headers"), false, #configuration)
 
      syntax Bool ::= checkOptions(K, String, Bool, K) [function, klabel(checkOptions1)]
                    | checkOptionsCateg(K, Bool, K) [function, klabel(checkOptions2)]

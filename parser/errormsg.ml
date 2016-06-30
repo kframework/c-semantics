@@ -57,6 +57,7 @@ type parseinfo =
       mutable  linestart: int    ; (* The position in the buffer where the 
                                     * current line starts *)
       mutable fileName : string   ; (* Current file *)
+      mutable systemHeader : bool ; (* Whether this is a system header *)
       mutable hfile   : string   ; (* High-level file *)
       mutable hline   : int;       (* High-level line *)
       lexbuf          : Lexing.lexbuf;
@@ -64,11 +65,12 @@ type parseinfo =
 	  mutable savedOffset : int; (* when including a file, save old offset here *)
       inchan          : in_channel option; (* None, if from a string *)
       mutable   num_errors : int;  (* Errors so far *)
-    }  
+    }
 let dummyinfo = 
     { linenum   = 1;
       linestart = 0;
       fileName  = "" ;
+      systemHeader = false;
       lexbuf    = Lexing.from_string "";
       inchan    = None;
 	  offsetFix = 0;
@@ -131,7 +133,7 @@ let startParsing ?(useBasename=true) (fname: string) =
 	  offsetFix = 0;
 	  savedOffset = 0;
       hfile = ""; hline = 0;
-      num_errors = 0 } in
+      num_errors = 0; systemHeader = false } in
 
   current := i;
   lexbuf
@@ -151,8 +153,11 @@ let newline () =
 let setCurrentLine (i: int) = 
   !current.linenum <- i
 
-let setCurrentFile (n: string) = 
+let setCurrentFile (n: string) =
   !current.fileName <- cleanFileName n
+
+let setSystemHeader (f: bool) =
+  !current.systemHeader <- f
  (*
 let setOffsetFix (i: int) = 
   !current.offsetFix <- i
@@ -219,7 +224,7 @@ let parse_error (msg: string) : 'a =
   raise Parsing.Parse_error
 
 (* More parsing support functions: line, file, char count *)
-let getPosition () : int * string * int * int = 
+let getPosition () : int * string * int * int * bool =
 	let i = !current in
 	let offset = Lexing.lexeme_start i.lexbuf in
-  i.linenum, i.fileName, offset, (offset - i.linestart)
+  i.linenum, i.fileName, offset, (offset - i.linestart), i.systemHeader

@@ -43,12 +43,13 @@ let getident () =
     !nextident
 
 let currentLoc () = 
-  let l, f, c, bytestart = Errormsg.getPosition () in
+  let l, f, c, bytestart, sysHeader = Errormsg.getPosition () in
   { lineno   = l; 
     filename = f; 
     byteno   = c;
     ident    = getident ();
 	lineOffsetStart = bytestart;
+	systemHeader = sysHeader;
 	}
 
 let cabslu = {lineno = -10; 
@@ -56,6 +57,7 @@ let cabslu = {lineno = -10;
 	      byteno = -10;
               ident = 0;
 			  lineOffsetStart = 0;
+			  systemHeader = false;
 			 }
 
 (* clexer puts comments here *)

@@ -52,6 +52,7 @@ type cabsloc = {
  byteno: int;
  ident : int;
  lineOffsetStart : int;
+ systemHeader : bool;
 }
 
 type typeSpecifier = (* Merge all specifiers into one type *)

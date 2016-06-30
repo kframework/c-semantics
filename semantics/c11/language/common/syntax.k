@@ -20,6 +20,7 @@ module C-SYNTAX
           filename: string;
           lineOffsetStart: int;
           lineOffsetEnd : int;
+          systemHeader : bool;
      }
      */
 

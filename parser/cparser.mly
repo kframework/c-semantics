@@ -67,7 +67,8 @@ let cabslu = {lineno = -10;
 	      filename = "cabs loc unknown"; 
 	      byteno = -10;
               ident = 0;
-			  lineOffsetStart = 0; 
+			  lineOffsetStart = 0;
+			  systemHeader = false;
 			  }
 
 (* cabsloc -> cabsloc *)

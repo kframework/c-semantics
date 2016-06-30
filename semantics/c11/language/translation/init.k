@@ -67,7 +67,7 @@ module C-TRANSLATION-INIT
           <curr-program-loc> _ => L </curr-program-loc>
 
      syntax CabsLoc ::= filterCabsLoc(CabsLoc) [function]
-     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0))
+     rule filterCabsLoc(CabsLoc("cabs loc unknown", -10, -10, 0, _))
           => UnknownCabsLoc
      rule filterCabsLoc(L:CabsLoc) => L [owise]
 

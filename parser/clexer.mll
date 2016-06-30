@@ -376,7 +376,6 @@ let wstr_to_warray wstr =
 (* Pragmas get explicit end-of-line tokens.
  * Elsewhere they are silently discarded as whitespace. *)
 let pragmaLine = ref false
-
 }
 
 let decdigit = ['0'-'9']
@@ -631,9 +630,16 @@ and file =  parse
                                    let n1 = String.sub n 1 
                                        ((String.length n) - 2) in
                                    E.setCurrentFile n1;
-				 endline lexbuf}
+                 E.setSystemHeader false;
+				 checkSystemHeader lexbuf}
 
 |	_			{addWhite lexbuf; endline lexbuf}
+
+and checkSystemHeader = parse
+        '\n'            { addWhite lexbuf; E.newline(); initial lexbuf}
+|       '3'             { E.setSystemHeader true; addWhite lexbuf; endline lexbuf}
+|   eof                         { EOF }
+|   _           { addWhite lexbuf; checkSystemHeader lexbuf}
 
 and endline = parse 
         '\n' 			{ addWhite lexbuf; E.newline (); initial lexbuf}

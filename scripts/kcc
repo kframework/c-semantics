@@ -215,6 +215,8 @@ my $spec = q(#
       -E				Preprocess only.
       -I <dir>				Look for headers in <dir>.
 { push(@main::cppArgs, '-I', $dir); }
+      -isystem <dir>	Look for system headers in <dir>.
+{ push(@main::cppArgs, '-isystem', $dir); }
       -include <file>			Add header to file during preprocessing.
 { push(@main::cppArgs, '-include', $file); }
       -L <dir>				Look for shared libraries in <dir>.
@@ -273,6 +275,11 @@ my $spec = q(#
   } else {
     push(@main::nowarns, $errcode);
   }
+}
+      -Wsystem-headers			Do not ignore errors in system headers
+{
+    push(@main::cppArgs, "-Wsystem-headers");
+    push(@main::warns, "system-headers");
 }
       -W<errcode>				Do not ignore specified error code
 {

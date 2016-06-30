@@ -8,7 +8,7 @@ module COMMON-SYNTAX
      syntax CId ::= #NoName(Int)
 
      syntax CabsLoc ::= "UnknownCabsLoc"
-     syntax CabsLoc ::= CabsLoc(String, Int, Int, Int)
+     syntax CabsLoc ::= CabsLoc(String, Int, Int, Int, Bool)
 
      syntax Qualifier ::= Const()
      syntax Qualifier ::= Volatile()
