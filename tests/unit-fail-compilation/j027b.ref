@@ -1,7 +1,8 @@
-j027b.c:2:2: error: missing terminating " character
+j027b.c:2:2: error: missing terminating " character [-Werror]
   "x
   ^
-j027b.c:3:2: error: missing terminating " character
+j027b.c:3:2: error: missing terminating " character [-Werror]
   ";
   ^
+cc1: all warnings being treated as errors
 Translation failed (config dumped). Run kcc -d j027b.c to see commands run.

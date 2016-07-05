@@ -1,1 +1,1 @@
-gcc -Wall -Wextra -Wmissing-prototypes -pedantic -x c -std=c11 -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "$@"
+gcc -Wall -Wextra -Wmissing-prototypes -x c -std=c11 -nostdlib -U __GNUC__ -D__KCC__ -include "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "$@"

@@ -289,6 +289,7 @@ my $spec = q(#
     push(@main::warns, $errcode);
   }
 }
+      -no-pedantic				Do not trigger warnings for non-standard compliant language features
       -w						Ignore all preprocessor warnings
 {  push(@main::cppArgs, "-w"); }
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
@@ -781,6 +782,9 @@ sub getKRunCommand {
 sub preprocess {
      my ($output, $inputFile, $isCPP) = (@_);
      my $directoryname = dirname($inputFile);
+     if (!$args->{'-no-pedantic'}) {
+          push(@main::cppArgs, '-pedantic');
+     }
      if ($isCPP) {
        my @ppArgs = ("$profileDirectory/cpp-pp",
                      @main::cppArgs, $inputFile, '-o', $output);

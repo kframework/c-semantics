@@ -1,1 +1,1 @@
-g++ -Wall -Wextra -Werror -Wno-error=comment -pedantic-errors -x c++ -std=c++14 -nostdlib -U __GNUC__ -U __GNUG__ -D__KCC__ -inclue "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "$@"
+g++ -Wall -Wextra -Werror -Wno-error=comment -x c++ -std=c++14 -nostdlib -U __GNUC__ -U __GNUG__ -D__KCC__ -inclue "$(dirname "$0")/include/kcc_settings.h" -E -I "$(dirname "$0")/include" "$@"
