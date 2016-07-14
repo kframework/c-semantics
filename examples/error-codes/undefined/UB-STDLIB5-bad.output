@@ -6,4 +6,3 @@ See also: C11 sec. 7.22.4.7:2, J.2:1 item 182
   at foo(UB-STDLIB5-bad.c:4)
   at quick_exit(UB-STDLIB5-bad.c:9)
   at main(UB-STDLIB5-bad.c:9)
-  at <file-scope>(<unknown>)

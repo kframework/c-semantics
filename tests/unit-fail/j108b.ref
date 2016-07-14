@@ -4,5 +4,4 @@ Type: Undefined behavior.
 See also: C11 sec. 7.21.6.1:9, J.2:1 item 153
   at printf(j108b.c:4)
   at main(j108b.c:4)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

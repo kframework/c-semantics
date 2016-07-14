@@ -3,5 +3,4 @@ Description: Variable-length array with length that evaluates to non-positive va
 Type: Undefined behavior.
 See also: C11 sec. 6.7.6.2:5, J.2:1 item 75
   at main(j075b.c:5)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

@@ -3,5 +3,4 @@ Description: Attempt to call the function f through a pointer with incompatible 
 Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:9, J.2:1 item 41
   at main(j039a.c:6)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

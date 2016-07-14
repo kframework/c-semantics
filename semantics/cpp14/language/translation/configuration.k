@@ -2,6 +2,7 @@ module C-CONFIGURATION
      imports COMPAT-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
 
      configuration
 <global>
@@ -20,6 +21,7 @@ module C-CONFIGURATION
           <external-decls> .Map </external-decls>
           // CIds
           <external-uses> SetItem(Identifier("main")) </external-uses>
+          <odr-uses> .Set </odr-uses>
      </linking-state>
 
      <structs color="lightgray"> .Map </structs>
@@ -51,23 +53,56 @@ module C-CONFIGURATION
 
                // TODO(chathhorn): move.
                <incomplete-tags> .Set </incomplete-tags>
+
+               <namespaces>
+                    <ns multiplicity="*" type="Map">
+                         <ns-id> GlobalNamespace() </ns-id>
+                         <nenv> .Map </nenv>
+                         <using-namespaces> .Set </using-namespaces>
+                    </ns>
+               </namespaces>
           </tu>
      </translation-units>
 </global>
 <result-value color="red"> 1 </result-value>
 <T multiplicity="?">
 <exec>
+
+     <goto-map-calc color="cyan">
+          <goto-calc multiplicity="*" color="cyan" type="Set">
+               <computation color="cyan"> .K </computation>
+               <computation-tail color="cyan"> .K </computation-tail>
+               <decl-stack color="cyan"> .List </decl-stack>
+               <goto-nesting-depth color="cyan"> 0 </goto-nesting-depth>
+               <goto-block-history color="cyan"> .List </goto-block-history>
+               <goto-loop-stack color="cyan"> .List </goto-loop-stack>
+          </goto-calc>
+     </goto-map-calc>
+
      <k color="green">
           $PGM:K
           ~> load($OBJS:K)
           ~> link
           ~> cleanup
      </k>
+
+     <elab> .K </elab>
+     <elab-stack> .List </elab-stack>
+
      <curr-tu color="lightgray"> "" </curr-tu>
+     <curr-lang-linkage> DefaultLinkage </curr-lang-linkage>
+     <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
      <curr-eval-context color="lightgray"> eval </curr-eval-context>
      <curr-program-loc color="black">
           UnknownCabsLoc
      </curr-program-loc>
+     <curr-function> .K </curr-function>
+
+     <block-stack color="violet"> .List </block-stack>
+     <block-control>
+          <env color="red"> .Map </env>
+          <block-history> .List </block-history>
+     </block-control>
 </exec>
 
 <generated-annotations> .List </generated-annotations>

@@ -3,5 +3,4 @@ Description: Attempt to alias restrict qualified pointers associated with the sa
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3.1:4, J.2:1 item 69
   at main(j069b.c:7)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

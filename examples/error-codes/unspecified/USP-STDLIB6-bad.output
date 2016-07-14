@@ -6,4 +6,3 @@ See also: C11 sec. 7.22.4.3:2, J.1:1 item 45
   at bar(USP-STDLIB6-bad.c:4)
   at quick_exit(USP-STDLIB6-bad.c:9)
   at main(USP-STDLIB6-bad.c:9)
-  at <file-scope>(<unknown>)

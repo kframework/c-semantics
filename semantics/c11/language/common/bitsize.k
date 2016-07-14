@@ -28,6 +28,7 @@ module C-BITSIZE
      imports C-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
 
      imports COMPAT-SYNTAX
 

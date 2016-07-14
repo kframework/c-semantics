@@ -4,4 +4,3 @@ Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_destroy
   at pthread_mutex_destroy(UB-PTHREAD3-bad.c:14)
   at main(UB-PTHREAD3-bad.c:14)
-  at <file-scope>(<unknown>)

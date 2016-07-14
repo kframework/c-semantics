@@ -1,9 +1,13 @@
 module C-LINKING-INIT-SYNTAX
      imports BASIC-K
+     imports STRING-SYNTAX
+
      syntax KItem ::= load(K) 
      syntax KItem ::= "link" | "cleanup" | "reportSuccess" | "builtinTu"
 
      syntax TransOpts ::= Debug() | NoLink()
+
+     syntax KItem ::= makeTu(String)
 
 endmodule
 
@@ -18,6 +22,7 @@ module C-LINKING-INIT
 
      imports C-CONFIGURATION
      imports C-ERROR-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
 
@@ -30,8 +35,6 @@ module C-LINKING-INIT
           ...</k>
           <options> Opts:Set </options>
           requires notBool (NoLink() in Opts)
-
-     syntax KItem ::= makeTu(String)
 
      rule <k> makeTu(TU:String) => .K ...</k>
           <curr-tu> _ => TU </curr-tu>
@@ -197,6 +200,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
                     <external-uses> ExtUses1:Set </external-uses>
+                    <odr-uses> OdrUses1:Set </odr-uses>
                </linking-state>
 
                <structs> Structs1:Map </structs>
@@ -217,6 +221,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-uses> ExtUses2:Set </external-uses>
+                    <odr-uses> OdrUses2:Set </odr-uses>
                </linking-state>
 
                <structs> Structs2:Map </structs>
@@ -238,6 +243,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
+                    <odr-uses> OdrUses1 OdrUses2 </odr-uses>
                </linking-state>
 
                <structs> updateMap(Structs1, Structs2) </structs>

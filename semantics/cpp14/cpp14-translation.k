@@ -16,4 +16,5 @@ module CPP14-TRANSLATION
      imports CPP-COMMON
      imports C-LINKING
      imports COMMON
+     imports CPP-SETTINGS
 endmodule

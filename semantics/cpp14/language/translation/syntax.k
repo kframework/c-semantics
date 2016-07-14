@@ -1,14 +1,33 @@
 module CPP-ABSTRACT-SYNTAX
+     imports CPP-SYNTAX
+
+     imports CPP-DYNAMIC-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax Decl ::= TranslationUnit(List)
+     syntax LVal ::= LExpr
+     syntax XVal ::= XExpr
+     syntax PRVal ::= PRExpr
+     syntax GLVal ::= GLExpr
+     syntax RVal ::= RExpr
+     syntax Val ::= TExpr
+
+     syntax Decl ::= TranslationUnit(String, List)
                    | LinkageSpec(String, List)
-                   | FunctionDefinition(Namespace, CId, AType, Stmt)
-                   | Declarator(Namespace, CId, AType)
+                   | Declarator
+                   | Specifier(Specifier, Decl)
+     syntax Declarator ::= FunctionDecl(Namespace, CId, AType)
+                         | VarDecl(Namespace, CId, AType, Expr)
+                         | FunctionDefinition(Namespace, CId, AType, AStmt)
 
-     syntax Type // defined in CPP-DYNAMIC-SYNTAX
+     syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
+     syntax FunctionSpecifier ::= Inline() | Virtual() | Explicit()
+     syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
 
-     syntax AType ::= Type
+     syntax Expr ::= "NoInit"
+
+     syntax CPPType // defined in CPP-TYPING-SYNTAX
+
+     syntax AType ::= CPPType
                     | FunctionPrototype(AType, List, List, Expr, Bool)
                     | BuiltinType(AType)
                     | PointerType(AType)
@@ -20,15 +39,16 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax AType ::= Qualifier(Qualifier, AType)
 
-     syntax Namespace ::= NoNamespace()
-
-     syntax Stmt ::= CompoundStmt(List)
-                   | LabelStmt(CId, List)
-                   | GotoStmt(CId)
+     syntax AStmt ::= CompoundAStmt(List)
+                   | LabelAStmt(CId, List)
                    | Expr //expression statement, handled later
 
-     syntax Expr ::= CallExpr(Expr, List)
-                   | DeclRef(Namespace, CId)
+     syntax AStmt ::= Stmt
+
+     syntax Stmt ::= ReturnStmt(Init)
+
+     syntax Expr ::= CallExpr(Expr, StrictList)
                    | StringLiteral(String)
+                   | NoExpression()
 
 endmodule

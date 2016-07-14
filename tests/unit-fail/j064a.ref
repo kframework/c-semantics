@@ -3,5 +3,4 @@ Description: Trying to modify an object declared with const type.
 Type: Undefined behavior.
 See also: C11 sec. 6.7.3:6, J.2:1 item 64
   at main(j064a.c:4)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

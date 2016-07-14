@@ -9,6 +9,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-CONFIGURATION
 

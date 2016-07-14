@@ -31,19 +31,19 @@ module COMPAT-SYNTAX
 
      syntax List ::= removeListItem(List, K) [function]
 
-     // TODO(chathhorn): ugly
-     syntax KItem ::= toKRList(List)
-
-     syntax KResult ::= krlist(List)
+     syntax StrictListResult ::= krlist(List)
+     syntax StrictList ::= StrictListResult
+     syntax KResult ::= StrictListResult
 
      syntax List ::= reverseList(List) [function]
 
      //TODO(liyi): syntax List ::= ListItem(Bag)
-     syntax KItem ::= list(List)
+     syntax StrictList ::= list(List)
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)
 
      syntax K ::= listToK(List) [function]
+     syntax List ::= kSeqToList(K) [function]
 
      syntax KItem ::= kpair(K, K)
 
@@ -67,8 +67,12 @@ module COMPAT-SYNTAX
 
      syntax SSList ::= toSSList(List) [function]
      syntax List ::= ofSSList(SSList) [function]
+     syntax SList ::= toSList(List) [function]
+     syntax List ::= ofSList(SList) [function]
 
-     syntax KItem ::= seqstrict(K)
+     syntax KItem ::= seqstrict(StrictList)
+
+     syntax Map ::= Map "[" K "," K "<-" K "]" [function]
 endmodule
 
 module COMPAT
@@ -140,9 +144,6 @@ module COMPAT
      rule removeBagItemFromMap(K |-> 1 M::Map, K:K) => M
      rule removeBagItemFromMap(K |-> I::Int M::Map, K:K) => K |-> (I -Int 1) M
 
-     rule list(L:List) => toKRList(L)
-          [structural]
-
      syntax KItem ::= "seqstrict()"
      rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
      rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
@@ -157,40 +158,19 @@ module COMPAT
      rule ofSSList(.SSList) => .List
      rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
 
-     syntax KItem ::= "toKRList'" "(" SubKRList ")" [strict]
+     syntax KItem ::= "strict()"
+     rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
+     rule HOLE:SList ~> strict() => krlist(ofSList(HOLE)) [cool]
 
-     // TODO(dwightguth): refactor the below into a strict() operator
-     syntax SubKRItem ::= sItem(K) [strict]
-     syntax SubKRList ::= List{SubKRItem, "ss::"} [strict]
-     syntax SubKRList ::= toSubKRList(List) [function]
-
-     rule isKResult(.SubKRList) => true
-     rule isKResult(S1::SubKRItem ss:: S2::SubKRList) => isKResult(S1) andBool isKResult(S2)
-
-     syntax SubResult ::= srItem(K)
-     syntax SubKRItem ::= SubResult
-     syntax KResult ::= SubResult
-
-     rule toSubKRList(.List) => .SubKRList
-     rule toSubKRList(ListItem(K:K) L:List) => sItem(K) ss:: toSubKRList(L)
-
-     // TODO(liyi): overcome the context associative matching
-     //context toKRList'(_:List ListItem(HOLE) _:List)
-     rule sItem(V:KResult) => srItem(V) [structural]
-
-     rule toKRList(L:List) => toKRList'(toSubKRList(L)) ~> krlist(.List)
-          [structural]
-
-     rule toKRList'((srItem(V:KResult) ss:: S:SubKRList) => S)
-          ~> krlist(_:List (.List => ListItem(V)))
-          requires getKLabel(V) =/=K #klabel(`krlist`)
-          [structural]
-     // Somewhat contrived feature: nested lists are flattened.
-     rule toKRList'((srItem(krlist(L:List)) ss:: S:SubKRList) => S)
-          ~> krlist( _:List (.List => L))
-          [structural]
-     rule toKRList'(.SubKRList) => .K
-          [structural]
+     syntax SList ::= K "strict::" SList [strict]
+                    | ".SList"
+     rule isKResult(.SList) => true
+     rule isKResult(S1::SList strict:: S2::SList) => isKResult(S1) andBool isKResult(S2)
+     rule toSList(ListItem(K:K) L::List) => K strict:: toSList(L)
+     rule toSList(.List) => .SList
+     rule ofSList(krlist(L1::List) strict:: L2::SList) => L1 ofSList(L2)
+     rule ofSList(.SList) => .List
+     rule ofSList(K:K strict:: L::SList) => ListItem(K) ofSList(L) [owise]
 
      syntax List ::= reverseAppendList(List, List) [function]
      rule reverseAppendList(.List, L::List) => L
@@ -201,6 +181,9 @@ module COMPAT
 
      rule listToK(ListItem(K:K) L:List) => K ~> listToK(L)
      rule listToK(.List) => .K
+
+     rule kSeqToList(K1:KItem ~> K:K) => ListItem(K1) kSeqToList(K)
+     rule kSeqToList(.K) => .List
 
      rule N:Int to N => .List
      rule N:Int to N':Int => ListItem(N)  ((N +Int 1) to N')
@@ -270,4 +253,7 @@ module COMPAT
 
      rule mapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
      rule mapList(.List, _) => .List
+
+     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> M2[B <- C]) M1
+     rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C) [owise]
 endmodule

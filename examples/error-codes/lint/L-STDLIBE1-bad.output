@@ -3,4 +3,3 @@ Description: Called free() on a null pointer.
 Type: Possible unintended behavior.
   at free(L-STDLIBE1-bad.c:10)
   at main(L-STDLIBE1-bad.c:10)
-  at <file-scope>(<unknown>)

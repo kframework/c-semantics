@@ -3,5 +3,4 @@ Description: Unsequenced side effect on scalar object with value computation of 
 Type: Undefined behavior.
 See also: C11 sec. 6.5:2, J.2:1 item 35
   at main(j035c.c:7)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

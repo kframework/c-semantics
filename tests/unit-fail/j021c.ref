@@ -4,5 +4,4 @@ Type: Undefined behavior.
 See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
   at test1(j021c.c:5)
   at main(j021c.c:9)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

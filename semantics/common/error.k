@@ -1,5 +1,6 @@
 module ERROR-SYNTAX
      imports LIST
+     imports STRING-SYNTAX
 
      syntax String ::= ErrorMsg(String, String, String, List) [function]
                      | ErrorMsg(List) [function, klabel(ErrorMsg1)]
@@ -8,7 +9,7 @@ module ERROR-SYNTAX
                    | "warnSystemHeaders" [function]
                    | checkOptions(K, String, Bool) [function]
 
-     syntax Opts ::= Undef() | Unspec() | Impl()
+     syntax Opts ::= Undef() | Unspec() | Impl() | Cond() | Undiag()
                    | No(Opts)
                    | Warn(String)
                    | CSV(String)

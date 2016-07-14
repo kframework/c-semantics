@@ -3,5 +3,4 @@ Description: Conversion from pointer to floating point type or from floating poi
 Type: Constraint violation.
 See also: C11 sec. 6.5.4:4
   at main(j044a.c:4)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

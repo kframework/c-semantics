@@ -3,5 +3,4 @@ Description: Reading outside the bounds of an object.
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
   at main(j062a.c:7)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

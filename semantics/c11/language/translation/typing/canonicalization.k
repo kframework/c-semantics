@@ -6,6 +6,7 @@ endmodule
 
 module C-TYPING-CANONICALIZATION
      imports C-TYPING-CANONICALIZATION-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
 
      imports C-ABSTRACT-SYNTAX

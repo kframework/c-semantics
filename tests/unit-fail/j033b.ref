@@ -3,5 +3,4 @@ Description: Trying to modify a string literal.
 Type: Undefined behavior.
 See also: C11 sec. 6.4.5:7, J.2:1 item 33
   at main(j033b.c:4)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

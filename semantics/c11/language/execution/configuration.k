@@ -1,9 +1,10 @@
 module C-CONFIGURATION
      imports C-EXECUTION-INIT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports C-DYNAMIC-CONFIG-SYNTAX
+     imports CPP-DYNAMIC-CONFIG-SYNTAX
      imports COMPAT-SYNTAX
      imports COMMON-INIT-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-CONFIGURATION-EXTENSIONS
 
      configuration
@@ -44,6 +45,14 @@ module C-CONFIGURATION
 
                // TODO(chathhorn): remove.
                <incomplete-tags> .Set </incomplete-tags>
+
+               // C++ stuff
+               <namespaces>
+                    <ns multiplicity="*" type="Map">
+                         <ns-id> GlobalNamespace() </ns-id>
+                         <nenv> .Map </nenv>
+                    </ns>
+               </namespaces>
           </tu>
      </translation-units>
 </global>
@@ -104,7 +113,7 @@ module C-CONFIGURATION
                          // general information
                          <curr-tu color="lightgray"> "" </curr-tu>
                          <curr-scope color="lightgray">
-                              fileScope:Scope
+                              none
                          </curr-scope>
                          // The identifiers that params are bound to. This
                          // is used for builtins and var-args.

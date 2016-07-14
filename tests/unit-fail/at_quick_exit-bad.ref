@@ -6,5 +6,4 @@ See also: C11 sec. 7.22.4.3:2, J.1:1 item 45
   at foo(at_quick_exit-bad.c:6)
   at quick_exit(at_quick_exit-bad.c:11)
   at main(at_quick_exit-bad.c:11)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

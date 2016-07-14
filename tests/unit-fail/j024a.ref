@@ -3,5 +3,4 @@ Description: Conversion from pointer to integer of a value possibly unrepresenta
 Type: Undefined behavior.
 See also: C11 sec. 6.3.2.3:6, J.2:1 item 24
   at main(j024a.c:5)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

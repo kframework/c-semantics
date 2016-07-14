@@ -3,4 +3,3 @@ Description: The left operand in a bitwise right-shift is negative.
 Type: Implementation defined behavior.
 See also: C11 sec. 6.5.7:5, J.3.5:1 item 5
   at main(IMPL-CEB8-bad.c:5)
-  at <file-scope>(<unknown>)

@@ -4,5 +4,4 @@ Type: Unspecified value or behavior.
 See also: C11 sec. 7.21.6.1:8
   at printf(USP-STDIO2-bad.c:10)
   at main(USP-STDIO2-bad.c:10)
-  at <file-scope>(<unknown>)
 2139062016

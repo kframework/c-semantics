@@ -4,5 +4,4 @@ Type: Unspecified value or behavior.
 See also: C11 sec. 7.21.6.1:8
   at printf(padding-2.c:9)
   at main(padding-2.c:9)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

@@ -4,4 +4,3 @@ Type: Undefined behavior.
 See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
   at foo(UB-CB4-bad.c:4)
   at main(UB-CB4-bad.c:4)
-  at <file-scope>(<unknown>)

@@ -1,5 +1,6 @@
 module C-TYPING-SYNTAX
      imports BASIC-K
+     imports MEMORY-SYNTAX
      imports STRING-SYNTAX
      imports MAP
 
@@ -11,13 +12,14 @@ module C-TYPING-SYNTAX
      syntax UType ::= ut(Set, SimpleUType)     // unqualified type
      syntax DType ::= typedDeclaration(Type, CId)
 
+     syntax EffectiveType ::= Type
+
      syntax Type ::= type(K) [function]
      syntax UType ::= utype(K) [function]
 
      // --------------
 
      syntax CId ::= typedef(CId) [klabel(typedef1)]
-     syntax CId ::= unnamed(Int, String)
      syntax CId ::= vararg(Int)
 
      syntax Bool ::= Type "==Type" Type [function]
@@ -55,17 +57,6 @@ module C-TYPING-SYNTAX
      syntax Set ::= "typeQualifiers" [function]
      syntax Set ::= "storageSpecifiers" [function]
      syntax Set ::= "functionSpecifiers" [function]
-
-     // Const, Restrict, Volatile, Atomic
-     syntax Quals ::= quals(Set)
-
-     syntax Quals ::= "noQuals" [function]
-     syntax Bool ::= Qualifier "inQuals" Quals [function]
-     syntax Quals ::= toQuals(Set) [function]
-     syntax Quals ::= Quals "+Quals" Quals [function]
-     syntax Quals ::= Quals "+Qual" Qualifier [function]
-     syntax Quals ::= Quals "-Qual" Qualifier [function]
-     syntax Bool ::= Quals "<=Quals" Quals [function]
 
      // Basic types
      syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType

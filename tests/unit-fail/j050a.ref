@@ -3,5 +3,4 @@ Description: Pointer difference outside the range that can be represented by obj
 Type: Undefined behavior.
 See also: C11 sec. 6.5.6:9, J.2:1 item 50
   at main(j050a.c:11)
-  at <file-scope>(<unknown>)
 Execution failed (configuration dumped)

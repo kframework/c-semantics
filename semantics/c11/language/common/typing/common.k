@@ -1,4 +1,19 @@
+module C-TYPING-COMMON-SYNTAX
+     imports SET
+     imports LIST
+     imports BASIC-K
+     imports COMMON-SYNTAX
+
+     syntax Type // defined in C-TYPING-SYNTAX
+
+     // Function id, def return type, def params, local declarations, body.
+     syntax RValue ::= functionObject(CId, Type, List, K)
+
+endmodule
+
 module C-TYPING-COMMON
+     imports C-TYPING-COMMON-SYNTAX
+
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-CONFIGURATION

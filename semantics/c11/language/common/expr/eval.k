@@ -20,6 +20,7 @@ module C-COMMON-EXPR-EVAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 

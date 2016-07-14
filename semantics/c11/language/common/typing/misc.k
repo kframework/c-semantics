@@ -1,5 +1,6 @@
 module C-TYPING-MISC
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
 
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX

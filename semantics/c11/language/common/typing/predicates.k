@@ -3,6 +3,7 @@ module C-TYPING-PREDICATES
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
 

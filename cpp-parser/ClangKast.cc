@@ -8,6 +8,8 @@
 #include "llvm/Support/CommandLine.h"
 #include <cstdio>
 #include <vector>
+#include <fcntl.h>
+#include <unistd.h>
 
 using namespace clang;
 using namespace clang::tooling;
@@ -37,6 +39,8 @@ struct Node {
 };
 
 std::vector<Node *> nodes;
+
+int dupedFd;
 
 #define TRY_TO(CALL_EXPR)                                                     \
   do {                                                                        \
@@ -85,26 +89,36 @@ const char *escape(const char *str, unsigned len) {
   return res->c_str();
 }
 
+void doThrow(const char *str) {
+  dup2(dupedFd, STDERR_FILENO);
+  throw std::logic_error(str);
+}
+
 class GetKASTVisitor
   : public RecursiveASTVisitor<GetKASTVisitor> {
 public:
-  explicit GetKASTVisitor(ASTContext *Context)
-    : Context(Context) {}
+  explicit GetKASTVisitor(ASTContext *Context, llvm::StringRef InFile)
+    : Context(Context) {
+    this->InFile = InFile;
+  }
 
 // if we reach all the way to the top of a hierarchy, crash with an error
 // because we don't support the node
 
   bool VisitDecl(Decl *Declaration) {
+    dup2(dupedFd, STDERR_FILENO);
     Declaration->dump();
     throw std::logic_error("unimplemented decl");
   }
 
   bool VisitStmt(Stmt *Statement) {
+    dup2(dupedFd, STDERR_FILENO);
     Statement->dump();
     throw std::logic_error("unimplemented stmt");
   }
 
   bool VisitType(Type *T) {
+    dup2(dupedFd, STDERR_FILENO);
     T->dump();
     printf("%s", T->getTypeClassName());
     throw std::logic_error("unimplemented type");
@@ -180,7 +194,8 @@ public:
     
 
   bool VisitTranslationUnitDecl(TranslationUnitDecl *Declaration) {
-    AddKApplyNode("TranslationUnit", 1);
+    AddKApplyNode("TranslationUnit", 2);
+    AddKTokenNode(VisitStringRef(InFile), "String");
     AddDeclContextNode(Declaration);
     return false;
   }
@@ -206,7 +221,7 @@ public:
   }
 
   bool VisitCXXMethodDecl(CXXMethodDecl *Declaration) {
-    throw std::logic_error("unimplemented: methods");
+    doThrow("unimplemented: methods");
   }
 
   bool TraverseNestedNameSpecifierLoc(NestedNameSpecifierLoc NNS) {
@@ -214,7 +229,7 @@ public:
       AddKApplyNode("NoNamespace", 0);
       return true;
     }
-    throw std::logic_error("unimplemented: nns");
+    doThrow("unimplemented: nns");
   }
 
   bool TraverseDeclarationNameInfo(DeclarationNameInfo NameInfo) {
@@ -241,28 +256,88 @@ public:
       }
       return true;
     default:
-      throw std::logic_error("unimplemented: nameinfo");
+      doThrow("unimplemented: nameinfo");
     }
   }
 
   bool TraverseTemplateArgumentLoc(const TemplateArgumentLoc &ArgLoc) {
-    throw std::logic_error("unimplemented: templates");
+    doThrow("unimplemented: templates");
+  }
+
+  void AddSpecifier(const char *str) {
+    AddKApplyNode("Specifier", 2);
+    AddKApplyNode(str, 0);
   }
 
   bool VisitFunctionDecl(FunctionDecl *Declaration) {
+    if (Declaration->isInlineSpecified()) {
+      AddSpecifier("Inline");
+    }
+    if (Declaration->isConstexpr()) {
+      AddSpecifier("Constexpr");
+    }
     if (Declaration->getDescribedFunctionTemplate() || 
         Declaration->getTemplateSpecializationInfo()) {
-      throw std::logic_error("unimplemented: function templates");
+      doThrow("unimplemented: function templates");
     }
     if(!Declaration->getTypeSourceInfo()) {
-      throw std::logic_error("unimplemented: something implicit???");
+      doThrow("unimplemented: something implicit???");
     }
     if (Declaration->isThisDeclarationADefinition()) {
       AddKApplyNode("FunctionDefinition", 4);
     } else {
-      AddKApplyNode("Declarator", 3);
+      AddKApplyNode("FunctionDecl", 3);
     }
     return false;
+  }
+
+  void AddStorageClass(StorageClass sc) {
+    const char *spec;
+    switch(sc) {
+    case StorageClass::SC_None:
+      return;
+    case StorageClass::SC_Extern:
+      spec = "Extern";
+      break;
+    case StorageClass::SC_Static:
+      spec = "Static";
+      break;
+    case StorageClass::SC_Register:
+      spec = "Register";
+      break;
+    default:
+      doThrow("unimplemented: storage class");
+    }
+    AddSpecifier(spec);
+  }
+
+  void AddThreadStorageClass(ThreadStorageClassSpecifier sc) {
+    const char *spec;
+    switch(sc) {
+    case ThreadStorageClassSpecifier::TSCS_unspecified:
+      return;
+    case ThreadStorageClassSpecifier::TSCS_thread_local:
+      spec = "ThreadLocal";
+      break;
+    default:
+      doThrow("unimplemented: thread storage class");
+    }
+    AddSpecifier(spec);
+  }
+
+  bool TraverseVarDecl(VarDecl *Declaration) {
+    AddStorageClass(Declaration->getStorageClass());
+    AddThreadStorageClass(Declaration->getTSCSpec());
+    if (Declaration->isConstexpr()) {
+      AddSpecifier("Constexpr");
+    }
+    AddKApplyNode("VarDecl", 4);
+
+    TRY_TO(TraverseNestedNameSpecifierLoc(Declaration->getQualifierLoc()));
+    TRY_TO(TraverseDeclarationName(Declaration->getDeclName()));
+    TRY_TO(TraverseType(Declaration->getType()));
+    TRY_TO(TraverseStmt(Declaration->getInit()));
+    return true;
   }
 
   bool TraverseFunctionProtoType(FunctionProtoType *T) {
@@ -349,7 +424,7 @@ public:
         AddKApplyNode("UInt128", 0);
         break;
       default:
-        throw std::logic_error("unimplemented: basic type");
+        doThrow("unimplemented: basic type");
     }
     return false;
   }
@@ -369,7 +444,7 @@ public:
         }
         break;
       default:
-        throw std::logic_error("unimplemented: non normal arrays");
+        doThrow("unimplemented: non normal arrays");
     }
     return false;
   }
@@ -406,13 +481,13 @@ public:
   }
 
   bool VisitCompoundStmt(CompoundStmt *Statement) {
-    AddKApplyNode("CompoundStmt", 1);
+    AddKApplyNode("CompoundAStmt", 1);
     AddStmtChildrenNode(Statement);
     return false;
   }
 
   bool VisitLabelStmt(LabelStmt *Statement) {
-    AddKApplyNode("LabelStmt", 2);
+    AddKApplyNode("LabelAStmt", 2);
     TRY_TO(TraverseDeclarationName(Statement->getDecl()->getDeclName()));
     AddStmtChildrenNode(Statement);
     return false;
@@ -424,6 +499,16 @@ public:
     return false;
   }
 
+  bool VisitDeclStmt(DeclStmt *Statement) {
+    AddKApplyNode("DeclStmt", 1);
+    int i = 0;
+    for (auto *I : Statement->decls()) {
+      i++;
+    }
+    AddKSequenceNode(i);
+    return false;
+  }
+
   bool TraverseCallExpr(CallExpr *Expression) {
     AddKApplyNode("CallExpr", 2);
     int i = 0;
@@ -431,12 +516,13 @@ public:
       i++;
     }
     if (i-1 != Expression->getNumArgs()) {
-      throw std::logic_error("unimplemented: pre_args???");
+      doThrow("unimplemented: pre_args???");
     }
     bool first = true;
     for (Stmt *SubStmt : Expression->children()) {
       TRY_TO(TraverseStmt(SubStmt));
       if (first) {
+        AddKApplyNode("list", 1);
         AddKSequenceNode(i-1);
       }
       first = false;
@@ -449,26 +535,30 @@ public:
   }
 
   bool VisitDeclRefExpr(DeclRefExpr *Expression) {
-    AddKApplyNode("DeclRef", 2);
+    AddKApplyNode("Name", 2);
     return false;
+  }
+
+  const char *VisitStringRef(StringRef str) {
+    return escape(str.begin(), (str.end() - str.begin()));
   }
 
   bool VisitStringLiteral(StringLiteral *Constant) {
     AddKApplyNode("StringLiteral", 1);
     StringRef str = Constant->getString();
-    const char *escaped_string = escape(str.begin(), (str.end() - str.begin()));
-    AddKTokenNode(escaped_string, "String");
+    AddKTokenNode(VisitStringRef(str), "String");
     return false;
   }
 
 private:
   ASTContext *Context;
+  llvm::StringRef InFile;
 };
 
 class GetKASTConsumer : public clang::ASTConsumer {
 public:
-  explicit GetKASTConsumer(ASTContext *Context)
-    : Visitor(Context) {}
+  explicit GetKASTConsumer(ASTContext *Context, llvm::StringRef InFile)
+    : Visitor(Context, InFile) {}
 
   virtual void HandleTranslationUnit(clang::ASTContext &Context) {
     Visitor.TraverseDecl(Context.getTranslationUnitDecl());
@@ -482,7 +572,7 @@ public:
   virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
     clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
     return std::unique_ptr<clang::ASTConsumer>(
-        new GetKASTConsumer(&Compiler.getASTContext()));
+        new GetKASTConsumer(&Compiler.getASTContext(), InFile));
   }
 };
 
@@ -504,7 +594,7 @@ void makeKast(int& idx) {
   case KSEQUENCE:
     printf("kSeqToList(");
     if (current->size == 0) {
-      printf(".KList");
+      printf(".K");
     }
     idx++;
     for (int i = 0; i < current->size; i++) {
@@ -522,7 +612,7 @@ void makeKast(int& idx) {
     printf(")");
     break;
   default:
-    throw std::logic_error("unexpected kind");
+    doThrow("unexpected kind");
   }
 }
 
@@ -530,9 +620,33 @@ int main(int argc, const char **argv) {
   CommonOptionsParser OptionsParser(argc, argv, MyToolCategory);
   ClangTool Tool(OptionsParser.getCompilations(),
                  OptionsParser.getSourcePathList());
+
+  // nasty hacky garbage in order to gain access to the output sent to stderr
+  // so we can filter it
+  dupedFd = dup(STDERR_FILENO);
+  int master = posix_openpt(O_RDWR | O_NOCTTY);
+  grantpt(master);
+  unlockpt(master);
+  int slave = open(ptsname(master), O_RDWR | O_NOCTTY);
+  dup2(slave, STDERR_FILENO);
   int ret = Tool.run(newFrontendActionFactory<GetKASTAction>().get());
+  dup2(dupedFd, STDERR_FILENO);
+  close(dupedFd);
+  close(slave);
+  char *buf = NULL;
+  char *buf2 = NULL;
+  size_t n = 0;
+  FILE *temp = fdopen(master, "r");
+  do {
+    if (buf2) fprintf(stderr, "%s", buf2);
+    free(buf2);
+    buf2 = buf;
+    buf = NULL;
+    n = 0;
+  } while (getline(&buf, &n, temp) != -1);
+  close(master);
   if (ret != 0) {
-    throw std::logic_error("failed to successfully process ast");
+    return ret;
   }
   int idx = 0;
   makeKast(idx);

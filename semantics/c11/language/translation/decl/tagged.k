@@ -22,8 +22,8 @@ module C-DECL-TAGGED
 
      imports C-CONFIGURATION
 
-     context StructDef(_, HOLE:KItem => seqstrict(HOLE))
-     context UnionDef(_, HOLE:KItem => seqstrict(HOLE))
+     context StructDef(_, HOLE:StrictList => seqstrict(HOLE))
+     context UnionDef(_, HOLE:StrictList => seqstrict(HOLE))
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.

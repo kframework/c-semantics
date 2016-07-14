@@ -36,6 +36,7 @@ module C-DECL-GLOBAL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-ALIGNMENT-SYNTAX

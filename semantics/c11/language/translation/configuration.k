@@ -21,6 +21,7 @@ module C-CONFIGURATION
           <external-decls> .Map </external-decls>
           // CIds
           <external-uses> SetItem(Identifier("main")) </external-uses>
+          <odr-uses> .Set </odr-uses>
      </linking-state>
 
      <structs color="lightgray"> .Map </structs>
@@ -52,6 +53,13 @@ module C-CONFIGURATION
 
                // TODO(chathhorn): move.
                <incomplete-tags> .Set </incomplete-tags>
+
+               // C++ stuff
+               <namespaces>
+                    <ns multiplicity="*" type="Map">
+                         <ns-id> .K </ns-id>
+                    </ns>
+               </namespaces>
           </tu>
      </translation-units>
 </global>

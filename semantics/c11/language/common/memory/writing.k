@@ -329,17 +329,6 @@ module C-MEMORY-WRITING
      rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))
           => Offset *Int cfg:bitsPerByte in PaddingOffs
 
-     syntax DataList ::= splitPointerBytes(SymLoc, Int) [function]
-     syntax DataList ::= splitPointerBytes(SymLoc, Int, K, List) [function, klabel(splitPointerBytes2)]
-
-     rule splitPointerBytes(Loc:SymLoc, Len:Int)
-          => splitPointerBytes(Loc, Len, 0, .List)
-     rule splitPointerBytes(Loc:SymLoc, Len:Int, N:Int, L:List)
-          => splitPointerBytes(Loc, Len -Int 1, N +Int 1,
-               L ListItem(piece(subObject(Loc, N, N), cfg:bitsPerByte)))
-          requires Len >Int 0
-     rule splitPointerBytes(_, 0, _, L:List) => dataList(L:List)
-
      syntax DataList ::= splitFloatBytes(Float, UType, Int) [function]
      syntax DataList ::= splitFloatBytes(Float, UType, Int, List) [function, klabel(splitFloatBytes2)]
 

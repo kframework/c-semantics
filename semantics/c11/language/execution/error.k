@@ -31,13 +31,13 @@ module C-EXECUTION-ERROR
 
 
      rule (<k> EXIT(Msg:String) ~> K:K </k>
-          => <final-computation> #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
+          => <final-computation> #write(2, Msg +String stackPrefix(L, Loc, S) +String printStackTrace(L, Loc, S) +String "\n") ~> K </final-computation>)
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           requires notBool isErrorRecovery andBool notBool isCSV
 
-     rule <k> EXIT(Msg:String) => #write(2, Msg +String "\n" +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
+     rule <k> EXIT(Msg:String) => #write(2, Msg +String stackPrefix(L, Loc, S) +String printStackTrace(L, Loc, S) +String "\n") ~> HALT ...</k>
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
@@ -67,8 +67,13 @@ module C-EXECUTION-ERROR
           <options>... SetItem(CSV(Report:String)) ...</options>
           requires isErrorRecovery
 
+     syntax String ::= stackPrefix(List, CabsLoc, Scope) [function]
+     rule stackPrefix(.List, UnknownCabsLoc, none) => ""
+     rule stackPrefix(_, _, _) => "\n" [owise]
+
      syntax String ::= stackSeparator(List) [function]
      rule stackSeparator(.List) => ""
+     rule stackSeparator(ListItem(_)) => ""
      rule stackSeparator(_) => "\n" [owise]
 
      rule <result-value> unknown(I:Int) => I </result-value>
@@ -76,6 +81,8 @@ module C-EXECUTION-ERROR
           <options>... SetItem(CSV(Report::String)) ...</options>
           <status> terminated </status>
 
+     rule printStackTrace(L:List, UnknownCabsLoc, none)
+          => printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))

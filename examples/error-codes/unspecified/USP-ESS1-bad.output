@@ -3,4 +3,3 @@ Description: Switching on an unspecified controlling expression.
 Type: Unspecified value or behavior.
 See also: C11 sec. 6.8.4.2:5
   at main(USP-ESS1-bad.c:9)
-  at <file-scope>(<unknown>)

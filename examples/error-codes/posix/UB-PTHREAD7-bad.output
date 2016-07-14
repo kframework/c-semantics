@@ -4,4 +4,3 @@ Type: Undefined behavior.
 See also: POSIX 2008 sec. pthread_mutex_unlock
   at pthread_mutex_unlock(UB-PTHREAD7-bad.c:12)
   at main(UB-PTHREAD7-bad.c:12)
-  at <file-scope>(<unknown>)

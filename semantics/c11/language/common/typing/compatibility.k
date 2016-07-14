@@ -14,6 +14,7 @@ module C-TYPING-COMPATIBILITY
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
 
      imports COMPAT-SYNTAX
 

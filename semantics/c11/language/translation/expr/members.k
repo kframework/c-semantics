@@ -2,6 +2,7 @@ module C-EXPR-MEMBERS
      imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{

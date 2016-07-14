@@ -1,5 +1,18 @@
-module C-DYNAMIC-SYNTAX
+// information used by execution configuration and therefore
+// included in all C and C++ modules
+module C-DYNAMIC-CONFIG-SYNTAX
      imports BITS-SYNTAX
+
+     syntax CValue ::= NumValue
+     syntax NumValue ::= Bits // Int is a subsort of Bits
+
+     syntax Scope ::= "none"
+
+     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
+endmodule
+
+module C-DYNAMIC-SYNTAX
+     imports C-DYNAMIC-CONFIG-SYNTAX
      imports COMPAT-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
@@ -31,20 +44,18 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "discard"
 
-     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
-     syntax CValue ::= NumValue | SymLoc | Agg
+     syntax NumValue ::= Float
+     syntax CValue ::= SymLoc | Agg
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
-     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
-
      syntax FileScope ::= "fileScope"
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
-     syntax Scope ::= FileScope | PrototypeScope | BlockScope | "none"
+     syntax Scope ::= FileScope | PrototypeScope | BlockScope
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)

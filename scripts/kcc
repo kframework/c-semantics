@@ -826,7 +826,7 @@ sub parse {
      checkError(preprocess($ppResult, $inputFile, $isCPP), $ppResult, 0);
 
      if ($isCPP) {
-       my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output > $kast");
+       my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output -std=c++14 > $kast");
        if ($args->{'-d'}) {
          print("$cmd\n");
        }

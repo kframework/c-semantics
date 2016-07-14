@@ -7,6 +7,7 @@ endmodule
 
 module C-TYPING-EXPR
      imports C-TYPING-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
 

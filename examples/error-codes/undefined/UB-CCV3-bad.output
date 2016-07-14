@@ -3,10 +3,8 @@ Description: Conversion to integer from float outside the range that can be repr
 Type: Undefined behavior.
 See also: C11 sec. 6.3.1.4:1, J.2:1 item 17
   at main(UB-CCV3-bad.c:6)
-  at <file-scope>(<unknown>)
 Error: UB-CCV1
 Description: Signed integer overflow.
 Type: Undefined behavior.
 See also: C11 sec. 6.5:5, J.2:1 item 36
   at main(UB-CCV3-bad.c:6)
-  at <file-scope>(<unknown>)
