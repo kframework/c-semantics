@@ -47,31 +47,55 @@ module C-DECL-TAGGED
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true
           requires F =/=K #NoName
-     rule hasNamedField((ListItem(typedDeclaration(_, #NoName)) => .List) _)
+     rule hasNamedField(ListItem(typedDeclaration(T::Type, #NoName)) L:List)
+          => hasNamedField(L)
+          requires notBool isStructOrUnionType(T)
+     rule hasNamedField(ListItem(typedDeclaration(T::Type, #NoName)) L:List)
+          => hasNamedField(getFields(getFieldInfo(T)) L)
+          requires isStructOrUnionType(T)
      rule hasNamedField(.List) => false
 
      rule makeStructFieldInfo(L:List)
-          => makeStructFieldInfo'(
-               incompleteToFlexibleArrayMember(L),
-               0, .Map, .Map,
-               incompleteToFlexibleArrayMember(L))
+          => makeStructFieldInfo'(incompleteToFlexibleArrayMember(L),
+               0, .Map, .Map, 0, .List)
 
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," List ")"
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," Int "," List ")"
                          [function]
      syntax Int ::= structPadding(Int, Type) [function]
                   | structPadding(Int, Int) [function, klabel(structPadding2)]
 
      rule makeStructFieldInfo'(
-               ListItem(typedDeclaration(T:Type, Field:CId)) L:List
+               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
                , V:Int
                , Types:Map
                , Offsets:Map
-               , L':List
+               , I:Int
+               , NL:List
           )
           => makeStructFieldInfo'(L, V +Int bitSizeofType(T) +Int structPadding(V, T),
-               Types[Field <- T], Offsets[Field <- V +Int structPadding(V, T)], L')
-     rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets, computePaddingOffsets(L, (V +Int structPadding(V, maxByteAlignofList(L))), Types, Offsets, 0))
+               Types[Field <- T], Offsets[Field <- V +Int structPadding(V, T)], I +Int 1,
+               NL ListItem(typedDeclaration(T, Field)))
+          requires Field =/=K #NoName orBool notBool isStructOrUnionType(T)
+
+     rule makeStructFieldInfo'(
+               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
+               , V:Int
+               , Types:Map
+               , Offsets:Map
+               , I:Int
+               , NL:List
+          )
+          => makeStructFieldInfo'(L, V +Int bitSizeofType(T) +Int structPadding(V, T),
+               Types[#NoName(I) <- T],
+               Offsets[#NoName(I) <- V +Int structPadding(V, T)],
+               I +Int 1,
+               NL ListItem(typedDeclaration(T, #NoName(I))))
+         requires Field ==K #NoName andBool isStructOrUnionType(T)
+
+     rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, _, NL:List)
+          => fieldInfo(NL, (V +Int structPadding(V, maxByteAlignofList(NL))),
+                        Types, Offsets,
+                        computePaddingOffsets(NL, (V +Int structPadding(V, maxByteAlignofList(NL))), Types, Offsets, 0))
 
      rule structPadding(Offset::Int, t(_, _, bitfieldType(T::BitfieldFieldType, N::Int))) => 0
           requires (Offset +Int bitSizeofType(type(bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte
@@ -95,20 +119,39 @@ module C-DECL-TAGGED
           => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
 
-     rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, L)
+     rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, 0, .List)
 
-     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," List ")"
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," Int "," List ")"
                          [function]
      rule makeUnionFieldInfo'(
-               ListItem(typedDeclaration(T:Type, Field:CId)) L:List
+               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
                , Types:Map
                , Offsets:Map
-               , L':List
+               , I:Int
+               , NL:List
           )
           => makeUnionFieldInfo'(L,
-               Types[Field <- T], Offsets[Field <- 0], L')
-     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, L:List)
-          => fieldInfo(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets, computePaddingOffsets(L, maxByteSizeofList(L) *Int cfg:bitsPerByte, Types, Offsets, 0))
+               Types[Field <- T], Offsets[Field <- 0], I +Int 1,
+               NL ListItem(typedDeclaration(T, Field)))
+          requires Field =/=K #NoName orBool notBool isStructOrUnionType(T)
+     rule makeUnionFieldInfo'(
+               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
+               , Types:Map
+               , Offsets:Map
+               , I:Int
+               , NL:List
+          )
+          => makeUnionFieldInfo'(L,
+               Types[#NoName(I) <- T],
+               Offsets[#NoName(I) <- 0],
+               I +Int 1,
+               NL ListItem(typedDeclaration(T, #NoName(I))))
+          requires Field ==K #NoName andBool isStructOrUnionType(T)
+
+     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, _, NL:List)
+          => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte,
+                Types, Offsets,
+                computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
 
      syntax Set ::= computePaddingOffsets(List, Int, Map, Map, Int) [function]
      rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, Offset::Int)

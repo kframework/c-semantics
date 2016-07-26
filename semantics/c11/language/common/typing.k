@@ -33,6 +33,11 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
+     syntax List ::= getFields(FieldInfo) [function]
+     syntax Map  ::= getFieldsTypes(FieldInfo) [function]
+     syntax Map  ::= getFieldsOffsets(FieldInfo) [function]
+     syntax Int  ::= getOffsetForField(CId, Type, FieldInfo) [function]
+     syntax Type ::= getTypeForField(CId, List) [function]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
      syntax Bool ::= isCompleteType(Type) [function]
@@ -336,4 +341,10 @@ module C-TYPING-SYNTAX
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
      syntax Int ::= numBytes(SimpleType) [function]
+
+     syntax Bool ::= isNoNameInt(CId) [function]
+     syntax Bool ::= anonInDecls(List) [function]
+     // Search - anonymous fields
+     syntax ProvInfo ::= provInfo(CId, Bool, FieldInfo)
+     syntax List  ::= searchAnons(CId, Bool, FieldInfo, Int, List, List) [function]
 endmodule

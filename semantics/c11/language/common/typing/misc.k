@@ -227,6 +227,20 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
+     rule getFields(fieldInfo(L:List, _, _, _, _)) => L
+     rule getFieldsTypes(fieldInfo(_, _, Ts:Map, _, _)) => Ts
+     rule getFieldsOffsets(fieldInfo(_, _, _, Offs:Map, _)) => Offs
+     rule getOffsetForField(F:CId, T:Type,
+            fieldInfo(_, _,
+                F |-> T _,
+                F |-> Offset:Int _, _))
+          => Offset
+     rule getTypeForField(F:CId, ListItem(
+                                  fieldInfo(_, _,
+                                      F |-> T::Type _,
+                                      _, _)) _)
+          => T
+
      rule getTypesAtOffset(T::Type, 0) => ListItem(T)
           requires notBool isAggregateOrUnionType(T) andBool notBool isBitfieldType(T)
      rule getTypesAtOffset(t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, N::Int)), 0)
@@ -394,5 +408,65 @@ module C-TYPING-MISC
      rule isStructOrUnionKLabel(#klabel(`structType`)) => true
      rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
      rule isStructOrUnionKLabel(_) => false [owise]
+     rule isNoNameInt(#NoName(_:Int)) => true
+     rule isNoNameInt(_:CId) => false [owise]
+
+     rule anonInDecls(ListItem(typedDeclaration(_:Type, #NoName(_:Int))) _:List)
+          => true
+     rule anonInDecls(ListItem(typedDeclaration(_:Type, F:CId)) Decls':List)
+          => anonInDecls(Decls')
+          requires notBool isNoNameInt(F)
+     rule anonInDecls(.List) => false
+
+     // Search anonymous fields
+     syntax List  ::= searchAnonsNoName(CId, Bool, FieldInfo, Int, List, List,
+                                        CId, Bool, FieldInfo, Int, List, List) [function]
+     // recursion steps
+     rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
+                   ListItem(typedDeclaration(T::Type, #NoName(I:Int))) Decls:List, Path:List)
+          => searchAnonsNoName(F, IsUnion, Fields, Offset, Decls, Path,
+                #NoName(I), isUnionType(T), getFieldInfo(T),          // F', IsUnion', Fields'
+                Offset +Int getOffsetForField(#NoName(I), T, Fields), // Offset'
+                getFields(getFieldInfo(T)),                           // Decls'
+                Path ListItem(provInfo(#NoName(I), IsUnion, Fields))) // Path'
+
+     rule searchAnonsNoName(F :CId, IsUnion :Bool, Fields :FieldInfo, Offset :Int, Decls :List, Path :List,
+                            F':CId, IsUnion':Bool, Fields':FieldInfo, Offset':Int, Decls':List, Path':List)
+          => searchAnons(F, IsUnion', Fields', Offset', Decls', Path')
+             searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
+          requires (notBool F in_keys(getFieldsTypes(Fields')))
+           andBool (notBool F in_keys(getFieldsOffsets(Fields')))
+           andBool anonInDecls(Decls')
+
+     rule searchAnonsNoName(F:CId, IsUnion:Bool, Fields :FieldInfo, Offset:Int, Decls :List, Path:List,
+                            _    , _           , Fields':FieldInfo, _         , Decls':List, _)
+          => searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
+          requires (notBool F in_keys(getFieldsTypes(Fields')))
+           andBool (notBool F in_keys(getFieldsOffsets(Fields')))
+           andBool (notBool anonInDecls(Decls'))
+
+     rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
+                   ListItem(typedDeclaration(T::Type, F':CId)) Decls:List, Path:List)
+          => searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
+         requires F =/=K F' andBool notBool isNoNameInt(F')
+
+     // recursion base cases
+     rule searchAnons(_, _, _, _, .List, _) => .List
+
+     // two bases cases to accomodate different clients
+     // note: instead of creating a new type wrapper,
+     //       the heterogenous list with element and the offset is returned
+     rule searchAnonsNoName(F:CId, _            , _                , _          , _          , _         ,
+                            _    , IsUnion':Bool, Fields':FieldInfo, Offset':Int, Decls':List, Path':List)
+          => ListItem(Fields') ListItem(Offset') ListItem(IsUnion') Path'
+          requires F in_keys(getFieldsTypes(Fields'))
+           andBool F in_keys(getFieldsOffsets(Fields'))
+
+     rule searchAnons(F:CId, IsUnion:Bool, fieldInfo(Decls:List, Size:Int,
+                   F |-> T::Type Tys:Map, F |-> I:Int Offs:Map, PO:Set), Offset:Int, _:List,
+                   Path:List)
+         => ListItem(fieldInfo(Decls, Size, F |-> T Tys, F |-> I Offs, PO))
+            ListItem(Offset) ListItem(IsUnion)
+            Path
 
 endmodule
