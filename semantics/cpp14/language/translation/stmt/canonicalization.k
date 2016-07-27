@@ -2,7 +2,7 @@ module CPP-STMT-CANONICALIZATION
       imports COMPAT-SYNTAX
       imports CPP-ABSTRACT-SYNTAX
 
-      rule CompoundAStmt(L::List) => CompoundStmt(canonicalizeAStmts(L)) [anywhere]
+      rule CompoundAStmt(L::List) => BlockStmt(!N:Int, canonicalizeAStmts(L)) [anywhere]
       rule LabelAStmt(X::CId, L::List) => LabelStmt(X, canonicalizeAStmts(L))
 
       syntax List ::= canonicalizeAStmts(List) [function]

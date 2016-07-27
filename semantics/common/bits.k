@@ -15,7 +15,8 @@ module BITS-SYNTAX
      syntax Bits ::= bitRange(Bits, Int, Int)
 
      // object, start piece, end piece
-     syntax SubObject ::= subObject(SymLoc, Int, Int)
+     syntax Bits ::= encodedValue(EffectiveValue, Int, Int)
+     syntax SubObject ::= encodedValue(SymLoc, Int, Int)
      syntax Bits ::= SubObject
      syntax IntPtr ::= SubObject
 
@@ -31,10 +32,10 @@ module BITS
      imports COMPAT-SYNTAX
      imports SETTINGS-SYNTAX
 
-     rule base(subObject(S:SymLoc, _, _)) => base(S)
-     rule sameBase((subObject(S:SymLoc, _, _) => S), _)
-     rule sameBase(_, (subObject(S:SymLoc, _, _) => S))
-     rule locOf(subObject(S:SymLoc, _, _)) => S
+     rule base(encodedValue(S:SymLoc, _, _)) => base(S)
+     rule sameBase((encodedValue(S:SymLoc, _, _) => S), _)
+     rule sameBase(_, (encodedValue(S:SymLoc, _, _) => S))
+     rule locOf(encodedValue(S:SymLoc, _, _)) => S
 
      // coallesce bitranges that are adjacent
      rule piece(bitRange(N::Bits, SuccTo:Int, To':Int), Len:Int)

@@ -11,23 +11,29 @@ module C-CONFIGURATION
 
      <main-tu color="lightgray"> .Set </main-tu>
 
-     // CId |-> Types
-     <external-types> .Map </external-types>
-     // CId |-> Loc
-     <external-defs> .Map </external-defs>
+     <global-state>
+          // CId |-> Types
+          <external-types> .Map </external-types>
+          // CId |-> Loc
+          <external-defs> .Map </external-defs>
+          // QualId |-> (Type |-> Loc)
+          <odr-defs> .Map </odr-defs>
+          // dummy link base |-> real base
+          <linkings> .Map </linkings>
+     </global-state>
 
      <linking-state multiplicity="?" initial="">
           // CId |-> Set(TUs)
           <external-decls> .Map </external-decls>
           // CIds
-          <external-uses> SetItem(Identifier("main")) </external-uses>
+          <external-uses> .Set </external-uses>
+          // SymBase |-> Set(ktriple(TU, QualId, Type))
+          <odr-decls> .Map </odr-decls>
+          // Set(SymBase)
           <odr-uses> .Set </odr-uses>
      </linking-state>
 
      <structs color="lightgray"> .Map </structs>
-
-     // dummy link base |-> real base
-     <linkings> .Map </linkings>
 
      <translation-units>
           <tu multiplicity="*" type="Map">
@@ -59,6 +65,7 @@ module C-CONFIGURATION
                          <ns-id> GlobalNamespace() </ns-id>
                          <nenv> .Map </nenv>
                          <using-namespaces> .Set </using-namespaces>
+                         <inline-namespaces> .Set </inline-namespaces>
                     </ns>
                </namespaces>
           </tu>
@@ -90,7 +97,8 @@ module C-CONFIGURATION
      <elab-stack> .List </elab-stack>
 
      <curr-tu color="lightgray"> "" </curr-tu>
-     <curr-lang-linkage> DefaultLinkage </curr-lang-linkage>
+     <curr-lang-linkage> CPPLinkage </curr-lang-linkage>
+     <curr-extern> false </curr-extern>
      <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
      <curr-eval-context color="lightgray"> eval </curr-eval-context>
      <curr-program-loc color="black">

@@ -15,19 +15,26 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPSimpleType ::= CPPSimpleBasicType
 
-     syntax CPPSimpleBasicType ::= CPPSimpleIntegerType | CPPSimpleVoidType
-     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType | CPPSimpleCharType
-     syntax CPPSimpleSignedType ::= "int" | CPPSimpleSignedCharType
+     syntax CPPSimpleArithmeticType ::= CPPSimpleIntegerType | CPPSimpleFloatingType
+     syntax CPPSimpleBasicType ::= CPPSimpleArithmeticType | CPPSimpleVoidType | CPPSimpleNullPtrTType
+     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType | CPPSimpleUnsignedType | CPPSimpleCharType | CPPSimpleBoolType
+     syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long"
+     syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
+     syntax CPPSimpleFloatingType ::= "float" | "double" | "long-double"
      syntax CPPSimpleCharType ::= CPPSimpleSignedCharType | CPPSimpleUnsignedCharType
      syntax CPPSimpleSignedCharType ::= "signed-char"
      syntax CPPSimpleUnsignedCharType ::= "unsigned-char"
+     syntax CPPSimpleBoolType ::= "bool"
      syntax CPPSimpleVoidType ::= "void"
      syntax CPPSimpleCharType ::= "char" [function]
+     syntax CPPSimpleIntegerType ::= "wchar_t" | "char16_t" | "char32_t"
+     syntax CPPSimpleNullPtrTType ::= "nullptr_t"
 
      syntax CPPSimpleType ::= CPPSimplePointerType
                             | CPPSimpleFunctionType
                             | CPPSimpleArrayType
                             | CPPSimpleRefType
+                            | CPPSimpleNullPtrTType
      syntax CPPSimpleRefType ::= CPPSimpleLVRefType
                                | CPPSimpleRVRefType
 
@@ -37,7 +44,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimplePointerType ::= pointerType(CPPType) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
      syntax CPPSimpleRVRefType ::= rvRefType(CPPType)
-     syntax CPPSimpleFunctionType ::= functionType(CPPType, List, Prototype, LanguageLinkage) [klabel(cppFunctionType)]
+     // TODO: exception specification
+     syntax CPPSimpleFunctionType ::= functionType(CPPType, List, LanguageLinkage) [klabel(cppFunctionType)]
 
      syntax CPPFunctionType ::= t(Quals, Set, CPPSimpleFunctionType) [klabel(tcpp)]
      syntax CPPBasicType ::= CPPIntegerType | CPPVoidType
@@ -47,17 +55,17 @@ module CPP-TYPING-SYNTAX
      syntax CPPPointerType ::= t(Quals, Set, CPPSimplePointerType) [klabel(tcpp)]
      syntax CPPLVRefType ::= t(Quals, Set, CPPSimpleLVRefType) [klabel(tcpp)]
      syntax CPPRVRefType ::= t(Quals, Set, CPPSimpleRVRefType) [klabel(tcpp)]
+     syntax CPPNullPtrTType ::= t(Quals, Set, CPPSimpleNullPtrTType) [klabel(tcpp)]
      syntax CPPRefType ::= CPPLVRefType | CPPRVRefType
      syntax CPPClassType
-     syntax CPPCompleteType ::= CPPFunctionType | CPPPointerType
-     syntax CPPType ::= CPPCompleteType | CPPFunctionType | CPPArrayType
-
-     syntax Prototype ::= proto(List, Expr)
-                        | "noproto"
+     syntax CPPBitfieldType
+     syntax CPPCompleteType ::= CPPFunctionType | CPPPointerType | CPPIntegerType
+     syntax CPPType ::= CPPCompleteType | CPPArrayType
 
      syntax CPPDType ::= "variadic"
 
      syntax List ::= getParams(CPPFunctionType) [function, klabel(cppgetParams)]
+     syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
 
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
 
@@ -72,18 +80,32 @@ module CPP-TYPING-SYNTAX
 
      syntax Bool ::= isVolatileType(CPPType) [function, klabel(isVolatileTypeCPP)]
 
+     syntax Type ::= convertTypeToC(CPPType) [function]
+     syntax DType ::= convertTypeToC(CPPDType) [function]
+
+     syntax CPPType ::= convertTypeToCPP(Type) [function]
+     syntax CPPDType ::= convertTypeToCPP(DType) [function]
+
+     syntax Int ::= max(CPPIntegerType) [function, klabel(maxCpp)]
+                  | min(CPPIntegerType) [function, klabel(minCpp)]
+
 endmodule
 
 module CPP-TYPING
      imports CPP-TYPING-SYNTAX
 
-     rule getParams(t(_, _, functionType(_, L::List, _, _))) => L
+     rule getParams(t(_, _, functionType(_, L::List, _))) => L
+     rule getReturnType(t(_, _, functionType(T::CPPType, _, _))) => T
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
 
      rule type(T::CPPSimpleType) => t(noQuals, .Set, T)
      rule type(lv(_, T::CPPType)) => T
      rule type(le(_, T::CPPType)) => T
+     rule type(prv(_, T::CPPType)) => T
+     rule type(pre(_, T::CPPType)) => T
+     rule type(xv(_, T::CPPType)) => T
+     rule type(xe(_, T::CPPType)) => T
 
      rule innerType(t(_, _, pointerType(T::CPPType))) => T
      rule innerType(t(_, _, arrayType(T::CPPType, _))) => T
@@ -92,10 +114,27 @@ module CPP-TYPING
 
      rule isCPPObjectType(T:K) => notBool isCPPFunctionType(T) andBool notBool isCPPRefType(T) andBool notBool isCPPVoidType(T)
 
-     rule utype(lv(_, T::CPPType)) => utype(T)
-     rule utype(le(_, T::CPPType)) => utype(T)
+     rule utype(V::Val) => utype(type(V))
      rule utype(t(_, Mods::Set, T::CPPSimpleType)) => t(noQuals, Mods, T)
 
      rule isVolatileType(t(Q::Quals, _, _)) => Volatile() inQuals Q
+
+endmodule
+
+module C-CPP-TYPING
+     imports C-TYPING-SYNTAX
+     imports CPP-TYPING
+
+     rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, Args::List, CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(Args, #klabel(`convertTypeToC`))))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, signed-char::CPPSimpleSignedCharType)) => t(Q, Mods, signed-char::SimpleSignedCharType)
+     rule convertTypeToC(variadic::CPPDType) => variadic::Variadic
+     rule convertTypeToC(t(Q::Quals, Mods::Set, pointerType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
+
+
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleSignedIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
+
+     rule max(T::CPPIntegerType) => max(utype(convertTypeToC(T)))
+     rule min(T::CPPIntegerType) => min(utype(convertTypeToC(T)))
 
 endmodule

@@ -615,7 +615,7 @@ module C-DECL-GLOBAL
      // No previous decl, this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
+          <external-decls> Decls:Map (.Map => X |-> SetItem(Tu)) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
           requires isLinkerLoc(Base')
                andBool notBool (X in_keys(Decls))
@@ -623,7 +623,7 @@ module C-DECL-GLOBAL
      // No previous decl, this is a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls> Decls:Map (.Map => X |-> set(SetItem(Tu))) </external-decls>
+          <external-decls> Decls:Map (.Map => X |-> SetItem(Tu)) </external-decls>
           <external-types>... (.Map => X |-> T') ...</external-types>
           <external-defs>... (.Map => X |-> Base') ...</external-defs>
           requires notBool isLinkerLoc(Base')
@@ -632,7 +632,7 @@ module C-DECL-GLOBAL
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls>... X |-> set(_:Set (.Set => SetItem(Tu))) ...</external-decls>
+          <external-decls>... X |-> _:Set (.Set => SetItem(Tu)) ...</external-decls>
           <external-types>... X |-> (_ => T') ...</external-types>
           requires isLinkerLoc(Base')
           [structural]

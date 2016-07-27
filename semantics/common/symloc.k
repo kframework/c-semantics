@@ -185,6 +185,8 @@ module SYMLOC
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
      rule getTU(loc(_ @ link(Tu:String), _)) => Tu
      rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
+     rule getTU(loc(_ @ nativeAddress(), _)) => "native"
+     rule getTU(loc(_ @ nativeAddress(), _, _)) => "native"
 
      rule getThreadId(loc(_ @ thread(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ thread(Th:Int), _, _)) => Th

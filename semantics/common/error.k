@@ -17,10 +17,14 @@ module ERROR-SYNTAX
      syntax ErrorExit ::= "HALT"
 
      syntax Error
+     syntax K ::= assert(Bool, Error)
 
      syntax KItem ::= openWriteThenClose(String, String)
      syntax KItem ::= writeThenClose(Int, String)
      syntax KItem ::= close(Int)
+
+     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")"
+     syntax KItem ::= UNDIAG(String, String, String)
 endmodule
 
 module ERROR
@@ -91,5 +95,17 @@ module ERROR
      rule checkOptionsCateg(Opt:Opts, _, <generatedTop>... <options>... SetItem(No(Opt))...</options> ...</generatedTop>) => false
      rule checkOptionsCateg(Opt:Opts, _, <generatedTop>... <options>... SetItem(Opt)...</options> ...</generatedTop>) => true
      rule checkOptionsCateg(_, B:Bool, _) => B [owise]
+
+     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
+          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", ListItem(Document) ListItem(Citation)))
+          requires checkOptions(Undef(), Title, true)
+     rule UNDIAG(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg("URV-" +String Title, Msg, "Undiagnosable Rule violation.", ListItem("C++14") ListItem(Citation)))
+          requires checkOptions(Undiag(), Title, true)
+
+     rule EXT-UNDEF(Title:String, _, _, _) => HALT
+          requires notBool checkOptions(Undef(), Title, true)
+     rule UNDIAG(Title:String, _, _) => HALT
+          requires notBool checkOptions(Undiag(), Title, true)
 
 endmodule

@@ -4,6 +4,7 @@ module CPP-OVERLOADING-SYNTAX
      syntax Val ::= CandidateSet
      syntax CandidateSet ::= cSet(Map)
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, CId)
+     syntax Expr ::= resolveUniqueDecl(K, Expr) [strict(1)]
 
 endmodule
 
@@ -18,5 +19,12 @@ module CPP-OVERLOADING
      rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, operator()) => CallExpr(lv(lnew(Base, T), T), Args) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
+               andBool Base =/=K nonStatic
+
+     rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), _) => lv(lnew(Base, T), T)
+          requires Base =/=K nonStatic
+     rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, T)
+     rule resolveUniqueDecl(V:KResult, _) => V
+          requires notBool isCandidateSet(V)
 
 endmodule

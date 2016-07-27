@@ -10,7 +10,7 @@ add_definitions(
 -D__STDC_CONSTANT_MACROS
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-variable")
 
 set(SOURCE_FILES ClangKast.cc)
 add_executable(clang-kast ${SOURCE_FILES})

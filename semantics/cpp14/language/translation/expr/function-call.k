@@ -6,18 +6,18 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(V:K, t(Q::Quals, S::Set, functionType(T::CPPType, P::List, Pr::Prototype, L::LanguageLinkage))), list(A::List))
+     rule CallExpr(Lbl:KLabel(V:K, t(Q::Quals, S::Set, functionType(T::CPPType, P::List, L::LanguageLinkage))), list(A::List))
           => elaborate(bind(P, P, A, 0))
-          ~> elabCall(Lbl(V, t(Q, S, functionType(T, P, Pr, L))), T, .K)
+          ~> elabCall(Lbl(V, t(Q, S, functionType(T, P, L))), A, T, .K)
           requires isLKLabel(#klabel(Lbl))
 
-     syntax KItem ::= elabCall(Val, CPPType, K)
+     syntax KItem ::= elabCall(Val, List, CPPType, K)
 
      rule (elaborateDone(K:K) => .K)
-          ~> elabCall(_, _, _ => K)
+          ~> elabCall(_, _, _, _ => K)
 
-     rule elabCall(Fun::Val, T::CPPType, K:K)
-          => makeCall(BuiltinCallOp(Fun, K), T)
+     rule elabCall(Fun::Val, Args::List, T::CPPType, K:K)
+          => makeCall(BuiltinCallOp(Fun, size(Args), K), T)
 
      syntax TExpr ::= makeCall(Expr, CPPType) [function]
      rule makeCall(E::Expr, T::CPPType) => le(E, T)
@@ -27,7 +27,7 @@ module CPP-EXPR-FUNCTION-CALL
      rule makeCall(E::Expr, T::CPPType) => pre(E, T) [owise]
 
      rule bindParam(I::Int, T::CPPType, Init::Init)
-          => bindParamHelper(figureInit(le(Name(NoNamespace(), arg(I)), T), T, Init, Init))
+          => bindParamHelper(figureInit(le(Name(NoNNS(), arg(I)), T), T, Init, Init))
      syntax KItem ::= bindParamHelper(K) [strict]
      rule bindParamHelper(initValue(_, _, S::Stmt)) => S
 

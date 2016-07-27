@@ -1,4 +1,15 @@
+module FUNCTION-CALL-SYNTAX
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
+     syntax EffectiveType
+
+     // syntax for function call regardless of language of caller
+     syntax KItem ::= application(CabsLoc, SymBase, K, EffectiveType, LanguageLinkage, StrictList)
+endmodule
+
 module C-EXPR-FUNCTION-CALL
+     imports FUNCTION-CALL-SYNTAX
+
      imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
      imports C-BUILTIN-SYNTAX
@@ -65,10 +76,11 @@ module C-EXPR-FUNCTION-CALL
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
 
+     // Function call (from C function)
      rule <k> Call(
                tv(loc(Base:SymBase, 0), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, getTU(loc(Base, 0)), Fun, T, L)
+               => sequencePoint ~> application(CurrLoc, Base, Fun, T, CLinkage, krlist(L))
           ...</k>
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -77,7 +89,7 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(
                tv(loc(0 @ nativeAddress(), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, "native", functionObject(nativeFunction(Address), makeNativeDecl(T), .List, handleBuiltin), T, L)
+               => sequencePoint ~> application(CurrLoc, 0 @ nativeAddress(), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, handleBuiltin), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
@@ -109,15 +121,15 @@ module C-EXPR-FUNCTION-CALL
 
      syntax KResult ::= rvlist(List)
 
-     syntax KItem ::= application(CabsLoc, String, RValue, Type, List)
      rule checkStackDepth => .K
           requires notBool hasLint
 
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
-     rule <k> application(CurrLoc:CabsLoc, Tu:String,
+     // Function call (into C function)
+     rule <k> application(CurrLoc:CabsLoc, Base:SymBase,
                     functionObject(X:CId, DefT:Type, Locals:List, Blk:K),
-                    CallT:Type, L:List)
+                    CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => sequencePoint
                ~> enterRestrictScope(blockScope(X, 0))
@@ -128,16 +140,17 @@ module C-EXPR-FUNCTION-CALL
                ~> Blk
           </k>
           <call-stack> .List => ListItem(
-               <call-stack-frame>...
+               <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
                          C
                     </stack-function-control>
-               ...</call-stack-frame>
+                    <stack-lang-linkage> CallingLang </stack-lang-linkage>
+               </call-stack-frame>
           ) ...</call-stack>
           (C:FunctionControlCell
           => <function-control>...
-               <curr-tu> Tu </curr-tu>
+               <curr-tu> getTU(loc(Base, 0)) </curr-tu>
                <curr-scope> blockScope(X, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
@@ -146,7 +159,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
           idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
-          ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _)
+          ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
 

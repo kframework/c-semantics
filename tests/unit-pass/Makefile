@@ -1,4 +1,4 @@
-TUS = $(wildcard ./*.c)
+TUS = $(wildcard ./*.c) $(wildcard ./*.cc)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, ${TUS}))
 GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
@@ -33,6 +33,9 @@ compile: ${KCC_COMPILED_TESTS}
 %.kcc: %.c
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+%.kcc: %.cc
+	@echo -n "Compiling $<... "
+	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
@@ -41,6 +44,9 @@ compile: ${KCC_COMPILED_TESTS}
 %.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
 	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+%.gcc: %.cc
+	@echo -n "Compiling $< (reference)... "
+	@$(CC) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.ref: %.gcc
 	@echo -n "Running $<... "

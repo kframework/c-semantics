@@ -109,6 +109,7 @@ UB-PTHREAD5,Called lock on an object that was not initialized with pthread_mutex
 UB-PTHREAD6,Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior,X
 UB-PTHREAD7,Called unlock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_unlock,Undefined Behavior,X
 UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior,X
+URV-TDR3,No definition for function or variable which was odr-used: <name>.,C++14 sec. 3.2:4,Undiagnosable rule violation,
 USP-CEER6,Unspecified value returned from main function.,5.1.2.2.3:1,Unspecified Behavior,
 USP-CERL7,Comparison of unspecified value.,6.5.9,Unspecified Behavior,
 USP-CMR1,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,

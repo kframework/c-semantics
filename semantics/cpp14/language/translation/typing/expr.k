@@ -33,6 +33,12 @@ module CPP-TYPING-EXPR
 
      // ----------------------------------
 
-     rule typeof(StringLiteral(S::String) => type(arrayType(const(char), lengthString(S) +Int 1)))
+     rule typeof(StringLiteral(Ascii(), S::String) => type(arrayType(const(char), lengthString(S) +Int 1)))
+     context typeof(IntegerLiteral(_, HOLE:AType))
+     rule typeof(IntegerLiteral(_, T:CPPType) => T)
+     rule typeof(NullPointerLiteral() => type(nullptr_t))
+     context typeof(HOLE:KItem)
+             requires getKLabel(HOLE) ==K #klabel(`Name`)
+     rule typeof(T:Typed => type(T))
 
 endmodule

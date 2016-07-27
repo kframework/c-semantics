@@ -17,11 +17,11 @@ module C-LINKING-INIT
 
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
+     imports ERROR-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
 
      imports C-CONFIGURATION
-     imports C-ERROR-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -182,10 +182,15 @@ module C-LINKING-INIT
                   | #mergeDecls(Map, Map, Set) [function]
      rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
      rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:K) CommonKeys:Set)
-          => #mergeDecls(OldValues, NewValues[Key <- set(getSet(OldValues[Key]<:K) getSet(NewValues[Key]<:K))], CommonKeys)
+          => #mergeDecls(OldValues, NewValues[Key <- OldValues[Key]<:K:>Set NewValues[Key]<:K:>Set], CommonKeys)
      rule #mergeDecls(_, NewValues:Map, .Set) => NewValues
-     syntax Set ::= getSet(K) [function]
-     rule getSet(set(S:Set)) => S
+
+     syntax Map ::= mergeDefs(Map, Map) [function]
+                  | #mergeDefs(Map, Map, Set) [function]
+     rule mergeDefs(M1::Map, M2::Map) => #mergeDefs(M1, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
+     rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:K) CommonKeys::Set)
+          => #mergeDefs(OldValues, NewValues[Key <- updateMap(OldValues[Key]<:K:>Map, NewValues[Key]<:K:>Map)], CommonKeys)
+     rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
      rule mergeObj(B:K, .K) => B
      rule mergeObj(.K, B:K) => B
@@ -196,10 +201,12 @@ module C-LINKING-INIT
 
                <external-types> ExtTypes1:Map </external-types>
                <external-defs> ExtDefs1:Map </external-defs>
+               <odr-defs> OdrDefs1:Map </odr-defs>
 
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
                     <external-uses> ExtUses1:Set </external-uses>
+                    <odr-decls> OdrDecls1:Map </odr-decls>
                     <odr-uses> OdrUses1:Set </odr-uses>
                </linking-state>
 
@@ -217,10 +224,12 @@ module C-LINKING-INIT
 
                <external-types> ExtTypes2:Map </external-types>
                <external-defs> ExtDefs2:Map </external-defs>
+               <odr-defs> OdrDefs2:Map </odr-defs>
 
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-uses> ExtUses2:Set </external-uses>
+                    <odr-decls> OdrDecls2:Map </odr-decls>
                     <odr-uses> OdrUses2:Set </odr-uses>
                </linking-state>
 
@@ -239,10 +248,12 @@ module C-LINKING-INIT
 
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
                <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
+               <odr-defs> mergeDefs(OdrDefs1, OdrDefs2) </odr-defs>
 
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
+                    <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>
                </linking-state>
 

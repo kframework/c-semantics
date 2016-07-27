@@ -1,5 +1,7 @@
 module C-EXECUTION-ERROR-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports COMMON-SYNTAX
+     imports LIST
+
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
      syntax KItem ::= error(String, String)
 endmodule
@@ -85,8 +87,8 @@ module C-EXECUTION-ERROR
           => printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, Loc:CabsLoc, fileScope)
           => "  at <file-scope>(" +String printStackTrace(L, Loc, .K)
-     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(Identifier(S:String), _))
-          => "  at " +String S +String "(" +String printStackTrace(L, Loc, .K)
+     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(X::CId, _))
+          => "  at " +String idToString(X) +String "(" +String printStackTrace(L, Loc, .K)
      rule printStackTrace(L:List, CabsLoc(File:String, Line:Int, _, _, _), .K)
           => File +String ":" +String Int2String(Line) +String ")" +String stackSeparator(L) +String printStackTrace(L, .K, .K)
      rule printStackTrace(L:List, UnknownCabsLoc, .K)

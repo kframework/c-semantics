@@ -1,5 +1,5 @@
 module C-IO-BUFFERED-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports SYMLOC-SYNTAX
 
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
 
@@ -7,6 +7,12 @@ module C-IO-BUFFERED-SYNTAX
      syntax KItem ::= deleteObject(SymBase)
 
      syntax KItem ::= writeBytes(SymLoc, List)
+
+     syntax KItem ::= setModified(SymLoc, Int, K, Map) [klabel(setModified4)]
+
+     syntax Set ::= locations(List) [function]
+
+     syntax Quals ::= getQualsAtOffset(List) [function]
 endmodule
 
 module C-IO-BUFFERED
@@ -60,7 +66,6 @@ module C-IO-BUFFERED
      rule updateModified(M::Map, Loc::SymLoc, I::Int, _)
           => M[Loc <- I] [owise]
 
-     syntax KItem ::= setModified(SymLoc, Int, K, Map) [klabel(setModified4)]
      rule <k> setModified(Loc::SymLoc, Size::Int,
                 (Tag:KItem => .K), _)
            ...</k>
@@ -178,7 +183,6 @@ module C-IO-BUFFERED
           requires isNativeLoc(Loc)
 
 
-     syntax Set ::= locations(List) [function]
      rule locations(.List) => .Set
      rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)
           => #locations(Loc, size(Bytes)) locations(L)
@@ -440,7 +444,6 @@ module C-IO-BUFFERED
      rule getQualsAtOffset(T::Type, Offset::Int)
           => getQualsAtOffset(getTypesAtOffset(T, Offset *Int cfg:bitsPerByte))
 
-     syntax Quals ::= getQualsAtOffset(List) [function]
      rule getQualsAtOffset(ListItem(T:Type) Ts:List)
           => getQualifiers(T) +Quals getQualsAtOffset(Ts)
      rule getQualsAtOffset(.List) => noQuals

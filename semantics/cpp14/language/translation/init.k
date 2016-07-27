@@ -1,5 +1,15 @@
+module CPP-TRANSLATION-INIT-SYNTAX
+     imports COMMON-SYNTAX
+
+     syntax KItem ::= makeNs(Namespace)
+endmodule
+
 module CPP-TRANSLATION-INIT
+     imports CPP-TRANSLATION-INIT-SYNTAX
+
      imports C-LINKING-INIT-SYNTAX
+     imports C-LINKING-RESOLUTION-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      imports C-CONFIGURATION
 
@@ -7,6 +17,7 @@ module CPP-TRANSLATION-INIT
                => makeTu(TU +String newUUID)
                ~> makeNs(GlobalNamespace())
                ~> listToK(Decls)
+               ~> removeUnusedIdentifiers
           ...</k>
           // don't delete this... we want to make sure the fresh counter starts
           // at 1 for each TU because unlike C, C++ doesn't give us unique block
@@ -16,8 +27,7 @@ module CPP-TRANSLATION-INIT
           // block.
           requires !Fresh:Int >=Int 0 
 
-     syntax KItem ::= makeNs(NormalizedNamespace)
-     rule <k> makeNs(N::NormalizedNamespace) => .K ...</k>
+     rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <namespaces>...
@@ -25,4 +35,7 @@ module CPP-TRANSLATION-INIT
                              <ns-id> N </ns-id>
                         ...</ns>)
           ...</namespaces>
+
+     rule isCLinkage(t(_, _, functionType(_, _, CLinkage))) => true
+     rule isCLinkage(_) => false [owise]
 endmodule

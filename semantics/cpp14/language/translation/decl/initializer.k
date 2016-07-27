@@ -5,7 +5,6 @@ module CPP-DECL-INITIALIZER-SYNTAX
      syntax KResult ::= initializer(K)
 
      syntax KItem ::= figureInit(Expr, CPPType, Init, K) [strict(1)]
-     syntax KResult ::= initValue(LVal, CPPType, K)
 
 endmodule
 

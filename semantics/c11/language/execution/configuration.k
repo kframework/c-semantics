@@ -1,7 +1,5 @@
 module C-CONFIGURATION
      imports C-EXECUTION-INIT-SYNTAX
-     imports C-DYNAMIC-CONFIG-SYNTAX
-     imports CPP-DYNAMIC-CONFIG-SYNTAX
      imports COMPAT-SYNTAX
      imports COMMON-INIT-SYNTAX
      imports SYMLOC-SYNTAX
@@ -14,18 +12,21 @@ module C-CONFIGURATION
 
      <main-tu color="lightgray"> .Set </main-tu>
 
-     // CId |-> Type
-     <external-types> .Map </external-types>
-     // CId |-> SymBase
-     <external-defs> .Map </external-defs>
+     <global-state>
+          // CId |-> Types
+          <external-types> .Map </external-types>
+          // CId |-> Loc
+          <external-defs> .Map </external-defs>
+          // QualId |-> (Type |-> Loc)
+          <odr-defs> .Map </odr-defs>
+          // dummy link base |-> real base
+          <linkings> .Map </linkings>
+     </global-state>
 
      // placeholder from translation semantics
      <linking-state multiplicity="?"> .K </linking-state>
 
      <structs color="lightgray"> .Map </structs>
-
-     // dummy link base |-> real base
-     <linkings> .Map </linkings>
 
      <translation-units>
           <tu multiplicity="*" type="Map">
@@ -51,12 +52,14 @@ module C-CONFIGURATION
                     <ns multiplicity="*" type="Map">
                          <ns-id> GlobalNamespace() </ns-id>
                          <nenv> .Map </nenv>
+                         <using-namespaces> .Set </using-namespaces>
+                         <inline-namespaces> .Set </inline-namespaces>
                     </ns>
                </namespaces>
           </tu>
      </translation-units>
 </global>
-<result-value color="red"> 139:CValue </result-value>
+<result-value color="red"> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
      // SymBase |-> Type
@@ -184,6 +187,7 @@ module C-CONFIGURATION
      <call-stack-frame multiplicity="?">
           <continuation> .K </continuation>
           <stack-function-control> .K </stack-function-control>
+          <stack-lang-linkage> CLinkage </stack-lang-linkage>
      </call-stack-frame>
 
      <thread-state multiplicity="?">

@@ -1,18 +1,5 @@
-// information used by execution configuration and therefore
-// included in all C and C++ modules
-module C-DYNAMIC-CONFIG-SYNTAX
-     imports BITS-SYNTAX
-
-     syntax CValue ::= NumValue
-     syntax NumValue ::= Bits // Int is a subsort of Bits
-
-     syntax Scope ::= "none"
-
-     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
-endmodule
-
 module C-DYNAMIC-SYNTAX
-     imports C-DYNAMIC-CONFIG-SYNTAX
+     imports BITS-SYNTAX
      imports COMPAT-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
@@ -44,8 +31,9 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "discard"
 
-     syntax NumValue ::= Float
+     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
      syntax CValue ::= SymLoc | Agg
+     syntax EffectiveValue ::= CValue
      syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
@@ -80,7 +68,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= reval(K)
 
      syntax KResult ::= initValue(CId, Type, K)
-     syntax KItem ::= allowInit(K)
      syntax NoInit
      syntax KResult ::= NoInit
 

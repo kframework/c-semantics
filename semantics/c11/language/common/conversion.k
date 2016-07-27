@@ -86,7 +86,7 @@ module C-CONVERSION
           requires notBool isBoolUType(T')
                andBool inRange(V, T')
 
-     rule cast(T':IntegerUType, tv(subObject(L:SymLoc, N:Int, M:Int), T:IntegerUType)) => tv(subObject(L, N, M), T')
+     rule cast(T':IntegerUType, tv(encodedValue(L:SymLoc, N:Int, M:Int), T:IntegerUType)) => tv(encodedValue(L, N, M), T')
           requires notBool isBoolUType(T')
                andBool M -Int N <Int byteSizeofType(T')
 

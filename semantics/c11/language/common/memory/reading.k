@@ -184,22 +184,22 @@ module C-MEMORY-READING
           => tv(encodedFloat(F, Start, End -Int 1, T2:>UType), T)
           requires Start =/=Int 0 orBool End <Int byteSizeofType(T2:>UType)
 
-     syntax RValue ::= joinPointerBytes(UType, List) [function]
+     syntax RValue ::= joinPointerBytes(UType, List) [function, klabel(joinPointerBytesC)]
      syntax RValue ::= "joinPointerBytes-aux" "(" UType "," List "," K ")" [function]
      rule joinPointerBytes(T::UType, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinPointerBytes-aux(T, L, N)
           requires Len ==Int cfg:bitsPerByte
      rule joinPointerBytes-aux(T::UType,
-               ListItem(piece(subObject(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
-               L:List, subObject(Loc, I:Int, End:Int))
-          => joinPointerBytes-aux(T, L, subObject(Loc, I, End +Int 1))
+               ListItem(piece(encodedValue(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
+               L:List, encodedValue(Loc, I:Int, End:Int))
+          => joinPointerBytes-aux(T, L, encodedValue(Loc, I, End +Int 1))
           requires (Len ==Int cfg:bitsPerByte)
                andBool (SNatEnd ==Int End +Int 1)
-     rule joinPointerBytes-aux(T::UType, .List, subObject(Loc:SymLoc, 0, N:Int))
+     rule joinPointerBytes-aux(T::UType, .List, encodedValue(Loc:SymLoc, 0, N:Int))
           => tv(Loc, T)
           requires N ==Int cfg:ptrsize -Int 1
-     rule joinPointerBytes-aux(T::UType, .List, subObject(Loc:SymLoc, M:Int, N:Int))
-          => tv(subObject(Loc, M,  N), T)
+     rule joinPointerBytes-aux(T::UType, .List, encodedValue(Loc:SymLoc, M:Int, N:Int))
+          => tv(encodedValue(Loc, M,  N), T)
           requires N <Int cfg:ptrsize -Int 1 orBool M >Int 0
      rule joinPointerBytes-aux(T::UType,
                ListItem(piece(0, Len:Int)) L:List, 0)
@@ -208,13 +208,13 @@ module C-MEMORY-READING
      rule joinPointerBytes-aux(T::UType, .List, 0)
           => tv(NullPointer, T)
 
-     syntax RValue ::= joinIntegerBytes(UType, List) [function]
+     syntax RValue ::= joinIntegerBytes(UType, List) [function, klabel(joinIntegerBytesC)]
      syntax RValue ::= "joinIntegerBytes-aux" "(" UType "," List "," K ")" [function]
      rule joinIntegerBytes(T::UType, L::List)
           => joinIntegerBytes-aux(T, L, piece(0, 0))
      rule joinIntegerBytes-aux(T::UType,
-               L::List ListItem(piece(subObject(Loc::SymLoc, Start::Int, End::Int), Len:Int)), piece(0, 0))
-          => joinPointerBytes(T, L ListItem(piece(subObject(Loc, Start, End), Len)))
+               L::List ListItem(piece(encodedValue(Loc:SymLoc, Start::Int, End::Int), Len:Int)), piece(0, 0))
+          => joinPointerBytes(T, L ListItem(piece(encodedValue(Loc, Start, End), Len)))
      rule joinIntegerBytes-aux(T::UType,
                L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
           => joinIntegerBytes-aux(T,

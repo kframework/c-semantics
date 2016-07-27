@@ -4,9 +4,9 @@ module CPP-STMT-RETURN
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION
 
-     rule <k> ReturnStmt(I::Init) => returnHelper(figureInit(le(Name(NoNamespace(), ret), Ret), Ret, I, I)) ...</k>
+     rule <k> ReturnStmt(I::Init) => returnHelper(figureInit(le(Name(NoNNS(), ret), Ret), Ret, I, I)) ...</k>
           <curr-function> Base::SymBase </curr-function>
-          <functions>... Base |-> functionObject(_, t(_, _, functionType(Ret::CPPType, _, _, _)), _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, t(_, _, functionType(Ret::CPPType, _, _)), _, _) ...</functions>
 
      syntax KItem ::= returnHelper(K) [strict]
 

@@ -12,10 +12,8 @@ module C-ERROR-SYNTAX
      syntax KItem ::= SE(String, String, String)
      syntax KItem ::= IMPL(String, String, String)
      syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
-     syntax KItem ::= "EXT-UNDEF" "(" String "," String "," String "," String ")"
 
      syntax KResult ::= Bool
-     syntax K ::= assert(Bool, Error)
 
      syntax String ::= ErrorMsg(String, String, String, String, String) [function, klabel(ErrorMsg5)]
 
@@ -54,9 +52,6 @@ module C-ERROR
           requires checkOptions(Impl(), Title, true)
      rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
           => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation.", Document, Citation))
-     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
-          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", Document, Citation))
-          requires checkOptions(Undef(), Title, true)
 
      rule UNDEF(Title:String, _, _) => HALT
           requires notBool checkOptions(Undef(), Title, true)
@@ -64,7 +59,5 @@ module C-ERROR
           requires notBool checkOptions(Unspec(), Title, true)
      rule IMPL(Title:String, _, _) => HALT
           requires notBool checkOptions(Impl(), Title, true)
-     rule EXT-UNDEF(Title:String, _, _, _) => HALT
-          requires notBool checkOptions(Undef(), Title, true)
 
 endmodule

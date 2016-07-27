@@ -11,23 +11,29 @@ module C-CONFIGURATION
 
      <main-tu color="lightgray"> .Set </main-tu>
 
-     // CId |-> Types
-     <external-types> .Map </external-types>
-     // CId |-> Loc
-     <external-defs> .Map </external-defs>
+     <global-state>
+          // CId |-> Types
+          <external-types> .Map </external-types>
+          // CId |-> Loc
+          <external-defs> .Map </external-defs>
+          // QualId |-> (Type |-> Loc)
+          <odr-defs> .Map </odr-defs>
+          // dummy link base |-> real base
+          <linkings> .Map </linkings>
+     </global-state>
 
      <linking-state multiplicity="?" initial="">
           // CId |-> Set(TUs)
           <external-decls> .Map </external-decls>
           // CIds
-          <external-uses> SetItem(Identifier("main")) </external-uses>
+          <external-uses> .Set </external-uses>
+          // SymBase |-> Set(ktriple(TU, QualId, Type))
+          <odr-decls> .Map </odr-decls>
+          // Set(SymBase)
           <odr-uses> .Set </odr-uses>
      </linking-state>
 
      <structs color="lightgray"> .Map </structs>
-
-     // dummy link base |-> real base
-     <linkings> .Map </linkings>
 
      <translation-units>
           <tu multiplicity="*" type="Map">
@@ -57,7 +63,10 @@ module C-CONFIGURATION
                // C++ stuff
                <namespaces>
                     <ns multiplicity="*" type="Map">
-                         <ns-id> .K </ns-id>
+                         <ns-id> GlobalNamespace() </ns-id>
+                         <nenv> .Map </nenv>
+                         <using-namespaces> .Set </using-namespaces>
+                         <inline-namespaces> .Set </inline-namespaces>
                     </ns>
                </namespaces>
           </tu>
@@ -109,13 +118,15 @@ module C-CONFIGURATION
      // for initializers.
      <initializing> false </initializing>
 
-     <curr-tu color="lightgray"> "" </curr-tu>
-     <curr-function> .K </curr-function>
-     <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
-     <curr-eval-context color="lightgray"> eval </curr-eval-context>
-     <curr-program-loc color="black">
-          UnknownCabsLoc
-     </curr-program-loc>
+     <curr-state>
+          <curr-tu color="lightgray"> "" </curr-tu>
+          <curr-function> .K </curr-function>
+          <curr-scope color="lightgray"> fileScope:Scope </curr-scope>
+          <curr-eval-context color="lightgray"> eval </curr-eval-context>
+          <curr-program-loc color="black">
+               UnknownCabsLoc
+          </curr-program-loc>
+     </curr-state>
 
      <block-stack color="violet"> .List </block-stack>
      <block-control>

@@ -1,5 +1,5 @@
 module TRANSLATION-ERROR
-     imports C-ERROR-SYNTAX
+     imports ERROR-SYNTAX
 
      imports C-TYPING-SYNTAX
      imports C-CONFIGURATION

@@ -1,4 +1,13 @@
+module RETURN-SYNTAX
+     imports BASIC-K
+
+     syntax KItem ::= return(K)
+
+endmodule
+
 module C-STMT-RETURN
+     imports RETURN-SYNTAX
+
      imports C-CHECK-LOC-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
@@ -27,6 +36,7 @@ module C-STMT-RETURN
      assignment to an object having the return type of the function.
      }*/
 
+     // Return (from C function)
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> TU:String </curr-tu>
@@ -73,7 +83,6 @@ module C-STMT-RETURN
 
 
      syntax KItem ::= "Return'" "(" K ")"
-                    | "Return''" "(" K ")"
      context Return'(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
      /* recursively exits each Block wrapped in BlockStatement */
@@ -83,21 +92,24 @@ module C-STMT-RETURN
           [structural]
      /* delete the locals when the function body is not wrapped in Block */
      rule <k> (.K => deleteLocals)
-               ~> (Return'(V:RValue) => Return''(V))
+               ~> (Return'(V:RValue) => return(V))
           ...</k>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>
           [structural]
+
+     // Return (to C function)
+
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
-     rule <k> Return''(V:RValue) ~> _
-               => exitRestrictScope(blockScope(F, 0))
+     rule <k> return(V:RValue) ~> _
+               => exitRestrictScope(Scope)
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
                ~> K
           </k>
           (<function-control>
-               <curr-scope> blockScope(F:CId, _) </curr-scope>
+               <curr-scope> Scope::BlockScope </curr-scope>
                <block-control>...
                     <local-addresses> .Set </local-addresses>
                ...</block-control>
@@ -105,12 +117,13 @@ module C-STMT-RETURN
           ...</function-control> => C)
           <call-stack>
                ListItem(
-                    <call-stack-frame>...
+                    <call-stack-frame>
                          <continuation> K:K </continuation>
                          <stack-function-control>
                               C:FunctionControlCell
                          </stack-function-control>
-                    ...</call-stack-frame>
+                         <stack-lang-linkage> CLinkage </stack-lang-linkage>
+                    </call-stack-frame>
                ) => .List
           ...</call-stack>
           <stack-depth> ListItem(_) => .List ...</stack-depth>

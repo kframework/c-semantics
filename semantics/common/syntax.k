@@ -29,4 +29,20 @@ module COMMON-SYNTAX
      syntax Quals ::= Quals "-Qual" Qualifier [function]
      syntax Bool ::= Quals "<=Quals" Quals [function]
 
+     syntax Namespace ::= GlobalNamespace()
+     syntax QualId ::= Namespace "::" CId
+
+     syntax Scope ::= "none"
+
+     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
+
+     syntax CValue ::= NumValue
+     syntax NumValue ::= Int
+
+     syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
+
+     syntax KItem ::= allowInit(K)
+
+     syntax EffectiveValue ::= Int
+
 endmodule

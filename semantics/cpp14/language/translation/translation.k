@@ -1,6 +1,5 @@
 require "elaborator.k"
 require "env.k"
-require "error.k"
 require "init.k"
 require "io.k"
 require "overloading.k"
@@ -11,6 +10,8 @@ require "configuration.k"
 require "decl/declarator.k"
 require "decl/initializer.k"
 require "decl/linkage.k"
+require "decl/namespace.k"
+require "decl/typedef.k"
 
 require "expr/assignment.k"
 require "expr/function-call.k"
@@ -31,7 +32,6 @@ require "cpp-extensions-translation.k"
 module CPP-TRANSLATION
      imports CPP-ELABORATOR
      imports CPP-ENV
-     imports C-ERROR
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
      imports CPP-OVERLOADING
@@ -42,6 +42,8 @@ module CPP-TRANSLATION
      imports CPP-DECL-DECLARATOR
      imports CPP-DECL-INITIALIZER
      imports CPP-DECL-LINKAGE
+     imports CPP-DECL-NAMESPACE
+     imports CPP-DECL-TYPEDEF
 
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-EXPR-FUNCTION-CALL

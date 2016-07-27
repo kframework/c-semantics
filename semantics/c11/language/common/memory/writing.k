@@ -10,7 +10,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax List ::= explodeToBits(List) [function]
 
      // TODO(chathhorn): For trans/symbolic-value.k
-     syntax DataList ::= splitBytes(RValue) [function]
+     syntax DataList ::= splitBytes(RValue) [function, klabel(splitBytesC)]
 
      syntax KItem ::= writeString(SymLoc, String)
      syntax KItem ::= writeWString(SymLoc, List)
@@ -32,6 +32,8 @@ module C-MEMORY-WRITING
      imports C-TYPING-SYNTAX
 
      imports C-CONFIGURATION
+
+     imports MEMORY-SYNTAX
 
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
@@ -277,11 +279,11 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(unknown(I:Int), T::UType))
           => makeUnknown(splitBytes(tv(I, T)))
      rule splitBytes(tv(I:Int, T::UType))
-          => splitIntegerBytes(I, T, byteSizeofType(T))
+          => splitBytes(I, byteSizeofType(T))
      rule splitBytes(tv(F:Float, T::UType))
           => splitFloatBytes(F, T, byteSizeofType(T))
      rule splitBytes(tv(Loc:SymLoc, T::UType))
-          => splitPointerBytes(Loc, byteSizeofType(T))
+          => splitBytes(Loc, byteSizeofType(T))
      rule splitBytes(tv(agg(L:List), T::UType))
           => splitStructBytes(dataList(L), T,
                byteSizeofType(T))
@@ -293,16 +295,6 @@ module C-MEMORY-WRITING
      rule makeUnknownAux(.List, L::List) => dataList(L)
      rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]
 
-     syntax DataList ::= splitIntegerBytes(Int, UType, Int) [function]
-     syntax DataList ::= #splitIntegerBytes(Int, UType, Int, List) [function]
-
-     rule splitIntegerBytes(I:Int, T::UType, Len:Int)
-          => #splitIntegerBytes(I, T, Len, .List)
-     rule #splitIntegerBytes(I:Int, T::UType, Len:Int, L:List)
-          => #splitIntegerBytes(I >>Int cfg:bitsPerByte, T, Len -Int 1,
-               L ListItem(piece(I &Int byteMaskSet, cfg:bitsPerByte)))
-          requires Len >Int 0
-     rule #splitIntegerBytes(_, _, 0, L:List) => dataList(L)
 
      syntax DataList ::= splitStructBytes(K, UType, Int) [function]
      syntax DataList ::= #splitStructBytes(K, UType, Int, List)  [function]
@@ -341,10 +333,6 @@ module C-MEMORY-WRITING
                ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)) L)
           requires Len >Int 0
      rule splitFloatBytes(_, _, 0, L:List) => dataList(L)
-
-     syntax Int ::= "byteMaskSet" [function]
-
-     rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
      rule writeString(Loc:SymLoc, S:String)
           => Computation(

@@ -8,9 +8,13 @@ require "syntax.k"
 require "typing.k"
 
 require "expr/eval.k"
+require "expr/unary.k"
 
 require "memory/alloc.k"
+require "memory/reading.k"
 require "memory/writing.k"
+
+require "stmt/expr.k"
 
 require "cpp-extensions-common.k"
 
@@ -22,12 +26,16 @@ module CPP-COMMON
      imports CPP-ERROR
      imports CPP-SYMLOC
      imports CPP-SYNTAX
-     imports CPP-TYPING
+     imports C-CPP-TYPING
 
      imports CPP-EXPR-EVAL
+     imports CPP-EXPR-UNARY
 
      imports CPP-MEMORY-ALLOC
+     imports CPP-MEMORY-READING
      imports CPP-MEMORY-WRITING
+
+     imports CPP-COMMON-STMT-EXPR
 
      imports CPP-COMMON-EXTENSIONS
 endmodule

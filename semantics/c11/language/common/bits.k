@@ -57,5 +57,5 @@ module C-BITS
           requires notBool isUnknown(V)
 
      rule maxIntPtrValue(_:SymLoc) => (1 <<Int (cfg:bitsPerByte *Int cfg:ptrsize -Int 1)) -Int 1
-     rule maxIntPtrValue(subObject(_, N:Int, M:Int)) => (1 <<Int (cfg:bitsPerByte *Int (M -Int N +Int 1) -Int 1)) -Int 1
+     rule maxIntPtrValue(encodedValue(_, N:Int, M:Int)) => (1 <<Int (cfg:bitsPerByte *Int (M -Int N +Int 1) -Int 1)) -Int 1
 endmodule

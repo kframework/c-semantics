@@ -23,6 +23,7 @@ module COMPAT-SYNTAX
      syntax String ::= listToString(List) [function]
 
      syntax String ::= idToString(CId) [function]
+                     | idToString(QualId) [function, klabel(qualIdToiString)]
 
      syntax String ::= toUpperCase(String) [function]
 
@@ -46,6 +47,7 @@ module COMPAT-SYNTAX
      syntax List ::= kSeqToList(K) [function]
 
      syntax KItem ::= kpair(K, K)
+                    | ktriple(K, K, K)
 
      syntax List ::= Int "to" Int [function]
 
@@ -73,6 +75,7 @@ module COMPAT-SYNTAX
      syntax KItem ::= seqstrict(StrictList)
 
      syntax Map ::= Map "[" K "," K "<-" K "]" [function]
+     syntax Map ::= Map "[" K "+=" K "]" [function]
 endmodule
 
 module COMPAT
@@ -90,7 +93,10 @@ module COMPAT
 
      rule idToString(Identifier(S:String)) => S
      rule idToString(#NoName) => "<anonymous>"
-     rule idToString(_) => "<unknown>" [owise]
+     rule idToString(_::CId) => "<unknown>" [owise]
+
+     rule idToString(GlobalNamespace() :: X::CId)
+          => "::" +String idToString(X)
 
      rule [firstChar]:
           firstChar(S:String) => substrString(S, 0, 1)
@@ -256,4 +262,7 @@ module COMPAT
 
      rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> M2[B <- C]) M1
      rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C) [owise]
+
+     rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
+     rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
 endmodule

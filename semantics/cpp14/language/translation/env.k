@@ -6,6 +6,9 @@ module CPP-ENV-SYNTAX
      // identifier, type, location, is using declaration
      syntax KItem ::= addToEnv(QualId, CPPType, SymBase, Bool)
                     | scope(Scope, K)
+                    | setScope(Scope)
+                    | noEval(K)
+                    | "recover"
 
 endmodule
 
@@ -15,20 +18,25 @@ module CPP-ENV
 
     imports C-CONFIGURATION
 
-    rule <k> addToEnv(N::NormalizedNamespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(N::Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
          <curr-tu> Tu::String </curr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
          <nenv> NE::Map => NE[X, T <- kpair(IsUsing, Base)] </nenv>
+         requires N =/=K NoNamespace()
+
+    rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+             => .K
+         ...</k>
+         <env> NE::Map => NE[X, T <- kpair(IsUsing, Base)] </env>
 
      rule <k> scope(Scope::Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)
           ...</k>
           <curr-scope> OldScope::Scope => Scope </curr-scope>
 
-     syntax KItem ::= setScope(Scope)
      rule <k> setScope(Scope::Scope) => .K ...</k>
           <curr-scope> _ => Scope </curr-scope>
 
@@ -44,5 +52,18 @@ module CPP-ENV
           <block-stack>
                ListItem(L:BlockControlCell) => .List
           ...</block-stack>
+
+     rule <k> noEval(K:K)
+              => setEval(noEval) ~> pushLocals ~> K ~> popLocals ~> setEval(OldEval)
+          ...</k>
+          <curr-eval-context> OldEval::EvalContext </curr-eval-context>
+
+     syntax KItem ::= setEval(EvalContext)
+     rule <k> setEval(Eval::EvalContext) => .K ...</k>
+          <curr-eval-context> _ => Eval </curr-eval-context>
+
+     rule recover ~> (K:KItem => .K)
+          requires K =/=K popLocals
+     rule (recover => .K) ~> popLocals
 
 endmodule
