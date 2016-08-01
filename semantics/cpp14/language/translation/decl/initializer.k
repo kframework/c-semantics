@@ -1,6 +1,7 @@
 module CPP-DECL-INITIALIZER-SYNTAX
-     imports CPP-TYPING-SYNTAX
-     imports CPP-ABSTRACT-SYNTAX
+     imports BASIC-K
+     imports CPP-TYPING-SORTS
+     imports CPP-SORTS
 
      syntax KResult ::= initializer(K)
 
@@ -10,8 +11,11 @@ endmodule
 
 module CPP-DECL-INITIALIZER
      imports CPP-DECL-INITIALIZER-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYNTAX
+     imports CPP-TYPING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
 
      context figureInit(_, _, _, (HOLE:KItem => typeof(HOLE)))

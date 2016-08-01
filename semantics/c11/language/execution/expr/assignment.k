@@ -1,4 +1,6 @@
 module C-EXPR-ASSIGNMENT
+     imports BOOL
+     imports K-REFLECTION
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -6,8 +8,6 @@ module C-EXPR-ASSIGNMENT
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports COMPAT-SYNTAX
 
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
@@ -103,8 +103,8 @@ module C-EXPR-ASSIGNMENT
 
      rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
           => checkArrayStaticAssign'(T,
-               getFirstMatch(Mods, #klabel(`arrayStatic`)):>Modifier,
-               getFirstMatch(Prov, #klabel(`fromArray`)):>Provenance)
+               {getFirstMatch(Mods, #klabel(`arrayStatic`))}:>Modifier,
+               {getFirstMatch(Prov, #klabel(`fromArray`))}:>Provenance)
      rule (.K => UNDEF("EEA4",
                "Passing a pointer not to an array object as a function parameter with a static-qualified array size.",
                "6.7.6.3:7, J.2:1 item 77"))

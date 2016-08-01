@@ -1,14 +1,12 @@
 module C-COMPOUND-LITERAL
+     imports C-CONFIGURATION
+     imports BOOL
+     imports SYMLOC-SYNTAX
+     imports C-TYPING-SORTS
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed

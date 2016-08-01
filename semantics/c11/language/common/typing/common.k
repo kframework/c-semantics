@@ -1,10 +1,8 @@
 module C-TYPING-COMMON-SYNTAX
-     imports SET
      imports LIST
      imports BASIC-K
-     imports COMMON-SYNTAX
-
-     syntax Type // defined in C-TYPING-SYNTAX
+     imports C-TYPING-SORTS
+     imports COMMON-SORTS
 
      // Function id, def return type, def params, local declarations, body.
      syntax RValue ::= functionObject(CId, Type, List, K)
@@ -13,10 +11,10 @@ endmodule
 
 module C-TYPING-COMMON
      imports C-TYPING-COMMON-SYNTAX
-
-     imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-CONFIGURATION
+     imports K-REFLECTION
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule type(T:Type) => T
      rule type(T:SimpleType) => t(noQuals, .Set, T)
@@ -92,7 +90,7 @@ module C-TYPING-COMMON
 
      syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
      rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
-          => extractFieldInfo(M[Tu]:>Map[tag(X, Tu, B)])
+          => extractFieldInfo({M[Tu]}:>Map[tag(X, Tu, B)])
      syntax FieldInfo ::= extractFieldInfo(K) [function]
      rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
      rule extractFieldInfo(_) => #incomplete [owise]

@@ -4,6 +4,7 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule CallExpr(Lbl:KLabel(V:K, t(Q::Quals, S::Set, functionType(T::CPPType, P::List, L::LanguageLinkage))), list(A::List))

@@ -1,11 +1,10 @@
 module C-STMT-BLOCK
+     imports C-CONFIGURATION
+     imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.2}{2}}}{
      A \emph{compound statement} is a block.

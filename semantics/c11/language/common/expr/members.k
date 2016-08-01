@@ -1,17 +1,19 @@
 module C-COMMON-EXPR-MEMBERS
-     imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports LIST
+     imports SET
+     imports COMMON-SORTS
+     imports SETTINGS-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an

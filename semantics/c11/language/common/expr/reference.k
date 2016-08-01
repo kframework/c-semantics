@@ -1,22 +1,19 @@
 module C-COMMON-EXPR-REFERENCE-SYNTAX
-     imports C-SYMLOC-SYNTAX
-
+     imports SYMLOC-SORTS
      syntax KItem ::= checkRestrict(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-REFERENCE
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
-
+     imports BOOL
+     imports K-EQUAL
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{3}}}{
      The unary \cinline{&} operator yields the address of its operand. If the

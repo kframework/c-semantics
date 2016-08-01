@@ -1,19 +1,26 @@
-module C-NATIVE-BRIDGE
-     imports LIBC-BOOTSTRAP-SYNTAX
+module C-NATIVE-BRIDGE-SYNTAX
+     imports LIST
+     imports STRING-SYNTAX
 
-     imports C-SYNTAX
-     imports C-BUILTIN-SYNTAX
+     syntax KItem ::= nativeCall(String, List, List)
+     syntax KItem ::= nativeCall(Int, List, List)
+endmodule
+
+module C-NATIVE-BRIDGE
+     imports C-NATIVE-BRIDGE-SYNTAX
+     imports LIBC-BOOTSTRAP-SYNTAX
      imports C-CONFIGURATION
+     imports C-BUILTIN-SYNTAX
+     imports C-TYPING-SORTS
+     imports C-DYNAMIC-SYNTAX
 
      syntax K ::= #nativeCall(String, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
-     syntax KItem ::= nativeCall(String, List, List)
      rule <generatedTop>... 
             <k> nativeCall(S:String, Args:List, VarArgs:List) ~> Rest:K </k>
             <types>... Identifier(S) |-> T:Type ...</types>
           ...</generatedTop> => #nativeCall(S, T, Args, VarArgs, Rest)
 
      syntax K ::= #nativeCall(Int, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
-     syntax KItem ::= nativeCall(Int, List, List)
      rule <generatedTop>... 
             <k> nativeCall(I:Int, Args:List, VarArgs:List) ~> Rest:K </k>
             <types>... nativeFunction(I) |-> T:Type ...</types>

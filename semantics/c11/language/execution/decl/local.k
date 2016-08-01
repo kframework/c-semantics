@@ -1,14 +1,15 @@
 module C-DECL-LOCAL
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports SYMLOC-SORTS
+     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
-     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
+     imports C-TYPING-SYNTAX
 
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
                => addToEnv(X, Base)

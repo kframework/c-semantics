@@ -1,5 +1,6 @@
 module CPP-EXECUTION-ERROR
      imports C-EXECUTION-ERROR-SYNTAX
+     imports STRING
      imports CPP-DYNAMIC-SYNTAX
 
      rule printStackTrace(L:List, Loc:CabsLoc, blockScope(X::QualId, _, _))

@@ -1,20 +1,20 @@
 module LIBC-STDIO
      imports LIBC-BOOTSTRAP-SYNTAX
      imports LIBC-IO-SYNTAX
-
-     imports C-BITS-SYNTAX
-     imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
+     imports INT
+     imports K-IO
+     imports STRING
+     imports BITS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]
@@ -56,9 +56,9 @@ module LIBC-STDIO
           => "0x" +String Base2String(Addr, 16)
 
      rule [symBaseToString-thread]:
-          symBaseToString(B:Int @ thread(Th:Int))
+          symBaseToString(B:Int @ threadLocal(Th:Int))
           => Int2String(B) +String " @ "
-          +String "thread(" +String Int2String(Th) +String ")"
+          +String "threadLocal(" +String Int2String(Th) +String ")"
           [structural]
      rule [sub-pointerToString-allocated]:
           symBaseToString(B:Int @ alloc)
@@ -582,7 +582,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     Float2String(setPrecision(D, String2Int(P))),
                     String2Int(W),
-                    #if Z #then "0" #else " " #fi:>String))
+                    {#if Z #then "0" #else " " #fi}:>String))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
           [structural]
@@ -601,7 +601,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
                     String2Int(W),
-                    #if Z #then "0" #else " " #fi:>String))
+                    {#if Z #then "0" #else " " #fi}:>String))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
           [structural]
@@ -670,7 +670,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     Float2String(setPrecision(D, String2Int(P))),
                     String2Int(W),
-                    #if Z #then "0" #else " " #fi:>String))
+                    {#if Z #then "0" #else " " #fi}:>String))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
           [structural]
@@ -689,7 +689,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
                     String2Int(W),
-                    #if Z #then "0" #else " " #fi:>String))
+                    {#if Z #then "0" #else " " #fi}:>String))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
           [structural]

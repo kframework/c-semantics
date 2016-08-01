@@ -1,4 +1,13 @@
+module SYMLOC-SORTS
+     syntax IntPtr ::= SymLoc
+     syntax SymBase
+     syntax SymLoc
+     syntax CValue ::= IntPtr
+endmodule
+
 module SYMLOC-SYNTAX
+     imports SYMLOC-SORTS
+     imports LIST
      imports COMPAT-SYNTAX
 
      syntax SymBase ::= base(IntPtr) [function]
@@ -12,7 +21,7 @@ module SYMLOC-SYNTAX
      syntax SymBase ::= string(String)
      syntax SymBase ::= wstring(List)
      // Thread local duration.
-     syntax Duration ::= thread(Int)
+     syntax Duration ::= threadLocal(Int)
      // Auto storage duration.
      syntax Duration ::= auto(Int)
      syntax Duration ::= "argv"
@@ -50,8 +59,6 @@ module SYMLOC-SYNTAX
      syntax CanonicalSymLoc ::= "NullPointer" [klabel(NullPointer)]
 
      syntax KResult ::= SymLoc
-     syntax CValue ::= IntPtr
-     syntax IntPtr ::= SymLoc
 
      syntax SymBase ::= linc(SymBase) [function]
 
@@ -89,8 +96,8 @@ endmodule
 
 module SYMLOC
      imports SYMLOC-SYNTAX
-     imports COMPAT-SYNTAX
      imports C-CONFIGURATION
+     imports K-REFLECTION
 
      rule isAllocatedDuration(_ @ alloc) => true
      rule isAllocatedDuration(_:SymBase) => false [owise]
@@ -108,8 +115,8 @@ module SYMLOC
      rule isStaticDuration(loc(wstring(_), _, _)) => true
      rule isStaticDuration(_) => false [owise]
 
-     rule isThreadDuration(loc(_ @ thread(_), _)) => true
-     rule isThreadDuration(loc(_ @ thread(_), _, _)) => true
+     rule isThreadDuration(loc(_ @ threadLocal(_), _)) => true
+     rule isThreadDuration(loc(_ @ threadLocal(_), _, _)) => true
      rule isThreadDuration(_) => false [owise]
 
      rule isAutoDuration(loc(_ @ auto(_), _)) => true
@@ -188,8 +195,8 @@ module SYMLOC
      rule getTU(loc(_ @ nativeAddress(), _)) => "native"
      rule getTU(loc(_ @ nativeAddress(), _, _)) => "native"
 
-     rule getThreadId(loc(_ @ thread(Th:Int), _)) => Th
-     rule getThreadId(loc(_ @ thread(Th:Int), _, _)) => Th
+     rule getThreadId(loc(_ @ threadLocal(Th:Int), _)) => Th
+     rule getThreadId(loc(_ @ threadLocal(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ auto(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ auto(Th:Int), _, _)) => Th
      rule getThreadId(loc(_ @ register(Th:Int), _)) => Th

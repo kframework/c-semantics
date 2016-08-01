@@ -1,5 +1,7 @@
 module C-LINKING-INIT-SYNTAX
      imports BASIC-K
+     imports BOOL-SYNTAX
+     imports MAP
      imports STRING-SYNTAX
 
      syntax KItem ::= load(K) 
@@ -9,21 +11,24 @@ module C-LINKING-INIT-SYNTAX
 
      syntax KItem ::= makeTu(String)
 
+     syntax KItem ::= addBuiltins(Map, Bool)
+
 endmodule
 
 module C-LINKING-INIT
      imports C-LINKING-INIT-SYNTAX
-     imports C-LINKING-RESOLUTION-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports STRING
+     imports C-TYPING-SORTS
+     imports COMPAT-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
      imports COMMON-INIT-SYNTAX
      imports ERROR-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
-
-     imports C-CONFIGURATION
+     imports C-LINKING-RESOLUTION-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
 
      rule <k> link // compare against c11/language/translation/init.k
@@ -47,8 +52,7 @@ module C-LINKING-INIT
           ...</translation-units>
           [structural]
 
-     syntax KItem ::= addBuiltins(Map, Bool)
-                    | addBuiltin(CId, Type, Bool)
+     syntax KItem ::= addBuiltin(CId, Type, Bool)
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it (although
@@ -162,7 +166,7 @@ module C-LINKING-INIT
      rule (checkExtType(true) => .K) ~> checkExtTypes((X:KItem => .K), _, _, _, _)
      rule checkExtTypes(.K, .Set, _, _, _) => .K
      rule (.K => EXT-UNDEF("TIN1",
-               "Identifier " +String idToString(X:>CId) +String " declared with incompatible types in different translation units.",
+               "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units.",
                "C11", "6.2.7:2, J.2:1 item 15"))
           ~> checkExtType(false) ~> checkExtTypes(X:KItem,
                _, _,
@@ -173,7 +177,7 @@ module C-LINKING-INIT
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _) => .K
      rule (.K => EXT-UNDEF("TIN2",
-               "Multiple external definitions for " +String idToString(X:>CId) +String ".",
+               "Multiple external definitions for " +String idToString({X}:>CId) +String ".",
                "C11", "6.9:5, J.2:1 item 84"))
           ~> checkExtDefs(X:KItem, _, SetItem(X) _)
 
@@ -182,14 +186,14 @@ module C-LINKING-INIT
                   | #mergeDecls(Map, Map, Set) [function]
      rule mergeDecls(M1:Map, M2:Map) => #mergeDecls(M1:Map, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
      rule #mergeDecls(OldValues:Map, NewValues:Map, SetItem(Key:K) CommonKeys:Set)
-          => #mergeDecls(OldValues, NewValues[Key <- OldValues[Key]<:K:>Set NewValues[Key]<:K:>Set], CommonKeys)
+          => #mergeDecls(OldValues, NewValues[Key <- {{OldValues[Key]}<:K}:>Set {{NewValues[Key]}<:K}:>Set], CommonKeys)
      rule #mergeDecls(_, NewValues:Map, .Set) => NewValues
 
      syntax Map ::= mergeDefs(Map, Map) [function]
                   | #mergeDefs(Map, Map, Set) [function]
      rule mergeDefs(M1::Map, M2::Map) => #mergeDefs(M1, updateMap(M1, M2), intersectSet(keys(M1), keys(M2)))
      rule #mergeDefs(OldValues::Map, NewValues::Map, SetItem(Key:K) CommonKeys::Set)
-          => #mergeDefs(OldValues, NewValues[Key <- updateMap(OldValues[Key]<:K:>Map, NewValues[Key]<:K:>Map)], CommonKeys)
+          => #mergeDefs(OldValues, NewValues[Key <- updateMap({{OldValues[Key]}<:K}:>Map, {{NewValues[Key]}<:K}:>Map)], CommonKeys)
      rule #mergeDefs(_, NewValues::Map, .Set) => NewValues
 
      rule mergeObj(B:K, .K) => B

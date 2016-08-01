@@ -1,8 +1,17 @@
-module CPP-ABSTRACT-SYNTAX
-     imports CPP-SYNTAX
+module CPP-ABSTRACT-SORTS
+     syntax Decl
+endmodule
 
-     imports CPP-DYNAMIC-SYNTAX
-     imports COMPAT-SYNTAX
+module CPP-ABSTRACT-SYNTAX
+     imports CPP-ABSTRACT-SORTS
+     imports BOOL-SYNTAX
+     imports FLOAT-SYNTAX
+     imports LIST
+     imports STRING-SYNTAX
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-SORTS
+     imports COMMON-SORTS
+     imports COMPAT-SORTS
 
      syntax LVal ::= LExpr
      syntax XVal ::= XExpr

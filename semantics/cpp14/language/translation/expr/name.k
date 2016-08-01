@@ -2,6 +2,7 @@ module CPP-EXPR-NAME
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-OVERLOADING-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION

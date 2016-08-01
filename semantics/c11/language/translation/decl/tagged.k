@@ -1,5 +1,6 @@
 module C-DECL-TAGGED-SYNTAX
-     imports C-ABSTRACT-SYNTAX
+     imports LIST
+     imports COMMON-SORTS
      // Not defined, just used.
      syntax KItem ::= addGlobalTag(CId, FieldInfo)
      syntax KItem ::= addLocalTag(CId, FieldInfo)
@@ -10,17 +11,20 @@ endmodule
 
 module C-DECL-TAGGED
      imports C-DECL-TAGGED-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports MAP
+     imports STRING
+     imports COMPAT-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      context StructDef(_, HOLE:StrictList => seqstrict(HOLE))
      context UnionDef(_, HOLE:StrictList => seqstrict(HOLE))
@@ -164,8 +168,8 @@ module C-DECL-TAGGED
 
      syntax Bool ::= isNonPaddingOffset(Int, List, Map, Map) [function]
      rule isNonPaddingOffset(Offset:Int, ListItem(typedDeclaration(_, F:CId)) Decls:List, Types:Map, Offsets:Map)
-          => (Offsets[F]<:K:>Int <=Int Offset andBool Offset <Int Offsets[F]<:K:>Int +Int
-               bitSizeofType(Types[F]<:K:>Type))
+          => ({{Offsets[F]}<:K}:>Int <=Int Offset andBool Offset <Int {{Offsets[F]}<:K}:>Int +Int
+               bitSizeofType({{Types[F]}<:K}:>Type))
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 

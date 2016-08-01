@@ -1,6 +1,7 @@
 module CPP-STMT-RETURN
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION
 

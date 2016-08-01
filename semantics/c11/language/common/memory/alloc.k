@@ -1,7 +1,6 @@
 module C-MEMORY-ALLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports MEMORY-SYNTAX
+     imports C-TYPING-SORTS
 
      syntax KItem ::= alloc(SymBase, Type, Int)
 
@@ -15,16 +14,14 @@ endmodule
 
 module C-MEMORY-ALLOC
      imports C-MEMORY-ALLOC-SYNTAX
-
-     imports C-ALIGNMENT-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-ERROR-SYNTAX
-
      imports C-CONFIGURATION
+     imports BOOL
+     imports BITS-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
           requires notBool isVoidType(T)

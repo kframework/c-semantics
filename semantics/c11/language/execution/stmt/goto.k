@@ -1,9 +1,9 @@
 module C-STMT-GOTO
+     imports C-CONFIGURATION
+     imports BOOL
+     imports K-REFLECTION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax KItem ::= getIdOfDeclaration(K) [function]
      rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
@@ -185,9 +185,9 @@ module C-STMT-GOTO
           [structural]
 
      rule <k> (.K => pushBlock(
-                        BlockNums[-1 -Int size(ActualHist)]:>Int)
+                        {BlockNums[-1 -Int size(ActualHist)]}:>Int)
                ~> addVariablesForBlock(
-                        BlockNums[-1 -Int size(ActualHist)]:>Int, DeclStk)
+                        {BlockNums[-1 -Int size(ActualHist)]}:>Int, DeclStk)
                ) ~> processGotoDown(gotoObject(TargetDepth:Int,
                     BlockNums:List, _, _,
                     DeclStk:List))

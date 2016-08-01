@@ -1,7 +1,8 @@
 module C-EXPR-EVAL
-     imports C-DYNAMIC-SYNTAX
+     imports BOOL
      imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule reval(ncle(K:K, T::Type) => te(K, utype(T)))
           requires notBool isArrayOrFunctionType(T)

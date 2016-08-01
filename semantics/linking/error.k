@@ -1,8 +1,8 @@
 module TRANSLATION-ERROR
-     imports ERROR-SYNTAX
-
-     imports C-TYPING-SYNTAX
      imports C-CONFIGURATION
+     imports STRING
+     imports K-IO
+     imports ERROR-SYNTAX
 
      syntax KItem ::= error(String, CabsLoc)
      rule <k> EXIT(_) => HALT ...</k>

@@ -7,18 +7,16 @@ module C-LITERAL-SYNTAX
 endmodule
 
 module C-LITERAL
-     imports C-CONVERSION-SYNTAX
      imports C-LITERAL-SYNTAX
-
-     imports C-ABSTRACT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-MEMORY-ALLOC-SYNTAX
-
+     imports FLOAT-SYNTAX
+     imports K-EQUAL
+     imports STRING
      imports COMPAT-SYNTAX
+     imports C-ABSTRACT-SYNTAX
+     imports C-CONVERSION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax Bool ::= withinRange(Int, SimpleUType) [function]
      rule withinRange(I::Int, T::SimpleUType)
@@ -252,7 +250,7 @@ module C-LITERAL
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
-          => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))):>RValue)
+          => cast(utype(int), {cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int)))}:>RValue)
           [structral, anywhere]
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
           [structral, anywhere]

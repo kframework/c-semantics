@@ -1,8 +1,11 @@
 module C-EXPR-SEQUENCING
-     imports C-ABSTRACT-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports BOOL
+     imports K-EQUAL
      imports COMPAT-SYNTAX
+     imports C-ABSTRACT-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax KItem ::= commaListHolder(K)
      rule Comma(list(ListItem(K:K) L:List))

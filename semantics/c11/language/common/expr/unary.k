@@ -1,11 +1,11 @@
 module C-COMMON-EXPR-UNARY
-     imports C-BITS-SYNTAX
+     imports FLOAT
+     imports INT
+     imports C-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{2}}}{
      The result of the unary \cinline{+} operator is the value of its

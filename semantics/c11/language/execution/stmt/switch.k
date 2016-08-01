@@ -1,4 +1,6 @@
 module C-STMT-SWITCH
+     imports C-CONFIGURATION
+     imports K-REFLECTION
      imports C-BITS-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -6,8 +8,6 @@ module C-STMT-SWITCH
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      // switch num, promoted value of controlling exp, int value of exp
      syntax KItem ::= handleSwitch(Int, K) [strict(2)]
@@ -88,7 +88,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule tryCase(
-               (tv(V::CValue, T'::UType) => stripConstants(cast(T, tv(V, T')):>RValue)),
+               (tv(V::CValue, T'::UType) => stripConstants({cast(T, tv(V, T'))}:>RValue)),
                tv(_, T::UType), _)
           requires T =/=Type T'
           [structural]

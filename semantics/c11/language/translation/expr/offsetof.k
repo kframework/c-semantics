@@ -1,7 +1,12 @@
 module C-EXPR-OFFSETOF
+     imports BASIC-K
+     imports COMMON-SORTS
+     imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // Used by stddef.h.
      rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)

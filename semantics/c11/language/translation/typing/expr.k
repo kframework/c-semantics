@@ -6,23 +6,24 @@ module C-TYPING-EXPR-SYNTAX
 endmodule
 
 module C-TYPING-EXPR
-     imports C-TYPING-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-CONFIGURATION
      imports C-TYPING-EXPR-SYNTAX
-
+     imports BOOL
+     imports INT
+     imports K-REFLECTION
+     imports STRING
+     imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
-     imports C-CONFIGURATION
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMPATIBILITY-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax Bool ::= isTypeStrictUnaryKLabel(K) [function, klabelPredicate]
                    | isTypeStrictBinaryFirstKLabel(K) [function, klabelPredicate]

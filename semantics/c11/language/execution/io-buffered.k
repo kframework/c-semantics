@@ -1,5 +1,8 @@
 module C-IO-BUFFERED-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports INT-SYNTAX
+     imports LIST
+     imports MAP
+     imports SYMLOC-SORTS
 
      syntax KItem ::= realloc(SymBase, SymBase, Int, Int)
 
@@ -16,22 +19,20 @@ module C-IO-BUFFERED-SYNTAX
 endmodule
 
 module C-IO-BUFFERED
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports BITS-SYNTAX
+     imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-CHECK-LOC-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax KItem ::= bwrite(SymLoc, List)
 
@@ -307,7 +308,7 @@ module C-IO-BUFFERED
             Types::Map (FId |-> T::Type),
             Offsets::Map (FId |-> FOffset::Int),
             PaddingOffs::Set))
-          => #if FId ==K #NoName #then
+          => {#if FId ==K #NoName #then
                //the bits of the field in the current byte are traps, because it was unnamed
                piece(trap, minInt(FOffset +Int bitSizeofType(T),
                                   Offset +Int N) -Int
@@ -318,7 +319,7 @@ module C-IO-BUFFERED
                              (minInt(FOffset +Int bitSizeofType(T),
                                      Offset +Int N) -Int
                               maxInt(FOffset, Offset)), T)
-             #fi:>Bits
+             #fi}:>Bits
                bit::
                  //read the remaining bits in the byte
                  getZeroedBits(minInt(FOffset +Int bitSizeofType(T),
@@ -459,5 +460,42 @@ module C-IO-BUFFERED
           <effective-types> M:Map => M [ Base <- T' ] </effective-types>
           requires isNativeLoc(Base)
           [structural]
+
+
+     rule [err00037]:
+          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
+          read(NullPointer, _)
+          [structural]
+
+     // TODO(chathhorn): Silly way to do things. Probably need to allow
+     // multiple error cells at least. Also, add more details (loc?).
+     // FIXME possible to miss dataraces with bitfields
+     rule [read-write-race]:
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+               read(Loc:SymLoc, T:Type)
+          ...</k>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J:2.1 item 5")) ~>
+               write(Loc':SymLoc, _, T':Type)
+          ...</k>
+          requires sameBase(Loc, Loc') andBool
+               ((Loc <=bytes Loc'
+                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
+               orBool (Loc >bytes Loc'
+                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
+          [computational]
+
+      rule [write-write-race]:
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+               write(Loc:SymLoc, _, T:Type)
+          ...</k>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+               write(Loc':SymLoc, _, T':Type)
+          ...</k>
+          requires sameBase(Loc, Loc') andBool
+               ((Loc <=bytes Loc'
+                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
+               orBool (Loc >bytes Loc'
+                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
+          [computational]
 
 endmodule

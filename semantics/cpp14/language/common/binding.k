@@ -1,7 +1,9 @@
 module CPP-BINDING-SYNTAX
+     imports INT-SYNTAX
      imports LIST
-     imports COMMON-SYNTAX
-     imports CPP-TYPING-SYNTAX
+     imports COMMON-SORTS
+     imports CPP-SORTS
+     imports CPP-TYPING-SORTS
 
      syntax KItem ::= bind(List, List, List, Int) [klabel(bindCpp)]
      syntax KItem ::= bindParam(Int, CPPType, Init) [klabel(bindParamCpp3)]
@@ -11,6 +13,8 @@ endmodule
 module CPP-BINDING
      imports CPP-BINDING-SYNTAX
      imports C-CONFIGURATION
+     imports INT
+     imports CPP-TYPING-SYNTAX
 
      rule <k> (.K => bindParam(I, T, V))
           ~> bind(

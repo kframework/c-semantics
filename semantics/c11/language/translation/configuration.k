@@ -1,8 +1,10 @@
 module C-CONFIGURATION
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BOOL-SYNTAX
+     imports INT-SYNTAX
+     imports MAP
+     imports SET
+     imports COMMON-SYNTAX
      imports C-LINKING-INIT-SYNTAX
-     imports COMPAT-SYNTAX
 
      configuration
 <global>
@@ -170,7 +172,7 @@ module C-CONFIGURATION
 
 <previous-errors> .Set </previous-errors>
 
-<status> initializing </status>
+<status> initializingTu </status>
 
 <options> $OPTIONS:Set </options>
 

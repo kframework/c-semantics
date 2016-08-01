@@ -1,16 +1,14 @@
 module C-EXPR-CONDITIONAL
-     imports C-EXPR-LOGICAL-SYNTAX
-
-     imports C-BITS-SYNTAX
-     imports C-COMMON-PROMOTION-SYNTAX
-     imports C-CONVERSION-SYNTAX
+     imports BASIC-K
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
+     imports C-EXPR-LOGICAL-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.15}{4}}}{
      The first operand is evaluated; there is a sequence point between its
@@ -41,7 +39,7 @@ module C-EXPR-CONDITIONAL
           requires notBool isVariablyModifiedType(type(T))
      rule evalConditional(tv(0, ut(_, int)), _:RValue, E2:RValue, T::UType) => E2
           requires notBool isVariablyModifiedType(type(T))
-     rule evalConditional(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)), _, _, T::UType)
+     rule evalConditional(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _, _, T::UType)
           requires notBool isVariablyModifiedType(type(T))
 
 endmodule

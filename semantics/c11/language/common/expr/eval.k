@@ -1,5 +1,7 @@
 module C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports BASIC-K
+     imports C-TYPING-SORTS
+     imports SYMLOC-SORTS
 
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkUse(K) [strict]
@@ -12,19 +14,17 @@ endmodule
 
 module C-COMMON-EXPR-EVAL
      imports C-COMMON-EXPR-EVAL-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports K-REFLECTION
+     imports INT
+     imports BITS-SYNTAX
+     imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax KItem ::= "reval" "(" ")"
      rule reval(HOLE:K) => HOLE ~> reval() [heat]

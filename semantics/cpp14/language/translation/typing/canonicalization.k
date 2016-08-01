@@ -1,8 +1,10 @@
 module CPP-TYPING-CANONICALIZATION
      imports C-CONFIGURATION
+     imports K-REFLECTION
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports ERROR-SYNTAX

@@ -1,6 +1,8 @@
 module LIBC-BOOTSTRAP-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports INT-SYNTAX
+     imports LIST
+     imports STRING-SYNTAX
+     imports C-DYNAMIC-SORTS
 
      syntax KItem ::= builtin(String) [klabel(builtin0)]
                     | builtin(String, RValue) [klabel(builtin1)]
@@ -18,16 +20,14 @@ endmodule
 
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
-
-     imports C-BUILTIN-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
-     imports C-CONVERSION-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
-
      imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports COMMON-BUILTIN-SYNTAX
+     imports COMPAT-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
      rule <k> handleBuiltin

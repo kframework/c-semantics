@@ -1,22 +1,25 @@
 module C-COMMON-EXPR-RELATIONAL-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-
+     imports BASIC-K
+     imports C-TYPING-SORTS
      syntax Bool ::= isCompatibleEqualityTypes(UType, UType, K, K) [function]
 endmodule
 
 module C-COMMON-EXPR-RELATIONAL
      imports C-COMMON-EXPR-RELATIONAL-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports FLOAT
+     imports INT
+     imports K-EQUAL
+     imports K-REFLECTION
+     imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-BITS-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports COMPAT-SYNTAX
-     imports C-CONFIGURATION
 
      syntax KItem ::= makeTruth(Bool, UType, UType) [function]
      syntax UType ::= makeTruthType(UType, UType) [function]

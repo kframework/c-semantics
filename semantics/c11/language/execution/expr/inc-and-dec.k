@@ -1,8 +1,5 @@
 module C-EXPR-INC-AND-DEC
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-MEMORY-READING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.4}{2}}}{
      The result of the postfix \cinline{++} operator is the value of the

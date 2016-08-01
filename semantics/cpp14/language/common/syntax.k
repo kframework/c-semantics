@@ -1,6 +1,20 @@
+module CPP-SORTS
+     syntax CId ::= OpId
+     syntax CId ::= TempId
+     syntax Init ::= Stmt | Expr
+     syntax Expr ::= Name
+     syntax Name
+     syntax Stmt
+     syntax OpId
+     syntax TempId
+endmodule
+
 module CPP-SYNTAX
-     imports COMPAT-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-SORTS
+     imports INT-SYNTAX
+     imports LIST
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-REVAL-SYNTAX
 
      syntax OpId ::= "operatornew"
                    | "operatordelete"
@@ -55,19 +69,14 @@ module CPP-SYNTAX
                    | "operator_--"
                    | "operator--_"
                    
-     syntax CId ::= OpId
 
      syntax TempId ::= arg(Int)
                      | "ret"
-     syntax CId ::= TempId
 
      syntax CId ::= Destructor(CId)
 
-     syntax Init ::= Stmt | Expr
-
      syntax Expr ::= Expr ":=" Init [strict(1)]
                    | "*" Expr
-                   | Name
                    | BuiltinCallOp(Expr, Int, K)
      syntax Name ::= Name(NNS, CId)
 

@@ -1,5 +1,17 @@
+module BITS-SORTS
+     imports INT-SYNTAX
+     syntax Bits ::= Int | Trap | Unknown
+     syntax Unknown
+     syntax Trap
+     syntax SubObject
+     syntax DataList
+endmodule
+
 module BITS-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports BITS-SORTS
+     imports COMMON-SORTS
+     imports INT-SYNTAX
+     imports LIST
 
      syntax Trap ::= "trap" [klabel(trap)]
      syntax Unknown ::= unknown(Int)
@@ -8,8 +20,6 @@ module BITS-SYNTAX
 
      syntax Bits ::= piece(Bits, Int)
      syntax Bits ::= Bits "bit::" Bits
-
-     syntax Bits ::= Int
 
      // original number, from, to inclusive
      syntax Bits ::= bitRange(Bits, Int, Int)
@@ -29,8 +39,9 @@ endmodule
 
 module BITS
      imports BITS-SYNTAX
-     imports COMPAT-SYNTAX
+     imports INT
      imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
 
      rule base(encodedValue(S:SymLoc, _, _)) => base(S)
      rule sameBase((encodedValue(S:SymLoc, _, _) => S), _)

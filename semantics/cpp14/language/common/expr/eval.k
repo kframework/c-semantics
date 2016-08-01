@@ -1,5 +1,8 @@
 module CPP-EXPR-EVAL
+     imports BOOL
      imports CPP-CONVERSION-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-REVAL-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule reval(lv(Loc::SymLoc, T:CPPArrayType)

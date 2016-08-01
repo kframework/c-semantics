@@ -1,21 +1,17 @@
 module C-COMPOUND-LITERAL
+     imports C-CONFIGURATION
+     imports LIST
+     imports STRING
      imports C-ABSTRACT-SYNTAX
-     imports C-ALIGNMENT-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
-     imports C-ENV-SYNTAX
      imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      // Compound literals at file scope get stored in global memory (i.e., the
      // data segment). At function scope, though, they have automatic storage

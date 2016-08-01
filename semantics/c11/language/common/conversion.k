@@ -1,5 +1,6 @@
 module C-CONVERSION-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports C-DYNAMIC-SORTS
+     imports C-TYPING-SORTS
 
      // interpret the result of arithmetic as in 6.5.4
      syntax KItem ::= arithInterpret(UType, NumValue) [function]
@@ -14,20 +15,17 @@ endmodule
 
 module C-CONVERSION
      imports C-CONVERSION-SYNTAX
-
+     imports INT
+     imports FLOAT
+     imports SYMLOC-SYNTAX
      imports C-ALIGNMENT-SYNTAX
-     imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports COMPAT-SYNTAX
 
      rule arithInterpret(T:IntegerUType, N:Int) => tv(N, T)
           requires (min(T) <=Int N)

@@ -1,13 +1,10 @@
 module C-PROMOTION
      imports C-COMMON-PROMOTION-SYNTAX
-
+     imports BOOL
      imports C-COMMON-PROMOTION-CONTEXT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ABSTRACT-SYNTAX
-
-     imports COMPAT-SYNTAX
 
      rule L:KLabel(
                (V:RValue => cast(promote(utype(V)), V))

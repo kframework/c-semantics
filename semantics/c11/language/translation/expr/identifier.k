@@ -1,12 +1,13 @@
 module C-EXPR-IDENTIFIER
+     imports C-CONFIGURATION
+     imports K-EQUAL
+     imports SET
+     imports C-ABSTRACT-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONFIGURATION
-     imports C-ABSTRACT-SYNTAX
 
      rule <k> X:CId => lv(lnew(Base, T), T) ...</k>
           <env>... X |-> Base::SymBase ...</env>

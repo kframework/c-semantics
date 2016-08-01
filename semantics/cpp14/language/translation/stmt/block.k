@@ -1,7 +1,8 @@
 module CPP-STMT-BLOCK
+     imports C-CONFIGURATION
      imports CPP-ENV-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports C-CONFIGURATION
+     imports CPP-SYNTAX
 
      rule <k> popBlock => .K ...</k>
           <elab>... .K => popBlock </elab>

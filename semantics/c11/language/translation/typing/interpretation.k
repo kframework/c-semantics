@@ -1,26 +1,26 @@
 module C-TYPING-INTERPRETATION-SYNTAX
      imports BASIC-K
-     imports C-DYNAMIC-SYNTAX
+     imports C-DYNAMIC-SORTS
 
      syntax Type ::= pushTypeDown(Type, K) [function]
      syntax KItem ::= makeArrayType(RValue, K)
 endmodule
 
 module C-TYPING-INTERPRETATION
+     imports C-TYPING-INTERPRETATION-SYNTAX
+     imports C-CONFIGURATION
+     imports INT
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-BITSIZE-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-CANONICALIZATION-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      // Rules that use specifier should be careful to use extractActualType if
      // going to be used in a typed name.

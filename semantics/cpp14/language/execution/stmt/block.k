@@ -7,6 +7,7 @@ module CPP-STMT-BLOCK
      imports C-CHECK-LOC-SYNTAX
      imports C-CONFIGURATION
      imports C-IO-BUFFERED-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
 
      rule <k> pushBlock(Tag:Int)

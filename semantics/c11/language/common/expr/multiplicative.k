@@ -1,13 +1,13 @@
 module C-COMMON-EXPR-MULTIPLICATIVE
-     imports C-BITS-SYNTAX
+     imports BOOL
+     imports FLOAT
+     imports INT
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.5}{3--6}}}{
      The usual arithmetic conversions are performed on the operands.

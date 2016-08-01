@@ -1,4 +1,18 @@
+module C-TYPING-SORTS
+     syntax EffectiveType ::= Type
+     syntax Type ::= FunctionType
+     syntax FunctionType
+     syntax UType
+     syntax DType
+     syntax SimpleType
+     syntax SimpleUType
+     syntax FieldInfo
+     syntax Variadic
+endmodule
+
 module C-TYPING-SYNTAX
+     imports C-TYPING-SORTS
+
      imports BASIC-K
      imports MEMORY-SYNTAX
      imports STRING-SYNTAX
@@ -11,8 +25,6 @@ module C-TYPING-SYNTAX
      syntax Type ::= t(Quals, Set, SimpleType) // possibly-qualified type
      syntax UType ::= ut(Set, SimpleUType)     // unqualified type
      syntax DType ::= typedDeclaration(Type, CId)
-
-     syntax EffectiveType ::= Type
 
      syntax Type ::= type(K) [function]
      syntax UType ::= utype(K) [function]

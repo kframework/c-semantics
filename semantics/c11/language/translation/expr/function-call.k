@@ -1,14 +1,15 @@
 module C-EXPR-FUNCTION-CALL
-     imports C-ABSTRACT-SYNTAX
+     imports BASIC-K
+     imports BOOL
+     imports K-EQUAL
+     imports COMPAT-SYNTAX
+     imports C-ABSTRACT-SORTS
      imports C-BINDING-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports COMPAT-SYNTAX
 
      syntax KResult ::= rvlist(List)
 

@@ -1,13 +1,13 @@
 module CPP-PROCESS-LABEL-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-
+     imports BASIC-K
      syntax KItem ::= calculateGotoMap(K)
 endmodule
 
 module CPP-PROCESS-LABEL
      imports CPP-PROCESS-LABEL-SYNTAX
-
      imports C-CONFIGURATION
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-SYNTAX
 
      syntax KItem ::= "waitingOnGotoMap"
      rule <k> calculateGotoMap(K:K) => waitingOnGotoMap ...</k>
@@ -43,7 +43,7 @@ module CPP-PROCESS-LABEL
                M[F, Target <- gotoObject(Depth, BlockHistory,
                     (listToK(L) ~> K ~> Tail), LoopStack, DeclStack)]
           </goto-map>
-          requires notBool (Target in_keys(M[F]:>Map))
+          requires notBool (Target in_keys({M[F]}:>Map))
 
      rule <k> waitingOnGotoMap ...</k>
           <computation> pushBlock(Tag::Int) => .K ...</computation>

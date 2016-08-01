@@ -1,6 +1,8 @@
 module CPP-EXECUTION-INIT
      imports C-CONFIGURATION
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      imports LIBC-IO-SYNTAX

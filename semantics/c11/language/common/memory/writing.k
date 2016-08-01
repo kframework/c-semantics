@@ -1,5 +1,8 @@
 module C-MEMORY-WRITING-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports STRING-SYNTAX
+     imports C-DYNAMIC-SORTS
+     imports C-TYPING-SORTS
+     imports SYMLOC-SORTS
 
      // location, value
      syntax KItem ::= write(SymLoc, CValue, Type)
@@ -19,21 +22,26 @@ module C-MEMORY-WRITING-SYNTAX
 endmodule
 
 module C-MEMORY-WRITING
-     imports C-MEMORY-WRITING-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-
-     imports C-BITSIZE-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports FLOAT-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports K-REFLECTION
+     imports MAP
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
+     imports MEMORY-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
-
-     imports MEMORY-SYNTAX
 
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
@@ -311,7 +319,7 @@ module C-MEMORY-WRITING
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
                     orBool isUnknown(N))
      rule #splitStructBytes(
-          dataList(ListItem(piece((N:Bits => unknown(#if isInt(N) #then N #else 0 #fi:>Int)), _:Int)) _:List),
+          dataList(ListItem(piece((N:Bits => unknown({#if isInt(N) #then N #else 0 #fi}:>Int)), _:Int)) _:List),
                T::UType, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
                andBool notBool isUnknown(N)

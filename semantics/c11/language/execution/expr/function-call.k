@@ -1,7 +1,9 @@
 module FUNCTION-CALL-SYNTAX
-     imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
-     syntax EffectiveType
+     imports BASIC-K
+     imports COMMON-SORTS
+     imports COMPAT-SORTS
+     imports SYMLOC-SORTS
+     imports MEMORY-SORTS
 
      // syntax for function call regardless of language of caller
      syntax KItem ::= application(CabsLoc, SymBase, K, EffectiveType, LanguageLinkage, StrictList)
@@ -9,10 +11,14 @@ endmodule
 
 module C-EXPR-FUNCTION-CALL
      imports FUNCTION-CALL-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports STRING
+     imports COMMON-BUILTIN-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
-     imports C-BUILTIN-SYNTAX
      imports C-CHECK-LOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -21,13 +27,9 @@ module C-EXPR-FUNCTION-CALL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.2}{3}}}{
      A postfix expression followed by parentheses \cinline{()} containing a

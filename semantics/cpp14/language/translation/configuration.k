@@ -1,5 +1,6 @@
 module C-CONFIGURATION
-     imports COMPAT-SYNTAX
+     imports MAP
+     imports SET
      imports C-LINKING-INIT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

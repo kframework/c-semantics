@@ -1,18 +1,22 @@
 module C-COMMON-EXPR-ADDITIVE
-     imports C-BITSIZE-SYNTAX
+     imports BASIC-K
+     imports BOOL
+     imports FLOAT
+     imports INT
+     imports K-REFLECTION
+     imports SET
+     imports STRING-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports COMPAT-SYNTAX
-     imports C-ERROR-SYNTAX
-
-     imports C-SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.6}{2}}}{
      For addition, either both operands shall have arithmetic type, or one
@@ -228,7 +232,7 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(L1:SymLoc, T:IntegerUType)
                - tv(L2:SymLoc, T':IntegerUType)
-          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi:>String)
+          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, {#if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi}:>String)
           requires sameBase(L1, L2)
                andBool isPromoted(T) andBool T ==Type T'
 

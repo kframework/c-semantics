@@ -1,16 +1,18 @@
 module C-TYPING-MISC
      imports C-TYPING-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports FLOAT
+     imports INT
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-SORTS
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-
      imports C-ERROR-SYNTAX
-     imports K-REFLECTION
-     imports C-CONFIGURATION
+     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
+     
 
      //TODO(chathhorn): a lot of junk dumped here.
 
@@ -34,7 +36,7 @@ module C-TYPING-MISC
 
      syntax SimpleIntegerType ::= flipSignedness(SimpleIntegerType) [function]
      rule flipSignedness(bitfieldType(T::BitfieldFieldType, N::Int))
-          => bitfieldType(flipSignedness(T:>SimpleIntegerType):>BitfieldFieldType, N)
+          => bitfieldType({flipSignedness({T}:>SimpleIntegerType)}:>BitfieldFieldType, N)
 
      rule flipSignedness(unsigned-char) => signed-char
      rule flipSignedness(unsigned-short-int) => short-int

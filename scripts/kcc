@@ -476,7 +476,6 @@ sub main {
           my @cmd = ('-d', catfile($profileDirectory, "c11-cpp14-kompiled"), 
                   '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
                   '-w', 'none', '--parser', 'cat', $programConfFile,
-                  '--exit-code', "<result-value> _:Int </result-value>",
                   "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
                   '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
                   '--ocaml-serialize-config', '$PGM'
@@ -711,9 +710,7 @@ sub getKRunCommand {
           '--output-file', $output,
           '-d', $isCPP ? $CPP_TRANS_DEF : $C_TRANS_DEF,
           '-w', 'none',
-          '--smt', 'none',
-          '--exit-code',
-          '<result-value> _:Int </result-value>'
+          '--smt', 'none'
      );
 
      if ($args->{'-d'}) {

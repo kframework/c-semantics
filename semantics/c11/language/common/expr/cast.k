@@ -1,7 +1,8 @@
 module C-COMMON-EXPR-CAST
+     imports C-DYNAMIC-SORTS
+     imports C-CONVERSION-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONVERSION-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.4}{5--6}}}{
      Preceding an expression by a parenthesized type name converts the value of

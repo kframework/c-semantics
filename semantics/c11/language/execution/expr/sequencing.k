@@ -1,6 +1,5 @@
 module C-EXPR-SEQUENCING
      imports C-SEQUENCE-POINT-SYNTAX
-     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.17}{2}}}{

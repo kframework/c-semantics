@@ -1,8 +1,19 @@
+module CPP-TYPING-SORTS
+     syntax AType
+     syntax CPPType
+     syntax CPPDType
+     syntax CPPSimpleType
+     syntax EffectiveType ::= CPPType
+endmodule
+
 module CPP-TYPING-SYNTAX
-     imports COMMON-SYNTAX
-     imports CPP-SYNTAX
-     imports MEMORY-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports SET
+     imports CPP-TYPING-SORTS
+     imports COMMON-SORTS
+     imports MEMORY-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-SORTS
 
      syntax AType ::= CPPType
 
@@ -10,8 +21,6 @@ module CPP-TYPING-SYNTAX
      syntax CPPDType ::= typedDeclaration(CPPType, CId) [klabel(dtcpp)]
 
      syntax CPPType ::= innerType(CPPType) [function, klabel(cppInnerType)]
-
-     syntax EffectiveType ::= CPPType
 
      syntax CPPSimpleType ::= CPPSimpleBasicType
 
@@ -93,6 +102,9 @@ endmodule
 
 module CPP-TYPING
      imports CPP-TYPING-SYNTAX
+     imports BOOL
+     imports COMMON-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
 
      rule getParams(t(_, _, functionType(_, L::List, _))) => L
      rule getReturnType(t(_, _, functionType(T::CPPType, _, _))) => T
@@ -124,6 +136,7 @@ endmodule
 module C-CPP-TYPING
      imports C-TYPING-SYNTAX
      imports CPP-TYPING
+     imports COMPAT-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, Args::List, CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(Args, #klabel(`convertTypeToC`))))
      rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)

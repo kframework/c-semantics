@@ -5,12 +5,12 @@ endmodule
 
 module C-EXPR-LOGICAL
      imports C-EXPR-LOGICAL-SYNTAX
-
-     imports C-BITS-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports BITS-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
      rule simplifyTruth(V:K) => V != tv(0, ut(SetItem(IntegerConstant), int))
 
@@ -24,7 +24,7 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #and(tv(0, ut(S:Set, int)), _:RValue) => tv(0, ut(S, int))
      rule #and(tv(1, ut(S:Set, int)), R:RValue) => R
-     rule #and(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)), _)
+     rule #and(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _)
 
      rule L:K || R:K => #or(simplifyTruth(L), simplifyTruth(R))
 
@@ -36,6 +36,6 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #or(tv(0, ut(S:Set, int)), R:RValue) => R
      rule #or(tv(1, ut(S:Set, int)), _:RValue) => tv(1, ut(S, int))
-     rule #or(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)), _)
+     rule #or(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _)
 
 endmodule

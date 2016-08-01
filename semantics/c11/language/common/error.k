@@ -21,18 +21,9 @@ endmodule
 
 module C-ERROR
      imports C-ERROR-SYNTAX
-
-     imports C-CONVERSION-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports K-REFLECTION
      imports C-CONFIGURATION
-
+     imports BOOL
+     imports STRING
 
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)
           => ErrorMsg(Title, Msg, ErrType, ListItem(Document) ListItem(Citation))

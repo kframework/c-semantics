@@ -3,19 +3,18 @@ module C-DECL-RESOLUTION-SYNTAX
 endmodule
 
 module C-DECL-RESOLUTION
+     imports C-DECL-RESOLUTION-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports K-EQUAL
+     imports STRING
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-RESOLUTION-SYNTAX
-
+     imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-CONFIGURATION
-
-     imports C-ERROR-SYNTAX
 
      syntax KItem ::= allocateIncompleteTentative(CId, K)
 

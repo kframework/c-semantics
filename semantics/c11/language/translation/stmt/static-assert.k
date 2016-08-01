@@ -1,10 +1,10 @@
 module C-STMT-STATIC-ASSERT
+     imports INT
+     imports STRING
      imports C-ABSTRACT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-LITERAL-SYNTAX
-     imports C-SYNTAX
-     imports COMPAT-SYNTAX
 
      context StaticAssert((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule StaticAssert(tv(N:Int, _), _) => .K

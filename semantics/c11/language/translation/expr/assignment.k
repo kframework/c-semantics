@@ -1,17 +1,15 @@
 module C-EXPR-ASSIGNMENT
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONFIGURATION
+     imports BASIC-K
+     imports BOOL
+     imports K-EQUAL
+     imports SYMLOC-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16}{3}}}{
      An assignment operator stores a value in the object designated by the left

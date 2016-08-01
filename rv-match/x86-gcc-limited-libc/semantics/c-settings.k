@@ -5,6 +5,7 @@ module C-SETTINGS
      imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports BOOL
      imports INT
 
      rule cfg:charAlias => signed-char

@@ -1,12 +1,16 @@
 module CPP-EXECUTION-IO
      imports CPP-MEMORY-READING-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX
+     imports BOOL
+     imports INT
      imports BITS-SYNTAX
+     imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-CONFIGURATION
      imports C-IO-BUFFERED-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-ERROR-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
               => checkWrite(Loc, T)

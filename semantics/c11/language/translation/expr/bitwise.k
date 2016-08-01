@@ -1,13 +1,11 @@
 module C-EXPR-BITWISE
-     imports C-ABSTRACT-SYNTAX
+     imports BOOL
+     imports INT
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports COMPAT-SYNTAX
 
      rule ~ te(K:K, T::UType) => te(~ K, T)
           requires isPromoted(T)

@@ -1,6 +1,5 @@
 module C-DECL-DEFINITION-SYNTAX
-     imports C-ABSTRACT-SYNTAX
-
+     imports BASIC-K
      syntax KItem ::= declare(K, K) [strict(1)]
 
      // The declare "backend" implemented in the trans or exec semantics.
@@ -15,13 +14,10 @@ endmodule
 
 module C-DECL-DEFINITION
      imports C-DECL-DEFINITION-SYNTAX
-
-     imports C-MEMORY-ALLOC-SYNTAX
-
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports MAP
      imports COMPAT-SYNTAX
+     imports C-ABSTRACT-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // c99 6.7.8:9 Except where explicitly stated otherwise, for the purposes
      // of this subclause unnamed members of objects of structure and union

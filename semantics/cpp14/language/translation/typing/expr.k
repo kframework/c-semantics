@@ -8,9 +8,11 @@ endmodule
 
 module CPP-TYPING-EXPR
      imports CPP-TYPING-EXPR-SYNTAX
-
+     imports K-REFLECTION
+     imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-SYNTAX
 
      syntax STypeList ::= toSTypeList(List) [function]
      syntax List ::= ofSTypeList(STypeList) [function]

@@ -1,10 +1,11 @@
 module C-STMT-IF-THEN
+     imports INT
+     imports K-EQUAL
+     imports BITS-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{4}}}{
      \ldots There is a sequence point between the evaluation of a full
@@ -18,7 +19,7 @@ module C-STMT-IF-THEN
      substatement is reached via a label, the second substatement is not
      executed.
      }*/
-     rule IfThenElse(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi:>Int), ut(_, int)), _, _)
+     rule IfThenElse(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _, _)
 
      rule [if-then-else-true]:
           IfThenElse(tv(1, ut(_, int)), S:K, _) => sequencePoint ~> S

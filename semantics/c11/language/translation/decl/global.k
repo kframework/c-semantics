@@ -1,6 +1,6 @@
 module C-DECL-GLOBAL-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-TYPING-SORTS
+     imports SYMLOC-SORTS
 
      syntax Linkage ::= "external" | "internal"
 
@@ -21,27 +21,29 @@ module C-DECL-GLOBAL-SYNTAX
 endmodule
 
 module C-DECL-GLOBAL
-     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports K-EQUAL
+     imports LIST
+     imports MAP
+     imports SET
+     imports STRING
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-ABSTRACT-SYNTAX
+     imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-TAGGED-SYNTAX
-
-     imports C-ABSTRACT-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-BUILTIN-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-FUNCTION-DEF-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ALIGNMENT-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule declare'(typedDeclaration(T:Type, X:CId), K:K)
           => checkComplete(T, K)
@@ -318,7 +320,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     State, internal,
-                    #if isExtern(T) #then Extern() #else Static() #fi:>Storage)
+                    {#if isExtern(T) #then Extern() #else Static() #fi}:>Storage)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -399,7 +401,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, external,
-                    #if isExtern(T) #then Extern() #else Static() #fi:>Storage)
+                    {#if isExtern(T) #then Extern() #else Static() #fi}:>Storage)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -733,7 +735,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <structs> GStructs:Map </structs>
-          requires (tag(X, Tu, global) in_keys(GStructs[Tu]<:K:>Map))
+          requires (tag(X, Tu, global) in_keys({{GStructs[Tu]}<:K}:>Map))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a

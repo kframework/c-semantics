@@ -1,6 +1,4 @@
 module C-BUILTIN-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
 
      syntax Map ::= "builtins" [function]
@@ -13,13 +11,11 @@ module C-BUILTIN-SYNTAX
 endmodule
 
 module C-BUILTIN
-     imports C-BITS-SYNTAX
      imports C-BUILTIN-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports MAP
      imports C-SETTINGS-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // Types for library functions defined in the semantics. These are the
      // definitive types against which all calls are checked for compatibility.

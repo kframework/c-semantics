@@ -1,21 +1,21 @@
 module C-DECL-LOCAL
-     imports C-DECL-DEFINITION-SYNTAX
+     imports C-CONFIGURATION
+     imports BASIC-K
+     imports BOOL
+     imports STRING
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
-
+     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      // TODO(chathhorn): Totally not sure what to do about these first cases.
      // Should the external types be updated/completed? That appears to be the

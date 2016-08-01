@@ -1,12 +1,12 @@
 module CPP-TRANSLATION-INIT-SYNTAX
-     imports COMMON-SYNTAX
+     imports COMMON-SORTS
 
      syntax KItem ::= makeNs(Namespace)
 endmodule
 
 module CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-INIT-SYNTAX
-
+     imports STRING
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-TYPING-SYNTAX

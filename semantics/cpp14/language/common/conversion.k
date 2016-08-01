@@ -1,5 +1,7 @@
 module CPP-CONVERSION-SYNTAX
-     imports CPP-TYPING-SYNTAX
+     imports SYMLOC-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPING-SORTS
 
      syntax Expr ::= instantiate(SymLoc, CPPType) [klabel(instantiateCpp)]
 
@@ -13,6 +15,8 @@ endmodule
 
 module CPP-CONVERSION
      imports CPP-CONVERSION-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule convertType(T::CPPType, prv(V::CPPValue, T)) => prv(V, T)
      rule convertType(T::CPPType, pre(E::Expr, T)) => pre(E, T)

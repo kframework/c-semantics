@@ -1,10 +1,9 @@
 module C-STMT-LOOP
+     imports C-CONFIGURATION
+     imports K-REFLECTION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ENV-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.5.2}{1}}}{
      The statement

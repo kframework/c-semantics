@@ -6,15 +6,14 @@ endmodule
 
 module C-EXPR-SIZEOF
      imports C-EXPR-SIZEOF-SYNTAX
+     imports BOOL
+     imports C-ABSTRACT-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-BITS-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-ABSTRACT-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
-     imports COMPAT-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.4}{2}}}{
      The \cinline{sizeof} operator yields the size (in bytes) of its operand,

@@ -1,9 +1,17 @@
-module C-ABSTRACT-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-
+module C-ABSTRACT-SORTS
+     imports C-DYNAMIC-SORTS
      syntax RValue ::= RHold
      syntax KResult ::= NCLHold
+endmodule
+
+module C-ABSTRACT-SYNTAX
+     imports C-ABSTRACT-SORTS
+     imports BOOL-SYNTAX
+     imports INT-SYNTAX
+     imports STRING-SYNTAX
+     imports COMMON-SORTS
+     imports C-DYNAMIC-SORTS
+     imports C-REVAL-SYNTAX
 
      syntax SymBase ::= "nonStatic"
 
@@ -404,7 +412,6 @@ module C-ABSTRACT-SYNTAX
      // String, List
 
      syntax KItem ::= AnonymousName() // new, argument is type
-     rule AnonymousName() => #NoName [anywhere]
 
      syntax C ::= Definition
      syntax C ::= ForClause
@@ -412,9 +419,6 @@ module C-ABSTRACT-SYNTAX
      syntax Definition ::= DefinitionLocRange(K, CabsLoc, CabsLoc)
      // this wraps all statements with their location in the original file
      syntax Statement ::= StatementLoc(K, K) // new
-
-     rule DefinitionLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
-     rule StatementLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
 
      syntax PureDefinition ::= StaticAssert(K, K)
 
@@ -426,102 +430,153 @@ module C-ABSTRACT-SYNTAX
      syntax ForClause ::= ForClauseExpression(K)
 
      syntax Expression ::= Conditional(K, K, K)
-     rule Conditional(K1::K, K2::K, K3::K) => K1 ? K2 : K3 [anywhere]
 
      syntax Expression ::= ArrayIndex(K, K)
-     rule ArrayIndex(K1::K, K2::K) => K1[K2]::Expression [anywhere]
 
      syntax Expression ::= Negative(K)
-     rule Negative(K::K) => - K [anywhere]
      syntax Expression ::= Positive(K)
-     rule Positive(K::K) => + K [anywhere]
      syntax Expression ::= LogicalNot(K)
-     rule LogicalNot(K::K) => ! K [anywhere]
      syntax Expression ::= BitwiseNot(K)
-     rule BitwiseNot(K::K) => ~ K [anywhere]
      syntax Expression ::= Dereference(K)
-     rule Dereference(K::K) => * K [anywhere]
      syntax Expression ::= Reference(K)
-     rule Reference(K::K) => & K [anywhere]
      syntax Expression ::= PreIncrement(K)
-     rule PreIncrement(K::K) => ++ K [anywhere]
      syntax Expression ::= PreDecrement(K)
-     rule PreDecrement(K::K) => -- K [anywhere]
      syntax Expression ::= PostIncrement(K)
-     rule PostIncrement(K::K) => K ++ [anywhere]
      syntax Expression ::= PostDecrement(K)
-     rule PostDecrement(K::K) => K -- [anywhere]
 
      syntax Expression ::= Multiply(K, K)
-     rule Multiply(K1::K, K2::K) => K1 * K2 [anywhere]
      syntax Expression ::= Divide(K, K)
-     rule Divide(K1::K, K2::K) => K1 / K2 [anywhere]
      syntax Expression ::= Modulo(K, K)
-     rule Modulo(K1::K, K2::K) => K1 % K2 [anywhere]
      syntax Expression ::= Plus(K, K)
-     rule Plus(K1::K, K2::K) => K1 + K2 [anywhere]
      syntax Expression ::= Minus(K, K)
-     rule Minus(K1::K, K2::K) => K1 - K2 [anywhere]
      syntax Expression ::= LeftShift(K, K)
-     rule LeftShift(K1::K, K2::K) => K1 << K2 [anywhere]
      syntax Expression ::= RightShift(K, K)
-     rule RightShift(K1::K, K2::K) => K1 >> K2 [anywhere]
      syntax Expression ::= LessThan(K, K)
-     rule LessThan(K1::K, K2::K) => K1 < K2 [anywhere]
      syntax Expression ::= LessThanOrEqual(K, K)
-     rule LessThanOrEqual(K1::K, K2::K) => K1 <= K2 [anywhere]
      syntax Expression ::= GreaterThan(K, K)
-     rule GreaterThan(K1::K, K2::K) => K1 > K2 [anywhere]
      syntax Expression ::= GreaterThanOrEqual(K, K)
-     rule GreaterThanOrEqual(K1::K, K2::K) => K1 >= K2 [anywhere]
      syntax Expression ::= Equality(K, K)
-     rule Equality(K1::K, K2::K) => K1 == K2 [anywhere]
      syntax Expression ::= NotEquality(K, K)
-     rule NotEquality(K1::K, K2::K) => K1 != K2 [anywhere]
      syntax Expression ::= BitwiseAnd(K, K)
-     rule BitwiseAnd(K1::K, K2::K) => K1 & K2 [anywhere]
      syntax Expression ::= BitwiseXor(K, K)
-     rule BitwiseXor(K1::K, K2::K) => K1 ^ K2 [anywhere]
      syntax Expression ::= BitwiseOr(K, K)
-     rule BitwiseOr(K1::K, K2::K) => K1 | K2 [anywhere]
      syntax Expression ::= LogicalAnd(K, K)
-     rule LogicalAnd(K1::K, K2::K) => K1 && K2 [anywhere]
      syntax Expression ::= LogicalOr(K, K)
-     rule LogicalOr(K1::K, K2::K) => K1 || K2 [anywhere]
 
      syntax Expression ::= Assign(K, K)
-     rule Assign(K1::K, K2::K) => K1 := K2 [anywhere]
      syntax Expression ::= AssignMultiply(K, K)
-     rule AssignMultiply(K1::K, K2::K) => K1 *= K2 [anywhere]
      syntax Expression ::= AssignDivide(K, K)
-     rule AssignDivide(K1::K, K2::K) => K1 /= K2 [anywhere]
      syntax Expression ::= AssignModulo(K, K)
-     rule AssignModulo(K1::K, K2::K) => K1 %= K2 [anywhere]
      syntax Expression ::= AssignPlus(K, K)
-     rule AssignPlus(K1::K, K2::K) => K1 += K2 [anywhere]
      syntax Expression ::= AssignMinus(K, K)
-     rule AssignMinus(K1::K, K2::K) => K1 -= K2 [anywhere]
      syntax Expression ::= AssignBitwiseAnd(K, K)
-     rule AssignBitwiseAnd(K1::K, K2::K) => K1 &= K2 [anywhere]
      syntax Expression ::= AssignBitwiseXor(K, K)
-     rule AssignBitwiseXor(K1::K, K2::K) => K1 ^= K2 [anywhere]
      syntax Expression ::= AssignBitwiseOr(K, K)
-     rule AssignBitwiseOr(K1::K, K2::K) => K1 |= K2 [anywhere]
      syntax Expression ::= AssignLeftShift(K, K)
-     rule AssignLeftShift(K1::K, K2::K) => K1 <<= K2 [anywhere]
      syntax Expression ::= AssignRightShift(K, K)
-     rule AssignRightShift(K1::K, K2::K) => K1 >>= K2 [anywhere]
 
      syntax Expression ::= Dot(K, CId)
-     rule Dot(K::K, X::CId) => K . X [anywhere]
      syntax Expression ::= Arrow(K, CId)
-     rule Arrow(K::K, X::CId) => K -> X [anywhere]
 
      syntax KItem ::= CodeLoc(K, CabsLoc)
+
+endmodule
+
+module C-ABSTRACT-REWRITING
+     imports C-SYNTAX
+     imports C-ABSTRACT-SYNTAX
+     imports COMMON-SYNTAX
+
+     rule AnonymousName() => #NoName [anywhere]
+
+     rule DefinitionLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+     rule StatementLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
+
+     rule Conditional(K1::K, K2::K, K3::K) => K1 ? K2 : K3 [anywhere]
+     rule ArrayIndex(K1::K, K2::K) => K1[K2]::Expression [anywhere]
+     rule Negative(K::K) => - K [anywhere]
+     rule Positive(K::K) => + K [anywhere]
+     rule LogicalNot(K::K) => ! K [anywhere]
+     rule BitwiseNot(K::K) => ~ K [anywhere]
+     rule Dereference(K::K) => * K [anywhere]
+     rule Reference(K::K) => & K [anywhere]
+     rule PreIncrement(K::K) => ++ K [anywhere]
+     rule PreDecrement(K::K) => -- K [anywhere]
+     rule PostIncrement(K::K) => K ++ [anywhere]
+     rule PostDecrement(K::K) => K -- [anywhere]
+
+     rule Multiply(K1::K, K2::K) => K1 * K2 [anywhere]
+     rule Divide(K1::K, K2::K) => K1 / K2 [anywhere]
+     rule Modulo(K1::K, K2::K) => K1 % K2 [anywhere]
+     rule Plus(K1::K, K2::K) => K1 + K2 [anywhere]
+     rule Minus(K1::K, K2::K) => K1 - K2 [anywhere]
+     rule LeftShift(K1::K, K2::K) => K1 << K2 [anywhere]
+     rule RightShift(K1::K, K2::K) => K1 >> K2 [anywhere]
+     rule LessThan(K1::K, K2::K) => K1 < K2 [anywhere]
+     rule LessThanOrEqual(K1::K, K2::K) => K1 <= K2 [anywhere]
+     rule GreaterThan(K1::K, K2::K) => K1 > K2 [anywhere]
+     rule GreaterThanOrEqual(K1::K, K2::K) => K1 >= K2 [anywhere]
+     rule Equality(K1::K, K2::K) => K1 == K2 [anywhere]
+     rule NotEquality(K1::K, K2::K) => K1 != K2 [anywhere]
+     rule BitwiseAnd(K1::K, K2::K) => K1 & K2 [anywhere]
+     rule BitwiseXor(K1::K, K2::K) => K1 ^ K2 [anywhere]
+     rule BitwiseOr(K1::K, K2::K) => K1 | K2 [anywhere]
+     rule LogicalAnd(K1::K, K2::K) => K1 && K2 [anywhere]
+     rule LogicalOr(K1::K, K2::K) => K1 || K2 [anywhere]
+
+     rule Assign(K1::K, K2::K) => K1 := K2 [anywhere]
+     rule AssignMultiply(K1::K, K2::K) => K1 *= K2 [anywhere]
+     rule AssignDivide(K1::K, K2::K) => K1 /= K2 [anywhere]
+     rule AssignModulo(K1::K, K2::K) => K1 %= K2 [anywhere]
+     rule AssignPlus(K1::K, K2::K) => K1 += K2 [anywhere]
+     rule AssignMinus(K1::K, K2::K) => K1 -= K2 [anywhere]
+     rule AssignBitwiseAnd(K1::K, K2::K) => K1 &= K2 [anywhere]
+     rule AssignBitwiseXor(K1::K, K2::K) => K1 ^= K2 [anywhere]
+     rule AssignBitwiseOr(K1::K, K2::K) => K1 |= K2 [anywhere]
+     rule AssignLeftShift(K1::K, K2::K) => K1 <<= K2 [anywhere]
+     rule AssignRightShift(K1::K, K2::K) => K1 >>= K2 [anywhere]
+
+     rule Dot(K::K, X::CId) => K . X [anywhere]
+     rule Arrow(K::K, X::CId) => K -> X [anywhere]
 
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
      on programs before they even start to reduce. */
      rule &(*(K::K)) => K [anywhere]
+
+     /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{4}}}{
+     A postfix expression followed by the \cinline{->} operator and an
+     identifier designates a member of a structure or union object. The value
+     is that of the named member of the object to which the first expression
+     points, and is an lvalue. \broken{If the first expression is a pointer to
+     a qualified type, the result has the so-qualified version of the type of
+     the designated member.}
+     }*/
+     rule K::K -> F::CId => (* K) . F [anywhere]
+
+     /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
+     A postfix expression followed by an expression in square brackets
+     \cinline{[]} is a subscripted designation of an element of an array
+     object. The definition of the subscript operator \cinline{[]} is that
+     \cinline{E1[E2]} is identical to \cinline{(*((E1)+(E2)))}. Because of the
+     conversion rules that apply to the binary \cinline{+} operator, if
+     \cinline{E1} is an array object (equivalently, a pointer to the initial
+     element of an array object) and \cinline{E2} is an integer,
+     \cinline{E1[E2]} designates the \cinline{E2}-th element of \cinline{E1}
+     (counting from zero).
+
+     Successive subscript operators designate an element of a multidimensional
+     array object. If \cinline{E} is an $n$-dimensional array ($n \ge 2$) with
+     dimensions $i \times j \times\cdots\times k$, then \cinline{E} (used as
+     other than an lvalue) is converted to a pointer to an ($n -
+     1$)-dimensional array with dimensions $j \times\cdots\times k$. If the
+     unary \cinline{*} operator is applied to this pointer explicitly, or
+     implicitly as a result of subscripting, the result is the referenced ($n -
+     1$)-dimensional array, which itself is converted into a pointer if used as
+     other than an lvalue. It follows from this that arrays are stored in
+     row-major order (last subscript varies fastest).
+     }*/
+     rule E1::K[E2::K] => *(E1 + E2) [anywhere]
+
 
 endmodule

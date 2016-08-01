@@ -3,4 +3,5 @@ module SETTINGS-SYNTAX
 
      syntax Bool ::= "isErrorRecovery" [function]
                    | "hasLint" [function]
+                   | "isErrorRecoveryAll" [function]
 endmodule

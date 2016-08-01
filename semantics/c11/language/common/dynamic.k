@@ -1,8 +1,35 @@
+// information used by execution and translation configuration and therefore
+// included in all C and C++ modules
+module C-DYNAMIC-SORTS
+     syntax LHold
+     syntax RHold
+     syntax NCLHold
+     syntax RValue
+     syntax LValue
+     syntax Nclv
+     syntax Hold
+     syntax Scope
+     syntax NumValue
+     syntax CValue
+     syntax TrapLValue
+     syntax Typed ::= LValue | RValue | Hold | Nclv | TrapLValue
+endmodule
+
+module C-REVAL-SYNTAX
+     imports BASIC-K
+     syntax KItem ::= reval(K)
+endmodule
+
 module C-DYNAMIC-SYNTAX
-     imports BITS-SYNTAX
-     imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-REVAL-SYNTAX
+     imports C-DYNAMIC-SORTS
+     imports BASIC-K
+     imports FLOAT-SYNTAX
+     imports INT-SYNTAX 
+     imports LIST
+     imports BITS-SORTS
+     imports SYMLOC-SORTS
+     imports C-TYPING-SORTS
 
      syntax Agg ::= agg(List)
 
@@ -25,7 +52,8 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= toRVal(K)
 
-     syntax Typed ::= LValue | RValue | Hold | Type | Nclv | TrapLValue
+     syntax Typed ::= Type
+
      syntax Valued ::= LValue | RValue | Hold
      syntax KItem ::= value(K) [function]
 
@@ -40,10 +68,9 @@ module C-DYNAMIC-SYNTAX
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
-     syntax FileScope ::= "fileScope"
      syntax BlockScope ::= blockScope(CId, Int)
      syntax PrototypeScope ::= "prototypeScope"
-     syntax Scope ::= FileScope | PrototypeScope | BlockScope
+     syntax Scope ::= PrototypeScope | BlockScope
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)
@@ -65,7 +92,6 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "comma"
      // these are semantic
-     syntax KItem ::= reval(K)
 
      syntax KResult ::= initValue(CId, Type, K)
      syntax NoInit
@@ -113,11 +139,12 @@ endmodule
 
 module C-DYNAMIC
      imports C-DYNAMIC-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports K-EQUAL
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule isKResult(.HeatList) => true
      rule isKResult(S1::HeatItem hs:: S2::HeatList) => isKResult(S1) andBool isKResult(S2)

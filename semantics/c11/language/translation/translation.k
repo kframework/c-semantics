@@ -58,6 +58,7 @@ require "typing/expr.k"
 require "c-extensions-translation.k"
 
 module C-TRANSLATION
+     imports C-ABSTRACT-REWRITING
      imports C-DYNAMIC-SYNTAX
 
      imports C-ANNOTATION

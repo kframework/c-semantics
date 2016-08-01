@@ -1,9 +1,11 @@
 module CPP-EXPR-LITERAL
      imports C-CONFIGURATION
+     imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX
+     imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
 

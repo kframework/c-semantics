@@ -1,11 +1,11 @@
 module C-EXPR-RELATIONAL
-     imports C-COMMON-PROMOTION-SYNTAX
-     imports C-COMMON-EXPR-RELATIONAL-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports BOOL
+     imports SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-COMMON-EXPR-RELATIONAL-SYNTAX
+     imports C-COMMON-PROMOTION-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
      rule L:RValue < R:RValue => te(stripHold(L) < stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))

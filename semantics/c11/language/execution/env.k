@@ -1,7 +1,9 @@
 module C-ENV-SYNTAX
-     imports C-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports INT-SYNTAX
+     imports COMMON-SORTS
+     imports SYMLOC-SORTS
+     imports C-TYPING-SORTS
 
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
@@ -11,11 +13,9 @@ module C-ENV-SYNTAX
 endmodule
 
 module C-ENV
-     imports C-ENV-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-TYPING-SYNTAX
-
      imports C-CONFIGURATION
+     imports C-ENV-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule <k> addToHistory(BlockNum:Int) => .K ...</k>
           <block-history> .List => ListItem(BlockNum) ...</block-history>

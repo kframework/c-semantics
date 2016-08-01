@@ -1,6 +1,11 @@
 module CPP-DECL-DECLARATOR-SYNTAX
-     imports CPP-ABSTRACT-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports SET
+     imports COMMON-SORTS
+     imports SYMLOC-SORTS
+     imports CPP-ABSTRACT-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-SORTS
+     imports CPP-TYPING-SORTS
 
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
                     | declareObject(Namespace, CId, CPPType, Init, DeclarationType, Linkage, Duration, Set)
@@ -24,6 +29,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule FunctionDecl(N::Namespace, X::CId, T::CPPType) => NormalizedDecl(N, X, T, NoInit(), Function) [anywhere]

@@ -12,10 +12,11 @@ endmodule
 
 module C-COMMON-PROMOTION
      imports C-COMMON-PROMOTION-SYNTAX
-
-     imports C-TYPING-SYNTAX
+     imports BOOL
+     imports INT
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      // \csection{6}{3}{0}{0}{Conversions}
      /*@

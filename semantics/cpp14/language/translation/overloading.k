@@ -12,6 +12,7 @@ module CPP-OVERLOADING
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION
 

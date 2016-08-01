@@ -1,12 +1,12 @@
 module LIBC-SETJMP
      imports LIBC-BOOTSTRAP-SYNTAX
-
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
-
      imports C-CONFIGURATION
+     imports INT
+     imports K-EQUAL
+     imports C-DYNAMIC-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      /*@
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{

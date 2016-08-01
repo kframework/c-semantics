@@ -1,13 +1,14 @@
 module C-EXPR-ALIGNOF
+     imports C-CONFIGURATION
+     imports BASIC-K
+     imports BOOL
      imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
-     imports C-ELABORATOR-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule (.K => typeof(E)) ~> AlignofExpression(E:K)
      rule typeof(T:Type) ~> AlignofExpression(_) => alignofType(T)

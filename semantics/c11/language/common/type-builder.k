@@ -1,6 +1,7 @@
 module C-TYPE-BUILDER-SYNTAX
-     imports C-TYPING-SYNTAX
-
+     imports INT-SYNTAX
+     imports STRING-SYNTAX
+     imports C-TYPING-SORTS
      syntax FlexType ::= Type | SimpleType | Variadic
 
      syntax Type ::= fun(FlexType) [function, klabel(fun1)]
@@ -23,15 +24,12 @@ module C-TYPE-BUILDER-SYNTAX
 endmodule
 
 module C-TYPE-BUILDER
-     imports C-BITSIZE-SYNTAX
-     imports C-CONFIGURATION
-     imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
+     imports C-CONFIGURATION
      imports K-REFLECTION
+     imports COMMON-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule fun(R:FlexType)
           => fun(R, void)

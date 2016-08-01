@@ -1,6 +1,16 @@
+module C-SORTS
+     syntax Storage
+     syntax Qualifier
+     syntax Modifier ::= Qualifier
+     syntax Modifier ::= Storage
+endmodule
+
 module C-SYNTAX
-     imports COMMON-SYNTAX
-     imports BASIC-K
+     imports C-SORTS
+     imports C-REVAL-SYNTAX
+     imports INT-SYNTAX
+     imports STRING-SYNTAX
+     imports COMMON-SORTS
 
      syntax KResult ::= SpecifierElem
 
@@ -65,8 +75,6 @@ module C-SYNTAX
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
-     syntax Modifier ::= Qualifier
-     syntax Modifier ::= Storage
      syntax Modifier ::= Inline()
      syntax Modifier ::= Noreturn()
 
@@ -129,60 +137,51 @@ module C-SYNTAX
      MINUS | PLUS | NOT | BNOT | MEMOF | ADDROF
      | PREINCR | PREDECR | POSINCR | POSDECR
      */
-     syntax Expression ::= "-" K [prec(22)]
-                         | "+" K [prec(22)]
-                         | "!" K [prec(22)]
-                         | "~" K [prec(22)]
-                         | "*" K [prec(22)]
-                         | "&" K [prec(22), strict]
-                         | "++" K [prec(22), prefer, strict]
-                         | "--" K [prec(22), prefer, strict, latex(\terminal{-{}-}{#1})]
+     syntax Expression ::= "-" K
+                         | "+" K
+                         | "!" K
+                         | "~" K
+                         | "*" K
+                         | "&" K [strict]
+                         | "++" K [prefer, strict]
+                         | "--" K [prefer, strict, latex(\terminal{-{}-}{#1})]
                          | K "++" [prefer, strict]
                          | K "--" [prefer, strict, latex({#1}\terminal{-{}-})]
      /* | BINARY of binary_operator * expression * expression */
-                         > K "*" K [prec(31), left]
-                         | K "/" K [prec(31), left]
-                         | K "%" K [prec(31), left]
-                         > K "+" K [prec(33), left]
-                         | K "-" K [prec(33), left]
-                         > K "<<" K [prec(35), left, latex({{#1}}\ll{{#2}})]
-                         | K ">>" K [prec(35), left, latex({{#1}}\gg{{#2}})]
-                         > K "<" K [prec(37), left]
-                         | K "<=" K [prec(37), left]
-                         | K ">" K [prec(37), left]
-                         | K ">=" K [prec(37), left]
-                         > K "==" K [prec(39), left]
-                         | K "!=" K [prec(39), left]
-                         > K "&" K [prec(41), left]
-                         > K "^" K [prec(43), left]
-                         > K "|" K [prec(45), left]
-                         > K "&&" K [prec(47), prefer, left]
-                         > K "||" K [prec(49), left]
+                         > K "*" K [left]
+                         | K "/" K [left]
+                         | K "%" K [left]
+                         > K "+" K [left]
+                         | K "-" K [left]
+                         > K "<<" K [left, latex({{#1}}\ll{{#2}})]
+                         | K ">>" K [left, latex({{#1}}\gg{{#2}})]
+                         > K "<" K [left]
+                         | K "<=" K [left]
+                         | K ">" K [left]
+                         | K ">=" K [left]
+                         > K "==" K [left]
+                         | K "!=" K [left]
+                         > K "&" K [left]
+                         > K "^" K [left]
+                         > K "|" K [left]
+                         > K "&&" K [prefer, left]
+                         > K "||" K [left]
      /* | QUESTION of expression * expression * expression */
                          // Ternary operator is right-associative.
                          > K "?" K ":" K
-                              [prec(51), right, gather(e & E)]
+                              [right, gather(e & E)]
                          > K "*=" K
-                              [prec(53)]
                          | K "/=" K
-                              [prec(53)]
                          | K "%=" K
-                              [prec(53)]
                          | K "+=" K
-                              [prec(53)]
                          | K "-=" K
-                              [prec(53)]
                          | K "<<=" K
-                              [prec(53)]
                          | K "&=" K
-                              [prec(53)]
                          | K "^=" K
-                              [prec(53)]
                          | K "|=" K
-                              [prec(53)]
                          | K ">>=" K
-                              [prec(53), latex({{#1}}\terminal{$\ll$=}{{#2}})]
-                         | K ":=" K [prec(53)]
+                              [latex({{#1}}\terminal{$\ll$=}{{#2}})]
+                         | K ":=" K
 
      context - (HOLE:KItem => reval(HOLE)) [result(RValue)]
      context + (HOLE:KItem => reval(HOLE)) [result(RValue)]

@@ -1,14 +1,18 @@
 module CPP-EXPR-FUNCTION-CALL
      imports FUNCTION-CALL-SYNTAX
+     imports C-CONFIGURATION
+     imports INT
      imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
-     imports C-CONFIGURATION
+     imports C-TYPING-SYNTAX
      imports CPP-BINDING-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      // Function call (from C++ function)
@@ -82,7 +86,7 @@ module CPP-EXPR-FUNCTION-CALL
                (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
 
      syntax RValue ::= convertValToC(PRVal) [function]
-     rule convertValToC(prv(V::CPPValue, T::CPPType)) => tv(V:>CValue, utype(convertTypeToC(T)))
+     rule convertValToC(prv(V::CPPValue, T::CPPType)) => tv({V}:>CValue, utype(convertTypeToC(T)))
           requires isCValue(V)
 
 endmodule

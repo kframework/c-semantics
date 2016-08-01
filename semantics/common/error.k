@@ -28,9 +28,11 @@ module ERROR-SYNTAX
 endmodule
 
 module ERROR
-     imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
      imports C-CONFIGURATION
+     imports K-IO
+     imports K-REFLECTION
+     imports STRING
 
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, L:List)
           => "Error: "

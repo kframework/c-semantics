@@ -1,11 +1,16 @@
-module MEMORY-SYNTAX
-     imports BITS-SYNTAX
-     imports SYMLOC-SYNTAX
-     imports ARRAY
-     imports INT
-     imports LIST
-
+module MEMORY-SORTS
      syntax EffectiveType
+endmodule
+
+module MEMORY-SYNTAX
+     imports MEMORY-SORTS
+     imports ARRAY
+     imports BASIC-K
+     imports INT-SYNTAX
+     imports LIST
+     imports BITS-SORTS
+     imports COMMON-SORTS
+     imports SYMLOC-SORTS
 
      /* object(effective type, size, byte map) */
      syntax KItem ::= object(EffectiveType, Int, Array)
@@ -19,6 +24,7 @@ endmodule
 
 module MEMORY
      imports MEMORY-SYNTAX
+     imports INT
      imports BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
 

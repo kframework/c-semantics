@@ -1,6 +1,6 @@
 module LIBC-IO-SYNTAX
-     imports INT
-     imports STRING
+     imports INT-SYNTAX
+     imports STRING-SYNTAX
      syntax KItem ::= writeToFD(Int, Int)
      syntax KItem ::= writeToFD(Int, String)
      syntax KItem ::= readFromFD(Int)
@@ -13,11 +13,12 @@ endmodule
 
 module LIBC-IO
      imports LIBC-IO-SYNTAX
-
+     imports C-CONFIGURATION
+     imports INT
+     imports K-IO
+     imports STRING
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      // fixme these should be computational, unless I handle that at a higher
      // level
@@ -60,7 +61,7 @@ module LIBC-IO
           <fid> FD </fid>
           <next-byte> E:IOError </next-byte>
           requires E =/=K #EOF
-     rule chrChar(E:IOError :>Int) => E
+     rule chrChar({E:IOError}:>Int) => E
 // TODO(chathhorn): java port.
 //      rule <next-byte> chrChar((#EOF)::K) => #EOF </next-byte>
 //           [structural, simplification]

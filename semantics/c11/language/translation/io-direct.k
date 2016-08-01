@@ -1,16 +1,17 @@
 module C-IO-DIRECT
-     imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONFIGURATION
+     imports ARRAY
+     imports BOOL
+     imports INT
+     imports MAP
+     imports BITS-SYNTAX
+     imports MEMORY-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax KItem ::= writeBytes(SymLoc, DataList)
      syntax KItem ::= writeByte(SymLoc, CValue)
@@ -58,7 +59,7 @@ module C-IO-DIRECT
           [structural]
 
      rule <k> readByte(loc(Base:SymBase, Offset:Int))
-               => tv(M[Offset]:>Bits, utype(no-type))
+               => tv({M[Offset]}:>Bits, utype(no-type))
           ...</k>
           <mem>...
                Base |-> object(_, _, M::Array)

@@ -9,20 +9,19 @@ endmodule
 
 module C-EXECUTION-INIT
      imports C-EXECUTION-INIT-SYNTAX
-
+     imports C-CONFIGURATION
+     imports K-EQUAL
+     imports STRING
      imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-
      imports LIBC-IO-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax TCell ::= ".TCell" [klabel(.TCell)]
 
@@ -238,7 +237,7 @@ module C-EXECUTION-INIT
                ...</thread> => .Bag)
           ...</exec>
           <status> _ => terminated </status>
-          <result-value> _ => value(V):>CValue </result-value>
+          <result-value> _ => {value(V)}:>CValue </result-value>
           <files>...
                // Flush stdout.
                <file-commands>... (.K => f-flush(1)) </file-commands>
@@ -247,6 +246,19 @@ module C-EXECUTION-INIT
 
      rule <k> L:CabsLoc => .K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
+          [structural]
+
+     /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
+     The expression in an expression statement is evaluated as a void expression
+     for its side effects.
+     }*/
+     rule Computation(_:RValue) => sequencePoint
+          [structural]
+
+     /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
+     A null statement (consisting of just a semicolon) performs no operations.
+     }*/
+     rule Nop() => .K
           [structural]
 
 endmodule

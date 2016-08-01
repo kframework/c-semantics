@@ -1,5 +1,5 @@
 module C-ELABORATOR-SYNTAX
-     imports C-SYNTAX
+     imports BASIC-K
 
      syntax KItem ::= elaborate(K) [klabel(elaborate1)]
      syntax KItem ::= elaborate(K, K)
@@ -17,6 +17,7 @@ module C-ELABORATOR
      imports C-ELABORATOR-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      syntax KItem ::= elabFrame(K, K)
                     | elabInitFrame(K, K, K)

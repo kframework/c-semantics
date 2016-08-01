@@ -1,15 +1,12 @@
 module LIBC-STRING
      imports LIBC-BOOTSTRAP-SYNTAX
-
-     imports C-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports COMPAT-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      // try to use getString
      // fixme should detect overlaps

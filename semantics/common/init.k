@@ -8,6 +8,7 @@ endmodule
 module COMMON-INIT
      imports COMMON-INIT-SYNTAX
      imports C-CONFIGURATION
+     imports K-EQUAL
 
      rule <k> loadObj(G:GlobalCell) => .K ...</k>
           (<global> _ </global> => G)

@@ -1,6 +1,6 @@
 module CPP-STMT-EXPR
      imports C-CONFIGURATION
-     imports CPP-ABSTRACT-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-COMMON-STMT-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 

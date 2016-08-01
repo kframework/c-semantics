@@ -1,6 +1,7 @@
 module C-BITS-SYNTAX
      imports BITS-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports FLOAT-SYNTAX
+     imports C-TYPING-SORTS
 
      // value, (length - byte-offset), type
      syntax Bits ::= encodedFloat(Float, Int, Int, UType)
@@ -17,6 +18,8 @@ endmodule
 
 module C-BITS
      imports C-BITS-SYNTAX
+     imports BOOL
+     imports INT
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
 

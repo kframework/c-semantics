@@ -1,5 +1,7 @@
 module C-ALIGNMENT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports LIST
+     imports C-TYPING-SORTS
+     imports SYMLOC-SORTS
 
      syntax Int ::= getAlign(SymLoc) [function]
      syntax Int ::= getNativeAlign(Int) [function]
@@ -14,13 +16,15 @@ endmodule
 module C-ALIGNMENT
      imports C-ALIGNMENT-SYNTAX
      imports C-CONFIGURATION
-     imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports BOOL
+     imports INT
+     imports K-REFLECTION
+     imports MAP
+     imports SET
+     imports MEMORY-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
-
 
      // TODO(chathhorn): make configurable.
      rule byteAlignofType(t(_, _, bool)) => cfg:alignofBool

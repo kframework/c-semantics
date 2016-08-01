@@ -7,6 +7,7 @@ module CPP-STMT-RETURN
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-STMT-BLOCK-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      // Return (from C++ function)
@@ -67,6 +68,7 @@ endmodule
 module C-CPP-STMT-RETURN
      imports CPP-STMT-RETURN
      imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule <k> return(V:RValue => convertValToCPP(V)) ...</k>
           <call-stack>
@@ -78,7 +80,7 @@ module C-CPP-STMT-RETURN
           ...</call-stack>
 
      syntax PRVal ::= convertValToCPP(RValue) [function]
-     rule convertValToCPP(tv(V::CValue, T::UType)) => prv(V:>CPPValue, convertTypeToCPP(type(T)))
+     rule convertValToCPP(tv(V::CValue, T::UType)) => prv({V}:>CPPValue, convertTypeToCPP(type(T)))
           requires isCPPValue(V)
 
 endmodule

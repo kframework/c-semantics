@@ -1,6 +1,4 @@
 module C-TYPING-COMPATIBILITY-SYNTAX
-     imports SET
-
      syntax Type ::= compositeType(Type, Type) [function]
      syntax UType ::= compositeType(UType, UType) [function]
 
@@ -10,14 +8,18 @@ endmodule
 
 module C-TYPING-COMPATIBILITY
      imports C-TYPING-COMPATIBILITY-SYNTAX
-     
+     imports BASIC-K
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports LIST
+     imports SET
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-
-     imports COMPAT-SYNTAX
-
+     
      rule T:Type ==Type T':Type => areCompatible(T, T')
      rule T:Type =/=Type T':Type => notBool areCompatible(T, T')
 

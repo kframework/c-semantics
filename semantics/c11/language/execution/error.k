@@ -1,7 +1,8 @@
 module C-EXECUTION-ERROR-SYNTAX
-     imports COMMON-SYNTAX
      imports LIST
-
+     imports STRING-SYNTAX
+     imports COMMON-SORTS
+     imports C-DYNAMIC-SORTS
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
      syntax KItem ::= error(String, String)
 endmodule
@@ -9,25 +10,12 @@ endmodule
 module C-EXECUTION-ERROR
      imports C-ERROR-SYNTAX
      imports C-EXECUTION-ERROR-SYNTAX
-
-     imports C-EXECUTION-INIT-SYNTAX
-
-     imports C-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-CONVERSION-SYNTAX
-
-     imports C-IO-BUFFERED-SYNTAX
-
      imports C-CONFIGURATION
+     imports K-IO
+     imports STRING
+     imports BITS-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports C-DYNAMIC-SYNTAX
 
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
@@ -55,7 +43,7 @@ module C-EXECUTION-ERROR
           requires isErrorRecovery andBool notBool isCSV
                andBool error(Msg, printStackTrace(L, Loc, S)) in Errors
 
-     rule <result-value> unknown(I:Int) => (I ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")):>Int </result-value>
+     rule <result-value> unknown(I:Int) => {I ~> #write(2, ErrorMsg("USP-CEER6", "Unspecified value returned from main function.", "Unspecified value or behavior.", "C11", "5.1.2.2.3:1") +String "\n")}:>Int </result-value>
      requires notBool isCSV
 
      rule <file-commands> openWriteThenClose(File::String, Line::String) => writeThenClose(#open(File, "wac"), Line) ...</file-commands>
@@ -101,66 +89,5 @@ module C-EXECUTION-ERROR
           ...</call-stack-frame>) L:List, .K, .K)
           => printStackTrace(L, Loc, S)
      rule printStackTrace(.List, .K, .K) => ""
-
-     rule cast(ut(Mods::Set, T::SimpleUType), emptyValue)
-          => castHold(ut(Mods, T), emptyValue)
-          requires T =/=K void
-
-     rule [err00037]:
-          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
-          read(NullPointer, _)
-          [structural]
-
-     // TODO(chathhorn): Silly way to do things. Probably need to allow
-     // multiple error cells at least. Also, add more details (loc?).
-     // FIXME possible to miss dataraces with bitfields
-     rule [read-write-race]:
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
-               read(Loc:SymLoc, T:Type)
-          ...</k>
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J:2.1 item 5")) ~>
-               write(Loc':SymLoc, _, T':Type)
-          ...</k>
-          requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc'
-                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc'
-                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
-          [computational]
-
-      rule [write-write-race]:
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
-               write(Loc:SymLoc, _, T:Type)
-          ...</k>
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
-               write(Loc':SymLoc, _, T':Type)
-          ...</k>
-          requires sameBase(Loc, Loc') andBool
-               ((Loc <=bytes Loc'
-                    andBool Loc' <bytes (Loc +bytes byteSizeofType(T)))
-               orBool (Loc >bytes Loc'
-                    andBool (Loc' +bytes byteSizeofType(T')) >bytes Loc))
-          [computational]
-
-     rule <k> (.K => SE("CID1",
-               "Trying to look up identifier " +String S +String
-               ", but no such identifier is in scope.",
-               "6.5.1:2") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types> Types:Map </types>
-          requires (notBool (Identifier(S) in_keys(Env)))
-               andBool (notBool (Identifier(S) in_keys(Types)))
-          [structural]
-     rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1, J.2:1 item 19") )
-               ~> Identifier(S:String)
-          ...</k>
-          <env> Env:Map </env>
-          <types>... Identifier(S) |-> _ ...</types>
-          requires (notBool (Identifier(S) in_keys(Env)))
-          [structural]
-
 
 endmodule

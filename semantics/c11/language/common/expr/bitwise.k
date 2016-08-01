@@ -1,15 +1,17 @@
 module C-COMMON-EXPR-BITWISE
+     imports BASIC-K
+     imports BOOL
+     imports INT
+     imports SYMLOC-SYNTAX
      imports C-ALIGNMENT-SYNTAX
-     imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{4}}}{
      The result of the \cinline{\~} operator is the bitwise complement of its

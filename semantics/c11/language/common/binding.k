@@ -1,28 +1,25 @@
 module C-BINDING-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports LIST
+     imports C-TYPING-SORTS
+     imports COMMON-SORTS
 
      // RValues, Types, CIds
      syntax KItem ::= bind(List, List, List)
      syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
      syntax KItem ::= bindParam(CId)
-
 endmodule
 
 module C-BINDING
      imports C-BINDING-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports STRING
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONVERSION-SYNTAX
-     imports C-ENV-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      // Construct the function parameters. Takes three lists: (1) the formal
      // parameters (ids and types) from the function definition, (2) the
@@ -52,7 +49,7 @@ module C-BINDING
                (ListItem(typedDeclaration(T::Type, X:CId)) => .List) _,
                .List,
                (ListItem(V:RValue) => .List) _)
-          requires #arePromotedTypesCompat(value(V):>CValue, utype(T), utype(V))
+          requires #arePromotedTypesCompat({value(V)}:>CValue, utype(T), utype(V))
           [structural]
      rule (.K => UNDEF("CB1", "Types of function call arguments aren't "
                +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2:1 item 39"))
@@ -60,7 +57,7 @@ module C-BINDING
                ListItem(typedDeclaration(T::Type, _)) _,
                .List,
                ListItem(V:RValue) _)
-          requires notBool #arePromotedTypesCompat(value(V):>CValue, utype(T), utype(V))
+          requires notBool #arePromotedTypesCompat({value(V)}:>CValue, utype(T), utype(V))
                andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("CB2", "Function call has fewer arguments than "

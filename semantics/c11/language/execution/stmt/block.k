@@ -4,15 +4,12 @@ endmodule
 
 module C-STMT-BLOCK
      imports C-STMT-BLOCK-SYNTAX
-
+     imports C-CONFIGURATION
+     imports INT
      imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
-     imports C-SEQUENCE-POINT-SYNTAX
-     imports C-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule <k> pushBlock(Tag:Int)
                => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
@@ -61,19 +58,6 @@ module C-STMT-BLOCK
           [structural]
      rule <k> deleteLocals => .K ...</k>
           <local-addresses> .Set </local-addresses>
-
-     /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
-     The expression in an expression statement is evaluated as a void expression
-     for its side effects.
-     }*/
-     rule Computation(_:RValue) => sequencePoint
-          [structural]
-
-     /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{
-     A null statement (consisting of just a semicolon) performs no operations.
-     }*/
-     rule Nop() => .K
-          [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
      A block allows a set of declarations and statements to be grouped into one

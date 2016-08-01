@@ -1,6 +1,8 @@
 module C-MEMORY-READING-SYNTAX
-     imports C-SYMLOC-SYNTAX
-
+     imports INT-SYNTAX
+     imports LIST
+     imports C-TYPING-SORTS
+     imports SYMLOC-SORTS
      // location, type
      syntax KItem ::= read(SymLoc, Type)
 
@@ -23,15 +25,19 @@ endmodule
 module C-MEMORY-READING
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
-
-     imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports FLOAT-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-CONFIGURATION
 
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
@@ -169,7 +175,7 @@ module C-MEMORY-READING
                ListItem(piece(0, _)) L:List)
           => joinFloatBytes(T, .K, 0.0, 0, 1, L)
      rule joinFloatBytes(T::UType, T2:KItem, F:Float, Start:Int, End:Int,
-               ListItem(piece(encodedFloat(F, End, End, T2:>UType), _)) L:List)
+               ListItem(piece(encodedFloat(F, End, End, {T2}:>UType), _)) L:List)
           => joinFloatBytes(T, T2, F, Start, End +Int 1, L)
      rule joinFloatBytes(T::UType, .K, 0.0, 0, Len:Int,
                ListItem(piece(0, _)) L:List)
@@ -179,10 +185,10 @@ module C-MEMORY-READING
           requires Len ==Int byteSizeofType(T)
      rule joinFloatBytes(T::UType, T2:KItem, F:Float, 0, Len:Int, .List)
           => tv(F, T)
-          requires Len ==Int byteSizeofType(T2:>UType)
+          requires Len ==Int byteSizeofType({T2}:>UType)
      rule joinFloatBytes(T::UType, T2:KItem, F:Float, Start:Int, End:Int, .List)
-          => tv(encodedFloat(F, Start, End -Int 1, T2:>UType), T)
-          requires Start =/=Int 0 orBool End <Int byteSizeofType(T2:>UType)
+          => tv(encodedFloat(F, Start, End -Int 1, {T2}:>UType), T)
+          requires Start =/=Int 0 orBool End <Int byteSizeofType({T2}:>UType)
 
      syntax RValue ::= joinPointerBytes(UType, List) [function, klabel(joinPointerBytesC)]
      syntax RValue ::= "joinPointerBytes-aux" "(" UType "," List "," K ")" [function]

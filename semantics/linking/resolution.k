@@ -8,12 +8,15 @@ endmodule
 
 module C-LINKING-RESOLUTION
      imports C-LINKING-RESOLUTION-SYNTAX
-
+     imports C-CONFIGURATION
+     imports COLLECTIONS
+     imports LIST
+     imports MAP
+     imports STRING
+     imports COMMON-SORTS
      imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
-
-     imports C-CONFIGURATION
 
      // Add the real location at which an external reference is defined to the
      // environment of every TU where it appears.
@@ -115,7 +118,7 @@ module C-LINKING-RESOLUTION
           ...</odr-decls>
           <external-defs> CDefs::Map </external-defs>
           <odr-defs> Defs::Map </odr-defs>
-          requires notBool (T in_keys(Defs[N :: X]:>Map))
+          requires notBool (T in_keys({Defs[N :: X]}:>Map))
                andBool notBool (X in_keys(CDefs))
 
      rule <k> (.K => EXT-UNDEF("TDR2",

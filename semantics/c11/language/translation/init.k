@@ -1,25 +1,18 @@
 module C-TRANSLATION-INIT
-     imports C-LINKING-INIT
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports LIST
+     imports STRING
+     imports COMPAT-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-BUILTIN-SYNTAX
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-GLOBAL-SYNTAX
-     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-FUNCTION-DEF-SYNTAX
-     imports C-SYMLOC-SYNTAX
+     imports C-LINKING-INIT-SYNTAX
+     imports C-LINKING-RESOLUTION-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-COMPATIBILITY-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      syntax Opts ::= XBuiltins()
 
@@ -90,7 +83,7 @@ module C-TRANSLATION-INIT
 
      rule AttributeWrapper(K:K, _) => K
 
-     rule NothingExpression() => emptyValue:>Expression
+     rule NothingExpression() => {emptyValue}:>Expression
 
      rule Computation(.K) => .K
      rule <k> Computation(V:RValue) => .K ...</k>

@@ -3,9 +3,8 @@ module C-SEQUENCE-POINT-SYNTAX
 endmodule
 
 module C-SEQUENCE-POINT
-     imports C-SEQUENCE-POINT-SYNTAX
      imports C-CONFIGURATION
-     imports C-DYNAMIC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
 
      rule [sequencePoint]:
           <k> sequencePoint => .K ...</k>

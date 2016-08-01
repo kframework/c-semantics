@@ -1,17 +1,20 @@
 module C-PROCESS-LABEL-SYNTAX
-     imports C-SYNTAX
+     imports BASIC-K
+     imports COMMON-SORTS
 
      syntax KItem ::= calculateGotoMap(CId, K)
 endmodule
 
 module C-PROCESS-LABEL
      imports C-PROCESS-LABEL-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports COMPAT-SYNTAX
+     imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-ABSTRACT-SYNTAX
-
-     imports C-CONFIGURATION
 
      /*
      things I have to keep track of:

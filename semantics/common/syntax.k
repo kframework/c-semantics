@@ -1,8 +1,21 @@
+module COMMON-SORTS
+     imports INT-SYNTAX
+     syntax CId
+     syntax CabsLoc
+     syntax Qualifier
+     syntax Quals
+     syntax EvalContext
+     syntax CValue ::= NumValue
+     syntax NumValue ::= Int
+     syntax EffectiveValue ::= Int
+     syntax LanguageLinkage
+     syntax Namespace
+endmodule
+
 module COMMON-SYNTAX
-     imports STRING
-     imports INT
+     imports COMMON-SORTS
      imports SET
-     imports BOOL
+     imports STRING-SYNTAX
 
      syntax CId ::= Identifier(String)
      syntax CId ::= "#NoName"
@@ -32,17 +45,13 @@ module COMMON-SYNTAX
      syntax Namespace ::= GlobalNamespace()
      syntax QualId ::= Namespace "::" CId
 
-     syntax Scope ::= "none"
+     syntax Scope ::= "none" | FileScope
+     syntax FileScope ::= "fileScope"
 
-     syntax Status ::= "initializing" | "mainCalled" | "mainExited" | "terminated"
-
-     syntax CValue ::= NumValue
-     syntax NumValue ::= Int
+     syntax Status ::= "initializingTu" | "mainCalled" | "mainExited" | "terminated"
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
      syntax KItem ::= allowInit(K)
-
-     syntax EffectiveValue ::= Int
 
 endmodule

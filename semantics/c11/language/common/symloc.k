@@ -1,6 +1,8 @@
 module C-SYMLOC-SYNTAX
-     imports C-TYPING-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-DYNAMIC-SORTS
+     imports C-TYPING-SORTS
+     imports COMMON-SORTS
 
      // Base, type
      syntax SymLoc ::= lnew(SymBase, Type) [function]
@@ -32,9 +34,13 @@ endmodule
 
 module C-SYMLOC
      imports C-SYMLOC-SYNTAX
-
+     imports BOOL
+     imports K-REFLECTION
+     imports SET
+     imports COMPAT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule lnew(Base:SymBase, T:Type)
           => loc(Base, 0, .Set)

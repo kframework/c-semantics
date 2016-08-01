@@ -1,29 +1,36 @@
+module LIBC-THREADS-SYNTAX
+     imports INT-SYNTAX
+     imports C-DYNAMIC-SORTS
+
+     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout"
+                    | "thrd-busy" | "thrd-nomem"
+     syntax KItem ::= "threadRunning"
+     syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
+endmodule
+
 module LIBC-THREADS
      imports LIBC-BOOTSTRAP-SYNTAX
-
+     imports LIBC-THREADS-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports SYMLOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports C-EXECUTION-ERROR-SYNTAX
-
-     imports C-CONFIGURATION
 
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout"
-                    | "thrd-busy" | "thrd-nomem"
      rule thrd-success => tv(0, utype(int)) [macro, structural]
      rule thrd-error => tv(1, utype(int)) [macro, structural]
      rule thrd-timeout => tv(2, utype(int)) [macro, structural]
      rule thrd-busy => tv(3, utype(int)) [macro, structural]
      rule thrd-nomem => tv(4, utype(int)) [macro, structural]
 
-     syntax KItem ::= "threadRunning"
-
-     syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
      rule [thrd-create-start]:
           <k> builtin("thrd_create",
                     ThIdPtr:RValue,
@@ -53,7 +60,7 @@ module LIBC-THREADS
           </thread-status>
           (.Bag =>
           <thread>...
-               <duration> thread(ThId:Int) </duration>
+               <duration> threadLocal(ThId:Int) </duration>
                <thread-id> ThId:Int </thread-id>
                <k> Call(ThFuncPtr, list(ListItem(ThArg)))
                </k>
@@ -113,9 +120,9 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
-          <glocks> M:Map (.Map => Loc |-> printStackTrace(Stack, L, S)) </glocks>
+          <glocks> M:Map (.Map => Loc |-> printStackTrace(CallStack, L, S)) </glocks>
           <locks> .List => ListItem(Loc) ...</locks>
-          <call-stack> Stack:List </call-stack>
+          <call-stack> CallStack:List </call-stack>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           requires (notBool (Loc in_keys(M)))

@@ -1,6 +1,6 @@
 module C-DECL-INITIALIZER-SYNTAX
-     imports C-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports COMMON-SORTS
 
      syntax KResult ::= initializer(K)
 
@@ -11,21 +11,24 @@ endmodule
 
 module C-DECL-INITIALIZER
      imports C-DECL-INITIALIZER-SYNTAX
-     imports C-DECL-DEFINITION-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports K-REFLECTION
+     imports LIST
+     imports STRING
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-BUILTIN-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-LITERAL-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
-
-     imports C-CONFIGURATION
+     imports C-TYPING-SYNTAX
 
      rule figureInit(X:CId, T:Type, CodeLoc(K:K, L::CabsLoc))
           => CodeLoc(.K, L) ~> figureInit(X, T, K)
@@ -425,7 +428,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(findStruct(t(Qs, S, structType(X)))))
                L:List
           </curr-subobject>
-          requires L[0]<:K =/=K next
+          requires {L[0]}<:K =/=K next
           [structural]
 
      syntax KItem ::= findStruct(Type)

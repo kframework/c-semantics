@@ -1,18 +1,18 @@
 module LIBC-STDLIB
      imports LIBC-BOOTSTRAP-SYNTAX
-     imports LIBC-IO-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports STRING
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-EXECUTION-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
+     imports LIBC-IO-SYNTAX
 
      syntax KItem ::= printString(K)
 

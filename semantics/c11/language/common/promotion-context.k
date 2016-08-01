@@ -10,9 +10,8 @@ endmodule
 
 module C-COMMON-PROMOTION-CONTEXT
      imports C-COMMON-PROMOTION-CONTEXT-SYNTAX
-
+     imports BOOL-SYNTAX
      imports C-SYNTAX
-     imports COMPAT-SYNTAX
 
      rule isArithBinNonEqualityOp(#klabel(`_*__C-SYNTAX`)) => true
      rule isArithBinNonEqualityOp(#klabel(`_/__C-SYNTAX`)) => true

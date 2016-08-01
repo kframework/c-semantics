@@ -1,4 +1,34 @@
+module CPP-DYNAMIC-SORTS
+     syntax LVal
+     syntax XVal
+     syntax PRVal
+     syntax GLVal ::= LVal | XVal
+     syntax RVal ::= XVal | PRVal
+     syntax Val ::= GLVal | RVal
+     syntax Expr ::= Val
+     syntax LExpr
+     syntax XExpr
+     syntax PRExpr
+     syntax GLExpr ::= LExpr | XExpr
+     syntax RExpr ::= XExpr | PRExpr
+     syntax TExpr ::= GLExpr | RExpr
+     syntax Expr ::= TExpr
+     syntax NNS ::= Namespace | NNSSpecifier
+     syntax Namespace
+     syntax NNSSpecifier
+     syntax DeclarationType
+     syntax Linkage
+     syntax Duration
+endmodule
+
+module CPP-REVAL-SYNTAX
+     imports CPP-SORTS
+     syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
+endmodule
+
 module CPP-DYNAMIC-SYNTAX
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-REVAL-SYNTAX
      imports INT
      imports LIST
      imports BITS-SYNTAX
@@ -17,20 +47,11 @@ module CPP-DYNAMIC-SYNTAX
      syntax LVal ::= lv(SymLoc, CPPType) [klabel(lvcpp)]
      syntax XVal ::= xv(SymLoc, CPPType)
      syntax PRVal ::= prv(CPPValue, CPPType)
-     syntax GLVal ::= LVal | XVal
-     syntax RVal ::= XVal | PRVal
-     syntax Val ::= GLVal | RVal
-     syntax Expr ::= Val
 
-     syntax Expr ::= reval(Expr) [strict, klabel(revalCpp)]
 
      syntax LExpr ::= le(Expr, CPPType) [klabel(lecpp)]
      syntax XExpr ::= xe(Expr, CPPType)
      syntax PRExpr ::= pre(Expr, CPPType)
-     syntax GLExpr ::= LExpr | XExpr
-     syntax RExpr ::= XExpr | PRExpr
-     syntax TExpr ::= GLExpr | RExpr
-     syntax Expr ::= TExpr
 
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
  
@@ -40,7 +61,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax KResult ::= initValue(Expr, CPPType, K) [klabel(initValueCpp)]
  
      syntax UnnamedNamespace
-     syntax NNS ::= Namespace | NoNNS() | NNSSpecifier
+     syntax NNS ::= NoNNS()
                   | NNS "::" NNSSpecifier [klabel(NestedName)]
      syntax Namespace ::= Namespace "::" NamespaceSpecifier
                         | NoNamespace() // signifies a declaration at block scope

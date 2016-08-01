@@ -1,8 +1,13 @@
 module C-CONFIGURATION
-     imports C-EXECUTION-INIT-SYNTAX
-     imports COMPAT-SYNTAX
+     imports BOOL-SYNTAX
+     imports INT-SYNTAX
+     imports LIST
+     imports MAP
+     imports SET
      imports COMMON-INIT-SYNTAX
+     imports COMMON-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-EXECUTION-INIT-SYNTAX
      imports C-CONFIGURATION-EXTENSIONS
 
      configuration
@@ -217,7 +222,7 @@ module C-CONFIGURATION
 
 <previous-errors> .Set </previous-errors>
 
-<status> initializing </status>
+<status> initializingTu </status>
 
 <options> $OPTIONS:Set </options>
 

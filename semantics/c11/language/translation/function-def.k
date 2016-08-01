@@ -1,29 +1,32 @@
 module C-FUNCTION-DEF-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports COMMON-SORTS
+     imports C-DYNAMIC-SORTS
 
      syntax KItem ::= initFunction(K, CId, RValue) [strict(1)]
 endmodule
 
 module C-FUNCTION-DEF
      imports C-FUNCTION-DEF-SYNTAX
-
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports LIST
+     imports STRING
+     imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-ANNOTATION-SYNTAX
-     imports C-BINDING-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
-     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare'(

@@ -1,13 +1,14 @@
 module CPP-DECL-LINKAGE
-     imports CPP-ERROR-SYNTAX
      imports C-CONFIGURATION
+     imports STRING
+     imports CPP-ERROR-SYNTAX
 
      syntax KItem ::= setLinkage(LanguageLinkage, Bool)
 
      rule <k> LinkageSpec(Linkage:String, HasBraces:Bool, Decls:List) 
               // error checking handled by parser
-              => setLinkage(#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else .K #fi #fi:>LanguageLinkage, 
-                            #if notBool HasBraces #then true #else OldExtern #fi:>Bool)
+              => setLinkage({#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else .K #fi #fi}:>LanguageLinkage, 
+                            {#if notBool HasBraces #then true #else OldExtern #fi}:>Bool)
               ~> listToK(Decls)
               ~> setLinkage(OldLinkage, OldExtern)
           ...</k>

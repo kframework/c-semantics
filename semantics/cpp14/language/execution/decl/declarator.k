@@ -2,6 +2,7 @@ module CPP-DECL-DECLARATOR
      imports C-CONFIGURATION
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-TYPING-SYNTAX

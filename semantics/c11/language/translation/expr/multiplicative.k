@@ -1,11 +1,10 @@
 module C-EXPR-MULTIPLICATIVE
+     imports BOOL
+     imports K-EQUAL 
+     imports C-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports COMPAT-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      rule L:RValue * R:RValue => te(stripHold(L) * stripHold(R), utype(L))
           requires (isHold(L) orBool isHold(R))

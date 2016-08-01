@@ -1,7 +1,6 @@
 module C-EXPR-INC-AND-DEC
-     imports C-DYNAMIC-SYNTAX
-     imports C-ELABORATOR-SYNTAX
      imports C-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
      rule LV:KResult ++

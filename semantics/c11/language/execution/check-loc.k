@@ -1,5 +1,7 @@
 module C-CHECK-LOC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports INT-SYNTAX
+     imports MAP
+     imports C-DYNAMIC-SORTS
 
      syntax KItem ::= enterRestrictScope(Scope)
      syntax KItem ::= exitRestrictScope(Scope)
@@ -8,14 +10,15 @@ endmodule
 
 module C-CHECK-LOC
      imports C-CHECK-LOC-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports MEMORY-SYNTAX
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SYMLOC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-
-     imports C-CONFIGURATION
+     imports C-TYPING-SYNTAX
 
      rule <k> enterRestrictScope(Tag:Scope) => .K ...</k>
           <active-blocks>... Tag |-> activity((N:Int => N +Int 1), _) ...</active-blocks>

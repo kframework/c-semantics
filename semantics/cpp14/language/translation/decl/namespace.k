@@ -2,6 +2,7 @@ module CPP-DECL-NAMESPACE
      imports C-CONFIGURATION
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TRANSLATION-INIT-SYNTAX
 
      syntax Decl ::= NamespaceNameDecl(Expr, Bool, List) [strict(1)]

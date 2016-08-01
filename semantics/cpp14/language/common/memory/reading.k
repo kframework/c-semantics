@@ -1,7 +1,9 @@
 module CPP-MEMORY-READING-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TYPING-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports INT-SYNTAX
+     imports LIST
+     imports SYMLOC-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPING-SORTS
 
      syntax KItem ::= read(SymLoc, CPPType) [klabel(readCpp)]
                     | readBytes(SymLoc, Int, CPPType) [klabel(readBytesCpp)]
@@ -13,7 +15,11 @@ endmodule
 
 module CPP-MEMORY-READING
      imports CPP-MEMORY-READING-SYNTAX
+     imports INT
+     imports MEMORY-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
+     imports CPP-TYPING-SYNTAX
      imports C-SETTINGS-SYNTAX
 
      rule read(Loc::SymLoc, T::CPPType)

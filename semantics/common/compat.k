@@ -1,19 +1,10 @@
-module COMPAT-SYNTAX
-     imports COMMON-SYNTAX
+module COMPAT-SORTS
+     syntax StrictList
+endmodule
 
-     imports ARRAY
-     imports BASIC-K
-     imports BOOL
-     imports COLLECTIONS
-     imports FLOAT
-     imports INT
-     imports K-EQUAL
-     imports K-IO
-     imports K-REFLECTION
-     imports LIST
-     imports MAP
-     imports SET
-     imports STRING
+module COMPAT-SYNTAX
+     imports COMPAT-SORTS
+     imports COMMON-SYNTAX
 
      syntax String ::= firstChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
@@ -80,6 +71,9 @@ endmodule
 
 module COMPAT
      imports COMPAT-SYNTAX
+     imports BOOL
+     imports MAP
+     imports STRING
 
      rule stringToList("") => .List
      rule stringToList(S:String)

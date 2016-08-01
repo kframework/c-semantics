@@ -1,6 +1,7 @@
 module C-BITSIZE-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports BASIC-K
+     imports LIST
+     imports C-TYPING-SORTS
 
      syntax Int ::= bitSizeofType(UType) [function]
      syntax Int ::= bitSizeofType(Type) [function]
@@ -20,17 +21,12 @@ endmodule
 
 module C-BITSIZE
      imports C-BITSIZE-SYNTAX
-
-     imports C-BITS-SYNTAX
-     imports C-ENV-SYNTAX
-     imports C-CONVERSION-SYNTAX
-
-     imports C-SYNTAX
-     imports C-ERROR-SYNTAX
+     imports INT
+     imports COMMON-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
-     imports C-TYPING-COMMON-SYNTAX
-
-     imports COMPAT-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule sizeof(V:KResult => type(V))
           requires notBool isType(V)

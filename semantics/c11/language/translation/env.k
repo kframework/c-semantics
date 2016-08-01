@@ -1,7 +1,12 @@
 module C-ENV-SYNTAX
-     imports C-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports BASIC-K
+     imports INT-SYNTAX
+
+     imports SYMLOC-SORTS
+     imports COMMON-SORTS
+     imports C-DYNAMIC-SORTS
+     imports C-TYPING-SORTS
+
 
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
@@ -13,12 +18,13 @@ module C-ENV-SYNTAX
 endmodule
 
 module C-ENV
-     imports C-BITSIZE-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-CONFIGURATION
+     imports STRING
+     imports COMMON-SYNTAX
+     imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-TYPING-SYNTAX
-
-     imports C-CONFIGURATION
 
      rule <k> populateFromGlobal => .K ...</k>
           <curr-tu> Tu:String </curr-tu>

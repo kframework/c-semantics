@@ -1,5 +1,5 @@
 module CPP-BITSIZE-SYNTAX
-     imports CPP-TYPING-SYNTAX
+     imports CPP-TYPING-SORTS
 
      syntax Int ::= byteSizeofType(CPPType) [klabel(byteSizeofTypeCpp), function]
      syntax Int ::= bitSizeofType(CPPType) [klabel(bitSizeofTypeCpp), function]
@@ -7,7 +7,9 @@ endmodule
 
 module CPP-BITSIZE
      imports CPP-BITSIZE-SYNTAX
+     imports INT
      imports C-SETTINGS-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      syntax Int ::= byteSizeofType(CPPSimpleType) [klabel(byteSizeofSimpleTypeCpp), function]
      rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
