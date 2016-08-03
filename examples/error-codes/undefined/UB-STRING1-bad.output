@@ -1,6 +1,6 @@
 Error: UB-STRING1
 Description: Null pointer passed to strcpy.
 Type: Undefined behavior.
-See also: C11 sec. 7.1.4:1, J.2:1 item 108
+See also: C11 sec. 7.1.4:1, J.2:1 item 109
   at strcpy(UB-STRING1-bad.c:6)
   at main(UB-STRING1-bad.c:6)

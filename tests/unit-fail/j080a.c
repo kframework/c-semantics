@@ -1,5 +1,5 @@
 struct {
-      unsigned:sizeof(unsigned);
+      unsigned : sizeof(unsigned) * 8;
       unsigned x;
 } s;
 

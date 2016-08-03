@@ -33,19 +33,27 @@ module C-DECL-TAGGED
      // note that struct defs might appear buried in a type.
      rule StructDef(X:CId, krlist(L:List))
           => addTag(X, makeStructFieldInfo(L))
-          requires hasNamedField(L)
+          requires hasNamedField(L) andBool structFieldsComplete(L)
           [structural]
      rule (.K => UNDEF("CDT1", "Structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
           ~> StructDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
           [structural]
+     rule (.K => CV("CDT3", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3") )
+          ~> StructDef(_, krlist(L:List))
+          requires notBool structFieldsComplete(L)
+          [structural]
      rule UnionDef(X:CId, krlist(L:List))
           => addTag(X, makeUnionFieldInfo(L))
-          requires hasNamedField(L)
+          requires hasNamedField(L) andBool allComplete(L)
           [structural]
      rule (.K => UNDEF("CDT2", "Unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
           ~> UnionDef(_, krlist(L:List))
           requires notBool hasNamedField(L)
+          [structural]
+     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3") )
+          ~> UnionDef(_, krlist(L:List))
+          requires notBool allComplete(L)
           [structural]
 
      syntax Bool ::= hasNamedField(List) [function]
@@ -111,10 +119,9 @@ module C-DECL-TAGGED
      rule structPadding(Offset:Int, Alignment:Int)
           => (0 -Int Offset) modInt (Alignment *Int cfg:bitsPerByte)
 
-     // FIXME: chould check for some struct contraints here.
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T:Type, X:CId))
+          ListItem(typedDeclaration(T::Type, X:CId))
           L:List)
           => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
           requires isCompleteType(T)
@@ -122,6 +129,23 @@ module C-DECL-TAGGED
           ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), X:CId)))
           => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
      rule incompleteToFlexibleArrayMember(.List) => .List
+
+     syntax Bool ::= structFieldsComplete(List) [function]
+     rule structFieldsComplete(L::List ListItem(typedDeclaration(T::Type, _)))
+          => allComplete(L) andBool (isCompleteType(T) orBool isIncompleteArrayType(T))
+     rule structFieldsComplete(.List) => true
+
+     syntax Bool ::= allComplete(List) [function]
+     rule allComplete(ListItem(typedDeclaration(T::Type, _)) L::List)
+          => isCompleteType(T) andBool allComplete(L)
+     rule allComplete(.List) => true
+
+     syntax String ::= firstIncomplete(List) [function]
+     rule firstIncomplete(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+          requires notBool isCompleteType(T)
+     rule firstIncomplete((ListItem(typedDeclaration(T::Type, X::CId)) => .List) _)
+          requires isCompleteType(T)
+     rule firstIncomplete(.List) => ""
 
      rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, 0, .List)
 

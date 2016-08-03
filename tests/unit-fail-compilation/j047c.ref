@@ -3,5 +3,5 @@ Line: 3
 Error: UB-CER4
 Description: Dereferencing a pointer past the end of an array.
 Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8, J.2:1 item 47
+See also: C11 sec. 6.5.6:8, J.2:1 items 47, 49
 Translation failed (config dumped). Run kcc -d j047c.c to see commands run.

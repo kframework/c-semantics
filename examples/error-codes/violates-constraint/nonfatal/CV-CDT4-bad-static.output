@@ -1,0 +1,6 @@
+File: CV-CDT4-bad-static.c
+Line: 1
+Error: CV-CDT4
+Description: Field y has incomplete type.
+Type: Constraint violation.
+See also: C11 sec. 6.7.2.1:3

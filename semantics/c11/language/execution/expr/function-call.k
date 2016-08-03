@@ -160,7 +160,7 @@ module C-EXPR-FUNCTION-CALL
           requires CallT ==Type toPrototype(DefT)
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
-          idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 item 41"))
+          idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 items 26, 41"))
           ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]

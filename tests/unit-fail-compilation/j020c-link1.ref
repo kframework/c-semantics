@@ -1,7 +1,7 @@
 File: j020c-link1.c
 Line: 4
-Error: UB-CEE3
+Error: UB-CEE5
 Description: Trying to convert an incomplete lvalue not of array type.
 Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:2
+See also: C11 sec. 6.3.2.1:2, J.2:1 item 20
 Translation failed (config dumped). Run kcc -d j020c-link1.c j020c-link2.c to see commands run.

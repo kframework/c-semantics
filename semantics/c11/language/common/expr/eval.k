@@ -52,7 +52,7 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= checkCompleteLValue(Type)
      rule checkCompleteLValue(T::Type) => .K
           requires isCompleteType(T)
-     rule (.K => UNDEF("CEE3", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2"))
+     rule (.K => UNDEF("CEE5", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2, J.2:1 item 20"))
           ~> checkCompleteLValue(T::Type)
           requires notBool isCompleteType(T)
 

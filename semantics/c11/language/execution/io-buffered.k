@@ -121,7 +121,7 @@ module C-IO-BUFFERED
           requires isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO2",
                "Trying to write outside the bounds of an object.",
-               "6.5.6:8, J.2:1 item 47"))
+               "6.5.6:8, J.2:1 items 47, 49"))
                ~> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int)
           ...</k>
           <mem>... Base |-> object(_, Len::Int, _) ...</mem>
