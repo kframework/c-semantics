@@ -1,0 +1,5 @@
+Error: CV-CER5
+Description: Unary '&' operator applied to a bit-field.
+Type: Constraint violation.
+See also: C11 sec. 6.5.3.2:1
+  at main(CV-CER5-bad.c:3)

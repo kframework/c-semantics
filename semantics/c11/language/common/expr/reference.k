@@ -34,6 +34,7 @@ module C-COMMON-EXPR-REFERENCE
           => checkUse(tv(addProv(fromArray(0, byteSizeofType(T)), Loc),
                utype(pointerType(T))))
           requires notBool isRegisterLoc(Loc)
+               andBool notBool isBitfieldType(T)
                andBool isCompleteType(T)
           [structural]
      // fromArray is used to catch dimension and field boundaries in aggregates and unions.
@@ -43,6 +44,7 @@ module C-COMMON-EXPR-REFERENCE
      rule &(nclv(Loc:SymLoc, T::Type))
           => checkUse(tv(Loc, utype(pointerType(T))))
           requires notBool isRegisterLoc(Loc)
+               andBool notBool isBitfieldType(T)
                andBool notBool isCompleteType(T)
           [structural]
      rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
@@ -51,6 +53,10 @@ module C-COMMON-EXPR-REFERENCE
      rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
           ~> &(nclv(Loc:SymLoc, _))
           requires isRegisterLoc(Loc)
+          [structural]
+     rule (.K => CV("CER5", "Unary '&' operator applied to a bit-field.", "6.5.3.2:1"))
+          ~> &(nclv(Loc:SymLoc, T::Type))
+          requires isBitfieldType(T)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.2}{4}}}{

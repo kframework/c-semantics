@@ -1,12 +1,15 @@
 module C-EXPR-OFFSETOF
      imports BASIC-K
+     imports BOOL
      imports COMMON-SORTS
-     imports SYMLOC-SYNTAX
+
      imports C-ABSTRACT-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports SYMLOC-SYNTAX
 
      // Used by stddef.h.
      rule OffsetOf(T:KResult, K:K, Mem:K) => offsetOf(DeclType(T, K), Mem)
@@ -20,7 +23,6 @@ module C-EXPR-OFFSETOF
           [structural]
 
      // Rejigger the AST.
-     // TODO(chathhorn): array indexing?
      syntax KItem ::= "offsetOf'" "(" K "," K ")" [function]
      rule offsetOf'(K:K, K':K . F:CId) => offsetOf'(K, K') . F
      rule offsetOf'(K:K, K1:K + K2:K) =>  offsetOf'(K, K1) + K2
@@ -28,6 +30,11 @@ module C-EXPR-OFFSETOF
      rule offsetOf'(K:K, F:CId) => K . F
 
      syntax KItem ::= toOffset(K) [strict]
-     rule toOffset(nclv(Loc:SymLoc, _)) => tv(offset(Loc), utype(cfg:sizeut))
+     rule toOffset(nclv(Loc:SymLoc, T::Type)) => tv(offset(Loc), utype(cfg:sizeut))
+          requires notBool isBitfieldType(T)
+          [structural]
+     rule (.K => UNDEF("TEOFF1", "Offsetof member designator specifies a bit-field.", "7.19:3, J.2:1 item 144"))
+          ~> toOffset(nclv(_, T::Type))
+          requires isBitfieldType(T)
           [structural]
 endmodule
