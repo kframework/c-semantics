@@ -1,0 +1,19 @@
+Error: UB-STDARG6
+Description: 'va_arg' called with no arguments remaining.
+Type: Undefined behavior.
+See also: C11 sec. 7.16.1.1:2, J.2:1 item 141
+  at __va_inc(UB-STDARG6-bad.c:5)
+  at f(UB-STDARG6-bad.c:5)
+  at main(UB-STDARG6-bad.c:11)
+Error: UB-CER3
+Description: Dereferencing a null pointer.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.3.2:4, J.2:1 item 43
+  at f(UB-STDARG6-bad.c:5)
+  at main(UB-STDARG6-bad.c:11)
+Error: UB-CEE2
+Description: Indeterminate value used in an expression.
+Type: Undefined behavior.
+See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+  at f(UB-STDARG6-bad.c:5)
+  at main(UB-STDARG6-bad.c:11)

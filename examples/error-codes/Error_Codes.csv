@@ -96,6 +96,8 @@ UB-STDARG2,'va_start' or 'va_copy' used to reinitialize a va_list without an int
 UB-STDARG3,'va_arg' called on an unintialized va_list.,"7.16.1.1:2, J.2:1 item 136",Undefined Behavior,
 UB-STDARG4,'va_copy' called on an unintialized source va_list.,"7.16.1.2:2, J.2:1 item 136",Undefined Behavior,
 UB-STDARG5,'va_end' called on an unintialized va_list.,"7.16.1.2:2, J.2:1 item 136",Undefined Behavior,
+UB-STDARG6,'va_arg' called with no arguments remaining.,"7.16.1.1:2, J.2:1 item 141",Undefined Behavior,
+UB-STDARG9,Function exited without calling 'va_end' after 'va_start' or 'va_copy'.,"7.16.1:1, J.2:1 item 139",Undefined Behavior,
 UB-STDIO1,"'printf': Mismatch between the type expected by the conversion specifier <conversion_specifier> and the type of the argument.","7.21.6.1:9, J.2:1 item 153",Undefined Behavior,
 UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed.","7.22.3.5:3, J.2:1 item 179",Undefined Behavior,
 UB-STRING1,Null pointer passed to strcpy.,"7.1.4:1, J.2:1 item 109",Undefined Behavior,

@@ -36,6 +36,7 @@ fap (int i, char* format, va_list ap)
   while (*formatc)
     if (*formatc++ != to_hex (va_arg (apc, int)))
       abort ();
+  va_end(apc);
 }
 
 void

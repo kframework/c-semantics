@@ -17,6 +17,7 @@ void foo(int a, int b, int c, int d, int e, struct two f, int g, ...)
   h = va_arg(args, int);
   if (g != 1 || h != 2)
     abort ();
+  va_end(args);
 }
 
 int main()

@@ -46,6 +46,7 @@ module CPP-STMT-RETURN
           </k>
           (<function-control>
                <curr-scope> Scope::BlockScope </curr-scope>
+               <live-va-lists> .Set </live-va-lists>
                <block-control>...
                     <local-addresses> .Set </local-addresses>
                ...</block-control>

@@ -130,6 +130,8 @@ module C-CONFIGURATION
                               UnknownCabsLoc
                          </curr-program-loc>
 
+                         <live-va-lists> .Set </live-va-lists>
+
                          // stack of block-control cells
                          <block-stack color="violet"> .List </block-stack>
                          <block-control>

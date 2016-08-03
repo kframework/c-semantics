@@ -1,13 +1,7 @@
 module LIBC-STDIO
-     imports LIBC-BOOTSTRAP-SYNTAX
-     imports LIBC-IO-SYNTAX
-     imports C-CONFIGURATION
-     imports INT
-     imports K-IO
-     imports STRING
      imports BITS-SYNTAX
-     imports SYMLOC-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -15,6 +9,12 @@ module LIBC-STDIO
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports K-IO
+     imports LIBC-BOOTSTRAP-SYNTAX
+     imports LIBC-IO-SYNTAX
+     imports STRING
+     imports SYMLOC-SYNTAX
 
      // fixme might be messing things up elsewhere
      syntax String ::= pointerToString(SymLoc) [function]
@@ -189,7 +189,7 @@ module LIBC-STDIO
      rule [vsnprintf]:
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
           ...</k>
-          <va-lists>... VaList |-> VarArgs::List ...</va-lists>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
      rule H:HeatList ~> builtin("vsnprintf", tv(Dest::SymLoc, _), tv(Len::Int, _), Format::RValue, _)
           => snprintf(formatter(getString(Format), hListToList(H)), Dest,  Len)
           requires isKResult(H)
