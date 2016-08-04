@@ -85,6 +85,8 @@ module C-CONFIGURATION
 
      // stdarg.h support.
      <va-lists> .Map </va-lists>
+     // setjmp.h support.
+     <jmp-bufs> .Map </jmp-bufs>
 
      <extensions-global/>
 
@@ -196,11 +198,6 @@ module C-CONFIGURATION
           <stack-function-control> .K </stack-function-control>
           <stack-lang-linkage> CLinkage </stack-lang-linkage>
      </call-stack-frame>
-
-     <thread-state multiplicity="?">
-          <thread-continuation> .K </thread-continuation>
-          <saved-thread-local> .K </saved-thread-local>
-     </thread-state>
 
 </exec>
 

@@ -13,6 +13,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= ptr(FlexType) [function]
      syntax Type ::= arr(FlexType, Int) [function]
      syntax Type ::= const(FlexType) [function]
+     syntax Type ::= noreturn(FlexType) [function]
      syntax Type ::= restrict(FlexType) [function]
      syntax Type ::= struct(String) [function]
      syntax Type ::= union(String) [function]
@@ -24,12 +25,13 @@ module C-TYPE-BUILDER-SYNTAX
 endmodule
 
 module C-TYPE-BUILDER
-     imports C-TYPE-BUILDER-SYNTAX
      imports C-CONFIGURATION
-     imports K-REFLECTION
      imports COMMON-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
+     imports K-REFLECTION
 
      rule fun(R:FlexType)
           => fun(R, void)
@@ -57,6 +59,8 @@ module C-TYPE-BUILDER
      rule arr(T:FlexType, N:Int) => type(arrayType(expand(T), N))
 
      rule const(T:FlexType) => addQualifier(Const(), expand(T))
+
+     rule noreturn(T:FlexType) => addModifier(Noreturn(), expand(T))
 
      rule restrict(T:FlexType) => addQualifier(Restrict(), expand(T))
 

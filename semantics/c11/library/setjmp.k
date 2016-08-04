@@ -1,12 +1,15 @@
 module LIBC-SETJMP
      imports LIBC-BOOTSTRAP-SYNTAX
+
+     imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
-     imports INT
-     imports K-EQUAL
      imports C-DYNAMIC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+
+     imports INT
+     imports K-EQUAL
 
      /*@
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
@@ -30,12 +33,6 @@ module LIBC-SETJMP
      identifier with the name \cinline{setjmp}, the behavior is undefined.
      }*/
 
-
-     // The (apparent) return value from setjmp indicates whether control
-     // reached that point normally or from a call to longjmp
-     // fixme check bounds
-     // fixme obviously need to rework configuration to make this easy
-     syntax CValue ::= bag(K)
 
      syntax KItem ::= "ignoreLocals"
 
@@ -91,48 +88,47 @@ module LIBC-SETJMP
 
      If the invocation appears in any other context, the behavior is undefined.
      }*/
-     // fixme doesn't check if loc:Int is const
+     // The (apparent) return value from setjmp indicates whether control
+     // reached that point normally or from a call to longjmp
      rule [setjmp]:
-          <k> (builtin("setjmp",
-               tv(Loc:SymLoc, ut(_, pointerType(t(_, _,
-                    structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))))))
+          <k> (builtin("__setjmp", Ptr:RValue)
                => ignoreLocals
-                    ~> writeBytes(Loc, ListItem(bag(
-                         <thread-state>
-                              <thread-continuation> K:K </thread-continuation>
-                              <saved-thread-local>C</saved-thread-local>
-                         </thread-state>
-                    )))
-                    ~> tv(0, utype(int))
+               ~> addJmpBuf(!N:Int, Ptr, K, C)
+               ~> tv(0, utype(int))
                )
-               ~> K
+               ~> K:K
           </k>
           C:ThreadLocalCell
           [structural]
 
-     syntax KItem ::= "longjmp-aux" "(" K "," K ")" [strict(2)]
-     context longjmp-aux(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     rule [longjmp-prepare]:
-          builtin("longjmp", V:RValue, V':RValue)
-          => longjmp-aux(*(V), V')
+     syntax KItem ::= jmpBuf(K, K)
+     syntax KItem ::= addJmpBuf(Int, RValue, K, K)
+
+     rule <k> addJmpBuf(N'::Int, JmpBufPtr::RValue, K:K, C:K)
+               => Computation((* JmpBufPtr) := tv(N', utype(innerType(jmp_buf))))
+          ...</k>
+          <jmp-bufs>... .Map => N' |-> jmpBuf(K, C) </jmp-bufs>
+          [structural]
+
+     syntax KItem ::= "longjmp'" "(" K "," K ")" [strict(2)]
+     context longjmp'(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     rule builtin("longjmp", V:RValue, V':RValue) => longjmp'(*(V), V')
           [structural]
 
      // fixme: memory leak here with extra ignoreLocals.  needed for recursive
      // setjmp/longjmp as in Looping.c
      rule [longjmp]:
-          <k> longjmp-aux(tv(agg(ListItem(bag(
-                    <thread-state>
-                         <thread-continuation> K:K </thread-continuation>
-                         <saved-thread-local>C:ThreadLocalCell</saved-thread-local>
-                    </thread-state>
-               ))), ut(_, structType(tag(Identifier("__jmp_buf_tag"), "builtin", global)))),
-                    tv(I:Int, ut(_, int))) ~> _
-               => ignoreLocals
-                    ~> #if I:Int ==Int 0
-                         #then tv(1, ut(.Set, int))
-                         #else tv(I:Int, ut(.Set, int)) #fi
-                    ~> K
+          <k> longjmp'(tv(N:Int, _), tv(I:Int, _))
+                ~> _
+                => ignoreLocals
+                ~> #if (I ==Int 0)
+                      #then tv(1, utype(int))
+                      #else tv(I, utype(int)) #fi
+                ~> K
           </k>
-          (<thread-local> _ </thread-local> => C)
+          <thread-local> _:Bag => C </thread-local>
+          <jmp-bufs>...
+               N |-> jmpBuf(K:K, (<thread-local> C:Bag </thread-local>))
+          ...</jmp-bufs>
           [structural]
 endmodule

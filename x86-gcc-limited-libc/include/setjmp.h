@@ -1,12 +1,13 @@
 #ifndef _KCC_SETJMP_H
 #define _KCC_SETJMP_H
 #include <kcc_settings.h>
+#include <stddef.h>
 
-struct __jmp_buf_tag {
-	unsigned char used;
-};
-typedef struct __jmp_buf_tag jmp_buf[1];
-int setjmp(jmp_buf xxenv);
-void longjmp(jmp_buf yyenv, int zzval);
+typedef ptrdiff_t jmp_buf[1];
+
+#define setjmp(E) __setjmp(E)
+int __setjmp(jmp_buf env);
+
+_Noreturn void longjmp(jmp_buf env, int val);
 
 #endif

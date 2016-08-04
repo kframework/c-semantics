@@ -39,7 +39,7 @@ module C-BUILTIN
           "__fslOpenFile" |-> fun(int, ptr(const(char)), ptr(const(char)))
           "__fslPutc" |-> fun(int, unsigned-char, int)
           "log" |-> fun(double, double)
-          "longjmp" |-> fun(void, jmp_buf, int)
+          "longjmp" |-> noreturn(fun(void, jmp_buf, int))
           "malloc" |-> fun(ptr(void), size_t)
           "mtx_init" |-> fun(int, ptr(mtx_t), int)
           "mtx_lock" |-> fun(int, ptr(mtx_t))
@@ -48,7 +48,7 @@ module C-BUILTIN
           "quick_exit" |-> fun(void, int)
           "rand" |-> fun(int)
           "realloc" |-> fun(ptr(void), ptr(void), size_t)
-          "setjmp" |-> fun(int, jmp_buf)
+          "__setjmp" |-> fun(int, jmp_buf)
           "sin" |-> fun(double, double)
           "snprintf" |-> fun(int, restrict(ptr(char)), size_t, restrict(ptr(const(char))), variadic)
           "sprintf" |-> fun(int, restrict(ptr(char)), restrict(ptr(const(char))), variadic)
@@ -67,7 +67,7 @@ module C-BUILTIN
           extensionBuiltins
 
      rule mtx_t => struct("__typeref_mtx_t")
-     rule jmp_buf => arr(struct("__typeref_jmp_buf"), 1)
+     rule jmp_buf => ptr(cfg:ptrdiffut)
      rule va_list => type(cfg:ptrdiffut)
 
 endmodule
