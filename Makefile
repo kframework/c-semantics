@@ -25,7 +25,7 @@ FILES_TO_DIST = \
 
 .PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile
 
-default: dist
+default: test-build
 
 fast: $(DIST_DIR)/$(PROFILE)/lib/libc.so $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp
 

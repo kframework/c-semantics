@@ -13,18 +13,19 @@ We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
 On Ubuntu, the installation process for our C semantics can be summarized as:
 ```
+$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.6-dev diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
 $ git clone --depth=1 https://github.com/runtimeverification/k.git
 $ cd k
 $ mvn package
 $ export PATH=$PATH:`pwd`/k-distribution/target/release/k/bin
 $ mvn dependency:copy -Dartifact=com.runtimeverification.rv_match:ocaml-backend:1.0-SNAPSHOT -DoutputDirectory=k-distribution/target/release/k/lib/java
+$ cd ..
 $ git clone --depth=1 https://github.com/kframework/c-semantics.git
-$ sudo apt-get install build-essential diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
 $ k-configure-opam-dev
 $ eval `opam config env`
 $ cd c-semantics
 $ make -j4
-$ export PATH=$PATH:~/c-semantics/dist
+$ export PATH=$PATH:`pwd`/dist
 ```
 
 ### 1. Install basic dependencies.
