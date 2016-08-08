@@ -1,0 +1,153 @@
+,,,
+Errors reported by RV-Match follow the template: Error_Type-Error_Code. ,,,
+"The Error_Type can be one of: UB (Undefined Behavior), USP (Unspecified Behavior), CV (Constraint Violation), or IMPL (Implementation Specific Behavior)",,,
+The Error_Code is a unique code used to identify a particular error. ,,,
+,,,
+,,,
+Error,Description ,References,Type
+UB-CB1,types of function call arguments aren't compatible with declared types after promotions.,"6.5.2.2:6, J.2:1 item 39",Undefined Behavior
+UB-CB2,function call has fewer arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
+UB-CB3,function call has more arguments than parameters in function definition.,"6.5.2.2:6, J.2:1 item 38",Undefined Behavior
+UB-CCV1,signed overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
+UB-CCV3,conversion to integer from float outside the range that can be represented.,"6.3.1.4:1, J.2:1 item 17",Undefined Behavior
+UB-CCV4,floating-point value outside the range of values that can be represented after conversion.,"6.3.1.5:1, J.2:1 item 18",Undefined Behavior
+UB-CCV5,casting empty value to type other than void.,"6.3.2.2:1, J.2:1 item 23",Undefined Behavior
+UB-CCV6,casting void type to non-void type.,"6.3.2.2:1, J.2:1 item 23",Undefined Behavior
+UB-CCV7,conversion from pointer to integer of a value possibly unrepresentable in the integer type.,"6.3.2.3:6, J.2:1 item 24",Undefined Behavior
+UB-CCV11,conversion to a pointer type with a stricter alignment requirement (possibly undefined).,"6.3.2.3:7, J.2:1 item 25",Undefined Behavior
+UB-CEA1,A pointer (or array subscript) outside the bounds of an object.,"6.5.6:8, J.2:1 item 46",Undefined Behavior
+UB-CEA5,Computing pointer difference between two different objects.,"6.5.6:9, J.2:1 item 48",Undefined Behavior
+UB-CEA2,Pointer difference outside the range that can be represented by object of type ptrdiff_t.,"6.5.6:9, J.2:1 item 50",Undefined Behavior
+UB-CEA6,"Unspecified value in signed addition, possible overflow.","6.5:5, J.2:1 item 36",Undefined Behavior
+UB-CEB2,the right operand in a bitwise shift is negative.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
+UB-CEB3,the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
+UB-CEB4,the left operand in a bitwise left-shift is negative.,"6.5.7:4, J.2:1 item 52",Undefined Behavior
+UB-CEB6,the right operand in a bitwise shift is negative.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
+UB-CEB12,potential negative zero produced via bitwise operations (this could be a false positive).,"6.2.6.2:4, J.2:1 item 14",Undefined Behavior
+UB-CEB7,the right operand in a bitwise shift is greater than or equal to the bit width of the left operand.,"6.5.7:3, J.2:1 item 51",Undefined Behavior
+UB-CEE2,Indeterminate value used in an expression.,"6.2.4, 6.7.9, 6.8, J.2:1 item 11",Undefined Behavior
+UB-CEE1,Address of an array declared with register storage class used in an expression.,"6.3.2.1:3, J.2:1 item 22",Undefined Behavior
+UB-CEE4,Referring to an object outside of its lifetime.,"6.2.4:2, J.2:1 item 9",Undefined Behavior
+UB-CEE3,Found pointer that refers outside the bounds of an object + 1.,"6.3.2.1:1, J.2:1 item 19",Undefined Behavior
+UB-CEM1,attempting to access a member in an atomic struct.,"6.5.2.3:5, J.2:1 item 42",Undefined Behavior
+UB-CEM2,attempting to access a member in an atomic union.,"6.5.2.3:5, J.2:1 item 42",Undefined Behavior
+UB-CEMX1,Division by 0.,"6.5.5:5, J.2:1 item 45",Undefined Behavior
+UB-CEMX2,Modulus by 0.,"6.5.5:5, J.2:1 item 45",Undefined Behavior
+UB-CEMX3,Signed overflow.,"6.5:5, J.2:1 item 36",Undefined Behavior
+UB-CER3,Dereferencing a null pointer.,"6.5.3.2:4, J.2:1 item 43",Undefined Behavior
+UB-CER4,Dereferencing a pointer past the end of an array.,"6.5.6:8, J.2:1 item 47",Undefined Behavior
+UB-CERL1,Cannot compare pointers with different base objects using '<'.,"6.5.8:5, J.2:1 item 53",Undefined Behavior
+UB-CERL2,Cannot compare pointers with different base objects using '<='.,"6.5.8:5, J.2:1 item 53",Undefined Behavior
+UB-CERL3,Cannot compare pointers with different base objects using '>'.,"6.5.8:5, J.2:1 item 53",Undefined Behavior
+UB-CERL4,Cannot compare pointers with different base objects using '>='.,"6.5.8:5, J.2:1 item 53",Undefined Behavior
+UB-CMW1,Trying to modify a string literal.,"6.4.5:7, J.2:1 item 33",Undefined Behavior
+UB-CTM1,Variable-length array with length that evaluates to non-positive value at execution.,"6.7.6.2:5, J.2:1 item 75",Undefined Behavior
+UB-ECL3,An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.,"6.7.3.1:4, J.2:1 item 68",Undefined Behavior
+UB-ECL4,An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.,"6.7.3.1:4, J.2:1 item 68",Undefined Behavior
+UB-CEER1,Trying to read through a null pointer.,"6.3.2.1:1, J.2:1 item 19",Undefined Behavior
+UB-CEER4,Have a read-write datarace.,"5.1.2.4:25, J.2:1 item 5",Undefined Behavior
+UB-CEER5,Have a write-write datarace.,"5.1.2.4:25, J.2:1 item 5",Undefined Behavior
+UB-CID2,No definition found for identifier .,"6.3.2.1:1, J.2:1 item 19",Undefined Behavior
+UB-EEA1,assignment from non-exactly-overlapping overlapping read.,"6.5.16.1:3, J.2:1 item 54",Undefined Behavior
+UB-EEA2,Attempt to alias restrict qualified pointers associated with the same block.,"6.7.3.1:4, J.2:1 item 69",Undefined Behavior
+UB-EEA3,Attempt to alias restrict qualified pointers associated with incompatible blocks.,"6.7.3.1:4, J.2:1 item 69",Undefined Behavior
+UB-EEA4,passing a pointer not to an array object as a function parameter with a static-qualified array size.,"6.7.6.3:7, J.2:1 item 77",Undefined Behavior
+UB-EEA5,passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size.,"6.7.6.3:7, J.2:1 item 77",Undefined Behavior
+UB-EEC1,Incompatible variably modified types in a conditional expression.,6.7.6.1:6,Undefined Behavior
+UB-EFNC1,attempt to call the function through a pointer with incompatible type.,"6.5.2.2:9, J.2:1 item 41",Undefined Behavior
+UB-EIO8,Unsequenced side effect on scalar object with side effect of same object.,"6.5:2, J.2:1 item 35",Undefined Behavior
+UB-EIO2,Trying to write outside the bounds of an object.,"6.5.6:8, J.2:1 item 47",Undefined Behavior
+UB-EIO3,Trying to modify an object declared with const type.,"6.7.3:6, J.2:1 item 64",Undefined Behavior
+UB-EIO4,Trying to modify an object declared with volatile type through a non-volatile lvalue.,"6.7.3:6, J.2:1 item 65",Undefined Behavior
+UB-EIO7,reading outside the bounds of an object.,"6.3.2.1:1, J.2:1 item 19",Undefined Behavior
+UB-EIO9,trying to access an object declared with volatile type through a non-volatile lvalue.,"6.7.3:6, J.2:1 item 65",Undefined Behavior
+UB-EIO10,Type of lvalue not compatible with the effective type of the object being accessed.,"6.5:7, J.2:1 item 37",Undefined Behavior
+UB-ESR1,Return from a function declared _Noreturn.,"6.7.4, J.2:1 item 71",Undefined Behavior
+UB-TDG6,void parameter appears with a storage class specifier.,"6.7.6.3:10, J.2:1 item 78",Undefined Behavior
+UB-TDG7,void parameter appears with qualifiers.,"6.7.6.3:10, J.2:1 item 78",Undefined Behavior
+UB-TDG11,static declaration of Identifier follows non-static declaration.,"6.2.2:7, J.2:1 item 8",Undefined Behavior
+UB-TDG12,declaration for an object is a tentative definition with internal linkage and has an incomplete type.,"6.9.2:3, J.2:1 item 89",Undefined Behavior
+UB-TDG17,could not form composite type from declaration.,"6.2.7:3, J.2:1 item 16",Undefined Behavior
+UB-CDI1,Initializer for scalar contains multiple expressions,"6.7.9:11, J.2:1 item 81",Undefined Behavior
+UB-CDI2,Initializer for scalar contains multiple levels of braces,"6.7.9:11, J.2:1 item 81",Undefined Behavior
+UB-CDI3,Invalid initializer for aggregate type,"6.7.9:16, J.2:1 item 83",Undefined Behavior
+UB-TDL5,declaration of an identifier for an object with no linkage and incomplete type.,"6.7:7, J.2:1 item 59",Undefined Behavior
+UB-CDT1,structs must contain a named member.,"6.7.2.1:8, J.2:1 item 61",Undefined Behavior
+UB-CDT2,unions must contain a named member.,"6.7.2.1, J.2:1 item 61",Undefined Behavior
+UB-TDG1,declaration for the function appears with type qualifiers.,"6.7.3:9, J.2:1 item 66",Undefined Behavior
+UB-TDG3,declaration for Id appears with invalid storage class specifiers.,"6.7.1:7, J.2:1 item 60",Undefined Behavior
+UB-TEAS4,void value as right operand in assignment,"6.3.2.2:1, J.2:1 item 23",Undefined Behavior
+UB-TDR1,declaration for inline function not defined in the same translation unit.,"6.7.4:7, J.2:1 item 70",Undefined Behavior
+UB-TDR2,no definition for symbol with external linkage.,"6.9:5, J.2:1 item 84",Undefined Behavior
+UB-TIN1,Identifier declared with incompatible types in different translation units.,"6.2.7:2, J.2:1 item 15",Undefined Behavior
+UB-TIN2,Multiple external definitions for Identifier.,"6.9:5, J.2:1 item 84",Undefined Behavior
+UB-FD4,definition of main requires a prototype.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD5,main must return an int.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD6,"if main has arguments, the type of the first argument must be equivalent to int.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD7,"if main has arguments, the type of the second argument must be equivalent to char**.","5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD8,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-FD9,main must have zero or two parameters.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior
+UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior
+UB-STDIO1,"printf: Format string expects type of size a, but got an argument of size b.","7.21.6.1:9, J.2:1 item 153",Undefined Behavior
+UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed.","7.22.3.5:3, J.2:1 item 179",Undefined Behavior
+USP-CEER2,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior
+CV-CAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation
+CV-CCV9,conversion from pointer to floating point type or from floating point type to pointer.,6.5.4:4,Constraint Violation
+CV-CCV10,conversion to or from non-scalar type.,6.5.4:2,Constraint Violation
+CV-CEA7,Computing pointer addition of a pointer not to a complete object type.,6.5.6:2,Constraint Violation
+CV-CEA8,Computing pointer minus integer of a pointer not to a complete object type.,6.5.6:3,Constraint Violation
+CV-CEA3,Invalid operand types to addition.,6.5.6:2,Constraint Violation
+CV-CEA4,Invalid operand types to subtraction.,6.5.6:3,Constraint Violation
+CV-CEA9,Computing pointer difference between pointers not to complete object types.,6.5.6:3,Constraint Violation
+CV-CEB1,both bitwise shift operands must have integer type.,6.5.7:2,Constraint Violation
+CV-CEB5,both bitwise shift operands must have integer type.,6.5.7:2,Constraint Violation
+CV-CEB9,both bitwise AND operands must have integer type.,6.5.10:2,Constraint Violation
+CV-CEB10,both bitwise exclusive OR operands must have integer type.,6.5.11:2,Constraint Violation
+CV-CEB11,both bitwise inclusive OR operands must have integer type.,6.5.12:2,Constraint Violation
+CV-CEM3,attempting to access member but it does not exist,6.5.2.3:1,Constraint Violation
+CV-CER1,Unary '&' operator applied to non-lvalue.,6.5.3.2:1,Constraint Violation
+CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3.2:1,Constraint Violation
+CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation
+CV-00035,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
+CV-CTM2,Variable-length array with file scope.,6.7.6.2:2,Constraint Violation
+CV-EFNC2,incompatible types in function call arguments.,6.5.16.1:1,Constraint Violation
+CV-EFNC3,incompatible pointer types in function call arguments.,6.5.16.1:1,Constraint Violation
+CV-TDG2,declaration for appears with multiple storage class specifiers.,6.7.1:2,Constraint Violation
+CV-TDG4,declaration appears with invalid storage class specifiers.,6.9:2,Constraint Violation
+CV-TDG5,function parameter appears with storage class other than register.,6.7.6.3:2,Constraint Violation
+CV-TDG8,declaration has initializer but incomplete type.,6.7.9:3,Constraint Violation
+CV-TDG10,conflicting types for identifier.,6.7:4,Constraint Violation
+CV-TDG13,Redefinition of symbol:,6.9:3,Constraint Violation
+CV-TDL1,Extern declaration follows one with no linkage,6.7:3,Constraint Violation
+CV-TDL2,Extern declaration appears at block scope with an initializer.,6.7.9:5,Constraint Violation
+CV-TDL3,Extern declaration with incompatible type,6.7:4,Constraint Violation
+CV-TDL4,Redeclaration with no linkage,6.7:3,Constraint Violation
+CV-CDI4,Attempting to initialize nonexistent member.,6.7.9:2,Constraint Violation
+CV-TDG14,CV-TDG15,CV-TDG16,CV-TDG17
+CV-TDG15,"redefinition of struct, union, or enum",6.7.2.3:1,Constraint Violation
+CV-TDG18,declaration for appears with invalid storage class specifiers.,6.7.1:3,Constraint Violation
+CV-CDE1,Enum initializer not an integer constant expression.,6.7.2.2:2,Constraint Violation
+CV-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Constraint Violation
+CV-TEAS1,incompatible types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation
+CV-TEAS2,incompatible pointer types in assignment or function call arguments.,6.5.16.1:1,Constraint Violation
+CV-TEAS3,lvalue required as left operand in assignment.,6.5.16:2,Constraint Violation
+CV-TEAS5,Non-constant static initializer.,6.7.9:4,Constraint Violation
+CV-TEAS6,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation
+CV-CEC1,"If both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the other must be a pointer to void.",6.5.15:3,Constraint Violation
+CV-CEC5,"If one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",6.5.15:3,Constraint Violation
+CV-CEC2,"If one of a conditional expression's branches has void type, the other must also have void type.",6.5.15:3,Constraint Violation
+CV-CEC4,"If one of a conditional expression's branches has struct or union type, the other must have the same type.",6.5.15:3,Constraint Violation
+CV-EFC1,function call with incomplete or invalid return type.,6.5.2.2:2,Constraint Violation
+CV-TES1,Trying to compute sizeof of an expression with incomplete or a function type.,6.5.3.4:1,Constraint Violation
+CV-TES2,Trying to compute sizeof of an incomplete or function type.,6.5.3.4:1,Constraint Violation
+CV-FD1,duplicate parameters in function definition.,6.7:3,Constraint Violation
+CV-FD2,invalid return type in function definition.,6.7.6.3:1,Constraint Violation
+CV-FD3,incomplete parameter type in function definition.,6.7.6.3:4,Constraint Violation
+CV-SSA1,Non-constant expression in static assertion.,6.7.10:2,Constraint Violation
+CV-SSA2,Static assertion failed: ,6.7.10:2,Constraint Violation
+CV-CTI3,The width of a bit field shall be an integer constant expression.,6.7.2.1:4,Constraint Violation
+CV-CTI2,Arrays must have positive length.,6.7.6.2:1,Constraint Violation
+IMPL-CCV2,conversion to signed integer outside the range that can be represented.,"6.3.1.3:3, J.3.5:1 item 4",Implementation Specific Behavior
+IMPL-CEB8,the left operand in a bitwise right-shift is negative.,"6.5.7:5, J.3.5:1 item 5",Implementation Specific Behavior
+IMPL-EIO5,Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior
+IMPL-EIO6,Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.,"6.2.4:4, 6.2.4:5, J.3.13:1 item 2",Implementation Specific Behavior

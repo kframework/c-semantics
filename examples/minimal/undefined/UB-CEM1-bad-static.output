@@ -1,0 +1,7 @@
+File: UB-CEM1-bad-static.c
+Line: 6
+Error: UB-CEM1
+Description: attempting to access a member in an atomic struct.
+Type: Undefined behavior.
+See also: C11 sec. 6.5.2.3:5, J.2:1 item 42
+Translation failed. Run kcc -d UB-CEM1-bad-static.c to see commands run.

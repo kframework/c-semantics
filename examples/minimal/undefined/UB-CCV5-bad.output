@@ -1,0 +1,8 @@
+Error: UB-CCV5
+Description: casting empty value to type other than void.
+Type: Undefined behavior.
+See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
+  at f(UB-CCV5-bad.c:6)
+  at main(UB-CCV5-bad.c:6)
+  at <file-scope>(<unknown>)
+Execution failed (configuration dumped)
