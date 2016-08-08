@@ -15,7 +15,5 @@ module C-LINKING
      imports C-COMMON-PROMOTION
      imports C-TYPING-COMMON
      imports C-TYPING-COMPATIBILITY
-     imports C-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
      imports C-SETTINGS
 endmodule

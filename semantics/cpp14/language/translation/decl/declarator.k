@@ -20,8 +20,8 @@ endmodule
 
 module CPP-DECL-DECLARATOR
      imports CPP-DECL-DECLARATOR-SYNTAX
-
      imports C-CONFIGURATION
+     imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-ELABORATOR-SYNTAX

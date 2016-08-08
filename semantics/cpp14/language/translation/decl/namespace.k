@@ -1,5 +1,6 @@
 module CPP-DECL-NAMESPACE
      imports C-CONFIGURATION
+     imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-SYNTAX

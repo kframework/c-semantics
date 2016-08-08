@@ -36,8 +36,6 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-IO
      imports CPP-OVERLOADING
      imports CPP-PROCESS-LABEL
-     imports CPP-ABSTRACT-SYNTAX
-     imports C-CONFIGURATION
 
      imports CPP-DECL-DECLARATOR
      imports CPP-DECL-INITIALIZER

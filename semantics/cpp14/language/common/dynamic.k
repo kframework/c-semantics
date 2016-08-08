@@ -98,7 +98,7 @@ endmodule
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-SYNTAX
+     imports CPP-SORTS
 
      rule isLKLabel(#klabel(`lvcpp`)) => true
      rule isLKLabel(#klabel(`lecpp`)) => true

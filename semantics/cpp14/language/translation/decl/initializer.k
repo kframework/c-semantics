@@ -13,7 +13,6 @@ module CPP-DECL-INITIALIZER
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
-     imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX

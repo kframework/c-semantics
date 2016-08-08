@@ -9,6 +9,7 @@ module CPP-TRANSLATION-INIT
      imports STRING
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
+     imports CPP-ABSTRACT-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      imports C-CONFIGURATION

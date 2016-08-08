@@ -10,7 +10,6 @@ module C-TYPING-COMMON-SYNTAX
 endmodule
 
 module C-TYPING-COMMON
-     imports C-TYPING-COMMON-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports C-SETTINGS-SYNTAX

@@ -1,6 +1,7 @@
 module CPP-DECL-LINKAGE
      imports C-CONFIGURATION
      imports STRING
+     imports CPP-ABSTRACT-SYNTAX
      imports CPP-ERROR-SYNTAX
 
      syntax KItem ::= setLinkage(LanguageLinkage, Bool)

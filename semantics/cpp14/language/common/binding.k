@@ -1,7 +1,6 @@
 module CPP-BINDING-SYNTAX
      imports INT-SYNTAX
      imports LIST
-     imports COMMON-SORTS
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 

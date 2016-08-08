@@ -11,7 +11,6 @@ module CPP-TYPING-SYNTAX
      imports SET
      imports CPP-TYPING-SORTS
      imports COMMON-SORTS
-     imports MEMORY-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
 

@@ -2,7 +2,6 @@ module CPP-STMT-EXPR
      imports C-CONFIGURATION
      imports CPP-SYNTAX
      imports CPP-COMMON-STMT-EXPR-SYNTAX
-     imports CPP-TYPING-SYNTAX
 
      rule <k> ExpressionStmt(V:Val)  => .K ...</k>
           <elab>... .K => ExpressionStmt(V) </elab>

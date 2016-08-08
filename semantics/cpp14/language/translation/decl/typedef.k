@@ -1,5 +1,6 @@
 module CPP-DECL-TYPEDEF
      imports C-CONFIGURATION
+     imports CPP-ABSTRACT-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule <k> TypedefDecl(X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType)) => .K ...</k>

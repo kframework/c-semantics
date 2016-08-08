@@ -16,5 +16,4 @@ module COMMON
   imports COMMON-INIT
   imports MEMORY
   imports SYMLOC
-  imports COMMON-SYNTAX
 endmodule

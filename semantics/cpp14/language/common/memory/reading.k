@@ -17,10 +17,10 @@ module CPP-MEMORY-READING
      imports CPP-MEMORY-READING-SYNTAX
      imports INT
      imports MEMORY-SYNTAX
+     imports SETTINGS-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports C-SETTINGS-SYNTAX
 
      rule read(Loc::SymLoc, T::CPPType)
           => concretize(readBytes(stripProv(Loc), byteSizeofType(T), T), utype(T))

@@ -1,5 +1,4 @@
 module C-COMMON-PROMOTION-SYNTAX
-     imports BASIC-K
      imports LIST
 
      // should be K, but is Type for efficiency reasons

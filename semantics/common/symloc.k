@@ -96,7 +96,6 @@ endmodule
 
 module SYMLOC
      imports SYMLOC-SYNTAX
-     imports C-CONFIGURATION
      imports K-REFLECTION
 
      rule isAllocatedDuration(_ @ alloc) => true

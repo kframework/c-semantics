@@ -25,7 +25,6 @@ module CPP-COMMON
      imports CPP-DYNAMIC
      imports CPP-ERROR
      imports CPP-SYMLOC
-     imports CPP-SYNTAX
      imports C-CPP-TYPING
 
      imports CPP-EXPR-EVAL

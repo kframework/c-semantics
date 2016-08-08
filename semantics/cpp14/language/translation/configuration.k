@@ -2,7 +2,6 @@ module C-CONFIGURATION
      imports MAP
      imports SET
      imports C-LINKING-INIT-SYNTAX
-     imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
      configuration

@@ -1,6 +1,5 @@
 module CPP-MEMORY-ALLOC-SYNTAX
      imports INT-SYNTAX
-     imports MEMORY-SORTS
      imports SYMLOC-SORTS
      imports CPP-TYPING-SORTS
 

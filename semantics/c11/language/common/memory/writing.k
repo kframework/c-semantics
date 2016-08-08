@@ -1,4 +1,5 @@
 module C-MEMORY-WRITING-SYNTAX
+     imports BASIC-K
      imports STRING-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
