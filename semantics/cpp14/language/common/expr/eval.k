@@ -5,11 +5,11 @@ module CPP-EXPR-EVAL
      imports CPP-REVAL-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule reval(lv(Loc::SymLoc, T:CPPArrayType)
-          => convertArray(lv(Loc, T)))
+     rule reval(lv(Loc::SymLoc, Tr::Trace, T:CPPArrayType)
+          => convertArray(lv(Loc, Tr, T)))
 
-     rule reval(lv(Loc::SymLoc, T:CPPFunctionType)
-          => convertFunction(lv(Loc, T)))
+     rule reval(lv(Loc::SymLoc, Tr::Trace, T:CPPFunctionType)
+          => convertFunction(lv(Loc, Tr, T)))
 
      rule reval(L:LVal
           => convertLVal(L))

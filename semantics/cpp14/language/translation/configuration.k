@@ -3,74 +3,10 @@ module C-CONFIGURATION
      imports SET
      imports C-LINKING-INIT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports COMMON-CONFIGURATION
 
      configuration
-<global>
-     <mem> .Map </mem>
-     <functions color="lightgray"> .Map </functions>
-
-     <main-tu color="lightgray"> .Set </main-tu>
-
-     <global-state>
-          // CId |-> Types
-          <external-types> .Map </external-types>
-          // CId |-> Loc
-          <external-defs> .Map </external-defs>
-          // QualId |-> (Type |-> Loc)
-          <odr-defs> .Map </odr-defs>
-          // dummy link base |-> real base
-          <linkings> .Map </linkings>
-     </global-state>
-
-     <linking-state multiplicity="?" initial="">
-          // CId |-> Set(TUs)
-          <external-decls> .Map </external-decls>
-          // CIds
-          <external-uses> .Set </external-uses>
-          // SymBase |-> Set(ktriple(TU, QualId, Type))
-          <odr-decls> .Map </odr-decls>
-          // Set(SymBase)
-          <odr-uses> .Set </odr-uses>
-     </linking-state>
-
-     <structs color="lightgray"> .Map </structs>
-
-     <translation-units>
-          <tu multiplicity="*" type="Map">
-               <tu-id> "" </tu-id>
-               <genv color="lightgray"> .Map </genv>
-               <gtypes color="lightgray"> .Map </gtypes>
-
-               // kpair(CId, Scope) |-> kpair(SymBase, Type)
-               <local-statics> .Map </local-statics>
-
-               <tu-linking-state multiplicity="?" initial="">
-                    <externals> .Map </externals>
-                    <internals> .Map </internals>
-                    <next-link-loc> .K </next-link-loc>
-                    <next-static-loc> .K </next-static-loc>
-                    <uses> SetItem(Identifier("main")) </uses>
-                    <genums> .Map </genums>
-               </tu-linking-state>
-
-               <next-unnamed color="black"> 0 </next-unnamed>
-
-               <goto-map color="lightgray"> .Map </goto-map>
-
-               // TODO(chathhorn): move.
-               <incomplete-tags> .Set </incomplete-tags>
-
-               <namespaces>
-                    <ns multiplicity="*" type="Map">
-                         <ns-id> GlobalNamespace() </ns-id>
-                         <nenv> .Map </nenv>
-                         <using-namespaces> .Set </using-namespaces>
-                         <inline-namespaces> .Set </inline-namespaces>
-                    </ns>
-               </namespaces>
-          </tu>
-     </translation-units>
-</global>
+<global />
 <result-value color="red"> 1 </result-value>
 <T multiplicity="?">
 <exec>
@@ -101,6 +37,7 @@ module C-CONFIGURATION
      <curr-extern> false </curr-extern>
      <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
      <curr-eval-context color="lightgray"> eval </curr-eval-context>
+     <curr-template-context> noTemplate </curr-template-context>
      <curr-program-loc color="black">
           UnknownCabsLoc
      </curr-program-loc>
@@ -109,8 +46,12 @@ module C-CONFIGURATION
      <block-stack color="violet"> .List </block-stack>
      <block-control>
           <env color="red"> .Map </env>
+          <types color="lightgray"> .Map </types>
           <block-history> .List </block-history>
      </block-control>
+
+     <template-deduction> .Map </template-deduction>
+     <template-arguments> .Map </template-arguments>
 </exec>
 
 <generated-annotations> .List </generated-annotations>

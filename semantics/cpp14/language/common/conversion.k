@@ -3,7 +3,7 @@ module CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= instantiate(SymLoc, CPPType) [klabel(instantiateCpp)]
+     syntax Expr ::= instantiate(SymLoc, Trace, CPPType) [klabel(instantiateCpp)]
 
      syntax PRVal ::= convertType(CPPType, PRVal) [function]
                     | convertType(CPPType, PRExpr) [function]
@@ -18,18 +18,20 @@ module CPP-CONVERSION
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule convertType(T::CPPType, prv(V::CPPValue, T)) => prv(V, T)
-     rule convertType(T::CPPType, pre(E::Expr, T)) => pre(E, T)
+     rule convertType(T::CPPType, prv(V::CPPValue, Tr::Trace, T)) => prv(V, Tr, T)
+     rule convertType(T::CPPType, pre(E::Expr, Tr::Trace, T)) => pre(E, Tr, T)
 
-     rule convertArray(lv(Loc::SymLoc, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
-          => prv(Loc, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+     rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
 
-     rule convertFunction(lv(Loc::SymLoc, T::CPPFunctionType))
-          => prv(Loc, t(noQuals, .Set, pointerType(T)))
+     rule convertArray(lv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
+          => prv(Loc, Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
 
-     rule convertLVal(lv(Loc::SymLoc, T::CPPType))
-          => instantiate(Loc, T)
-     rule convertLVal(le(E::Expr, T::CPPType))
-          => pre(E, utype(T))
+     rule convertFunction(lv(Loc::SymLoc, Tr::Trace, T::CPPFunctionType))
+          => prv(Loc, Tr, t(noQuals, .Set, pointerType(T)))
+
+     rule convertLVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType))
+          => instantiate(Loc, Tr, T)
+     rule convertLVal(le(E::Expr, Tr::Trace, T::CPPType))
+          => pre(E, Tr, utype(T))
 
 endmodule

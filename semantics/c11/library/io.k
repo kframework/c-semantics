@@ -91,36 +91,18 @@ module LIBC-IO
      rule [sendString-one]:
           <file-commands>
                f-sendString(FD::Int, S::String)
-               => (#putc(FD, ordChar(firstChar(S)))
-                    ~> f-sendString(FD, butFirstChar(S)))
+               => #if NoIO() in Opts orBool S ==String "" #then .K #else (#putc(FD, ordChar(firstChar(S)))
+                    ~> f-sendString(FD, butFirstChar(S))) #fi
           ...</file-commands>
           <options> Opts::Set </options>
-          requires (S =/=String "")
-               andBool notBool (NoIO()  in Opts)
-          [structural]
-     rule <file-commands>
-               f-sendString(_, _) => .K
-          ...</file-commands>
-          <options> SetItem(NoIO()) ...</options>
-          [structural]
-     rule [sendString-done]:
-          <file-commands> f-sendString(_, "") => .K ...</file-commands>
-          [structural]
 
      rule [f-sent]:
           <file-commands> f-sent(FD::Int, S::String) => .K ...</file-commands>
           <file>...
                <fid> FD </fid>
                <sending> ListItem(S) => .List ...</sending>
-               <done>... .List => ListItem(S) </done>
+               <done> Sent::String => Sent +String S </done>
           ...</file>
-          [structural]
-
-     rule [combine-done]:
-          <done>
-               ListItem(S::String) ListItem(S'::String)
-               => ListItem(S +String S')
-          ...</done>
           [structural]
 endmodule
 

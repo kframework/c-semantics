@@ -19,9 +19,9 @@ module ERROR-SYNTAX
      syntax Error
      syntax K ::= assert(Bool, Error)
 
-     syntax KItem ::= openWriteThenClose(String, String)
-     syntax KItem ::= writeThenClose(Int, String)
-     syntax KItem ::= close(Int)
+     syntax K ::= openWriteThenClose(String, String) [function]
+     syntax K ::= writeThenClose(Int, String) [function]
+     syntax K ::= close(Int, K) [function]
 
      syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")"
      syntax KItem ::= UNDIAG(String, String, String)
@@ -77,8 +77,8 @@ module ERROR
      rule ErrorMsg(.List) => ""
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
-     rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd)
-     rule close(Fd:Int) => #close(Fd)
+     rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd, #write(Fd, Line))
+     rule close(Fd:Int, .K) => #close(Fd)
 
      syntax Bool ::= isCSV(K) [function, klabel(isCSV1)]
      rule isCSV => isCSV(#configuration)

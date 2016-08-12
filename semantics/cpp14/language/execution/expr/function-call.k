@@ -16,11 +16,11 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-TYPING-SYNTAX
 
      // Function call (from C++ function)
-     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _), _, _)
-     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _), _, _) ...</k>
+     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _), _, _)
+     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, _), _, _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
-     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), T:CPPFunctionType), N::Int, Init::K)
+     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), N::Int, Init::K)
               => prepareArguments(CurrLoc, Base, Fun, T, N, Init)
           ...</k>
           <functions>... Base |-> Fun:K ...</functions>
@@ -44,7 +44,7 @@ module CPP-EXPR-FUNCTION-CALL
 
      rule <k> (.K => allocObject(!I:Int @ D, T, byteSizeofType(T))
                   ~> addToEnv(arg(I), T, !I @ D, false))
-              ~> makeArgumentTemporaries(NArgs::Int, (I::Int => I +Int 1), t(_, _, functionType(_, (ListItem(T::CPPType) => .List) _, _)))
+              ~> makeArgumentTemporaries(NArgs::Int, (I::Int => I +Int 1), t(_, _, functionType(_, (T::CPPType, Ts::CPPTypes => Ts), _)))
           ...</k>
           <duration> D::Duration </duration>
           <local-addresses>... .Set => SetItem(!I @ D) ...</local-addresses>
@@ -57,12 +57,12 @@ module CPP-EXPR-FUNCTION-CALL
 
      // Function call (into C++ function)
      rule <k> application(CurrLoc::CabsLoc, Base::SymBase,
-                    functionObject(X::QualId, DefT::CPPFunctionType, Locals::List, Blk:K),
-                    CallT:CPPFunctionType, CallingLang::LanguageLinkage, krlist(L::List))
+                    functionObject(X::QualId, DefT::CPPFunctionType, Params::List, Blk:K),
+                    _, CallingLang::LanguageLinkage, krlist(L::List))
               ~> K:K
               => sequencePoint
               ~> enterRestrictScope(blockScope(X, Base, 0))
-              ~> bind(getParams(DefT), getParams(CallT), L, 0)
+              ~> bind(Params, getParams(DefT), L)
               ~> Blk
           </k>
           <call-stack> .List => ListItem(
@@ -81,12 +81,16 @@ module CPP-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
 
+     rule bindParam(X::CId, T::CPPType, V:LVal) => declareNonStaticObject(X, T, 
+               initValue(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, ExpressionStmt(Name(NoNNS(), X) := V)), 
+               Var, AutoStorage, .Set)
+
      // Function call conversion (C linkage)
      rule application(_, _, functionObject(X::CId, _, _, _),
                (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
 
      syntax RValue ::= convertValToC(PRVal) [function]
-     rule convertValToC(prv(V::CPPValue, T::CPPType)) => tv({V}:>CValue, utype(convertTypeToC(T)))
+     rule convertValToC(prv(V::CPPValue, _, T::CPPType)) => tv({V}:>CValue, utype(convertTypeToC(T)))
           requires isCValue(V)
 
 endmodule

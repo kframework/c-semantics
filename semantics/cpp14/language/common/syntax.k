@@ -7,6 +7,7 @@ module CPP-SORTS
      syntax Stmt
      syntax OpId
      syntax TempId
+     syntax Tag
 endmodule
 
 module CPP-SYNTAX
@@ -75,10 +76,15 @@ module CPP-SYNTAX
 
      syntax CId ::= Destructor(CId)
 
+     syntax ClassKey ::= Struct() | Union() | Class() 
+     syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
+
      syntax Expr ::= Expr ":=" Init [strict(1)]
                    | "*" Expr
+                   | "&" Expr
                    | BuiltinCallOp(Expr, Int, K)
      syntax Name ::= Name(NNS, CId)
+                   | Name(NNS, CId, List)
 
      context _ := (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context * (HOLE:Expr => reval(HOLE)) [result(PRVal)]

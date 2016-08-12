@@ -1,7 +1,9 @@
 module CPP-ENV-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports CPP-TYPING-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports BASIC-K
+     imports BOOL-SYNTAX
+     imports SYMLOC-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPING-SORTS
 
      // identifier, type, location, is using declaration
      syntax KItem ::= addToEnv(QualId, CPPType, SymBase, Bool)
@@ -9,16 +11,17 @@ module CPP-ENV-SYNTAX
                     | setScope(Scope)
                     | noEval(K)
                     | "recover"
+     syntax KItem ::= "pushLocals" | "popLocals"
 
 endmodule
 
 module CPP-ENV
     imports CPP-ENV-SYNTAX
-    imports COMPAT-SYNTAX
-
     imports C-CONFIGURATION
+    imports COMPAT-SYNTAX
+    imports CPP-DYNAMIC-SYNTAX
 
-    rule <k> addToEnv(N::Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+    rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
          <curr-tu> Tu::String </curr-tu>
@@ -40,7 +43,6 @@ module CPP-ENV
      rule <k> setScope(Scope::Scope) => .K ...</k>
           <curr-scope> _ => Scope </curr-scope>
 
-     syntax KItem ::= "pushLocals" | "popLocals"
      rule <k> pushLocals => .K ...</k>
           <block-control> C::Bag </block-control>
           <block-stack>

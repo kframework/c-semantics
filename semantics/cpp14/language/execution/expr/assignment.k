@@ -5,9 +5,9 @@ module CPP-EXPR-ASSIGNMENT
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule lv(Loc:SymLoc, T::CPPType) := prv(V::CPPValue, T'::CPPType)
-          => write(Loc, convertType(utype(T), prv(V, T')), T)
-          ~> lv(Loc, T)
+     rule lv(Loc:SymLoc, Tr::Trace, T::CPPType) := prv(V::CPPValue, Tr'::Trace, T'::CPPType)
+          => write(Loc, convertType(utype(T), prv(V, Tr', T')), T)
+          ~> lv(Loc, Tr, T)
           requires notBool isCPPClassType(T)
 
 endmodule

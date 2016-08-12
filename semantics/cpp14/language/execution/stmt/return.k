@@ -25,6 +25,9 @@ module CPP-STMT-RETURN
           ...</k>
           <duration> D::Duration </duration>
           <local-addresses>... .Set => SetItem(!I @ D) ...</local-addresses>
+          requires notBool isCPPVoidType(T)
+
+     rule prepareReturn(T:CPPVoidType, .K) => Return'(prv(voidVal, noTrace, T))
 
      syntax KItem ::= "Return'" "(" K ")"
      context Return'(HOLE:Expr => reval(HOLE)) [result(PRVal)]
@@ -81,7 +84,7 @@ module C-CPP-STMT-RETURN
           ...</call-stack>
 
      syntax PRVal ::= convertValToCPP(RValue) [function]
-     rule convertValToCPP(tv(V::CValue, T::UType)) => prv({V}:>CPPValue, convertTypeToCPP(type(T)))
+     rule convertValToCPP(tv(V::CValue, T::UType)) => prv({V}:>CPPValue, noTrace, convertTypeToCPP(type(T)))
           requires isCPPValue(V)
 
 endmodule

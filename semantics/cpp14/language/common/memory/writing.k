@@ -25,20 +25,20 @@ module CPP-MEMORY-WRITING
      rule write(Loc::SymLoc, V::PRVal, T::CPPType)
           => writeBytes(stripProv(Loc), splitBytes(V), T)
 
-     rule splitBytes(prv(V::CPPValue, T::CPPType))
+     rule splitBytes(prv(V::CPPValue, _, T::CPPType))
           => splitBytes(V, byteSizeofType(T))
 
      rule writeString(Loc::SymLoc, S::String)
           => ExpressionStmt(
-               lv(Loc, type(char))
-               := prv(ordChar(firstChar(S)), type(char)))
+               lv(Loc, noTrace, type(char))
+               := prv(ordChar(firstChar(S)), noTrace, type(char)))
                ~> writeString(Loc +bytes 1, butFirstChar(S))
           requires S =/=String ""
 
      rule writeString(Loc::SymLoc, "")
           => ExpressionStmt(
-               lv(Loc, type(char))
-               := prv(0, type(char)))
+               lv(Loc, noTrace, type(char))
+               := prv(0, noTrace, type(char)))
 
 
 endmodule

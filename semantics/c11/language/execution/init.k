@@ -12,9 +12,11 @@ module C-EXECUTION-INIT
      imports C-CONFIGURATION
      imports K-EQUAL
      imports STRING
+     imports BITS-SYNTAX
      imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
@@ -233,16 +235,22 @@ module C-EXECUTION-INIT
                (<thread>...
                     // main's thread, not the global "thread"
                     <thread-id> 0 </thread-id>
-                    <k> reval(V:RValue) </k>
+                    <k> reval(tv(I:Int, _)) </k>
                ...</thread> => .Bag)
           ...</exec>
           <status> _ => terminated </status>
-          <result-value> _ => {value(V)}:>CValue </result-value>
+          <result-value> _ => I </result-value>
           <files>...
                // Flush stdout.
                <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
           [ndtrans]
+
+     rule <thread>...
+            <thread-id> 0 </thread-id>
+            <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function.", "5.1.2.2.3:1"))
+                ~> reval(tv(unknown(I:Int), _)) </k>
+          ...</thread>
 
      rule <k> L:CabsLoc => .K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>

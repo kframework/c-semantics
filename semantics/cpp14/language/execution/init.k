@@ -7,9 +7,9 @@ module CPP-EXECUTION-INIT
 
      imports LIBC-IO-SYNTAX
 
-     rule pre(E::Expr, _) => E
-     rule xe(E::Expr, _) => E
-     rule le(E::Expr, _) => E
+     rule pre(E::Expr, _, _) => E
+     rule xe(E::Expr, _, _) => E
+     rule le(E::Expr, _, _) => E
 
      rule <k> callMain(N:Int, Args:K)
                => reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
@@ -22,7 +22,7 @@ module CPP-EXECUTION-INIT
 
      syntax Expr ::= "#callMain" "(" K "," SymBase "," Int "," CId "," K ")"
      rule #callMain(T::CPPFunctionType, Base::SymBase, _, _, _)
-          => BuiltinCallOp(lv(lnew(Base,T), T), 0, .K)
+          => BuiltinCallOp(lv(lnew(Base,T), noTrace, T), 0, .K)
           requires getParams(T) ==K .List
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
@@ -43,7 +43,7 @@ module CPP-EXECUTION-INIT
      rule <exec>...
                (<thread>...
                     <thread-id> 0 </thread-id>
-                    <k> reval(prv(V::CPPValue, _)) </k>
+                    <k> reval(prv(V::CPPValue, _, _)) </k>
                ...</thread> => .Bag)
           ...</exec>
           <status> _ => terminated </status>
@@ -52,5 +52,9 @@ module CPP-EXECUTION-INIT
                // Flush stdout.
                <file-commands>... (.K => f-flush(1)) </file-commands>
           ...</files>
+
+     rule hasTrace(_) => noTrace [anywhere]
+     rule combine(_, _) => noTrace
+     rule combine(_, _::Trace, _) => noTrace
 
 endmodule

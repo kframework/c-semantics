@@ -22,7 +22,7 @@ module CPP-DECL-INITIALIZER
      syntax KItem ::= figureInitAux(LVal, CPPType, K)
 
      rule figureInit(Base:LVal, DestT::CPPType, E:Expr, SrcT:CPPType)
-          => figureInitAux(Base, DestT, initializer(ExpressionStmt(le(Base, DestT) := E)))
+          => figureInitAux(Base, DestT, initializer(ExpressionStmt(le(Base, trace(Base), DestT) := E)))
           requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT)
 
      rule figureInitAux(Base::LVal, T::CPPType, initializer(K:K))

@@ -4,8 +4,8 @@ module CPP-BINDING-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax KItem ::= bind(List, List, List, Int) [klabel(bindCpp)]
-     syntax KItem ::= bindParam(Int, CPPType, Init) [klabel(bindParamCpp3)]
+     syntax KItem ::= bind(List, List, List) [klabel(bindCpp)]
+     syntax KItem ::= bindParam(CId, CPPType, Init) [klabel(bindParamCpp3)]
 
 endmodule
 
@@ -15,19 +15,18 @@ module CPP-BINDING
      imports INT
      imports CPP-TYPING-SYNTAX
 
-     rule <k> (.K => bindParam(I, T, V))
+     rule <k> (.K => bindParam(X, T, V))
           ~> bind(
+               (ListItem(X::CId) => .List) _,
                (ListItem(T:CPPType) => .List) _,
-               (ListItem(_) => .List) _,
-               (ListItem(V::Init) => .List) _,
-               (I::Int => I +Int 1))
+               (ListItem(V::Init) => .List) _)
           ...</k>
 
-     rule bind(ListItem(variadic), ListItem(variadic), Vs::List, I::Int)
-          => bindVariadics(Vs, I)
+     rule bind(.List, ListItem(variadic), Vs::List)
+          => bindVariadics(Vs)
 
-     rule bind(.List, .List, .List, _) => .K
+     rule bind(.List, .List, .List) => .K
 
-     syntax KItem ::= bindVariadics(List, Int) [klabel(bindVariadicsCpp)]
-     rule bindVariadics(.List, _) => .K
+     syntax KItem ::= bindVariadics(List) [klabel(bindVariadicsCpp)]
+     rule bindVariadics(.List) => .K
 endmodule

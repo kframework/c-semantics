@@ -10,6 +10,7 @@ module CPP-TRANSLATION-INIT
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      imports C-CONFIGURATION
@@ -37,6 +38,11 @@ module CPP-TRANSLATION-INIT
                         ...</ns>)
           ...</namespaces>
 
-     rule isCLinkage(t(_, _, functionType(_, _, CLinkage))) => true
+     rule isCLinkage(t(_, _, functionType(_, _::CPPTypes, CLinkage))) => true
      rule isCLinkage(_) => false [owise]
+
+     rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))
+     rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E, E2))
+     rule combine(_, _) => noTrace [owise]
+     rule combine(_, _::Trace, _) => noTrace [owise]
 endmodule

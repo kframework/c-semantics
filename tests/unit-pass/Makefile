@@ -30,6 +30,10 @@ compile: ${KCC_COMPILED_TESTS}
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
+%-link1.kcc: %-link1.cc %-link2.cc
+	@echo -n "Compiling $^... "
+	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
 %.kcc: %.c
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
@@ -40,6 +44,10 @@ compile: ${KCC_COMPILED_TESTS}
 %-link1.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
 	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+
+%-link1.gcc: %-link1.cc %-link2.cc
+	@echo -n "Compiling $^ (reference)... "
+	@$(CXX) -std=c++14 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.gcc: %.c
 	@echo -n "Compiling $< (reference)... "

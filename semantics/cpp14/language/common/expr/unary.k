@@ -3,7 +3,7 @@ module CPP-EXPR-UNARY
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule *(prv(Loc:SymLoc, T:CPPPointerType))
-          => lv(Loc, innerType(T))
+     rule *(prv(Loc:SymLoc, Tr::Trace, T:CPPPointerType))
+          => lv(Loc, combine(Tr, #klabel(`*__CPP-SYNTAX`)), innerType(T))
 
 endmodule

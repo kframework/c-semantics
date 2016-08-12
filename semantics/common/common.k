@@ -1,6 +1,7 @@
 require "bits.k"
 require "builtin.k"
 require "compat.k"
+require "configuration.k"
 require "error.k"
 require "init.k"
 require "memory.k"

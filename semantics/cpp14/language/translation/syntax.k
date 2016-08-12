@@ -4,14 +4,16 @@ endmodule
 
 module CPP-ABSTRACT-SYNTAX
      imports CPP-ABSTRACT-SORTS
-     imports BOOL-SYNTAX
+     imports BOOL
      imports FLOAT-SYNTAX
      imports LIST
      imports STRING-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
+     imports CPP-TYPING-SORTS
      imports COMMON-SORTS
      imports COMPAT-SORTS
+     imports CPP-DEPENDENT-SYNTAX
 
      syntax LVal ::= LExpr
      syntax XVal ::= XExpr
@@ -34,11 +36,17 @@ module CPP-ABSTRACT-SYNTAX
                    | Declarator
                    | Constructor(List, Decl)
 
+     context TypedefDecl(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
+     context TypeAliasDecl(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      syntax CtorInit ::= ConstructorBase(AType, Bool, Bool, Init)
                       | ConstructorMember(CId, Init)
 
-     syntax Declarator ::= FunctionDefinition(NNS, CId, AType, AStmt)
-                         | FunctionDecl(NNS, CId, AType)
+     syntax Declarator ::= FunctionDefinition(NNS, CId, AType, List, AStmt)
+                         | FunctionDecl(NNS, CId, AType, List)
                          | VarDecl(NNS, CId, AType, Init)
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr)
@@ -52,26 +60,28 @@ module CPP-ABSTRACT-SYNTAX
                         | Constexpr() | Friend() | Auto()
 
      syntax Decl ::= Template(Decl, List)
+                   | TemplateWithInstantiations(Decl, List, List)
      syntax TemplateParameter ::= TypeTemplateParam(Bool, Bool, AType, AType)
                                 | ValueTemplateParam(Bool, NNS, CId, AType, AExpr)
                                 | TemplateTemplateParam(Bool, CId, AType, List)
 
-     syntax TemplateArgument ::= TypeArg(AType)
-                               | TemplateArg(TemplateName)
+     syntax TemplateArgument ::= TypeArg(AType) [strict]
+                               | TemplateArg(CId)
                                | ExprArg(Expr)
                                | PackArg(List)
 
-     syntax TemplateName ::= TemplateName(CId)
+
+     context TypeArg(HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax Decl ::= TemplateSpecialization(AType, Decl)
-                   | TemplateInstantiation(AType, Decl)
+                   | TemplateInstantiationDeclaration(AType, Decl)
+                   | TemplateInstantiationDefinition(AType, Decl)
                    | PartialSpecialization(List, List, Decl)
 
-     syntax Tag ::= Struct() | Union() | Class() | Enum() | Typename() | NoTag()
-
      syntax Decl ::= ClassDef(Tag, CId, NNS, List, List)
-                   | EnumDef(CId, NNS, List)
                    | TypeDecl(AType)
+                   | EnumDef(CId, NNS, List)
                    | AccessSpec(AccessSpecifier)
                    | StaticAssert(Expr, Expr)
                    | UsingDecl(Bool, NNS, CId)
@@ -85,10 +95,11 @@ module CPP-ABSTRACT-SYNTAX
      syntax ATypeResult ::= NoType()
      syntax KResult ::= ATypeResult
 
-     syntax AType ::= CPPType
+     syntax AType ::= CPPTypeExpr
                     | ATypeResult
                     | ElaboratedTypeSpecifier(Tag, CId, NNS)
-                    | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1, 2)]
+                    | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
+                    | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1)]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]
                     | MemberPointerType(AType, AType) [strict]
@@ -100,17 +111,36 @@ module CPP-ABSTRACT-SYNTAX
                     | TemplateParameterType(CId)
                     | LValRefType(AType) [strict]
                     | RValRefType(AType) [strict]
-                    | TemplateSpecializationType(TemplateName, List)
+                    | TemplateSpecializationType(CId)
+                    | TemplateSpecializationType(CId, List)
                     | PackExpansionType(AType)
                     | AutoType(Bool)
- 
+
+     context FunctionPrototype(HOLE:CPPTypeExpr, _, _, _)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context FunctionPrototype(_, HOLE:StrictList => typeStrict(HOLE), _, _)
+     context PointerType(HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context MemberPointerType(HOLE:CPPTypeExpr, _)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context MemberPointerType(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context ArrayType(HOLE:CPPTypeExpr, _::Int)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context ArrayType(HOLE:CPPTypeExpr, _::AExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context LValRefType(HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context RValRefType(HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+
      // extensions
      syntax AType ::= GnuTypeOfExpr(AType)
                     | GnuEnumUnderlyingType(AType)               
 
      syntax ExceptionSpec ::= NoExceptionSpec() 
                             | NoexceptSpec(AExpr)
-                            | ThrowSpec(StrictList) [strict]
+                            | ThrowSpec(StrictList)
 
      syntax TypeSpecifier ::= Void() | Char() | WChar() | Char16() | Char32()
                             | Bool() | UChar() | UShort() | UInt() | ULong() 
@@ -118,6 +148,8 @@ module CPP-ABSTRACT-SYNTAX
                             | LongLong() | Float() | Double() | LongDouble()
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
+     context Qualifier(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax AStmt ::= Stmt
      syntax Stmt ::= DeclStmt(List)
@@ -125,6 +157,7 @@ module CPP-ABSTRACT-SYNTAX
                   // GotoStmt(CId)
                    | ReturnStmt(Init)
                    | NullStmt()
+                   | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
       
      syntax AStmt ::= NoStatement()
                     | CompoundAStmt(List)
@@ -177,6 +210,11 @@ module CPP-ABSTRACT-SYNTAX
                    | FloatingLiteral(Float, AType) [strict(2)]
                    | NullPointerLiteral()
                    | BoolLiteral(Bool)
+
+     context IntegerLiteral(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
+     context FloatingLiteral(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      syntax CaptureDefault ::= NoCaptureDefault() | CopyCapture() | RefCapture()
      syntax Capture ::= LambdaCapture(CaptureKind, Bool)

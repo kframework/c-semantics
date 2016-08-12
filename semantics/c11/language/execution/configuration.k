@@ -5,65 +5,14 @@ module C-CONFIGURATION
      imports MAP
      imports SET
      imports COMMON-INIT-SYNTAX
+     imports COMMON-CONFIGURATION
      imports COMMON-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-EXECUTION-INIT-SYNTAX
      imports C-CONFIGURATION-EXTENSIONS
 
      configuration
-<global>
-     <mem> .Map </mem>
-     <functions color="lightgray"> .Map </functions>
-
-     <main-tu color="lightgray"> .Set </main-tu>
-
-     <global-state>
-          // CId |-> Types
-          <external-types> .Map </external-types>
-          // CId |-> Loc
-          <external-defs> .Map </external-defs>
-          // QualId |-> (Type |-> Loc)
-          <odr-defs> .Map </odr-defs>
-          // dummy link base |-> real base
-          <linkings> .Map </linkings>
-     </global-state>
-
-     // placeholder from translation semantics
-     <linking-state multiplicity="?"> .K </linking-state>
-
-     <structs color="lightgray"> .Map </structs>
-
-     <translation-units>
-          <tu multiplicity="*" type="Map">
-               <tu-id> "" </tu-id>
-               <genv color="lightgray"> .Map </genv>
-               <gtypes color="lightgray"> .Map </gtypes>
-
-               // kpair(CId, Scope) |-> kpair(SymBase, Type)
-               <local-statics> .Map </local-statics>
-
-               // placeholder from translation semantics
-               <tu-linking-state multiplicity="?"> .K </tu-linking-state>
-
-               <next-unnamed color="black"> 0 </next-unnamed>
-
-               <goto-map color="lightgray"> .Map </goto-map>
-
-               // TODO(chathhorn): remove.
-               <incomplete-tags> .Set </incomplete-tags>
-
-               // C++ stuff
-               <namespaces>
-                    <ns multiplicity="*" type="Map">
-                         <ns-id> GlobalNamespace() </ns-id>
-                         <nenv> .Map </nenv>
-                         <using-namespaces> .Set </using-namespaces>
-                         <inline-namespaces> .Set </inline-namespaces>
-                    </ns>
-               </namespaces>
-          </tu>
-     </translation-units>
-</global>
+<global/>
 <result-value color="red"> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
@@ -211,7 +160,7 @@ module C-CONFIGURATION
           <next-byte> .K </next-byte>
           <buff> "" </buff>
           <sending> .List </sending>
-          <done> ListItem("") </done>
+          <done> "" </done>
      </file>
 </files>
 <input color="lightgray"> .List </input>

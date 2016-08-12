@@ -393,7 +393,27 @@ public:
         }
       } else if (FTSI->getTemplateSpecializationKind() != TSK_Undeclared &&
           FTSI->getTemplateSpecializationKind() != TSK_ImplicitInstantiation) {
-        doThrow("unimplemented: explicit template instantiation");
+        if (const ASTTemplateArgumentListInfo *TALI =
+                FTSI->TemplateArgumentsAsWritten) { 
+          if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitInstantiationDefinition) {
+             AddKApplyNode("TemplateInstantiationDefinition", 2);
+          } else {
+             AddKApplyNode("TemplateInstantiationDeclaration", 2);
+          }
+          AddKApplyNode("TemplateSpecializationType", 2);
+          TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
+          AddKSequenceNode(TALI->NumTemplateArgs);
+          TRY_TO(TraverseTemplateArgumentLocs(TALI->getTemplateArgs(),
+                                                    TALI->NumTemplateArgs));
+        } else {
+          if (FTSI->getTemplateSpecializationKind() == TSK_ExplicitInstantiationDefinition) {
+             AddKApplyNode("TemplateInstantiationDefinition", 2);
+          } else {
+             AddKApplyNode("TemplateInstantiationDeclaration", 2);
+          }
+          AddKApplyNode("TemplateSpecializationType", 1);
+          TRY_TO(TraverseDeclarationName(FTSI->getTemplate()->getDeclName()));
+        }
       }
     }
 
@@ -435,9 +455,9 @@ public:
     }
 
     if (D->isThisDeclarationADefinition()) {
-      AddKApplyNode("FunctionDefinition", 4);
+      AddKApplyNode("FunctionDefinition", 5);
     } else {
-      AddKApplyNode("FunctionDecl", 3);
+      AddKApplyNode("FunctionDecl", 4);
     }
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
@@ -447,6 +467,11 @@ public:
       TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
     } else {
       doThrow("something implicit in functions??");
+    }
+
+    AddKSequenceNode(D->parameters().size());
+    for (unsigned i = 0; i < D->parameters().size(); i++) {
+      TRY_TO(TraverseDecl(D->parameters()[i]));
     }
 
     if (D->isThisDeclarationADefinition()) {
@@ -590,7 +615,7 @@ public:
 
   #define TRAVERSE_TEMPLATE_DECL(DeclKind) \
   bool Traverse##DeclKind##TemplateDecl(DeclKind##TemplateDecl *D) { \
-    AddKApplyNode("Template", 2); \
+    AddKApplyNode("TemplateWithInstantiations", 3); \
     TRY_TO(TraverseDecl(D->getTemplatedDecl())); \
     TemplateParameterList *TPL = D->getTemplateParameters(); \
     if (TPL) { \
@@ -601,11 +626,55 @@ public:
         TRY_TO(TraverseDecl(*I)); \
       } \
     } \
+    TRY_TO(TraverseTemplateInstantiations(D)); \
     return true; \
   }
   TRAVERSE_TEMPLATE_DECL(Class)
   TRAVERSE_TEMPLATE_DECL(Function)
   TRAVERSE_TEMPLATE_DECL(TypeAlias)
+
+  bool TraverseTemplateInstantiations(ClassTemplateDecl *D) {
+    AddKSequenceNode(0);
+    return true;
+  }
+
+  bool TraverseTemplateInstantiations(TypeAliasTemplateDecl *D) {
+    AddKSequenceNode(0);
+    return true;
+  }
+
+  bool TraverseTemplateInstantiations(VarTemplateDecl *D) {
+    AddKSequenceNode(0);
+    return true;
+  }
+
+  //TODO(dwightguth): we need to fix this so that clang actually
+  // has an AST for function template instantiations, because
+  // the point of instantiation can have an effect on whether
+  // the instantiation is undefined or not.
+  bool TraverseTemplateInstantiations(FunctionTemplateDecl *D) {
+    unsigned i = 0;
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        i++;
+      default:
+        break;
+      }
+    }
+    AddKSequenceNode(i);
+    for (auto *FD : D->specializations()) {
+      switch(FD->getTemplateSpecializationKind()) {
+      case TSK_ExplicitInstantiationDeclaration:
+      case TSK_ExplicitInstantiationDefinition:
+        TRY_TO(TraverseDecl(FD));
+      default:
+        break;
+      }
+    }
+    return true;
+  }
 
   bool TraverseTemplateTypeParmDecl(TemplateTypeParmDecl *D) {
     AddKApplyNode("TypeTemplateParam", 4);
@@ -691,7 +760,6 @@ public:
   bool TraverseTemplateName(TemplateName Name) {
     switch(Name.getKind()) {
     case TemplateName::Template:
-      AddKApplyNode("TemplateName", 1);
       TRY_TO(TraverseDeclarationName(Name.getAsTemplateDecl()->getDeclName()));
       break;
     default:
@@ -799,8 +867,10 @@ public:
         AddKApplyNode("TemplateSpecialization", 2);
         break;
       case TSK_ExplicitInstantiationDeclaration:
+        AddKApplyNode("TemplateInstantiationDeclaration", 2);
+        break;
       case TSK_ExplicitInstantiationDefinition:
-        AddKApplyNode("TemplateInstantiation", 2);
+        AddKApplyNode("TemplateInstantiationDefinition", 2);
         break;
       default:
         doThrow("unimplemented: implicit template instantiation");
@@ -1064,7 +1134,7 @@ public:
     AddKApplyNode("QualifiedTypeName", 3);
     VisitTypeKeyword(T->getKeyword());
     if(!T->getQualifier()) {
-      AddKApplyNode("NoNamespace", 0);
+      AddKApplyNode("NoNNS", 0);
     }
     return false;
   }
@@ -1080,16 +1150,15 @@ public:
     return false;
   }
 
-  bool VisitSubstTemplateTypeParmType(SubstTemplateTypeParmType *T) {
-    AddKApplyNode("TemplateParameterType", 1);
-    TRY_TO(TraverseIdentifierInfo(T->getReplacedParameter()->getIdentifier()));
-    return false;
+  bool TraverseSubstTemplateTypeParmType(SubstTemplateTypeParmType *T) {
+    TRY_TO(TraverseType(T->getReplacementType()));
+    return true;
   }
 
   bool VisitTagType(TagType *T) {
     TagDecl *D = T->getDecl();
     AddKApplyNode("Name", 2);
-    AddKApplyNode("NoNamespace", 0);
+    AddKApplyNode("NoNNS", 0);
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     return false;
   }

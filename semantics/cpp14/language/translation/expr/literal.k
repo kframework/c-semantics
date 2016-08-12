@@ -16,9 +16,9 @@ module CPP-EXPR-LITERAL
 
      rule StringLiteral(S::String, T:CPPType) => stringLiteral(S, T)
 
-     rule IntegerLiteral(I::Int, T:CPPType) => prv(I, T)
+     rule IntegerLiteral(I::Int, T:CPPType) => prv(I, hasTrace(IntegerLiteral(I, T)), T)
 
-     rule NullPointerLiteral() => prv(nullptrVal, type(nullptr_t))
+     rule NullPointerLiteral() => prv(nullptrVal, hasTrace(NullPointerLiteral()), type(nullptr_t))
 
      syntax Expr ::= stringLiteral(String, CPPType)
 
@@ -29,7 +29,7 @@ module CPP-EXPR-LITERAL
           requires notBool (string(S) in_keys(Mem))
 
      rule <k> stringLiteral(S::String, T::CPPType)
-              => lv(lnew(string(S), T), T)
+              => lv(lnew(string(S), T), hasTrace(StringLiteral(S, T)), T)
           ...</k>
           <mem>... string(S) |-> _ ...</mem>
 

@@ -3,6 +3,7 @@ KOMPILE = kompile -O2
 KDEP = kdep
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --exit-code "<result-value> _:Int </result-value>"
 CPP_KOMPILE_FLAGS=--opaque-klabels c11/c11-translation.k
+EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14/cpp14-translation.k
 KDEP_DEFAULT_FLAGS=
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
@@ -28,15 +29,15 @@ $(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp:
 
 $(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp:
 	@echo "Kompiling the dynamic C and C++ semantics..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-cpp14-kompiled" --no-prelude -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-cpp14-kompiled" --no-prelude -w all -v --transition "interpRule" --debug -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
 
 $(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp:
 	@echo "Kompiling the dynamic C and C++ semantics with expression sequencing non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-nd-kompiled" --no-prelude --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-nd-kompiled" --no-prelude --transition "observable ndtrans" --superheat "ndheat" --supercool "ndlocal" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
 
 $(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp:
 	@echo "Kompiling the dynamic C and C++ semantics with thread-interleaving non-determinism..."
-	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-nd-thread-kompiled" --no-prelude --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
+	$(KOMPILE) $(KOMPILE_DEFAULT_FLAGS) $(EXECUTION_KOMPILE_FLAGS) --smt none c11-cpp14.k -d "$(PROFILE)/c11-nd-thread-kompiled" --no-prelude --transition "observable ndtrans ndthread" -I $(PROFILE_DIR)/semantics -I $(PROFILE_DIR)/cpp-semantics
 
 all: fast nd thread
 
