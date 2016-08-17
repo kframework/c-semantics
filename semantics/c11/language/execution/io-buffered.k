@@ -207,11 +207,6 @@ module C-IO-BUFFERED
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
 
-     // loc, size in bytes, aux list
-     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
-     rule readBytes-aux(_, 0, Aux::List, _) => dataList(Aux)
-          [structural]
-
      syntax Error ::= "errorReadOutOfBounds"
                     | "errorUnseqEffects"
                     | "errorNonVolatileLVal"
@@ -233,7 +228,8 @@ module C-IO-BUFFERED
           => assert(notBool hasLint orBool notBool (isStaticDuration(L) orBool isThreadDuration(L)),
                errorUninit) [macro]
 
-     syntax KItem ::= readByte(SymLoc, Type)
+     // loc, size in bytes, aux list
+     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
      //TODO(dwightguth): make these rules look a little better once we have partial compilation
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
                // TODO(chathhorn): do we really need to check this stuff every
@@ -276,31 +272,55 @@ module C-IO-BUFFERED
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M)))
+     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
+     rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
+               => assertSeq(Loc, Locs)
+               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T)
+          ...</k>
+          <locs-written> Locs::Set </locs-written>
+          <buffer> Mem::List </buffer>
+          requires Size >Int 0 andBool notBool (Loc in locations(Mem))
+               andBool isNativeLoc(Loc)
+     rule readBytes-aux(_, 0, Aux::List, _) => dataList(Aux)
+          [structural]
 
      syntax Bits ::= getUninitializedBits(SymLoc, Type) [function]
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
-     rule getUninitializedBits(loc(_, Offset::Int), T::Type) => getZeroedBits(Offset *Int cfg:bitsPerByte, cfg:bitsPerByte, T) [owise]
+     rule getUninitializedBits(L::SymLoc, T::Type)
+          => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
+          requires isStaticDuration(L)
+     rule getUninitializedBits(L::SymLoc, T::Type)
+          => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
+          requires isThreadDuration(L)
+
      syntax Bits ::= getZeroedBits(Int, Int, Type) [function]
-     rule getZeroedBits(_, N::Int, T::Type) => piece(0, N)
+     rule getZeroedBits(_, N::Int, T::Type)
+          => piece(0, N)
           requires isPointerType(T) orBool isArithmeticType(T) orBool N ==Int 0
-     rule getZeroedBits(Offset::Int, N::Int, t(_, _, arrayType(T::Type, _))) => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
+     rule getZeroedBits(Offset::Int, N::Int, t(_, _, arrayType(T::Type, _)))
+          => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
           requires N =/=Int 0
-     rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType) => getZeroedBits(Offset, N, T, getFieldInfo(T))
+     rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType)
+          => getZeroedBits(Offset, N, T, getFieldInfo(T))
           requires N =/=Int 0
+
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
-     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _)) => getZeroedBits(Offset, N, T)
+     rule getZeroedBits(Offset::Int, N::Int, _:UnionType, fieldInfo(ListItem(typedDeclaration(T::Type, _)) _, _, _, _, _))
+          => getZeroedBits(Offset, N, T)
      rule getZeroedBits(Offset::Int, N::Int, _:StructType, fieldInfo(
             ((ListItem(typedDeclaration(_, FId::CId))) => .List) _,
             _,
             _::Map (FId |-> T::Type),
             _::Map (FId |-> FOffset::Int), _))
           requires FOffset +Int bitSizeofType(T) <=Int Offset orBool Offset +Int N <=Int FOffset
-     rule getZeroedBits(_, 0, _, _) => piece(0, 0)
+     rule getZeroedBits(_, 0, _, _)
+          => piece(0, 0)
      // this happens when we are reading padding bits, which are zeroed.
      // bit fields never contain padding in between two bit fields in the same byte,
      // so doing this at the end should be safe
-     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _)) => piece(0, N)
+     rule getZeroedBits(_, N::Int, _, fieldInfo(.List, _, _, _, _))
+          => piece(0, N)
 
      rule getZeroedBits(Offset::Int, N::Int, BaseT::StructType, fieldInfo(
             (ListItem(typedDeclaration(_, FId::CId))) Fields::List,
@@ -332,19 +352,10 @@ module C-IO-BUFFERED
                    Types (FId |-> T),
                    Offsets (FId |-> FOffset),
                    PaddingOffs))
-     [owise]
-
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
-     rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
-               => assertSeq(Loc, Locs)
-               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T)
-          ...</k>
-          <locs-written> Locs::Set </locs-written>
-          <buffer> Mem::List </buffer>
-          requires Size >Int 0 andBool notBool (Loc in locations(Mem))
-               andBool isNativeLoc(Loc)
+          [owise]
 
           // TODO(chathhorn): perf, elided
+//        syntax KItem ::= readByte(SymLoc, Type)
 //        rule [read-byte-buffer]:
 //             <k> readByte(Loc:SymLoc)
 //                  => assertSeq(Loc, Locs)
@@ -460,7 +471,6 @@ module C-IO-BUFFERED
           <effective-types> M:Map => M [ Base <- T' ] </effective-types>
           requires isNativeLoc(Base)
           [structural]
-
 
      rule [err00037]:
           (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>

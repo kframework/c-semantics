@@ -192,5 +192,6 @@ L-STDLIBE3,"Realloc overflows memory bound, returning null pointer.",,Possible u
 L-CEIE1,Memory malloced but never freed.,,Possible unintended behavior,X
 L-CCVE1,Unsigned integer overflow.,,Possible unintended behavior,X
 L-CCVE2,Conversion to unsigned integer outside the range that can be represented.,,Possible unintended behavior,X
+L-CMR1,Reading a struct or union with uninitialized parts.,,Possible unintended behavior,X
 L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior,X
 SE-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Syntax error,

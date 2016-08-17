@@ -11,9 +11,9 @@ Type: Undefined behavior.
 See also: C11 sec. 6.5.3.2:4, J.2:1 item 43
   at f(UB-STDARG6-bad.c:5)
   at main(UB-STDARG6-bad.c:11)
-Error: UB-CEE2
-Description: Indeterminate value used in an expression.
+Error: UB-CEER1
+Description: Trying to read through a null pointer.
 Type: Undefined behavior.
-See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
   at f(UB-STDARG6-bad.c:5)
   at main(UB-STDARG6-bad.c:11)

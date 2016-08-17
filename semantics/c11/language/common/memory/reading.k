@@ -76,51 +76,51 @@ module C-MEMORY-READING
      rule concretize(T:IntegerUType, dataList(L::List))
           => joinIntegerBytes(T, L)
           requires notBool isBitfieldType(type(T))
-               andBool (#hasUnknown(L) =/=K true)
-               andBool (#hasTrap(L) =/=K true)
-               andBool (#hasFloat(L) =/=K true)
+               andBool (notBool hasUnknown(L))
+               andBool (notBool hasTrap(L))
+               andBool (notBool hasFloat(L))
           [structural]
      rule concretize(ut(S::Set, bitfieldType(T::BitfieldFieldType, Len::Int)), dataList(L::List))
           => joinIntegerBytes(ut(S, bitfieldType(T, Len)), reverseList(L))
-          requires (#hasUnknown(L) =/=K true)
-               andBool (#hasTrap(L) =/=K true)
+          requires (notBool hasUnknown(L))
+               andBool (notBool hasTrap(L))
           [structural]
      rule concretize(T:FloatUType, dataList(L::List))
           => joinFloatBytes(T, L)
-          requires (#hasUnknown(L) =/=K true)
-               andBool (#hasTrap(L) =/=K true)
-               andBool (#hasInt(L) =/=K true)
+          requires (notBool hasUnknown(L))
+               andBool (notBool hasTrap(L))
+               andBool (notBool hasInt(L))
           [structural]
 
-     // fixme should also check sizes are appropriate
      rule concretize(T:PointerUType, dataList(L::List))
           => joinIntegerBytes(T, L)
-          requires (#hasUnknown(L) =/=K true)
-               andBool (#hasTrap(L) =/=K true)
+          requires (notBool hasUnknown(L))
+               andBool (notBool hasTrap(L))
           [structural]
      rule concretize(T::UType, dataList(L::List))
           => makeUnknown2(concretize(T, stripUnknown(dataList(L))))
-          requires (#hasUnknown(L) ==K true andBool notBool isPointerUType(T))
-               andBool (#hasTrap(L) =/=K true)
+          requires (hasUnknown(L) andBool notBool isPointerUType(T))
+               andBool (notBool hasTrap(L))
                andBool notBool isStructOrUnionType(type(T))
           [structural]
      rule concretize(T::UType, dataList(L::List))
           => trap(T)
-          requires (#hasTrap(L) ==K true orBool (isPointerUType(T) andBool #hasUnknown(L)))
+          requires (hasTrap(L) orBool (isPointerUType(T) andBool hasUnknown(L)))
                andBool notBool isStructOrUnionType(type(T))
           [structural]
      rule concretize(T::UType, dataList(L::List))
           => tv(agg(L), T)
           requires isStructOrUnionType(type(T))
+               andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
 
      rule (.K => UNSPEC("CMR1", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
           concretize(_:FloatUType, dataList(L::List))
-          requires #hasInt(L)
+          requires hasInt(L)
           [structural]
      rule (.K => UNSPEC("CMR2", "Trying to reinterpret floating bytes as integer bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
           concretize(T:IntegerUType, dataList(L::List))
-          requires #hasFloat(L)
+          requires hasFloat(L)
                andBool notBool isCharUType(T)
           [structural]
 
@@ -130,39 +130,39 @@ module C-MEMORY-READING
      rule stripUnknownAux((ListItem(B::Bits) => .List) _:List, _:List (.List => ListItem(B))) [owise]
      rule stripUnknownAux(.List, L::List) => dataList(L)
 
-     syntax Bool ::= #hasUnknown(List) [function]
-     syntax Bool ::= #hasTrap(List) [function]
-     syntax Bool ::= #hasInt(List) [function]
-     syntax Bool ::= #hasFloat(List) [function]
+     syntax Bool ::= hasUnknown(List) [function]
+     syntax Bool ::= hasTrap(List) [function]
+     syntax Bool ::= hasInt(List) [function]
+     syntax Bool ::= hasFloat(List) [function]
 
-     rule #hasUnknown(.List) => false
-     rule #hasUnknown(ListItem(piece(B::Bits, _) => B) _:List)
-     rule #hasUnknown((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasUnknown(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule #hasUnknown(ListItem(unknown(_)) _:List) => true
-     rule #hasUnknown(ListItem(B::Bits) L:List) => #hasUnknown(L) [owise]
+     rule hasUnknown(.List) => false
+     rule hasUnknown(ListItem(piece(B::Bits, _) => B) _:List)
+     rule hasUnknown((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule hasUnknown(ListItem(bitRange(B::Bits, _, _) => B) _:List)
+     rule hasUnknown(ListItem(unknown(_)) _:List) => true
+     rule hasUnknown(ListItem(B::Bits) L:List) => hasUnknown(L) [owise]
 
-     rule #hasTrap(.List) => false
-     rule #hasTrap(ListItem(piece(B::Bits, _) => B) _:List)
-     rule #hasTrap((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasTrap(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule #hasTrap(ListItem(trap) _:List) => true
-     rule #hasTrap(ListItem(B::Bits) L:List) => #hasTrap(L) [owise]
+     rule hasTrap(.List) => false
+     rule hasTrap(ListItem(piece(B::Bits, _) => B) _:List)
+     rule hasTrap((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule hasTrap(ListItem(bitRange(B::Bits, _, _) => B) _:List)
+     rule hasTrap(ListItem(trap) _:List) => true
+     rule hasTrap(ListItem(B::Bits) L:List) => hasTrap(L) [owise]
 
-     rule #hasInt(.List) => false
-     rule #hasInt(ListItem(piece(B::Bits, _) => B) _:List)
-     rule #hasInt((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasInt(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule #hasInt(ListItem(B:Int) _:List) => true
+     rule hasInt(.List) => false
+     rule hasInt(ListItem(piece(B::Bits, _) => B) _:List)
+     rule hasInt((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule hasInt(ListItem(bitRange(B::Bits, _, _) => B) _:List)
+     rule hasInt(ListItem(B:Int) _:List) => true
           requires B =/=Int 0
-     rule #hasInt(ListItem(B::Bits) L:List) => #hasInt(L) [owise]
+     rule hasInt(ListItem(B::Bits) L:List) => hasInt(L) [owise]
 
-     rule #hasFloat(.List) => false
-     rule #hasFloat(ListItem(piece(B::Bits, _) => B) _:List)
-     rule #hasFloat((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule #hasFloat(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule #hasFloat(ListItem(encodedFloat(_, _, _, _)) _:List) => true
-     rule #hasFloat(ListItem(B::Bits) L:List) => #hasFloat(L) [owise]
+     rule hasFloat(.List) => false
+     rule hasFloat(ListItem(piece(B::Bits, _) => B) _:List)
+     rule hasFloat((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
+     rule hasFloat(ListItem(bitRange(B::Bits, _, _) => B) _:List)
+     rule hasFloat(ListItem(encodedFloat(_, _, _, _)) _:List) => true
+     rule hasFloat(ListItem(B::Bits) L:List) => hasFloat(L) [owise]
 
 
      // TODO(chathhorn): half-assed floating point support.
@@ -228,10 +228,6 @@ module C-MEMORY-READING
      rule joinIntegerBytes-aux(T::UType, .List, piece(N:Int, Len:Int))
           => interpret(T, piece(N, Len))
 
-     // fixme not sure about this
-     // interpret is used to "cast" values read from memory
-     // shouldn't need to do the < min one since values start positive
-
      // interpret the values of reading from mem
      syntax RValue ::= interpret(UType, K) [function]
      syntax RValue ::= "interpret-aux" "(" UType "," K ")" [function]
@@ -252,7 +248,6 @@ module C-MEMORY-READING
      rule extractBitsFromList(dataList(L:List), N:Int, M:Int)
           => extractBitsFromList-aux(dataList(explodeToBits(L)), N, M, .List)
           [structural]
-     // fixme snat
      rule extractBitsFromList-aux(
                dataList(ListItem(piece(_, 1)) L:List),
                Offset:Int, NumBits:Int, .List)

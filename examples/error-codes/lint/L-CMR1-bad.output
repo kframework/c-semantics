@@ -1,0 +1,4 @@
+Warning: L-CMR1
+Description: Reading a struct or union with uninitialized parts.
+Type: Possible unintended behavior.
+  at main(L-CMR1-bad.c:4)
