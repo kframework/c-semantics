@@ -181,7 +181,6 @@ my @cppWarnsList = (
 our %cppWarns =  map { $_ => 1 } @cppWarnsList;
 
 our @cppArgs = ();
-our @stdlib = ();
 our @ld_lib = ();
 our @ldArgs = ();
 our @warns = ();
@@ -220,12 +219,14 @@ my $spec = q(#
       -include <file>			Add header to file during preprocessing.
 { push(@main::cppArgs, '-include', $file); }
       -L <dir>				Look for shared libraries in <dir>.
-{ push(@main::ld_lib, $dir) }
+{ push(@main::ld_lib, $dir); push(@main::ldArgs, "-L$dir"); }
       -nodefaultlibs			Do not link against the standard library.
       -o <file>				Place the output into <file>.
 { $main::oflag = $file; }
       -l <lib>				Link semantics against library in search path.
-{ push (@main::stdlib, $lib) }
+{ classifyLib($lib); }
+      -Wl,<args>			Add flags to linker arguments.
+{ push(@main::ldArgs, "-Wl,$args"); }
       <files>...			C files to be compiled. [required] [repeatable]
 { classify(@files); }
       --help				Show usage information [undocumented]
@@ -237,13 +238,13 @@ my $spec = q(#
   print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
   exit 0;
 }
-      -Version				[ditto]
-      -VERSION				[ditto]
-      --version				[ditto]
-      --Version				[ditto]
-      --VERSION				[ditto]
-      -v				[ditto]
-      -V				[ditto]
+      -Version				[ditto, undocumented]
+      -VERSION				[ditto, undocumented]
+      --version				[ditto, undocumented]
+      --Version				[ditto, undocumented]
+      --VERSION				[ditto, undocumented]
+      -v				[ditto, undocumented]
+      -V				[ditto, undocumented]
 
       -M				Dependency generation. See documentation for GCC preprocessor
 { push(@main::cppArgs, '-M'); }
@@ -301,7 +302,7 @@ my $spec = q(#
       -x <language>			Set language for input files.
 { $main::xLang = $language; }
       -pthread				Enables pthread library (highly experimental, likely broken)
-{ push(@main::cppArgs, '-pthread');  push(@main::stdlib, 'pthread'); }
+{ push(@main::cppArgs, '-pthread');  push(@main::ldArgs, '-lpthread'); }
 
       -Xmx<size>			Passed to underlying JVM
       -profile <name>			Set KCC profile.
@@ -336,15 +337,6 @@ exit main();
 sub main {
      @originalArgv = @ARGV;
      $args->parse() or die "Failed to parse the command line.\n";
-
-     my $clib;
-     if ($cygwin) {
-       $clib = 'msvcrt';
-     } else {
-       $clib = 'c';
-     }
-
-     push(@stdlib, $clib);
 
      my $heapSize = "1G";
      if ($args->{'-Xmx'}) {
@@ -540,40 +532,33 @@ sub isAr {
   return $retval == 0;
 }
 
+sub classifyLib {
+  my $lib = shift;
+  my @files = ();
+  my $isK = 0;
+  for (@ld_lib) {
+    my $candidate = catfile($_, "lib$lib.so");
+    if (-e $candidate) {
+      push(@files, $candidate);
+      $isK = 1;
+      last;
+    }
+    $candidate = catfile($_, "lib$lib.a");
+    if (-e $candidate) {
+      push(@files, $candidate);
+      $isK = 1;
+      last;
+    }
+  }
+  if (!$isK) {
+    push(@ldArgs, "-l$lib");
+  } else {
+    classify(@files);
+  }
+}
+
 sub classify {
      my @files = @_;
-
-     my @nativeLibs = ();
-     for (@stdlib) {
-       my $lib = $_;
-       my $isK = 0;
-       for (@ld_lib) {
-         my $candidate = catfile($_, "lib$lib.so");
-         if (-e $candidate) {
-           push(@files, $candidate);
-           $isK = 1;
-           last;
-         }
-         $candidate = catfile($_, "lib$lib.a");
-         if (-e $candidate) {
-           push(@files, $candidate);
-           $isK = 1;
-           last;
-         }
-       }
-       if (!$isK) {
-         push(@nativeLibs, $lib);
-       }
-     }
-     @stdlib = ();
-     # todo: interleaving correctly
-     for (@ld_lib) {
-       push(@ldArgs, "-L$_");
-     }
-     @ld_lib = ();
-     for (@nativeLibs) {
-       push(@ldArgs, "-l$_");
-     }
 
      for (@files) {
           my $lang = $xLang;

@@ -7,7 +7,7 @@
 -soname=.*
 -rpath=.*
 -pedantic
--W.*
+-W[^l].*
 -f(no-)?omit-frame-pointer
 -g
 -rdynamic
