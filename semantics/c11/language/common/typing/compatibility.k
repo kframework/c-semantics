@@ -90,19 +90,19 @@ module C-TYPING-COMPATIBILITY
                t(Qs, Mods'::Set, structType(S'::StructId)), Cache::Set)
           => true
           requires S ==K S'
-               orBool kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))) in Cache
+               orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
                     andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
-                    Cache SetItem(kpair(t(Qs, Mods, structType(S)), t(Qs, Mods', structType(S'))))))
+                    Cache SetItem(kpair(S, S'))))
      rule #areCompat(
                t(Qs::Quals, Mods::Set, unionType(S::StructId)),
                t(Qs, Mods'::Set, unionType(S'::StructId)), Cache::Set)
           => true
           requires S ==K S'
-               orBool kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))) in Cache
+               orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
                     andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
-                    Cache SetItem(kpair(t(Qs, Mods, unionType(S)), t(Qs, Mods', unionType(S'))))))
+                    Cache SetItem(kpair(S, S'))))
 
      syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
      rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _), Cache::Set)
