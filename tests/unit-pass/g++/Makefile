@@ -1,12 +1,11 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, ${TUS}))
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, $(filter-out %-link3.C, ${TUS}))))
 GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
 TEST_RESULTS = ${TESTS:.c=.out}
-REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
+REFERENCE_TEST_RESULTS = ${TESTS:.C=.ref}
 TEST_COMPARISON = ${TESTS:.c=.cmp}
-CC=gcc-4.9
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
