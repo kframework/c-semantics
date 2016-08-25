@@ -27,7 +27,7 @@ module C-COMMON-EXPR-MEMBERS
                => lookupField(F, Loc, false, Qs, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
+          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</tags>
           requires notBool (Atomic() inQuals Qs) orBool Initializing
           [structural]
      rule <k> nclv(Loc:SymLoc, t(Qs::Quals, _,
@@ -35,7 +35,7 @@ module C-COMMON-EXPR-MEMBERS
                => lookupField(F, Loc, true, Qs, X, Fields, Fields)
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
+          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</tags>
           requires notBool (Atomic() inQuals Qs) orBool Initializing
           [structural]
      rule <k> (.K => UNDEF("CEM1",
@@ -130,12 +130,12 @@ module C-COMMON-EXPR-MEMBERS
      rule <k> tv(agg(L:List), ut(Mods::Set,
                structType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
           => extractField(F, false, L, Mods, X, Fields, Fields) ...</k>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
+          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</tags>
           [structural]
      rule <k> tv(agg(L:List), ut(Mods::Set,
                unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
           => extractField(F, true, L, Mods, X, Fields, Fields) ...</k>
-          <structs>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</structs>
+          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</tags>
           [structural]
 
      syntax KItem ::= extractField(CId, Bool, List, Set, CId, FieldInfo, FieldInfo)

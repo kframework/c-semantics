@@ -214,7 +214,7 @@ module C-LINKING-INIT
                     <odr-uses> OdrUses1:Set </odr-uses>
                </linking-state>
 
-               <structs> Structs1:Map </structs>
+               <tags> Structs1:Map </tags>
 
                <linkings> Links1:Map </linkings>
 
@@ -237,7 +237,7 @@ module C-LINKING-INIT
                     <odr-uses> OdrUses2:Set </odr-uses>
                </linking-state>
 
-               <structs> Structs2:Map </structs>
+               <tags> Structs2:Map </tags>
 
                <linkings> Links2:Map </linkings>
 
@@ -261,7 +261,7 @@ module C-LINKING-INIT
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>
                </linking-state>
 
-               <structs> updateMap(Structs1, Structs2) </structs>
+               <tags> updateMap(Structs1, Structs2) </tags>
 
                <linkings> updateMap(Links1, Links2) </linkings>
 

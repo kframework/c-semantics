@@ -83,16 +83,25 @@ module C-TYPING-COMMON
 
      rule getTag(tag(S:CId, _, _)) => S
 
-     rule getFieldInfo(S:StructId) => #getFieldInfo(S, #configuration)
-     rule getFieldInfo(t(_, Mods::Set, structType(S::StructId))) => getFieldInfo(S)
-     rule getFieldInfo(t(_, Mods::Set, unionType(S::StructId))) => getFieldInfo(S)
+     rule getFieldInfo(S:TagId) => toFieldInfo(getTagInfo(S))
+     rule getFieldInfo(t(_, Mods::Set, structType(S::TagId)))
+          => toFieldInfo(getTagInfo(S))
+     rule getFieldInfo(t(_, Mods::Set, unionType(S::TagId)))
+          => toFieldInfo(getTagInfo(S))
 
-     syntax FieldInfo ::= #getFieldInfo(StructId, K) [function]
-     rule #getFieldInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <structs> M::Map </structs> ...</global> ...</generatedTop>)
-          => extractFieldInfo({M[Tu]}:>Map[tag(X, Tu, B)])
-     syntax FieldInfo ::= extractFieldInfo(K) [function]
-     rule extractFieldInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
-     rule extractFieldInfo(_) => #incomplete [owise]
+     syntax FieldInfo ::= toFieldInfo(TagInfo) [function]
+     rule toFieldInfo(Fields:FieldInfo) => Fields
+     rule toFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
+
+     rule getTagInfo(S:TagId) => #getTagInfo(S, #configuration)
+
+     syntax TagInfo ::= #getTagInfo(TagId, K) [function]
+     rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)
+          => extractTagInfo({M[Tu]}:>Map[tag(X, Tu, B)])
+     syntax TagInfo ::= extractTagInfo(K) [function]
+     rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
+     rule extractTagInfo(enumAlias(T::SimpleType)) => enumAlias(T)
+     rule extractTagInfo(_) => #incomplete [owise]
 
      rule numBytes(bool) => cfg:sizeofBool
      rule numBytes(signed-char) => cfg:sizeofSignedChar
@@ -110,7 +119,7 @@ module C-TYPING-COMMON
      rule numBytes(unsigned-int) => numBytes(int)
      rule numBytes(unsigned-long-int) => numBytes(long-int)
      rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
-     rule numBytes(enumType(_)) => numBytes(cfg:enumAlias)
+     rule numBytes(enumType(S::TagId)) => numBytes(getEnumAlias(S))
      rule numBytes(_) => 0 [owise]
 
      syntax Int ::= numBits(SimpleType) [function]
@@ -160,18 +169,19 @@ module C-TYPING-COMMON
      rule max(ut(_, unsigned-long-long-int))
           => (1 <<Int absInt(numBits(unsigned-long-long-int))) -Int 1
 
-     rule min(ut(_, enumType(_) => cfg:enumAlias))
-     rule max(ut(_, enumType(_) => cfg:enumAlias))
+     rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
+     rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
 
      rule innerType(T:UType) => innerType(type(T))
 
      rule innerType(t(_, _, arrayType(T::Type, _))) => T
-     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
+     rule innerType(t(_, _, bitfieldType(T::BitfieldFieldType, _))) => type(T)
      rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
+     rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
+     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
+     rule innerType(t(_, _, pointerType(T::Type))) => T
      rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
      rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
-     rule innerType(t(_, _, pointerType(T::Type))) => T
-     rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
 
      rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
           => Qs +Quals getQualifiers(innerType(type(T)))

@@ -31,21 +31,27 @@ module C-TYPING-PREDICATES
      rule isVariablyModifiedType(_) => false [owise]
 
      rule isCompleteType(_:IncompleteArrayType) => false
+     rule isCompleteType(T:EnumType) => notBool isIncompleteEnumType(T)
      rule isCompleteType(T:StructType) => notBool isIncompleteStructType(T)
      rule isCompleteType(T:UnionType) => notBool isIncompleteUnionType(T)
      rule isCompleteType(_:VoidType) => false
+     rule isCompleteType(_:NoType) => false
      rule isCompleteType(_) => true [owise]
 
      rule isCompletePointerType(t(_, _, pointerType(T::Type)))
           => isCompleteType(T)
      rule isCompletePointerType(_) => false [owise]
 
-     rule isIncompleteStructType(t(_, _, structType(S::StructId)))
-          => getFieldInfo(S) ==K #incomplete
+     rule isIncompleteEnumType(t(_, _, enumType(S::TagId)))
+          => getTagInfo(S) ==K #incomplete
+     rule isIncompleteEnumType(_) => false [owise]
+
+     rule isIncompleteStructType(t(_, _, structType(S::TagId)))
+          => getTagInfo(S) ==K #incomplete
      rule isIncompleteStructType(_) => false [owise]
 
-     rule isIncompleteUnionType(t(_, _, unionType(S:StructId)))
-          => getFieldInfo(S) ==K #incomplete
+     rule isIncompleteUnionType(t(_, _, unionType(S::TagId)))
+          => getTagInfo(S) ==K #incomplete
      rule isIncompleteUnionType(_) => false [owise]
 
      rule isOldStyleFunctionType(T::Type)

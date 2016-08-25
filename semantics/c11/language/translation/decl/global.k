@@ -705,47 +705,47 @@ module C-DECL-GLOBAL
 
      rule <k> addGlobalTag(_, _) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <structs> S:Map => S[Tu <- .Map] </structs>
+          <tags> S:Map => S[Tu <- .Map] </tags>
           requires notBool (Tu in_keys(S))
 
-     rule <k> addGlobalTag(X:CId, Info:FieldInfo)
+     rule <k> addGlobalTag(X::CId, Info::TagInfo)
                => completeTagInExtDecls(X, Info, keys_list(Exts))
                ~> completeTagInIntDecls(X, Info, keys_list(Ints))
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</structs>
+          <tags>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</tags>
           <externals> Exts:Map </externals>
           <internals> Ints:Map </internals>
           <incomplete-tags>... SetItem(X) => .Set ...</incomplete-tags>
           requires notBool (tag(X, Tu, global) in_keys(Structs))
           [structural]
-     rule <k> addGlobalTag(X:CId, Info:FieldInfo) => .K ...</k>
+     rule <k> addGlobalTag(X::CId, Info::TagInfo) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</structs>
+          <tags>... Tu |-> (Structs:Map => Structs[tag(X, Tu, global) <- Info]) ...</tags>
           <incomplete-tags> Incs:Set </incomplete-tags>
           requires notBool (X in Incs)
                andBool notBool (tag(X, Tu, global) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15",
                "Redefinition of a struct, union, or enum: " +String idToString(X) +String ".", "6.7.2.3:1"))
-               ~> addGlobalTag(X:CId, _)
+               ~> addGlobalTag(X::CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <structs> GStructs:Map </structs>
+          <tags> GStructs:Map </tags>
           requires (tag(X, Tu, global) in_keys({{GStructs[Tu]}<:K}:>Map))
           [structural]
 
      // TODO(chathhorn): This is all a mess, I really need to come up with a
      // better way to handle this.
      // Re-evaluate declarations that can now be allocated...
-     syntax KItem ::= completeTagInExtDecls(CId, FieldInfo, List)
-                    | completeTagInExtDecl(CId, FieldInfo, CId)
+     syntax KItem ::= completeTagInExtDecls(CId, TagInfo, List)
+                    | completeTagInExtDecl(CId, TagInfo, CId)
 
      rule <k> ( .K => completeTagInExtDecl(Tag, Info, X))
-               ~> completeTagInExtDecls(Tag:CId, Info:FieldInfo,
+               ~> completeTagInExtDecls(Tag::CId, Info::TagInfo,
                     (ListItem(X:CId) => .List) _) ...</k>
           [structural]
 
@@ -777,11 +777,11 @@ module C-DECL-GLOBAL
                orBool DS =/=K declared
           [structural]
 
-     syntax KItem ::= completeTagInIntDecls(CId, FieldInfo, List)
-                    | completeTagInIntDecl(CId, FieldInfo, CId)
+     syntax KItem ::= completeTagInIntDecls(CId, TagInfo, List)
+                    | completeTagInIntDecl(CId, TagInfo, CId)
 
      rule <k> ( .K => completeTagInIntDecl(Tag, Info, X))
-               ~> completeTagInIntDecls(Tag:CId, Info:FieldInfo,
+               ~> completeTagInIntDecls(Tag::CId, Info::TagInfo,
                     (ListItem(X:CId) => .List) _) ...</k>
           [structural]
 

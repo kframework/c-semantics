@@ -157,9 +157,9 @@ module C-DECL-LOCAL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
-     syntax KItem ::= addLocalTag(CId, FieldInfo)
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
+     syntax KItem ::= addLocalTag(CId, TagInfo)
+     rule <k> addLocalTag(X::CId, Info::TagInfo) => .K ...</k>
+          <tags>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</tags>
           <curr-tu> Tu:String </curr-tu>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           [structural]

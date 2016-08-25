@@ -85,26 +85,24 @@ module C-ABSTRACT-SYNTAX
      | TtypeofE of expression                      (* GCC __typeof__ *)
      | TtypeofT of specifier * decl_type       (* GCC __typeof__ *)
      */
-     syntax TypeSpecifier ::= StructRef(CId)
-          [klabel(StructRef)] // new
+     syntax TypeSpecifier ::= StructRef(CId, K)
      // new // CId, List
-     syntax C ::= StructDef(CId, K)
-     syntax TypeSpecifier ::= UnionRef(CId) // new
+     syntax TypeSpecifier ::= StructDef(CId, K, K)
+     syntax TypeSpecifier ::= UnionRef(CId, K) // new
      // new // CId, List
-     syntax C ::= UnionDef(CId, K)
-     syntax TypeSpecifier ::= EnumRef(CId) // new
+     syntax TypeSpecifier ::= UnionDef(CId, K, K)
+     syntax TypeSpecifier ::= EnumRef(CId, K) // new
      // new // CId, List
-     syntax C ::= EnumDef(CId, K)
-
-     syntax TypeSpecifier ::= TypeofExpression(K)
-
-     syntax TypeSpecifier ::= TypeofType(K, K)
+     syntax TypeSpecifier ::= EnumDef(CId, K, K)
 
      syntax TypeSpecifier ::= Complex()
      syntax TypeSpecifier ::= Imaginary()
-     syntax TypeSpecifier ::= TAtomic(K, K)
-     syntax TypeSpecifier ::= AlignasExpression(K)
-     syntax TypeSpecifier ::= AlignasType(K, K)
+
+     syntax SpecifierElem ::= TypeofExpression(K)
+     syntax SpecifierElem ::= TypeofType(K, K)
+     syntax SpecifierElem ::= TAtomic(K, K)
+     syntax SpecifierElem ::= AlignasExpression(K)
+     syntax SpecifierElem ::= AlignasType(K, K)
 
      /*
      and spec_elem =
@@ -188,7 +186,7 @@ module C-ABSTRACT-SYNTAX
      and name = String * decl_type * attribute list * cabsloc
      */
      // first argument is id, second is basetype
-     syntax Name ::= Name(K, K) [avoid]
+     syntax Name ::= Name(K, K, K) [avoid]
      //might not need this
      syntax CId ::= ToIdentifier(String) [function]
      /*

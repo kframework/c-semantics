@@ -12,7 +12,6 @@ module C-TYPING-MISC
      imports C-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     
 
      //TODO(chathhorn): a lot of junk dumped here.
 
@@ -97,6 +96,7 @@ module C-TYPING-MISC
           SetItem(Auto())
           SetItem(ThreadLocal())
           SetItem(Register())
+          SetItem(Packed()) // Pseudo-storage specifier.
           // Also typedef, technically.
 
      rule functionSpecifiers =>
@@ -228,6 +228,12 @@ module C-TYPING-MISC
           => addModifier(readFrom(stripProv(Loc), Len), stripReadFrom(T))
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
+
+     rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
+
+     syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
+     rule getEnumAlias'(enumAlias(T::SimpleType)) => T
+     rule getEnumAlias'(_) => no-type [owise]
 
      rule getFields(fieldInfo(L:List, _, _, _, _)) => L
      rule getFieldsTypes(fieldInfo(_, _, Ts:Map, _, _)) => Ts

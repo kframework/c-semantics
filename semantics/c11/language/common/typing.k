@@ -7,6 +7,7 @@ module C-TYPING-SORTS
      syntax SimpleType
      syntax SimpleUType
      syntax FieldInfo
+     syntax TagInfo
      syntax Variadic
 endmodule
 
@@ -45,6 +46,9 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
+     syntax EnumInfo ::= enumAlias(SimpleType)
+     syntax TagInfo ::= FieldInfo | EnumInfo
+     syntax SimpleType ::= getEnumAlias(TagId) [function]
      syntax List ::= getFields(FieldInfo) [function]
      syntax Map  ::= getFieldsTypes(FieldInfo) [function]
      syntax Map  ::= getFieldsOffsets(FieldInfo) [function]
@@ -56,6 +60,7 @@ module C-TYPING-SYNTAX
      syntax Bool ::= isConstType(Type) [function]
      syntax Bool ::= isFlexibleArrayType(Type) [function]
      syntax Bool ::= isFunctionPointerType(Type) [function]
+     syntax Bool ::= isIncompleteEnumType(Type) [function]
      syntax Bool ::= isIncompleteStructType(Type) [function]
      syntax Bool ::= isIncompleteUnionType(Type) [function]
      syntax Bool ::= isOldStyleFunctionType(Type) [function]
@@ -113,7 +118,6 @@ module C-TYPING-SYNTAX
      syntax SimpleUType ::= SimpleBasicType
 
      // Composite types
-     syntax SimpleEnumType ::= enumType(CId)
      syntax SimpleFunctionType ::= functionType(UType, List)
      syntax SimplePointerType ::= pointerType(Type)
 
@@ -129,10 +133,11 @@ module C-TYPING-SYNTAX
      syntax SimpleVariableArrayUType ::= unspecifiedArrayUType(UType)
      syntax SimpleVariableArrayUType ::= variableLengthArrayUType(UType, K)
 
-     syntax SimpleStructType ::= structType(StructId)
-     syntax SimpleUnionType ::= unionType(StructId)
+     syntax SimpleEnumType ::= enumType(TagId)
+     syntax SimpleStructType ::= structType(TagId)
+     syntax SimpleUnionType ::= unionType(TagId)
 
-     syntax StructId ::= tag(CId, String, BlockRef)
+     syntax TagId ::= tag(CId, String, BlockRef)
      syntax BlockRef ::= Int | "global"
 
      syntax SimpleType ::= SimpleArrayType
@@ -153,10 +158,11 @@ module C-TYPING-SYNTAX
                                | SimpleVariableArrayUType
                                | SimpleIncompleteArrayUType
 
-     syntax FieldInfo ::= getFieldInfo(StructId) [function]
+     syntax FieldInfo ::= getFieldInfo(TagId) [function]
      syntax FieldInfo ::= getFieldInfo(Type) [function]
-     syntax CId ::= getTag(StructId) [function]
-     syntax FieldInfo ::= "#incomplete"
+     syntax TagInfo ::= getTagInfo(TagId) [function]
+     syntax CId ::= getTag(TagId) [function]
+     syntax TagInfo ::= "#incomplete"
 
      // These aren't real types, but are values that can appear in type
      // contexts.
@@ -180,7 +186,8 @@ module C-TYPING-SYNTAX
      syntax ArrayOrFunctionType ::= ArrayType | FunctionType
      syntax BasicType ::= ArithmeticType | VoidType | NoType
      syntax ArithmeticType ::= IntegerType | FloatType
-     syntax IntegerType ::= UnsignedIntegerType | SignedIntegerType | CharType | BitfieldType
+     syntax IntegerType ::= UnsignedIntegerType | SignedIntegerType | CharType
+                          | BitfieldType | EnumType
      syntax SignedIntegerType ::= SCharType | SignedBitfieldType
      syntax UnsignedIntegerType ::= UCharType | BoolType | UnsignedBitfieldType
      syntax CharType ::= UCharType | SCharType
@@ -211,6 +218,7 @@ module C-TYPING-SYNTAX
      syntax VariableLengthArrayType ::= t(Quals, Set, SimpleVariableArrayType)
      syntax VoidType ::= t(Quals, Set, SimpleVoidType)
      syntax NoType ::= t(Quals, Set, SimpleNoType)
+     syntax EnumType ::= t(Quals, Set, SimpleEnumType)
      syntax StructType ::= t(Quals, Set, SimpleStructType)
      syntax UnionType ::= t(Quals, Set, SimpleUnionType)
      syntax IncompleteArrayType ::= t(Quals, Set, SimpleIncompleteArrayType)
@@ -266,7 +274,7 @@ module C-TYPING-SYNTAX
      // setting active union variants for getTypesAtOffset. Note that we
      // propagate these locks up through aggregates (which is the reason for
      // the offset) because we need copies of the type information for fields
-     // stored in the global <structs> cell.
+     // stored in the global <tags> cell.
      syntax Modifier ::= lock(Int, Type)
 
      // Special restrict modifier tagged with a block num.

@@ -35,7 +35,7 @@ module COMMON-CONFIGURATION
           <odr-uses> .Set </odr-uses>
      </linking-state>
 
-     <structs color="lightgray"> .Map </structs>
+     <tags color="lightgray"> .Map </tags>
 
      <translation-units>
           <tu multiplicity="*" type="Map">

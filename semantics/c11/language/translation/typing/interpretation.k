@@ -119,9 +119,9 @@ module C-TYPING-INTERPRETATION
           => t(Qs, Mods, pointerType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType'(T::Type, L:List)), Lbl:K)
           => t(Qs, Mods, functionType'(pushTypeDown(T, Lbl), L))
-     rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X:StructId)), Lbl:K)
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X::TagId)), Lbl:K)
           => applyTypeFunction(Lbl, t(Qs, Mods, structType(X)))
-     rule pushTypeDown(t(Qs::Quals, Mods::Set, unionType(X:StructId)), Lbl:K)
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, unionType(X::TagId)), Lbl:K)
           => applyTypeFunction(Lbl, t(Qs, Mods, unionType(X)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, typedefType(X:CId, T::Type)), Lbl:K)
           => applyTypeFunction(Lbl, t(Qs, Mods, typedefType(X, T)))
@@ -206,20 +206,20 @@ module C-TYPING-INTERPRETATION
 
      syntax KItem ::= NameAndType(CId, K) [strict(2)]
 
-     rule SingleName(T:Type, Name(X:CId, K:K))
-          => NameAndType(X, DeclType(T, K))
+     rule SingleName(T:Type, Name(X:CId, K:K, list(Attrs::List)))
+          => NameAndType(X, addMods(Attrs, DeclType(T, K)))
           [structural]
-     rule FieldGroup(K:KResult, list(ListItem(C:K) ListItem(C':K) L:List))
-          => list(ListItem(FieldGroup(K, list(ListItem(C))))
-               ListItem(FieldGroup(K, list(ListItem(C') L))))
-          [structural]
-
-     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:CId, K:K)))))
-          => NameAndType(X, DeclType(T, K))
+     rule FieldGroup(T:Type, list(ListItem(C:K) ListItem(C':K) L:List))
+          => list(ListItem(FieldGroup(T, list(ListItem(C))))
+               ListItem(FieldGroup(T, list(ListItem(C') L))))
           [structural]
 
-     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K), Size:K))))
-          => NameAndType(X, DeclType(T, BitFieldType(K, Size)))
+     rule FieldGroup(T:Type, list(ListItem(FieldName(Name(X:CId, K:K, list(Attrs::List))))))
+          => NameAndType(X, addMods(Attrs, DeclType(T, K)))
+          [structural]
+
+     rule FieldGroup(T:Type, list(ListItem(BitFieldName(Name(X:CId, K:K, list(Attrs::List)), Size:K))))
+          => NameAndType(X, addMods(Attrs, DeclType(T, BitFieldType(K, Size))))
           [structural]
 
      context Typedef(NameGroup(HOLE:KItem, _))

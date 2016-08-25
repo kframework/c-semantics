@@ -86,7 +86,7 @@ module C-COMMON-PROMOTION
      rule rank(ut(_, unsigned-long-int)) => 4
      rule rank(ut(_, long-long-int)) => 5
      rule rank(ut(_, unsigned-long-long-int)) => 5
-     rule rank(ut(Mods::Set, enumType(_))) => rank(ut(Mods, cfg:enumAlias))
+     rule rank(ut(_, enumType(S::TagId))) => rank(utype(getEnumAlias(S)))
      rule rank(ut(_, bitfieldType(T::BitfieldFieldType, _))) => rank(utype(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{

@@ -19,7 +19,7 @@ module C-TYPING-COMPATIBILITY
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     
+
      rule T:Type ==Type T':Type => areCompatible(T, T')
      rule T:Type =/=Type T':Type => notBool areCompatible(T, T')
 
@@ -69,39 +69,39 @@ module C-TYPING-COMPATIBILITY
      // type, or an unsigned integer type. The choice of type is
      // implementation-defined. (6.7.2.2:4)
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, enumType(_)),
+               t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs, Mods'::Set, T::SimpleType), _)
           => true
-          requires T ==K cfg:enumAlias
+          requires T ==K getEnumAlias(S)
      rule #areCompat(
                t(Qs::Quals, Mods::Set, T::SimpleType),
-               t(Qs, Mods'::Set, enumType(_)), _)
+               t(Qs, Mods'::Set, enumType(S::TagId)), _)
           => true
-          requires T ==K cfg:enumAlias
+          requires T ==K getEnumAlias(S)
 
      // TODO(chathhorn): should also check for equivalent members
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, enumType(X::CId)),
-               t(Qs, Mods'::Set, enumType(X'::CId)), _)
-          => #areTagsCompat(X, X')
+               t(Qs::Quals, Mods::Set, enumType(S::TagId)),
+               t(Qs, Mods'::Set, enumType(S'::TagId)), _)
+          => #areTagsCompat(getTag(S), getTag(S'))
 
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, structType(S::StructId)),
-               t(Qs, Mods'::Set, structType(S'::StructId)), Cache::Set)
+               t(Qs::Quals, Mods::Set, structType(S::TagId)),
+               t(Qs, Mods'::Set, structType(S'::TagId)), Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    andBool #areStructsCompat(getTagInfo(S), getTagInfo(S'),
                     Cache SetItem(kpair(S, S'))))
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, unionType(S::StructId)),
-               t(Qs, Mods'::Set, unionType(S'::StructId)), Cache::Set)
+               t(Qs::Quals, Mods::Set, unionType(S::TagId)),
+               t(Qs, Mods'::Set, unionType(S'::TagId)), Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areStructsCompat(getFieldInfo(S), getFieldInfo(S'),
+                    andBool #areStructsCompat(getTagInfo(S), getTagInfo(S'),
                     Cache SetItem(kpair(S, S'))))
 
      syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
@@ -274,15 +274,15 @@ module C-TYPING-COMPATIBILITY
      // TODO(chathhorn): surely implementation defined, although I don't see
      // composite types for enums explicitly addressed in the standard.
      rule compositeType(
-               t(Qs::Quals, Mods::Set, enumType(_)),
+               t(Qs::Quals, Mods::Set, enumType(S::TagId)),
                t(Qs'::Quals, Mods'::Set, T::SimpleType))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires T ==K cfg:enumAlias
+          requires T ==K getEnumAlias(S)
      rule compositeType(
                t(Qs::Quals, Mods::Set, T::SimpleType),
-               t(Qs'::Quals, Mods'::Set, enumType(_)))
+               t(Qs'::Quals, Mods'::Set, enumType(S::TagId)))
           => t(Qs +Quals Qs', Mods Mods', T)
-          requires T ==K cfg:enumAlias
+          requires T ==K getEnumAlias(S)
 
      rule compositeType(
                t(Qs::Quals, Mods:Set, functionType(T::UType, P:List)),
@@ -336,15 +336,15 @@ module C-TYPING-COMPATIBILITY
           => t(Qs +Quals Qs', Mods Mods', flexibleArrayType(compositeType(T, T')))
 
      rule compositeType(
-               t(Qs::Quals, Mods:Set, structType(S:StructId)),
-               t(Qs'::Quals, Mods':Set, structType(S':StructId)))
-          => t(Qs +Quals Qs', Mods Mods', structType(S:StructId))
-          requires getFieldInfo(S') ==K #incomplete
+               t(Qs::Quals, Mods:Set, structType(S::TagId)),
+               t(Qs'::Quals, Mods':Set, structType(S'::TagId)))
+          => t(Qs +Quals Qs', Mods Mods', structType(S::TagId))
+          requires getTagInfo(S') ==K #incomplete
      rule compositeType(
-               t(Qs::Quals, Mods:Set, structType(S:StructId)),
-               t(Qs'::Quals, Mods':Set, structType(S':StructId)))
-          => t(Qs +Quals Qs', Mods Mods', structType(S':StructId))
-          requires getFieldInfo(S) ==K #incomplete
+               t(Qs::Quals, Mods:Set, structType(S::TagId)),
+               t(Qs'::Quals, Mods':Set, structType(S'::TagId)))
+          => t(Qs +Quals Qs', Mods Mods', structType(S'::TagId))
+          requires getTagInfo(S) ==K #incomplete
 
      syntax KItem ::= compositeFunctionType(UType, Quals, Set, List, List, List)
           [function]

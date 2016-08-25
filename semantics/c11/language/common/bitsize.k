@@ -64,9 +64,9 @@ module C-BITSIZE
      rule bitSizeofType(bitfieldType(_, N::Int)) => N
      rule bitSizeofType(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte [owise]
 
-     rule bitSizeofType(structType(S::StructId))
+     rule bitSizeofType(structType(S::TagId))
           => bitSizeofStruct(getFieldInfo(S))
-     rule bitSizeofType(unionType(S::StructId))
+     rule bitSizeofType(unionType(S::TagId))
           => bitSizeofUnion(getFieldInfo(S))
 
      rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _, _)) => NBits

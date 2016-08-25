@@ -1,60 +1,116 @@
 module C-DECL-TAGGED-SYNTAX
      imports LIST
      imports COMMON-SORTS
+     imports C-TYPING-SORTS
      // Not defined, just used.
-     syntax KItem ::= addGlobalTag(CId, FieldInfo)
-     syntax KItem ::= addLocalTag(CId, FieldInfo)
+     syntax KItem ::= addGlobalTag(CId, TagInfo)
+     syntax KItem ::= addLocalTag(CId, TagInfo)
 
-     syntax FieldInfo ::= makeStructFieldInfo(List) [function]
-     syntax FieldInfo ::= makeUnionFieldInfo(List) [function]
+     syntax FieldInfo ::= makeStructFieldInfo(Bool, List) [function]
+     syntax FieldInfo ::= makeUnionFieldInfo(Bool, List) [function]
 endmodule
 
 module C-DECL-TAGGED
-     imports C-DECL-TAGGED-SYNTAX
-     imports C-CONFIGURATION
      imports BOOL
-     imports INT
-     imports MAP
-     imports STRING
-     imports COMPAT-SYNTAX
-     imports SETTINGS-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
      imports C-DECL-DEFINITION-SYNTAX
+     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
+     imports COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports MAP
+     imports SETTINGS-SYNTAX
+     imports STRING
 
-     context StructDef(_, HOLE:StrictList => seqstrict(HOLE))
-     context UnionDef(_, HOLE:StrictList => seqstrict(HOLE))
+     context StructDef(_, HOLE:StrictList => seqstrict(HOLE), _)
+     context UnionDef(_, HOLE:StrictList => seqstrict(HOLE), _)
 
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
-     rule StructDef(X:CId, krlist(L:List))
-          => addTag(X, makeStructFieldInfo(L))
+     rule EnumDef(X::CId, list(L:List), list(Mods::List))
+          => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L)
+          [structural]
+     rule StructDef(X::CId, krlist(L:List), list(Mods::List))
+          => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
           requires hasNamedField(L) andBool structFieldsComplete(L)
           [structural]
-     rule (.K => UNDEF("CDT1", "Structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61") )
-          ~> StructDef(_, krlist(L:List))
+     rule (.K => UNDEF("CDT1", "Structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61"))
+          ~> StructDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT3", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3") )
-          ~> StructDef(_, krlist(L:List))
+     rule (.K => CV("CDT3", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3"))
+          ~> StructDef(_, krlist(L:List), _)
           requires notBool structFieldsComplete(L)
           [structural]
-     rule UnionDef(X:CId, krlist(L:List))
-          => addTag(X, makeUnionFieldInfo(L))
+     rule UnionDef(X::CId, krlist(L:List), list(Mods::List))
+          => addTag(X, makeUnionFieldInfo(Packed() in Mods, numberUnnamed(L)))
           requires hasNamedField(L) andBool allComplete(L)
           [structural]
-     rule (.K => UNDEF("CDT2", "Unions must contain a named member.", "6.7.2.1, J.2:1 item 61") )
-          ~> UnionDef(_, krlist(L:List))
+     rule (.K => UNDEF("CDT2", "Unions must contain a named member.", "6.7.2.1, J.2:1 item 61"))
+          ~> UnionDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3") )
-          ~> UnionDef(_, krlist(L:List))
+     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3"))
+          ~> UnionDef(_, krlist(L:List), _)
           requires notBool allComplete(L)
           [structural]
+
+     syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List)
+
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List)
+          => initEnum(E, tv(Next, ut(SetItem(IntegerConstant), int)))
+          ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L)
+          [structural]
+     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem)) _)
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List)
+          => initEnum(E, R)
+          ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L)
+          [structural]
+      // Packed enums attempt to use a smaller type as the alias.
+     rule defEnumConstants(true, X::CId, Min::Int, Max::Int, _, .List)
+          => addTag(X, enumAlias(firstSuitableType(Min, Max, allEnumAliases)))
+          [structural]
+     rule defEnumConstants(false, X::CId, _, _, _, .List)
+          => addTag(X, enumAlias(cfg:enumAlias))
+          [structural]
+
+     // Defaults to int (the largest allowed enum type alias).
+     syntax SimpleType ::= firstSuitableType(Int, Int, List) [function]
+     rule firstSuitableType(Min::Int, Max::Int, ListItem(T::SimpleType) _) => T
+          requires Min >=Int min(utype(T)) andBool Max <=Int max(utype(T))
+     rule firstSuitableType(_, _, .List) => int
+     rule firstSuitableType(_, _, (ListItem(_) => .List) _) [owise]
+
+     syntax List ::= "allEnumAliases" [function]
+     rule allEnumAliases
+          => ListItem(signed-char)
+             ListItem(unsigned-char)
+             ListItem(short-int)
+             ListItem(unsigned-short-int)
+             ListItem(int)
+
+     syntax Int ::= asInt(RValue) [function]
+     rule asInt(R::RValue) => value(R)
+          requires isInt(value(R))
+     // In this case, the configuration should be about to get stuck, so it
+     // doesn't matter.
+     rule asInt(_) => 0 [owise]
+
+     syntax KItem ::= initEnum(CId, RValue)
+     rule initEnum(X:CId, tv(Value:Int, T:IntegerUType)) => addEnum(X, Value)
+          requires IntegerConstant in getModifiers(T)
+     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
+          ~> initEnum(_, R:RValue)
+          requires isHold(R) orBool notBool isIntegerType(type(R))
+               orBool notBool IntegerConstant in getModifiers(utype(R))
 
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true
@@ -67,57 +123,77 @@ module C-DECL-TAGGED
           requires isStructOrUnionType(T)
      rule hasNamedField(.List) => false
 
-     rule makeStructFieldInfo(L:List)
-          => makeStructFieldInfo'(incompleteToFlexibleArrayMember(L),
-               0, .Map, .Map, 0, .List)
+     syntax List ::= numberUnnamed(List) [function]
+                   | numberUnnamed(Int, List) [function, klabel(numberUnnamed2)]
+     rule numberUnnamed(Fs::List) => numberUnnamed(0, Fs)
+     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
+          => ListItem(typedDeclaration(T, #NoName(N))) numberUnnamed(N +Int 1, Fs)
+          requires F ==K #NoName andBool isStructOrUnionType(T)
+     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
+          => ListItem(typedDeclaration(T, F)) numberUnnamed(N +Int 1, Fs)
+          requires F =/=K #NoName orBool notBool isStructOrUnionType(T)
+     rule numberUnnamed(_, .List) => .List
 
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" List "," Int "," Map ","  Map "," Int "," List ")"
+     rule makeStructFieldInfo(Pack::Bool, Fs::List)
+          => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
+
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")"
                          [function]
-     syntax Int ::= structPadding(Int, Type) [function]
-                  | structPadding(Int, Int) [function, klabel(structPadding2)]
 
-     rule makeStructFieldInfo'(
-               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
-               , V:Int
-               , Types:Map
-               , Offsets:Map
-               , I:Int
-               , NL:List
-          )
-          => makeStructFieldInfo'(L, V +Int bitSizeofType(T) +Int structPadding(V, T),
-               Types[Field <- T], Offsets[Field <- V +Int structPadding(V, T)], I +Int 1,
+     rule makeStructFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               V::Int,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeStructFieldInfo'(Pack,
+               L,
+               pad(V, T) +Int bitSizeofType(T),
+               Types[Field <- T],
+               Offsets[Field <- pad(V, T)],
                NL ListItem(typedDeclaration(T, Field)))
-          requires Field =/=K #NoName orBool notBool isStructOrUnionType(T)
+     rule makeStructFieldInfo'(true, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, padTo(V, 1),
+               Types, Offsets,
+               computePaddingOffsets(NL, padTo(V, 1), Types, Offsets, 0))
+     rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, padTo(V, maxByteAlignofList(NL)),
+               Types, Offsets,
+               computePaddingOffsets(NL, padTo(V, maxByteAlignofList(NL)), Types, Offsets, 0))
 
-     rule makeStructFieldInfo'(
-               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
-               , V:Int
-               , Types:Map
-               , Offsets:Map
-               , I:Int
-               , NL:List
-          )
-          => makeStructFieldInfo'(L, V +Int bitSizeofType(T) +Int structPadding(V, T),
-               Types[#NoName(I) <- T],
-               Offsets[#NoName(I) <- V +Int structPadding(V, T)],
-               I +Int 1,
-               NL ListItem(typedDeclaration(T, #NoName(I))))
-         requires Field ==K #NoName andBool isStructOrUnionType(T)
+     // The padding associated with a particular field precedes it, with
+     // possibly some extra padding at the end of the whole struct not
+     // associated with any field. This is important for understanding the
+     // effect of the gcc et al. padding attr as applied to a particular field.
 
-     rule makeStructFieldInfo'(.List, V:Int, Types:Map, Offsets:Map, _, NL:List)
-          => fieldInfo(NL, (V +Int structPadding(V, maxByteAlignofList(NL))),
-                        Types, Offsets,
-                        computePaddingOffsets(NL, (V +Int structPadding(V, maxByteAlignofList(NL))), Types, Offsets, 0))
+     syntax Int ::= pad(Int, Type) [function]
+     // Packed bitfields and non-packed bitfields that don't cross an
+     // alignment boundary have 1-bit alignment (no padding).
+     rule pad(V::Int, T::Type) => V
+          requires isBitfieldType(T) andBool bitSizeofType(T) >Int 0
+               andBool (Packed() in getModifiers(T)
+               orBool (V +Int bitSizeofType(T)) <=Int padTo(V, byteAlignofType(innerType(T))))
+     // Packed non-bitfields have 1-byte alignment.
+     rule pad(V::Int, T::Type) => padTo(V, 1)
+          requires Packed() in getModifiers(T)
+               andBool notBool isBitfieldType(T)
+     // Non-packed bitfields that would cross an alignment boundary and
+     // zero-length bitfields have an alignment of the bitfield field type.
+     rule pad(V::Int, T::Type) => padTo(V, byteAlignofType(innerType(T)))
+          requires isBitfieldType(T) andBool ((notBool (Packed() in getModifiers(T))
+               andBool ((V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))))
+               orBool bitSizeofType(T) ==Int 0)
+     // Non-packed non-bitfields are aligned according to their type.
+     rule pad(V::Int, T::Type) => padTo(V, byteAlignofType(T))
+          requires notBool (Packed() in getModifiers(T))
+               andBool notBool isBitfieldType(T)
 
-     rule structPadding(Offset::Int, t(_, _, bitfieldType(T::BitfieldFieldType, N::Int))) => 0
-          requires (Offset +Int bitSizeofType(type(bitfieldType(T, N))) -Int 1) /Int cfg:bitsPerByte -Int Offset /Int cfg:bitsPerByte
-                    <Int byteAlignofType(type(T))
-               andBool N >Int 0
-     // if we can add the new bits without the new field crossing an alignment boundary, use no padding
-     rule structPadding(Offset:Int, T::Type) => structPadding(Offset, byteAlignofType(T)) [owise]
-     // otherwise, or if not a bit field, use the alignment of the field as padding
-     rule structPadding(Offset:Int, Alignment:Int)
-          => (0 -Int Offset) modInt (Alignment *Int cfg:bitsPerByte)
+     // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
+     syntax Int ::= padTo(Int, Int) [function]
+     rule padTo(N::Int, A::Int) => N
+          requires (N %Int (A *Int cfg:bitsPerByte)) ==Int 0
+     rule padTo(N::Int, A::Int)
+          => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
@@ -147,39 +223,30 @@ module C-DECL-TAGGED
           requires isCompleteType(T)
      rule firstIncomplete(.List) => ""
 
-     rule makeUnionFieldInfo(L:List) => makeUnionFieldInfo'(L, .Map, .Map, 0, .List)
+     rule makeUnionFieldInfo(Pack::Bool, Fs::List)
+          => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
 
-     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" List "," Map ","  Map "," Int "," List ")"
-                         [function]
-     rule makeUnionFieldInfo'(
-               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
-               , Types:Map
-               , Offsets:Map
-               , I:Int
-               , NL:List
-          )
-          => makeUnionFieldInfo'(L,
-               Types[Field <- T], Offsets[Field <- 0], I +Int 1,
+     syntax FieldInfo ::= "makeUnionFieldInfo'" "(" Bool "," List "," Map ","  Map "," List ")" [function]
+     rule makeUnionFieldInfo'(Pack::Bool,
+               ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
+               Types::Map,
+               Offsets::Map,
+               NL::List)
+          => makeUnionFieldInfo'(Pack, L,
+               Types[Field <- T], Offsets[Field <- 0],
                NL ListItem(typedDeclaration(T, Field)))
-          requires Field =/=K #NoName orBool notBool isStructOrUnionType(T)
-     rule makeUnionFieldInfo'(
-               ListItem(typedDeclaration(T::Type, Field:CId)) L:List
-               , Types:Map
-               , Offsets:Map
-               , I:Int
-               , NL:List
-          )
-          => makeUnionFieldInfo'(L,
-               Types[#NoName(I) <- T],
-               Offsets[#NoName(I) <- 0],
-               I +Int 1,
-               NL ListItem(typedDeclaration(T, #NoName(I))))
-          requires Field ==K #NoName andBool isStructOrUnionType(T)
-
-     rule makeUnionFieldInfo'(.List, Types:Map, Offsets:Map, _, NL:List)
+     rule makeUnionFieldInfo'(true, .List, Types::Map, Offsets::Map, NL::List)
           => fieldInfo(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte,
-                Types, Offsets,
-                computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
+               Types, Offsets,
+               computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
+     rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
+          => makePaddedUnionFieldInfo(
+               padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofList(NL)),
+               Types, Offsets, NL)
+
+     syntax FieldInfo ::= makePaddedUnionFieldInfo(Int, Map, Map, List) [function]
+     rule makePaddedUnionFieldInfo(NBits::Int, Types::Map, Offsets::Map, NL::List)
+          => fieldInfo(NL, NBits, Types, Offsets, computePaddingOffsets(NL, NBits, Types, Offsets, 0))
 
      syntax Set ::= computePaddingOffsets(List, Int, Map, Map, Int) [function]
      rule computePaddingOffsets(L::List, Len::Int, Types::Map, Offsets::Map, Offset::Int)
@@ -197,10 +264,15 @@ module C-DECL-TAGGED
           orBool isNonPaddingOffset(Offset, Decls, Types, Offsets)
      rule isNonPaddingOffset(_, .List, _, _) => false
 
-     syntax KItem ::= addTag(CId, FieldInfo)
+     syntax KItem ::= addTag(CId, TagInfo)
      rule <k> addTag(S:CId, fieldInfo(Fs:List, NBits:Int, Ts:Map, Offs:Map, PaddingOffs:Set))
                // Elide function parameter names in struct types.
                => addGlobalTag(S, fieldInfo(elideList(Fs), NBits, elideMap(Ts), Offs, PaddingOffs))
+          ...</k>
+          <curr-scope> fileScope </curr-scope>
+          [structural]
+     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
+               => addGlobalTag(S, enumAlias(T))
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
@@ -210,14 +282,20 @@ module C-DECL-TAGGED
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true
           [structural]
+     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
+               => addLocalTag(S, enumAlias(T))
+          ...</k>
+          <curr-scope> Scope:Scope </curr-scope>
+          requires isFileScope(Scope) =/=K true
+          [structural]
 
      rule <k> addLocalTag(_, _) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <structs> S:Map => S[Tu <- .Map] </structs>
+          <tags> S:Map => S[Tu <- .Map] </tags>
           requires notBool (Tu in_keys(S))
 
-     rule <k> addLocalTag(X:CId, Info:FieldInfo) => .K ...</k>
-          <structs>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</structs>
+     rule <k> addLocalTag(X:CId, Info::TagInfo) => .K ...</k>
+          <tags>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</tags>
           <curr-tu> Tu:String </curr-tu>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           requires notBool (tag(X, Tu, global) in_keys(Structs))
@@ -228,7 +306,7 @@ module C-DECL-TAGGED
                ~> addLocalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <structs>... Tu |-> Structs:Map ...</structs>
+          <tags>... Tu |-> Structs:Map ...</tags>
           <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
           requires (tag(X, Tu, global) in_keys(Structs))
                orBool (tag(X, Tu, BlockNum) in_keys(Structs))

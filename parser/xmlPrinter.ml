@@ -172,7 +172,7 @@ and printDefinitionLocRange a b c =
 	wrap (a :: (printCabsLoc b) :: (printCabsLoc c) :: []) "DefinitionLocRange"		
 and printSingleName (a, b) = 
 	wrap ((printSpecifier a) :: (printName b) :: []) "SingleName"
-and printAttr a b = wrap (a :: (printAttributeList b) :: []) "AttributeWrapper"
+and printAttr a b = wrap (a :: (printSpecElemList b) :: []) "AttributeWrapper"
 and printBlock a = 
 	let blockNum = ((counter := (!counter + 1); !counter)) in
 	let blockNumCell = (printRawInt blockNum) in
@@ -206,9 +206,9 @@ and printIdentifier a =
 and printName (a, b, c, d) = (* string * decl_type * attribute list * cabsloc *)
 	if a = "" then 
 		(* printAttr (printNameLoc (wrap ((printDeclType b) :: []) "AnonymousName") d) c *)
-		printNameLoc (wrap ((kapply "AnonymousName"  (nil)) :: (printDeclType b) :: []) "Name") d
+		printNameLoc (wrap ((kapply "AnonymousName"  (nil)) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
 	else 
-		printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: []) "Name") d
+		printNameLoc (wrap ((printIdentifier a) :: (printDeclType b) :: (printSpecElemList c) :: []) "Name") d
 	
 	
 and printInitNameGroup (a, b) = 
@@ -639,8 +639,6 @@ and printStatementLoc s l =
 	wrap (s :: (printCabsLoc l) :: []) "StatementLoc"
 and printStatementList a =
 	printNewList printStatement a
-and printAttributeList a =
-	printNewList printAttribute a
 and printEnumItemList a =
 	printNewList printEnumItem a
 and printBlockLabels a =
@@ -714,16 +712,16 @@ and printTypeSpec = function
 	| Tatomic (s, d) ->	wrap ((printSpecifier s) :: (printDeclType d) :: []) "TAtomic"
 and printStructType a b c =
 	match b with
-		| None -> wrap ((printIdentifier a) :: []) "StructRef"
-		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: []) "StructDef"
+		| None -> wrap ((printIdentifier a) :: (printSpecElemList c) :: []) "StructRef"
+		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: (printSpecElemList c) :: []) "StructDef"
 and printUnionType a b c = 
 	match b with
-		| None -> wrap ((printIdentifier a) :: []) "UnionRef"
-		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: []) "UnionDef"
+		| None -> wrap ((printIdentifier a) :: (printSpecElemList c) :: []) "UnionRef"
+		| Some b -> wrap ((printIdentifier a) :: (printFieldGroupList b) :: (printSpecElemList c) :: []) "UnionDef"
 and printEnumType a b c =
 	match b with
-		| None -> wrap ((printIdentifier a) :: []) "EnumRef"
-		| Some b -> wrap ((printIdentifier a) :: (printEnumItemList b) :: []) "EnumDef"
+		| None -> wrap ((printIdentifier a) :: (printSpecElemList c) :: []) "EnumRef"
+		| Some b -> wrap ((printIdentifier a) :: (printEnumItemList b) :: (printSpecElemList c) :: []) "EnumDef"
 
 
 

@@ -14,43 +14,56 @@ module C-ALIGNMENT-SYNTAX
 endmodule
 
 module C-ALIGNMENT
+     imports BOOL
      imports C-ALIGNMENT-SYNTAX
      imports C-CONFIGURATION
-     imports BOOL
+     imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
      imports INT
      imports K-REFLECTION
      imports MAP
-     imports SET
      imports MEMORY-SYNTAX
+     imports SET
      imports SYMLOC-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-TYPING-SYNTAX
 
-     // TODO(chathhorn): make configurable.
-     rule byteAlignofType(t(_, _, bool)) => cfg:alignofBool
-     rule byteAlignofType(t(_, _, signed-char)) => cfg:alignofSignedChar
-     rule byteAlignofType(t(_, _, short-int)) => cfg:alignofShortInt
-     rule byteAlignofType(t(_, _, int)) => cfg:alignofInt
-     rule byteAlignofType(t(_, _, long-int)) => cfg:alignofLongInt
-     rule byteAlignofType(t(_, _, long-long-int)) => cfg:alignofLongLongInt
-     rule byteAlignofType(t(_, _, float)) => cfg:alignofFloat
-     rule byteAlignofType(t(_, _, double)) => cfg:alignofDouble
-     rule byteAlignofType(t(_, _, long-double)) => cfg:alignofLongDouble
-     rule byteAlignofType(t(_, _, no-type)) => cfg:alignofMalloc
+     rule byteAlignofType(T::Type) => 1
+          // This should only be the case for (packed) struct fields.
+          requires Packed() in getModifiers(T)
+     rule byteAlignofType(T::Type) => byteAlignofType'(T) [owise]
 
-     rule byteAlignofType(t(_, _, unsigned-char))
-          => byteAlignofType(type(signed-char))
-     rule byteAlignofType(t(_, _, unsigned-short-int))
-          => byteAlignofType(type(short-int))
-     rule byteAlignofType(t(_, _, unsigned-int))
-          => byteAlignofType(type(int))
-     rule byteAlignofType(t(_, _, unsigned-long-int))
-          => byteAlignofType(type(long-int))
-     rule byteAlignofType(t(_, _, unsigned-long-long-int))
-          => byteAlignofType(type(long-long-int))
+     syntax Int ::= "byteAlignofType'" "(" Type ")" [function]
+     rule byteAlignofType'(t(_, _, bool)) => cfg:alignofBool
+     rule byteAlignofType'(t(_, _, signed-char)) => cfg:alignofSignedChar
+     rule byteAlignofType'(t(_, _, short-int)) => cfg:alignofShortInt
+     rule byteAlignofType'(t(_, _, int)) => cfg:alignofInt
+     rule byteAlignofType'(t(_, _, long-int)) => cfg:alignofLongInt
+     rule byteAlignofType'(t(_, _, long-long-int)) => cfg:alignofLongLongInt
+     rule byteAlignofType'(t(_, _, float)) => cfg:alignofFloat
+     rule byteAlignofType'(t(_, _, double)) => cfg:alignofDouble
+     rule byteAlignofType'(t(_, _, long-double)) => cfg:alignofLongDouble
+     rule byteAlignofType'(t(_, _, no-type)) => cfg:alignofMalloc
 
-     rule byteAlignofType(t(Qs::Quals, Mods::Set, enumType(_)))
-          => byteAlignofType(t(Qs, Mods, cfg:enumAlias))
+     rule byteAlignofType'(t(_, _, unsigned-char => signed-char))
+     rule byteAlignofType'(t(_, _, unsigned-short-int => short-int))
+     rule byteAlignofType'(t(_, _, unsigned-int => int))
+     rule byteAlignofType'(t(_, _, unsigned-long-int => long-int))
+     rule byteAlignofType'(t(_, _, unsigned-long-long-int => long-long-int))
+     rule byteAlignofType'(T:ArrayType)  => byteAlignofType(innerType(T))
+     rule byteAlignofType'(t(_, _, pointerType(_))) => cfg:alignofPointer
+
+     rule byteAlignofType'(t(_, _, enumType(S::TagId)))
+          => byteAlignofTagged(getTagInfo(S))
+     rule byteAlignofType'(t(_, _, structType(S::TagId)))
+          => byteAlignofTagged(getTagInfo(S))
+     rule byteAlignofType'(t(_, _, unionType(S::TagId)))
+          => byteAlignofTagged(getTagInfo(S))
+
+     rule byteAlignofType'(t(_, _, bitfieldType(T::BitfieldFieldType, _)))
+          => byteAlignofType'(type(T))
+
+     // TODO(dwightguth): make sure we correctly handle all the corner cases
+     rule byteAlignofType'(_) => 1 [owise]
 
      syntax Int ::= "maxByteAlignofList'" "(" Int "," List ")" [function]
      rule maxByteAlignofList(L:List) => maxByteAlignofList'(1, L)
@@ -60,20 +73,12 @@ module C-ALIGNMENT
           => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
      rule maxByteAlignofList'(Sz:Int, .List) => Sz
 
-     rule byteAlignofType(T:ArrayType)  => byteAlignofType(innerType(T))
-     rule byteAlignofType(t(_, _, pointerType(_))) => cfg:alignofPointer
-     rule byteAlignofType(t(_, _, structType(S:StructId)))
-          => byteAlignofStruct(getFieldInfo(S))
-     rule byteAlignofType(t(_, _, unionType(S:StructId)))
-          => byteAlignofStruct(getFieldInfo(S))
-
-     syntax Int ::= byteAlignofStruct(FieldInfo) [function]
-
-     rule byteAlignofStruct(fieldInfo(Decls:List, _, _, _, _))
+     syntax Int ::= byteAlignofTagged(TagInfo) [function]
+     rule byteAlignofTagged(fieldInfo(Decls:List, _, _, _, _))
           => maxByteAlignofList(Decls)
-
-     // TODO(dwightguth): make sure we correctly handle all the corner cases
-     rule byteAlignofType(_) => 1 [owise]
+     rule byteAlignofTagged(enumAlias(T::SimpleType))
+          => byteAlignofType'(type(T))
+     rule byteAlignofTagged(_) => 1 [owise]
 
      rule getAlignas(T::Type) => getAlignasMod(getModifiers(T))
           requires hasAlignasMod(getModifiers(T))

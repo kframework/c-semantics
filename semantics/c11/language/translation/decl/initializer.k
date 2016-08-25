@@ -184,7 +184,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(ncle(K . F, T)))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</structs>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</tags>
           [structural]
 
      // fixme these are terrible!
@@ -192,7 +192,7 @@ module C-DECL-INITIALIZER
                (.List => ListItem(ncle(K . F, T)))
                ListItem(ncle(K:K, t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</structs>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</tags>
           [structural]
 
      // fixme should i worry about basetype here_
@@ -261,7 +261,7 @@ module C-DECL-INITIALIZER
                ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F::CId, T::Type))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <structs>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</structs>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
 
      rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
@@ -358,9 +358,9 @@ module C-DECL-INITIALIZER
                ListItem(block) (.List => ListItem(ncle(K . F, T)))
                     ListItem(ncle(K:K, t(_, _, Lbl:KLabel(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
-          <structs>...
+          <tags>...
                Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _, _))
-          ...</structs>
+          ...</tags>
           requires isStructOrUnionKLabel(#klabel(Lbl))
           [structural]
 
@@ -421,7 +421,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= initFromStructRHS(K, Type)
-     rule <k> initFromAggregateRHS(K:K, t(Qs::Quals, S::Set, structType(X:StructId)))
+     rule <k> initFromAggregateRHS(K:K, t(Qs::Quals, S::Set, structType(X::TagId)))
                => initFromStructRHS(K, t(Qs, S, structType(X)))
           ...</k>
           <curr-subobject>
@@ -440,10 +440,10 @@ module C-DECL-INITIALIZER
           [structural]
 
      // fixme unsafe, might have started to initialize other things
-     rule <k> initFromStructRHS(K':K, t(_, _, structType(S:StructId))) => .K ...</k>
+     rule <k> initFromStructRHS(K':K, t(_, _, structType(S::TagId))) => .K ...</k>
           <curr-subobject>
-               ListItem(findStruct(t(_, _, structType(S:StructId))))
-               ListItem(ncle(K:K, t(_, _, structType(S:StructId))))
+               ListItem(findStruct(t(_, _, structType(S::TagId))))
+               ListItem(ncle(K:K, t(_, _, structType(S::TagId))))
                => ListItem(next)
           ...</curr-subobject>
           <incomplete-length>
@@ -598,12 +598,12 @@ module C-DECL-INITIALIZER
 
      rule <k> zeroType(X:K, t(_, _, structType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroStruct(X, Fields) ...</k>
-          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _, _)) ...</structs>
+          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _, _)) ...</tags>
           [structural]
 
      rule <k> zeroType(X:K, t(_, _, unionType(tag(Tag:CId, Tu:String, B:BlockRef))))
               => zeroType(X . F, T) ...</k>
-          <structs>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _, _)) ...</structs>
+          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _, _)) ...</tags>
           [structural]
 
      rule zeroType(_, _:FunctionType) => .K
@@ -626,41 +626,5 @@ module C-DECL-INITIALIZER
      rule getZero(_:IntegerType) => 0
      rule getZero(_:FloatType) => 0.0
      rule getZero(_:PointerType) => NullPointer
-
-     syntax KItem ::= fillEnums(K)
-     syntax KItem ::= "fillEnums-aux" "(" K "," Int ")"
-
-     rule EnumDef(X:CId, L:K) => fillEnums(EnumDef(X, L))
-          [structural]
-
-     rule fillEnums(K:K) => fillEnums-aux(K, 0)
-          [structural]
-
-     rule fillEnums-aux(EnumDef(X:CId, list(ListItem(EnumItem(E:CId)) L:List)), Value:Int)
-          => initEnum(E, tv(Value, ut(SetItem(IntegerConstant), int)))
-          ~> fillEnums-aux(
-               EnumDef(X, list(L)), Value +Int 1)
-          [structural]
-     context fillEnums-aux(EnumDef(_, list(ListItem(EnumItemInit(_, HOLE:KItem)) _)), _)
-     rule fillEnums-aux(EnumDef(X:CId, list(
-               ListItem(EnumItemInit(E:CId, R:RValue)) L:List)), _)
-          => initEnum(E, R)
-          ~> fillEnums-aux(
-               EnumDef(X, list(L)), incrementIfInt(value(R)))
-          [structural]
-     rule fillEnums-aux(EnumDef(_, list(.List)), _) => .K
-          [structural]
-
-     syntax Int ::= incrementIfInt(K) [function]
-     rule incrementIfInt(I:Int) => I +Int 1
-     rule incrementIfInt(_) => 0 [owise] //in this case, the configuration should be about to get stuck, so it doesn't matter
-
-     syntax KItem ::= initEnum(CId, RValue)
-     rule initEnum(X:CId, tv(Value:Int, T:IntegerUType)) => addEnum(X, Value)
-          requires IntegerConstant in getModifiers(T)
-     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
-          ~> initEnum(_, R:RValue)
-          requires isHold(R) orBool notBool isIntegerType(type(R))
-               orBool notBool IntegerConstant in getModifiers(utype(R))
 
 endmodule
