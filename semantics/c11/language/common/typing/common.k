@@ -88,6 +88,7 @@ module C-TYPING-COMMON
           => toFieldInfo(getTagInfo(S))
      rule getFieldInfo(t(_, Mods::Set, unionType(S::TagId)))
           => toFieldInfo(getTagInfo(S))
+     rule getFieldInfo(_:Type) => toFieldInfo(.K) [owise]
 
      syntax FieldInfo ::= toFieldInfo(TagInfo) [function]
      rule toFieldInfo(Fields:FieldInfo) => Fields

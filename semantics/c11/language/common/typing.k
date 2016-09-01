@@ -362,7 +362,6 @@ module C-TYPING-SYNTAX
      // moved from BITSIZE because type compatibility depends on it quite indirectly
      syntax Int ::= numBytes(SimpleType) [function]
 
-     syntax Bool ::= isNoNameInt(CId) [function]
      syntax Bool ::= anonInDecls(List) [function]
      // Search - anonymous fields
      syntax ProvInfo ::= provInfo(CId, Bool, FieldInfo)

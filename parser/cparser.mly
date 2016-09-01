@@ -1090,6 +1090,8 @@ field_decl: /* (* ISO 6.7.2. Except that we allow unnamed fields. *) */
                                       let al' = al @ $4 in
                                      ((n,decl,al',loc), Some (fst $3)) }
 |              COLON expression     { (missingFieldDecl, Some (fst $2)) }
+|              COLON expression attribute_nocv_list
+                                    { (("___missing_field_name",JUSTBASE,$3,cabslu), Some (fst $2)) }
 ;
 
 enum_list: /* (* ISO 6.7.2.2 *) */

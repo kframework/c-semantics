@@ -17,9 +17,8 @@ module C-EXPR-MEMBERS
                => le(K . F, addQualifiers(Qs, getTypeForField(F, searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)))))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:CId |-> T::Type _, _, _)) ...</tags>
-          requires isNoNameInt(AF)
-                   andBool searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
                    andBool (notBool (Atomic() inQuals Qs) orBool Initializing)
 
      rule <k> te(K:K, ut(_, structType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
@@ -30,9 +29,8 @@ module C-EXPR-MEMBERS
      rule <k> te(K:K, ut(_, structType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
                => te(K . F, utype(getTypeForField(F, searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)))))
           ...</k>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:CId |-> T::Type _, _, _)) ...</tags>
-          requires isNoNameInt(AF)
-                   andBool searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
 
      rule <k> ncle(K:K, t(Qs::Quals, _, unionType(tag(X:CId, Tu:String, B:BlockRef)))) . F:CId
                => le(K . F, addQualifiers(Qs, T))
@@ -45,9 +43,8 @@ module C-EXPR-MEMBERS
                => le(K . F, addQualifiers(Qs, getTypeForField(F, searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)))))
           ...</k>
           <initializing> Initializing:Bool </initializing>
-          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:CId |-> T::Type _, _, _)) ...</tags>
-          requires isNoNameInt(AF)
-                   andBool searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
+          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
                    andBool (notBool (Atomic() inQuals Qs) orBool Initializing)
 
      rule <k> te(K:K, ut(_, unionType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
@@ -58,8 +55,7 @@ module C-EXPR-MEMBERS
      rule <k> te(K:K, ut(_, unionType(tag(X::CId, Tu::String, B::BlockRef)))) . F:CId
                => te(K . F, utype(getTypeForField(F, searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)))))
           ...</k>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:CId |-> T::Type _, _, _)) ...</tags>
-          requires isNoNameInt(AF)
-                   andBool searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
 
 endmodule

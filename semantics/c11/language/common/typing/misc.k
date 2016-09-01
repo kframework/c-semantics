@@ -416,14 +416,12 @@ module C-TYPING-MISC
      rule isStructOrUnionKLabel(#klabel(`structType`)) => true
      rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
      rule isStructOrUnionKLabel(_) => false [owise]
-     rule isNoNameInt(#NoName(_:Int)) => true
-     rule isNoNameInt(_:CId) => false [owise]
 
-     rule anonInDecls(ListItem(typedDeclaration(_:Type, #NoName(_:Int))) _:List)
+     rule anonInDecls(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) _)
           => true
-     rule anonInDecls(ListItem(typedDeclaration(_:Type, F:CId)) Decls':List)
+     rule anonInDecls(ListItem(typedDeclaration(T::Type, F::CId)) Decls'::List)
           => anonInDecls(Decls')
-          requires notBool isNoNameInt(F)
+          requires notBool isNoName(F) orBool notBool isStructOrUnionType(T)
      rule anonInDecls(.List) => false
 
      // Search anonymous fields
@@ -431,7 +429,7 @@ module C-TYPING-MISC
                                         CId, Bool, FieldInfo, Int, List, List) [function]
      // recursion steps
      rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
-                   ListItem(typedDeclaration(T::Type, #NoName(I:Int))) Decls:List, Path:List)
+                   ListItem(typedDeclaration(T:StructOrUnionType, #NoName(I:Int))) Decls:List, Path:List)
           => searchAnonsNoName(F, IsUnion, Fields, Offset, Decls, Path,
                 #NoName(I), isUnionType(T), getFieldInfo(T),          // F', IsUnion', Fields'
                 Offset +Int getOffsetForField(#NoName(I), T, Fields), // Offset'
@@ -456,7 +454,7 @@ module C-TYPING-MISC
      rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
                    ListItem(typedDeclaration(T::Type, F':CId)) Decls:List, Path:List)
           => searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
-         requires F =/=K F' andBool notBool isNoNameInt(F')
+         requires F =/=K F' andBool notBool (isNoName(F') andBool isStructOrUnionType(T))
 
      // recursion base cases
      rule searchAnons(_, _, _, _, .List, _) => .List

@@ -113,25 +113,23 @@ module C-DECL-TAGGED
                orBool notBool IntegerConstant in getModifiers(utype(R))
 
      syntax Bool ::= hasNamedField(List) [function]
-     rule hasNamedField(ListItem(typedDeclaration(_, F:CId)) _) => true
-          requires F =/=K #NoName
-     rule hasNamedField(ListItem(typedDeclaration(T::Type, #NoName)) L:List)
+     rule hasNamedField(ListItem(typedDeclaration(_, F::CId)) _) => true
+          requires notBool isNoName(F)
+     rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L:List)
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
-     rule hasNamedField(ListItem(typedDeclaration(T::Type, #NoName)) L:List)
+     rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L:List)
           => hasNamedField(getFields(getFieldInfo(T)) L)
-          requires isStructOrUnionType(T)
      rule hasNamedField(.List) => false
 
      syntax List ::= numberUnnamed(List) [function]
                    | numberUnnamed(Int, List) [function, klabel(numberUnnamed2)]
      rule numberUnnamed(Fs::List) => numberUnnamed(0, Fs)
-     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
+     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
           => ListItem(typedDeclaration(T, #NoName(N))) numberUnnamed(N +Int 1, Fs)
-          requires F ==K #NoName andBool isStructOrUnionType(T)
      rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
           => ListItem(typedDeclaration(T, F)) numberUnnamed(N +Int 1, Fs)
-          requires F =/=K #NoName orBool notBool isStructOrUnionType(T)
+          requires notBool isNoName(F)
      rule numberUnnamed(_, .List) => .List
 
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
@@ -167,26 +165,20 @@ module C-DECL-TAGGED
      // effect of the gcc et al. padding attr as applied to a particular field.
 
      syntax Int ::= pad(Int, Type) [function]
-     // Packed bitfields and non-packed bitfields that don't cross an
-     // alignment boundary have 1-bit alignment (no padding).
-     rule pad(V::Int, T::Type) => V
-          requires isBitfieldType(T) andBool bitSizeofType(T) >Int 0
-               andBool (Packed() in getModifiers(T)
-               orBool (V +Int bitSizeofType(T)) <=Int padTo(V, byteAlignofType(innerType(T))))
-     // Packed non-bitfields have 1-byte alignment.
-     rule pad(V::Int, T::Type) => padTo(V, 1)
-          requires Packed() in getModifiers(T)
-               andBool notBool isBitfieldType(T)
+     // Non-bitfields are aligned according to their type (if we note that
+     // fields tagged with the Packed() attribute have an alignment of 1 byte).
+     rule pad(V::Int, T::Type) => padTo(V, byteAlignofType(T))
+          requires notBool isBitfieldType(T)
      // Non-packed bitfields that would cross an alignment boundary and
      // zero-length bitfields have an alignment of the bitfield field type.
-     rule pad(V::Int, T::Type) => padTo(V, byteAlignofType(innerType(T)))
-          requires isBitfieldType(T) andBool ((notBool (Packed() in getModifiers(T))
-               andBool ((V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))))
-               orBool bitSizeofType(T) ==Int 0)
-     // Non-packed non-bitfields are aligned according to their type.
-     rule pad(V::Int, T::Type) => padTo(V, byteAlignofType(T))
+     rule pad(V::Int, T:BitfieldType) => padTo(V, byteAlignofType(innerType(T)))
           requires notBool (Packed() in getModifiers(T))
-               andBool notBool isBitfieldType(T)
+               andBool (V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, T:BitfieldType) => padTo(V, byteAlignofType(innerType(T)))
+          requires bitSizeofType(T) ==Int 0
+     // Packed bitfields and non-packed bitfields that don't cross an alignment
+     // boundary have 1-bit alignment (no padding).
+     rule pad(V::Int, _) => V [owise]
 
      // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
      syntax Int ::= padTo(Int, Int) [function]

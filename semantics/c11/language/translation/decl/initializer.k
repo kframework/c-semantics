@@ -125,7 +125,7 @@ module C-DECL-INITIALIZER
           <incomplete-length> N:Int </incomplete-length>
           [structural]
 
-   // id, type, initializer
+     // id, type, initializer
      syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
      rule figureInit-aux(X:CId, T:Type, initializer(K:K))
           => giveType(X, T) ~> elaborateInit(K) ~> initValue(X, T, .K)
@@ -153,7 +153,7 @@ module C-DECL-INITIALIZER
           ...</k>
           <incomplete-length> _ => 0 </incomplete-length>
           <curr-subobject>
-               .List => ListItem(ncle(ncle(X, T), T))
+               .List => ListItem(down) ListItem(ncle(ncle(X, T), T))
           </curr-subobject>
           <curr-object>
                .List => ListItem(ncle(ncle(X, T), T))
@@ -167,35 +167,31 @@ module C-DECL-INITIALIZER
      rule fillInits(.List) => .K
           [structural]
 
-     syntax KItem ::= "next"
-     syntax KItem ::= "block"
+     syntax KItem ::= "next" | "down" | "block"
 
      rule <curr-subobject>
-               (.List => ListItem(ncle(K[[0]], T)))
+               (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K:K, t(_, _, arrayType(T::Type, _))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
-               (.List => ListItem(ncle(K[[0]], T)))
+               (ListItem(down) => ListItem(ncle(K[[0]], T)))
                ListItem(ncle(K:K, t(_, _, incompleteArrayType(T::Type))))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
-               (.List => ListItem(ncle(K . F, T)))
+               (ListItem(down) => ListItem(firstField(K, L)))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</tags>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
-
-     // fixme these are terrible!
      rule <curr-subobject>
-               (.List => ListItem(ncle(K . F, T)))
+               (ListItem(down) => ListItem(firstField(K, L)))
                ListItem(ncle(K:K, t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T::Type, F::CId)) _, _, _, _, _)) ...</tags>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
 
-     // fixme should i worry about basetype here_
      rule <curr-subobject>
                (ListItem(next) ListItem(ncle(K:K[[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
@@ -204,123 +200,97 @@ module C-DECL-INITIALIZER
           requires Len >Int N +Int 1
           [structural]
      rule <curr-subobject>
-               ListItem(next)
-               (ListItem(ncle(K:K[[N::Int]], _)) => .List)
+               (ListItem(next) ListItem(ncle(K:K[[N::Int]], _)) => ListItem(noMoreIndices))
                ListItem(ncle(K:K, t(_, _, arrayType(_, Len::Int))))
           ...</curr-subobject>
           requires notBool Len >Int N +Int 1
           [structural]
-
      rule <curr-subobject>
                (ListItem(next) ListItem(ncle(K:K[[N::Int]], T::Type))
                     => ListItem(ncle(K[[N +Int 1]], T)))
                ListItem(ncle(K, t(_, _, incompleteArrayType(_))))
           ...</curr-subobject>
           [structural]
-
-     // define a extra constructor in List to get the
-     // information of next T' and F' if we have next operator
-     // TODO(liyi): no associative matching. increase speed
-     syntax SearchResult ::= "noResultOfSearchType" | "matchResultOfSearchType"
-                           | DType
-
-     syntax KItem ::= resultInFieldInfoList(SearchResult)
-
-     syntax KItem ::= searchInFieldInfoList(Type, CId, List) [function]
-                    | continueInFieldInfoList(List) [function]
-
-     rule searchInFieldInfoList(T:Type, F:CId,
-               ListItem(typedDeclaration(T, F)) L:List)
-          => continueInFieldInfoList(L)
-     rule searchInFieldInfoList(_, _, .List)
-          => resultInFieldInfoList(noResultOfSearchType)
-     rule searchInFieldInfoList(T:Type, F:CId, ListItem(K:K) L:List)
-          => searchInFieldInfoList(T, F, L)
-          requires getKLabel(K) =/=K #klabel(`typedDeclaration`)
-     rule searchInFieldInfoList(T:Type, F:CId,
-               ListItem(typedDeclaration(T':Type, F':CId)) L:List)
-          => searchInFieldInfoList(T, F, L)
-          requires T =/=K T' orBool F =/=K F'
-
-     rule continueInFieldInfoList(.List)
-          => resultInFieldInfoList(matchResultOfSearchType)
-     rule continueInFieldInfoList(
-               ListItem(typedDeclaration(T:Type, F:CId)) _)
-          => resultInFieldInfoList(typedDeclaration(T, F))
-          requires F =/=K #NoName
-     rule continueInFieldInfoList(
-               ListItem(typedDeclaration(_, #NoName))
-               ListItem(typedDeclaration(T':Type, F':CId)) _)
-          => resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
-     rule continueInFieldInfoList(
-               ListItem(typedDeclaration(_, #NoName)))
-          => resultInFieldInfoList(matchResultOfSearchType)
-
-     rule <k> (.K => searchInFieldInfoList(T, F, L)) ...</k>
-          <curr-subobject>
-               ListItem(next) (.List => ListItem(block)) ListItem(ncle(K:K . F::CId, T::Type))
+     rule <curr-subobject>
+               (ListItem(next) ListItem(ncle(K:K . F::CId, T::Type)) => ListItem(followingField(K, F, L)))
                ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
           ...</curr-subobject>
           <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
-
-     rule <k> resultInFieldInfoList(typedDeclaration(T':Type, F':CId))
-               => .K
-          ...</k>
-          <curr-subobject>
-               (ListItem(next) ListItem(block) ListItem(ncle(K:K . _, _))
-                    => ListItem(ncle(K . F', T')))
-               ListItem(ncle(K:K, t(_, _, structType(_))))
-          ...</curr-subobject>
-          [structural]
-
-     rule <k> resultInFieldInfoList(matchResultOfSearchType) => .K ...</k>
-          <curr-subobject>
-               ListItem(next)
-               (ListItem(block) ListItem(ncle(K:K . _, _)) => .List)
-               ListItem(ncle(K:K, t(_, _, structType(_))))
-          ...</curr-subobject>
-          [structural]
-
      rule <curr-subobject>
-               ListItem(next)
-               (ListItem(ncle(K:K . _, _)) => .List)
+               (ListItem(next) ListItem(ncle(K:K . _, _)) => ListItem(noMoreFields))
                ListItem(ncle(K:K, t(_, _, unionType(_))))
           ...</curr-subobject>
           [structural]
+     rule <curr-subobject>
+               ListItem(noMoreFields => next)
+               ListItem(ncle(_ . _::CId, _))
+          ...</curr-subobject>
+          [structural]
+
+     syntax KItem ::= "noMoreFields" | "noMoreIndices"
+     syntax KItem ::= thisField(K, CId, List) [function]
+                    | followingField(K, CId, List) [function]
+                    | firstField(K, List) [function]
+
+     rule thisField(K:K, F::CId, ListItem(typedDeclaration(T::Type, F)) L::List)
+          => ncle(K . F, T)
+     rule thisField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule thisField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
+          requires F =/=K F' andBool notBool isNoName(F')
+     rule thisField(_, _, _) => noMoreFields [owise]
+
+     rule followingField(K:K, F::CId, ListItem(typedDeclaration(_, F)) L::List)
+          => firstField(K, L)
+     rule followingField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule followingField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
+          requires F =/=K F' andBool notBool isNoName(F')
+     rule followingField(_, _, _) => noMoreFields [owise]
+
+     rule firstField(K:K, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule firstField(K:K, ListItem(typedDeclaration(T::Type, F::CId)) _) => ncle(K . F, T)
+          requires notBool isNoName(F)
+     rule firstField(_, _) => noMoreFields [owise]
+
+     syntax List ::= flattenField(Type) [function]
+     rule flattenField(T::Type) => getFields(getFieldInfo(T))
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
           <curr-subobject>
-            ListItem(K:K)
+               ListItem(K:K)
           ...</curr-subobject>
-          requires K =/=K next
+          requires K =/=K next andBool K =/=K noMoreFields
           [structural]
 
-     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.",
-               "6.7.9:2"))
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.", "6.7.9:2"))
                ~> fillInit(InitFragment(NextInit(), _))
           ...</k>
           <curr-subobject>
-               ListItem(next) ListItem(ncle(_, T:Type))
+               ListItem(K:K) L::List
           </curr-subobject>
-          requires isAggregateOrUnionType(T)
+          requires K ==K noMoreIndices orBool
+               (K ==K noMoreFields andBool notBool isFieldAccess(L))
+
+     syntax Bool ::= isFieldAccess(List) [function]
+     rule isFieldAccess(ListItem(ncle(_ . _::CId, _)) _) => true
+     rule isFieldAccess(_) => false [owise]
 
      syntax KItem ::= finishCompoundInit(List)
-     rule <k> fillInit(CompoundInit(list(L:List)))
+     rule <k> fillInit(CompoundInit(list(L::List)))
                => fillInits(L)
-               ~> finishCompoundInit(ListItem(next) ListItem(ncle(K, T)) ListItem(Remainder))
+               ~> finishCompoundInit(ListItem(next) ListItem(ncle(K, T)) Remainder)
           ...</k>
           <curr-subobject>
-               (_:List => .List)
+               (.List => ListItem(down))
                ListItem(ncle(K:K, T:AggregateOrUnionType))
-               (ListItem(Remainder:K) => .List)
+               Remainder::List
           </curr-subobject>
           <curr-object>
                .List => ListItem(ncle(K, T))
           ...</curr-object>
           [structural]
-     rule <k> finishCompoundInit(L:List) => .K ...</k>
-          <curr-subobject> (_ => L) </curr-subobject>
+     rule <k> finishCompoundInit(L::List) => .K ...</k>
+          <curr-subobject> _ => L </curr-subobject>
           <curr-object>
                ListItem(ncle(_, _)) => .List
           ...</curr-object>
@@ -355,17 +325,17 @@ module C-DECL-INITIALIZER
                => buildDesignator(More)
           ...</k>
           <curr-subobject>
-               ListItem(block) (.List => ListItem(ncle(K . F, T)))
+               ListItem(block) (.List => ListItem(thisField(K, F, L)))
                     ListItem(ncle(K:K, t(_, _, Lbl:KLabel(tag(X:CId, Tu:String, B:BlockRef)))))
           ...</curr-subobject>
           <tags>...
-               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F:CId |-> T:Type), _, _))
+               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _))
           ...</tags>
           requires isStructOrUnionKLabel(#klabel(Lbl))
           [structural]
 
      rule <k> buildDesignator(NextInit()) => NextInit() ...</k>
-          <curr-subobject> (ListItem(block) => .List) ...</curr-subobject>
+          <curr-subobject> ListItem(block) => .List ...</curr-subobject>
           [structural]
 
      context buildDesignator(AtIndexInit((HOLE:KItem => reval(HOLE)), _))
@@ -378,8 +348,6 @@ module C-DECL-INITIALIZER
                     ListItem(ncle(K:K, T:ArrayType))
           ...</curr-subobject>
           [structural]
-
-     syntax KItem ::= "popInit"
 
      syntax Int ::= getTopArrayUse(K) [function]
      rule getTopArrayUse(_:KResult) => 0
@@ -396,7 +364,6 @@ module C-DECL-INITIALIZER
      rule (typeof(T:Type) => T) ~> initializeSingleInit(_)
           [structural]
 
-     // fixme want to exclude strings, but not normal arrays
      rule <k> T':Type ~> initializeSingleInit(K':KResult) => .K ...</k>
           <curr-subobject>
                (.List => ListItem(next)) ListItem(ncle(K:K, T::Type))
@@ -407,14 +374,16 @@ module C-DECL-INITIALIZER
           <saved-init>...
                .K => Computation(K := K')
           </saved-init>
-          requires (isBasicType(T)
-                    orBool isPointerType(T)
-                    orBool isBitfieldType(T))
+          requires notBool isAggregateOrUnionType(T)
                andBool notBool isStructOrUnionType(T')
           [structural]
-
-     // this is used to have an aggregate on the RHS of a compound init
-     // fixme want to exclude strings, but not normal arrays
+     rule <k> T':Type ~> initializeSingleInit(_) ...</k>
+          <curr-subobject>
+               (.List => ListItem(down)) ListItem(ncle(K:K, T::Type))
+          ...</curr-subobject>
+          requires isAggregateOrUnionType(T)
+               andBool notBool isAggregateOrUnionType(T')
+          [structural]
      syntax KItem ::= initFromAggregateRHS(K, Type)
      rule T:StructOrUnionType ~> initializeSingleInit(K:KResult)
           => initFromAggregateRHS(K, T)
@@ -459,12 +428,26 @@ module C-DECL-INITIALIZER
                andBool getKLabel(K) =/=K #klabel(`wstringLiteral`)
           [structural]
 
+     rule <k> fillInit(SingleInit(stringLiteral(_))) ...</k>
+          <curr-subobject>
+               (.List => ListItem(down))
+               ListItem(ncle(_, t(_, _, arrayType(T:CharType, _))))
+          ...</curr-subobject>
+          [structural]
+     rule <k> fillInit(SingleInit(wstringLiteral(_))) ...</k>
+          <curr-subobject>
+               (.List => ListItem(down))
+               ListItem(ncle(_, t(_, _, arrayType(T::Type, _))))
+          ...</curr-subobject>
+          requires isWCharType(T)
+          [structural]
+
      rule <k> fillInit(SingleInit(stringLiteral(S:String)))
                => fillInit-aux(SingleInit(stringLiteral(S)))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:CharType))
-               ListItem(ncle(_, t(_, _, arrayType(T, Len:Int))))
+               ListItem(ncle(_, T:CharType))
+               ListItem(ncle(_, t(_, _, arrayType(T, Len::Int))))
           ...</curr-subobject>
           requires lengthString(S) ==Int Len
           [structural]
@@ -472,8 +455,8 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(wstringLiteral(S)))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:Type))
-               ListItem(ncle(_, t(_, _, arrayType(T:Type, Len:Int))))
+               ListItem(ncle(_, T::Type))
+               ListItem(ncle(_, t(_, _, arrayType(T, Len:Int))))
           ...</curr-subobject>
           requires isWCharType(T) andBool size(S) ==Int Len
           [structural]
@@ -481,7 +464,7 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(stringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:CharType))
+               ListItem(ncle(_, T:CharType))
                ListItem(ncle(_, t(_, _, arrayType(T, Len:Int))))
           ...</curr-subobject>
           requires lengthString(S) <Int Len
@@ -490,8 +473,8 @@ module C-DECL-INITIALIZER
                => fillInit(SingleInit(wstringLiteral(S ListItem(0))))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:Type))
-                    ListItem(ncle(_, t(_, _, arrayType(T:Type, Len:Int))))
+               ListItem(ncle(_, T::Type))
+               ListItem(ncle(_, t(_, _, arrayType(T, Len:Int))))
           ...</curr-subobject>
           requires isWCharType(T) andBool size(S) <Int Len
           [structural]
@@ -499,7 +482,7 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(stringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:CharType))
+               ListItem(ncle(_, T:CharType))
                ListItem(ncle(_, t(_, _, incompleteArrayType(T))))
           ...</curr-subobject>
           [structural]
@@ -507,8 +490,8 @@ module C-DECL-INITIALIZER
                => fillInit-aux(SingleInit(wstringLiteral(S ListItem(0))))
           ...</k>
           <curr-subobject>
-               ListItem(ncle(_:K, T:Type))
-               ListItem(ncle(_, t(_, _, incompleteArrayType(T:Type))))
+               ListItem(ncle(_, T::Type))
+               ListItem(ncle(_, t(_, _, incompleteArrayType(T))))
           ...</curr-subobject>
           requires isWCharType(T)
           [structural]
@@ -517,7 +500,7 @@ module C-DECL-INITIALIZER
                ~> fillInit-aux(initTail(S))
           ...</k>
           <curr-subobject> ListItem(ncle(_, _:CharType)) ...</curr-subobject>
-          requires (S =/=String "")
+          requires S =/=String ""
           [structural]
 
      syntax KItem ::= initHead(String) [function]
@@ -597,13 +580,15 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule <k> zeroType(X:K, t(_, _, structType(tag(Tag:CId, Tu:String, B:BlockRef))))
-              => zeroStruct(X, Fields) ...</k>
+               => zeroStruct(X, Fields)
+          ...</k>
           <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _, _)) ...</tags>
           [structural]
 
      rule <k> zeroType(X:K, t(_, _, unionType(tag(Tag:CId, Tu:String, B:BlockRef))))
-              => zeroType(X . F, T) ...</k>
-          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(typedDeclaration(T:Type, F:CId)) _, _, _, _, _)) ...</tags>
+               => zeroStruct(X, ListItem(Field))
+          ...</k>
+          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(Field::DType) _, _, _, _, _)) ...</tags>
           [structural]
 
      rule zeroType(_, _:FunctionType) => .K
@@ -613,18 +598,18 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= zeroStruct(K, List)
-     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, F:CId)) L:List)
+     rule zeroStruct(X:K, ListItem(typedDeclaration(T::Type, F::CId)) L:List)
           => zeroType(X . F, T) ~> zeroStruct(X, L)
-          requires F =/=K #NoName
+          requires notBool isNoName(F)
           [structural]
-     rule zeroStruct(X:K, ListItem(typedDeclaration(T:Type, #NoName)) L:List)
-          => zeroStruct(X, L)
+     rule zeroStruct(_, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+          [structural]
      rule zeroStruct(_, .List) => .K
           [structural]
 
      syntax CValue ::= getZero(Type) [function]
-     rule getZero(_:IntegerType) => 0
      rule getZero(_:FloatType) => 0.0
      rule getZero(_:PointerType) => NullPointer
+     rule getZero(_) => 0 [owise]
 
 endmodule
