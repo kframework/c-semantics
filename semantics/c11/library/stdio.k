@@ -1,5 +1,6 @@
 module LIBC-STDIO
      imports BITS-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
@@ -22,23 +23,35 @@ module LIBC-STDIO
 
      // getString returns the string without the null terminator
      syntax KItem ::= getString(K) [function]
-     syntax KItem ::= "getString-aux" "(" SymLoc "," String ")"
-     rule getString(Loc:SymLoc) => getString-aux(Loc, "")
-     rule getString(tv(Loc:SymLoc, _)) => getString-aux(Loc, "")
-
-     rule [getString-pre]:
-          (.K => read(Loc, type(unsigned-char)))
-          ~> getString-aux((Loc:SymLoc => Loc +bytes 1), _)
-          [structural]
-
+                    | getWString(SymLoc) [function]
+     syntax KItem ::= "getString'" "(" SymLoc "," String ")"
+                    | "getWString'" "(" SymLoc "," String ")"
      syntax RValue ::= str(String)
-     rule [getString]:
-          tv(N:Int, _) ~> getString-aux(Loc:SymLoc, S:String)
-          => getString-aux(Loc, S +String chrChar(N))
+
+     rule getString(Loc:SymLoc) => getString'(Loc, "")
+     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc, "")
+
+     rule (.K => read(Loc, type(unsigned-char)))
+          ~> getString'((Loc:SymLoc => Loc +bytes 1), _)
+          [structural]
+     rule tv(N:Int, _) ~> getString'(Loc:SymLoc, S:String)
+          => getString'(Loc, S +String chrChar(N))
           requires N =/=Int 0
           [structural]
-     rule [getString-done]:
-          tv(0, _) ~> getString-aux(_, S:String)
+     rule tv(0, _) ~> getString'(_, S:String)
+          => str(S)
+          [structural]
+
+     rule getWString(Loc::SymLoc) => getWString'(Loc, "")
+
+     rule (.K => read(Loc, type(cfg:wcharut)))
+          ~> getWString'((Loc:SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut))), _)
+          [structural]
+     rule tv(N:Int, _) ~> getWString'(Loc:SymLoc, S:String)
+          => getWString'(Loc, S +String chrChar(N))
+          requires N =/=Int 0
+          [structural]
+     rule tv(0, _) ~> getWString'(_, S:String)
           => str(S)
           [structural]
 
@@ -767,6 +780,15 @@ module LIBC-STDIO
           <k> (.K => getString(Loc))
                ~> formatter-aux(_)
           ...</k>
+          <format-length> "" </format-length>
+          <format-arg> Loc:SymLoc => .K </format-arg>
+          <format-state> "%s" => "%s-read" </format-state>
+          [structural]
+     rule [format-%ls]:
+          <k> (.K => getWString(Loc))
+               ~> formatter-aux(_)
+          ...</k>
+          <format-length> "l" </format-length>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
@@ -999,8 +1021,9 @@ module LIBC-STDIO
      rule getFormatType-aux("%g", _) => type(double)
      rule getFormatType-aux("%G", _) => type(double)
 
-     rule getFormatType-aux("%c", "") =>type(int)
-     rule getFormatType-aux("%s", "") =>type(pointerType(type(char)))
+     rule getFormatType-aux("%c", "") => type(int)
+     rule getFormatType-aux("%s", "") => type(pointerType(type(char)))
+     rule getFormatType-aux("%s", "l") => type(pointerType(type(cfg:wcharut)))
 
      rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
 

@@ -83,6 +83,12 @@ module C-TYPING-COMMON
 
      rule getTag(tag(S:CId, _, _)) => S
 
+     rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
+
+     syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
+     rule getEnumAlias'(enumAlias(T::SimpleType)) => T
+     rule getEnumAlias'(_) => no-type [owise]
+
      rule getFieldInfo(S:TagId) => toFieldInfo(getTagInfo(S))
      rule getFieldInfo(t(_, Mods::Set, structType(S::TagId)))
           => toFieldInfo(getTagInfo(S))

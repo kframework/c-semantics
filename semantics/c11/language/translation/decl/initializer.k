@@ -519,10 +519,15 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires isWCharType(T)
           [structural]
-     // fixme not sure what happens in the case of   char *x = "";
-     rule fillInit-aux(SingleInit(stringLiteral(""))) => .K
+     rule <k> fillInit-aux(SingleInit(stringLiteral(""))) => .K ...</k>
+          <curr-subobject>
+               ListItem(noMoreIndices => next)
+          ...</curr-subobject>
           [structural]
-     rule fillInit-aux(SingleInit(wstringLiteral(.List))) => .K
+     rule <k> fillInit-aux(SingleInit(wstringLiteral(.List))) => .K ...</k>
+          <curr-subobject>
+               ListItem(noMoreIndices => next)
+          ...</curr-subobject>
           [structural]
 
      // This rule assumes all unrollings have already occurred, so it needs to

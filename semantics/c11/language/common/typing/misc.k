@@ -229,12 +229,6 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
-     rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
-
-     syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
-     rule getEnumAlias'(enumAlias(T::SimpleType)) => T
-     rule getEnumAlias'(_) => no-type [owise]
-
      rule getFields(fieldInfo(L:List, _, _, _, _)) => L
      rule getFieldsTypes(fieldInfo(_, _, Ts:Map, _, _)) => Ts
      rule getFieldsOffsets(fieldInfo(_, _, _, Offs:Map, _)) => Offs

@@ -152,10 +152,28 @@ module C-PROCESS-LABEL
           )
           <k> waitingOnGotoMap ...</k>
 
+     rule <computation>
+               (.K => S ~> loopMarked)
+               ~> While(_, S:K)
+               ~> (.K => popLoop)
+               ~> K:K
+          </computation>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-block-history> ListItem(Num::Int) ...</goto-block-history>
+          <goto-loop-stack>
+               (.List => ListItem(kpair(Num, (K ~> Tail))))
+          ...</goto-loop-stack>
+          <k> waitingOnGotoMap ...</k>
+     rule <computation>
+               (loopMarked ~> While(_, _) => .K) ~> popLoop ~> _
+          </computation>
+          <k> waitingOnGotoMap ...</k>
+
      rule <goto-calc>
                <computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
+               <goto-nesting-depth> N::Int </goto-nesting-depth>
                <goto-block-history>
                     ListItem(Num::Int) OldBlockHistory::List
                </goto-block-history>
@@ -171,6 +189,7 @@ module C-PROCESS-LABEL
                          ~> Tail
                     </computation-tail>
                     B
+                    <goto-nesting-depth> N </goto-nesting-depth>
                     <goto-block-history>
                          ListItem(Num) OldBlockHistory
                     </goto-block-history>
@@ -180,23 +199,6 @@ module C-PROCESS-LABEL
                     </goto-loop-stack>
                </goto-calc>
           )
-          <k> waitingOnGotoMap ...</k>
-
-     rule <computation>
-               (.K => S ~> loopMarked)
-               ~> While(_:K, S:K)
-               ~> (.K => popLoop)
-               ~> K:K
-          </computation>
-          <computation-tail> Tail:K </computation-tail>
-          <goto-block-history> ListItem(Num::Int) ...</goto-block-history>
-          <goto-loop-stack>
-               (.List => ListItem(kpair(Num, (K ~> Tail))))
-          ...</goto-loop-stack>
-          <k> waitingOnGotoMap ...</k>
-     rule <computation>
-               (loopMarked ~> While(_, _) => .K) ~> popLoop ~> _
-          </computation>
           <k> waitingOnGotoMap ...</k>
 
      rule <goto-calc>
@@ -233,7 +235,7 @@ module C-PROCESS-LABEL
           <k> waitingOnGotoMap ...</k>
 
      rule <computation> popLoop => .K ...</computation>
-          <goto-loop-stack> (ListItem(_:K) => .List) ...</goto-loop-stack>
+          <goto-loop-stack> ListItem(_) => .List ...</goto-loop-stack>
           <k> waitingOnGotoMap ...</k>
 
      rule <computation> (Label(Target::CId, S:K) => S) ~> K:K </computation>

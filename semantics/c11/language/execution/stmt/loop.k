@@ -54,8 +54,7 @@ module C-STMT-LOOP
      }*/
 
      rule [while-mark]:
-          <k>
-               While(B:K, S:K) ~> K:K
+          <k> While(B:K, S:K) ~> K:K
                => loopMarked
                     ~> While(B, S)
                     ~> popLoop
@@ -74,8 +73,7 @@ module C-STMT-LOOP
      }*/
 
      rule [do-while-mark]:
-          <k>
-               DoWhile(B:K, S:K) ~> K:K
+          <k> DoWhile(B:K, S:K) ~> K:K
                => loopMarked
                     ~> DoWhile(B, S)
                     ~> popLoop
@@ -131,10 +129,19 @@ module C-STMT-LOOP
                andBool (getKLabel(K) =/=K #klabel(`popBlock_C-DYNAMIC-SYNTAX`))
                andBool (getKLabel(K) =/=K #klabel(`pushBlock_C-DYNAMIC-SYNTAX`))
                andBool (getKLabel(K) =/=K #klabel(`popLoop_C-DYNAMIC-SYNTAX`))
+               andBool (getKLabel(K) =/=K #klabel(`IfThenElse`))
           [structural]
-     rule [continue-through-pop]:
-          Continue() ~> popBlock
+     rule Continue() ~> (IfThenElse(_, K:KItem ~> _, _) => .K)
+          requires getKLabel(K) =/=K #klabel(`loopMarked_C-DYNAMIC-SYNTAX`)
+          [structural]
+     rule Continue() ~> popBlock
           => popBlock ~> Continue()
+          [structural]
+     rule Continue() ~> popLoop
+          => popLoop ~> Continue()
+          [structural]
+     rule Continue() ~> pushBlock(N::Int)
+          => pushBlock(N) ~> Continue()
           [structural]
 
      rule [continue-done-for]:
@@ -145,6 +152,9 @@ module C-STMT-LOOP
      rule [continue-done]:
           (Continue() => .K) ~> loopMarked ~> K:KItem
           requires getKLabel(K) =/=K #klabel(`For`)
+          [structural]
+     // Do-while.
+     rule (Continue() => .K) ~> IfThenElse(_, loopMarked ~> _, _)
           [structural]
 
      rule [popLoop]:
