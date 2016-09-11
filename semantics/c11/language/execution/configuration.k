@@ -16,9 +16,6 @@ module C-CONFIGURATION
 <result-value color="red"> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
-     // SymBase |-> Type
-     <effective-types> .Map </effective-types>
-
      // These are used for verifying the aliasing restrictions on
      // restrict-qualified pointers.
      // SymLoc |-> set(basedOns)

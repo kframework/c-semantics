@@ -12,9 +12,6 @@ module C-CONFIGURATION
 <result-value color="red"> 1 </result-value>
 <T multiplicity="?">
 <exec>
-     // SymLoc |-> Type
-     <effective-types> .Map </effective-types>
-
      <final-computation multiplicity="?" color="lightgray">
           .K
      </final-computation>

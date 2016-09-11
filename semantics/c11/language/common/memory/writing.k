@@ -399,7 +399,7 @@ module C-MEMORY-WRITING
           [structural]
      rule <k> setEffectiveType(Loc::SymLoc, _) => .K ...</k>
           <mem> Mem:Map </mem>
-          requires notBool isNativeLoc(Loc) andBool notBool base(Loc) in_keys(Mem)
+          requires notBool base(Loc) in_keys(Mem)
           [structural]
 
      syntax Bool ::= hasObjectType(SymLoc) [function]

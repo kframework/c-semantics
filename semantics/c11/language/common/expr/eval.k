@@ -8,8 +8,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= checkLoc(SymLoc)
      syntax UType ::= arrayToPtrType(Type) [function]
 
-     syntax KItem ::= getEffectiveType(SymBase)
-
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -241,7 +239,7 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= "checkEffectiveType''" "(" SymLoc "," Type "," Int "," SymBase "," K ")" [strict(5)]
      rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, Eff:Type)
           => nclv(setLastAccessType(Loc, newLastAccessType(Eff, L, Offset)), L)
-          requires (effectivelyCompat(L, getTypesAtOffset(Eff, Offset)))
+          requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
      rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7, J.2:1 item 37"))
@@ -380,12 +378,13 @@ module C-COMMON-EXPR-EVAL
 
      rule #effectivelyCompat(_, _) => false [owise]
 
+     syntax KItem ::= getEffectiveType(SymBase)
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
           <mem>... Base |-> object(T::Type, _, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem:Map </mem>
-          requires notBool Base in_keys(Mem) andBool notBool isNativeLoc(Base)
+          requires notBool Base in_keys(Mem)
           [structural]
 
      syntax SymLoc ::= setLastAccessType(SymLoc, Type) [function]

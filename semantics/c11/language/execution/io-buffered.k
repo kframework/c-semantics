@@ -460,18 +460,6 @@ module C-IO-BUFFERED
           => getQualifiers(T) +Quals getQualsAtOffset(Ts)
      rule getQualsAtOffset(.List) => noQuals
 
-     rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
-          <effective-types> EffTypes::Map </effective-types>
-          requires isNativeLoc(Base) andBool notBool (Base in_keys(EffTypes))
-     rule <k> getEffectiveType(Base::SymBase) => T ...</k>
-          <effective-types>... Base |-> T::Type ...</effective-types>
-          requires isNativeLoc(Base)
-
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <effective-types> M:Map => M [ Base <- T' ] </effective-types>
-          requires isNativeLoc(Base)
-          [structural]
-
      rule [err00037]:
           (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
           read(NullPointer, _)
