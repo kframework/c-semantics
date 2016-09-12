@@ -11,10 +11,14 @@ module CPP-EXPR-LITERAL
 
      syntax Expr ::= StringLiteral(String, K) [klabel(StringLiteral2)]
      context StringLiteral(_, (HOLE:KItem => typeof(HOLE)))
+     syntax Expr ::= CharacterLiteral(Int, K) [klabel(CharacterLiteral2)]
+     context CharacterLiteral(_, (HOLE:KItem => typeof(HOLE)))
 
      rule StringLiteral(K::CharKind, S::String) => StringLiteral(S, StringLiteral(K, S))
+     rule CharacterLiteral(K::CharKind, I::Int) => CharacterLiteral(I, CharacterLiteral(K, I))
 
      rule StringLiteral(S::String, T:CPPType) => stringLiteral(S, T)
+     rule CharacterLiteral(I::Int, T:CPPType) => prv(I, hasTrace(CharacterLiteral(I, T)), T)
 
      rule IntegerLiteral(I::Int, T:CPPType) => prv(I, hasTrace(IntegerLiteral(I, T)), T)
 

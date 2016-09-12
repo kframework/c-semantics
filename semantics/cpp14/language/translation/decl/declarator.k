@@ -16,7 +16,7 @@ module CPP-DECL-DECLARATOR-SYNTAX
 
      syntax DeclState ::= "declared" | "completed" | "defined" | "initialized"
  
-     syntax KItem ::= declState(SymBase, CPPType, DeclState)
+     syntax KItem ::= declState(SymBase, DeclState)
      syntax KItem ::= processFunDef(SymBase, QualId, CPPTypeExpr, List, Stmt)
      syntax KItem ::= "calculateGotoMap"
      syntax KItem ::= addParam(CId)
@@ -25,6 +25,8 @@ endmodule
 module CPP-DECL-DECLARATOR
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports C-CONFIGURATION
+     imports K-REFLECTION
+     imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
@@ -126,19 +128,48 @@ module CPP-DECL-DECLARATOR
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      // ExternalLinkage, StaticStorage, not previously declared
-     rule <k> declareObject(N::Namespace, X::CId, T:CPPCompleteType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(N::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals> 
               Exts::Map
-              => Exts[N :: X, T <- declState(Base, T, declared)]
+              => Exts[N :: X, T <- declState(Base, declared)]
           </externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, N :: X, T)] </odr-decls>
           <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
           <curr-template-context> noTemplate </curr-template-context>
           requires notBool N :: X in_keys(Exts)
+               andBool completeDeclaration(T, Init) ==K T
+
+     // InternalLinkage, StaticStorage, not previously declared
+     rule <k> declareObject(N::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
+              => addToEnv(N :: X, T, Base, false)
+              ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <internals> 
+              Ints::Map
+              => Ints[N :: X, T <- declState(Base, declared)]
+          </internals>
+          <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, N :: X, T)] </odr-decls>
+          <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
+          <curr-template-context> noTemplate </curr-template-context>
+          requires notBool N :: X in_keys(Ints)
+               andBool completeDeclaration(T, Init) ==K T
+
+     // ExternalLinkage, StaticStorage, redeclare incomplete array
+     rule <k> declareObject(N::Namespace, X::CId, T:CPPArrayType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+              => addToEnv(N :: X, T, Base, false)
+              ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals>... N :: X |-> ((T':CPPArrayType => T) |-> declState(Base::SymBase, _)) ...</externals>
+          <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, N :: X, T)] </odr-decls>
+          <curr-template-context> noTemplate </curr-template-context>
+          requires completeDeclaration(T, Init) ==K T
+              andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set)
@@ -146,9 +177,31 @@ module CPP-DECL-DECLARATOR
               ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), noTrace, T), T, Init, Init), Type, AutoStorage, S) ...</k>
           <curr-template-context> noTemplate </curr-template-context>
           requires Init =/=K NoInit()
+               andBool completeDeclaration(T, Init) ==K T
+
+     rule declareObject(_, _, (T::CPPType => completeDeclaration(T, Init)), Init::Init, _, _, _, _)
+          requires T =/=K completeDeclaration(T, Init)
 
      rule <k> declareNonStaticObject(X::CId, T::CPPType, Init:KResult, Type::DeclarationType, D::Duration, S::Set) => .K ...</k>
           <elab>... .K => declareNonStaticObject(X, T, Init, Type, D, S) </elab>
+
+     syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
+     // 8.5.4:3.2 (char x[] = {"foo"})
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), BraceInit(ListItem(StringLiteral(Narrow::CharKind, S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
+          requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, wchar_t))), BraceInit(ListItem(StringLiteral(Wide(), S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', wchar_t), lengthString(S) +Int 1))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char16_t))), BraceInit(ListItem(StringLiteral(UTF16(), S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', char16_t), lengthString(S) +Int 1))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), BraceInit(ListItem(StringLiteral(UTF32(), S::String)))) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
+     // 8.5:17.3 (char x[] = "foo")
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, T:CPPSimpleCharType))), StringLiteral(Narrow::CharKind, S::String)) => t(Q, Mods, arrayType(t(Q', Mods', T), lengthString(S) +Int 1))
+          requires Narrow ==K Ascii() orBool Narrow ==K UTF8()
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, wchar_t))), StringLiteral(Wide(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', wchar_t), lengthString(S) +Int 1))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char16_t))), StringLiteral(UTF16(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char16_t), lengthString(S) +Int 1))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), StringLiteral(UTF32(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(L::List)) => t(Q, Mods, arrayType(T, size(L)))
+         requires size(L) =/=Int 1 orBool getKLabel(L[0]) =/=K #klabel(`StringLiteral`)
+     rule completeDeclaration(T::CPPType, _) => T [owise]
+
 
      rule defineObject(_, _, _, NoInit(), Function(_), _, _) => .K
      rule defineObject(_, _, _, NoInit(), _, _, S::Set) => .K
@@ -158,7 +211,7 @@ module CPP-DECL-DECLARATOR
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage, byteSizeofType(T)),
                    T, Init, Init), Type) ...</k>
-          requires Init =/=K NoInit()
+          requires Init =/=K NoInit() andBool isCompleteType(T)
 
      syntax Expr ::= allocateDecl(QualId, CPPType, Duration, Int)
 

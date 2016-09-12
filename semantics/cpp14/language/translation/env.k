@@ -20,6 +20,7 @@ module CPP-ENV
     imports C-CONFIGURATION
     imports COMPAT-SYNTAX
     imports CPP-DYNAMIC-SYNTAX
+    imports CPP-TYPING-SYNTAX
 
     rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
@@ -28,12 +29,28 @@ module CPP-ENV
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
          <nenv> NE::Map => NE[X, T <- kpair(IsUsing, Base)] </nenv>
-         requires N =/=K NoNamespace()
+         requires N =/=K NoNamespace() andBool isCPPFunctionType(T)
+
+    rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+             => .K
+         ...</k>
+         <curr-tu> Tu::String </curr-tu>
+         <tu-id> Tu </tu-id>
+         <ns-id> N </ns-id>
+         <nenv> NE::Map => NE[X <- T |-> kpair(IsUsing, Base)] </nenv>
+         requires N =/=K NoNamespace() andBool notBool isCPPFunctionType(T)
 
     rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
          <env> NE::Map => NE[X, T <- kpair(IsUsing, Base)] </env>
+         requires isCPPFunctionType(T)
+
+    rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+             => .K
+         ...</k>
+         <env> NE::Map => NE[X <- T |-> kpair(IsUsing, Base)] </env>
+         requires notBool isCPPFunctionType(T)
 
      rule <k> scope(Scope::Scope, K:K)
               => pushLocals ~> K ~> popLocals ~> setScope(OldScope)

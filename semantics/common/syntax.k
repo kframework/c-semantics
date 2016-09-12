@@ -54,4 +54,6 @@ module COMMON-SYNTAX
 
      syntax KItem ::= allowInit(K)
 
+     syntax String ::= signatureToString(QualId, K) [function]
+
 endmodule

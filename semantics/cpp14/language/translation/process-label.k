@@ -72,4 +72,23 @@ module CPP-PROCESS-LABEL
           <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
 
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
+               <computation>
+                    (IfStmt(_:Expr, S1::Block, S2::Block) => .K) ~> K:K
+               </computation>
+               <computation-tail> Tail:K </computation-tail>
+               B::Bag
+          </goto-calc>
+          (.Bag => <goto-calc>
+               <computation> S1 </computation>
+               <computation-tail> K ~>  Tail </computation-tail>
+               B
+          </goto-calc>)
+          (.Bag => <goto-calc>
+               <computation> S2 </computation>
+               <computation-tail> K ~>  Tail </computation-tail>
+               B
+          </goto-calc>)
+
 endmodule

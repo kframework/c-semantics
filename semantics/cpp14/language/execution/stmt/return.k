@@ -1,7 +1,8 @@
 module CPP-STMT-RETURN
      imports RETURN-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
      imports C-CONFIGURATION
+     imports C-CHECK-LOC-SYNTAX
+     imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
@@ -44,6 +45,7 @@ module CPP-STMT-RETURN
      // Return (to C++ function)
      rule <k> return(V:PRVal) ~> _
               => exitRestrictScope(Scope)
+              ~> fullExpression
               ~> V
               ~> K
           </k>

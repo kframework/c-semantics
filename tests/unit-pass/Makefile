@@ -1,12 +1,13 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES=
-TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, ${TUS}))
-GCC_COMPILED_TESTS = ${TESTS:.c=.gcc}
-KCC_COMPILED_TESTS = ${TESTS:.c=.kcc}
-TEST_RESULTS = ${TESTS:.c=.out}
-REFERENCE_TEST_RESULTS = ${TESTS:.c=.ref}
-TEST_COMPARISON = ${TESTS:.c=.cmp}
+TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+GCC_COMPILED_TESTS = ${TESTS:=.gcc}
+KCC_COMPILED_TESTS = ${TESTS:=.kcc}
+TEST_RESULTS = ${TESTS:=.out}
+REFERENCE_TEST_RESULTS = ${TESTS:=.ref}
+TEST_COMPARISON = ${TESTS:=.cmp}
 CC=gcc-4.9
+CXX=g++-4.9
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
@@ -22,37 +23,41 @@ comparison: ${TEST_COMPARISON}
 
 compile: ${KCC_COMPILED_TESTS}
 
+# some versions of GNU make define the following pattern rule using cp. We need
+# to disable this, otherwise we will skip compilation and things will break.
+%.out: %
+
 %.out: %.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
 
-%-link1.kcc: %-link1.c %-link2.c
+%-link1.c.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.kcc: %-link1.C %-link2.C
+%-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
 	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%.kcc: %.c
+%.c.kcc: %.c
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
-%.kcc: %.C
+%.C.kcc: %.C
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.gcc: %-link1.c %-link2.c
+%-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "
 	@$(CC) -std=c11 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%-link1.gcc: %-link1.C %-link2.C
+%-link1.C.gcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^ (reference)... "
 	@$(CXX) -std=c++14 -o $@ $^ -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
-%.gcc: %.c
+%.c.gcc: %.c
 	@echo -n "Compiling $< (reference)... "
 	@$(CC) -std=c11 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
-%.gcc: %.C
+%.C.gcc: %.C
 	@echo -n "Compiling $< (reference)... "
 	@$(CXX) -std=c++14 -o $@ $< -lm > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 

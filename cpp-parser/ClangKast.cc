@@ -1228,7 +1228,7 @@ public:
   }
 
   bool VisitUnaryTransformType(UnaryTransformType *T) {
-    AddKApplyNode("GnuEnumUnderlyingType", 1);
+    AddKApplyNode("GnuEnumUnderlyingType", 2);
     return false;
   }
 
@@ -1772,7 +1772,7 @@ public:
     if (E->hasInitializer()) {
       TRY_TO(TraverseStmt(E->getInitializer()));
     } else {
-      AddKApplyNode("NoExpression", 0); 
+      AddKApplyNode("NoInit", 0); 
     }
     AddKSequenceNode(E->getNumPlacementArgs());
     for (unsigned i = 0; i < E->getNumPlacementArgs(); i++) {
@@ -1914,13 +1914,21 @@ public:
   }
 
   bool VisitCharacterLiteral(CharacterLiteral *Constant) {
+    AddKApplyNode("CharacterLiteral", 2);
     switch(Constant->getKind()) {
     case CharacterLiteral::Ascii:
+      AddKApplyNode("Ascii", 0);
       break;
-    default:
-      doThrow("unimplemented: char kind");
+    case CharacterLiteral::Wide:
+      AddKApplyNode("Wide", 0);
+      break;
+    case CharacterLiteral::UTF16:
+      AddKApplyNode("UTF16", 0);
+      break;
+    case CharacterLiteral::UTF32:
+      AddKApplyNode("UTF32", 0);
+      break;
     }
-    AddKApplyNode("CharacterLiteral", 1);
     char *buf = new char[11];
     sprintf(buf, "%d", Constant->getValue());
     AddKTokenNode(buf, "Int");

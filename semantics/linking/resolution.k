@@ -110,7 +110,7 @@ module C-LINKING-RESOLUTION
 
      rule <k> (.K => UNDIAG("TDR3",
                     "No definition for function or variable which was odr-used: "
-                    +String idToString(N :: X) +String ".",
+                    +String signatureToString(N :: X, T) +String ".",
                     "3.2:4"))
               ~> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...

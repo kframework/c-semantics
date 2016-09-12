@@ -92,6 +92,9 @@ module SYMLOC-SYNTAX
 
      syntax SymLoc ::= stripFromArray(SymLoc) [function]
      syntax SymLoc ::= stripProv(SymLoc) [function]
+
+     syntax SymLoc ::= stripProv(SymLoc, K) [function, klabel(stripProvByKLabel)]
+     syntax K ::= getProv(SymLoc, K) [function]
 endmodule
 
 module SYMLOC
@@ -242,6 +245,13 @@ module SYMLOC
 
      rule getBitOffset(loc(_, _, _:Set SetItem(bitOffset(I::Int)))) => I
      rule getBitOffset(_) => 0 [owise]
+
+     rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:K) S::Set), Lbl:K) => loc(Base, Offset, S)
+          requires getKLabel(K) ==K Lbl
+     rule stripProv(Loc::SymLoc, _) => Loc [owise]
+     rule getProv(loc(_, _, SetItem(K:K) _), Lbl:K) => K
+          requires getKLabel(K) ==K Lbl
+     rule getProv(_, _) => .K [owise]
 
 endmodule
 

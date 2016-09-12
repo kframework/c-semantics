@@ -19,6 +19,16 @@ module CPP-NAME
      imports CPP-TYPING-SYNTAX
 
      rule CallExpr(Name(NoNNS(), X::CId), Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag()))
+     rule (.K => Name(N, X)) ~> CallExpr(Name(N::NNS, X::CId), _)
+          requires N =/=K NoNNS()
+     rule cSet(Y::Map) ~> CallExpr(Name(N::NNS, X::CId), Args::StrictList)
+          => resolveOverload(cSet(Y), Args, X, operator())
+          requires N =/=K NoNNS()
+
+     syntax Bool ::= isQualifiedName(Expr)
+     rule isQualifiedName(Name(N::NNS, _)) => true
+          requires N =/=K NoNNS()
+     rule isQualifiedName(_) => false [owise]
 
      rule Name(NoNNS(), X::CId) => resolveUniqueDecl(nameLookup(X, NoTag()), Name(NoNNS(), X))
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T))

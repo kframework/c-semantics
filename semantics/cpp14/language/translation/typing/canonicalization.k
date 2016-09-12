@@ -31,6 +31,8 @@ module CPP-TYPING-CANONICALIZATION
 
      rule PointerType(T:CPPTypeExpr) => t(noQuals, .Set, pointerType(T))
 
+     rule ArrayType(T:CPPTypeExpr, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
+
      rule Qualifier(Q::Qualifier, t(Quals::Quals, Mods::Set, S::CPPSimpleType)) => t(Quals +Qual Q, Mods, S)
 
      rule FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), NoExceptionSpec(), true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), NoExceptionSpec(), false)

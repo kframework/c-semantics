@@ -7,12 +7,12 @@ module C-LINKING-INIT-SYNTAX
      syntax KItem ::= load(K) 
      syntax KItem ::= "link" | "cleanup" | "reportSuccess" | "builtinTu"
 
-     syntax TransOpts ::= Debug() | NoLink()
+     syntax TransOpts ::= Debug() | NoLink() | XBuiltins()
 
      syntax KItem ::= makeTu(String)
 
      syntax KItem ::= addBuiltins(Map, Bool)
-
+     syntax KItem ::= "addCPPBuiltins"
 endmodule
 
 module C-LINKING-INIT
@@ -34,6 +34,7 @@ module C-LINKING-INIT
      rule <k> link // compare against c11/language/translation/init.k
                => makeTu("native")
                ~> addBuiltins(nativeDefinedBuiltins, false)
+               ~> addCPPBuiltins
                ~> removeUnusedIdentifiers
                ~> resolveReferences
                ~> reportSuccess
@@ -55,8 +56,9 @@ module C-LINKING-INIT
      syntax KItem ::= addBuiltin(CId, Type, Bool)
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
-     // Therefore, if someone redefines a builtin, we won't co-opt it (although
-     // redefining it should probably be an error).
+     // Therefore, if someone redefines a builtin, we won't co-opt it.
+     // We should use this mechanism only for symbols that are considered weak
+     // by the C and C++ standards, or for native symbols.
 
      rule <k> (.K => addBuiltin(Identifier(B), T, AddAll))
                ~> addBuiltins((B:String |-> T:Type => .Map) _, AddAll:Bool) ...</k>

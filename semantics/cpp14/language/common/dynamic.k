@@ -30,6 +30,7 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateParams ::= TemplateArgs
      syntax TemplateParam ::= TemplateArg
      syntax TemplateArg
+     syntax CPPValue
 endmodule
 
 module CPP-REVAL-SYNTAX
@@ -134,11 +135,16 @@ module CPP-DYNAMIC-SYNTAX
      syntax TemplateParam ::= CPPTypeExpr
      syntax TemplateArg ::= CPPType
 
+     syntax String ::= typesToString(CPPTypes) [function]
+                     | typeToString(CPPType) [function]
+
 endmodule
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-SORTS
+     imports STRING
+     imports CPP-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule isLKLabel(#klabel(`lvcpp`)) => true
      rule isLKLabel(#klabel(`lecpp`)) => true
@@ -205,5 +211,79 @@ module CPP-DYNAMIC
      rule toTemplateParams(.List) => .TemplateParams
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
      rule toList(.CPPTypes) => .List
+
+     rule idToString(operatornew) => "operator new"
+     rule idToString(operatordelete) => "operator delete"
+     rule idToString(operatornew[]) => "operator new[]"
+     rule idToString(operatordelete[]) => "operator delete[]"
+     rule idToString(operator+) => "operator +"
+     rule idToString(operator-) => "operator -"
+     rule idToString(operator*) => "operator *"
+     rule idToString(operator/) => "operator /"
+     rule idToString(operator%) => "operator %"
+     rule idToString(operator^) => "operator ^"
+     rule idToString(operator&) => "operator &"
+     rule idToString(operator|) => "operator |"
+     rule idToString(operator~) => "operator ~"
+     rule idToString(operator!) => "operator !"
+     rule idToString(operator=) => "operator ="
+     rule idToString(operator<) => "operator <"
+     rule idToString(operator>) => "operator >"
+     rule idToString(operator+=) => "operator +="
+     rule idToString(operator-=) => "operator -="
+     rule idToString(operator*=) => "operator *="
+     rule idToString(operator/=) => "operator /="
+     rule idToString(operator%=) => "operator %="
+     rule idToString(operator^=) => "operator ^="
+     rule idToString(operator&=) => "operator &="
+     rule idToString(operator|=) => "operator |="
+     rule idToString(operator<<) => "operator <<"
+     rule idToString(operator>>) => "operator >>"
+     rule idToString(operator<<=) => "operator <<="
+     rule idToString(operator>>=) => "operator >>="
+     rule idToString(operator==) => "operator =="
+     rule idToString(operator!=) => "operator !="
+     rule idToString(operator<=) => "operator <="
+     rule idToString(operator>=) => "operator >="
+     rule idToString(operator&&) => "operator &&"
+     rule idToString(operator||) => "operator ||"
+     rule idToString(operator++) => "operator ++"
+     rule idToString(operator--) => "operator --"
+     rule idToString(operator,) => "operator ,"
+     rule idToString(operator->*) => "operator ->*"
+     rule idToString(operator->) => "operator ->"
+     rule idToString(operator()) => "operator ()"
+     rule idToString(operator[]) => "operator []"
+     rule idToString(Destructor(Identifier(S::String))) => "~" +String S
+
+     rule signatureToString(Q::QualId, T::CPPType) => idToString(Q)
+          requires notBool isCPPFunctionType(T)
+     rule signatureToString(Q::QualId, t(_, _, functionType(_, T::CPPTypes, _))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
+
+     rule typesToString(.CPPTypes) => ""
+     rule typesToString(T::CPPType) => typeToString(T)
+     rule typesToString(T1::CPPType, T2::CPPType, Ts::CPPTypes) => typeToString(T1) +String ", " +String typesToString(T2, Ts)
+     syntax String ::= typeToString(CPPSimpleType) [function, klabel(simpleTypeToString)]
+     rule typeToString(t(quals(.Set), _, T::CPPSimpleType)) => typeToString(T)
+     rule typeToString(char) => "char"
+     rule typeToString(signed-char) => "signed char"
+     rule typeToString(unsigned-char) => "unsigned char"
+     rule typeToString(short) => "short"
+     rule typeToString(int) => "int"
+     rule typeToString(long) => "long"
+     rule typeToString(long-long) => "long long"
+     rule typeToString(unsigned-short) => "unsigned short"
+     rule typeToString(unsigned) => "unsigned int"
+     rule typeToString(unsigned-long) => "unsigned long"
+     rule typeToString(unsigned-long-long) => "unsigned long long"
+     rule typeToString(float) => "float"
+     rule typeToString(double) => "double"
+     rule typeToString(long-double) => "long double"
+     rule typeToString(bool) => "bool"
+     rule typeToString(void) => "void"
+     rule typeToString(wchar_t) => "wchar_t"
+     rule typeToString(char16_t) => "char16_t"
+     rule typeToString(char32_t) => "char32_t"
+     rule typeToString(nullptr_t) => "decltype(nullptr)"
 
 endmodule

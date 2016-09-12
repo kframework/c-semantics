@@ -1,11 +1,14 @@
 require "conversion.k"
 require "elaborator.k"
 require "env.k"
+require "error.k"
 require "init.k"
 require "io.k"
 require "name.k"
+require "operators.k"
 require "overloading.k"
 require "process-label.k"
+require "promotion.k"
 require "syntax.k"
 require "template-deduction.k"
 require "value-category.k"
@@ -22,10 +25,14 @@ require "decl/typedef.k"
 require "expr/assignment.k"
 require "expr/function-call.k"
 require "expr/literal.k"
+require "expr/logical.k"
+require "expr/new.k"
+require "expr/sizeof.k"
 
 require "stmt/block.k"
 require "stmt/canonicalization.k"
 require "stmt/expr.k"
+require "stmt/if.k"
 require "stmt/labeled.k"
 require "stmt/return.k"
 
@@ -39,11 +46,15 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-CONVERSION
      imports CPP-ELABORATOR
      imports CPP-ENV
+     imports CPP-TRANSLATION-ERROR
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
      imports CPP-NAME
+     imports CPP-OPERATORS
      imports CPP-OVERLOADING
      imports CPP-PROCESS-LABEL
+     imports CPP-PROMOTION
+     imports CPP-ABSTRACT-REWRITING
      imports CPP-TEMPLATE-DEDUCTION
      imports CPP-VALUE-CATEGORY
 
@@ -58,10 +69,14 @@ module CPP-TRANSLATION
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-EXPR-FUNCTION-CALL
      imports CPP-EXPR-LITERAL
+     imports CPP-EXPR-LOGICAL
+     imports CPP-EXPR-NEW
+     imports CPP-EXPR-SIZEOF
 
      imports CPP-STMT-BLOCK
      imports CPP-STMT-CANONICALIZATION
      imports CPP-STMT-EXPR
+     imports CPP-STMT-IF
      imports CPP-STMT-LABELED
      imports CPP-STMT-RETURN
 

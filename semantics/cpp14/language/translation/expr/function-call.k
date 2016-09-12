@@ -28,7 +28,7 @@ module CPP-EXPR-FUNCTION-CALL
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => le(E, Tr, T)
           requires isCPPLVRefType(T) orBool (isCPPRVRefType(T) andBool isCPPFunctionType(innerType(T)))
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => xe(E, Tr, T)
-          requires isCPPRVRefType(T) andBool isCPPObjectType(innerType(T))
+          requires isCPPRVRefType(T) andBool isObjectType(innerType(T))
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => pre(E, Tr, T) [owise]
 
      rule bindParam(X::CId, T::CPPType, Init::Init)

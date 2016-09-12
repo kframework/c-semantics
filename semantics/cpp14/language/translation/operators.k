@@ -1,0 +1,42 @@
+module CPP-OPERATORS
+     imports BASIC-K
+     imports CPP-ABSTRACT-SYNTAX
+     imports CPP-SYNTAX
+     imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-TYPING-SYNTAX
+
+     rule BinaryOperator(O::OpId, E1::Expr, E2::Init)
+          => #BinaryOperator(O, E1, E1, E2, E2)
+
+     syntax Expr ::= #BinaryOperator(OpId, Expr, K, Init, K)
+     context #BinaryOperator(_, _, (HOLE:KItem => typeof(HOLE)), _, _) [result(CPPType)]
+     context #BinaryOperator(_, _, _, _, (HOLE:KItem => typeof(HOLE))) [result(CPPType)]
+
+     rule #BinaryOperator(O::OpId, E1::Expr, T1:CPPType, E2::Init, T2:CPPType)
+          => builtinOperator(O, E1, E2)
+          requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
+               andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
+
+     syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
+     rule builtinOperator(operator=, E1::Expr, E2::Init)
+          => E1 := E2
+     rule builtinOperator(operator[], E1::Expr, E2::Expr)
+          => E1[E2]
+     rule builtinOperator(operator+, E1::Expr, E2::Expr)
+          => E1 + E2
+     rule builtinOperator(operator-, E1::Expr, E2::Expr)
+          => E1 - E2
+     rule builtinOperator(operator*, E1::Expr, E2::Expr)
+          => E1 * E2
+     rule builtinOperator(operator/, E1::Expr, E2::Expr)
+          => E1 / E2
+     rule builtinOperator(operator%, E1::Expr, E2::Expr)
+          => E1 % E2
+     rule builtinOperator(operator||, E1::Expr, E2::Expr)
+          => E1 || E2
+     rule builtinOperator(operator==, E1::Expr, E2::Expr)
+          => E1 == E2
+     rule builtinOperator(operator!=, E1::Expr, E2::Expr)
+          => E1 != E2
+
+endmodule

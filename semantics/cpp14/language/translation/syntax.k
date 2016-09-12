@@ -181,7 +181,7 @@ module CPP-ABSTRACT-SYNTAX
                    | CallExpr(Expr, StrictList)
                    | Name
                    | UnaryOperator(OpId, Expr)
-                   | BinaryOperator(OpId, Expr, Expr)
+                   | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)
                    | ParenthesizedCast(AType, Expr)
                    | ReinterpretCast(AType, Expr)
@@ -189,14 +189,14 @@ module CPP-ABSTRACT-SYNTAX
                    | DynamicCast(AType, Expr)
                    | ConstCast(AType, Expr)
                    | FunctionalCast(AType, List)
-                   | SizeofType(AType)
+                   | SizeofType(AType) [strict]
                    | SizeofExpr(Expr)
                    | AlignofType(AType)
                    | AlignofExpr(Expr)
                    | SizeofPack(CId)
                    | PseudoDestructor(Expr, Bool, NNS, AType, AType)
                    | Noexcept(Expr)
-                   | NewExpr(AType, AExpr, AExpr, List)
+                   | NewExpr(AType, AExpr, Init, List) [strict(1)]
                    | This
 
      syntax This ::= This()
@@ -205,11 +205,13 @@ module CPP-ABSTRACT-SYNTAX
                    | Lambda(CaptureDefault, List, AType, AStmt)
                    | PackExpansionExpr(Expr)
                    | StringLiteral(CharKind, String)
-                   | CharacterLiteral(Int)
+                   | CharacterLiteral(CharKind, Int)
                    | IntegerLiteral(Int, AType) [strict(2)]
                    | FloatingLiteral(Float, AType) [strict(2)]
                    | NullPointerLiteral()
                    | BoolLiteral(Bool)
+
+     syntax Expr ::= Expr "[" Expr "]"
 
      context IntegerLiteral(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -234,4 +236,12 @@ module CPP-ABSTRACT-SYNTAX
                    | ParenList(List)
                    | DefaultArg(Expr)
 
+endmodule
+
+module CPP-ABSTRACT-REWRITING
+     imports CPP-SYNTAX
+     imports CPP-ABSTRACT-SYNTAX
+
+     rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
+     rule E1::Expr [ E2::Expr ] => * (E1 + E2) [anywhere]
 endmodule

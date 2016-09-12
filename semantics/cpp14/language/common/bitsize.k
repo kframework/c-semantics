@@ -15,8 +15,11 @@ module CPP-BITSIZE
      rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
 
      rule byteSizeofType(pointerType(_)) => cfg:ptrsize
+     rule byteSizeofType(arrayType(t(_, _, S::CPPSimpleType), N::Int)) => N *Int byteSizeofType(S)
      rule byteSizeofType(functionType(_, _, _)) => 0
      rule byteSizeofType(signed-char) => cfg:sizeofSignedChar
+     rule byteSizeofType(unsigned-char) => cfg:sizeofSignedChar
+     rule byteSizeofType(char) => cfg:sizeofSignedChar
      rule byteSizeofType(int) => cfg:sizeofInt
      rule byteSizeofType(nullptr_t) => cfg:ptrsize
 

@@ -1,8 +1,10 @@
 module CPP-ELABORATOR-SYNTAX
      imports BASIC-K
 
-     syntax KItem ::= elaborate(K)
-                    | elaborateDone(K)
+     syntax KItem ::= elaborate(K) [klabel(elaborate1)]
+                    | elaborate(K, K)
+                    | elaborateDone(K) [klabel(elaborateDone1)]
+                    | elaborateDone(K, K)
                     | elaborateTemplateBody(K)
 
      syntax KItem ::= runInit(K)
@@ -42,5 +44,11 @@ module CPP-ELABORATOR
 
      rule (.K => elaborate(K)) ~> runInit(K:K)
      rule elaborateDone(_) ~> runInit(_) => .K
+
+     rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
+     rule elaborateDone(K1:K) ~> elaborate(K2:K)
+          => elaborate(K2) ~> elaborateDone(K1)
+     rule elaborateDone(K2:K) ~> elaborateDone(K1:K)
+          => elaborateDone(K1:K, K2:K)
 
 endmodule

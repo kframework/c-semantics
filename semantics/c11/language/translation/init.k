@@ -14,8 +14,6 @@ module C-TRANSLATION-INIT
      imports C-LINKING-RESOLUTION-SYNTAX
      imports C-SYNTAX
 
-     syntax Opts ::= XBuiltins()
-
      rule ToIdentifier("___missing_field_name") => #NoName
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"

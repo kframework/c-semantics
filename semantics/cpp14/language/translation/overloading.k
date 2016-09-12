@@ -39,7 +39,8 @@ module CPP-OVERLOADING
 
      rule (lv(loc(Base::SymBase, 0, _), _, T::CPPType) => .K) ~> resolveOverload(cSet(.Map => T |-> kpair(false, Base)), _, _, _)
 
-     rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T)
+     rule <k> resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
+          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic
      rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
      rule resolveUniqueDecl(V:KResult, _) => V

@@ -65,7 +65,7 @@ $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
 $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
 	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*) $(DIST_DIR)/kcc
+$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*.c) $(DIST_DIR)/kcc
 	@echo "Translating the standard library... ($(PROFILE_DIR))"
 	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libc.so *.c $(KCCFLAGS) -I .
 	@echo "Done."

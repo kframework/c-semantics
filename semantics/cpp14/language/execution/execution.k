@@ -12,6 +12,7 @@ require "expr/name.k"
 require "stmt/block.k"
 require "stmt/expr.k"
 require "stmt/goto.k"
+require "stmt/if.k"
 require "stmt/return.k"
 
 require "cpp-extensions-execution.k"
@@ -33,6 +34,7 @@ module CPP-EXECUTION
      imports CPP-STMT-BLOCK
      imports CPP-STMT-EXPR
      imports CPP-STMT-GOTO
+     imports CPP-STMT-IF
      imports C-CPP-STMT-RETURN
 
      imports CPP-EXECUTION-EXTENSIONS

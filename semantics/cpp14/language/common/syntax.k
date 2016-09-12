@@ -4,7 +4,8 @@ module CPP-SORTS
      syntax Init ::= Stmt | Expr
      syntax Expr ::= Name
      syntax Name
-     syntax Stmt
+     syntax Stmt ::= Block
+     syntax Block
      syntax OpId
      syntax TempId
      syntax Tag
@@ -16,6 +17,7 @@ module CPP-SYNTAX
      imports LIST
      imports CPP-DYNAMIC-SORTS
      imports CPP-REVAL-SYNTAX
+     imports CPP-TYPING-SORTS
 
      syntax OpId ::= "operatornew"
                    | "operatordelete"
@@ -82,17 +84,43 @@ module CPP-SYNTAX
      syntax Expr ::= Expr ":=" Init [strict(1)]
                    | "*" Expr
                    | "&" Expr
+                   | Expr "+" Expr
+                   | Expr "-" Expr
+                   | Expr "*" Expr
+                   | Expr "/" Expr
+                   | Expr "%" Expr
+                   | Expr "||" Expr
+                   | Expr "!=" Expr
+                   | Expr "==" Expr
                    | BuiltinCallOp(Expr, Int, K)
+                   | NewOp(CPPType, Expr, K)
      syntax Name ::= Name(NNS, CId)
                    | Name(NNS, CId, List)
 
      context _ := (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context * (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) + _ [result(PRVal)]
+     context _ + (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) - _ [result(PRVal)]
+     context _ - (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) * _ [result(PRVal)]
+     context _ * (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) / _ [result(PRVal)]
+     context _ / (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) % _ [result(PRVal)]
+     context _ % (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) != _ [result(PRVal)]
+     context _ != (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) == _ [result(PRVal)]
+     context _ == (HOLE:Expr => reval(HOLE)) [result(PRVal)]
 
-     syntax Stmt ::= BlockStmt(Int, List)
-                   | LabelStmt(CId, List)
+     syntax Block ::= BlockStmt(Int, List)
+     syntax Decl
+     syntax Stmt ::= LabelStmt(CId, List)
                    | GotoStmt(CId)
                    | ExpressionStmt(Expr) [strict]
                    | ReturnOp(K)
+                   | IfStmt(Decl, Stmt, Stmt)
+                   | IfStmt(Expr, Stmt, Stmt)
 
 endmodule
