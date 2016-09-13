@@ -24,8 +24,7 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 $::VERSION="0.1 GNU-compatible";
 
 my @objFiles = ();
-my @cSrcFiles = ();
-my @cppSrcFiles = ();
+my @srcFiles = ();
 my @tempFiles = ();
 
 my $MAGIC = "\x7fKAST";
@@ -350,18 +349,16 @@ sub main {
        $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
      }
 
-     my @allSources = (@cSrcFiles, @cppSrcFiles);
-
      if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @allSources > 1) {
+            if (scalar @srcFiles > 2) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
             $oval = '-';
           }
-          return preprocess($oval, $allSources[0], scalar @cppSrcFiles);
+          return preprocess($oval, $srcFiles[0], $srcFiles[1]);
      } elsif ($hasStdin) {
        die "-E or -x required when input is from standard input";
      }
@@ -369,14 +366,14 @@ sub main {
      if ($args->{'-c'}) {
           my $oval = $main::oflag;
           if ($oval) {
-            if (scalar @allSources > 1) {
+            if (scalar @srcFiles > 2) {
               die "cannot specify -o with -c or -E with multiple files";
             }
           } else {
-            $oval = basename($allSources[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
+            $oval = basename($srcFiles[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
           }
           my $result = tempFile();
-          compile($result, $allSources[0], scalar @cppSrcFiles);
+          compile($result, $srcFiles[0], $srcFiles[1]);
           move($result, $oval);
           return 0;
      }
@@ -497,15 +494,12 @@ sub mergeObjs {
 
      my @pids = ();
 
-     while (scalar @cSrcFiles > $numSrc) {
+     while (scalar @srcFiles > $numSrc * 2) {
           my $oval = tempFile();
-          compile($oval, shift @cSrcFiles, 0);
-          push(@objFiles, $oval);
-     }
-     while (scalar @cppSrcFiles > $numSrc) {
-          my $oval = tempFile();
-          compile($oval, shift @cppSrcFiles, 1);
-          push(@objFiles, $oval);
+          my $input = shift @srcFiles;
+          my $lang = shift @srcFiles;
+          compile($oval, $input, $lang);
+          classify($oval)
      }
 
      if ($mergeObjs) {
@@ -570,19 +564,25 @@ sub classify {
               my ($base, $dir, $suffix) = fileparse($_, 
                 ('\.c', '\.cc', '\.cp', '\.cxx', '\.cpp', '\.CPP', '\.c++',
                  '\.C', '\.h', '\.hh', '\.hp', '\.hxx', '\.hpp', '\.HPP', 
-                 '\.h++', '\.H', '\.tcc'));
+                 '\.h++', '\.H', '\.tcc', '\.s', '\.S', '\.sx'));
               if ($suffix eq '.c' or $suffix eq '.h') {
                 $lang = 'c';
+              } elsif ($suffix eq '.s') {
+                $lang = 'assembler';
+              } elsif ($suffix eq '.S' or $suffix eq '.sx') {
+                $lang = 'assembler-with-cpp';
               } elsif ($suffix ne '') {
                 $lang = 'c++';
               }
             }
           }
 
-          if ($lang eq 'c' or $lang eq 'c-header') {
-            push(@cSrcFiles, $_);
+          if ($lang eq 'assembler' or $lang eq 'assembler-with-cpp') {
+            push(@srcFiles, $_, $lang);
+          } elsif ($lang eq 'c' or $lang eq 'c-header') {
+            push(@srcFiles, $_, 'c');
           } elsif ($lang eq 'c++' or $lang eq 'c++-header') {
-            push(@cppSrcFiles, $_);
+            push(@srcFiles, $_, 'c++');
           } elsif ($lang ne 'none') {
             die "Unsupported -x option: $lang";
           } elsif (isKObj($_)) {
@@ -632,10 +632,15 @@ sub extractStatic {
 }
 
 sub compile {
-     my ($oval, $inputFile, $isCPP) = (@_);
+     my ($oval, $inputFile, $lang) = (@_);
      my @arr = ();
-     my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $isCPP));
-     checkError($retval, $oval, 1);
+     if ($lang eq 'c' or $lang eq 'c++') {
+          my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang eq 'c++'));
+          checkError($retval, $oval, 1);
+     } else {
+          my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval);
+          checkError($retval, $oval, 0);
+     }
 }
 
 sub pushObj {
