@@ -8,7 +8,7 @@ use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
 use File::Path qw(remove_tree);
 use MIME::Base64;
-use String::Escape qw(quote backslash); 
+use String::Escape qw(quote backslash);
 use Getopt::Declare;
 
 # Here we trap control-c (and others) so we can clean up when that happens.
@@ -30,11 +30,16 @@ my @tempFiles = ();
 my $MAGIC = "\x7fKAST";
 
 my $distDirectory = dirname(rel2abs($0));
+if (defined $ENV{KCC_COMMAND_NAME}) {
+  $0 = $ENV{KCC_COMMAND_NAME};
+}
+
 our $profile;
 my $profileDirectory;
 {
   local $/=undef;
-  open FILE, "$distDirectory/current-profile" or die "Couldn't find current profile: please fix $distDirectory/current-profile";
+  open FILE, "$distDirectory/current-profile"
+    or die "Couldn't find current profile: please fix $distDirectory/current-profile.\n";
   $profile = <FILE>;
   $profileDirectory = "$distDirectory/$profile";
   close FILE;
@@ -43,7 +48,8 @@ my $profileDirectory;
 our $defaultProfile;
 {
   local $/=undef;
-  open FILE, "$distDirectory/default-profile" or die "Couldn't find default profile: please fix $distDirectory/default-profile";
+  open FILE, "$distDirectory/default-profile"
+    or die "Couldn't find default profile: please fix $distDirectory/default-profile.\n";
   $defaultProfile = <FILE>;
   close FILE;
 }
@@ -59,7 +65,8 @@ while ( my $entry = readdir $DIR) {
 my $ignoredFlagsRegex = "^(";
 {
   my $sep = "";
-  open FILE, "$distDirectory/ignored-flags" or die "Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags";
+  open FILE, "$distDirectory/ignored-flags"
+    or die "Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags.\n";
   while (<FILE>) {
     chop($_);
     $ignoredFlagsRegex = "$ignoredFlagsRegex$sep(?:$_)";
@@ -190,139 +197,142 @@ my $hasBuiltins;
 
 our $oflag;
 
-my $spec = q(#
+my $spec = q(
       [strict]
+      -version				Show version information.
+        {
+          $self->version();
+          my $profiles = join("\n	                    ", @main::profiles);
+          print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
+          exit 0;
+        }
+      -Version				[ditto] [undocumented]
+      -VERSION				[ditto] [undocumented]
+      --version				[ditto] [undocumented]
+      --Version				[ditto] [undocumented]
+      --VERSION				[ditto] [undocumented]
+      -v				[ditto] [undocumented]
+      -V				[ditto] [undocumented]
       -c				Compile and assemble, but do not link.
-      -shared				Compile and assemble into a single object file (for
-					faster loading).
+      -shared				Compile and assemble into a single object file.
       -d				Print debugging information.
       -D <name>[=[<definition>]]	Predefine <name> as a macro, with definition <definition>.
-{ 
-  if (defined $definition) {
-    push(@main::cppArgs, "-D$name=$definition");
-  } elsif ($_PUNCT_{"="}) {
-    push(@main::cppArgs, "-D$name=");
-  } else  {
-    push(@main::cppArgs, "-D$name");
-  }
-}
+        {
+          if (defined $definition) {
+            push(@main::cppArgs, "-D$name=$definition");
+          } elsif ($_PUNCT_{"="}) {
+            push(@main::cppArgs, "-D$name=");
+          } else  {
+            push(@main::cppArgs, "-D$name");
+          }
+        }
       -U <name>				Undefine <name> as a macro.
-{ push(@main::cppArgs, "-U$name"); }
-      -P				Inhibit preprocessor line numbers
-{ push(@main::cppArgs, "-P"); }
+        { push(@main::cppArgs, "-U$name"); }
+      -P				Inhibit preprocessor line numbers.
+        { push(@main::cppArgs, "-P"); }
       -E				Preprocess only.
       -I <dir>				Look for headers in <dir>.
-{ push(@main::cppArgs, '-I', $dir); }
-      -isystem <dir>	Look for system headers in <dir>.
-{ push(@main::cppArgs, '-isystem', $dir); }
+        { push(@main::cppArgs, '-I', $dir); }
+      -isystem <dir>			Look for system headers in <dir>.
+        { push(@main::cppArgs, '-isystem', $dir); }
       -include <file>			Add header to file during preprocessing.
-{ push(@main::cppArgs, '-include', $file); }
+        { push(@main::cppArgs, '-include', $file); }
       -L <dir>				Look for shared libraries in <dir>.
-{ push(@main::ld_lib, $dir); push(@main::ldArgs, "-L$dir"); }
+        {
+          push(@main::ld_lib, $dir);
+          push(@main::ldArgs, "-L$dir");
+        }
       -nodefaultlibs			Do not link against the standard library.
       -o <file>				Place the output into <file>.
-{ $main::oflag = $file; }
+        { $main::oflag = $file; }
       -l <lib>				Link semantics against library in search path.
-{ classifyLib($lib); }
+        { classifyLib($lib); }
       -Wl,<args>			Add flags to linker arguments.
-{ push(@main::ldArgs, "-Wl,$args"); }
-      <files>...			C files to be compiled. [required] [repeatable]
-{ classify(@files); }
-      --help				Show usage information [undocumented]
-                        { $self->usage(0); }
-      -version				Show version information [undocumented]
-{ 
-  $self->version(); 
-  my $profiles = join("\n	                    ", @main::profiles);
-  print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
-  exit 0;
-}
-      -Version				[ditto, undocumented]
-      -VERSION				[ditto, undocumented]
-      --version				[ditto, undocumented]
-      --Version				[ditto, undocumented]
-      --VERSION				[ditto, undocumented]
-      -v				[ditto, undocumented]
-      -V				[ditto, undocumented]
-
-      -M				Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-M'); }
-      -MM				Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MM'); }
-      -MD				Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MD'); }
-      -MMD				Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MMD'); }
-      -MP				Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MP'); }
-      -MF <file>			Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MF', $file); }
-      -MT <target>			Dependency generation. See documentation for GCC preprocessor
-{ push(@main::cppArgs, '-MT', $target); }
-      -d<chars>				Debugging info from preprocessor. See documentation for GCC
-{ push(@main::cppArgs, "-d$chars"); }
-      -frunner-script			Compile program to perl script with analysis tool options
-      -fissue-report=<file>		Write issues to the specified file in CSV format
+        { push(@main::ldArgs, "-Wl,$args"); }
+      <files>...			C files to be compiled. [repeatable] [required]
+        { classify(@files); }
+      -M				Dependency generation. See documentation for GCC preprocessor.
+        { push(@main::cppArgs, '-M'); }
+      -MM				[ditto]
+        { push(@main::cppArgs, '-MM'); }
+      -MD				[ditto]
+        { push(@main::cppArgs, '-MD'); }
+      -MMD				[ditto]
+        { push(@main::cppArgs, '-MMD'); }
+      -MP				[ditto]
+        { push(@main::cppArgs, '-MP'); }
+      -MF <file>			[ditto]
+        { push(@main::cppArgs, '-MF', $file); }
+      -MT <target>			[ditto]
+        { push(@main::cppArgs, '-MT', $target); }
+      -d<chars>				Debugging info from preprocessor. See documentation for GCC.
+        { push(@main::cppArgs, "-d$chars"); }
+      -frunner-script			Compile program to perl script with analysis tool options.
+      -fissue-report=<file>		Write issues to the specified file in CSV format.
       -Wlint				Generate lint errors for potentially undesirable behaviors.*
       -flint				[ditto]
       -Wno-undefined			Do not output undefined behaviors.
       -Wno-unspecified			Do not output unspecified behaviors.
       -Wno-implementation-defined	Do not output implementation-defined behaviors.
-      -Wno-<errcode>			Ignore specified error code
-{
-  if ($main::cppWarns{$errcode}) {
-    push(@main::cppArgs, "-Wno-$errcode");
-  } else {
-    push(@main::nowarns, $errcode);
-  }
-}
-      -Wsystem-headers			Do not ignore errors in system headers
-{
-    push(@main::cppArgs, "-Wsystem-headers");
-    push(@main::warns, "system-headers");
-}
-      -W<errcode>				Do not ignore specified error code
-{
-  if ($main::cppWarns{$errcode}) {
-    push(@main::cppArgs, "-W$errcode");
-  } else {
-    push(@main::warns, $errcode);
-  }
-}
-      -no-pedantic				Do not trigger warnings for non-standard compliant language features
-      -w						Ignore all preprocessor warnings
-{  push(@main::cppArgs, "-w"); }
+      -Wno-<errcode>			Ignore specified error code.
+        {
+          if ($main::cppWarns{$errcode}) {
+            push(@main::cppArgs, "-Wno-$errcode");
+          } else {
+            push(@main::nowarns, $errcode);
+          }
+        }
+      -Wsystem-headers			Do not ignore errors in system headers.
+        {
+          push(@main::cppArgs, "-Wsystem-headers");
+          push(@main::warns, "system-headers");
+        }
+      -W<errcode>			Do not ignore specified error code.
+        {
+          if ($main::cppWarns{$errcode}) {
+            push(@main::cppArgs, "-W$errcode");
+          } else {
+            push(@main::warns, $errcode);
+          }
+        }
+      -no-pedantic			Do not trigger warnings for non-standard compliant language features.
+      -w				Ignore all preprocessor warnings.
+        { push(@main::cppArgs, "-w"); }
       -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
       -fstack-size=<size>		Used with -flint to detect stack overflow.*
       -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
-      					WARNING: This can change the semantics of tools like autoconf which analyze
-      					the exit code of the compiler to trigger unexpected or undesirable results.
-
+                                        WARNING: This can change the semantics of tools like autoconf which analyze
+                                                 the exit code of the compiler to trigger unexpected or undesirable
+                                                 results.
       -x <language>			Set language for input files.
-{ $main::xLang = $language; }
+        { $main::xLang = $language; }
       -pthread				Enables pthread library (highly experimental, likely broken)
-{ push(@main::cppArgs, '-pthread');  push(@main::ldArgs, '-lpthread'); }
-
-      -Xmx<size>			Passed to underlying JVM
+        {
+          push(@main::cppArgs, '-pthread');
+          push(@main::ldArgs, '-lpthread');
+        }
+      -Xmx<size>			Passed to underlying JVM.
       -profile <name>			Set KCC profile.
-{
-      if ( grep( /^$name$/, @main::profiles ) ) {
-           open(my $file, '>', "$main::ourDist/current-profile") or die "Could not open profile file. Check OS permissions.";
-           print $file $name;
-           close $file;
-           exit 0;
-      } else {
-           print "Profile '$name' is not installed. See kcc -v for list of installed profiles.\n";
-           exit 1;
-      }
-}
+        {
+          if ( grep( /^$name$/, @main::profiles ) ) {
+             open(my $file, '>', "$main::ourDist/current-profile")
+               or die "Could not open profile file. Check OS permissions.\n";
+             print $file $name;
+             close $file;
+             exit 0;
+          } else {
+             print "Profile '$name' is not installed. See $0 -v for list of installed profiles.\n";
+             exit 1;
+          }
+        }
       -Xbuiltins			[undocumented]
+
       * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
         to run.
 
-      For a complete list of other flags ignored by kcc, refer to ) . $distDirectory . q(/ignored-flags, which contains
-      one regular expression per line.
-                  
+      For a complete list of other flags ignored by kcc, refer to ) . $distDirectory . q(/ignored-flags,
+      which contains one regular expression per line.
+
       The following lines of output are added to this message for compatibility
       with GNU ld and libtool:
 
@@ -334,181 +344,181 @@ my $args = Getopt::Declare->new($spec, ['-BUILD']);
 exit main();
 
 sub main {
-     @originalArgv = @ARGV;
-     $args->parse() or die "Failed to parse the command line.\n";
+  @originalArgv = @ARGV;
+  $args->parse() or die "Failed to parse the command line.\n";
 
-     my $heapSize = "1G";
-     if ($args->{'-Xmx'}) {
-          $heapSize = $args->{'-Xmx'};
-     }
-     # Set heap and stack size of krun
-     $ENV{K_OPTS} = "-Xmx$heapSize";
-     if ($args->{'-d'}) {
-       $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
-     } else {
-       $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
-     }
+  my $heapSize = "1G";
+  if ($args->{'-Xmx'}) {
+    $heapSize = $args->{'-Xmx'};
+  }
+  # Set heap and stack size of krun
+  $ENV{K_OPTS} = "-Xmx$heapSize";
+  if ($args->{'-d'}) {
+    $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
+  } else {
+    $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
+  }
 
-     if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
-          my $oval = $main::oflag;
-          if ($oval) {
-            if (scalar @srcFiles > 2) {
-              die "cannot specify -o with -c or -E with multiple files";
-            }
-          } else {
-            $oval = '-';
-          }
-          return preprocess($oval, $srcFiles[0], $srcFiles[1]);
-     } elsif ($hasStdin) {
-       die "-E or -x required when input is from standard input";
-     }
+  if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
+    my $oval = $main::oflag;
+    if ($oval) {
+      if (scalar @srcFiles > 2) {
+        die "cannot specify -o with -c or -E with multiple files.\n";
+      }
+    } else {
+      $oval = '-';
+    }
+    return preprocess($oval, $srcFiles[0], $srcFiles[1]);
+  } elsif ($hasStdin) {
+    die "-E or -x required when input is from standard input.\n";
+  }
 
-     if ($args->{'-c'}) {
-          my $oval = $main::oflag;
-          if ($oval) {
-            if (scalar @srcFiles > 2) {
-              die "cannot specify -o with -c or -E with multiple files";
-            }
-          } else {
-            $oval = basename($srcFiles[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
-          }
-          my $result = tempFile();
-          compile($result, $srcFiles[0], $srcFiles[1]);
-          move($result, $oval);
-          return 0;
-     }
+  if ($args->{'-c'}) {
+    my $oval = $main::oflag;
+    if ($oval) {
+      if (scalar @srcFiles > 2) {
+        die "cannot specify -o with -c or -E with multiple files.\n";
+      }
+    } else {
+      $oval = basename($srcFiles[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
+    }
+    my $result = tempFile();
+    compile($result, $srcFiles[0], $srcFiles[1]);
+    move($result, $oval);
+    return 0;
+  }
 
-     if ($args->{'-shared'}) {
-          mergeObjs(1, 0);
-          move($objFiles[0], $main::oflag || 'a.out');
-          return 0;
-     }
+  if ($args->{'-shared'}) {
+    mergeObjs(1, 0);
+    move($objFiles[0], $main::oflag || 'a.out');
+    return 0;
+  }
 
-     if (!$args->{'-s'}) {
-          $xLang = "none";
-          classify(catfile($profileDirectory, 'lib', 'libc.so'));
-     }
+  if (!$args->{'-s'}) {
+    $xLang = "none";
+    classify(catfile($profileDirectory, 'lib', 'libc.so'));
+  }
 
-     # Reduce our remaining source files to object files
-     mergeObjs(0, 0);
+  # Reduce our remaining source files to object files
+  mergeObjs(0, 0);
 
-     my $oval = $main::oflag || 'a.out';
+  my $oval = $main::oflag || 'a.out';
 
-     my $programConfFile = tempFile(); 
+  my $programConfFile = tempFile();
 
-     # At this point, we have 0 source files and 1 object file left for
-     # the final calls to krun.
-     my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 1));
-     checkError($retval, $programConfFile, 1);
+  # At this point, we have 0 source files and 1 object file left for
+  # the final calls to krun.
+  my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 1));
+  checkError($retval, $programConfFile, 1);
 
-     open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
-     my $programConf = join("", <FILE>);
-     close(FILE);
+  open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
+  my $programConf = join("", <FILE>);
+  close(FILE);
 
-     if ($args->{'-frunner-script'}) {
-          $programConf = encode_base64($programConf);
-          open(FILE, catfile($distDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
-          my $template = join("", <FILE>);
-          close(FILE);
+  if ($args->{'-frunner-script'}) {
+    $programConf = encode_base64($programConf);
+    open(FILE, catfile($distDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
+    my $template = join("", <FILE>);
+    close(FILE);
 
-          $template =~ s?EXTERN_SCRIPTS_DIR?$profileDirectory?g;
-          $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
+    $template =~ s?EXTERN_SCRIPTS_DIR?$profileDirectory?g;
+    $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
-          open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
-          print $programRunner "$template\n";
-          print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
-          if (@ldArgs) {
-                print $programRunner "sub nativeLibraries {\n return '@ldArgs';\n}\n";
-          } else {
-                print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
-          }
-          close($programRunner);
+    open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
+    print $programRunner "$template\n";
+    print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
+    if (@ldArgs) {
+      print $programRunner "sub nativeLibraries {\n return '@ldArgs';\n}\n";
+    } else {
+      print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
+    }
+    close($programRunner);
 
-     } else {
-          # add space to end of args with () so that batch scripts work on windows
-          my @options = initOptions();
-          if ($args->{'-flint'} || $args->{'-Wlint'}) {
-               my $heapSize;
-               if ($args->{'-fheap-size='}) {
-                    $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
-                    chop($heapSize);
-               } else {
-                    $heapSize = 1024 * 1024 * 1024;
-               }
-               my $heapSizeInt = $heapSize;
-               $heapSize = quote(backslash($heapSize));
-               if ($cygwin) {
-                    $heapSize = backslash($heapSize);
-               }
-               my $stackSize;
-               if ($args->{'-fstack-size='}) {
-                    $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
-                    chop($stackSize);
-               } else {
-                    $stackSize = `bash -c 'ulimit -s'`;
-                    chop($stackSize);
-                    if ($stackSize eq 'unlimited') {
-                        $stackSize = $heapSizeInt;
-                    } else {
-                        $stackSize = $stackSize * 1024; # result was in kb
-                    }
-               }
-               $stackSize = quote(backslash($stackSize));
-               if ($cygwin) {
-                    $stackSize = backslash($stackSize);
-               }
-               push(@options, "`Heap`(#token($heapSize, $quoteInt))");
-               push(@options, "`Stack`(#token($stackSize, $quoteInt))");
-          }
-          my $opts = makeSet(@options);
+  } else {
+    # add space to end of args with () so that batch scripts work on windows
+    my @options = initOptions();
+    if ($args->{'-flint'} || $args->{'-Wlint'}) {
+      my $heapSize;
+      if ($args->{'-fheap-size='}) {
+        $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+        chop($heapSize);
+      } else {
+        $heapSize = 1024 * 1024 * 1024;
+      }
+      my $heapSizeInt = $heapSize;
+      $heapSize = quote(backslash($heapSize));
+      if ($cygwin) {
+        $heapSize = backslash($heapSize);
+      }
+      my $stackSize;
+      if ($args->{'-fstack-size='}) {
+        $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+        chop($stackSize);
+      } else {
+        $stackSize = `bash -c 'ulimit -s'`;
+        chop($stackSize);
+        if ($stackSize eq 'unlimited') {
+          $stackSize = $heapSizeInt;
+        } else {
+          $stackSize = $stackSize * 1024; # result was in kb
+        }
+      }
+      $stackSize = quote(backslash($stackSize));
+      if ($cygwin) {
+        $stackSize = backslash($stackSize);
+      }
+      push(@options, "`Heap`(#token($heapSize, $quoteInt))");
+      push(@options, "`Stack`(#token($stackSize, $quoteInt))");
+    }
+    my $opts = makeSet(@options);
 
-          my @cmd = ('-d', catfile($profileDirectory, "c11-cpp14-kompiled"), 
-                  '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
-                  '-w', 'none', '--parser', 'cat', $programConfFile,
-                  "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
-                  '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
-                  '--ocaml-serialize-config', '$PGM'
-                  );
+    my @cmd = ('-d', catfile($profileDirectory, "c11-cpp14-kompiled"),
+      '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
+      '-w', 'none', '--parser', 'cat', $programConfFile,
+      "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
+      '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
+      '--ocaml-serialize-config', '$PGM'
+    );
 
-          if ($args->{'-d'}) {
-               push(@cmd, '--debug');
-          }
-          if (@ldArgs) {
-            push @cmd, '--native-libraries';
-            push @cmd, "@ldArgs";
-          }
-          my $retval = execute($krun, @cmd);
-          checkError($retval, $programConfFile, 1);
-     }
+    if ($args->{'-d'}) {
+      push(@cmd, '--debug');
+    }
+    if (@ldArgs) {
+      push @cmd, '--native-libraries';
+      push @cmd, "@ldArgs";
+    }
+    my $retval = execute($krun, @cmd);
+    checkError($retval, $programConfFile, 1);
+  }
 
-     my $numFilesChanged = chmod(0755, $oval);
+  my $numFilesChanged = chmod(0755, $oval);
 
-     ($numFilesChanged == 1)
-          or die "Call to chmod $oval failed\n";
+  ($numFilesChanged == 1)
+  or die "Call to chmod $oval failed.\n";
 
-     return 0;
+  return 0;
 }
 
 sub mergeObjs {
-     my ($mergeObjs, $numSrc) = (@_);
+  my ($mergeObjs, $numSrc) = (@_);
 
-     my @pids = ();
+  my @pids = ();
 
-     while (scalar @srcFiles > $numSrc * 2) {
-          my $oval = tempFile();
-          my $input = shift @srcFiles;
-          my $lang = shift @srcFiles;
-          compile($oval, $input, $lang);
-          classify($oval)
-     }
+  while (scalar @srcFiles > $numSrc * 2) {
+    my $oval = tempFile();
+    my $input = shift @srcFiles;
+    my $lang = shift @srcFiles;
+    compile($oval, $input, $lang);
+    classify($oval)
+  }
 
-     if ($mergeObjs) {
-         my $accum = tempFile();
-         my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 1);
-         my $retval = execute($krun, @cmd);
-         checkError($retval, $accum, 1);
-         @objFiles = ($accum);
-     }
+  if ($mergeObjs) {
+    my $accum = tempFile();
+    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 1);
+    my $retval = execute($krun, @cmd);
+    checkError($retval, $accum, 1);
+    @objFiles = ($accum);
+  }
 }
 
 sub isKObj {
@@ -552,52 +562,52 @@ sub classifyLib {
 }
 
 sub classify {
-     my @files = @_;
+  my @files = @_;
 
-     for (@files) {
-          my $lang = $xLang;
-          if ($lang eq 'none') {
-            if ($_ eq '-') {
-              $hasStdin = 1;
-              $lang = 'c';
-            } else {
-              my ($base, $dir, $suffix) = fileparse($_, 
-                ('\.c', '\.cc', '\.cp', '\.cxx', '\.cpp', '\.CPP', '\.c++',
-                 '\.C', '\.h', '\.hh', '\.hp', '\.hxx', '\.hpp', '\.HPP', 
-                 '\.h++', '\.H', '\.tcc', '\.s', '\.S', '\.sx'));
-              if ($suffix eq '.c' or $suffix eq '.h') {
-                $lang = 'c';
-              } elsif ($suffix eq '.s') {
-                $lang = 'assembler';
-              } elsif ($suffix eq '.S' or $suffix eq '.sx') {
-                $lang = 'assembler-with-cpp';
-              } elsif ($suffix ne '') {
-                $lang = 'c++';
-              }
-            }
-          }
+  for (@files) {
+    my $lang = $xLang;
+    if ($lang eq 'none') {
+      if ($_ eq '-') {
+        $hasStdin = 1;
+        $lang = 'c';
+      } else {
+        my ($base, $dir, $suffix) = fileparse($_,
+          ('\.c', '\.cc', '\.cp', '\.cxx', '\.cpp', '\.CPP', '\.c++',
+           '\.C', '\.h', '\.hh', '\.hp', '\.hxx', '\.hpp', '\.HPP',
+           '\.h++', '\.H', '\.tcc', '\.s', '\.S', '\.sx'));
+        if ($suffix eq '.c' or $suffix eq '.h') {
+          $lang = 'c';
+        } elsif ($suffix eq '.s') {
+          $lang = 'assembler';
+        } elsif ($suffix eq '.S' or $suffix eq '.sx') {
+          $lang = 'assembler-with-cpp';
+        } elsif ($suffix ne '') {
+          $lang = 'c++';
+        }
+      }
+    }
 
-          if ($lang eq 'assembler' or $lang eq 'assembler-with-cpp') {
-            push(@srcFiles, $_, $lang);
-          } elsif ($lang eq 'c' or $lang eq 'c-header') {
-            push(@srcFiles, $_, 'c');
-          } elsif ($lang eq 'c++' or $lang eq 'c++-header') {
-            push(@srcFiles, $_, 'c++');
-          } elsif ($lang ne 'none') {
-            die "Unsupported -x option: $lang";
-          } elsif (isKObj($_)) {
-               push(@objFiles, $_);
-          } elsif (isAr($_)) {
-               my ($base, $dir, $suffix) = fileparse($_);
-               extractStatic($_, $base, $suffix);
-          } elsif (isNativeObj($_) or -e $_) {
-               push(@ldArgs, $_);
-          } else {
-               if (!($_ =~ $ignoredFlags)) {
-                   die "Unsupported option $_";
-               }
-          }
-     }
+    if ($lang eq 'assembler' or $lang eq 'assembler-with-cpp') {
+      push(@srcFiles, $_, $lang);
+    } elsif ($lang eq 'c' or $lang eq 'c-header') {
+      push(@srcFiles, $_, 'c');
+    } elsif ($lang eq 'c++' or $lang eq 'c++-header') {
+      push(@srcFiles, $_, 'c++');
+    } elsif ($lang ne 'none') {
+      die "Unsupported -x option: $lang\n";
+    } elsif (isKObj($_)) {
+      push(@objFiles, $_);
+    } elsif (isAr($_)) {
+      my ($base, $dir, $suffix) = fileparse($_);
+      extractStatic($_, $base, $suffix);
+    } elsif (isNativeObj($_) or -e $_) {
+      push(@ldArgs, $_);
+    } else {
+      if (!($_ =~ $ignoredFlags)) {
+        die "Unsupported option: $_\n";
+      }
+    }
+  }
 }
 
 sub isNativeObj {
@@ -611,7 +621,7 @@ sub isNativeObj {
 
 sub extractStatic {
   my ($file, $basename, $suffix) = (@_);
-  -e $file or die "$file does not exist";
+  -e $file or die "$file does not exist.\n";
   my $tempDir = File::Temp->newdir(
       TEMPLATE => 'tmp-kcc-ar-XXXX',
       CLEANUP => 0);
@@ -619,9 +629,9 @@ sub extractStatic {
   copy ($file, $tempDir);
   system("cd $tempDir && ar -x $basename$suffix");
   if ($? >> 8) {
-    die "failed to run ar -x";
+    die "failed to run ar -x.\n";
   }
-  opendir my $dir, $tempDir or die "Cannot open directory: $tempDir";
+  opendir my $dir, $tempDir or die "Cannot open directory: $tempDir\n";
   my @files = readdir $dir;
   closedir $dir;
   for (@files) {
@@ -632,204 +642,204 @@ sub extractStatic {
 }
 
 sub compile {
-     my ($oval, $inputFile, $lang) = (@_);
-     my @arr = ();
-     if ($lang eq 'c' or $lang eq 'c++') {
-          my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang eq 'c++'));
-          checkError($retval, $oval, 1);
-     } else {
-          my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval);
-          checkError($retval, $oval, 0);
-     }
+  my ($oval, $inputFile, $lang) = (@_);
+  my @arr = ();
+  if ($lang eq 'c' or $lang eq 'c++') {
+    my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang eq 'c++'));
+    checkError($retval, $oval, 1);
+  } else {
+    my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval);
+    checkError($retval, $oval, 0);
+  }
 }
 
 sub pushObj {
-     my ($arr, $obj, $i) = (@_);
+  my ($arr, $obj, $i) = (@_);
 
-     if (defined $obj) {
-          push(@{$_[0]}, "-pOBJ$i=cat");
-          push(@{$_[0]}, "-cOBJ$i=$obj");
-     } else {
-          push(@{$_[0]}, "-pOBJ$i=$printf");
-          push(@{$_[0]}, "-cOBJ$i=.K");
-     }
+  if (defined $obj) {
+    push(@{$_[0]}, "-pOBJ$i=cat");
+    push(@{$_[0]}, "-cOBJ$i=$obj");
+  } else {
+    push(@{$_[0]}, "-pOBJ$i=$printf");
+    push(@{$_[0]}, "-cOBJ$i=.K");
+  }
 }
-   
+
 
 sub initOptions {
-     my @options = ();
-     if ($args->{'-fissue-report='}) {
-          my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
-          if ($cygwin) {
-               $file = backslash($file);
-          }
-          push(@options, "`CSV`(#token($file, $quoteString))");
-     }
-     if ($args->{'-frecover-all-errors'}) {
-          push(@options, "`RecoverAll`(.KList)");
-     }
-     if ($args->{'-Wno-undefined'}) {
-          push(@options, "`No`(`Undef`(.KList))");
-     }
-     if ($args->{'-Wno-unspecified'}) {
-          push(@options, "`No`(`Unspec`(.KList))");
-     }
-     if ($args->{'-Wno-implementation-defined'}) {
-          push(@options, "`No`(`Impl`(.KList))");
-     }
-     foreach (@main::warns) {
-          my $word = quote(backslash(quote(backslash($_))));
-          push(@options, "`Warn`(#token($word, $quoteString))");
-     }
-     foreach (@main::nowarns) {
-          my $word = quote(backslash(quote(backslash($_))));
-          push(@options, "`No`(`Warn`(#token($word, $quoteString)))");
-     }
-     if ($args->{'-flint'} || $args->{'-Wlint'}) {
-          push(@options, "`Lint`(.KList)");
-     }
-     @options
+  my @options = ();
+  if ($args->{'-fissue-report='}) {
+    my $file = quote(backslash(quote(backslash($args->{'-fissue-report='}))));
+    if ($cygwin) {
+      $file = backslash($file);
+    }
+    push(@options, "`CSV`(#token($file, $quoteString))");
+  }
+  if ($args->{'-frecover-all-errors'}) {
+    push(@options, "`RecoverAll`(.KList)");
+  }
+  if ($args->{'-Wno-undefined'}) {
+    push(@options, "`No`(`Undef`(.KList))");
+  }
+  if ($args->{'-Wno-unspecified'}) {
+    push(@options, "`No`(`Unspec`(.KList))");
+  }
+  if ($args->{'-Wno-implementation-defined'}) {
+    push(@options, "`No`(`Impl`(.KList))");
+  }
+  foreach (@main::warns) {
+    my $word = quote(backslash(quote(backslash($_))));
+    push(@options, "`Warn`(#token($word, $quoteString))");
+  }
+  foreach (@main::nowarns) {
+    my $word = quote(backslash(quote(backslash($_))));
+    push(@options, "`No`(`Warn`(#token($word, $quoteString)))");
+  }
+  if ($args->{'-flint'} || $args->{'-Wlint'}) {
+    push(@options, "`Lint`(.KList)");
+  }
+  @options
 }
 
 sub getKRunCommand {
-     my ($output, $objsRef, $src, $link, $isCPP) = (@_);
-     my @objs = @$objsRef;
+  my ($output, $objsRef, $src, $link, $isCPP) = (@_);
+  my @objs = @$objsRef;
 
-     my @krun_args = (
-          '--output', 'binary', 
-          '--output-file', $output,
-          '-d', $isCPP ? $CPP_TRANS_DEF : $C_TRANS_DEF,
-          '-w', 'none',
-          '--smt', 'none'
-     );
+  my @krun_args = (
+    '--output', 'binary',
+    '--output-file', $output,
+    '-d', $isCPP ? $CPP_TRANS_DEF : $C_TRANS_DEF,
+    '-w', 'none',
+    '--smt', 'none'
+    );
 
-     if ($args->{'-d'}) {
-          push(@krun_args, '--debug');
-     }
-     my @options = initOptions();
-     if (!$isCPP && !$hasBuiltins && $args->{'-Xbuiltins'}) {
-          push(@options, "`XBuiltins`(.KList)");
-          $hasBuiltins = 1;
-     }
-     if (!$link) {
-          push(@options, "`NoLink`(.KList)");
-          push(@krun_args, "--interpret");
-     } else {
-          push(@krun_args, '--mini-krun');
-     }
+  if ($args->{'-d'}) {
+    push(@krun_args, '--debug');
+  }
+  my @options = initOptions();
+  if (!$isCPP && !$hasBuiltins && $args->{'-Xbuiltins'}) {
+    push(@options, "`XBuiltins`(.KList)");
+    $hasBuiltins = 1;
+  }
+  if (!$link) {
+    push(@options, "`NoLink`(.KList)");
+    push(@krun_args, "--interpret");
+  } else {
+    push(@krun_args, '--mini-krun');
+  }
 
-     my $opts = makeSet(@options);
-     push(@krun_args, "-cOPTIONS=$opts ");
-     push(@krun_args, "-pOPTIONS=$printf");
+  my $opts = makeSet(@options);
+  push(@krun_args, "-cOPTIONS=$opts ");
+  push(@krun_args, "-pOPTIONS=$printf");
 
-     if (scalar @objs) {
-          my $allObjsFile = tempFile();
-          my @catArgs = ();
-          my @objTexts = ();
-          for (my $i = 0; $i < scalar @objFiles; $i++) {
-               my $thisObj = `cat $objFiles[$i]`;
-               #push(@objTexts, "`unwrapObj`($thisObj)");
-               $thisObj = substr($thisObj, 8, -1);
-               # wrap $thisObj with `unwrapObj`()
-               push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
-          }
-          my $objText = join('', @objTexts);
-          my $one = chr((scalar @objTexts >> 24) & 0xff);
-          my $two = chr((scalar @objTexts >> 16) & 0xff);
-          my $three = chr((scalar @objTexts >> 8) & 0xff);
-          my $four = chr((scalar @objTexts >> 0) & 0xff);
-          $objText = "$MAGIC\x04\x00\x01$objText\x03$one$two$three$four\x07";
-          open(my $file, '>', "$allObjsFile");
-          print $file $objText;
-          close $file;
+  if (scalar @objs) {
+    my $allObjsFile = tempFile();
+    my @catArgs = ();
+    my @objTexts = ();
+    for (my $i = 0; $i < scalar @objFiles; $i++) {
+      my $thisObj = `cat $objFiles[$i]`;
+      # push(@objTexts, "`unwrapObj`($thisObj)");
+      $thisObj = substr($thisObj, 8, -1);
+      # wrap $thisObj with `unwrapObj`()
+      push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
+    }
+    my $objText = join('', @objTexts);
+    my $one = chr((scalar @objTexts >> 24) & 0xff);
+    my $two = chr((scalar @objTexts >> 16) & 0xff);
+    my $three = chr((scalar @objTexts >> 8) & 0xff);
+    my $four = chr((scalar @objTexts >> 0) & 0xff);
+    $objText = "$MAGIC\x04\x00\x01$objText\x03$one$two$three$four\x07";
+    open(my $file, '>', "$allObjsFile");
+    print $file $objText;
+    close $file;
 
-          push(@krun_args, "-pOBJS=cat");
-          push(@krun_args, "-cOBJS=$allObjsFile");
-     } else {
-          push(@krun_args, "-pOBJS=$printf");
-          push(@krun_args, "-cOBJS=.K");
-     }
-     if (defined $src) {
-          my $kast = parse($src, $isCPP);
-          push(@krun_args, '--parser', 'cat');
-          push(@krun_args, $kast);
-     } else {
-          push(@krun_args, "-pPGM=$printf");
-          push(@krun_args, '-cPGM=.K');
-     }
+    push(@krun_args, "-pOBJS=cat");
+    push(@krun_args, "-cOBJS=$allObjsFile");
+  } else {
+    push(@krun_args, "-pOBJS=$printf");
+    push(@krun_args, "-cOBJS=.K");
+  }
+  if (defined $src) {
+    my $kast = parse($src, $isCPP);
+    push(@krun_args, '--parser', 'cat');
+    push(@krun_args, $kast);
+  } else {
+    push(@krun_args, "-pPGM=$printf");
+    push(@krun_args, '-cPGM=.K');
+  }
 
-     if (scalar @ldArgs) {
-          push(@krun_args, '--native-libraries');
-          push(@krun_args, "@ldArgs");
-     }
+  if (scalar @ldArgs) {
+    push(@krun_args, '--native-libraries');
+    push(@krun_args, "@ldArgs");
+  }
 
-     return @krun_args;
+  return @krun_args;
 }
 
 sub preprocess {
-     my ($output, $inputFile, $isCPP) = (@_);
-     my $directoryname = dirname($inputFile);
-     if (!$args->{'-no-pedantic'}) {
-          push(@main::cppArgs, '-pedantic');
-     }
-     if ($isCPP) {
-       my @ppArgs = ("$profileDirectory/cpp-pp",
-                     @main::cppArgs, $inputFile, '-o', $output);
+  my ($output, $inputFile, $isCPP) = (@_);
+  my $directoryname = dirname($inputFile);
+  if (!$args->{'-no-pedantic'}) {
+    push(@main::cppArgs, '-pedantic');
+  }
+  if ($isCPP) {
+    my @ppArgs = ("$profileDirectory/cpp-pp",
+      @main::cppArgs, $inputFile, '-o', $output);
 
-       my $retval = execute(@ppArgs);
-       return $retval;
-     }
+    my $retval = execute(@ppArgs);
+    return $retval;
+  }
 
-     my @ppArgs = ("$profileDirectory/pp",
-                   @main::cppArgs, $inputFile, '-o', $output);
+  my @ppArgs = ("$profileDirectory/pp",
+    @main::cppArgs, $inputFile, '-o', $output);
 
-     my $retval = execute(@ppArgs);
-     return $retval;
+  my $retval = execute(@ppArgs);
+  return $retval;
 }
 
 sub execute {
-    my @cmd = @_;
-    if ($args->{'-d'}) {
-      print("'" . join("' '", @cmd) . "'\n");
-    }
-    my $pgm = shift @cmd;
-    system($pgm, @cmd);
-    return $? >> 8;
+  my @cmd = @_;
+  if ($args->{'-d'}) {
+    print("'" . join("' '", @cmd) . "'\n");
+  }
+  my $pgm = shift @cmd;
+  system($pgm, @cmd);
+  return $? >> 8;
 }
 
 sub tempFile {
-     my $file = File::Temp->new( 
-                TEMPLATE => 'tmp-kcc-XXXXXXX', 
-                UNLINK => 0 );
-     push(@tempFiles, $file);
-     return $file;
+  my $file = File::Temp->new(
+      TEMPLATE => 'tmp-kcc-XXXXXXX',
+      UNLINK => 0 );
+  push(@tempFiles, $file);
+  return $file;
 }
 
 sub parse {
-     my ($inputFile, $isCPP) = (@_);
+  my ($inputFile, $isCPP) = (@_);
 
-     my $ppResult = tempFile();
-     my $kast = tempFile();
-     checkError(preprocess($ppResult, $inputFile, $isCPP), $ppResult, 0);
+  my $ppResult = tempFile();
+  my $kast = tempFile();
+  checkError(preprocess($ppResult, $inputFile, $isCPP), $ppResult, 0);
 
-     if ($isCPP) {
-       my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output -std=c++14 > $kast");
-       if ($args->{'-d'}) {
-         print("$cmd\n");
-       }
-       system($cmd);
-       checkError($? >> 8, $kast, 0);
+  if ($isCPP) {
+    my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output -std=c++14 > $kast");
+    if ($args->{'-d'}) {
+      print("$cmd\n");
+    }
+    system($cmd);
+    checkError($? >> 8, $kast, 0);
 
-       return $kast;
-     }
-     my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
-     if ($args->{'-d'}) {
-       print("$cmd\n");
-     }
-     system($cmd);
-     checkError($? >> 8, $kast, 0);
+    return $kast;
+  }
+  my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
+  if ($args->{'-d'}) {
+    print("$cmd\n");
+  }
+  system($cmd);
+  checkError($? >> 8, $kast, 0);
 
-     return $kast;
+  return $kast;
 }
 
 sub checkError {
@@ -856,37 +866,37 @@ sub makeSet {
     $set = "`_Set_`(`SetItem`($el), $set)";
   }
   return $set;
-} 
+}
 
 sub interruptHandler {
-# Call single cleanup point.
-     finalCleanup();
-# Since we were interrupted, we should exit with a non-zero code.
-     exit 1;
+  # Call single cleanup point.
+  finalCleanup();
+  # Since we were interrupted, we should exit with a non-zero code.
+  exit 1;
 }
 
 # This subroutine can be used as a way to ensure we clean up all resources
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
 sub finalCleanup {
-     if (!$args->{'-d'}) {
-          for (@tempFiles) {
-               if (-d $_) {
-                    remove_tree($_);
-               } else {
-                    unlink;
-               }
-          }
-     }
+  if (!$args->{'-d'}) {
+    for (@tempFiles) {
+      if (-d $_) {
+        remove_tree($_);
+      } else {
+        unlink;
+      }
+    }
+  }
 }
 
 # This block gets run at the end of a normally terminating program, whether it
 # simply exits, or dies. We use this to clean up.
 END {
-# $? contains the value the program would normally have exited with.
-     my $retval = $?;
-# Call single cleanup point.
-     finalCleanup();
-     exit $retval;
+  # $? contains the value the program would normally have exited with.
+  my $retval = $?;
+  # Call single cleanup point.
+  finalCleanup();
+  exit $retval;
 }
 
