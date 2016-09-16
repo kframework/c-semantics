@@ -32,31 +32,28 @@ all: cparser$(EXEEXT)
 clexer.ml: clexer.mll
 	@$(OCAML_LEX) clexer.mll
 
-cparser.ml cparser.mli: cparser.mly cabs.cmi cabshelper.cmi
+cparser.ml cparser.mli: cparser.mly cabs.cmx cabshelper.cmx
 	@$(OCAML_YACC) cparser.mly
 
-lexerhack.cmx lexerhack.cmi: errormsg.cmi
-whitetrack.cmx whitetrack.cmi: cabs.cmi cabshelper.cmi
-escape.cmx escape.cmi: whitetrack.cmi
-cprint.cmx cprint.cmi: escape.cmi cabs.cmi
-longarray.cmx longarray.cmi: errormsg.cmi
-growArray.cmx growArray.cmi: errormsg.cmi longarray.cmi 	
-cabshelper.cmx cabshelper.cmi: errormsg.cmi growArray.cmi cabs.cmi
-cparser.cmx: cabs.cmi cabshelper.cmi lexerhack.cmi cprint.cmi
-cabsDriver.cmx cabsDriver.cmi: cparser.cmi frontc.cmi clexer.cmi xmlPrinter.cmi
-frontc.cmx frontc.cmi: errormsg.cmi whitetrack.cmi cprint.cmi clexer.cmi
-clexer.cmx clexer.cmi: lexerhack.cmi cparser.cmi cprint.cmi cabshelper.cmi
-xmlPrinter.cmx xmlPrinter.cmi: cabs.cmi escape.cmi
-#xmlPrinter.cmi
-#xmlPrinter.cmx xmlPrinter.cmi: $(IOXML)
-%.cmx %.cmi: %.ml 
-#Makefile
+lexerhack.cmx lexerhack.cmi: errormsg.cmx
+whitetrack.cmx whitetrack.cmi: cabs.cmx cabshelper.cmx
+escape.cmx escape.cmi: whitetrack.cmx
+cprint.cmx cprint.cmi: escape.cmx cabs.cmx
+longarray.cmx longarray.cmi: errormsg.cmx
+growArray.cmx growArray.cmi: errormsg.cmx longarray.cmx
+cabshelper.cmx cabshelper.cmi: errormsg.cmx growArray.cmx cabs.cmx
+cparser.cmx: cabs.cmx cabshelper.cmx lexerhack.cmx cprint.cmx cparser.cmi
+cabsDriver.cmx cabsDriver.cmi: cparser.cmx frontc.cmx clexer.cmx xmlPrinter.cmx
+frontc.cmx frontc.cmi: errormsg.cmx whitetrack.cmx cprint.cmx clexer.cmx
+clexer.cmx clexer.cmi: lexerhack.cmx cparser.cmx cprint.cmx cabshelper.cmx
+xmlPrinter.cmx xmlPrinter.cmi: cabs.cmx escape.cmx
+%.cmx: %.ml 
 	@$(OCAML_COMPILE) $*.ml
 	
-cparser.cmi: cparser.mli cabs.cmi clexer.ml
+cparser.cmi: cparser.mli cabs.cmx clexer.ml
 	@$(OCAML_COMPILE) cparser.mli
 	
-cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmi
+cabsDriver.cmx cabsDriver.cmi: xmlPrinter.cmx
 
 EXEEXT=
 
