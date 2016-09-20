@@ -20,6 +20,9 @@ module CPP-TRANSLATION-INIT
 
      imports C-CONFIGURATION
 
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
+          requires isTExprKLabel(#klabel(Lbl))
+
      rule <k> TranslationUnit(TU:String, Decls:List)
                => makeTu(TU +String newUUID)
                ~> makeNs(GlobalNamespace())
@@ -98,6 +101,8 @@ module CPP-TRANSLATION-INIT
 
      rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))
      rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E, E2))
+     rule combine(hasTrace(E::Expr), hasTrace(E2::Expr), hasTrace(E3::Expr), V::ValueCategory, T::CPPType) => hasTrace(ConditionalOp(E, E2, E3, V, T))
      rule combine(_, _) => noTrace [owise]
      rule combine(_, _::Trace, _) => noTrace [owise]
+     rule combine(_, _, _::Trace, _, _) => noTrace [owise]
 endmodule

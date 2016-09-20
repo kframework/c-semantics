@@ -10,4 +10,9 @@ module CPP-EXPR-ASSIGNMENT
           ~> lv(Loc, Tr, T)
           requires notBool isCPPClassType(T)
 
+     rule compoundAssign(L:LVal, R::Expr, _)
+          => fillLHoles(L, fillRHoles(L, R))
+     context compoundOp(Lbl:KLabel(_, HOLE:KItem))
+     rule compoundOp(Lbl:KLabel(L:K, R:KResult)) => Lbl(L, R)
+
 endmodule

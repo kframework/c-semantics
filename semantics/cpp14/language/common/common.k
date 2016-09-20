@@ -10,6 +10,8 @@ require "syntax.k"
 require "typing.k"
 
 require "expr/additive.k"
+require "expr/bitwise.k"
+require "expr/cast.k"
 require "expr/eval.k"
 require "expr/multiplicative.k"
 require "expr/relational.k"
@@ -35,6 +37,8 @@ module CPP-COMMON
      imports C-CPP-TYPING
 
      imports CPP-EXPR-ADDITIVE
+     imports CPP-EXPR-BITWISE
+     imports CPP-EXPR-CAST
      imports CPP-EXPR-EVAL
      imports CPP-EXPR-MULTIPLICATIVE
      imports CPP-EXPR-RELATIONAL

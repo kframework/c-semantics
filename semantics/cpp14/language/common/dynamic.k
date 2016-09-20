@@ -31,6 +31,7 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateParam ::= TemplateArg
      syntax TemplateArg
      syntax CPPValue
+     syntax ValueCategory
 endmodule
 
 module CPP-REVAL-SYNTAX
@@ -64,16 +65,25 @@ module CPP-DYNAMIC-SYNTAX
      syntax XExpr ::= xe(Expr, Trace, CPPTypeExpr)
      syntax PRExpr ::= pre(Expr, Trace, CPPTypeExpr)
 
+     syntax LValueCategory ::= "lvalue"
+     syntax XValueCategory ::= "xvalue"
+     syntax PRValueCategory ::= "prvalue"
+     syntax GLValueCategory ::= LValueCategory | XValueCategory
+     syntax RValueCategory ::= XValueCategory | PRValueCategory
+     syntax ValueCategory ::= GLValueCategory | RValueCategory
+     syntax KResult ::= ValueCategory
+
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
      syntax Trace ::= hasTrace(K) | trace(Typed) [function] | "noTrace"
      syntax Trace ::= combine(Trace, K) [function]
      syntax Trace ::= combine(Trace, Trace, K) [function, klabel(combine2)]
+     syntax Trace ::= combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
  
      syntax FunctionDeclarationType ::= "Function" "(" List ")" 
      syntax VarDeclarationType ::= "Var"
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
-     syntax Decl ::= declareNonStaticObject(CId, CPPType, K, DeclarationType, Duration, Set) [strict(3)]
+     syntax Decl ::= declareNonStaticObject(CId, CPPType, K, DeclarationType, Duration, Set)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
      syntax KResult ::= initValue(Expr, CPPType, K) [klabel(initValueCpp)]
  
@@ -100,7 +110,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax ClassScope ::= classScope(Class)
      syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
      syntax TemplateParameterScope ::= "templateParameterScope"
-     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope
+     syntax FunctionPrototypeScope ::= "prototypeScope"
+     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope
 
      syntax Linkage ::= "ExternalLinkage" | "InternalLinkage" | "NoLinkage"
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
@@ -115,12 +126,15 @@ module CPP-DYNAMIC-SYNTAX
      syntax KItem ::= "pushBlock" "(" Int ")"
                     | "popBlock"
 
+     syntax Stmt ::= "loopMarked"
+     syntax KItem ::= "popLoop"
+
      syntax KItem ::= gotoObject(Int, List, K, List, List) [klabel(gotoObjectCpp)]
 
      syntax NameRef ::= nsRef(Namespace) | notFound(CId)
                       | templateRef(QualId, CPPTypeExpr)
      syntax Val ::= NameRef
-     syntax KResult ::= CPPTypeExpr | Val
+     syntax KResult ::= CPPTypeExpr | NameRef
 
      syntax Bool ::= isLKLabel(K) [function, klabelPredicate]
 
@@ -138,13 +152,51 @@ module CPP-DYNAMIC-SYNTAX
      syntax String ::= typesToString(CPPTypes) [function]
                      | typeToString(CPPType) [function]
 
+     syntax Bool ::= isValKLabel(K) [function, klabelPredicate]
+     syntax Bool ::= isTExprKLabel(K) [function, klabelPredicate]
+
+     syntax KItem ::= bindReference(Expr, Expr) [strict(2)]
+
+     syntax KItem ::= "discard"
+     syntax Expr ::= "LHOLE" | "RHOLE"
+     syntax Expr ::= postOp(Expr, Expr, Trace) [strict(1), klabel(postOpCpp)]
+     syntax Expr ::= compoundAssign(Expr, Expr, Trace) [strict(1), klabel(compoundAssignCpp)]
+                   | compoundOp(Expr)
+     syntax KItem ::= fillLHoles(K, K) [function, klabel(fillLHolesCpp)]
+     syntax KItem ::= fillRHoles(K, K) [function, klabel(fillRHolesCpp)]
+     syntax Expr ::= makePRVal(K)
+     syntax Expr ::= makeXVal(K)
+
 endmodule
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
+     imports C-CONFIGURATION
      imports STRING
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+
+     rule isValKLabel(#klabel(`prv`)) => true
+     rule isValKLabel(#klabel(`xv`)) => true
+     rule isValKLabel(#klabel(`lvcpp`)) => true
+     rule isValKLabel(_) => false [owise]
+     rule isTExprKLabel(#klabel(`pre`)) => true
+     rule isTExprKLabel(#klabel(`xe`)) => true
+     rule isTExprKLabel(#klabel(`lecpp`)) => true
+     rule isTExprKLabel(_) => false [owise]
+
+     // references aren't kresults because they need to get transformed into the object they refer to.
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
+          requires isValKLabel(#klabel(Lbl))
+     rule Lbl:KLabel((loc(Base::SymBase, 0, _) => loc(Base, 0)), _::Trace, _:CPPRefType)
+          requires isValKLabel(#klabel(Lbl))
+     // not all references are lvalues. Some are xvalues. The individual
+     // cases where this is true must handle this explicitly.
+     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, T:CPPRefType) => lv(V, Tr, innerType(T)) ...</k>
+          <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
+          requires isValKLabel(#klabel(Lbl))
+     rule <k> Lbl:KLabel(E::Expr, Tr::Trace, T:CPPRefType) => Lbl(E, Tr, innerType(T)) ...</k>
+          requires isTExprKLabel(#klabel(Lbl)) andBool isTExpr(Lbl(E, Tr, T))
 
      rule isLKLabel(#klabel(`lvcpp`)) => true
      rule isLKLabel(#klabel(`lecpp`)) => true
@@ -285,5 +337,36 @@ module CPP-DYNAMIC
      rule typeToString(char16_t) => "char16_t"
      rule typeToString(char32_t) => "char32_t"
      rule typeToString(nullptr_t) => "decltype(nullptr)"
+
+     rule fillRHoles(V::PRVal, RHOLE) => V
+     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))
+          => Lbl(fillRHoles(V, L))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillRHoles(V, L), fillRHoles(V, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillRHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
+          => Lbl(fillRHoles(V, L), fillRHoles(V, M), fillRHoles(V, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillRHoles(_, K:K) => K [owise]
+
+     rule fillLHoles(V::LVal, LHOLE) => V
+     rule fillLHoles(V::LVal, Lbl:KLabel(L:K))
+          => Lbl(fillLHoles(V, L))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillLHoles(V::LVal, Lbl:KLabel(L:K, R:K))
+          => Lbl(fillLHoles(V, L), fillLHoles(V, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillLHoles(V::PRVal, Lbl:KLabel(L:K, M:K, R:K))
+          => Lbl(fillLHoles(V, L), fillLHoles(V, M), fillLHoles(V, R))
+          requires #klabel(Lbl) =/=K #klabel(`compoundAssignCpp`) andBool #klabel(Lbl) =/=K #klabel(`postOpCpp`)
+     rule fillLHoles(_, K:K) => K [owise]
+
+     rule _:KResult ~> discard => .K
+
+     context makePRVal(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     rule makePRVal(R:PRVal) => R
+     rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
+     rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
 endmodule

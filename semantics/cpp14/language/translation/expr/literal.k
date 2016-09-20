@@ -9,10 +9,10 @@ module CPP-EXPR-LITERAL
      imports CPP-TYPING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
 
-     syntax Expr ::= StringLiteral(String, K) [klabel(StringLiteral2)]
-     context StringLiteral(_, (HOLE:KItem => typeof(HOLE)))
-     syntax Expr ::= CharacterLiteral(Int, K) [klabel(CharacterLiteral2)]
-     context CharacterLiteral(_, (HOLE:KItem => typeof(HOLE)))
+     syntax Expr ::= StringLiteral(String, TypeExpr) [klabel(StringLiteral2)]
+     context StringLiteral(_, (HOLE:TypeExpr => typeof(HOLE)))
+     syntax Expr ::= CharacterLiteral(Int, TypeExpr) [klabel(CharacterLiteral2)]
+     context CharacterLiteral(_, (HOLE:TypeExpr => typeof(HOLE)))
 
      rule StringLiteral(K::CharKind, S::String) => StringLiteral(S, StringLiteral(K, S))
      rule CharacterLiteral(K::CharKind, I::Int) => CharacterLiteral(I, CharacterLiteral(K, I))
@@ -21,6 +21,9 @@ module CPP-EXPR-LITERAL
      rule CharacterLiteral(I::Int, T:CPPType) => prv(I, hasTrace(CharacterLiteral(I, T)), T)
 
      rule IntegerLiteral(I::Int, T:CPPType) => prv(I, hasTrace(IntegerLiteral(I, T)), T)
+
+     rule BoolLiteral(false) => prv(0, hasTrace(BoolLiteral(false)), type(bool))
+     rule BoolLiteral(true) => prv(1, hasTrace(BoolLiteral(true)), type(bool))
 
      rule NullPointerLiteral() => prv(nullptrVal, hasTrace(NullPointerLiteral()), type(nullptr_t))
 

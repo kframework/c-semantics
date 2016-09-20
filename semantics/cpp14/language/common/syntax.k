@@ -81,23 +81,83 @@ module CPP-SYNTAX
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
 
-     syntax Expr ::= Expr ":=" Init [strict(1)]
+     syntax TemplateKeyword ::= "template" | "no-template"
+
+     syntax Expr ::= left:
+                     Expr "++" [strict]
+                   | Expr "--" [strict]
+                   | BuiltinCallOp(Expr, Int, K)
+                   > right:
+                     "++" Expr [strict]
+                   | "--" Expr [strict]
+                   | NewOp(CPPType, Expr, K)
                    | "*" Expr
                    | "&" Expr
-                   | Expr "+" Expr
-                   | Expr "-" Expr
-                   | Expr "*" Expr
+                   | "!" Expr
+                   | Expr "." TemplateKeyword Name
+                   | Expr "->" TemplateKeyword Name
+                   > left:
+                     Expr ".*" Expr
+                   | Expr "->*" Expr
+                   > left:
+                     Expr "*" Expr
                    | Expr "/" Expr
                    | Expr "%" Expr
-                   | Expr "||" Expr
+                   > left:
+                     Expr "+" Expr
+                   | Expr "-" Expr
+	           > left:
+                     Expr "<<" Expr
+                   | Expr ">>" Expr
+                   > left:
+                     Expr "<" Expr
+                   | Expr "<=" Expr
+                   | Expr ">" Expr
+                   | Expr ">=" Expr
+                   > left:
+                     Expr "==" Expr
                    | Expr "!=" Expr
-                   | Expr "==" Expr
-                   | BuiltinCallOp(Expr, Int, K)
-                   | NewOp(CPPType, Expr, K)
+                   > left:
+                     Expr "&" Expr
+                   > left:
+                     Expr "^" Expr
+                   > left:
+                     Expr "|" Expr
+                   > left:
+                     Expr "&&" Expr
+                   > left:
+                     Expr "||" Expr
+                   > right:
+                     Expr ":=" Init [strict(1)]
+                   | Expr "+=" Init [strict(1)]
+                   | Expr "-=" Init [strict(1)]
+                   | Expr "*=" Init [strict(1)]
+                   | Expr "/=" Init [strict(1)]
+                   | Expr "%=" Init [strict(1)]
+                   | Expr "^=" Init [strict(1)]
+                   | Expr "&=" Init [strict(1)]
+                   | Expr "|=" Init [strict(1)]
+                   | Expr "<<=" Init [strict(1)]
+                   | Expr ">>=" Init [strict(1)]
+                   | ConditionalOp(Expr, Expr, Expr, ValueCategory, CPPType)
+                   > left:
+                     Comma(Expr, Expr)
      syntax Name ::= Name(NNS, CId)
                    | Name(NNS, CId, List)
 
+     syntax Expr ::= ConvertType(CPPType, Expr)
+
      context _ := (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ += (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ -= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ *= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ /= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ %= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ ^= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ &= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ |= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ <<= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ >>= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context * (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context (HOLE:Expr => reval(HOLE)) + _ [result(PRVal)]
      context _ + (HOLE:Expr => reval(HOLE)) [result(PRVal)]
@@ -109,18 +169,36 @@ module CPP-SYNTAX
      context _ / (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context (HOLE:Expr => reval(HOLE)) % _ [result(PRVal)]
      context _ % (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) ^ _ [result(PRVal)]
+     context _ ^ (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) & _ [result(PRVal)]
+     context _ & (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) | _ [result(PRVal)]
+     context _ | (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context (HOLE:Expr => reval(HOLE)) != _ [result(PRVal)]
      context _ != (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context (HOLE:Expr => reval(HOLE)) == _ [result(PRVal)]
      context _ == (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) < _ [result(PRVal)]
+     context _ < (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) <= _ [result(PRVal)]
+     context _ <= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) > _ [result(PRVal)]
+     context _ > (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context (HOLE:Expr => reval(HOLE)) >= _ [result(PRVal)]
+     context _ >= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
 
      syntax Block ::= BlockStmt(Int, List)
      syntax Decl
      syntax Stmt ::= LabelStmt(CId, List)
                    | GotoStmt(CId)
                    | ExpressionStmt(Expr) [strict]
+                   | PRValExpressionStmt(Expr) [strict]
                    | ReturnOp(K)
                    | IfStmt(Decl, Stmt, Stmt)
                    | IfStmt(Expr, Stmt, Stmt)
+                   | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
+
+     context IfStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 
 endmodule

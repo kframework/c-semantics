@@ -19,33 +19,47 @@ module CPP-STMT-RETURN
      syntax KItem ::= prepareReturn(CPPType, K)
 
      rule <k> prepareReturn(T::CPPType, Init:K)
-              => allocObject(!I:Int @ D, T, byteSizeofType(T))
+              => #if notBool isCPPRefType(T) #then allocObject(!I:Int @ D, T, byteSizeofType(T)) #else .K #fi
               ~> addToEnv(ret, T, !I @ D, false)
               ~> allowInit(Init)
-              ~> Return'(Name(NoNNS(), ret))
+              ~> Return'(Name(NoNNS(), ret), T)
           ...</k>
           <duration> D::Duration </duration>
           <local-addresses>... .Set => SetItem(!I @ D) ...</local-addresses>
           requires notBool isCPPVoidType(T)
 
-     rule prepareReturn(T:CPPVoidType, .K) => Return'(prv(voidVal, noTrace, T))
+     rule prepareReturn(T:CPPVoidType, .K) => Return''(prv(voidVal, noTrace, T))
 
-     syntax KItem ::= "Return'" "(" K ")"
-     context Return'(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
+                    | "Return''" "(" K ")" [strict]
+
+     // compute value category of result
+     rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) => 
+          Return''(makeCall(Loc, Tr, T, DeclT))
+
+     syntax Val ::= makeCall(SymLoc, Trace, CPPType, CPPType) [function]
+     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+          => lv(Loc, Tr, T)
+          requires isCPPLVRefType(DeclT) orBool (isCPPRVRefType(DeclT) andBool isCPPFunctionType(innerType(DeclT)))
+     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+          => xv(Loc, Tr, T)
+          requires isCPPRVRefType(DeclT) andBool isObjectType(innerType(DeclT))
+     rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
+          => makePRVal(lv(Loc, Tr, T)) [owise]
 
      /* recursively exits each Block wrapped in BlockStatement */
-     rule <k> (.K => popBlock) ~> Return'(_:PRVal) ...</k>
+     rule <k> (.K => popBlock) ~> Return''(_:Val) ...</k>
           <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
 
-     rule <k> Return'(V:PRVal) => deleteLocals ~> return(V) ...</k>
+     rule <k> Return''(V:Val) => fullExpression ~> deleteLocals ~> return(V) ...</k>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>
 
      // Return (to C++ function)
-     rule <k> return(V:PRVal) ~> _
+     rule <k> return(V:Val) ~> _
               => exitRestrictScope(Scope)
-              ~> fullExpression
+              ~> sequencePoint
               ~> V
               ~> K
           </k>

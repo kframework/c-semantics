@@ -36,6 +36,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule FunctionDecl(N::Namespace, X::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, T, NoInit(), Function(Params)) [anywhere]
@@ -171,16 +172,34 @@ module CPP-DECL-DECLARATOR
           requires completeDeclaration(T, Init) ==K T
               andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
+     context declareNonStaticObject(_, _, HOLE:KItem, _, _, _)
+
      // NoLinkage, AutoStorage, not previously declared
-     rule <k> declareObject(NoNamespace(), X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set)
+     rule <k> declareObject(NoNamespace(), X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set) ~> Next:KItem
               => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), noTrace, T), T, Init, Init), Type, AutoStorage, S) ...</k>
+              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init, Init), Type, AutoStorage, S)
+              ~> Next
+          ...</k>
+          <curr-scope> _:BlockScope </curr-scope>
           <curr-template-context> noTemplate </curr-template-context>
-          requires Init =/=K NoInit()
-               andBool completeDeclaration(T, Init) ==K T
+          requires completeDeclaration(T, Init) ==K T
+               andBool getKLabel(Next) =/=K #klabel(`dummyBind`)
 
      rule declareObject(_, _, (T::CPPType => completeDeclaration(T, Init)), Init::Init, _, _, _, _)
           requires T =/=K completeDeclaration(T, Init)
+
+     rule <k> (.K => deduceAuto(T, Init)) 
+              ~> declareObject(_, _, T::CPPTypeExpr, Init::Init, _, _, _, _) ...</k>
+          <template-deduction> _ => .Map </template-deduction>
+          requires isDependentInScope(T) andBool isAuto(T)
+
+     rule <k> (finishAutoDeduction => .K) ~> declareObject(_, _, _, _, _, _, _, _) ~> (.K => stripAuto) ...</k>
+          <template-deduction>... auto |-> T::CPPType ...</template-deduction> //don't substitute any other variables that may have arisen during template deduction
+          <template-arguments>... .Map => auto |-> T ...</template-arguments>
+
+     syntax KItem ::= "stripAuto"
+     rule <k> stripAuto => .K ...</k>
+          <template-arguments>... auto |-> _ => .Map ...</template-arguments>
 
      rule <k> declareNonStaticObject(X::CId, T::CPPType, Init:KResult, Type::DeclarationType, D::Duration, S::Set) => .K ...</k>
           <elab>... .K => declareNonStaticObject(X, T, Init, Type, D, S) </elab>
@@ -207,11 +226,12 @@ module CPP-DECL-DECLARATOR
      rule defineObject(_, _, _, NoInit(), _, _, S::Set) => .K
           requires Extern() in S
 
-     rule <k> defineObject(N::Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, _)
+     rule <k> defineObject(N::Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage, byteSizeofType(T)),
-                   T, Init, Init), Type) ...</k>
-          requires Init =/=K NoInit() andBool isCompleteType(T)
+                   T, StaticStorage, Init, Init), Type) ...</k>
+          requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
+               andBool notBool isCPPRefType(T)
 
      syntax Expr ::= allocateDecl(QualId, CPPType, Duration, Int)
 
@@ -274,6 +294,13 @@ module CPP-DECL-DECLARATOR
      rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, initValue(_, T, Init:K), Var)
               => runInit(stripInitHolds(Init))
           ...</k>
+          requires isStaticInitialization(Init)
+
+     syntax Bool ::= isStaticInitialization(K) [function]
+     rule isStaticInitialization(ExpressionStmt(le(_ := V::Expr, _, _)) ~> K:K) => false
+          requires notBool (isVal(V) andBool notBool isTExpr(V))
+     rule isStaticInitialization((ExpressionStmt(le(_ := _, _, _)) => .K) ~> _:K)
+     rule isStaticInitialization(.K) => true
 
      syntax K ::= stripInitHolds(K) [function]
      rule stripInitHolds(ExpressionStmt(Init::Expr) ~> K:K)

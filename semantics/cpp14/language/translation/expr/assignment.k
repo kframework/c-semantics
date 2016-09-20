@@ -15,4 +15,46 @@ module CPP-EXPR-ASSIGNMENT
           requires notBool isCPPClassType(T)
                andBool notBool isLinkerLoc(Loc)
 
+     rule lv(Loc::SymLoc, Tr::Trace, T::CPPType) := PR:PRVal
+          => le(lv(Loc, Tr, T) := stripHold(convertType(utype(T), PR)), combine(Tr, trace(PR), #klabel(`_:=__CPP-SYNTAX`)), T)
+          requires isLinkerLoc(Loc)
+
+
+     rule L:LVal += R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) + R), 
+               combine(trace(L), trace(R), #klabel(`_+=__CPP-SYNTAX`)))
+     rule L:LVal -= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) - R), 
+               combine(trace(L), trace(R), #klabel(`_-=__CPP-SYNTAX`)))
+     rule L:LVal *= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) * R), 
+               combine(trace(L), trace(R), #klabel(`_*=__CPP-SYNTAX`)))
+     rule L:LVal /= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) / R), 
+               combine(trace(L), trace(R), #klabel(`_/=__CPP-SYNTAX`)))
+     rule L:LVal %= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) % R), 
+               combine(trace(L), trace(R), #klabel(`_%=__CPP-SYNTAX`)))
+     rule L:LVal ^= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) ^ R), 
+               combine(trace(L), trace(R), #klabel(`_^=__CPP-SYNTAX`)))
+     rule L:LVal &= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) & R), 
+               combine(trace(L), trace(R), #klabel(`_&=__CPP-SYNTAX`)))
+     rule L:LVal |= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) | R),
+               combine(trace(L), trace(R), #klabel(`_|=__CPP-SYNTAX`)))
+     rule L:LVal <<= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) << R), 
+               combine(trace(L), trace(R), #klabel(`_<<=__CPP-SYNTAX`)))
+     rule L:LVal >>= R:PRVal
+          => compoundAssign(L, le(LHOLE, trace(L), type(L)) := compoundOp(pre(RHOLE, trace(L), utype(L)) >> R), 
+               combine(trace(L), trace(R), #klabel(`_>>=__CPP-SYNTAX`)))
+
+     context compoundAssign(_, (HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
+     rule compoundAssign(L:LVal, R:PRVal, Tr::Trace)
+          => le(compoundAssign(L, R, Tr), Tr, type(L))
+     context compoundOp(HOLE:Expr)
+     rule compoundOp(V:PRVal)
+          => pre(compoundOp(stripHold(V)), noTrace, type(V))
 endmodule

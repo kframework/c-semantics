@@ -1,16 +1,17 @@
 module CPP-EXPR-ADDITIVE
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule prv(Loc::SymLoc, Tr::Trace, T:CPPPointerType) + prv(I::Int, Tr'::Trace, T':CPPIntegerType)
+     rule prv(Loc::SymLoc, Tr::Trace, T:CPPPointerType) + prv(I:Int, Tr'::Trace, T':CPPIntegerType)
           => addToPointer(Loc, T, I, combine(Tr, Tr', #klabel(`_+__CPP-SYNTAX`)))
           requires isCompleteType(innerType(T)) andBool isObjectType(innerType(T))
 
-     rule prv(I::Int, Tr::Trace, T':CPPIntegerType) + prv(Loc::SymLoc, Tr'::Trace, T:CPPPointerType)
+     rule prv(I:Int, Tr::Trace, T':CPPIntegerType) + prv(Loc::SymLoc, Tr'::Trace, T:CPPPointerType)
           => addToPointer(Loc, T, I, combine(Tr, Tr', #klabel(`_+__CPP-SYNTAX`)))
           requires isCompleteType(innerType(T)) andBool isObjectType(innerType(T))
 
@@ -32,4 +33,8 @@ module CPP-EXPR-ADDITIVE
      rule #newFromArray(Loc::SymLoc, fromArray(ArrOffset::Int, Len::Int), NewOffset::Int)
           => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripProv(Loc, #klabel(`fromArray`)))
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
+
+     rule prv(I1:Int, Tr1::Trace, T1:CPPIntegerType) + prv(I2:Int, Tr2::Trace, T2:CPPIntegerType)
+          => arithInterpret(T1, I1 +Int I2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
+          requires isPromoted(T1) andBool T1 ==Type T2
 endmodule

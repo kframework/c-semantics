@@ -11,6 +11,7 @@ module CPP-TYPING-CANONICALIZATION
      imports ERROR-SYNTAX
 
      rule BuiltinType(Void()) => type(void)
+     rule BuiltinType(Bool()) => type(bool)
      rule BuiltinType(Char()) => type(char)
      rule BuiltinType(WChar()) => type(wchar_t)
      rule BuiltinType(Char16()) => type(char16_t)
@@ -30,8 +31,10 @@ module CPP-TYPING-CANONICALIZATION
      rule BuiltinType(LongDouble()) => type(long-double)
 
      rule PointerType(T:CPPTypeExpr) => t(noQuals, .Set, pointerType(T))
-
      rule ArrayType(T:CPPTypeExpr, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
+     rule ArrayType(T:CPPTypeExpr, I:Int) => t(noQuals, .Set, arrayType(T, I))
+     rule LValRefType(T:CPPTypeExpr) => t(noQuals, .Set, lvRefType(T))
+     rule RValRefType(T:CPPTypeExpr) => t(noQuals, .Set, rvRefType(T))
 
      rule Qualifier(Q::Qualifier, t(Quals::Quals, Mods::Set, S::CPPSimpleType)) => t(Quals +Qual Q, Mods, S)
 
@@ -48,17 +51,16 @@ module CPP-TYPING-CANONICALIZATION
      rule TypedefType(X::CId) => Name(NoNNS(), X)
      rule TemplateParameterType(X::CId) => Name(NoNNS(), X)
 
+     rule AutoType(false) => t(noQuals, .Set, auto)
+     rule AutoType(true) => t(noQuals, .Set, decltype(auto))
+
      rule (.K => typeof(E)) ~> Decltype(E::Expr)
+     rule (.K => catof(E)) ~> typeof(T:CPPType) ~> Decltype(E::Expr)
+          requires getKLabel(E) =/=K #klabel(`Name`)
      rule typeof(T:CPPType) ~> Decltype(Name(_, _)) => T
-     rule typeof(T:CPPType) ~> Decltype(E::Expr) => type(rvRefType(T))
-          requires getKLabel(E) =/=K #klabel(`Name`)
-               andBool isExprXValue(E)
-     rule typeof(T:CPPType) ~> Decltype(E::Expr) => type(lvRefType(T))
-          requires getKLabel(E) =/=K #klabel(`Name`)
-               andBool isExprLValue(E)
-     rule typeof(T:CPPType) ~> Decltype(E::Expr) => T
-          requires getKLabel(E) =/=K #klabel(`Name`)
-               andBool isExprPRValue(E)
+     rule catof(xvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => type(rvRefType(T))
+     rule catof(lvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => type(lvRefType(T))
+     rule catof(prvalue) ~> typeof(T:CPPType) ~> Decltype(E::Expr) => T
 
      syntax KItem ::= elabResult(K)
      context elabResult(HOLE:KItem)

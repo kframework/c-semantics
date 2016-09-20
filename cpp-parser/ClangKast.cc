@@ -2193,13 +2193,11 @@ int main(int argc, const char **argv) {
   close(dupedFd);
   close(slave);
   char *buf = NULL;
-  char *buf2 = NULL;
   size_t n = 0;
   FILE *temp = fdopen(master, "r");
   do {
-    if (buf2) fprintf(stderr, "%s", buf2);
-    free(buf2);
-    buf2 = buf;
+    if (buf) fprintf(stderr, "%s", buf);
+    free(buf);
     buf = NULL;
     n = 0;
   } while (getline(&buf, &n, temp) != -1);

@@ -5,7 +5,7 @@ module CPP-TYPING-SORTS
      syntax CPPVariadic
      syntax CPPSimpleType
      syntax EffectiveType ::= CPPType
-     syntax CPPTypeExpr
+     syntax CPPTypeExpr ::= CPPType
      syntax CPPDTypeExpr ::= CPPTypeExpr | CPPDType
      syntax CPPTypeExprs ::= List{CPPDTypeExpr, ","}
      syntax CPPTypes ::= List{CPPDType, ","}
@@ -18,6 +18,7 @@ module CPP-DEPENDENT-SYNTAX
      syntax Bool ::= isDependentInScope(CPPTypeExpr) [function]
                    | areDependentInScope(TemplateParams) [function]
                    | areDependentInScope(CPPTypeExprs) [function]
+                   | isAuto(CPPDTypeExpr) [function]
      syntax StrictList ::= typeStrict(StrictList)
 endmodule
 
@@ -38,7 +39,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= innerType(CPPType) [function, klabel(cppInnerType)]
      syntax CPPSimpleType ::= simpleType(CPPType) [function, klabel(cppSimpleType)]
 
-     syntax CPPSimpleType ::= underlyingType(CPPSimpleType) [function]
+     syntax CPPSimpleType ::= underlyingType(CPPSimpleType) [function, klabel(underlyingSimpleType)]
+     syntax CPPType ::= underlyingType(CPPType) [function]
 
      syntax CPPSimpleType ::= CPPSimpleBasicType
 
@@ -58,6 +60,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleNullPtrTType ::= "nullptr_t"
 
      syntax CPPSimpleType ::= CPPSimplePointerType
+                            | CPPSimpleMemberPointerType
                             | CPPSimpleFunctionType
                             | CPPSimpleArrayType
                             | CPPSimpleRefType
@@ -66,11 +69,12 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleRefType ::= CPPSimpleLVRefType
                                | CPPSimpleRVRefType
 
-     syntax CPPSimpleTypeExpr ::= CPPSimpleType | CPPSimpleDependentType
+     syntax CPPSimpleTypeExpr ::= CPPSimpleType 
+                                | CPPSimpleDependentType
+                                | CPPSimpleAutoType
                                 | CPPSimpleArrayTypeExpr
                                 | CPPSimplePointerTypeExpr
-                                | CPPSimpleLVRefTypeExpr
-                                | CPPSimpleRVRefTypeExpr
+                                | CPPSimpleRefTypeExpr
                                 | CPPSimpleFunctionTypeExpr
                                 | CPPSimpleClassTypeExpr
 
@@ -79,6 +83,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
      syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
+     syntax CPPSimpleRefTypeExpr ::= CPPSimpleLVRefTypeExpr | CPPSimpleRVRefTypeExpr
      syntax CPPSimpleFunctionTypeExpr ::= functionType(CPPTypeExpr, CPPTypeExprs, LanguageLinkage) [klabel(cppFunctionType)]
      syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
 
@@ -86,6 +91,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleFixedArrayType ::= arrayType(CPPType, Int) [klabel(cppArrayType)]
      syntax CPPSimpleIncompleteArrayType ::= incompleteArrayType(CPPType) [klabel(cppIncompleteArrayType)]
      syntax CPPSimplePointerType ::= pointerType(CPPType) [klabel(cppPointerType)]
+     syntax CPPSimpleMemberPointerType ::= memberPointerType(CPPClassType, CPPType)
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
      syntax CPPSimpleRVRefType ::= rvRefType(CPPType)
      // TODO: exception specification
@@ -93,12 +99,15 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleClassType ::= classType(Class)
 
      syntax CPPSimpleDependentType ::= dependentType(String)
+     syntax CPPSimpleAutoType ::= "auto"
+                                | "decltype(auto)"
 
      syntax CPPFunctionType ::= t(Quals, Set, CPPSimpleFunctionType) [klabel(tcpp)]
      syntax CPPArithmeticType ::= CPPIntegerType | t(Quals, Set, CPPSimpleArithmeticType) [klabel(tcpp)]
      syntax CPPBasicType ::= CPPIntegerType | CPPVoidType
      syntax CPPCharType ::= t(Quals, Set, CPPSimpleCharType) [klabel(tcpp)]
      syntax CPPBoolType ::= t(Quals, Set, CPPSimpleBoolType) [klabel(tcpp)]
+     syntax CPPFloatingType ::= t(Quals, Set, CPPSimpleFloatingType) [klabel(tcpp)]
      syntax CPPIntegerType ::= CPPCharType | CPPBoolType | CPPSignedType | CPPUnsignedType
      syntax CPPSignedType ::= t(Quals, Set, CPPSimpleSignedType) [klabel(tcpp)]
      syntax CPPUnsignedType ::= t(Quals, Set, CPPSimpleUnsignedType) [klabel(tcpp)]
@@ -125,10 +134,12 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(Quals, Set, CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
      syntax CPPClassTypeExpr ::= CPPClassType | t(Quals, Set, CPPSimpleClassTypeExpr) [klabel(tcpp)]
      syntax CPPArrayTypeExpr ::= CPPArrayType | t(Quals, Set, CPPSimpleArrayTypeExpr) [klabel(tcpp)]
-     syntax CPPTypeExpr ::= CPPType | t(Quals, Set, CPPSimpleTypeExpr) [klabel(tcpp)]
+     syntax CPPRefTypeExpr ::= CPPRefType | t(Quals, Set, CPPSimpleRefTypeExpr) [klabel(tcpp)]
+     syntax CPPTypeExpr ::= t(Quals, Set, CPPSimpleTypeExpr) [klabel(tcpp)]
                           | CPPFunctionTypeExpr
                           | CPPClassTypeExpr
                           | CPPArrayTypeExpr
+                          | CPPRefTypeExpr
 
      syntax CPPVariadic ::= "variadic"
 
@@ -163,6 +174,7 @@ module CPP-TYPING-SYNTAX
 
      syntax Int ::= max(CPPIntegerType) [function, klabel(maxCpp)]
                   | min(CPPIntegerType) [function, klabel(minCpp)]
+     syntax Bool ::= inRange(CPPValue, CPPIntegerType) [function, klabel(inRangeCpp)]
 
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
 
@@ -242,6 +254,13 @@ module CPP-TYPING
      rule T1::CPPType ==Type T2::CPPType => T1 ==K T2
      rule T1::CPPType =/=Type T2::CPPType => T1 =/=K T2
 
+     rule underlyingType(T::CPPSimpleType) => T [owise]
+     rule underlyingType(t(Q::Quals, Mods::Set, T::CPPSimpleType))
+          => t(Q, Mods, underlyingType(T))
+
+     rule inRange(I:Int, T::CPPIntegerType)
+          => I <=Int max(T) andBool I >=Int min(T)
+
 endmodule
 
 module C-CPP-TYPING
@@ -250,6 +269,8 @@ module C-CPP-TYPING
      imports COMPAT-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, Args::CPPTypes, CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, bool::CPPSimpleBoolType)) => t(Q, Mods, bool::SimpleBoolType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned)) => t(Q, Mods, unsigned-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, long)) => t(Q, Mods, long-int)

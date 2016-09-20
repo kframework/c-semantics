@@ -9,6 +9,7 @@ module COMMON-CONFIGURATION
   configuration
   <global>
      <mem> .Map </mem>
+     <references> .Map </references>
      <functions color="lightgray"> .Map </functions>
 
      <main-tu color="lightgray"> .Set </main-tu>

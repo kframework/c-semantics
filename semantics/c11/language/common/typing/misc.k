@@ -17,8 +17,6 @@ module C-TYPING-MISC
 
      rule simpleType(t(_, _, T::SimpleType)) => T
 
-     rule char => cfg:charAlias
-
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)

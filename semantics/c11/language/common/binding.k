@@ -85,6 +85,8 @@ module C-BINDING
           => bindVariadics(Vs, 0)
           [structural]
      // No params.
+     rule bind(ListItem(_:VoidType), .List, .List) => .K
+          [structural]
      rule bind(ListItem(typedDeclaration(T:VoidType, _)),
                .List, .List) => .K
           [structural]

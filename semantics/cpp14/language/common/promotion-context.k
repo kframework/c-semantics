@@ -11,11 +11,19 @@ module CPP-COMMON-PROMOTION-CONTEXT
      imports CPP-SYNTAX
 
      rule isArithBinConversionOp(#klabel(`_+__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_-__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(#klabel(`_*__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(#klabel(`_/__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(#klabel(`_%__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_^__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_&__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_|__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(#klabel(`_!=__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(#klabel(`_==__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_<__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_<=__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_>__CPP-SYNTAX`)) => true
+     rule isArithBinConversionOp(#klabel(`_>=__CPP-SYNTAX`)) => true
      rule isArithBinConversionOp(_) => false [owise]
 
 endmodule

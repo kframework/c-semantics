@@ -132,6 +132,8 @@ module C-TYPING-COMMON
      syntax Int ::= numBits(SimpleType) [function]
      rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
 
+     rule char => cfg:charAlias
+
      rule min(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
      rule max(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))

@@ -3,6 +3,7 @@ module CPP-OVERLOADING-SYNTAX
 
      syntax Val ::= CandidateSet
      syntax CandidateSet ::= cSet(Map)
+     syntax KResult ::= CandidateSet
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, CId, CId)
      syntax Expr ::= resolveUniqueDecl(K, Expr) [strict(1)]
 

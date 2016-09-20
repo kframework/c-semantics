@@ -12,6 +12,12 @@ module CPP-STMT-CANONICALIZATION
            requires notBool isBlock(S) [anywhere]
       rule IfAStmt(_::Expr, _, S::AStmt => CompoundAStmt(ListItem(S)))
            requires notBool isBlock(S) andBool S =/=K NoStatement() [anywhere]
+      rule ForAStmt((NoStatement() => NullStmt()), _::AExpr, _, _) [anywhere]
+      rule ForAStmt(_, (NoExpression() => BoolLiteral(true)), _, _) [anywhere]
+      rule ForAStmt(_, _::AExpr, _, S::Stmt => CompoundAStmt(ListItem(S)))
+           requires notBool isBlock(S) [anywhere]
+      rule ForAStmt(D::Stmt, C::Expr, E:Expr, S:Block) => ForStmt(D, C, ExpressionStmt(E), S)
+      rule ForAStmt(D::Stmt, C::Expr, NoExpression(), S:Block) => ForStmt(D, C, NullStmt(), S)
 
       syntax List ::= canonicalizeAStmts(List) [function]
       rule canonicalizeAStmts(ListItem(E:Expr) L::List) => ListItem(ExpressionStmt(E)) canonicalizeAStmts(L)

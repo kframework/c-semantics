@@ -12,6 +12,6 @@ module CPP-PROMOTION
           requires isArithBinConversionOp(#klabel(Lbl))
                andBool isCPPArithmeticType(type(L))
                andBool isCPPArithmeticType(type(R))
-               andBool type(L) =/=Type type(R)
+               andBool (type(L) =/=Type type(R) orBool notBool isPromoted(type(L)))
 
 endmodule

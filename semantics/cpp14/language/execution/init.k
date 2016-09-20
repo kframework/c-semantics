@@ -56,5 +56,6 @@ module CPP-EXECUTION-INIT
      rule hasTrace(_) => noTrace [anywhere]
      rule combine(_, _) => noTrace
      rule combine(_, _::Trace, _) => noTrace
+     rule combine(_, _, _::Trace, _, _) => noTrace
 
 endmodule

@@ -4,8 +4,7 @@ module CPP-STMT-EXPR
      imports BOOL
      imports CPP-SYNTAX
 
-     // TODO(dwightguth): destroy temporaries
      rule ExpressionStmt(V:Val) => fullExpression
-          requires notBool isConvertableDiscardedExpr(V)
+     rule PRValExpressionStmt(V:PRVal) => fullExpression
 
 endmodule

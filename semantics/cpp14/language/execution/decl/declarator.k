@@ -10,7 +10,7 @@ module CPP-DECL-DECLARATOR
      syntax KItem ::= initializeObject(K)
 
      rule <k> declareNonStaticObject(X::CId, T::CPPType, initValue(_, _, Init:K), Var, AutoStorage, _)
-              => allocObject(!I:Int @ D, T, byteSizeofType(T))
+              => #if notBool isCPPRefType(T) #then allocObject(!I:Int @ D, T, byteSizeofType(T)) #else .K #fi
               ~> addToEnv(X, T, !I @ D, false)
               ~> initializeObject(Init)
           ...</k>

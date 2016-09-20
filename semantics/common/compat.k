@@ -254,7 +254,7 @@ module COMPAT
      rule mapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
      rule mapList(.List, _) => .List
 
-     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> M2[B <- C]) M1
+     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> (M2[B <- C])) M1
      rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C) [owise]
 
      rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M

@@ -26,13 +26,13 @@ module CPP-EXPR-FUNCTION-CALL
 
      syntax TExpr ::= makeCall(Expr, Trace, CPPType) [function]
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => le(E, Tr, T)
-          requires isCPPLVRefType(T) orBool (isCPPRVRefType(T) andBool isCPPFunctionType(innerType(T)))
+          requires isCPPLVRefType(T) orBool (isCPPRVRefType(T) andBool notBool isCPPFunctionType(innerType(T)))
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => xe(E, Tr, T)
           requires isCPPRVRefType(T) andBool isObjectType(innerType(T))
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => pre(E, Tr, T) [owise]
 
      rule bindParam(X::CId, T::CPPType, Init::Init)
-          => bindParamHelper(figureInit(le(Name(NoNNS(), X), noTrace, T), T, Init, Init))
+          => bindParamHelper(figureInit(le(Name(NoNNS(), X), noTrace, T), T, AutoStorage, Init, Init))
      syntax KItem ::= bindParamHelper(K) [strict]
      rule bindParamHelper(initValue(_, _, S::Stmt)) => S
 

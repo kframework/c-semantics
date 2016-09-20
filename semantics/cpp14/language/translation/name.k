@@ -140,7 +140,10 @@ module CPP-NAME
      // arg dependent name lookup
      context argDependentNameLookup(_, _, (HOLE:StrictList => types(HOLE)), _)
 
-     rule (.K => isDependentName(X, Args, Types)) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(_))
+     rule <k> (.K => isDependentName(X, Args, Types)) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(_)) ...</k>
+          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+     rule <k> (.K => false) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(_)) ...</k>
+          <curr-template-context> noTemplate </curr-template-context>
 
      // TODO(dwightguth): class member stuff
      syntax KItem ::= isDependentName(CId, List, List)

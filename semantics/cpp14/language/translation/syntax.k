@@ -157,12 +157,15 @@ module CPP-ABSTRACT-SYNTAX
                   // GotoStmt(CId)
                    | ReturnStmt(Init)
                    | NullStmt()
+                   | ForStmt(Stmt, Expr, Stmt, Stmt)
+                   | ForStmt(Stmt, Decl, Stmt, Stmt)
                    | TemplateDefinitionStmt(K) // synthetic statement created by the body of a function template definition when it's evaluted before instantiation
       
      syntax AStmt ::= NoStatement()
                     | CompoundAStmt(List)
                     | LabelAStmt(CId, List)
                     | ForAStmt(AStmt, AExpr, AExpr, AStmt)
+                    | ForAStmt(AStmt, Decl, AExpr, AStmt)
                     | WhileAStmt(Expr, AStmt)
                     | DoWhileAStmt(AStmt, Expr)
                     | IfAStmt(Decl, AStmt, AStmt)
@@ -183,7 +186,7 @@ module CPP-ABSTRACT-SYNTAX
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)
-                   | ParenthesizedCast(AType, Expr)
+                   | ParenthesizedCast(AType, Expr) [strict]
                    | ReinterpretCast(AType, Expr)
                    | StaticCast(AType, Expr)
                    | DynamicCast(AType, Expr)
@@ -224,7 +227,8 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax CharKind ::= Ascii() | Wide() | UTF8() | UTF16() | UTF32()
 
-     syntax Init ::= BraceInit(List)
+     syntax BraceInit ::= BraceInit(List)
+     syntax Init ::= BraceInit
 
      // extensions
      syntax Expr ::= GnuTypeTrait(String, List)

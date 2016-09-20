@@ -8,8 +8,6 @@ module CPP-STMT-IF
      imports CPP-TRANSLATION-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     context IfStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
-
      rule IfStmt((C:PRVal => convertType(type(bool), C)), TrueBr:Block, FalseBr:Block)
           requires notBool isCPPBoolType(type(C))
 

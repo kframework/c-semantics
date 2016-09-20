@@ -75,6 +75,41 @@ module CPP-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
+                    (ForStmt(Control:Expr, Post::Stmt, S::Stmt) => .K)
+                    ~> K:K
+               </computation>
+               <computation-tail> Tail:K </computation-tail>
+               B::Bag
+               <goto-nesting-depth> N::Int </goto-nesting-depth>
+               <goto-block-history>
+                    ListItem(Num::Int) OldBlockHistory::List
+               </goto-block-history>
+               <goto-loop-stack> OldLoopStack::List </goto-loop-stack>
+          </goto-calc>
+          (.Bag => <goto-calc>
+               <computation> S </computation>
+               <computation-tail>
+                    Post
+                    ~> loopMarked
+                    ~> ForStmt(Control, Post, S)
+                    ~> popLoop
+                    ~> K
+                    ~> Tail
+               </computation-tail>
+               B
+               <goto-nesting-depth> N </goto-nesting-depth>
+               <goto-block-history>
+                    ListItem(Num) OldBlockHistory
+               </goto-block-history>
+               <goto-loop-stack>
+                    ListItem(kpair(Num, (K ~> Tail)))
+                    OldLoopStack
+               </goto-loop-stack>
+          </goto-calc>)
+
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
+               <computation>
                     (IfStmt(_:Expr, S1::Block, S2::Block) => .K) ~> K:K
                </computation>
                <computation-tail> Tail:K </computation-tail>

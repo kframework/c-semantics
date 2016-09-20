@@ -22,18 +22,27 @@ require "decl/namespace.k"
 require "decl/template.k"
 require "decl/typedef.k"
 
+require "expr/additive.k"
 require "expr/assignment.k"
+require "expr/bitwise.k"
+require "expr/conditional.k"
 require "expr/function-call.k"
+require "expr/eval.k"
+require "expr/inc-and-dec.k"
 require "expr/literal.k"
 require "expr/logical.k"
 require "expr/new.k"
+require "expr/reference.k"
+require "expr/relational.k"
 require "expr/sizeof.k"
+require "expr/unary.k"
 
 require "stmt/block.k"
 require "stmt/canonicalization.k"
 require "stmt/expr.k"
 require "stmt/if.k"
 require "stmt/labeled.k"
+require "stmt/loop.k"
 require "stmt/return.k"
 
 require "typing/canonicalization.k"
@@ -66,18 +75,27 @@ module CPP-TRANSLATION
      imports CPP-DECL-TEMPLATE
      imports CPP-DECL-TYPEDEF
 
+     imports CPP-TRANSLATION-EXPR-ADDITIVE
      imports CPP-EXPR-ASSIGNMENT
+     imports CPP-TRANSLATION-EXPR-BITWISE
+     imports CPP-EXPR-CONDITIONAL
+     imports CPP-TRANSLATION-EXPR-EVAL
      imports CPP-EXPR-FUNCTION-CALL
+     imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LITERAL
      imports CPP-EXPR-LOGICAL
      imports CPP-EXPR-NEW
+     imports CPP-EXPR-REFERENCE
+     imports CPP-TRANSLATION-EXPR-RELATIONAL
      imports CPP-EXPR-SIZEOF
+     imports CPP-TRANSLATION-EXPR-UNARY
 
      imports CPP-STMT-BLOCK
      imports CPP-STMT-CANONICALIZATION
      imports CPP-STMT-EXPR
      imports CPP-STMT-IF
      imports CPP-STMT-LABELED
+     imports CPP-STMT-LOOP
      imports CPP-STMT-RETURN
 
      imports CPP-TYPING-CANONICALIZATION

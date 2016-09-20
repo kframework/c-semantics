@@ -155,7 +155,7 @@ module CPP-DECL-TEMPLATE
           <curr-scope> S::Scope </curr-scope>
 
      syntax KItem ::= declareTemplateArgs(List, Map)
-     rule (.K => TypedefDecl(Identifier(S), T)) ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ S |-> T:CPPType)
+     rule (.K => TypedefDecl(Identifier(S), T)) ~> declareTemplateArgs((ListItem(Identifier(S::String)) => .List) _, _ dependentType(S) |-> T:CPPType)
      rule declareTemplateArgs(.List, _) => .K
 
      rule TemplateDefinitionStmt(K:K) => K
@@ -188,5 +188,7 @@ module CPP-DECL-TEMPLATE
      context HOLE:CPPTypeExpr, _::TemplateParams
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
      rule <k> t(Q::Quals, Mods::Set, dependentType(S::String)) => t(Q +Quals Q', Mods Mods', T) ...</k>
-          <template-arguments>... S |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleTypeExpr) ...</template-arguments>
+          <template-arguments>... dependentType(S) |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleTypeExpr) ...</template-arguments>
+     rule <k> t(Q::Quals, Mods::Set, auto) => t(Q +Quals Q', Mods Mods', T) ...</k>
+          <template-arguments>... auto |-> t(Q'::Quals, Mods'::Set, T::CPPSimpleTypeExpr) ...</template-arguments>
 endmodule

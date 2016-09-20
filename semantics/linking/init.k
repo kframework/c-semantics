@@ -203,6 +203,7 @@ module C-LINKING-INIT
      rule mergeObj(
           (<global>
                <mem> M1:Map </mem>
+               <references> R1:Map </references>
                <functions> F1:Map </functions>
 
                <external-types> ExtTypes1:Map </external-types>
@@ -226,6 +227,7 @@ module C-LINKING-INIT
           </global>),
           (<global>
                <mem> M2:Map </mem>
+               <references> R2:Map </references>
                <functions> F2:Map </functions>
 
                <external-types> ExtTypes2:Map </external-types>
@@ -250,6 +252,7 @@ module C-LINKING-INIT
           =>
           <global>
                <mem> updateMap(M1, M2) </mem>
+               <references> updateMap(R1, R2) </references>
                <functions> updateMap(F1, F2) </functions>
 
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>

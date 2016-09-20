@@ -5,12 +5,16 @@ module CPP-CONVERSION-SYNTAX
 
      syntax Expr ::= instantiate(SymLoc, Trace, CPPType) [klabel(instantiateCpp)]
 
+     // performs standard type conversions only
      syntax PRVal ::= convertType(CPPType, PRVal) [function]
                     | convertType(CPPType, PRExpr) [function]
+
      syntax PRVal ::= convertLVal(GLVal) [function]
                     | convertLVal(GLExpr) [function]
      syntax PRVal ::= convertArray(Val) [function]
      syntax PRVal ::= convertFunction(LVal) [function]
+
+     syntax Bool ::= isSimilar(CPPType, CPPType) [function]
 
      syntax CPPType ::= promote(CPPType) [function, klabel(promoteCpp)]
      syntax Bool ::= isPromoted(CPPType) [function, klabel(isPromotedCpp)]
@@ -36,11 +40,32 @@ module CPP-CONVERSION
           => UNDIAG("CCV1", "Signed integer overflow.", "5:4") ~> arithInterpretHold(T, N, Tr)
           requires notBool (min(T) <=Int N andBool max(T) >=Int N)
 
-     rule convertType(T::CPPType, prv(V::CPPValue, Tr::Trace, T)) => prv(V, Tr, T)
-     rule convertType(T::CPPType, pre(E::Expr, Tr::Trace, T)) => pre(E, Tr, T)
+     rule convertType(T1::CPPType, prv(V::CPPValue, Tr::Trace, T2::CPPType)) => prv(V, Tr, T2)
+          requires T1 ==Type T2
+     rule convertType(T1::CPPType, pre(E::Expr, Tr::Trace, T2::CPPType)) => pre(E, Tr, T2)
+          requires T1 ==Type T2
 
-     rule convertType(T:CPPUnsignedType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
+     rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => prv(C, Tr, T)
+          requires inRange(C, T) andBool isCPPSignedType(underlyingType(T))
+     rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
+          requires isCPPUnsignedType(underlyingType(T))
+     rule convertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPBoolType)) => prv(C, Tr, T)
+     rule convertType(T:CPPBoolType, prv(0, Tr::Trace, T':CPPIntegerType)) => prv(0, Tr, T)
+     rule convertType(T:CPPBoolType, prv(I:Int, Tr::Trace, T':CPPIntegerType)) => prv(1, Tr, T)
+          requires I =/=Int 0
+
      rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
+
+     rule isSimilar(t(_, _, pointerType(T1::CPPType)), t(_, _, pointerType(T2::CPPType)))
+          => isSimilar(T1, T2)
+     rule isSimilar(t(_, _, memberPointerType(C1::CPPClassType, T1::CPPType)), t(_, _, memberPointerType(C2::CPPClassType, T2::CPPType)))
+          => C1 ==Type C2 andBool isSimilar(T1, T2)
+     rule isSimilar(t(_, _, arrayType(T1::CPPType, N1::Int)), t(_, _, arrayType(T2::CPPType, N2::Int)))
+          => N1 ==Int N2 andBool isSimilar(T1, T2)
+     rule isSimilar(t(_, _, incompleteArrayType(T1::CPPType)), t(_, _, incompleteArrayType(T2::CPPType)))
+          => isSimilar(T1, T2)
+     rule isSimilar(T1::CPPType, T2::CPPType)
+          => utype(T1) ==Type utype(T2) [owise]
 
      rule convertArray(lv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
           => prv(Loc, Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))

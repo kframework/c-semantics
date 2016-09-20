@@ -5,6 +5,7 @@ module CPP-EXECUTION-IO
      imports INT
      imports BITS-SYNTAX
      imports MEMORY-SYNTAX
+     imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-CONFIGURATION
      imports C-IO-BUFFERED-SYNTAX
@@ -76,6 +77,20 @@ module CPP-EXECUTION-IO
           <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
+     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
+              => cppAssertSeq(loc(Base, Offset), Locs)
+              ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T) ...</k>
+          <mem>...
+               Base |-> object(ObjT::CPPType, Len::Int, M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
+          ...</mem>
+          <locs-written> Locs::Set </locs-written>
+          <buffer> Mem::List </buffer>
+          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool notBool (Offset in_keys(M))
+
+     syntax Bits ::= getUninitializedBits(SymLoc, CPPType) [function, klabel(getUninitializedBitsCpp)]
+     rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
+          requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
+     rule getUninitializedBits(L::SymLoc, _) => piece(0, cfg:bitsPerByte) [owise]
 
      rule (.K => UNDIAG("PEIO2",
            "Unsequenced side effect on scalar object with value computation of same object.",

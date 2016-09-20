@@ -42,7 +42,7 @@ module CPP-EXPR-FUNCTION-CALL
      syntax KItem ::= makeArgumentTemporaries(Int, Int, CPPType)
      syntax List ::= readArgumentTemporaries(Int) [function]
 
-     rule <k> (.K => allocObject(!I:Int @ D, T, byteSizeofType(T))
+     rule <k> (.K => #if notBool isCPPRefType(T) #then allocObject(!I:Int @ D, T, byteSizeofType(T)) #else .K #fi
                   ~> addToEnv(arg(I), T, !I @ D, false))
               ~> makeArgumentTemporaries(NArgs::Int, (I::Int => I +Int 1), t(_, _, functionType(_, (T::CPPType, Ts::CPPTypes => Ts), _)))
           ...</k>
@@ -81,9 +81,14 @@ module CPP-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
 
-     rule bindParam(X::CId, T::CPPType, V:LVal) => declareNonStaticObject(X, T, 
+     rule bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
                initValue(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, ExpressionStmt(Name(NoNNS(), X) := V)), 
                Var, AutoStorage, .Set)
+          requires notBool isCPPRefType(T)
+     rule bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
+               initValue(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, bindReference(Name(NoNNS(), X), V)),
+               Var, AutoStorage, .Set)
+          requires isCPPRefType(T)
 
      // Function call conversion (C linkage)
      rule application(_, _, functionObject(X::CId, _, _, _),
