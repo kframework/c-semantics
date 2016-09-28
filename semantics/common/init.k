@@ -19,7 +19,7 @@ module COMMON-INIT
           [structural]
 
      rule unwrapObj(<generatedTop>...
-               <global> G:Bag </global>
+               <global> G::Bag </global>
           ...</generatedTop>)
           => <global> G </global>
 

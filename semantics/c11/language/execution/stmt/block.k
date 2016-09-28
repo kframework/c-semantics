@@ -16,7 +16,7 @@ module C-STMT-BLOCK
           ...</k>
           <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
           <block-control>
-               C:Bag
+               C::Bag
                <local-vars> Vars:List => .List </local-vars>
                <local-addresses> Addresses:Set => .Set </local-addresses>
                <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>

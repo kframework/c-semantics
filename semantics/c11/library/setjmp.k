@@ -126,9 +126,9 @@ module LIBC-SETJMP
                       #else tv(I, utype(int)) #fi
                 ~> K
           </k>
-          <thread-local> _:Bag => C </thread-local>
+          <thread-local> _::Bag => C </thread-local>
           <jmp-bufs>...
-               N |-> jmpBuf(K:K, (<thread-local> C:Bag </thread-local>))
+               N |-> jmpBuf(K:K, (<thread-local> C::Bag </thread-local>))
           ...</jmp-bufs>
           [structural]
 endmodule

@@ -223,7 +223,7 @@ module C-LINKING-INIT
 
                <main-tu> Main1:Set </main-tu>
 
-               <translation-units> TUs1:Bag </translation-units>
+               <translation-units> TUs1::Bag </translation-units>
           </global>),
           (<global>
                <mem> M2:Map </mem>
@@ -247,7 +247,7 @@ module C-LINKING-INIT
 
                <main-tu> Main2:Set </main-tu>
 
-               <translation-units> TUs2:Bag </translation-units>
+               <translation-units> TUs2::Bag </translation-units>
           </global>))
           =>
           <global>
