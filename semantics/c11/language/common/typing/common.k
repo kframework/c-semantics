@@ -14,6 +14,7 @@ module C-TYPING-COMMON
      imports K-REFLECTION
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports FLOAT
 
      rule type(T:Type) => T
      rule type(T:SimpleType) => t(noQuals, .Set, T)
@@ -128,6 +129,20 @@ module C-TYPING-COMMON
      rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
      rule numBytes(enumType(S::TagId)) => numBytes(getEnumAlias(S))
      rule numBytes(_) => 0 [owise]
+
+     rule typePrecision(ut(_, float)) => cfg:precisionofFloat
+     rule typePrecision(ut(_, double)) => cfg:precisionofDouble
+     rule typePrecision(ut(_, long-double)) => cfg:precisionofLongDouble
+     rule maxFloatPrecision => 237
+
+     rule typeExponent(ut(_, float)) => cfg:exponentofFloat
+     rule typeExponent(ut(_, double)) => cfg:exponentofDouble
+     rule typeExponent(ut(_, long-double)) => cfg:exponentofLongDouble
+     rule maxFloatExponent => 19
+
+     rule roundCFloat(T:FloatUType, F:Float) => roundFloat(F, typePrecision(T), typeExponent(T))
+     rule Int2CFloat(T:FloatUType, I:Int) => Int2Float(I, typePrecision(T), typeExponent(T))
+     rule zeroCFloat(T:FloatUType) => Int2CFloat(T, 0)
 
      syntax Int ::= numBits(SimpleType) [function]
      rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte

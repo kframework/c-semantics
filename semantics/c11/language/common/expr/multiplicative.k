@@ -52,8 +52,9 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool utype(L) ==Type T'
           [structural]
      rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
-          ~> L:RValue / tv(0.0, T'::UType)
+          ~> L:RValue / tv(Z:Float, T'::UType)
           requires isFloatUType(utype(L))
+               andBool Z ==Float 0.0
                andBool utype(L) ==Type T'
           [structural]
 

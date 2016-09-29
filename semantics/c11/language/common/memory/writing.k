@@ -290,7 +290,7 @@ module C-MEMORY-WRITING
      rule splitBytes(tv(I:Int, T::UType))
           => splitBytes(I, byteSizeofType(T))
      rule splitBytes(tv(F:Float, T::UType))
-          => splitFloatBytes(F, T, byteSizeofType(T))
+          => splitBytes(F, byteSizeofType(T))
      rule splitBytes(tv(Loc:SymLoc, T::UType))
           => splitBytes(Loc, byteSizeofType(T))
      rule splitBytes(tv(agg(L:List), T::UType))
@@ -329,19 +329,6 @@ module C-MEMORY-WRITING
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))
           => Offset *Int cfg:bitsPerByte in PaddingOffs
-
-     syntax DataList ::= splitFloatBytes(Float, UType, Int) [function]
-     syntax DataList ::= splitFloatBytes(Float, UType, Int, List) [function, klabel(splitFloatBytes2)]
-
-     rule splitFloatBytes(F:Float, T::UType, Len:Int)
-          => splitFloatBytes(F, T, Len -Int 1,
-               ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)))
-          requires Len >Int 0
-     rule splitFloatBytes(F:Float, T::UType, Len:Int, L:List)
-          => splitFloatBytes(F, T, Len -Int 1,
-               ListItem(piece(encodedFloat(F, Len -Int 1, Len -Int 1, T), cfg:bitsPerByte)) L)
-          requires Len >Int 0
-     rule splitFloatBytes(_, _, 0, L:List) => dataList(L)
 
      rule writeString(Loc:SymLoc, S:String)
           => Computation(

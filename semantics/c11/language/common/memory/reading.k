@@ -71,8 +71,8 @@ module C-MEMORY-READING
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     rule concretize(T:CharUType, dataList(ListItem(piece(encodedFloat(F:Float, N:Int, M:Int, T2::UType), _))))
-          => tv(encodedFloat(F, N, M, T2), T)
+     rule concretize(T:CharUType, dataList(ListItem(piece(encodedValue(F:Float, N:Int, M:Int), _))))
+          => tv(encodedValue(F, N, M), T)
      rule concretize(T:IntegerUType, dataList(L::List))
           => joinIntegerBytes(T, L)
           requires notBool isBitfieldType(type(T))
@@ -161,34 +161,32 @@ module C-MEMORY-READING
      rule hasFloat(ListItem(piece(B::Bits, _) => B) _:List)
      rule hasFloat((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
      rule hasFloat(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule hasFloat(ListItem(encodedFloat(_, _, _, _)) _:List) => true
+     rule hasFloat(ListItem(encodedValue(F:Float, _, _)) _:List) => true
      rule hasFloat(ListItem(B::Bits) L:List) => hasFloat(L) [owise]
 
-
-     // TODO(chathhorn): half-assed floating point support.
      syntax RValue ::= joinFloatBytes(UType, List) [function]
-     syntax RValue ::= joinFloatBytes(UType, K, Float, Int, Int, List) [function, klabel(joinFloatBytes2)]
-     rule joinFloatBytes(T::UType,
-               ListItem(piece(encodedFloat(F:Float, I:Int, I:Int, T2::UType), _)) L:List)
-          => joinFloatBytes(T, T2, F, I, I +Int 1, L)
-     rule joinFloatBytes(T::UType,
-               ListItem(piece(0, _)) L:List)
-          => joinFloatBytes(T, .K, 0.0, 0, 1, L)
-     rule joinFloatBytes(T::UType, T2:KItem, F:Float, Start:Int, End:Int,
-               ListItem(piece(encodedFloat(F, End, End, {T2}:>UType), _)) L:List)
-          => joinFloatBytes(T, T2, F, Start, End +Int 1, L)
-     rule joinFloatBytes(T::UType, .K, 0.0, 0, Len:Int,
-               ListItem(piece(0, _)) L:List)
-          => joinFloatBytes(T, .K, 0.0, 0, Len +Int 1, L)
-     rule joinFloatBytes(T::UType, .K, F:Float, 0, Len:Int, .List)
+     syntax RValue ::= "joinFloatBytes-aux" "(" UType "," List "," K ")" [function]
+     rule joinFloatBytes(T::UType, ListItem(piece(N:Bits, Len:Int)) L:List)
+          => joinFloatBytes-aux(T, L, N)
+          requires Len ==Int cfg:bitsPerByte
+     rule joinFloatBytes-aux(T::UType,
+               ListItem(piece(encodedValue(F, SNatEnd:Int, SNatEnd:Int), Len:Int))
+               L:List, encodedValue(F:Float, I:Int, End:Int))
+          => joinFloatBytes-aux(T, L, encodedValue(F, I, End +Int 1))
+          requires (Len ==Int cfg:bitsPerByte)
+               andBool (SNatEnd ==Int End +Int 1)
+     rule joinFloatBytes-aux(T:UType, .List, encodedValue(F:Float, 0, N:Int))
           => tv(F, T)
-          requires Len ==Int byteSizeofType(T)
-     rule joinFloatBytes(T::UType, T2:KItem, F:Float, 0, Len:Int, .List)
-          => tv(F, T)
-          requires Len ==Int byteSizeofType({T2}:>UType)
-     rule joinFloatBytes(T::UType, T2:KItem, F:Float, Start:Int, End:Int, .List)
-          => tv(encodedFloat(F, Start, End -Int 1, {T2}:>UType), T)
-          requires Start =/=Int 0 orBool End <Int byteSizeofType({T2}:>UType)
+          requires N ==Int byteSizeofType(T) -Int 1
+     rule joinFloatBytes-aux(T:UType, .List, encodedValue(F:Float, M:Int, N:Int))
+          => tv(encodedValue(F, M,  N), T)
+          requires N <Int byteSizeofType(T) -Int 1 orBool M >Int 0
+     rule joinFloatBytes-aux(T::UType,
+               ListItem(piece(0, Len:Int)) L:List, 0)
+          => joinFloatBytes-aux(T, L, 0)
+          requires Len ==Int cfg:bitsPerByte
+     rule joinFloatBytes-aux(T::UType, .List, 0)
+          => tv(Int2CFloat(T, 0), T)
 
      syntax RValue ::= joinPointerBytes(UType, List) [function, klabel(joinPointerBytesC)]
      syntax RValue ::= "joinPointerBytes-aux" "(" UType "," List "," K ")" [function]

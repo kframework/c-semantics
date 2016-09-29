@@ -3,9 +3,6 @@ module C-BITS-SYNTAX
      imports FLOAT-SYNTAX
      imports C-TYPING-SORTS
 
-     // value, (length - byte-offset), type
-     syntax Bits ::= encodedFloat(Float, Int, Int, UType)
-
      syntax KItem ::= fillToBytes(K) [strict]
      syntax KItem ::= "fillToBytes-aux" "(" K "," List ")" [function]
 

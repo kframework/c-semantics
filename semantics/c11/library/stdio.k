@@ -580,6 +580,9 @@ module LIBC-STDIO
      \cinline{nan}, respectively.
      \end{description}
      */
+
+     //TODO(traiansf): missing formatting for long double
+     //TODO(traiansf): width specs for floats are not working
      rule [format-%f-start]:
           <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("f") => .List ...</format>

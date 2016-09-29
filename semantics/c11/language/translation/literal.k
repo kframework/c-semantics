@@ -17,6 +17,7 @@ module C-LITERAL
      imports C-DYNAMIC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
+     imports FLOAT
 
      syntax Bool ::= withinRange(Int, SimpleUType) [function]
      rule withinRange(I::Int, T::SimpleUType)
@@ -219,17 +220,18 @@ module C-LITERAL
      suffixed by the letter \cinline{l} or \cinline{L}, it has type
      \cinline{long double}.
      }*/
+     //TODO(traiansf): The float used here is the approximation of the original float using the precision given by ocaml.
      syntax FloatConstant ::= reducedFloat(Float)
      rule DecimalFloatConstant(_, _, F:Float) => reducedFloat(F)
      rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
 
-     rule NoSuffix(reducedFloat(F:Float)) => tv(F, utype(double))
+     rule NoSuffix(reducedFloat(F:Float)) => tv(roundCFloat(utype(double), F), utype(double))
           [structural, anywhere]
 
-     rule LitL(reducedFloat(F:Float)) => tv(F, utype(long-double))
+     rule LitL(reducedFloat(F:Float)) => tv(roundCFloat(utype(long-double), F), utype(long-double))
           [structural, anywhere]
 
-     rule LitF(reducedFloat(F:Float)) => tv(F, utype(float))
+     rule LitF(reducedFloat(F:Float)) => tv(roundCFloat(utype(float), F), utype(float))
           [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{

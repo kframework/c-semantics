@@ -33,7 +33,7 @@ module C-COMMON-EXPR-UNARY
           requires isPromoted(T)
           [structural]
      rule [unaryMinus-float]:
-          - tv(F:Float, T::UType) => arithInterpret(T, 0.0 -Float F)
+          - tv(F:Float, T::UType) => arithInterpret(T, zeroCFloat(T) -Float F)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{

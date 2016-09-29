@@ -32,7 +32,7 @@ module C-CONVERSION
                andBool (max(T) >=Int N)
      rule arithInterpret(T::UType, unknown(I:Int)) => makeUnknown(arithInterpret(T, I))
      rule arithInterpret(T::UType, trap) => trap(T)
-     rule arithInterpret(T:FloatUType, F:Float) => tv(F, T)
+     rule arithInterpret(T:FloatUType, F:Float) => tv(roundCFloat(T, F), T)
           requires fmin(T) <=Float F andBool fmax(T) >=Float F
      rule arithInterpret(T:FloatUType, F:Float) => arithInterpretHold(T, F)
           requires notBool (fmin(T) <=Float F andBool fmax(T) >=Float F)
@@ -65,7 +65,7 @@ module C-CONVERSION
                #else tv(1, cast(ut(Mods, bool), T)) #fi
 
      rule cast(ut(Mods::Set, bool), tv(F:Float, T:FloatUType))
-          => #if F ==Float Int2Float(0, 53, 11)
+          => #if F ==Float zeroCFloat(T)
                #then tv(0, cast(ut(Mods, bool), T))
                #else tv(1, cast(ut(Mods, bool), T)) #fi
 
@@ -201,8 +201,10 @@ module C-CONVERSION
      6.8.6.4).
      }*/
      rule cast(T':FloatUType, tv(V:Int, T:IntegerUType))
-          => tv(Int2Float(V, 53, 11), cast(T', T))
-          requires inRange(Int2Float(V, 53, 11), T')
+          => tv(Int2Float(V, typePrecision(T'), typeExponent(T')), cast(T', T))
+          requires inRange(Int2Float(V, maxFloatPrecision, maxFloatExponent), T')
+
+     //TODO(traiansf): Shouldn't here be an undef rule for too large integers, too?
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.5}{2}}}{
      When a value of real floating type is converted to a real floating type,
@@ -217,7 +219,7 @@ module C-CONVERSION
      6.8.6.4).
      }*/
      rule cast(T':FloatUType, tv(V:Float, T:FloatUType))
-          => tv(V, cast(T', T))
+          => tv(roundCFloat(T', V), cast(T', T))
           requires inRange(V, T')
 
      rule cast(T':FloatUType, tv(V:Float, T:FloatUType))

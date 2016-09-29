@@ -613,7 +613,7 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax CValue ::= getZero(Type) [function]
-     rule getZero(_:FloatType) => 0.0
+     rule getZero(t(_, _, T:SimpleFloatType)) => zeroCFloat(utype(T))
      rule getZero(_:PointerType) => NullPointer
      rule getZero(_) => 0 [owise]
 

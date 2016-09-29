@@ -362,6 +362,14 @@ module C-TYPING-SYNTAX
      // moved from BITSIZE because type compatibility depends on it quite indirectly
      syntax Int ::= numBytes(SimpleType) [function]
 
+     syntax Int ::= typePrecision(UType) [function]
+     syntax Int ::= typeExponent(UType) [function]
+     syntax Float ::= Int2CFloat(UType, Int) [function]
+     syntax Float ::= roundCFloat(UType, Float) [function]
+     syntax Float ::= zeroCFloat(UType) [function]
+     syntax Int ::= "maxFloatPrecision" [function]
+     syntax Int ::= "maxFloatExponent" [function]
+
      syntax Bool ::= anonInDecls(List) [function]
      // Search - anonymous fields
      syntax ProvInfo ::= provInfo(CId, Bool, FieldInfo)

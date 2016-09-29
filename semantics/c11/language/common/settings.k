@@ -20,6 +20,12 @@ module C-SETTINGS-SYNTAX
      syntax Int ::= "cfg:sizeofFloat" [function]
      syntax Int ::= "cfg:sizeofDouble" [function]
      syntax Int ::= "cfg:sizeofLongDouble" [function]
+     syntax Int ::= "cfg:exponentofFloat" [function]
+     syntax Int ::= "cfg:exponentofDouble" [function]
+     syntax Int ::= "cfg:exponentofLongDouble" [function]
+     syntax Int ::= "cfg:precisionofFloat" [function]
+     syntax Int ::= "cfg:precisionofDouble" [function]
+     syntax Int ::= "cfg:precisionofLongDouble" [function]
      syntax SimpleBasicType ::= "cfg:thrdut" [function]
      syntax Int ::= "cfg:mtxPlain" [function]
      syntax SimpleBasicType ::= "cfg:sizeut" [function]
@@ -46,7 +52,7 @@ module C-SETTINGS-SYNTAX
      syntax CValue ::= "cfg:pointerToInt" "(" CValue "," UType ")" [function]
 
      syntax Float ::= "cfg:floatFromBits" "(" Int "," UType ")" [function]
-     syntax Int ::= "cfg:floatRepr" "(" Float "," Int "," Int "," UType "," UType ")" [function]
+     syntax Int ::= "cfg:floatRepr" "(" Float "," Int "," Int "," UType ")" [function]
 
      syntax Int ::= "cfg:maxHeapBound" [function]
 

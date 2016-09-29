@@ -53,14 +53,8 @@ module C-TYPING-MISC
           => ((V <=Float fmax(T)) andBool (V >=Float fmin(T)))
           orBool isInfinite(V) orBool isNaN(V)
 
-     rule fmin(ut(_, float)) => 0.0f -Float maxValueFloat(24, 8)
-     rule fmax(ut(_, float)) => maxValueFloat(24, 8)
-
-     rule fmin(ut(_, double)) => 0.0 -Float maxValueFloat(53, 11)
-     rule fmax(ut(_, double)) => maxValueFloat(53, 11)
-
-     rule fmin(ut(_, long-double)) => Int2Float(0, 64, 15) -Float maxValueFloat(64, 15)
-     rule fmax(ut(_, long-double)) => maxValueFloat(64, 15)
+     rule fmin(T:FloatUType) => zeroCFloat(T) -Float maxValueFloat(typePrecision(T), typeExponent(T))
+     rule fmax(T:FloatUType) => maxValueFloat(typePrecision(T), typeExponent(T))
 
      rule getParams(t(_, _, functionType(_, P::List))) => P
      rule getParams(T::Type) => .List
