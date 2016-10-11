@@ -8,7 +8,9 @@ module CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-INIT-SYNTAX
      imports STRING
      imports COMMON-BUILTIN-SYNTAX
+     imports COMPAT-SYNTAX
      imports MEMORY-SYNTAX
+     imports SYMLOC-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX

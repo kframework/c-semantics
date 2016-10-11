@@ -1,11 +1,13 @@
 TUS = $(wildcard ./*.c) $(wildcard ./*.C)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link2.C, ${TUS})))
+CPP_TESTS = $(filter-out %.c, ${TESTS})
 GCC_COMPILED_TESTS = ${TESTS:=.gcc}
 KCC_COMPILED_TESTS = ${TESTS:=.kcc}
 TEST_RESULTS = ${TESTS:=.out}
 REFERENCE_TEST_RESULTS = ${TESTS:=.ref}
 TEST_COMPARISON = ${TESTS:=.cmp}
+CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 CC=gcc-4.9
 CXX=g++-4.9
 
@@ -20,6 +22,8 @@ test: ${TEST_RESULTS}
 reference: ${REFERENCE_TEST_RESULTS}
 
 comparison: ${TEST_COMPARISON}
+
+cpp-comparison: ${CPP_TEST_COMPARISON}
 
 compile: ${KCC_COMPILED_TESTS}
 

@@ -10,8 +10,18 @@ module CPP-PROMOTION
                convertType(usualArithmeticConversions(type(L), type(R)), L),
                convertType(usualArithmeticConversions(type(L), type(R)), R))
           requires isArithBinConversionOp(#klabel(Lbl))
-               andBool isCPPArithmeticType(type(L))
-               andBool isCPPArithmeticType(type(R))
+               andBool (isCPPArithmeticType(type(L)) orBool isCPPEnumType(type(L)))
+               andBool (isCPPArithmeticType(type(R)) orBool isCPPEnumType(type(R)))
                andBool (type(L) =/=Type type(R) orBool notBool isPromoted(type(L)))
+
+     rule Lbl:KLabel(L:PRVal, R:PRVal)
+          => Lbl(
+               convertType(compositePointerType(L, R), L),
+               convertType(compositePointerType(L, R), R))
+          requires isCompositePointerOp(#klabel(Lbl))
+               andBool (isCPPPointerType(type(L)) orBool isCPPMemberPointerType(type(L))
+                    orBool isCPPPointerType(type(R)) orBool isCPPMemberPointerType(type(R))
+                    orBool isCPPNullPtrTType(type(L)) orBool isCPPNullPtrTType(type(R)))
+               andBool type(L) =/=Type type(R)
 
 endmodule

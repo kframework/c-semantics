@@ -12,6 +12,7 @@ endmodule
 module CPP-EXPR-CONDITIONAL
      imports CPP-EXPR-CONDITIONAL-SYNTAX
      imports K-REFLECTION
+     imports COMMON-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

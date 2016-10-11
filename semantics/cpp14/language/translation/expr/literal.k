@@ -44,5 +44,6 @@ module CPP-EXPR-LITERAL
      rule allocString(Base::SymBase, T::CPPType, S::String)
           => allocObject(Base, T, lengthString(S) +Int 1)
           ~> writeString(lnew(Base, T), S)
+          ~> lv(lnew(Base, T), hasTrace(StringLiteral(S, T)), T)
 
 endmodule

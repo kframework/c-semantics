@@ -1,4 +1,6 @@
 module CPP-EXPR-MULTIPLICATIVE
+     imports BOOL
+     imports INT
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX

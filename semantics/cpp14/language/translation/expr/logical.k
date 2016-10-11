@@ -1,4 +1,8 @@
 module CPP-EXPR-LOGICAL
+     imports BOOL
+     imports INT
+     imports K-EQUAL
+     imports BITS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX

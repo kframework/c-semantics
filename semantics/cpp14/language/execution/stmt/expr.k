@@ -5,6 +5,5 @@ module CPP-STMT-EXPR
      imports CPP-SYNTAX
 
      rule ExpressionStmt(V:Val) => fullExpression
-     rule PRValExpressionStmt(V:PRVal) => fullExpression
 
 endmodule

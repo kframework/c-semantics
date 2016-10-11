@@ -41,17 +41,21 @@ endmodule
 
 module CPP-DYNAMIC-SYNTAX
      imports CPP-DYNAMIC-SORTS
+     imports BITS-SORTS
+     imports CPP-SYMLOC-SORTS
      imports CPP-TYPING-SORTS
-     imports CPP-REVAL-SYNTAX
-     imports INT
-     imports LIST
-     imports BITS-SYNTAX
-     imports SYMLOC-SYNTAX
      imports CPP-DEPENDENT-SYNTAX
+     imports CPP-REVAL-SYNTAX
+     imports FLOAT-SYNTAX
+     imports INT-SYNTAX
+     imports LIST
+     imports SET
 
      syntax CPPValue ::= SymLoc
                        | Bits
                        | NullPtrVal // value of type std::nullptr_t
+                       | Float
+                       | MemberPtr
      syntax EffectiveValue ::= CPPValue
      syntax NullPtrVal ::= "nullptrVal"
 
@@ -85,7 +89,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
      syntax Decl ::= declareNonStaticObject(CId, CPPType, K, DeclarationType, Duration, Set)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
-     syntax KResult ::= initValue(Expr, CPPType, K) [klabel(initValueCpp)]
+     syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
  
      syntax UnnamedNamespace
      syntax NNS ::= NoNNS()
@@ -155,7 +159,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax Bool ::= isValKLabel(K) [function, klabelPredicate]
      syntax Bool ::= isTExprKLabel(K) [function, klabelPredicate]
 
-     syntax KItem ::= bindReference(Expr, Expr) [strict(2)]
+     syntax Expr ::= bindReference(Expr, Expr) [strict(2)]
 
      syntax KItem ::= "discard"
      syntax Expr ::= "LHOLE" | "RHOLE"
@@ -167,12 +171,18 @@ module CPP-DYNAMIC-SYNTAX
      syntax Expr ::= makePRVal(K)
      syntax Expr ::= makeXVal(K)
 
+     // synthetic sort for KResults that result from expressions, but aren't actually values
+     syntax ValResult
+     syntax Val ::= ValResult
+     syntax KResult ::= ValResult
+
 endmodule
 
 module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
      imports C-CONFIGURATION
      imports STRING
+     imports SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 

@@ -7,6 +7,7 @@ require "io.k"
 require "decl/declarator.k"
 
 require "expr/assignment.k"
+require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/inc-and-dec.k"
 require "expr/logical.k"
@@ -34,6 +35,7 @@ module CPP-EXECUTION
      imports CPP-DECL-DECLARATOR
 
      imports CPP-EXPR-ASSIGNMENT
+     imports CPP-EXPR-CONDITIONAL
      imports CPP-EXPR-FUNCTION-CALL
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LOGICAL

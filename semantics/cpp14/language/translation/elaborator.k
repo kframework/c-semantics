@@ -7,7 +7,7 @@ module CPP-ELABORATOR-SYNTAX
                     | elaborateDone(K, K)
                     | elaborateTemplateBody(K)
 
-     syntax KItem ::= runInit(K)
+     syntax KItem ::= runInit(K) [strict]
 endmodule
 
 module CPP-ELABORATOR
@@ -41,9 +41,7 @@ module CPP-ELABORATOR
                ListItem(elabTemplateFrame(Cont:K, OldElab:K, I::TemplateInfo)) => .List
           ...</elab-stack>
 
-
-     rule (.K => elaborate(K)) ~> runInit(K:K)
-     rule elaborateDone(_) ~> runInit(_) => .K
+     rule runInit(V:Val) => .K
 
      rule elaborate(K1:K, K2:K) => elaborate(K1) ~> elaborate(K2)
      rule elaborateDone(K1:K) ~> elaborate(K2:K)

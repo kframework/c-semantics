@@ -14,7 +14,7 @@ module BITS-SYNTAX
      imports LIST
 
      syntax Trap ::= "trap" [klabel(trap)]
-     syntax Unknown ::= unknown(Int)
+     syntax Unknown ::= unknown(EffectiveValue)
      syntax Bits ::= Trap
      syntax Bits ::= Unknown
 

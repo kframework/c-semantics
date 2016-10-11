@@ -1,5 +1,6 @@
 module CPP-STMT-LOOP
      imports C-CONFIGURATION
+     imports INT
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 

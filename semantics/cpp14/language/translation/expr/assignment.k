@@ -1,4 +1,6 @@
 module CPP-EXPR-ASSIGNMENT
+     imports BOOL
+     imports SYMLOC-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-MEMORY-WRITING-SYNTAX

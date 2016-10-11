@@ -25,6 +25,7 @@ require "decl/typedef.k"
 require "expr/additive.k"
 require "expr/assignment.k"
 require "expr/bitwise.k"
+require "expr/cast.k"
 require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/eval.k"
@@ -78,6 +79,7 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-EXPR-ADDITIVE
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-TRANSLATION-EXPR-BITWISE
+     imports CPP-TRANSLATION-EXPR-CAST
      imports CPP-EXPR-CONDITIONAL
      imports CPP-TRANSLATION-EXPR-EVAL
      imports CPP-EXPR-FUNCTION-CALL

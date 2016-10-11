@@ -8,10 +8,11 @@ module CPP-DECL-CLASS-SYNTAX
 endmodule
 
 module CPP-DECL-CLASS
-     import CPP-DECL-CLASS-SYNTAX
+     imports CPP-DECL-CLASS-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports COMMON-SYNTAX
+     imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX

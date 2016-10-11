@@ -9,6 +9,7 @@ endmodule
 module CPP-BUILTIN
      imports CPP-BUILTIN-SYNTAX
      imports MAP
+     imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX

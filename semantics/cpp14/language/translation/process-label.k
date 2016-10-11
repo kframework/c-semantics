@@ -6,6 +6,9 @@ endmodule
 module CPP-PROCESS-LABEL
      imports CPP-PROCESS-LABEL-SYNTAX
      imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 

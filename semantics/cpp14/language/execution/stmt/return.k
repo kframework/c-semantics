@@ -1,6 +1,7 @@
 module CPP-STMT-RETURN
      imports RETURN-SYNTAX
      imports C-CONFIGURATION
+     imports BOOL
      imports C-CHECK-LOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -12,23 +13,17 @@ module CPP-STMT-RETURN
      imports CPP-TYPING-SYNTAX
 
      // Return (from C++ function)
-     rule <k> ReturnOp(Init:K) => prepareReturn(getReturnType(T), Init) ...</k>
+     rule <k> ReturnOp(V::Expr) => prepareReturn(getReturnType(T), V) ...</k>
           <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, T::CPPFunctionType, _, _) ...</functions>
 
      syntax KItem ::= prepareReturn(CPPType, K)
 
-     rule <k> prepareReturn(T::CPPType, Init:K)
-              => #if notBool isCPPRefType(T) #then allocObject(!I:Int @ D, T, byteSizeofType(T)) #else .K #fi
-              ~> addToEnv(ret, T, !I @ D, false)
-              ~> allowInit(Init)
-              ~> Return'(Name(NoNNS(), ret), T)
-          ...</k>
-          <duration> D::Duration </duration>
-          <local-addresses>... .Set => SetItem(!I @ D) ...</local-addresses>
+     rule prepareReturn(T::CPPType, Init:K)
+          => Return'(allowInit(Init), T)
           requires notBool isCPPVoidType(T)
 
-     rule prepareReturn(T:CPPVoidType, .K) => Return''(prv(voidVal, noTrace, T))
+     rule prepareReturn(T:CPPVoidType, V:PRVal) => Return''(V)
 
      syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
                     | "Return''" "(" K ")" [strict]

@@ -1,5 +1,6 @@
 module CPP-STMT-BLOCK
      imports C-CONFIGURATION
+     imports COMPAT-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX

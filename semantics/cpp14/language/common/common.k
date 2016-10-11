@@ -1,3 +1,4 @@
+require "alignment.k"
 require "binding.k"
 require "bitsize.k"
 require "builtin.k"
@@ -5,6 +6,7 @@ require "conversion.k"
 require "dynamic.k"
 require "error.k"
 require "promotion-context.k"
+require "reference.k"
 require "symloc.k"
 require "syntax.k"
 require "typing.k"
@@ -26,6 +28,7 @@ require "stmt/expr.k"
 require "cpp-extensions-common.k"
 
 module CPP-COMMON
+     imports CPP-ALIGNMENT
      imports CPP-BINDING
      imports CPP-BITSIZE
      imports CPP-BUILTIN
@@ -33,6 +36,7 @@ module CPP-COMMON
      imports CPP-DYNAMIC
      imports CPP-ERROR
      imports CPP-COMMON-PROMOTION-CONTEXT
+     imports CPP-REFERENCE
      imports CPP-SYMLOC
      imports C-CPP-TYPING
 

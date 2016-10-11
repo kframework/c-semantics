@@ -1,4 +1,5 @@
 module CPP-EXPR-NEW
+     imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX

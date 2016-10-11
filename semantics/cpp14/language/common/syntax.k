@@ -1,13 +1,11 @@
 module CPP-SORTS
      syntax CId ::= OpId
-     syntax CId ::= TempId
      syntax Init ::= Stmt | Expr
      syntax Expr ::= Name
      syntax Name
      syntax Stmt ::= Block
      syntax Block
      syntax OpId
-     syntax TempId
      syntax Tag
 endmodule
 
@@ -73,8 +71,7 @@ module CPP-SYNTAX
                    | "operator--_"
                    
 
-     syntax TempId ::= arg(Int)
-                     | "ret"
+     syntax Expr ::= temp(Int, CPPType)
 
      syntax CId ::= Destructor(CId)
 
@@ -86,7 +83,7 @@ module CPP-SYNTAX
      syntax Expr ::= left:
                      Expr "++" [strict]
                    | Expr "--" [strict]
-                   | BuiltinCallOp(Expr, Int, K)
+                   | BuiltinCallOp(Expr, List)
                    > right:
                      "++" Expr [strict]
                    | "--" Expr [strict]
@@ -194,7 +191,7 @@ module CPP-SYNTAX
                    | GotoStmt(CId)
                    | ExpressionStmt(Expr) [strict]
                    | PRValExpressionStmt(Expr) [strict]
-                   | ReturnOp(K)
+                   | ReturnOp(Expr)
                    | IfStmt(Decl, Stmt, Stmt)
                    | IfStmt(Expr, Stmt, Stmt)
                    | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]

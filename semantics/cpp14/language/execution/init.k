@@ -1,5 +1,6 @@
 module CPP-EXECUTION-INIT
      imports C-CONFIGURATION
+     imports K-EQUAL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -22,7 +23,7 @@ module CPP-EXECUTION-INIT
 
      syntax Expr ::= "#callMain" "(" K "," SymBase "," Int "," CId "," K ")"
      rule #callMain(T::CPPFunctionType, Base::SymBase, _, _, _)
-          => BuiltinCallOp(lv(lnew(Base,T), noTrace, T), 0, .K)
+          => BuiltinCallOp(lv(lnew(Base,T), noTrace, T), .List)
           requires getParams(T) ==K .List
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>

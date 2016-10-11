@@ -71,6 +71,7 @@ module SYMLOC-SYNTAX
                    | SymLoc "==bytes" SymLoc [function]
 
      syntax Bool ::= sameBase(IntPtr, IntPtr) [function]
+     syntax Bool ::= sameAddress(SymLoc, SymLoc) [function]
 
      syntax String ::= getTU(SymLoc) [function]
      syntax ThreadId ::= getThreadId(SymLoc) [function]
@@ -189,6 +190,14 @@ module SYMLOC
      rule sameBase(loc(A:SymBase, _), loc(B:SymBase, _, _)) => A ==K B
      rule sameBase(loc(A:SymBase, _, _), loc(B:SymBase, _)) => A ==K B
      rule sameBase(_, _) => false [owise]
+
+
+     rule sameAddress(loc(A::SymBase, B::Int), loc(A::SymBase, B::Int)) => true
+     rule sameAddress(loc(A::SymBase, B::Int, _), loc(A::SymBase, B::Int, _)) => true
+     rule sameAddress(loc(A::SymBase, B::Int), loc(A::SymBase, B::Int, _)) => true
+     rule sameAddress(loc(A::SymBase, B::Int, _), loc(A::SymBase, B::Int)) => true
+     rule sameAddress(NullPointer, NullPointer) => true
+     rule sameAddress(_, _) => false [owise]
 
      rule getTU(loc(_ @ static(Tu:String), _)) => Tu
      rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu

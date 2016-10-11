@@ -1,6 +1,7 @@
 module CPP-TRANSLATION-IO
      imports CPP-MEMORY-WRITING-SYNTAX
      imports C-CONFIGURATION
+     imports INT
      imports BITS-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX

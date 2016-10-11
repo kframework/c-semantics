@@ -1,4 +1,6 @@
 module CPP-EXPR-ADDITIVE
+     imports BOOL
+     imports INT
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

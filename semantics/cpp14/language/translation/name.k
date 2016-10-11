@@ -8,6 +8,7 @@ module CPP-NAME
      imports CPP-NAME-SYNTAX
      imports C-CONFIGURATION
      imports COLLECTIONS
+     imports K-EQUAL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
@@ -203,7 +204,7 @@ module CPP-NAME
                    | getTemplateArgTypes(TemplateParams) [function]
 
      // 3.4.2:2.1
-     rule getAssociatedNamespaces((ListItem(T:CPPBasicType) => .List) L::List, _)
+     rule getAssociatedNamespaces((ListItem(T:CPPFundamentalType) => .List) L::List, _)
      // 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, X::CId, Args::TemplateParams)))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(t(Q, Mods, classType(N :: Class(Tag, X, Args)))), #klabel(`getInnermostNamespace1`))), B)

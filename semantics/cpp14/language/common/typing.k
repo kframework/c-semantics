@@ -37,16 +37,16 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPTypeExpr ::= innerType(CPPTypeExpr) [function, klabel(cppInnerType)]
      syntax CPPType ::= innerType(CPPType) [function, klabel(cppInnerType)]
+     syntax CPPType ::= innerType(CPPSimpleType) [function, klabel(innerTypeOfSimpleType)]
      syntax CPPSimpleType ::= simpleType(CPPType) [function, klabel(cppSimpleType)]
 
      syntax CPPSimpleType ::= underlyingType(CPPSimpleType) [function, klabel(underlyingSimpleType)]
      syntax CPPType ::= underlyingType(CPPType) [function]
 
-     syntax CPPSimpleType ::= CPPSimpleBasicType
+     syntax CPPSimpleType ::= CPPSimpleSignedType | CPPSimpleUnsignedType | CPPSimpleFloatingType
+                            | CPPSimpleCharType | CPPSimpleBoolType | CPPSimpleVoidType
+                            | CPPSimpleWideCharType | CPPSimpleNullPtrTType
 
-     syntax CPPSimpleArithmeticType ::= CPPSimpleIntegerType | CPPSimpleFloatingType
-     syntax CPPSimpleBasicType ::= CPPSimpleArithmeticType | CPPSimpleVoidType | CPPSimpleNullPtrTType
-     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType | CPPSimpleUnsignedType | CPPSimpleCharType | CPPSimpleBoolType
      syntax CPPSimpleSignedType ::= CPPSimpleSignedCharType | "short" | "int" | "long" | "long-long"
      syntax CPPSimpleUnsignedType ::= CPPSimpleUnsignedCharType | "unsigned-short" | "unsigned" | "unsigned-long" | "unsigned-long-long"
      syntax CPPSimpleFloatingType ::= "float" | "double" | "long-double"
@@ -56,34 +56,34 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleBoolType ::= "bool"
      syntax CPPSimpleVoidType ::= "void"
      syntax CPPSimpleCharType ::= "char"
-     syntax CPPSimpleIntegerType ::= "wchar_t" | "char16_t" | "char32_t" | "size_t" [function]
+     syntax CPPSimpleUnsignedType ::= "size_t" [function]
+     syntax CPPSimpleWideCharType ::= "wchar_t" | "char16_t" | "char32_t"
      syntax CPPSimpleNullPtrTType ::= "nullptr_t"
 
      syntax CPPSimpleType ::= CPPSimplePointerType
                             | CPPSimpleMemberPointerType
                             | CPPSimpleFunctionType
                             | CPPSimpleArrayType
-                            | CPPSimpleRefType
                             | CPPSimpleNullPtrTType
                             | CPPSimpleClassType
-     syntax CPPSimpleRefType ::= CPPSimpleLVRefType
-                               | CPPSimpleRVRefType
+                            | CPPSimpleLVRefType
+                            | CPPSimpleRVRefType
 
      syntax CPPSimpleTypeExpr ::= CPPSimpleType 
                                 | CPPSimpleDependentType
                                 | CPPSimpleAutoType
                                 | CPPSimpleArrayTypeExpr
                                 | CPPSimplePointerTypeExpr
-                                | CPPSimpleRefTypeExpr
                                 | CPPSimpleFunctionTypeExpr
                                 | CPPSimpleClassTypeExpr
+                                | CPPSimpleLVRefTypeExpr
+                                | CPPSimpleRVRefTypeExpr
 
      syntax CPPSimpleArrayTypeExpr ::= arrayType(CPPTypeExpr, Int) [klabel(cppArrayType)]
      syntax CPPSimpleArrayTypeExpr ::= incompleteArrayType(CPPTypeExpr) [klabel(cppIncompleteArrayType)]
      syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
      syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
-     syntax CPPSimpleRefTypeExpr ::= CPPSimpleLVRefTypeExpr | CPPSimpleRVRefTypeExpr
      syntax CPPSimpleFunctionTypeExpr ::= functionType(CPPTypeExpr, CPPTypeExprs, LanguageLinkage) [klabel(cppFunctionType)]
      syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
 
@@ -103,38 +103,43 @@ module CPP-TYPING-SYNTAX
                                 | "decltype(auto)"
 
      syntax CPPFunctionType ::= t(Quals, Set, CPPSimpleFunctionType) [klabel(tcpp)]
-     syntax CPPArithmeticType ::= CPPIntegerType | t(Quals, Set, CPPSimpleArithmeticType) [klabel(tcpp)]
-     syntax CPPBasicType ::= CPPIntegerType | CPPVoidType
+     syntax CPPArithmeticType ::= CPPIntegerType | CPPFloatingType
+     syntax CPPFundamentalType ::= CPPArithmeticType | CPPVoidType | CPPNullPtrTType
      syntax CPPCharType ::= t(Quals, Set, CPPSimpleCharType) [klabel(tcpp)]
      syntax CPPBoolType ::= t(Quals, Set, CPPSimpleBoolType) [klabel(tcpp)]
      syntax CPPFloatingType ::= t(Quals, Set, CPPSimpleFloatingType) [klabel(tcpp)]
-     syntax CPPIntegerType ::= CPPCharType | CPPBoolType | CPPSignedType | CPPUnsignedType
+     syntax CPPIntegerType ::= CPPCharType | CPPBoolType | CPPSignedType | CPPUnsignedType | CPPWideCharType
      syntax CPPSignedType ::= t(Quals, Set, CPPSimpleSignedType) [klabel(tcpp)]
      syntax CPPUnsignedType ::= t(Quals, Set, CPPSimpleUnsignedType) [klabel(tcpp)]
      syntax CPPVoidType ::= t(Quals, Set, CPPSimpleVoidType) [klabel(tcpp)]
      syntax CPPArrayType ::= t(Quals, Set, CPPSimpleArrayType) [klabel(tcpp)]
      syntax CPPPointerType ::= t(Quals, Set, CPPSimplePointerType) [klabel(tcpp)]
+     syntax CPPMemberPointerType ::= t(Quals, Set, CPPSimpleMemberPointerType) [klabel(tcpp)]
      syntax CPPLVRefType ::= t(Quals, Set, CPPSimpleLVRefType) [klabel(tcpp)]
      syntax CPPRVRefType ::= t(Quals, Set, CPPSimpleRVRefType) [klabel(tcpp)]
      syntax CPPNullPtrTType ::= t(Quals, Set, CPPSimpleNullPtrTType) [klabel(tcpp)]
      syntax CPPRefType ::= CPPLVRefType | CPPRVRefType
      syntax CPPClassType ::= t(Quals, Set, CPPSimpleClassType) [klabel(tcpp)]
+     syntax CPPWideCharType ::= t(Quals, Set, CPPSimpleWideCharType) [klabel(tcpp)]
      syntax CPPBitfieldType
-     syntax CPPEnumType
-     syntax CPPCompleteType ::= CPPFunctionType | CPPPointerType | CPPIntegerType | CPPNullPtrTType | CPPRefType
+     syntax CPPEnumType ::= CPPScopedEnumType | CPPUnscopedEnumType
+     syntax CPPScopedEnumType
+     syntax CPPUnscopedEnumType
      syntax CPPType ::= CPPFunctionType
                       | CPPPointerType
+                      | CPPMemberPointerType
                       | CPPNullPtrTType
                       | CPPRefType
                       | CPPArrayType 
                       | CPPClassType 
-                      | CPPBasicType
+                      | CPPFundamentalType
                       | CPPEnumType
 
      syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(Quals, Set, CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
      syntax CPPClassTypeExpr ::= CPPClassType | t(Quals, Set, CPPSimpleClassTypeExpr) [klabel(tcpp)]
      syntax CPPArrayTypeExpr ::= CPPArrayType | t(Quals, Set, CPPSimpleArrayTypeExpr) [klabel(tcpp)]
-     syntax CPPRefTypeExpr ::= CPPRefType | t(Quals, Set, CPPSimpleRefTypeExpr) [klabel(tcpp)]
+     syntax CPPRefTypeExpr ::= CPPRefType | t(Quals, Set, CPPSimpleLVRefTypeExpr) [klabel(tcpp)]
+                             | t(Quals, Set, CPPSimpleRVRefTypeExpr) [klabel(tcpp)]
      syntax CPPTypeExpr ::= t(Quals, Set, CPPSimpleTypeExpr) [klabel(tcpp)]
                           | CPPFunctionTypeExpr
                           | CPPClassTypeExpr
@@ -172,15 +177,21 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= convertTypeToCPP(Type) [function]
      syntax CPPDType ::= convertTypeToCPP(DType) [function]
 
-     syntax Int ::= max(CPPIntegerType) [function, klabel(maxCpp)]
-                  | min(CPPIntegerType) [function, klabel(minCpp)]
-     syntax Bool ::= inRange(CPPValue, CPPIntegerType) [function, klabel(inRangeCpp)]
+     syntax Int ::= max(CPPType) [function, klabel(maxCpp)]
+                  | min(CPPType) [function, klabel(minCpp)]
+                  | precision(CPPFloatingType) [function]
+                  | exponent(CPPFloatingType) [function]
+     syntax Bool ::= inRange(CPPValue, CPPType) [function, klabel(inRangeCpp)]
 
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
 
      syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
                         | #getClassInfo(CPPClassType, K) [function]
      syntax ClassInfo ::= ClassCell | "#incomplete"
+
+     syntax Bool ::= isBaseClassOf(CPPSimpleClassType, CPPSimpleClassType) [function, klabel(isBaseClassOfSimpleType)]
+                   | isBaseClassOf(CPPClassType, CPPClassType) [function]
+                   | isVirtualBaseClassOf(CPPSimpleClassType, CPPSimpleClassType) [function]
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
@@ -208,11 +219,12 @@ module CPP-TYPING
      rule type(xv(_, _, T::CPPType)) => T
      rule type(xe(_, _, T::CPPType)) => T
 
-     rule innerType(t(_, _, pointerType(T::CPPType))) => T
-     rule innerType(t(_, _, arrayType(T::CPPType, _))) => T
-     rule innerType(t(_, _, incompleteArrayType(T::CPPType))) => T
-     rule innerType(t(_, _, lvRefType(T::CPPType))) => T
-     rule innerType(t(_, _, rvRefType(T::CPPType))) => T
+     rule innerType(t(_, _, T::CPPSimpleType)) => innerType(T)
+     rule innerType(pointerType(T::CPPType)) => T
+     rule innerType(arrayType(T::CPPType, _)) => T
+     rule innerType(incompleteArrayType(T::CPPType)) => T
+     rule innerType(lvRefType(T::CPPType)) => T
+     rule innerType(rvRefType(T::CPPType)) => T
 
      rule simpleType(t(_, _, T::CPPSimpleType)) => T
 

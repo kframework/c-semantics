@@ -4,8 +4,9 @@ endmodule
 
 module CPP-STMT-BLOCK
      imports CPP-STMT-BLOCK-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
      imports C-CONFIGURATION
+     imports INT
+     imports C-CHECK-LOC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX

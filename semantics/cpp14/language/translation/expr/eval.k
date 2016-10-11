@@ -1,4 +1,5 @@
 module CPP-TRANSLATION-EXPR-EVAL
+     imports BOOL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
 

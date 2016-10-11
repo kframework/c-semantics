@@ -53,6 +53,7 @@ module COMMON-SYNTAX
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
      syntax KItem ::= allowInit(K)
+     syntax Expr ::= allowInit(Expr)
 
      syntax String ::= signatureToString(QualId, K) [function]
 

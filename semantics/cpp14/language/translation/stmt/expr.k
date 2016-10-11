@@ -8,17 +8,16 @@ module CPP-STMT-EXPR
           <elab>... .K => ExpressionStmt(V) </elab>
           requires isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
 
-     rule ExpressionStmt(V::GLVal) => PRValExpressionStmt(V)
+     rule ExpressionStmt(V::GLVal => prDiscardedExpr(V))
           requires isConvertableDiscardedExpr(V)
 
      rule ExpressionStmt(V:Val) => .K
           requires notBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
 
-     rule <k> PRValExpressionStmt(V:PRVal) => .K ...</k>
-          <elab>... .K => PRValExpressionStmt(V) </elab>
-
-     rule PRValExpressionStmt(V:PRVal) => .K
-          requires notBool isTExpr(V)
+     rule prDiscardedExpr(pre(E::Expr, Tr::Trace, T::CPPType)) => pre(prDiscardedExpr(E), Tr, T)
+     rule glDiscardedExpr(le(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
+     rule glDiscardedExpr(xe(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
+     rule glDiscardedExpr(pre(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)
 
      rule NullStmt() => .K
 

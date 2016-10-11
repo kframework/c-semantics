@@ -1,9 +1,25 @@
+module CPP-SYMLOC-SORTS
+     imports SYMLOC-SORTS
+     syntax MemberPtr
+endmodule
+
 module CPP-SYMLOC-SYNTAX
+     imports CPP-SYMLOC-SORTS
      imports SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      syntax SymLoc ::= lnew(SymBase, CPPType) [function, klabel(lnewCpp)]
      syntax Bool ::= ifFromArrayInBounds(SymLoc, CPPType, Int) [function, klabel(ifFromArrayInBoundsCPP)]
+
+     syntax MemberPtr ::= "NullMemberPointer"
+
+     syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPClassType, CPPClassType) [function]
+                        | baseClassSubobject(MemberPtr, CPPClassType, CPPClassType) [function]
+     syntax SymLoc ::= baseClassSubobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
+                     | derivedClassSuperobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
+
+     syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
+                   | isBaseClassSubobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
 
 endmodule
 

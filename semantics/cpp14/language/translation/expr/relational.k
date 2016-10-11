@@ -1,4 +1,5 @@
 module CPP-TRANSLATION-EXPR-RELATIONAL
+     imports BOOL
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX

@@ -30,6 +30,7 @@ endmodule
 module CPP-DECL-TEMPLATE
      imports CPP-DECL-TEMPLATE-SYNTAX
      imports C-CONFIGURATION
+     imports K-EQUAL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX

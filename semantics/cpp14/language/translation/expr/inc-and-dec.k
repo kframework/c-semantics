@@ -1,4 +1,5 @@
 module CPP-EXPR-INC-AND-DEC
+     imports BOOL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX

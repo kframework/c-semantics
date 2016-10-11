@@ -18,6 +18,8 @@ endmodule
 module CPP-ENV
     imports CPP-ENV-SYNTAX
     imports C-CONFIGURATION
+    imports BOOL
+    imports K-EQUAL
     imports COMPAT-SYNTAX
     imports CPP-DYNAMIC-SYNTAX
     imports CPP-TYPING-SYNTAX

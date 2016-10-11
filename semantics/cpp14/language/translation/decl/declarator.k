@@ -172,7 +172,7 @@ module CPP-DECL-DECLARATOR
           requires completeDeclaration(T, Init) ==K T
               andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
-     context declareNonStaticObject(_, _, HOLE:KItem, _, _, _)
+     context declareNonStaticObject(_, _, HOLE:Expr, _, _, _)
 
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set) ~> Next:KItem
@@ -249,7 +249,7 @@ module CPP-DECL-DECLARATOR
           <odr-defs> Defs::Map => Defs[N :: X, T <- Base'] </odr-defs>
           requires isLinkerLoc(Base)
 
-     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, initValue(lv(loc(Base::SymBase, _, _), _, _), T, initializer(Body::Stmt)), Function(Params::List))
+     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
               ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
 
@@ -271,10 +271,10 @@ module CPP-DECL-DECLARATOR
           => LabelStmt(funLabel(X), ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(N :: X, getReturnType(T)))))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
 
-     syntax K ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
+     syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
      rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)
-          => ExpressionStmt(le(Name(NoNNS(), ret), noTrace, T) := prv(0, noTrace, type(int)))
-     rule getDefaultReturnOp(_, _) => .K [owise]
+          => le(temp(!I:Int, type(int)), noTrace, T) := prv(0, noTrace, type(int))
+     rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]
 
      syntax KItem ::= dummyBind(List)
      rule (.K => K) ~> dummyBind((ListItem(K:K) => .List) _)
@@ -291,22 +291,24 @@ module CPP-DECL-DECLARATOR
           <curr-template-context> noTemplate </curr-template-context>
 
 
-     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, initValue(_, T, Init:K), Var)
+     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, Init:Val, Var)
               => runInit(stripInitHolds(Init))
           ...</k>
           requires isStaticInitialization(Init)
 
      syntax Bool ::= isStaticInitialization(K) [function]
-     rule isStaticInitialization(ExpressionStmt(le(_ := V::Expr, _, _)) ~> K:K) => false
+     rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
           requires notBool (isVal(V) andBool notBool isTExpr(V))
-     rule isStaticInitialization((ExpressionStmt(le(_ := _, _, _)) => .K) ~> _:K)
-     rule isStaticInitialization(.K) => true
+     rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
+     rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
+     rule isStaticInitialization(le(_ := _, _, _)) => true [owise]
+     rule isStaticInitialization(lv(_, _, _)) => true
 
-     syntax K ::= stripInitHolds(K) [function]
-     rule stripInitHolds(ExpressionStmt(Init::Expr) ~> K:K)
-          => ExpressionStmt(stripHold(Init)) ~> stripInitHolds(K)
-     rule stripInitHolds(L:CabsLoc ~> K:K)
-          => L ~> stripInitHolds(K)
-     rule stripInitHolds(.K) => .K
+     syntax Expr ::= stripInitHolds(K) [function]
+     rule stripInitHolds(le(compoundInit(E1::Expr, E2::Expr), _, _)) => stripInitHolds(compoundInit(E1, E2))
+     rule stripInitHolds(compoundInit(E1::Expr, E2::Expr)) => compoundInit(stripInitHolds(E1), stripInitHolds(E2))
+     rule stripInitHolds(le(E::Expr, _, _)) => E [owise]
+     rule stripInitHolds(V:Val) => V
+          requires notBool isTExpr(V)
 
 endmodule

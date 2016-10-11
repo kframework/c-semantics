@@ -1,5 +1,6 @@
 module CPP-DECL-TYPEDEF
      imports C-CONFIGURATION
+     imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX

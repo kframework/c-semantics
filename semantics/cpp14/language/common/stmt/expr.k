@@ -1,6 +1,8 @@
 module CPP-COMMON-STMT-EXPR-SYNTAX
      imports CPP-DYNAMIC-SORTS
      syntax Bool ::= isConvertableDiscardedExpr(Val) [function]
+     syntax Expr ::= prDiscardedExpr(Expr) [strict]
+                   | glDiscardedExpr(Expr) [strict]
 endmodule
 
 module CPP-COMMON-STMT-EXPR
@@ -11,7 +13,9 @@ module CPP-COMMON-STMT-EXPR
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule PRValExpressionStmt(V:GLVal => convertLVal(V))
+     rule prDiscardedExpr(V:GLVal => convertLVal(V))
+     rule prDiscardedExpr(prv(_, Tr::Trace, _)) => prv(voidVal, Tr, type(void))
+     rule glDiscardedExpr(V:Val) => prv(voidVal, trace(V), type(void))
 
      rule isConvertableDiscardedExpr(V::Val) 
           => isGLVal(V) andBool isVolatileType(type(V))

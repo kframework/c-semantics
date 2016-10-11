@@ -1,9 +1,8 @@
 module CPP-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
 
-     syntax Val ::= CandidateSet
+     syntax ValResult ::= CandidateSet
      syntax CandidateSet ::= cSet(Map)
-     syntax KResult ::= CandidateSet
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, CId, CId)
      syntax Expr ::= resolveUniqueDecl(K, Expr) [strict(1)]
 
@@ -11,6 +10,8 @@ endmodule
 
 module CPP-OVERLOADING
      imports CPP-OVERLOADING-SYNTAX
+     imports C-CONFIGURATION
+     imports K-EQUAL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
@@ -19,7 +20,6 @@ module CPP-OVERLOADING
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports C-CONFIGURATION
 
      // no overloading
      rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, X::CId, operator()) 

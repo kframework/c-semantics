@@ -8,37 +8,56 @@ module CPP-CONVERSION-SYNTAX
      // performs standard type conversions only
      syntax PRVal ::= convertType(CPPType, PRVal) [function]
                     | convertType(CPPType, PRExpr) [function]
+     syntax KItem ::= convertTypeHold(CPPType, Expr)
 
      syntax PRVal ::= convertLVal(GLVal) [function]
                     | convertLVal(GLExpr) [function]
-     syntax PRVal ::= convertArray(Val) [function]
-     syntax PRVal ::= convertFunction(LVal) [function]
+                    | convertArray(Val) [function]
+                    | convertFunction(LVal) [function]
+                    | convertReval(Val) [function]
 
      syntax Bool ::= isSimilar(CPPType, CPPType) [function]
 
      syntax CPPType ::= promote(CPPType) [function, klabel(promoteCpp)]
      syntax Bool ::= isPromoted(CPPType) [function, klabel(isPromotedCpp)]
+                   | isCompositePointerType(CPPType) [function]
 
-     syntax CPPType ::= usualArithmeticConversions(CPPType, CPPType) [function]
+     syntax CPPType ::= compositePointerType(PRVal, PRVal) [function]
+                      | usualArithmeticConversions(CPPType, CPPType) [function]
 
      syntax KItem ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
                     | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
+
+     syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
+                   | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp)]
+
+     syntax ValResult ::= "cannot-convert"
 endmodule
 
 module CPP-CONVERSION
      imports CPP-CONVERSION-SYNTAX
+     imports FLOAT
+     imports INT
      imports SETTINGS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
+     imports CPP-REFERENCE-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule arithInterpret(T::CPPIntegerType, N::Int, Tr::Trace) => prv(N, Tr, T)
+     rule arithInterpret(T::CPPIntegerType, N:Int, Tr::Trace) => prv(N, Tr, T)
           requires min(T) <=Int N andBool max(T) >=Int N
-     rule arithInterpret(T:CPPUnsignedType, N::Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
+     rule arithInterpret(T:CPPUnsignedType, N:Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
           requires (N >Int max(T) orBool N <Int min(T)) andBool notBool hasLint
-     rule arithInterpret(T:CPPSignedType, N::Int, Tr::Trace) 
+     rule arithInterpret(T:CPPSignedType, N:Int, Tr::Trace) 
           => UNDIAG("CCV1", "Signed integer overflow.", "5:4") ~> arithInterpretHold(T, N, Tr)
           requires notBool (min(T) <=Int N andBool max(T) >=Int N)
+     rule arithInterpret(T:CPPFloatingType, (F:Float => roundFloat(F, precision(T), exponent(T))), _)
+          requires precisionFloat(F) =/=Int precision(T) orBool exponentFloat(F) =/=Int exponent(T)
+     rule arithInterpret(T:CPPFloatingType, F:Float, Tr::Trace)
+          => UNDIAG("CCV2", "Floating point overflow.", "4.8:1, 5:4")
+          ~> arithInterpretHold(T, F, Tr)
+          requires isInfinite(F)
 
      rule convertType(T1::CPPType, prv(V::CPPValue, Tr::Trace, T2::CPPType)) => prv(V, Tr, T2)
           requires T1 ==Type T2
@@ -47,14 +66,70 @@ module CPP-CONVERSION
 
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => prv(C, Tr, T)
           requires inRange(C, T) andBool isCPPSignedType(underlyingType(T))
+     rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType))
+          => IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented.", "4.7:3")
+          ~> convertTypeHold(T, prv(C, Tr, T'))
+          requires notBool inRange(C, T) andBool isCPPSignedType(underlyingType(T))
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
           requires isCPPUnsignedType(underlyingType(T))
      rule convertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPBoolType)) => prv(C, Tr, T)
      rule convertType(T:CPPBoolType, prv(0, Tr::Trace, T':CPPIntegerType)) => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(I:Int, Tr::Trace, T':CPPIntegerType)) => prv(1, Tr, T)
           requires I =/=Int 0
+     rule convertType(_:CPPIntegerType, prv(_, _, (T:CPPUnscopedEnumType => underlyingType(T))))
+
+     rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType)) => arithInterpret(T, F, Tr)
+          requires inRange(F, T)
+     rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
+          => UNDIAG("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.", "4.8:1")
+          ~> convertTypeHold(T, prv(F, Tr, T'))
+          requires notBool inRange(F, T)
+
+     rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
+          => arithInterpret(T, Float2Int(F), Tr)
+          requires notBool isCPPBoolType(T) andBool inRange(Float2Int(F), T)
+     rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
+          => UNDIAG("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.", "4.9:1")
+          ~> convertTypeHold(T, prv(F, Tr, T'))
+          requires notBool isCPPBoolType(T) andBool notBool inRange(Float2Int(F), T)
+     rule convertType(T:CPPBoolType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
+          => prv(0, Tr, T)
+          requires F ==Float 0.0
+     rule convertType(T:CPPBoolType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
+          => prv(1, Tr, T)
+          requires F =/=Float 0.0
+     rule convertType(_:CPPFloatingType, prv(_, _, (T:CPPUnscopedEnumType => underlyingType(T))))
+     rule convertType(T:CPPFloatingType, prv(I:Int, Tr::Trace, T':CPPIntegerType))
+          => arithInterpret(T, Int2Float(I, precision(T), exponent(T)), Tr)
+          requires notBool isInfinite(Int2Float(I, precision(T), exponent(T)))
+     rule convertType(T:CPPFloatingType, prv(I:Int, Tr::Trace, T':CPPIntegerType))
+          => UNDIAG("CCV6", "Floating-integral conversion to floating point type in which value is outside3 range that can be represented.", "4.9:2")
+          ~> convertTypeHold(T, prv(I, Tr, T'))
+          requires isInfinite(Int2Float(I, precision(T), exponent(T)))
 
      rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
+     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, void))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, Mods2::Set, T::CPPSimpleType)))))
+          => prv(L, Tr, t(Q, Mods, pointerType(t(Q', Mods', void))))
+          requires isObjectType(t(Q', Mods2::Set, T))
+     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, B:CPPSimpleClassType))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, Mods2::Set, D:CPPSimpleClassType)))))
+          => prv(baseClassSubobject(L, B, D), Tr, t(Q, Mods, pointerType(t(Q', Mods', B))))
+          requires B =/=K D andBool isBaseClassOf(B, D)
+     rule convertType(T:CPPBoolType, prv(NullPointer, Tr::Trace, T':CPPPointerType))
+          => prv(0, Tr, T)
+     rule convertType(T:CPPBoolType, prv(Loc::SymLoc, Tr::Trace, T':CPPPointerType))
+          => prv(1, Tr, T)
+          requires Loc =/=K NullPointer
+
+     rule convertType(T:CPPMemberPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullMemberPointer, Tr, T)
+     rule convertType(t(Q::Quals, Mods::Set, memberPointerType(D::CPPClassType, T1::CPPType)), prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(B::CPPClassType, T2::CPPType))))
+          => prv(derivedClassSuperobject(L, B, D), Tr, t(Q, Mods, memberPointerType(D, T1)))
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool T1 ==Type T2
+     rule convertType(T:CPPBoolType, prv(NullMemberPointer, Tr::Trace, T':CPPMemberPointerType))
+          => prv(0, Tr, T)
+     rule convertType(T:CPPBoolType, prv(Loc::MemberPtr, Tr::Trace, T':CPPMemberPointerType))
+          => prv(1, Tr, T)
+          requires Loc =/=K NullMemberPointer
+
 
      rule isSimilar(t(_, _, pointerType(T1::CPPType)), t(_, _, pointerType(T2::CPPType)))
           => isSimilar(T1, T2)
@@ -117,13 +192,13 @@ module CPP-CONVERSION
      // 4.5:6
      rule promote(t(_, _, bool)) => type(int)
      rule promote(T::CPPType) => T
-          requires notBool isCPPBitfieldType(T) andBool notBool isCPPEnumType(T) [owise]
+          requires notBool isCPPBitfieldType(T) andBool notBool isCPPUnscopedEnumType(T) [owise]
      rule isPromoted(T::CPPType) => T ==Type promote(T)
      
 
      // TODO(dwightguth): handle modifiers if we need them
      // 5:10.1
-     rule usualArithmeticConversions(T:CPPEnumType, T) => T
+     rule usualArithmeticConversions(T:CPPScopedEnumType, T) => T
      // 5:10.2
      rule usualArithmeticConversions(t(_, _, long-double), _) => t(noQuals, .Set, long-double)
      rule usualArithmeticConversions(_, t(_, _, long-double)) => t(noQuals, .Set, long-double)
@@ -157,5 +232,98 @@ module CPP-CONVERSION
                andBool broaderTypeThan(Signed, Unsigned)
      // 5:10.5.5
      rule #usualArithmeticConversions2(_, Signed::CPPSignedType) => correspondingUnsignedType(Signed)
+
+     rule isNullPointerConstant(prv(_, _, _:CPPNullPtrTType)) => true
+     rule isNullPointerConstant(pre(_, _, _:CPPNullPtrTType)) => true
+     rule isNullPointerConstant(V::PRVal) => false
+          requires trace(V) =/=K noTrace
+
+     rule isCompositePointerType(T::CPPType) => isCPPPointerType(T) orBool isCPPMemberPointerType(T) orBool isCPPNullPtrTType(T)
+
+     //5:13.3
+     rule compositePointerType(L::PRVal, R::PRVal) => type(nullptr_t)
+          requires isNullPointerConstant(L) andBool isNullPointerConstant(R)
+     //5:13.4
+     rule compositePointerType(L::PRVal, R::PRVal) => type(L)
+          requires notBool isNullPointerConstant(L) andBool isNullPointerConstant(R)
+     rule compositePointerType(L::PRVal, R::PRVal) => type(R)
+          requires notBool isNullPointerConstant(R) andBool isNullPointerConstant(L)
+     rule compositePointerType(L::PRVal, R::PRVal) => #compositePointerType(type(L), type(R)) [owise]
+
+     syntax CPPType ::= cvCombinedType(CPPType, CPPType) [function]
+     syntax CPPType ::= #compositePointerType(CPPType, CPPType) [function]
+     // 5:13.5
+     rule #compositePointerType(t(_, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, void))), 
+                               t(_, Mods2::Set, pointerType(t(Q2'::Quals, Mods2'::Set, _))))
+          => t(noQuals, Mods Mods2, pointerType(t(Q' +Quals Q2', Mods' Mods2', void)))
+     rule #compositePointerType(t(_, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _))), 
+                               t(_, Mods2::Set, pointerType(t(Q2'::Quals, Mods2'::Set, void))))
+          => t(noQuals, Mods Mods2, pointerType(t(Q' +Quals Q2', Mods' Mods2', void)))
+     // 5:13.6
+     rule #compositePointerType(t(Q::Quals, Mods::Set, pointerType(C1::CPPType)), t(Q2::Quals, Mods2::Set, pointerType(C2::CPPType)))
+          => cvCombinedType(t(Q, Mods, pointerType(C1)), t(Q2, Mods2, pointerType(C2)))
+          requires isReferenceRelated(utype(C1), utype(C2))
+     rule #compositePointerType(t(Q::Quals, Mods::Set, pointerType(C1::CPPType)), t(Q2::Quals, Mods2::Set, pointerType(C2::CPPType)))
+          => cvCombinedType(t(Q2, Mods2, pointerType(C2)), t(Q, Mods, pointerType(C1)))
+          requires isReferenceRelated(utype(C2), utype(C1))
+     // 5:13.7
+     rule #compositePointerType(t(Q::Quals, Mods::Set, memberPointerType(C1::CPPClassType, U1::CPPType)), t(Q2::Quals, Mods2::Set, memberPointerType(C2::CPPClassType, U2::CPPType)))
+          => cvCombinedType(t(Q2, Mods2, memberPointerType(C2, U2)), t(Q, Mods, memberPointerType(C1, U1)))
+          requires isReferenceRelated(C1, C2)
+     rule #compositePointerType(t(Q::Quals, Mods::Set, memberPointerType(C1::CPPClassType, U1::CPPType)), t(Q2::Quals, Mods2::Set, memberPointerType(C2::CPPClassType, U2::CPPType)))
+          => cvCombinedType(t(Q, Mods, memberPointerType(C1, U1)), t(Q2, Mods2, memberPointerType(C2, U2)))
+          requires isReferenceRelated(C2, C1)
+     // 5:13.8
+     rule #compositePointerType(T1::CPPType, T2::CPPType)
+          => cvCombinedType(T1, T2)
+          requires isSimilar(T1, T2)
+
+     syntax List ::= cvQualificationSignature(CPPType) [function]
+     rule cvQualificationSignature(t(Q::Quals, _, pointerType(T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
+     rule cvQualificationSignature(t(Q::Quals, _, memberPointerType(_, T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
+     rule cvQualificationSignature(t(Q::Quals, _, arrayType(T::CPPType, _))) => ListItem(Q) cvQualificationSignature(T)
+     rule cvQualificationSignature(t(Q::Quals, _, incompleteArrayType(T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
+     rule cvQualificationSignature(t(Q::Quals, _, _)) => ListItem(Q) [owise]
+
+     rule cvCombinedType(T1::CPPType, T2::CPPType) => utype(#cvCombinedType(T1, cvQualificationSignature(T2), getDifferentCVOffset(cvQualificationSignature(T1), cvQualificationSignature(T2), 0, 0), 0))
+     syntax CPPType ::= #cvCombinedType(CPPType, List, Int, Int) [function]
+     syntax Int ::= getDifferentCVOffset(List, List, Int, Int) [function]
+     rule getDifferentCVOffset(ListItem(Q::Quals) L1::List, ListItem(Q::Quals) L2::List, Idx::Int, Res::Int)
+          => getDifferentCVOffset(L1, L2, Idx +Int 1, Res)
+     rule getDifferentCVOffset(ListItem(Q1::Quals) L1::List, ListItem(Q2::Quals) L2::List, Idx::Int, Res::Int)
+          => getDifferentCVOffset(L1, L2, Idx +Int 1, Idx)
+          requires Q1 =/=K Q2
+     rule getDifferentCVOffset(.List, _, _, Res::Int) => Res
+
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, pointerType(T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t((Q +Quals Q') +Qual Const(), Mods, pointerType(#cvCombinedType(T, L, J, K +Int 1)))
+          requires K <Int J
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, pointerType(T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t(Q +Quals Q', Mods, pointerType(#cvCombinedType(T, L, J, K +Int 1)))
+          requires J <=Int K
+
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPClassType, T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t((Q +Quals Q') +Qual Const(), Mods, memberPointerType(C, #cvCombinedType(T, L, J, K +Int 1)))
+          requires K <Int J
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPClassType, T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t(Q +Quals Q', Mods, memberPointerType(C, #cvCombinedType(T, L, J, K +Int 1)))
+          requires J <=Int K
+
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t((Q +Quals Q') +Qual Const(), Mods, arrayType(#cvCombinedType(T, L, J, K +Int 1), N))
+          requires K <Int J
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t(Q +Quals Q', Mods, arrayType(#cvCombinedType(T, L, J, K +Int 1), N))
+          requires J <=Int K
+
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t((Q +Quals Q') +Qual Const(), Mods, incompleteArrayType(#cvCombinedType(T, L, J, K +Int 1)))
+          requires K <Int J
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => t(Q +Quals Q', Mods, incompleteArrayType(#cvCombinedType(T, L, J, K +Int 1)))
+          requires J <=Int K
+
+     rule #cvCombinedType(t(Q::Quals, Mods::Set, T::CPPSimpleType), ListItem(Q'::Quals) L::List, J::Int, K::Int)
+          => #if K <Int J #then t((Q +Quals Q') +Qual Const(), Mods, T) #else t(Q +Quals Q', Mods, T) #fi [owise]
 
 endmodule

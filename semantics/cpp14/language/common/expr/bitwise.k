@@ -1,4 +1,5 @@
 module CPP-EXPR-BITWISE
+     imports INT
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX

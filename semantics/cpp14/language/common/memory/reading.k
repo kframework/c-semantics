@@ -16,8 +16,10 @@ endmodule
 module CPP-MEMORY-READING
      imports CPP-MEMORY-READING-SYNTAX
      imports INT
+     imports BITS-SYNTAX
      imports MEMORY-SYNTAX
      imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-TYPING-SYNTAX
