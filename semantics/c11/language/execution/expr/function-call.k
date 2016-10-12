@@ -198,42 +198,4 @@ module C-EXPR-FUNCTION-CALL
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
-     // TODO(chathhorn): copied from translation -- we only need this in the
-     // case of parameter binding.
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
-               andBool (utype(L) =/=Type utype(R))
-
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool stripQualifiers(innerType(type(L)))
-                    ==Type stripQualifiers(innerType(type(R)))
-               andBool getQualifiers(innerType(type(R)))
-                    <=Quals getQualifiers(innerType(type(L)))
-               andBool getAlignas(innerType(type(L)))
-                    <=Int getAlignas(innerType(type(R)))
-               andBool utype(L) =/=Type utype(R)
-
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isPointerType(type(L)) andBool isPointerType(type(R))
-               andBool (isVoidType(innerType(type(L)))
-                    orBool isVoidType(innerType(type(R))))
-               andBool (getQualifiers(innerType(type(R)))
-                    <=Quals getQualifiers(innerType(type(L))))
-               andBool utype(L) =/=Type utype(R)
-
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isPointerType(type(L))
-               andBool isNullPointerConstant(R)
-               andBool utype(L) =/=Type utype(R)
-          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
-
-     rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isBoolType(type(L)) andBool isPointerType(type(R))
-
-     rule nclv(_, T::Type => stripConstants(T)) := _:RValue
-          requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T::UType => stripConstants(T))
-          requires fromConstantExpr(T)
-
 endmodule

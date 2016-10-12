@@ -15,6 +15,7 @@ require "type-builder.k"
 require "typing.k"
 
 require "expr/additive.k"
+require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
@@ -52,6 +53,7 @@ module C-COMMON
      imports C-TYPE-BUILDER
 
      imports C-COMMON-EXPR-ADDITIVE
+     imports C-COMMON-EXPR-ASSIGNMENT
      imports C-COMMON-EXPR-BITWISE
      imports C-COMMON-EXPR-CAST
      imports C-COMMON-EXPR-EVAL
