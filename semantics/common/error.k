@@ -77,7 +77,7 @@ module ERROR
      rule ErrorMsg(.List) => ""
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
-     rule writeThenClose(Fd:Int, Line:String) => #write(Fd, Line) ~> close(Fd, #write(Fd, Line))
+     rule writeThenClose(Fd:Int, Line:String) => close(Fd, #write(Fd, Line))
      rule close(Fd:Int, .K) => #close(Fd)
 
      syntax Bool ::= isCSV(K) [function, klabel(isCSV1)]
