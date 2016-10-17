@@ -1,6 +1,4 @@
-Error: UB-CB3
-Description: Function call has more arguments than parameters in function definition.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
-  at foo(UB-CB3-bad.c:10)
-  at main(UB-CB3-bad.c:10)
+ Function call has more arguments than parameters in function definition.
+   at foo(UB-CB3-bad.c:10:2)
+   by main(UB-CB3-bad.c:10:2)
+  Undefined behavior (UB-CB3). See C11 sec. 6.5.2.2:6, J.2:1 item 38

@@ -1,10 +1,6 @@
-Error: UB-CER3
-Description: Dereferencing a null pointer.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.3.2:4, J.2:1 item 43
-  at main(UB-CER3-bad.c:6)
-Error: UB-CEER1
-Description: Trying to read through a null pointer.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-  at main(UB-CER3-bad.c:6)
+ Dereferencing a null pointer.
+   at main(UB-CER3-bad.c:6:3)
+  Undefined behavior (UB-CER3). See C11 sec. 6.5.3.2:4, J.2:1 item 43
+ Trying to read through a null pointer.
+   at main(UB-CER3-bad.c:6:3)
+  Undefined behavior (UB-CEER1). See C11 sec. 6.3.2.1:1, J.2:1 item 19

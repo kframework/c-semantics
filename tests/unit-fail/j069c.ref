@@ -1,6 +1,4 @@
-Error: UB-EEA2
-Description: Attempt to alias restrict qualified pointers associated with the same block.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.3.1:4, J.2:1 item 69
-  at main(j069c.c:7)
+ Attempt to alias restrict qualified pointers associated with the same block.
+   at main(j069c.c:7:7)
+  Undefined behavior (UB-EEA2). See C11 sec. 6.7.3.1:4, J.2:1 item 69
 Execution failed (configuration dumped)

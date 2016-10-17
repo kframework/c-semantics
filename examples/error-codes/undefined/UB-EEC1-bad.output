@@ -1,5 +1,3 @@
-Error: UB-EEC1
-Description: variably modified types in a conditional expression with unequal size expressions.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.6.1:6
-  at main(UB-EEC1-bad.c:6)
+ variably modified types in a conditional expression with unequal size expressions.
+   at main(UB-EEC1-bad.c:6:7)
+  Undefined behavior (UB-EEC1). See C11 sec. 6.7.6.1:6

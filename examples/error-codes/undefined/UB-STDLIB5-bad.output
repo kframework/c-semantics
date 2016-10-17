@@ -1,8 +1,6 @@
-Error: UB-STDLIB5
-Description: Called the quick_exit function more than once (from a call to at_quick_exit).
-Type: Undefined behavior.
-See also: C11 sec. 7.22.4.7:2, J.2:1 item 182
-  at quick_exit(UB-STDLIB5-bad.c:4)
-  at foo(UB-STDLIB5-bad.c:4)
-  at quick_exit(UB-STDLIB5-bad.c:9)
-  at main(UB-STDLIB5-bad.c:9)
+ Called the quick_exit function more than once (from a call to at_quick_exit).
+   at quick_exit(UB-STDLIB5-bad.c:4:3)
+   by foo(UB-STDLIB5-bad.c:4:3)
+   by quick_exit(UB-STDLIB5-bad.c:9:3)
+   by main(UB-STDLIB5-bad.c:9:3)
+  Undefined behavior (UB-STDLIB5). See C11 sec. 7.22.4.7:2, J.2:1 item 182

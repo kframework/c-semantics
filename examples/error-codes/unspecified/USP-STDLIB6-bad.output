@@ -1,8 +1,6 @@
-Error: USP-STDLIB6
-Description: Called the at_quick_exit function after normal program termination has begun.
-Type: Unspecified value or behavior.
-See also: C11 sec. 7.22.4.3:2, J.1:1 item 45
-  at at_quick_exit(USP-STDLIB6-bad.c:4)
-  at bar(USP-STDLIB6-bad.c:4)
-  at quick_exit(USP-STDLIB6-bad.c:9)
-  at main(USP-STDLIB6-bad.c:9)
+ Called the at_quick_exit function after normal program termination has begun.
+   at at_quick_exit(USP-STDLIB6-bad.c:4:3)
+   by bar(USP-STDLIB6-bad.c:4:3)
+   by quick_exit(USP-STDLIB6-bad.c:9:3)
+   by main(USP-STDLIB6-bad.c:9:3)
+  Unspecified value or behavior (USP-STDLIB6). See C11 sec. 7.22.4.3:2, J.1:1 item 45

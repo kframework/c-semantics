@@ -1,6 +1,4 @@
-Error: UB-EIO10
-Description: Type of lvalue not compatible with the effective type of the object being accessed.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:7, J.2:1 item 37
-  at main(j037e.c:8)
+ Type of lvalue not compatible with the effective type of the object being accessed.
+   at main(j037e.c:8:7)
+  Undefined behavior (UB-EIO10). See C11 sec. 6.5:7, J.2:1 item 37
 Execution failed (configuration dumped)

@@ -1,7 +1,3 @@
-File: CV-CEB9-bad-static.c
-Line: 5
-Error: CV-CEB9
-Description: Both bitwise AND operands must have integer type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.10:2
+CV-CEB9-bad-static.c:5:3: error: Both bitwise AND operands must have integer type.
+  Constraint violation (CV-CEB9). See C11 sec. 6.5.10:2
 Translation failed (config dumped). Run kcc -d CV-CEB9-bad-static.c to see commands run.

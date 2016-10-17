@@ -1,7 +1,3 @@
-File: j023f.c
-Line: 3
-Error: UB-TEAS4
-Description: Void value as right operand in assignment.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
+j023f.c:3:2: error: Void value as right operand in assignment.
+  Undefined behavior (UB-TEAS4). See C11 sec. 6.3.2.2:1, J.2:1 item 23
 Translation failed (config dumped). Run kcc -d j023f.c to see commands run.

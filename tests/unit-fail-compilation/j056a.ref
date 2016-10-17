@@ -1,7 +1,3 @@
-File: j056a.c
-Line: 5
-Error: CV-TEAS5
-Description: Non-constant static initializer.
-Type: Constraint violation.
-See also: C11 sec. 6.7.9:4
+j056a.c:5:1: error: Non-constant static initializer.
+  Constraint violation (CV-TEAS5). See C11 sec. 6.7.9:4
 Translation failed (config dumped). Run kcc -d j056a.c to see commands run.

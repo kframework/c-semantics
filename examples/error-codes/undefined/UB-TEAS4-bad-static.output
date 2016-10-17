@@ -1,6 +1,2 @@
-File: UB-TEAS4-bad-static.c
-Line: 5
-Error: UB-TEAS4
-Description: Void value as right operand in assignment.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.2:1, J.2:1 item 23
+UB-TEAS4-bad-static.c:5:2: error: Void value as right operand in assignment.
+  Undefined behavior (UB-TEAS4). See C11 sec. 6.3.2.2:1, J.2:1 item 23

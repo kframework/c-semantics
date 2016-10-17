@@ -1,8 +1,6 @@
-Error: UB-STDARG1
-Description: 'va_start' used in a function with fixed args.
-Type: Undefined behavior.
-See also: C11 sec. 6.9.1:8, J.2:1 item 87
-  at __va_start(j087a.c:5)
-  at f(j087a.c:5)
-  at main(j087a.c:10)
+ 'va_start' used in a function with fixed args.
+   at __va_start(j087a.c:5:8)
+   by f(j087a.c:5:8)
+   by main(j087a.c:10:7)
+  Undefined behavior (UB-STDARG1). See C11 sec. 6.9.1:8, J.2:1 item 87
 Execution failed (configuration dumped)

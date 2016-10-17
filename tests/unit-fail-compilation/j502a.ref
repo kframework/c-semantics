@@ -1,7 +1,3 @@
-File: j502a.c
-Line: 3
-Error: CV-TTE4
-Description: if one of a conditional expression's branches has void type, the other must also have void type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.15:3
+j502a.c:3:2: error: if one of a conditional expression's branches has void type, the other must also have void type.
+  Constraint violation (CV-TTE4). See C11 sec. 6.5.15:3
 Translation failed (config dumped). Run kcc -d j502a.c to see commands run.

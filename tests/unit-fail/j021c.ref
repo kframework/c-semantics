@@ -1,7 +1,5 @@
-Error: UB-CEE2
-Description: Indeterminate value used in an expression.
-Type: Undefined behavior.
-See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
-  at test1(j021c.c:5)
-  at main(j021c.c:9)
+ Indeterminate value used in an expression.
+   at test1(j021c.c:5:7)
+   by main(j021c.c:9:7)
+  Undefined behavior (UB-CEE2). See C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
 Execution failed (configuration dumped)

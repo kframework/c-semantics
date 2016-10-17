@@ -1,6 +1,4 @@
-Error: UB-PTHREAD8
-Description: Called trylock on an object that was not initialized with pthread_mutex_init.
-Type: Undefined behavior.
-See also: POSIX 2008 sec. pthread_mutex_trylock
-  at pthread_mutex_trylock(UB-PTHREAD8-bad.c:12)
-  at main(UB-PTHREAD8-bad.c:12)
+ Called trylock on an object that was not initialized with pthread_mutex_init.
+   at pthread_mutex_trylock(UB-PTHREAD8-bad.c:12:5)
+   by main(UB-PTHREAD8-bad.c:12:5)
+  Undefined behavior (UB-PTHREAD8). See POSIX 2008 sec. pthread_mutex_trylock

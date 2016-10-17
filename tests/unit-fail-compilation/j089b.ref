@@ -1,7 +1,3 @@
-File: j089b.c
-Line: 3
-Error: UB-TDG12
-Description: Declaration for an object is a tentative definition with internal linkage and has an incomplete type.
-Type: Undefined behavior.
-See also: C11 sec. 6.9.2:3, J.2:1 item 89
+j089b.c:3:1: error: Declaration for an object is a tentative definition with internal linkage and has an incomplete type.
+  Undefined behavior (UB-TDG12). See C11 sec. 6.9.2:3, J.2:1 item 89
 Translation failed (config dumped). Run kcc -d j089b.c to see commands run.

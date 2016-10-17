@@ -1,5 +1,3 @@
-Error: UB-EIO3
-Description: Trying to modify an object declared with const type.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.3:6, J.2:1 item 64
-  at main(UB-EIO3-bad.c:8)
+ Trying to modify an object declared with const type.
+   at main(UB-EIO3-bad.c:8:2)
+  Undefined behavior (UB-EIO3). See C11 sec. 6.7.3:6, J.2:1 item 64

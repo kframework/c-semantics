@@ -1,5 +1,3 @@
-Error: UB-CEMX2
-Description: Modulus by 0.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.5:5, J.2:1 item 45
-  at main(UB-CEMX2-bad.c:6)
+ Modulus by 0.
+   at main(UB-CEMX2-bad.c:6:2)
+  Undefined behavior (UB-CEMX2). See C11 sec. 6.5.5:5, J.2:1 item 45

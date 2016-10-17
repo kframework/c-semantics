@@ -1,6 +1,2 @@
-File: UB-TDG11-bad-static.c
-Line: 5
-Error: UB-TDG11
-Description: Static declaration of f follows non-static declaration.
-Type: Undefined behavior.
-See also: C11 sec. 6.2.2:7, J.2:1 item 8
+UB-TDG11-bad-static.c:5:1: error: Static declaration of f follows non-static declaration.
+  Undefined behavior (UB-TDG11). See C11 sec. 6.2.2:7, J.2:1 item 8

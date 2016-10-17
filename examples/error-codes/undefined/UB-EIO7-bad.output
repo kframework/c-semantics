@@ -1,5 +1,3 @@
-Error: UB-EIO7
-Description: Reading outside the bounds of an object.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-  at main(UB-EIO7-bad.c:9)
+ Reading outside the bounds of an object.
+   at main(UB-EIO7-bad.c:9:2)
+  Undefined behavior (UB-EIO7). See C11 sec. 6.3.2.1:1, J.2:1 item 19

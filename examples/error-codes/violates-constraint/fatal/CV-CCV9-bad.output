@@ -1,6 +1,4 @@
-Error: CV-CCV9
-Description: Conversion from pointer to floating point type or from floating point type to pointer.
-Type: Constraint violation.
-See also: C11 sec. 6.5.4:4
-  at main(CV-CCV9-bad.c:6)
+ Conversion from pointer to floating point type or from floating point type to pointer.
+   at main(CV-CCV9-bad.c:6:2)
+  Constraint violation (CV-CCV9). See C11 sec. 6.5.4:4
 Execution failed (configuration dumped)

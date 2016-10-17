@@ -1,7 +1,3 @@
-File: j045b.c
-Line: 2
-Error: UB-CEMX2
-Description: Modulus by 0.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.5:5, J.2:1 item 45
+j045b.c:2:7: error: Modulus by 0.
+  Undefined behavior (UB-CEMX2). See C11 sec. 6.5.5:5, J.2:1 item 45
 Translation failed (config dumped). Run kcc -d j045b.c to see commands run.

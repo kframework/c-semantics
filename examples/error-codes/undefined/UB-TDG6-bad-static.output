@@ -1,6 +1,2 @@
-File: UB-TDG6-bad-static.c
-Line: 3
-Error: UB-TDG6
-Description: Void parameter appears with a storage class specifier.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.6.3:10, J.2:1 item 78
+UB-TDG6-bad-static.c:3:1: error: Void parameter appears with a storage class specifier.
+  Undefined behavior (UB-TDG6). See C11 sec. 6.7.6.3:10, J.2:1 item 78

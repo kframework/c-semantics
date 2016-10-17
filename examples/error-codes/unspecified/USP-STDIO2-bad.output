@@ -1,7 +1,5 @@
-Error: USP-STDIO2
-Description: Printing an unspecified value.
-Type: Unspecified value or behavior.
-See also: C11 sec. 7.21.6.1:8
-  at printf(USP-STDIO2-bad.c:10)
-  at main(USP-STDIO2-bad.c:10)
+ Printing an unspecified value.
+   at printf(USP-STDIO2-bad.c:10:9)
+   by main(USP-STDIO2-bad.c:10:9)
+  Unspecified value or behavior (USP-STDIO2). See C11 sec. 7.21.6.1:8
 2139062016

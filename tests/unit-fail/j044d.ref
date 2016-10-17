@@ -1,6 +1,4 @@
-Error: CV-CCV10
-Description: Conversion to or from non-scalar type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.4:2
-  at main(j044d.c:6)
+ Conversion to or from non-scalar type.
+   at main(j044d.c:6:7)
+  Constraint violation (CV-CCV10). See C11 sec. 6.5.4:2
 Execution failed (configuration dumped)

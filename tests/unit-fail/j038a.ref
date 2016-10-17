@@ -1,7 +1,5 @@
-Error: UB-CB2
-Description: Function call has fewer arguments than parameters in function definition.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:6, J.2:1 item 38
-  at foo(j038a.c:4)
-  at main(j038a.c:4)
+ Function call has fewer arguments than parameters in function definition.
+   at foo(j038a.c:4:7)
+   by main(j038a.c:4:7)
+  Undefined behavior (UB-CB2). See C11 sec. 6.5.2.2:6, J.2:1 item 38
 Execution failed (configuration dumped)

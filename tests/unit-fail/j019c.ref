@@ -1,6 +1,4 @@
-Error: UB-CER4
-Description: Dereferencing a pointer past the end of an array.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8, J.2:1 items 47, 49
-  at main(j019c.c:3)
+ Dereferencing a pointer past the end of an array.
+   at main(j019c.c:3:7)
+  Undefined behavior (UB-CER4). See C11 sec. 6.5.6:8, J.2:1 items 47, 49
 Execution failed (configuration dumped)

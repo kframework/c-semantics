@@ -1,20 +1,8 @@
-File: L-TREMPTY-bad-static.c
-Line: 3
-Warning: L-TREMPTY
-Description: Empty block or statement in an if, for, or while.
-Type: Possible unintended behavior.
-File: L-TREMPTY-bad-static.c
-Line: 5
-Warning: L-TREMPTY
-Description: Empty block or statement in an if, for, or while.
-Type: Possible unintended behavior.
-File: L-TREMPTY-bad-static.c
-Line: 7
-Warning: L-TREMPTY
-Description: Empty block or statement in an if, for, or while.
-Type: Possible unintended behavior.
-File: L-TREMPTY-bad-static.c
-Line: 9
-Warning: L-TREMPTY
-Description: Empty block or statement in an if, for, or while.
-Type: Possible unintended behavior.
+L-TREMPTY-bad-static.c:3:27: warning: Empty block or statement in an if, for, or while.
+  Possible unintended behavior (L-TREMPTY).
+L-TREMPTY-bad-static.c:5:30: warning: Empty block or statement in an if, for, or while.
+  Possible unintended behavior (L-TREMPTY).
+L-TREMPTY-bad-static.c:7:20: warning: Empty block or statement in an if, for, or while.
+  Possible unintended behavior (L-TREMPTY).
+L-TREMPTY-bad-static.c:9:10: warning: Empty block or statement in an if, for, or while.
+  Possible unintended behavior (L-TREMPTY).

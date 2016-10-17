@@ -1,6 +1,2 @@
-File: UB-CEB6-bad-static.c
-Line: 4
-Error: UB-CEB6
-Description: The right operand in a bitwise shift is negative.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.7:3, J.2:1 item 51
+UB-CEB6-bad-static.c:4:2: error: The right operand in a bitwise shift is negative.
+  Undefined behavior (UB-CEB6). See C11 sec. 6.5.7:3, J.2:1 item 51

@@ -1,7 +1,5 @@
-Error: UB-STDIO1
-Description: 'printf': Mismatch between the type expected by the conversion specifier %d and the type of the argument.
-Type: Undefined behavior.
-See also: C11 sec. 7.21.6.1:9, J.2:1 item 153
-  at printf(j108b.c:4)
-  at main(j108b.c:4)
+ 'printf': Mismatch between the type expected by the conversion specifier %d and the type of the argument.
+   at printf(j108b.c:4:2)
+   by main(j108b.c:4:2)
+  Undefined behavior (UB-STDIO1). See C11 sec. 7.21.6.1:9, J.2:1 item 153
 Execution failed (configuration dumped)

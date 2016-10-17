@@ -1,15 +1,9 @@
-Error: UB-CER4
-Description: Dereferencing a pointer past the end of an array.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8, J.2:1 items 47, 49
-  at main(UB-CER4-bad.c:5)
-Error: UB-EIO7
-Description: Reading outside the bounds of an object.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-  at main(UB-CER4-bad.c:5)
-Error: UB-CEE2
-Description: Indeterminate value used in an expression.
-Type: Undefined behavior.
-See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
-  at main(UB-CER4-bad.c:5)
+ Dereferencing a pointer past the end of an array.
+   at main(UB-CER4-bad.c:5:2)
+  Undefined behavior (UB-CER4). See C11 sec. 6.5.6:8, J.2:1 items 47, 49
+ Reading outside the bounds of an object.
+   at main(UB-CER4-bad.c:5:2)
+  Undefined behavior (UB-EIO7). See C11 sec. 6.3.2.1:1, J.2:1 item 19
+ Indeterminate value used in an expression.
+   at main(UB-CER4-bad.c:5:2)
+  Undefined behavior (UB-CEE2). See C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11

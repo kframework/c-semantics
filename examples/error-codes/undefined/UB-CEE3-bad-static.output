@@ -1,6 +1,2 @@
-File: UB-CEE3-bad-static.c
-Line: 9
-Error: UB-CEE3
-Description: Found pointer that refers outside the bounds of an object + 1.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
+UB-CEE3-bad-static.c:9:2: error: Found pointer that refers outside the bounds of an object + 1.
+  Undefined behavior (UB-CEE3). See C11 sec. 6.3.2.1:1, J.2:1 item 19

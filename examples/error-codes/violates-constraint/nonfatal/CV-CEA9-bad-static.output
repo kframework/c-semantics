@@ -1,6 +1,2 @@
-File: CV-CEA9-bad-static.c
-Line: 8
-Error: CV-CEA9
-Description: Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.
-Type: Constraint violation.
-See also: C11 sec. 6.5.6:3
+CV-CEA9-bad-static.c:8:3: error: Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.
+  Constraint violation (CV-CEA9). See C11 sec. 6.5.6:3

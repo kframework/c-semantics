@@ -1,5 +1,3 @@
-Error: UB-CERL3
-Description: Cannot compare pointers with different base objects using '>'.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.8:5, J.2:1 item 53
-  at main(UB-CERL3-bad.c:6)
+ Cannot compare pointers with different base objects using '>'.
+   at main(UB-CERL3-bad.c:6:3)
+  Undefined behavior (UB-CERL3). See C11 sec. 6.5.8:5, J.2:1 item 53

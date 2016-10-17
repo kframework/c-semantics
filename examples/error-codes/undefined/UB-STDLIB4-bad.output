@@ -1,6 +1,4 @@
-Error: UB-STDLIB4
-Description: Called the exit function more than once (from a call to atexit).
-Type: Undefined behavior.
-See also: C11 sec. 7.22.4.4:2, J.2:1 item 182
-  at exit(UB-STDLIB4-bad.c:4)
-  at foo(UB-STDLIB4-bad.c:4)
+ Called the exit function more than once (from a call to atexit).
+   at exit(UB-STDLIB4-bad.c:4:3)
+   by foo(UB-STDLIB4-bad.c:4:3)
+  Undefined behavior (UB-STDLIB4). See C11 sec. 7.22.4.4:2, J.2:1 item 182

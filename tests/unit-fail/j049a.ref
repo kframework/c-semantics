@@ -1,6 +1,4 @@
-Error: UB-CEA1
-Description: A pointer (or array subscript) outside the bounds of an object.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8, J.2:1 item 46
-  at main(j049a.c:3)
+ A pointer (or array subscript) outside the bounds of an object.
+   at main(j049a.c:3:7)
+  Undefined behavior (UB-CEA1). See C11 sec. 6.5.6:8, J.2:1 item 46
 Execution failed (configuration dumped)

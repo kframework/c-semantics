@@ -1,6 +1,2 @@
-File: UB-CCV1-bad-static.c
-Line: 5
-Error: UB-CCV1
-Description: Signed integer overflow.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:5, J.2:1 item 36
+UB-CCV1-bad-static.c:5:2: error: Signed integer overflow.
+  Undefined behavior (UB-CCV1). See C11 sec. 6.5:5, J.2:1 item 36

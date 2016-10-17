@@ -1,9 +1,7 @@
-Error: USP-STDLIB3
-Description: Called the atexit function after normal program termination has begun.
-Type: Unspecified value or behavior.
-See also: C11 sec. 7.22.4.2:2, J.1:1 item 44
-  at atexit(atexit-bad.c:6)
-  at foo(atexit-bad.c:6)
-  at exit(atexit-bad.c:11)
-  at main(atexit-bad.c:11)
+ Called the atexit function after normal program termination has begun.
+   at atexit(atexit-bad.c:6:3)
+   by foo(atexit-bad.c:6:3)
+   by exit(atexit-bad.c:11:3)
+   by main(atexit-bad.c:11:3)
+  Unspecified value or behavior (USP-STDLIB3). See C11 sec. 7.22.4.2:2, J.1:1 item 44
 Execution failed (configuration dumped)

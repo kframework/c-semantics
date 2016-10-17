@@ -1,5 +1,3 @@
-Error: IMPL-CEB8
-Description: The left operand in a bitwise right-shift is negative.
-Type: Implementation defined behavior.
-See also: C11 sec. 6.5.7:5, J.3.5:1 item 5
-  at main(IMPL-CEB8-bad.c:5)
+ The left operand in a bitwise right-shift is negative.
+   at main(IMPL-CEB8-bad.c:5:3)
+  Implementation defined behavior (IMPL-CEB8). See C11 sec. 6.5.7:5, J.3.5:1 item 5

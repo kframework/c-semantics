@@ -1,6 +1,2 @@
-File: UB-CDI1-bad-static.c
-Line: 4
-Error: UB-CDI1
-Description: Initializer for scalar contains multiple expressions.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.9:11, J.2:1 item 81
+UB-CDI1-bad-static.c:4:2: error: Initializer for scalar contains multiple expressions.
+  Undefined behavior (UB-CDI1). See C11 sec. 6.7.9:11, J.2:1 item 81

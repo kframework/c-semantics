@@ -1,7 +1,3 @@
-File: CV-TDL1-bad-static.c
-Line: 5
-Error: CV-TDL1
-Description: Extern declaration of a follows one with no linkage.
-Type: Constraint violation.
-See also: C11 sec. 6.7:3
+CV-TDL1-bad-static.c:5:2: error: Extern declaration of a follows one with no linkage.
+  Constraint violation (CV-TDL1). See C11 sec. 6.7:3
 Translation failed (config dumped). Run kcc -d CV-TDL1-bad-static.c to see commands run.

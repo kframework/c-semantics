@@ -1,6 +1,2 @@
-File: IMPL-CTI4-bad-static.c
-Line: 1
-Error: IMPL-CTI4
-Description: Bit-field with type other than signed int, unsigned int, or _Bool.
-Type: Implementation defined behavior.
-See also: C11 sec. 6.7.2.1:5, J.3.9:1 item 2
+IMPL-CTI4-bad-static.c:1:1: warning: Bit-field with type other than signed int, unsigned int, or _Bool.
+  Implementation defined behavior (IMPL-CTI4). See C11 sec. 6.7.2.1:5, J.3.9:1 item 2

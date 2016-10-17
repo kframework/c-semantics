@@ -1,6 +1,4 @@
-Error: UB-PTHREAD1
-Description: Initializing an already initialiized mutex.
-Type: Undefined behavior.
-See also: POSIX 2008 sec. pthread_mutex_init
-  at pthread_mutex_init(UB-PTHREAD1-bad.c:17)
-  at main(UB-PTHREAD1-bad.c:17)
+ Initializing an already initialiized mutex.
+   at pthread_mutex_init(UB-PTHREAD1-bad.c:17:5)
+   by main(UB-PTHREAD1-bad.c:17:5)
+  Undefined behavior (UB-PTHREAD1). See POSIX 2008 sec. pthread_mutex_init

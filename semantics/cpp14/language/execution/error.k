@@ -4,7 +4,7 @@ module CPP-EXECUTION-ERROR
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
-     rule printStackTrace(L:List, Loc:CabsLoc, blockScope(X::QualId, _, _))
-          => "  at " +String idToString(X) +String "(" +String printStackTrace(L, Loc, .K)
+     rule printStackTraceStart(Start:String, L:List, Loc:CabsLoc, blockScope(X::QualId, _, _))
+          => Start +String idToString(X) +String "(" +String printStackTraceStart("   by ", L, Loc, .K)
 
 endmodule

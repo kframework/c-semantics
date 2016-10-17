@@ -1,18 +1,6 @@
-File: UB-CEB2-bad-static.c
-Line: 4
-Error: UB-CEB2
-Description: The right operand in a bitwise shift is negative.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.7:3, J.2:1 item 51
-File: UB-CEB2-bad-static.c
-Line: 4
-Error: UB-CCV1
-Description: Signed integer overflow.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:5, J.2:1 item 36
-File: UB-CEB2-bad-static.c
-Line: 4
-Error: UB-CEB12
-Description: Potential negative zero produced via bitwise operations (this could be a false positive).
-Type: Undefined behavior.
-See also: C11 sec. 6.2.6.2:4, J.2:1 item 14
+UB-CEB2-bad-static.c:4:2: error: The right operand in a bitwise shift is negative.
+  Undefined behavior (UB-CEB2). See C11 sec. 6.5.7:3, J.2:1 item 51
+UB-CEB2-bad-static.c:4:2: error: Signed integer overflow.
+  Undefined behavior (UB-CCV1). See C11 sec. 6.5:5, J.2:1 item 36
+UB-CEB2-bad-static.c:4:2: error: Potential negative zero produced via bitwise operations (this could be a false positive).
+  Undefined behavior (UB-CEB12). See C11 sec. 6.2.6.2:4, J.2:1 item 14

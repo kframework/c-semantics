@@ -1,4 +1,3 @@
-Warning: L-CMRE1
-Description: Reading a struct or union with uninitialized parts.
-Type: Possible unintended behavior.
-  at main(L-CMRE1-bad.c:4)
+ Reading a struct or union with uninitialized parts.
+   at main(L-CMRE1-bad.c:4:7)
+  Possible unintended behavior (L-CMRE1).

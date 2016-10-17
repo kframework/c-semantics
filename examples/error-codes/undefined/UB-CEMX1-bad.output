@@ -1,5 +1,3 @@
-Error: UB-CEMX1
-Description: Division by 0.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.5:5, J.2:1 item 45
-  at main(UB-CEMX1-bad.c:6)
+ Division by 0.
+   at main(UB-CEMX1-bad.c:6:2)
+  Undefined behavior (UB-CEMX1). See C11 sec. 6.5.5:5, J.2:1 item 45

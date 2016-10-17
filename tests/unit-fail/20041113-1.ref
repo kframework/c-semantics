@@ -1,7 +1,5 @@
-Error: UB-STDARG9
-Description: Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
-Type: Undefined behavior.
-See also: C11 sec. 7.16.1:1, J.2:1 item 139
-  at test(20041113-1.c:15)
-  at main(20041113-1.c:23)
+ Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
+   at test(20041113-1.c:15:5)
+   by main(20041113-1.c:23:5)
+  Undefined behavior (UB-STDARG9). See C11 sec. 7.16.1:1, J.2:1 item 139
 Execution failed (configuration dumped)

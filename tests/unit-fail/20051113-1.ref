@@ -1,6 +1,4 @@
-Error: UB-EIO2
-Description: Trying to write outside the bounds of an object.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.6:8, J.2:1 items 47, 49
-  at main(20051113-1.c:62)
+ Trying to write outside the bounds of an object.
+   at main(20051113-1.c:62:3)
+  Undefined behavior (UB-EIO2). See C11 sec. 6.5.6:8, J.2:1 items 47, 49
 Execution failed (configuration dumped)

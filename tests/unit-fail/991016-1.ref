@@ -1,7 +1,5 @@
-Error: UB-CCV11
-Description: Conversion to a pointer type with a stricter alignment requirement (possibly undefined).
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.3:7, J.2:1 item 25
-  at doit(991016-1.c:15)
-  at main(991016-1.c:46)
+ Conversion to a pointer type with a stricter alignment requirement (possibly undefined).
+   at doit(991016-1.c:15:3)
+   by main(991016-1.c:46:11)
+  Undefined behavior (UB-CCV11). See C11 sec. 6.3.2.3:7, J.2:1 item 25
 Execution failed (configuration dumped)

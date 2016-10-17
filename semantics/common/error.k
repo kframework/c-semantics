@@ -2,8 +2,10 @@ module ERROR-SYNTAX
      imports LIST
      imports STRING-SYNTAX
 
-     syntax String ::= ErrorMsg(String, String, String, List) [function]
-                     | ErrorMsg(List) [function, klabel(ErrorMsg1)]
+     syntax ErrorMsg ::= ErrorMsg(String, String, String, String, List)
+                       | ErrorMsg(String, String, String, List) [function, klabel(ErrorMsgS)]
+
+     syntax String ::= formatCitations(List) [function]
 
      syntax Bool ::= "isCSV" [function]
                    | "warnSystemHeaders" [function]
@@ -13,7 +15,7 @@ module ERROR-SYNTAX
                    | No(Opts)
                    | Warn(String)
                    | CSV(String)
-     syntax KItem ::= EXIT(String)
+     syntax KItem ::= EXIT(ErrorMsg)
      syntax ErrorExit ::= "HALT"
 
      syntax Error
@@ -23,7 +25,8 @@ module ERROR-SYNTAX
      syntax K ::= writeThenClose(Int, String) [function]
      syntax K ::= close(Int, K) [function]
 
-     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")"
+     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")" [function, klabel(ExtUndef)]
+     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String "," String ")"
      syntax KItem ::= UNDIAG(String, String, String)
 endmodule
 
@@ -35,46 +38,18 @@ module ERROR
      imports STRING
 
      rule ErrorMsg(Title:String, Msg:String, ErrType:String, L:List)
-          => "Error: "
-          +String Title
-          +String "\n"
-          +String "Description: "
-          +String Msg
-          +String "\n"
-          +String "Type: "
-          +String ErrType
-          +String ErrorMsg(L)
-          requires notBool isCSV
+          => ErrorMsg(Title, Msg, ErrType, "", L)
 
-     rule ErrorMsg(ListItem(Document:String) ListItem(Citation:String) L:List)
-          => "\n"
-          +String "See also: "
-          +String Document
-          +String " sec. "
-          +String Citation
-          +String ErrorMsg(L)
-          requires notBool isCSV
 
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, L:List)
-          => Title
-          +String ",\""
-          +String Msg
-          +String "\","
-          +String ErrType
-          +String ",\""
-          +String ErrorMsg(L)
-          +String "\""
-          requires isCSV
+     rule formatCitations(L:List) => formatCitationsStart({#if isCSV #then "" #else " See " #fi}:>String, L)
 
-     rule ErrorMsg(ListItem(Document:String) ListItem(Citation:String) L:List)
-          => Document
-          +String " sec. "
-          +String Citation
-          +String "\n"
-          +String ErrorMsg(L)
-          requires isCSV
-          
-     rule ErrorMsg(.List) => ""
+     syntax String ::= formatCitationsStart(String, List) [function]
+     rule formatCitationsStart(Start:String, ListItem(Document:String) ListItem(Citation:String) L:List)
+          => Start
+          +String Document +String " sec. " +String Citation
+          +String formatCitationsStart("; ", L)
+
+     rule formatCitationsStart(_, .List) => ""
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
      rule writeThenClose(Fd:Int, Line:String) => close(Fd, #write(Fd, Line))
@@ -99,13 +74,15 @@ module ERROR
      rule checkOptionsCateg(_, B:Bool, _) => B [owise]
 
      rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
-          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior.", ListItem(Document) ListItem(Citation)))
+          => EXT-UNDEF(Title, Msg, Document, Citation, "")
+     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String, Reason:String)
+          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason, ListItem(Document) ListItem(Citation)))
           requires checkOptions(Undef(), Title, true)
      rule UNDIAG(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("URV-" +String Title, Msg, "Undiagnosable Rule violation.", ListItem("C++14") ListItem(Citation)))
+          => EXIT(ErrorMsg("URV-" +String Title, Msg, "Undiagnosable Rule violation", ListItem("C++14") ListItem(Citation)))
           requires checkOptions(Undiag(), Title, true)
 
-     rule EXT-UNDEF(Title:String, _, _, _) => HALT
+     rule EXT-UNDEF(Title:String, _, _, _, _) => HALT
           requires notBool checkOptions(Undef(), Title, true)
      rule UNDIAG(Title:String, _, _) => HALT
           requires notBool checkOptions(Undiag(), Title, true)

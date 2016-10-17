@@ -1,6 +1,2 @@
-File: UB-FD8-bad-static.c
-Line: 4
-Error: UB-FD8
-Description: Function main must have zero or two parameters.
-Type: Undefined behavior.
-See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
+UB-FD8-bad-static.c:4:1: error: Function main must have zero or two parameters.
+  Undefined behavior (UB-FD8). See C11 sec. 5.1.2.2.1:1, J.2:1 item 4

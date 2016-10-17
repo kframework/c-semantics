@@ -1,5 +1,3 @@
-Error: UB-CCV7
-Description: Conversion from pointer to integer of a value possibly unrepresentable in the integer type.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.3:6, J.2:1 item 24
-  at main(UB-CCV7-bad.c:7)
+ Conversion from pointer to integer of a value possibly unrepresentable in the integer type.
+   at main(UB-CCV7-bad.c:7:7)
+  Undefined behavior (UB-CCV7). See C11 sec. 6.3.2.3:6, J.2:1 item 24

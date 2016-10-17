@@ -1,6 +1,4 @@
-Error: UB-ECL3
-Description: An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.3.1:4, J.2:1 item 68
-  at f(UB-ECL3-bad.c:5)
-  at main(UB-ECL3-bad.c:11)
+ An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.
+   at f(UB-ECL3-bad.c:5:7)
+   by main(UB-ECL3-bad.c:11:7)
+  Undefined behavior (UB-ECL3). See C11 sec. 6.7.3.1:4, J.2:1 item 68

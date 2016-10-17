@@ -1,6 +1,4 @@
-Error: UB-EIO7
-Description: Reading outside the bounds of an object.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:1, J.2:1 item 19
-  at main(j062a.c:7)
+ Reading outside the bounds of an object.
+   at main(j062a.c:7:7)
+  Undefined behavior (UB-EIO7). See C11 sec. 6.3.2.1:1, J.2:1 item 19
 Execution failed (configuration dumped)

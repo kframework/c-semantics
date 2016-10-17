@@ -1,6 +1,4 @@
-Error: UB-EFNC1
-Description: Attempt to call the function f through a pointer with incompatible type.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:9, J.2:1 items 26, 41
-  at main(j039b.c:6)
+ Attempt to call the function f through a pointer with incompatible type.
+   at main(j039b.c:6:7)
+  Undefined behavior (UB-EFNC1). See C11 sec. 6.5.2.2:9, J.2:1 items 26, 41
 Execution failed (configuration dumped)

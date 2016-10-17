@@ -1,13 +1,9 @@
-Error: UB-STDARG2
-Description: 'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.
-Type: Undefined behavior.
-See also: C11 sec. 7.16.1.4:3, J.2:1 item 142
-  at __va_start(UB-STDARG2-bad.c:8)
-  at f(UB-STDARG2-bad.c:8)
-  at main(UB-STDARG2-bad.c:16)
-Error: UB-STDARG9
-Description: Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
-Type: Undefined behavior.
-See also: C11 sec. 7.16.1:1, J.2:1 item 139
-  at f(UB-STDARG2-bad.c:13)
-  at main(UB-STDARG2-bad.c:16)
+ 'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.
+   at __va_start(UB-STDARG2-bad.c:8:8)
+   by f(UB-STDARG2-bad.c:8:8)
+   by main(UB-STDARG2-bad.c:16:7)
+  Undefined behavior (UB-STDARG2). See C11 sec. 7.16.1.4:3, J.2:1 item 142
+ Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
+   at f(UB-STDARG2-bad.c:13:7)
+   by main(UB-STDARG2-bad.c:16:7)
+  Undefined behavior (UB-STDARG9). See C11 sec. 7.16.1:1, J.2:1 item 139

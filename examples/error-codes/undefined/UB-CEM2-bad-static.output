@@ -1,12 +1,4 @@
-File: UB-CEM2-bad-static.c
-Line: 8
-Error: UB-CEM2
-Description: Attempting to access a member in an atomic union.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.3:5, J.2:1 item 42
-File: UB-CEM2-bad-static.c
-Line: 8
-Error: UB-EIO10
-Description: Type of lvalue not compatible with the effective type of the object being accessed.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:7, J.2:1 item 37
+UB-CEM2-bad-static.c:8:7: error: Attempting to access a member in an atomic union.
+  Undefined behavior (UB-CEM2). See C11 sec. 6.5.2.3:5, J.2:1 item 42
+UB-CEM2-bad-static.c:8:7: error: Type of lvalue not compatible with the effective type of the object being accessed.
+  Undefined behavior (UB-EIO10). See C11 sec. 6.5:7, J.2:1 item 37

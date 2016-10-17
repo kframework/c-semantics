@@ -1,7 +1,3 @@
-File: 20041212-1.c
-Line: 14
-Error: CV-CERL9
-Description: Invalid operand types to !=.
-Type: Constraint violation.
-See also: C11 sec. 6.5.9:2
+20041212-1.c:14:3: error: Invalid operand types to !=.
+  Constraint violation (CV-CERL9). See C11 sec. 6.5.9:2
 Translation failed (config dumped). Run kcc -d 20041212-1.c to see commands run.

@@ -1,5 +1,3 @@
-Error: UB-EFNC2
-Description: Invoking a null pointer.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2
-  at main(UB-EFNC2-bad.c:6)
+ Invoking a null pointer.
+   at main(UB-EFNC2-bad.c:6:3)
+  Undefined behavior (UB-EFNC2). See C11 sec. 6.5.2.2

@@ -1,7 +1,3 @@
-File: j015d-link2.c
-Line: 3
-Error: UB-TIN1
-Description: Identifier f declared with incompatible types in different translation units.
-Type: Undefined behavior.
-See also: C11 sec. 6.2.7:2, J.2:1 item 15
+j015d-link2.c:3: Undefined behavior: Identifier f declared with incompatible types in different translation units. (UB-TIN1)
+  See C11 sec. 6.2.7:2, J.2:1 item 15
 Translation failed (config dumped). Run kcc -d j015d-link1.c j015d-link2.c to see commands run.

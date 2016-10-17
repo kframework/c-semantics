@@ -1,6 +1,2 @@
-File: UB-FD6-bad-static.c
-Line: 4
-Error: UB-FD6
-Description: If main has parameters, the type of the first parameter must be equivalent to int.
-Type: Undefined behavior.
-See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
+UB-FD6-bad-static.c:4:1: error: If main has parameters, the type of the first parameter must be equivalent to int.
+  Undefined behavior (UB-FD6). See C11 sec. 5.1.2.2.1:1, J.2:1 item 4

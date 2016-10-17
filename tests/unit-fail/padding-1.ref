@@ -1,7 +1,5 @@
-Error: USP-STDIO2
-Description: Printing an unspecified value.
-Type: Unspecified value or behavior.
-See also: C11 sec. 7.21.6.1:8
-  at printf(padding-1.c:7)
-  at main(padding-1.c:7)
+ Printing an unspecified value.
+   at printf(padding-1.c:7:3)
+   by main(padding-1.c:7:3)
+  Unspecified value or behavior (USP-STDIO2). See C11 sec. 7.21.6.1:8
 Execution failed (configuration dumped)

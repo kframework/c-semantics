@@ -1,5 +1,3 @@
-Error: IMPL-EIO6
-Description: Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.
-Type: Implementation defined behavior.
-See also: C11 sec. 6.2.4:4, 6.2.4:5, J.3.13:1 item 2
-  at foo(IMPL-EIO6-bad.c:6)
+ Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.
+   at foo(IMPL-EIO6-bad.c:6:3)
+  Implementation defined behavior (IMPL-EIO6). See C11 sec. 6.2.4:4, 6.2.4:5, J.3.13:1 item 2

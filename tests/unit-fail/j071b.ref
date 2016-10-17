@@ -1,7 +1,5 @@
-Error: UB-ESR1
-Description: Return from a function declared _Noreturn.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.4, J.2:1 item 71
-  at f(j071b.c:4)
-  at main(j071b.c:4)
+ Return from a function declared _Noreturn.
+   at f(j071b.c:4:7)
+   by main(j071b.c:4:7)
+  Undefined behavior (UB-ESR1). See C11 sec. 6.7.4, J.2:1 item 71
 Execution failed (configuration dumped)

@@ -1,6 +1,2 @@
-File: UB-TEOFF1-bad-static.c
-Line: 4
-Error: UB-TEOFF1
-Description: Offsetof member designator specifies a bit-field.
-Type: Undefined behavior.
-See also: C11 sec. 7.19:3, J.2:1 item 144
+UB-TEOFF1-bad-static.c:4:7: error: Offsetof member designator specifies a bit-field.
+  Undefined behavior (UB-TEOFF1). See C11 sec. 7.19:3, J.2:1 item 144

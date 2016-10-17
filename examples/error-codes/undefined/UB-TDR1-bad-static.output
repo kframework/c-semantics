@@ -1,6 +1,2 @@
-File: UB-TDR1-bad-static.c
-Line: 7
-Error: UB-TDR1
-Description: Declaration for inline function not defined in the same translation unit: f.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.4:7, J.2:1 item 70
+UB-TDR1-bad-static.c:7:1: error: Declaration for inline function not defined in the same translation unit: f.
+  Undefined behavior (UB-TDR1). See C11 sec. 6.7.4:7, J.2:1 item 70

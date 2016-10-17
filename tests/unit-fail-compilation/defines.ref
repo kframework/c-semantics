@@ -1,7 +1,3 @@
-File: defines.c
-Line: 4
-Error: SE-CID1
-Description: Trying to look up identifier FOO, but no such identifier is in scope.
-Type: Syntax error.
-See also: C11 sec. 6.5.1:2
+defines.c:4:2: error: Trying to look up identifier FOO, but no such identifier is in scope.
+  Syntax error (SE-CID1). See C11 sec. 6.5.1:2
 Translation failed (config dumped). Run kcc -d defines.c to see commands run.

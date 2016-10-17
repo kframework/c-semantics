@@ -1,7 +1,3 @@
-File: j036b.c
-Line: 3
-Error: UB-CCV1
-Description: Signed integer overflow.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:5, J.2:1 item 36
+j036b.c:3:7: error: Signed integer overflow.
+  Undefined behavior (UB-CCV1). See C11 sec. 6.5:5, J.2:1 item 36
 Translation failed (config dumped). Run kcc -d j036b.c to see commands run.

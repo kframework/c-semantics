@@ -1,10 +1,4 @@
-File: UB-CEE5-bad-static.c
-Line: 4
-Error: UB-CEE5
-Description: Trying to convert an incomplete lvalue not of array type.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.2.1:2, J.2:1 item 20
-Error: UB-TDR2
-Description: No definition for symbol with external linkage: x.
-Type: Undefined behavior.
-See also: C11 sec. 6.9:5, J.2:1 item 84
+UB-CEE5-bad-static.c:4:7: error: Trying to convert an incomplete lvalue not of array type.
+  Undefined behavior (UB-CEE5). See C11 sec. 6.3.2.1:2, J.2:1 item 20
+<unknown>: error: No definition for symbol with external linkage: x.
+  Undefined behavior (UB-TDR2). See C11 sec. 6.9:5, J.2:1 item 84

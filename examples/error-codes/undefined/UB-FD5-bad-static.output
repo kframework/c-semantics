@@ -1,6 +1,2 @@
-File: UB-FD5-bad-static.c
-Line: 4
-Error: UB-FD5
-Description: Function main must return an int.
-Type: Undefined behavior.
-See also: C11 sec. 5.1.2.2.1:1, J.2:1 item 4
+UB-FD5-bad-static.c:4:1: error: Function main must return an int.
+  Undefined behavior (UB-FD5). See C11 sec. 5.1.2.2.1:1, J.2:1 item 4

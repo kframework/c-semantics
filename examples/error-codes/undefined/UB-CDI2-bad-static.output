@@ -1,12 +1,4 @@
-File: UB-CDI2-bad-static.c
-Line: 4
-Error: UB-CDI2
-Description: Initializer for scalar contains multiple levels of braces.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.9:11, J.2:1 item 81
-File: UB-CDI2-bad-static.c
-Line: 4
-Error: UB-CDI1
-Description: Initializer for scalar contains multiple expressions.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.9:11, J.2:1 item 81
+UB-CDI2-bad-static.c:4:7: error: Initializer for scalar contains multiple levels of braces.
+  Undefined behavior (UB-CDI2). See C11 sec. 6.7.9:11, J.2:1 item 81
+UB-CDI2-bad-static.c:4:7: error: Initializer for scalar contains multiple expressions.
+  Undefined behavior (UB-CDI1). See C11 sec. 6.7.9:11, J.2:1 item 81

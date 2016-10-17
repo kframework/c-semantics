@@ -1,6 +1,2 @@
-File: CV-CDI4-bad-static.c
-Line: 11
-Error: CV-CDI4
-Description: Attempting to initialize nonexistent member.
-Type: Constraint violation.
-See also: C11 sec. 6.7.9:2
+CV-CDI4-bad-static.c:11:1: error: Attempting to initialize nonexistent member.
+  Constraint violation (CV-CDI4). See C11 sec. 6.7.9:2

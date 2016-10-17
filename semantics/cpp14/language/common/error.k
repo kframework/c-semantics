@@ -13,7 +13,7 @@ module CPP-ERROR
      imports STRING
 
      rule COND(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("CND-" +String Title, Msg, "Conditionally-supported behavior.", ListItem("C++14") ListItem(Citation)))
+          => EXIT(ErrorMsg("CND-" +String Title, Msg, "Conditionally-supported behavior", ListItem("C++14") ListItem(Citation)))
           requires checkOptions(Cond(), Title, true)
 
      rule IMPL(Title:String, Msg:String, Citation:String)
@@ -22,7 +22,7 @@ module CPP-ERROR
 
 
      rule DV(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("DRV-" +String Title, Msg, "Diagnosable Rule violation.", ListItem("C++14") ListItem(Citation)))
+          => EXIT(ErrorMsg("DRV-" +String Title, Msg, "Diagnosable Rule violation", ListItem("C++14") ListItem(Citation)))
 
      rule COND(Title:String, _, _) => HALT
           requires notBool checkOptions(Cond(), Title, true)

@@ -1,6 +1,2 @@
-File: UB-TTE1-bad-static.c
-Line: 7
-Error: UB-TTE1
-Description: Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).
-Type: Undefined behavior.
-See also: C11 sec. 6.2.7:3, J.2:1 item 16
+UB-TTE1-bad-static.c:7:7: error: Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).
+  Undefined behavior (UB-TTE1). See C11 sec. 6.2.7:3, J.2:1 item 16

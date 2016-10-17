@@ -1,7 +1,3 @@
-File: j019a.c
-Line: 2
-Error: UB-CEE2
-Description: Indeterminate value used in an expression.
-Type: Undefined behavior.
-See also: C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
+j019a.c:2:7: error: Indeterminate value used in an expression.
+  Undefined behavior (UB-CEE2). See C11 sec. 6.2.4, 6.7.9, 6.8, J.2:1 item 11
 Translation failed (config dumped). Run kcc -d j019a.c to see commands run.

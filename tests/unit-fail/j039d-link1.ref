@@ -1,7 +1,5 @@
-Error: UB-CB1
-Description: Types of function call arguments aren't compatible with declared types after promotions.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.2:6, J.2:1 item 39
-  at foo(j039d-link1.c:4)
-  at main(j039d-link1.c:4)
+ Types of function call arguments aren't compatible with declared types after promotions.
+   at foo(j039d-link1.c:4:7)
+   by main(j039d-link1.c:4:7)
+  Undefined behavior (UB-CB1). See C11 sec. 6.5.2.2:6, J.2:1 item 39
 Execution failed (configuration dumped)

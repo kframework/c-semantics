@@ -1,4 +1,2 @@
-Error: UB-TIN2
-Description: Multiple external definitions for a.
-Type: Undefined behavior.
-See also: C11 sec. 6.9:5, J.2:1 item 84
+<unknown>: error: Multiple external definitions for a.
+  Undefined behavior (UB-TIN2). See C11 sec. 6.9:5, J.2:1 item 84

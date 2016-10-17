@@ -1,10 +1,6 @@
-Error: UB-CCV3
-Description: Conversion to integer from float outside the range that can be represented.
-Type: Undefined behavior.
-See also: C11 sec. 6.3.1.4:1, J.2:1 item 17
-  at main(UB-CCV3-bad.c:6)
-Error: UB-CCV1
-Description: Signed integer overflow.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:5, J.2:1 item 36
-  at main(UB-CCV3-bad.c:6)
+ Conversion to integer from float outside the range that can be represented.
+   at main(UB-CCV3-bad.c:6:2)
+  Undefined behavior (UB-CCV3). See C11 sec. 6.3.1.4:1, J.2:1 item 17
+ Signed integer overflow.
+   at main(UB-CCV3-bad.c:6:2)
+  Undefined behavior (UB-CCV1). See C11 sec. 6.5:5, J.2:1 item 36

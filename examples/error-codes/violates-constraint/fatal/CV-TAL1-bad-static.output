@@ -1,7 +1,3 @@
-File: CV-TAL1-bad-static.c
-Line: 7
-Error: CV-TAL1
-Description: Trying to compute alignof of a type that is incomplete or a function type.
-Type: Constraint violation.
-See also: C11 sec. 6.5.3.4:1
+CV-TAL1-bad-static.c:7:3: error: Trying to compute alignof of a type that is incomplete or a function type.
+  Constraint violation (CV-TAL1). See C11 sec. 6.5.3.4:1
 Translation failed (config dumped). Run kcc -d CV-TAL1-bad-static.c to see commands run.

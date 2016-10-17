@@ -1,7 +1,3 @@
-File: j076c.c
-Line: 2
-Error: CV-TDG10
-Description: Conflicting types for a.
-Type: Constraint violation.
-See also: C11 sec. 6.7:4
+j076c.c:2:1: error: Conflicting types for a.
+  Constraint violation (CV-TDG10). See C11 sec. 6.7:4
 Translation failed (config dumped). Run kcc -d j076c.c to see commands run.

@@ -1,12 +1,4 @@
-File: UB-CEM1-bad-static.c
-Line: 8
-Error: UB-CEM1
-Description: Attempting to access a member in an atomic struct.
-Type: Undefined behavior.
-See also: C11 sec. 6.5.2.3:5, J.2:1 item 42
-File: UB-CEM1-bad-static.c
-Line: 8
-Error: UB-EIO10
-Description: Type of lvalue not compatible with the effective type of the object being accessed.
-Type: Undefined behavior.
-See also: C11 sec. 6.5:7, J.2:1 item 37
+UB-CEM1-bad-static.c:8:7: error: Attempting to access a member in an atomic struct.
+  Undefined behavior (UB-CEM1). See C11 sec. 6.5.2.3:5, J.2:1 item 42
+UB-CEM1-bad-static.c:8:7: error: Type of lvalue not compatible with the effective type of the object being accessed.
+  Undefined behavior (UB-EIO10). See C11 sec. 6.5:7, J.2:1 item 37

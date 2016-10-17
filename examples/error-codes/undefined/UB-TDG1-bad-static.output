@@ -1,6 +1,2 @@
-File: UB-TDG1-bad-static.c
-Line: 4
-Error: UB-TDG1
-Description: Declaration for the function f appears with type qualifiers.
-Type: Undefined behavior.
-See also: C11 sec. 6.7.3:9, J.2:1 item 66
+UB-TDG1-bad-static.c:4:1: error: Declaration for the function f appears with type qualifiers.
+  Undefined behavior (UB-TDG1). See C11 sec. 6.7.3:9, J.2:1 item 66

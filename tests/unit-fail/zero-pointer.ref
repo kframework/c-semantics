@@ -1,6 +1,4 @@
-Error: USP-CERL7
-Description: Comparison of unspecified value.
-Type: Unspecified value or behavior.
-See also: C11 sec. 6.5.9
-  at main(zero-pointer.c:29)
+ Comparison of unspecified value.
+   at main(zero-pointer.c:29:9)
+  Unspecified value or behavior (USP-CERL7). See C11 sec. 6.5.9
 Execution failed (configuration dumped)
