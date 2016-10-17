@@ -115,8 +115,18 @@ module C-TYPING-EXPR
 
      rule <k> typeof(t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
           <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</tags>
+     rule <k> typeof(t(Qs::Quals, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId
+               => getTypeForField(F, searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF))))
+          ...</k>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
      rule <k> typeof(t(_, _, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
           <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</tags>
+     rule <k> typeof(t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef))) . F:CId
+               => getTypeForField(F, searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF))))
+          ...</k>
+          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
+          requires searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
 
      rule typeof(T:Type ++ => T)
      rule typeof(T:Type -- => T)
