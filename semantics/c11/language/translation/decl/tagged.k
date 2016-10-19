@@ -46,7 +46,7 @@ module C-DECL-TAGGED
           ~> StructDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT3", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3"))
+     rule (.K => CV("CDT3", "Field " +String firstIncompleteOrFlexible(L) +String " has incomplete type or contains a flexible array member.", "6.7.2.1:2"))
           ~> StructDef(_, krlist(L:List), _)
           requires notBool structFieldsComplete(L)
           [structural]
@@ -58,7 +58,7 @@ module C-DECL-TAGGED
           ~> UnionDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:3"))
+     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:2"))
           ~> UnionDef(_, krlist(L:List), _)
           requires notBool allComplete(L)
           [structural]
@@ -200,13 +200,18 @@ module C-DECL-TAGGED
 
      syntax Bool ::= structFieldsComplete(List) [function]
      rule structFieldsComplete(L::List ListItem(typedDeclaration(T::Type, _)))
-          => allComplete(L) andBool (isCompleteType(T) orBool isIncompleteArrayType(T))
+          => allComplete(L) andBool allRigid(L)
+               andBool ((isCompleteType(T) andBool isRigidType(T)) orBool isIncompleteArrayType(T))
      rule structFieldsComplete(.List) => true
 
      syntax Bool ::= allComplete(List) [function]
-     rule allComplete(ListItem(typedDeclaration(T::Type, _)) L::List)
-          => isCompleteType(T) andBool allComplete(L)
-     rule allComplete(.List) => true
+     rule allComplete(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isCompleteType`))
+
+     syntax Bool ::= allRigid(List) [function]
+     rule allRigid(L::List) => all(mapList(L, #klabel(`type`)), #klabel(`isRigidType`))
+
+     syntax Bool ::= isRigidType(Type) [function]
+     rule isRigidType(T::Type) => notBool isFlexibleType(T)
 
      syntax String ::= firstIncomplete(List) [function]
      rule firstIncomplete(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
@@ -214,6 +219,13 @@ module C-DECL-TAGGED
      rule firstIncomplete((ListItem(typedDeclaration(T::Type, X::CId)) => .List) _)
           requires isCompleteType(T)
      rule firstIncomplete(.List) => ""
+
+     syntax String ::= firstIncompleteOrFlexible(List) [function]
+     rule firstIncompleteOrFlexible(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+          requires notBool isCompleteType(T) orBool isFlexibleType(T)
+     rule firstIncompleteOrFlexible((ListItem(typedDeclaration(T::Type, X::CId)) => .List) _)
+          requires isCompleteType(T) andBool notBool isFlexibleType(T)
+     rule firstIncompleteOrFlexible(.List) => ""
 
      rule makeUnionFieldInfo(Pack::Bool, Fs::List)
           => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)

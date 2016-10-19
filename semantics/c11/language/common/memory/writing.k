@@ -372,7 +372,7 @@ module C-MEMORY-WRITING
      // Upgrade the effective type for a malloced region to an array.
      rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
           <mem>... Base |-> object(T::Type => type(arrayType(T', Len /Int byteSizeofType(T'))), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool notBool isNoType(T') andBool notBool isFlexibleStruct(T')
+          requires isNoType(T) andBool notBool isNoType(T') andBool notBool isFlexibleType(T')
           [structural]
      rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
           <mem>... Base |-> object(T::Type, _, _) ...</mem>
@@ -382,7 +382,7 @@ module C-MEMORY-WRITING
      // malloced region.
      rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
           <mem>... Base |-> object(T::Type => lockFlexibleStruct(T', Len -Int byteSizeofType(T')), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool isFlexibleStruct(T')
+          requires isNoType(T) andBool isFlexibleType(T')
           [structural]
      rule <k> setEffectiveType(Loc::SymLoc, _) => .K ...</k>
           <mem> Mem:Map </mem>

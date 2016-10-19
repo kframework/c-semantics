@@ -17,6 +17,7 @@ module C-TYPING-COMMON
      imports FLOAT
 
      rule type(T:Type) => T
+     rule type(typedDeclaration(T::Type, _)) => T
      rule type(T:SimpleType) => t(noQuals, .Set, T)
      rule type(T:SimpleArrayUType) => t(noQuals, .Set, qualSimple(T))
      rule type(ut(Mods::Set, T::SimpleUType)) => t(noQuals, Mods, qualSimple(T))

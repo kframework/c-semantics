@@ -353,8 +353,9 @@ module C-TYPING-SYNTAX
      syntax Type ::= unlock(Int, Type) [function]
      syntax Type ::= unlockAll(Type) [function]
 
-     // True iff the type is a struct with a flexible array member.
-     syntax Bool ::= isFlexibleStruct(Type) [function]
+     // A flexible type is a struct with a flexible array member or a union
+     // with a member that has a flexible type.
+     syntax Bool ::= isFlexibleType(Type) [function]
 
      // Locks the type of the flexible array member to a fixed array.
      syntax Type ::= lockFlexibleStruct(Type, Int) [function]

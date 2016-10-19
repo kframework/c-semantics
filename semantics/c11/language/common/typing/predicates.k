@@ -101,12 +101,20 @@ module C-TYPING-PREDICATES
      rule isTruthValue(tv(V::CValue, ut(_, T::SimpleUType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
 
-     rule isFlexibleStruct(T:StructType) => isFlexibleStruct'(getFieldInfo(T))
+     rule isFlexibleType(T:StructType) => isFlexibleStruct(getFieldInfo(T))
+     rule isFlexibleType(T:UnionType) => isFlexibleUnion(getFieldInfo(T))
+     rule isFlexibleType(_) => false [owise]
+
+     syntax Bool ::= isFlexibleStruct(FieldInfo) [function]
+     rule isFlexibleStruct(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
+          requires isFlexibleArrayType(T)
      rule isFlexibleStruct(_) => false [owise]
 
-     syntax Bool ::= "isFlexibleStruct'" "(" FieldInfo ")" [function]
-     rule isFlexibleStruct'(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
-          requires isFlexibleArrayType(T)
-     rule isFlexibleStruct'(_) => false [owise]
+     syntax Bool ::= isFlexibleUnion(FieldInfo) [function]
+     rule isFlexibleUnion(fieldInfo(_:List ListItem(typedDeclaration(T::Type, _)), _, _, _, _)) => true
+          requires isFlexibleType(T)
+     rule isFlexibleUnion(fieldInfo(_:List (ListItem(typedDeclaration(T::Type, _)) => .List), _, _, _, _))
+          requires notBool isFlexibleType(T)
+     rule isFlexibleUnion(_) => false [owise]
 
 endmodule

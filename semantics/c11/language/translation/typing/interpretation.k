@@ -50,24 +50,30 @@ module C-TYPING-INTERPRETATION
      context ArrayType(_, (HOLE:KItem => reval(HOLE)), _) [ndheat, result(RValue)]
      rule ArrayType(T:Type, tv(N:Int, T'::UType), Spec:K)
           => pushTypeDown(T, makeArrayType(tv(N, T'), Spec))
-          requires N >Int 0
+          requires N >Int 0 andBool notBool isFlexibleType(T)
           [structural]
      rule ArrayType(T:Type, UnspecifiedSizeExpression(), Spec:K)
           => pushTypeDown(T, makeArrayType(UnspecifiedSizeExpression(), Spec))
+          requires notBool isFlexibleType(T)
           [structural]
      rule ArrayType(T:Type, N:RValue, Spec:K)
           => pushTypeDown(T, makeArrayType(N, Spec))
-          requires isHold(N) // VLAs
+          requires isHold(N) andBool notBool isFlexibleType(T) // VLAs
           [structural]
      rule ArrayType(T:Type, emptyValue, _)
           => pushTypeDown(T, makeIncompleteArrayType)
+          requires notBool isFlexibleType(T)
           [structural]
      rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6, J.2:1 item 55"))
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
      rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
-          ~> ArrayType(_:Type, tv(Len:Int, _), _)
+          ~> ArrayType(T:Type, tv(Len:Int, _), _)
           requires Len <=Int 0
+          [structural]
+     rule (.K => CV("CTI5", "Structs containing a flexible array member must not be array elements.", "6.7.2.1:2"))
+          ~> ArrayType(T:Type, _, _)
+          requires isFlexibleType(T)
           [structural]
 
      rule PointerType(Specifier(list(Mods:List)), T:Type)
