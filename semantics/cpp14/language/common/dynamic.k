@@ -88,6 +88,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax VarDeclarationType ::= "Var"
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
      syntax Decl ::= declareNonStaticObject(CId, CPPType, K, DeclarationType, Duration, Set)
+     syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
      syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
  
@@ -273,6 +274,9 @@ module CPP-DYNAMIC
      rule toTemplateParams(.List) => .TemplateParams
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
      rule toList(.CPPTypes) => .List
+
+     rule idToString(NoNamespace() :: X::CId)
+          => idToString(X)
 
      rule idToString(operatornew) => "operator new"
      rule idToString(operatordelete) => "operator delete"

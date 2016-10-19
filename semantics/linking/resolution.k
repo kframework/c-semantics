@@ -72,6 +72,14 @@ module C-LINKING-RESOLUTION
           <linkings>... (.Map => Base |-> Base') ...</linkings>
           requires isLinkerLoc(Base)
 
+     // used by local statics
+     rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
+          <odr-decls>...
+               OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set
+          ...</odr-decls>
+          <odr-defs>... N :: X |-> (T |-> _ _::Map) ...</odr-defs>
+          requires notBool isLinkerLoc(OdrBase)
+
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set

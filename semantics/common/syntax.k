@@ -1,5 +1,6 @@
 module COMMON-SORTS
      imports INT-SYNTAX
+     imports FLOAT-SYNTAX
      syntax CId
      syntax CabsLoc
      syntax Qualifier
@@ -7,7 +8,7 @@ module COMMON-SORTS
      syntax EvalContext
      syntax CValue ::= NumValue
      syntax NumValue ::= Int
-     syntax EffectiveValue ::= Int
+     syntax EffectiveValue ::= Int | Float
      syntax LanguageLinkage
      syntax Namespace
 endmodule

@@ -42,8 +42,13 @@ module CPP-OVERLOADING
 
      rule <k> resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          requires Base =/=K nonStatic
+          requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
+          <references> Refs::Map </references>
+          requires notBool loc(Base, 0) in_keys(Refs)
+     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
+          <references>... loc(Base, 0) |-> _ ...</references>
      rule resolveUniqueDecl(V:KResult, _) => V
           requires notBool isCandidateSet(V)
 

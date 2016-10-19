@@ -60,6 +60,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleWideCharType ::= "wchar_t" | "char16_t" | "char32_t"
      syntax CPPSimpleNullPtrTType ::= "nullptr_t"
 
+     syntax CPPSimpleType ::= "no-type"
+
      syntax CPPSimpleType ::= CPPSimplePointerType
                             | CPPSimpleMemberPointerType
                             | CPPSimpleFunctionType
@@ -153,8 +155,6 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isAdjustedType(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionTypeExpr ::= adjustFunctionType(CPPFunctionTypeExpr) [function]
 
-     syntax CPPUnsignedType ::= correspondingUnsignedType(CPPSignedType) [function, klabel(correspondingUnsignedTypeCpp)]
-
      syntax List ::= getParams(CPPFunctionTypeExpr) [function, klabel(cppgetParams)]
      syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
@@ -177,10 +177,14 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= convertTypeToCPP(Type) [function]
      syntax CPPDType ::= convertTypeToCPP(DType) [function]
 
+     syntax CPPType ::= correspondingUnsignedType(CPPType) [function, klabel(correspondingUnsignedTypeCpp)]
+
      syntax Int ::= max(CPPType) [function, klabel(maxCpp)]
                   | min(CPPType) [function, klabel(minCpp)]
                   | precision(CPPFloatingType) [function]
                   | exponent(CPPFloatingType) [function]
+     syntax Float ::= fmax(CPPType) [function, klabel(fmaxCpp)]
+                    | fmin(CPPType) [function, klabel(fminCpp)]
      syntax Bool ::= inRange(CPPValue, CPPType) [function, klabel(inRangeCpp)]
 
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
@@ -202,8 +206,11 @@ module CPP-TYPING
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
+     imports FLOAT
      imports K-REFLECTION
      imports COMMON-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
      rule getParams(t(_, _, functionType(_, L::CPPTypes, _))) => toList(L)
@@ -272,6 +279,44 @@ module CPP-TYPING
 
      rule inRange(I:Int, T::CPPIntegerType)
           => I <=Int max(T) andBool I >=Int min(T)
+     rule inRange(F:Float, T::CPPFloatingType)
+          => F <=Float fmax(T) andBool F >=Float fmin(T)
+
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, signed-char))
+          => t(Q, Mods, unsigned-char)
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, short))
+          => t(Q, Mods, unsigned-short)
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, int))
+          => t(Q, Mods, unsigned)
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long))
+          => t(Q, Mods, unsigned-long)
+     rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long-long))
+          => t(Q, Mods, unsigned-long-long)
+
+     rule min(T:CPPSignedType) => 0 -Int (1 <<Int ((byteSizeofType(T) *Int cfg:bitsPerByte) -Int 1))
+     rule max(T:CPPSignedType) => (1 <<Int ((byteSizeofType(T) *Int cfg:bitsPerByte) -Int 1)) -Int 1
+
+     rule min(_:CPPUnsignedType) => 0
+     rule max(T:CPPUnsignedType) => (1 <<Int (byteSizeofType(T) *Int cfg:bitsPerByte)) -Int 1
+
+     rule min(t(_, _, bool)) => 0
+     rule max(t(_, _, bool)) => 1
+
+     rule min(t(_, _, char)) => min(underlyingType(type(char)))
+     rule max(t(_, _, char)) => max(underlyingType(type(char)))
+
+     rule min(T:CPPWideCharType) => min(underlyingType(T))
+     rule max(T:CPPWideCharType) => max(underlyingType(T))
+
+     rule precision(t(_, _, float)) => cfg:precisionofFloat
+     rule precision(t(_, _, double)) => cfg:precisionofDouble
+     rule precision(t(_, _, long-double)) => cfg:precisionofLongDouble
+     rule exponent(t(_, _, float)) => cfg:exponentofFloat
+     rule exponent(t(_, _, double)) => cfg:exponentofDouble
+     rule exponent(t(_, _, long-double)) => cfg:exponentofLongDouble
+
+     rule fmax(T::CPPFloatingType) => maxValueFloat(precision(T), exponent(T))
+     rule fmin(T::CPPFloatingType) => --Float fmax(T)
 
 endmodule
 
@@ -279,6 +324,7 @@ module C-CPP-TYPING
      imports C-TYPING-SYNTAX
      imports CPP-TYPING
      imports COMPAT-SYNTAX
+     imports SETTINGS-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, Args::CPPTypes, CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
@@ -295,8 +341,4 @@ module C-CPP-TYPING
 
 
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleSignedIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
-
-     rule max(T::CPPIntegerType) => max(utype(convertTypeToC(T)))
-     rule min(T::CPPIntegerType) => min(utype(convertTypeToC(T)))
-
 endmodule

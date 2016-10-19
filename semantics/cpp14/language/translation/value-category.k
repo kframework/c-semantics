@@ -33,6 +33,8 @@ module CPP-VALUE-CATEGORY
      rule makeExpr(xvalue, T::CPPType, V::Expr, Tr::Trace) => xe(V, Tr, T)
      rule makeExpr(prvalue, T::CPPType, V::Expr, Tr::Trace) => pre(V, Tr, T)
 
+     rule catof(ExprLoc(_, E::Expr) => E)
+
      rule catof(StringLiteral(_, _) => lvalue)
      rule catof(CharacterLiteral(_, _) => prvalue)
      rule catof(IntegerLiteral(_, _) => prvalue)

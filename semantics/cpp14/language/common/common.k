@@ -40,6 +40,8 @@ module CPP-COMMON
      imports CPP-SYMLOC
      imports C-CPP-TYPING
 
+     imports CPP-SETTINGS
+
      imports CPP-EXPR-ADDITIVE
      imports CPP-EXPR-BITWISE
      imports CPP-EXPR-CAST

@@ -2,7 +2,6 @@ module CPP-EXPR-EVAL
      imports BOOL
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
-     imports CPP-REVAL-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule reval(L:LVal => convertReval(L))

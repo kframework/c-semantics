@@ -20,6 +20,8 @@ module CPP-NAME
      imports CPP-TYPING-SYNTAX
 
      rule CallExpr(Name(NoNNS(), X::CId), Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag()))
+     rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
      rule (.K => Name(N, X)) ~> CallExpr(Name(N::NNS, X::CId), _)
           requires N =/=K NoNNS()
      rule cSet(Y::Map) ~> CallExpr(Name(N::NNS, X::CId), Args::StrictList)
@@ -204,12 +206,13 @@ module CPP-NAME
                    | getTemplateArgTypes(TemplateParams) [function]
 
      // 3.4.2:2.1
-     rule getAssociatedNamespaces((ListItem(T:CPPFundamentalType) => .List) L::List, _)
+     rule getAssociatedNamespaces((ListItem(T:CPPFundamentalType) => .List) _, _)
+     rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
      // 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, X::CId, Args::TemplateParams)))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(t(Q, Mods, classType(N :: Class(Tag, X, Args)))), #klabel(`getInnermostNamespace1`))), B)
      // 3.4.2:2.4
-     rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) L::List, _)
+     rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) _, _)
           requires isCPPPointerType(T) orBool isCPPArrayType(T)
      rule getAssociatedNamespaces(.List, _) => .Set
 

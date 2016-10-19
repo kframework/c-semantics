@@ -19,6 +19,6 @@ module CPP-TRANSLATION-IO
      rule writeBytes(_, dataList(.List), _) => .K
 
      rule instantiate(Loc::SymLoc, Tr::Trace, T::CPPType)
-          => pre(instantiate(Loc, Tr, T), Tr, T)
+          => pre(instantiate(Loc, Tr, T), Tr, prvalType(T))
 
 endmodule

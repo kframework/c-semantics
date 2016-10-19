@@ -18,6 +18,8 @@ module CPP-CONVERSION-SYNTAX
 
      syntax Bool ::= isSimilar(CPPType, CPPType) [function]
 
+     syntax CPPType ::= prvalType(CPPType) [function]
+
      syntax CPPType ::= promote(CPPType) [function, klabel(promoteCpp)]
      syntax Bool ::= isPromoted(CPPType) [function, klabel(isPromotedCpp)]
                    | isCompositePointerType(CPPType) [function]
@@ -25,7 +27,7 @@ module CPP-CONVERSION-SYNTAX
      syntax CPPType ::= compositePointerType(PRVal, PRVal) [function]
                       | usualArithmeticConversions(CPPType, CPPType) [function]
 
-     syntax KItem ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
+     syntax Expr ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
                     | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
 
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
@@ -39,13 +41,14 @@ module CPP-CONVERSION
      imports FLOAT
      imports INT
      imports SETTINGS-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule arithInterpret(T::CPPIntegerType, N:Int, Tr::Trace) => prv(N, Tr, T)
+     rule arithInterpret(T:CPPIntegerType, N:Int, Tr::Trace) => prv(N, Tr, T)
           requires min(T) <=Int N andBool max(T) >=Int N
      rule arithInterpret(T:CPPUnsignedType, N:Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
           requires (N >Int max(T) orBool N <Int min(T)) andBool notBool hasLint
@@ -65,11 +68,11 @@ module CPP-CONVERSION
           requires T1 ==Type T2
 
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => prv(C, Tr, T)
-          requires inRange(C, T) andBool isCPPSignedType(underlyingType(T))
+          requires isCPPSignedType(underlyingType(T)) andBool inRange(C, T)
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType))
           => IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented.", "4.7:3")
           ~> convertTypeHold(T, prv(C, Tr, T'))
-          requires notBool inRange(C, T) andBool isCPPSignedType(underlyingType(T))
+          requires isCPPSignedType(underlyingType(T)) andBool notBool inRange(C, T)
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
           requires isCPPUnsignedType(underlyingType(T))
      rule convertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPBoolType)) => prv(C, Tr, T)
@@ -143,15 +146,24 @@ module CPP-CONVERSION
           => utype(T1) ==Type utype(T2) [owise]
 
      rule convertArray(lv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
-          => prv(Loc, Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+
+     syntax SymLoc ::= arrayToPtrLoc(SymLoc, CPPType) [function, klabel(arrayToPtrLocCpp)]
+     rule arrayToPtrLoc(Loc::SymLoc, t(_, _, arrayType(T::CPPType, N::Int)))
+          => addProv(fromArray(0, byteSizeofType(T) *Int N), Loc)
+     rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
      rule convertFunction(lv(Loc::SymLoc, Tr::Trace, T::CPPFunctionType))
           => prv(Loc, Tr, t(noQuals, .Set, pointerType(T)))
 
+     rule prvalType(T:CPPArrayType) => T
+     rule prvalType(T:CPPClassType) => T
+     rule prvalType(T::CPPType) => utype(T) [owise]
+
      rule convertLVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType))
           => instantiate(Loc, Tr, T)
      rule convertLVal(le(E::Expr, Tr::Trace, T::CPPType))
-          => pre(E, Tr, utype(T))
+          => pre(E, Tr, prvalType(T))
 
      syntax Int ::= rank(CPPType) [function, klabel(rankcpp)]
      rule rank(t(_, _, bool)) => 0

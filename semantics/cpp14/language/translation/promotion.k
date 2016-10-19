@@ -5,6 +5,13 @@ module CPP-PROMOTION
      imports CPP-CONVERSION-SYNTAX
      imports CPP-TYPING-SYNTAX
 
+     rule Lbl:KLabel(V:PRVal)
+          => Lbl(
+               convertType(promote(type(V)), V))
+          requires isPromoteOp(#klabel(Lbl))
+               andBool (isCPPArithmeticType(type(V)) orBool isCPPEnumType(type(V)))
+               andBool notBool isPromoted(type(V))
+
      rule Lbl:KLabel(L:PRVal, R:PRVal)
           => Lbl(
                convertType(usualArithmeticConversions(type(L), type(R)), L),

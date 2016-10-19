@@ -87,6 +87,8 @@ module CPP-ABSTRACT-SYNTAX
                    | UsingDecl(Bool, NNS, CId)
                    | UsingDirective(CId, NNS)
 
+     syntax Decl ::= DeclLoc(CabsLoc, Decl)
+
      syntax BaseSpecifier ::= BaseClass(Bool, Bool, AccessSpecifier, AType)
      syntax Enumerator ::= Enumerator(CId, AExpr)
 
@@ -238,7 +240,9 @@ module CPP-ABSTRACT-SYNTAX
      // of existence by the semantics
      syntax Expr ::= MaterializeTemporaryExpr(Expr)
                    | ParenList(List)
-                   | DefaultArg(Expr)
+                   | DefaultArg()
+
+     syntax AStmt ::= StmtLoc(CabsLoc, AStmt)
 
 endmodule
 
@@ -248,4 +252,6 @@ module CPP-ABSTRACT-REWRITING
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
      rule E1::Expr [ E2::Expr ] => * (E1 + E2) [anywhere]
+
+     rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
 endmodule

@@ -19,7 +19,7 @@ module CPP-EXPR-ASSIGNMENT
 
      rule lv(Loc::SymLoc, Tr::Trace, T::CPPType) := PR:PRVal
           => le(lv(Loc, Tr, T) := stripHold(convertType(utype(T), PR)), combine(Tr, trace(PR), #klabel(`_:=__CPP-SYNTAX`)), T)
-          requires isLinkerLoc(Loc)
+          requires isLinkerLoc(Loc) orBool isPRExpr(PR)
 
 
      rule L:LVal += R:PRVal

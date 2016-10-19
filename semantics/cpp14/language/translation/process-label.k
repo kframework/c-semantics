@@ -76,6 +76,18 @@ module CPP-PROCESS-LABEL
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
 
      rule <k> waitingOnGotoMap ...</k>
+          <computation>
+               declareLocalStaticObject(X::CId, Base::SymBase, T::CPPType) => .K
+          ...</computation>
+          <decl-stack>...
+               .List
+               => ListItem(frozenDeclaration(Depth, BlockNum,
+                    declareLocalStaticObject(X, Base, T)))
+          </decl-stack>
+          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
+          <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
+
+     rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
                     (ForStmt(Control:Expr, Post::Stmt, S::Stmt) => .K)

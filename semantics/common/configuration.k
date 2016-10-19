@@ -38,6 +38,8 @@ module COMMON-CONFIGURATION
 
      <tags color="lightgray"> .Map </tags>
 
+     <dynamic-init> .K </dynamic-init>
+
      <translation-units>
           <tu multiplicity="*" type="Map">
                <tu-id> "" </tu-id>

@@ -13,8 +13,9 @@ module CPP-EXECUTION-INIT
      rule le(E::Expr, _, _) => E
 
      rule <k> callMain(N:Int, Args:K)
-               => reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
+               => K ~> reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
           ...</k>
+          <dynamic-init> K:K </dynamic-init>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> GlobalNamespace() </ns-id>
@@ -58,5 +59,13 @@ module CPP-EXECUTION-INIT
      rule combine(_, _) => noTrace
      rule combine(_, _::Trace, _) => noTrace
      rule combine(_, _, _::Trace, _, _) => noTrace
+
+     rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+
+     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
+     rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+
 
 endmodule

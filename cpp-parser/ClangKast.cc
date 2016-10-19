@@ -128,6 +128,25 @@ public:
     return TraverseType(TL.getType());
   }
 
+  bool TraverseStmt(Stmt *S) {
+    if (Expr *E = dyn_cast<Expr>(S)) {
+      AddKApplyNode("ExprLoc", 2);
+      AddCabsLoc(E->getExprLoc());
+    }
+    return RecursiveASTVisitor::TraverseStmt(S);
+  }
+
+  void AddCabsLoc(SourceLocation loc) {
+    AddKApplyNode("CabsLoc", 5);
+    SourceManager &mgr = Context->getSourceManager();
+    PresumedLoc presumed = mgr.getPresumedLoc(loc);
+    AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
+    VisitUnsigned(presumed.getLine());
+    VisitUnsigned(presumed.getColumn());
+    AddKTokenNode("0", "Int");
+    VisitBool(mgr.isInSystemHeader(loc));
+  }
+
 // modify the evaluation strategy so that we walk up from the base to the
 // parent, stopping if any of the nodes are successfully visited (but
 // continuing to the next node)
@@ -1867,6 +1886,12 @@ public:
     AddKTokenNode(name->c_str(), "Int");
   }
 
+  void VisitUnsigned(unsigned s) {
+    char *name = new char[10];
+    sprintf(name, "%u", s);
+    AddKTokenNode(name, "Int");
+  }
+
   void VisitAPFloat(APFloat f) {
     if (!f.isFinite()) {
       doThrow("unimplemented: special floats");
@@ -2090,6 +2115,10 @@ public:
     return false;
   }
 
+  bool VisitPredefinedExpr(PredefinedExpr *E) {
+    return false;
+  }
+
   // the rest of these are not part of the syntax of C but we keep them and transform them later
   // in order to avoid having to deal with messy syntax transformations within the parser
   bool VisitMaterializeTemporaryExpr(MaterializeTemporaryExpr *E) {
@@ -2104,7 +2133,7 @@ public:
   }
 
   bool VisitCXXDefaultArgExpr(CXXDefaultArgExpr *E) {
-    AddKApplyNode("DefaultArg", 1);
+    AddKApplyNode("DefaultArg", 0);
     return false;
   }
 

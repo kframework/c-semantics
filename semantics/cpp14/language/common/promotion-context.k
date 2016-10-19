@@ -3,6 +3,7 @@ module CPP-COMMON-PROMOTION-CONTEXT-SYNTAX
 
      syntax Bool ::= isArithBinConversionOp(K) [function, klabelPredicate, klabel(isArithBinConversionOpCpp)]
                    | isCompositePointerOp(K) [function, klabelPredicate]
+                   | isPromoteOp(K) [function, klabelPredicate]
 
 endmodule
 
@@ -34,5 +35,10 @@ module CPP-COMMON-PROMOTION-CONTEXT
      rule isCompositePointerOp(#klabel(`_>__CPP-SYNTAX`)) => true
      rule isCompositePointerOp(#klabel(`_>=__CPP-SYNTAX`)) => true
      rule isCompositePointerOp(_) => false [owise]
+
+     rule isPromoteOp(#klabel(`-__CPP-SYNTAX`)) => true
+     rule isPromoteOp(#klabel(`+__CPP-SYNTAX`)) => true
+     rule isPromoteOp(#klabel(`~__CPP-SYNTAX`)) => true
+     rule isPromoteOp(_) => false [owise]
 
 endmodule

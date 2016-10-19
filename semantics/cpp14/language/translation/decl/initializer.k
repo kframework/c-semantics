@@ -5,7 +5,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= figureInit(Expr, CPPType, Duration, Init, K) [strict(1)]
+     syntax Expr ::= figureInit(Expr, CPPType, Duration, Init, K)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
 
@@ -13,6 +13,7 @@ endmodule
 
 module CPP-DECL-INITIALIZER
      imports CPP-DECL-INITIALIZER-SYNTAX
+     imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
      imports COMMON-SYNTAX
@@ -24,7 +25,12 @@ module CPP-DECL-INITIALIZER
      imports CPP-TYPING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
 
+     context figureInit(HOLE:Expr, _, _, _, _) [result(LVal)]
+
      context figureInit(_, _, _, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPType)]
+
+     rule <k> figureInit(_, _, _, (ExprLoc(L::CabsLoc, I::Init) => I), _) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
 
      // expression initializer, non-class type
      rule figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType)
@@ -39,9 +45,9 @@ module CPP-DECL-INITIALIZER
           => zeroInit(Base, DestT)
      rule figureInit(Base:LVal, DestT::CPPType, AutoStorage, NoInit(), _)
           => defaultInit(Base, DestT)
-     // 8.5:6.1 (scalar type, initialized implicitly by memory read)
+     // 8.5:6.1, 6.4 (scalar type or array of scalars, initialized implicitly by memory read)
      rule zeroInit(Base:LVal, T::CPPType) => Base
-          requires notBool isCPPClassType(T) andBool notBool isCPPArrayType(T) andBool notBool isCPPRefType(T)
+          requires notBool isCPPClassType(T) andBool (notBool isCPPArrayType(T) orBool notBool isCPPClassType(innerType(T))) andBool notBool isCPPRefType(T)
      // 8.5:7.2-7.3 (non-class, non-array-of-classes, initialized implicitly by memory read)
      rule defaultInit(Base:LVal, T::CPPType) => Base
           requires notBool isCPPClassType(T) andBool (notBool isCPPArrayType(T) orBool notBool isCPPClassType(innerType(T)))
@@ -68,10 +74,12 @@ module CPP-DECL-INITIALIZER
                     | zeroInit(LVal, CPPType)
                     | defaultInit(LVal, CPPType)
 
-     rule listInit(Base::LVal, T::CPPType, D::Duration, L::List) => aggInit(Base, T, D, L)
+     // TODO(dwightguth): all the cases for class type
+     rule listInit(Base::LVal, T::CPPType, D::Duration, L::List)
+          => #if isAggregateType(T) #then aggInit(Base, T, D, L)
+             #else #if size(L) ==Int 1 andBool notBool isCPPRefType(T) #then figureInit(Base, T, D, {L[0]}:>Init, {L[0]}:>Init) #else ill-formed #fi #fi
           requires notBool isCPPClassType(T) 
                andBool notBool (isCPPArrayType(T) andBool isCPPCharType(innerType(T)) andBool size(L) ==Int 1 andBool getKLabel(L[0]) ==K #klabel(`StringLiteral`))
-               andBool isAggregateType(T)
 
      rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), _, L::List)
      rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), D::Duration, L::List)

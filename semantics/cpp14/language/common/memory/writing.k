@@ -36,9 +36,6 @@ module CPP-MEMORY-WRITING
           requires S =/=String ""
 
      rule writeString(Loc::SymLoc, "")
-          => ExpressionStmt(
-               lv(Loc, noTrace, type(char))
-               := prv(0, noTrace, type(char)))
-
+          => .K
 
 endmodule

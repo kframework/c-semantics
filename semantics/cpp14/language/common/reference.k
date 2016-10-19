@@ -16,7 +16,7 @@ module CPP-REFERENCE
           requires T1 ==Type T2
      // TODO(dwightguth): base classes
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => false
-          requires T1 =/=Type T2 andBool (notBool isCPPClassType(T1) orBool notBool isCPPClassType(T2))
+          requires notBool isCPPClassType(T1) orBool notBool isCPPClassType(T2) [owise]
      rule isReferenceCompatible(T1::CPPType, T2::CPPType) => isReferenceRelated(utype(T1), utype(T2)) andBool getQuals(T2) <=Quals getQuals(T1)
 
 

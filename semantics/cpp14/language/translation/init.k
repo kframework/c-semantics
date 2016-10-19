@@ -48,7 +48,7 @@ module CPP-TRANSLATION-INIT
           // TODO(dwightguth): delete, delete[]
 
      rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes) 
-          => declareObject(N, X, type(functionType(Ret, Args, CPPLinkage)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
+          => declareObject(N, N, X, type(functionType(Ret, Args, CPPLinkage)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -107,4 +107,26 @@ module CPP-TRANSLATION-INIT
      rule combine(_, _) => noTrace [owise]
      rule combine(_, _::Trace, _) => noTrace [owise]
      rule combine(_, _, _::Trace, _, _) => noTrace [owise]
+
+     rule DeclLoc(L::CabsLoc, D::Decl) => L ~> D
+     rule StmtLoc(L::CabsLoc, S::Stmt) => L ~> S
+
+     rule <k> L:CabsLoc => .K ...</k>
+          <elab>... .K => L </elab>
+          <curr-program-loc> _ => L </curr-program-loc>
+
+     rule <k> ExprLoc(L::CabsLoc, E::Expr) => #ExprLoc(L, E) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+
+     syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
+     rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+          requires notBool isTExpr(V)
+     rule <k> #ExprLoc(L::CabsLoc, V:PRExpr) => pre(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> #ExprLoc(L::CabsLoc, V:XExpr) => xe(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> #ExprLoc(L::CabsLoc, V:LExpr) => le(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     
 endmodule

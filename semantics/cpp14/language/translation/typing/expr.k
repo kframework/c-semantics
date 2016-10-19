@@ -11,7 +11,7 @@ module CPP-TYPING-EXPR-SYNTAX
 
      syntax StrictList ::= types(StrictList)
      syntax TypeExpr ::= typeof(TypeExpr)
-     syntax TypeExpr ::= Expr | CPPType | Typed
+     syntax TypeExpr ::= Expr | CPPDType | Typed
 
 endmodule
 
@@ -21,6 +21,7 @@ module CPP-TYPING-EXPR
      imports STRING
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-EXPR-CONDITIONAL-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -43,16 +44,31 @@ module CPP-TYPING-EXPR
      rule ofSTypeList(.STypeList) => .List
      rule ofSTypeList(K:K types:: L::STypeList) => ListItem(K) ofSTypeList(L) [owise]
 
+     rule (I:Init => t(noQuals, .Set, no-type)) types:: _
+          requires notBool isExpr(I)
+
      context (HOLE:TypeExpr => typeof(HOLE)) types:: _ [result(CPPType)]
      context K:KResult types:: HOLE:STypeList
 
      // ----------------------------------
 
+     rule typeof(ExprLoc(_, E::Expr) => E)
+
      rule typeof(StringLiteral(Ascii(), S::String) => type(arrayType(const(char), lengthString(S) +Int 1)))
+     rule typeof(StringLiteral(UTF8(), S::String) => type(arrayType(const(char), lengthString(S) +Int 1)))
+     rule typeof(StringLiteral(UTF16(), S::String) => type(arrayType(const(char16_t), lengthString(S) /Int byteSizeofType(type(char16_t)) +Int 1)))
+     rule typeof(StringLiteral(UTF32(), S::String) => type(arrayType(const(char32_t), lengthString(S) /Int byteSizeofType(type(char32_t)) +Int 1)))
+     rule typeof(StringLiteral(Wide(), S::String) => type(arrayType(const(wchar_t), lengthString(S) /Int byteSizeofType(type(wchar_t)) +Int 1)))
      rule typeof(BoolLiteral(_) => type(bool))
      rule typeof(CharacterLiteral(Ascii(), _) => type(char))
+     rule typeof(CharacterLiteral(UTF8(), _) => type(char))
+     rule typeof(CharacterLiteral(UTF16(), _) => type(char16_t))
+     rule typeof(CharacterLiteral(UTF32(), _) => type(char32_t))
+     rule typeof(CharacterLiteral(Wide(), _) => type(wchar_t))
      context typeof(IntegerLiteral(_, HOLE:AType))
      rule typeof(IntegerLiteral(_, T:CPPType) => T)
+     context typeof(FloatingLiteral(_, HOLE:AType))
+     rule typeof(FloatingLiteral(_, T:CPPType) => T)
      rule typeof(NullPointerLiteral() => type(nullptr_t))
      context typeof(HOLE:TypeExpr)
              requires getKLabel(HOLE) ==K #klabel(`Name`)
@@ -69,21 +85,34 @@ module CPP-TYPING-EXPR
      rule typeof(ConditionalOperator(_, E2::Expr, E3::Expr))
           => typeofConditional(E2, E3)
 
+     rule typeof(UnaryOperator(O::OpId, E1::Expr))
+          => typeofOperator(O, E1)
+
      rule typeof(BinaryOperator(O::OpId, E1::Expr, E2::Init))
           => typeofOperator(O, E1, E2)
      syntax KItem ::= typeofOperator(OpId, TypeExpr, K)
+                    | typeofOperator(OpId, TypeExpr)
                     | typeofBuiltinOperator(OpId, TypeExpr, TypeExpr)
+                    | typeofBuiltinOperator(OpId, TypeExpr)
                     | typeofConditional(Expr, Expr)
-     context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPType)]
-     context typeofOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPType)]
-     rule typeofOperator(O::OpId, T1:CPPType, T2:CPPType)
+
+     syntax CPPDType ::= dataMember(CPPClassType, CPPType)
+     context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPDType)]
+     context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context typeofOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     rule typeofOperator(O::OpId, T1:CPPDType, T2:CPPDType)
           => typeofBuiltinOperator(O, T1, T2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
+     rule typeofOperator(O::OpId, T1:CPPDType)
+          => typeofBuiltinOperator(O, T1)
+          requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
      rule typeofBuiltinOperator(operator=, T::CPPType, _)
           => typeof(T)
      rule typeofBuiltinOperator(operator||, _, _)
+          => typeof(type(bool))
+     rule typeofBuiltinOperator(operator&&, _, _)
           => typeof(type(bool))
      rule typeofBuiltinOperator(operator==, _, _)
           => typeof(type(bool))
@@ -99,6 +128,33 @@ module CPP-TYPING-EXPR
           => typeof(innerType(T))
      rule typeofBuiltinOperator(operator[], T:CPPPointerType, _)
           => typeof(innerType(T))
+
+     rule typeofBuiltinOperator(operator+, T1::CPPType, T2::CPPType)
+          => typeof(usualArithmeticConversions(T1, T2))
+          requires (isCPPArithmeticType(T1) orBool isCPPUnscopedEnumType(T1)) andBool (isCPPArithmeticType(T2) orBool isCPPUnscopedEnumType(T2))
+     rule typeofBuiltinOperator(operator+, T:CPPPointerType, _)
+          => typeof(T)
+     rule typeofBuiltinOperator(operator+, _, T:CPPPointerType)
+          => typeof(T)
+
+     rule typeofBuiltinOperator(operator-, T::CPPType)
+          => typeof(promote(T))
+     rule typeofBuiltinOperator(operator+, T::CPPType)
+          => typeof(promote(T))
+     rule typeofBuiltinOperator(operator++_, T::CPPType)
+          => typeof(T)
+     rule typeofBuiltinOperator(operator--_, T::CPPType)
+          => typeof(T)
+     rule typeofBuiltinOperator(operator_++, T::CPPType)
+          => typeof(T)
+     rule typeofBuiltinOperator(operator_--, T::CPPType)
+          => typeof(T)
+     rule typeofBuiltinOperator(operator&, T:CPPType)
+          => typeof(type(pointerType(T)))
+     rule typeofBuiltinOperator(operator*, T::CPPType)
+          => typeof(innerType(T))
+     rule typeofBuiltinOperator(operator&, dataMember(C::CPPClassType, T::CPPType))
+          => typeof(type(memberPointerType(C, T)))
 
      rule (.K => typeAndCatOfConditional(E2, E2, E2, E3, E3, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(T:CPPType, _) ~> typeofConditional(_, _) => typeof(T)

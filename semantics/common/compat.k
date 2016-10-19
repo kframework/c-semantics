@@ -14,7 +14,7 @@ module COMPAT-SYNTAX
      syntax String ::= listToString(List) [function]
 
      syntax String ::= idToString(CId) [function]
-                     | idToString(QualId) [function, klabel(qualIdToiString)]
+                     | idToString(QualId) [function, klabel(qualIdToString)]
 
      syntax String ::= toUpperCase(String) [function]
 

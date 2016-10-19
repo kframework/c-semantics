@@ -164,7 +164,7 @@ module C-MEMORY-READING
      rule hasFloat(ListItem(encodedValue(F:Float, _, _)) _:List) => true
      rule hasFloat(ListItem(B::Bits) L:List) => hasFloat(L) [owise]
 
-     syntax RValue ::= joinFloatBytes(UType, List) [function]
+     syntax RValue ::= joinFloatBytes(UType, List) [function, klabel(joinFloatBytesC)]
      syntax RValue ::= "joinFloatBytes-aux" "(" UType "," List "," K ")" [function]
      rule joinFloatBytes(T::UType, ListItem(piece(N:Bits, Len:Int)) L:List)
           => joinFloatBytes-aux(T, L, N)

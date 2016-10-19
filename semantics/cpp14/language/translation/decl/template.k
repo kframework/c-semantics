@@ -107,12 +107,12 @@ module CPP-DECL-TEMPLATE
      // TODO(dwightguth): check the syntax of template definitions and generate
      // the "hypothetical instantantiation"
      // var or function declaration
-     rule <k> declareObject(N::Namespace, X::CId, T::CPPType, NoInit(), Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T) ...</k>
-          <elab>... .K => declareObject(N, X, T, NoInit(), Type, L, D, S) </elab>
+     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T::CPPType, NoInit(), Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T) ...</k>
+          <elab>... .K => declareObject(N, LN, X, T, NoInit(), Type, L, D, S) </elab>
           <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
      // function definition
      rule <k> (.K => processFunDef(dependent, N :: X, T, Params, Init))
-              ~> declareObject(N::Namespace, X::CId, T::CPPType, Init::Stmt, Function(Params::List), L::Linkage, D::Duration, S::Set)
+              ~> declareObject(N::Namespace, _, X::CId, T::CPPType, Init::Stmt, Function(Params::List), _, _, _)
           ...</k>
           <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
           requires Init =/=K NoInit()
@@ -121,9 +121,9 @@ module CPP-DECL-TEMPLATE
           <curr-function> dependent </curr-function>
 
      rule <k> (elaborateDone(K:K) ~> calculateGotoMap => .K) ~> _:KItem ~> setScope(_)
-              ~> (declareObject(N::Namespace, X::CId, T::CPPType, _, Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T))
+              ~> (declareObject(N::Namespace, LN::Namespace, X::CId, T::CPPType, _, Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T))
           ...</k>
-          <elab>... .K => declareObject(N, X, T, TemplateDefinitionStmt(K), Type, L, D, S) </elab>
+          <elab>... .K => declareObject(N, LN, X, T, TemplateDefinitionStmt(K), Type, L, D, S) </elab>
 
 
      syntax KItem ::= declareTemplate(CPPType)

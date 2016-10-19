@@ -33,6 +33,7 @@ module CPP-BITSIZE
      rule byteSizeofType(double) => cfg:sizeofDouble
      rule byteSizeofType(long-double) => cfg:sizeofLongDouble
      rule byteSizeofType(nullptr_t) => cfg:ptrsize
+     rule byteSizeofType(T:CPPSimpleWideCharType) => byteSizeofType(underlyingType(T))
 
      rule bitSizeofType(T::CPPType) => byteSizeofType(T) *Int cfg:bitsPerByte
           requires notBool isCPPBitfieldType(T)

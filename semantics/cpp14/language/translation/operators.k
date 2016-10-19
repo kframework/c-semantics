@@ -44,6 +44,8 @@ module CPP-OPERATORS
           => E1 % E2
      rule builtinOperator(operator||, E1::Expr, E2::Expr)
           => E1 || E2
+     rule builtinOperator(operator&&, E1::Expr, E2::Expr)
+          => E1 && E2
      rule builtinOperator(operator==, E1::Expr, E2::Expr)
           => E1 == E2
      rule builtinOperator(operator!=, E1::Expr, E2::Expr)
@@ -86,5 +88,11 @@ module CPP-OPERATORS
           => -- E1
      rule builtinOperator(operator!, E1::Expr)
           => ! E1
+     rule builtinOperator(operator-, E1::Expr)
+          => - E1
+     rule builtinOperator(operator&, E1::Expr)
+          => & E1
+     rule builtinOperator(operator*, E1::Expr)
+          => * E1
 
 endmodule

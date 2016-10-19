@@ -51,12 +51,12 @@ module CPP-EXPR-FUNCTION-CALL
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
-                         C
+                         <function-control> C <curr-program-loc> CurrLoc </curr-program-loc> </function-control>
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
           ) ...</call-stack>
-          (C:FunctionControlCell
+          (<function-control> C::Bag <curr-program-loc> _ </curr-program-loc> </function-control>
           => <function-control>...
                <curr-tu> getTU(loc(Base, 0)) </curr-tu>
                <curr-scope> blockScope(X, Base, 0) </curr-scope>
@@ -67,8 +67,17 @@ module CPP-EXPR-FUNCTION-CALL
                Name(NoNNS(), X) := V, 
                Var, AutoStorage, .Set)
           requires notBool isCPPRefType(T)
+               andBool X =/=K #NoName
      rule bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
                bindReference(Name(NoNNS(), X), V),
+               Var, AutoStorage, .Set)
+          requires isCPPRefType(T)
+               andBool X =/=K #NoName
+
+     rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObject(#NoName, T, V,
+               Var, AutoStorage, .Set)
+          requires notBool isCPPRefType(T)
+     rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObject(#NoName, T, V,
                Var, AutoStorage, .Set)
           requires isCPPRefType(T)
 

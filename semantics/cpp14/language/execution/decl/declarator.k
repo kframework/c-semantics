@@ -19,13 +19,18 @@ module CPP-DECL-DECLARATOR
           <duration> D::Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
           <local-addresses>... .Set => SetItem(!I @ D) ...</local-addresses>
-          requires notBool X in Vars
+          requires notBool X in Vars andBool X =/=K #NoName
+
+     rule declareNonStaticObject(#NoName, _, Init::Expr, _, _, _) => ExpressionStmt(Init)
 
      rule <k> initializeObject(Init::Expr) 
               => allowInit(ExpressionStmt(Init))
               ~> sequencePoint
           ...</k>
           <should-init> true </should-init>
+
+     rule declareLocalStaticObject(X::CId, Base::SymBase, T::CPPType)
+          => addToEnv(X, T, Base, false)
 
 endmodule
 

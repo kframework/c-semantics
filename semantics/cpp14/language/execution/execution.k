@@ -5,6 +5,7 @@ require "init.k"
 require "io.k"
 
 require "decl/declarator.k"
+require "decl/initializer.k"
 
 require "expr/assignment.k"
 require "expr/conditional.k"
@@ -33,6 +34,7 @@ module CPP-EXECUTION
      imports CPP-EXECUTION-IO
 
      imports CPP-DECL-DECLARATOR
+     imports CPP-DECL-INITIALIZER
 
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-EXPR-CONDITIONAL
