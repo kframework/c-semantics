@@ -5,7 +5,7 @@ module C-STMT-GOTO
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     syntax KItem ::= getIdOfDeclaration(K) [function]
+     syntax CId ::= getIdOfDeclaration(K) [function]
      rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
      rule getIdOfDeclaration(typedef(X:CId, _)) => X
 
@@ -90,7 +90,7 @@ module C-STMT-GOTO
      syntax KItem ::= processGotoSameBlock(List, List)
                     | preprocessGoto(K, CId) [function]
 
-     rule <k> (Goto(Lbl:CId) ~> _:K) => preprocessGoto(K, Lbl) </k>
+     rule <k> Goto(Lbl:CId) ~> _ => preprocessGoto(K, Lbl) </k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -111,69 +111,55 @@ module C-STMT-GOTO
      rule isGotoKLabel(#klabel(`processGotoDown`)) => true
      rule isGotoKLabel(_) => false [owise]
 
+     // isSuffixOf(A, B) => true if A is a suffix of B
+     syntax Bool ::= isSuffixOf(List, List) [function]
+     rule isSuffixOf(.List, _) => true
+     rule isSuffixOf(ListItem(_) _, .List) => false
+     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
+          => isSuffixOf(L, L')
+     rule isSuffixOf(_ ListItem(K:K), _ ListItem(K':K)) => false
+          requires K =/=K K'
+
      // - first case, when we're in the same block
-     rule <k> (L:KLabel(gotoObject(Depth::Int,
-                    (ListItem(CurrentBlock::Int) BlockHistory::List),
+     rule <k> L:KLabel(gotoObject(Depth::Int,
+                    ListItem(CurrentBlock::Int) BlockHistory::List,
                     K:K, LoopStack::List, DeclStack::List))
-                    ~> _:K)
-               => (addVariablesForBlock(CurrentBlock, DeclStack)
-                    ~> K)
+               ~> _
+               => addVariablesForBlock(CurrentBlock, DeclStack)
+               ~> K
           </k>
+          <env> Env => rewindEnv(Env', Env, filterIds(CurrentBlock, DeclStack)) </env>
           <nesting-depth> Depth </nesting-depth>
           <block-history>
                ListItem(CurrentBlock) BlockHistory
           </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
+          <block-stack>
+               ListItem(<block-control>... <env> Env':Map </env> ...</block-control>)
+          ...</block-stack>
           requires isGotoKLabel(#klabel(L))
           [structural]
 
-     // - second case, we're in a different block
-     // isSuffixOf(A, B) => true if A is a suffix of B
-     syntax Bool ::= isSuffixOf(List, List) [function]
-
-     rule isSuffixOf(.List, _) => true
-     rule isSuffixOf(ListItem(_) _, .List) => false
-     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
-           => isSuffixOf(L:List, L':List)
-     rule isSuffixOf(_ ListItem(K:K), _ ListItem(K':K))
-           => false
-          requires K =/=K K'
-
-     //  as long as there are entries in the actual block history that differ
-     //  from the target block history, we need to pop
-     rule [processGoto-pop-differing-1]:
-          <k> (.K => popBlock)
-               ~> processGoto(gotoObject(
-                    _:Int, TargetBlockHistory:List, _, _, _))
-          ...</k>
-          <block-history>
-               ListItem(BlockNum:Int) _:List
-          </block-history>
-          requires notBool BlockNum in TargetBlockHistory
-          [structural]
-
-     //  same
-     rule [processGoto-pop-differing-2]:
-          <k> (.K => popBlock)
-               ~> processGoto(gotoObject(_:Int,
-                    BlockNums:List, _, _, _))
+     // - second case, as long as there are entries in the actual block
+     // history that differ from the target block history, we need to pop
+     rule <k> (.K => popBlock)
+               ~> processGoto(gotoObject(_, TargetHistory:List, _, _, _))
           ...</k>
           <block-history>
                ListItem(BlockNum:Int) ActualHistory:List
           </block-history>
-          requires BlockNum in BlockNums andBool
-               (notBool isSuffixOf(ListItem(BlockNum) ActualHistory,
-               BlockNums))
+          requires notBool BlockNum in TargetHistory
+               orBool notBool isSuffixOf(ListItem(BlockNum) ActualHistory, TargetHistory)
           [structural]
 
-     //  once we share a history, we start to push
+     // once we share a history, we start to push
      rule <k> processGoto(gotoObject(TargetDepth:Int,
                     BlockNums:List, K:K, LoopStack:List, DeclStack:List))
                => addVariablesForBlock(CurrentBlock, DeclStack)
-                    ~> processGotoDown(gotoObject(TargetDepth,
-                         (range(BlockNums, 0, size(ActualHistory) +Int 1)
-                         ListItem(CurrentBlock) ActualHistory),
-                         K, LoopStack, DeclStack))
+               ~> processGotoDown(gotoObject(TargetDepth,
+                     (range(BlockNums, 0, size(ActualHistory) +Int 1)
+                     ListItem(CurrentBlock) ActualHistory),
+                     K, LoopStack, DeclStack))
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history>
@@ -199,17 +185,16 @@ module C-STMT-GOTO
                andBool notBool (BlockNums ==K ActualHist)
           [structural]
 
-     //  We've made it to the block above the target
+     // We've made it to the block above the target
      rule <k> L:KLabel(gotoObject(SIntDepth::Int,
-                    (ListItem(TargetBlock::Int) BlockHistory:List),
+                    ListItem(TargetBlock::Int) BlockHistory:List,
                     K:K,
                     LoopStack::List,
-                    DeclStack::List)
-               )
-                    ~> _
+                    DeclStack::List))
+               ~> _
                => pushBlock(TargetBlock)
-                    ~> addVariablesForBlock(TargetBlock, DeclStack)
-                    ~> K
+               ~> addVariablesForBlock(TargetBlock, DeclStack)
+               ~> K
           </k>
           <nesting-depth> Depth::Int </nesting-depth>
           <block-history> BlockHistory:List </block-history>
@@ -218,53 +203,59 @@ module C-STMT-GOTO
                andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 
+     syntax Map ::= rewindEnv(Map, Map, List) [function]
+     rule rewindEnv(Env' => Env'[X <- Env[X]], Env::Map, (ListItem(X:CId) => .List) _)
+          requires X in_keys(Env)
+     rule rewindEnv(_, _, (ListItem(_) => .List) _) [owise]
+     rule rewindEnv(Env', (K:K |-> _ => .Map) _, .List)
+          requires isIdent(K)
+     rule rewindEnv(Env' => Env'[K <- V], (K:K |-> V:K => .Map) _, .List)
+          requires notBool isIdent(K)
+     rule rewindEnv(Env', .Map, .List) => Env'
+
+     syntax Bool ::= isIdent(K) [function]
+     rule isIdent(Identifier(_)) => true
+     rule isIdent(_) => false [owise]
+
+     syntax List ::= filterIds(Int, List) [function]
+     rule filterIds(B::Int, ListItem(frozenDeclaration(_, B, Decl:K)) Ds::List)
+          => ListItem(getIdOfDeclaration(Decl)) filterIds(B, Ds)
+     rule filterIds(_, (ListItem(_) => .List) _) [owise]
+     rule filterIds(_, .List) => .List
+
      syntax KItem ::= addVariablesForBlock(Int, List)
           [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))]
 
-     //  skip variables from other blocks
-     rule <k> addVariablesForBlock(TargetBlock:Int,
-                    ((ListItem(frozenDeclaration(_:Int, BlockNum:Int, _)) => .List)
-                    _:List)
-               )
-          ...</k>
-          <block-history> ListItem(TargetBlock:Int) ...</block-history>
+     // skip variables from other blocks
+     rule addVariablesForBlock(TargetBlock::Int,
+               (ListItem(frozenDeclaration(_, BlockNum::Int, _)) => .List) _)
           requires BlockNum =/=Int TargetBlock
           [structural]
 
-     //  skip variables in the real history
-     rule <k> addVariablesForBlock(TargetBlock:Int,
-                    ((ListItem(frozenDeclaration(
-                         _:Int, TargetBlock:Int, Decl:K)) => .List)
-                    _:List)
-               )
+     // skip variables in the real history
+     rule <k> addVariablesForBlock(TargetBlock::Int,
+                    (ListItem(frozenDeclaration(_, TargetBlock, Decl:K)) => .List) _)
           ...</k>
           <local-vars> Vars:List </local-vars>
-          <block-history> ListItem(TargetBlock:Int) ...</block-history>
           requires getIdOfDeclaration(Decl) in Vars
+          [structural]
+
+     rule <k> (.K => Decl ~> enableInits)
+               ~> addVariablesForBlock(TargetBlock::Int,
+                    (ListItem(frozenDeclaration(_, TargetBlock, Decl:K)) => .List) _)
+          ...</k>
+          <local-vars> Vars:List </local-vars>
+          <should-init> _ => false </should-init>
+          requires notBool getIdOfDeclaration(Decl) in Vars
+          [structural]
+
+     rule addVariablesForBlock(_, .List) => .K
           [structural]
 
      syntax KItem ::= "enableInits"
 
      rule <k> enableInits => .K ...</k>
           <should-init> _ => true </should-init>
-          [structural]
-
-     rule <k> (.K => Decl:K
-                    ~> enableInits
-               )
-               ~> addVariablesForBlock(TargetBlock:Int,
-                    ((ListItem(frozenDeclaration(
-                         _:Int, TargetBlock:Int, Decl:K)) => .List) _)
-               )
-          ...</k>
-          <local-vars> Vars:List </local-vars>
-          <block-history> ListItem(TargetBlock:Int) ...</block-history>
-          <should-init> _ => false </should-init>
-          requires notBool getIdOfDeclaration(Decl) in Vars
-          [structural]
-
-     //  fixme this is wrong
-     rule addVariablesForBlock(_, .List) => .K
           [structural]
 
 endmodule
