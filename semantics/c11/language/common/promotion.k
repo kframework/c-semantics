@@ -76,8 +76,8 @@ module C-COMMON-PROMOTION
      }*/
      syntax Int ::= rank(UType) [function]
      rule rank(ut(_, bool)) => 0
-     rule rank(ut(_, signed-char)) => 1
-     rule rank(ut(_, unsigned-char)) => 1
+     rule rank(ut(_, _:SimpleSignedCharType)) => 1
+     rule rank(ut(_, _:SimpleUnsignedCharType)) => 1
      rule rank(ut(_, short-int)) => 2
      rule rank(ut(_, unsigned-short-int)) => 2
      rule rank(ut(_, int)) => 3

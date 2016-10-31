@@ -35,13 +35,13 @@ module C-TYPING-MISC
      rule flipSignedness(bitfieldType(T::BitfieldFieldType, N::Int))
           => bitfieldType({flipSignedness({T}:>SimpleIntegerType)}:>BitfieldFieldType, N)
 
-     rule flipSignedness(unsigned-char) => signed-char
+     rule flipSignedness(_:SimpleUnsignedCharType) => signed-char
      rule flipSignedness(unsigned-short-int) => short-int
      rule flipSignedness(unsigned-int) => int
      rule flipSignedness(unsigned-long-int) => long-int
      rule flipSignedness(unsigned-long-long-int) => long-long-int
 
-     rule flipSignedness(signed-char) => unsigned-char
+     rule flipSignedness(_:SimpleSignedCharType) => unsigned-char
      rule flipSignedness(short-int) => unsigned-short-int
      rule flipSignedness(int) => unsigned-int
      rule flipSignedness(long-int) => unsigned-long-int

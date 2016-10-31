@@ -113,7 +113,7 @@ module C-TYPING-COMMON
      rule extractTagInfo(_) => #incomplete [owise]
 
      rule numBytes(bool) => cfg:sizeofBool
-     rule numBytes(signed-char) => cfg:sizeofSignedChar
+     rule numBytes(_:SimpleSignedCharType) => cfg:sizeofSignedChar
      rule numBytes(short-int) => cfg:sizeofShortInt
      rule numBytes(int) => cfg:sizeofInt
      rule numBytes(long-int) => cfg:sizeofLongInt
@@ -123,7 +123,7 @@ module C-TYPING-COMMON
      rule numBytes(double) => cfg:sizeofDouble
      rule numBytes(long-double) => cfg:sizeofLongDouble
 
-     rule numBytes(unsigned-char) => numBytes(signed-char)
+     rule numBytes(_:SimpleUnsignedCharType) => numBytes(signed-char)
      rule numBytes(unsigned-short-int) => numBytes(short-int)
      rule numBytes(unsigned-int) => numBytes(int)
      rule numBytes(unsigned-long-int) => numBytes(long-int)
@@ -148,16 +148,14 @@ module C-TYPING-COMMON
      syntax Int ::= numBits(SimpleType) [function]
      rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
 
-     rule char => cfg:charAlias
-
      rule min(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
      rule max(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
           => (1 <<Int absInt(N -Int 1)) -Int 1
 
-     rule min(ut(_, signed-char))
+     rule min(ut(_, _:SimpleSignedCharType))
           => 0 -Int (1 <<Int absInt(numBits(signed-char) -Int 1))
-     rule max(ut(_, signed-char))
+     rule max(ut(_, _:SimpleSignedCharType))
           => (1 <<Int absInt(numBits(signed-char) -Int 1)) -Int 1
      rule min(ut(_, short-int))
           => 0 -Int (1 <<Int absInt(numBits(short-int) -Int 1))
@@ -183,7 +181,7 @@ module C-TYPING-COMMON
      rule max(ut(_, bitfieldType(_:UnsignedBitfieldFieldType, N::Int)))
           => (1 <<Int absInt(N)) -Int 1
 
-     rule max(ut(_, unsigned-char))
+     rule max(ut(_, _:SimpleUnsignedCharType))
           => (1 <<Int absInt(numBits(unsigned-char))) -Int 1
      rule max(ut(_, unsigned-short-int))
           => (1 <<Int absInt(numBits(unsigned-short-int))) -Int 1

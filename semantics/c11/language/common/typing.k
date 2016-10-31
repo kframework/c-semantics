@@ -86,7 +86,6 @@ module C-TYPING-SYNTAX
      syntax SimpleSignedBitfieldType ::= bitfieldType(SignedBitfieldFieldType, Int)
      syntax SimpleUnsignedBitfieldType ::= bitfieldType(UnsignedBitfieldFieldType, Int)
 
-     syntax SimpleCharType ::= "char" [function]
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int"
                                | SimpleSignedCharType
@@ -95,7 +94,7 @@ module C-TYPING-SYNTAX
      syntax SimpleSignedCharType ::= "signed-char"
      syntax SimpleSignedIntType ::= "int"
      syntax SimpleUnsignedCharType ::= "unsigned-char"
-     syntax SimpleCharType ::= SimpleSignedCharType | SimpleUnsignedCharType
+     syntax SimpleCharType ::= "char"
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
@@ -111,8 +110,9 @@ module C-TYPING-SYNTAX
      syntax SimpleIntegerType ::= SimpleSignedType | SimpleUnsignedType
                                 | SimpleBitfieldType
                                 | BitfieldFieldType
+                                | SimpleCharType
 
-     syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType | SimpleCharType
+     syntax SimpleBasicType ::= SimpleNoType | SimpleVoidType
                               | SimpleFloatType | SimpleIntegerType
      syntax SimpleType ::= SimpleBasicType
      syntax SimpleUType ::= SimpleBasicType

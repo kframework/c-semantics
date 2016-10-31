@@ -8,9 +8,9 @@ module C-SETTINGS
      imports BOOL
      imports INT
 
-     rule cfg:charAlias => signed-char
      rule cfg:enumAlias => int
 
+     syntax SimpleSignedCharType ::= SimpleCharType
      syntax SimpleSignedType ::= SimpleEnumType
 
      rule cfg:bitsPerByte => 8

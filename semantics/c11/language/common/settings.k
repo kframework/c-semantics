@@ -1,14 +1,7 @@
 module C-SETTINGS-SYNTAX
      imports SETTINGS-SYNTAX
      imports LIST
-     // S 6.2.5 p.35 i.15.  "The implementation shall define char to have the
-     // same range, representation, and behavior as either signed char or
-     // unsigned char.  37)... Irrespective of the choice made, char is a
-     // separate type from the other two and is not compatible with either"
-     //
-     // FIXME I'm not sure what consequence being a separate type entails, so
-     // for now it will just be rewritten to the chosen type
-     syntax SimpleCharType ::= "cfg:charAlias" [function]
+
      syntax SimpleBasicType ::= "cfg:enumAlias" [function]
 
      syntax Int ::= "cfg:sizeofBool" [function]

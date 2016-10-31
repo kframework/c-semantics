@@ -34,7 +34,7 @@ module C-ALIGNMENT
 
      syntax Int ::= "byteAlignofType'" "(" Type ")" [function]
      rule byteAlignofType'(t(_, _, bool)) => cfg:alignofBool
-     rule byteAlignofType'(t(_, _, signed-char)) => cfg:alignofSignedChar
+     rule byteAlignofType'(t(_, _, _:SimpleSignedCharType)) => cfg:alignofSignedChar
      rule byteAlignofType'(t(_, _, short-int)) => cfg:alignofShortInt
      rule byteAlignofType'(t(_, _, int)) => cfg:alignofInt
      rule byteAlignofType'(t(_, _, long-int)) => cfg:alignofLongInt
@@ -44,7 +44,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, long-double)) => cfg:alignofLongDouble
      rule byteAlignofType'(t(_, _, no-type)) => cfg:alignofMalloc
 
-     rule byteAlignofType'(t(_, _, unsigned-char => signed-char))
+     rule byteAlignofType'(t(_, _, _:SimpleUnsignedCharType => signed-char))
      rule byteAlignofType'(t(_, _, unsigned-short-int => short-int))
      rule byteAlignofType'(t(_, _, unsigned-int => int))
      rule byteAlignofType'(t(_, _, unsigned-long-int => long-int))
