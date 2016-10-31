@@ -128,7 +128,7 @@ module C-STMT-GOTO
                => addVariablesForBlock(CurrentBlock, DeclStack)
                ~> K
           </k>
-          <env> Env => rewindEnv(Env', Env, filterIds(CurrentBlock, DeclStack)) </env>
+          <env> Env::Map => rewindEnv(Env', Env, filterIds(CurrentBlock, DeclStack)) </env>
           <nesting-depth> Depth </nesting-depth>
           <block-history>
                ListItem(CurrentBlock) BlockHistory
@@ -204,14 +204,14 @@ module C-STMT-GOTO
           [structural]
 
      syntax Map ::= rewindEnv(Map, Map, List) [function]
-     rule rewindEnv(Env' => Env'[X <- Env[X]], Env::Map, (ListItem(X:CId) => .List) _)
+     rule rewindEnv(Env'::Map => Env'[X <- Env[X]], Env::Map, (ListItem(X:CId) => .List) _)
           requires X in_keys(Env)
      rule rewindEnv(_, _, (ListItem(_) => .List) _) [owise]
-     rule rewindEnv(Env', (K:K |-> _ => .Map) _, .List)
+     rule rewindEnv(Env'::Map, (K:K |-> _ => .Map) _, .List)
           requires isIdent(K)
-     rule rewindEnv(Env' => Env'[K <- V], (K:K |-> V:K => .Map) _, .List)
+     rule rewindEnv(Env'::Map => Env'[K <- V], (K:K |-> V:K => .Map) _, .List)
           requires notBool isIdent(K)
-     rule rewindEnv(Env', .Map, .List) => Env'
+     rule rewindEnv(Env'::Map, .Map, .List) => Env'
 
      syntax Bool ::= isIdent(K) [function]
      rule isIdent(Identifier(_)) => true

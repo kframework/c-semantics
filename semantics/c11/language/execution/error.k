@@ -15,6 +15,7 @@ module C-EXECUTION-ERROR
      imports C-EXECUTION-ERROR-SYNTAX
      imports C-CONFIGURATION
      imports K-IO
+     imports K-REFLECTION
      imports STRING
      imports BITS-SYNTAX
      imports SETTINGS-SYNTAX
@@ -50,13 +51,18 @@ module C-EXECUTION-ERROR
           <curr-scope> S:Scope </curr-scope>
           requires notBool isErrorRecovery andBool notBool isCSV
 
-     rule <k> EXIT(Msg:ErrorMsg) => #write(2, formatErrorMsg(Msg, printStackTrace(L, Loc, S), false) +String "\n") ~> HALT ...</k>
+     rule <k> EXIT(Msg:ErrorMsg) => doError(Msg, printStackTrace(L, Loc, S)) ~> HALT ...</k>
           <call-stack> L:List </call-stack>
           <curr-program-loc> Loc:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           <previous-errors> Errors:Set => Errors SetItem(error(Msg, printStackTrace(L, Loc, S))) </previous-errors>
           requires isErrorRecovery andBool notBool isCSV
                andBool notBool error(Msg, printStackTrace(L, Loc, S)) in Errors
+
+     syntax K ::= doError(ErrorMsg, String) [function]
+     rule doError(Err::ErrorMsg, StackTrace::String) 
+          => openWriteThenClose(#getenv("HOME") +String "/.kcc-report.csv", formatErrorMsg(Err, StackTrace, true) +String "\r\n") 
+          ~> #write(2, formatErrorMsg(Err, StackTrace, false) +String "\n")
 
      rule <k> EXIT(Msg:ErrorMsg) => HALT ...</k>
           <call-stack> L:List </call-stack>
