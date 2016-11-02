@@ -15,6 +15,8 @@ module SYMLOC-SYNTAX
 
      // Allocated duration.
      syntax Duration ::= "alloc"
+     // Dynamic duration. (C++)
+     syntax Duration ::= "dynamic"
      // Static duration.
      syntax Duration ::= static(String)
      syntax Duration ::= link(String)

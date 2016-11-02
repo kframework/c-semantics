@@ -22,4 +22,15 @@ module CPP-TRANSLATION-EXPR-ADDITIVE
                     andBool isCompleteType(innerType(type(R))) 
                     andBool isObjectType(innerType(type(R)))
 
+     rule L:PRVal - R:PRVal => pre(stripHold(L) - stripHold(R), combine(trace(L), trace(R), #klabel(`_-__CPP-SYNTAX`)), type(ptrdiff_t))
+          requires (isPRExpr(L) orBool isPRExpr(R))
+               andBool isCPPPointerType(type(L)) andBool isCPPPointerType(type(R))
+
+     rule L:PRVal - R:PRVal => pre(stripHold(L) - stripHold(R), combine(trace(L), trace(R), #klabel(`_-__CPP-SYNTAX`)), type(L))
+          requires (isPRExpr(L) orBool isPRExpr(R))
+               andBool isCPPIntegerType(type(L))
+               andBool isPromoted(type(L))
+               andBool type(L) ==Type type(R)
+
+
 endmodule

@@ -9,7 +9,7 @@ module CPP-STMT-RETURN
 
      rule <k> ReturnStmt(I::Init) => ReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, AutoStorage, I, I)) ...</k>
           <curr-function> Base::SymBase </curr-function>
-          <functions>... Base |-> functionObject(_, t(_, _, functionType(Ret::CPPType, _, _)), _, _) ...</functions>
+          <functions>... Base |-> functionObject(_, t(_, _, functionType(Ret::CPPType, _, _, _)), _, _) ...</functions>
 
      rule <k> ReturnOp(V:Val) => .K ...</k>
           <elab>... .K => ReturnOp(V) </elab>

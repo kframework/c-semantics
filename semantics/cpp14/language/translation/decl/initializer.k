@@ -5,7 +5,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= figureInit(Expr, CPPType, Duration, Init, K)
+     syntax Expr ::= figureInit(Expr, CPPTypeExpr, Duration, Init, K)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
 
@@ -45,6 +45,8 @@ module CPP-DECL-INITIALIZER
           => zeroInit(Base, DestT)
      rule figureInit(Base:LVal, DestT::CPPType, AutoStorage, NoInit(), _)
           => defaultInit(Base, DestT)
+     rule figureInit(Base:LVal, DestT::CPPTypeExpr, DynamicStorage, NoInit(), _)
+          => defaultInit(Base, DestT)
      // 8.5:6.1, 6.4 (scalar type or array of scalars, initialized implicitly by memory read)
      rule zeroInit(Base:LVal, T::CPPType) => Base
           requires notBool isCPPClassType(T) andBool (notBool isCPPArrayType(T) orBool notBool isCPPClassType(innerType(T))) andBool notBool isCPPRefType(T)
@@ -72,7 +74,7 @@ module CPP-DECL-INITIALIZER
                     | arrayInit(LVal, CPPType, Duration, Int, List, K)
                     | strInit(LVal, CPPType, Duration, CharKind, String, Int, K)
                     | zeroInit(LVal, CPPType)
-                    | defaultInit(LVal, CPPType)
+                    | defaultInit(LVal, CPPTypeExpr)
 
      // TODO(dwightguth): all the cases for class type
      rule listInit(Base::LVal, T::CPPType, D::Duration, L::List)

@@ -26,6 +26,7 @@ module C-CONFIGURATION
      // stdlib.h support
      <malloced color="lightgray"> .Map </malloced>
      <next-malloced> 0 @ alloc </next-malloced>
+     <next-newed> 0 @ dynamic </next-newed>
      <atexit> .K </atexit>
      <at-quick-exit> .K </at-quick-exit>
 
@@ -87,6 +88,7 @@ module C-CONFIGURATION
                               <env color="red"> .Map </env>
                               <types color="lightgray"> .Map </types>
                               <compound-lit-map> .Map </compound-lit-map>
+                              <new-size-map> .Map </new-size-map>
 
                               // information about the block we're in
                               <nesting-depth color="lightgray">

@@ -80,7 +80,7 @@ const char *escape(const char *str, unsigned len) {
         res->push_back(c);
       } else {
         char buf[5];
-        sprintf(buf, "\\x%02x", c);
+        sprintf(buf, "\\x%02hhx", (unsigned char)c);
         *res += buf;
       }
     }
@@ -1798,6 +1798,13 @@ public:
       TRY_TO(TraverseStmt(E->getPlacementArg(i)));
     }
     return true;
+  }
+
+  bool VisitCXXDeleteExpr(CXXDeleteExpr *E) {
+    AddKApplyNode("DeleteExpr", 3);
+    VisitBool(E->isGlobalDelete());
+    VisitBool(E->isArrayFormAsWritten());
+    return false;
   }
 
   bool VisitCXXThisExpr(CXXThisExpr *E) {

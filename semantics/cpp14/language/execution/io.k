@@ -8,6 +8,7 @@ module CPP-EXECUTION-IO
      imports MEMORY-SYNTAX
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-ERROR-SYNTAX
@@ -95,10 +96,14 @@ module CPP-EXECUTION-IO
           => Q +Quals getQualsAtOffset(Ts)
 
 
-     rule (.K => UNDIAG("EIO1",
+     rule (.K => DRAFTING("EIO1",
                "Reading outside the bounds of an object.",
-               "4.1:2.6"))
+               232))
           ~> errorReadOutOfBounds
+          [structural]
+
+     rule <k> getEffectiveType(Base::SymBase) => convertTypeToC(T) ...</k>
+          <mem>... Base |-> object(T:CPPType, _, _) ...</mem>
           [structural]
 
 endmodule

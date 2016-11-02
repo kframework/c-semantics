@@ -2,6 +2,8 @@
 
 typedef decltype(nullptr) nullptr_t;
 
+extern "C" void abort(void);
+
 int i;
 nullptr_t n;
 const nullptr_t& f() { ++i; return n; }
@@ -12,5 +14,5 @@ int main()
 {
   g();
   if (i != 1)
-    __builtin_abort ();
+    abort ();
 }

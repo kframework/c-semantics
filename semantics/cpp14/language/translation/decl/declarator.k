@@ -33,6 +33,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
+     imports CPP-NAME-SYNTAX
      imports CPP-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -57,6 +58,8 @@ module CPP-DECL-DECLARATOR
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => NoNamespace()), _, _, _, _), _) ...</k>
           <curr-scope> _:BlockScope </curr-scope>
+     rule (.K => nameLookup(X, NoTag())) ~> DeclaratorAndSpecifiers(NormalizedDecl(NNS(X:CId), _, _, _, _), _)
+     rule (nsRef(N::Namespace) => .K) ~> DeclaratorAndSpecifiers(NormalizedDecl((_ => N), _, _, _, _), _)
 
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:AType, _, _), _) [result(CPPTypeExpr)]
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:CPPTypeExpr, _, _), _)
@@ -141,7 +144,7 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
           <curr-template-context> noTemplate </curr-template-context>
-          requires notBool LN :: X in_keys(Exts)
+          requires notBool LN :: X, T in_keys(Exts)
                andBool completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, not previously declared
@@ -158,7 +161,7 @@ module CPP-DECL-DECLARATOR
           <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
-          requires notBool LN :: X in_keys(Ints)
+          requires notBool LN :: X, T in_keys(Ints)
                andBool completeDeclaration(T, Init) ==K T
 
      // ExternalLinkage, StaticStorage, redeclare incomplete array
@@ -175,12 +178,12 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _)) ...</externals>
+          <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires completeDeclaration(T, Init) ==K T
+          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, redeclare complete type
      rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
@@ -188,12 +191,12 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <internals>... LN :: X |-> (T |-> declState(Base::SymBase, _)) ...</internals>
+          <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</internals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires completeDeclaration(T, Init) ==K T
+          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
 
      context declareNonStaticObject(_, _, HOLE:Expr, _, _, _)
 

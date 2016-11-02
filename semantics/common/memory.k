@@ -54,15 +54,15 @@ module MEMORY
      syntax Int ::= "byteMaskSet" [function]
      rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
-     rule joinPointerBytes(ListItem(piece(encodedValue(Loc:SymLoc, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
+     rule joinPointerBytes(ListItem(piece(encodedValue(Loc::EffectiveValue, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
                encodedValue(Loc, I::Int, End::Int))
           => joinPointerBytes(L, encodedValue(Loc, I, End +Int 1))
           requires Len ==Int cfg:bitsPerByte
                andBool SNatEnd ==Int End +Int 1
-     rule joinPointerBytes(.List, encodedValue(Loc:SymLoc, 0, N::Int))
+     rule joinPointerBytes(.List, encodedValue(Loc::EffectiveValue, 0, N::Int))
           => Loc
           requires N ==Int cfg:ptrsize -Int 1
-     rule joinPointerBytes(.List, encodedValue(Loc:SymLoc, Begin::Int, End:Int))
+     rule joinPointerBytes(.List, encodedValue(Loc::EffectiveValue, Begin::Int, End:Int))
           => encodedValue(Loc, Begin, End)
           requires End <Int cfg:ptrsize -Int 1 orBool Begin >Int 0
 

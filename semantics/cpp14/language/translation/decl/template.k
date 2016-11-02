@@ -178,9 +178,9 @@ module CPP-DECL-TEMPLATE
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
      context t(_, _, rvRefType(HOLE:CPPTypeExpr))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
-     context t(_, _, functionType(HOLE:CPPTypeExpr, _, _))
+     context t(_, _, functionType(HOLE:CPPTypeExpr, _, _, _))
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
-     context t(_, _, functionType(_, HOLE:CPPTypeExprs, _))
+     context t(_, _, functionType(_, HOLE:CPPTypeExprs, _, _))
              requires notBool areDependentInScope(HOLE) [result(CPPTypes)]
      context t(_, _, classType(_ :: Class(_, _, HOLE:TemplateParams)))
              requires notBool areDependentInScope(HOLE) [result(TemplateArgs)]

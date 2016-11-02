@@ -59,6 +59,7 @@ module CPP-EXPR-CONDITIONAL
                (isCPPClassType(T1) orBool isCPPClassType(T2) orBool 
                     (isGLValueCategory(V1) andBool V1 ==K V2 
                          andBool utype(T1) ==Type utype(T2))))
+               andBool notBool isCPPVoidType(T1) andBool notBool isCPPVoidType(T2)
 
      syntax KItem ::= typeAndCatOfConditional3(Expr, CPPType, ValueCategory, Expr, CPPType, ValueCategory) [function]
      rule typeAndCatOfConditional3(_, T1:CPPType, V:GLValueCategory, _, T2:CPPType, V)
@@ -67,7 +68,7 @@ module CPP-EXPR-CONDITIONAL
      // TODO(dwightguth): 5.16:5
      rule typeAndCatOfConditional3(E1::Expr, T1:CPPType, _, E2::Expr, T2:CPPType, _)
           => typeAndCatOfConditional5(E1, T1, E2, T2)
-          requires notBool (T1 =/=Type T2 andBool (isCPPClassType(T1) orBool isCPPClassType(T2)))
+          requires notBool (T1 =/=Type T2 andBool (isCPPClassType(T1) orBool isCPPClassType(T2))) [owise]
 
      syntax KItem ::= typeAndCatOfConditional5(Expr, CPPType, Expr, CPPType) [function]
      rule typeAndCatOfConditional5(_, (T:CPPFunctionType => type(pointerType(T))), _, _)

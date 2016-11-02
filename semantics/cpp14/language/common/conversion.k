@@ -17,6 +17,8 @@ module CPP-CONVERSION-SYNTAX
                     | convertReval(Val) [function]
 
      syntax Bool ::= isSimilar(CPPType, CPPType) [function]
+     syntax List ::= cvQualificationSignature(CPPType) [function]
+     syntax Bool ::= List "<=QualSig" List [function]
 
      syntax CPPType ::= prvalType(CPPType) [function]
 
@@ -33,7 +35,8 @@ module CPP-CONVERSION-SYNTAX
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
                    | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp)]
 
-     syntax ValResult ::= "cannot-convert"
+     syntax CannotConvert ::= "cannot-convert"
+     syntax ValResult ::= CannotConvert
 endmodule
 
 module CPP-CONVERSION
@@ -53,12 +56,15 @@ module CPP-CONVERSION
      rule arithInterpret(T:CPPUnsignedType, N:Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
           requires (N >Int max(T) orBool N <Int min(T)) andBool notBool hasLint
      rule arithInterpret(T:CPPSignedType, N:Int, Tr::Trace) 
-          => UNDIAG("CCV1", "Signed integer overflow.", "5:4") ~> arithInterpretHold(T, N, Tr)
+          => UNDEF("CCV1", "Signed integer overflow.", "5:4") ~> arithInterpretHold(T, N, Tr)
           requires notBool (min(T) <=Int N andBool max(T) >=Int N)
      rule arithInterpret(T:CPPFloatingType, (F:Float => roundFloat(F, precision(T), exponent(T))), _)
-          requires precisionFloat(F) =/=Int precision(T) orBool exponentFloat(F) =/=Int exponent(T)
+          requires precisionFloat(F) =/=Int precision(T) orBool exponentBitsFloat(F) =/=Int exponent(T)
+     rule arithInterpret(T:CPPFloatingType, F:Float, Tr::Trace) => prv(F, Tr, T)
+          requires precisionFloat(F) ==Int precision(T) andBool exponentBitsFloat(F) ==Int exponent(T)
+               andBool notBool isInfinite(F)
      rule arithInterpret(T:CPPFloatingType, F:Float, Tr::Trace)
-          => UNDIAG("CCV2", "Floating point overflow.", "4.8:1, 5:4")
+          => UNDEF("CCV2", "Floating point overflow.", "5:4")
           ~> arithInterpretHold(T, F, Tr)
           requires isInfinite(F)
 
@@ -74,7 +80,9 @@ module CPP-CONVERSION
           ~> convertTypeHold(T, prv(C, Tr, T'))
           requires isCPPSignedType(underlyingType(T)) andBool notBool inRange(C, T)
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
-          requires isCPPUnsignedType(underlyingType(T))
+          requires isCPPUnsignedType(underlyingType(T)) andBool inRange(C, T)
+     rule convertType(T::CPPType, prv(N:Int, Tr::Trace, T':CPPIntegerType)) => prv(N modInt (max(T) +Int 1), Tr, T)
+          requires isCPPUnsignedType(underlyingType(T)) andBool notBool inRange(N, T)
      rule convertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPBoolType)) => prv(C, Tr, T)
      rule convertType(T:CPPBoolType, prv(0, Tr::Trace, T':CPPIntegerType)) => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(I:Int, Tr::Trace, T':CPPIntegerType)) => prv(1, Tr, T)
@@ -84,7 +92,7 @@ module CPP-CONVERSION
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType)) => arithInterpret(T, F, Tr)
           requires inRange(F, T)
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDIAG("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.", "4.8:1")
+          => UNDEF("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.", "4.8:1")
           ~> convertTypeHold(T, prv(F, Tr, T'))
           requires notBool inRange(F, T)
 
@@ -92,7 +100,7 @@ module CPP-CONVERSION
           => arithInterpret(T, Float2Int(F), Tr)
           requires notBool isCPPBoolType(T) andBool inRange(Float2Int(F), T)
      rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDIAG("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.", "4.9:1")
+          => UNDEF("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.", "4.9:1")
           ~> convertTypeHold(T, prv(F, Tr, T'))
           requires notBool isCPPBoolType(T) andBool notBool inRange(Float2Int(F), T)
      rule convertType(T:CPPBoolType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
@@ -106,17 +114,17 @@ module CPP-CONVERSION
           => arithInterpret(T, Int2Float(I, precision(T), exponent(T)), Tr)
           requires notBool isInfinite(Int2Float(I, precision(T), exponent(T)))
      rule convertType(T:CPPFloatingType, prv(I:Int, Tr::Trace, T':CPPIntegerType))
-          => UNDIAG("CCV6", "Floating-integral conversion to floating point type in which value is outside3 range that can be represented.", "4.9:2")
+          => UNDEF("CCV6", "Floating-integral conversion to floating point type in which value is outside3 range that can be represented.", "4.9:2")
           ~> convertTypeHold(T, prv(I, Tr, T'))
           requires isInfinite(Int2Float(I, precision(T), exponent(T)))
 
      rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
-     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, void))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, Mods2::Set, T::CPPSimpleType)))))
+     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, void))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, T::CPPSimpleType)))))
           => prv(L, Tr, t(Q, Mods, pointerType(t(Q', Mods', void))))
-          requires isObjectType(t(Q', Mods2::Set, T))
-     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, B:CPPSimpleClassType))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, Mods2::Set, D:CPPSimpleClassType)))))
+          requires isObjectType(t(Q', Mods2::Set, T)) andBool Q2 <=Quals Q'
+     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, B:CPPSimpleClassType))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, D:CPPSimpleClassType)))))
           => prv(baseClassSubobject(L, B, D), Tr, t(Q, Mods, pointerType(t(Q', Mods', B))))
-          requires B =/=K D andBool isBaseClassOf(B, D)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q2 <=Quals Q'
      rule convertType(T:CPPBoolType, prv(NullPointer, Tr::Trace, T':CPPPointerType))
           => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(Loc::SymLoc, Tr::Trace, T':CPPPointerType))
@@ -126,7 +134,7 @@ module CPP-CONVERSION
      rule convertType(T:CPPMemberPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullMemberPointer, Tr, T)
      rule convertType(t(Q::Quals, Mods::Set, memberPointerType(D::CPPClassType, T1::CPPType)), prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(B::CPPClassType, T2::CPPType))))
           => prv(derivedClassSuperobject(L, B, D), Tr, t(Q, Mods, memberPointerType(D, T1)))
-          requires B =/=K D andBool isBaseClassOf(B, D) andBool T1 ==Type T2
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool getQuals(T2) <=Quals getQuals(T1)
      rule convertType(T:CPPBoolType, prv(NullMemberPointer, Tr::Trace, T':CPPMemberPointerType))
           => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(Loc::MemberPtr, Tr::Trace, T':CPPMemberPointerType))
@@ -188,7 +196,7 @@ module CPP-CONVERSION
 
      // 4.5:1
      rule promote(t(_, _, T::CPPSimpleType)) => #if broaderTypeThan(type(int), type(T)) #then type(int) #else type(unsigned) #fi
-          requires isCPPIntegerType(T) andBool T =/=K bool andBool T =/=K char16_t andBool T =/=K char32_t andBool T =/=K wchar_t
+          requires isCPPIntegerType(type(T)) andBool T =/=K bool andBool T =/=K char16_t andBool T =/=K char32_t andBool T =/=K wchar_t
                andBool rank(type(T)) <Int rank(type(int))
      // 4.5:2
      rule promote(t(_, _, T::CPPSimpleType)) => #if broaderTypeThan(type(int), type(T)) #then type(int) #else 
@@ -290,12 +298,22 @@ module CPP-CONVERSION
           => cvCombinedType(T1, T2)
           requires isSimilar(T1, T2)
 
-     syntax List ::= cvQualificationSignature(CPPType) [function]
      rule cvQualificationSignature(t(Q::Quals, _, pointerType(T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
      rule cvQualificationSignature(t(Q::Quals, _, memberPointerType(_, T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
      rule cvQualificationSignature(t(Q::Quals, _, arrayType(T::CPPType, _))) => ListItem(Q) cvQualificationSignature(T)
      rule cvQualificationSignature(t(Q::Quals, _, incompleteArrayType(T::CPPType))) => ListItem(Q) cvQualificationSignature(T)
      rule cvQualificationSignature(t(Q::Quals, _, _)) => ListItem(Q) [owise]
+
+     rule Qs1::List <=QualSig Qs2::List
+          => computeLeQualSig(Qs1, Qs2, getDifferentCVOffset(Qs1, Qs2, 0, 0), 0)
+
+     syntax Bool ::= computeLeQualSig(List, List, Int, Int) [function]
+     rule computeLeQualSig((ListItem(Q::Quals) => .List) _, (ListItem(Q) => .List) _, _, (K::Int => K +Int 1))
+     rule computeLeQualSig((ListItem(Q1::Quals) => .List) _, (ListItem(Q2::Quals) => .List) _, J::Int, (K::Int => K +Int 1))
+          requires J <=Int K andBool Q1 <=Quals Q2
+     rule computeLeQualSig(.List, .List, _, _) => true
+     rule computeLeQualSig(_, _, _, _) => false [owise]
+     
 
      rule cvCombinedType(T1::CPPType, T2::CPPType) => utype(#cvCombinedType(T1, cvQualificationSignature(T2), getDifferentCVOffset(cvQualificationSignature(T1), cvQualificationSignature(T2), 0, 0), 0))
      syntax CPPType ::= #cvCombinedType(CPPType, List, Int, Int) [function]

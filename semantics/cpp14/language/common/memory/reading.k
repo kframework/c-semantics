@@ -34,6 +34,9 @@ module CPP-MEMORY-READING
      rule joinBytes(ListItem(piece(encodedValue(Loc:SymLoc, Begin::Int, End::Int), Len::Int)) L::List)
           => joinPointerBytes(L, encodedValue(Loc, Begin, End))
           requires Len ==Int cfg:bitsPerByte
+     rule joinBytes(ListItem(piece(encodedValue(nullptrVal, Begin::Int, End::Int), Len::Int)) L::List)
+          => joinPointerBytes(L, encodedValue(nullptrVal, Begin, End))
+          requires Len ==Int cfg:bitsPerByte
      rule joinBytes(ListItem(piece(encodedValue(F:Float, Begin::Int, End::Int), Len::Int)) L::List)
           => joinFloatBytes(L, encodedValue(F, Begin, End))
           requires Len ==Int cfg:bitsPerByte
@@ -44,8 +47,9 @@ module CPP-MEMORY-READING
      rule interpret(prv(F:Float, Tr::Trace, T:CPPFloatingType)) => prv(F, Tr, T)
      rule interpret(prv(I:Int, Tr::Trace, T:CPPIntegerType))
           => #if max(T) >=Int I #then prv(I, Tr, T) #else interpret(prv(I -Int (1 <<Int absInt(bitSizeofType(T))), Tr, T)) #fi
+     rule interpret(prv(nullptrVal, Tr::Trace, T:CPPNullPtrTType)) => prv(nullptrVal, Tr, T)
 
-     // TODO(dwightguth): find a way to make this representation profile-dependent while also solving the large-array problem
+     rule interpret(prv(0, Tr::Trace, T:CPPNullPtrTType)) => prv(nullptrVal, Tr, T)
      rule interpret(prv(0, Tr::Trace, T:CPPPointerType)) => prv(NullPointer, Tr, T)
 
 endmodule

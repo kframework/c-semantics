@@ -116,7 +116,7 @@ module C-LINKING-RESOLUTION
                (Base::SymBase |-> .Set => .Map)
           ...</odr-decls>
 
-     rule <k> (.K => UNDIAG("TDR3",
+     rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
                     +String signatureToString(N :: X, T) +String ".",
                     "3.2:4"))
@@ -126,7 +126,7 @@ module C-LINKING-RESOLUTION
           ...</odr-decls>
           <external-defs> CDefs::Map </external-defs>
           <odr-defs> Defs::Map </odr-defs>
-          requires notBool (T in_keys({Defs[N :: X]}:>Map))
+          requires notBool (N :: X, T in_keys(Defs))
                andBool notBool (X in_keys(CDefs))
 
      rule <k> (.K => EXT-UNDEF("TDR2",

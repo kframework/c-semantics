@@ -32,6 +32,7 @@ require "expr/eval.k"
 require "expr/inc-and-dec.k"
 require "expr/literal.k"
 require "expr/logical.k"
+require "expr/multiplicative.k"
 require "expr/new.k"
 require "expr/reference.k"
 require "expr/relational.k"
@@ -41,6 +42,7 @@ require "expr/unary.k"
 require "stmt/block.k"
 require "stmt/canonicalization.k"
 require "stmt/expr.k"
+require "stmt/goto.k"
 require "stmt/if.k"
 require "stmt/labeled.k"
 require "stmt/loop.k"
@@ -86,6 +88,7 @@ module CPP-TRANSLATION
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LITERAL
      imports CPP-EXPR-LOGICAL
+     imports CPP-TRANSLATION-EXPR-MULTIPLICATIVE
      imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE
      imports CPP-TRANSLATION-EXPR-RELATIONAL
@@ -95,6 +98,7 @@ module CPP-TRANSLATION
      imports CPP-STMT-BLOCK
      imports CPP-STMT-CANONICALIZATION
      imports CPP-STMT-EXPR
+     imports CPP-STMT-GOTO
      imports CPP-STMT-IF
      imports CPP-STMT-LABELED
      imports CPP-STMT-LOOP

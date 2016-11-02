@@ -18,8 +18,15 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | "builtin*" "(" Int "," List "," List ")"
 endmodule
 
+module LIB-BOOTSTRAP-SYNTAX
+     imports BASIC-K
+     syntax Bool ::= isVarArg(K) [function]
+     syntax Bool ::= notVarArg(K) [function]
+endmodule
+
 module LIBC-BOOTSTRAP
      imports LIBC-BOOTSTRAP-SYNTAX
+     imports LIB-BOOTSTRAP-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports INT
@@ -40,11 +47,9 @@ module LIBC-BOOTSTRAP
           <types>... F |-> T:Type ...</types>
           [structural]
 
-     syntax Bool ::= isVarArg(K) [function]
      rule isVarArg(vararg(_)) => true
      rule isVarArg(_) => false [owise]
 
-     syntax Bool ::= notVarArg(K) [function]
      rule notVarArg(K:K) => notBool isVarArg(K)
 
      rule prepareBuiltin(Identifier(F:String), false, .HeatList, _)

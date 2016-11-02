@@ -142,7 +142,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax ExceptionSpec ::= NoExceptionSpec() 
                             | NoexceptSpec(AExpr)
-                            | ThrowSpec(StrictList)
+                            | ThrowSpec(StrictList) [strict]
 
      syntax TypeSpecifier ::= Void() | Char() | WChar() | Char16() | Char32()
                             | Bool() | UChar() | UShort() | UInt() | ULong() 
@@ -189,10 +189,8 @@ module CPP-ABSTRACT-SYNTAX
                    | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)
                    | ParenthesizedCast(AType, Expr) [strict]
-                   | ReinterpretCast(AType, Expr)
                    | StaticCast(AType, Expr)
                    | DynamicCast(AType, Expr)
-                   | ConstCast(AType, Expr)
                    | FunctionalCast(AType, List)
                    | SizeofType(AType) [strict]
                    | SizeofExpr(Expr)
@@ -202,6 +200,7 @@ module CPP-ABSTRACT-SYNTAX
                    | PseudoDestructor(Expr, Bool, NNS, AType, AType)
                    | Noexcept(Expr)
                    | NewExpr(AType, AExpr, Init, List) [strict(1)]
+                   | DeleteExpr(Bool, Bool, Expr)
                    | This
 
      syntax This ::= This()
@@ -215,8 +214,6 @@ module CPP-ABSTRACT-SYNTAX
                    | FloatingLiteral(Float, AType) [strict(2)]
                    | NullPointerLiteral()
                    | BoolLiteral(Bool)
-
-     syntax Expr ::= Expr "[" Expr "]"
 
      context IntegerLiteral(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -251,7 +248,6 @@ module CPP-ABSTRACT-REWRITING
      imports CPP-ABSTRACT-SYNTAX
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
-     rule E1::Expr [ E2::Expr ] => * (E1 + E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
 endmodule

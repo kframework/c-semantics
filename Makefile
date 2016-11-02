@@ -107,13 +107,13 @@ semantics: check-vars
 check:	pass fail fail-compile
 
 pass:	test-build
-	@$(MAKE) -C $(PASS_TESTS_DIR) comparison
+	@$(MAKE) -C $(PASS_TESTS_DIR) c-comparison
 
 fail:	test-build
-	@$(MAKE) -C $(FAIL_TESTS_DIR) comparison
+	@$(MAKE) -C $(FAIL_TESTS_DIR) c-comparison
 
 fail-compile:	test-build
-	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) comparison
+	@$(MAKE) -C $(FAIL_COMPILE_TESTS_DIR) c-comparison
 
 clean:
 	-$(MAKE) -C $(PARSER_DIR) clean

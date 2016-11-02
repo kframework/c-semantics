@@ -25,7 +25,7 @@ module CPP-NAME
      rule (.K => Name(N, X)) ~> CallExpr(Name(N::NNS, X::CId), _)
           requires N =/=K NoNNS()
      rule cSet(Y::Map) ~> CallExpr(Name(N::NNS, X::CId), Args::StrictList)
-          => resolveOverload(cSet(Y), Args, X, operator())
+          => resolveOverload(cSet(Y), Args, Args, Args, X, operator())
           requires N =/=K NoNNS()
 
      syntax Bool ::= isQualifiedName(Expr)
@@ -44,7 +44,7 @@ module CPP-NAME
      rule nsRef(N::Namespace) ~> Name(_, X::CId) => qualifiedNameLookup(X, N)
 
      syntax Expr ::= argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
-                   | #argDependentNameLookup(CId, StrictList, Set, CandidateSet)
+                   | #argDependentNameLookup(CId, StrictList, List, Set, CandidateSet)
                    | nameLookupInNamespace(CId, Namespace, Tag)
                    | qualifiedNameLookup(CId, Namespace)
      syntax AType ::= resolveElabSpecifier(Tag, K) [strict(2)]
@@ -162,7 +162,7 @@ module CPP-NAME
           requires notBool isDependentInScope(T)
      rule cSet(.Map) ~> isTypeDependent(Name(NoNNS(), _), _) => false
 
-     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, _, cSet(Y::Map)) => resolveOverload(cSet(Y), Args, X, operator()) ...</k>
+     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::Map)) => resolveOverload(cSet(Y), Args, Types, Args, X, operator()) ...</k>
            <env> Env::Map </env>
            requires hasSpecialDeclInArgLookup(X, Y, Env)
 
@@ -194,7 +194,7 @@ module CPP-NAME
      rule isAddressOfName(& N:Name) => true
      rule isAddressOfName(_) => false [owise]
 
-     rule <k> getFunctionAddressTypes(.List) ~> false ~> argDependentNameLookup(X::CId, Args::StrictList, krlist(Types::List), cSet(Y::Map)) => #argDependentNameLookup(X, Args, getAssociatedNamespaces(Types, <namespaces> B </namespaces>), cSet(Y)) ...</k>
+     rule <k> getFunctionAddressTypes(.List) ~> false ~> argDependentNameLookup(X::CId, Args::StrictList, krlist(Types::List), cSet(Y::Map)) => #argDependentNameLookup(X, Args, Types, getAssociatedNamespaces(Types, <namespaces> B </namespaces>), cSet(Y)) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <namespaces> B::Bag </namespaces>
@@ -237,9 +237,9 @@ module CPP-NAME
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleTypeExpr), Ps::TemplateParams) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
      rule getTemplateArgTypes(.TemplateParams) => .List
 
-     rule #argDependentNameLookup(X::CId, Args::StrictList, .Set, cSet(Y::Map)) => resolveOverload(cSet(Y), Args, X, operator())
-     rule (.K => qualifiedNameLookup(X, N)) ~> #argDependentNameLookup(X::CId, _, (SetItem(N::Namespace) => .Set) _, _)
-     rule (cSet(M::Map) => .K) ~> #argDependentNameLookup(_, _, _, cSet(_::Map (.Map => M)))
+     rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, cSet(Y::Map)) => resolveOverload(cSet(Y), Args, krlist(Types), Args, X, operator())
+     rule (.K => qualifiedNameLookup(X, N)) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
+     rule (cSet(M::Map) => .K) ~> #argDependentNameLookup(_, _, _, _, cSet(_::Map (.Map => M)))
 
      // qualified name lookup
      rule <k> qualifiedNameLookup(X::CId, N::Namespace) => T ...</k>

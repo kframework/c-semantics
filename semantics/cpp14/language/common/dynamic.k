@@ -146,6 +146,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax StrictList ::= prval(StrictList)
 
      syntax TemplateArgs ::= toTemplateArgs(List) [function]
+                           | toTemplateArgs(CPPTypes) [function, klabel(CPPTypesToTemplateArgs)]
      syntax TemplateParams ::= toTemplateParams(List) [function]
      syntax List ::= toList(CPPTypes) [function]
                    | toList(CPPTypeExprs) [function]
@@ -203,7 +204,7 @@ module CPP-DYNAMIC
           requires isValKLabel(#klabel(Lbl))
      // not all references are lvalues. Some are xvalues. The individual
      // cases where this is true must handle this explicitly.
-     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, T:CPPRefType) => lv(V, Tr, innerType(T)) ...</k>
+     rule <k> Lbl:KLabel(loc(Base::SymBase, Offset::Int), Tr::Trace, T:CPPRefType) => Lbl(V, Tr, innerType(T)) ...</k>
           <references>... loc(Base, Offset) |-> V::SymLoc ...</references>
           requires isValKLabel(#klabel(Lbl))
      rule <k> Lbl:KLabel(E::Expr, Tr::Trace, T:CPPRefType) => Lbl(E, Tr, innerType(T)) ...</k>
@@ -267,6 +268,7 @@ module CPP-DYNAMIC
      rule trace(pre(_, Tr::Trace, _)) => Tr
 
      rule toTemplateArgs(ListItem(A::TemplateArg) L::List) => A, toTemplateArgs(L)
+     rule toTemplateArgs(T::CPPTypes) => toTemplateArgs(toList(T))
      rule toTemplateArgs(.List) => .TemplateArgs
      rule toCPPTypes(ListItem(A::CPPType) L::List) => A, toCPPTypes(L)
      rule toCPPTypes(.List) => .CPPTypes
@@ -324,7 +326,14 @@ module CPP-DYNAMIC
 
      rule signatureToString(Q::QualId, T::CPPType) => idToString(Q)
           requires notBool isCPPFunctionType(T)
-     rule signatureToString(Q::QualId, t(_, _, functionType(_, T::CPPTypes, _))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
+     rule signatureToString(Q::QualId, t(_, _, functionType(_, T::CPPTypes, _, _))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
+
+     rule X:K, T::CPPType in_keys(M::Map) => X in_keys(M) andBool typeInKey(M[X], T)
+     syntax Bool ::= typeInKey(K, CPPType) [function]
+     rule typeInKey(T1::CPPType |-> _ _::Map, T2::CPPType) => true
+          requires T1 ==Type T2
+     rule typeInKey((_ |-> _ => .Map) _, _) [owise]
+     rule typeInKey(.Map, _) => false
 
      rule typesToString(.CPPTypes) => ""
      rule typesToString(T::CPPType) => typeToString(T)
@@ -350,7 +359,18 @@ module CPP-DYNAMIC
      rule typeToString(wchar_t) => "wchar_t"
      rule typeToString(char16_t) => "char16_t"
      rule typeToString(char32_t) => "char32_t"
-     rule typeToString(nullptr_t) => "decltype(nullptr)"
+     rule typeToString(nullptr_t) => "std::nullptr_t"
+     rule typeToString(pointerType(T::CPPType)) => typeToString("", pointerType(T))
+     syntax String ::= typeToString(String, CPPSimpleType) [function, klabel(compoundTypeToString)]
+     rule typeToString(DDL::String, pointerType(T::CPPType))
+          => typeToString(parens(T, "*" +String DDL), simpleType(T))
+     rule typeToString(DDL::String, T::CPPSimpleType)
+          => typeToString(T) +String " " +String DDL [owise]
+
+     syntax String ::= parens(CPPType, String) [function]
+     rule parens(_:CPPFunctionType, S::String) => "(" +String S +String ")"
+     rule parens(_:CPPArrayType, S::String) => "(" +String S +String ")"
+     rule parens(_, S::String) => S [owise]
 
      rule fillRHoles(V::PRVal, RHOLE) => V
      rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))
@@ -379,6 +399,7 @@ module CPP-DYNAMIC
      rule _:KResult ~> discard => .K
 
      context makePRVal(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context makeXVal(HOLE:Expr) [result(LVal)]
      rule makePRVal(R:PRVal) => R
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)

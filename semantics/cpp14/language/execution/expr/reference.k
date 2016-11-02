@@ -17,6 +17,11 @@ module CPP-EXPR-REFERENCE
           <references>... .Map => stripProv(Loc1) |-> Loc2 ...</references>
           requires isCPPLVRefType(T1) andBool notBool isCPPBitfieldType(T2) andBool isReferenceCompatible(innerType(T1), T2)
 
+     rule <k> bindReference(lv(Loc1::SymLoc, Tr::Trace, T1::CPPType), xv(Loc2::SymLoc, _, T2::CPPType))
+              => lv(Loc1, Tr, T1) ...</k>
+          <references>... .Map => stripProv(Loc1) |-> Loc2 ...</references>
+          requires notBool isCPPBitfieldType(T2)  andBool isReferenceCompatible(innerType(T1), T2) andBool notBool isCPPClassType(T2)
+
      rule <k> bindReference(lv(Loc::SymLoc, Tr1::Trace, T1::CPPType), prv(V::CPPValue, Tr2::Trace, T2::CPPType))
               => allocObject(!I @ D, innerType(T1), byteSizeofType(innerType(T1)))
               ~> bindReference(lv(Loc, Tr1, T1), lv(lnew(!I:Int @ D, innerType(T1)), noTrace, innerType(T1)) := prv(V, Tr2, T2)) ...</k>

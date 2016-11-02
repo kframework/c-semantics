@@ -1,5 +1,11 @@
+module CPP-STMT-RETURN-SYNTAX
+     imports BASIC-K
+     syntax KItem ::= "Return''" "(" K ")" [strict]
+endmodule
+
 module CPP-STMT-RETURN
      imports RETURN-SYNTAX
+     imports CPP-STMT-RETURN-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports C-CHECK-LOC-SYNTAX
@@ -26,7 +32,6 @@ module CPP-STMT-RETURN
      rule prepareReturn(T:CPPVoidType, V:PRVal) => Return''(V)
 
      syntax KItem ::= "Return'" "(" K "," CPPType ")" [strict(1)]
-                    | "Return''" "(" K ")" [strict]
 
      // compute value category of result
      rule Return'(lv(Loc::SymLoc, Tr::Trace, T::CPPType), DeclT::CPPType) => 
@@ -35,10 +40,10 @@ module CPP-STMT-RETURN
      syntax Val ::= makeCall(SymLoc, Trace, CPPType, CPPType) [function]
      rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => lv(Loc, Tr, T)
-          requires isCPPLVRefType(DeclT) orBool (isCPPRVRefType(DeclT) andBool isCPPFunctionType(innerType(DeclT)))
+          requires isUnnamedLValue(DeclT)
      rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => xv(Loc, Tr, T)
-          requires isCPPRVRefType(DeclT) andBool isObjectType(innerType(DeclT))
+          requires isUnnamedXValue(DeclT)
      rule makeCall(Loc::SymLoc, Tr::Trace, T::CPPType, DeclT::CPPType)
           => makePRVal(lv(Loc, Tr, T)) [owise]
 

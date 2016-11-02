@@ -7,5 +7,6 @@ module CPP-SETTINGS
      rule underlyingType(wchar_t) => int
 
      rule size_t => unsigned
+     rule ptrdiff_t => int
 
 endmodule

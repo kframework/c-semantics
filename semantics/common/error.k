@@ -11,7 +11,7 @@ module ERROR-SYNTAX
                    | "warnSystemHeaders" [function]
                    | checkOptions(K, String, Bool) [function]
 
-     syntax Opts ::= Undef() | Unspec() | Impl() | Cond() | Undiag()
+     syntax Opts ::= Undef() | Unspec() | Impl() | Cond() | Ill() | Drafting()
                    | No(Opts)
                    | Warn(String)
                    | CSV(String)
@@ -27,7 +27,7 @@ module ERROR-SYNTAX
 
      syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")" [function, klabel(ExtUndef)]
      syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String "," String ")"
-     syntax KItem ::= UNDIAG(String, String, String)
+                    | ILL(String, String, String)
 endmodule
 
 module ERROR
@@ -78,13 +78,15 @@ module ERROR
      rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String, Reason:String)
           => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason, ListItem(Document) ListItem(Citation)))
           requires checkOptions(Undef(), Title, true)
-     rule UNDIAG(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("URV-" +String Title, Msg, "Undiagnosable Rule violation", ListItem("C++14") ListItem(Citation)))
-          requires checkOptions(Undiag(), Title, true)
+
+     rule ILL(Title:String, Msg:String, Citation:String)
+          => EXIT(ErrorMsg("ILF-" +String Title, Msg, "Ill-formed program.", ListItem("C++14") ListItem(Citation)))
+          requires checkOptions(Ill(), Title, true)
 
      rule EXT-UNDEF(Title:String, _, _, _, _) => HALT
           requires notBool checkOptions(Undef(), Title, true)
-     rule UNDIAG(Title:String, _, _) => HALT
-          requires notBool checkOptions(Undiag(), Title, true)
+
+     rule ILL(Title:String, _, _) => HALT
+          requires notBool checkOptions(Ill(), Title, true)
 
 endmodule

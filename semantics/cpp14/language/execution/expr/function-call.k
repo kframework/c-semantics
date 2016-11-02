@@ -63,14 +63,16 @@ module CPP-EXPR-FUNCTION-CALL
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
 
-     rule bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
+     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
                Name(NoNNS(), X) := V, 
-               Var, AutoStorage, .Set)
+               Var, AutoStorage, .Set) ...</k>
+          <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires notBool isCPPRefType(T)
                andBool X =/=K #NoName
-     rule bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
+     rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
                bindReference(Name(NoNNS(), X), V),
-               Var, AutoStorage, .Set)
+               Var, AutoStorage, .Set) ...</k>
+          <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires isCPPRefType(T)
                andBool X =/=K #NoName
 

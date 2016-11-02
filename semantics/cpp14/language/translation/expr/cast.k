@@ -10,6 +10,21 @@ module CPP-TRANSLATION-EXPR-CAST
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
+     rule convertConst(T2::CPPType, pre(V::Expr, Tr::Trace, T1::CPPType))
+          => pre(ConstCast(T2, V), Tr, T2)
+          requires isSimilar(T2, T1)
+     rule convertConst(T2:CPPLVRefType, le(Loc::Expr, Tr::Trace, T1::CPPType))
+          => le(Loc, Tr, innerType(T2))
+          requires isObjectType(T1) andBool isObjectType(innerType(T2))
+               andBool isSimilar(type(pointerType(innerType(T2))),
+                                 type(pointerType(T1)))
+
+     rule convertConst(T2:CPPRVRefType, V:TExpr)
+          => xe(ConstCast(T2, stripHold(V)), trace(V), innerType(T2))
+          requires isObjectType(type(V)) andBool isObjectType(innerType(T2))
+               andBool isSimilar(type(pointerType(innerType(T2))),
+                                 type(pointerType(type(V))))
+
      // TODO(dwightguth): 5.4:4.3-5
      rule ParenthesizedCast(T:CPPType, V:Val) => tryConvert(convertConst(T, V), tryConvert(convertStatic(T, V, hasTrace(ParenthesizedCast(T, V))), tryConvert(.K, .K)))
 
@@ -32,5 +47,16 @@ module CPP-TRANSLATION-EXPR-CAST
      rule convertStatic(_:CPPVoidType, V::Val, _)
           => glDiscardedExpr(V)
           requires notBool isConvertableDiscardedExpr(V)
+
+     rule convertReinterpret(T2:CPPRefType, V:GLExpr)
+          => le(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
+          requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
+               orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
+               andBool isUnnamedLValue(T2)
+     rule convertReinterpret(T2:CPPRefType, V:GLExpr)
+          => xe(ReinterpretCast(T2, stripHold(V)), trace(V), innerType(T2))
+          requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
+               orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
+               andBool isUnnamedXValue(T2)
 
 endmodule

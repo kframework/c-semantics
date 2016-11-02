@@ -8,6 +8,7 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= checkLoc(SymLoc)
      syntax UType ::= arrayToPtrType(Type) [function]
 
+     syntax KItem ::= getEffectiveType(SymBase)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -378,9 +379,8 @@ module C-COMMON-EXPR-EVAL
 
      rule #effectivelyCompat(_, _) => false [owise]
 
-     syntax KItem ::= getEffectiveType(SymBase)
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
-          <mem>... Base |-> object(T::Type, _, _) ...</mem>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem:Map </mem>

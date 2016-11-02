@@ -17,6 +17,7 @@ module CPP-TRANSLATION-INIT
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-ERROR-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -41,14 +42,17 @@ module CPP-TRANSLATION-INIT
           requires !Fresh:Int >=Int 0 
 
      syntax KItem ::= "implicitDecls"
-                    | "func" "(" Namespace "," CId "," CPPType "," CPPTypes ")" [function]
+                    | "func" "(" Namespace "," CId "," CPPType "," CPPTypes "," ExceptionSet ")" [function]
      rule implicitDecls
-          => func(GlobalNamespace(), operatornew, type(pointerType(type(void))), type(size_t))
-          ~> func(GlobalNamespace(), operatornew[], type(pointerType(type(void))), type(size_t))
-          // TODO(dwightguth): delete, delete[]
+          => func(GlobalNamespace(), operatornew, ptr(type(void)), type(size_t), noexcept(false))
+          ~> func(GlobalNamespace(), operatornew[], ptr(type(void)), type(size_t), noexcept(false))
+          ~> func(GlobalNamespace(), operatordelete, type(void), ptr(type(void)), noexcept(true))
+          ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), noexcept(true))
+          ~> func(GlobalNamespace(), operatordelete, type(void), ptr(type(void)), type(size_t), noexcept(true))
+          ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), type(size_t), noexcept(true))
 
-     rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes) 
-          => declareObject(N, N, X, type(functionType(Ret, Args, CPPLinkage)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
+     rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
+          => declareObject(N, N, X, type(functionType(Ret, Args, CPPLinkage, E)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -70,7 +74,8 @@ module CPP-TRANSLATION-INIT
           requires notBool (XBuiltins() in Opts)
 
      rule <k> (.K => addBuiltin(B, T, AddAll))
-               ~> addBuiltins((B:QualId |-> T:CPPType => .Map) _, AddAll:Bool) ...</k>
+               ~> addBuiltins((B::QualId -> T::CPPType => .K) ~> _, AddAll::Bool) ...</k>
+     rule addBuiltins(.K, _) => .K
 
      syntax KItem ::= addBuiltin(QualId, CPPType, Bool) [klabel(addBuiltinCpp)]
 
@@ -80,11 +85,23 @@ module CPP-TRANSLATION-INIT
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Base::SymBase => linc(Base) </next-static-loc>
-          requires (notBool (Q in_keys(Defs))) orBool AddAll
+          requires (notBool (Q, T in_keys(Defs))) orBool AddAll
 
-     rule <k> addBuiltin(Q::QualId, _, false) => .K ...</k>
+     rule <k> addBuiltin(Q::QualId, T::CPPType, false) => checkReplaceable(Q, T, Defs) ...</k>
           <odr-defs> Defs:Map </odr-defs>
-          requires Q in_keys(Defs)
+          requires Q, T in_keys(Defs)
+
+     syntax K ::= checkReplaceable(QualId, CPPType, Map) [function]
+     syntax Error ::= "replaceableError"
+     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), CPPLinkage, _)), Defs::Map)
+          => ILL("TIN1", "Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).", "18.6.1.1:11")
+          ~> replaceableError
+          requires notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void)), type(size_t)) in_keys(Defs))
+     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), t(_, _, T::CPPSimpleType), CPPLinkage, _)), Defs::Map)
+          => ILL("TIN2", "Declared replacement function operator delete(void *, std::size_t) but no operator delete(void *).", "18.6.1.1:11")
+          ~> replaceableError
+          requires T ==K size_t andBool notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void))) in_keys(Defs))
+     rule checkReplaceable(_, _, _) => .K [owise]
 
      syntax KItem ::= declareBuiltinFunction(QualId, CPPType, SymBase) [klabel(declareBuiltinFunctionCpp)]
      rule <k> declareBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase) => .K ...</k>
@@ -94,11 +111,11 @@ module CPP-TRANSLATION-INIT
 
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]
-     rule getDummyParams(t(_, _, functionType(_, Ts::CPPTypes, _))) => #getDummyParams(Ts, 0)
+     rule getDummyParams(t(_, _, functionType(_, Ts::CPPTypes, _, _))) => #getDummyParams(Ts, 0)
      rule #getDummyParams(T::CPPType, Ts::CPPTypes, I::Int) => ListItem(Identifier("_" +String Int2String(I))) #getDummyParams(Ts, I +Int 1)
      rule #getDummyParams(.CPPTypes, _) => .List
 
-     rule isCLinkage(t(_, _, functionType(_, _::CPPTypes, CLinkage))) => true
+     rule isCLinkage(t(_, _, functionType(_, _::CPPTypes, CLinkage, _))) => true
      rule isCLinkage(_) => false [owise]
 
      rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))

@@ -1,0 +1,15 @@
+[1mnew26.C:14:1: [0m[0;1;35mwarning: [0m[1mreplacement function 'operator new' cannot be declared 'inline' [-Winline-new-delete][0m
+inline void *operator new(long unsigned int)
+[0;1;32m^
+[0m[1mnew26.C:19:1: [0m[0;1;35mwarning: [0m[1mreplacement function 'operator delete' cannot be declared 'inline' [-Winline-new-delete][0m
+inline void operator delete (void*) {}
+[0;1;32m^
+[0m[1mnew26.C:19:13: [0m[0;1;35mwarning: [0m[1mfunction previously declared with an explicit exception specification redeclared with an implicit exception specification [-Wimplicit-exception-spec-mismatch][0m
+inline void operator delete (void*) {}
+[0;1;32m            ^
+[0m3 warnings generated.
+Error: ILF-TIN1
+Description: Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).
+Type: Ill-formed program.
+See also: C++14 sec. 18.6.1.1:11
+Translation failed (config dumped). Run kcc -d new26.C to see commands run.

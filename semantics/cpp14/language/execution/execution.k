@@ -13,12 +13,14 @@ require "expr/function-call.k"
 require "expr/inc-and-dec.k"
 require "expr/logical.k"
 require "expr/name.k"
+require "expr/new.k"
 require "expr/reference.k"
 
 require "stmt/block.k"
 require "stmt/expr.k"
 require "stmt/goto.k"
 require "stmt/if.k"
+require "stmt/labeled.k"
 require "stmt/loop.k"
 require "stmt/return.k"
 
@@ -42,12 +44,14 @@ module CPP-EXECUTION
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LOGICAL
      imports CPP-EXPR-NAME
+     imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE
 
      imports CPP-STMT-BLOCK
      imports CPP-STMT-EXPR
      imports CPP-STMT-GOTO
      imports CPP-STMT-IF
+     imports CPP-STMT-LABELED
      imports CPP-STMT-LOOP
      imports C-CPP-STMT-RETURN
 

@@ -62,6 +62,8 @@ module CPP-PROCESS-LABEL
           <computation> ExpressionStmt(_) => .K ...</computation>
      rule <k> waitingOnGotoMap ...</k>
           <computation> ReturnOp(_) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> GotoStmt(_) => .K ...</computation>
 
      rule <k> waitingOnGotoMap ...</k>
           <computation>

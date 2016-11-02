@@ -11,7 +11,7 @@ module C-LINKING-INIT-SYNTAX
 
      syntax KItem ::= makeTu(String)
 
-     syntax KItem ::= addBuiltins(Map, Bool)
+     syntax KItem ::= addBuiltins(K, Bool)
      syntax KItem ::= "addCPPBuiltins"
 endmodule
 

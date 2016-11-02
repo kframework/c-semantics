@@ -39,9 +39,13 @@ module CPP-TYPING-CANONICALIZATION
 
      rule Qualifier(Q::Qualifier, t(Quals::Quals, Mods::Set, S::CPPSimpleType)) => t(Quals +Qual Q, Mods, S)
 
-     rule FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), NoExceptionSpec(), true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), NoExceptionSpec(), false)
-     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), NoExceptionSpec(), false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), L))) ...</k>
+     rule FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E::ExceptionSpec, true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), E, false)
+     context FunctionPrototype(_, _, HOLE:ExceptionSpec, _)
+     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), L, E))) ...</k>
           <curr-lang-linkage> L::LanguageLinkage </curr-lang-linkage>
+
+     rule ThrowSpec(krlist(.List)) => exSet(.Set)
+     rule NoExceptionSpec() => noexcept(false)
 
      rule QualifiedTypeName(NoTag(), N::NNS, TypedefType(X::CId))
           => Name(N, X)
@@ -70,17 +74,17 @@ module CPP-TYPING-CANONICALIZATION
      rule <k> EXIT(_) => recover ...</k>
           <curr-eval-context> noEval </curr-eval-context>
 
-     rule isAdjustedType(t(_, _, functionType(_, (T::CPPType, _), _))) => false
+     rule isAdjustedType(t(_, _, functionType(_, (T::CPPType, _), _, _))) => false
           requires isCPPFunctionTypeExpr(T) orBool isCPPArrayTypeExpr(T) orBool (isCPPTypeExpr(T) andBool getQuals(T) =/=K noQuals)
-     rule isAdjustedType(t(_, _, functionType(_, (_, Ts::CPPTypes => Ts), _))) [owise]
-     rule isAdjustedType(t(_, _, functionType(_, .CPPTypes, _))) => true
+     rule isAdjustedType(t(_, _, functionType(_, (_, Ts::CPPTypes => Ts), _, _))) [owise]
+     rule isAdjustedType(t(_, _, functionType(_, .CPPTypes, _, _))) => true
 
      syntax CPPFunctionType ::= #adjustFunctionType(CPPFunctionTypeExpr, List) [function]
      rule adjustFunctionType(T::CPPFunctionType) => #adjustFunctionType(T, .List)
-     rule #adjustFunctionType(t(_, _, functionType(_, (t(Q::Quals, Mods::Set, T:CPPSimpleArrayTypeExpr), Ts::CPPTypeExprs => Ts), _)), _::List (.List => ListItem(t(noQuals, Mods, pointerType(innerType(t(Q, Mods, T)))))))
-     rule #adjustFunctionType(t(_, _, functionType(_, (variadic, Ts::CPPTypeExprs => Ts), _)), _::List (.List => ListItem(variadic)))
-     rule #adjustFunctionType(t(_, _, functionType(_, (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts), _)), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
-     rule #adjustFunctionType(t(_, _, functionType(_, (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts), _)), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
-     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, L::LanguageLinkage)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), L))
+     rule #adjustFunctionType(t(_, _, functionType(_, (t(Q::Quals, Mods::Set, T:CPPSimpleArrayTypeExpr), Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, Mods, pointerType(innerType(t(Q, Mods, T)))))))
+     rule #adjustFunctionType(t(_, _, functionType(_, (variadic, Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(variadic)))
+     rule #adjustFunctionType(t(_, _, functionType(_, (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
+     rule #adjustFunctionType(t(_, _, functionType(_, (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
+     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), L, E))
 
 endmodule

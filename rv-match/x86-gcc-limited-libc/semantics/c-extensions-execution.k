@@ -3,7 +3,7 @@ requires "core-extensions/c11/library/library.k"
 
 module C-EXECUTION-EXTENSIONS
   imports CORE-EXTENSIONS-EXECUTION
-  imports CORE-EXTENSIONS-LIBRARY
+  imports C-CORE-EXTENSIONS-LIBRARY
 endmodule
 
 module C-CONFIGURATION-EXTENSIONS

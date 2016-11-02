@@ -1,6 +1,7 @@
 module CPP-EXPR-ADDITIVE
      imports BOOL
      imports INT
+     imports STRING
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -22,7 +23,7 @@ module CPP-EXPR-ADDITIVE
           => prv(newFromArray(Loc, T, I) +bytes (I *Int byteSizeofType(innerType(T))), Tr, T)
           requires ifFromArrayInBounds(Loc, T, I)
 
-     rule (.K => UNDIAG("CEA1",
+     rule (.K => UNDEF("CEA1",
                "A pointer (or array subscript) outside the bounds of an object.",
                "5.7:4"))
           ~> addToPointer(Loc::SymLoc, T::CPPType, I::Int, _)
@@ -36,7 +37,35 @@ module CPP-EXPR-ADDITIVE
           => addProv(fromArray(ArrOffset +Int NewOffset, Len), stripProv(Loc, #klabel(`fromArray`)))
      rule #newFromArray(Loc::SymLoc, .K, _) => Loc
 
+     rule prv(Loc::SymLoc, Tr::Trace, T:CPPPointerType) - prv(Loc'::SymLoc, Tr'::Trace, T':CPPPointerType)
+          => computePointerDifference(offset(Loc) -Int offset(Loc'), byteSizeofType(innerType(T)), type(ptrdiff_t), combine(Tr, Tr', #klabel(`_-__CPP-SYNTAX`)), "std::ptrdiff_t")
+          requires sameBase(Loc, Loc')
+
+     rule (.K => UNDEF("CEA2",
+               "Computing pointer difference between two different objects.", "5.7:6"))
+          ~> prv(Loc::SymLoc, _, _:CPPPointerType) - prv(Loc'::SymLoc, _, _:CPPPointerType)
+          requires notBool sameBase(Loc, Loc')
+
+     syntax KItem ::= computePointerDifference(Int, Int, CPPType, Trace, String) [klabel(computePointerDifferenceCPP)]
+     rule computePointerDifference(Diff::Int, Size::Int, T::CPPType, Tr::Trace, _)
+          => prv(Diff /Int Size, Tr, T)
+          requires (Diff %Int Size ==Int 0)
+               andBool inRange(Diff /Int Size, T)
+     rule (.K => UNDEF("CEA3", "Pointer difference outside the range that can be represented by object of type " +String S +String ".",
+               "5.7:6"))
+          ~> computePointerDifference(Diff::Int, Size::Int, T::CPPType, _, S::String)
+          requires notBool inRange(Diff /Int Size, T)
+
      rule prv(I1:Int, Tr1::Trace, T1:CPPIntegerType) + prv(I2:Int, Tr2::Trace, T2:CPPIntegerType)
           => arithInterpret(T1, I1 +Int I2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
           requires isPromoted(T1) andBool T1 ==Type T2
+
+     rule prv(I1:Int, Tr1::Trace, T1:CPPIntegerType) - prv(I2:Int, Tr2::Trace, T2:CPPIntegerType)
+          => arithInterpret(T1, I1 -Int I2, combine(Tr1, Tr2, #klabel(`_-__CPP-SYNTAX`)))
+          requires isPromoted(T1) andBool T1 ==Type T2
+
+     rule L:LVal [ R:Val ] => * (L + R)
+     rule L:Val [ R:Val ] => * (L + R)
+          requires isCPPPointerType(type(L))
+
 endmodule

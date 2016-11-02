@@ -73,6 +73,7 @@ module CPP-SYNTAX
                    
 
      syntax Expr ::= temp(Int, CPPType)
+                   | newSize(Int)
 
      syntax CId ::= Destructor(CId)
 
@@ -82,13 +83,17 @@ module CPP-SYNTAX
      syntax TemplateKeyword ::= "template" | "no-template"
 
      syntax Expr ::= left:
-                     Expr "++" [strict]
+                     Expr "[" Expr "]" [strict]
+                   | Expr "++" [strict]
                    | Expr "--" [strict]
                    | BuiltinCallOp(Expr, List)
+                   | ReinterpretCast(AType, Expr) [strict]
+                   | ConstCast(AType, Expr) [strict]
                    > right:
                      "++" Expr [strict]
                    | "--" Expr [strict]
-                   | NewOp(CPPType, Expr, K)
+                   | NewOp(CPPType, Expr, K, K, Int)
+                   | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
                    | "&" Expr [strict]
                    | "!" Expr
