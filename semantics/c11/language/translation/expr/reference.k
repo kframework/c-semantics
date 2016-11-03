@@ -7,7 +7,7 @@ module C-EXPR-REFERENCE
      rule &(ncle(K:K, T::Type))
           => te(& K, utype(pointerType(T)))
 
-     rule * (te(K:K, T::UType)) => le(* K, innerType(T))
+     rule * (te(K:K, T:PointerUType)) => le(* K, innerType(T))
           requires notBool isVoidType(innerType(T))
 
 endmodule

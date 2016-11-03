@@ -76,6 +76,11 @@ module C-COMMON-EXPR-REFERENCE
                andBool ifFromArrayInBounds(Loc,
                     utype(pointerType(type(char))), 1) ==K true
           [structural]
+
+     rule (.K => CV("CER6", "Unary '*' operator applied to non-pointer.", "6.5.3.2:2"))
+          ~> * R:RValue
+          requires notBool isPointerUType(utype(R))
+
      rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer.",
                "6.5.3.2:4, J.2:1 item 43"))

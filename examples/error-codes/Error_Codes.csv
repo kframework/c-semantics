@@ -140,6 +140,7 @@ CV-CEM3,Attempting to access member but it does not exist.,6.5.2.3:1,Constraint 
 CV-CER1,Unary '&' operator applied to non-lvalue.,6.5.3.2:1,Constraint Violation,
 CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3.2:1,Constraint Violation,
 CV-CER5,Unary '&' operator applied to a bit-field.,6.5.3.2:1,Constraint Violation,
+CV-CER6,Unary '*' operator applied to non-pointer.,6.5.3.2:2,Constraint Violation,
 CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation,
 CV-CERL8,Invalid opeand types to ==.,6.5.9:2,Constraint Violation,
 CV-CERL9,Invalid opeand types to !=.,6.5.9:2,Constraint Violation,
