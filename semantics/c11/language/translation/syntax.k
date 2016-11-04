@@ -476,8 +476,6 @@ module C-ABSTRACT-SYNTAX
      syntax Expression ::= Dot(K, CId)
      syntax Expression ::= Arrow(K, CId)
 
-     syntax KItem ::= CodeLoc(K, CabsLoc)
-
 endmodule
 
 module C-ABSTRACT-REWRITING

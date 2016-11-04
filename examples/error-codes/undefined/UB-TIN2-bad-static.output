@@ -1,2 +1,2 @@
-<unknown>: error: Multiple external definitions for a.
+UB-TIN2-bad-static-link1.c:4:1: error: Multiple external definitions for a.
   Undefined behavior (UB-TIN2). See C11 sec. 6.9:5, J.2:1 item 84

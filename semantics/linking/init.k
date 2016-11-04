@@ -13,6 +13,7 @@ module C-LINKING-INIT-SYNTAX
 
      syntax KItem ::= addBuiltins(K, Bool)
      syntax KItem ::= "addCPPBuiltins"
+
 endmodule
 
 module C-LINKING-INIT
@@ -73,7 +74,8 @@ module C-LINKING-INIT
           <tu-id> Tu </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in Uses) orBool AddAll
+          requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in getIds(Uses))
+               orBool AddAll
 
      rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
           <external-types> Types:Map </external-types>
@@ -88,7 +90,8 @@ module C-LINKING-INIT
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in Uses) orBool AddAll)
+          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in getIds(Uses))
+               orBool AddAll)
                andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
@@ -96,7 +99,12 @@ module C-LINKING-INIT
           <external-uses> Uses:Set </external-uses>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in_keys(Defs))
-               andBool notBool (B in Uses)
+               andBool notBool (B in getIds(Uses))
+
+     syntax Set ::= getIds(Set) [function]
+     rule getIds(SetItem(CodeLoc(X::CId, _)) S::Set)
+          => SetItem(X) getIds(S)
+     rule getIds(.Set) => .Set
 
      // compare against declare()
      syntax KItem ::= declareBuiltinFunction(CId, Type, SymBase)
@@ -106,6 +114,7 @@ module C-LINKING-INIT
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, handleBuiltin)] </functions>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
+          <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[B <- Base] </genv>
@@ -113,6 +122,7 @@ module C-LINKING-INIT
 
      rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
+          <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[B <- Base] </genv>
@@ -141,9 +151,9 @@ module C-LINKING-INIT
           [structural]
 
      syntax KItem ::= checkMerge(K, K)
-                    | checkExtTypes(K, Set, Map, Set, Map)
+                    | checkExtTypes(K, Set, Map, Set, Map, Map)
                     | checkExtType(Bool)
-                    | checkExtDefs(K, Set, Set)
+                    | checkExtDefs(K, Set, Set, Map)
 
      rule checkMerge(_, .K) => .K
      rule checkMerge(.K, _) => .K
@@ -151,37 +161,50 @@ module C-LINKING-INIT
           (<global>...
                <external-types> Types:Map </external-types>
                <external-defs> Defs:Map </external-defs>
+               <external-defs-loc> Locs:Map </external-defs-loc>
           ...</global>),
           (<global>...
                <external-types> Types':Map </external-types>
                <external-defs> Defs':Map </external-defs>
+               <external-defs-loc> Locs':Map </external-defs-loc>
           ...</global>))
-          => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types')
-          ~> checkExtDefs(.K, keys(Defs), keys(Defs'))
+          => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types', updateMap(Locs, Locs'))
+          ~> checkExtDefs(.K, keys(Defs), keys(Defs'), updateMap(Locs, Locs'))
 
-     rule checkExtTypes((.K => X::CId), (SetItem(X::CId) => .Set) _, _, _, _)
-     rule checkExtTypes((X:KItem => .K), _, _, Ids':Set, _)
+     rule checkExtTypes(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
+     rule checkExtTypes(X:KItem => .K, _, _, Ids':Set, _, _)
           requires notBool (X in Ids')
-     rule (.K => checkExtType(areDeclCompat(T,T'))) ~> checkExtTypes(X:KItem,
-               _, (X |-> T:Type) _,
-               _, (X |-> T':Type) _)
-     rule (checkExtType(true) => .K) ~> checkExtTypes((X:KItem => .K), _, _, _, _)
-     rule checkExtTypes(.K, .Set, _, _, _) => .K
+     rule <k> (.K => checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
+               _, X |-> T:Type _,
+               _, X |-> T':Type _,
+               X |-> L::CabsLoc _)
+          ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> (.K => checkExtType(areDeclCompat(T, T'))) ~> checkExtTypes(X:KItem,
+               _, X |-> T:Type _,
+               _, X |-> T':Type _,
+               Locs::Map)
+          ...</k>
+          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
+          requires notBool (X in_keys(Locs))
+     rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
      rule (.K => EXT-UNDEF("TIN1",
-               "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units.",
-               "C11", "6.2.7:2, J.2:1 item 15"))
-          ~> checkExtType(false) ~> checkExtTypes(X:KItem,
-               _, _,
-               _, _)
+          "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units.",
+          "C11", "6.2.7:2, J.2:1 item 15"))
+          ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, _)
+     rule <k> checkExtTypes(.K, .Set, _, _, _, _) => .K ...</k>
+          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
 
-     rule checkExtDefs((.K => X::CId), (SetItem(X::CId) => .Set) _, _)
-     rule checkExtDefs((X:KItem => .K), _, Defs':Set)
+     rule checkExtDefs(.K => X, (SetItem(X::CId) => .Set) _, _, _)
+     rule checkExtDefs(X:KItem => .K, _, Defs':Set, _)
           requires notBool (X in Defs')
-     rule checkExtDefs(.K, .Set, _) => .K
-     rule (.K => EXT-UNDEF("TIN2",
+     rule checkExtDefs(.K, .Set, _, _) => .K
+     rule <k> (.K => EXT-UNDEF("TIN2",
                "Multiple external definitions for " +String idToString({X}:>CId) +String ".",
                "C11", "6.9:5, J.2:1 item 84"))
-          ~> checkExtDefs(X:KItem, _, SetItem(X) _)
+               ~> checkExtDefs(X:KItem, _, SetItem(X) _, X |-> L::CabsLoc _)
+          ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
 
      syntax K ::= mergeObj(K, K) [function]
      syntax Map ::= mergeDecls(Map, Map) [function]
@@ -213,6 +236,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
                     <external-uses> ExtUses1:Set </external-uses>
+                    <external-defs-loc> ExtDefsLoc1:Map </external-defs-loc>
                     <odr-decls> OdrDecls1:Map </odr-decls>
                     <odr-uses> OdrUses1:Set </odr-uses>
                </linking-state>
@@ -236,6 +260,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
                     <external-uses> ExtUses2:Set </external-uses>
+                    <external-defs-loc> ExtDefsLoc2:Map </external-defs-loc>
                     <odr-decls> OdrDecls2:Map </odr-decls>
                     <odr-uses> OdrUses2:Set </odr-uses>
                </linking-state>
@@ -260,6 +285,7 @@ module C-LINKING-INIT
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
                     <external-uses> ExtUses1 ExtUses2 </external-uses>
+                    <external-defs-loc> updateMap(ExtDefsLoc1, ExtDefsLoc2) </external-defs-loc>
                     <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>
                </linking-state>

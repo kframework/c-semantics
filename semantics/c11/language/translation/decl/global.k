@@ -598,7 +598,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>...
-               X |-> declState((_ => Base'), (_ => T'), (_ => S'), _)
+               X |-> declState(_ => Base', _ => T', _ => S', _)
           ...</externals>
           [structural]
      rule <k> updateDecl(X:CId, internal, S':DeclState)
@@ -609,55 +609,61 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals>...
-               X |-> declState((_ => Base'), (_ => T'), (_ => S'), _)
+               X |-> declState(_ => Base', _ => T', _ => S', _)
           ...</internals>
           [structural]
 
      syntax KItem ::= updateLinkState(CId, Type, SymBase)
      // No previous decl, this isn't a def.
-     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls> Decls:Map (.Map => X |-> SetItem(Tu)) </external-decls>
-          <external-types>... (.Map => X |-> T') ...</external-types>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-types> Types::Map => Types[X <- T'] </external-types>
           requires isLinkerLoc(Base')
                andBool notBool (X in_keys(Decls))
           [structural]
      // No previous decl, this is a def.
-     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls> Decls:Map (.Map => X |-> SetItem(Tu)) </external-decls>
-          <external-types>... (.Map => X |-> T') ...</external-types>
-          <external-defs>... (.Map => X |-> Base') ...</external-defs>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-types> Types::Map => Types[X <- T'] </external-types>
+          <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
+          <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
           requires notBool isLinkerLoc(Base')
                andBool notBool (X in_keys(Decls))
           [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
-     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
-          <external-decls>... X |-> _:Set (.Set => SetItem(Tu)) ...</external-decls>
-          <external-types>... X |-> (_ => T') ...</external-types>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-types> Types::Map => Types[X <- T'] </external-types>
           requires isLinkerLoc(Base')
           [structural]
      // New def.
-     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
-          <external-types>... X |-> (_ => T') ...</external-types>
-          <external-defs> Defs:Map (.Map => X |-> Base') </external-defs>
+     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <curr-program-loc> L:CabsLoc </curr-program-loc>
+          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-types> Types::Map => Types[X <- T'] </external-types>
+          <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
+          <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
           requires notBool isLinkerLoc(Base')
                andBool (notBool (X in_keys(Defs)))
           [structural]
      // Def already encountered.
-     rule <k> updateLinkState(X:CId, T':Type, Base':SymBase) => .K ...</k>
-          <external-types>... X |-> (_ => T') ...</external-types>
+     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+          <external-types> Types::Map => Types[X <- T'] </external-types>
           <external-defs>... X |-> Base' ...</external-defs>
           [structural]
 
      rule <k> (.K => CV("TDG13",
                "Redefinition of symbol: " +String idToString(X) +String ".", "6.9:3"))
-               ~> updateLinkState(X:CId, _, Base':SymBase)
+               ~> updateLinkState(X::CId, _, Base'::SymBase)
           ...</k>
-          <external-defs>...
-               X |-> Base:SymBase
-          ...</external-defs>
+          <external-defs>... X |-> Base:SymBase ...</external-defs>
           requires notBool isLinkerLoc(Base')
                andBool (Base =/=K Base')
           [structural]
@@ -697,7 +703,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Base':SymBase => linc(Base') </next-static-loc>
-          <linkings>... (.Map => Base |-> Base') </linkings>
+          <linkings>... .Map => Base |-> Base' ...</linkings>
           requires isLinkerLoc(Base)
           [structural]
 

@@ -22,15 +22,27 @@ module C-LINKING-RESOLUTION
      // environment of every TU where it appears.
 
      syntax KItem ::= resolveReference(CId)
+                    | resolveReferences(Map)
                     | resolveCPPReference(SymBase)
                     | "resolveMain"
 
-     rule <k> (.K => resolveReference(X)) ~> resolveReferences ...</k>
-          <external-uses> (SetItem(X:CId) => .Set) ...</external-uses>
+     syntax Map ::= usesToMap(Set) [function]
+                  | usesToMap(Set, Map) [function, klabel(usesToMap2)]
+     rule usesToMap(S::Set) => usesToMap(S, .Map)
+     rule usesToMap((SetItem(CodeLoc(X::CId, L::CabsLoc)) => .Set) _, M::Map => M[X <- L])
+     rule usesToMap(.Set, M::Map) => M
+
+     rule <k> resolveReferences => resolveReferences(usesToMap(Uses)) ...</k>
+          <external-uses> Uses:Set => .Set </external-uses>
+
+     rule <k> (.K => resolveReference(X))
+               ~> resolveReferences((X:CId |-> L:CabsLoc => .Map) _)
+          ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
           [structural]
 
-     rule <k> (.K => resolveCPPReference(Base)) ~> resolveReferences ...</k>
-          <odr-uses> (SetItem(Base::SymBase) => .Set) ...</odr-uses>
+     rule <k> (.K => resolveCPPReference(Base)) ~> resolveReferences(_) ...</k>
+          <odr-uses> SetItem(Base::SymBase) => .Set ...</odr-uses>
 
      rule <k> resolveReference(X:CId) ...</k>
           <external-decls>...
@@ -39,7 +51,7 @@ module C-LINKING-RESOLUTION
           <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
           <genv>... X |-> (Base:SymBase => Base') ...</genv>
-          <linkings>... (.Map => Base |-> Base') ...</linkings>
+          <linkings>... .Map => Base |-> Base' ...</linkings>
           requires isLinkerLoc(Base)
           [structural]
 
@@ -55,7 +67,7 @@ module C-LINKING-RESOLUTION
 
      rule <k> resolveReference(X:CId) => .K  ...</k>
           <external-decls>...
-               (X:CId |-> .Set => .Map)
+               X:CId |-> .Set => .Map
           ...</external-decls>
           <external-defs>... X |-> _ ...</external-defs>
           <external-types>... X |-> _ ...</external-types>
@@ -94,7 +106,7 @@ module C-LINKING-RESOLUTION
           <odr-decls>...
                OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set
           ...</odr-decls>
-          <external-defs>... X |-> Base'::SymBase ...</external-defs>
+          <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> (T |-> kpair(_, (Base::SymBase => Base')) _::Map) ...</nenv>
@@ -143,13 +155,14 @@ module C-LINKING-RESOLUTION
 
      // Now everything left in <external-uses> should be an unresolved
      // reference.
-     rule <k> resolveReferences => resolveMain ...</k>
+     rule <k> resolveReferences(.Map) => resolveMain ...</k>
           <external-uses> .Set </external-uses>
           <odr-uses> .Set </odr-uses>
+          <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
 
      // Remember which TU has the definition of main.
      rule <k> resolveMain => .K ...</k>
-          <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
+          <main-tu>... .Set => SetItem(MainTu) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
           <external-defs>...
                Identifier("main") |-> _ @ static(MainTu:String)
@@ -189,13 +202,17 @@ module C-LINKING-RESOLUTION
      rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <external-decls>... X |-> (SetItem(Tu) => .Set) _::Set ...</external-decls>
+          <external-decls>... X |-> (SetItem(Tu) S::Set => S) ...</external-decls>
+          requires S =/=K .Set
+     rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <external-decls>... X |-> SetItem(Tu) => .Map ...</external-decls>
      rule <k> removeFromExternalDecls((ListItem(X:CId) => .List) _) ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <external-decls> Decls:Map </external-decls>
           requires notBool (X in_keys(Decls))
      rule removeFromExternalDecls(.List) => .K
-
 
 endmodule

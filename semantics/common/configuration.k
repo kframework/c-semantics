@@ -30,6 +30,8 @@ module COMMON-CONFIGURATION
           <external-decls> .Map </external-decls>
           // CIds
           <external-uses> .Set </external-uses>
+          // CId |-> CabsLoc
+          <external-defs-loc> .Map </external-defs-loc>
           // SymBase |-> Set(ktriple(TU, QualId, Type))
           <odr-decls> .Map </odr-decls>
           // Set(SymBase)

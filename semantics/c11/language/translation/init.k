@@ -27,7 +27,6 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (XBuiltins() in Opts)
 
-     // TODO(chathhorn): prevent duplicate TUs or TU name clashes.
      rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
                => makeTu(TU +String newUUID)
                ~> preDeclareStrings(Strings)

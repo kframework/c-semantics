@@ -58,4 +58,6 @@ module COMMON-SYNTAX
 
      syntax String ::= signatureToString(QualId, K) [function]
 
+     syntax KItem ::= CodeLoc(K, CabsLoc)
+
 endmodule
