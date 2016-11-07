@@ -20,13 +20,13 @@ module TRANSLATION-ERROR
           +String Msg
           +String {#if Reason ==String "" #then "" #else "\n" +String Reason #fi}:>String
           +String {#if isNoWrap #then "  " #else "\n  " #fi}:>String +String ErrType +String " (" +String Title +String ")."
-          +String formatCitations(Title)
+          +String formatCitations(Title, false)
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, true)
           => Title
           +String ",\"" +String Msg +String "\""
           +String ","   +String ErrType
-          +String ",\"" +String formatCitations(Title) +String "\""
+          +String ",\"" +String formatCitations(Title, true) +String "\""
           +String ",\"" +String Reason +String "\""
           +String ",\"" +String Location +String "\""
 

@@ -5,7 +5,7 @@ module ERROR-SYNTAX
      syntax ErrorMsg ::= ErrorMsg(String, String, String, String)
                        | ErrorMsg(String, String, String) [function, klabel(ErrorMsgS)]
 
-     syntax String ::= formatCitations(String) [function]
+     syntax String ::= formatCitations(String, Bool) [function]
 
      syntax Bool ::= "isCSV" [function]
                    | "isNoWrap" [function]
@@ -43,7 +43,7 @@ module ERROR
      rule ErrorMsg(Title:String, Msg:String, ErrType:String)
           => ErrorMsg(Title, Msg, ErrType, "")
 
-     rule formatCitations(Title:String) => formatCitationsWithDelims(citations(Title), isCSV, isNoWrap)
+     rule formatCitations(Title:String, IsCSV:Bool) => formatCitationsWithDelims(citations(Title), IsCSV, isNoWrap)
 
      syntax String ::= formatCitationsWithDelims(List, Bool, Bool) [function]
      rule formatCitationsWithDelims(.List, _, _) => ""

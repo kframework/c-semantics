@@ -26,7 +26,7 @@ module C-EXECUTION-ERROR
           +String {#if Trace ==String "" #then "" #else "\n" +String Trace #fi}:>String
           +String {#if Reason ==String "" #then "" #else "\n  " +String Reason #fi}:>String
           +String "\n  " +String ErrType +String " (" +String Title +String ")."
-          +String formatCitations(Title)
+          +String formatCitations(Title, false)
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String), Trace:String, true)
           => Title
@@ -35,7 +35,7 @@ module C-EXECUTION-ERROR
           +String "\","
           +String ErrType
           +String ",\""
-          +String formatCitations(Title)
+          +String formatCitations(Title, true)
           +String "\""
           +String ",\"" +String Reason +String "\""
           +String ",\"" +String Trace +String "\""
