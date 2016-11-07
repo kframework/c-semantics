@@ -1,3 +1,5 @@
 j504a.c:2:1: error: Redefinition of symbol: x.
-  Constraint violation (CV-TDG13). See C11 sec. 6.9:3
+  Constraint violation (CV-TDG13).
+   see C11 section 6.9:3 http://rvdoc.org/C11/6.9
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d j504a.c to see commands run.

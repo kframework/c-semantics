@@ -1,3 +1,4 @@
  Unsigned integer overflow.
    at main(L-CCVE1-bad.c:10:5)
   Possible unintended behavior (L-CCVE1).
+   see CERT-C section INT30-C http://rvdoc.org/CERT-C/INT30-C

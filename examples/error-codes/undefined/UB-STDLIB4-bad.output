@@ -1,4 +1,8 @@
  Called the exit function more than once (from a call to atexit).
    at exit(UB-STDLIB4-bad.c:4:3)
    by foo(UB-STDLIB4-bad.c:4:3)
-  Undefined behavior (UB-STDLIB4). See C11 sec. 7.22.4.4:2, J.2:1 item 182
+  Undefined behavior (UB-STDLIB4).
+   see C11 section 7.22.4.4:2 http://rvdoc.org/C11/7.22.4.4
+   see C11 section J.2:1 item 182 http://rvdoc.org/C11/J.2
+   see CERT-C section ENV32-C http://rvdoc.org/CERT-C/ENV32-C
+   see CERT-C section ERR04-C http://rvdoc.org/CERT-C/ERR04-C

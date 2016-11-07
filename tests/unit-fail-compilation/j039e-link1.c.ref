@@ -1,3 +1,7 @@
 j039e-link2.c:1:1: error: Identifier foo declared with incompatible types in different translation units.
-  Undefined behavior (UB-TIN1). See C11 sec. 6.2.7:2, J.2:1 item 15
+  Undefined behavior (UB-TIN1).
+   see C11 section 6.2.7:2 http://rvdoc.org/C11/6.2.7
+   see C11 section J.2:1 item 15 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL23-C http://rvdoc.org/CERT-C/DCL23-C
+   see CERT-C section DCL40-C http://rvdoc.org/CERT-C/DCL40-C
 Translation failed (config dumped). Run kcc -d j039e-link1.c j039e-link2.c to see commands run.

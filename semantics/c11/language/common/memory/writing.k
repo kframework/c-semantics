@@ -84,13 +84,13 @@ module C-MEMORY-WRITING
      rule <k> write(loc((Base:SymBase => Base'), _, _), _, _) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
-     rule <k> (.K => CV("CMW2", "Trying to write through a const lvalue.", "6.5.16.1:1") )
+     rule <k> (.K => CV("CMW2", "Trying to write through a const lvalue.") )
                ~> write(_, _, T:Type)
           ...</k>
           <initializing> false </initializing>
           requires isConstType(T)
           [structural]
-     rule <k> (.K => UNDEF("CMW1", "Trying to modify a string literal.", "6.4.5:7, J.2:1 item 33"))
+     rule <k> (.K => UNDEF("CMW1", "Trying to modify a string literal."))
                ~> write(Loc:SymLoc, _, _)
           ...</k>
           <initializing> false </initializing>

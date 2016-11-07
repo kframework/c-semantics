@@ -1,4 +1,8 @@
  Attempt to call the function f through a pointer with incompatible type.
    at main(j039b.c:6:7)
-  Undefined behavior (UB-EFNC1). See C11 sec. 6.5.2.2:9, J.2:1 items 26, 41
+  Undefined behavior (UB-EFNC1).
+   see C11 section 6.5.2.2:9 http://rvdoc.org/C11/6.5.2.2
+   see C11 section J.2:1 items 26 and 41 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP37-C http://rvdoc.org/CERT-C/EXP37-C
+   see CERT-C section DCL40-C http://rvdoc.org/CERT-C/DCL40-C
 Execution failed (configuration dumped)

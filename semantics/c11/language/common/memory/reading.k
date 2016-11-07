@@ -114,11 +114,11 @@ module C-MEMORY-READING
                andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
 
-     rule (.K => UNSPEC("CMR1", "Trying to reinterpret integer bytes as floating bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
+     rule (.K => UNSPEC("CMR1", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
           concretize(_:FloatUType, dataList(L::List))
           requires hasInt(L)
           [structural]
-     rule (.K => UNSPEC("CMR2", "Trying to reinterpret floating bytes as integer bytes.", "6.2.6.1:1, J.1:1 item 9") ) ~>
+     rule (.K => UNSPEC("CMR2", "Trying to reinterpret floating bytes as integer bytes.") ) ~>
           concretize(T:IntegerUType, dataList(L::List))
           requires hasFloat(L)
                andBool notBool isCharUType(T)

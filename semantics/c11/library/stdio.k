@@ -436,7 +436,7 @@ module LIBC-STDIO
           <format-state> State::String </format-state>
           requires (State ==String "%d" orBool State ==String "%x" orBool State ==String "%X" orBool State ==String "%u" orBool State ==String "%o")
 
-     rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.", "7.21.6.1:8")) ~> formatter-aux(_) ...</k>
+     rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.")) ~> formatter-aux(_) ...</k>
           <format-arg> unknown(_) </format-arg>
 
      rule <k> formatter-aux(_) ...</k>
@@ -886,8 +886,7 @@ module LIBC-STDIO
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
-               +String State +String " and the type of the argument.",
-               "7.21.6.1:9, J.2:1 item 153") )
+               +String State +String " and the type of the argument.") )
           ~> nextvarg(tv(V:CValue, T'::UType), T:Type)
           ...</k>
           <format-state> State:String </format-state>

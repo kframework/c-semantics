@@ -18,7 +18,7 @@ module LIBC-STRING
           requires Dest =/=K NullPointer andBool Src =/=K NullPointer
           [structural]
 
-     rule (.K => UNDEF("STRING1", "Null pointer passed to strcpy.", "7.1.4:1, J.2:1 item 109"))
+     rule (.K => UNDEF("STRING1", "Null pointer passed to strcpy."))
           ~> builtin("strcpy",
                tv(Dest:SymLoc, ut(_, pointerType(_))),
                tv(Src:SymLoc, ut(_, pointerType(_))))

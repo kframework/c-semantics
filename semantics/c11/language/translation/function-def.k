@@ -45,7 +45,7 @@ module C-FUNCTION-DEF
           requires notBool hasDupParams(T)
           [structural]
      rule (.K => CV("FD1", "Duplicate parameters in "
-               +String "function definition.", "6.7:3"))
+               +String "function definition."))
           ~> FunctionDefinition(typedDeclaration(T:Type, _), _)
           requires hasDupParams(T)
 
@@ -81,12 +81,11 @@ module C-FUNCTION-DEF
                andBool areVoidOrComplete(getParams(T))
                andBool (X ==K Identifier("main"))
           [structural]
-     rule (.K => CV("FD2", "Invalid return type in function definition.",
-               "6.7.6.3:1"))
+     rule (.K => CV("FD2", "Invalid return type in function definition."))
           ~> checkFunDefType(_, t(_, _, functionType(_:ArrayOrFunctionUType, _)))
           [structural]
      rule (.K => CV("FD3", "Incomplete parameter type in "
-               +String "function definition.", "6.7.6.3:4"))
+               +String "function definition."))
           ~> checkFunDefType(_, T:Type)
           requires notBool areVoidOrComplete(getParams(T))
           [structural]
@@ -112,27 +111,27 @@ module C-FUNCTION-DEF
           => .K
           requires (notBool oldStyle in Mods) andBool isArgvType(T)
           [structural]
-     rule (.K => UNDEF("FD4", "Definition of main requires a prototype.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD4", "Definition of main requires a prototype.") )
           ~> checkMainDef(t(_, Mods:Set, functionType(ut(_, int), ListItem(T:Type) _)))
           requires (oldStyle in Mods) andBool notBool isVoidType(T)
           [structural]
-     rule (.K => UNDEF("FD5", "Function main must return an int.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD5", "Function main must return an int.") )
           ~> checkMainDef(t(_, _, functionType(ut(_, T::SimpleUType), _)))
           requires T =/=K int
           [structural]
-     rule (.K => UNDEF("FD6", "If main has parameters, the type of the first parameter must be equivalent to int.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD6", "If main has parameters, the type of the first parameter must be equivalent to int.") )
           ~> checkMainDef(t(_, _, functionType(_, ListItem(t(_, _, T::SimpleType)) _)))
           requires T =/=K int andBool T =/=K void
           [structural]
-     rule (.K => UNDEF("FD7", "If main has parameters, the type of the second parameter must be equivalent to char**.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD7", "If main has parameters, the type of the second parameter must be equivalent to char**.") )
           ~> checkMainDef(t(_, _, functionType(_, ListItem(_) ListItem(T:Type))))
           requires notBool isArgvType(T)
           [structural]
-     rule (.K => UNDEF("FD8", "Function main must have zero or two parameters.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD8", "Function main must have zero or two parameters.") )
           ~> checkMainDef(t(_, _, functionType(_, Params::List)))
           requires size(Params) >Int 2
           [structural]
-     rule (.K => UNDEF("FD9", "Function main must have zero or two parameters.", "5.1.2.2.1:1, J.2:1 item 4") )
+     rule (.K => UNDEF("FD9", "Function main must have zero or two parameters.") )
           ~> checkMainDef(t(_, _, functionType(_, ListItem(t(_, _, T::SimpleType)))))
           requires T =/=K void
           [structural]

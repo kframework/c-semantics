@@ -51,7 +51,7 @@ module C-COMMON-EXPR-EVAL
      syntax KItem ::= checkCompleteLValue(Type)
      rule checkCompleteLValue(T::Type) => .K
           requires isCompleteType(T)
-     rule (.K => UNDEF("CEE5", "Trying to convert an incomplete lvalue not of array type.", "6.3.2.1:2, J.2:1 item 20"))
+     rule (.K => UNDEF("CEE5", "Trying to convert an incomplete lvalue not of array type."))
           ~> checkCompleteLValue(T::Type)
           requires notBool isCompleteType(T)
 
@@ -110,8 +110,7 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      rule reval(trap(T::UType)
-               => UNDEF("CEE2", "Indeterminate value used in an expression.",
-                    "6.2.4, 6.7.9, 6.8, J.2:1 item 11")
+               => UNDEF("CEE2", "Indeterminate value used in an expression.")
                ~> tv(trap, T))
           [structural]
 
@@ -124,8 +123,7 @@ module C-COMMON-EXPR-EVAL
           requires notBool isRegisterLoc(Loc)
           [structural]
      rule <k> (.K => UNDEF("CEE1",
-                    "Address of an array declared with register storage class used in an expression.",
-                    "6.3.2.1:3, J.2:1 item 22"))
+                    "Address of an array declared with register storage class used in an expression."))
               ~> checkRegister(Loc:SymLoc)
           ...</k>
           <initializing> false </initializing>
@@ -174,13 +172,11 @@ module C-COMMON-EXPR-EVAL
      syntax Error ::= "errorLocBounds"
      syntax KItem ::= "errorLocInvalid"
      rule (.K => UNDEF("CEE4",
-               "Referring to an object outside of its lifetime.",
-               "6.2.4:2, J.2:1 item 9"))
+               "Referring to an object outside of its lifetime."))
           ~> errorLocInvalid
           [structural]
      rule (.K => UNDEF("CEE3",
-               "Found pointer that refers outside the bounds of an object + 1.",
-               "6.3.2.1:1, J.2:1 item 19"))
+               "Found pointer that refers outside the bounds of an object + 1."))
           ~> errorLocBounds
           [structural]
 
@@ -243,7 +239,7 @@ module C-COMMON-EXPR-EVAL
           requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
-     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed.", "6.5:7, J.2:1 item 37"))
+     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed."))
           ~> checkEffectiveType''(_, L::Type, Offset::Int, _, Eff:Type)
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)

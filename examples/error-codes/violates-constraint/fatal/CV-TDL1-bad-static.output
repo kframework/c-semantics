@@ -1,3 +1,5 @@
 CV-TDL1-bad-static.c:5:2: error: Extern declaration of a follows one with no linkage.
-  Constraint violation (CV-TDL1). See C11 sec. 6.7:3
+  Constraint violation (CV-TDL1).
+   see C11 section 6.7:3 http://rvdoc.org/C11/6.7
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-TDL1-bad-static.c to see commands run.

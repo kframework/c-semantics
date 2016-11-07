@@ -1,5 +1,8 @@
  Return from a function declared _Noreturn.
    at f(j071a.c:3:13)
    by main(j071a.c:8:7)
-  Undefined behavior (UB-ESR1). See C11 sec. 6.7.4, J.2:1 item 71
+  Undefined behavior (UB-ESR1).
+   see C11 section 6.7.4 http://rvdoc.org/C11/6.7.4
+   see C11 section J.2:1 item 71 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
 Execution failed (configuration dumped)

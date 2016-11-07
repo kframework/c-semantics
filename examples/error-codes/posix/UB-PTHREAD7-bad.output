@@ -1,4 +1,6 @@
  Called unlock on an object that was not initialized with pthread_mutex_init.
    at pthread_mutex_unlock(UB-PTHREAD7-bad.c:12:5)
    by main(UB-PTHREAD7-bad.c:12:5)
-  Undefined behavior (UB-PTHREAD7). See POSIX 2008 sec. pthread_mutex_unlock
+  Undefined behavior (UB-PTHREAD7).
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see POSIX 2008 section pthread_mutex_unlock http://rvdoc.org/POSIX%202008/pthread_mutex_unlock

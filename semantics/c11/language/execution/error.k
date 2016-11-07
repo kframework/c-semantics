@@ -21,21 +21,21 @@ module C-EXECUTION-ERROR
      imports SETTINGS-SYNTAX
      imports C-DYNAMIC-SYNTAX
 
-     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String, L:List), Trace:String, false)
+     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String), Trace:String, false)
           => " " +String Msg
           +String {#if Trace ==String "" #then "" #else "\n" +String Trace #fi}:>String
           +String {#if Reason ==String "" #then "" #else "\n  " +String Reason #fi}:>String
           +String "\n  " +String ErrType +String " (" +String Title +String ")."
-          +String formatCitations(L)
+          +String formatCitations(Title)
 
-     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String, L:List), Trace:String, true)
+     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String), Trace:String, true)
           => Title
           +String ",\""
           +String Msg
           +String "\","
           +String ErrType
           +String ",\""
-          +String formatCitations(L)
+          +String formatCitations(Title)
           +String "\""
           +String ",\"" +String Reason +String "\""
           +String ",\"" +String Trace +String "\""

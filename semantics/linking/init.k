@@ -189,8 +189,7 @@ module C-LINKING-INIT
           requires notBool (X in_keys(Locs))
      rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
      rule (.K => EXT-UNDEF("TIN1",
-          "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units.",
-          "C11", "6.2.7:2, J.2:1 item 15"))
+          "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units."))
           ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, _)
      rule <k> checkExtTypes(.K, .Set, _, _, _, _) => .K ...</k>
           <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
@@ -200,8 +199,7 @@ module C-LINKING-INIT
           requires notBool (X in Defs')
      rule checkExtDefs(.K, .Set, _, _) => .K
      rule <k> (.K => EXT-UNDEF("TIN2",
-               "Multiple external definitions for " +String idToString({X}:>CId) +String ".",
-               "C11", "6.9:5, J.2:1 item 84"))
+               "Multiple external definitions for " +String idToString({X}:>CId) +String "."))
                ~> checkExtDefs(X:KItem, _, SetItem(X) _, X |-> L::CabsLoc _)
           ...</k>
           <curr-program-loc> _ => L </curr-program-loc>

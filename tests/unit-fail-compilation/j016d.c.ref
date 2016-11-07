@@ -1,3 +1,6 @@
 j016d.c:6:7: error: Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).
-  Undefined behavior (UB-TTE1). See C11 sec. 6.2.7:3, J.2:1 item 16
+  Undefined behavior (UB-TTE1).
+   see C11 section 6.2.7:3 http://rvdoc.org/C11/6.2.7
+   see C11 section J.2:1 item 16 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
 Translation failed (config dumped). Run kcc -d j016d.c to see commands run.

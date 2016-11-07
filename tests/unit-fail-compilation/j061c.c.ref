@@ -1,3 +1,6 @@
 j061c.c:1:1: error: Structs must contain a named member.
-  Undefined behavior (UB-CDT1). See C11 sec. 6.7.2.1:8, J.2:1 item 61
+  Undefined behavior (UB-CDT1).
+   see C11 section 6.7.2.1:8 http://rvdoc.org/C11/6.7.2.1
+   see C11 section J.2:1 item 61 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
 Translation failed (config dumped). Run kcc -d j061c.c to see commands run.

@@ -4,11 +4,15 @@
   Mutex previously locked
    at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
    by locker_thread(UB-PTHREAD4-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD4). See POSIX 2008 sec. pthread_mutex_lock
+  Undefined behavior (UB-PTHREAD4).
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see POSIX 2008 section pthread_mutex_lock http://rvdoc.org/POSIX%202008/pthread_mutex_lock
  Destroying a locked mutex.
    at pthread_mutex_destroy(UB-PTHREAD4-bad.c:34:5)
    by main(UB-PTHREAD4-bad.c:34:5)
   Mutex previously locked
    at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
    by locker_thread(UB-PTHREAD4-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD2). See POSIX 2008 sec. pthread_mutex_destroy
+  Undefined behavior (UB-PTHREAD2).
+   see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
+   see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy

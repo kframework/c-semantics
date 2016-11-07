@@ -1,3 +1,5 @@
 j074a.c:2:1: error: Conflicting types for x.
-  Constraint violation (CV-TDG10). See C11 sec. 6.7:4
+  Constraint violation (CV-TDG10).
+   see C11 section 6.7:4 http://rvdoc.org/C11/6.7
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d j074a.c to see commands run.

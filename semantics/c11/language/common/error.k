@@ -6,16 +6,15 @@ module C-ERROR-SYNTAX
      imports ERROR-SYNTAX
 
      // Error code, desc., C11 citation.
+     syntax KItem ::= UNDEF(String, String) [function, klabel(CUndef)]
      syntax KItem ::= UNDEF(String, String, String)
-     syntax KItem ::= UNSPEC(String, String, String)
-     syntax KItem ::= CV(String, String, String)
-     syntax KItem ::= SE(String, String, String)
-     syntax KItem ::= IMPL(String, String, String)
-     syntax KItem ::= "EXT-CV" "(" String "," String "," String "," String ")"
+     syntax KItem ::= UNSPEC(String, String)
+     syntax KItem ::= CV(String, String)
+     syntax KItem ::= SE(String, String)
+     syntax KItem ::= IMPL(String, String)
 
      syntax KResult ::= Bool
 
-     syntax ErrorMsg ::= ErrorMsg(String, String, String, String, String) [function, klabel(ErrorMsg5)]
 endmodule
 
 module C-ERROR
@@ -24,30 +23,27 @@ module C-ERROR
      imports BOOL
      imports STRING
 
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, Document:String, Citation:String)
-          => ErrorMsg(Title, Msg, ErrType, ListItem(Document) ListItem(Citation))
+     rule UNDEF(Title:String, Msg:String) => UNDEF(Title, Msg, "")
 
-     rule UNDEF(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", "C11", Citation))
+     rule UNDEF(Title:String, Msg:String, Reason:String)
+      => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason))
           requires checkOptions(Undef(), Title, true)
-     rule UNSPEC(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior", "C11", Citation))
+     rule UNSPEC(Title:String, Msg:String)
+          => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior"))
           requires checkOptions(Unspec(), Title, true)
-     rule CV(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation", "C11", Citation))
-     rule SE(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("SE-" +String Title, Msg, "Syntax error", "C11", Citation))
-     rule IMPL(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior", "C11", Citation))
+     rule CV(Title:String, Msg:String)
+          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation"))
+     rule SE(Title:String, Msg:String)
+          => EXIT(ErrorMsg("SE-" +String Title, Msg, "Syntax error"))
+     rule IMPL(Title:String, Msg:String)
+          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior"))
           requires checkOptions(Impl(), Title, true)
-     rule EXT-CV(Title:String, Msg:String, Document:String, Citation:String)
-          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation", Document, Citation))
 
      rule UNDEF(Title:String, _, _) => HALT
           requires notBool checkOptions(Undef(), Title, true)
-     rule UNSPEC(Title:String, _, _) => HALT
+     rule UNSPEC(Title:String, _) => HALT
           requires notBool checkOptions(Unspec(), Title, true)
-     rule IMPL(Title:String, _, _) => HALT
+     rule IMPL(Title:String, _) => HALT
           requires notBool checkOptions(Impl(), Title, true)
 
 endmodule

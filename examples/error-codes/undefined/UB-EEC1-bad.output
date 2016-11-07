@@ -1,3 +1,5 @@
  variably modified types in a conditional expression with unequal size expressions.
    at main(UB-EEC1-bad.c:6:7)
-  Undefined behavior (UB-EEC1). See C11 sec. 6.7.6.1:6
+  Undefined behavior (UB-EEC1).
+   see C11 section 6.7.6.1:6 http://rvdoc.org/C11/6.7.6.1
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C

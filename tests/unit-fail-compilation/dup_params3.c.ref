@@ -1,3 +1,5 @@
 dup_params3.c:1:1: error: Duplicate parameters in function definition.
-  Constraint violation (CV-FD1). See C11 sec. 6.7:3
+  Constraint violation (CV-FD1).
+   see C11 section 6.7:3 http://rvdoc.org/C11/6.7
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d dup_params3.c to see commands run.

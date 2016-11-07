@@ -98,8 +98,7 @@ module LIBC-STDARG
 
      syntax KItem ::= checkDead(K) [strict]
      rule <k> (.K => UNDEF("STDARG2",
-                    "'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.",
-                    "7.16.1.4:3, J.2:1 item 142"))
+                    "'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end."))
                ~> checkDead(tv(N:Int, _))
           ...</k>
           <va-lists>... N |-> _ ...</va-lists>
@@ -135,16 +134,14 @@ module LIBC-STDARG
           <va-lists>... N |-> ((ListItem(V:RValue) => .List) _:List) ...</va-lists>
           [structural]
      rule <k> (.K => UNDEF("STDARG3",
-                    "'va_arg' called on an uninitialized va_list.",
-                    "7.16.1.1:2, J.2:1 item 136"))
+                    "'va_arg' called on an uninitialized va_list."))
                ~> builtin("__va_inc", tv(N:Int, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool N in_keys(VaLists)
           [structural]
      rule <k> (.K => UNDEF("STDARG6",
-                    "'va_arg' called with no arguments remaining.",
-                    "7.16.1.1:2, J.2:1 item 141"))
+                    "'va_arg' called with no arguments remaining."))
                ~> builtin("__va_inc", tv(N:Int, _))
           ...</k>
           <va-lists>... N |-> .List ...</va-lists>
@@ -159,8 +156,7 @@ module LIBC-STDARG
           <va-lists>... Src |-> Args:List ...</va-lists>
           [structural]
      rule <k> (.K => UNDEF("STDARG4",
-                    "'va_copy' called on an uninitialized source va_list.",
-                    "7.16.1.2:2, J.2:1 item 136"))
+                    "'va_copy' called on an uninitialized source va_list."))
                ~> builtin("__va_copy", _, tv(Src:Int, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
@@ -179,8 +175,7 @@ module LIBC-STDARG
           ...</call-stack>
           [structural]
      rule <k> (.K => UNDEF("STDARG5",
-                    "'va_end' called on an uninitialized va_list.",
-                    "7.16.1.3:2, J.2:1 item 139"))
+                    "'va_end' called on an uninitialized va_list."))
                ~> builtin("va_end", tv(Src:Int, _))
           ...</k>
           <call-stack> ListItem(
@@ -208,8 +203,7 @@ module LIBC-STDARG
           requires variadic in getParams(T)
           [structural]
      rule <k> (.K => UNDEF("STDARG1",
-                    "'va_start' used in a function with fixed args.",
-                    "6.9.1:8, J.2:1 item 87"))
+                    "'va_start' used in a function with fixed args."))
                ~> checkVarArgs
           ...</k>
           <call-stack> ListItem(
@@ -226,8 +220,7 @@ module LIBC-STDARG
           [structural]
 
      rule <k> (.K => UNDEF("STDARG9",
-                    "Function exited without calling 'va_end' after 'va_start' or 'va_copy'.",
-                    "7.16.1:1, J.2:1 item 139"))
+                    "Function exited without calling 'va_end' after 'va_start' or 'va_copy'."))
                ~> return(_:RValue) ...</k>
           <live-va-lists> VaLists:Set </live-va-lists>
           requires VaLists =/=K .Set

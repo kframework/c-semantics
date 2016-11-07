@@ -101,19 +101,19 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule (.K => UNDEF("CDI1",
-               "Initializer for scalar contains multiple expressions.", "6.7.9:11, J.2:1 item 81"))
+               "Initializer for scalar contains multiple expressions."))
           ~> figureInit(_, T:Type, CompoundInit(list(L:List)))
           requires notBool isAggregateOrUnionType(T)
                andBool size(L) >Int 1
 
      rule (.K => UNDEF("CDI2",
-               "Initializer for scalar contains multiple levels of braces.", "6.7.9:11, J.2:1 item 81"))
+               "Initializer for scalar contains multiple levels of braces."))
           ~> figureInit(_, T:Type,
                CompoundInit(list(ListItem(InitFragment(NextInit(), CompoundInit(_))))))
           requires notBool isAggregateOrUnionType(T)
 
      rule (.K => UNDEF("CDI3",
-               "Invalid initializer for aggregate type.", "6.7.9:16, J.2:1 item 83"))
+               "Invalid initializer for aggregate type."))
           ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:K))
           requires (notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`wstringLiteral`))
                andBool (notBool isCharType(T) orBool getKLabel(K) =/=K #klabel(`stringLiteral`))
@@ -262,7 +262,7 @@ module C-DECL-INITIALIZER
           requires K =/=K next andBool K =/=K noMoreFields
           [structural]
 
-     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member.", "6.7.9:2"))
+     rule <k> (.K => CV("CDI4", "Attempting to initialize nonexistent member."))
                ~> fillInit(InitFragment(NextInit(), _))
           ...</k>
           <curr-subobject>

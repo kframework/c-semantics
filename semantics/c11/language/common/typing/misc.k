@@ -360,8 +360,7 @@ module C-TYPING-MISC
           => t(Qs, Mods, arrayType(T, N)))
           requires N >Int 0
           [structural]
-     rule (.K => UNDEF("CTM1", "Variable-length array with length that evaluates to non-positive value at execution.",
-                       "6.7.6.2:5, J.2:1 item 75"))
+     rule (.K => UNDEF("CTM1", "Variable-length array with length that evaluates to non-positive value at execution."))
           ~> stabilize(t(_, _, variableLengthArrayType(_, tv(N:Int, _))))
           requires N <=Int 0
           [structural]

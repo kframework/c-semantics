@@ -4,4 +4,6 @@
   Mutex previously locked
    at pthread_mutex_lock(UB-PTHREAD2-bad.c:14:5)
    by locker_thread(UB-PTHREAD2-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD2). See POSIX 2008 sec. pthread_mutex_destroy
+  Undefined behavior (UB-PTHREAD2).
+   see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
+   see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy

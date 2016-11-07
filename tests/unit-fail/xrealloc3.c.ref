@@ -1,5 +1,8 @@
  Called realloc on memory not allocated by malloc, or already freed.
    at realloc(xrealloc3.c:4:2)
    by main(xrealloc3.c:4:2)
-  Undefined behavior (UB-STDLIB1). See C11 sec. 7.22.3.5:3, J.2:1 item 179
+  Undefined behavior (UB-STDLIB1).
+   see C11 section 7.22.3.5:3 http://rvdoc.org/C11/7.22.3.5
+   see C11 section J.2:1 item 179 http://rvdoc.org/C11/J.2
+   see CERT-C section MEM34-C http://rvdoc.org/CERT-C/MEM34-C
 Execution failed (configuration dumped)

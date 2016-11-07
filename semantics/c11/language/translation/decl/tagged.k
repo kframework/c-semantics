@@ -42,11 +42,11 @@ module C-DECL-TAGGED
           => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
           requires hasNamedField(L) andBool structFieldsComplete(L)
           [structural]
-     rule (.K => UNDEF("CDT1", "Structs must contain a named member.", "6.7.2.1:8, J.2:1 item 61"))
+     rule (.K => UNDEF("CDT1", "Structs must contain a named member."))
           ~> StructDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT3", "Field " +String firstIncompleteOrFlexible(L) +String " has incomplete type or contains a flexible array member.", "6.7.2.1:2"))
+     rule (.K => CV("CDT3", "Field " +String firstIncompleteOrFlexible(L) +String " has incomplete type or contains a flexible array member."))
           ~> StructDef(_, krlist(L:List), _)
           requires notBool structFieldsComplete(L)
           [structural]
@@ -54,11 +54,11 @@ module C-DECL-TAGGED
           => addTag(X, makeUnionFieldInfo(Packed() in Mods, numberUnnamed(L)))
           requires hasNamedField(L) andBool allComplete(L)
           [structural]
-     rule (.K => UNDEF("CDT2", "Unions must contain a named member.", "6.7.2.1, J.2:1 item 61"))
+     rule (.K => UNDEF("CDT2", "Unions must contain a named member."))
           ~> UnionDef(_, krlist(L:List), _)
           requires notBool hasNamedField(L)
           [structural]
-     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type.", "6.7.2.1:2"))
+     rule (.K => CV("CDT4", "Field " +String firstIncomplete(L) +String " has incomplete type."))
           ~> UnionDef(_, krlist(L:List), _)
           requires notBool allComplete(L)
           [structural]
@@ -107,7 +107,7 @@ module C-DECL-TAGGED
      syntax KItem ::= initEnum(CId, RValue)
      rule initEnum(X:CId, tv(Value:Int, T:IntegerUType)) => addEnum(X, Value)
           requires IntegerConstant in getModifiers(T)
-     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression.", "6.7.2.2:2"))
+     rule (.K => CV("CDE1", "Enum initializer not an integer constant expression."))
           ~> initEnum(_, R:RValue)
           requires isHold(R) orBool notBool isIntegerType(type(R))
                orBool notBool IntegerConstant in getModifiers(utype(R))
@@ -306,7 +306,7 @@ module C-DECL-TAGGED
                andBool notBool (tag(X, Tu, BlockNum) in_keys(Structs))
           [structural]
      rule <k> (.K => CV("TDG15", "Redefinition of a struct, union, or enum: "
-               +String idToString(X), "6.7.2.3:1"))
+               +String idToString(X)))
                ~> addLocalTag(X:CId, _)
           ...</k>
           <curr-tu> Tu:String </curr-tu>

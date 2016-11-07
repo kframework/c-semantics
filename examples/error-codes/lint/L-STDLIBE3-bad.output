@@ -6,3 +6,4 @@
    at malloc(L-STDLIBE3-bad.c:10:5)
    by main(L-STDLIBE3-bad.c:10:5)
   Possible unintended behavior (L-CEIE1).
+   see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C

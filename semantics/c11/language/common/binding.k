@@ -52,7 +52,7 @@ module C-BINDING
           requires #arePromotedTypesCompat({value(V)}:>CValue, utype(T), utype(V))
           [structural]
      rule (.K => UNDEF("CB1", "Types of function call arguments aren't "
-               +String "compatible with declared types after promotions.", "6.5.2.2:6, J.2:1 item 39"))
+               +String "compatible with declared types after promotions."))
           ~> bind(
                ListItem(typedDeclaration(T::Type, _)) _,
                .List,
@@ -61,24 +61,24 @@ module C-BINDING
                andBool notBool isVoidType(T)
           [structural]
      rule (.K => UNDEF("CB2", "Function call has fewer arguments than "
-               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
+               +String "parameters in function definition."))
           ~> bind(
                ListItem(typedDeclaration(T::Type, _)) _,
                _,
                .List)
           requires notBool isVoidType(T)
      rule (.K => UNDEF("CB2", "Function call has fewer arguments than "
-               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
+               +String "parameters in function definition."))
           ~> bind(
                ListItem(T:Type) _,
                _,
                .List)
           requires notBool isVoidType(T)
      rule (.K => UNDEF("CB3", "Function call has more arguments than "
-               +String "parameters in function definition.", "6.5.2.2:6, J.2:1 item 38"))
+               +String "parameters in function definition."))
           ~> bind(.List, _, ListItem(_) _)
      rule (.K => UNDEF("CB4", "Function defined with no parameters "
-               +String "called with arguments.", "6.5.2.2:6, J.2:1 item 38"))
+               +String "called with arguments."))
           ~> bind(ListItem(typedDeclaration(T:VoidType, _)), _, ListItem(_) _)
      // Variadic.
      rule bind(ListItem(variadic), ListItem(variadic), Vs:List)

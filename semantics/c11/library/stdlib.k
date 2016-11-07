@@ -35,7 +35,7 @@ module LIBC-STDLIB
           <status> mainCalled => mainExited </status>
           [structural]
 
-     rule <k> (.K => UNDEF("STDLIB4", "Called the exit function more than once (from a call to atexit).", "7.22.4.4:2, J.2:1 item 182"))
+     rule <k> (.K => UNDEF("STDLIB4", "Called the exit function more than once (from a call to atexit)."))
               ~> builtin("exit", tv(_, _))
           ...</k>
           <status> mainExited </status>
@@ -48,7 +48,7 @@ module LIBC-STDLIB
           <status> mainCalled => mainExited </status>
           [structural]
 
-     rule <k> (.K => UNDEF("STDLIB5", "Called the quick_exit function more than once (from a call to at_quick_exit).", "7.22.4.7:2, J.2:1 item 182"))
+     rule <k> (.K => UNDEF("STDLIB5", "Called the quick_exit function more than once (from a call to at_quick_exit)."))
               ~> builtin("quick_exit", tv(_, _))
           ...</k>
           <status> mainExited </status>
@@ -117,8 +117,7 @@ module LIBC-STDLIB
           requires notBool hasLint
           [structural]
 
-     rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed.",
-                           "7.22.3.5:3, J.2:1 item 179"))
+     rule <k> (.K => UNDEF("STDLIB1", "Called realloc on memory not allocated by malloc, or already freed."))
               ~> builtin("realloc", tv(loc(Base:SymBase, I:Int), _), _)
           ...</k>
           <malloced> Malloced:Map </malloced>
@@ -149,8 +148,7 @@ module LIBC-STDLIB
           <malloced>... Base |-> _ => .Map ...</malloced>
           requires notBool hasLint
           [structural]
-     rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed.",
-                           "7.22.3.3:2, J.2:1 item 179"))
+     rule <k> (.K => UNDEF("STDLIB2", "Called free on memory not allocated by malloc, or already freed."))
               ~> builtin("free", tv(loc(Base:SymBase, I:Int), ut(_, pointerType(_))))
           ...</k>
           <malloced> Malloced:Map </malloced>
@@ -178,7 +176,7 @@ module LIBC-STDLIB
           <atexit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</atexit>
           <status> mainCalled </status>
 
-     rule <k> (.K => UNSPEC("STDLIB3", "Called the atexit function after normal program termination has begun.", "7.22.4.2:2, J.1:1 item 44"))
+     rule <k> (.K => UNSPEC("STDLIB3", "Called the atexit function after normal program termination has begun."))
               ~> builtin("atexit", _)
           ...</k>
           <status> mainExited </status>
@@ -190,7 +188,7 @@ module LIBC-STDLIB
           <at-quick-exit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</at-quick-exit>
           <status> mainCalled </status>
 
-     rule <k> (.K => UNSPEC("STDLIB6", "Called the at_quick_exit function after normal program termination has begun.", "7.22.4.3:2, J.1:1 item 45"))
+     rule <k> (.K => UNSPEC("STDLIB6", "Called the at_quick_exit function after normal program termination has begun."))
               ~> builtin("at_quick_exit", _)
           ...</k>
           <status> mainExited </status>

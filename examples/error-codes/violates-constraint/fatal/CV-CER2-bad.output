@@ -1,4 +1,6 @@
  Unary '&' operator applied to a value with register storage class.
    at main(CV-CER2-bad.c:5:3)
-  Constraint violation (CV-CER2). See C11 sec. 6.5.3.2:1
+  Constraint violation (CV-CER2).
+   see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Execution failed (configuration dumped)

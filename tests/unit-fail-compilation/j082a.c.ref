@@ -1,3 +1,5 @@
 j082a.c:7:2: error: Incompatible types in assignment or function call arguments.
-  Constraint violation (CV-TEAS1). See C11 sec. 6.5.16.1:1
+  Constraint violation (CV-TEAS1).
+   see C11 section 6.5.16.1:1 http://rvdoc.org/C11/6.5.16.1
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d j082a.c to see commands run.

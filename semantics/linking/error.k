@@ -14,19 +14,19 @@ module TRANSLATION-ERROR
           => File +String ":" +String Int2String(Line) +String ":" +String Int2String(Column)
 
      syntax String ::= formatErrorMsg(ErrorMsg, String, Bool) [function]
-     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String, L:List),Location:String, false)
+     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, false)
           => {#if Location ==String "" #then "" #else Location +String ": " #fi}:>String
           +String getErrorType(Title) +String ": "
           +String Msg
           +String {#if Reason ==String "" #then "" #else "\n" +String Reason #fi}:>String
           +String "\n  " +String ErrType +String " (" +String Title +String ")."
-          +String formatCitations(L)
+          +String formatCitations(Title)
 
-     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String, L:List),Location:String, true)
+     rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, true)
           => Title
           +String ",\"" +String Msg +String "\""
           +String ","   +String ErrType
-          +String ",\"" +String formatCitations(L) +String "\""
+          +String ",\"" +String formatCitations(Title) +String "\""
           +String ",\"" +String Reason +String "\""
           +String ",\"" +String Location +String "\""
 

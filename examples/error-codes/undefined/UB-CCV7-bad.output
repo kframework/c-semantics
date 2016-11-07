@@ -1,3 +1,6 @@
  Conversion from pointer to integer of a value possibly unrepresentable in the integer type.
    at main(UB-CCV7-bad.c:7:7)
-  Undefined behavior (UB-CCV7). See C11 sec. 6.3.2.3:6, J.2:1 item 24
+  Undefined behavior (UB-CCV7).
+   see C11 section 6.3.2.3:6 http://rvdoc.org/C11/6.3.2.3
+   see C11 section J.2:1 item 24 http://rvdoc.org/C11/J.2
+   see CERT-C section INT36-C http://rvdoc.org/CERT-C/INT36-C

@@ -1,3 +1,5 @@
 defines.c:4:2: error: Trying to look up identifier FOO, but no such identifier is in scope.
-  Syntax error (SE-CID1). See C11 sec. 6.5.1:2
+  Syntax error (SE-CID1).
+   see C11 section 6.5.1:2 http://rvdoc.org/C11/6.5.1
+   see CERT-C section DCL31-C http://rvdoc.org/CERT-C/DCL31-C
 Translation failed (config dumped). Run kcc -d defines.c to see commands run.

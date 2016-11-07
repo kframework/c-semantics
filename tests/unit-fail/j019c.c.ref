@@ -1,4 +1,9 @@
  Dereferencing a pointer past the end of an array.
    at main(j019c.c:3:7)
-  Undefined behavior (UB-CER4). See C11 sec. 6.5.6:8, J.2:1 items 47, 49
+  Undefined behavior (UB-CER4).
+   see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6
+   see C11 section J.2:1 items 47 and 49 http://rvdoc.org/C11/J.2
+   see CERT-C section ARR30-C http://rvdoc.org/CERT-C/ARR30-C
+   see CERT-C section ARR37-C http://rvdoc.org/CERT-C/ARR37-C
+   see CERT-C section STR31-C http://rvdoc.org/CERT-C/STR31-C
 Execution failed (configuration dumped)

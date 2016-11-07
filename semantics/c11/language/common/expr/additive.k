@@ -116,37 +116,34 @@ module C-COMMON-EXPR-ADDITIVE
           [structural]
 
      rule (.K => CV("CEA7",
-               "Computing pointer addition of a pointer not to a complete object type.",
-               "6.5.6:2"))
+               "Computing pointer addition of a pointer not to a complete object type."))
           ~> L:RValue + R:RValue
           requires isPointerType(type(L)) andBool isIntegerType(type(R))
                andBool (isFunctionType(innerType(type(L)))
                     orBool notBool isCompleteType(innerType(type(L))))
           [structural]
      rule (.K => CV("CEA7",
-               "Computing pointer addition of a pointer not to a complete object type.",
-               "6.5.6:2"))
+               "Computing pointer addition of a pointer not to a complete object type."))
           ~> L:RValue + R:RValue
           requires isIntegerType(type(L)) andBool isPointerType(type(R))
                andBool (isFunctionType(innerType(type(R)))
                     orBool notBool isCompleteType(innerType(type(R))))
           [structural]
      rule (.K => CV("CEA8",
-               "Computing pointer minus integer of a pointer not to a complete object type.",
-               "6.5.6:3"))
+               "Computing pointer minus integer of a pointer not to a complete object type."))
           ~> L:RValue - R:RValue
           requires isPointerType(type(L)) andBool isIntegerType(type(R))
                andBool (isFunctionType(innerType(type(L)))
                     orBool notBool isCompleteType(innerType(type(L))))
           [structural]
 
-     rule (.K => CV("CEA3", "Invalid operand types to addition.", "6.5.6:2"))
+     rule (.K => CV("CEA3", "Invalid operand types to addition."))
           ~> L:RValue + R:RValue
           requires notBool ((isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
                orBool (isPointerType(type(L)) andBool isIntegerType(type(R)))
                orBool (isPointerType(type(R)) andBool isIntegerType(type(L))))
 
-     rule (.K => CV("CEA4", "Invalid operand types to subtraction.", "6.5.6:3"))
+     rule (.K => CV("CEA4", "Invalid operand types to subtraction."))
           ~> L:RValue - R:RValue
           requires notBool ((isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
                orBool (isPointerType(type(L)) andBool isPointerType(type(R)))
@@ -158,8 +155,7 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes (I *Int byteSizeofType(innerType(T))), T))
           requires ifFromArrayInBounds(Loc, T, I) ==K true
      rule (.K => UNDEF("CEA1",
-               "A pointer (or array subscript) outside the bounds of an object.",
-               "6.5.6:8, J.2:1 item 46"))
+               "A pointer (or array subscript) outside the bounds of an object."))
           ~> addToPointer(Loc:SymLoc, T::UType, I:Int)
           requires notBool ifFromArrayInBounds(Loc, T, I)
 
@@ -169,8 +165,7 @@ module C-COMMON-EXPR-ADDITIVE
                +bytes I, T))
           requires ifFromArrayInBounds(Loc, utype(pointerType(type(char))), I) ==K true
      rule (.K => UNDEF("CEA1",
-               "A pointer (or array subscript) outside the bounds of an object.",
-               "6.5.6:8, J.2:1 item 46"))
+               "A pointer (or array subscript) outside the bounds of an object."))
           ~> addToIntptr(Loc:SymLoc, T::UType, I:Int)
           requires notBool ifFromArrayInBounds(Loc, utype(pointerType(type(char))), I)
 
@@ -237,8 +232,7 @@ module C-COMMON-EXPR-ADDITIVE
                andBool isPromoted(T) andBool T ==Type T'
 
      rule (.K => CV("CEA9",
-               "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types.",
-               "6.5.6:3"))
+               "Computing pointer difference between pointers not to qualified or unqualified versions of compatible complete object types."))
           ~> L:RValue - R:RValue
           requires isPointerUType(utype(L)) andBool isPointerUType(utype(R))
                andBool (isFunctionType(innerType(utype(L))) orBool isFunctionType(innerType(utype(R)))
@@ -247,8 +241,7 @@ module C-COMMON-EXPR-ADDITIVE
                     orBool stripQualifiers(innerType(utype(L)))
                          =/=Type stripQualifiers(innerType(utype(R))))
 
-     rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects.",
-          "6.5.6:9, J.2:1 item 48"))
+     rule (.K => UNDEF("CEA5", "Computing pointer difference between two different objects."))
           ~> tv(L1:SymLoc, _) - tv(L2:SymLoc, _)
           requires notBool sameBase(L1, L2)
 
@@ -260,8 +253,7 @@ module C-COMMON-EXPR-ADDITIVE
                andBool (Diff /Int Size) <=Int max(T)
                andBool (Diff /Int Size) >=Int min(T)
           [structural]
-     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented by object of type " +String S +String ".",
-               "6.5.6:9, J.2:1 item 50"))
+     rule (.K => UNDEF("CEA2", "Pointer difference outside the range that can be represented by object of type " +String S +String "."))
           ~> computePointerDifference(Diff:Int, Size:Int, T::UType, S::String)
           requires (Diff /Int Size) >Int max(T)
                orBool (Diff /Int Size) <Int min(T)

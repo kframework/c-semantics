@@ -56,7 +56,7 @@ module CPP-CONVERSION
      rule arithInterpret(T:CPPUnsignedType, N:Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
           requires (N >Int max(T) orBool N <Int min(T)) andBool notBool hasLint
      rule arithInterpret(T:CPPSignedType, N:Int, Tr::Trace) 
-          => UNDEF("CCV1", "Signed integer overflow.", "5:4") ~> arithInterpretHold(T, N, Tr)
+          => UNDEF("CCV1", "Signed integer overflow.") ~> arithInterpretHold(T, N, Tr)
           requires notBool (min(T) <=Int N andBool max(T) >=Int N)
      rule arithInterpret(T:CPPFloatingType, (F:Float => roundFloat(F, precision(T), exponent(T))), _)
           requires precisionFloat(F) =/=Int precision(T) orBool exponentBitsFloat(F) =/=Int exponent(T)
@@ -64,7 +64,7 @@ module CPP-CONVERSION
           requires precisionFloat(F) ==Int precision(T) andBool exponentBitsFloat(F) ==Int exponent(T)
                andBool notBool isInfinite(F)
      rule arithInterpret(T:CPPFloatingType, F:Float, Tr::Trace)
-          => UNDEF("CCV2", "Floating point overflow.", "5:4")
+          => UNDEF("CCV2", "Floating point overflow.")
           ~> arithInterpretHold(T, F, Tr)
           requires isInfinite(F)
 
@@ -76,7 +76,7 @@ module CPP-CONVERSION
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => prv(C, Tr, T)
           requires isCPPSignedType(underlyingType(T)) andBool inRange(C, T)
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType))
-          => IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented.", "4.7:3")
+          => IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented.")
           ~> convertTypeHold(T, prv(C, Tr, T'))
           requires isCPPSignedType(underlyingType(T)) andBool notBool inRange(C, T)
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
@@ -92,7 +92,7 @@ module CPP-CONVERSION
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType)) => arithInterpret(T, F, Tr)
           requires inRange(F, T)
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDEF("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.", "4.8:1")
+          => UNDEF("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.")
           ~> convertTypeHold(T, prv(F, Tr, T'))
           requires notBool inRange(F, T)
 
@@ -100,7 +100,7 @@ module CPP-CONVERSION
           => arithInterpret(T, Float2Int(F), Tr)
           requires notBool isCPPBoolType(T) andBool inRange(Float2Int(F), T)
      rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDEF("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.", "4.9:1")
+          => UNDEF("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.")
           ~> convertTypeHold(T, prv(F, Tr, T'))
           requires notBool isCPPBoolType(T) andBool notBool inRange(Float2Int(F), T)
      rule convertType(T:CPPBoolType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
@@ -114,7 +114,7 @@ module CPP-CONVERSION
           => arithInterpret(T, Int2Float(I, precision(T), exponent(T)), Tr)
           requires notBool isInfinite(Int2Float(I, precision(T), exponent(T)))
      rule convertType(T:CPPFloatingType, prv(I:Int, Tr::Trace, T':CPPIntegerType))
-          => UNDEF("CCV6", "Floating-integral conversion to floating point type in which value is outside3 range that can be represented.", "4.9:2")
+          => UNDEF("CCV6", "Floating-integral conversion to floating point type in which value is outside range that can be represented.")
           ~> convertTypeHold(T, prv(I, Tr, T'))
           requires isInfinite(Int2Float(I, precision(T), exponent(T)))
 

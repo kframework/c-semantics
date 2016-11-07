@@ -1,2 +1,5 @@
 IMPL-CTI4-bad-static.c:1:1: warning: Bit-field with type other than signed int, unsigned int, or _Bool.
-  Implementation defined behavior (IMPL-CTI4). See C11 sec. 6.7.2.1:5, J.3.9:1 item 2
+  Implementation defined behavior (IMPL-CTI4).
+   see C11 section 6.7.2.1:5 http://rvdoc.org/C11/6.7.2.1
+   see C11 section J.3.9:1 item 2 http://rvdoc.org/C11/J.3.9
+   see CERT-C section INT12-C http://rvdoc.org/CERT-C/INT12-C

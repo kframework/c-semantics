@@ -2,12 +2,22 @@
    at __va_inc(UB-STDARG3-bad.c:7:7)
    by f(UB-STDARG3-bad.c:7:7)
    by main(UB-STDARG3-bad.c:11:7)
-  Undefined behavior (UB-STDARG3). See C11 sec. 7.16.1.1:2, J.2:1 item 136
+  Undefined behavior (UB-STDARG3).
+   see C11 section 7.16.1.1:2 http://rvdoc.org/C11/7.16.1.1
+   see C11 section J.2:1 item 136 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
  Dereferencing a null pointer.
    at f(UB-STDARG3-bad.c:7:7)
    by main(UB-STDARG3-bad.c:11:7)
-  Undefined behavior (UB-CER3). See C11 sec. 6.5.3.2:4, J.2:1 item 43
+  Undefined behavior (UB-CER3).
+   see C11 section 6.5.3.2:4 http://rvdoc.org/C11/6.5.3.2
+   see C11 section J.2:1 item 43 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP34-C http://rvdoc.org/CERT-C/EXP34-C
  Trying to read through a null pointer.
    at f(UB-STDARG3-bad.c:7:7)
    by main(UB-STDARG3-bad.c:11:7)
-  Undefined behavior (UB-CEER1). See C11 sec. 6.3.2.1:1, J.2:1 item 19
+  Undefined behavior (UB-CEER1).
+   see C11 section 6.3.2.1:1 http://rvdoc.org/C11/6.3.2.1
+   see C11 section J.2:1 item 19 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP34-C http://rvdoc.org/CERT-C/EXP34-C
+   see CERT-C section ERR33-C http://rvdoc.org/CERT-C/ERR33-C

@@ -1,2 +1,5 @@
 UB-TEOFF1-bad-static.c:4:7: error: Offsetof member designator specifies a bit-field.
-  Undefined behavior (UB-TEOFF1). See C11 sec. 7.19:3, J.2:1 item 144
+  Undefined behavior (UB-TEOFF1).
+   see C11 section 7.19:3 http://rvdoc.org/C11/7.19
+   see C11 section J.2:1 item 144 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C

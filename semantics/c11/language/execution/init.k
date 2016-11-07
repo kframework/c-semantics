@@ -248,7 +248,7 @@ module C-EXECUTION-INIT
 
      rule <thread>...
             <thread-id> 0 </thread-id>
-            <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function.", "5.1.2.2.3:1"))
+            <k> (.K => UNSPEC("CEER6", "Unspecified value returned from main function."))
                 ~> reval(tv(unknown(I:Int), _)) </k>
           ...</thread>
 

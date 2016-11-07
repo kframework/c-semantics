@@ -1,3 +1,5 @@
 paramStorage.c:1:1: error: Function parameter appears with storage class other than register.
-  Constraint violation (CV-TDG5). See C11 sec. 6.7.6.3:2
+  Constraint violation (CV-TDG5).
+   see C11 section 6.7.6.3:2 http://rvdoc.org/C11/6.7.6.3
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d paramStorage.c to see commands run.

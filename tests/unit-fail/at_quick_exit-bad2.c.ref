@@ -3,5 +3,9 @@
    by foo(at_quick_exit-bad2.c:4:3)
    by exit(at_quick_exit-bad2.c:9:3)
    by main(at_quick_exit-bad2.c:9:3)
-  Undefined behavior (UB-STDLIB5). See C11 sec. 7.22.4.7:2, J.2:1 item 182
+  Undefined behavior (UB-STDLIB5).
+   see C11 section 7.22.4.7:2 http://rvdoc.org/C11/7.22.4.7
+   see C11 section J.2:1 item 182 http://rvdoc.org/C11/J.2
+   see CERT-C section ENV32-C http://rvdoc.org/CERT-C/ENV32-C
+   see CERT-C section ERR04-C http://rvdoc.org/CERT-C/ERR04-C
 Execution failed (configuration dumped)

@@ -104,16 +104,16 @@ module C-COMMON-EXPR-RELATIONAL
           requires T ==Type T'
           [structural]
 
-     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer."))
           ~> tv(L:SymLoc, _) < tv(R:SymLoc, _)
           requires L ==K NullPointer orBool R ==K NullPointer
-     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer."))
           ~> tv(L:SymLoc, _) <= tv(R:SymLoc, _)
           requires L ==K NullPointer orBool R ==K NullPointer
-     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer."))
           ~> tv(L:SymLoc, _) > tv(R:SymLoc, _)
           requires L ==K NullPointer orBool R ==K NullPointer
-     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer.", "6.5.8:5, J.2:1 item 53"))
+     rule (.K => UNDEF("CERL6", "Ordered comparison of a null pointer."))
           ~> tv(L:SymLoc, _) >= tv(R:SymLoc, _)
           requires L ==K NullPointer orBool R ==K NullPointer
 
@@ -125,7 +125,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool sameBase(Loc, Loc')
            andBool isCompatibleRelationalTypes(T, T')
           [structural]
-     rule (.K => UNDEF("CERL1", "Cannot compare pointers with different base objects using '<'.", "6.5.8:5, J.2:1 item 53") )
+     rule (.K => UNDEF("CERL1", "Cannot compare pointers with different base objects using '<'."))
           ~> tv(Loc:SymLoc, T::UType) < tv(Loc':SymLoc, T'::UType)
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -139,7 +139,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool sameBase(Loc, Loc')
            andBool isCompatibleRelationalTypes(T, T')
           [structural]
-     rule (.K => UNDEF("CERL2", "Cannot compare pointers with different base objects using '<='.", "6.5.8:5, J.2:1 item 53") )
+     rule (.K => UNDEF("CERL2", "Cannot compare pointers with different base objects using '<='."))
           ~> tv(Loc:SymLoc, T::UType) <= tv(Loc':SymLoc, T'::UType)
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -153,7 +153,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool sameBase(Loc, Loc')
            andBool isCompatibleRelationalTypes(T, T')
           [structural]
-     rule (.K => UNDEF("CERL3", "Cannot compare pointers with different base objects using '>'.", "6.5.8:5, J.2:1 item 53") )
+     rule (.K => UNDEF("CERL3", "Cannot compare pointers with different base objects using '>'."))
           ~> tv(Loc:SymLoc, T::UType) > tv(Loc':SymLoc, T'::UType)
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -167,7 +167,7 @@ module C-COMMON-EXPR-RELATIONAL
            andBool sameBase(Loc, Loc')
            andBool isCompatibleRelationalTypes(T, T')
           [structural]
-     rule (.K => UNDEF("CERL4", "Cannot compare pointers with different base objects using '>='.", "6.5.8:5, J.2:1 item 53") )
+     rule (.K => UNDEF("CERL4", "Cannot compare pointers with different base objects using '>='."))
           ~> tv(Loc:SymLoc, T::UType) >= tv(Loc':SymLoc, T'::UType)
           requires Loc  =/=K NullPointer
            andBool Loc' =/=K NullPointer
@@ -175,22 +175,22 @@ module C-COMMON-EXPR-RELATIONAL
                andBool T ==Type T'
           [structural]
 
-     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression."))
           ~> L:RValue < R:RValue
           requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
            andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression."))
           ~> L:RValue <= R:RValue
           requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
            andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression."))
           ~> L:RValue > R:RValue
           requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
            andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
           [structural]
-     rule (.K => CV("CERL5", "Incompatible types in relational expression.", "6.5.8:2") )
+     rule (.K => CV("CERL5", "Incompatible types in relational expression."))
           ~> L:RValue >= R:RValue
           requires notBool isCompatibleRelationalTypes(utype(L), utype(R))
            andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
@@ -243,32 +243,32 @@ module C-COMMON-EXPR-RELATIONAL
           requires T ==Type T'
           [structural]
 
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) == tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) != tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) < tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) <= tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) > tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
           [structural]
-     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value.", "6.5.9"))
+     rule (.K => UNSPEC("CERL7", "Comparison of unspecified value."))
           ~> tv(V:CValue, T::UType) >= tv(V':CValue, T'::UType)
           requires T ==Type T'
                andBool (isUnknown(V) orBool isUnknown(V'))
@@ -427,13 +427,13 @@ module C-COMMON-EXPR-RELATIONAL
 
      // we check also that they aren't both arithmetic types because arithmetic types must be promoted
      // so it's not technically a constraint violation if the types don't match.
-     rule (.K => CV("CERL8", "Invalid operand types to ==.", "6.5.9:2"))
+     rule (.K => CV("CERL8", "Invalid operand types to ==."))
           ~> L:RValue == R:RValue
           requires notBool isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
                andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))
                andBool notBool (isPointerType(type(L)) andBool isNullPointerConstant(R))
                andBool notBool (isPointerType(type(R)) andBool isNullPointerConstant(L))
-     rule (.K => CV("CERL9", "Invalid operand types to !=.", "6.5.9:2"))
+     rule (.K => CV("CERL9", "Invalid operand types to !=."))
           ~> L:RValue != R:RValue
           requires notBool isCompatibleEqualityTypes(utype(L), utype(R), value(L), value(R))
                andBool notBool (isArithmeticType(type(L)) andBool isArithmeticType(type(R)))

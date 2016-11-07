@@ -1,4 +1,5 @@
  Comparison of unspecified value.
    at main(zero-pointer.c:29:9)
-  Unspecified value or behavior (USP-CERL7). See C11 sec. 6.5.9
+  Unspecified value or behavior (USP-CERL7).
+   see C11 section 6.5.9 http://rvdoc.org/C11/6.5.9
 Execution failed (configuration dumped)

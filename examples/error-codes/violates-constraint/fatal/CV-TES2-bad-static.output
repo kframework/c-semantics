@@ -1,3 +1,5 @@
 CV-TES2-bad-static.c:7:3: error: Trying to compute sizeof of an incomplete or function type.
-  Constraint violation (CV-TES2). See C11 sec. 6.5.3.4:1
+  Constraint violation (CV-TES2).
+   see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-TES2-bad-static.c to see commands run.

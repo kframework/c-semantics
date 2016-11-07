@@ -33,7 +33,7 @@ module C-EXPR-OFFSETOF
      rule toOffset(nclv(Loc:SymLoc, T::Type)) => tv(offset(Loc), utype(cfg:sizeut))
           requires notBool isBitfieldType(T)
           [structural]
-     rule (.K => UNDEF("TEOFF1", "Offsetof member designator specifies a bit-field.", "7.19:3, J.2:1 item 144"))
+     rule (.K => UNDEF("TEOFF1", "Offsetof member designator specifies a bit-field."))
           ~> toOffset(nclv(_, T::Type))
           requires isBitfieldType(T)
           [structural]

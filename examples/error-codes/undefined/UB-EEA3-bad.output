@@ -1,3 +1,6 @@
  Attempt to alias restrict qualified pointers associated with incompatible blocks.
    at main(UB-EEA3-bad.c:10:3)
-  Undefined behavior (UB-EEA3). See C11 sec. 6.7.3.1:4, J.2:1 item 69
+  Undefined behavior (UB-EEA3).
+   see C11 section 6.7.3.1:4 http://rvdoc.org/C11/6.7.3.1
+   see C11 section J.2:1 item 69 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP43-C http://rvdoc.org/CERT-C/EXP43-C

@@ -1,4 +1,5 @@
  Comparing a function pointer to a null pointer constant.
    at main(L-EXC3-bad.c:17:5)
   Possible unintended behavior (L-EXC3).
+   see CERT-C section EXP16-C http://rvdoc.org/CERT-C/EXP16-C
 Hello, World!

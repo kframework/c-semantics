@@ -1,3 +1,5 @@
 CV-CEA3-bad-static.c:6:7: error: Invalid operand types to addition.
-  Constraint violation (CV-CEA3). See C11 sec. 6.5.6:2
+  Constraint violation (CV-CEA3).
+   see C11 section 6.5.6:2 http://rvdoc.org/C11/6.5.6
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-CEA3-bad-static.c to see commands run.

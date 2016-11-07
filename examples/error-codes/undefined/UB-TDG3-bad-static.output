@@ -1,2 +1,5 @@
 UB-TDG3-bad-static.c:4:2: error: Declaration for f appears with invalid storage class specifiers.
-  Undefined behavior (UB-TDG3). See C11 sec. 6.7.1:7, J.2:1 item 60
+  Undefined behavior (UB-TDG3).
+   see C11 section 6.7.1:7 http://rvdoc.org/C11/6.7.1
+   see C11 section J.2:1 item 60 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C

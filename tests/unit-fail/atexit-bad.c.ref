@@ -3,5 +3,7 @@
    by foo(atexit-bad.c:6:3)
    by exit(atexit-bad.c:11:3)
    by main(atexit-bad.c:11:3)
-  Unspecified value or behavior (USP-STDLIB3). See C11 sec. 7.22.4.2:2, J.1:1 item 44
+  Unspecified value or behavior (USP-STDLIB3).
+   see C11 section 7.22.4.2:2 http://rvdoc.org/C11/7.22.4.2
+   see C11 section J.1:1 item 44 http://rvdoc.org/C11/J.1
 Execution failed (configuration dumped)

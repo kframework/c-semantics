@@ -1,4 +1,7 @@
  Called free on memory not allocated by malloc, or already freed.
    at free(UB-STDLIB2-bad.c:4:3)
    by main(UB-STDLIB2-bad.c:4:3)
-  Undefined behavior (UB-STDLIB2). See C11 sec. 7.22.3.3:2, J.2:1 item 179
+  Undefined behavior (UB-STDLIB2).
+   see C11 section 7.22.3.3:2 http://rvdoc.org/C11/7.22.3.3
+   see C11 section J.2:1 item 179 http://rvdoc.org/C11/J.2
+   see CERT-C section MEM34-C http://rvdoc.org/CERT-C/MEM34-C

@@ -39,8 +39,7 @@ module C-EXPR-FUNCTION-CALL
           requires isRKLabel(#klabel(Lbl))
                andBool (isCompleteType(type(T)) orBool isVoidType(type(T)))
                andBool notBool isArrayType(type(T)) // Don't think this is possible.
-     rule (.K => CV("EFC1", "Function call with incomplete or invalid return type.",
-               "6.5.2.2:2"))
+     rule (.K => CV("EFC1", "Function call with incomplete or invalid return type."))
           ~> Call(Lbl:KLabel(_, ut(_, pointerType(t(_, _, functionType(T::UType, _))))), rvlist(_))
           requires isRKLabel(#klabel(Lbl))
                andBool (notBool (isCompleteType(type(T)) orBool isVoidType(type(T)))

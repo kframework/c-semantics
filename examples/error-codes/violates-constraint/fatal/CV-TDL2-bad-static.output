@@ -1,3 +1,5 @@
 CV-TDL2-bad-static.c:4:2: error: Extern declaration of a appears at block scope with an initializer.
-  Constraint violation (CV-TDL2). See C11 sec. 6.7.9:5
+  Constraint violation (CV-TDL2).
+   see C11 section 6.7.9:5 http://rvdoc.org/C11/6.7.9
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-TDL2-bad-static.c to see commands run.

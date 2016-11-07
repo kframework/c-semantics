@@ -1,3 +1,5 @@
 j501b.c:5:2: error: Trying to write through a const lvalue.
-  Constraint violation (CV-TEAS6). See C11 sec. 6.5.16.1:1
+  Constraint violation (CV-TEAS6).
+   see C11 section 6.5.16.1:1 http://rvdoc.org/C11/6.5.16.1
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d j501b.c to see commands run.

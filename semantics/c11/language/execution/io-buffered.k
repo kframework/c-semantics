@@ -104,8 +104,7 @@ module C-IO-BUFFERED
           </locs-written>
           requires notBool Loc in Locs andBool isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO8",
-               "Unsequenced side effect on scalar object with side effect of same object.",
-               "6.5:2, J.2:1 item 35") )
+               "Unsequenced side effect on scalar object with side effect of same object.") )
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <locs-written> Locs::Set </locs-written>
@@ -120,8 +119,7 @@ module C-IO-BUFFERED
      rule <k> checkBounds(Loc::SymLoc, _) => .K ...</k>
           requires isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO2",
-               "Trying to write outside the bounds of an object.",
-               "6.5.6:8, J.2:1 items 47, 49"))
+               "Trying to write outside the bounds of an object."))
                ~> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int)
           ...</k>
           <mem>... Base |-> object(_, Len::Int, _) ...</mem>
@@ -131,16 +129,14 @@ module C-IO-BUFFERED
      // this is somewhat less safe than some of our other error recovery options,
      // but all error recovery is essentially unsound anyway, so it should be fine
      rule <k> (.K => UNDEF("EIO3",
-               "Trying to modify an object declared with const type.",
-               "6.7.3:6, J.2:1 item 64"))
+               "Trying to modify an object declared with const type."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _) ...</mem>
           requires Const() inQuals getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (.K => UNDEF("EIO4",
-               "Trying to modify an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3:6, J.2:1 item 65"))
+               "Trying to modify an object declared with volatile type through a non-volatile lvalue."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), T::Type)
           ...</k>
           <mem>... Base |-> object(ObjT::Type, _, _) ...</mem>
@@ -148,8 +144,7 @@ module C-IO-BUFFERED
                andBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset))
           [structural]
      rule <k> (.K => IMPL("EIO5",
-               "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated.",
-               "6.2.4:4, 6.2.4:5, J.3.13:1 item 2"))
+               "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated."))
                ~> checkWrite(Loc::SymLoc, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
@@ -199,7 +194,7 @@ module C-IO-BUFFERED
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
-     rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.", "6.2.4:4, 6.2.4:5, J.3.13:1 item 2"))
+     rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated."))
                ~> readBytes(Loc::SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
@@ -370,19 +365,16 @@ module C-IO-BUFFERED
 //             //[interpRule]
 
      rule (.K => UNDEF("EIO7",
-               "Reading outside the bounds of an object.",
-               "6.3.2.1:1, J.2:1 item 19"))
+               "Reading outside the bounds of an object."))
           ~> errorReadOutOfBounds
           [structural]
      // read outo f bounds becomes a trap by the above rule
      rule (.K => UNDEF("EIO8",
-               "Unsequenced side effect on scalar object with value computation of same object.",
-               "6.5:2, J.2:1 item 35"))
+               "Unsequenced side effect on scalar object with value computation of same object."))
           ~> errorUnseqEffects
           [structural]
      rule (.K => UNDEF("EIO9",
-               "Trying to access an object declared with volatile type through a non-volatile lvalue.",
-               "6.7.3:6, J.2:1 item 65"))
+               "Trying to access an object declared with volatile type through a non-volatile lvalue."))
           ~> errorNonVolatileLVal
           [structural]
 
@@ -461,7 +453,7 @@ module C-IO-BUFFERED
      rule getQualsAtOffset(.List) => noQuals
 
      rule [err00037]:
-          (.K => UNDEF("CEER1", "Trying to read through a null pointer.", "6.3.2.1:1, J.2:1 item 19") ) ~>
+          (.K => UNDEF("CEER1", "Trying to read through a null pointer.") ) ~>
           read(NullPointer, _)
           [structural]
 
@@ -469,10 +461,10 @@ module C-IO-BUFFERED
      // multiple error cells at least. Also, add more details (loc?).
      // FIXME possible to miss dataraces with bitfields
      rule [read-write-race]:
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.")) ~>
                read(Loc:SymLoc, T:Type)
           ...</k>
-          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.", "5.1.2.4:25, J:2.1 item 5")) ~>
+          <k> (.K => UNDEF("CEER4", "Have a read-write datarace.")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool
@@ -483,10 +475,10 @@ module C-IO-BUFFERED
           [computational]
 
       rule [write-write-race]:
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
                write(Loc:SymLoc, _, T:Type)
           ...</k>
-          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.", "5.1.2.4:25, J.2:1 item 5")) ~>
+          <k> (.K => UNDEF("CEER5", "Have a write-write datarace.")) ~>
                write(Loc':SymLoc, _, T':Type)
           ...</k>
           requires sameBase(Loc, Loc') andBool

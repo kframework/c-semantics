@@ -1,4 +1,7 @@
  Type of lvalue not compatible with the effective type of the object being accessed.
    at main(j037f.c:10:7)
-  Undefined behavior (UB-EIO10). See C11 sec. 6.5:7, J.2:1 item 37
+  Undefined behavior (UB-EIO10).
+   see C11 section 6.5:7 http://rvdoc.org/C11/6.5
+   see C11 section J.2:1 item 37 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP39-C http://rvdoc.org/CERT-C/EXP39-C
 Execution failed (configuration dumped)

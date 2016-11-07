@@ -39,8 +39,7 @@ module C-COMMON-EXPR-MEMBERS
           requires notBool (Atomic() inQuals Qs) orBool Initializing
           [structural]
      rule <k> (.K => UNDEF("CEM1",
-               "Attempting to access a member in an atomic struct.",
-               "6.5.2.3:5, J.2:1 item 42"))
+               "Attempting to access a member in an atomic struct."))
                ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>
@@ -48,8 +47,7 @@ module C-COMMON-EXPR-MEMBERS
                andBool isNCLKLabel(#klabel(Lbl))
           [structural]
      rule <k> (.K => UNDEF("CEM2",
-               "Attempting to access a member in an atomic union.",
-               "6.5.2.3:5, J.2:1 item 42"))
+               "Attempting to access a member in an atomic union."))
                ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
           ...</k>
           <initializing> false </initializing>
@@ -123,7 +121,7 @@ module C-COMMON-EXPR-MEMBERS
           requires notBool anonInDecls(Decls)
                    andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
 
-     rule (.K => CV("CEM3", "Attempting to access member but it does not exist.", "6.5.2.3:1"))
+     rule (.K => CV("CEM3", "Attempting to access member but it does not exist."))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map, _))
 
      // Same deal as above, only for byte lists.

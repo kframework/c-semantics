@@ -1,3 +1,6 @@
  Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated.
    at foo(IMPL-EIO6-bad.c:6:3)
-  Implementation defined behavior (IMPL-EIO6). See C11 sec. 6.2.4:4, 6.2.4:5, J.3.13:1 item 2
+  Implementation defined behavior (IMPL-EIO6).
+   see C11 section 6.2.4:4 http://rvdoc.org/C11/6.2.4
+   see C11 section 6.2.4:5 http://rvdoc.org/C11/6.2.4
+   see C11 section J.3.13:1 item 2 http://rvdoc.org/C11/J.3.13

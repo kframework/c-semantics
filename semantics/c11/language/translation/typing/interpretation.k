@@ -33,10 +33,10 @@ module C-TYPING-INTERPRETATION
      rule BitFieldType(t(Qs::Quals, Mods::Set, T:BitfieldFieldType), tv(N:Int, ut(SetItem(IntegerConstant) _, _)))
           => t(Qs, Mods, bitfieldType(T, N)) [structural]
      rule BitFieldType(t(Qs::Quals, Mods::Set, T:SimpleTypedefType) => extractActualType(t(Qs, Mods, T)), _)
-     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression.", "6.7.2.1:4"))
+     rule (.K => CV("CTI3", "The width of a bit field shall be an integer constant expression."))
           ~> BitFieldType(_, tv(N:CValue, T::UType))
           requires notBool fromConstantExpr(T) orBool isInt(N) =/=K true
-     rule (.K => IMPL("CTI4", "Bit-field with type other than signed int, unsigned int, or _Bool.", "6.7.2.1:5, J.3.9:1 item 2"))
+     rule (.K => IMPL("CTI4", "Bit-field with type other than signed int, unsigned int, or _Bool."))
           ~> BitFieldType(t(_, _, T'::SimpleType), tv(N:CValue, T::UType))
           requires fromConstantExpr(T) andBool isInt(N)
                andBool notBool isBitfieldFieldType(T')
@@ -64,14 +64,14 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makeIncompleteArrayType)
           requires notBool isFlexibleType(T)
           [structural]
-     rule (.K => UNDEF("CTI1", "Arrays must have integer length.", "6.6:6, J.2:1 item 55"))
+     rule (.K => UNDEF("CTI1", "Arrays must have integer length."))
           ~> ArrayType(_, tv(_:Float, _), _)
           [structural]
-     rule (.K => CV("CTI2", "Arrays must have positive length.", "6.7.6.2:1"))
+     rule (.K => CV("CTI2", "Arrays must have positive length."))
           ~> ArrayType(T:Type, tv(Len:Int, _), _)
           requires Len <=Int 0
           [structural]
-     rule (.K => CV("CTI5", "Structs containing a flexible array member must not be array elements.", "6.7.2.1:2"))
+     rule (.K => CV("CTI5", "Structs containing a flexible array member must not be array elements."))
           ~> ArrayType(T:Type, _, _)
           requires isFlexibleType(T)
           [structural]

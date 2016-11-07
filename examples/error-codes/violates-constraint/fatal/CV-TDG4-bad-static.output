@@ -1,3 +1,5 @@
 CV-TDG4-bad-static.c:3:1: error: Declaration for a appears with invalid storage class specifiers.
-  Constraint violation (CV-TDG4). See C11 sec. 6.9:2
+  Constraint violation (CV-TDG4).
+   see C11 section 6.9:2 http://rvdoc.org/C11/6.9
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-TDG4-bad-static.c to see commands run.

@@ -24,8 +24,7 @@ module CPP-EXPR-ADDITIVE
           requires ifFromArrayInBounds(Loc, T, I)
 
      rule (.K => UNDEF("CEA1",
-               "A pointer (or array subscript) outside the bounds of an object.",
-               "5.7:4"))
+               "A pointer (or array subscript) outside the bounds of an object."))
           ~> addToPointer(Loc::SymLoc, T::CPPType, I::Int, _)
           requires notBool ifFromArrayInBounds(Loc, T, I)
 
@@ -42,7 +41,7 @@ module CPP-EXPR-ADDITIVE
           requires sameBase(Loc, Loc')
 
      rule (.K => UNDEF("CEA2",
-               "Computing pointer difference between two different objects.", "5.7:6"))
+               "Computing pointer difference between two different objects."))
           ~> prv(Loc::SymLoc, _, _:CPPPointerType) - prv(Loc'::SymLoc, _, _:CPPPointerType)
           requires notBool sameBase(Loc, Loc')
 
@@ -51,8 +50,7 @@ module CPP-EXPR-ADDITIVE
           => prv(Diff /Int Size, Tr, T)
           requires (Diff %Int Size ==Int 0)
                andBool inRange(Diff /Int Size, T)
-     rule (.K => UNDEF("CEA3", "Pointer difference outside the range that can be represented by object of type " +String S +String ".",
-               "5.7:6"))
+     rule (.K => UNDEF("CEA3", "Pointer difference outside the range that can be represented by object of type " +String S +String "."))
           ~> computePointerDifference(Diff::Int, Size::Int, T::CPPType, _, S::String)
           requires notBool inRange(Diff /Int Size, T)
 

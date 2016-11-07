@@ -1,3 +1,5 @@
 CV-CTI3-bad-static.c:3:1: error: The width of a bit field shall be an integer constant expression.
-  Constraint violation (CV-CTI3). See C11 sec. 6.7.2.1:4
+  Constraint violation (CV-CTI3).
+   see C11 section 6.7.2.1:4 http://rvdoc.org/C11/6.7.2.1
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-CTI3-bad-static.c to see commands run.

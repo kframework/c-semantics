@@ -1,3 +1,6 @@
 j055d.c:1:1: error: Arrays must have integer length.
-  Undefined behavior (UB-CTI1). See C11 sec. 6.6:6, J.2:1 item 55
+  Undefined behavior (UB-CTI1).
+   see C11 section 6.6:6 http://rvdoc.org/C11/6.6
+   see C11 section J.2:1 item 55 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
 Translation failed (config dumped). Run kcc -d j055d.c to see commands run.

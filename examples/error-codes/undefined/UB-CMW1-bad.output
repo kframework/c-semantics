@@ -1,3 +1,6 @@
  Trying to modify a string literal.
    at main(UB-CMW1-bad.c:4:2)
-  Undefined behavior (UB-CMW1). See C11 sec. 6.4.5:7, J.2:1 item 33
+  Undefined behavior (UB-CMW1).
+   see C11 section 6.4.5:7 http://rvdoc.org/C11/6.4.5
+   see C11 section J.2:1 item 33 http://rvdoc.org/C11/J.2
+   see CERT-C section STR30-C http://rvdoc.org/CERT-C/STR30-C

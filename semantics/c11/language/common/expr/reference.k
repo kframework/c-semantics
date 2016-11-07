@@ -47,14 +47,14 @@ module C-COMMON-EXPR-REFERENCE
                andBool notBool isBitfieldType(T)
                andBool notBool isCompleteType(T)
           [structural]
-     rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue.", "6.5.3.2:1"))
+     rule (.K => CV("CER1", "Unary '&' operator applied to non-lvalue."))
           ~> &(_:RValue)
           [structural]
-     rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class.", "6.5.3.2:1"))
+     rule (.K => CV("CER2", "Unary '&' operator applied to a value with register storage class."))
           ~> &(nclv(Loc:SymLoc, _))
           requires isRegisterLoc(Loc)
           [structural]
-     rule (.K => CV("CER5", "Unary '&' operator applied to a bit-field.", "6.5.3.2:1"))
+     rule (.K => CV("CER5", "Unary '&' operator applied to a bit-field."))
           ~> &(nclv(Loc:SymLoc, T::Type))
           requires isBitfieldType(T)
           [structural]
@@ -77,19 +77,17 @@ module C-COMMON-EXPR-REFERENCE
                     utype(pointerType(type(char))), 1) ==K true
           [structural]
 
-     rule (.K => CV("CER6", "Unary '*' operator applied to non-pointer.", "6.5.3.2:2"))
+     rule (.K => CV("CER6", "Unary '*' operator applied to non-pointer."))
           ~> * R:RValue
           requires notBool isPointerUType(utype(R))
 
      rule (.K => UNDEF("CER3",
-               "Dereferencing a null pointer.",
-               "6.5.3.2:4, J.2:1 item 43"))
+               "Dereferencing a null pointer."))
           ~> *(tv(Loc:SymLoc, _))
           requires Loc ==K NullPointer
           [structural]
      rule (.K => UNDEF("CER4",
-               "Dereferencing a pointer past the end of an array.",
-               "6.5.6:8, J.2:1 items 47, 49"))
+               "Dereferencing a pointer past the end of an array."))
           ~> *(tv(Loc:SymLoc, _))
           requires ifFromArrayInBounds(Loc,
                utype(pointerType(type(char))), 1) =/=K true

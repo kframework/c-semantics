@@ -130,8 +130,7 @@ module C-LINKING-RESOLUTION
 
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
-                    +String signatureToString(N :: X, T) +String ".",
-                    "3.2:4"))
+                    +String signatureToString(N :: X, T) +String "."))
               ~> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(ktriple(_, N::Namespace :: X::CId, T:K))) _::Set
@@ -143,8 +142,7 @@ module C-LINKING-RESOLUTION
 
      rule <k> (.K => EXT-UNDEF("TDR2",
                     "No definition for symbol with external linkage: "
-                     +String idToString(X) +String ".",
-                    "C11", "6.9:5, J.2:1 item 84"))
+                     +String idToString(X) +String "."))
               ~> resolveReference(X:CId)
           ...</k>
           <external-defs> Defs:Map </external-defs>
@@ -179,8 +177,7 @@ module C-LINKING-RESOLUTION
 
      // TODO(dwightguth): make this a better error message when we take the C++ semantics live
      rule <k> (.K => EXT-UNDEF("TDR2",
-                    "No definition for symbol with external linkage: main.",
-                    "C11", "6.9:5, J.2:1 item 84"))
+                    "No definition for symbol with external linkage: main."))
               ~> resolveMain
           ...</k>
           <external-defs> CDefs:Map </external-defs>

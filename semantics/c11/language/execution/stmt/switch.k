@@ -68,7 +68,7 @@ module C-STMT-SWITCH
      rule #handleSwitch-aux(_, tv((I:IntPtr => unknown(maxIntPtrValue(I))), T::UType), caseLabel(_, Exp:K), _)
           requires Exp =/=K #klabel(`Default`)
 
-     rule (.K => UNSPEC("ESS1", "Switching on an unspecified controlling expression.", "6.8.4.2:5"))
+     rule (.K => UNSPEC("ESS1", "Switching on an unspecified controlling expression."))
           ~> #handleSwitch-aux(_, tv(unknown(_), _), caseLabel(_, Exp:K), _)
           requires Exp =/=K #klabel(`Default`)
 

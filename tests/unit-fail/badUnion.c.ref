@@ -1,3 +1,4 @@
  Unspecified value returned from main function.
-  Unspecified value or behavior (USP-CEER6). See C11 sec. 5.1.2.2.3:1
+  Unspecified value or behavior (USP-CEER6).
+   see C11 section 5.1.2.2.3:1 http://rvdoc.org/C11/5.1.2.2.3
 Execution failed (configuration dumped)

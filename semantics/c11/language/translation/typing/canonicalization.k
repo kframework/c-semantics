@@ -102,7 +102,7 @@ module C-TYPING-CANONICALIZATION
           requires notBool isCompleteType(T)
                orBool getAlignas(T) >=Int byteAlignofType(T)
           [structural]
-     rule (.K => CV("TCANON1", "Alignas attribute specifying an alignment less strict than would otherwise be required.", "6.7.5:4"))
+     rule (.K => CV("TCANON1", "Alignas attribute specifying an alignment less strict than would otherwise be required."))
           ~> addMods(.List, T:Type)
           requires isCompleteType(T)
                andBool getAlignas(T) <Int byteAlignofType(T)

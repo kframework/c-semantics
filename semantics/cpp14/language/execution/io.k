@@ -97,8 +97,7 @@ module CPP-EXECUTION-IO
 
 
      rule (.K => DRAFTING("EIO1",
-               "Reading outside the bounds of an object.",
-               232))
+               "Reading outside the bounds of an object."))
           ~> errorReadOutOfBounds
           [structural]
 

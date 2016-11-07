@@ -1,4 +1,8 @@
  Trying to modify an object declared with const type.
    at main(j064b.c:6:7)
-  Undefined behavior (UB-EIO3). See C11 sec. 6.7.3:6, J.2:1 item 64
+  Undefined behavior (UB-EIO3).
+   see C11 section 6.7.3:6 http://rvdoc.org/C11/6.7.3
+   see C11 section J.2:1 item 64 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP05-C http://rvdoc.org/CERT-C/EXP05-C
+   see CERT-C section EXP40-C http://rvdoc.org/CERT-C/EXP40-C
 Execution failed (configuration dumped)

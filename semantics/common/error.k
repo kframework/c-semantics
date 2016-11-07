@@ -2,10 +2,10 @@ module ERROR-SYNTAX
      imports LIST
      imports STRING-SYNTAX
 
-     syntax ErrorMsg ::= ErrorMsg(String, String, String, String, List)
-                       | ErrorMsg(String, String, String, List) [function, klabel(ErrorMsgS)]
+     syntax ErrorMsg ::= ErrorMsg(String, String, String, String)
+                       | ErrorMsg(String, String, String) [function, klabel(ErrorMsgS)]
 
-     syntax String ::= formatCitations(List) [function]
+     syntax String ::= formatCitations(String) [function]
 
      syntax Bool ::= "isCSV" [function]
                    | "warnSystemHeaders" [function]
@@ -25,9 +25,9 @@ module ERROR-SYNTAX
      syntax K ::= writeThenClose(Int, String) [function]
      syntax K ::= close(Int, K) [function]
 
-     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String ")" [function, klabel(ExtUndef)]
-     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String "," String "," String ")"
-                    | ILL(String, String, String)
+     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String ")" [function, klabel(LinkUndef)]
+     syntax KItem ::= "EXT" "-" "UNDEF" "(" String "," String "," String ")"
+                    | ILL(String, String)
 endmodule
 
 module ERROR
@@ -35,21 +35,39 @@ module ERROR
      imports C-CONFIGURATION
      imports K-IO
      imports K-REFLECTION
+     imports CITATIONS
      imports STRING
 
-     rule ErrorMsg(Title:String, Msg:String, ErrType:String, L:List)
-          => ErrorMsg(Title, Msg, ErrType, "", L)
+     rule ErrorMsg(Title:String, Msg:String, ErrType:String)
+          => ErrorMsg(Title, Msg, ErrType, "")
 
+     rule formatCitations(Title:String) => formatCitationsWithDelims(citations(Title), isCSV)
 
-     rule formatCitations(L:List) => formatCitationsStart({#if isCSV #then "" #else " See " #fi}:>String, L)
+     syntax String ::= formatCitationsWithDelims(List, Bool) [function]
+     rule formatCitationsWithDelims(.List, _) => ""
+     rule formatCitationsWithDelims(ListItem(Citation:KItem) Citations:List, IsCSV:Bool)
+          => formatCitationWithDelims(Citation, IsCSV) +String formatCitationsWithDelims(Citations:List, IsCSV)
 
-     syntax String ::= formatCitationsStart(String, List) [function]
-     rule formatCitationsStart(Start:String, ListItem(Document:String) ListItem(Citation:String) L:List)
-          => Start
-          +String Document +String " sec. " +String Citation
-          +String formatCitationsStart("; ", L)
+     syntax String ::= formatCitationWithDelims(K, Bool) [function]
+     rule formatCitationWithDelims(citation(Source:String, Section:String, Details:String), IsCSV:Bool)
+          => "\n" +String {#if IsCSV #then "" #else "   see " #fi}:>String +String Source
+             +String {#if IsCSV #then "," #else " section " #fi}:>String +String Section
+             +String {#if IsCSV #then "," +String Details #else #if Details =/=String "" #then ":" +String Details #else "" #fi  #fi}:>String
+             +String {#if IsCSV #then "," #else " " #fi}:>String +String citationURL(Source, Section)
 
-     rule formatCitationsStart(_, .List) => ""
+     syntax String ::= replaceAllMap(String, Map) [function]
+     rule replaceAllMap(Source:String, .Map) => Source
+     rule replaceAllMap(Source:String, Key:String |-> Value:String Rest:Map) => replaceAllMap(replaceAll(Source, Key, Value), Rest)
+
+     syntax String ::= percenteEncode(String) [function]
+     rule percenteEncode(Source:String) => replaceAllMap(replaceAll(Source, "%", "%25"),
+             "!" |-> "%21" "#" |-> "%23" "$" |-> "%24" "&" |-> "%26" "'" |-> "%27" "(" |-> "%28" ")" |-> "%29"
+             "*" |-> "%2A" "+" |-> "%2B" "," |-> "%2C" "/" |-> "%2F" ":" |-> "%3A" ";" |-> "%3B" "=" |-> "%3D"
+             "?" |-> "%3F" "@" |-> "%40" "[" |-> "%5B" "]" |-> "%5D" " " |-> "%20")
+
+     syntax String ::= citationURL(String, String) [function]
+     rule citationURL(Source:String, Section:String)
+          => "http://rvdoc.org/" +String percenteEncode(Source) +String "/" +String percenteEncode(Section)
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
      rule writeThenClose(Fd:Int, Line:String) => close(Fd, #write(Fd, Line))
@@ -73,20 +91,20 @@ module ERROR
      rule checkOptionsCateg(Opt:Opts, _, <generatedTop>... <options>... SetItem(Opt)...</options> ...</generatedTop>) => true
      rule checkOptionsCateg(_, B:Bool, _) => B [owise]
 
-     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String)
-          => EXT-UNDEF(Title, Msg, Document, Citation, "")
-     rule EXT-UNDEF(Title:String, Msg:String, Document:String, Citation:String, Reason:String)
-          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason, ListItem(Document) ListItem(Citation)))
+     rule EXT-UNDEF(Title:String, Msg:String)
+          => EXT-UNDEF(Title, Msg, "")
+     rule EXT-UNDEF(Title:String, Msg:String, Reason:String)
+          => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason))
           requires checkOptions(Undef(), Title, true)
 
-     rule ILL(Title:String, Msg:String, Citation:String)
-          => EXIT(ErrorMsg("ILF-" +String Title, Msg, "Ill-formed program.", ListItem("C++14") ListItem(Citation)))
+     rule ILL(Title:String, Msg:String)
+          => EXIT(ErrorMsg("ILF-" +String Title, Msg, "Ill-formed program."))
           requires checkOptions(Ill(), Title, true)
 
-     rule EXT-UNDEF(Title:String, _, _, _, _) => HALT
+     rule EXT-UNDEF(Title:String, _, _) => HALT
           requires notBool checkOptions(Undef(), Title, true)
 
-     rule ILL(Title:String, _, _) => HALT
+     rule ILL(Title:String, _) => HALT
           requires notBool checkOptions(Ill(), Title, true)
 
 endmodule

@@ -1,3 +1,6 @@
  Floating-point value outside the range of values that can be represented after conversion.
    at main(UB-CCV4-bad.c:6:7)
-  Undefined behavior (UB-CCV4). See C11 sec. 6.3.1.5:1, J.2:1 item 18
+  Undefined behavior (UB-CCV4).
+   see C11 section 6.3.1.5:1 http://rvdoc.org/C11/6.3.1.5
+   see C11 section J.2:1 item 18 http://rvdoc.org/C11/J.2
+   see CERT-C section FLP34-C http://rvdoc.org/CERT-C/FLP34-C

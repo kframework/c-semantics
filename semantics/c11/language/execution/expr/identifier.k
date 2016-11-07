@@ -34,8 +34,7 @@ module C-EXPR-IDENTIFIER
 
      rule <k> (.K => SE("CID1",
                "Trying to look up identifier " +String S +String
-               ", but no such identifier is in scope.",
-               "6.5.1:2") )
+               ", but no such identifier is in scope.") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>
@@ -44,7 +43,7 @@ module C-EXPR-IDENTIFIER
                andBool (notBool (Identifier(S) in_keys(Types)))
           [structural]
      rule <k> (.K => UNDEF("CID2",
-               "No definition found for identifier " +String S +String ".", "6.3.2.1:1, J.2:1 item 19") )
+               "No definition found for identifier " +String S +String ".") )
                ~> Identifier(S:String)
           ...</k>
           <env> Env:Map </env>

@@ -1,4 +1,6 @@
  Called destroy on an object that was not initialized with pthread_mutex_init.
    at pthread_mutex_destroy(UB-PTHREAD3-bad.c:14:5)
    by main(UB-PTHREAD3-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD3). See POSIX 2008 sec. pthread_mutex_destroy
+  Undefined behavior (UB-PTHREAD3).
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy

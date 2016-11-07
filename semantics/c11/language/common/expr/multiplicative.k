@@ -46,12 +46,12 @@ module C-COMMON-EXPR-MULTIPLICATIVE
           => arithInterpret(T, F1 /Float F2)
           requires T ==Type T' andBool F2 =/=Float 0.0
           [structural]
-     rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
+     rule (.K => UNDEF("CEMX1", "Division by 0."))
           ~> L:RValue / tv(0, T'::UType)
           requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
                andBool utype(L) ==Type T'
           [structural]
-     rule (.K => UNDEF("CEMX1", "Division by 0.", "6.5.5:5, J.2:1 item 45") )
+     rule (.K => UNDEF("CEMX1", "Division by 0.") )
           ~> L:RValue / tv(Z:Float, T'::UType)
           requires isFloatUType(utype(L))
                andBool Z ==Float 0.0
@@ -67,12 +67,12 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool (max(T) >=Int I1 /Int I2)
                andBool T ==Type T'
           [structural]
-     rule (.K => UNDEF("CEMX2", "Modulus by 0.", "6.5.5:5, J.2:1 item 45") )
+     rule (.K => UNDEF("CEMX2", "Modulus by 0."))
           ~> L:RValue % tv(0, T'::UType)
           requires isIntegerUType(utype(L)) andBool isPromoted(utype(L))
                andBool utype(L) ==Type T'
           [structural]
-     rule (.K => UNDEF("CEMX3", "Signed integer overflow.", "6.5:5, J.2:1 item 36") ) ~>
+     rule (.K => UNDEF("CEMX3", "Signed integer overflow.")) ~>
           tv(I1:Int, T:IntegerUType) % tv(I2:Int, T'::UType)
           requires I2 =/=Int 0
                andBool notBool (min(T) <=Int I1 /Int I2

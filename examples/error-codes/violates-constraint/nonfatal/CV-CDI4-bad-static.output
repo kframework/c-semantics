@@ -1,2 +1,4 @@
 CV-CDI4-bad-static.c:11:1: error: Attempting to initialize nonexistent member.
-  Constraint violation (CV-CDI4). See C11 sec. 6.7.9:2
+  Constraint violation (CV-CDI4).
+   see C11 section 6.7.9:2 http://rvdoc.org/C11/6.7.9
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C

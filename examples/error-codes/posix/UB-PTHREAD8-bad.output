@@ -1,4 +1,6 @@
  Called trylock on an object that was not initialized with pthread_mutex_init.
    at pthread_mutex_trylock(UB-PTHREAD8-bad.c:12:5)
    by main(UB-PTHREAD8-bad.c:12:5)
-  Undefined behavior (UB-PTHREAD8). See POSIX 2008 sec. pthread_mutex_trylock
+  Undefined behavior (UB-PTHREAD8).
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see POSIX 2008 section pthread_mutex_trylock http://rvdoc.org/POSIX%202008/pthread_mutex_trylock

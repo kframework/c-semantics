@@ -1,3 +1,5 @@
 CV-CER6-bad-static.c:6:2: error: Unary '*' operator applied to non-pointer.
-  Constraint violation (CV-CER6). See C11 sec. 6.5.3.2:2
+  Constraint violation (CV-CER6).
+   see C11 section 6.5.3.2:2 http://rvdoc.org/C11/6.5.3.2
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-CER6-bad-static.c to see commands run.

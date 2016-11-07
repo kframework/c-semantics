@@ -1,3 +1,5 @@
 CV-EFC1-bad-static.c:8:3: error: Function call with incomplete or invalid return type.
-  Constraint violation (CV-EFC1). See C11 sec. 6.5.2.2:2
+  Constraint violation (CV-EFC1).
+   see C11 section 6.5.2.2:2 http://rvdoc.org/C11/6.5.2.2
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-EFC1-bad-static.c to see commands run.

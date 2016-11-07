@@ -1,5 +1,8 @@
  An object which has been modified is accessed through an expression based on a restrict-qualified pointer and another lvalue not also based on said pointer.
    at f(j068a.c:3:7)
    by main(j068a.c:9:7)
-  Undefined behavior (UB-ECL3). See C11 sec. 6.7.3.1:4, J.2:1 item 68
+  Undefined behavior (UB-ECL3).
+   see C11 section 6.7.3.1:4 http://rvdoc.org/C11/6.7.3.1
+   see C11 section J.2:1 item 68 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP43-C http://rvdoc.org/CERT-C/EXP43-C
 Execution failed (configuration dumped)

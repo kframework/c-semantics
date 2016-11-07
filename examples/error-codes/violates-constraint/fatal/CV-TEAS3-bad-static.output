@@ -1,3 +1,5 @@
 CV-TEAS3-bad-static.c:4:2: error: 'lvalue' required as left operand in assignment.
-  Constraint violation (CV-TEAS3). See C11 sec. 6.5.16:2
+  Constraint violation (CV-TEAS3).
+   see C11 section 6.5.16:2 http://rvdoc.org/C11/6.5.16
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d CV-TEAS3-bad-static.c to see commands run.

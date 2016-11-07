@@ -1,4 +1,7 @@
  The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.
    at main(j051d.c:6:7)
-  Undefined behavior (UB-CEB7). See C11 sec. 6.5.7:3, J.2:1 item 51
+  Undefined behavior (UB-CEB7).
+   see C11 section 6.5.7:3 http://rvdoc.org/C11/6.5.7
+   see C11 section J.2:1 item 51 http://rvdoc.org/C11/J.2
+   see CERT-C section INT34-C http://rvdoc.org/CERT-C/INT34-C
 Execution failed (configuration dumped)

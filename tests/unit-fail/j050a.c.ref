@@ -1,4 +1,7 @@
  Pointer difference outside the range that can be represented by object of type ptrdiff_t.
    at main(j050a.c:11:13)
-  Undefined behavior (UB-CEA2). See C11 sec. 6.5.6:9, J.2:1 item 50
+  Undefined behavior (UB-CEA2).
+   see C11 section 6.5.6:9 http://rvdoc.org/C11/6.5.6
+   see C11 section J.2:1 item 50 http://rvdoc.org/C11/J.2
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
 Execution failed (configuration dumped)

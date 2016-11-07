@@ -94,11 +94,11 @@ module CPP-TRANSLATION-INIT
      syntax K ::= checkReplaceable(QualId, CPPType, Map) [function]
      syntax Error ::= "replaceableError"
      rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), CPPLinkage, _)), Defs::Map)
-          => ILL("TIN1", "Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).", "18.6.1.1:11")
+          => ILL("TIN1", "Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).")
           ~> replaceableError
           requires notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void)), type(size_t)) in_keys(Defs))
      rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), t(_, _, T::CPPSimpleType), CPPLinkage, _)), Defs::Map)
-          => ILL("TIN2", "Declared replacement function operator delete(void *, std::size_t) but no operator delete(void *).", "18.6.1.1:11")
+          => ILL("TIN2", "Declared replacement function operator delete(void *, std::size_t) but no operator delete(void *).")
           ~> replaceableError
           requires T ==K size_t andBool notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void))) in_keys(Defs))
      rule checkReplaceable(_, _, _) => .K [owise]

@@ -20,7 +20,7 @@ module C-EXPR-ASSIGNMENT
      rule _:KResult := te(_, T::UType => stripConstants(T))
           requires fromConstantExpr(T)
 
-     rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments.", "6.5.16.1:1"))
+     rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
           ~> L:KResult := R:RValue
           requires utype(L) =/=Type utype(R)
                andBool (
@@ -39,7 +39,7 @@ module C-EXPR-ASSIGNMENT
                ) andBool notBool R ==K voidVal
           [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
-     rule (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments.", "6.5.16.1:1"))
+     rule (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
           ~> L:KResult := R:RValue
           requires (isPointerType(type(L)) andBool isPointerType(type(R)))
                andBool notBool isVoidType(innerType(type(L)))
@@ -50,16 +50,16 @@ module C-EXPR-ASSIGNMENT
                     orBool notBool (getQualifiers(innerType(type(R)))
                          <=Quals getQualifiers(innerType(type(L))))
                )
-     rule (.K => CV("TEAS3", "'lvalue' required as left operand in assignment.", "6.5.16:2"))
+     rule (.K => CV("TEAS3", "'lvalue' required as left operand in assignment."))
           ~> tv(_, _) := _:RValue
 
-     rule (.K => UNDEF("TEAS4", "Void value as right operand in assignment.", "6.3.2.2:1, J.2:1 item 23"))
+     rule (.K => UNDEF("TEAS4", "Void value as right operand in assignment."))
           ~> _ := voidVal
-     rule <k> (.K => CV("TEAS5", "Non-constant static initializer.", "6.7.9:4"))
+     rule <k> (.K => CV("TEAS5", "Non-constant static initializer."))
                ~> nclv(_, _) := te(_, _)
           ...</k>
           <initializing> true </initializing>
-     rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue.", "6.5.16.1:1"))
+     rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue."))
                ~> L:KResult := _:RValue
           ...</k>
           <initializing> false </initializing>

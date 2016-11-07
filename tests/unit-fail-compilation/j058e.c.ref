@@ -1,3 +1,5 @@
 j058e.c:3:1: error: Non-constant static initializer.
-  Constraint violation (CV-TEAS5). See C11 sec. 6.7.9:4
+  Constraint violation (CV-TEAS5).
+   see C11 section 6.7.9:4 http://rvdoc.org/C11/6.7.9
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
 Translation failed (config dumped). Run kcc -d j058e.c to see commands run.

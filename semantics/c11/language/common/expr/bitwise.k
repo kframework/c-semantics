@@ -57,29 +57,25 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T)
 
      rule (.K => CV("CEB1",
-               "Both bitwise shift operands must have integer type.",
-               "6.5.7:2"))
+               "Both bitwise shift operands must have integer type."))
           ~> L:RValue << R:RValue
           requires notBool isIntegerType(type(L))
                orBool notBool isIntegerType(type(R))
           [structural]
      rule (.K => UNDEF("CEB2",
-               "The right operand in a bitwise shift is negative.",
-               "6.5.7:3, J.2:1 item 51"))
+               "The right operand in a bitwise shift is negative."))
           ~> L:RValue << tv(E2:Int, T2::UType)
           requires isPromoted(utype(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB3",
-               "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
-               "6.5.7:3, J.2:1 item 51"))
+               "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand."))
           ~> L:RValue << tv(E2:Int, T2::UType)
           requires isPromoted(utype(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => UNDEF("CEB4",
-               "The left operand in a bitwise left-shift is negative.",
-               "6.5.7:4, J.2:1 item 52"))
+               "The left operand in a bitwise left-shift is negative."))
           ~> tv(E1:Int, T1:SignedIntegerUType) << R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
                andBool E1 <Int 0
@@ -108,29 +104,25 @@ module C-COMMON-EXPR-BITWISE
                andBool E2 <Int bitSizeofType(T)
 
      rule (.K => CV("CEB5",
-               "Both bitwise shift operands must have integer type.",
-               "6.5.7:2"))
+               "Both bitwise shift operands must have integer type."))
           ~> L:RValue >> R:RValue
           requires notBool isIntegerType(type(L))
                orBool notBool isIntegerType(type(R))
           [structural]
      rule (.K => UNDEF("CEB6",
-               "The right operand in a bitwise shift is negative.",
-               "6.5.7:3, J.2:1 item 51"))
+               "The right operand in a bitwise shift is negative."))
           ~> L:RValue >> tv(E2:Int, T2::UType)
           requires isPromoted(utype(L)) andBool isPromoted(T2)
                andBool E2 <Int 0
           [structural]
      rule (.K => UNDEF("CEB7",
-               "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand.",
-               "6.5.7:3, J.2:1 item 51"))
+               "The right operand in a bitwise shift is greater than or equal to the bit width of the left operand."))
           ~> L:RValue >> tv(E2:Int, T2::UType)
           requires isPromoted(utype(L)) andBool isPromoted(T2)
                andBool E2 >=Int bitSizeofType(type(L))
           [structural]
      rule (.K => IMPL("CEB8",
-               "The left operand in a bitwise right-shift is negative.",
-               "6.5.7:5, J.3.5:1 item 5"))
+               "The left operand in a bitwise right-shift is negative."))
           ~> tv(E1:Int, T1:SignedIntegerUType) >> R:RValue
           requires isPromoted(T1) andBool isPromoted(utype(R))
                andBool E1 <Int 0
@@ -177,8 +169,7 @@ module C-COMMON-EXPR-BITWISE
                andBool isPromoted(T) andBool T ==Type T'
 
      rule (.K => CV("CEB9",
-               "Both bitwise AND operands must have integer type.",
-               "6.5.10:2"))
+               "Both bitwise AND operands must have integer type."))
           ~> L:RValue & R:RValue
           requires notBool isIntegerType(type(L))
                orBool notBool isIntegerType(type(R))
@@ -214,8 +205,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T) andBool T ==Type T'
 
      rule (.K => CV("CEB10",
-               "Both bitwise exclusive OR operands must have integer type.",
-               "6.5.11:2"))
+               "Both bitwise exclusive OR operands must have integer type."))
           ~> L:RValue ^ R:RValue
           requires notBool isIntegerType(type(L))
                orBool notBool isIntegerType(type(R))
@@ -252,8 +242,7 @@ module C-COMMON-EXPR-BITWISE
           requires isPromoted(T) andBool T ==Type T'
 
      rule (.K => CV("CEB11",
-               "Both bitwise inclusive OR operands must have integer type.",
-               "6.5.12:2"))
+               "Both bitwise inclusive OR operands must have integer type."))
           ~> L:RValue | R:RValue
           requires notBool isIntegerType(type(L))
                orBool notBool isIntegerType(type(R))
@@ -274,8 +263,7 @@ module C-COMMON-EXPR-BITWISE
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be a trap representation.
-               "Potential negative zero produced via bitwise operations (this could be a false positive).",
-               "6.2.6.2:4, J.2:1 item 14"))
+               "Potential negative zero produced via bitwise operations (this could be a false positive)."))
           ~> bitwiseInterpret(tv(N:Int, T::UType))
           requires isNegZero(N, T)
 

@@ -66,7 +66,7 @@ module C-EXPR-FUNCTION-CALL
 
      context Call(_, (HOLE:KItem => revalParams(HOLE))) [ndheat]
 
-     rule (.K => UNDEF("EFNC2", "Invoking a null pointer.", "6.5.2.2"))
+     rule (.K => UNDEF("EFNC2", "Invoking a null pointer."))
           ~> Call(tv(NullPointer, _), _)
 
      // Strip prov.
@@ -160,7 +160,7 @@ module C-EXPR-FUNCTION-CALL
           requires CallT ==Type toPrototype(DefT)
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
-          idToString(X) +String " through a pointer with incompatible type.", "6.5.2.2:9, J.2:1 items 26, 41"))
+          idToString(X) +String " through a pointer with incompatible type."))
           ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]

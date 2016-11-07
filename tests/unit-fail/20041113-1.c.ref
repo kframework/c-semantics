@@ -1,5 +1,8 @@
  Function exited without calling 'va_end' after 'va_start' or 'va_copy'.
    at test(20041113-1.c:15:5)
    by main(20041113-1.c:23:5)
-  Undefined behavior (UB-STDARG9). See C11 sec. 7.16.1:1, J.2:1 item 139
+  Undefined behavior (UB-STDARG9).
+   see C11 section 7.16.1:1 http://rvdoc.org/C11/7.16.1
+   see C11 section J.2:1 item 139 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
 Execution failed (configuration dumped)

@@ -298,8 +298,7 @@ module C-TYPING-EXPR
                andBool notBool isNPC(V)
 
      rule (.K => UNDEF("TTE1",
-               "Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof).",
-               "6.2.7:3, J.2:1 item 16"))
+               "Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated (in an argument to sizeof)."))
           ~> elaborateDone(V:K, V':K) ~> typeof(_ ? T:Type : T':Type)
           ~> SizeofExpression(_)
           requires (isSpecifiedVariablyModifiedType(T) orBool isSpecifiedVariablyModifiedType(T'))
@@ -307,36 +306,30 @@ module C-TYPING-EXPR
 
      rule (.K => CV("TTE2",
                "if both of a conditional expression's branches have pointer type, they must be compatible, or one must be a pointer to an object and the"
-               +String " other must be a pointer to void.",
-               "6.5.15:3"))
+               +String " other must be a pointer to void."))
           ~> elaborateDone(_, _) ~> typeof(_ ? T:PointerType : T':PointerType)
           requires stripQualifiers(innerType(T)) =/=Type stripQualifiers(innerType(T'))
                andBool notBool (isVoidType(innerType(T)) orBool isVoidType(innerType(T')))
 
      rule (.K => CV("TTE3",
-               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
-               "6.5.15:3"))
+               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant."))
           ~> elaborateDone(V:K, _) ~> typeof(_ ? _:IntegerType : _:PointerType)
           requires notBool isNPC(V)
      rule (.K => CV("TTE3",
-               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.",
-               "6.5.15:3"))
+               "if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant."))
           ~> elaborateDone(_, V:K) ~> typeof(_ ? _:PointerType : _:IntegerType)
           requires notBool isNPC(V)
 
      rule (.K => CV("TTE4",
-               "if one of a conditional expression's branches has void type, the other must also have void type.",
-               "6.5.15:3") )
+               "if one of a conditional expression's branches has void type, the other must also have void type.") )
           ~> elaborateDone(_, _) ~> typeof(_ ? t(_, _, void) : t(_, _, T:SimpleType))
           requires T =/=K void
      rule (.K => CV("TTE4",
-               "if one of a conditional expression's branches has void type, the other must also have void type.",
-               "6.5.15:3") )
+               "if one of a conditional expression's branches has void type, the other must also have void type.") )
           ~> elaborateDone(_, _) ~> typeof(_ ? t(_, _, T:SimpleType) : t(_, _, void))
           requires T =/=K void
      rule (.K => CV("TTE5",
-               "if one of a conditional expression's branches has struct or union type, the other must have the same type.",
-               "6.5.15:3") )
+               "if one of a conditional expression's branches has struct or union type, the other must have the same type.") )
           ~> elaborateDone(_, _) ~> typeof(_ ? T:StructOrUnionType : T':StructOrUnionType)
           requires T =/=Type T'
 
