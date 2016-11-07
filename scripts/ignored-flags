@@ -9,5 +9,5 @@
 -pedantic
 -W[^l].*
 -f(no-)?omit-frame-pointer
--g
+-g[0123]?
 -rdynamic

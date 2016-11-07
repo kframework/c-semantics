@@ -19,7 +19,7 @@ module TRANSLATION-ERROR
           +String getErrorType(Title) +String ": "
           +String Msg
           +String {#if Reason ==String "" #then "" #else "\n" +String Reason #fi}:>String
-          +String "\n  " +String ErrType +String " (" +String Title +String ")."
+          +String {#if isNoWrap #then "  " #else "\n  " #fi}:>String +String ErrType +String " (" +String Title +String ")."
           +String formatCitations(Title)
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, true)

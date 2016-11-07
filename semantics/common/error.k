@@ -8,6 +8,7 @@ module ERROR-SYNTAX
      syntax String ::= formatCitations(String) [function]
 
      syntax Bool ::= "isCSV" [function]
+                   | "isNoWrap" [function]
                    | "warnSystemHeaders" [function]
                    | checkOptions(K, String, Bool) [function]
 
@@ -15,6 +16,7 @@ module ERROR-SYNTAX
                    | No(Opts)
                    | Warn(String)
                    | CSV(String)
+                   | NoWrap()
      syntax KItem ::= EXIT(ErrorMsg)
      syntax ErrorExit ::= "HALT"
 
@@ -41,16 +43,16 @@ module ERROR
      rule ErrorMsg(Title:String, Msg:String, ErrType:String)
           => ErrorMsg(Title, Msg, ErrType, "")
 
-     rule formatCitations(Title:String) => formatCitationsWithDelims(citations(Title), isCSV)
+     rule formatCitations(Title:String) => formatCitationsWithDelims(citations(Title), isCSV, isNoWrap)
 
-     syntax String ::= formatCitationsWithDelims(List, Bool) [function]
-     rule formatCitationsWithDelims(.List, _) => ""
-     rule formatCitationsWithDelims(ListItem(Citation:KItem) Citations:List, IsCSV:Bool)
-          => formatCitationWithDelims(Citation, IsCSV) +String formatCitationsWithDelims(Citations:List, IsCSV)
+     syntax String ::= formatCitationsWithDelims(List, Bool, Bool) [function]
+     rule formatCitationsWithDelims(.List, _, _) => ""
+     rule formatCitationsWithDelims(ListItem(Citation:KItem) Citations::List, IsCSV::Bool, IsNoWrap::Bool)
+          => formatCitationWithDelims(Citation, IsCSV, IsNoWrap) +String formatCitationsWithDelims(Citations:List, IsCSV, IsNoWrap)
 
-     syntax String ::= formatCitationWithDelims(K, Bool) [function]
-     rule formatCitationWithDelims(citation(Source:String, Section:String, Details:String), IsCSV:Bool)
-          => "\n" +String {#if IsCSV #then "" #else "   see " #fi}:>String +String Source
+     syntax String ::= formatCitationWithDelims(K, Bool, Bool) [function]
+     rule formatCitationWithDelims(citation(Source::String, Section::String, Details::String), IsCSV:Bool, IsNoWrap:Bool)
+          => {#if IsNoWrap #then "" #else "\n" #fi}:>String +String {#if IsCSV #then "" #else "   see " #fi}:>String +String Source
              +String {#if IsCSV #then "," #else " section " #fi}:>String +String Section
              +String {#if IsCSV #then "," +String Details #else #if Details =/=String "" #then ":" +String Details #else "" #fi  #fi}:>String
              +String {#if IsCSV #then "," #else " " #fi}:>String +String citationURL(Source, Section)
@@ -77,6 +79,12 @@ module ERROR
      rule isCSV => isCSV(#configuration)
      rule isCSV(<generatedTop>... <options>... SetItem(CSV(_)) ...</options> ...</generatedTop>) => true
      rule isCSV(_) => false [owise]
+
+     syntax Bool ::= isNoWrap(K) [function, klabel(isNoWrap1)]
+     rule isNoWrap => isNoWrap(#configuration)
+     rule isNoWrap(<generatedTop>... <options>... SetItem(NoWrap()) ...</options> ...</generatedTop>) => true
+     rule isNoWrap(_) => false [owise]
+
 
      rule warnSystemHeaders => checkOptionsCateg(Warn("system-headers"), false, #configuration)
 
