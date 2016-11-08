@@ -45,7 +45,7 @@ module C-EXPR-IDENTIFIER
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals>... X |-> _ ...</externals>
-          <external-uses>... .Set => SetItem(CodeLoc(X, L)) ...</external-uses>
+          <external-uses> Uses::Map => Uses[X <- L] </external-uses>
           <uses>... .Set => SetItem(X) ...</uses>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           requires isLinkerLoc(Base)

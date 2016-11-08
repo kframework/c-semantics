@@ -26,14 +26,8 @@ module C-LINKING-RESOLUTION
                     | resolveCPPReference(SymBase)
                     | "resolveMain"
 
-     syntax Map ::= usesToMap(Set) [function]
-                  | usesToMap(Set, Map) [function, klabel(usesToMap2)]
-     rule usesToMap(S::Set) => usesToMap(S, .Map)
-     rule usesToMap((SetItem(CodeLoc(X::CId, L::CabsLoc)) => .Set) _, M::Map => M[X <- L])
-     rule usesToMap(.Set, M::Map) => M
-
-     rule <k> resolveReferences => resolveReferences(usesToMap(Uses)) ...</k>
-          <external-uses> Uses:Set => .Set </external-uses>
+     rule <k> resolveReferences => resolveReferences(Uses) ...</k>
+          <external-uses> Uses:Map => .Map </external-uses>
 
      rule <k> (.K => resolveReference(X))
                ~> resolveReferences((X:CId |-> L:CabsLoc => .Map) _)
@@ -154,7 +148,7 @@ module C-LINKING-RESOLUTION
      // Now everything left in <external-uses> should be an unresolved
      // reference.
      rule <k> resolveReferences(.Map) => resolveMain ...</k>
-          <external-uses> .Set </external-uses>
+          <external-uses> .Map </external-uses>
           <odr-uses> .Set </odr-uses>
           <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
 

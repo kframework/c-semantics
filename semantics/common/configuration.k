@@ -28,8 +28,8 @@ module COMMON-CONFIGURATION
      <linking-state multiplicity="?" initial="">
           // CId |-> Set(TUs)
           <external-decls> .Map </external-decls>
-          // CIds
-          <external-uses> .Set </external-uses>
+          // CIds |-> CabsLoc
+          <external-uses> .Map </external-uses>
           // CId |-> CabsLoc
           <external-defs-loc> .Map </external-defs-loc>
           // SymBase |-> Set(ktriple(TU, QualId, Type))

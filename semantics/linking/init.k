@@ -68,13 +68,13 @@ module C-LINKING-INIT
 
      rule <k> addBuiltin(B:CId, T:FunctionType, AddAll:Bool) => declareBuiltinFunction(B, T, Base) ...</k>
           <external-types> Types:Map </external-types>
-          <external-uses> Uses:Set </external-uses>
+          <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in getIds(Uses))
+          requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in_keys(Uses))
                orBool AddAll
 
      rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
@@ -85,21 +85,21 @@ module C-LINKING-INIT
 
      rule <k> addBuiltin(B:CId, T:Type, AddAll:Bool) => declareBuiltinConstant(B, T, 0 @ nativeSymbol(idToString(B))) ...</k>
           <external-types> Types:Map </external-types>
-          <external-uses> Uses:Set </external-uses>
+          <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in getIds(Uses))
+          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in_keys(Uses))
                orBool AddAll)
                andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
           <external-types>... B |-> _ ...</external-types>
-          <external-uses> Uses:Set </external-uses>
+          <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           requires notBool (B in_keys(Defs))
-               andBool notBool (B in getIds(Uses))
+               andBool notBool (B in_keys(Uses))
 
      syntax Set ::= getIds(Set) [function]
      rule getIds(SetItem(CodeLoc(X::CId, _)) S::Set)
@@ -233,7 +233,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
-                    <external-uses> ExtUses1:Set </external-uses>
+                    <external-uses> ExtUses1:Map </external-uses>
                     <external-defs-loc> ExtDefsLoc1:Map </external-defs-loc>
                     <odr-decls> OdrDecls1:Map </odr-decls>
                     <odr-uses> OdrUses1:Set </odr-uses>
@@ -257,7 +257,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
-                    <external-uses> ExtUses2:Set </external-uses>
+                    <external-uses> ExtUses2:Map </external-uses>
                     <external-defs-loc> ExtDefsLoc2:Map </external-defs-loc>
                     <odr-decls> OdrDecls2:Map </odr-decls>
                     <odr-uses> OdrUses2:Set </odr-uses>
@@ -282,7 +282,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
-                    <external-uses> ExtUses1 ExtUses2 </external-uses>
+                    <external-uses> updateMap(ExtUses1, ExtUses2) </external-uses>
                     <external-defs-loc> updateMap(ExtDefsLoc1, ExtDefsLoc2) </external-defs-loc>
                     <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>
                     <odr-uses> OdrUses1 OdrUses2 </odr-uses>
