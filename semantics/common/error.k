@@ -5,6 +5,7 @@ module ERROR-SYNTAX
      syntax ErrorMsg ::= ErrorMsg(String, String, String, String)
                        | ErrorMsg(String, String, String) [function, klabel(ErrorMsgS)]
 
+     syntax String ::= formatErrorMsg(ErrorMsg, String, Bool) [function]
      syntax String ::= formatCitations(String, Bool) [function]
 
      syntax Bool ::= "isCSV" [function]
@@ -23,6 +24,7 @@ module ERROR-SYNTAX
      syntax Error
      syntax K ::= assert(Bool, Error)
 
+     syntax K ::= doError(ErrorMsg, String) [function]
      syntax K ::= openWriteThenClose(String, String) [function]
      syntax K ::= writeThenClose(Int, String) [function]
      syntax K ::= close(Int, K) [function]
@@ -70,6 +72,10 @@ module ERROR
      syntax String ::= citationURL(String, String) [function]
      rule citationURL(Source:String, Section:String)
           => "http://rvdoc.org/" +String percenteEncode(Source) +String "/" +String percenteEncode(Section)
+
+     rule doError(Err::ErrorMsg, StackTrace::String)
+          => openWriteThenClose(#getenv("HOME") +String "/.kcc-report.csv", formatErrorMsg(Err, StackTrace, true) +String "\r\n")
+          ~> #write(2, formatErrorMsg(Err, StackTrace, false) +String "\n")
 
      rule openWriteThenClose(File:String, Line:String) => writeThenClose(#open(File, "wac"), Line)
      rule writeThenClose(Fd:Int, Line:String) => close(Fd, #write(Fd, Line))

@@ -13,7 +13,6 @@ module TRANSLATION-ERROR
      rule formatLocation(File:String, Line:Int, Column:Int)
           => File +String ":" +String Int2String(Line) +String ":" +String Int2String(Column)
 
-     syntax String ::= formatErrorMsg(ErrorMsg, String, Bool) [function]
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, false)
           => {#if Location ==String "" #then "" #else Location +String ": " #fi}:>String
           +String getErrorType(Title) +String ": "
@@ -34,7 +33,7 @@ module TRANSLATION-ERROR
      rule getErrorType(S:String) => {#if "L-" ==String substrString(S,0,2) orElseBool "IMPL-" ==String substrString(S,0,5) #then "warning" #else "error" #fi}:>String
 
      rule <k> EXIT(Msg:ErrorMsg)
-          => #write(2, formatErrorMsg(Msg, formatLocation(File, Line, Column), false) +String "\n")
+          => doError(Msg, formatLocation(File, Line, Column))
           ~> HALT ...</k>
           <curr-eval-context> eval </curr-eval-context>
           <curr-program-loc>
@@ -44,7 +43,7 @@ module TRANSLATION-ERROR
           <previous-errors> Errors:Set => Errors SetItem(error(Msg, CabsLoc(File, Line, Column, .K, .K))) </previous-errors>
           requires notBool isCSV andBool notBool error(Msg, CabsLoc(File, Line, Column, .K, .K)) in Errors andBool (notBool SysHead orBool warnSystemHeaders)
      rule <k> EXIT(Msg:ErrorMsg)
-          => #write(2, formatErrorMsg(Msg, "<unknown>", false) +String "\n")
+          => doError(Msg, "<unknown>")
           ~> HALT ...</k>
           <curr-eval-context> eval </curr-eval-context>
           <curr-program-loc> UnknownCabsLoc </curr-program-loc>

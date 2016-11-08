@@ -6,7 +6,6 @@ module C-EXECUTION-ERROR-SYNTAX
      imports ERROR-SYNTAX
      syntax String ::= printStackTrace(List, CabsLoc, Scope) [function]
                      | printStackTraceStart(String, List, CabsLoc, Scope) [function]
-                     | formatErrorMsg(ErrorMsg, String, Bool) [function]
      syntax KItem ::= error(ErrorMsg, String)
 endmodule
 
@@ -58,11 +57,6 @@ module C-EXECUTION-ERROR
           <previous-errors> Errors:Set => Errors SetItem(error(Msg, printStackTrace(L, Loc, S))) </previous-errors>
           requires isErrorRecovery andBool notBool isCSV
                andBool notBool error(Msg, printStackTrace(L, Loc, S)) in Errors
-
-     syntax K ::= doError(ErrorMsg, String) [function]
-     rule doError(Err::ErrorMsg, StackTrace::String) 
-          => openWriteThenClose(#getenv("HOME") +String "/.kcc-report.csv", formatErrorMsg(Err, StackTrace, true) +String "\r\n") 
-          ~> #write(2, formatErrorMsg(Err, StackTrace, false) +String "\n")
 
      rule <k> EXIT(Msg:ErrorMsg) => HALT ...</k>
           <call-stack> L:List </call-stack>
