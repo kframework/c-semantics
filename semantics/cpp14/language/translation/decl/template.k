@@ -90,18 +90,18 @@ module CPP-DECL-TEMPLATE
      // template declarations
 
      // class declaration
-     rule <k> TypeDecl(t(Q::Quals, Mods::Set, T::CPPSimpleType)) => declareTemplate(t(Q, Mods, T)) ...</k>
-          <elab>... .K => declareTemplatedType(t(Q, Mods, T)) </elab>
+     rule <k> TypeDecl(t(_, _, _) #as T::CPPType) => declareTemplate(T) ...</k>
+          <elab>... .K => declareTemplatedType(T) </elab>
           <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
      // class definition
      rule <k> (.K => elaborate(listToK(Members)))
           ~> classContext(t(_, _, _), Members::List) ...</k>
           <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
 
-     rule <k> elaborateDone(Done:K) ~> classContext(t(Q::Quals, Mods::Set, T::CPPSimpleType), _)
-              => declareTemplate(t(Q, Mods, T))
+     rule <k> elaborateDone(Done:K) ~> classContext(t(_, _, _) #as T::CPPType, _)
+              => declareTemplate(T)
           ...</k>
-          <elab>... .K => classContext(t(Q, Mods, T), kSeqToList(Done)) </elab>
+          <elab>... .K => classContext(T, kSeqToList(Done)) </elab>
           <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
 
      // TODO(dwightguth): check the syntax of template definitions and generate
@@ -132,7 +132,7 @@ module CPP-DECL-TEMPLATE
           <templates>... .Map => X |-> (T |-> templateInfo(X, Decls, Types, Default, T, .K)) ...</templates>
 
      // template arguments
-     rule TypeArg(t(Q::Quals, Mods::Set, T::CPPSimpleType)) => t(Q, Mods, T)
+     rule TypeArg(t(_, _, _) #as T::CPPType) => T
 
      // template instantiation
 

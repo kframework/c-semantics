@@ -199,9 +199,8 @@ module CPP-TYPING-SYNTAX
                         | #getClassInfo(CPPClassType, K) [function]
      syntax ClassInfo ::= ClassCell | "#incomplete"
 
-     syntax Bool ::= isBaseClassOf(CPPSimpleClassType, CPPSimpleClassType) [function, klabel(isBaseClassOfSimpleType)]
-                   | isBaseClassOf(CPPClassType, CPPClassType) [function]
-                   | isVirtualBaseClassOf(CPPSimpleClassType, CPPSimpleClassType) [function]
+     syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
+                   | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]

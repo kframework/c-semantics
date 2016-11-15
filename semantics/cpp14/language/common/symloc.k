@@ -15,11 +15,11 @@ module CPP-SYMLOC-SYNTAX
 
      syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPClassType, CPPClassType) [function]
                         | baseClassSubobject(MemberPtr, CPPClassType, CPPClassType) [function]
-     syntax SymLoc ::= baseClassSubobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
-                     | derivedClassSuperobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
+     syntax SymLoc ::= baseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
+                     | derivedClassSuperobject(SymLoc, CPPClassType, CPPClassType) [function]
 
      syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
-                   | isBaseClassSubobject(SymLoc, CPPSimpleClassType, CPPSimpleClassType) [function]
+                   | isBaseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
 
 endmodule
 

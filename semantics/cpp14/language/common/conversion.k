@@ -119,12 +119,12 @@ module CPP-CONVERSION
           requires isInfinite(Int2Float(I, precision(T), exponent(T)))
 
      rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
-     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, void))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, T::CPPSimpleType)))))
-          => prv(L, Tr, t(Q, Mods, pointerType(t(Q', Mods', void))))
-          requires isObjectType(t(Q', Mods2::Set, T)) andBool Q2 <=Quals Q'
-     rule convertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, B:CPPSimpleClassType))), prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, D:CPPSimpleClassType)))))
-          => prv(baseClassSubobject(L, B, D), Tr, t(Q, Mods, pointerType(t(Q', Mods', B))))
-          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q2 <=Quals Q'
+     rule convertType(t(_, _, pointerType(t(Q::Quals, _, void))) #as T::CPPType, prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, _, _) #as T'::CPPType))))
+          => prv(L, Tr, T)
+          requires isObjectType(T') andBool Q' <=Quals Q
+     rule convertType(t(_, _, pointerType(t(Q::Quals, _, _) #as B:CPPClassType)) #as T::CPPType, prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, _, _) #as D:CPPClassType))))
+          => prv(baseClassSubobject(L, B, D), Tr, T)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q' <=Quals Q
      rule convertType(T:CPPBoolType, prv(NullPointer, Tr::Trace, T':CPPPointerType))
           => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(Loc::SymLoc, Tr::Trace, T':CPPPointerType))
@@ -132,8 +132,8 @@ module CPP-CONVERSION
           requires Loc =/=K NullPointer
 
      rule convertType(T:CPPMemberPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullMemberPointer, Tr, T)
-     rule convertType(t(Q::Quals, Mods::Set, memberPointerType(D::CPPClassType, T1::CPPType)), prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(B::CPPClassType, T2::CPPType))))
-          => prv(derivedClassSuperobject(L, B, D), Tr, t(Q, Mods, memberPointerType(D, T1)))
+     rule convertType(t(_, _, memberPointerType(D::CPPClassType, T1::CPPType)) #as MemberT::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(B::CPPClassType, T2::CPPType))))
+          => prv(derivedClassSuperobject(L, B, D), Tr, MemberT)
           requires B =/=K D andBool isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool getQuals(T2) <=Quals getQuals(T1)
      rule convertType(T:CPPBoolType, prv(NullMemberPointer, Tr::Trace, T':CPPMemberPointerType))
           => prv(0, Tr, T)

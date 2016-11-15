@@ -65,7 +65,7 @@ module CPP-DECL-DECLARATOR
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:CPPTypeExpr, _, _), _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:Namespace, X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType), Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, t(Q, Mods, T), Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, t(Q, Mods, T), Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
+     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:Namespace, X::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, T, Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <curr-scope> Scope::Scope </curr-scope>
@@ -73,7 +73,7 @@ module CPP-DECL-DECLARATOR
           <internals> Ints:Map </internals>
           <curr-extern> IsExtern:Bool </curr-extern>
           requires ((notBool IsExtern) orBool Extern() in S)
-               andBool (notBool isCPPFunctionType(t(Q, Mods, T)) orBool isAdjustedType(t(Q, Mods, {T}:>CPPSimpleFunctionType)))
+               andBool (notBool isCPPFunctionType(T) orBool isAdjustedType({T}:>CPPFunctionType))
 
      rule <k> DeclaratorAndSpecifiers(_, (S::Set => SetItem(Extern()) S)) ...</k>
           <curr-extern> true </curr-extern>

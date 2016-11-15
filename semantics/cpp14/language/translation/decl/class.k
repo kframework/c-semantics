@@ -34,17 +34,17 @@ module CPP-DECL-CLASS
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(N :: Class(T, X, .TemplateArgs))) ...</k>
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
 
-     rule <k> TypeDecl(t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(T::Tag, X::CId, Args::TemplateArgs)))) => .K ...</k>
+     rule <k> TypeDecl(t(_, _, classType(N::Namespace :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, T <- t(Q, Mods, classType(N :: Class(T, X, Args)))] </ntypes>
+          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
 
      rule <k> ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List) => classContext(declareClassName(T, X, true), Members) ...</k>
 
-     rule <k> classContext(t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(T::Tag, X::CId, Args::TemplateArgs))), Members::List) 
-              => setScope(classScope(N :: Class(T, X, Args)))
+     rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
+              => setScope(classScope(C))
               ~> listToK(Members)
               ~> setScope(OldScope)
           ...</k>
@@ -53,11 +53,11 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, T <- t(Q, Mods, classType(N :: Class(T, X, Args)))] </ntypes>
+          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
           (.Bag => <class>...
-            <class-id> N :: Class(T, X, Args) </class-id>
+            <class-id> C </class-id>
             // injected class name
-            <ctypes> X |-> (T |-> t(Q, Mods, classType(N :: Class(T, X, Args)))) </ctypes>
+            <ctypes> X |-> (ClassKey |-> T) </ctypes>
             <access> X |-> Public() </access>
           ...</class>)
 
