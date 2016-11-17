@@ -110,6 +110,11 @@ module CPP-TYPING-SYNTAX
                                 | "decltype(auto)"
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
+     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: CId, underlyingType: CPPIntegerType)
+     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: CId, underlyingType: CPPIntegerType)
+     syntax CPPSimpleEnumType ::= CPPSimpleScopedEnumType | CPPSimpleUnscopedEnumType
+     syntax CPPSimpleCompoundType ::= CPPSimpleEnumType
+
      syntax CPPFunctionType ::= t(q: Quals, m: Set, st: CPPSimpleFunctionType) [klabel(tcpp)]
      syntax CPPArithmeticType ::= CPPIntegerType | CPPFloatingType
      syntax CPPScalarType ::= CPPArithmeticType | CPPEnumType | CPPPointerType | CPPMemberPointerType | CPPNullPtrTType
@@ -133,15 +138,18 @@ module CPP-TYPING-SYNTAX
      syntax CPPClassType ::= t(q: Quals, m: Set, st: CPPSimpleClassType) [klabel(tcpp)]
      syntax CPPWideCharType ::= t(q: Quals, m: Set, st: CPPSimpleWideCharType) [klabel(tcpp)]
      syntax CPPBitfieldType
+
      syntax CPPEnumType ::= CPPScopedEnumType | CPPUnscopedEnumType
-     syntax CPPScopedEnumType
-     syntax CPPUnscopedEnumType
+     syntax CPPScopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleScopedEnumType) [klabel(tcpp)]
+     syntax CPPUnscopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleUnscopedEnumType) [klabel(tcpp)]
+
      syntax CPPType ::= CPPFunctionType
                       | CPPScalarType
                       | CPPRefType
                       | CPPArrayType 
                       | CPPClassType 
                       | CPPFundamentalType
+
 
      syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(q: Quals, m: Set, st: CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
      syntax CPPClassTypeExpr ::= CPPClassType | t(q: Quals, m: Set, st: CPPSimpleClassTypeExpr) [klabel(tcpp)]
@@ -205,6 +213,10 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
 
+     syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
+                       | #getEnumInfo(CId, K) [function]
+     syntax EnumInfo ::= CppenumCell | "#incomplete"
+     
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
 
@@ -216,6 +228,8 @@ module CPP-TYPING-SYNTAX
                    | isUnnamedXValue(CPPType) [function]
                    | isUnnamedPRValue(CPPType) [function]
 
+     syntax CId ::= getEnumName(CPPEnumType) [function]
+     syntax Bool ::= getScoped(CPPEnumType) [function]
 endmodule
 
 module CPP-TYPING
@@ -275,8 +289,14 @@ module CPP-TYPING
      rule #getClassInfo(t(_, _, classType(C::Class)), <generatedTop>... <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
      rule #getClassInfo(_, _) => #incomplete [owise]
 
+     rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumName(E), #configuration)
+
+     rule #getEnumInfo(X::CId, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
+     rule #getEnumInfo(_, _) => #incomplete [owise]
+
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
-     rule isCompleteType(T:CPPEnumType) => false //TODO(dwightguth): true in certain cases
+     rule isCompleteType(T:CPPEnumType) => getEnumInfo(T) =/=K #incomplete //TODO(h0nzZik): false in 7.2, par 6
+
      rule isCompleteType(T:CPPClassType) => getClassInfo(T) =/=K #incomplete
      rule isCompleteType(T:CPPArrayType) => false
           requires notBool isCompleteType(innerType(T))
@@ -305,6 +325,9 @@ module CPP-TYPING
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
      rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2)
      rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
+     rule t(Q::Quals, _, scopedEnum(X::CId, _)) ==Type t(Q, _, scopedEnum(X::CId, _)) => true
+     rule t(Q::Quals, _, unscopedEnum(X::CId, _)) ==Type t(Q, _, unscopedEnum(X::CId, _)) => true
+
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
      rule .TemplateArgs ==Types .TemplateArgs => true
@@ -316,6 +339,9 @@ module CPP-TYPING
      rule underlyingType(T::CPPSimpleType) => T [owise]
      rule underlyingType(t(Q::Quals, Mods::Set, T::CPPSimpleType))
           => t(Q, Mods, underlyingType(T))
+     rule underlyingType(scopedEnum(_, T::CPPIntegerType)) => simpleType(T)
+     rule underlyingType(unscopedEnum(_, T::CPPIntegerType)) => simpleType(T)
+
 
      rule inRange(I:Int, T::CPPIntegerType)
           => I <=Int max(T) andBool I >=Int min(T)
@@ -364,6 +390,11 @@ module CPP-TYPING
           => isCPPRVRefType(T) andBool isObjectType(innerType(T))
      rule isUnnamedPRValue(T::CPPType) 
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
+
+     rule getScoped(t(_, _, scopedEnum(_, _))) => true
+     rule getScoped(t(_, _, unscopedEnum(_, _))) => false
+     rule getEnumName(t(_, _, scopedEnum(X::CId, _))) => X
+     rule getEnumName(t(_, _, unscopedEnum(X::CId, _))) => X
 
 endmodule
 

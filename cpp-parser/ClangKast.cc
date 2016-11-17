@@ -129,6 +129,9 @@ public:
   }
 
   bool TraverseStmt(Stmt *S) {
+    if (!S)
+      return RecursiveASTVisitor::TraverseStmt(S);
+
     if (Expr *E = dyn_cast<Expr>(S)) {
       AddKApplyNode("ExprLoc", 2);
       AddCabsLoc(E->getExprLoc());
@@ -859,19 +862,23 @@ public:
   }
 
   bool TraverseEnumDecl(EnumDecl *D) {
-    if (D->isCompleteDefinition()) {
-      AddKApplyNode("EnumDef", 3);
-    } else {
-      AddKApplyNode("TypeDecl", 1);
-      AddKApplyNode("ElaboratedTypeSpecifier", 3);
-      VisitTagKind(D->getTagKind());
+    if (!D->isCompleteDefinition()) {
+      AddKApplyNode("OpaqueEnumDeclaration", 3);
+      TRY_TO(TraverseDeclarationName(D->getDeclName()));
+      VisitBool(D->isScoped());
+      TraverseType(D->getIntegerType());
+      return true;
     }
+
+    AddKApplyNode("EnumDef", 6);
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
-    if (D->isCompleteDefinition()) {
-      AddDeclContextNode(D);
-      TraverseDeclContextNode(D);
-    }
+    VisitBool(D->isScoped());
+    VisitBool(D->isFixed());
+    TraverseType(D->getIntegerType());
+
+    AddDeclContextNode(D);
+    TraverseDeclContextNode(D);
     return true;
   }
 
@@ -1126,6 +1133,12 @@ public:
     AddKApplyNode("TypedefType", 1);
     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
     return false;
+  }
+
+  bool VisitEnumType(EnumType *T) {
+     AddKApplyNode("EnumTypeName", 1);
+     TRY_TO(TraverseDeclarationName(T->getDecl()->getDeclName()));
+     return false;
   }
 
   void VisitTypeKeyword(ElaboratedTypeKeyword Keyword) {

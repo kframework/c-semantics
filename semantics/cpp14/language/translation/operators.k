@@ -27,6 +27,9 @@ module CPP-OPERATORS
           => builtinOperator(O, E1)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
+     rule #UnaryOperator(operator&, E1::Expr, T1::CPPEnumType)
+          => builtinOperator(operator&, E1)
+
      syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
                    | builtinOperator(OpId, Expr) [function, klabel(builtinOperator2)]
      rule builtinOperator(operator=, E1::Expr, E2::Init)

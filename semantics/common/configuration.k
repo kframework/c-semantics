@@ -101,6 +101,16 @@ module COMMON-CONFIGURATION
                          <access-specifier> .K </access-specifier>
                     </class>
                </classes>
+
+               <cpp-enums>
+                    <cppenum multiplicity="*" type="Map">
+                         <enum-id> .K </enum-id>
+                         <enum-ut> .K </enum-ut>
+                         <scoped> false </scoped>
+                         <enumerators> .List </enumerators>
+                    </cppenum>
+               </cpp-enums>
+
           </tu>
      </translation-units>
    </global>
