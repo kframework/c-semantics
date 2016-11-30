@@ -105,10 +105,10 @@ through, consecutively:
 The root of this AST is a single `TranslationUnit` term, which is then
 interpreted by our "translation" semantics.
 
-See [semantics/README.md][] for more details.
+See [semantics/c11/README.md][] for more details.
 
-[semantics/README.md]: semantics/README.md
-[semantics/language/dynamic.k]: semantics/language/dynamic.k
+[semantics/c11/README.md]: semantics/c11/README.md
+[semantics/language/common/dynamic.k]: semantics/language/common/dynamic.k
 [scripts/kcc]: scripts/kcc
 [scripts/program-runner]: scripts/program-runner
 [scripts/query-kcc-prof]: scripts/query-kcc-prof
