@@ -199,146 +199,160 @@ my $hasBuiltins;
 our $oflag;
 
 my $spec = q(
-      [strict]
-      -version				Show version information.
-        {
-          $self->version();
-          my $profiles = join("\n	                    ", @main::profiles);
-          print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
-          exit 0;
-        }
-      -Version				[ditto] [undocumented]
-      -VERSION				[ditto] [undocumented]
-      --version				[ditto] [undocumented]
-      --Version				[ditto] [undocumented]
-      --VERSION				[ditto] [undocumented]
-      -v				[ditto] [undocumented]
-      -V				[ditto] [undocumented]
-      -c				Compile and assemble, but do not link.
-      -shared				Compile and assemble into a single object file.
-      -d				Print debugging information.
-      -D <name>[=[<definition>]]	Predefine <name> as a macro, with definition <definition>.
-        {
-          if (defined $definition) {
-            push(@main::cppArgs, "-D$name=$definition");
-          } elsif ($_PUNCT_{"="}) {
-            push(@main::cppArgs, "-D$name=");
-          } else  {
-            push(@main::cppArgs, "-D$name");
-          }
-        }
-      -U <name>				Undefine <name> as a macro.
-        { push(@main::cppArgs, "-U$name"); }
-      -P				Inhibit preprocessor line numbers.
-        { push(@main::cppArgs, "-P"); }
-      -E				Preprocess only.
-      -I <dir>				Look for headers in <dir>.
-        { push(@main::cppArgs, '-I', $dir); }
-      -isystem <dir>			Look for system headers in <dir>.
-        { push(@main::cppArgs, '-isystem', $dir); }
-      -include <file>			Add header to file during preprocessing.
-        { push(@main::cppArgs, '-include', $file); }
-      -L <dir>				Look for shared libraries in <dir>.
-        {
-          push(@main::ld_lib, $dir);
-          push(@main::ldArgs, "-L$dir");
-        }
-      -nodefaultlibs			Do not link against the standard library.
-      -o <file>				Place the output into <file>.
-        { $main::oflag = $file; }
-      -l <lib>				Link semantics against library in search path.
-        { classifyLib($lib); }
-      -Wl,<args>			Add flags to linker arguments.
-        { push(@main::ldArgs, "-Wl,$args"); }
-      <files>...			C files to be compiled. [repeatable] [required]
-        { classify(@files); }
-      -M				Dependency generation. See documentation for GCC preprocessor.
-        { push(@main::cppArgs, '-M'); }
-      -MM				[ditto]
-        { push(@main::cppArgs, '-MM'); }
-      -MD				[ditto]
-        { push(@main::cppArgs, '-MD'); }
-      -MMD				[ditto]
-        { push(@main::cppArgs, '-MMD'); }
-      -MP				[ditto]
-        { push(@main::cppArgs, '-MP'); }
-      -MF <file>			[ditto]
-        { push(@main::cppArgs, '-MF', $file); }
-      -MT <target>			[ditto]
-        { push(@main::cppArgs, '-MT', $target); }
-      -d<chars>				Debugging info from preprocessor. See documentation for GCC.
-        { push(@main::cppArgs, "-d$chars"); }
-      -fmessage-length=0		Write all error messages on a single line.
-      -frunner-script			Compile program to perl script with analysis tool options.
-      -fissue-report=<file>		Write issues to the specified file in CSV format.
-      -Wlint				Generate lint errors for potentially undesirable behaviors.*
-      -flint				[ditto]
-      -Wno-undefined			Do not output undefined behaviors.
-      -Wno-unspecified			Do not output unspecified behaviors.
-      -Wno-implementation-defined	Do not output implementation-defined behaviors.
-      -Wno-<errcode>			Ignore specified error code.
-        {
-          if ($main::cppWarns{$errcode}) {
-            push(@main::cppArgs, "-Wno-$errcode");
-          } else {
-            push(@main::nowarns, $errcode);
-          }
-        }
-      -Wsystem-headers			Do not ignore errors in system headers.
-        {
-          push(@main::cppArgs, "-Wsystem-headers");
-          push(@main::warns, "system-headers");
-        }
-      -W<errcode>			Do not ignore specified error code.
-        {
-          if ($main::cppWarns{$errcode}) {
-            push(@main::cppArgs, "-W$errcode");
-          } else {
-            push(@main::warns, $errcode);
-          }
-        }
-      -no-pedantic			Do not trigger warnings for non-standard compliant language features.
-      -w				Ignore all preprocessor warnings.
-        { push(@main::cppArgs, "-w"); }
-      -fheap-size=<size>		Used with -flint to detect dynamic memory overflow.*
-      -fstack-size=<size>		Used with -flint to detect stack overflow.*
-      -frecover-all-errors		Recover from fatal errors that would normally cause an application to crash.
-                                        WARNING: This can change the semantics of tools like autoconf which analyze
-                                                 the exit code of the compiler to trigger unexpected or undesirable
-                                                 results.
-      -x <language>			Set language for input files.
-        { $main::xLang = $language; }
-      -pthread				Enables pthread library (highly experimental, likely broken)
-        {
-          push(@main::cppArgs, '-pthread');
-          push(@main::ldArgs, '-lpthread');
-        }
-      -Xmx<size>			Passed to underlying JVM.
-      -profile <name>			Set KCC profile.
-        {
-          if ( grep( /^$name$/, @main::profiles ) ) {
-             open(my $file, '>', "$main::ourDist/current-profile")
-               or die "Could not open profile file. Check OS permissions.\n";
-             print $file $name;
-             close $file;
-             exit 0;
-          } else {
-             print "Profile '$name' is not installed. See $0 -v for list of installed profiles.\n";
-             exit 1;
-          }
-        }
-      -Xbuiltins			[undocumented]
+  [strict]
+  -version		Show version information.
+    {
+      $self->version();
+      my $profiles = join("\n	                    ", @main::profiles);
+      print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
+      exit 0;
+    }
+  -Version		[ditto] [undocumented]
+  -VERSION		[ditto] [undocumented]
+  --version		[ditto] [undocumented]
+  --Version		[ditto] [undocumented]
+  --VERSION		[ditto] [undocumented]
+  -v			[ditto] [undocumented]
+  -V			[ditto] [undocumented]
+  -c			Compile and assemble, but do not link.
+  -shared		Compile and assemble into a single object file.
+  -d			Print debugging information.
+  -D <name>[=[<definition>]]	Predefine <name> as a macro, with definition
+				<definition>.
+    {
+      if (defined $definition) {
+        push(@main::cppArgs, "-D$name=$definition");
+      } elsif ($_PUNCT_{"="}) {
+        push(@main::cppArgs, "-D$name=");
+      } else  {
+        push(@main::cppArgs, "-D$name");
+      }
+    }
+  -U <name>		Undefine <name> as a macro.
+    { push(@main::cppArgs, "-U$name"); }
+  -P			Inhibit preprocessor line numbers.
+    { push(@main::cppArgs, "-P"); }
+  -E			Preprocess only.
+  -I <dir>		Look for headers in <dir>.
+    { push(@main::cppArgs, '-I', $dir); }
+  -isystem <dir>	Look for system headers in <dir>.
+    { push(@main::cppArgs, '-isystem', $dir); }
+  -include <file>	Add header to file during preprocessing.
+    { push(@main::cppArgs, '-include', $file); }
+  -L <dir>		Look for shared libraries in <dir>.
+    {
+      push(@main::ld_lib, $dir);
+      push(@main::ldArgs, "-L$dir");
+    }
+  -nodefaultlibs	Do not link against the standard library.
+  -o <file>		Place the output into <file>.
+    { $main::oflag = $file; }
+  -l <lib>		Link semantics against library in search path.
+    { classifyLib($lib); }
+  -Wl,<args>		Add flags to linker arguments.
+    { push(@main::ldArgs, "-Wl,$args"); }
+  <files>...		C files to be compiled. [repeatable] [required] [undocumented]
+    { classify(@files); }
+  -M			Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-M'); }
+  -MM			Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MM'); }
+  -MD			Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MD'); }
+  -MMD			Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MMD'); }
+  -MP			Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MP'); }
+  -MF <file>		Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MF', $file); }
+  -MT <target>		Dependency generation. See documentation for GCC
+			preprocessor.
+    { push(@main::cppArgs, '-MT', $target); }
+  -d<chars>		Debugging info from preprocessor. See documentation
+			for GCC.
+    { push(@main::cppArgs, "-d$chars"); }
+  -fmessage-length=0	Write all error messages on a single line.
+  -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
+  -fissue-report=<file>	Write issues to the specified file in CSV format.
+  -Wlint		Generate lint errors for potentially undesirable
+			behaviors.*
+  -flint		Generate lint errors for potentially undesirable
+			behaviors.*
+  -Wno-undefined	Do not output undefined behaviors.
+  -Wno-unspecified	Do not output unspecified behaviors.
+  -Wno-implementation-defined	Do not output implementation-defined behaviors.
+  -Wno-<errcode>	Ignore specified error code.
+    {
+      if ($main::cppWarns{$errcode}) {
+        push(@main::cppArgs, "-Wno-$errcode");
+      } else {
+        push(@main::nowarns, $errcode);
+      }
+    }
+  -Wsystem-headers	Do not ignore errors in system headers.
+    {
+      push(@main::cppArgs, "-Wsystem-headers");
+      push(@main::warns, "system-headers");
+    }
+  -W<errcode>		Do not ignore specified error code.
+    {
+      if ($main::cppWarns{$errcode}) {
+        push(@main::cppArgs, "-W$errcode");
+      } else {
+        push(@main::warns, $errcode);
+      }
+    }
+  -no-pedantic		Do not trigger preprocessor warnings for non-standard
+			compliant language features.
+  -w			Ignore all preprocessor warnings.
+    { push(@main::cppArgs, "-w"); }
+  -fheap-size=<size>	Used with -flint to detect dynamic memory overflow.*
+  -fstack-size=<size>	Used with -flint to detect stack overflow.*
+  -frecover-all-errors	Recover from fatal errors that would normally cause an
+			application to crash.
+			WARNING: This can change the semantics of tools like
+			autoconf which analyze the exit code of the compiler to
+			trigger unexpected or undesirable results.
+  -x <language>		Set language for input files.
+    { $main::xLang = $language; }
+  -pthread		Enables pthread library (experimental)
+    {
+      push(@main::cppArgs, '-pthread');
+      push(@main::ldArgs, '-lpthread');
+    }
+  -Xmx<size>		Passed to underlying JVM. [undocumented]
+  -profile <name>	Set KCC profile.
+    {
+      if ( grep( /^$name$/, @main::profiles ) ) {
+         open(my $file, '>', "$main::ourDist/current-profile")
+           or die "Could not open profile file. Check OS permissions.\n";
+         print $file $name;
+         close $file;
+         exit 0;
+      } else {
+         print "Profile '$name' is not installed. See $0 -v for list of installed profiles.\n";
+         exit 1;
+      }
+    }
+  -Xbuiltins		[undocumented]
 
-      * Indicates flags that require RV-Match from http://www.runtimeverification.com/match
-        to run.
+  * Indicates flags that require RV-Match from
+    http://www.runtimeverification.com/match to run.
 
-      For a complete list of other flags ignored by kcc, refer to ) . $distDirectory . q(/ignored-flags,
-      which contains one regular expression per line.
+  For a complete list of other flags ignored by kcc, refer to ) 
+  . "\n  $distDirectory" . q(/ignored-flags,
+  which contains one regular expression per line.
 
-      The following lines of output are added to this message for compatibility
-      with GNU ld and libtool:
+  The following lines of output are added to this message for compatibility
+  with GNU ld and libtool:
 
-      : supported targets: elf
+  : supported targets: elf
       );
 
 my $args = Getopt::Declare->new($spec, ['-BUILD']);
