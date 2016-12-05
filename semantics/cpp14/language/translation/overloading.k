@@ -101,7 +101,7 @@ module CPP-OVERLOADING
      rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(Q::QualId, Decls::List, Types::Map, Defaults::Map, _, _) => .Map) _), list(Args::List), _, _, _, _) ...</k>
+     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
 
      syntax Conversion ::= "identity"
@@ -121,7 +121,7 @@ module CPP-OVERLOADING
      rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(Q::QualId, Decls::List, Types::Map, Defaults::Map, _, _) => .Map) _), list(Args::List), _, _, _, _) ...</k>
+     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
           requires isAdjustedType(T)
 

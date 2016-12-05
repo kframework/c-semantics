@@ -34,7 +34,7 @@ module CPP-TYPING-SYNTAX
 
      syntax AType ::= CPPType
 
-     syntax CPPType ::= t(Quals, Set, CPPSimpleType) [klabel(tcpp)]
+     syntax CPPType ::= t(q: Quals, m: Set, st: CPPSimpleType) [klabel(tcpp)]
 
      syntax CPPTypeExpr ::= innerType(CPPTypeExpr) [function, klabel(cppInnerType)]
      syntax CPPType ::= innerType(CPPType) [function, klabel(cppInnerType)]
@@ -108,25 +108,25 @@ module CPP-TYPING-SYNTAX
                                 | "decltype(auto)"
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
-     syntax CPPFunctionType ::= t(Quals, Set, CPPSimpleFunctionType) [klabel(tcpp)]
+     syntax CPPFunctionType ::= t(q: Quals, m: Set, st: CPPSimpleFunctionType) [klabel(tcpp)]
      syntax CPPArithmeticType ::= CPPIntegerType | CPPFloatingType
      syntax CPPFundamentalType ::= CPPArithmeticType | CPPVoidType | CPPNullPtrTType
-     syntax CPPCharType ::= t(Quals, Set, CPPSimpleCharType) [klabel(tcpp)]
-     syntax CPPBoolType ::= t(Quals, Set, CPPSimpleBoolType) [klabel(tcpp)]
-     syntax CPPFloatingType ::= t(Quals, Set, CPPSimpleFloatingType) [klabel(tcpp)]
+     syntax CPPCharType ::= t(q: Quals, m: Set, st: CPPSimpleCharType) [klabel(tcpp)]
+     syntax CPPBoolType ::= t(q: Quals, m: Set, st: CPPSimpleBoolType) [klabel(tcpp)]
+     syntax CPPFloatingType ::= t(q: Quals, m: Set, st: CPPSimpleFloatingType) [klabel(tcpp)]
      syntax CPPIntegerType ::= CPPCharType | CPPBoolType | CPPSignedType | CPPUnsignedType | CPPWideCharType
-     syntax CPPSignedType ::= t(Quals, Set, CPPSimpleSignedType) [klabel(tcpp)]
-     syntax CPPUnsignedType ::= t(Quals, Set, CPPSimpleUnsignedType) [klabel(tcpp)]
-     syntax CPPVoidType ::= t(Quals, Set, CPPSimpleVoidType) [klabel(tcpp)]
-     syntax CPPArrayType ::= t(Quals, Set, CPPSimpleArrayType) [klabel(tcpp)]
-     syntax CPPPointerType ::= t(Quals, Set, CPPSimplePointerType) [klabel(tcpp)]
-     syntax CPPMemberPointerType ::= t(Quals, Set, CPPSimpleMemberPointerType) [klabel(tcpp)]
-     syntax CPPLVRefType ::= t(Quals, Set, CPPSimpleLVRefType) [klabel(tcpp)]
-     syntax CPPRVRefType ::= t(Quals, Set, CPPSimpleRVRefType) [klabel(tcpp)]
-     syntax CPPNullPtrTType ::= t(Quals, Set, CPPSimpleNullPtrTType) [klabel(tcpp)]
+     syntax CPPSignedType ::= t(q: Quals, m: Set, st: CPPSimpleSignedType) [klabel(tcpp)]
+     syntax CPPUnsignedType ::= t(q: Quals, m: Set, st: CPPSimpleUnsignedType) [klabel(tcpp)]
+     syntax CPPVoidType ::= t(q: Quals, m: Set, st: CPPSimpleVoidType) [klabel(tcpp)]
+     syntax CPPArrayType ::= t(q: Quals, m: Set, st: CPPSimpleArrayType) [klabel(tcpp)]
+     syntax CPPPointerType ::= t(q: Quals, m: Set, st: CPPSimplePointerType) [klabel(tcpp)]
+     syntax CPPMemberPointerType ::= t(q: Quals, m: Set, st: CPPSimpleMemberPointerType) [klabel(tcpp)]
+     syntax CPPLVRefType ::= t(q: Quals, m: Set, st: CPPSimpleLVRefType) [klabel(tcpp)]
+     syntax CPPRVRefType ::= t(q: Quals, m: Set, st: CPPSimpleRVRefType) [klabel(tcpp)]
+     syntax CPPNullPtrTType ::= t(q: Quals, m: Set, st: CPPSimpleNullPtrTType) [klabel(tcpp)]
      syntax CPPRefType ::= CPPLVRefType | CPPRVRefType
-     syntax CPPClassType ::= t(Quals, Set, CPPSimpleClassType) [klabel(tcpp)]
-     syntax CPPWideCharType ::= t(Quals, Set, CPPSimpleWideCharType) [klabel(tcpp)]
+     syntax CPPClassType ::= t(q: Quals, m: Set, st: CPPSimpleClassType) [klabel(tcpp)]
+     syntax CPPWideCharType ::= t(q: Quals, m: Set, st: CPPSimpleWideCharType) [klabel(tcpp)]
      syntax CPPBitfieldType
      syntax CPPEnumType ::= CPPScopedEnumType | CPPUnscopedEnumType
      syntax CPPScopedEnumType
@@ -141,12 +141,12 @@ module CPP-TYPING-SYNTAX
                       | CPPFundamentalType
                       | CPPEnumType
 
-     syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(Quals, Set, CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
-     syntax CPPClassTypeExpr ::= CPPClassType | t(Quals, Set, CPPSimpleClassTypeExpr) [klabel(tcpp)]
-     syntax CPPArrayTypeExpr ::= CPPArrayType | t(Quals, Set, CPPSimpleArrayTypeExpr) [klabel(tcpp)]
-     syntax CPPRefTypeExpr ::= CPPRefType | t(Quals, Set, CPPSimpleLVRefTypeExpr) [klabel(tcpp)]
-                             | t(Quals, Set, CPPSimpleRVRefTypeExpr) [klabel(tcpp)]
-     syntax CPPTypeExpr ::= t(Quals, Set, CPPSimpleTypeExpr) [klabel(tcpp)]
+     syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(q: Quals, m: Set, st: CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
+     syntax CPPClassTypeExpr ::= CPPClassType | t(q: Quals, m: Set, st: CPPSimpleClassTypeExpr) [klabel(tcpp)]
+     syntax CPPArrayTypeExpr ::= CPPArrayType | t(q: Quals, m: Set, st: CPPSimpleArrayTypeExpr) [klabel(tcpp)]
+     syntax CPPRefTypeExpr ::= CPPRefType | t(q: Quals, m: Set, st: CPPSimpleLVRefTypeExpr) [klabel(tcpp)]
+                             | t(q: Quals, m: Set, st: CPPSimpleRVRefTypeExpr) [klabel(tcpp)]
+     syntax CPPTypeExpr ::= t(q: Quals, m: Set, st: CPPSimpleTypeExpr) [klabel(tcpp)]
                           | CPPFunctionTypeExpr
                           | CPPClassTypeExpr
                           | CPPArrayTypeExpr

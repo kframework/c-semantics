@@ -12,7 +12,7 @@ module CPP-DECL-TEMPLATE-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax TemplateInfo ::= templateInfo(QualId, List, Map, Map, AType, K)
+     syntax TemplateInfo ::= templateInfo(id: QualId, decls: List, paramTypes: Map, defaults: Map, type: AType, body: K)
      syntax ParamType ::= "TypeParam" | "ValueParam" | "TemplateParam"
      syntax KItem ::= templateContext(QualId, K, K)
      syntax SymBase ::= "dependent"
@@ -69,8 +69,8 @@ module CPP-DECL-TEMPLATE
      rule <k> elaborateDone(K:K) ~> finishTemplate => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... Q |-> (T |-> templateInfo(_, _, _, _, _, (_ => K))) ...</templates>
-          <curr-template-context> templateInfo(Q::QualId, _, _, _, T::CPPType, _) </curr-template-context>
+          <templates>... Q |-> (T |-> templateInfo(... body: (_ => K))) ...</templates>
+          <curr-template-context> templateInfo(...id: Q::QualId, type: T::CPPType) </curr-template-context>
 
 
      rule <k> setTemplateContext(Old::TemplateInfo) => .K ...</k>
@@ -92,29 +92,29 @@ module CPP-DECL-TEMPLATE
      // class declaration
      rule <k> TypeDecl(t(_, _, _) #as T::CPPType) => declareTemplate(T) ...</k>
           <elab>... .K => declareTemplatedType(T) </elab>
-          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+          <curr-template-context> templateInfo(...) </curr-template-context>
      // class definition
      rule <k> (.K => elaborate(listToK(Members)))
           ~> classContext(t(_, _, _), Members::List) ...</k>
-          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+          <curr-template-context> templateInfo(...) </curr-template-context>
 
      rule <k> elaborateDone(Done:K) ~> classContext(t(_, _, _) #as T::CPPType, _)
               => declareTemplate(T)
           ...</k>
           <elab>... .K => classContext(T, kSeqToList(Done)) </elab>
-          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+          <curr-template-context> templateInfo(...) </curr-template-context>
 
      // TODO(dwightguth): check the syntax of template definitions and generate
      // the "hypothetical instantantiation"
      // var or function declaration
      rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T::CPPType, NoInit(), Type::DeclarationType, L::Linkage, D::Duration, S::Set) => declareTemplate(T) ...</k>
           <elab>... .K => declareObject(N, LN, X, T, NoInit(), Type, L, D, S) </elab>
-          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+          <curr-template-context> templateInfo(...) </curr-template-context>
      // function definition
      rule <k> (.K => processFunDef(dependent, N :: X, T, Params, Init))
               ~> declareObject(N::Namespace, _, X::CId, T::CPPType, Init::Stmt, Function(Params::List), _, _, _)
           ...</k>
-          <curr-template-context> templateInfo(_, _, _, _, _, _) </curr-template-context>
+          <curr-template-context> templateInfo(...) </curr-template-context>
           requires Init =/=K NoInit()
 
      rule <k> addParam(X::CId) => .K ...</k>

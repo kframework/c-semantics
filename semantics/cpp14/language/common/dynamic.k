@@ -61,13 +61,13 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax CPPValue ::= "voidVal" // not technically a value, but it can be the result of an expression
 
-     syntax LVal ::= lv(SymLoc, Trace, CPPTypeExpr) [klabel(lvcpp)]
-     syntax XVal ::= xv(SymLoc, Trace, CPPTypeExpr)
-     syntax PRVal ::= prv(CPPValue, Trace, CPPTypeExpr)
+     syntax LVal ::= lv(v: SymLoc, tr: Trace, t: CPPTypeExpr) [klabel(lvcpp)]
+     syntax XVal ::= xv(v: SymLoc, tr: Trace, t: CPPTypeExpr)
+     syntax PRVal ::= prv(v: CPPValue, tr: Trace, t: CPPTypeExpr)
 
-     syntax LExpr ::= le(Expr, Trace, CPPTypeExpr) [klabel(lecpp)]
-     syntax XExpr ::= xe(Expr, Trace, CPPTypeExpr)
-     syntax PRExpr ::= pre(Expr, Trace, CPPTypeExpr)
+     syntax LExpr ::= le(v: Expr, tr: Trace, t: CPPTypeExpr) [klabel(lecpp)]
+     syntax XExpr ::= xe(v: Expr, tr: Trace, t: CPPTypeExpr)
+     syntax PRExpr ::= pre(v: Expr, tr: Trace, t: CPPTypeExpr)
 
      syntax LValueCategory ::= "lvalue"
      syntax XValueCategory ::= "xvalue"
