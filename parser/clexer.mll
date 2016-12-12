@@ -422,16 +422,6 @@ let oct_escape = '\\' octdigit octdigit? octdigit?
 let hexquad = hexdigit hexdigit hexdigit hexdigit
 let u_escape = '\\' (('u' hexquad)|('U' hexquad hexquad))
 
-(* Pragmas that are not parsed by CIL.  We lex them as PRAGMA_LINE tokens *)
-let no_parse_pragma =
-               "warning" | "GCC"
-             (* Solaris-style pragmas:  *)
-             | "ident" | "section" | "option" | "asm" | "use_section" | "weak"
-             | "redefine_extname"
-             | "TCS_align"
-	     | "mark"
-
-
 rule initial =
 	parse 	
 (* "/*@" { BEGINANNOTATION (currentLoc ())} *)
@@ -615,12 +605,9 @@ and hash = parse
 | "line"        { addWhite lexbuf; hash lexbuf } (* MSVC line number info *)
                 (* For pragmas with irregular syntax, like #pragma warning, 
                  * we parse them as a whole line. *)
-| "pragma" blank (no_parse_pragma as pragmaName)
+| "pragma" blank
                 { addWhite lexbuf; hash lexbuf }
-| "pragma" blank "KCC" blank "inv"  { PRAGMA_KCC_INV (pragma lexbuf, currentLoc ()) }
-| "pragma" blank "KCC" blank "rule" { PRAGMA_KCC_RULE (pragma lexbuf, currentLoc ()) }
-| "pragma"                          { pragmaLine := true; PRAGMA (currentLoc ()) }
-| _                                 { addWhite lexbuf; endline lexbuf}
+| _	        { addWhite lexbuf; endline lexbuf}
 
 and file =  parse 
         '\n'		        {addWhite lexbuf; E.newline (); initial lexbuf}

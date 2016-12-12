@@ -395,12 +395,17 @@ sub main {
       if (scalar @srcFiles > 2) {
         die "cannot specify -o with -c or -E with multiple files.\n";
       }
+      my $result = tempFile();
+      compile($result, $srcFiles[0], $srcFiles[1]);
+      move($result, $oval);
     } else {
-      $oval = basename($srcFiles[0], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
+      for (my $i = 0; $i < $#srcFiles; $i += 2) {
+        $oval = basename($srcFiles[$i], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
+        my $result = tempFile();
+        compile($result, $srcFiles[$i], $srcFiles[$i+1]);
+        move($result, $oval);
+      }
     }
-    my $result = tempFile();
-    compile($result, $srcFiles[0], $srcFiles[1]);
-    move($result, $oval);
     return 0;
   }
 

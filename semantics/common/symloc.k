@@ -54,6 +54,8 @@ module SYMLOC-SYNTAX
      syntax SymBase ::= Int "@" Duration [klabel(_@_)]
 
 
+     syntax SymLoc ::= resolveLinking(SymLoc, Map) [function]
+
      // Base, byte offset, bit offset.
      syntax SymLoc ::= loc(SymBase, Int)
      syntax SymLoc ::= CanonicalSymLoc
@@ -103,6 +105,7 @@ endmodule
 module SYMLOC
      imports SYMLOC-SYNTAX
      imports K-REFLECTION
+     imports MAP
 
      rule isAllocatedDuration(_ @ alloc) => true
      rule isAllocatedDuration(_:SymBase) => false [owise]
@@ -263,6 +266,11 @@ module SYMLOC
      rule getProv(loc(_, _, SetItem(K:K) _), Lbl:K) => K
           requires getKLabel(K) ==K Lbl
      rule getProv(_, _) => .K [owise]
+
+     rule resolveLinking(loc(Base::SymBase, Offset::Int, Prov::Set), _ Base |-> Base'::SymBase) => loc(Base', Offset, Prov)
+     rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)
+     rule resolveLinking(Loc::SymLoc, _) => Loc
+          requires notBool isLinkerLoc(Loc) [owise]
 
 endmodule
 

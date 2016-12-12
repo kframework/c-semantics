@@ -156,23 +156,27 @@ module C-MEMORY-WRITING
  
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
-     rule makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
+     rule <k> makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
                F |-> T::Type _, _, _))
-          => writeBytes(stripProv(Loc) +bytes byteSizeofType(T),
+          => writeBytes(stripProv(resolveLinking(Loc, Linkings)) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T),
                     piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
+          ...</k>
+          <linkings> Linkings::Map </linkings>
           requires maxByteSizeofList(L) >Int byteSizeofType(T)
           [structural]
      rule makeUnionUnknown(_, F::CId, fieldInfo(L::List, _, F |-> T::Type _, _, _)) => .K
           requires maxByteSizeofList(L) <=Int byteSizeofType(T)
           [structural]
 
-     rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
+     rule <k> makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
                F |-> T::Type M::Map, Offsets::Map, PaddingOffs::Set), I::Int)
-          => writeBytes(stripProv(Loc) +bytes I,
+          => writeBytes(stripProv(resolveLinking(Loc, Linkings)) +bytes I,
                dataList(ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
           ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs), I +Int 1)
+          ...</k>
+          <linkings> Linkings::Map </linkings>
           requires isPaddingOffset(I, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs))
                andBool I *Int cfg:bitsPerByte <Int N
      rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
