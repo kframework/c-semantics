@@ -310,7 +310,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     State, internal,
-                    {#if isExtern(T) #then Extern() #else Static() #fi}:>Storage)
+                    #if isExtern(T) #then Extern() #else Static() #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -391,7 +391,7 @@ module C-DECL-GLOBAL
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, external,
-                    {#if isExtern(T) #then Extern() #else Static() #fi}:>Storage)
+                    #if isExtern(T) #then Extern() #else Static() #fi)
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>

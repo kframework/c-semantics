@@ -598,7 +598,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     Float2String(setPrecision(D, String2Int(P))),
                     String2Int(W),
-                    {#if Z #then "0" #else " " #fi}:>String))
+                    #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
           [structural]
@@ -617,7 +617,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
                     String2Int(W),
-                    {#if Z #then "0" #else " " #fi}:>String))
+                    #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%F" => "reset" </format-state>
           [structural]
@@ -686,7 +686,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     Float2String(setPrecision(D, String2Int(P))),
                     String2Int(W),
-                    {#if Z #then "0" #else " " #fi}:>String))
+                    #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%g" => "reset" </format-state>
           [structural]
@@ -705,7 +705,7 @@ module LIBC-STDIO
                .List => ListItem(pad(
                     toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
                     String2Int(W),
-                    {#if Z #then "0" #else " " #fi}:>String))
+                    #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%G" => "reset" </format-state>
           [structural]

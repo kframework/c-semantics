@@ -54,10 +54,10 @@ module ERROR
 
      syntax String ::= formatCitationWithDelims(K, Bool, Bool) [function]
      rule formatCitationWithDelims(citation(Source::String, Section::String, Details::String), IsCSV:Bool, IsNoWrap:Bool)
-          => {#if IsNoWrap #then "" #else "\n" #fi}:>String +String {#if IsCSV #then "" #else "   see " #fi}:>String +String Source
-             +String {#if IsCSV #then "," #else " section " #fi}:>String +String Section
-             +String {#if IsCSV #then "," +String Details #else #if Details =/=String "" #then ":" +String Details #else "" #fi  #fi}:>String
-             +String {#if IsCSV #then "," #else " " #fi}:>String +String citationURL(Source, Section)
+          => #if IsNoWrap #then "" #else "\n" #fi +String #if IsCSV #then "" #else "   see " #fi +String Source
+             +String #if IsCSV #then "," #else " section " #fi +String Section
+             +String #if IsCSV #then "," +String Details #else #if Details =/=String "" #then ":" +String Details #else "" #fi  #fi
+             +String #if IsCSV #then "," #else " " #fi +String citationURL(Source, Section)
 
      syntax String ::= replaceAllMap(String, Map) [function]
      rule replaceAllMap(Source:String, .Map) => Source

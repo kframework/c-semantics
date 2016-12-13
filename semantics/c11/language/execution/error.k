@@ -22,8 +22,8 @@ module C-EXECUTION-ERROR
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String), Trace:String, false)
           => " " +String Msg
-          +String {#if Trace ==String "" #then "" #else "\n" +String Trace #fi}:>String
-          +String {#if Reason ==String "" #then "" #else "\n  " +String Reason #fi}:>String
+          +String #if Trace ==String "" #then "" #else "\n" +String Trace #fi
+          +String #if Reason ==String "" #then "" #else "\n  " +String Reason #fi
           +String "\n  " +String ErrType +String " (" +String Title +String ")."
           +String formatCitations(Title, false)
 

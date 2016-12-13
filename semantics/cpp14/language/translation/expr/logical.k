@@ -36,11 +36,11 @@ module CPP-EXPR-LOGICAL
 
      rule prv(0, _, _:CPPBoolType) || R:PRVal => R
      rule prv(1, Tr::Trace, T:CPPBoolType) || _:PRVal => prv(1, Tr, T)
-     rule prv((unknown(I::Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), _, _:CPPBoolType) || _:PRVal
+     rule prv((unknown(I::Int) => #if I ==Int 0 #then 0 #else 1 #fi), _, _:CPPBoolType) || _:PRVal
 
      rule prv(1, _, _:CPPBoolType) && R:PRVal => R
      rule prv(0, Tr::Trace, T:CPPBoolType) && _:PRVal => prv(0, Tr, T)
-     rule prv((unknown(I::Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), _, _:CPPBoolType) && _:PRVal
+     rule prv((unknown(I::Int) => #if I ==Int 0 #then 0 #else 1 #fi), _, _:CPPBoolType) && _:PRVal
 
      rule ! V:PRExpr => pre(! stripHold(V), combine(trace(V), #klabel(`!__CPP-SYNTAX`)), type(bool))
 

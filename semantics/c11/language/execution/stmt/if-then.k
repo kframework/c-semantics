@@ -19,7 +19,7 @@ module C-STMT-IF-THEN
      substatement is reached via a label, the second substatement is not
      executed.
      }*/
-     rule IfThenElse(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _, _)
+     rule IfThenElse(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)), _, _)
 
      rule [if-then-else-true]:
           IfThenElse(tv(1, ut(_, int)), S:K, _) => sequencePoint ~> S

@@ -14,11 +14,11 @@ module TRANSLATION-ERROR
           => File +String ":" +String Int2String(Line) +String ":" +String Int2String(Column)
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, false)
-          => {#if Location ==String "" #then "" #else Location +String ": " #fi}:>String
+          => #if Location ==String "" #then "" #else Location +String ": " #fi
           +String getErrorType(Title) +String ": "
           +String Msg
-          +String {#if Reason ==String "" #then "" #else "\n" +String Reason #fi}:>String
-          +String {#if isNoWrap #then "  " #else "\n  " #fi}:>String +String ErrType +String " (" +String Title +String ")."
+          +String #if Reason ==String "" #then "" #else "\n" +String Reason #fi
+          +String #if isNoWrap #then "  " #else "\n  " #fi +String ErrType +String " (" +String Title +String ")."
           +String formatCitations(Title, false)
 
      rule formatErrorMsg(ErrorMsg(Title:String, Msg:String, ErrType:String, Reason:String),Location:String, true)
@@ -30,7 +30,7 @@ module TRANSLATION-ERROR
           +String ",\"" +String Location +String "\""
 
      syntax String ::= getErrorType(String) [function]
-     rule getErrorType(S:String) => {#if "L-" ==String substrString(S,0,2) orElseBool "IMPL-" ==String substrString(S,0,5) #then "warning" #else "error" #fi}:>String
+     rule getErrorType(S:String) => #if "L-" ==String substrString(S,0,2) orElseBool "IMPL-" ==String substrString(S,0,5) #then "warning" #else "error" #fi
 
      rule <k> EXIT(Msg:ErrorMsg)
           => doError(Msg, formatLocation(File, Line, Column))

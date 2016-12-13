@@ -39,7 +39,7 @@ module C-EXPR-CONDITIONAL
           requires notBool isVariablyModifiedType(type(T))
      rule evalConditional(tv(0, ut(_, int)), _:RValue, E2:RValue, T::UType) => E2
           requires notBool isVariablyModifiedType(type(T))
-     rule evalConditional(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _, _, T::UType)
+     rule evalConditional(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)), _, _, T::UType)
           requires notBool isVariablyModifiedType(type(T))
 
 endmodule

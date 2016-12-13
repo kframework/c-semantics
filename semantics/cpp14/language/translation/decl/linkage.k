@@ -9,8 +9,8 @@ module CPP-DECL-LINKAGE
 
      rule <k> LinkageSpec(Linkage:String, HasBraces:Bool, Decls:List) 
               // error checking handled by parser
-              => setLinkage({#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else .K #fi #fi}:>LanguageLinkage, 
-                            {#if notBool HasBraces #then true #else OldExtern #fi}:>Bool)
+              => setLinkage(#if Linkage ==String "C" #then CLinkage #else #if Linkage ==String "C++" #then CPPLinkage #else .K #fi #fi, 
+                            #if notBool HasBraces #then true #else OldExtern #fi)
               ~> listToK(Decls)
               ~> setLinkage(OldLinkage, OldExtern)
           ...</k>

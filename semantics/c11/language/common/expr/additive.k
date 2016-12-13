@@ -227,7 +227,7 @@ module C-COMMON-EXPR-ADDITIVE
 
      rule tv(L1:SymLoc, T:IntegerUType)
                - tv(L2:SymLoc, T':IntegerUType)
-          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, {#if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi}:>String)
+          => computePointerDifference(offset(L1) -Int offset(L2), 1, T, #if isSignedIntegerType(T) #then "intptr_t" #else "uintptr_t" #fi)
           requires sameBase(L1, L2)
                andBool isPromoted(T) andBool T ==Type T'
 

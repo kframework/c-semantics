@@ -324,7 +324,7 @@ module C-MEMORY-WRITING
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
                     orBool isUnknown(N))
      rule #splitStructBytes(
-          dataList(ListItem(piece((N:Bits => unknown({#if isInt(N) #then N #else 0 #fi}:>Int)), _:Int)) _:List),
+          dataList(ListItem(piece((N:Bits => unknown(#if isInt(N) #then N #else 0 #fi)), _:Int)) _:List),
                T::UType, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
                andBool notBool isUnknown(N)

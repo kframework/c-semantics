@@ -220,7 +220,7 @@ module CPP-NAME
      // namespace is also included in the set.
      // If an associated namespace directly contains inline namespaces, those
      // inline namespaces are also included in the set
-     rule #getAssociatedNamespaces(SetItem(N::Namespace :: S::NamespaceSpecifier) _::Set (.Set => {#if B #then SetItem(N) #else .Set #fi}:>Set Set), 
+     rule #getAssociatedNamespaces(SetItem(N::Namespace :: S::NamespaceSpecifier) _::Set (.Set => #if B #then SetItem(N) #else .Set #fi Set), 
           <namespaces>... 
             (<ns>... 
                <ns-id> N :: S </ns-id>

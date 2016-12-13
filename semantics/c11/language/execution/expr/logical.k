@@ -28,7 +28,7 @@ module C-EXPR-LOGICAL
      rule tv(1, ut(_, int)) && E:K
           => sequencePoint ~> E
           [structural]
-     rule tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)) && _
+     rule tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)) && _
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.14}{3--4}}}{
      The \cinline{||} operator shall yield 1 if either of its operands compare
@@ -46,6 +46,6 @@ module C-EXPR-LOGICAL
           [structural]
      rule tv(1, ut(_, int)) || _ => tv(1, utype(int))
           [structural]
-     rule tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)) || _
+     rule tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)) || _
 
 endmodule

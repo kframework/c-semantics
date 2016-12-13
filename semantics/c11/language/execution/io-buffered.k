@@ -323,7 +323,7 @@ module C-IO-BUFFERED
             Types::Map (FId |-> T::Type),
             Offsets::Map (FId |-> FOffset::Int),
             PaddingOffs::Set))
-          => {#if isNoName(FId) #then
+          => #if isNoName(FId) #then
                //the bits of the field in the current byte are traps, because it was unnamed
                piece(trap, minInt(FOffset +Int bitSizeofType(T),
                                   Offset +Int N) -Int
@@ -334,7 +334,7 @@ module C-IO-BUFFERED
                              (minInt(FOffset +Int bitSizeofType(T),
                                      Offset +Int N) -Int
                               maxInt(FOffset, Offset)), T)
-             #fi}:>Bits
+             #fi
                bit::
                  //read the remaining bits in the byte
                  getZeroedBits(minInt(FOffset +Int bitSizeofType(T),

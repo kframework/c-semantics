@@ -24,7 +24,7 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #and(tv(0, ut(S:Set, int)), _:RValue) => tv(0, ut(S, int))
      rule #and(tv(1, ut(S:Set, int)), R:RValue) => R
-     rule #and(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _)
+     rule #and(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)), _)
 
      rule L:K || R:K => #or(simplifyTruth(L), simplifyTruth(R))
 
@@ -36,6 +36,6 @@ module C-EXPR-LOGICAL
      requires isHold(L)
      rule #or(tv(0, ut(S:Set, int)), R:RValue) => R
      rule #or(tv(1, ut(S:Set, int)), _:RValue) => tv(1, ut(S, int))
-     rule #or(tv((unknown(I:Int) => {#if I ==Int 0 #then 0 #else 1 #fi}:>Int), ut(_, int)), _)
+     rule #or(tv((unknown(I:Int) => #if I ==Int 0 #then 0 #else 1 #fi), ut(_, int)), _)
 
 endmodule
