@@ -87,7 +87,7 @@ module C-COMMON-PROMOTION
      rule rank(ut(_, long-long-int)) => 5
      rule rank(ut(_, unsigned-long-long-int)) => 5
      rule rank(ut(_, enumType(S::TagId))) => rank(utype(getEnumAlias(S)))
-     rule rank(ut(_, bitfieldType(T::BitfieldFieldType, _))) => rank(utype(T))
+     rule rank(ut(_, bitfieldType(T::SimpleType, _))) => rank(utype(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.1}{2}}}{
      The following may be used in an expression wherever an int or unsigned int
@@ -135,7 +135,7 @@ module C-COMMON-PROMOTION
      rule promote(T::UType) => T
           requires rank(T) >Int rank(utype(int))
 
-     rule promote(ut(Mods::Set, bitfieldType(T::BitfieldFieldType, Len::Int)))
+     rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(int)
           requires ((T ==K bool) orBool (T ==K int) orBool (T ==K unsigned-int))
                andBool min(utype(int))
@@ -151,7 +151,7 @@ module C-COMMON-PROMOTION
                     andBool max(utype(int)) >=Int max(T)
                )
 
-     rule promote(ut(Mods::Set, bitfieldType(T::BitfieldFieldType, Len::Int)))
+     rule promote(ut(Mods::Set, bitfieldType(T::SimpleType, Len::Int)))
           => utype(unsigned-int)
           requires (T ==K bool orBool T ==K int orBool T ==K unsigned-int)
                andBool notBool (

@@ -21,32 +21,32 @@ module C-BITS
      imports C-SETTINGS-SYNTAX
 
      // this maintains byte order
-     rule fillToBytes(dataList(L:List))
+     rule fillToBytes(dataList(L::List))
           => fillToBytes-aux(dataList(L), .List)
           [structural]
      rule fillToBytes-aux(dataList(
-               L:List ListItem(piece(N:Bits, Len:Int))),
-               L':List)
-          => fillToBytes-aux(dataList(L), ListItem(piece(N, Len)) L')
+               ListItem(piece(N::Bits, Len::Int)) L::List),
+               L'::List)
+          => fillToBytes-aux(dataList(L), L' ListItem(piece(N, Len)))
           requires Len ==Int cfg:bitsPerByte
           [structural]
 
-     rule fillToBytes-aux(dataList(ListItem(piece(N:Bits, Len:Int))), L':List)
+     rule fillToBytes-aux(dataList(ListItem(piece(N::Bits, Len::Int))), L'::List)
           => fillToBytes-aux(dataList(
-               ListItem(piece(0, 1)) ListItem(piece(N, Len))),
+               ListItem(piece(N, Len)) ListItem(piece(0, 1))),
                L')
           requires Len <Int cfg:bitsPerByte
           [structural]
 
      rule fillToBytes-aux(dataList(
-               L:List ListItem(piece(N:Bits, Len:Int))
-               ListItem(piece(N':Bits, Len':Int))), L':List)
-          => fillToBytes-aux(dataList(L ListItem(piece(piece(N, Len)
-               bit:: piece(N', Len'), Len +Int Len'))), L')
+               ListItem(piece(N::Bits, Len::Int))
+               ListItem(piece(N'::Bits, Len'::Int)) L::List), L'::List)
+          => fillToBytes-aux(dataList(ListItem(piece(piece(N, Len)
+               bit:: piece(N', Len'), Len +Int Len')) L), L')
           requires Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
 
-     rule fillToBytes-aux(dataList(.List), L:List) => dataList(L)
+     rule fillToBytes-aux(dataList(.List), L::List) => dataList(L)
           [structural]
 
      rule makeUnknown(tv(I:Int, T::UType)) => tv(unknown(I), T)

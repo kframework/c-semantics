@@ -1,19 +1,20 @@
 module C-COMMON-EXPR-MEMBERS
-     imports C-CONFIGURATION
      imports BOOL
-     imports INT
-     imports LIST
-     imports SET
-     imports COMMON-SORTS
-     imports SETTINGS-SYNTAX
-     imports C-BITS-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
+     imports COMMON-SORTS
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports LIST
+     imports SET
+     imports SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -138,39 +139,33 @@ module C-COMMON-EXPR-MEMBERS
 
      syntax KItem ::= extractField(CId, Bool, List, Set, CId, FieldInfo, FieldInfo)
           [function]
-     syntax KItem ::= travAnons(CId, Bool, List, Set, CId, FieldInfo, List, Int)
+     syntax KItem ::= extractAnon(CId, List, Set, List)
           [function]
-     syntax KItem ::= extractItem(CId, List, Set, CId, FieldInfo, List)
+     syntax KItem ::= extractItem(CId, List, Set, Int, FieldInfo)
           [function]
 
-     rule extractField(F:CId, _, L:List, Mods:Set, _, _,
-          fieldInfo(_, _,
-               F |-> t(_, Mods'::Set, T'::SimpleType) _,
-               F |-> Offset:Int _,
-               _))
-          => concretize(addModifiers(Mods Mods', utype(T')),
-               fillToBytes(extractBitsFromList(dataList(L),
-                    Offset,
-                    bitSizeofType(type(T')))))
-
-    rule extractField(F:CId, IsUnion:Bool, L:List, Mods:Set, S:CId, Fields:FieldInfo,
+     rule extractField(F:CId, IsUnion:Bool, L:List, Mods:Set, S:CId, Fields:FieldInfo,
                fieldInfo(Decls:List, _, Types:Map, Offsets:Map, _))
-         => travAnons(F, IsUnion, L, Mods, S, Fields, Decls, 0)
-         requires anonInDecls(Decls)
-                  andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
+          => extractAnon(F, L, Mods, searchAnons(F, IsUnion, Fields, 0, Decls, .List))
+          requires anonInDecls(Decls)
+                   andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
+     rule extractField(F::CId, _, L::List, Mods::Set, _, _, Info::FieldInfo)
+          => extractItem(F, L, Mods, 0, Info)
+          [owise]
 
-    rule travAnons(F:CId, IsUnion:Bool, L:List, Mods:Set, S:CId, Fields:FieldInfo, Decls:List, Offset:Int)
-         => extractItem(F, L, Mods, S, Fields, searchAnons(F, IsUnion, Fields, Offset, Decls, .List))
+     rule extractAnon(F::CId, L::List, Mods::Set,
+               ListItem(Info:FieldInfo)
+               ListItem(Offset':Int) _::List)
+          => extractItem(F, L, Mods, Offset', Info)
 
-    rule extractItem(F:CId, L:List, Mods:Set, _, _,
-          ListItem(fieldInfo(_, _,
-                        F |-> t(_, Mods'::Set, T'::SimpleType) _,
-                        F |-> Offset:Int _,
-                        _))
-          ListItem(Offset':Int) _:List)
-        => concretize(addModifiers(Mods Mods', utype(T')),
-             fillToBytes(extractBitsFromList(dataList(L),
-                  Offset +Int Offset',
-                  bitSizeofType(type(T')))))
+     rule extractItem(F::CId, L::List, Mods::Set, Offset'::Int,
+               fieldInfo(_, _,
+                         F |-> t(_, Mods'::Set, T'::SimpleType) _,
+                         F |-> Offset:Int _,
+                         _))
+          => concretize(addModifiers(Mods Mods', utype(T')),
+              fillToBytes(extractBitsFromList(dataList(L),
+                   Offset +Int Offset',
+                   bitSizeofType(type(T')))))
 
 endmodule

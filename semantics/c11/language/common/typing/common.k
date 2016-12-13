@@ -148,9 +148,9 @@ module C-TYPING-COMMON
      syntax Int ::= numBits(SimpleType) [function]
      rule numBits(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte
 
-     rule min(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
+     rule min(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => 0 -Int (1 <<Int absInt(N -Int 1))
-     rule max(ut(_, bitfieldType(_:SignedBitfieldFieldType, N::Int)))
+     rule max(ut(_, bitfieldType(_:SimpleSignedType, N::Int)))
           => (1 <<Int absInt(N -Int 1)) -Int 1
 
      rule min(ut(_, _:SimpleSignedCharType))
@@ -178,7 +178,7 @@ module C-TYPING-COMMON
 
      rule max(ut(_, bool)) => 1
 
-     rule max(ut(_, bitfieldType(_:UnsignedBitfieldFieldType, N::Int)))
+     rule max(ut(_, bitfieldType(_:SimpleUnsignedType, N::Int)))
           => (1 <<Int absInt(N)) -Int 1
 
      rule max(ut(_, _:SimpleUnsignedCharType))
@@ -198,7 +198,7 @@ module C-TYPING-COMMON
      rule innerType(T:UType) => innerType(type(T))
 
      rule innerType(t(_, _, arrayType(T::Type, _))) => T
-     rule innerType(t(_, _, bitfieldType(T::BitfieldFieldType, _))) => type(T)
+     rule innerType(t(_, _, bitfieldType(T::SimpleType, _))) => type(T)
      rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
      rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
      rule innerType(t(_, _, incompleteArrayType(T::Type))) => T

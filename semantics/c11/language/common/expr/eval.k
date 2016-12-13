@@ -260,7 +260,7 @@ module C-COMMON-EXPR-EVAL
      syntax Type ::= tracePath(Type, Type, Int) [function]
      rule tracePath(T::Type, L::Type, 0) => unlock(0, T)
           requires #effectivelyCompat(L, T)
-     rule tracePath(t(Qs::Quals, Mods::Set, bitfieldType(T'::BitfieldFieldType, N::Int)), L::Type, Offset::Int)
+     rule tracePath(t(Qs::Quals, Mods::Set, bitfieldType(T'::SimpleType, N::Int)), L::Type, Offset::Int)
           => t(Qs, Mods, bitfieldType(T', N))
           requires notBool #effectivelyCompat(L, t(Qs, Mods, bitfieldType(T', N)))
                andBool #effectivelyCompat(L, addQualifiers(Qs, type(T')))

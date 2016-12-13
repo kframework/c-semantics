@@ -59,7 +59,7 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, unionType(S::TagId)))
           => byteAlignofTagged(getTagInfo(S))
 
-     rule byteAlignofType'(t(_, _, bitfieldType(T::BitfieldFieldType, _)))
+     rule byteAlignofType'(t(_, _, bitfieldType(T::SimpleType, _)))
           => byteAlignofType'(type(T))
 
      // TODO(dwightguth): make sure we correctly handle all the corner cases

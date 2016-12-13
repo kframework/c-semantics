@@ -32,8 +32,8 @@ module C-TYPING-MISC
      rule correspondingSignedType(T::UType) => T [owise]
 
      syntax SimpleIntegerType ::= flipSignedness(SimpleIntegerType) [function]
-     rule flipSignedness(bitfieldType(T::BitfieldFieldType, N::Int))
-          => bitfieldType({flipSignedness({T}:>SimpleIntegerType)}:>BitfieldFieldType, N)
+     rule flipSignedness(bitfieldType(T::SimpleType, N::Int))
+          => bitfieldType(flipSignedness({T}:>SimpleIntegerType), N)
 
      rule flipSignedness(_:SimpleUnsignedCharType) => signed-char
      rule flipSignedness(unsigned-short-int) => short-int
@@ -237,7 +237,7 @@ module C-TYPING-MISC
 
      rule getTypesAtOffset(T::Type, 0) => ListItem(T)
           requires notBool isAggregateOrUnionType(T) andBool notBool isBitfieldType(T)
-     rule getTypesAtOffset(t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, N::Int)), 0)
+     rule getTypesAtOffset(t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, N::Int)), 0)
           => ListItem(t(Qs, Mods, bitfieldType(T, N))) ListItem(addQualifiers(Qs, type(T)))
      rule getTypesAtOffset(T:ArrayType, 0)
           => ListItem(T) getTypesAtOffset(addQualifiers(getQualifiers(T), innerType(T)), 0)

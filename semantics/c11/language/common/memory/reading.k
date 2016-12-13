@@ -15,29 +15,25 @@ module C-MEMORY-READING-SYNTAX
      // data, offset, size in bits
      syntax KItem ::= extractBitsFromList(K, Int, Int) [strict(1)]
 
-     // datalist, offset in bits into list, number of bits to extract,
-     // accumulator
-     // TODO(chathhorn): used in ltlmc?
-     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")"
-          [function]
 endmodule
 
 module C-MEMORY-READING
+     imports BOOL
+     imports C-ALIGNMENT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-CONFIGURATION
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-CONFIGURATION
-     imports BOOL
+     imports COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-TYPING-SYNTAX
      imports FLOAT-SYNTAX
      imports INT
      imports K-EQUAL
-     imports COMPAT-SYNTAX
      imports SYMLOC-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-TYPING-SYNTAX
 
      /*@ These rules figure out whether the read should be structural or
      computational, depending on what is being read */
@@ -80,8 +76,8 @@ module C-MEMORY-READING
                andBool (notBool hasTrap(L))
                andBool (notBool hasFloat(L))
           [structural]
-     rule concretize(ut(S::Set, bitfieldType(T::BitfieldFieldType, Len::Int)), dataList(L::List))
-          => joinIntegerBytes(ut(S, bitfieldType(T, Len)), reverseList(L))
+     rule concretize(ut(S::Set, bitfieldType(T::SimpleType, Len::Int)), dataList(L::List))
+          => joinIntegerBytes(ut(S, bitfieldType(T, Len)), L)
           requires (notBool hasUnknown(L))
                andBool (notBool hasTrap(L))
           [structural]
@@ -126,8 +122,10 @@ module C-MEMORY-READING
 
      syntax KItem ::= stripUnknownAux(List, List) [function]
      rule stripUnknown(dataList(L::List)) => stripUnknownAux(L, .List)
-     rule stripUnknownAux((ListItem(piece(unknown(I:Int), PieceLen:Int)) => .List) _:List, _:List (.List => ListItem(piece(I, PieceLen))))
-     rule stripUnknownAux((ListItem(B::Bits) => .List) _:List, _:List (.List => ListItem(B))) [owise]
+     rule stripUnknownAux((ListItem(piece(unknown(I::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(I, PieceLen))))
+     rule stripUnknownAux((ListItem(piece(bitRange(unknown(I::Int), N::Int, M::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(bitRange(I, N, M), PieceLen))))
+     rule stripUnknownAux((ListItem(piece(B1::Bits bit:: B2::Bits, _)) => ListItem(B1) ListItem(B2)) _, _)
+     rule stripUnknownAux((ListItem(B::Bits) => .List) _, _::List (.List => ListItem(B))) [owise]
      rule stripUnknownAux(.List, L::List) => dataList(L)
 
      syntax Bool ::= hasUnknown(List) [function]
@@ -217,13 +215,13 @@ module C-MEMORY-READING
      rule joinIntegerBytes(T::UType, L::List)
           => joinIntegerBytes-aux(T, L, piece(0, 0))
      rule joinIntegerBytes-aux(T::UType,
-               L::List ListItem(piece(encodedValue(Loc:SymLoc, Start::Int, End::Int), Len:Int)), piece(0, 0))
-          => joinPointerBytes(T, L ListItem(piece(encodedValue(Loc, Start, End), Len)))
+               ListItem(piece(encodedValue(Loc:SymLoc, Start::Int, End::Int), Len::Int)) L::List, piece(0, 0))
+          => joinPointerBytes(T, ListItem(piece(encodedValue(Loc, Start, End), Len)) L)
      rule joinIntegerBytes-aux(T::UType,
-               L:List ListItem(piece(N:Int, Len:Int)), piece(N':Int, Len':Int))
+               ListItem(piece(N:Int, Len::Int)) L::List, piece(N':Int, Len'::Int))
           => joinIntegerBytes-aux(T,
                L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-     rule joinIntegerBytes-aux(T::UType, .List, piece(N:Int, Len:Int))
+     rule joinIntegerBytes-aux(T::UType, .List, piece(N:Int, Len::Int))
           => interpret(T, piece(N, Len))
 
      // interpret the values of reading from mem
@@ -238,33 +236,34 @@ module C-MEMORY-READING
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
 
      rule extractBitsFromMem(Loc:SymLoc, T::Type)
-          => extractBitsFromList(
-               readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
+          => extractBitsFromList(readBytes(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
                getBitOffset(Loc), bitSizeofType(T))
           [structural]
 
-     rule extractBitsFromList(dataList(L:List), N:Int, M:Int)
+     rule extractBitsFromList(dataList(L::List), N::Int, M::Int)
           => extractBitsFromList-aux(dataList(explodeToBits(L)), N, M, .List)
           [structural]
+
+     // datalist, offset in bits into list, number of bits to extract, accumulator
+     syntax KItem ::= "extractBitsFromList-aux" "(" K "," Int "," Int "," List ")" [function]
      rule extractBitsFromList-aux(
-               dataList(ListItem(piece(_, 1)) L:List),
-               Offset:Int, NumBits:Int, .List)
+               dataList(ListItem(piece(_, 1)) L::List),
+               Offset::Int, NumBits::Int, .List)
           => extractBitsFromList-aux(
                dataList(L),
                Offset -Int 1, NumBits, .List)
-          requires Offset:Int >Int 0
+          requires Offset >Int 0
           [structural]
      rule extractBitsFromList-aux(
-               dataList(ListItem(piece(N:Bits, 1)) L:List),
-               0, NumBits:Int, Done:List)
+               dataList(ListItem(piece(N::Bits, 1)) L::List),
+               0, NumBits::Int, Done::List)
           => extractBitsFromList-aux(
                dataList(L),
                0, NumBits -Int 1, Done ListItem(piece(N, 1)))
           requires NumBits >Int 0
           [structural]
 
-     rule extractBitsFromList-aux(_, 0, 0, Done:List) => dataList(Done)
+     rule extractBitsFromList-aux(_, 0, 0, Done::List) => dataList(Done)
           [structural]
 
 endmodule
-

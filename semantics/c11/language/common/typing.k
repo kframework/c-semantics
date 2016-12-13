@@ -82,9 +82,9 @@ module C-TYPING-SYNTAX
 
      // Basic types
      syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
-                                 | bitfieldType(BitfieldFieldType, Int)
-     syntax SimpleSignedBitfieldType ::= bitfieldType(SignedBitfieldFieldType, Int)
-     syntax SimpleUnsignedBitfieldType ::= bitfieldType(UnsignedBitfieldFieldType, Int)
+                                 | bitfieldType(SimpleType, Int)
+     syntax SimpleSignedBitfieldType ::= bitfieldType(SimpleSignedType, Int)
+     syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedType, Int)
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
                                | "long-int" | "long-long-int"

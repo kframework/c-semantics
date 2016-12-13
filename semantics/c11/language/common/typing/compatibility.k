@@ -117,8 +117,8 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areBitFieldsCompat(List, List) [function]
      rule #areBitFieldsCompat(
-               ListItem(typedDeclaration(t(_, _, bitfieldType(_::BitfieldFieldType, Size::Int)), _)) Fs::List,
-               ListItem(typedDeclaration(t(_, _, bitfieldType(_::BitfieldFieldType, Size::Int)), _)) Fs'::List)
+               ListItem(typedDeclaration(t(_, _, bitfieldType(_, Size::Int)), _)) Fs::List,
+               ListItem(typedDeclaration(t(_, _, bitfieldType(_, Size::Int)), _)) Fs'::List)
           => #areBitFieldsCompat(Fs, Fs')
      rule #areBitFieldsCompat(
                ListItem(typedDeclaration(T::Type, _)) Fs::List,
@@ -133,12 +133,12 @@ module C-TYPING-COMPATIBILITY
      // compatibility of the type of the struct, hence #areBitFieldsCompat
      // above.
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, _)),
+               t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, _)),
                T'::Type, Cache::Set)
           => #areCompat(t(Qs, Mods, T), T', Cache)
      rule #areCompat(
                T'::Type,
-               t(Qs::Quals, Mods::Set, bitfieldType(T::BitfieldFieldType, _)), Cache::Set)
+               t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, _)), Cache::Set)
           => #areCompat(t(Qs, Mods, T), T', Cache)
 
      rule #areCompat(

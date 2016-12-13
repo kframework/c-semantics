@@ -1,5 +1,6 @@
 module C-MEMORY-WRITING-SYNTAX
      imports BASIC-K
+     imports INT-SYNTAX
      imports STRING-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-TYPING-SORTS
@@ -23,26 +24,27 @@ module C-MEMORY-WRITING-SYNTAX
 endmodule
 
 module C-MEMORY-WRITING
+     imports BOOL
+     imports C-ALIGNMENT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-BITS-SYNTAX
+     imports C-CONFIGURATION
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
-     imports C-CONFIGURATION
-     imports BOOL
+     imports COMMON-SORTS
+     imports COMPAT-SYNTAX
+     imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
+     imports C-TYPING-SYNTAX
      imports FLOAT-SYNTAX
      imports INT
      imports K-EQUAL
      imports K-REFLECTION
      imports MAP
-     imports COMMON-SORTS
-     imports COMPAT-SYNTAX
      imports MEMORY-SYNTAX
-     imports C-BITS-SYNTAX
-     imports C-BITSIZE-SYNTAX
-     imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-SETTINGS-SYNTAX
-     imports C-SYMLOC-SYNTAX
-     imports C-SYNTAX
-     imports C-TYPING-SYNTAX
 
      // Write thread-local or auto.
      rule <k> write(Loc:SymLoc, V:CValue, T:Type)
@@ -200,8 +202,7 @@ module C-MEMORY-WRITING
      rule justBits-aux(I::Int, T::UType)
           => justBits-aux(I +Int max(T) +Int 1, T)
           requires I <Int 0
-     // fixme sNat
-     rule justBits-aux(N:Int, ut(_, bitfieldType(_, Len:Int)))
+     rule justBits-aux(N::Int, ut(_, bitfieldType(_, Len::Int)))
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
 
@@ -224,22 +225,31 @@ module C-MEMORY-WRITING
      syntax KItem ::= calculateNewBytes(Bits, K, Int)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]
 
-     rule calculateNewBytes(N:Bits, dataList(L:List), Offset:Int)
+     rule calculateNewBytes(N::Bits, dataList(L:List), Offset::Int)
           => calculateNewBytes-aux(dataList(explodeToBits(ListItem(N))),
                dataList(explodeToBits(L)), .List, Offset)
           [structural]
 
      syntax KItem ::= "calculateNewBytes-aux" "(" DataList "," DataList "," List "," Int ")"
-     rule calculateNewBytes-aux(dataList(L:List),
-               dataList(ListItem(piece(N:Bits, 1)) L':List), Result:List, Offset:Int)
-          => calculateNewBytes-aux(dataList(L),
-               dataList(L'), Result ListItem(piece(N, 1)), Offset -Int 1)
-     rule calculateNewBytes-aux(dataList(ListItem(piece(N:Bits, 1)) L:List),
-               dataList(ListItem(piece(_, 1)) L':List), Result:List, 0)
-          => calculateNewBytes-aux(dataList(L),
-               dataList(L'), Result ListItem(piece(N, 1)), 0)
+     rule calculateNewBytes-aux(
+               dataList(L::List),
+               dataList(ListItem(piece(N:Bits, 1)) L'::List),
+               Result::List, Offset::Int)
+          => calculateNewBytes-aux(
+               dataList(L),
+               dataList(L'),
+               Result ListItem(piece(N, 1)), Offset -Int 1)
+          requires Offset >Int 0
+     rule calculateNewBytes-aux(
+               dataList(ListItem(piece(N::Bits, 1)) L::List),
+               dataList(ListItem(piece(_, 1)) L'::List),
+               Result::List, 0)
+          => calculateNewBytes-aux(
+               dataList(L),
+               dataList(L'),
+               Result ListItem(piece(N, 1)), 0)
           [structural]
-     rule calculateNewBytes-aux(dataList(.List), dataList(L:List), Result:List, 0)
+     rule calculateNewBytes-aux(dataList(.List), dataList(L::List), Result::List, 0)
           => joinBitsToBytes(Result L)
           [structural]
 
@@ -263,25 +273,25 @@ module C-MEMORY-WRITING
      rule joinBitsToBytes-aux(dataList(.List), dataList(R:List))
           => dataList(R)
 
-     rule explodeToBits(ListItem(K:Bits) L:List)
+     rule explodeToBits(ListItem(K:Bits) L::List)
           => explodeToBits(ListItem(K)) explodeToBits(L)
           requires L =/=K .List
-     rule explodeToBits(ListItem(N:Bits bit:: N':Bits))
+     rule explodeToBits(ListItem(N::Bits bit:: N'::Bits))
           => explodeToBits(ListItem(N)) explodeToBits(ListItem(N'))
-     rule explodeToBits(ListItem(piece(N:Bits, Len:Int)))
+     rule explodeToBits(ListItem(piece(N::Bits, Len::Int)))
           => splinter(N, Len)
           requires Len >Int 0
           [structural]
-     rule explodeToBits(ListItem(piece(_:Bits, 0))) => .List
+     rule explodeToBits(ListItem(piece(_, 0))) => .List
      rule explodeToBits(.List) => .List
 
      syntax List ::= splinter(Bits, Int) [function]
      syntax List ::= "splinter-aux" "(" Bits "," Int "," Int ")" [function]
-     rule splinter(N:Bits, Len:Int) => splinter-aux(N, Len, 0)
-     rule splinter-aux(_, Len:Int, Len:Int) => .List
-     rule splinter-aux(N:Bits, Len:Int, Pos:Int)
-          => splinter-aux(N, Len, Pos +Int 1)
-               ListItem(piece(bitRange(N, Pos, Pos), 1))
+     rule splinter(N::Bits, Len::Int) => splinter-aux(N, Len, 0)
+     rule splinter-aux(_, Len::Int, Len) => .List
+     rule splinter-aux(N::Bits, Len::Int, Pos::Int)
+          => ListItem(piece(bitRange(N, Pos, Pos), 1))
+               splinter-aux(N, Len, Pos +Int 1)
           requires Pos <Int Len
 
      // this general rule is useful for unknowns, abstracts, etc
@@ -308,7 +318,6 @@ module C-MEMORY-WRITING
      rule makeUnknownAux(.List, L::List) => dataList(L)
      rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]
 
-
      syntax DataList ::= splitStructBytes(K, UType, Int) [function]
      syntax DataList ::= #splitStructBytes(K, UType, Int, List)  [function]
 
@@ -318,7 +327,7 @@ module C-MEMORY-WRITING
           dataList(ListItem(piece(N:Bits, PieceLen:Int)) Rest:List),
                T::UType, Len:Int, L:List)
           => #splitStructBytes(dataList(Rest), T, Len -Int 1,
-               ListItem(piece(N, PieceLen)) L)
+               L ListItem(piece(N, PieceLen)))
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
                andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
@@ -328,7 +337,7 @@ module C-MEMORY-WRITING
                T::UType, Len:Int, _:List)
           requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
                andBool notBool isUnknown(N)
-     rule #splitStructBytes(_, _, 0, L:List) => dataList(reverseList(L))
+     rule #splitStructBytes(_, _, 0, L:List) => dataList(L)
 
      syntax Bool ::= isPaddingOffset(Int, K) [function]
      rule isPaddingOffset(Offset::Int, fieldInfo(_, _, _, _, PaddingOffs::Set))

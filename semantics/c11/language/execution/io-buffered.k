@@ -329,8 +329,8 @@ module C-IO-BUFFERED
                                   Offset +Int N) -Int
                            maxInt(FOffset, Offset))
              #else
-               // read the bits of the field that overlap the current byte
-               getZeroedBits(maxInt(FOffset, Offset) -Int FOffset,
+                // read the bits of the field that overlap the current byte
+                getZeroedBits(maxInt(FOffset, Offset) -Int FOffset,
                              (minInt(FOffset +Int bitSizeofType(T),
                                      Offset +Int N) -Int
                               maxInt(FOffset, Offset)), T)

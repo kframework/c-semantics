@@ -94,7 +94,7 @@ module MEMORY
      rule isFullFloat(_, _) => false [owise]
 
      rule joinIntegerBytes(ListItem(piece(N:Int, Len::Int)) L::List, piece(N':Int, Len'::Int))
-          => joinIntegerBytes(L, piece(piece(N, Len) bit:: piece(N', Len'), Len +Int Len'))
+          => joinIntegerBytes(L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
      rule joinIntegerBytes(.List, piece(N:Int, _)) => N
 
 endmodule
