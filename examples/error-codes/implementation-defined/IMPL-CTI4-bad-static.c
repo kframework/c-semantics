@@ -1,5 +1,5 @@
 struct foo {
-  char x : 5;
+  short x : 5;
 };
 
 int main() {
