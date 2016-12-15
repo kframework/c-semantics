@@ -1,10 +1,7 @@
 // Copyright (c) 2015 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
+#include<stdio.h>
 
 int main(void){
-	int x = 0;
-	{
-		int x = 5;
-	}
-	x;
+	printf("%d\n", 0);
 	return 0;
 }

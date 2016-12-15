@@ -16,9 +16,12 @@ CHECK_RESULT_RUN_FATAL = if [ $$? -eq 139 ] ; then echo "passed $<"; cat $@.tmp 
 
 comparison: ${TEST_COMPARISON}
 
-%-bad-static.out: %-bad-static.c
+%-bad-static.out: %-bad-static.kcc
+	@cp $<.out $@
+
+%-bad-static.kcc: %-bad-static.c
 	@echo -n "Compiling $<... "
-	@kcc $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE_FATAL}
+	@kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-bad.kcc: %-bad.c
 	@echo -n "Compiling $<... "
