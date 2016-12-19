@@ -375,4 +375,6 @@ module C-TYPING-SYNTAX
      // Search - anonymous fields
      syntax ProvInfo ::= provInfo(CId, Bool, FieldInfo)
      syntax List  ::= searchAnons(CId, Bool, FieldInfo, Int, List, List) [function]
+
+     syntax UType ::= arrayToPtrType(Type) [function]
 endmodule

@@ -6,7 +6,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkUse(K) [strict]
      syntax KItem ::= checkLoc(SymLoc)
-     syntax UType ::= arrayToPtrType(Type) [function]
 
      syntax KItem ::= getEffectiveType(SymBase)
 endmodule
@@ -80,9 +79,6 @@ module C-COMMON-EXPR-EVAL
           => checkRegister(Loc)
           ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
           [structural]
-
-     rule arrayToPtrType(T::Type)
-          => ut(getModifiers(T), pointerType(innerType(T)))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]
      rule arrayToPtrLoc(Loc::SymLoc, T:FixedLengthArrayType)

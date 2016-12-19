@@ -197,14 +197,17 @@ module C-TYPING-COMMON
 
      rule innerType(T:UType) => innerType(type(T))
 
-     rule innerType(t(_, _, arrayType(T::Type, _))) => T
+     rule innerType(t(Qs::Quals, _, arrayType(T::Type, _))) => addQualifiers(Qs, T)
+     rule innerType(t(Qs::Quals, _, flexibleArrayType(T::Type))) => addQualifiers(Qs, T)
+     rule innerType(t(Qs::Quals, _, incompleteArrayType(T::Type))) => addQualifiers(Qs, T)
+     rule innerType(t(Qs::Quals, _, unspecifiedArrayType(T::Type))) => addQualifiers(Qs, T)
+     rule innerType(t(Qs::Quals, _, variableLengthArrayType(T::Type, _))) => addQualifiers(Qs, T)
      rule innerType(t(_, _, bitfieldType(T::SimpleType, _))) => type(T)
-     rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
      rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
-     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
      rule innerType(t(_, _, pointerType(T::Type))) => T
-     rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
-     rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
+
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
+          => t(Qs +Quals Qs', Mods, T)
 
      rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
           => Qs +Quals getQualifiers(innerType(type(T)))

@@ -15,6 +15,10 @@ module C-TYPING-MISC
 
      //TODO(chathhorn): a lot of junk dumped here.
 
+     rule arrayToPtrType(T:ArrayType)
+          => ut(getModifiers(T), pointerType(innerType(T)))
+     rule arrayToPtrType(T::Type) => utype(T) [owise]
+
      rule simpleType(t(_, _, T::SimpleType)) => T
 
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
@@ -123,20 +127,6 @@ module C-TYPING-MISC
      rule stripConstants(V:RValue) => V [owise]
 
      rule addQualifier(Q:Qualifier, T:Type) => addQualifiers(noQuals +Qual Q, T)
-
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, arrayType(T::Type, N:Int)))
-          => t(Qs +Quals Qs', Mods, arrayType(addQualifiers(Qs', T), N))
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, incompleteArrayType(T:Type)))
-          => t(Qs +Quals Qs', Mods, incompleteArrayType(addQualifiers(Qs', T)))
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, flexibleArrayType(T:Type)))
-          => t(Qs +Quals Qs', Mods, flexibleArrayType(addQualifiers(Qs', T)))
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, unspecifiedArrayType(T:Type)))
-          => t(Qs +Quals Qs', Mods, unspecifiedArrayType(addQualifiers(Qs', T)))
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, variableLengthArrayType(T:Type, N:K)))
-          => t(Qs +Quals Qs', Mods, variableLengthArrayType(addQualifiers(Qs', T), N))
-     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
-          => t(Qs +Quals Qs', Mods, T)
-          [owise]
 
      rule addStorage(S:Storage, T:Type) => addModifier(S, T)
 

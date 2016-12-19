@@ -245,8 +245,7 @@ module C-TYPING-INTERPRETATION
      syntax Type ::= adjustParam(Type) [function]
      rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
           => type(pointerType(t(Qs, Mods, functionType(R, Params))))
-     rule adjustParam(T:ArrayType)
-          => t(getQualifiers(T), getModifiers(T), pointerType(innerType(T)))
+     rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
      rule adjustParam(T::Type) => T [owise]
 
 endmodule
