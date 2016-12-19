@@ -11,9 +11,9 @@ do any installation steps not listed explicitly.
 
 We recommend using Linux or OSX on a computer with at least 1 GB of memory.
 
-On Ubuntu, the installation process for our C semantics can be summarized as:
+On Ubuntu 16.04, the installation process for our C semantics can be summarized as:
 ```
-$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.6-dev diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
+$ sudo apt-get install maven git openjdk-8-jdk flex libgmp-dev libmpfr-dev build-essential cmake zlib1g-dev libclang-3.6-dev llvm-3.6 diffutils libxml-libxml-perl libstring-escape-perl libgetopt-declare-perl opam
 $ git clone --depth=1 https://github.com/runtimeverification/k.git
 $ cd k
 $ mvn package
