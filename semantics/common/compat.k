@@ -53,8 +53,6 @@ module COMPAT-SYNTAX
      syntax KItem ::= "dotK"
                     | lookup(Map, K) [function]
 
-     syntax Bool ::= isKItem(K) [function]
-
      syntax Int ::= ceilDiv(Int, Int) [function]
      syntax List ::= mapList(List, K) [function]
 
@@ -247,9 +245,6 @@ module COMPAT
      //TODO(liyi): might not need this
      rule dotK => .K [structural]
      rule lookup(Key |-> Val:K _:Map, Key:K) => Val
-
-     rule isKItem(_:KItem) => true
-     rule isKItem(_) => false [owise]
 
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 
