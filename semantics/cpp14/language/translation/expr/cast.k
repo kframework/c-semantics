@@ -26,7 +26,10 @@ module CPP-TRANSLATION-EXPR-CAST
                                  type(pointerType(type(V))))
 
      // TODO(dwightguth): 5.4:4.3-5
-     rule ParenthesizedCast(T:CPPType, V:Val) => tryConvert(convertConst(T, V), tryConvert(convertStatic(T, V, hasTrace(ParenthesizedCast(T, V))), tryConvert(.K, .K)))
+     rule ParenthesizedCast(T:CPPType, V:Val)
+          => tryConvert(convertConst(T, V)
+           , tryConvert(convertStatic(T, V, hasTrace(ParenthesizedCast(T, V)))
+           , tryConvert(.K, .K)))
 
      syntax Expr ::= tryConvert(Expr, Expr) [strict(1)]
      rule tryConvert(cannot-convert, E::Expr) => E

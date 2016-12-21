@@ -12,6 +12,12 @@ module CPP-SYMLOC-SYNTAX
      syntax Bool ::= ifFromArrayInBounds(SymLoc, CPPType, Int) [function, klabel(ifFromArrayInBoundsCPP)]
 
      syntax MemberPtr ::= "NullMemberPointer"
+                        | memberPointer(Class, CId, CPPType)
+                        | MemberFunctionPtr
+     syntax MemberFunctionPtr ::= "NullMemberFunctionPointer"
+                                | memberPointer(Class, CId, CPPFunctionType)
+
+     syntax ValResult ::= dataMemberValue(MemberPtr, Trace, CPPType)
 
      syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPClassType, CPPClassType) [function]
                         | baseClassSubobject(MemberPtr, CPPClassType, CPPClassType) [function]

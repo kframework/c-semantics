@@ -117,6 +117,7 @@ module CPP-ABSTRACT-SYNTAX
                     | TemplateSpecializationType(CId, List)
                     | PackExpansionType(AType)
                     | AutoType(Bool)
+                    | Name
 
      context FunctionPrototype(HOLE:CPPTypeExpr, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]

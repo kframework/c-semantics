@@ -18,6 +18,7 @@ module MEMORY-SYNTAX
      syntax DataList ::= splitBytes(EffectiveValue, Int) [function]
 
      syntax IntPtr ::= joinPointerBytes(List, Bits) [function]
+     syntax IntPtr ::= joinSizedPointerBytes(Int, List, Bits) [function]
      syntax Int ::= joinIntegerBytes(List, Bits) [function]
      syntax Float ::= joinFloatBytes(List, Bits) [function]
 
@@ -54,17 +55,19 @@ module MEMORY
      syntax Int ::= "byteMaskSet" [function]
      rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
-     rule joinPointerBytes(ListItem(piece(encodedValue(Loc::EffectiveValue, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
+     rule joinPointerBytes(L::List, Bs::Bits) => joinSizedPointerBytes(cfg:ptrsize, L, Bs)
+
+     rule joinSizedPointerBytes(Size::Int, ListItem(piece(encodedValue(Loc::EffectiveValue, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
                encodedValue(Loc, I::Int, End::Int))
-          => joinPointerBytes(L, encodedValue(Loc, I, End +Int 1))
+          => joinSizedPointerBytes(Size, L, encodedValue(Loc, I, End +Int 1))
           requires Len ==Int cfg:bitsPerByte
                andBool SNatEnd ==Int End +Int 1
-     rule joinPointerBytes(.List, encodedValue(Loc::EffectiveValue, 0, N::Int))
+     rule joinSizedPointerBytes(Size::Int, .List, encodedValue(Loc::EffectiveValue, 0, N::Int))
           => Loc
-          requires N ==Int cfg:ptrsize -Int 1
-     rule joinPointerBytes(.List, encodedValue(Loc::EffectiveValue, Begin::Int, End:Int))
+          requires N ==Int Size -Int 1
+     rule joinSizedPointerBytes(Size::Int, .List, encodedValue(Loc::EffectiveValue, Begin::Int, End:Int))
           => encodedValue(Loc, Begin, End)
-          requires End <Int cfg:ptrsize -Int 1 orBool Begin >Int 0
+          requires End <Int Size -Int 1 orBool Begin >Int 0
 
      rule joinFloatBytes(ListItem(piece(encodedValue(F:Float, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
                encodedValue(F, I::Int, End::Int))

@@ -1,4 +1,5 @@
 module CPP-SETTINGS
+     imports CPP-SETTINGS-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule underlyingType(char) => signed-char
@@ -9,6 +10,8 @@ module CPP-SETTINGS
      rule size_t => unsigned
      rule ptrdiff_t => int
 
+     rule cfg:memberDataPtrSize => 4
+     rule cfg:memberFunctionPtrSize => 8
 endmodule
 
 module CPP-COMPILER-SETTINGS

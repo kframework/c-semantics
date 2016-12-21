@@ -96,7 +96,9 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleFixedArrayType ::= arrayType(CPPType, Int) [klabel(cppArrayType)]
      syntax CPPSimpleIncompleteArrayType ::= incompleteArrayType(CPPType) [klabel(cppIncompleteArrayType)]
      syntax CPPSimplePointerType ::= pointerType(CPPType) [klabel(cppPointerType)]
-     syntax CPPSimpleMemberPointerType ::= memberPointerType(CPPClassType, CPPType)
+     syntax CPPSimpleMemberPointerType ::= CPPSimpleMemberFunctionPointerType
+                                         | memberPointerType(CPPClassType, CPPType)
+     syntax CPPSimpleMemberFunctionPointerType ::= memberPointerType(CPPClassType, CPPFunctionType)
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
      syntax CPPSimpleRVRefType ::= rvRefType(CPPType)
      // TODO: exception specification
@@ -120,7 +122,9 @@ module CPP-TYPING-SYNTAX
      syntax CPPVoidType ::= t(q: Quals, m: Set, st: CPPSimpleVoidType) [klabel(tcpp)]
      syntax CPPArrayType ::= t(q: Quals, m: Set, st: CPPSimpleArrayType) [klabel(tcpp)]
      syntax CPPPointerType ::= t(q: Quals, m: Set, st: CPPSimplePointerType) [klabel(tcpp)]
-     syntax CPPMemberPointerType ::= t(q: Quals, m: Set, st: CPPSimpleMemberPointerType) [klabel(tcpp)]
+     syntax CPPMemberPointerType ::= CPPMemberFunctionPointerType
+                                   | t(q: Quals, m: Set, st: CPPSimpleMemberPointerType) [klabel(tcpp)]
+     syntax CPPMemberFunctionPointerType ::= t(q: Quals, m: Set, st: CPPSimpleMemberFunctionPointerType) [klabel(tcpp)]
      syntax CPPLVRefType ::= t(q: Quals, m: Set, st: CPPSimpleLVRefType) [klabel(tcpp)]
      syntax CPPRVRefType ::= t(q: Quals, m: Set, st: CPPSimpleRVRefType) [klabel(tcpp)]
      syntax CPPNullPtrTType ::= t(q: Quals, m: Set, st: CPPSimpleNullPtrTType) [klabel(tcpp)]

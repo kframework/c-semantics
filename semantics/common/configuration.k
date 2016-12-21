@@ -88,9 +88,13 @@ module COMMON-CONFIGURATION
                <classes color="lightgray">
                     <class multiplicity="*" type="Map">
                          <class-id> .K </class-id>
+                         <class-type> .K </class-type>
                          <cenv> .Map </cenv>
+                         <initializers> .Map </initializers>
                          <ctypes> .Map </ctypes>
                          <access> .Map </access>
+                         <max-offset> 0 </max-offset>
+                         <max-align> 1 </max-align>
                     </class>
                </classes>
           </tu>

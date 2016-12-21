@@ -1,23 +1,12 @@
-module CPP-NAME-SYNTAX
-     imports COMMON-SORTS
-     imports CPP-SORTS
-     syntax Expr ::= nameLookup(CId, Tag)
-endmodule
-
-module CPP-NAME
-     imports CPP-NAME-SYNTAX
-     imports C-CONFIGURATION
+module CPP-TRANSLATION-NAME
+     imports CPP-EXPR-NAME
      imports COLLECTIONS
-     imports K-EQUAL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
-     imports CPP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
-     imports CPP-TYPING-SYNTAX
+     imports CPP-OVERLOADING-SYNTAX
 
      rule CallExpr(Name(NoNNS(), X::CId), Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag()))
      rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList) ...</k>
@@ -40,13 +29,16 @@ module CPP-NAME
      requires T =/=K NoTag()
 
      rule (.K => nsRef(GlobalNamespace())) ~> Name(GlobalNamespace(), _)
-     rule (.K => nameLookup(X, NoTag())) ~> Name(NNS(X::CId), _)
+     rule (.K => nameLookup(X, NoTag())) ~> Name(NNS(X:CId), _)
+     rule (.K => N) ~> Name(NNS(N:Name), _)
+
      rule nsRef(N::Namespace) ~> Name(_, X::CId) => qualifiedNameLookup(X, N)
+     rule (T:CPPClassType => classNameLookup(X, T)) ~> Name(_, X::CId)
 
      syntax Expr ::= argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
                    | #argDependentNameLookup(CId, StrictList, List, Set, CandidateSet)
-                   | nameLookupInNamespace(CId, Namespace, Tag)
                    | qualifiedNameLookup(CId, Namespace)
+                   | classNameLookup(CId, CPPClassType)
      syntax AType ::= resolveElabSpecifier(Tag, K) [strict(2)]
                     | resolveElabSpecifier(K, StrictList) [strict(1, 2), klabel(resolveElabSpecifier2)]
                     | specializeTypeTemplate(QualId, CPPType, List)
@@ -60,11 +52,6 @@ module CPP-NAME
 
      rule <k> nameLookup(X::CId, Tag::Tag) => T ...</k>
           <types>... X |-> (_ Tag |-> T::CPPType) ...</types>
-
-     syntax Namespace ::= getInnermostNamespace(Scope) [function, klabel(getInnermostNamespace1)]
-     rule getInnermostNamespace(blockScope(N:Namespace :: _, _, _)) => N
-     rule getInnermostNamespace(classScope(N:Namespace :: _)) => N
-     rule getInnermostNamespace(namespaceScope(N::Namespace)) => N
 
      rule <k> nameLookup(X::CId, T::Tag) => nameLookupInNamespace(X, getInnermostNamespace(S), T) ...</k>
           <curr-scope> S::Scope </curr-scope>
@@ -86,59 +73,6 @@ module CPP-NAME
           <nenv> NE::Map </nenv>
           <templates>... N :: X |-> (T:CPPFunctionTypeExpr |-> I::TemplateInfo M::Map) ...</templates>
           requires notBool X in_keys(NE)
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag()) => nsRef(NS) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id>
-          <nested-namespaces>... X |-> NS::Namespace ...</nested-namespaces>
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag) => T ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id>
-          <ntypes>... X |-> (_ Tag |-> T::CPPType) ...</ntypes>
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag()) => T ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id>
-          <ntypes>... X |-> (_ |-> T::CPPType) ...</ntypes>
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag()) => templateRef(N :: X, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag) => templateRef(N :: X, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
-          requires getTag(T) ==K Tag
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace :: S::NamespaceSpecifier, T::Tag) => nameLookupInNamespace(X, N, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> N :: S </ns-id>
-          <nenv> NE::Map </nenv>
-          <ntypes> NT::Map </ntypes>
-          <nested-namespaces> NN::Map </nested-namespaces>
-          <templates> TP::Map </templates>
-          <using-namespaces> .Set </using-namespaces>
-          requires notBool X in_keys(NE) andBool notBool X in_keys(NT) andBool notBool X in_keys(NN)
-               andBool notBool N :: S :: X in_keys(TP)
-
-     rule <k> nameLookupInNamespace(X::CId, GlobalNamespace(), _) => notFound(X) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> GlobalNamespace() </ns-id>
-          <nenv> NE::Map </nenv>
-          <ntypes> NT::Map </ntypes>
-          <nested-namespaces> NN::Map </nested-namespaces>
-          <templates> T::Map </templates>
-          <using-namespaces> .Set </using-namespaces>
-          requires notBool X in_keys(NE) andBool notBool X in_keys(NT) andBool notBool X in_keys(NN)
-               andBool notBool GlobalNamespace() :: X in_keys(T)
-
 
      // arg dependent name lookup
      context argDependentNameLookup(_, _, (HOLE:StrictList => types(HOLE)), _)
@@ -263,6 +197,11 @@ module CPP-NAME
           <ns-id> N </ns-id>
           <inline-namespaces> .Set </inline-namespaces>
           <nenv>... X |-> M::Map ...</nenv>
+
+     // class name lookup
+     rule <k> classNameLookup(X::CId, t(... st: classType(C::Class))) ~> N:Name => le(N, noTrace, T) ...</k>
+          <class-id> C </class-id>
+          <cenv>... X |-> (T::CPPType |-> _) ...</cenv>
 
      // elaborated type specifiers
      rule resolveElabSpecifier(_, T:CPPTypeExpr) => T

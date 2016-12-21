@@ -18,6 +18,7 @@ require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
 require "expr/multiplicative.k"
+require "expr/name.k"
 require "expr/relational.k"
 require "expr/unary.k"
 

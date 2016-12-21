@@ -131,7 +131,9 @@ module CPP-CONVERSION
           => prv(1, Tr, T)
           requires Loc =/=K NullPointer
 
+     rule convertType(T:CPPMemberFunctionPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullMemberFunctionPointer, Tr, T)
      rule convertType(T:CPPMemberPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullMemberPointer, Tr, T)
+          requires notBool(isCPPMemberFunctionPointerType(T))
      rule convertType(t(_, _, memberPointerType(D::CPPClassType, T1::CPPType)) #as MemberT::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(B::CPPClassType, T2::CPPType))))
           => prv(derivedClassSuperobject(L, B, D), Tr, MemberT)
           requires B =/=K D andBool isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool getQuals(T2) <=Quals getQuals(T1)
@@ -139,8 +141,22 @@ module CPP-CONVERSION
           => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(Loc::MemberPtr, Tr::Trace, T':CPPMemberPointerType))
           => prv(1, Tr, T)
-          requires Loc =/=K NullMemberPointer
+          requires Loc =/=K NullMemberPointer andBool Loc =/=K NullMemberFunctionPointer
 
+     // Qualification conversions: http://rvdoc.org/C++14/4.4
+     // 1
+     rule convertType(T2:CPPPointerType, prv(L::SymLoc, Tr::Trace, T1:CPPPointerType))
+          => prv(L, Tr, T2)
+          requires isSimilar(T1, T2)
+               andBool cvQualificationSignature(T1) <=QualSig cvQualificationSignature(T2)
+     // 2
+     rule convertType(t(... st: memberPointerType(X2::CPPClassType, T2::CPPType)) #as T::CPPType,
+            prv(L::MemberPtr, Tr::Trace, t(... st: memberPointerType(X1::CPPClassType, T1::CPPType))))
+          => prv(L, Tr, T)
+          requires X1 ==Type X2 andBool isSimilar(T1, T2)
+               andBool cvQualificationSignature(T1) <=QualSig cvQualificationSignature(T2)
+
+     rule convertType(_::CPPType, _::PRExpr) => cannot-convert [owise]
 
      rule isSimilar(t(_, _, pointerType(T1::CPPType)), t(_, _, pointerType(T2::CPPType)))
           => isSimilar(T1, T2)
@@ -308,9 +324,9 @@ module CPP-CONVERSION
           => computeLeQualSig(Qs1, Qs2, getDifferentCVOffset(Qs1, Qs2, 0, 0), 0)
 
      syntax Bool ::= computeLeQualSig(List, List, Int, Int) [function]
-     rule computeLeQualSig((ListItem(Q::Quals) => .List) _, (ListItem(Q) => .List) _, _, (K::Int => K +Int 1))
      rule computeLeQualSig((ListItem(Q1::Quals) => .List) _, (ListItem(Q2::Quals) => .List) _, J::Int, (K::Int => K +Int 1))
-          requires J <=Int K andBool Q1 <=Quals Q2
+          requires Q1 <=Quals Q2                            // 4.4:4.2
+           andBool (J <=Int K orBool Const() inQuals Q2)    // 4.4:4.3
      rule computeLeQualSig(.List, .List, _, _) => true
      rule computeLeQualSig(_, _, _, _) => false [owise]
      

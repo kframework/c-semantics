@@ -32,6 +32,7 @@ module CPP-TYPING-CANONICALIZATION
      rule BuiltinType(LongDouble()) => type(long-double)
 
      rule PointerType(T:CPPTypeExpr) => t(noQuals, .Set, pointerType(T))
+     rule MemberPointerType(D:CPPClassType, T:CPPType) => t(noQuals, .Set, memberPointerType(D, T))
      rule ArrayType(T:CPPTypeExpr, NoExpression()) => t(noQuals, .Set, incompleteArrayType(T))
      rule ArrayType(T:CPPTypeExpr, I:Int) => t(noQuals, .Set, arrayType(T, I))
      rule LValRefType(T:CPPTypeExpr) => t(noQuals, .Set, lvRefType(T))

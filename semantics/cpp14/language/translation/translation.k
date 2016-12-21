@@ -61,7 +61,7 @@ module CPP-TRANSLATION
      imports CPP-TRANSLATION-ERROR
      imports CPP-TRANSLATION-INIT
      imports CPP-TRANSLATION-IO
-     imports CPP-NAME
+     imports CPP-TRANSLATION-NAME
      imports CPP-OPERATORS
      imports CPP-OVERLOADING
      imports CPP-PROCESS-LABEL

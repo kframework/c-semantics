@@ -37,7 +37,7 @@ module CPP-DECL-TEMPLATE
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
-     imports CPP-NAME-SYNTAX
+     imports CPP-EXPR-NAME-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX

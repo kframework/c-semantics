@@ -97,6 +97,7 @@ module CPP-DYNAMIC-SYNTAX
                   | NNS "::" NNSSpecifier [klabel(NestedName)]
      syntax NNSSpecifier ::= NNS(CId)
                            | TemplateNNS(CId)
+                           | NNS(Name)
 
      syntax Namespace ::= Namespace "::" NamespaceSpecifier
                         | NoNamespace() // signifies a declaration at block scope
@@ -184,7 +185,7 @@ module CPP-DYNAMIC
      imports CPP-DYNAMIC-SYNTAX
      imports C-CONFIGURATION
      imports STRING
-     imports SYMLOC-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 

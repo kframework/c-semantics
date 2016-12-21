@@ -33,7 +33,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
-     imports CPP-NAME-SYNTAX
+     imports CPP-EXPR-NAME-SYNTAX
      imports CPP-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX

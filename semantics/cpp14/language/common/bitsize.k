@@ -8,13 +8,16 @@ endmodule
 module CPP-BITSIZE
      imports CPP-BITSIZE-SYNTAX
      imports INT
-     imports C-SETTINGS-SYNTAX
+     imports CPP-SETTINGS-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      syntax Int ::= byteSizeofType(CPPSimpleType) [klabel(byteSizeofSimpleTypeCpp), function]
      rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
 
      rule byteSizeofType(pointerType(_)) => cfg:ptrsize
+     rule byteSizeofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrSize
+     rule byteSizeofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrSize
+          requires notBool(isCPPFunctionType(T))
      rule byteSizeofType(arrayType(t(_, _, S::CPPSimpleType), N::Int)) => N *Int byteSizeofType(S)
      rule byteSizeofType(functionType(_, _, _, _)) => 0
      rule byteSizeofType(bool) => cfg:sizeofBool
