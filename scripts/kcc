@@ -204,7 +204,7 @@ my $spec = q(
     {
       $self->version();
       my $profiles = join("\n	                    ", @main::profiles);
-      print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n");
+      print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
       exit 0;
     }
   -Version		[ditto] [undocumented]
