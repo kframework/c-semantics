@@ -881,8 +881,12 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
-     rule nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T))
-          requires utype(T) ==Type T' orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
+     rule <k> nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T)) ...</k>
+          <format-state> State:String </format-state>
+          <format-length> Length:String </format-length>
+          requires utype(T) ==Type T'
+               orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T'))
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
@@ -890,7 +894,10 @@ module LIBC-STDIO
           ~> nextvarg(tv(V:CValue, T'::UType), T:Type)
           ...</k>
           <format-state> State:String </format-state>
-          requires utype(T) =/=Type T' andBool notBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
+          <format-length> Length:String </format-length>
+          requires notBool (utype(T) ==Type T'
+               orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T')))
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
@@ -1077,6 +1084,12 @@ module LIBC-STDIO
      rule getFormatType-aux("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType-aux("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType-aux("%n", "t") => type(pointerType(type(cfg:sizeut)))
+
+     syntax Bool ::= isPointerToCharType(UType) [function]
+     rule isPointerToCharType(ut(_, pointerType(t(_, _, char)))) => true
+     rule isPointerToCharType(ut(_, pointerType(t(_, _, unsigned-char)))) => true
+     rule isPointerToCharType(ut(_, pointerType(t(_, _, signed-char)))) => true
+     rule isPointerToCharType(_) => false [owise]
 
 endmodule
 
