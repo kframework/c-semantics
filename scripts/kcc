@@ -235,6 +235,8 @@ my $spec = q(
   -E			Preprocess only.
   -I <dir>		Look for headers in <dir>.
     { push(@main::cppArgs, '-I', $dir); }
+  -iquote <dir>		Look for headers with quotation marks in <dir>.
+    { push(@main::cppArgs, '-iquote', $dir); }
   -isystem <dir>	Look for system headers in <dir>.
     { push(@main::cppArgs, '-isystem', $dir); }
   -include <file>	Add header to file during preprocessing.
