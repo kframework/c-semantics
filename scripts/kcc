@@ -671,7 +671,7 @@ sub compile {
     my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang eq 'c++'));
     checkError($retval, $oval, 1);
   } else {
-    my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval);
+    my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
   }
 }
@@ -808,7 +808,7 @@ sub preprocess {
   if (!$args->{'-no-pedantic'}) {
     push(@main::cppArgs, '-pedantic');
   }
-  if ($isCPP) {
+  if ($isCPP eq 'c++') {
     my @ppArgs = ("$profileDirectory/cpp-pp",
       @main::cppArgs, $inputFile, '-o', $output);
 
