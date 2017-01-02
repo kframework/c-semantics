@@ -4,6 +4,7 @@ module LIBC-SETJMP
      imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -130,5 +131,12 @@ module LIBC-SETJMP
           <jmp-bufs>...
                N |-> jmpBuf(K:K, (<thread-local> C::Bag </thread-local>))
           ...</jmp-bufs>
+          [structural]
+     rule <k> (.K => UNDEF("SETJMP1",
+               "'longjmp' invoked to restore a nonexistent environment."))
+               ~> longjmp'(tv(N:Int, _), _)
+          ...</k>
+          <jmp-bufs> JmpBufs:Map </jmp-bufs>
+          requires notBool N in_keys(JmpBufs)
           [structural]
 endmodule

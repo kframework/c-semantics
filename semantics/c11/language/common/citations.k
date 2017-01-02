@@ -307,6 +307,8 @@ module C-CITATIONS
   rule sourceReferences("UB-PTHREAD7", "POSIX 2008") => ListItem(reference("pthread_mutex_unlock", ""))
   rule sourceReferences("UB-PTHREAD8", "CERT-C") => ListItem(reference("MSC15-C", ""))
   rule sourceReferences("UB-PTHREAD8", "POSIX 2008") => ListItem(reference("pthread_mutex_trylock", ""))
+  rule sourceReferences("UB-SETJMP1", "C11") => ListItem(reference("7.13.2.1", "2")) ListItem(reference("J.2", "1 item 126"))
+  rule sourceReferences("UB-SETJMP1", "CERT-C") => ListItem(reference("MSC22-C", ""))
   rule sourceReferences("UB-STDARG1", "C11") => ListItem(reference("6.9.1", "8")) ListItem(reference("J.2", "1 item 87"))
   rule sourceReferences("UB-STDARG1", "CERT-C") => ListItem(reference("DCL10-C", ""))
   rule sourceReferences("UB-STDARG2", "C11") => ListItem(reference("7.16.1.4", "3")) ListItem(reference("J.2", "1 item 142"))
