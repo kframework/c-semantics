@@ -161,15 +161,30 @@ module LIBC-STDIO
      // to do this
      rule [printf]:
           builtin*("printf", Format:RValue, VarArgs:List)
-          => new-printf-aux(formatter(getString(Format), VarArgs))
+          => printf(formatter(getString(Format), VarArgs))
           [structural]
-
-     syntax KItem ::= "new-printf-aux" "(" K ")" [strict]
+     syntax KItem ::= printf(K) [strict]
      rule [printf-done]:
-          new-printf-aux(formattedResult(S:String))
+          printf(formattedResult(S:String))
           => writeToFD(1, S)
                ~> flush(1)
                ~> tv(lengthString(S), utype(int))
+          [structural]
+
+     rule [vprintf]:
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vprintf", _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDIO3", "'vprintf': uninitialized va_list argument."))
+               ~> builtin("vprintf", _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool VaList in_keys(VaLists)
+          [structural]
+     rule H:HeatList ~> builtin("vprintf", Format::RValue, _)
+          => printf(formatter(getString(Format), hListToList(H)))
+          requires isKResult(H)
           [structural]
 
      syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
@@ -181,6 +196,22 @@ module LIBC-STDIO
           sprintf(formattedResult(S:String), Dest:SymLoc)
           => writeString(Dest, S)
                ~> tv(lengthString(S), utype(int))
+          [structural]
+
+     rule [vsprintf]:
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDIO4", "'vsprintf': uninitialized va_list argument."))
+               ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool VaList in_keys(VaLists)
+          [structural]
+     rule H:HeatList ~> builtin("vsprintf", tv(Dest::SymLoc, _), Format::RValue, _)
+          => sprintf(formatter(getString(Format), hListToList(H)), Dest)
+          requires isKResult(H)
           [structural]
 
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
@@ -203,9 +234,17 @@ module LIBC-STDIO
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDIO5", "'vsnprintf': uninitialized va_list argument."))
+               ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool VaList in_keys(VaLists)
+          [structural]
      rule H:HeatList ~> builtin("vsnprintf", tv(Dest::SymLoc, _), tv(Len::Int, _), Format::RValue, _)
           => snprintf(formatter(getString(Format), hListToList(H)), Dest,  Len)
           requires isKResult(H)
+          [structural]
 
      syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:

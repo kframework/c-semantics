@@ -1,0 +1,8 @@
+ 'vsprintf': uninitialized va_list argument.
+   at vsprintf(UB-STDIO4-bad.c:7:7)
+   by main(UB-STDIO4-bad.c:7:7)
+  Undefined behavior (UB-STDIO4).
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
+   see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Nothing
