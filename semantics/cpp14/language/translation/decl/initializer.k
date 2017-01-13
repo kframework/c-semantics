@@ -83,16 +83,43 @@ module CPP-DECL-INITIALIZER
           requires notBool isCPPClassType(T) 
                andBool notBool (isCPPArrayType(T) andBool isCPPCharType(innerType(T)) andBool size(L) ==Int 1 andBool getKLabel(L[0]) ==K #klabel(`StringLiteral`))
 
+     // 8.5.4:3.1
+     rule listInit(Base::LVal, T::CPPType, D::Duration, L::List)
+          => aggInit(Base, T, D, L)
+          requires isCPPClassType(T) andBool isAggregateType(T)
+
      rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), _, L::List)
      rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), D::Duration, L::List)
           => arrayInit(Base, t(Q, Mods, arrayType(T, N)), D, 0, L, .K)
+
+     rule aggInit(Base::LVal, T:CPPClassType, D::Duration, L::List)
+          => classAggInit(Base, D, getClassInfo(T), L)
+
+     syntax KItem ::= classAggInit(LVal, Duration, ClassInfo, List)
+                    | classAggInit(LVal, Duration, fields: List, initList: List, initializers: Map, initExp: Expr)
+
+     rule classAggInit(Base::LVal, D::Duration, CI::ClassInfo, L::List)
+          => classAggInit(Base, D, L, getNonStaticDataMembers(CI), getDataMembersInitializers(CI), .K)
+
+     rule classAggInit(Base::LVal, _, .List, .List, _, E::Expr) => compoundInit(E, Base)
+     rule (.K => figureInit(le(Base . no-template Name(NoNNS(), F), noTrace, T), T, D, Init, Init))
+          ~> classAggInit(Base::LVal, D::Duration, .List, (ListItem(F:CId) => .List) FL::List, (F::CId |-> (T::CPPType |-> Init::Expr)) IM::Map, E::Expr)
+     rule (V:Val => .K) ~> classAggInit(... initExp: (E::Expr => compoundInit(E, V)))
+
+     syntax Bool ::= isNarrowingConversion(CPPType, CPPType) [function]
+
+     syntax List ::= getNonStaticDataMembers(ClassInfo) [function]
+     rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+     syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
+     rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
+
      rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, D, Init, Init))
           ~> arrayInit(Base::LVal, t(_, _, arrayType(T::CPPType, _)), D::Duration, (I::Int => I +Int 1), (ListItem(Init::Init) => .List) _, _)
           requires notBool isAggregateType(T) orBool isBraceInit(Init)
      rule (V:Val => .K)
           ~> arrayInit(_, _, _, _, _, (E::Expr => compoundInit(E, V)))
      rule arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), _, Size::Int, .List, E::Expr)
-          => E
+          => compoundInit(E, Base)
 
      rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], innerType(T), D, CharacterLiteral(C, ordChar(firstChar(S))), CharacterLiteral(C, ordChar(firstChar(S))))) ~> strInit(Base:LVal, T::CPPArrayType, D::Duration, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
           requires S =/=String ""
@@ -101,10 +128,10 @@ module CPP-DECL-INITIALIZER
      rule (V:Val => .K)
           ~> strInit(_, _, _, _, _, _, (E::Expr => compoundInit(E, V)))
      rule strInit(Base:LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), _, _, "", N, E::Expr)
-          => E
+          => compoundInit(E, Base)
 
      rule compoundInit(.K, E::Expr) => E
-     rule compoundInit(V:TExpr, LV:LExpr) => le(compoundInit(stripCompoundInit(V), LV), noTrace, type(LV))
+     rule compoundInit(V:TExpr, LV:LVal) => le(compoundInit(stripCompoundInit(V), LV), noTrace, type(LV))
      rule compoundInit(V:Val, E::Expr) => E
           requires notBool isTExpr(V)
      syntax Val ::= stripCompoundInit(Val) [function]

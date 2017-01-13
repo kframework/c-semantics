@@ -15,4 +15,6 @@ module CPP-ALIGNMENT
      imports CPP-TYPING-SYNTAX
 
      rule byteAlignofType(t(_, _, _:CPPSimpleCharType)) => cfg:alignofSignedChar
+     rule byteAlignofType(t(_, _, int)) => cfg:alignofInt
+     rule byteAlignofType(_:CPPPointerType) => cfg:alignofPointer
 endmodule

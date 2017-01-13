@@ -91,7 +91,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
      syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
- 
+
      syntax UnnamedNamespace
      syntax NNS ::= NoNNS()
                   | NNS "::" NNSSpecifier [klabel(NestedName)]

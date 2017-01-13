@@ -34,7 +34,6 @@ module CPP-EXECUTION
      imports CPP-EXECUTION-ERROR
      imports CPP-EXECUTION-INIT
      imports CPP-EXECUTION-IO
-     imports CPP-EXECUTION-EXPR-NAME
 
      imports CPP-DECL-DECLARATOR
      imports CPP-DECL-INITIALIZER
@@ -44,6 +43,7 @@ module CPP-EXECUTION
      imports CPP-EXPR-FUNCTION-CALL
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LOGICAL
+     imports CPP-EXECUTION-EXPR-NAME
      imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE
 

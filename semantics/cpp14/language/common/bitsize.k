@@ -3,6 +3,8 @@ module CPP-BITSIZE-SYNTAX
 
      syntax Int ::= byteSizeofType(CPPType) [klabel(byteSizeofTypeCpp), function]
      syntax Int ::= bitSizeofType(CPPType) [klabel(bitSizeofTypeCpp), function]
+     // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
+     syntax Int ::= padTo(Int, Int) [function]
 endmodule
 
 module CPP-BITSIZE
@@ -10,9 +12,20 @@ module CPP-BITSIZE
      imports INT
      imports CPP-SETTINGS-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports C-CONFIGURATION
+
+     rule padTo(N::Int, A::Int) => N
+          requires (N %Int (A *Int cfg:bitsPerByte)) ==Int 0
+     rule padTo(N::Int, A::Int)
+          => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
      syntax Int ::= byteSizeofType(CPPSimpleType) [klabel(byteSizeofSimpleTypeCpp), function]
-     rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
+     rule byteSizeofType(T:CPPClassType) => byteSizeofClass(getClassInfo(T))
+     rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T) [owise]
+
+     syntax Int ::= byteSizeofClass(ClassInfo) [function]
+     rule byteSizeofClass(<class>... <max-offset> V::Int </max-offset> <max-align> A::Int </max-align> ...</class>)
+          => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte)
 
      rule byteSizeofType(pointerType(_)) => cfg:ptrsize
      rule byteSizeofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrSize

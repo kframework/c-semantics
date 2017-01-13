@@ -89,12 +89,16 @@ module COMMON-CONFIGURATION
                     <class multiplicity="*" type="Map">
                          <class-id> .K </class-id>
                          <class-type> .K </class-type>
+                         <is-aggregate> true </is-aggregate>
+                         <base-classes> .List </base-classes>
                          <cenv> .Map </cenv>
                          <initializers> .Map </initializers>
                          <ctypes> .Map </ctypes>
+                         <non-static-data-members> .List </non-static-data-members>
                          <access> .Map </access>
                          <max-offset> 0 </max-offset>
                          <max-align> 1 </max-align>
+                         <access-specifier> .K </access-specifier>
                     </class>
                </classes>
           </tu>

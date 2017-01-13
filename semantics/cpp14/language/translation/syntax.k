@@ -248,6 +248,8 @@ module CPP-ABSTRACT-REWRITING
      imports CPP-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
 
+     rule MemberExpr(false, false, N::Name, E::Expr) => E . no-template N [anywhere]
+
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]

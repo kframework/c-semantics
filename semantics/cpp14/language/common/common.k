@@ -19,6 +19,7 @@ require "expr/cast.k"
 require "expr/eval.k"
 require "expr/multiplicative.k"
 require "expr/name.k"
+require "expr/members.k"
 require "expr/relational.k"
 require "expr/unary.k"
 
@@ -51,6 +52,7 @@ module CPP-COMMON
      imports CPP-EXPR-CAST
      imports CPP-EXPR-EVAL
      imports CPP-EXPR-MULTIPLICATIVE
+     imports CPP-EXPR-MEMBERS
      imports CPP-EXPR-RELATIONAL
      imports CPP-EXPR-UNARY
 

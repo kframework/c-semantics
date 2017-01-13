@@ -159,6 +159,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPVariadic ::= "variadic"
 
      syntax Quals ::= getQuals(CPPType) [function]
+     syntax CPPType ::= addQuals(Quals, CPPType) [function]
 
      syntax Bool ::= isAdjustedType(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionTypeExpr ::= adjustFunctionType(CPPFunctionTypeExpr) [function]
@@ -268,6 +269,8 @@ module CPP-TYPING
      rule getTag(t(_, _, classType(_ :: Class(Tag::Tag, _, _)))) => Tag
      rule getTag(_) => .K [owise]
 
+     rule addQuals(Qs'::Quals, t(Qs::Quals, Mods::Set, T::CPPSimpleType))
+          => t(Qs +Quals Qs', Mods, T)
      rule getQuals(t(Q::Quals, _, _)) => Q
 
      rule getClassInfo(T::CPPClassType) => #getClassInfo(T, #configuration)
@@ -286,6 +289,8 @@ module CPP-TYPING
      rule isAggregateType(T:CPPClassType) => isAggregateClass(getClassInfo(T))
      rule isAggregateType(_) => false [owise]
      syntax Bool ::= isAggregateClass(ClassInfo) [function]
+
+     rule isAggregateClass(<class>... <is-aggregate> B::Bool </is-aggregate> ...</class>) => B
 
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, signed-char)) => t(Q, Mods, unsigned-char)
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, short)) => t(Q, Mods, unsigned-short)

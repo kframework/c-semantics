@@ -62,7 +62,13 @@ module CPP-DECL-CLASS
             // injected class name
             <ctypes> X |-> (ClassKey |-> T) </ctypes>
             <access> X |-> Public() </access>
+            <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
+
+     syntax KItem ::= getDefaultAccessType(Tag) [function]
+     rule getDefaultAccessType(Class()) => Private()
+     rule getDefaultAccessType(Struct()) => Public()
+     rule getDefaultAccessType(Union()) => Public()
 
      rule FieldDecl(NoNNS(), X::CId, T::CPPType, Init::Expr) => declareField(X, T, Init)
 
@@ -73,24 +79,31 @@ module CPP-DECL-CLASS
           <class>...
             <class-type> Key::ClassKey </class-type>
             <class-id> C </class-id>
-            <cenv> CE::Map => CE[X, T <- pad(V,T)] </cenv>
+            <is-aggregate> B:Bool => B andBool (AS ==K Public()) </is-aggregate>
+            <non-static-data-members>... .List => ListItem(X) </non-static-data-members>
+            <access-specifier> AS::AccessSpecifier </access-specifier>
+            <access> AE::Map => AE[X <- AS] </access>
+            <cenv> CE::Map => CE[X, T <- padOrNot(V, T, Key)] </cenv>
             <initializers> Inits::Map => Inits[X, T <- Init] </initializers>
-            <max-offset> V::Int => pad(V,T) +Int bitSizeofType(T) </max-offset>
+            <max-offset> V::Int => updateMaxOffset(V, T, Key) </max-offset>
             <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
           ...</class>
           requires Key =/=K Union()
 
-     rule <k> declareField(X::CId, T::CPPType, Init::Expr) => .K ...</k>
+     rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
           <curr-scope> classScope(C::Class) </curr-scope>
           <class>...
-            <class-type> Union() </class-type>
             <class-id> C </class-id>
-            <cenv> CE::Map => CE[X, T <- 0] </cenv>
-            <initializers> Inits::Map => Inits[X, T <- Init] </initializers>
-            <max-offset> V::Int => maxInt(V, bitSizeofType(T)) </max-offset>
-            <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
+            <access-specifier> _ => AS </access-specifier>
           ...</class>
 
+     syntax Int ::= updateMaxOffset(Int, CPPType, ClassKey) [function]
+     rule updateMaxOffset(V::Int, T::CPPType, Union()) => maxInt(V, bitSizeofType(T))
+     rule updateMaxOffset(V::Int, T::CPPType, _) => pad(V,T) +Int bitSizeofType(T)  [owise]
+
+     syntax Int ::= padOrNot(Int, CPPType, ClassKey) [function]
+     rule padOrNot(_, _, Union()) => 0
+     rule padOrNot(V::Int, T::CPPType, _) => pad(V, T) [owise]
 
      // TODO(traiansf): Handle pack directives
      // TODO(traiansf): Handle bit fields
@@ -116,12 +129,5 @@ module CPP-DECL-CLASS
      // Packed bitfields and non-packed bitfields that don't cross an alignment
      // boundary have 1-bit alignment (no padding).
 //     rule pad(V::Int, _) => V [owise]
-
-     // Round up to the nearest multiple of the second arg * cfg:bitsPerByte.
-     syntax Int ::= padTo(Int, Int) [function]
-     rule padTo(N::Int, A::Int) => N
-          requires (N %Int (A *Int cfg:bitsPerByte)) ==Int 0
-     rule padTo(N::Int, A::Int)
-          => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
 endmodule
