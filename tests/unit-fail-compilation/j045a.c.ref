@@ -3,4 +3,4 @@ j045a.c:2:7: error: Division by 0.
    see C11 section 6.5.5:5 http://rvdoc.org/C11/6.5.5
    see C11 section J.2:1 item 45 http://rvdoc.org/C11/J.2
    see CERT-C section INT33-C http://rvdoc.org/CERT-C/INT33-C
-Translation failed (config dumped). Run kcc -d j045a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j045a.c to see commands run.

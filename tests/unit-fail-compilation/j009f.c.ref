@@ -2,4 +2,4 @@ j009f.c:6:7: error: Trying to look up identifier x, but no such identifier is in
   Syntax error (SE-CID1).
    see C11 section 6.5.1:2 http://rvdoc.org/C11/6.5.1
    see CERT-C section DCL31-C http://rvdoc.org/CERT-C/DCL31-C
-Translation failed (config dumped). Run kcc -d j009f.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j009f.c to see commands run.

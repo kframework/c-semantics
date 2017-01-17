@@ -23,19 +23,19 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %-link1.c.kcc.out: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@../../dist/kcc $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.C.kcc.out: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/kcc $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc.out: %.c
 	@echo -n "Compiling $<... "
-	@../../dist/kcc $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.C.kcc.out: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/kcc $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/kcc -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 
 %.cmp: %.kcc.out %.ref

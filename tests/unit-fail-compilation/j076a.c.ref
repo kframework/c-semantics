@@ -2,4 +2,4 @@ j076a.c:2:1: error: Conflicting types for a.
   Constraint violation (CV-TDG10).
    see C11 section 6.7:4 http://rvdoc.org/C11/6.7
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j076a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j076a.c to see commands run.

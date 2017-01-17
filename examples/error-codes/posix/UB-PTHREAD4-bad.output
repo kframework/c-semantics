@@ -1,7 +1,7 @@
  Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.
    at pthread_mutex_lock(UB-PTHREAD4-bad.c:15:5)
    by locker_thread(UB-PTHREAD4-bad.c:15:5)
-  Mutex previously locked
+  Locked here:
    at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
    by locker_thread(UB-PTHREAD4-bad.c:14:5)
   Undefined behavior (UB-PTHREAD4).
@@ -10,7 +10,7 @@
  Destroying a locked mutex.
    at pthread_mutex_destroy(UB-PTHREAD4-bad.c:34:5)
    by main(UB-PTHREAD4-bad.c:34:5)
-  Mutex previously locked
+  Locked here:
    at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
    by locker_thread(UB-PTHREAD4-bad.c:14:5)
   Undefined behavior (UB-PTHREAD2).

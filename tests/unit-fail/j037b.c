@@ -1,5 +1,5 @@
 int main(void) {
-      int x = 5;
-      *((int**)&x);
+      long x = 5;
+      *((long**)&x);
       return 0;
 }

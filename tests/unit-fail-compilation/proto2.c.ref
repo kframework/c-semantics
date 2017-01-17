@@ -1,2 +1,2 @@
 proto2.c[2:6-16] : undeclared identifier in parameter identifier list
-Translation failed (config dumped). Run kcc -d proto2.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors proto2.c to see commands run.

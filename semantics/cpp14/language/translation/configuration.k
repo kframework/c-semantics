@@ -32,16 +32,18 @@ module C-CONFIGURATION
      <elab> .K </elab>
      <elab-stack> .List </elab-stack>
 
-     <curr-tu color="lightgray"> "" </curr-tu>
-     <curr-lang-linkage> CPPLinkage </curr-lang-linkage>
-     <curr-extern> false </curr-extern>
-     <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
-     <curr-eval-context color="lightgray"> eval </curr-eval-context>
-     <curr-template-context> noTemplate </curr-template-context>
-     <curr-program-loc color="black">
-          UnknownCabsLoc
-     </curr-program-loc>
-     <curr-function> .K </curr-function>
+     <curr-state>
+         <curr-tu color="lightgray"> "" </curr-tu>
+         <curr-lang-linkage> CPPLinkage </curr-lang-linkage>
+         <curr-extern> false </curr-extern>
+         <curr-scope> namespaceScope(GlobalNamespace()):Scope </curr-scope>
+         <curr-eval-context color="lightgray"> eval </curr-eval-context>
+         <curr-template-context> noTemplate </curr-template-context>
+         <curr-program-loc color="black">
+               UnknownCabsLoc
+         </curr-program-loc>
+         <curr-function> .K </curr-function>
+     </curr-state>
 
      <block-stack color="violet"> .List </block-stack>
      <block-control>
@@ -56,9 +58,9 @@ module C-CONFIGURATION
 
 <generated-annotations> .List </generated-annotations>
 
-<previous-errors> .Set </previous-errors>
-
 <options> $OPTIONS:Set </options>
 </T>
+
+<json> $JSON:String </json>
 
 endmodule

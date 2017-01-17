@@ -11,7 +11,6 @@ require "settings.k"
 require "symloc.k"
 require "syntax.k"
 require "typing.k"
-require "citations.k"
 
 require "expr/additive.k"
 require "expr/bitwise.k"
@@ -43,7 +42,6 @@ module CPP-COMMON
      imports CPP-REFERENCE
      imports CPP-SYMLOC
      imports C-CPP-TYPING
-     imports CPP-CITATIONS
 
      imports CPP-SETTINGS
 

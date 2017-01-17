@@ -1,4 +1,5 @@
  Memory malloced but never freed.
+  Malloced here:
    at malloc(L-CEIE1-bad.c:9:5)
    by main(L-CEIE1-bad.c:9:5)
   Possible unintended behavior (L-CEIE1).

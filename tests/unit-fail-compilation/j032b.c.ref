@@ -1,2 +1,2 @@
 j032b.c[2:7-10] : syntax error
-Translation failed (config dumped). Run kcc -d j032b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j032b.c to see commands run.

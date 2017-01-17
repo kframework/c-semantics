@@ -5,4 +5,4 @@ j062b.c:7:7: error: Found pointer that refers outside the bounds of an object + 
    see CERT-C section ARR30-C http://rvdoc.org/CERT-C/ARR30-C
    see CERT-C section ARR37-C http://rvdoc.org/CERT-C/ARR37-C
    see CERT-C section STR31-C http://rvdoc.org/CERT-C/STR31-C
-Translation failed (config dumped). Run kcc -d j062b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j062b.c to see commands run.

@@ -3,4 +3,4 @@ j070a.c:5:1: error: Declaration for inline function not defined in the same tran
    see C11 section 6.7.4:7 http://rvdoc.org/C11/6.7.4
    see C11 section J.2:1 item 70 http://rvdoc.org/C11/J.2
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-Translation failed (config dumped). Run kcc -d j070a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j070a.c to see commands run.

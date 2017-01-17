@@ -167,12 +167,12 @@ module C-CONFIGURATION
 
 <error-cell multiplicity="?" color="black"> .K </error-cell>
 
-<previous-errors> .Set </previous-errors>
-
 <status> initializingTu </status>
 
 <options> $OPTIONS:Set </options>
 
 </T>
+
+<json> $JSON:String </json>
 
 endmodule

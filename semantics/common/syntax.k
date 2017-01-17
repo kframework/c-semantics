@@ -11,6 +11,7 @@ module COMMON-SORTS
      syntax EffectiveValue ::= Int | Float
      syntax LanguageLinkage
      syntax Namespace
+     syntax Scope
 endmodule
 
 module COMMON-SYNTAX

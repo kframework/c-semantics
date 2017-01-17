@@ -3,4 +3,4 @@ j020c-link1.c:4:3: error: Trying to convert an incomplete lvalue not of array ty
    see C11 section 6.3.2.1:2 http://rvdoc.org/C11/6.3.2.1
    see C11 section J.2:1 item 20 http://rvdoc.org/C11/J.2
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-Translation failed (config dumped). Run kcc -d j020c-link1.c j020c-link2.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j020c-link1.c j020c-link2.c to see commands run.

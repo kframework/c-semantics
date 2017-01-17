@@ -3,7 +3,7 @@
   Undefined behavior (UB-EIO2).
    see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6
    see C11 section J.2:1 items 47 and 49 http://rvdoc.org/C11/J.2
-   see CERT-C section MEM35-C http://rvdoc.org/CERT-C/MEM35-C
    see CERT-C section ARR30-C http://rvdoc.org/CERT-C/ARR30-C
    see CERT-C section ARR37-C http://rvdoc.org/CERT-C/ARR37-C
+   see CERT-C section MEM35-C http://rvdoc.org/CERT-C/MEM35-C
    see CERT-C section STR31-C http://rvdoc.org/CERT-C/STR31-C

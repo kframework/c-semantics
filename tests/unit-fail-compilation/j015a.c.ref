@@ -2,4 +2,4 @@ j015a.c:3:1: error: Conflicting types for f.
   Constraint violation (CV-TDG10).
    see C11 section 6.7:4 http://rvdoc.org/C11/6.7
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j015a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j015a.c to see commands run.

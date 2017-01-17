@@ -3,4 +3,4 @@ j083a.c:2:7: error: Invalid initializer for aggregate type.
    see C11 section 6.7.9:16 http://rvdoc.org/C11/6.7.9
    see C11 section J.2:1 item 83 http://rvdoc.org/C11/J.2
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-Translation failed (config dumped). Run kcc -d j083a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j083a.c to see commands run.

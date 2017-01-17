@@ -7,7 +7,7 @@ module C-ERROR-SYNTAX
 
      // Error code, desc., C11 citation.
      syntax KItem ::= UNDEF(String, String) [function, klabel(CUndef)]
-     syntax KItem ::= UNDEF(String, String, String)
+     syntax KItem ::= UNDEF(String, String, List)
      syntax KItem ::= UNSPEC(String, String)
      syntax KItem ::= CV(String, String)
      syntax KItem ::= SE(String, String)
@@ -23,27 +23,17 @@ module C-ERROR
      imports BOOL
      imports STRING
 
-     rule UNDEF(Title:String, Msg:String) => UNDEF(Title, Msg, "")
+     rule UNDEF(Title:String, Msg:String) => UNDEF(Title, Msg, .List)
 
-     rule UNDEF(Title:String, Msg:String, Reason:String)
-      => EXIT(ErrorMsg("UB-" +String Title, Msg, "Undefined behavior", Reason))
-          requires checkOptions(Undef(), Title, true)
+     rule UNDEF(Title:String, Msg:String, Reason:List)
+          => EXIT(ErrorMsg(Undef(CLinkage), Title, Msg, Reason))
      rule UNSPEC(Title:String, Msg:String)
-          => EXIT(ErrorMsg("USP-" +String Title, Msg, "Unspecified value or behavior"))
-          requires checkOptions(Unspec(), Title, true)
+          => EXIT(ErrorMsg(Unspec(CLinkage), Title, Msg))
      rule CV(Title:String, Msg:String)
-          => EXIT(ErrorMsg("CV-" +String Title, Msg, "Constraint violation"))
+          => EXIT(ErrorMsg(Constraint(), Title, Msg))
      rule SE(Title:String, Msg:String)
-          => EXIT(ErrorMsg("SE-" +String Title, Msg, "Syntax error"))
+          => EXIT(ErrorMsg(Syntax(CLinkage), Title, Msg))
      rule IMPL(Title:String, Msg:String)
-          => EXIT(ErrorMsg("IMPL-" +String Title, Msg, "Implementation defined behavior"))
-          requires checkOptions(Impl(), Title, true)
-
-     rule UNDEF(Title:String, _, _) => HALT
-          requires notBool checkOptions(Undef(), Title, true)
-     rule UNSPEC(Title:String, _) => HALT
-          requires notBool checkOptions(Unspec(), Title, true)
-     rule IMPL(Title:String, _) => HALT
-          requires notBool checkOptions(Impl(), Title, true)
+          => EXIT(ErrorMsg(Impl(CLinkage), Title, Msg))
 
 endmodule

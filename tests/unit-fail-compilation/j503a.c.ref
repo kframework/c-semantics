@@ -2,4 +2,4 @@ j503a.c:2:2: error: Arrays must have positive length.
   Constraint violation (CV-CTI2).
    see C11 section 6.7.6.2:1 http://rvdoc.org/C11/6.7.6.2
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j503a.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j503a.c to see commands run.

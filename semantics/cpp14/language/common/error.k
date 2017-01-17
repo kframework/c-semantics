@@ -12,30 +12,15 @@ module CPP-ERROR
      imports CPP-ERROR-SYNTAX
      imports BOOL
      imports STRING
+     imports COMMON-SYNTAX
 
      rule COND(Title:String, Msg:String)
-          => EXIT(ErrorMsg("CND-" +String Title, Msg, "Conditionally-supported behavior"))
-          requires checkOptions(Cond(), Title, true)
-
+          => EXIT(ErrorMsg(Cond(), Title, Msg))
      rule IMPL(Title:String, Msg:String)
-          => EXIT(ErrorMsg("IMPL++-" +String Title, Msg, "Implementation-defined behavior."))
-          requires checkOptions(Cond(), Title, true)
-
+          => EXIT(ErrorMsg(Impl(CPPLinkage), Title, Msg))
      rule UNDEF(Title:String, Msg:String)
-          => EXIT(ErrorMsg("UB++-" +String Title, Msg, "Undefined behavior."))
-          requires checkOptions(Undef(), Title, true)
-
+          => EXIT(ErrorMsg(Undef(CPPLinkage), Title, Msg))
      rule DRAFTING(Title:String, Msg:String)
-          => EXIT(ErrorMsg("DR++-" +String Title, Msg, "Behavior underspecified by C++ standard."))
-          requires checkOptions(Drafting(), Title, true)
-
-     rule COND(Title:String, _) => HALT
-          requires notBool checkOptions(Cond(), Title, true)
-     rule IMPL(Title:String, _) => HALT
-          requires notBool checkOptions(Impl(), Title, true)
-     rule UNDEF(Title:String, _) => HALT
-          requires notBool checkOptions(Undef(), Title, true)
-     rule DRAFTING(Title:String, _) => HALT
-          requires notBool checkOptions(Drafting(), Title, true)
+          => EXIT(ErrorMsg(Drafting(CPPLinkage), Title, Msg))
 
 endmodule

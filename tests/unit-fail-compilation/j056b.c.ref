@@ -2,4 +2,4 @@ j056b.c:2:1: error: Non-constant static initializer.
   Constraint violation (CV-TEAS5).
    see C11 section 6.7.9:4 http://rvdoc.org/C11/6.7.9
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j056b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j056b.c to see commands run.

@@ -2,4 +2,4 @@ redecl.c:3:7: error: Redeclaration of x with no linkage.
   Constraint violation (CV-TDL4).
    see C11 section 6.7:3 http://rvdoc.org/C11/6.7
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d redecl.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors redecl.c to see commands run.

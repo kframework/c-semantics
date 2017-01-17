@@ -2,6 +2,6 @@ j014d.c:3:8: error: Potential negative zero produced via bitwise operations (thi
   Undefined behavior (UB-CEB12).
    see C11 section 6.2.6.2:4 http://rvdoc.org/C11/6.2.6.2
    see C11 section J.2:1 item 14 http://rvdoc.org/C11/J.2
-   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
    see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
-Translation failed (config dumped). Run kcc -d j014d.c to see commands run.
+   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j014d.c to see commands run.

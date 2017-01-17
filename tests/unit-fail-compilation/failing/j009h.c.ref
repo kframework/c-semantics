@@ -2,4 +2,4 @@ j009h.c:8:7: error: Incompatible pointer types in assignment or function call ar
   Constraint violation (CV-TEAS2).
    see C11 section 6.5.16.1:1 http://rvdoc.org/C11/6.5.16.1
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j009h.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Wfatal-errors j009h.c to see commands run.

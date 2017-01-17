@@ -2,4 +2,4 @@ funstruct.c:6:7: error: Unary '&' operator applied to non-lvalue.
   Constraint violation (CV-CER1).
    see C11 section 6.5.3.2:1 http://rvdoc.org/C11/6.5.3.2
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d funstruct.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors funstruct.c to see commands run.

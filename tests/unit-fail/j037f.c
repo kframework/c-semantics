@@ -1,7 +1,7 @@
 int main(void) {
-      int x = 10;
-      int* a;
-      long* b;
+      long x = 10;
+      long* a;
+      long long* b;
       void* p;
 
       a = &x;

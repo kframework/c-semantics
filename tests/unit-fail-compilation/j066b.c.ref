@@ -3,4 +3,4 @@ j066b.c:2:1: error: Declaration for the function f appears with type qualifiers.
    see C11 section 6.7.3:9 http://rvdoc.org/C11/6.7.3
    see C11 section J.2:1 item 66 http://rvdoc.org/C11/J.2
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-Translation failed (config dumped). Run kcc -d j066b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j066b.c to see commands run.

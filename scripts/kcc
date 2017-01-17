@@ -6,7 +6,7 @@ use File::Basename;
 use File::Temp;
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
-use File::Path qw(remove_tree);
+use File::Path qw(rmtree);
 use MIME::Base64;
 use String::Escape qw(quote backslash);
 use Getopt::Declare;
@@ -190,8 +190,8 @@ our %cppWarns =  map { $_ => 1 } @cppWarnsList;
 our @cppArgs = ();
 our @ld_lib = ();
 our @ldArgs = ();
-our @warns = ();
-our @nowarns = ();
+our @suppress = ();
+our $fatalErrors = "false";
 our $xLang = "none";
 my $hasStdin;
 my $hasBuiltins;
@@ -282,32 +282,57 @@ my $spec = q(
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file in CSV format.
+  -fworkspace=<dir>	Use <dir> for the workspace of kcc when reporting
+			errors.
   -Wlint		Generate lint errors for potentially undesirable
 			behaviors.*
+    {
+      push(@main::suppress, '{"condition": ["Category", ["LintError"]], "suppress": false}');
+    }
   -flint		Generate lint errors for potentially undesirable
 			behaviors.*
-  -Wno-undefined	Do not output undefined behaviors.
-  -Wno-unspecified	Do not output unspecified behaviors.
-  -Wno-implementation-defined	Do not output implementation-defined behaviors.
-  -Wno-<errcode>	Ignore specified error code.
+    {
+      push(@main::suppress, '{"condition": ["Category", ["LintError"]], "suppress": false}');
+    }
+  -Wno-undefined	Do not output undefined behaviors.*
+    {
+      push(@main::suppress, '{"condition": ["Category", ["Undefined", ["C"]]], "suppress": true}' .
+                           ',{"condition": ["Category", ["Undefined", ["CPP"]]], "suppress": true}');
+    }
+  -Wno-unspecified	Do not output unspecified behaviors.*
+    {
+      push(@main::suppress, '{"condition": ["Category", ["Unspecified", ["C"]]], "suppress": true}' .
+                           ',{"condition": ["Category", ["Unspecified", ["CPP"]]], "suppress": true}');
+    }
+  -Wno-implementation-defined	Do not output implementation-defined behaviors.*
+    {
+      push(@main::suppress, '{"condition": ["Category", ["ImplementationDefined", ["C"]]], "suppress": true}' .
+                           ',{"condition": ["Category", ["ImplementationDefined", ["CPP"]]], "suppress": true}');
+    }
+  -Wno-<errcode>	Ignore specified error code.*
     {
       if ($main::cppWarns{$errcode}) {
         push(@main::cppArgs, "-Wno-$errcode");
       } else {
-        push(@main::nowarns, $errcode);
+        push(@main::suppress, '{"condition": ["ErrorId", "' . $errcode . '"], "suppress": true}');
       }
     }
-  -Wsystem-headers	Do not ignore errors in system headers.
+  -Wsystem-headers	Do not ignore errors in system headers.*
     {
       push(@main::cppArgs, "-Wsystem-headers");
-      push(@main::warns, "system-headers");
+      push(@main::suppress, '{"condition": ["SystemHeader", true], "suppress": false}');
     }
-  -W<errcode>		Do not ignore specified error code.
+  -Wfatal-errors	Do not recover from errors reported by tool.*
+    {
+      push(@main::cppArgs, "-Wfatal-errors");
+      $main::fatalErrors = "true";
+    }
+  -W<errcode>		Do not ignore specified error code.*
     {
       if ($main::cppWarns{$errcode}) {
         push(@main::cppArgs, "-W$errcode");
       } else {
-        push(@main::warns, $errcode);
+        push(@main::suppress, '{"condition": ["ErrorId", "' . $errcode . '"], "suppress": false}');
       }
     }
   -no-pedantic		Do not trigger preprocessor warnings for non-standard
@@ -359,11 +384,38 @@ my $spec = q(
 
 my $args = Getopt::Declare->new($spec, ['-BUILD']);
 
+my $encodedJson;
+
 exit main();
 
 sub main {
   @originalArgv = @ARGV;
   $args->parse() or die "Failed to parse the command line.\n";
+
+  my $format;
+  my $output;
+  if ($args->{"-fissue-report="}) {
+    $format = "CSV";
+    $output = quote(backslash(abs_path($args->{"-fissue-report="})));
+    $output = ", \"output\": $output";
+  } else {
+    $format = "Console";
+    $output = "";
+  }
+
+  my $messageLength = 80;
+  if ($args->{'-fmessage-length='}) {
+    $messageLength = $args->{'-fmessage-length='};
+  }
+  
+  my $allSuppress = join(',', @suppress);
+  $encodedJson = quote(backslash(quote(backslash(
+    "{\"suppressions\": [$allSuppress]" .
+    ",\"message_length\": $messageLength" .
+    ",\"format\": \"$format\"" .
+    ",\"previous_errors\": []" .
+    ",\"fatal_errors\": $fatalErrors" .
+    "$output}"))));
 
   my $heapSize = "1G";
   if ($args->{'-Xmx'}) {
@@ -499,6 +551,7 @@ sub main {
       '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
       '-w', 'none', '--parser', 'cat', $programConfFile,
       "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
+      "-cJSON=#token($encodedJson, $quoteString)", "-pJSON=$printf",
       '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
       '--ocaml-serialize-config', '$PGM'
     );
@@ -691,32 +744,8 @@ sub pushObj {
 
 sub initOptions {
   my @options = ();
-  if ($args->{'-fissue-report='}) {
-    my $file = quote(backslash(quote(backslash(abs_path($args->{'-fissue-report='})))));
-    if ($cygwin) {
-      $file = backslash($file);
-    }
-    push(@options, "`CSV`(#token($file, $quoteString))");
-  }
   if ($args->{'-frecover-all-errors'}) {
     push(@options, "`RecoverAll`(.KList)");
-  }
-  if ($args->{'-Wno-undefined'}) {
-    push(@options, "`No`(`Undef`(.KList))");
-  }
-  if ($args->{'-Wno-unspecified'}) {
-    push(@options, "`No`(`Unspec`(.KList))");
-  }
-  if ($args->{'-Wno-implementation-defined'}) {
-    push(@options, "`No`(`Impl`(.KList))");
-  }
-  foreach (@main::warns) {
-    my $word = quote(backslash(quote(backslash($_))));
-    push(@options, "`Warn`(#token($word, $quoteString))");
-  }
-  foreach (@main::nowarns) {
-    my $word = quote(backslash(quote(backslash($_))));
-    push(@options, "`No`(`Warn`(#token($word, $quoteString)))");
   }
   if ($args->{'-flint'} || $args->{'-Wlint'}) {
     push(@options, "`Lint`(.KList)");
@@ -740,9 +769,6 @@ sub getKRunCommand {
     push(@krun_args, '--debug');
   }
   my @options = initOptions();
-  if ($args->{'-fmessage-length=0'}) {
-    push(@options, "`NoWrap`(.KList)");
-  }
   if (!$isCPP && !$hasBuiltins && $args->{'-Xbuiltins'}) {
     push(@options, "`XBuiltins`(.KList)");
     $hasBuiltins = 1;
@@ -757,6 +783,9 @@ sub getKRunCommand {
   my $opts = makeSet(@options);
   push(@krun_args, "-cOPTIONS=$opts ");
   push(@krun_args, "-pOPTIONS=$printf");
+
+  push(@krun_args, "-cJSON=#token($encodedJson, $quoteString)");
+  push(@krun_args, "-pJSON=$printf");
 
   if (scalar @objs) {
     my $allObjsFile = tempFile();
@@ -908,7 +937,7 @@ sub finalCleanup {
   if (!$args->{'-d'}) {
     for (@tempFiles) {
       if (-d $_) {
-        remove_tree($_);
+        rmtree(rel2abs($_)) or die "Cannot remove_tree $_: $!";
       } else {
         unlink;
       }

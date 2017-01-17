@@ -2,4 +2,4 @@ regehr-int-pointer-comparison.c:2:2: error: Incompatible types in relational exp
   Constraint violation (CV-CERL5).
    see C11 section 6.5.8:2 http://rvdoc.org/C11/6.5.8
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d regehr-int-pointer-comparison.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors regehr-int-pointer-comparison.c to see commands run.

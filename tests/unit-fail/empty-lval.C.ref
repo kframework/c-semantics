@@ -1,7 +1,5 @@
-Error: DR++-EIO1
-Description: Reading outside the bounds of an object.
-Type: Behavior underspecified by C++ standard.
-See also: C++ Defect Reports sec. 232
-( http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#232 )
-  at ::main(empty-lval.C:4)
+ Reading outside the bounds of an object.
+   at ::main(empty-lval.C:4:11)
+  Behavior underspecified by standard (DR++-EIO1).
+   see C++ Defect Reports section 232 http://rvdoc.org/C++%20Defect%20Reports/232
 Execution failed (configuration dumped)

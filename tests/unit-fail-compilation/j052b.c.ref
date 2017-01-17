@@ -3,4 +3,4 @@ j052b.c:4:7: error: Signed integer overflow.
    see C11 section 6.5:5 http://rvdoc.org/C11/6.5
    see C11 section J.2:1 item 36 http://rvdoc.org/C11/J.2
    see CERT-C section INT32-C http://rvdoc.org/CERT-C/INT32-C
-Translation failed (config dumped). Run kcc -d j052b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j052b.c to see commands run.

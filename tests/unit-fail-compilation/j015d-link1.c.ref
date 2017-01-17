@@ -3,4 +3,4 @@ j015d-link2.c:3: Undefined behavior: Identifier f declared with incompatible typ
    see C11 section J.2:1 item 15 http://rvdoc.org/C11/J.2
    see CERT-C section DCL23-C http://rvdoc.org/CERT-C/DCL23-C
    see CERT-C section DCL40-C http://rvdoc.org/CERT-C/DCL40-C
-Translation failed (config dumped). Run kcc -d j015d-link1.c j015d-link2.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j015d-link1.c j015d-link2.c to see commands run.

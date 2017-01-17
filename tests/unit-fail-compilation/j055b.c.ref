@@ -2,4 +2,4 @@ j055b.c:1:1: error: Enum initializer not an integer constant expression.
   Constraint violation (CV-CDE1).
    see C11 section 6.7.2.2:2 http://rvdoc.org/C11/6.7.2.2
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d j055b.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j055b.c to see commands run.

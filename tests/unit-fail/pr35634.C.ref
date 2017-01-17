@@ -1,6 +1,5 @@
-Error: IMPL++-CCV3
-Description: Integral conversion to signed integer type in which value cannot be represented.
-Type: Implementation-defined behavior.
-See also: C++14 sec. 4.7:3
-  at ::main(pr35634.C:18)
+ Integral conversion to signed integer type in which value cannot be represented.
+   at ::main(pr35634.C:18:19)
+  Implementation defined behavior (IMPL++-CCV3).
+   see C++14 section 4.7:3 http://rvdoc.org/C++14/4.7
 Execution failed (configuration dumped)

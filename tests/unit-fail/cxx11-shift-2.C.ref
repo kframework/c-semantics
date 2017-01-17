@@ -1,5 +1,5 @@
  Left operand of left shift has signed type and negative value.
    at ::main(cxx11-shift-2.C:8:3)
-  Undiagnosable Rule violation (URV-CEB1).
+  Undefined behavior (UB++-CEB1).
    see C++14 section 5.8:2 http://rvdoc.org/C++14/5.8
 Execution failed (configuration dumped)

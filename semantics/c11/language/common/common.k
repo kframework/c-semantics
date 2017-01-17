@@ -13,7 +13,6 @@ require "symloc.k"
 require "syntax.k"
 require "type-builder.k"
 require "typing.k"
-require "citations.k"
 
 require "expr/additive.k"
 require "expr/assignment.k"
@@ -52,7 +51,6 @@ module C-COMMON
      imports C-SYMLOC
      imports C-SYNTAX
      imports C-TYPE-BUILDER
-     imports C-CITATIONS
 
      imports C-COMMON-EXPR-ADDITIVE
      imports C-COMMON-EXPR-ASSIGNMENT

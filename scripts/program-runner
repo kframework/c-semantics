@@ -123,6 +123,8 @@ sub main {
 
       push @cmd, "-cOPTIONS=$options";
       push @cmd, '-pOPTIONS=printf %s';
+      push @cmd, '-cJSON=#token("\"\"", "String")';
+      push @cmd, '-pJSON=printf %s';
 
       # Execute krun with the arguments in @cmd
       print("'krun' '" . join("' '", @cmd) . "'\n") if defined $ENV{VERBOSE};

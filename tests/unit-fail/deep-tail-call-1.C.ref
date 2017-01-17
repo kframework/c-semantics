@@ -4,6 +4,6 @@
    by ::call2(deep-tail-call-1.C:9:47)
    by ::call1(deep-tail-call-1.C:10:47)
    by ::main(deep-tail-call-1.C:13:3)
-  Undiagnosable Rule violation (URV-CEA1).
+  Undefined behavior (UB++-CEA1).
    see C++14 section 5.7:4 http://rvdoc.org/C++14/5.7
 Execution failed (configuration dumped)

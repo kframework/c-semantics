@@ -1,7 +1,7 @@
  Destroying a locked mutex.
    at pthread_mutex_destroy(UB-PTHREAD2-bad.c:15:5)
    by locker_thread(UB-PTHREAD2-bad.c:15:5)
-  Mutex previously locked
+  Locked here:
    at pthread_mutex_lock(UB-PTHREAD2-bad.c:14:5)
    by locker_thread(UB-PTHREAD2-bad.c:14:5)
   Undefined behavior (UB-PTHREAD2).

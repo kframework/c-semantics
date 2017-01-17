@@ -2,4 +2,4 @@ needsInclude.c:2:21: fatal error: include.h: No such file or directory
  #include "include.h"
                      ^
 compilation terminated.
-Translation failed (config dumped). Run kcc -d needsInclude.c to see commands run.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors needsInclude.c to see commands run.
