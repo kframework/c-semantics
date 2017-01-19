@@ -368,6 +368,7 @@ my $spec = q(
       }
     }
   -Xbuiltins		[undocumented]
+  -soname <name>	[undocumented]
 
   * Indicates flags that require RV-Match from
     http://www.runtimeverification.com/match to run.

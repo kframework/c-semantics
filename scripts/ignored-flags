@@ -1,7 +1,6 @@
 -O[0123sg]?
 -Ofast
 -fpic
--soname
 -fPIC
 -m64
 -m32
