@@ -150,6 +150,8 @@ let init_lexicon _ =
       ("long", fun loc -> LONG loc);
       ("register", fun loc -> REGISTER loc);
       ("restrict", fun loc -> RESTRICT loc);
+      ("__restrict", fun loc -> RESTRICT_RESERVED ("__restrict",loc));
+      ("__restrict__", fun loc -> RESTRICT_RESERVED ("__restrict__",loc));
       ("return", fun loc -> dbgToken (RETURN loc));
       ("short", fun loc -> SHORT loc);
       ("signed", fun loc -> SIGNED loc);

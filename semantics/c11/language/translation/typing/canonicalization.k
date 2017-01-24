@@ -25,7 +25,8 @@ module C-TYPING-CANONICALIZATION
      imports INT
      imports K-REFLECTION
      imports MAP
-     imports STRING-SYNTAX
+     imports STRING
+     imports C-SETTINGS-SYNTAX
 
      rule canonicalizeType(M::List) => canonicalizeType'(M, .List, .List)
           [structural]
@@ -87,8 +88,19 @@ module C-TYPING-CANONICALIZATION
      rule isReducibleSpecifier(AlignasType(_, _)) => true
      rule isReducibleSpecifier(_) => false [owise]
 
+     rule addMods(Mods::List ListItem(RestrictReserved(Tok:String, _)), T:Type)
+          => addMods(Mods, addQualifier(Restrict(), T))
+          requires cfg:reservedKeywordSupported(Tok)
+          [structural]
+     rule <k>addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
+          => reportError(ErrorMsg(Syntax(CLinkage),"TCANON2",("Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict).")), S, Loc, .K) ~> HALT ...</k>
+          // Scope needed for error reporting
+          <curr-scope>S::Scope</curr-scope>
+          requires notBool cfg:reservedKeywordSupported(Tok)
+          [structural]
      rule addMods(Mods::List ListItem(Q:Qualifier), T:Type)
           => addMods(Mods, addQualifier(Q, T))
+          requires getKLabel(Q) =/=K #klabel(`RestrictReserved`)
           [structural]
      rule addMods(Mods::List ListItem(M:Modifier), T:Type)
           => addMods(Mods, addModifier(M, T))

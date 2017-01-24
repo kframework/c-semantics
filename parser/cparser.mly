@@ -273,6 +273,7 @@ let transformOffsetOf (speclist, dtype) member =
 %token<Cabs.cabsloc> ENUM STRUCT TYPEDEF UNION
 %token<Cabs.cabsloc> SIGNED UNSIGNED LONG SHORT
 %token<Cabs.cabsloc> VOLATILE EXTERN STATIC CONST RESTRICT AUTO REGISTER
+%token<string * Cabs.cabsloc> RESTRICT_RESERVED
 %token<Cabs.cabsloc> THREAD
 
 %token<Cabs.cabsloc> ALIGNAS ATOMIC COMPLEX GENERIC IMAGINARY NORETURN STATIC_ASSERT THREAD_LOCAL
@@ -346,7 +347,8 @@ let transformOffsetOf (speclist, dtype) member =
 %left	INF SUP INF_EQ SUP_EQ
 %left	INF_INF SUP_SUP
 %left	PLUS MINUS
-%left	STAR SLASH PERCENT CONST RESTRICT VOLATILE
+%left	STAR SLASH PERCENT CONST RESTRICT RESTRICT_RESERVED
+VOLATILE
 %right	EXCLAM TILDE PLUS_PLUS MINUS_MINUS CAST RPAREN ADDROF SIZEOF ALIGNOF
 %left 	LBRACKET
 %left	DOT ARROW LPAREN LBRACE
@@ -1307,6 +1309,7 @@ function_def_start:  /* (* ISO 6.9.1 *) */
 cvspec:
     CONST                               { SpecCV(CV_CONST), $1 }
 |   RESTRICT                            { SpecCV(CV_RESTRICT), $1 }
+|   RESTRICT_RESERVED                   { SpecCV(CV_RESTRICT_RESERVED $1), (snd $1) }
 |   VOLATILE                            { SpecCV(CV_VOLATILE), $1 }
 |   ATOMIC                              { SpecCV(CV_ATOMIC), $1 }
 ;
@@ -1350,6 +1353,7 @@ attribute:
     attribute_nocv         { (fst $1), (snd $1) }
 |   CONST                  { SpecCV CV_CONST, $1 }
 |   RESTRICT               { SpecCV CV_RESTRICT, $1 }
+|   RESTRICT_RESERVED      { SpecCV (CV_RESTRICT_RESERVED $1), (snd $1) }
 |   VOLATILE               { SpecCV CV_VOLATILE, $1 }
 ;
 

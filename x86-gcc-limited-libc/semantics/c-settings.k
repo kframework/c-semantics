@@ -64,5 +64,7 @@ module C-SETTINGS
 
      rule cfg:stackSize(_, _) => 0
 
+     rule cfg:reservedKeywordAllowed(_) => false
+
 endmodule
 

@@ -207,3 +207,4 @@ L-CCVE2,Conversion to unsigned integer outside the range that can be represented
 L-CMRE1,Reading a struct or union with uninitialized parts.,,Possible unintended behavior,X
 L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior,X
 SE-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Syntax error,
+SE-TCANON2,"Unsupported reserved identifier  (reserved variant of restrict).",,Syntax error,X

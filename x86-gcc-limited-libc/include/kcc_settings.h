@@ -10,9 +10,6 @@
 // Some things not in the C11 standard (mostly GCCisms, I think).
 #define __FUNCTION__ __func__
 
-#define __restrict restrict
-#define __restrict__ restrict
-
 #define __volatile volatile
 #define __volatile__ volatile
 

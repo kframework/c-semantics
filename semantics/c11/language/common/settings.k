@@ -1,5 +1,6 @@
 module C-SETTINGS-SYNTAX
      imports SETTINGS-SYNTAX
+     imports STRING
      imports LIST
 
      syntax SimpleBasicType ::= "cfg:enumAlias" [function]
@@ -51,4 +52,5 @@ module C-SETTINGS-SYNTAX
 
      syntax Int ::= "cfg:stackSize" "(" List "," List ")" [function]
 
+     syntax Bool ::= "cfg:reservedKeywordSupported" "(" String ")" [function, klabel(cfg:reservedKeywordSupported)]
 endmodule

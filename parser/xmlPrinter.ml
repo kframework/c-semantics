@@ -660,7 +660,8 @@ and printSpecElem a =
 		| CV_CONST -> kapply "Const"  nil
 		| CV_VOLATILE -> kapply "Volatile"  nil
 		| CV_ATOMIC -> kapply "Atomic"  nil
-		| CV_RESTRICT -> kapply "Restrict"  nil)
+		| CV_RESTRICT -> kapply "Restrict"  nil
+		| CV_RESTRICT_RESERVED (kwd,loc) -> wrap (ktoken kwd "String"::printCabsLoc loc::[]) "RestrictReserved")
 	| SpecAttr al -> printAttribute al
 	| SpecStorage sto ->
 		(match sto with
