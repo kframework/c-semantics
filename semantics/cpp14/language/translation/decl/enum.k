@@ -17,11 +17,9 @@ module CPP-DECL-ENUM
      imports CPP-SYNTAX
      imports CPP-BITSIZE-SYNTAX
 
-     // TODO add namespaces somewhere
-     syntax CPPEnumType ::= declareEnumName(id: CId, ut: CPPIntegerType, scoped: Bool) [function]
-     rule declareEnumName(X::CId, UT::CPPIntegerType, false) => t(noQuals, .Set, unscopedEnum(X, UT))
-     rule declareEnumName(X::CId, UT::CPPIntegerType, true)  => t(noQuals, .Set,   scopedEnum(X, UT))
-
+     syntax CPPEnumType ::= declareEnumName(ns: Namespace, id: CId, ut: CPPIntegerType, scoped: Bool) [function]
+     rule declareEnumName(N::Namespace, X::CId, UT::CPPIntegerType, false) => t(noQuals, .Set, unscopedEnum(enumId(N::Namespace :: X), UT))
+     rule declareEnumName(N::Namespace, X::CId, UT::CPPIntegerType, true)  => t(noQuals, .Set,   scopedEnum(enumId(N::Namespace :: X), UT))
 
      syntax KItem ::= addToCurrentNamespace(CId, CPPEnumType)
      rule <k> addToCurrentNamespace(X::CId, E::CPPEnumType) => . ... </k>
@@ -38,7 +36,7 @@ module CPP-DECL-ENUM
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
-               <enum-id> getEnumName(E) </enum-id>
+               <enum-id> getEnumId(E) </enum-id>
                <enum-ut> underlyingType(E) </enum-ut>
                <scoped> getScoped(E) </scoped>
            ...</cppenum>)
@@ -46,11 +44,13 @@ module CPP-DECL-ENUM
      syntax KItem ::= enumContext(CId, CPPEnumType) [strict(2)]
 
      // We do not support enumerators yet
-     rule EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, .List)
-          => enumContext(X, declareEnumName(X, UT, Scoped))
+     rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, .List)
+          => enumContext(X, declareEnumName(N, X, UT, Scoped)) ...</k>
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
 
      rule enumContext(X::CId, E::CPPEnumType) => newEnum(E) ~> addToCurrentNamespace(X, E)
-
 
 endmodule
 

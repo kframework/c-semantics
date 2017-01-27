@@ -110,8 +110,8 @@ module CPP-TYPING-SYNTAX
                                 | "decltype(auto)"
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
-     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: CId, underlyingType: CPPIntegerType)
-     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: CId, underlyingType: CPPIntegerType)
+     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: EnumId, underlyingType: CPPIntegerType)
+     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: EnumId, underlyingType: CPPIntegerType)
      syntax CPPSimpleEnumType ::= CPPSimpleScopedEnumType | CPPSimpleUnscopedEnumType
      syntax CPPSimpleCompoundType ::= CPPSimpleEnumType
 
@@ -214,9 +214,11 @@ module CPP-TYPING-SYNTAX
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
 
      syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
-                       | #getEnumInfo(CId, K) [function]
+                       | #getEnumInfo(EnumId, K) [function]
      syntax EnumInfo ::= CppenumCell | "#incomplete"
-     
+
+     syntax EnumId ::= enumId(QualId)
+
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
 
@@ -228,7 +230,7 @@ module CPP-TYPING-SYNTAX
                    | isUnnamedXValue(CPPType) [function]
                    | isUnnamedPRValue(CPPType) [function]
 
-     syntax CId ::= getEnumName(CPPEnumType) [function]
+     syntax EnumId ::= getEnumId(CPPEnumType) [function]
      syntax Bool ::= getScoped(CPPEnumType) [function]
 endmodule
 
@@ -289,9 +291,9 @@ module CPP-TYPING
      rule #getClassInfo(t(_, _, classType(C::Class)), <generatedTop>... <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
      rule #getClassInfo(_, _) => #incomplete [owise]
 
-     rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumName(E), #configuration)
+     rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumId(E), #configuration)
 
-     rule #getEnumInfo(X::CId, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
+     rule #getEnumInfo(X::EnumId, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
      rule #getEnumInfo(_, _) => #incomplete [owise]
 
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
@@ -325,8 +327,8 @@ module CPP-TYPING
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
      rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2)
      rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
-     rule t(Q::Quals, _, scopedEnum(X::CId, _)) ==Type t(Q, _, scopedEnum(X::CId, _)) => true
-     rule t(Q::Quals, _, unscopedEnum(X::CId, _)) ==Type t(Q, _, unscopedEnum(X::CId, _)) => true
+     rule t(Q::Quals, _, scopedEnum(X::EnumId, _)) ==Type t(Q, _, scopedEnum(X::EnumId, _)) => true
+     rule t(Q::Quals, _, unscopedEnum(X::EnumId, _)) ==Type t(Q, _, unscopedEnum(X::EnumId, _)) => true
 
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
@@ -393,8 +395,8 @@ module CPP-TYPING
 
      rule getScoped(t(_, _, scopedEnum(_, _))) => true
      rule getScoped(t(_, _, unscopedEnum(_, _))) => false
-     rule getEnumName(t(_, _, scopedEnum(X::CId, _))) => X
-     rule getEnumName(t(_, _, unscopedEnum(X::CId, _))) => X
+     rule getEnumId(t(_, _, scopedEnum(X::EnumId, _))) => X
+     rule getEnumId(t(_, _, unscopedEnum(X::EnumId, _))) => X
 
 endmodule
 
