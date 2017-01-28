@@ -106,7 +106,10 @@ module COMMON-CONFIGURATION
                          <enum-id> .K </enum-id>
                          <enum-type> .K </enum-type>
                          <scoped> false </scoped>
-                         <enumerators> .List </enumerators>
+                         <enumerators> .Map </enumerators>
+                         <enum-complete> false </enum-complete>
+                         <enum-min> 0 </enum-min>
+                         <enum-max> 0 </enum-max>
                     </cppenum>
                </cpp-enums>
 

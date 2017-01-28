@@ -111,7 +111,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
      syntax CPPSimpleScopedEnumType ::= scopedEnum(id: EnumId, underlyingType: CPPIntegerType)
-     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: EnumId, underlyingType: CPPIntegerType)
+     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: EnumId, underlyingType: CPPIntegerType, utFixed: Bool)
      syntax CPPSimpleEnumType ::= CPPSimpleScopedEnumType | CPPSimpleUnscopedEnumType
      syntax CPPSimpleCompoundType ::= CPPSimpleEnumType
 
@@ -426,7 +426,7 @@ module CPP-TYPING
 
      rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
      rule t(Q::Quals, _, scopedEnum(X::EnumId, _)) ==Type t(Q, _, scopedEnum(X::EnumId, _)) => true
-     rule t(Q::Quals, _, unscopedEnum(X::EnumId, _)) ==Type t(Q, _, unscopedEnum(X::EnumId, _)) => true
+     rule t(Q::Quals, _, unscopedEnum(X::EnumId, _, _)) ==Type t(Q, _, unscopedEnum(X::EnumId, _, _)) => true
 
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
@@ -440,7 +440,7 @@ module CPP-TYPING
      rule underlyingType(t(Q::Quals, Mods::Set, T::CPPSimpleType))
           => t(Q, Mods, underlyingType(T))
      rule underlyingType(scopedEnum(_, T::CPPIntegerType)) => simpleType(T)
-     rule underlyingType(unscopedEnum(_, T::CPPIntegerType)) => simpleType(T)
+     rule underlyingType(unscopedEnum(_, T::CPPIntegerType, _)) => simpleType(T)
 
 
      rule inRange(I:Int, T::CPPIntegerType)
@@ -475,6 +475,12 @@ module CPP-TYPING
 
      rule min(T:CPPWideCharType) => min(underlyingType(T))
      rule max(T:CPPWideCharType) => max(underlyingType(T))
+
+     rule min(t(_, _, scopedEnum(_, UT::CPPIntegerType))) => min(UT)
+     rule max(t(_, _, scopedEnum(_, UT::CPPIntegerType))) => max(UT)
+
+     rule min(t(_, _, unscopedEnum(E::EnumId, _, _))) => #getEnumMin(#getEnumInfo(E, #configuration))
+     rule max(t(_, _, unscopedEnum(E::EnumId, _, _))) => #getEnumMax(#getEnumInfo(E, #configuration))
 
      rule precision(t(_, _, float)) => cfg:precisionofFloat
      rule precision(t(_, _, double)) => cfg:precisionofDouble
@@ -517,9 +523,14 @@ module CPP-TYPING
      rule setType(T::CPPType, prv(Loc::SymLoc, Tr::Trace, _)) => prv(Loc, Tr, T)
 
      rule getScoped(t(_, _, scopedEnum(_, _))) => true
-     rule getScoped(t(_, _, unscopedEnum(_, _))) => false
+     rule getScoped(t(_, _, unscopedEnum(_, _, _))) => false
      rule getEnumId(t(_, _, scopedEnum(X::EnumId, _))) => X
-     rule getEnumId(t(_, _, unscopedEnum(X::EnumId, _))) => X
+     rule getEnumId(t(_, _, unscopedEnum(X::EnumId, _, _))) => X
+
+     syntax Int ::= #getEnumMin(K) [function]
+                  | #getEnumMax(K) [function]
+     rule #getEnumMin(<cppenum>... <enum-min>Min::Int</enum-min>  ...</cppenum>) => Min
+     rule #getEnumMax(<cppenum>... <enum-max>Max::Int</enum-max>  ...</cppenum>) => Max
 
 endmodule
 
