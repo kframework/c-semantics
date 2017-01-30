@@ -112,7 +112,6 @@ module CPP-ABSTRACT-SYNTAX
                     | ArrayType(AType, Int) [strict(1)]
                     | ArrayType(AType, AExpr) [strict(1)]
                     | TypedefType(CId)
-                    | EnumTypeName(CId)
                     | QualifiedTypeName(Tag, NNS, AType)
                     | Decltype(Expr)
                     | TemplateParameterType(CId)
