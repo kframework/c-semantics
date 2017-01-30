@@ -287,27 +287,27 @@ my $spec = q(
   -Wlint		Generate lint errors for potentially undesirable
 			behaviors.*
     {
-      push(@main::suppress, '{"condition": ["Category", ["LintError"]], "suppress": false}');
+      push(@main::suppress, '{"condition": ["Category", "LintError"], "suppress": false}');
     }
   -flint		Generate lint errors for potentially undesirable
 			behaviors.*
     {
-      push(@main::suppress, '{"condition": ["Category", ["LintError"]], "suppress": false}');
+      push(@main::suppress, '{"condition": ["Category", "LintError"], "suppress": false}');
     }
   -Wno-undefined	Do not output undefined behaviors.*
     {
-      push(@main::suppress, '{"condition": ["Category", ["Undefined", ["C"]]], "suppress": true}' .
-                           ',{"condition": ["Category", ["Undefined", ["CPP"]]], "suppress": true}');
+      push(@main::suppress, '{"condition": ["Category", ["Undefined", "C"]], "suppress": true}' .
+                           ',{"condition": ["Category", ["Undefined", "CPP"]], "suppress": true}');
     }
   -Wno-unspecified	Do not output unspecified behaviors.*
     {
-      push(@main::suppress, '{"condition": ["Category", ["Unspecified", ["C"]]], "suppress": true}' .
-                           ',{"condition": ["Category", ["Unspecified", ["CPP"]]], "suppress": true}');
+      push(@main::suppress, '{"condition": ["Category", ["Unspecified", "C"]], "suppress": true}' .
+                           ',{"condition": ["Category", ["Unspecified", "CPP"]], "suppress": true}');
     }
   -Wno-implementation-defined	Do not output implementation-defined behaviors.*
     {
-      push(@main::suppress, '{"condition": ["Category", ["ImplementationDefined", ["C"]]], "suppress": true}' .
-                           ',{"condition": ["Category", ["ImplementationDefined", ["CPP"]]], "suppress": true}');
+      push(@main::suppress, '{"condition": ["Category", ["ImplementationDefined", "C"]], "suppress": true}' .
+                           ',{"condition": ["Category", ["ImplementationDefined", "CPP"]], "suppress": true}');
     }
   -Wno-<errcode>	Ignore specified error code.*
     {
@@ -410,12 +410,16 @@ sub main {
   }
   
   my $allSuppress = join(',', @suppress);
+  my $rvError = `sh -c 'command -v rv-error'`;
+  chop($rvError);
+  $rvError = quote(backslash($rvError));
   $encodedJson = quote(backslash(quote(backslash(
     "{\"suppressions\": [$allSuppress]" .
     ",\"message_length\": $messageLength" .
     ",\"format\": \"$format\"" .
     ",\"previous_errors\": []" .
     ",\"fatal_errors\": $fatalErrors" .
+    ",\"rv_error\": $rvError" .
     "$output}"))));
 
   my $heapSize = "1G";
