@@ -367,7 +367,7 @@ my $spec = q(
          exit 1;
       }
     }
-  --no-license-message  Do not print any licensing information. Use this
+  --no-license-message	Do not print any licensing information. Use this
                         option if extra output interferes with a build system.
                         Setting the environment error KCC_NO_LICENCE_MESSAGE
                         has the same effect.
