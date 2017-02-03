@@ -141,9 +141,13 @@ public:
     SourceManager &mgr = Context->getSourceManager();
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
     AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
+    StringRef filename(presumed.getFilename());
+    SmallString<64> vector(filename);
+    llvm::sys::fs::make_absolute(vector);
+    const char *absolute = vector.c_str();
+    AddKTokenNode(escape(absolute, strlen(absolute)), "String");
     VisitUnsigned(presumed.getLine());
     VisitUnsigned(presumed.getColumn());
-    AddKTokenNode("0", "Int");
     VisitBool(mgr.isInSystemHeader(loc));
   }
 

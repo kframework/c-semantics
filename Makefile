@@ -23,7 +23,7 @@ FILES_TO_DIST = \
         LICENSE \
         licenses
 
-.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile
+.PHONY: default check-vars semantics clean fast cpp-semantics translation-semantics execution-semantics $(DIST_DIR) test-build pass fail fail-compile parser/cparser cpp-parser/clang-kast
 
 default: test-build
 

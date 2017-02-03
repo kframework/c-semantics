@@ -25,7 +25,7 @@ module COMMON-SYNTAX
      syntax CId ::= unnamed(Int, String)         // Unnamed struct/union/enums.
 
      syntax CabsLoc ::= "UnknownCabsLoc"
-     syntax CabsLoc ::= CabsLoc(String, Int, Int, Int, Bool)
+     syntax CabsLoc ::= CabsLoc(rel: String, abs: String, line: Int, col: Int, systemHeader: Bool)
 
      syntax Qualifier ::= Const()
      syntax Qualifier ::= Volatile()

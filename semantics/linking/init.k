@@ -299,27 +299,4 @@ module C-LINKING-INIT
      rule <k> reportSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>
 
-     /*
-          <generated-annotations> .List </generated-annotations>
-     rule <k> reportSuccess => writeSpecModule(#open(S +String ".spec.k")) ...</k>
-          <generated-annotations> L:List </generated-annotations>
-          <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-          requires size(L) >Int 0
-
-     syntax KItem ::= writeSpecModule(Int)
-     rule <k> writeSpecModule(Fd:Int) => #write(Fd,
-                  "module " +String replaceAll(S, ".", "-") +String "-SPEC" +String "\n"
-          +String "  imports C-VERIFIER\n\n") ~> writeSpecs(Fd) ...</k>
-          <curr-program-loc> CabsLoc(S:String, _, _, _) </curr-program-loc>
-
-     syntax KItem ::= writeSpecs(Int)
-     rule <k> (.K => #write(Fd, S +String "\n")) ~> writeSpecs(Fd:Int) ...</k>
-          <generated-annotations> ListItem(S:String) => .List ...</generated-annotations>
-     rule <k> writeSpecs(Fd:Int) => #write(Fd, "\nendmodule") ~> writeEndModule(Fd) ...</k>
-          <generated-annotations> .List </generated-annotations>
-
-     syntax KItem ::= writeEndModule(Int)
-     rule <k> writeEndModule(Fd:Int) => #close(Fd) ...</k>
-          <result-value> _ => 0 </result-value>
-     */
 endmodule

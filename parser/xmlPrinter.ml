@@ -190,7 +190,7 @@ and printCabsLoc a =
 		:: Attrib ("systemHeader", string_of_bool a.systemHeader )
 		:: []
 	in*)
-        wrap ((printRawString a.filename) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawInt 0) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
+        wrap ((printRawString a.filename) :: (printRawString (if Filename.is_relative a.filename then Filename.concat (Sys.getcwd ()) a.filename else a.filename)) :: (printRawInt a.lineno) :: (printRawInt a.lineOffsetStart) :: (printRawBool a.systemHeader) :: []) "CabsLoc"
 
 and hasInformation l =
 	l.lineno <> -10

@@ -191,6 +191,7 @@ our @cppArgs = ();
 our @ld_lib = ();
 our @ldArgs = ();
 our @suppress = ();
+our @ifdef = ();
 our $fatalErrors = "false";
 our $xLang = "none";
 my $hasStdin;
@@ -334,6 +335,21 @@ my $spec = q(
       } else {
         push(@main::suppress, '{"condition": ["ErrorId", "' . $errcode . '"], "suppress": false}');
       }
+    }
+  -Wno-ifdef=<macro>	Disable errors on lines emitted when <macro> is
+			defined.*
+    {
+      push(@main::ifdef, [$macro, "D", "true"]);
+    }
+  -Wno-ifndef=<macro>	Disable errors on lines emitted when <macro>
+ is not
+			defined.*
+    {
+      push(@main::ifdef, [$macro, "U", "true"]);
+    }
+  -Wno-file=<glob>	Disable errors in files matching <glob>.*
+    {
+      push(@main::suppress, '{"condition": ["File", ' . quote(backslash($glob)) . '], "suppress": true}');
     }
   -no-pedantic		Do not trigger preprocessor warnings for non-standard
 			compliant language features.
@@ -857,6 +873,11 @@ sub getKRunCommand {
 
 sub preprocess {
   my ($output, $inputFile, $isCPP) = (@_);
+  my $isStdout = 0;
+  if ($output eq '-') {
+    $output = tempFile();
+    $isStdout = 1;
+  }
   my $directoryname = dirname($inputFile);
   if (!$args->{'-no-pedantic'}) {
     push(@main::cppArgs, '-pedantic');
@@ -865,14 +886,27 @@ sub preprocess {
     my @ppArgs = ("$profileDirectory/cpp-pp",
       @main::cppArgs, $inputFile, '-o', $output);
 
-    my $retval = execute(@ppArgs);
-    return $retval;
+    return execPreprocess($output, $isStdout, @ppArgs);
   }
 
   my @ppArgs = ("$profileDirectory/pp",
     @main::cppArgs, $inputFile, '-o', $output);
 
+  return execPreprocess($output, $isStdout, @ppArgs);
+}
+
+sub execPreprocess {
+  my ($output, $isStdout, @ppArgs) = (@_);
   my $retval = execute(@ppArgs);
+  if (!$retval) {
+    system("rv-ifdefclear", $output);
+    for (@ifdef) {
+      system("rv-ifdefall", $output, @$_);
+    }
+    if ($isStdout) {
+      execute("cat", $output);
+    }
+  }
   return $retval;
 }
 
