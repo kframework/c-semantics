@@ -136,11 +136,6 @@ module CPP-TYPING-EXPR
           => typeofBuiltinOperator(O, T1)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
-//     rule typeofOperator(operator&, T::CPPEnumType)
-//          => typeof(type(pointerType(T)))
-//   It should work with this one too, but does not!
-//          => typeofBuiltinOperator(operator&, T)
-
      rule typeofBuiltinOperator(operator=, T::CPPType, _)
           => typeof(T)
      rule typeofBuiltinOperator(operator||, _, _)
