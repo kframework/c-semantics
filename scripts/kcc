@@ -40,7 +40,7 @@ my $profileDirectory;
 {
   local $/=undef;
   open FILE, "$distDirectory/current-profile"
-    or die "Couldn't find current profile: please fix $distDirectory/current-profile.\n";
+    or error("Couldn't find current profile: please fix $distDirectory/current-profile.\n");
   $profile = <FILE>;
   $profileDirectory = "$distDirectory/$profile";
   close FILE;
@@ -50,7 +50,7 @@ our $defaultProfile;
 {
   local $/=undef;
   open FILE, "$distDirectory/default-profile"
-    or die "Couldn't find default profile: please fix $distDirectory/default-profile.\n";
+    or error("Couldn't find default profile: please fix $distDirectory/default-profile.\n");
   $defaultProfile = <FILE>;
   close FILE;
 }
@@ -67,7 +67,7 @@ my $ignoredFlagsRegex = "^(";
 {
   my $sep = "";
   open FILE, "$distDirectory/ignored-flags"
-    or die "Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags.\n";
+    or error("Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags.\n");
   while (<FILE>) {
     chop($_);
     $ignoredFlagsRegex = "$ignoredFlagsRegex$sep(?:$_)";
@@ -374,7 +374,7 @@ my $spec = q(
     {
       if ( grep( /^$name$/, @main::profiles ) ) {
          open(my $file, '>', "$main::ourDist/current-profile")
-           or die "Could not open profile file. Check OS permissions.\n";
+           or error("Could not open profile file. Check OS permissions.\n");
          print $file $name;
          close $file;
          exit 0;
@@ -411,7 +411,7 @@ exit main();
 
 sub main {
   @originalArgv = @ARGV;
-  $args->parse() or die "Failed to parse the command line.\n";
+  $args->parse() or error("Failed to parse the command line.\n");
 
   my $noLicense = exists($args->{'--no-license-message'})
     || defined($ENV{'KCC_NO_LICENSE_MESSAGE'});
@@ -459,25 +459,29 @@ sub main {
     $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
   }
 
+  if (!@srcFiles && !@objFiles) {
+    error("no input files found.\n");
+  }
+
   if ($args->{'-E'} || $args->{'-M'} || $args->{'-MM'}) {
     my $oval = $main::oflag;
     if ($oval) {
       if (scalar @srcFiles > 2) {
-        die "cannot specify -o with -c or -E with multiple files.\n";
+        error("cannot specify -o with -c or -E with multiple files.\n");
       }
     } else {
       $oval = '-';
     }
     return preprocess($oval, $srcFiles[0], $srcFiles[1]);
   } elsif ($hasStdin) {
-    die "-E or -x required when input is from standard input.\n";
+    error("-E or -x required when input is from standard input.\n");
   }
 
   if ($args->{'-c'}) {
     my $oval = $main::oflag;
     if ($oval) {
       if (scalar @srcFiles > 2) {
-        die "cannot specify -o with -c or -E with multiple files.\n";
+        error("cannot specify -o with -c or -E with multiple files.\n");
       }
       if (!$noLicense && $msg ne '') {
         printf "%s\n", $msg;
@@ -526,20 +530,20 @@ sub main {
   my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 1));
   checkError($retval, $programConfFile, 1);
 
-  open(FILE, $programConfFile) or die "Couldn't open file: $!\n";
+  open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
   my $programConf = join("", <FILE>);
   close(FILE);
 
   if ($args->{'-frunner-script'}) {
     $programConf = encode_base64($programConf);
-    open(FILE, catfile($distDirectory, 'program-runner')) or die "Couldn't open file: $!\n";
+    open(FILE, catfile($distDirectory, 'program-runner')) or error("Couldn't open file: $!\n");
     my $template = join("", <FILE>);
     close(FILE);
 
     $template =~ s?EXTERN_SCRIPTS_DIR?$profileDirectory?g;
     $template =~ s?EXTERN_HEAP_SIZE?$heapSize?g;
 
-    open(my $programRunner, '>', $oval) or die "Couldn't open file: $!\n";
+    open(my $programRunner, '>', $oval) or error("Couldn't open file: $!\n");
     print $programRunner "$template\n";
     print $programRunner "sub linkedProgram {\nreturn <<'PROGRAMCONF';\n$programConf\nPROGRAMCONF\n}\n";
     if (@ldArgs) {
@@ -610,7 +614,7 @@ sub main {
   my $numFilesChanged = chmod(0755, $oval);
 
   ($numFilesChanged == 1)
-  or die "Call to chmod $oval failed.\n";
+  or error("Call to chmod $oval failed.\n");
 
   return 0;
 }
@@ -710,7 +714,7 @@ sub classify {
     } elsif ($lang eq 'c++' or $lang eq 'c++-header') {
       push(@srcFiles, $_, 'c++');
     } elsif ($lang ne 'none') {
-      die "Unsupported -x option: $lang\n";
+      error("Unsupported -x option: $lang\n");
     } elsif (isKObj($_)) {
       push(@objFiles, $_);
     } elsif (isAr($_)) {
@@ -720,7 +724,7 @@ sub classify {
       push(@ldArgs, $_);
     } else {
       if (!($_ =~ $ignoredFlags)) {
-        die "Unsupported option: $_\n";
+        error("Unsupported option: $_\n");
       }
     }
   }
@@ -737,7 +741,7 @@ sub isNativeObj {
 
 sub extractStatic {
   my ($file, $basename, $suffix) = (@_);
-  -e $file or die "$file does not exist.\n";
+  -e $file or error("$file does not exist.\n");
   my $tempDir = File::Temp->newdir(
       TEMPLATE => 'tmp-kcc-ar-XXXX',
       CLEANUP => 0);
@@ -745,9 +749,9 @@ sub extractStatic {
   copy ($file, $tempDir);
   system("cd $tempDir && ar -x $basename$suffix");
   if ($? >> 8) {
-    die "failed to run ar -x.\n";
+    error("failed to run ar -x.\n");
   }
-  opendir my $dir, $tempDir or die "Cannot open directory: $tempDir\n";
+  opendir my $dir, $tempDir or error("Cannot open directory: $tempDir\n");
   my @files = readdir $dir;
   closedir $dir;
   for (@files) {
@@ -995,12 +999,17 @@ sub finalCleanup {
   if (!$args->{'-d'}) {
     for (@tempFiles) {
       if (-d $_) {
-        rmtree(rel2abs($_)) or die "Cannot remove_tree $_: $!";
+        rmtree(rel2abs($_)) or error("Cannot remove_tree $_: $!");
       } else {
         unlink;
       }
     }
   }
+}
+
+sub error {
+  print STDERR @_;
+  exit 1;
 }
 
 # This block gets run at the end of a normally terminating program, whether it
