@@ -35,11 +35,11 @@ module C-TYPING-SYNTAX
      syntax CId ::= typedef(CId) [klabel(typedef1)]
      syntax CId ::= vararg(Int)
 
-     syntax Bool ::= Type "==Type" Type [function]
-     syntax Bool ::= Type "=/=Type" Type [function]
+     syntax Bool ::= Type "==Type" Type [function, klabel(equalType)]
+     syntax Bool ::= Type "=/=Type" Type [function, klabel(notEqualType)]
 
-     syntax Bool ::= UType "==Type" UType [function]
-     syntax Bool ::= UType "=/=Type" UType [function]
+     syntax Bool ::= UType "==Type" UType [function, klabel(equalUType)]
+     syntax Bool ::= UType "=/=Type" UType [function, klabel(notEqualUType)]
 
      syntax SimpleType ::= simpleType(Type) [function]
 

@@ -187,13 +187,28 @@ module C-IO-BUFFERED
           requires I >Int 0
      rule #locations(Loc::SymLoc, 0) => .Set
 
-     rule <k> readBytes(Loc::SymLoc, Size::Int, T::Type)
-               => readBytes-aux(Loc +bytes (Size -Int 1), Size, .List, T)
+     rule <k> readBytes(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc, Size::Int, T::Type)
+               => readBytes-aux(loc(Base, Offset +Int Size -Int 1), Size, .List, T, ObjT, Len, M, Locs, Mem)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
+          <mem>...
+               Base |-> object(ObjT::Type, Len::Int, M::Array)
+          ...</mem>
+          <locs-written> Locs::Set </locs-written>
+          <buffer> Mem::List </buffer>
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
+     rule <k> readBytes(Loc::SymLoc, Size::Int, T::Type)
+               => readBytes-aux(Loc +bytes (Size -Int 1), Size, .List, T, .K, .K, .K, Locs, Mem)
+          ...</k>
+          <thread-id> ThreadId::Int </thread-id>
+          <locs-written> Locs::Set </locs-written>
+          <buffer> Mem::List </buffer>
+          requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
+                    andBool (ThreadId =/=K getThreadId(Loc)))
+               andBool isNativeLoc(Loc)
+
      rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated."))
                ~> readBytes(Loc::SymLoc, _, _)
           ...</k>
@@ -224,59 +239,35 @@ module C-IO-BUFFERED
                errorUninit) [macro]
 
      // loc, size in bytes, aux list
-     syntax KItem ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type ")"
-     //TODO(dwightguth): make these rules look a little better once we have partial compilation
-     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type "," K "," K "," K "," Set "," List ")" [function]
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, .List)
                // TODO(chathhorn): do we really need to check this stuff every
                // byte?
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
-          ...</k>
-          <mem>...
-               Base |-> object(ObjT::Type, Len::Int, M::Array)
-          ...</mem>
-          <locs-written> Locs::Set </locs-written>
-          <buffer> .List </buffer>
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T, ObjT, Len, M, Locs, .List)
           requires Size >Int 0 andBool Offset in_keys(M)
-          [structural]
-     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, Mem::List)
                => assertSeq(loc(Base, Offset), Locs)
                ~> assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
-          ...</k>
-          <mem>...
-               Base |-> object(ObjT::Type, Len::Int, M::Array)
-          ...</mem>
-          <locs-written> Locs::Set </locs-written>
-          <buffer> Mem::List </buffer>
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T, ObjT, Len, M, Locs, Mem)
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
-          [structural]
-     rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, Mem::List)
                => assertInBounds(Offset, Len)
                ~> assertVolatile(ObjT, Offset, T)
                ~> assertUninit(loc(Base, Offset))
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T)
-          ...</k>
-          <mem>...
-               Base |-> object(ObjT::Type, Len::Int,
-                    M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
-          ...</mem>
-          <buffer> Mem::List </buffer>
+               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T, ObjT, Len, 
+                    M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)], Locs, Mem)
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
-               andBool (notBool (Offset in_keys(M)))
+               andBool (notBool (Offset in_keys(M))) [owise]
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
-     rule <k> readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type)
+     rule readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type, .K, .K, .K, Locs::Set, Mem::List)
                => assertSeq(Loc, Locs)
-               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T)
-          ...</k>
-          <locs-written> Locs::Set </locs-written>
-          <buffer> Mem::List </buffer>
+               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T, .K, .K, .K, Locs, Mem)
           requires Size >Int 0 andBool notBool (Loc in locations(Mem))
-               andBool isNativeLoc(Loc)
-     rule readBytes-aux(_, 0, Aux::List, _) => dataList(Aux)
+     rule readBytes-aux(_, 0, Aux::List, _, _, _, _, _, _) => dataList(Aux)
           [structural]
 
      syntax Bits ::= getUninitializedBits(SymLoc, Type) [function]

@@ -211,7 +211,7 @@ module C-COMMON-EXPR-EVAL
      rule checkEffectiveType'(Loc::SymLoc, L::Type, _, _, _) => nclv(Loc, L)
           requires isNoType(L)
           [structural]
-     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, LAT:Type)
+     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, t(...) #as LAT::Type)
           // If compatible, the new last access type becomes a composite of the
           // current last-access object type and the type of the current lvalue
           // expression.
@@ -221,7 +221,7 @@ module C-COMMON-EXPR-EVAL
                // of the types at the given offset into the object.
                andBool effectivelyCompat(L, getTypesAtOffset(LAT, Offset))
           [structural]
-     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, LAT:Type)
+     rule checkEffectiveType'(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, t(...) #as LAT::Type)
           => checkEffectiveType''(Loc, L, Offset, Base, getEffectiveType(Base))
           requires notBool isNoType(L)
                andBool (notBool effectivelyCompat(L, getTypesAtOffset(LAT, Offset)) orBool isNoType(LAT))
@@ -230,13 +230,13 @@ module C-COMMON-EXPR-EVAL
      // If the lvalue isn't compatible with the last access type, then we try
      // the current effective type.
      syntax KItem ::= "checkEffectiveType''" "(" SymLoc "," Type "," Int "," SymBase "," K ")" [strict(5)]
-     rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, Eff:Type)
+     rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, t(...) #as Eff::Type)
           => nclv(setLastAccessType(Loc, newLastAccessType(Eff, L, Offset)), L)
           requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
      rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed."))
-          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, Eff:Type)
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, (t(...) #as Eff::Type => Eff))
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)
           [structural]
@@ -330,9 +330,9 @@ module C-COMMON-EXPR-EVAL
 
      syntax Bool ::= effectivelyCompat(Type, List) [function]
      rule effectivelyCompat(_:CharType, _) => true
-     rule effectivelyCompat(L::Type, ListItem(Eff:Type) _) => true
+     rule effectivelyCompat(L::Type, ListItem(Eff::Type) _) => true
           requires #effectivelyCompat(L, Eff)
-     rule effectivelyCompat(L::Type, (ListItem(Eff:Type) => .List) _)
+     rule effectivelyCompat(L::Type, (ListItem(Eff::Type) => .List) _)
           requires notBool #effectivelyCompat(L, Eff)
      rule effectivelyCompat(_, _) => false [owise]
 
@@ -372,7 +372,7 @@ module C-COMMON-EXPR-EVAL
      rule #effectivelyCompat(_, _) => false [owise]
 
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
+          <mem>... Base |-> object(t(...) #as T::Type, _, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem:Map </mem>

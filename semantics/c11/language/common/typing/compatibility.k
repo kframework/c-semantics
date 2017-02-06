@@ -20,11 +20,11 @@ module C-TYPING-COMPATIBILITY
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule T:Type ==Type T':Type => areCompatible(T, T')
-     rule T:Type =/=Type T':Type => notBool areCompatible(T, T')
+     rule T::Type ==Type T'::Type => areCompatible(T, T')
+     rule T::Type =/=Type T'::Type => notBool areCompatible(T, T')
 
-     rule T:UType ==Type T':UType => areCompatible(type(T), type(T'))
-     rule T:UType =/=Type T':UType => notBool areCompatible(type(T), type(T'))
+     rule T::UType ==Type T'::UType => areCompatible(type(T), type(T'))
+     rule T::UType =/=Type T'::UType => notBool areCompatible(type(T), type(T'))
 
      /*@ \fromStandard{\source[n1570]{\para{6.2.7}{1}}}{
      Two types have compatible type if their types are the same. Additional
@@ -52,11 +52,11 @@ module C-TYPING-COMPATIBILITY
      type.
      }*/
 
-     syntax Bool ::= areCompatible(Type, Type) [function]
-     rule areCompatible(T:Type, T':Type) => #areCompat(T, T', .Set)
+     syntax Bool ::= areCompatible(Type, Type) [function, klabel(areCompatibleType)]
+     rule areCompatible(T::Type, T'::Type) => #areCompat(T, T', .Set)
 
-     syntax Bool ::= areCompatible(UType, UType) [function]
-     rule areCompatible(T:UType, T':UType) => #areCompat(type(T), type(T'), .Set)
+     syntax Bool ::= areCompatible(UType, UType) [function, klabel(areCompatibleUType)]
+     rule areCompatible(T::UType, T'::UType) => #areCompat(type(T), type(T'), .Set)
 
      syntax Bool ::= #areCompat(Type, Type, Set) [function]
      rule #areCompat(
@@ -145,46 +145,111 @@ module C-TYPING-COMPATIBILITY
                t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)),
                t(Qs, Mods'::Set, arrayType(T'::Type, N)), Cache::Set)
           => #areCompat(T, T', Cache)
-     // here we use a T:FixedArrayType instead of a t(_, _, arrayType(_, _)) because
-     // we want to use T':IncompleteArrayType, but getQualifiers(T) and t(Quals, _, _) do
-     // not behave identically (one adds the qualifiers of the component type, one does not.
+
      rule #areCompat(
-               T:FixedLengthArrayType,
-               T':IncompleteArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'),  Cache)
+               t(Qs::Quals, _, arrayType(T::Type, _)),
+               t(Qs, _, incompleteArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               T:IncompleteArrayType,
-               T':FixedLengthArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, arrayType(T::Type, _)),
+               t(Qs, _, flexibleArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               T:FixedLengthArrayType,
-               T':VariableLengthArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, incompleteArrayType(T::Type)),
+               t(Qs, _, arrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               T:VariableLengthArrayType,
-               T':FixedLengthArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T')) andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, flexibleArrayType(T::Type)),
+               t(Qs, _, arrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+
+     rule #areCompat(
+               t(Qs::Quals, _, arrayType(T::Type, _)),
+               t(Qs, _, unspecifiedArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, arrayType(T::Type, _)),
+               t(Qs, _, variableLengthArrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, unspecifiedArrayType(T::Type)),
+               t(Qs, _, arrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, variableLengthArrayType(T::Type, _)),
+               t(Qs, _, arrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+
      // Two variable length arrays are compatible, but it's undefined if
      // they're used in an expression where they're required to be compat but
      // they have different sizes.
-     rule #areCompat(T:VariableLengthArrayType, T':VariableLengthArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool #areCompat(innerType(T), innerType(T'), Cache)
      rule #areCompat(
-               T:IncompleteArrayType,
-               T':VariableLengthArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, unspecifiedArrayType(T::Type)),
+               t(Qs, _, unspecifiedArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               T:VariableLengthArrayType,
-               T':IncompleteArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, variableLengthArrayType(T::Type, _)),
+               t(Qs, _, variableLengthArrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
      rule #areCompat(
-               T:IncompleteArrayType,
-               T':IncompleteArrayType, Cache::Set)
-          => (getQualifiers(T) ==K getQualifiers(T'))
-               andBool #areCompat(innerType(T), innerType(T'), Cache)
+               t(Qs::Quals, _, unspecifiedArrayType(T::Type)),
+               t(Qs, _, variableLengthArrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, variableLengthArrayType(T::Type, _)),
+               t(Qs, _, unspecifiedArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+
+     rule #areCompat(
+               t(Qs::Quals, _, incompleteArrayType(T::Type)),
+               t(Qs, _, unspecifiedArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, incompleteArrayType(T::Type)),
+               t(Qs, _, variableLengthArrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, flexibleArrayType(T::Type)),
+               t(Qs, _, variableLengthArrayType(T'::Type, _)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, flexibleArrayType(T::Type)),
+               t(Qs, _, unspecifiedArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+
+     rule #areCompat(
+               t(Qs::Quals, _, unspecifiedArrayType(T::Type)),
+               t(Qs, _, incompleteArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, variableLengthArrayType(T::Type, _)),
+               t(Qs, _, incompleteArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, variableLengthArrayType(T::Type, _)),
+               t(Qs, _, flexibleArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, unspecifiedArrayType(T::Type)),
+               t(Qs, _, flexibleArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+
+     rule #areCompat(
+               t(Qs::Quals, _, incompleteArrayType(T::Type)),
+               t(Qs, _, incompleteArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, flexibleArrayType(T::Type)),
+               t(Qs, _, incompleteArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, flexibleArrayType(T::Type)),
+               t(Qs, _, flexibleArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
+     rule #areCompat(
+               t(Qs::Quals, _, incompleteArrayType(T::Type)),
+               t(Qs, _, flexibleArrayType(T'::Type)), Cache::Set)
+          => #areCompat(T, T', Cache)
 
      rule #areCompat(
                t(Qs::Quals, Mods::Set, pointerType(T::Type)),
@@ -215,7 +280,7 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(type(T), type(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
           requires size(L) ==Int size(L')
-     rule #areCompat(_:Type, _:Type, _) => false [owise]
+     rule #areCompat(_, _, _) => false [owise]
 
      syntax Bool ::= #areParamsCompat(List, List, Set) [function]
      rule #areParamsCompat(
@@ -229,25 +294,25 @@ module C-TYPING-COMPATIBILITY
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(
-               ListItem(T:Type) L::List,
+               ListItem(t(...) #as T::Type) L::List,
                ListItem(typedDeclaration(T'::Type, _)) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(
                ListItem(typedDeclaration(T::Type, _)) L::List,
-               ListItem(T':Type) L'::List, Cache::Set)
+               ListItem(t(...) #as T'::Type) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(
-               ListItem(T:Type) L::List,
-               ListItem(T':Type) L'::List, Cache::Set)
+               ListItem(t(...) #as T::Type) L::List,
+               ListItem(t(...) #as T'::Type) L'::List, Cache::Set)
           => #areCompat(stripQualifiers(T), stripQualifiers(T'), Cache)
                andBool #areParamsCompat(L, L', Cache)
      rule #areParamsCompat(.List, .List, _) => true
      rule #areParamsCompat(_, _, _) => false [owise]
 
      syntax Bool ::= #areCompatFields(List, List, Set) [function]
-     rule #areCompatFields(ListItem(T:Type) L::List, ListItem(T':Type) L'::List, Cache::Set)
+     rule #areCompatFields(ListItem(t(...) #as T::Type) L::List, ListItem(t(...)  #as T'::Type) L'::List, Cache::Set)
           => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
      rule #areCompatFields(
                ListItem(typedDeclaration(T::Type, X:CId)) L::List,
