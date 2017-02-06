@@ -117,6 +117,7 @@ fail-compile:	test-build
 
 clean:
 	-$(MAKE) -C $(PARSER_DIR) clean
+	-$(MAKE) -C $(CPPPARSER_DIR) clean
 	-$(MAKE) -C $(SEMANTICS_DIR) clean
 	-$(MAKE) -C $(TESTS_DIR) clean
 	-$(MAKE) -C $(PASS_TESTS_DIR) clean
