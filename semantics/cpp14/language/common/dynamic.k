@@ -13,7 +13,8 @@ module CPP-DYNAMIC-SORTS
      syntax RExpr ::= XExpr | PRExpr
      syntax TExpr ::= GLExpr | RExpr
      syntax Expr ::= TExpr
-     syntax NNS ::= Namespace | Class | ClassTemplate | NNSSpecifier
+     syntax NNSVal ::= Namespace | Class | ClassTemplate
+     syntax NNS ::= NNSVal | NNSSpecifier
      syntax Namespace
      syntax Class
      syntax ClassTemplate
@@ -40,6 +41,7 @@ module CPP-REVAL-SYNTAX
 endmodule
 
 module CPP-DYNAMIC-SYNTAX
+     imports COMMON-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports BITS-SORTS
      imports CPP-SYMLOC-SORTS
@@ -50,6 +52,7 @@ module CPP-DYNAMIC-SYNTAX
      imports INT-SYNTAX
      imports LIST
      imports SET
+     imports BOOL
 
      syntax CPPValue ::= SymLoc
                        | Bits
@@ -104,11 +107,36 @@ module CPP-DYNAMIC-SYNTAX
                         | UnnamedNamespace
      syntax NamespaceSpecifier ::= Namespace(CId)
 
-     syntax Class ::= Namespace "::" ClassSpecifier
+     syntax LocalQualifier ::= localQual(BlockScope)
+     syntax ClassQualifier ::= Namespace | Class | LocalQualifier
+     syntax Class ::= ClassQualifier "::" ClassSpecifier
+     syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
+     syntax InnerClass ::= Class "::" ClassSpecifier
+     syntax LocalInnerClass ::= LocalClass
+                             | LocalInnerClass "::" ClassSpecifier
      syntax ClassSpecifier ::= Class(Tag, CId, TemplateArgs) [klabel(classSpecifier)]
      syntax ClassTemplate ::= Namespace "::" ClassTemplateSpecifier
      syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
                                      | ClassSpecifier //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
+
+     syntax MaybeNNS ::= NNS | "noNNS"
+     syntax MaybeNNS ::= getOuterClass(Class) [function]
+     rule getOuterClass(C:Class :: _::ClassSpecifier) => C
+     rule getOuterClass(_) => noNNS [owise]
+
+     syntax MaybeNNS ::= getParentNamespace(Namespace) [function]
+     rule getParentNamespace(N:Namespace :: _::NamespaceSpecifier) => N
+     rule getParentNamespace(_) => noNNS [owise]
+
+     syntax Bool ::= hasParentNamespace(Namespace) [function]
+     rule hasParentNamespace(N:Namespace :: _::NamespaceSpecifier) => true
+     rule hasParentNamespace(_) => false [owise]
+
+     syntax Namespace ::= getClassNamespace(Class) [function]
+     rule getClassNamespace(N:Namespace :: _::ClassSpecifier) => N
+     rule getClassNamespace(C:Class :: _::ClassSpecifier => C)
+     rule getClassNamespace(localQual(blockScope(N:Namespace :: _:CId, _, _)) :: _::ClassSpecifier) => N
+     rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
 
      syntax QualId ::= Class "::" CId
 
@@ -118,6 +146,19 @@ module CPP-DYNAMIC-SYNTAX
      syntax TemplateParameterScope ::= "templateParameterScope"
      syntax FunctionPrototypeScope ::= "prototypeScope"
      syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope
+
+     syntax Bool ::= inClassScope(Scope) [function]
+     rule inClassScope(_:NamespaceScope) => false
+     rule inClassScope(_:ClassScope) => true
+     rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
+
+     syntax Bool ::= isClassQualId(QualId) [function]
+     rule isClassQualId(C:Class :: _::CId) => true
+     rule isClassQualId(_) => false [owise]
+
+     syntax Class ::= classFromScope(Scope) [function]
+     rule classFromScope(classScope(C::Class)) => C
+     rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
 
      syntax Linkage ::= "ExternalLinkage" | "InternalLinkage" | "NoLinkage"
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
@@ -137,7 +178,8 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax KItem ::= gotoObject(Int, List, K, List, List) [klabel(gotoObjectCpp)]
 
-     syntax NameRef ::= nsRef(Namespace) | notFound(CId)
+     syntax NotFoundNameRef ::= notFound(CId)
+     syntax NameRef ::= nsRef(Namespace) | NotFoundNameRef
                       | templateRef(QualId, CPPTypeExpr)
      syntax Val ::= NameRef
      syntax KResult ::= CPPTypeExpr | NameRef

@@ -7,10 +7,12 @@ module CPP-DECL-NAMESPACE
      imports CPP-ENV-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-INIT-SYNTAX
+     imports CPP-TRANSLATION-NAME-SYNTAX
 
      syntax Decl ::= NamespaceNameDecl(Expr, Bool, List) [strict(1)]
 
-     rule NamespaceDecl(X::CId, IsInline::Bool, Decls::List) => NamespaceNameDecl(Name(NoNNS(), X), IsInline, Decls)
+     rule <k> NamespaceDecl(X::CId, IsInline::Bool, Decls::List) => NamespaceNameDecl(nameLookupInNamespace(X, N, NoTag(), true), IsInline, Decls) ...</k>
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
           requires X =/=K #NoName
 
      rule <k> NamespaceNameDecl(nsRef(N::Namespace), false, Decls::List)

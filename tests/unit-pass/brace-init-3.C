@@ -4,6 +4,6 @@ struct s {
 
 int main() {
   s x{};
-  x.y;
+  return x.y;
 }
 

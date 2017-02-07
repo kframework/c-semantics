@@ -12,4 +12,6 @@ module CPP-SETTINGS
 
      rule cfg:memberDataPtrSize => 4
      rule cfg:memberFunctionPtrSize => 8
+     rule cfg:memberDataPtrAlign => 4
+     rule cfg:memberFunctionPtrAlign => 8
 endmodule

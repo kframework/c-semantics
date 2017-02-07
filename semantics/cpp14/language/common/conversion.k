@@ -50,6 +50,10 @@ module CPP-CONVERSION
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-SYNTAX
+
+     context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
+     rule ConvertType(T::CPPType, R:PRVal) => convertType(T, R)
 
      rule arithInterpret(T:CPPIntegerType, N:Int, Tr::Trace) => prv(N, Tr, T)
           requires min(T) <=Int N andBool max(T) >=Int N

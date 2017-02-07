@@ -2,6 +2,7 @@ require "alignment.k"
 require "binding.k"
 require "bitsize.k"
 require "builtin.k"
+require "class.k"
 require "conversion.k"
 require "dynamic.k"
 require "error.k"
@@ -17,7 +18,6 @@ require "expr/bitwise.k"
 require "expr/cast.k"
 require "expr/eval.k"
 require "expr/multiplicative.k"
-require "expr/name.k"
 require "expr/members.k"
 require "expr/relational.k"
 require "expr/unary.k"
@@ -35,6 +35,7 @@ module CPP-COMMON
      imports CPP-BINDING
      imports CPP-BITSIZE
      imports CPP-BUILTIN
+     imports CPP-CLASS
      imports CPP-CONVERSION
      imports CPP-DYNAMIC
      imports CPP-ERROR

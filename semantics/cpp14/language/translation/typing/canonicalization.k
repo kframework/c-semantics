@@ -48,6 +48,8 @@ module CPP-TYPING-CANONICALIZATION
      rule ThrowSpec(krlist(.List)) => exSet(.Set)
      rule NoExceptionSpec() => noexcept(false)
 
+     rule QualifiedTypeName(NoTag(), N::NNS, Name(NoNNS(), X::CId))
+          => Name(N, X)
      rule QualifiedTypeName(NoTag(), N::NNS, TypedefType(X::CId))
           => Name(N, X)
      rule QualifiedTypeName(NoTag(), N::NNS, TemplateParameterType(X::CId))

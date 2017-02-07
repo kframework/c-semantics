@@ -81,6 +81,12 @@ module CPP-VALUE-CATEGORY
      context catof(ReinterpretCast(HOLE:AType, _))
      rule catof(ReinterpretCast(T:CPPType, _) => unnamedCat(T))
 
+     // 5.2.3:2
+     rule catof(FunctionalCast(_, .List) => prvalue)
+     // 5.2.3:1
+     rule catof(FunctionalCast(T::AType, ListItem(A::K)) => ParenthesizedCast(T, A))
+     rule catof(FunctionalCast(_, ListItem(_) ListItem(_) _::List) => prvalue)
+
      syntax ValueCategory ::= unnamedCat(CPPType) [function]
      rule unnamedCat(T::CPPType) => #if isUnnamedLValue(T) #then lvalue #else #if isUnnamedXValue(T) #then xvalue #else prvalue #fi #fi
 

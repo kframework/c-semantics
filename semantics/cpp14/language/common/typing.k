@@ -112,7 +112,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPFunctionType ::= t(q: Quals, m: Set, st: CPPSimpleFunctionType) [klabel(tcpp)]
      syntax CPPArithmeticType ::= CPPIntegerType | CPPFloatingType
-     syntax CPPFundamentalType ::= CPPArithmeticType | CPPVoidType | CPPNullPtrTType
+     syntax CPPScalarType ::= CPPArithmeticType | CPPEnumType | CPPPointerType | CPPMemberPointerType | CPPNullPtrTType
+     syntax CPPFundamentalType ::= CPPVoidType | CPPArithmeticType | CPPNullPtrTType
      syntax CPPCharType ::= t(q: Quals, m: Set, st: CPPSimpleCharType) [klabel(tcpp)]
      syntax CPPBoolType ::= t(q: Quals, m: Set, st: CPPSimpleBoolType) [klabel(tcpp)]
      syntax CPPFloatingType ::= t(q: Quals, m: Set, st: CPPSimpleFloatingType) [klabel(tcpp)]
@@ -136,14 +137,11 @@ module CPP-TYPING-SYNTAX
      syntax CPPScopedEnumType
      syntax CPPUnscopedEnumType
      syntax CPPType ::= CPPFunctionType
-                      | CPPPointerType
-                      | CPPMemberPointerType
-                      | CPPNullPtrTType
+                      | CPPScalarType
                       | CPPRefType
                       | CPPArrayType 
                       | CPPClassType 
                       | CPPFundamentalType
-                      | CPPEnumType
 
      syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(q: Quals, m: Set, st: CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
      syntax CPPClassTypeExpr ::= CPPClassType | t(q: Quals, m: Set, st: CPPSimpleClassTypeExpr) [klabel(tcpp)]
@@ -266,7 +264,7 @@ module CPP-TYPING
 
      rule isVolatileType(t(Q::Quals, _, _)) => Volatile() inQuals Q
 
-     rule getTag(t(_, _, classType(_ :: Class(Tag::Tag, _, _)))) => Tag
+     rule getTag(t(_, _, classType(_::ClassQualifier :: Class(Tag::Tag, _, _)))) => Tag
      rule getTag(_) => .K [owise]
 
      rule addQuals(Qs'::Quals, t(Qs::Quals, Mods::Set, T::CPPSimpleType))

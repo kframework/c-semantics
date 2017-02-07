@@ -7,20 +7,23 @@ module CPP-EXPR-MEMBERS
      imports CPP-SYNTAX
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
-
-     rule le(E::Expr, Trace::Trace, T::CPPType). TK::TemplateKeyword N::Name
-          => le(E . TK N, Trace, T)
+     imports CPP-CLASS-SYNTAX
 
      context HOLE:Expr . _ _
 
-     rule lv(Loc:SymLoc, _, T:CPPClassType) . no-template Name(NoNNS(), F:CId) => lookupFieldCPP(F, Loc, getQuals(T), getClassInfo(T))
+     rule LV:LVal . no-template N::Name
+       => lookupFieldCPP(LV, N, type(LV))
 
-     syntax KItem ::= lookupFieldCPP(CId, SymLoc, Quals, ClassInfo)
-     rule <k> lookupFieldCPP(F::CId, Loc::SymLoc, Qs::Quals,
-            <class>...
-              <cenv>... F |-> (T::CPPType |-> O::Int) ...</cenv>
-            ...</class>)
-          => lv(Loc +bytes O /Int cfg:bitsPerByte, noTrace, addQuals(Qs, T))
+     syntax KItem ::= lookupFieldCPP(LVal, Name, CPPType)
+     //TODO(traiansf): Check access permissions
+     rule <k> lookupFieldCPP(LV::LVal, Name(NoNNS(), F::CId) #as N::Name, t(Qs::Quals, _, classType(C::Class)))
+           => fieldExp(LV, N, addQuals(Qs, T), Offset)
           ...</k>
+          <class-id> C </class-id>
+          <cenv>... F |-> (T::CPPType |-> classOffset(Offset::Int)) ...</cenv>
+
+     syntax KItem ::= fieldExp(LVal, Name, CPPType, Int)
+     rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
+          => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
           requires notBool isCPPBitfieldType(T)
 endmodule

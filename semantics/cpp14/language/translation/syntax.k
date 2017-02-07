@@ -14,6 +14,7 @@ module CPP-ABSTRACT-SYNTAX
      imports COMMON-SORTS
      imports COMPAT-SORTS
      imports CPP-DEPENDENT-SYNTAX
+     imports CPP-CLASS-SYNTAX
 
      syntax LVal ::= LExpr
      syntax XVal ::= XExpr
@@ -192,7 +193,7 @@ module CPP-ABSTRACT-SYNTAX
                    | ParenthesizedCast(AType, Expr) [strict]
                    | StaticCast(AType, Expr)
                    | DynamicCast(AType, Expr)
-                   | FunctionalCast(AType, List)
+                   | FunctionalCast(AType, List) [strict(1)]
                    | SizeofType(AType) [strict]
                    | SizeofExpr(Expr)
                    | AlignofType(AType)
@@ -202,9 +203,6 @@ module CPP-ABSTRACT-SYNTAX
                    | Noexcept(Expr)
                    | NewExpr(AType, AExpr, Init, List) [strict(1)]
                    | DeleteExpr(Bool, Bool, Expr)
-                   | This
-
-     syntax This ::= This()
 
      syntax Expr ::= Throw(Expr)
                    | Lambda(CaptureDefault, List, AType, AStmt)

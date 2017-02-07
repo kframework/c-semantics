@@ -5,6 +5,7 @@ require "configuration.k"
 require "error.k"
 require "init.k"
 require "memory.k"
+require "resolution.k"
 require "settings.k"
 require "symloc.k"
 require "syntax.k"
@@ -16,5 +17,6 @@ module COMMON
   imports ERROR
   imports COMMON-INIT
   imports MEMORY
+  imports COMMON-RESOLUTION-SYNTAX
   imports SYMLOC
 endmodule

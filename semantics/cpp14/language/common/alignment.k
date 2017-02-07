@@ -10,6 +10,7 @@ module CPP-ALIGNMENT-SYNTAX
 endmodule
 
 module CPP-ALIGNMENT
+     imports BOOL
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -17,4 +18,7 @@ module CPP-ALIGNMENT
      rule byteAlignofType(t(_, _, _:CPPSimpleCharType)) => cfg:alignofSignedChar
      rule byteAlignofType(t(_, _, int)) => cfg:alignofInt
      rule byteAlignofType(_:CPPPointerType) => cfg:alignofPointer
+     rule byteAlignofType(_:CPPMemberFunctionPointerType) => cfg:memberFunctionPtrAlign
+     rule byteAlignofType(T:CPPMemberPointerType) => cfg:memberDataPtrAlign
+          requires notBool isCPPMemberFunctionPointerType(T)
 endmodule

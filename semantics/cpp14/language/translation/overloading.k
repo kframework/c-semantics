@@ -1,10 +1,17 @@
 module CPP-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
+     imports CPP-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
      syntax CandidateSet ::= cSet(Map)
+                           | classSet(Class, CId, Map)
+                           | wrapInThis(CandidateSet)
+
+     syntax Expr ::= wrapInThis(TypeExpr) [strict]
+
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, StrictList, StrictList, CId, CId)
      syntax Expr ::= resolveUniqueDecl(K, Expr) [strict(1)]
+     syntax Expr ::= cSetUnion(K, K) [strict]
 
 endmodule
 
@@ -25,6 +32,11 @@ module CPP-OVERLOADING
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
+     imports CPP-CLASS-SYNTAX
+
+     rule cSetUnion(notFound(_), E::Expr) => E
+     rule cSetUnion(E::Expr, notFound(_)) => E
+     rule cSetUnion(cSet(M1::Map), cSet(M2::Map)) => cSet(M1 M2)
 
      context resolveOverload(_, _, (HOLE:StrictList => types(HOLE)), _, _, _)
      context resolveOverload(_, _, _, (HOLE:StrictList => cats(HOLE)), _, _)
@@ -135,12 +147,21 @@ module CPP-OVERLOADING
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+
+     rule resolveUniqueDecl(wrapInThis(classSet(_, X::CId, T::CPPType |-> classOffset(_))), E::Expr) => le(This() . no-template Name(NoNNS(), X), hasTrace(E), T)
+     rule resolveUniqueDecl(wrapInThis(classSet(_, _, (_ |-> kpair(_, _)) #as S::Map)) => cSet(S), _)
+     rule resolveUniqueDecl(classSet(C::Class, X::CId, T::CPPType |-> _:ClassOffset), E::Expr)
+       => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
+     rule resolveUniqueDecl(classSet(_, _, (_ |-> kpair(_, _)) #as S::Map) => cSet(S), _)
+
      rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires notBool loc(Base, 0) in_keys(Refs)
      rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
+
      rule resolveUniqueDecl(V:KResult, _) => V
           requires notBool isCandidateSet(V)
 
+     rule wrapInThis(T:CPPType) => T
 endmodule

@@ -24,6 +24,12 @@ module CPP-TRANSLATION-EXPR-CAST
           requires isObjectType(type(V)) andBool isObjectType(innerType(T2))
                andBool isSimilar(type(pointerType(innerType(T2))),
                                  type(pointerType(type(V))))
+     //5.2.3:1
+     rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
+     //5.2.3:2
+     rule FunctionalCast(T:CPPType, .List)
+          => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
+          requires notBool isCPPArrayType(T)
 
      // TODO(dwightguth): 5.4:4.3-5
      rule ParenthesizedCast(T:CPPType, V:Val)

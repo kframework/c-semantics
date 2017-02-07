@@ -3,7 +3,6 @@ require "domains.k"
 require "language/translation/translation.k"
 require "language/common/common.k"
 require "../linking/linking.k"
-require "../common/common.k"
 require "c-settings.k"
 
 module C11-TRANSLATION-SYNTAX

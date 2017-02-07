@@ -1,5 +1,5 @@
 module C-LINKING-RESOLUTION-SYNTAX
-     imports BASIC-K
+     imports COMMON-RESOLUTION-SYNTAX
 
      syntax KItem ::= "resolveReferences"
      syntax KItem ::= "removeUnusedIdentifiers"
@@ -23,7 +23,6 @@ module C-LINKING-RESOLUTION
 
      syntax KItem ::= resolveReference(CId)
                     | resolveReferences(Map)
-                    | resolveCPPReference(SymBase)
                     | "resolveMain"
 
      rule <k> resolveReferences => resolveReferences(Uses) ...</k>
@@ -69,7 +68,7 @@ module C-LINKING-RESOLUTION
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set
+               OdrBase |-> (SetItem(ktriple(Tu::String, N:Namespace :: X::CId, T:K)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... N :: X |-> (T |-> Base'::SymBase _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
@@ -81,14 +80,14 @@ module C-LINKING-RESOLUTION
      // used by local statics
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set
+               OdrBase |-> (SetItem(ktriple(Tu::String, QX::QualId, T:K)) => .Set) _::Set
           ...</odr-decls>
-          <odr-defs>... N :: X |-> (T |-> _ _::Map) ...</odr-defs>
+          <odr-defs>... QX |-> (T |-> _ _::Map) ...</odr-defs>
           requires notBool isLinkerLoc(OdrBase)
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
-               OdrBase |-> (SetItem(ktriple(Tu::String, N::Namespace :: X::CId, T:K)) => .Set) _::Set
+               OdrBase |-> (SetItem(ktriple(Tu::String, N:Namespace :: X::CId, T:K)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... N :: X |-> (T |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>

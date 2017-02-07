@@ -1,3 +1,4 @@
+require "../common/common.k"
 require "error.k"
 require "init.k"
 require "resolution.k"

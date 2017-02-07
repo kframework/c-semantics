@@ -9,10 +9,10 @@ module CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-TYPING-SORTS
 
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
-                    | declareObject(Namespace, Namespace, CId, CPPTypeExpr, Init, DeclarationType, Linkage, Duration, Set)
-                    | defineObject(Namespace, CId, CPPType, Init, DeclarationType, Duration, Set)
-                    | initializeObject(Namespace, CId, CPPType, K, DeclarationType) [strict(4)]
-     syntax Declarator ::= NormalizedDecl(NNS, CId, AType, Init, DeclarationType)
+                    | declareObject(NNSVal, NNSVal, CId, CPPTypeExpr, Init, DeclarationType, Linkage, Duration, Set)
+                    | defineObject(NNSVal, CId, CPPType, Init, DeclarationType, Duration, Set)
+                    | initializeObject(NNSVal, CId, CPPType, K, DeclarationType) [strict(4)]
+     syntax Declarator ::= NormalizedDecl(nns: NNS, id: CId, type: AType, init: Init, dtype: DeclarationType)
 
      syntax DeclState ::= "declared" | "completed" | "defined" | "initialized"
  
@@ -33,7 +33,6 @@ module CPP-DECL-DECLARATOR
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
-     imports CPP-EXPR-NAME-SYNTAX
      imports CPP-PROCESS-LABEL-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -54,18 +53,22 @@ module CPP-DECL-DECLARATOR
 
      rule NormalizedDecl(N::Namespace, X::CId, T::AType, Init::Init, Type::DeclarationType) => DeclaratorAndSpecifiers(NormalizedDecl(N, X, T, Init, Type), .Set)
 
+     context DeclaratorAndSpecifiers(NormalizedDecl(... nns: HOLE:NNS), _)
+             requires HOLE =/=K NoNNS()
+             [result(NNSVal)]
+
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => N), _, _, _, _), _) ...</k>
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => NoNamespace()), _, _, _, _), _) ...</k>
-          <curr-scope> _:BlockScope </curr-scope>
-     rule (.K => nameLookup(X, NoTag())) ~> DeclaratorAndSpecifiers(NormalizedDecl(NNS(X:CId), _, _, _, _), _)
-     rule (nsRef(N::Namespace) => .K) ~> DeclaratorAndSpecifiers(NormalizedDecl((_ => N), _, _, _, _), _)
+          <curr-scope> _:BlockScope </curr-scope> 
+     rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => C), _, _, _, _), _) ...</k>
+          <curr-scope> classScope(C::Class) </curr-scope>
 
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:AType, _, _), _) [result(CPPTypeExpr)]
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:CPPTypeExpr, _, _), _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:Namespace, X::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, T, Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
+     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(mkQualId(getInnermostNamespace(N, Scope), X), T, Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <curr-scope> Scope::Scope </curr-scope>
@@ -74,17 +77,21 @@ module CPP-DECL-DECLARATOR
           <curr-extern> IsExtern:Bool </curr-extern>
           requires ((notBool IsExtern) orBool Extern() in S)
                andBool (notBool isCPPFunctionType(T) orBool isAdjustedType({T}:>CPPFunctionType))
+     
+     syntax QualId ::= mkQualId(NNSVal, CId) [function]
+     rule mkQualId(N:Namespace, X::CId) => N :: X
+     rule mkQualId(C:Class, X::CId) => C :: X
 
      rule <k> DeclaratorAndSpecifiers(_, (S::Set => SetItem(Extern()) S)) ...</k>
           <curr-extern> true </curr-extern>
           requires notBool (Extern() in S)
 
-     syntax Linkage ::= getLinkage(Set, Namespace, Scope, Quals, K, DeclarationType) [function]
+     syntax Linkage ::= getLinkage(Set, NNSVal, Scope, Quals, K, DeclarationType) [function]
                       | getNamespaceLinkage(Namespace, DeclarationType) [function]
                       | getNamespaceLinkage(Namespace) [function, klabel(getNamespaceLinkage1)]
      syntax KItem ::= getPreviousLinkage(QualId, CPPType, Map, Map) [function]
      syntax Duration ::= getDuration(Set, Scope) [function]
-     syntax Namespace ::= getInnermostNamespace(Namespace, Scope) [function]
+     syntax NNSVal ::= getInnermostNamespace(NNSVal, Scope) [function]
 
      rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::Map) _::Map, _) => ExternalLinkage
      rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::Map) _::Map) => InternalLinkage
@@ -99,6 +106,10 @@ module CPP-DECL-DECLARATOR
      //TODO(dwightguth): 3.5:3.3
 
      rule getLinkage(_, DeclNamespace::Namespace, _:NamespaceScope, _, _, Type::DeclarationType) => getNamespaceLinkage(DeclNamespace, Type) [owise]
+
+     // 9.4.2:5
+     rule getLinkage(S::Set, C:Class, _, _, _, _) => ExternalLinkage
+          requires Static() in S
 
      // 3.5:4
      rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage 
@@ -132,7 +143,7 @@ module CPP-DECL-DECLARATOR
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
      // ExternalLinkage, StaticStorage, not previously declared
-     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -148,7 +159,7 @@ module CPP-DECL-DECLARATOR
                andBool completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, not previously declared
-     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -173,7 +184,7 @@ module CPP-DECL-DECLARATOR
               andBool notBool isCompleteType(T') andBool innerType(T) ==Type innerType(T') andBool getQuals(T) ==K getQuals(T')
 
      // ExternalLinkage, StaticStorage, redeclare complete type
-     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -186,7 +197,7 @@ module CPP-DECL-DECLARATOR
           requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, redeclare complete type
-     rule <k> declareObject(N::Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -266,7 +277,7 @@ module CPP-DECL-DECLARATOR
      rule defineObject(_, _, _, NoInit(), _, _, S::Set) => .K
           requires Extern() in S
 
-     rule <k> defineObject(N::Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
+     rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage),
                    T, StaticStorage, Init, Init), Type) ...</k>
@@ -285,7 +296,7 @@ module CPP-DECL-DECLARATOR
 
      syntax Expr ::= allocateDecl(QualId, CPPType, Duration)
 
-     rule <k> allocateDecl(N::Namespace :: X::CId, T::CPPType, StaticStorage)
+     rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage)
               => addToEnv(N :: X, T, Base', false)
               ~> #if notBool isCPPRefType(T) #then allocObject(Base', T, byteSizeofType(T)) #else .K #fi
               ~> lv(lnew(Base', T), noTrace, T) ...</k>

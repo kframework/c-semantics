@@ -37,11 +37,11 @@ module CPP-DECL-TEMPLATE
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
-     imports CPP-EXPR-NAME-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TRANSLATION-NAME-SYNTAX
 
      rule TemplateWithInstantiations(D::Decl, L::List, ExplicitInstantiations::List) => Template(D, L) ~> listToK(ExplicitInstantiations) [anywhere]
 
@@ -137,7 +137,7 @@ module CPP-DECL-TEMPLATE
      // template instantiation
 
      rule <k> TemplateInstantiationDefinition(TemplateSpecializationType(X::CId), NormalizedDecl(NoNNS(), X::CId, A::AType, _, _)) 
-              => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag()), A)) ~> finishExplicitInstantiation ...</k>
+              => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), false), A)) ~> finishExplicitInstantiation ...</k>
 
      syntax KItem ::= "finishExplicitInstantiation"
      rule _:LVal ~> finishExplicitInstantiation => .K

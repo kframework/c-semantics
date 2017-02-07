@@ -32,6 +32,7 @@ require "expr/eval.k"
 require "expr/inc-and-dec.k"
 require "expr/literal.k"
 require "expr/logical.k"
+require "expr/members.k"
 require "expr/multiplicative.k"
 require "expr/new.k"
 require "expr/reference.k"
@@ -88,6 +89,7 @@ module CPP-TRANSLATION
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LITERAL
      imports CPP-EXPR-LOGICAL
+     imports CPP-TRANSLATION-EXPR-MEMBERS
      imports CPP-TRANSLATION-EXPR-MULTIPLICATIVE
      imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE

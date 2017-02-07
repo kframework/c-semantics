@@ -27,6 +27,9 @@ module CPP-TYPING-EXPR
      imports CPP-TYPING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
+     imports C-CONFIGURATION
+     imports CPP-CLASS-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
 
      syntax STypeList ::= toSTypeList(List) [function]
      syntax List ::= ofSTypeList(STypeList) [function]
@@ -88,6 +91,20 @@ module CPP-TYPING-EXPR
           requires notBool isCPPRefType(T)
      rule typeof(ReinterpretCast(T:CPPRefType, _) => innerType(T))
 
+     context typeof(FunctionalCast(HOLE:AType, _))
+     // 5.2.3:2
+     rule typeof(FunctionalCast(T:CPPType, .List) => T)
+     // 5.2.3:1
+     rule typeof(FunctionalCast(T::CPPType, ListItem(A::K)) => ParenthesizedCast(T, A))
+     rule typeof(FunctionalCast(T:CPPType, ListItem(_) ListItem(_) _::List) => T)
+
+     syntax TypeExpr ::= typeofField(TypeExpr, CId)
+     rule typeof(E::Expr . no-template Name(NoNNS(), X:CId)) => typeofField(E, X)
+     context typeofField((HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPType)]
+     rule <k> typeofField(t(_, _, classType(C::Class)), X:CId) => typeof(T) ...</k>
+          <class-id> C </class-id>
+          <cenv>... X |-> (T::CPPType |-> _:ClassOffset) ...</cenv>
+
      context typeof(NewExpr(HOLE:AType, _, _, _))
      rule typeof(NewExpr(T:CPPType, _, _, _) => type(pointerType(T)))
           requires notBool isCPPArrayType(T)
@@ -107,7 +124,7 @@ module CPP-TYPING-EXPR
                     | typeofBuiltinOperator(OpId, TypeExpr)
                     | typeofConditional(Expr, Expr)
 
-     syntax CPPDType ::= dataMember(CPPClassType, CPPType)
+     syntax CPPDType ::= dataMember(Class, CPPType)
      context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPDType)]
      context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
      context typeofOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
@@ -187,8 +204,9 @@ module CPP-TYPING-EXPR
           => typeof(type(pointerType(T)))
      rule typeofBuiltinOperator(operator*, T::CPPType)
           => typeof(innerType(T))
-     rule typeofBuiltinOperator(operator&, dataMember(C::CPPClassType, T::CPPType))
-          => typeof(type(memberPointerType(C, T)))
+     rule typeofBuiltinOperator(operator&, dataMember(C::Class, T::CPPType))
+          => typeof(type(memberPointerType(t(noQuals, .Set, classType(C)), T)))
+     rule type(dataMemberValue(memberPointer(C::Class, _, T::CPPType), _, _)) => dataMember(C, T)
 
      rule (.K => typeAndCatOfConditional(E2, E2, E2, E3, E3, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(T:CPPType, _) ~> typeofConditional(_, _) => typeof(T)

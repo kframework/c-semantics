@@ -1,0 +1,12 @@
+struct c{
+    static int x;
+    static int y;
+};
+
+int c::y = 0;
+int y = 1;
+int c::x = y;
+
+int main() {
+    return c::x;
+}
