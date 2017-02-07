@@ -1,4 +1,4 @@
- Type of lvalue not compatible with the effective type of the object being accessed.
+ Type of lvalue (float) not compatible with the effective type of the object being accessed (unsigned int).
    at f(effective_type_1.c:7:3)
    by main(effective_type_1.c:16:3)
   Undefined behavior (UB-EIO10).

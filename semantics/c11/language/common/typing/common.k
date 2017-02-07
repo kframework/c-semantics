@@ -11,10 +11,11 @@ endmodule
 
 module C-TYPING-COMMON
      imports C-CONFIGURATION
+     imports FLOAT
      imports K-REFLECTION
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports FLOAT
 
      rule type(T:Type) => T
      rule type(typedDeclaration(T::Type, _)) => T
@@ -212,5 +213,83 @@ module C-TYPING-COMMON
      rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
           => Qs +Quals getQualifiers(innerType(type(T)))
      rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
+
+     syntax String ::= showTypeSpecifier(SimpleType) [function]
+     rule showTypeSpecifier(bool) => "_Bool"
+     rule showTypeSpecifier(char) => "char"
+     rule showTypeSpecifier(signed-char) => "signed char"
+     rule showTypeSpecifier(short-int) => "short"
+     rule showTypeSpecifier(int) => "int"
+     rule showTypeSpecifier(long-int) => "long"
+     rule showTypeSpecifier(long-long-int) => "long long"
+     rule showTypeSpecifier(unsigned-char) => "unsigned char"
+     rule showTypeSpecifier(unsigned-short-int) => "unsigned short"
+     rule showTypeSpecifier(unsigned-int) => "unsigned int"
+     rule showTypeSpecifier(unsigned-long-int) => "unsigned long"
+     rule showTypeSpecifier(unsigned-long-long-int) => "unsigned long long"
+     rule showTypeSpecifier(float) => "float"
+     rule showTypeSpecifier(double) => "double"
+     rule showTypeSpecifier(long-double) => "long double"
+     rule showTypeSpecifier(enumType(tag(X::CId, _, _))) => "enum " +String idToString(X)
+     rule showTypeSpecifier(void) => "void"
+     rule showTypeSpecifier(structType(tag(X::CId, _, _))) => "struct " +String idToString(X)
+     rule showTypeSpecifier(unionType(tag(X::CId, _, _))) => "union " +String idToString(X)
+     rule showTypeSpecifier(bitfieldType(T::SimpleType, _) => T)
+     rule showTypeSpecifier(no-type) => "<none>"
+     syntax String ::= showQualifiers(Set) [function]
+     rule showQualifiers(SetItem(Q1::Qualifier) SetItem(Q2::Qualifier) S::Set)
+          => showQualifier(Q1) +String " " +String showQualifiers(SetItem(Q2) S)
+     rule showQualifiers(SetItem(Q::Qualifier)) => showQualifier(Q)
+     rule showQualifiers(.Set) => ""
+     syntax String ::= showQualifier(Qualifier) [function]
+     rule showQualifier(Const()) => "const"
+     rule showQualifier(Volatile()) => "volatile"
+     rule showQualifier(Restrict()) => "restrict"
+     rule showQualifier(Atomic()) => "_Atomic"
+     syntax String ::= showSpecifiedType(Type) [function]
+     rule showSpecifiedType(T::Type) 
+          => showQualifiedSpecifier(T) +String showTypeSpecifier(simpleType(T))
+     syntax String ::= showQualifiedSpecifier(Type) [function]
+     rule showQualifiedSpecifier(t(quals(.Set), _, _)) => ""
+     rule showQualifiedSpecifier(t(quals(S::Set), _, _)) 
+          => showQualifiers(S) +String " " [owise]
+     syntax String ::= showQualifiedDeclarator(Quals) [function]
+     rule showQualifiedDeclarator(quals(.Set)) => ""
+     rule showQualifiedDeclarator(quals(S::Set)) 
+          => " " +String showQualifiers(S) [owise]
+     syntax String ::= showDeclarator(String, Type) [function]
+     rule showDeclarator(DDL::String, t(Q::Quals, _, pointerType(T::Type)))
+          => showDeclarator(parens(T, "*" +String showQualifiedDeclarator(Q) +String DDL), T)
+     rule showDeclarator(DDL::String, t(Q::Quals, _, T:SimpleArrayType))
+          => showDeclarator(DDL +String showArrayDeclarator(T), innerType(t(Q, .Set, T)))
+     rule showDeclarator(DDL::String, t(Q::Quals, _, functionType(Ret::UType, Params::List)))
+          => showDeclarator(DDL +String " (" +String showFunctionDeclarator(Params) +String ")", type(Ret))
+     rule showDeclarator(DDL::String, T::Type)
+          => showSpecifiedType(T) +String DDL [owise]
+     syntax String ::= showArrayDeclarator(SimpleArrayType) [function]
+     rule showArrayDeclarator(arrayType(_, I::Int)) => " [" +String Int2String(I) +String "]"
+     rule showArrayDeclarator(T:SimpleIncompleteArrayType) => " []"
+     rule showArrayDeclarator(unspecifiedArrayType(_)) => " [*]"
+     rule showArrayDeclarator(variableLengthArrayType(_, _)) => " [<expr>]"
+     syntax String ::= showFunctionDeclarator(List) [function]
+     rule showFunctionDeclarator(ListItem(T1:DType) ListItem(T2::DType) L::List)
+          => showDType(T1) +String ", " +String showFunctionDeclarator(ListItem(T2) L)
+     rule showFunctionDeclarator(ListItem(T:DType))
+          => showDType(T)
+     rule showFunctionDeclarator(ListItem(T1:Type) ListItem(T2::DType) L::List)
+          => showType(T1) +String ", " +String showFunctionDeclarator(ListItem(T2) L)
+     rule showFunctionDeclarator(ListItem(T:Type))
+          => showType(T)
+     rule showFunctionDeclarator(.List) => ""
+     syntax String ::= parens(Type, String) [function, klabel(showTypeParensC)]
+     rule parens(_:FunctionType, S::String) => "(" +String S +String ")"
+     rule parens(_:ArrayType, S::String) => "(" +String S +String ")"
+     rule parens(_, S::String) => " " +String S [owise]
+
+     rule showType(T::Type) => showDeclarator("", T)
+     rule showDType(variadic) => "..."
+     rule showDType(typedDeclaration(T::Type, #NoName)) => showDeclarator("", T)
+     rule showDType(typedDeclaration(T::Type, #NoName(_))) => showDeclarator("", T)
+     rule showDType(typedDeclaration(T::Type, X::CId)) => showDeclarator(" " +String idToString(X), T) [owise]
 
 endmodule

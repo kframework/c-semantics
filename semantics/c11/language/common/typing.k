@@ -377,4 +377,7 @@ module C-TYPING-SYNTAX
      syntax List  ::= searchAnons(CId, Bool, FieldInfo, Int, List, List) [function]
 
      syntax UType ::= arrayToPtrType(Type) [function]
+
+     syntax String ::= showType(Type) [function]
+     syntax String ::= showDType(DType) [function]
 endmodule

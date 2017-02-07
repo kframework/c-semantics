@@ -1,4 +1,4 @@
- Type of lvalue not compatible with the effective type of the object being accessed.
+ Type of lvalue (float) not compatible with the effective type of the object being accessed (int).
    at main(j037d.c:10:7)
   Undefined behavior (UB-EIO10).
    see C11 section 6.5:7 http://rvdoc.org/C11/6.5

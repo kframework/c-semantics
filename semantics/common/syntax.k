@@ -30,6 +30,7 @@ module COMMON-SYNTAX
      syntax Qualifier ::= Const()
      syntax Qualifier ::= Volatile()
      syntax Qualifier ::= Restrict()
+     syntax Qualifier ::= Atomic()
 
      syntax EvalContext ::= "eval" | "noEval"
 

@@ -235,7 +235,7 @@ module C-COMMON-EXPR-EVAL
           requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
-     rule (.K => UNDEF("EIO10", "Type of lvalue not compatible with the effective type of the object being accessed."))
+     rule (.K => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ")."))
           ~> checkEffectiveType''(_, L::Type, Offset::Int, _, (t(...) #as Eff::Type => Eff))
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)

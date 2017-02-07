@@ -61,7 +61,6 @@ module C-SYNTAX
      and cvspec =
      CV_CONST | CV_VOLATILE | CV_RESTRICT
      */
-     syntax Qualifier ::= Atomic()
 
      /*
      and spec_elem =

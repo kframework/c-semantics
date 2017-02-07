@@ -64,7 +64,7 @@ UB-EIO3,Trying to modify an object declared with const type.,"6.7.3:6, J.2:1 ite
 UB-EIO4,Trying to modify an object declared with volatile type through a non-volatile lvalue.,"6.7.3:6, J.2:1 item 65",Undefined Behavior,
 UB-EIO7,Reading outside the bounds of an object.,"6.3.2.1:1, J.2:1 item 19",Undefined Behavior,
 UB-EIO9,Trying to access an object declared with volatile type through a non-volatile lvalue.,"6.7.3:6, J.2:1 item 65",Undefined Behavior,
-UB-EIO10,Type of lvalue not compatible with the effective type of the object being accessed.,"6.5:7, J.2:1 item 37",Undefined Behavior,
+UB-EIO10,Type of lvalue (<type>) not compatible with the effective type of the object being accessed (<type>).,"6.5:7, J.2:1 item 37",Undefined Behavior,
 UB-ESR1,Return from a function declared _Noreturn.,"6.7.4, J.2:1 item 71",Undefined Behavior,
 UB-TDG6,Void parameter appears with a storage class specifier.,"6.7.6.3:10, J.2:1 item 78",Undefined Behavior,
 UB-TDG7,Void parameter appears with qualifiers.,"6.7.6.3:10, J.2:1 item 78",Undefined Behavior,
