@@ -527,7 +527,7 @@ sub main {
 
   # At this point, we have 0 source files and 1 object file left for
   # the final calls to krun.
-  my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 1));
+  my $retval = execute($krun, getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++'));
   checkError($retval, $programConfFile, 1);
 
   open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
@@ -634,7 +634,7 @@ sub mergeObjs {
 
   if ($mergeObjs) {
     my $accum = tempFile();
-    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 1);
+    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++');
     my $retval = execute($krun, @cmd);
     checkError($retval, $accum, 1);
     @objFiles = ($accum);
@@ -765,7 +765,7 @@ sub compile {
   my ($oval, $inputFile, $lang) = (@_);
   my @arr = ();
   if ($lang eq 'c' or $lang eq 'c++') {
-    my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang eq 'c++'));
+    my $retval = execute($krun, getKRunCommand($oval, \@arr, $inputFile, 0, $lang));
     checkError($retval, $oval, 1);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
@@ -798,13 +798,13 @@ sub initOptions {
 }
 
 sub getKRunCommand {
-  my ($output, $objsRef, $src, $link, $isCPP) = (@_);
+  my ($output, $objsRef, $src, $link, $lang) = (@_);
   my @objs = @$objsRef;
 
   my @krun_args = (
     '--output', 'binary',
     '--output-file', $output,
-    '-d', $isCPP ? $CPP_TRANS_DEF : $C_TRANS_DEF,
+    '-d', $lang eq 'c++' ? $CPP_TRANS_DEF : $C_TRANS_DEF,
     '-w', 'none',
     '--smt', 'none'
     );
@@ -813,7 +813,7 @@ sub getKRunCommand {
     push(@krun_args, '--debug');
   }
   my @options = initOptions();
-  if (!$isCPP && !$hasBuiltins && $args->{'-Xbuiltins'}) {
+  if ($lang ne 'c++' && !$hasBuiltins && $args->{'-Xbuiltins'}) {
     push(@options, "`XBuiltins`(.KList)");
     $hasBuiltins = 1;
   }
@@ -859,7 +859,7 @@ sub getKRunCommand {
     push(@krun_args, "-cOBJS=.K");
   }
   if (defined $src) {
-    my $kast = parse($src, $isCPP);
+    my $kast = parse($src, $lang);
     push(@krun_args, '--parser', 'cat');
     push(@krun_args, $kast);
   } else {
@@ -876,7 +876,7 @@ sub getKRunCommand {
 }
 
 sub preprocess {
-  my ($output, $inputFile, $isCPP) = (@_);
+  my ($output, $inputFile, $lang) = (@_);
   my $isStdout = 0;
   if ($output eq '-') {
     $output = tempFile();
@@ -886,7 +886,7 @@ sub preprocess {
   if (!$args->{'-no-pedantic'}) {
     push(@main::cppArgs, '-pedantic');
   }
-  if ($isCPP eq 'c++') {
+  if ($lang eq 'c++') {
     my @ppArgs = ("$profileDirectory/cpp-pp",
       @main::cppArgs, $inputFile, '-o', $output);
 
@@ -933,13 +933,13 @@ sub tempFile {
 }
 
 sub parse {
-  my ($inputFile, $isCPP) = (@_);
+  my ($inputFile, $lang) = (@_);
 
   my $ppResult = tempFile();
   my $kast = tempFile();
-  checkError(preprocess($ppResult, $inputFile, $isCPP), $ppResult, 0);
+  checkError(preprocess($ppResult, $inputFile, $lang), $ppResult, 0);
 
-  if ($isCPP) {
+  if ($lang eq 'c++') {
     my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output -std=c++14 > $kast");
     if ($args->{'-d'}) {
       print("$cmd\n");
