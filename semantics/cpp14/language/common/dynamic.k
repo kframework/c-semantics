@@ -145,7 +145,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
      syntax TemplateParameterScope ::= "templateParameterScope"
      syntax FunctionPrototypeScope ::= "prototypeScope"
-     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope
+     syntax EnumScope ::= enumScope(Namespace, CId)
+     syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope | EnumScope
 
      syntax Bool ::= inClassScope(Scope) [function]
      rule inClassScope(_:NamespaceScope) => false
