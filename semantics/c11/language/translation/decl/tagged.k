@@ -69,7 +69,7 @@ module C-DECL-TAGGED
           => initEnum(E, tv(Next, ut(SetItem(IntegerConstant), int)))
           ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L)
           [structural]
-     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem)) _)
+     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem => reval(HOLE))) _) [result(RValue)]
      rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List)
           => initEnum(E, R)
           ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L)

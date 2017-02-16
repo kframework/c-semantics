@@ -17,10 +17,9 @@ module MEMORY-SYNTAX
 
      syntax DataList ::= splitBytes(EffectiveValue, Int) [function]
 
-     syntax IntPtr ::= joinPointerBytes(List, Bits) [function]
-     syntax IntPtr ::= joinSizedPointerBytes(Int, List, Bits) [function]
-     syntax Int ::= joinIntegerBytes(List, Bits) [function]
-     syntax Float ::= joinFloatBytes(List, Bits) [function]
+     syntax BitValue ::= joinBytes(List) [function]
+
+     syntax Bool ::= isFullFloat(Float, Int) [function]
 
 endmodule
 
@@ -42,7 +41,7 @@ module MEMORY
 
      rule #splitValueBytes(Loc::EffectiveValue, Len:Int, N:Int, L:List)
           => #splitValueBytes(Loc, Len -Int 1, N +Int 1,
-               L ListItem(piece(encodedValue(Loc, N, N), cfg:bitsPerByte)))
+               L ListItem(piece(encodedValue(Loc, N *Int cfg:bitsPerByte, (N +Int 1) *Int cfg:bitsPerByte), cfg:bitsPerByte)))
           requires Len >Int 0
      rule #splitValueBytes(_, 0, _, L:List) => dataList(L:List)
 
@@ -55,49 +54,26 @@ module MEMORY
      syntax Int ::= "byteMaskSet" [function]
      rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1
 
-     rule joinPointerBytes(L::List, Bs::Bits) => joinSizedPointerBytes(cfg:ptrsize, L, Bs)
+     // Fold bit:: over the list.
+     syntax BitValue ::= "joinBytes'" "(" List "," Bits ")" [function]
+     rule joinBytes(ListItem(N:Bits) L::List)
+          => joinBytes'(L, N)
+     rule joinBytes'(ListItem(N':Bits) L::List, N::Bits)
+          => joinBytes'(L, N bit:: N')
+     rule joinBytes'(.List, piece(N::BitValue, _)) => N
 
-     rule joinSizedPointerBytes(Size::Int, ListItem(piece(encodedValue(Loc::EffectiveValue, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
-               encodedValue(Loc, I::Int, End::Int))
-          => joinSizedPointerBytes(Size, L, encodedValue(Loc, I, End +Int 1))
-          requires Len ==Int cfg:bitsPerByte
-               andBool SNatEnd ==Int End +Int 1
-     rule joinSizedPointerBytes(Size::Int, .List, encodedValue(Loc::EffectiveValue, 0, N::Int))
-          => Loc
-          requires N ==Int Size -Int 1
-     rule joinSizedPointerBytes(Size::Int, .List, encodedValue(Loc::EffectiveValue, Begin::Int, End:Int))
-          => encodedValue(Loc, Begin, End)
-          requires End <Int Size -Int 1 orBool Begin >Int 0
-
-     rule joinFloatBytes(ListItem(piece(encodedValue(F:Float, SNatEnd::Int, SNatEnd::Int), Len::Int)) L::List,
-               encodedValue(F, I::Int, End::Int))
-          => joinFloatBytes(L, encodedValue(F, I, End +Int 1))
-          requires Len ==Int cfg:bitsPerByte
-               andBool SNatEnd ==Int End +Int 1
-     rule joinFloatBytes(.List, encodedValue(F:Float, 0, N::Int))
-          => F
-          requires isFullFloat(F, N)
-     rule joinFloatBytes(.List, encodedValue(F:Float, Begin::Int, End::Int))
-          => encodedValue(F, Begin, End)
-          requires notBool isFullFloat(F, End) orBool Begin >Int 0
-
-     syntax Bool ::= isFullFloat(Float, Int) [function]
      rule isFullFloat(F:Float, N::Int) => true
           requires precisionFloat(F) ==K cfg:precisionofFloat
                andBool exponentBitsFloat(F) ==K cfg:exponentofFloat
-               andBool N +Int 1 ==Int cfg:sizeofFloat
+               andBool N ==Int (cfg:sizeofFloat *Int cfg:bitsPerByte)
      rule isFullFloat(F:Float, N::Int) => true
           requires precisionFloat(F) ==K cfg:precisionofDouble
                andBool exponentBitsFloat(F) ==K cfg:exponentofDouble
-               andBool N +Int 1 ==Int cfg:sizeofDouble
+               andBool N ==Int (cfg:sizeofDouble *Int cfg:bitsPerByte)
      rule isFullFloat(F:Float, N::Int) => true
           requires precisionFloat(F) ==K cfg:precisionofLongDouble
                andBool exponentBitsFloat(F) ==K cfg:exponentofLongDouble
-               andBool N +Int 1 ==Int cfg:sizeofLongDouble
+               andBool N ==Int (cfg:sizeofLongDouble *Int cfg:bitsPerByte)
      rule isFullFloat(_, _) => false [owise]
-
-     rule joinIntegerBytes(ListItem(piece(N:Int, Len::Int)) L::List, piece(N':Int, Len'::Int))
-          => joinIntegerBytes(L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-     rule joinIntegerBytes(.List, piece(N:Int, _)) => N
 
 endmodule

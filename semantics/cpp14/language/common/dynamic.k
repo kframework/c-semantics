@@ -55,7 +55,7 @@ module CPP-DYNAMIC-SYNTAX
      imports BOOL
 
      syntax CPPValue ::= SymLoc
-                       | Bits
+                       | BitValue
                        | NullPtrVal // value of type std::nullptr_t
                        | Float
                        | MemberPtr

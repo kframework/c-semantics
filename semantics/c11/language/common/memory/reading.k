@@ -33,6 +33,7 @@ module C-MEMORY-READING
      imports FLOAT-SYNTAX
      imports INT
      imports K-EQUAL
+     imports LIBC-SYNTAX
      imports SYMLOC-SYNTAX
 
      /*@ These rules figure out whether the read should be structural or
@@ -67,31 +68,23 @@ module C-MEMORY-READING
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     rule concretize(T:CharUType, dataList(ListItem(piece(encodedValue(F:Float, N:Int, M:Int), _))))
-          => tv(encodedValue(F, N, M), T)
-     rule concretize(T:IntegerUType, dataList(L::List))
-          => joinIntegerBytes(T, L)
-          requires notBool isBitfieldType(type(T))
-               andBool (notBool hasUnknown(L))
-               andBool (notBool hasTrap(L))
-               andBool (notBool hasFloat(L))
-          [structural]
-     rule concretize(ut(S::Set, bitfieldType(T::SimpleType, Len::Int)), dataList(L::List))
-          => joinIntegerBytes(ut(S, bitfieldType(T, Len)), L)
+     rule concretize(T:CharUType, dataList(L::List))
+          => interpret(T, joinBytes(L))
           requires (notBool hasUnknown(L))
                andBool (notBool hasTrap(L))
-          [structural]
-     rule concretize(T:FloatUType, dataList(L::List))
-          => joinFloatBytes(T, L)
+     rule concretize(T::UType, dataList(L::List))
+          => interpret(T, joinBytes(L))
           requires (notBool hasUnknown(L))
                andBool (notBool hasTrap(L))
-               andBool (notBool hasInt(L))
+               andBool (notBool isStructOrUnionType(type(T)))
+               andBool (isIntegerUType(T) impliesBool notBool hasFloat(L))
+               andBool (isFloatUType(T) impliesBool notBool hasInt(L))
           [structural]
-
-     rule concretize(T:PointerUType, dataList(L::List))
-          => joinIntegerBytes(T, L)
-          requires (notBool hasUnknown(L))
-               andBool (notBool hasTrap(L))
+     rule concretize(T::UType, dataList(L::List))
+          => #if hasOpaque(L) #then interpret(T, joinBytes(L))
+             #else tv(agg(L), T) #fi
+          requires isStructOrUnionType(type(T))
+               andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
      rule concretize(T::UType, dataList(L::List))
           => makeUnknown2(concretize(T, stripUnknown(dataList(L))))
@@ -103,11 +96,6 @@ module C-MEMORY-READING
           => trap(T)
           requires (hasTrap(L) orBool (isPointerUType(T) andBool hasUnknown(L)))
                andBool notBool isStructOrUnionType(type(T))
-          [structural]
-     rule concretize(T::UType, dataList(L::List))
-          => tv(agg(L), T)
-          requires isStructOrUnionType(type(T))
-               andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
 
      rule (.K => UNSPEC("CMR1", "Trying to reinterpret integer bytes as floating bytes.") ) ~>
@@ -123,115 +111,46 @@ module C-MEMORY-READING
      syntax KItem ::= stripUnknownAux(List, List) [function]
      rule stripUnknown(dataList(L::List)) => stripUnknownAux(L, .List)
      rule stripUnknownAux((ListItem(piece(unknown(I::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(I, PieceLen))))
-     rule stripUnknownAux((ListItem(piece(bitRange(unknown(I::Int), N::Int, M::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(bitRange(I, N, M), PieceLen))))
-     rule stripUnknownAux((ListItem(piece(B1::Bits bit:: B2::Bits, _)) => ListItem(B1) ListItem(B2)) _, _)
+     rule stripUnknownAux((ListItem(piece(pieces(L::List), _)) => L) _, _)
      rule stripUnknownAux((ListItem(B::Bits) => .List) _, _::List (.List => ListItem(B))) [owise]
      rule stripUnknownAux(.List, L::List) => dataList(L)
 
      syntax Bool ::= hasUnknown(List) [function]
-     syntax Bool ::= hasTrap(List) [function]
-     syntax Bool ::= hasInt(List) [function]
-     syntax Bool ::= hasFloat(List) [function]
+                   | hasTrap(List) [function]
+                   | hasInt(List) [function]
+                   | hasFloat(List) [function]
+                   | hasOpaque(List) [function]
 
      rule hasUnknown(.List) => false
-     rule hasUnknown(ListItem(piece(B::Bits, _) => B) _:List)
-     rule hasUnknown((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule hasUnknown(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule hasUnknown(ListItem(unknown(_)) _:List) => true
-     rule hasUnknown(ListItem(B::Bits) L:List) => hasUnknown(L) [owise]
+     rule hasUnknown(ListItem(piece(B::BitValue, _) => B) _)
+     rule hasUnknown((ListItem(pieces(L::List)) => L) _)
+     rule hasUnknown(ListItem(unknown(_)) _) => true
+     rule hasUnknown(ListItem(_) L::List) => hasUnknown(L) [owise]
 
      rule hasTrap(.List) => false
-     rule hasTrap(ListItem(piece(B::Bits, _) => B) _:List)
-     rule hasTrap((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule hasTrap(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule hasTrap(ListItem(trap) _:List) => true
-     rule hasTrap(ListItem(B::Bits) L:List) => hasTrap(L) [owise]
+     rule hasTrap(ListItem(piece(B::BitValue, _) => B) _)
+     rule hasTrap((ListItem(pieces(L::List)) => L) _)
+     rule hasTrap(ListItem(trap) _) => true
+     rule hasTrap(ListItem(_) L::List) => hasTrap(L) [owise]
 
      rule hasInt(.List) => false
-     rule hasInt(ListItem(piece(B::Bits, _) => B) _:List)
-     rule hasInt((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule hasInt(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule hasInt(ListItem(B:Int) _:List) => true
+     rule hasInt(ListItem(piece(B::BitValue, _) => B) _)
+     rule hasInt((ListItem(pieces(L::List)) => L) _)
+     rule hasInt(ListItem(B:Int) _) => true
           requires B =/=Int 0
-     rule hasInt(ListItem(B::Bits) L:List) => hasInt(L) [owise]
+     rule hasInt(ListItem(_) L::List) => hasInt(L) [owise]
 
      rule hasFloat(.List) => false
-     rule hasFloat(ListItem(piece(B::Bits, _) => B) _:List)
-     rule hasFloat((ListItem(B::Bits bit:: B'::Bits) => ListItem(B) ListItem(B')) _:List)
-     rule hasFloat(ListItem(bitRange(B::Bits, _, _) => B) _:List)
-     rule hasFloat(ListItem(encodedValue(F:Float, _, _)) _:List) => true
-     rule hasFloat(ListItem(B::Bits) L:List) => hasFloat(L) [owise]
+     rule hasFloat(ListItem(piece(B::BitValue, _) => B) _)
+     rule hasFloat((ListItem(pieces(L::List)) => L) _)
+     rule hasFloat(ListItem(encodedValue(_:Float, _, _)) _) => true
+     rule hasFloat(ListItem(_) L::List) => hasFloat(L) [owise]
 
-     syntax RValue ::= joinFloatBytes(UType, List) [function, klabel(joinFloatBytesC)]
-     syntax RValue ::= "joinFloatBytes-aux" "(" UType "," List "," K ")" [function]
-     rule joinFloatBytes(T::UType, ListItem(piece(N:Bits, Len:Int)) L:List)
-          => joinFloatBytes-aux(T, L, N)
-          requires Len ==Int cfg:bitsPerByte
-     rule joinFloatBytes-aux(T::UType,
-               ListItem(piece(encodedValue(F, SNatEnd:Int, SNatEnd:Int), Len:Int))
-               L:List, encodedValue(F:Float, I:Int, End:Int))
-          => joinFloatBytes-aux(T, L, encodedValue(F, I, End +Int 1))
-          requires (Len ==Int cfg:bitsPerByte)
-               andBool (SNatEnd ==Int End +Int 1)
-     rule joinFloatBytes-aux(T:UType, .List, encodedValue(F:Float, 0, N:Int))
-          => tv(F, T)
-          requires N ==Int byteSizeofType(T) -Int 1
-     rule joinFloatBytes-aux(T:UType, .List, encodedValue(F:Float, M:Int, N:Int))
-          => tv(encodedValue(F, M,  N), T)
-          requires N <Int byteSizeofType(T) -Int 1 orBool M >Int 0
-     rule joinFloatBytes-aux(T::UType,
-               ListItem(piece(0, Len:Int)) L:List, 0)
-          => joinFloatBytes-aux(T, L, 0)
-          requires Len ==Int cfg:bitsPerByte
-     rule joinFloatBytes-aux(T::UType, .List, 0)
-          => tv(Int2CFloat(T, 0), T)
-
-     syntax RValue ::= joinPointerBytes(UType, List) [function, klabel(joinPointerBytesC)]
-     syntax RValue ::= "joinPointerBytes-aux" "(" UType "," List "," K ")" [function]
-     rule joinPointerBytes(T::UType, ListItem(piece(N:Bits, Len:Int)) L:List)
-          => joinPointerBytes-aux(T, L, N)
-          requires Len ==Int cfg:bitsPerByte
-     rule joinPointerBytes-aux(T::UType,
-               ListItem(piece(encodedValue(Loc:SymLoc, SNatEnd:Int, SNatEnd:Int), Len:Int))
-               L:List, encodedValue(Loc, I:Int, End:Int))
-          => joinPointerBytes-aux(T, L, encodedValue(Loc, I, End +Int 1))
-          requires (Len ==Int cfg:bitsPerByte)
-               andBool (SNatEnd ==Int End +Int 1)
-     rule joinPointerBytes-aux(T::UType, .List, encodedValue(Loc:SymLoc, 0, N:Int))
-          => tv(Loc, T)
-          requires N ==Int cfg:ptrsize -Int 1
-     rule joinPointerBytes-aux(T::UType, .List, encodedValue(Loc:SymLoc, M:Int, N:Int))
-          => tv(encodedValue(Loc, M,  N), T)
-          requires N <Int cfg:ptrsize -Int 1 orBool M >Int 0
-     rule joinPointerBytes-aux(T::UType,
-               ListItem(piece(0, Len:Int)) L:List, 0)
-          => joinPointerBytes-aux(T, L, 0)
-          requires Len ==Int cfg:bitsPerByte
-     rule joinPointerBytes-aux(T::UType, .List, 0)
-          => tv(NullPointer, T)
-
-     syntax RValue ::= joinIntegerBytes(UType, List) [function, klabel(joinIntegerBytesC)]
-     syntax RValue ::= "joinIntegerBytes-aux" "(" UType "," List "," K ")" [function]
-     rule joinIntegerBytes(T::UType, L::List)
-          => joinIntegerBytes-aux(T, L, piece(0, 0))
-     rule joinIntegerBytes-aux(T::UType,
-               ListItem(piece(encodedValue(Loc:SymLoc, Start::Int, End::Int), Len::Int)) L::List, piece(0, 0))
-          => joinPointerBytes(T, ListItem(piece(encodedValue(Loc, Start, End), Len)) L)
-     rule joinIntegerBytes-aux(T::UType,
-               ListItem(piece(N:Int, Len::Int)) L::List, piece(N':Int, Len'::Int))
-          => joinIntegerBytes-aux(T,
-               L, piece(piece(N', Len') bit:: piece(N, Len), Len +Int Len'))
-     rule joinIntegerBytes-aux(T::UType, .List, piece(N:Int, Len::Int))
-          => interpret(T, piece(N, Len))
-
-     // interpret the values of reading from mem
-     syntax RValue ::= interpret(UType, K) [function]
-     syntax RValue ::= "interpret-aux" "(" UType "," K ")" [function]
-     rule interpret(T::UType, piece(N::Int, _)) => interpret-aux(T, N)
-     rule interpret-aux(T:IntegerUType, I::Int)
-          => #if max(T) >=Int I #then tv(I, T) #else interpret-aux(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
-     rule interpret-aux(T:PointerUType, I::Int) => tv(cfg:intToPointer(I, T), T)
-     rule interpret-aux(T:FloatUType, I::Int) => tv(cfg:floatFromBits(I, T), T)
+     rule hasOpaque(.List) => false
+     rule hasOpaque(ListItem(piece(B::BitValue, _) => B) _)
+     rule hasOpaque((ListItem(pieces(L::List)) => L) _)
+     rule hasOpaque(ListItem(encodedValue(_:Opaque, _, _)) _) => true
+     rule hasOpaque(ListItem(_) L::List) => hasOpaque(L) [owise]
 
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
 
@@ -253,17 +172,28 @@ module C-MEMORY-READING
                dataList(L),
                Offset -Int 1, NumBits, .List)
           requires Offset >Int 0
-          [structural]
      rule extractBitsFromList-aux(
-               dataList(ListItem(piece(N::Bits, 1)) L::List),
+               dataList(ListItem(piece(N::BitValue, 1)) L::List),
                0, NumBits::Int, Done::List)
           => extractBitsFromList-aux(
                dataList(L),
                0, NumBits -Int 1, Done ListItem(piece(N, 1)))
           requires NumBits >Int 0
-          [structural]
-
      rule extractBitsFromList-aux(_, 0, 0, Done::List) => dataList(Done)
-          [structural]
+
+     syntax RValue ::= interpret(UType, BitValue) [function]
+     rule interpret(T:IntegerUType, I:Int)
+          => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
+     rule interpret(T:PointerUType, I:Int) => tv(cfg:intToPointer(I, T), T)
+     rule interpret(T::UType, encodedValue(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
+          requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)
+     rule interpret(T:FloatUType, 0) => tv(zeroCFloat(T), T)
+     rule interpret(T:FloatUType, I:Int) => tv(cfg:floatFromBits(I, T), T)
+          requires I =/=Int 0
+     rule interpret(T::UType, encodedValue(F:Float, 0, To::Int)) => tv(F, T)
+          requires isFullFloat(F, To)
+     rule interpret(T::UType, encodedValue(opaque(V::Int, T'::UType), 0, To::Int)) => tv(opaque(V, T'), T)
+          requires To ==Int bitSizeofType(type(T'))
+     rule interpret(T::UType, V::BitValue) => tv(V, T) [owise]
 
 endmodule

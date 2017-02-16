@@ -1,5 +1,5 @@
 module C-COMMON-EXTENSIONS
-  imports C-BUILTIN-SYNTAX
+  imports LIBC-SYNTAX
   imports MAP
 
   rule extensionBuiltins => .Map

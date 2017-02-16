@@ -1,15 +1,16 @@
 module C-CONFIGURATION
      imports BOOL-SYNTAX
+     imports C-CONFIGURATION-EXTENSIONS
+     imports C-EXECUTION-INIT-SYNTAX
+     imports COMMON-CONFIGURATION
+     imports COMMON-INIT-SYNTAX
+     imports COMMON-SYNTAX
      imports INT-SYNTAX
+     imports LIBC-IO-SYNTAX
      imports LIST
      imports MAP
      imports SET
-     imports COMMON-INIT-SYNTAX
-     imports COMMON-CONFIGURATION
-     imports COMMON-SYNTAX
      imports SYMLOC-SYNTAX
-     imports C-EXECUTION-INIT-SYNTAX
-     imports C-CONFIGURATION-EXTENSIONS
 
      configuration
 <global/>
@@ -23,17 +24,7 @@ module C-CONFIGURATION
      // Scope |-> activity(Int, SymLoc |-> Int)
      <active-blocks> .Map </active-blocks>
 
-     // stdlib.h support
-     <malloced color="lightgray"> .Map </malloced>
-     <next-malloced> 0 @ alloc </next-malloced>
      <next-newed> 0 @ dynamic </next-newed>
-     <atexit> .K </atexit>
-     <at-quick-exit> .K </at-quick-exit>
-
-     // stdarg.h support.
-     <va-lists> .Map </va-lists>
-     // setjmp.h support.
-     <jmp-bufs> .Map </jmp-bufs>
 
      <extensions-global/>
 
@@ -79,8 +70,6 @@ module C-CONFIGURATION
                               UnknownCabsLoc
                          </curr-program-loc>
 
-                         <live-va-lists> .Set </live-va-lists>
-
                          // stack of block-control cells
                          <block-stack color="violet"> .List </block-stack>
                          <block-control>
@@ -120,6 +109,9 @@ module C-CONFIGURATION
                               .Set
                          </locs-written>
 
+                         // stdarg
+                         <live-va-lists> .Set </live-va-lists>
+
                          // printf
                          <formatting multiplicity="?">
                               <format> .List </format>
@@ -134,6 +126,9 @@ module C-CONFIGURATION
                               <format-field-width> "" </format-field-width>
                               <format-length> "" </format-length>
                               <format-precision> "" </format-precision>
+                              <format-matched> 0 </format-matched>
+                              <format-nread> 0 </format-nread>
+                              <format-item> "" </format-item>
                          </formatting>
                     </function-control>
                </thread-local>
@@ -149,27 +144,48 @@ module C-CONFIGURATION
 
 </exec>
 
-<files color="lightgray">
-     <file-commands> .K </file-commands>
-     <file multiplicity="*" type="Set">
-          <fid> .K </fid>
-          <uri> .K </uri>
-          <pos> 0 </pos>
-          <mode> "r" </mode>
-          <next-byte> .K </next-byte>
-          <buff> "" </buff>
-          <sending> .List </sending>
-          <done> "" </done>
-     </file>
-</files>
-<input color="lightgray"> .List </input>
-<output color="lightgray"> .List </output>
-
 <error-cell multiplicity="?" color="black"> .K </error-cell>
 
 <status> initializingTu </status>
 
 <options> $OPTIONS:Set </options>
+
+<library>
+     // stdlib.h support
+     <malloced color="lightgray"> .Map </malloced>
+     <next-malloced> 0 @ alloc </next-malloced>
+     // Stderr is unbuffered by default, but it can be changed.
+     <atexit> flush(#stdout) ~> flush(#stderr) </atexit>
+     <at-quick-exit> .K </at-quick-exit>
+
+     // stdarg.h support.
+     <va-lists> .Map </va-lists>
+     // setjmp.h support.
+     <jmp-bufs> .Map </jmp-bufs>
+
+     <open-files> .Set </open-files>
+
+     <files color="lightgray">
+          <file multiplicity="*" type="Set">
+               <fid> .K </fid>
+               <uri> .K </uri>
+               <pos> 0 </pos>
+               <mode> "r" </mode>
+               <next-byte> .K </next-byte>
+               <read-buffer> "" </read-buffer>
+               <write-buffer> "" </write-buffer>
+               <buffer-mode> fullBuf </buffer-mode>
+               <buffer-size> bufSiz </buffer-size>
+               <sending> .List </sending>
+               <done> "" </done>
+               <feof> false </feof>
+               <ferror> .K </ferror>
+          </file>
+     </files>
+     <input color="lightgray"> .List </input>
+     <output color="lightgray"> .List </output>
+</library>
+
 
 </T>
 

@@ -1,13 +1,12 @@
 module LIBC-SETJMP
-     imports LIBC-BOOTSTRAP-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
 
-     imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIBC-SYNTAX
 
      imports INT
      imports K-EQUAL
@@ -95,7 +94,7 @@ module LIBC-SETJMP
           <k> (builtin("__setjmp", Ptr:RValue)
                => ignoreLocals
                ~> addJmpBuf(!N:Int, Ptr, K, C)
-               ~> tv(0, utype(int))
+               ~> success
                )
                ~> K:K
           </k>

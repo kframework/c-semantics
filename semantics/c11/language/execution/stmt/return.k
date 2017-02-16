@@ -46,6 +46,14 @@ module C-STMT-RETURN
 
      rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <curr-tu> "builtin" </curr-tu>
+          <types>...
+               F |-> t(_, Mods:Set, functionType(T::UType, _))
+          ...</types>
+          requires notBool (Noreturn() in Mods)
+          [structural]
+     rule <k> Return(V:RValue) => Return'(cast(T, V)) ...</k>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> "native" </curr-tu>
           <types>...
                F |-> t(_, Mods:Set, functionType(T::UType, _))

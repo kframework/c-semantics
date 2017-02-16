@@ -1,8 +1,9 @@
 module BITS-SORTS
      imports INT-SYNTAX
-     syntax Bits ::= Int | Trap | Unknown
+     syntax BitValue ::= Int | Trap | Unknown | Pieces
      syntax Unknown
      syntax Trap
+     syntax Pieces
      syntax SubObject
      syntax DataList
 endmodule
@@ -15,25 +16,27 @@ module BITS-SYNTAX
 
      syntax Trap ::= "trap" [klabel(trap)]
      syntax Unknown ::= unknown(EffectiveValue)
-     syntax Bits ::= Trap
-     syntax Bits ::= Unknown
 
-     syntax Bits ::= piece(Bits, Int)
-     syntax Bits ::= Bits "bit::" Bits
+     syntax Bits ::= piece(BitValue, Int)
+     syntax Bits ::= Bits "bit::" Bits [function]
 
-     // original number, from, to inclusive
-     syntax Bits ::= bitRange(Bits, Int, Int)
+     syntax Pieces ::= pieces(List)
 
-     // object, start piece, end piece
-     syntax Bits ::= encodedValue(EffectiveValue, Int, Int)
+     // object, bit range (from, to, inclusive, 0th is least significant)
+     syntax Bits ::= encode(EffectiveValue, Int, Int) [function]
+     syntax BitValue ::= encodedValue(EffectiveValue, Int, Int)
      syntax SubObject ::= encodedValue(SymLoc, Int, Int)
-     syntax Bits ::= SubObject
+
+     syntax BitValue ::= SubObject
      syntax IntPtr ::= SubObject
 
      syntax DataList ::= dataList(List)
      syntax KResult ::= DataList
 
      syntax SymLoc ::= locOf(SubObject) [function]
+
+     // Value of a bitrange within an int.
+     syntax Int ::= bitsValue(Int, Int, Int) [function]
 
 endmodule
 
@@ -48,75 +51,33 @@ module BITS
      rule sameBase(_, (encodedValue(S:SymLoc, _, _) => S))
      rule locOf(encodedValue(S:SymLoc, _, _)) => S
 
-     // coallesce bitranges that are adjacent
-     rule piece(bitRange(N::Bits, From::Int, To::Int), Len::Int)
-               bit:: piece(bitRange(N, From'::Int, To'::Int), Len':Int)
-          => piece(bitRange(N, From, To'), Len +Int Len')
-          requires (Len +Int Len' <=Int cfg:bitsPerByte)
-               andBool (From' ==Int To +Int 1)
-          [structural, anywhere]
-
-     rule piece(N::Bits bit:: N'::Bits, Len::Int) bit:: piece(N''::Bits, Len'::Int)
-          => piece(N bit:: (N' bit:: piece(N'', Len')), Len +Int Len')
-          [structural, anywhere]
-     rule piece(N''::Bits, Len'::Int) bit:: piece(N::Bits bit:: N'::Bits, Len::Int)
-          => piece(piece(N'', Len') bit:: (N bit:: N'), Len +Int Len')
-          [structural, anywhere]
-     rule piece(0, 0) bit:: N::Bits => N
-          [structural, anywhere]
-     rule N::Bits bit:: piece(0, 0) => N
-          [structural, anywhere]
-     rule piece(piece(N::Bits, Len1::Int), Len2::Int) => piece(N, Len1)
-          requires Len1 ==Int Len2
-          [structural, anywhere]
-
-     rule bitRange(piece(_, Len::Int) bit:: N::Bits, Pos::Int, Pos)
-          => bitRange(N, absInt(Pos -Int Len), absInt(Pos -Int Len))
-          requires (Pos >Int 0) andBool (Pos >=Int Len)
-          [structural, anywhere]
-
-     rule bitRange(piece(N::Bits, 1) bit:: _, 0, 0) => piece(N, 1)
-          [structural, anywhere]
-     rule bitRange(piece(N::Bits, 1), 0, 0) => piece(N, 1)
-          [structural, anywhere]
-
-     rule bitRange(piece(bitRange(N::Bits, From::Int, To::Int), Len::Int), 0, 0)
-          => bitRange(piece(bitRange(N, From, From), 1), 0, 0)
-          requires From +Int Len ==Int To +Int 1
-               andBool (Len =/=Int 1 orBool From =/=Int To)
-          [structural, anywhere]
-
-     rule bitRange(N::Bits, 0, To::Int) => N
-          requires To +Int 1 ==Int cfg:bitsPerByte
-          [structural, anywhere]
-
-     rule bitRange(piece(N::Bits, Len::Int) bit:: _, From::Int, To::Int)
-          => bitRange(piece(N, Len), From, To)
-          requires To <Int Len
-          [structural, anywhere]
-
-     rule bitRange(piece(N::Bits, SuccTo::Int), 0, To::Int)
-          => piece(N, To +Int 1)
-          requires SuccTo ==Int To +Int 1
-          [structural, anywhere]
-     rule bitRange(piece(N::Bits, Len::Int) bit:: _, 0, To::Int)
-          => piece(N, To +Int 1)
-          requires Len ==Int To +Int 1
-          [structural, anywhere]
-
-     rule bitRange(piece(N:Int, _), Pos::Int, Pos) => 1 &Int (N >>Int Pos)
-          requires N >=Int 0
-          [structural, anywhere]
-     rule bitRange(N:Int, Pos::Int, Pos) => 1 &Int (N >>Int Pos)
-          requires N >=Int 0
-          [structural, anywhere]
-
      rule piece(N:Int, Len::Int) bit:: piece(N':Int, Len'::Int)
           => piece((N' <<Int Len) |Int N, Len +Int Len')
-          [structural, anywhere]
+     rule piece(encodedValue(N::EffectiveValue, From::Int, To::Int), Len::Int)
+          bit:: piece(encodedValue(N, To, To'::Int), Len'::Int)
+          => piece(encodedValue(N, From, To'), Len +Int Len')
+     rule piece(pieces(Ps::List), Len::Int) bit:: piece(pieces(Ps'::List), Len'::Int)
+          => piece(pieces(Ps Ps'), Len +Int Len')
+     rule piece(pieces(Ps::List), Len::Int) bit:: piece(V'::BitValue, Len'::Int)
+          => piece(pieces(Ps ListItem(piece(V', Len'))), Len +Int Len')
+          requires notBool isPieces(V')
+     rule piece(V::BitValue, Len::Int) bit:: piece(pieces(Ps'::List), Len'::Int)
+          => piece(pieces(ListItem(piece(V, Len)) Ps'), Len +Int Len')
+          requires notBool isPieces(V)
+     rule piece(V::BitValue, Len::Int) bit:: piece(V'::BitValue, Len'::Int)
+          => piece(pieces(ListItem(piece(V, Len)) ListItem(piece(V', Len'))), Len +Int Len')
+          [owise]
 
-     rule (B::Bits bit:: piece(N:Int, Len::Int)) bit:: piece(N':Int, Len'::Int)
-          => B bit:: piece((N' <<Int Len) |Int N, Len +Int Len')
-          [structural, anywhere]
+     rule encode(N:Int, From::Int, To::Int)
+          => piece(bitsValue(N, From, To), To -Int From)
+          requires To >=Int From
+     rule encode(N::EffectiveValue, From::Int, To::Int)
+          => piece(encodedValue(N, From, To), To -Int From)
+          requires To >=Int From [owise]
 
+     syntax Int ::= bitmask(Int) [function]
+     rule bitmask(N::Int) => (1 <<Int N) -Int 1
+
+     rule bitsValue(N::Int, From::Int, To::Int)
+          => (N >>Int From) &Int bitmask(To -Int From)
 endmodule

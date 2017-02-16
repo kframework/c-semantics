@@ -21,15 +21,16 @@ module C-REVAL-SYNTAX
 endmodule
 
 module C-DYNAMIC-SYNTAX
-     imports C-REVAL-SYNTAX
-     imports C-DYNAMIC-SORTS
      imports BASIC-K
+     imports BITS-SORTS
+     imports BITS-SORTS
+     imports C-DYNAMIC-SORTS
+     imports C-REVAL-SYNTAX
+     imports C-TYPING-SORTS
      imports FLOAT-SYNTAX
      imports INT-SYNTAX 
      imports LIST
-     imports BITS-SORTS
      imports SYMLOC-SORTS
-     imports C-TYPING-SORTS
 
      syntax Agg ::= agg(List)
 
@@ -59,7 +60,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax KItem ::= "discard"
 
-     syntax NumValue ::= Float | Bits // Int is a subsort of Bits
+     syntax NumValue ::= Float | BitValue // Int is a subsort of BitValue
      syntax CValue ::= SymLoc | Agg
      syntax EffectiveValue ::= CValue
      syntax C ::= NumValue | Type | RValue

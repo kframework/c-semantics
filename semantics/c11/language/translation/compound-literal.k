@@ -94,14 +94,5 @@ module C-COMPOUND-LITERAL
           ...</k>
           <mem>... wstring(S) |-> _ ...</mem>
 
-     syntax KItem ::= allocString(SymBase, String)
-     rule allocString(Base:SymBase, S:String)
-          => allocObject(Base, type(arrayType(type(char), lengthString(S) +Int 1)))
-          ~> writeString(lnew(Base, type(arrayType(type(char), lengthString(S) +Int 1))), S)
-
-     syntax KItem ::= allocWString(SymBase, List)
-     rule allocWString(Base:SymBase, S:List)
-          => allocObject(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
-          ~> writeWString(lnew(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1))), S)
 
 endmodule

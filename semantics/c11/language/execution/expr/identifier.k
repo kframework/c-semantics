@@ -1,12 +1,13 @@
 module C-EXPR-IDENTIFIER
-     imports C-CONFIGURATION
-     imports STRING
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
+     imports COMMON-BUILTIN-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports STRING
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.1}{2}}}{
      An identifier is a primary expression, provided it has been declared as

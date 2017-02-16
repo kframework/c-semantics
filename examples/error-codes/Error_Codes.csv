@@ -103,6 +103,7 @@ UB-STDIO1,"'printf': Mismatch between the type expected by the conversion specif
 UB-STDIO3,"'vprintf': uninitialized va_list argument.","7.21.6.10:2, J.2:1 item 169",Undefined Behavior,
 UB-STDIO4,"'vsprintf': uninitialized va_list argument.","7.21.6.13:2, J.2:1 item 169",Undefined Behavior,
 UB-STDIO5,"'vsnprintf': uninitialized va_list argument.","7.21.6.12:2, J.2:1 item 169",Undefined Behavior,
+UB-STDIO6,"'vfprintf': uninitialized va_list argument.","7.21.6.10:2, J.2:1 item 169",Undefined Behavior,
 UB-STDLIB1,"Called realloc on memory not allocated by malloc, or already freed.","7.22.3.5:3, J.2:1 item 179",Undefined Behavior,
 UB-STRING1,Null pointer passed to strcpy.,"7.1.4:1, J.2:1 item 109",Undefined Behavior,
 UB-STDLIB2,"Called free on memory not allocated by malloc, or already freed.","7.22.3.3:2, J.2:1 item 179",Undefined Behavior,

@@ -1,9 +1,9 @@
 module LIBC-MATH
-     imports LIBC-BOOTSTRAP-SYNTAX
-     imports FLOAT
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports FLOAT
+     imports LIBC-BUILTIN-SYNTAX
 
      rule [sqrt]:
           builtin("sqrt", tv(F:Float, ut(_, double)))

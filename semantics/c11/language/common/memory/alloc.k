@@ -10,18 +10,25 @@ module C-MEMORY-ALLOC-SYNTAX
 
      syntax KItem ::= allocObject(SymBase, Type)
 
+     syntax KItem ::= allocString(SymBase, String)
+     syntax KItem ::= allocWString(SymBase, List)
+
 endmodule
 
 module C-MEMORY-ALLOC
-     imports C-MEMORY-ALLOC-SYNTAX
-     imports C-CONFIGURATION
-     imports BOOL
      imports BITS-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports BOOL
      imports C-BITSIZE-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports STRING
+     imports SYMLOC-SYNTAX
 
      rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
           requires notBool isVoidType(T)
@@ -57,5 +64,13 @@ module C-MEMORY-ALLOC
      rule <k> sizeofObject(Base:SymBase) => tv(Len, utype(cfg:sizeut)) ...</k>
           <mem>... Base |-> object(_, Len:Int, _) ...</mem>
           [structural]
+
+     rule allocString(Base::SymBase, S::String)
+          => allocObject(Base, type(arrayType(type(char), lengthString(S) +Int 1)))
+          ~> allowInit(writeString(lnew(Base, type(arrayType(type(char), lengthString(S) +Int 1))), S))
+
+     rule allocWString(Base::SymBase, S::List)
+          => allocObject(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
+          ~> allowInit(writeWString(lnew(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1))), S))
 
 endmodule

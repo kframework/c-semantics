@@ -1,6 +1,7 @@
 module CPP-EXECUTION-INIT
      imports C-CONFIGURATION
      imports K-EQUAL
+     imports K-IO
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -50,10 +51,6 @@ module CPP-EXECUTION-INIT
           ...</exec>
           <status> _ => terminated </status>
           <result-value> _ => V </result-value>
-          <files>...
-               // Flush stdout.
-               <file-commands>... (.K => f-flush(1)) </file-commands>
-          ...</files>
 
      rule hasTrace(_) => noTrace [anywhere]
      rule combine(_, _) => noTrace

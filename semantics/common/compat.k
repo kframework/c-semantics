@@ -7,6 +7,7 @@ module COMPAT-SYNTAX
      imports COMMON-SYNTAX
 
      syntax String ::= firstChar(String) [function]
+     syntax String ::= lastChar(String) [function]
      syntax String ::= nthChar(String, Int) [function]
      syntax String ::= butFirstChar(String) [function]
 
@@ -170,15 +171,23 @@ module COMPAT
      rule idToString(GlobalNamespace() :: X::CId)
           => "::" +String idToString(X)
 
-     rule [firstChar]:
-          firstChar(S:String) => substrString(S, 0, 1)
+     rule firstChar(S::String) => substrString(S, 0, 1)
+          requires lengthString(S) >=Int 1
+     rule firstChar(_) => "" [owise]
 
-     rule [nthChar]:
-          nthChar(S:String, N:Int) => substrString(S, N, N +Int 1)
+     rule lastChar(S::String) => nthChar(S, lengthString(S) -Int 1)
+          requires lengthString(S) >=Int 1
+     rule lastChar(_) => "" [owise]
 
-     rule [butFirstChar]:
-          butFirstChar(S:String)
-          => substrString(S:String, 1, lengthString(S:String))
+     rule nthChar(S::String, N::Int) => substrString(S, N, N +Int 1)
+          requires N <Int lengthString(S)
+               andBool N >=Int 0
+     rule nthChar(_, _) => "" [owise]
+
+     rule butFirstChar(S::String)
+          => substrString(S, 1, lengthString(S:String))
+          requires lengthString(S) >=Int 2
+     rule butFirstChar(_) => "" [owise]
 
      rule all(ListItem(K:K) L:List, #klabel(Lbl:KLabel))
           => Lbl(K:K) andBool all(L, #klabel(Lbl))
@@ -188,22 +197,21 @@ module COMPAT
           => Lbl(K:K) orBool some(L, #klabel(Lbl))
      rule some(.List, _) => false
 
-     rule toUpperCase(S:String)
-          => toUpperCase(firstChar(S:String))
-               +String toUpperCase(butFirstChar(S:String))
-          requires lengthString(S) >Int 1
-
-     rule toUpperCase(C:String)
-          => C:String
+     rule toUpperCase("") => ""
+     rule toUpperCase(C::String) => C
           requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) <Int ordChar("a")
                     orBool ordChar(C) >Int ordChar("z"))
-     rule toUpperCase(C:String)
+     rule toUpperCase(C::String)
           => chrChar(absInt(ordChar(C)
                -Int (ordChar("a") -Int ordChar("A"))))
           requires (lengthString(C) ==Int 1)
                andBool (ordChar(C) >=Int ordChar("a")
                     andBool ordChar(C) <=Int ordChar("z"))
+     rule toUpperCase(S::String)
+          => toUpperCase(firstChar(S:String))
+               +String toUpperCase(butFirstChar(S:String))
+          requires lengthString(S) >Int 1
 
      rule removeListItem(.List, _) => .List
      rule removeListItem(ListItem(A:K) M:List, A) => M

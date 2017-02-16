@@ -21,7 +21,6 @@ module C-TYPE-BUILDER-SYNTAX
      syntax DType ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 
-     syntax Type ::= "size_t" [function]
 endmodule
 
 module C-TYPE-BUILDER
@@ -84,7 +83,5 @@ module C-TYPE-BUILDER
      syntax UType ::= expandut(FlexType) [function]
      rule expandut(T:Type) => utype(T)
      rule expandut(T:SimpleType) => utype(T)
-
-     rule size_t => expand(cfg:sizeut)
 
 endmodule

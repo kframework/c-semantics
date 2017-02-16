@@ -1,28 +1,19 @@
 module LIBC-STDLIB
-     imports LIBC-BOOTSTRAP-SYNTAX
-     imports C-CONFIGURATION
      imports BOOL
-     imports INT
-     imports STRING
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-NATIVE-BRIDGE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
-
-     syntax KItem ::= printString(K)
-
-     rule printString(S:String)
-          => writeToFD(1, ordChar(firstChar(S:String)))
-               ~> printString(butFirstChar(S:String))
-          requires lengthString(S:String) >Int 0
-          [structural]
-     rule printString("") => writeToFD(1, 10)
-          [structural]
+     imports STRING
 
      rule [debug]:
           builtin("__debug", _) => voidVal
@@ -30,7 +21,7 @@ module LIBC-STDLIB
 
      rule [exit]:
           <k> builtin("exit", tv(I:Int, ut(_, int))) ~> _
-               => reval(tv(I:Int, utype(int))) ~> callAtExit
+               => reval(tv(I, utype(int))) ~> callAtExit
           </k>
           <status> mainCalled => mainExited </status>
           [structural]
@@ -53,10 +44,11 @@ module LIBC-STDLIB
           ...</k>
           <status> mainExited </status>
 
-
      rule [abort]:
           <k> builtin("abort") ~> _
-               => printString("Aborted") ~> reval(tv(134, utype(int)))
+               => writeFD(#stdout, "Aborted\n")
+               ~> flush(#stdout)
+               ~> reval(tv(134, utype(int)))
           </k>
 
      /*@ \fromStandard{\source[n1570]{\para{7.22.3.4}{2--3}}}{
@@ -171,7 +163,7 @@ module LIBC-STDLIB
 
      rule [atexit]:
           <k> builtin("atexit", tv(Loc:SymLoc, T:PointerUType))
-              => tv(0, utype(int))
+              => success
           ...</k>
           <atexit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</atexit>
           <status> mainCalled </status>
@@ -183,7 +175,7 @@ module LIBC-STDLIB
 
      rule [at-quick-exit]:
           <k> builtin("at_quick_exit", tv(Loc:SymLoc, T:PointerUType))
-              => tv(0, utype(int))
+              => success
           ...</k>
           <at-quick-exit> (.K => Computation(Call(tv(Loc, T), list(.List)))) ...</at-quick-exit>
           <status> mainCalled </status>
@@ -192,4 +184,15 @@ module LIBC-STDLIB
               ~> builtin("at_quick_exit", _)
           ...</k>
           <status> mainExited </status>
+
+     rule builtin("strtof", NPtr::RValue, EndPtr::RValue)
+          => nativeCall("strtof", ListItem(NPtr) ListItem(EndPtr), .List)
+          [structural]
+     rule builtin("strtod", NPtr::RValue, EndPtr::RValue)
+          => nativeCall("strtod", ListItem(NPtr) ListItem(EndPtr), .List)
+          [structural]
+     rule builtin("strtold", NPtr::RValue, EndPtr::RValue)
+          => nativeCall("strtold", ListItem(NPtr) ListItem(EndPtr), .List)
+          [structural]
+
 endmodule

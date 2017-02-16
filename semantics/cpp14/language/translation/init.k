@@ -63,9 +63,9 @@ module CPP-TRANSLATION-INIT
                         ...</ns>)
           ...</namespaces>
 
-     rule addCPPBuiltins => addBuiltins(weakCppBuiltins, false)
+     rule addCPPBuiltins => addCPPBuiltins(weakCppBuiltins, false)
 
-     rule <k> builtinTu => TranslationUnit("cpp-builtin", ListItem(addBuiltins(cppBuiltins, true)))
+     rule <k> builtinTu => TranslationUnit("cpp-builtin", ListItem(addCPPBuiltins(cppBuiltins, true)))
           ...</k>
           <options>... SetItem(XBuiltins()) ...</options>
 
@@ -73,9 +73,10 @@ module CPP-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (XBuiltins() in Opts)
 
+     syntax KItem ::= addCPPBuiltins(K, Bool)
      rule <k> (.K => addBuiltin(B, T, AddAll))
-               ~> addBuiltins((B::QualId -> T::CPPType => .K) ~> _, AddAll::Bool) ...</k>
-     rule addBuiltins(.K, _) => .K
+               ~> addCPPBuiltins((B::QualId -> T::CPPType => .K) ~> _, AddAll::Bool) ...</k>
+     rule addCPPBuiltins(.K, _) => .K
 
      syntax KItem ::= addBuiltin(QualId, CPPType, Bool) [klabel(addBuiltinCpp)]
 
@@ -106,7 +107,7 @@ module CPP-TRANSLATION-INIT
      syntax KItem ::= declareBuiltinFunction(QualId, CPPType, SymBase) [klabel(declareBuiltinFunctionCpp)]
      rule <k> declareBuiltinFunction(N::Namespace :: X::CId, T::CPPType, Base::SymBase) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
-          <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), handleBuiltin)] </functions>
+          <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
           <odr-defs> Defs::Map => Defs[N :: X, T <- Base] </odr-defs>
 
      syntax List ::= getDummyParams(CPPType) [function]

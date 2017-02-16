@@ -22,6 +22,8 @@ module SYMLOC-SYNTAX
      syntax Duration ::= link(String)
      syntax SymBase ::= string(String)
      syntax SymBase ::= wstring(List)
+     syntax SymBase ::= builtinSymbol(String)
+     syntax SymBase ::= nativeSymbol(String)
      // Thread local duration.
      syntax Duration ::= threadLocal(Int)
      // Auto storage duration.
@@ -32,18 +34,21 @@ module SYMLOC-SYNTAX
      syntax Duration ::= register(Int)
 
      syntax Duration ::= nativeAddress()
-     syntax Duration ::= nativeSymbol(String)
 
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      syntax Bool ::= isAllocatedDuration(SymBase) [function, klabel(isAllocatedDuration2)]
      // I.e., static or link.
      syntax Bool ::= isStaticDuration(SymLoc) [function]
+     syntax Bool ::= isStaticDuration(SymBase) [function, klabel(isStaticDuration2)]
      syntax Bool ::= isThreadDuration(SymLoc) [function]
      syntax Bool ::= isAutoDuration(SymLoc) [function]
+     syntax Bool ::= isAutoDuration(SymBase) [function, klabel(isAutoDuration2)]
 
      syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymBase) [function, klabel(isLinkerLoc2)]
+     syntax Bool ::= isBuiltinLoc(SymLoc) [function]
+     syntax Bool ::= isBuiltinLoc(SymBase) [function, klabel(isBuiltinLoc2)]
      syntax Bool ::= isArgvLoc(SymLoc) [function]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
      syntax Bool ::= isNativeLoc(SymLoc) [function]
@@ -78,6 +83,7 @@ module SYMLOC-SYNTAX
      syntax Bool ::= sameAddress(SymLoc, SymLoc) [function]
 
      syntax String ::= getTU(SymLoc) [function]
+     syntax String ::= getTU(SymBase) [function, klabel(getTU2)]
      syntax ThreadId ::= getThreadId(SymLoc) [function]
      syntax ThreadId ::= Int | "no-thread"
      syntax Int ::= getBitOffset(SymLoc) [function]
@@ -107,33 +113,33 @@ module SYMLOC
      imports K-REFLECTION
      imports MAP
 
-     rule isAllocatedDuration(_ @ alloc) => true
-     rule isAllocatedDuration(_:SymBase) => false [owise]
-
      rule isAllocatedDuration(NullPointer) => false
      rule isAllocatedDuration(Loc:SymLoc) => isAllocatedDuration(base(Loc)) [owise]
 
-     rule isStaticDuration(loc(_ @ static(_), _)) => true
-     rule isStaticDuration(loc(_ @ static(_), _, _)) => true
-     rule isStaticDuration(loc(_ @ link(_), _)) => true
-     rule isStaticDuration(loc(_ @ link(_), _, _)) => true
-     rule isStaticDuration(loc(string(_), _)) => true
-     rule isStaticDuration(loc(string(_), _, _)) => true
-     rule isStaticDuration(loc(wstring(_), _)) => true
-     rule isStaticDuration(loc(wstring(_), _, _)) => true
-     rule isStaticDuration(_) => false [owise]
+     rule isAllocatedDuration(_ @ alloc) => true
+     rule isAllocatedDuration(_:SymBase) => false [owise]
+
+     rule isStaticDuration(NullPointer) => false
+     rule isStaticDuration(Loc:SymLoc) => isStaticDuration(base(Loc)) [owise]
+
+     rule isStaticDuration(_ @ static(_)) => true
+     rule isStaticDuration(_ @ link(_)) => true
+     rule isStaticDuration(string(_)) => true
+     rule isStaticDuration(wstring(_)) => true
+     rule isStaticDuration(builtinSymbol(_)) => true
+     rule isStaticDuration(_:SymBase) => false [owise]
 
      rule isThreadDuration(loc(_ @ threadLocal(_), _)) => true
      rule isThreadDuration(loc(_ @ threadLocal(_), _, _)) => true
      rule isThreadDuration(_) => false [owise]
 
-     rule isAutoDuration(loc(_ @ auto(_), _)) => true
-     rule isAutoDuration(loc(_ @ auto(_), _, _)) => true
-     rule isAutoDuration(loc(_ @ argv, _)) => true
-     rule isAutoDuration(loc(_ @ argv, _, _)) => true
-     rule isAutoDuration(loc(_ @ register(_), _)) => true
-     rule isAutoDuration(loc(_ @ register(_), _, _)) => true
-     rule isAutoDuration(_) => false [owise]
+     rule isAutoDuration(NullPointer) => false
+     rule isAutoDuration(Loc:SymLoc) => isAutoDuration(base(Loc)) [owise]
+
+     rule isAutoDuration(_ @ auto(_)) => true
+     rule isAutoDuration(_ @ argv) => true
+     rule isAutoDuration(_ @ register(_)) => true
+     rule isAutoDuration(_:SymBase) => false [owise]
 
      rule isStringLoc(loc(string(_), _)) => true
      rule isStringLoc(loc(string(_), _, _)) => true
@@ -141,11 +147,17 @@ module SYMLOC
      rule isStringLoc(loc(wstring(_), _, _)) => true
      rule isStringLoc(_) => false [owise]
 
+     rule isLinkerLoc(NullPointer) => false
+     rule isLinkerLoc(Loc:SymLoc) => isLinkerLoc(base(Loc)) [owise]
+
      rule isLinkerLoc(_ @ link(_)) => true
      rule isLinkerLoc(_:SymBase) => false [owise]
 
-     rule isLinkerLoc(NullPointer) => false
-     rule isLinkerLoc(Loc:SymLoc) => isLinkerLoc(base(Loc)) [owise]
+     rule isBuiltinLoc(NullPointer) => false
+     rule isBuiltinLoc(Loc:SymLoc) => isBuiltinLoc(base(Loc)) [owise]
+
+     rule isBuiltinLoc(builtinSymbol(_)) => true
+     rule isBuiltinLoc(_:SymBase) => false [owise]
 
      rule isArgvLoc(loc(_ @ argv, _)) => true
      rule isArgvLoc(loc(_ @ argv, _, _)) => true
@@ -155,12 +167,12 @@ module SYMLOC
      rule isRegisterLoc(loc(_ @ register(_), _, _)) => true
      rule isRegisterLoc(_) => false [owise]
 
-     rule isNativeLoc(_ @ nativeAddress()) => true
-     rule isNativeLoc(_ @ nativeSymbol(_)) => true
-     rule isNativeLoc(_:SymBase) => false [owise]
-
      rule isNativeLoc(NullPointer) => false
      rule isNativeLoc(Loc:SymLoc) => isNativeLoc(base(Loc)) [owise]
+
+     rule isNativeLoc(_ @ nativeAddress()) => true
+     rule isNativeLoc(nativeSymbol(_)) => true
+     rule isNativeLoc(_:SymBase) => false [owise]
 
      rule autoToRegister(N:Int @ auto(Th:Int)) => N @ register(Th)
 
@@ -204,12 +216,14 @@ module SYMLOC
      rule sameAddress(NullPointer, NullPointer) => true
      rule sameAddress(_, _) => false [owise]
 
-     rule getTU(loc(_ @ static(Tu:String), _)) => Tu
-     rule getTU(loc(_ @ static(Tu:String), _, _)) => Tu
-     rule getTU(loc(_ @ link(Tu:String), _)) => Tu
-     rule getTU(loc(_ @ link(Tu:String), _, _)) => Tu
-     rule getTU(loc(_ @ nativeAddress(), _)) => "native"
-     rule getTU(loc(_ @ nativeAddress(), _, _)) => "native"
+     rule getTU(NullPointer) => ""
+     rule getTU(Loc:SymLoc) => getTU(base(Loc)) [owise]
+
+     rule getTU(_ @ static(Tu:String)) => Tu
+     rule getTU(_ @ link(Tu:String)) => Tu
+     rule getTU(_ @ nativeAddress()) => "native"
+     rule getTU(nativeSymbol(_)) => "native"
+     rule getTU(builtinSymbol(_)) => "builtin"
 
      rule getThreadId(loc(_ @ threadLocal(Th:Int), _)) => Th
      rule getThreadId(loc(_ @ threadLocal(Th:Int), _, _)) => Th

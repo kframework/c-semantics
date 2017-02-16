@@ -25,13 +25,13 @@ module C-BITS
           => fillToBytes-aux(dataList(L), .List)
           [structural]
      rule fillToBytes-aux(dataList(
-               ListItem(piece(N::Bits, Len::Int)) L::List),
+               ListItem(piece(N::BitValue, Len::Int)) L::List),
                L'::List)
           => fillToBytes-aux(dataList(L), L' ListItem(piece(N, Len)))
           requires Len ==Int cfg:bitsPerByte
           [structural]
 
-     rule fillToBytes-aux(dataList(ListItem(piece(N::Bits, Len::Int))), L'::List)
+     rule fillToBytes-aux(dataList(ListItem(piece(N::BitValue, Len::Int))), L'::List)
           => fillToBytes-aux(dataList(
                ListItem(piece(N, Len)) ListItem(piece(0, 1))),
                L')
@@ -39,10 +39,9 @@ module C-BITS
           [structural]
 
      rule fillToBytes-aux(dataList(
-               ListItem(piece(N::Bits, Len::Int))
-               ListItem(piece(N'::Bits, Len'::Int)) L::List), L'::List)
-          => fillToBytes-aux(dataList(ListItem(piece(piece(N, Len)
-               bit:: piece(N', Len'), Len +Int Len')) L), L')
+               ListItem(piece(N::BitValue, Len::Int))
+               ListItem(piece(N'::BitValue, Len'::Int)) L::List), L'::List)
+          => fillToBytes-aux(dataList(ListItem(piece(N, Len) bit:: piece(N', Len')) L), L')
           requires Len +Int Len' <=Int cfg:bitsPerByte
           [structural]
 

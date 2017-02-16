@@ -13,7 +13,9 @@ module C-ENV-SYNTAX
 endmodule
 
 module C-ENV
+     imports STRING
      imports C-CONFIGURATION
+     imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -28,6 +30,13 @@ module C-ENV
           <gtypes> GT:Map </gtypes>
           <env> _ => G </env>
           <types> _ => GT </types>
+          requires Tu =/=String "native"
+          [structural]
+     rule <k> populateFromGlobal(T::Type) => .K ...</k>
+          <curr-tu> "native" </curr-tu>
+          <curr-scope> blockScope(F:CId, _) </curr-scope>
+          <env> _ => .Map </env>
+          <types> _ => F |-> T </types>
           [structural]
 
      rule <k> addToEnv(X::CId, Base::SymBase) => .K ...</k>

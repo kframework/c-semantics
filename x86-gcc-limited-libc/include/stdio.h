@@ -4,16 +4,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-typedef struct FILE_ {
-	unsigned long long int offset;
-	unsigned short handle;
-	unsigned char eof;
-	unsigned char error;
-} FILE;
-
-extern FILE stdin_file;
-extern FILE stdout_file;
-extern FILE stderr_file;
+typedef ptrdiff_t FILE;
 
 extern FILE* stdin;
 extern FILE* stdout;
@@ -25,7 +16,7 @@ int putchar(int character);
 int putc(int c, FILE *stream);
 int getchar(void);
 int printf(const char * restrict format, ...);
-int fprintf(FILE *stream, const char *format, ...);
+int fprintf(FILE * restrict stream, const char * restrict format, ...);
 int sprintf(char * restrict s, const char * restrict format, ...);
 int snprintf(char * restrict s, size_t n, const char * restrict format, ...);
 int vsnprintf(char * restrict s, size_t n, const char * restrict format, va_list);
@@ -34,7 +25,8 @@ int puts(const char * str);
 int getc(FILE *stream);
 int feof(FILE * stream);
 int ferror(FILE *stream);
-FILE* fopen(const char *filename, const char *mode);
+void clearerr(FILE *stream);
+FILE* fopen(const char * restrict filename, const char * restrict mode);
 int fclose(FILE *stream);
 int fgetc(FILE *stream);
 int fputc(int c, FILE *stream);

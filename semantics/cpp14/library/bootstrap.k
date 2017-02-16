@@ -7,7 +7,7 @@ endmodule
 
 module LIBCPP-BOOTSTRAP
      imports LIBCPP-BOOTSTRAP-SYNTAX
-     imports LIB-BOOTSTRAP-SYNTAX
+     imports LIB-BUILTIN-SYNTAX
      imports C-CONFIGURATION
      imports COMMON-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -18,7 +18,7 @@ module LIBCPP-BOOTSTRAP
      syntax Expr ::= prepareBuiltin(QualId, Bool, StrictList, StrictList) [klabel(prepareBuiltinCpp)]
      context prepareBuiltin(_, _, (HOLE:StrictList => prval(HOLE)), _)
      context prepareBuiltin(_, _, _, (HOLE:StrictList => prval(HOLE)))
-     rule <k> handleBuiltin
+     rule <k> callBuiltin
               => Return''(prepareBuiltin(F, variadic in getParams(T),
                    list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`notVarArg`))),
                    list(filterList(mapList(P, #klabel(`makeNamesFromCIds`)), #klabel(`isVarArg`)))))

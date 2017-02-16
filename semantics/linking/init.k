@@ -11,7 +11,7 @@ module C-LINKING-INIT-SYNTAX
 
      syntax KItem ::= makeTu(String)
 
-     syntax KItem ::= addBuiltins(K, Bool)
+     syntax KItem ::= addBuiltins(Map)
      syntax KItem ::= "addCPPBuiltins"
 
 endmodule
@@ -34,7 +34,7 @@ module C-LINKING-INIT
 
      rule <k> link // compare against c11/language/translation/init.k
                => makeTu("native")
-               ~> addBuiltins(nativeDefinedBuiltins, false)
+               ~> addNativeSymbols(nativeDefinedBuiltins)
                ~> addCPPBuiltins
                ~> removeUnusedIdentifiers
                ~> resolveReferences
@@ -54,36 +54,37 @@ module C-LINKING-INIT
           ...</translation-units>
           [structural]
 
-     syntax KItem ::= addBuiltin(CId, Type, Bool)
      // Only add a builtin if it has an external type (that is, it's been
      // declared somewhere) and if it doesn't already have a definition.
      // Therefore, if someone redefines a builtin, we won't co-opt it.
      // We should use this mechanism only for symbols that are considered weak
      // by the C and C++ standards, or for native symbols.
 
-     rule <k> (.K => addBuiltin(Identifier(B), T, AddAll))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _, AddAll:Bool) ...</k>
+     rule (.K => addBuiltin(Identifier(B), T, builtinSymbol(B), true))
+               ~> addBuiltins((B:String |-> T:Type => .Map) _)
+     rule addBuiltins(.Map) => .K
 
-     rule addBuiltins(.Map, _) => .K
+     syntax KItem ::= addNativeSymbols(Map)
+     rule (.K => addBuiltin(Identifier(B), T, nativeSymbol(B), false))
+               ~> addNativeSymbols((B:String |-> T:Type => .Map) _)
+     rule addNativeSymbols(.Map) => .K
 
-     rule <k> addBuiltin(B:CId, T:FunctionType, AddAll:Bool) => declareBuiltinFunction(B, T, Base) ...</k>
+     syntax KItem ::= addBuiltin(CId, Type, SymBase, Bool)
+     rule <k> addBuiltin(B:CId, T:FunctionType, Base:SymBase, AddAll:Bool)
+               => declareBuiltinFunction(B, T, Base)
+          ...</k>
           <external-types> Types:Map </external-types>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <uses>... .Set => SetItem(B) ...</uses>
           requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in_keys(Uses))
                orBool AddAll
 
-     rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
-          <external-types> Types:Map </external-types>
-          <external-defs> Defs:Map </external-defs>
-          requires (B in_keys(Defs))
-               orBool (notBool (B in_keys(Types)))
-
-     rule <k> addBuiltin(B:CId, T:Type, AddAll:Bool) => declareBuiltinConstant(B, T, 0 @ nativeSymbol(idToString(B))) ...</k>
+     rule <k> addBuiltin(B:CId, T:Type, Base:SymBase, AddAll:Bool)
+               => declareBuiltinConstant(B, T, Base)
+          ...</k>
           <external-types> Types:Map </external-types>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
@@ -94,7 +95,13 @@ module C-LINKING-INIT
                orBool AddAll)
                andBool notBool isFunctionType(T)
 
-     rule <k> addBuiltin(B:CId, _, false) => .K ...</k>
+     rule <k> addBuiltin(B::CId, _, _, false) => .K ...</k>
+          <external-types> Types:Map </external-types>
+          <external-defs> Defs:Map </external-defs>
+          requires (B in_keys(Defs))
+               orBool (notBool (B in_keys(Types)))
+
+     rule <k> addBuiltin(B::CId, _, _, false) => .K ...</k>
           <external-types>... B |-> _ ...</external-types>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
@@ -112,7 +119,7 @@ module C-LINKING-INIT
 
      rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
-          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, handleBuiltin)] </functions>
+          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, callBuiltin)] </functions>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>

@@ -3,149 +3,424 @@ module LIBC-STDIO
      imports C-BITSIZE-SYNTAX
      imports C-COMMON-PROMOTION-SYNTAX
      imports C-CONFIGURATION
+     imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-NATIVE-BRIDGE-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports INT
      imports K-IO
-     imports LIBC-BOOTSTRAP-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
+     imports LIBC-SYNTAX
      imports STRING
      imports SYMLOC-SYNTAX
 
-     // fixme might be messing things up elsewhere
-     syntax String ::= pointerToString(SymLoc) [function]
-     syntax String ::= symBaseToString(SymBase) [function]
-
-     // getString returns the string without the null terminator
-     syntax KItem ::= getString(K) [function]
-                    | getWString(SymLoc) [function]
-     syntax KItem ::= "getString'" "(" SymLoc "," String ")"
-                    | "getWString'" "(" SymLoc "," String ")"
-     syntax RValue ::= str(String)
-
-     rule getString(Loc:SymLoc) => getString'(Loc, "")
-     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc, "")
-
-     rule (.K => read(Loc, type(unsigned-char)))
-          ~> getString'((Loc:SymLoc => Loc +bytes 1), _)
+     rule builtin("rewind", FDPtr::RValue)
+          => fseek((* FDPtr), 0, 0) ~> discard
+          ~> clearerr(* FDPtr)
           [structural]
-     rule tv(N:Int, _) ~> getString'(Loc:SymLoc, S:String)
-          => getString'(Loc, S +String chrChar(N))
-          requires N =/=Int 0
+     rule builtin("fseek", FDPtr::RValue, tv(Offset:Int, _), tv(Whence:Int, _))
+          => fseek((* FDPtr), Offset, Whence)
           [structural]
-     rule tv(0, _) ~> getString'(_, S:String)
-          => str(S)
+     rule builtin("fsetpos", FDPtr::RValue, PosPtr::RValue)
+          => fsetpos((* FDPtr), (* PosPtr))
+          [structural]
+     rule builtin("fflush", FDPtr::RValue)
+          => fflush(* FDPtr)
+          requires notBool isNull(FDPtr)
+          [structural]
+     rule <k> builtin("fflush", FDPtr::RValue) => fflushAll(OpenFiles) ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires isNull(FDPtr)
           [structural]
 
-     rule getWString(Loc::SymLoc) => getWString'(Loc, "")
-
-     rule (.K => read(Loc, type(cfg:wcharut)))
-          ~> getWString'((Loc:SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut))), _)
-          [structural]
-     rule tv(N:Int, _) ~> getWString'(Loc:SymLoc, S:String)
-          => getWString'(Loc, S +String chrChar(N))
-          requires N =/=Int 0
-          [structural]
-     rule tv(0, _) ~> getWString'(_, S:String)
-          => str(S)
+     syntax KItem ::= fsetpos(K, K)
+     context fsetpos(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     context fsetpos(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     rule fsetpos(FD:RValue, tv(opaque(Pos::Int, _), _))
+          => fseek(FD, Pos, 0)
           [structural]
 
-     rule [pointerToString]:
-          pointerToString(Loc:SymLoc)
-          => "[sym(" +String symBaseToString(base(Loc)) +String ") + "
-               +String Int2String(offset(Loc)) +String "]"
-          requires notBool isNativeLoc(Loc)
-               andBool Loc =/=K NullPointer
+     syntax KItem ::= fflush(K)
+     context fflush(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule fflush(tv(opaque(FD::Int, _), _))
+          => flush(FD)
+          ~> success
           [structural]
 
-     rule pointerToString(Loc:SymLoc => stripProv(Loc))
-          requires isNativeLoc(Loc)
-     rule pointerToString(loc(0 @ nativeAddress(), Addr:Int))
-          => "0x" +String Base2String(Addr, 16)
-
-     rule [symBaseToString-thread]:
-          symBaseToString(B:Int @ threadLocal(Th:Int))
-          => Int2String(B) +String " @ "
-          +String "threadLocal(" +String Int2String(Th) +String ")"
+     syntax KItem ::= fflushAll(Set)
+     rule (.K => flush(FD)) ~> fflushAll((SetItem(FD:Int) => .Set) _)
           [structural]
-     rule [sub-pointerToString-allocated]:
-          symBaseToString(B:Int @ alloc)
-          => Int2String(B) +String " @ "
-          +String "allocated"
-          [structural]
-     rule [sub-pointerToString-static]:
-          symBaseToString(B:Int @ static(Tu:String))
-          => Int2String(B) +String " @ "
-          +String "static(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-          [structural]
-     rule [sub-pointerToString-link]:
-          symBaseToString(B:Int @ link(Tu:String))
-          => Int2String(B) +String " @ "
-          +String "link(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-          [structural]
-     rule [symBaseToString-auto]:
-          symBaseToString(B:Int @ auto(Th:Int))
-          => Int2String(B) +String " @ "
-          +String "auto(" +String Int2String(Th) +String ")"
+     rule fflushAll(.Set) => success
           [structural]
 
-
-     rule [pointerToString-done]:
-          pointerToString(NullPointer) => "NullPointer"
+     // TODO(chathhorn): SEEK_END.
+     syntax KItem ::= fseek(K, Int, Int)
+     context fseek(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
+     rule fseek(tv(opaque(FD::Int, _), _), Offset::Int, 0)
+          => flush(FD)
+          ~> seek(FD, Offset, seekSet)
+          ~> cleareof(FD)
+          ~> success
+          [structural]
+     rule fseek(tv(opaque(FD::Int, _), _), Offset::Int, 1)
+          => flush(FD)
+          ~> seek(FD, Offset, seekCur)
+          ~> cleareof(FD)
+          ~> success
           [structural]
 
-     rule [fslPutc]:
-          builtin("__fslPutc", tv(N:Int, _), tv(H:Int, _))
-          => writeToFD(H, N) ~> tv(N, utype(int))
+     rule builtin("ftell", FDPtr::RValue)
+          => ftell(* FDPtr)
+          [structural]
+     rule builtin("fgetpos", FDPtr::RValue, PosPtr::RValue)
+          => fgetpos((* FDPtr), PosPtr)
           [structural]
 
-     rule [fslFGetC]:
-          builtin("__fslFGetC", tv(FD:Int, _), tv(_:Int, _))
-          => readFromFD(FD)
+     syntax KItem ::= ftell(K)
+     context ftell(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule (.K => tell(FD))
+          ~> ftell(tv(opaque(FD::Int, _), _))
+          [structural]
+     rule tv(Pos:Int, _) ~> ftell(_)
+          => tv(Pos, utype(long-int))
           [structural]
 
-     rule [fslCloseFile]:
-          <k> builtin("__fslCloseFile", tv(FD:Int, ut(_, int)))
-               => tv(0, utype(int))
+     syntax KItem ::= fgetpos(K, RValue)
+     context fgetpos(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     rule (.K => tell(FD))
+          ~> fgetpos(tv(opaque(FD::Int, _), _), _)
+          [structural]
+     rule tv(Pos:Int, _) ~> fgetpos(_, PosPtr::RValue)
+          => Computation((* PosPtr) := tv(opaque(Pos, utype(fpos_t)), utype(fpos_t)))
+          ~> success
+          [structural]
+
+     rule builtin("fputc", tv(N:Int, _), FDPtr::RValue)
+          => fputc(N, (* FDPtr))
+          [structural]
+     rule builtin("_IO_putc" => "putc", _, _)
+          [structural]
+     rule builtin("putc", tv(N:Int, _), FDPtr::RValue)
+          => fputc(N, (* FDPtr))
+          [structural]
+     rule builtin("putchar", tv(N:Int, _))
+          => fputc(N, stdout)
+          [structural]
+
+     syntax KItem ::= fputc(Int, K)
+     context fputc(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> fputc(N::Int, tv(opaque(FD::Int, _), _))
+               => writeFD(FD, N)
+               ~> tv(N, utype(int))
           ...</k>
-          (<file>... <fid> FD:Int </fid> ...</file> => .Bag)
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires isWritable(Mode)
           [structural]
-
-     rule [fslOpenFile-pre]:
-          builtin("__fslOpenFile", Filename:RValue, Mode:RValue)
-          => fsl-open-file(getString(Filename), getString(Mode))
-          [structural]
-
-     syntax KItem ::= "fsl-open-file-aux" "(" String "," String "," K ")"
-          [strict(3)]
-
-     rule [fslOpenFile-aux]:
-          fsl-open-file(str(Filename:String), str(Mode:String))
-          => fsl-open-file-aux("file:" +String Filename, Mode,
-               #open(Filename, Mode))
-          [structural]
-
-     rule [fslOpenFile]:
-          <k> fsl-open-file-aux(FileName:String, Mode:String, tv(FD:Int, _))
-               => tv(FD, utype(int))
+     rule <k> fputc(N::Int, tv(opaque(FD::Int, _), _))
+               => eof
           ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isWritable(Mode)
+          [structural]
+
+     rule builtin("fgetc", FDPtr::RValue)
+          => fgetc(* FDPtr)
+          [structural]
+     rule builtin("_IO_getc" => "getc", _)
+          [structural]
+     rule builtin("getc", FDPtr::RValue)
+          => fgetc(* FDPtr)
+          [structural]
+     rule builtin("getchar")
+          => fgetc(stdin)
+          [structural]
+     rule builtin("ungetc", tv(C:Int, _), FDPtr::RValue)
+          => ungetc(C, (* FDPtr))
+          requires C =/=K value(eof)
+          [structural]
+     rule builtin("ungetc", tv(C:Int, _), _)
+          => eof
+          requires C ==K value(eof)
+          [structural]
+
+     syntax KItem ::= fgetc(K)
+     context fgetc(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> (.K => readFD(FD, 1))
+               ~> fgetc(tv(opaque(FD::Int, _), _))
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires isReadable(Mode)
+          [structural]
+     rule <k> fgetc(tv(opaque(FD::Int, _), _))
+               => eof
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isReadable(Mode)
+          [structural]
+     rule str(S::String) ~> fgetc(_)
+          => tv(ordChar(firstChar(S)), utype(int))
+          requires lengthString(S) >Int 0
+          [structural]
+     rule str("") ~> fgetc(_) => eof
+          [structural]
+
+     syntax KItem ::= ungetc(Int, K)
+     context ungetc(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule ungetc(C::Int, tv(opaque(FD::Int, _), _))
+          => unget(FD, chrChar(C))
+          ~> cleareof(FD)
+          ~> tv(C, utype(int))
+          [structural]
+
+     rule builtin("feof", FDPtr::RValue) => feof(* FDPtr)
+          [structural]
+     rule builtin("ferror", FDPtr::RValue) => ferror(* FDPtr)
+          [structural]
+     rule builtin("fileno", FDPtr::RValue) => fileno(* FDPtr)
+          [structural]
+
+     syntax KItem ::= feof(K)
+     context feof(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> feof(tv(opaque(FD::Int, _), _)) => tv(1, utype(int)) ...</k>
+          <fid> FD </fid>
+          <feof> true </feof>
+          [structural]
+     rule <k> feof(tv(opaque(FD::Int, _), _)) => tv(0, utype(int)) ...</k>
+          <fid> FD </fid>
+          <feof> false </feof>
+          [structural]
+
+     syntax KItem ::= ferror(K)
+     context ferror(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> ferror(tv(opaque(FD::Int, _), _)) => tv(1, utype(int)) ...</k>
+          <fid> FD </fid>
+          <ferror> _:IOError </ferror>
+          [structural]
+     rule <k> ferror(tv(opaque(FD::Int, _), _)) => tv(0, utype(int)) ...</k>
+          <fid> FD </fid>
+          <ferror> .K </ferror>
+          [structural]
+
+     syntax KItem ::= fileno(K)
+     context fileno(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule fileno(tv(opaque(FD::Int, _), _)) => tv(FD, utype(int))
+          [structural]
+
+     rule builtin("clearerr", FDPtr::RValue)
+          => clearerr(* FDPtr)
+          [structural]
+
+     syntax KItem ::= clearerr(K)
+     context clearerr(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> clearerr(tv(opaque(FD::Int, _), _))
+               => cleareof(FD) ~> voidVal
+          ...</k>
+          <fid> FD </fid>
+          <ferror> _ => .K </ferror>
+          [structural]
+
+     syntax KItem ::= cleareof(Int)
+     rule <k> cleareof(FD::Int) => .K ...</k>
+          <fid> FD </fid>
+          <feof> _ => false </feof>
+          [structural]
+
+     rule builtin("fclose", FDPtr::RValue) => fclose(* FDPtr)
+          requires notBool isNull(FDPtr)
+          [structural]
+     rule builtin("fclose", FDPtr::RValue) => eof
+          requires isNull(FDPtr)
+          [structural]
+
+     syntax KItem ::= fclose(K)
+     context fclose(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> fclose(tv(opaque(FD::Int, _), _))
+               => flush(FD)
+               ~> close(FD)
+               ~> success
+          ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires FD in OpenFiles
+          [structural]
+     rule <k> fclose(tv(opaque(FD::Int, _), _)) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires notBool (FD in OpenFiles)
+          [structural]
+
+     rule builtin("fopen", Filename::RValue, Mode::RValue)
+          => alloc(!FDLoc:Int @ stdio, file, byteSizeofType(type(file)))
+          ~> fopen(!FDLoc @ stdio, getString(Filename), getString(Mode))
+          [structural]
+     rule builtin("freopen", Filename::RValue, Mode::RValue, tv(Loc:SymLoc, T::UType))
+          => freopen(Filename, Mode, base(Loc), (* tv(Loc, T)))
+          requires notBool isNull(tv(Loc, T))
+          [structural]
+     rule builtin("freopen", _, _, FDPtr::RValue)
+          => tv(NullPointer, utype(pointerType(type(file))))
+          requires isNull(FDPtr)
+          [structural]
+     rule builtin("tmpnam", S::RValue)
+          => nativeCall("tmpnam", ListItem(S), .List)
+          [structural]
+     rule (.K => Call(Identifier("tmpnam"),
+               list(ListItem(tv(0, utype(pointerType(type(char))))))))
+          ~> builtin("tmpfile")
+          [structural]
+     // TODO(chathhorn): delete on close and program exit?
+     rule S:RValue ~> builtin("tmpfile")
+          => alloc(!FDLoc:Int @ stdio, file, byteSizeofType(type(file)))
+          ~> fopen(!FDLoc @ stdio, getString(S), str("wb+"))
+          [structural]
+
+     // TODO(chathhorn): need another level of indirection here so e.g.
+     // stdin/out can be redirected.
+     syntax KItem ::= freopen(RValue, RValue, SymBase, K)
+     context freopen(_, _, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD::Int, T::UType), T'::UType))
+          => fclose(tv(opaque(FD, T), T')) ~> discard
+          ~> fopen(Base, getString(Filename), getString(Mode))
+          requires notBool isNull(Filename)
+          [structural]
+     rule <k> freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD::Int, T::UType), T'::UType))
+               => fclose(tv(opaque(FD, T), T')) ~> discard
+               ~> fopen(Base, Filename', getString(Mode))
+          ...</k>
+          <fid> FD </fid>
+          <uri> Filename':String </uri>
+          requires isNull(Filename)
+          [structural]
+
+     syntax KItem ::= fopen(SymBase, K, K) [strict(2,3)]
+     rule fopen(Base::SymBase, str(Filename:String), str(Mode:String))
+          => fopen'(Base, Filename, Mode, #open(Filename, Mode))
+          [structural]
+
+     syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")" [strict(4)]
+     rule <k> fopen'(Base::SymBase, Filename:String, Mode:String, tv(FD:Int, _))
+               => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
+               ~> & fileLVal(Base)
+          ...</k>
+          <open-files>... .Set => SetItem(FD) </open-files>
           <files>...
                (.Bag =>
                     <file>...
                          <fid> FD </fid>
-                         <uri> FileName </uri>
+                         <uri> Filename </uri>
                          <mode> Mode </mode>
                     ...</file>
                )
           ...</files>
           [structural]
 
-     syntax KItem ::= "fsl-open-file" "(" K "," K ")" [strict]
+     rule builtin("setbuf", FDPtr::RValue, Buf::RValue)
+          => setbuf((* FDPtr), fullBuf, bufSiz)
+          ~> voidVal
+          requires notBool isNull(Buf)
+          [structural]
+     rule builtin("setbuf", FDPtr::RValue, Buf::RValue)
+          => setbuf((* FDPtr), noBuf, bufSiz)
+          ~> voidVal
+          requires isNull(Buf)
+          [structural]
+     rule builtin("setbuffer", FDPtr::RValue, Buf::RValue, tv(Sz:Int, _))
+          => setbuf((* FDPtr), fullBuf, Sz)
+          ~> voidVal
+          requires notBool isNull(Buf)
+          [structural]
+     rule builtin("setbuffer", FDPtr::RValue, Buf::RValue, tv(Sz:Int, _))
+          => setbuf((* FDPtr), noBuf, Sz)
+          ~> voidVal
+          requires isNull(Buf)
+          [structural]
+     rule builtin("setvbuf", FDPtr::RValue, _, tv(0, _), tv(Sz:Int, _))
+          => setbuf((* FDPtr), fullBuf, Sz)
+          ~> success
+          [structural]
+     rule builtin("setvbuf", FDPtr::RValue, _, tv(1, _), tv(Sz:Int, _))
+          => setbuf((* FDPtr), lineBuf, Sz)
+          ~> success
+          [structural]
+     rule builtin("setvbuf", FDPtr::RValue, _, tv(2, _), tv(Sz:Int, _))
+          => setbuf((* FDPtr), noBuf, Sz)
+          ~> success
+          [structural]
+     rule builtin("setlinebuf", FDPtr::RValue)
+          => setbuf((* FDPtr), lineBuf, bufSiz)
+          ~> voidVal
+          [structural]
+
+     syntax KItem ::= setbuf(K, BufMode, Int)
+     context setbuf(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
+     rule setbuf(tv(opaque(FD::Int, _), _), Mode::BufMode, Sz::Int)
+          => setBuf(FD, Mode, Sz)
+          [structural]
+
+     rule builtin("fread", Ptr::RValue, tv(Size:Int, _), tv(NMemb:Int, _), FDPtr::RValue)
+          => fread(Ptr, Size, NMemb, (* FDPtr))
+          [structural]
+     rule builtin("gets", Ptr::RValue)
+          => fgets(Ptr, -1, stdin)
+          [structural]
+     rule builtin("fgets", Ptr::RValue, tv(NMemb:Int, _), FDPtr::RValue)
+          => fgets(Ptr, NMemb, (* FDPtr))
+          [structural]
+
+     syntax KItem ::= fread(RValue, Int, Int, K)
+     context fread(_, _, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+
+     rule <k> fread(tv(Loc:SymLoc, _), Size::Int, NMemb::Int, tv(opaque(FD::Int, _), _))
+               => fread'(Loc, Size, readFD(FD, Size *Int NMemb))
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires isReadable(Mode)
+          [structural]
+     rule <k> fread(_, _, _, tv(opaque(FD::Int, _), _))
+               => eof
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isReadable(Mode)
+          [structural]
+
+     syntax KItem ::= "fread'" "(" SymLoc "," Int "," K ")" [strict(3)]
+     rule fread'(Loc:SymLoc, Size::Int, str(Read::String))
+          => writeChars(Loc, Read)
+          ~> tv(lengthString(Read) /Int Size, utype(size_t))
+          [structural]
+
+     syntax KItem ::= fgets(RValue, Int, K)
+     context fgets(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule (.K => fscanf(FD, str("%s"), ListItem(Ptr)))
+          ~> fgets(Ptr::RValue, -1, FD:RValue)
+          [structural]
+     rule (.K => fscanf(FD, str("%" +String Int2String(NMemb) +String "s"), ListItem(Ptr)))
+          ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
+          requires NMemb >=Int 0
+          [structural]
+     rule tv(1, _) ~> fgets(Ptr::RValue, _, _)
+          => Ptr
+          [structural]
+     rule tv(V::CValue, _) ~> fgets(_, _, _)
+          => tv(NullPointer, utype(pointerType(type(char))))
+          requires V =/=K 1
+          [structural]
 
      //////////////////////////
 
@@ -160,19 +435,66 @@ module LIBC-STDIO
      // read during evaluation of printf.  should use something like a buffer
      // to do this
      rule [printf]:
-          builtin*("printf", Format:RValue, VarArgs:List)
-          => printf(formatter(getString(Format), VarArgs))
+          builtin*("printf", Format::RValue, VarArgs:List)
+          => fprintf(stdout, formatter(getString(Format), VarArgs))
           [structural]
-     syntax KItem ::= printf(K) [strict]
-     rule [printf-done]:
-          printf(formattedResult(S:String))
-          => writeToFD(1, S)
-               ~> flush(1)
+     rule [fprintf]:
+          builtin*("fprintf", FDPtr::RValue, Format::RValue, VarArgs:List)
+          => fprintf((* FDPtr), formatter(getString(Format), VarArgs))
+          [structural]
+     rule [fputs]:
+          builtin("fputs", Str::RValue, FDPtr::RValue)
+          => fprintf(* FDPtr, formatter(str("%s"), ListItem(Str)))
+          [structural]
+     rule [puts]:
+          builtin("puts", Str::RValue)
+          => fprintf(stdout, formatter(str("%s\n"), ListItem(Str)))
+          [structural]
+     rule builtin("fwrite", Ptr::RValue, tv(Size:Int, _), tv(NMemb:Int, _), FDPtr::RValue)
+          => fwrite(getBytes(Ptr, Size *Int NMemb), Size, (* FDPtr))
+          [structural]
+
+     syntax KItem ::= fprintf(K, K) [strict(2)]
+     context fprintf(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     rule <k> fprintf(tv(opaque(FD::Int, _), _), formattedResult(S:String))
+               => writeFD(FD, S)
                ~> tv(lengthString(S), utype(int))
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires isWritable(Mode)
+          [structural]
+     rule <k> fprintf(tv(opaque(FD::Int, _), _), formattedResult(S:String))
+               => eof
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isWritable(Mode)
+          [structural]
+
+     syntax KItem ::= fwrite(K, Int, K) [strict(1)]
+     context fwrite(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD::Int, _), _))
+               => writeFD(FD, S)
+               ~> tv(lengthString(S) /Int Size, utype(size_t))
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires isWritable(Mode)
+          [structural]
+     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD::Int, _), _))
+               => eof
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isWritable(Mode)
           [structural]
 
      rule [vprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vprintf", _, tv(VaList::Int, _))
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vprintf", _, tv(VaList::Int, _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
@@ -183,19 +505,37 @@ module LIBC-STDIO
           requires notBool VaList in_keys(VaLists)
           [structural]
      rule H:HeatList ~> builtin("vprintf", Format::RValue, _)
-          => printf(formatter(getString(Format), hListToList(H)))
+          => fprintf(stdout, formatter(getString(Format), hListToList(H)))
           requires isKResult(H)
           [structural]
 
-     syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
+     rule [vfprintf]:
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule <k> (.K => UNDEF("STDIO6", "'vfprintf': uninitialized va_list argument."))
+               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists> VaLists:Map </va-lists>
+          requires notBool VaList in_keys(VaLists)
+          [structural]
+     rule H:HeatList ~> builtin("vfprintf", FDPtr::RValue, Format::RValue, _)
+          => fprintf((* FDPtr), formatter(getString(Format), hListToList(H)))
+          requires isKResult(H)
+          [structural]
+
      rule [sprintf]:
-          builtin*("sprintf", tv(Dest:SymLoc, _), Format:RValue, VarArgs:List)
+          builtin*("sprintf", tv(Dest:SymLoc, _), Format::RValue, VarArgs:List)
           => sprintf(formatter(getString(Format), VarArgs), Dest)
           [structural]
+
+     syntax KItem ::= sprintf(K, SymLoc) [strict(1)]
      rule [sprintf-done]:
           sprintf(formattedResult(S:String), Dest:SymLoc)
           => writeString(Dest, S)
-               ~> tv(lengthString(S), utype(int))
+          ~> tv(lengthString(S), utype(int))
           [structural]
 
      rule [vsprintf]:
@@ -216,13 +556,13 @@ module LIBC-STDIO
 
      syntax KItem ::= snprintf(K, SymLoc, Int) [strict(1)]
      rule [snprintf]:
-          builtin*("snprintf", tv(Dest:SymLoc, _), tv(Len:Int, _), Format:RValue, VarArgs:List)
+          builtin*("snprintf", tv(Dest:SymLoc, _), tv(Len:Int, _), Format::RValue, VarArgs:List)
           => snprintf(formatter(getString(Format), VarArgs), Dest, Len)
           [structural]
      rule [snprintf-done-nz]:
           snprintf(formattedResult(S:String), Dest:SymLoc, Len:Int)
           => writeString(Dest, substrString(S, 0, minInt(lengthString(S), Len -Int 1)))
-               ~> tv(lengthString(S), utype(int))
+          ~> tv(lengthString(S), utype(int))
           requires Len >Int 0
           [structural]
      rule [snprintf-done-0]:
@@ -246,10 +586,724 @@ module LIBC-STDIO
           requires isKResult(H)
           [structural]
 
+     rule builtin*("__isoc99_scanf" => "scanf", _:RValue, _)
+          [structural]
+     rule builtin*("scanf", Format::RValue, VarArgs:List)
+          => fscanf(stdin, getString(Format), VarArgs)
+          [structural]
+     rule builtin*("__isoc99_fscanf" => "fscanf", _, _, _)
+          [structural]
+     rule builtin*("fscanf", FDPtr::RValue, Format::RValue, VarArgs:List)
+          => fscanf((* FDPtr), getString(Format), VarArgs)
+          [structural]
+     rule builtin("__isoc99_vfscanf" => "vfscanf", _, _, _)
+          [structural]
+     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vfscanf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule H:HeatList ~> builtin("vfscanf", FDPtr::RValue, Format::RValue, _)
+          => fscanf((* FDPtr), getString(Format), hListToList(H))
+          requires isKResult(H)
+          [structural]
+     rule builtin("__isoc99_vscanf" => "vscanf", _, _)
+          [structural]
+     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vscanf", _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule H:HeatList ~> builtin("vscanf", Format::RValue, _)
+          => fscanf(stdin, getString(Format), hListToList(H))
+          requires isKResult(H)
+          [structural]
+     rule builtin*("__isoc99_sscanf" => "sscanf", _, _, _)
+          [structural]
+     rule builtin*("sscanf", Str::RValue, Format::RValue, VarArgs:List)
+          => fscanf(getString(Str), getString(Format), VarArgs)
+          [structural]
+     rule builtin("__isoc99_vsscanf" => "vsscanf", _, _, _)
+          [structural]
+     rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vsscanf", _, _, tv(VaList::Int, _))
+          ...</k>
+          <va-lists>... VaList |-> VarArgs:List ...</va-lists>
+          [structural]
+     rule H:HeatList ~> builtin("vsscanf", Str::RValue, Format::RValue, _)
+          => fscanf(getString(Str), getString(Format), hListToList(H))
+          requires isKResult(H)
+          [structural]
+
+     syntax KItem ::= fscanf(K, K, List) [strict(2)]
+     context fscanf(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
+     rule <k> fscanf(tv(opaque(FD::Int, _), _), str(S::String), VarArgs::List)
+               => fscanf'(FD, VarArgs)
+          ...</k>
+          (.Bag =>
+               <formatting>...
+                    <format> parseFormat(stringToList(S)) </format>
+               ...</formatting>
+          )
+          [structural]
+     rule <k> fscanf(str(FD::String), str(S::String), VarArgs::List)
+               => fscanf'(FD, VarArgs)
+          ...</k>
+          (.Bag =>
+               <formatting>...
+                    <format> parseFormat(stringToList(S)) </format>
+               ...</formatting>
+          )
+          <open-files>... .Set => SetItem(FD) </open-files>
+          <files>...
+               (.Bag =>
+                    <file>...
+                         <fid> FD </fid>
+                         <read-buffer> FD </read-buffer>
+                    ...</file>
+               )
+          ...</files>
+          [structural]
+
+     syntax KItem ::= "fscanf'" "(" FD "," List ")"
+     rule <k> (.K => readFD(FD, 1))
+               ~> fscanf'(FD::FD, _)
+          ...</k>
+          <format> Format:List </format>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          requires Format =/=K .List
+               andBool isReadable(Mode)
+          [structural]
+     rule <k> fscanf'(FD::FD, _) => eof ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <ferror> _ => #EBADF </ferror>
+          requires notBool isReadable(Mode)
+          [structural]
+
+     rule <k> (str(C::String) => .K)
+               ~> fscanf'(_, _)
+          ...</k>
+          <format> ListItem(D:Directive) ...</format>
+          <format-nread> N:Int => N +Int 1 </format-nread>
+          <format-item> Item:String => Item +String C </format-item>
+          requires inScanSet(C, D, Item)
+               andBool notBool exceedsFieldWidth(Item +String C, D)
+          [structural]
+     rule <k> str(C::String)
+               ~> fscanf'(_, _)
+          ...</k>
+          <format> ListItem(D:String) => .List ...</format>
+          <format-item> Item:String => "" </format-item>
+          requires (notBool inScanSet(C, D, Item)
+               orBool exceedsFieldWidth(Item +String C, D))
+               andBool Item =/=String ""
+          [structural]
+     rule <k> str(C::String)
+               ~> fscanf'(_, _)
+          ...</k>
+          <format> ListItem(" ") => .List ...</format>
+          <format-item> _ => "" </format-item>
+          requires notBool isWhitespace(C)
+          [structural]
+     rule <k> (.K => writeItem(D, Item, Arg, NRead))
+               ~> str(C::String)
+               ~> fscanf'(_, (ListItem(Arg::RValue) => .List) _)
+          ...</k>
+          <format> ListItem(%(true, _, _, _) #as D::Directive) => .List ...</format>
+          <format-matched>
+               M:Int => #if isReadCountDirective(D) #then M #else M +Int 1 #fi
+          </format-matched>
+          <format-nread> NRead:Int </format-nread>
+          <format-item> Item:String => "" </format-item>
+          requires (notBool inScanSet(C, D, Item) orBool exceedsFieldWidth(Item +String C, D))
+               andBool isCompleteItem(Item, D)
+          [structural]
+     rule <k> str(C::String)
+               ~> fscanf'(_, _)
+          ...</k>
+          <format> ListItem(%(false, _, _, _) #as D::Directive) => .List ...</format>
+          <format-matched> M:Int => M +Int 1 </format-matched>
+          <format-item> Item:String => "" </format-item>
+          requires (notBool inScanSet(C, D, Item) orBool exceedsFieldWidth(Item +String C, D))
+               andBool isCompleteItem(Item, D)
+          [structural]
+     rule <k> str(C::String)
+               ~> fscanf'(_, _)
+          ...</k>
+          <format> ListItem(%% #as D::Directive) => .List ...</format>
+          <format-item> Item:String => "" </format-item>
+          requires notBool inScanSet(C, D, Item)
+               andBool isCompleteItem(Item, D)
+          [structural]
+
+     rule <k> str(C::String)
+               ~> fscanf'(FD::FD, _)
+               => #if isString(FD) #then close(FD) #else unget(FD, C) #fi
+               ~> #if (C ==String "" andBool Matched ==Int 0)
+                    #then eof #else tv(Matched, utype(int)) #fi
+          ...</k>
+          <format> ListItem(D::Directive) ...</format>
+          <format-matched> Matched:Int </format-matched>
+          <format-item> Item:String </format-item>
+          requires (notBool inScanSet(C, D, Item) orBool exceedsFieldWidth(Item +String C, D))
+               andBool notBool isWhitespace(D)
+               andBool notBool isCompleteItem(Item, D)
+          [structural]
+     rule <k> str(C::String)
+               ~> fscanf'(FD::FD, _)
+               => #if isString(FD) #then close(FD) #else unget(FD, C) #fi
+               ~> tv(Matched, utype(int))
+          ...</k>
+          <format> .List </format>
+          <format-matched> Matched:Int </format-matched>
+          [structural]
+     rule <k> fscanf'(FD::FD, _)
+               => #if isString(FD) #then close(FD) #else .K #fi
+               ~> tv(Matched, utype(int))
+          ...</k>
+          <format> .List </format>
+          <format-matched> Matched:Int </format-matched>
+          [structural]
+
+     syntax Bool ::= isReadCountDirective(Directive) [function]
+     rule isReadCountDirective(%(_, _, _, "n")) => true
+     rule isReadCountDirective(_) => false [owise]
+
+     syntax KItem ::= writeItem(Directive, String, RValue, Int) [function]
+     rule writeItem(%(true, _, "", "c"), Item::String, tv(Loc:SymLoc, _), _)
+          => writeChars(Loc, Item)
+     rule writeItem(%(true, _, "l", "c"), Item::String, tv(Loc:SymLoc, _), _)
+          => writeWChars(Loc, stringToList(Item))
+
+     rule writeItem(%(true, _, "", "s"), Item::String, tv(Loc:SymLoc, _), _)
+          => writeString(Loc, Item)
+     rule writeItem(%(true, _, "l", "s"), Item::String, tv(Loc:SymLoc, _), _)
+          => writeWString(Loc, stringToList(Item))
+
+     rule writeItem(%(true, _, "", D::String), Item::String, tv(Loc:SymLoc, _), _)
+          => writeString(Loc, Item)
+          requires firstChar(D) ==String "["
+     rule writeItem(%(true, _, "l", D::String), Item::String, tv(Loc:SymLoc, _), _)
+          => writeWString(Loc, stringToList(Item))
+          requires firstChar(D) ==String "["
+
+     rule writeItem(%(true, _, Length::String, "d"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%d", Length)))))
+     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 0), utype(getFormatType'("%i", Length)))))
+          requires notBool has0xPrefix(Item)
+     rule writeItem(%(true, _, Length::String, "i"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%i", Length)))))
+          requires has0xPrefix(Item)
+     rule writeItem(%(true, _, Length::String, "o"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 8), utype(getFormatType'("%o", Length)))))
+     rule writeItem(%(true, _, Length::String, "u"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 10), utype(getFormatType'("%u", Length)))))
+     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(Item, 16), utype(getFormatType'("%x", Length)))))
+          requires notBool has0xPrefix(Item)
+     rule writeItem(%(true, _, Length::String, "x"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%x", Length)))))
+          requires has0xPrefix(Item)
+
+     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(Item, 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
+          requires notBool has0xPrefix(Item)
+               andBool toUpperCase(Item) =/=String "(NIL)"
+     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(cfg:intToPointer(String2Base(strip0xPrefix(Item), 16), utype(getFormatType'("%p", Length))), utype(getFormatType'("%p", Length)))))
+          requires has0xPrefix(Item)
+               andBool toUpperCase(Item) =/=String "(NIL)"
+     rule writeItem(%(true, _, Length::String, "p"), Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(NullPointer, utype(getFormatType'("%p", Length)))))
+          requires toUpperCase(Item) ==String "(NIL)"
+
+     rule writeItem(%(true, _, Length::String, D::String) #as D'::Directive, Item::String, Ptr::RValue, _)
+          => Computation((* Ptr) := stringToFloat(Item, utype(innerType(type(Ptr))), utype(getFormatType'("%" +String D, Length))))
+          requires isFloatDirective(D')
+
+     rule writeItem(%(true, _, Length::String, "n"), _, Ptr::RValue, M::Int)
+          => Computation((* Ptr) := cast(utype(innerType(type(Ptr))), tv(M, utype(int))))
+
+     rule writeItem(_, _, _, _) => .K [owise]
+
+     syntax KItem ::= stringToFloat(String, UType, UType)
+     rule stringToFloat(S::String, T::UType, ut(_, float))
+          => allocString(!N:Int @ stdio, S)
+          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtof"), list(
+               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+               ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
+     rule stringToFloat(S::String, T::UType, ut(_, double))
+          => allocString(!N:Int @ stdio, S)
+          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtod"), list(
+               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+               ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
+     rule stringToFloat(S::String, T::UType, ut(_, long-double))
+          => allocString(!N:Int @ stdio, S)
+          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtold"), list(
+               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+               ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
+
+     syntax KItem ::= "stringToFloat'" "(" SymBase "," UType "," K ")"
+     context stringToFloat'(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule stringToFloat'(Base::SymBase, T::UType, V:RValue)
+          => deleteObject(Base) ~> cast(T, V)
+          [structural]
+
+     syntax Directive ::= "%" "(" Bool "," Int "," String "," String ")"
+                        | "%%"
+                        | String
+
+     // (Input char, current directive, item read so far.)
+     syntax Bool ::= inScanSet(String, Directive, String) [function]
+     rule inScanSet(C::String, C, "") => true
+     rule inScanSet("%", %%, "") => true
+     rule inScanSet(C::String, " ", _) => isWhitespace(C)
+     rule inScanSet(C::String, %(_, _, _, "c"), _) => C =/=String ""
+     rule inScanSet(C::String, %(_, _, _, "s"), _) => C =/=String "" andBool notBool isWhitespace(C)
+
+     rule inScanSet(C::String, %(_, _, _, "d"), _) => true
+          requires isDigit(C, 10)
+     rule inScanSet(C::String, %(_, _, _, "d"), "") => true
+          requires isSign(C)
+
+     rule inScanSet(C::String, %(_, _, _, "i"), _) => true
+          requires isDigit(C, 16)
+     rule inScanSet(C::String, %(_, _, _, "i"), "") => true
+          requires isSign(C)
+     rule inScanSet("x", %(_, _, _, "i"), I::String) => true
+          requires isXPrefix(I)
+     rule inScanSet("X", %(_, _, _, "i"), I::String) => true
+          requires isXPrefix(I)
+
+     rule inScanSet(C::String, %(_, _, _, "o"), _) => true
+          requires isDigit(C, 8)
+     rule inScanSet(C::String, %(_, _, _, "o"), "") => true
+          requires isSign(C)
+
+     rule inScanSet(C::String, %(_, _, _, "u"), _) => true
+          requires isDigit(C, 10)
+     rule inScanSet(C::String, %(_, _, _, "u"), "") => true
+          requires isSign(C)
+
+     rule inScanSet(C::String, %(_, _, _, "x"), _) => true
+          requires isDigit(C, 16)
+     rule inScanSet(C::String, %(_, _, _, "x"), "") => true
+          requires isSign(C)
+     rule inScanSet("x", %(_, _, _, "x"), I::String) => true
+          requires isXPrefix(I)
+     rule inScanSet("X", %(_, _, _, "x"), I::String) => true
+          requires isXPrefix(I)
+
+     rule inScanSet(C::String, %(_, _, _, "p"), _) => true
+          requires isDigit(C, 16)
+     rule inScanSet(C::String, %(_, _, _, "p"), "") => true
+          requires isSign(C)
+     rule inScanSet("x", %(_, _, _, "p"), I::String) => true
+          requires isXPrefix(I)
+     rule inScanSet("X", %(_, _, _, "p"), I::String) => true
+          requires isXPrefix(I)
+     rule inScanSet(C::String, %(_, _, _, "p"), I::String) => true
+          requires inNil(C, I)
+
+     // Floating point.
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool inInfinity(C, I)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool inNan(C, I)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isDigit(C, 10)
+               andBool notBool has0xPrefix(I)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isDigit(C, 16)
+               andBool has0xPrefix(I)
+               andBool notBool hasRadix(I)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isDigit(C, 2)
+               andBool has0xPrefix(I)
+               andBool hasRadix(I)
+     rule inScanSet(C::String, D::Directive, "") => true
+          requires isFloatDirective(D)
+               andBool isSign(C)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isSign(C)
+               // Must both have radix & it's the last char.
+               andBool hasRadix(I)
+               andBool (toUpperCase(lastChar(I)) ==String "E"
+                    orBool toUpperCase(lastChar(I)) ==String "P")
+     rule inScanSet(".", D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool notBool hasDot(I)
+               andBool notBool hasRadix(I)
+     rule inScanSet("x", D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isXPrefix(I)
+     rule inScanSet("X", D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool isXPrefix(I)
+     rule inScanSet(C::String, D::Directive, I::String) => true
+          requires isFloatDirective(D)
+               andBool hasRadix(C) andBool notBool hasRadix(I)
+               andBool hasDigit(I)
+
+     // Scan list (e.g., "[^]abc]").
+     rule inScanSet(C::String, %(_, _, _, D::String), _)
+          => ((substrString(D, 0, 2) ==String "[^")
+                    andBool (findChar(D, C, 2) ==Int -1))
+               orBool ((substrString(D, 0, 2) =/=String "[^")
+                    andBool (firstChar(D) ==String "[")
+                    andBool (findChar(D, C, 1) =/=Int -1))
+          requires lengthString(D) >Int 2
+
+     rule inScanSet(_, _, _) => false [owise]
+
+     syntax Bool ::= inNil(String, String) [function]
+                   | "inNil'" "(" String "," String ")" [function]
+     rule inNil(C::String, I::String)
+          => inNil'(toUpperCase(C), toUpperCase(stripSign(I)))
+     rule inNil'("(", "") => true
+     rule inNil'("N", "(") => true
+     rule inNil'("I", "(N") => true
+     rule inNil'("L", "(NI") => true
+     rule inNil'(")", "(NIL") => true
+     rule inNil'(_, _) => false [owise]
+
+     syntax Bool ::= inInfinity(String, String) [function]
+                   | "inInfinity'" "(" String "," String ")" [function]
+     rule inInfinity(C::String, I::String)
+          => inInfinity'(toUpperCase(C), toUpperCase(stripSign(I)))
+     rule inInfinity'("I", "") => true
+     rule inInfinity'("N", "I") => true
+     rule inInfinity'("F", "IN") => true
+     rule inInfinity'("I", "INF") => true
+     rule inInfinity'("N", "INFI") => true
+     rule inInfinity'("I", "INFIN") => true
+     rule inInfinity'("T", "INFINI") => true
+     rule inInfinity'("Y", "INFINIT") => true
+     rule inInfinity'(_, _) => false [owise]
+
+     syntax Bool ::= inNan(String, String) [function]
+                   | "inNan'" "(" String "," String ")" [function]
+     rule inNan(C::String, I::String) => inNan'(toUpperCase(C), toUpperCase(I))
+     rule inNan'("N", "") => true
+     rule inNan'("A", "N") => true
+     rule inNan'("N", "NA") => true
+     rule inNan'(_, _) => false [owise]
+
+     // Given that all characters are in the scan set, is this a complete item?
+     syntax Bool ::= isCompleteItem(String, Directive) [function]
+     rule isCompleteItem("", D::Directive) => isReadCountDirective(D)
+     rule isCompleteItem(Item::String, D::Directive) => false
+          requires isNumericDirective(D) andBool notBool hasDigit(strip0xPrefix(Item))
+               andBool toUpperCase(Item) =/=String "(NIL)"
+     rule isCompleteItem(Item::String, D::Directive) => false
+          requires isNumericDirective(D) andBool isSign(lastChar(Item))
+     rule isCompleteItem(Item::String, %(_, _, _, "p")) => false
+          requires toUpperCase(Item) ==String "("
+               orBool toUpperCase(Item) ==String "(N"
+               orBool toUpperCase(Item) ==String "(NI"
+               orBool toUpperCase(Item) ==String "(NIL"
+     rule isCompleteItem(Item::String, D::Directive) => false
+          requires isFloatDirective(D)
+               andBool (toUpperCase(stripSign(Item)) ==String "N"
+                    orBool toUpperCase(stripSign(Item)) ==String "NA"
+                    orBool toUpperCase(stripSign(Item)) ==String "I"
+                    orBool toUpperCase(stripSign(Item)) ==String "IN"
+                    orBool toUpperCase(stripSign(Item)) ==String "INFI"
+                    orBool toUpperCase(stripSign(Item)) ==String "INFIN"
+                    orBool toUpperCase(stripSign(Item)) ==String "INFINI"
+                    orBool toUpperCase(stripSign(Item)) ==String "INFINIT")
+     rule isCompleteItem(_, _) => true [owise]
+
+     syntax Bool ::= isNumericDirective(Directive) [function]
+     rule isNumericDirective(%(_, _, _, "d")) => true
+     rule isNumericDirective(%(_, _, _, "i")) => true
+     rule isNumericDirective(%(_, _, _, "o")) => true
+     rule isNumericDirective(%(_, _, _, "u")) => true
+     rule isNumericDirective(%(_, _, _, "x")) => true
+     rule isNumericDirective(%(_, _, _, "p")) => true
+     rule isNumericDirective(D::Directive) => isFloatDirective(D) [owise]
+
+     syntax Bool ::= isFloatDirective(Directive) [function]
+     rule isFloatDirective(%(_, _, _, "a")) => true
+     rule isFloatDirective(%(_, _, _, "e")) => true
+     rule isFloatDirective(%(_, _, _, "f")) => true
+     rule isFloatDirective(%(_, _, _, "g")) => true
+     rule isFloatDirective(_) => false [owise]
+
+     syntax Bool ::= exceedsFieldWidth(String, Directive) [function]
+     rule exceedsFieldWidth(S::String, %(_, Width::Int, _, _)) => lengthString(S) >Int Width
+          requires Width >Int 0
+     rule exceedsFieldWidth(_, _) => false [owise]
+
+     syntax Bool ::= isSign(String) [function]
+     rule isSign("+") => true
+     rule isSign("-") => true
+     rule isSign(_) => false [owise]
+
+     syntax Bool ::= isXPrefix(String) [function]
+     rule isXPrefix(S::String) => stripSign(S) ==String "0"
+
+     syntax Bool ::= hasDot(String) [function]
+     rule hasDot(S::String) => findChar(S, ".", 0) >=Int 0
+
+     syntax Bool ::= hasPosSign(String) [function]
+     rule hasPosSign(S::String) => firstChar(S) ==String "+"
+          requires lengthString(S) >=Int 1
+     rule hasPosSign(_) => false [owise]
+
+     syntax Bool ::= hasNegSign(String) [function]
+     rule hasNegSign(S::String) => firstChar(S) ==String "-"
+          requires lengthString(S) >=Int 1
+     rule hasNegSign(_) => false [owise]
+
+     syntax String ::= stripSign(String) [function]
+     rule stripSign(S::String) => stripSign(butFirstChar(S))
+          requires lengthString(S) >=Int 1
+               andBool (isSign(firstChar(S)) orBool isWhitespace(firstChar(S)))
+     rule stripSign(S::String) => S [owise]
+
+     syntax Bool ::= has0xPrefix(String) [function]
+     rule has0xPrefix(S::String) => toUpperCase(substrString(stripSign(S), 0, 2)) ==String "0X"
+          requires lengthString(stripSign(S)) >=Int 2
+     rule has0xPrefix(_) => false [owise]
+
+     syntax String ::= strip0xPrefix(String) [function]
+     rule strip0xPrefix(S::String) => "+" +String substrString(stripSign(S), 2, lengthString(S))
+          requires has0xPrefix(S) andBool hasPosSign(S)
+     rule strip0xPrefix(S::String) => "-" +String substrString(stripSign(S), 2, lengthString(S))
+          requires has0xPrefix(S) andBool hasNegSign(S)
+     rule strip0xPrefix(S::String) => substrString(stripSign(S), 2, lengthString(S))
+          requires has0xPrefix(S) andBool notBool (hasPosSign(S) orBool hasNegSign(S))
+     rule strip0xPrefix(S::String) => S [owise]
+
+     syntax ParseResult ::= parseResult(Directive, List)
+
+     syntax List ::= parseFormat(List) [function]
+     rule parseFormat(L::List) => parseFormat'(parseDirective(L))
+          requires L =/=K .List
+     rule parseFormat(.List) => .List
+
+     syntax List ::= "parseFormat'" "(" ParseResult ")" [function]
+     rule parseFormat'(parseResult(D::Directive, L::List))
+          => ListItem(" ") ListItem(normalizeDirective(D)) parseFormat(L)
+          requires isSpaceSkipDirective(D)
+     rule parseFormat'(parseResult(D::Directive, L::List))
+          => ListItem(normalizeDirective(D)) parseFormat(L) [owise]
+
+     // Does this directive require skipping leading whitespace?
+     syntax Bool ::= isSpaceSkipDirective(Directive) [function]
+     rule isSpaceSkipDirective(_:String) => false
+     rule isSpaceSkipDirective(%(_, _, _, D::String)) => false
+          requires firstChar(D) ==String "["
+     rule isSpaceSkipDirective(%(_, _, _, "c")) => false
+     rule isSpaceSkipDirective(%(_, _, _, "n")) => false
+     rule isSpaceSkipDirective(_) => true [owise]
+
+     syntax Directive ::= normalizeDirective(Directive) [function]
+     rule normalizeDirective(%(Write::Bool, 0, Length::String, "c"))
+          => %(Write, 1, Length, "c")
+     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "X"))
+          => %(Write, Width, Length, "x")
+     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "A"))
+          => %(Write, Width, Length, "a")
+     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "E"))
+          => %(Write, Width, Length, "e")
+     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "F"))
+          => %(Write, Width, Length, "f")
+     rule normalizeDirective(%(Write::Bool, Width::Int, Length::String, "G"))
+          => %(Write, Width, Length, "g")
+     rule normalizeDirective(D::Directive) => D [owise]
+
+     syntax ParseResult ::= parseDirective(List) [function]
+     rule parseDirective(ListItem(C:String) L::List)
+          => parseResult(" ", eatWhitespace(L))
+          requires isWhitespace(C)
+     rule parseDirective(ListItem(C:String) L::List)
+          => parseResult(C, L)
+          requires C =/=String "%" andBool notBool isWhitespace(C)
+     rule parseDirective(ListItem("%") ListItem("%") L::List)
+          => parseResult(%%, L)
+     rule parseDirective(ListItem("%") ListItem("*") L::List)
+          => parseResult(%
+               ( false
+               , parseDigits(L)
+               , parseLengthMod(eatDigits(L))
+               , parseConvSpec(eatLengthMod(eatDigits(L)))
+               ), eatConvSpec(eatLengthMod(eatDigits(L))))
+     rule parseDirective(ListItem("%") L::List)
+          => parseResult(%
+               ( true
+               , parseDigits(L)
+               , parseLengthMod(eatDigits(L))
+               , parseConvSpec(eatLengthMod(eatDigits(L)))
+               ), eatConvSpec(eatLengthMod(eatDigits(L))))
+          [owise]
+
+     syntax Bool ::= isWhitespace(Directive) [function]
+     rule isWhitespace(C:String)
+          => (ordChar(C) >=Int 9 andBool ordChar(C) <=Int 13)
+               orBool C ==String " "
+          requires C =/=String ""
+     rule isWhitespace(_) => false [owise]
+
+     syntax Bool ::= isDigit(String, Int) [function]
+     rule isDigit(C::String, Base::Int)
+          => ordChar(C) >=Int ordChar("0") andBool ordChar(C) <Int (ordChar("0") +Int Base)
+          requires Base <=Int 10
+               andBool C =/=String ""
+     rule isDigit(C::String, Base::Int)
+          => isDigit(C, 10)
+               orBool (ordChar(C) >=Int ordChar("a")
+                    andBool ordChar(C) <Int (ordChar("a") +Int (Base -Int 10)))
+               orBool (ordChar(C) >=Int ordChar("A")
+                    andBool ordChar(C) <Int (ordChar("A") +Int (Base -Int 10)))
+          requires Base >Int 10
+               andBool C =/=String ""
+     rule isDigit(_, _) => false [owise]
+
+     syntax Bool ::= hasDigit(String) [function]
+     rule hasDigit(S::String)
+          => findChar(S, "0", 0) =/=Int -1
+               orBool findChar(S, "1", 0) =/=Int -1
+               orBool findChar(S, "2", 0) =/=Int -1
+               orBool findChar(S, "3", 0) =/=Int -1
+               orBool findChar(S, "4", 0) =/=Int -1
+               orBool findChar(S, "5", 0) =/=Int -1
+               orBool findChar(S, "6", 0) =/=Int -1
+               orBool findChar(S, "7", 0) =/=Int -1
+               orBool findChar(S, "8", 0) =/=Int -1
+               orBool findChar(S, "9", 0) =/=Int -1
+               orBool findChar(S, "a", 0) =/=Int -1 orBool findChar(S, "A", 0) =/=Int -1
+               orBool findChar(S, "b", 0) =/=Int -1 orBool findChar(S, "B", 0) =/=Int -1
+               orBool findChar(S, "c", 0) =/=Int -1 orBool findChar(S, "C", 0) =/=Int -1
+               orBool findChar(S, "d", 0) =/=Int -1 orBool findChar(S, "D", 0) =/=Int -1
+               orBool findChar(S, "e", 0) =/=Int -1 orBool findChar(S, "E", 0) =/=Int -1
+               orBool findChar(S, "f", 0) =/=Int -1 orBool findChar(S, "F", 0) =/=Int -1
+
+     syntax Bool ::= hasRadix(String) [function]
+     rule hasRadix(S::String)
+          => findChar(S, "p", 0) =/=Int -1 orBool findChar(S, "P", 0) =/=Int -1
+          requires has0xPrefix(S)
+     rule hasRadix(S::String)
+          => findChar(S, "e", 0) =/=Int -1 orBool findChar(S, "E", 0) =/=Int -1
+          [owise]
+
+     syntax List ::= eatWhitespace(List) [function]
+     rule eatWhitespace(ListItem(C:String) L::List)
+          => eatWhitespace(L)
+          requires isWhitespace(C)
+     rule eatWhitespace(L::List) => L [owise]
+
+     syntax Int ::= parseDigits(List) [function]
+     rule parseDigits(L::List) => String2Int(fst(parseDigits'(L)))
+     syntax List ::= eatDigits(List) [function]
+     rule eatDigits(L::List) => snd(parseDigits'(L))
+
+     syntax ParseStrResult ::= parseStrResult(String, List)
+
+     syntax ParseStrResult ::= "parseDigits'" "(" List ")" [function]
+     rule parseDigits'(ListItem(C:String) L::List)
+          => parseStrResult(C +String fst(parseDigits'(L)), snd(parseDigits'(L)))
+          requires isDigit(C, 10)
+     rule parseDigits'(L::List)
+          => parseStrResult("", L) [owise]
+
+     syntax String ::= parseString(String, List) [function]
+     rule parseString(S::String, L::List) => fst(parseString'(S, L))
+     syntax List ::= eatString(String, List) [function]
+     rule eatString(S::String, L::List) => snd(parseString'(S, L))
+
+     syntax ParseStrResult ::= "parseString'" "(" String "," List ")" [function]
+     rule parseString'(S::String, ListItem(C:String) L::List)
+          => parseStrResult(C +String fst(parseString'(S, L)), snd(parseString'(S, L)))
+          requires C =/=String S
+     rule parseString'(_, L::List)
+          => parseStrResult("", L) [owise]
+
+     syntax String ::= parseLengthMod(List) [function]
+     rule parseLengthMod(L::List) => fst(parseLengthMod'(L))
+     syntax List ::= eatLengthMod(List) [function]
+     rule eatLengthMod(L::List) => snd(parseLengthMod'(L))
+
+     syntax ParseStrResult ::= "parseLengthMod'" "(" List ")" [function]
+     rule parseLengthMod'(ListItem("h") ListItem("h") L::List)
+          => parseStrResult("hh", L)
+     rule parseLengthMod'(ListItem("h") L::List)
+          => parseStrResult("h", L)
+          requires notBool atHead("h", L)
+     rule parseLengthMod'(ListItem("l") L::List)
+          => parseStrResult("l", L)
+          requires notBool atHead("l", L)
+     rule parseLengthMod'(ListItem("l") ListItem("l") L::List)
+          => parseStrResult("ll", L)
+     rule parseLengthMod'(ListItem(C:String) L::List)
+          => parseStrResult(C, L)
+          requires C ==String "j"
+               orBool C ==String "z"
+               orBool C ==String "t"
+               orBool C ==String "L"
+     rule parseLengthMod'(L::List) => parseStrResult("", L) [owise]
+
+     syntax String ::= parseConvSpec(List) [function]
+     rule parseConvSpec(L::List) => fst(parseConvSpec'(L))
+     syntax List ::= eatConvSpec(List) [function]
+     rule eatConvSpec(L::List) => snd(parseConvSpec'(L))
+
+     syntax ParseStrResult ::= "parseConvSpec'" "(" List ")" [function]
+     rule parseConvSpec'(ListItem(C:String) L::List)
+          => parseStrResult(C, L)
+          requires C ==String "d"
+               orBool C ==String "i"
+               orBool C ==String "o"
+               orBool C ==String "u"
+               orBool C ==String "x" orBool C ==String "X"
+               orBool C ==String "a" orBool C ==String "A"
+               orBool C ==String "e" orBool C ==String "E"
+               orBool C ==String "f" orBool C ==String "F"
+               orBool C ==String "g" orBool C ==String "G"
+               orBool C ==String "c"
+               orBool C ==String "s"
+               orBool C ==String "p"
+               orBool C ==String "n"
+     rule parseConvSpec'(ListItem("[") ListItem("^") ListItem("]") L::List)
+          => parseStrResult("[^]" +String parseString("]", L), tail(eatString("]", L)))
+     rule parseConvSpec'(ListItem("[") ListItem("^") L::List)
+          => parseStrResult("[^" +String parseString("]", L), tail(eatString("]", L)))
+          requires notBool atHead("]", L)
+     rule parseConvSpec'(ListItem("[") ListItem("]") L::List)
+          => parseStrResult("[]" +String parseString("]", L), tail(eatString("]", L)))
+     rule parseConvSpec'(ListItem("[") L::List)
+          => parseStrResult("[" +String parseString("]", L), tail(eatString("]", L)))
+          requires notBool atHead("^", L) andBool notBool atHead("]", L)
+     rule parseConvSpec'(L::List) => parseStrResult("", L) [owise]
+
+     syntax Bool ::= atHead(String, List) [function]
+     rule atHead(S::String, ListItem(S) _) => true
+     rule atHead(_, _) => false [owise]
+
+     syntax List ::= tail(List) [function]
+     rule tail(ListItem(_) L::List) => L
+     rule tail(_) => .List [owise]
+
+     syntax String ::= fst(ParseStrResult) [function]
+     rule fst(parseStrResult(S::String, _)) => S
+
+     syntax List ::= snd(ParseStrResult) [function]
+     rule snd(parseStrResult(_, L::List)) => L
+
      syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:
-          <k> formatter(str(S:String), VarArgs:List)
-               => formatter-aux(VarArgs)
+          <k> formatter(str(S::String), VarArgs::List)
+               => formatter'(VarArgs)
           ...</k>
           (.Bag =>
                <formatting>...
@@ -260,23 +1314,17 @@ module LIBC-STDIO
 
      syntax RValue ::= formattedResult(K)
 
-     syntax KItem ::= "formatter-aux" "(" List ")"
-     rule [format-done]:
-          <k> formatter-aux(_)
+     syntax KItem ::= "formatter'" "(" List ")"
+     rule <k> formatter'(_)
                => formattedResult(listToString(Result))
           ...</k>
-          (
-               <formatting>...
-                    <format> .List </format>
-                    <format-result> Result:List </format-result>
-                    <format-state> "normal" </format-state>
-               ...</formatting>
-               => .Bag
-          )
+          <format> .List </format>
+          <format-result> Result:List </format-result>
+          <format-state> "normal" </format-state>
           [structural]
 
      rule [format-normal]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-result>... .List => ListItem(S) </format-result>
           <format-state> "normal" </format-state>
@@ -284,7 +1332,7 @@ module LIBC-STDIO
           [structural]
 
      rule [format-reset]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-pad-zero> _ => false </format-pad-zero>
           <format-field-width> _ => "" </format-field-width>
           <format-precision> _ => "" </format-precision>
@@ -293,7 +1341,7 @@ module LIBC-STDIO
           [structural]
 
      rule [format-%]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format> ListItem("%") => .List ...</format>
           <format-state> "normal" => "%" </format-state>
           [structural]
@@ -386,57 +1434,52 @@ module LIBC-STDIO
      }*/
 
      rule [format-%0]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-pad-zero> _ => true </format-pad-zero>
           <format-field-width> "" </format-field-width>
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
           [structural]
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format-field-width> W:String => W +String "0" </format-field-width>
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
           requires W =/=K ""
           [structural]
 
-
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-field-width> W:String => W +String C </format-field-width>
           <format-state> "%" </format-state>
-          requires C ==K "-"
-             orBool (ordChar(C) >Int ordChar("0") andBool ordChar(C) <=Int ordChar("9"))
+          requires isSign(C) orBool (isDigit(C, 10) andBool C =/=String "0")
           [structural]
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(".") => .List ...</format>
           <format-state> "%" => "%." </format-state>
           [structural]
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-precision> P:String => P +String C </format-precision>
           <format-state> "%." </format-state>
-          requires ordChar(C) >=Int ordChar("0")
-               andBool ordChar(C) <=Int ordChar("9")
+          requires isDigit(C, 10)
           [structural]
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%." => "%" </format-state>
           requires P =/=K ""
-               andBool (ordChar(C) <Int ordChar("0")
-               orBool ordChar(C) >Int ordChar("9"))
+               andBool notBool isDigit(C, 10)
           [structural]
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
           <format-precision> P:String => "0" </format-precision>
           <format-state> "%." => "%" </format-state>
           requires P ==K ""
-               andBool (ordChar(C) <Int ordChar("0")
-               orBool ordChar(C) >Int ordChar("9"))
+               andBool notBool isDigit(C, 10)
           [structural]
 
 
@@ -452,7 +1495,7 @@ module LIBC-STDIO
      \end{description}
      */
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(S:String) ...</format>
           <format-precision> P:String => "1" </format-precision>
           <format-state> "%" </format-state>
@@ -463,29 +1506,29 @@ module LIBC-STDIO
           [structural]
 
      rule [format-%d-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%d" </format-state>
           requires P =/=K "" andBool (S ==String "d" orBool S ==String "i")
           [structural]
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format-arg> S:SymLoc => unknown(0) </format-arg>
           <format-state> State::String </format-state>
           requires (State ==String "%d" orBool State ==String "%x" orBool State ==String "%X" orBool State ==String "%u" orBool State ==String "%o")
 
-     rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.")) ~> formatter-aux(_) ...</k>
+     rule <k> (.K => UNSPEC("STDIO2", "Printing an unspecified value.")) ~> formatter'(_) ...</k>
           <format-arg> unknown(_) </format-arg>
 
-     rule <k> formatter-aux(_) ...</k>
+     rule <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Int2String(D:Int),
+                        formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
                                              Z,
                                              String2Int(W)))
@@ -508,21 +1551,21 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%o-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("o") => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%o" </format-state>
           requires P =/=K ""
           [structural]
      rule [format-%o]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Base2String(D:Int, 8),
+                        formatPrecisionWidth(Base2String(D, 8),
                                              String2Int(P),
                                              Z,
                                              String2Int(W)))
@@ -530,21 +1573,21 @@ module LIBC-STDIO
           <format-state> "%o" => "reset" </format-state>
           [structural]
      rule [format-%u-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("u") => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%u" </format-state>
           requires P =/=K ""
           [structural]
      rule [format-%u]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Int2String(D:Int),
+                        formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
                                              Z,
                                              String2Int(W)))
@@ -552,21 +1595,21 @@ module LIBC-STDIO
           <format-state> "%u" => "reset" </format-state>
           [structural]
      rule [format-%x-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("x") => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%x" </format-state>
           requires P =/=K ""
           [structural]
      rule [format-%x]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(Base2String(D:Int, 16),
+                        formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(P),
                                              Z,
                                              String2Int(W)))
@@ -574,21 +1617,21 @@ module LIBC-STDIO
           <format-state> "%x" => "reset" </format-state>
           [structural]
      rule [format-%X-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("X") => .List ...</format>
           <format-precision> P:String </format-precision>
           <format-state> "%" => "%X" </format-state>
           requires P =/=K ""
           [structural]
      rule [format-%X]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(toUpperCase(Base2String(D:Int, 16)),
+                        formatPrecisionWidth(toUpperCase(Base2String(D, 16)),
                                              String2Int(P),
                                              Z,
                                              String2Int(W)))
@@ -623,38 +1666,38 @@ module LIBC-STDIO
      //TODO(traiansf): missing formatting for long double
      //TODO(traiansf): width specs for floats are not working
      rule [format-%f-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("f") => .List ...</format>
           <format-state> "%" => "%f" </format-state>
           [structural]
      rule [format-%f]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(pad(
-                    Float2String(setPrecision(D, String2Int(P))),
+                    Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi)),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
           <format-state> "%f" => "reset" </format-state>
           [structural]
      rule [format-%F-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("F") => .List ...</format>
           <format-state> "%" => "%F" </format-state>
           [structural]
      rule [format-%F]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(pad(
-                    toUpperCase(Float2String(setPrecision(D, String2Int(P)))),
+                    toUpperCase(Float2String(setPrecision(D, #if P ==K "" #then 6 #else String2Int(P) #fi))),
                     String2Int(W),
                     #if Z #then "0" #else " " #fi))
           </format-result>
@@ -711,12 +1754,12 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%g-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("g") => .List ...</format>
           <format-state> "%" => "%g" </format-state>
           [structural]
      rule [format-%g]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
@@ -730,12 +1773,12 @@ module LIBC-STDIO
           <format-state> "%g" => "reset" </format-state>
           [structural]
      rule [format-%G-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("G") => .List ...</format>
           <format-state> "%" => "%G" </format-state>
           [structural]
      rule [format-%G]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> D:Float => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
@@ -772,12 +1815,12 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%c-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("c") => .List ...</format>
           <format-state> "%" => "%c" </format-state>
           [structural]
      rule [format-%c]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> C:Int => .K </format-arg>
           <format-result>...
                .List => ListItem(chrChar(((C:Int %Int 256) +Int 256)
@@ -814,21 +1857,21 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%s-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("s") => .List ...</format>
           <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString(Loc))
-               ~> formatter-aux(_)
+          <k> (.K => getString'(Loc))
+               ~> formatter'(_)
           ...</k>
           <format-length> "" </format-length>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
      rule [format-%ls]:
-          <k> (.K => getWString(Loc))
-               ~> formatter-aux(_)
+          <k> (.K => getWString'(Loc))
+               ~> formatter'(_)
           ...</k>
           <format-length> "l" </format-length>
           <format-arg> Loc:SymLoc => .K </format-arg>
@@ -836,7 +1879,7 @@ module LIBC-STDIO
           [structural]
      rule [format-%s-done]:
           <k> (str(S:String) => .K)
-               ~> formatter-aux(_)
+               ~> formatter'(_)
           ...</k>
           <format-result>...
                .List => ListItem(S)
@@ -853,15 +1896,22 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%p-start]:
-          <k> formatter-aux(Args:List) => formatter-next(Args) ...</k>
+          <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("p") => .List ...</format>
           <format-state> "%" => "%p" </format-state>
           [structural]
      rule [format-%p]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format-arg> Loc:SymLoc => .K </format-arg>
+          <format-precision> P:String </format-precision>
+          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(pointerToString(Loc))
+               .List => ListItem(
+                        formatPrecisionWidth("0x" +String Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
+                                             String2Int(P),
+                                             Z,
+                                             String2Int(W)))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]
@@ -885,7 +1935,7 @@ module LIBC-STDIO
      \end{description}
      */
      rule [format-%%]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format> ListItem("%") => .List ...</format>
           <format-result>...
                .List => ListItem("%")
@@ -894,7 +1944,7 @@ module LIBC-STDIO
           [structural]
 
      rule [format-%l]:
-          <k> formatter-aux(_) ...</k>
+          <k> formatter'(_) ...</k>
           <format> ListItem(Char:String) => .List ...</format>
           <format-state> "%" </format-state>
           <format-length>
@@ -914,7 +1964,7 @@ module LIBC-STDIO
 
      syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
      rule <k> formatter-arg(tv(V::CValue, _), Args:List)
-               => formatter-aux(Args)
+               => formatter'(Args)
           ...</k>
           <format-arg> _ => V </format-arg>
           [structural]
@@ -1054,81 +2104,122 @@ module LIBC-STDIO
      rule setPrecision(F::Float, _) => F
 
      syntax KItem ::= "getFormatType"
-     syntax Type ::= "getFormatType-aux" "(" K "," K ")" [function]
-     rule <k> getFormatType => getFormatType-aux(State, Length) ...</k>
+     syntax Type ::= "getFormatType'" "(" String "," String ")" [function]
+     rule <k> getFormatType => getFormatType'(State, Length) ...</k>
           <format-length> Length::String </format-length>
           <format-state> State::String </format-state>
           [structural]
 
-     rule getFormatType-aux("%a", _) => type(double)
-     rule getFormatType-aux("%A", _) => type(double)
-     rule getFormatType-aux("%e", _) => type(double)
-     rule getFormatType-aux("%E", _) => type(double)
-     rule getFormatType-aux("%f", _) => type(double)
-     rule getFormatType-aux("%F", _) => type(double)
-     rule getFormatType-aux("%g", _) => type(double)
-     rule getFormatType-aux("%G", _) => type(double)
+     rule getFormatType'("%a", _) => type(double)
+     rule getFormatType'("%A", _) => type(double)
+     rule getFormatType'("%e", _) => type(double)
+     rule getFormatType'("%E", _) => type(double)
+     rule getFormatType'("%f", _) => type(double)
+     rule getFormatType'("%F", _) => type(double)
+     rule getFormatType'("%g", _) => type(double)
+     rule getFormatType'("%G", _) => type(double)
 
-     rule getFormatType-aux("%c", "") => type(int)
-     rule getFormatType-aux("%s", "") => type(pointerType(type(char)))
-     rule getFormatType-aux("%s", "l") => type(pointerType(type(cfg:wcharut)))
+     rule getFormatType'("%c", "") => type(int)
+     rule getFormatType'("%s", "") => type(pointerType(type(char)))
+     rule getFormatType'("%s", "l") => type(pointerType(type(cfg:wcharut)))
 
-     rule getFormatType-aux("%p", "") => type(pointerType(type(void)))
+     rule getFormatType'("%p", "") => type(pointerType(type(void)))
 
-     rule getFormatType-aux("%d", "hh") => type(signed-char)
-     rule getFormatType-aux("%o", "hh") => type(signed-char)
-     rule getFormatType-aux("%u", "hh") => type(unsigned-char)
-     rule getFormatType-aux("%x", "hh") => type(unsigned-char)
-     rule getFormatType-aux("%X", "hh") => type(unsigned-char)
-     rule getFormatType-aux("%n", "hh") => type(pointerType(type(signed-char)))
+     rule getFormatType'("%d", "hh") => type(signed-char)
+     rule getFormatType'("%i", "hh") => type(signed-char)
+     rule getFormatType'("%o", "hh") => type(signed-char)
+     rule getFormatType'("%u", "hh") => type(unsigned-char)
+     rule getFormatType'("%x", "hh") => type(unsigned-char)
+     rule getFormatType'("%X", "hh") => type(unsigned-char)
+     rule getFormatType'("%n", "hh") => type(pointerType(type(signed-char)))
 
-     rule getFormatType-aux("%d", "h") => type(short-int)
-     rule getFormatType-aux("%o", "h") => type(short-int)
-     rule getFormatType-aux("%u", "h") => type(unsigned-short-int)
-     rule getFormatType-aux("%x", "h") => type(unsigned-short-int)
-     rule getFormatType-aux("%X", "h") => type(unsigned-short-int)
-     rule getFormatType-aux("%n", "h") => type(pointerType(type(short-int)))
+     rule getFormatType'("%d", "h") => type(short-int)
+     rule getFormatType'("%i", "h") => type(short-int)
+     rule getFormatType'("%o", "h") => type(short-int)
+     rule getFormatType'("%u", "h") => type(unsigned-short-int)
+     rule getFormatType'("%x", "h") => type(unsigned-short-int)
+     rule getFormatType'("%X", "h") => type(unsigned-short-int)
+     rule getFormatType'("%n", "h") => type(pointerType(type(short-int)))
 
-     rule getFormatType-aux("%d", "") => type(int)
-     rule getFormatType-aux("%o", "") => type(int)
-     rule getFormatType-aux("%u", "") => type(unsigned-int)
-     rule getFormatType-aux("%x", "") => type(unsigned-int)
-     rule getFormatType-aux("%X", "") => type(unsigned-int)
-     rule getFormatType-aux("%n", "") => type(pointerType(type(int)))
+     rule getFormatType'("%d", "") => type(int)
+     rule getFormatType'("%i", "") => type(int)
+     rule getFormatType'("%o", "") => type(int)
+     rule getFormatType'("%u", "") => type(unsigned-int)
+     rule getFormatType'("%x", "") => type(unsigned-int)
+     rule getFormatType'("%X", "") => type(unsigned-int)
+     rule getFormatType'("%n", "") => type(pointerType(type(int)))
 
-     rule getFormatType-aux("%d", "l") => type(long-int)
-     rule getFormatType-aux("%o", "l") => type(long-int)
-     rule getFormatType-aux("%u", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%x", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%X", "l") => type(unsigned-long-int)
-     rule getFormatType-aux("%n", "l") => type(pointerType(type(long-int)))
+     rule getFormatType'("%d", "l") => type(long-int)
+     rule getFormatType'("%i", "l") => type(long-int)
+     rule getFormatType'("%o", "l") => type(long-int)
+     rule getFormatType'("%u", "l") => type(unsigned-long-int)
+     rule getFormatType'("%x", "l") => type(unsigned-long-int)
+     rule getFormatType'("%X", "l") => type(unsigned-long-int)
+     rule getFormatType'("%n", "l") => type(pointerType(type(long-int)))
 
-     rule getFormatType-aux("%d", "ll") => type(long-long-int)
-     rule getFormatType-aux("%o", "ll") => type(long-long-int)
-     rule getFormatType-aux("%u", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%x", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%X", "ll") => type(unsigned-long-long-int)
-     rule getFormatType-aux("%n", "ll") => type(pointerType(type(long-long-int)))
+     rule getFormatType'("%d", "ll") => type(long-long-int)
+     rule getFormatType'("%i", "ll") => type(long-long-int)
+     rule getFormatType'("%o", "ll") => type(long-long-int)
+     rule getFormatType'("%u", "ll") => type(unsigned-long-long-int)
+     rule getFormatType'("%x", "ll") => type(unsigned-long-long-int)
+     rule getFormatType'("%X", "ll") => type(unsigned-long-long-int)
+     rule getFormatType'("%n", "ll") => type(pointerType(type(long-long-int)))
 
-     rule getFormatType-aux("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType-aux("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType-aux("%u", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%x", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%X", "z") => type(cfg:sizeut)
-     rule getFormatType-aux("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
+     rule getFormatType'("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType'("%i", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType'("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType'("%u", "z") => type(cfg:sizeut)
+     rule getFormatType'("%x", "z") => type(cfg:sizeut)
+     rule getFormatType'("%X", "z") => type(cfg:sizeut)
+     rule getFormatType'("%n", "z") => type(pointerType(type(correspondingSignedType(utype(cfg:sizeut)))))
 
-     rule getFormatType-aux("%d", "t") => type(cfg:ptrdiffut)
-     rule getFormatType-aux("%o", "t") => type(cfg:ptrdiffut)
-     rule getFormatType-aux("%u", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
-     rule getFormatType-aux("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
-     rule getFormatType-aux("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
-     rule getFormatType-aux("%n", "t") => type(pointerType(type(cfg:sizeut)))
+     rule getFormatType'("%d", "t") => type(cfg:ptrdiffut)
+     rule getFormatType'("%i", "t") => type(cfg:ptrdiffut)
+     rule getFormatType'("%o", "t") => type(cfg:ptrdiffut)
+     rule getFormatType'("%u", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType'("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType'("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
+     rule getFormatType'("%n", "t") => type(pointerType(type(cfg:sizeut)))
+
+     rule getFormatType'(D::String, "") => type(pointerType(type(char)))
+          requires substrString(D, 0, 2) ==String "%["
+     rule getFormatType'(D::String, "l") => type(pointerType(type(cfg:wcharut)))
+          requires substrString(D, 0, 2) ==String "%["
 
      syntax Bool ::= isPointerToCharType(UType) [function]
      rule isPointerToCharType(ut(_, pointerType(t(_, _, char)))) => true
      rule isPointerToCharType(ut(_, pointerType(t(_, _, unsigned-char)))) => true
      rule isPointerToCharType(ut(_, pointerType(t(_, _, signed-char)))) => true
      rule isPointerToCharType(_) => false [owise]
+
+     syntax Bool ::= isReadWritable(String) [function]
+     rule isReadWritable("r+") => true
+     rule isReadWritable("w+") => true
+     rule isReadWritable("w+x") => true
+     rule isReadWritable("a+") => true
+     rule isReadWritable("r+b") => true
+     rule isReadWritable("rb+") => true
+     rule isReadWritable("w+b") => true
+     rule isReadWritable("wb+") => true
+     rule isReadWritable("w+bx") => true
+     rule isReadWritable("wb+x") => true
+     rule isReadWritable("a+b") => true
+     rule isReadWritable("ab+") => true
+     rule isReadWritable(_) => false [owise]
+
+     syntax Bool ::= isReadable(String) [function]
+     rule isReadable("r") => true
+     rule isReadable("rb") => true
+     rule isReadable(M::String) => isReadWritable(M) [owise]
+
+     syntax Bool ::= isWritable(String) [function]
+     rule isWritable("w") => true
+     rule isWritable("wx") => true
+     rule isWritable("a") => true
+     rule isWritable("wb") => true
+     rule isWritable("wbx") => true
+     rule isWritable("ab") => true
+     rule isWritable(M::String) => isReadWritable(M) [owise]
 
 endmodule
 

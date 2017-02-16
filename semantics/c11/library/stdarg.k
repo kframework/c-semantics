@@ -1,6 +1,5 @@
 module LIBC-STDARG
      imports BOOL
-     imports C-BUILTIN-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -9,8 +8,8 @@ module LIBC-STDARG
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports K-REFLECTION
-     imports LIBC-BOOTSTRAP-SYNTAX
-
+     imports LIBC-BUILTIN-SYNTAX
+     imports LIBC-SYNTAX
      imports RETURN-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{7.16}{1--3}}}{

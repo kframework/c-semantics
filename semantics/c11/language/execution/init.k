@@ -8,22 +8,23 @@ module C-EXECUTION-INIT-SYNTAX
 endmodule
 
 module C-EXECUTION-INIT
-     imports C-EXECUTION-INIT-SYNTAX
-     imports C-CONFIGURATION
-     imports K-EQUAL
-     imports STRING
      imports BITS-SYNTAX
      imports C-CHECK-LOC-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-EXECUTION-INIT-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports K-EQUAL
+     imports K-IO
      imports LIBC-IO-SYNTAX
+     imports STRING
 
      syntax TCell ::= ".TCell" [klabel(.TCell)]
 
@@ -129,23 +130,26 @@ module C-EXECUTION-INIT
                     <curr-tu> _ => MainTU </curr-tu>
                ...</thread>
           </threads>
+          <open-files> _ => SetItem(#stdin) SetItem(#stdout) SetItem(#stderr) </open-files>
           <files>...
                ( .Bag =>
                <file>...
-                    <fid> 0 </fid>
+                    <fid> #stdin </fid>
                     <uri> stdinStr </uri>
                     <mode> "r" </mode>
-                    <buff> "" </buff>
+                    <buffer-mode> lineBuf </buffer-mode>
                ...</file>
                <file>...
-                    <fid> 1 </fid>
+                    <fid> #stdout </fid>
                     <uri> stdoutStr </uri>
                     <mode> "w" </mode>
+                    <buffer-mode> lineBuf </buffer-mode>
                ...</file>
                <file>...
-                    <fid> 2 </fid>
+                    <fid> #stderr </fid>
                     <uri> stdoutStr </uri>
                     <mode> "w" </mode>
+                    <buffer-mode> noBuf </buffer-mode>
                ...</file>)
           ...</files>
           requires MainTU =/=K .K
@@ -213,7 +217,7 @@ module C-EXECUTION-INIT
           requires T ==K type(char) andBool Qs ==K noQuals
           [structural]
 
-     rule <k> reval(V:RValue) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
+     rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>
           <status> _ => mainExited </status>
      rule <k> reval(V:RValue) ~> callAtExit => reval(V) ...</k>
@@ -227,8 +231,6 @@ module C-EXECUTION-INIT
           <at-quick-exit> .K </at-quick-exit>
           <status> _ => mainExited </status>
 
-
-
      // fixme I'm not sure threads clean up their memory
      rule [terminate]:
           <exec>...
@@ -240,10 +242,6 @@ module C-EXECUTION-INIT
           ...</exec>
           <status> _ => terminated </status>
           <result-value> _ => I </result-value>
-          <files>...
-               // Flush stdout.
-               <file-commands>... (.K => f-flush(1)) </file-commands>
-          ...</files>
           [ndtrans]
 
      rule <thread>...

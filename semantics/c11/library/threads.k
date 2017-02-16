@@ -2,34 +2,36 @@ module LIBC-THREADS-SYNTAX
      imports INT-SYNTAX
      imports C-DYNAMIC-SORTS
 
-     syntax KItem ::= "thrd-success" | "thrd-error" | "thrd-timeout"
-                    | "thrd-busy" | "thrd-nomem"
+     syntax RValue ::= "thrd-error" [function]
+                     | "thrd-timeout" [function]
+                     | "thrd-busy" [function]
+                     | "thrd-nomem" [function]
+
      syntax KItem ::= "threadRunning"
      syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
 endmodule
 
 module LIBC-THREADS
-     imports LIBC-BOOTSTRAP-SYNTAX
-     imports LIBC-THREADS-SYNTAX
-     imports C-CONFIGURATION
      imports BOOL
-     imports INT
-     imports K-EQUAL
-     imports SYMLOC-SYNTAX
+     imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-EXECUTION-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports LIBC-BUILTIN-SYNTAX
+     imports LIBC-THREADS-SYNTAX
+     imports SYMLOC-SYNTAX
 
      ////////////////////////////--
      // Threads
      ////////////////////////////--
-     rule thrd-success => tv(0, utype(int)) [macro, structural]
-     rule thrd-error => tv(1, utype(int)) [macro, structural]
-     rule thrd-timeout => tv(2, utype(int)) [macro, structural]
-     rule thrd-busy => tv(3, utype(int)) [macro, structural]
-     rule thrd-nomem => tv(4, utype(int)) [macro, structural]
+     rule thrd-error => tv(1, utype(int))
+     rule thrd-timeout => tv(2, utype(int))
+     rule thrd-busy => tv(3, utype(int))
+     rule thrd-nomem => tv(4, utype(int))
 
      rule [thrd-create-start]:
           <k> builtin("thrd_create",
@@ -49,7 +51,7 @@ module LIBC-THREADS
           <thread>...
                <k> spawn-aux(
                          ThId:Int, ThFuncPtr:RValue, ThArg:RValue)
-                    => thrd-success
+                    => success
                ...</k>
                <curr-tu> Tu:String </curr-tu>
                <buffer> .List </buffer>
@@ -94,7 +96,7 @@ module LIBC-THREADS
                        #then Computation((* Ptr) := V)
                        #else dotK
                        #fi
-                    ~> thrd-success
+                    ~> success
                ...</k>
                <buffer> .List </buffer>
           ...</thread>
@@ -106,7 +108,7 @@ module LIBC-THREADS
 
      rule [mtx-init]:
           <k> builtin("mtx_init", tv(Loc:Int, _), tv(Type:Int, _))
-               => thrd-success
+               => success
           ...</k>
           <mutexes> M:Map (.Map => Loc |-> Type:Int) </mutexes>
           // only handling plain mutexes for now
@@ -116,7 +118,7 @@ module LIBC-THREADS
 
      rule [mtx-lock]:
           <k> builtin("mtx_lock", tv(Loc:Int, _))
-               => thrd-success
+               => success
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
@@ -131,7 +133,7 @@ module LIBC-THREADS
 
      rule [mtx-unlock]:
           <k> builtin("mtx_unlock", tv(Loc:Int, _))
-               => thrd-success
+               => success
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc:Int |-> Type:Int ...</mutexes>

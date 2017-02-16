@@ -91,16 +91,10 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(
                tv(loc(0 @ nativeAddress(), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, 0 @ nativeAddress(), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, handleBuiltin), T, CLinkage, krlist(L))
+               => sequencePoint ~> application(CurrLoc, 0 @ nativeAddress(), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, callBuiltin), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-
-     rule <k> populateFromGlobal(T::Type) => .K ...</k>
-          <curr-tu> "native" </curr-tu>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
-          <types> _ => F |-> T </types>
-          <env> _ => .Map </env>
 
      rule idToString(nativeFunction(Address:Int)) => "<native function at 0x" +String Base2String(Address, 16) +String ">"
 
@@ -152,7 +146,7 @@ module C-EXPR-FUNCTION-CALL
           ) ...</call-stack>
           (C:FunctionControlCell
           => <function-control>...
-               <curr-tu> getTU(loc(Base, 0)) </curr-tu>
+               <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)

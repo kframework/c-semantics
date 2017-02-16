@@ -1,8 +1,8 @@
-module LIBC-BOOTSTRAP-SYNTAX
+module LIBC-BUILTIN-SYNTAX
+     imports C-DYNAMIC-SORTS
      imports INT-SYNTAX
      imports LIST
      imports STRING-SYNTAX
-     imports C-DYNAMIC-SORTS
 
      syntax KItem ::= builtin(String) [klabel(builtin0)]
                     | builtin(String, RValue) [klabel(builtin1)]
@@ -16,28 +16,33 @@ module LIBC-BOOTSTRAP-SYNTAX
                     | "builtin*" "(" String "," RValue "," RValue "," RValue "," List ")" [klabel(builtin3+)]
                     | "builtin*" "(" String "," List "," List ")"
                     | "builtin*" "(" Int "," List "," List ")"
+
+     syntax RValue ::= "success" [function]
+
 endmodule
 
-module LIB-BOOTSTRAP-SYNTAX
+module LIB-BUILTIN-SYNTAX
      imports BASIC-K
      syntax Bool ::= isVarArg(K) [function]
      syntax Bool ::= notVarArg(K) [function]
 endmodule
 
-module LIBC-BOOTSTRAP
-     imports LIBC-BOOTSTRAP-SYNTAX
-     imports LIB-BOOTSTRAP-SYNTAX
-     imports C-CONFIGURATION
+module LIBC-BUILTIN
      imports BOOL
-     imports INT
+     imports C-CONFIGURATION
+     imports C-DYNAMIC-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
      imports COMPAT-SYNTAX
-     imports C-DYNAMIC-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports INT
+     imports LIB-BUILTIN-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
+     imports MAP
 
      syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
-     rule <k> handleBuiltin
+     rule <k> callBuiltin
                => Return(prepareBuiltin(F, variadic in getParams(T),
                     toHeatList(filterList(P, #klabel(`notVarArg`))),
                     toHeatList(filterList(P, #klabel(`isVarArg`)))))
@@ -114,5 +119,7 @@ module LIBC-BOOTSTRAP
           => builtin*(Address, hListToList(Args), hListToList(VarArgs))
           requires allRValueInHeatList(Args)
                andBool allRValueInHeatList(VarArgs)
-          
+
+     rule success => tv(0, utype(int))
+
 endmodule

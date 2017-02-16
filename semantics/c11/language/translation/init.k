@@ -1,12 +1,12 @@
 module C-TRANSLATION-INIT
-     imports C-CONFIGURATION
      imports BOOL
      imports LIST
      imports STRING
      imports COMPAT-SYNTAX
+     imports LIBC-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-BUILTIN-SYNTAX
      imports C-COMMON-EXPR-REFERENCE-SYNTAX
+     imports C-CONFIGURATION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
@@ -18,8 +18,11 @@ module C-TRANSLATION-INIT
      rule ToIdentifier(S:String) => Identifier(S)
           requires S =/=String "___missing_field_name"
 
-     rule <k> builtinTu => TranslationUnit("builtin", list(.List),
-                   list(ListItem(addBuiltins(builtins, true))))
+     rule <k> builtinTu
+               => makeTu("builtin")
+               ~> addBuiltins(builtins)
+               ~> initBuiltins
+               ~> removeUnusedIdentifiers
           ...</k>
           <options>... SetItem(XBuiltins()) ...</options>
 
@@ -27,23 +30,20 @@ module C-TRANSLATION-INIT
           <options> Opts:Set </options>
           requires notBool (XBuiltins() in Opts)
 
-     rule <k> TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
-               => makeTu(TU +String newUUID)
-               ~> preDeclareStrings(Strings)
-               ~> listToK(Decls)
-               ~> allocateIncompleteTentatives
-               ~> removeUnusedIdentifiers
-          ...</k>
+     rule TranslationUnit(TU:String, list(Strings:List), list(Decls:List))
+          => makeTu(TU +String newUUID)
+          ~> preDeclareStrings(Strings)
+          ~> listToK(Decls)
+          ~> allocateIncompleteTentatives
+          ~> removeUnusedIdentifiers
 
      syntax KItem ::= preDeclareStrings(List)
-
      rule preDeclareStrings(ListItem(K:K) L:List)
           => runInit(K ~> discard)
           ~> preDeclareStrings(L)
           [structural]
      rule preDeclareStrings(.List) => .K
           [structural]
-
 
      rule <k> reportSuccess => .K ...</k>
           <result-value> _ => 0 </result-value>

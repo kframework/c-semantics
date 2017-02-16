@@ -58,7 +58,7 @@ module CPP-EXPR-FUNCTION-CALL
           ) ...</call-stack>
           (<function-control> C::Bag <curr-program-loc> _ </curr-program-loc> </function-control>
           => <function-control>...
-               <curr-tu> getTU(loc(Base, 0)) </curr-tu>
+               <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, Base, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
