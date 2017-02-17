@@ -23,6 +23,7 @@ require "stmt/if.k"
 require "stmt/labeled.k"
 require "stmt/loop.k"
 require "stmt/return.k"
+require "stmt/try.k"
 
 require "cpp-extensions-execution.k"
 
@@ -54,6 +55,7 @@ module CPP-EXECUTION
      imports CPP-STMT-LABELED
      imports CPP-STMT-LOOP
      imports C-CPP-STMT-RETURN
+     imports CPP-STMT-TRY
 
      imports CPP-EXECUTION-EXTENSIONS
 endmodule

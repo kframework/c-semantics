@@ -143,4 +143,46 @@ module CPP-PROCESS-LABEL
                B
           </goto-calc>)
 
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
+               <computation>
+                    (TryStmt(S::Block, .List) => .K) ~> K:K
+               </computation>
+               <computation-tail> Tail:K </computation-tail>
+               B::Bag
+          </goto-calc>
+          (.Bag => <goto-calc>
+               <computation> S </computation>
+               <computation-tail> K ~> Tail </computation-tail>
+               B
+          </goto-calc>)
+
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
+               <computation>
+                    TryStmt(_, (ListItem(CatchStmt(D::Decl, S::Block)) => .List) L::List) ~> K:K
+               </computation>
+               <computation-tail> Tail:K </computation-tail>
+               B::Bag
+          </goto-calc>
+          (.Bag => <goto-calc>
+               <computation> D ~> S </computation>
+               <computation-tail> K ~> Tail </computation-tail>
+               B
+          </goto-calc>)
+
+     rule <k> waitingOnGotoMap ...</k>
+          <goto-calc>
+               <computation>
+                    TryStmt(_, (ListItem(CatchAnyStmt(S::Block)) => .List) L::List) ~> K:K
+               </computation>
+               <computation-tail> Tail:K </computation-tail>
+               B::Bag
+          </goto-calc>
+          (.Bag => <goto-calc>
+               <computation> S </computation>
+               <computation-tail> K ~> Tail </computation-tail>
+               B
+          </goto-calc>)
+
 endmodule

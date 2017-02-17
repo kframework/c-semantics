@@ -51,6 +51,9 @@ module CPP-OVERLOADING
      rule notViableTypes(.List, .List, .List) => false
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C) =/=K cannot-convert
+
+     rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C) =/=K cannot-convert
+
      syntax ConversionSequence ::= CannotConvert
                                  | conversionSequence(CPPType, CPPType, ValueCategory) [function]
                                  | "ellipsisConversionSequence"
@@ -77,22 +80,48 @@ module CPP-OVERLOADING
           requires isCPPFunctionType(A)
      rule computeSCS(P::CPPType, A::CPPType, prvalue) => computeSCS2(identity, P, A)
           requires notBool isCPPArrayType(A)
-     rule computeSCS2(C::Conversion, P::CPPType, A::CPPType) => computeSCS3(C, identity, P, A)
-          requires cvQualificationSignature(P) ==K cvQualificationSignature(A)
-     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPPointerType) => computeSCS3(C, qualificationConversion, P, A)
-          requires cvQualificationSignature(A) <=QualSig cvQualificationSignature(P)
+     rule computeSCS(_, _, _) => cannot-convert [owise]
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType) => computeSCS3(C, integralPromotion, P, A)
+          requires promote(A) ==Type P
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType) => computeSCS3(C, integralPromotion, P, A)
+          requires promote(A) ==Type P
+     rule computeSCS2(C::Conversion, t(... st: double) #as P::CPPType, t(... st: float)) => computeSCS3(C, floatingPromotion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType) => computeSCS3(C, integralConversion, P, P)
+          requires promote(A) =/=Type P andBool notBool isCPPBoolType(P)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType) => computeSCS3(C, integralConversion, P, P)
+          requires promote(A) =/=Type P andBool notBool isCPPBoolType(P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPFloatingType) => computeSCS3(C, floatingConversion, P, P)
+          requires notBool (simpleType(P) ==K double andBool simpleType(P) ==K float)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPFloatingType) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPIntegerType) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPUnscopedEnumType) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPIntegerType) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPNullPtrTType) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: void))) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _)))) 
+          => computeSCS3(C, pointerConversion, P, t(Q, Mods, pointerType(t(Q', Mods', void))))
+     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: T:CPPSimpleClassType) #as B::CPPClassType)) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _) #as D:CPPClassType)))
+          => computeSCS3(C, pointerConversion, P, t(Q, Mods, pointerType(t(Q', Mods', T))))
+          requires B =/=K D andBool isBaseClassOf(B, D)
+     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPIntegerType) => computeSCS3(C, memberPointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPNullPtrTType) => computeSCS3(C, memberPointerConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: memberPointerType(D:CPPClassType, t(... st: T::CPPSimpleType))) #as P::CPPType, t(Q::Quals, Mods::Set, memberPointerType(B:CPPClassType, t(Q'::Quals, Mods'::Set, T))))
+          => computeSCS3(C, memberPointerConversion, P, t(Q, Mods, memberPointerType(D, t(Q', Mods', T))))
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPIntegerType) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPUnscopedEnumType) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPPointerType) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPMemberPointerType) => computeSCS3(C, booleanConversion, P, P)
      // this case includes the case when A is a BraceInit
+     rule computeSCS2(C::Conversion, P::CPPType, A::CPPType)
+          => computeSCS3(C, identity, P, A)
+          requires utype(P) ==Type utype(A) orBool simpleType(A) ==K no-type
+     rule computeSCS2(_, _, _) => cannot-convert [owise]
      rule computeSCS3(C1::Conversion, C2::Conversion, P::CPPType, A::CPPType)
           => standardConversionSequence(C1, C2, identity)
-          requires P ==Type A orBool simpleType(A) ==K no-type
-     rule computeSCS3(C1::Conversion, C2::Conversion, t(_, _, pointerType(t(_, _, void))), t(_, _, pointerType(t(_, _, _))))
-          => standardConversionSequence(C1, C2, pointerConversion)
-     rule computeSCS3(C1::Conversion, C2::Conversion, P:CPPIntegerType, A:CPPIntegerType)
-          => standardConversionSequence(C1, C2, integralConversion)
-          requires promote(A) =/=Type P
-     rule computeSCS3(C1::Conversion, C2::Conversion, P:CPPIntegerType, A:CPPIntegerType)
-          => standardConversionSequence(C1, C2, integralPromotion)
-          requires promote(A) ==Type P
+          requires cvQualificationSignature(P) ==K cvQualificationSignature(A)
+     rule computeSCS3(C1::Conversion, C2::Conversion, P::CPPType, A::CPPType)
+          => standardConversionSequence(C1, C2, qualificationConversion)
+          requires cvQualificationSignature(A) <=QualSig cvQualificationSignature(P)
+     rule computeSCS3(_, _, _, _) => cannot-convert [owise]
 
      syntax Conversion ::= "identity"
                          | "lvalueConversion" 
@@ -100,8 +129,13 @@ module CPP-OVERLOADING
                          | "functionConversion" 
                          | "qualificationConversion"
                          | "integralPromotion"
+                         | "floatingPromotion"
                          | "integralConversion"
+                         | "floatingConversion"
+                         | "floatingIntegralConversion"
                          | "pointerConversion"
+                         | "memberPointerConversion"
+                         | "booleanConversion"
 
      // no overloading
      rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 

@@ -146,6 +146,7 @@ module CPP-SYNTAX
                    | Expr "<<=" Init [strict(1)]
                    | Expr ">>=" Init [strict(1)]
                    | ConditionalOp(Expr, Expr, Expr, ValueCategory, CPPType)
+                   | Throw(Expr)
                    > left:
                      Comma(Expr, Expr)
      syntax Name ::= Name(NNS, CId)
@@ -212,6 +213,9 @@ module CPP-SYNTAX
                    | IfStmt(Decl, Stmt, Stmt)
                    | IfStmt(Expr, Stmt, Stmt)
                    | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
+                   | TryStmt(Stmt, List)
+                   | CatchStmt(Decl, Stmt)
+                   | CatchAnyStmt(Stmt)
 
      context IfStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 

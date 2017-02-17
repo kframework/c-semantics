@@ -75,12 +75,15 @@ module CPP-TYPING-EXPR
      rule typeof(NullPointerLiteral() => type(nullptr_t))
      context typeof(HOLE:TypeExpr)
              requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) [result(Val)]
+                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) //[result(Val)]
+                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
      rule typeof(T:Typed => type(T))
 
      rule typeof(SizeofExpr(_) => type(size_t))
      rule typeof(SizeofType(_) => type(size_t))
      rule typeof(SizeofPack(_) => type(size_t))
+     rule typeof(AlignofExpr(_) => type(size_t))
+     rule typeof(AlignofType(_) => type(size_t))
 
      context typeof(ParenthesizedCast(HOLE:AType, _))
      rule typeof(ParenthesizedCast(T:CPPType, _) => T)
@@ -183,6 +186,12 @@ module CPP-TYPING-EXPR
           => typeof(T)
      rule typeofBuiltinOperator(operator-, _:CPPPointerType, _:CPPPointerType)
           => typeof(type(ptrdiff_t))
+     rule typeofBuiltinOperator(operator&, T1::CPPType, T2::CPPType)
+          => typeof(usualArithmeticConversions(T1, T2))
+     rule typeofBuiltinOperator(operator|, T1::CPPType, T2::CPPType)
+          => typeof(usualArithmeticConversions(T1, T2))
+     rule typeofBuiltinOperator(operator^, T1::CPPType, T2::CPPType)
+          => typeof(usualArithmeticConversions(T1, T2))
      rule typeofBuiltinOperator(operator<<, T:CPPType, _)
           => typeof(promote(T))
      rule typeofBuiltinOperator(operator>>, T:CPPType, _)

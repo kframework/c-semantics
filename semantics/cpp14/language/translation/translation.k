@@ -23,6 +23,7 @@ require "decl/template.k"
 require "decl/typedef.k"
 
 require "expr/additive.k"
+require "expr/alignof.k"
 require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
@@ -38,6 +39,7 @@ require "expr/new.k"
 require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sizeof.k"
+require "expr/throw.k"
 require "expr/unary.k"
 
 require "stmt/block.k"
@@ -48,6 +50,7 @@ require "stmt/if.k"
 require "stmt/labeled.k"
 require "stmt/loop.k"
 require "stmt/return.k"
+require "stmt/try.k"
 
 require "typing/canonicalization.k"
 require "typing/dependent.k"
@@ -80,6 +83,7 @@ module CPP-TRANSLATION
      imports CPP-DECL-TYPEDEF
 
      imports CPP-TRANSLATION-EXPR-ADDITIVE
+     imports CPP-EXPR-ALIGNOF
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-TRANSLATION-EXPR-BITWISE
      imports CPP-TRANSLATION-EXPR-CAST
@@ -95,6 +99,7 @@ module CPP-TRANSLATION
      imports CPP-EXPR-REFERENCE
      imports CPP-TRANSLATION-EXPR-RELATIONAL
      imports CPP-EXPR-SIZEOF
+     imports CPP-EXPR-THROW
      imports CPP-TRANSLATION-EXPR-UNARY
 
      imports CPP-STMT-BLOCK
@@ -105,6 +110,7 @@ module CPP-TRANSLATION
      imports CPP-STMT-LABELED
      imports CPP-STMT-LOOP
      imports CPP-STMT-RETURN
+     imports CPP-STMT-TRY
 
      imports CPP-TYPING-CANONICALIZATION
      imports CPP-TYPING-DEPENDENT

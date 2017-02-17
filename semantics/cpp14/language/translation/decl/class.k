@@ -11,20 +11,21 @@ module CPP-DECL-CLASS
      imports CPP-DECL-CLASS-SYNTAX
      imports C-CONFIGURATION
      imports K-REFLECTION
+     imports MAP
      imports COMMON-SYNTAX
      imports COMMON-RESOLUTION-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
+     imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
-     imports CPP-BITSIZE-SYNTAX
+     imports CPP-VALUE-CATEGORY-SYNTAX
      imports CPP-ALIGNMENT
      imports CPP-DECL-DECLARATOR
-     imports CPP-CLASS-SYNTAX
-     imports MAP
-     imports CPP-TYPING-EXPR-SYNTAX
 
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 
@@ -159,7 +160,7 @@ module CPP-DECL-CLASS
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Type::DeclarationType, StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
                    allocateDecl(C :: X, T, StaticStorage),
-                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init),  evalBraceOrEqualInitializer(C, noObject(), Init)), Type)
+                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init)), Type)
           requires notBool (Init ==K NoInit() andBool isCPPFunctionType(T)) andBool isCompleteType(T)
 
      rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage)
@@ -204,6 +205,13 @@ module CPP-DECL-CLASS
           <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
      rule <k> typeof(V:CPPType) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
+     rule <k> catof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
+           ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
+          ...</k>
+          <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
+     rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
+          <curr-scope> _ => Scope </curr-scope>
+
 
      // Linking resolution for static class members
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>

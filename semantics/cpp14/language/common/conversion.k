@@ -35,6 +35,8 @@ module CPP-CONVERSION-SYNTAX
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
                    | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp)]
 
+     syntax Bool ::= canConvertWithStandardConversion(CPPType, CPPType, ValueCategory) [function]
+
      syntax CannotConvert ::= "cannot-convert"
      syntax ValResult ::= CannotConvert
 endmodule
@@ -329,8 +331,8 @@ module CPP-CONVERSION
 
      syntax Bool ::= computeLeQualSig(List, List, Int, Int) [function]
      rule computeLeQualSig((ListItem(Q1::Quals) => .List) _, (ListItem(Q2::Quals) => .List) _, J::Int, (K::Int => K +Int 1))
-          requires Q1 <=Quals Q2                            // 4.4:4.2
-           andBool (J <=Int K orBool Const() inQuals Q2)    // 4.4:4.3
+          requires K ==Int 0 orBool (Q1 <=Quals Q2          // 4.4:4.2
+           andBool (J <=Int K orBool Const() inQuals Q2))   // 4.4:4.3
      rule computeLeQualSig(.List, .List, _, _) => true
      rule computeLeQualSig(_, _, _, _) => false [owise]
      

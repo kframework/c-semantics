@@ -324,8 +324,18 @@ public:
   }
 
   bool TraverseIdentifierInfo(const IdentifierInfo *info) {
+    return TraverseIdentifierInfo(info, 0);
+  }
+
+  bool TraverseIdentifierInfo(const IdentifierInfo *info, uintptr_t decl) {
     if (!info) {
-      AddKApplyNode("#NoName_COMMON-SYNTAX", 0);
+      if (decl == 0) {
+        AddKApplyNode("#NoName_COMMON-SYNTAX", 0);
+      } else {
+        AddKApplyNode("unnamed", 2);
+        VisitUnsigned((unsigned long long)decl);
+        VisitStringRef(InFile);
+      }
       return true;
     }
     AddKApplyNode("Identifier", 1);
@@ -337,14 +347,21 @@ public:
     AddKTokenNode(buf, "String");
     return true;
   }
- 
-  
+
+  bool TraverseDeclarationAsName(NamedDecl *D) {
+    return TraverseDeclarationName(D->getDeclName(), (uintptr_t)D);
+  }
+
   bool TraverseDeclarationName(DeclarationName Name) {
+    return TraverseDeclarationName(Name, 0);
+  }
+  
+  bool TraverseDeclarationName(DeclarationName Name, uintptr_t decl) {
     switch(Name.getNameKind()) {
     case DeclarationName::Identifier:
       {
         IdentifierInfo *info = Name.getAsIdentifierInfo();
-        return TraverseIdentifierInfo(info);
+        return TraverseIdentifierInfo(info, decl);
       }
     case DeclarationName::CXXConversionFunctionName:
     case DeclarationName::CXXConstructorName:
@@ -367,9 +384,8 @@ public:
     case DeclarationName::CXXLiteralOperatorName:
       {
         IdentifierInfo *info = Name.getCXXLiteralIdentifier();
-        return TraverseIdentifierInfo(info);
+        return TraverseIdentifierInfo(info, decl);
       }
-
     default:
       doThrow("unimplemented: nameinfo");
     }
@@ -832,7 +848,7 @@ public:
       AddKApplyNode("ElaboratedTypeSpecifier", 3);
     }
     VisitTagKind(D->getTagKind());
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    TRY_TO(TraverseDeclarationAsName(D));
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     if (D->isCompleteDefinition()) {
       int i = 0;
@@ -1182,7 +1198,7 @@ public:
     TagDecl *D = T->getDecl();
     AddKApplyNode("Name", 2);
     AddKApplyNode("NoNNS", 0);
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    TRY_TO(TraverseDeclarationAsName(D));
     return false;
   }
 
@@ -1897,11 +1913,12 @@ public:
     AddKTokenNode(name->c_str(), "Int");
   }
 
-  void VisitUnsigned(unsigned s) {
-    char *name = new char[10];
-    sprintf(name, "%u", s);
+  void VisitUnsigned(unsigned long long s) {
+    char *name = new char[21];
+    sprintf(name, "%llu", s);
     AddKTokenNode(name, "Int");
   }
+
 
   void VisitAPFloat(APFloat f) {
     if (!f.isFinite()) {

@@ -71,10 +71,16 @@ module CPP-VALUE-CATEGORY
 
      context catof(HOLE:CatExpr)
              requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) [result(Val)]
+                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) //[result(Val)]
+                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
      rule catof(L:LVal => lvalue)
      rule catof(X:XVal => xvalue)
      rule catof(PR:PRVal => prvalue)
+
+     rule catof(AlignofExpr(_) => prvalue)
+     rule catof(AlignofType(_) => prvalue)
+     rule catof(NewExpr(_, _, _, _) => prvalue)
+     rule catof(DeleteExpr(_, _, _) => prvalue)
 
      context catof(ParenthesizedCast(HOLE:AType, _))
      rule catof(ParenthesizedCast(T:CPPType, _) => unnamedCat(T))

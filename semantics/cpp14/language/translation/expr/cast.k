@@ -3,6 +3,7 @@ module CPP-TRANSLATION-EXPR-CAST
      imports BOOL
      imports K-EQUAL
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
      imports CPP-COMMON-STMT-EXPR-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
@@ -33,9 +34,23 @@ module CPP-TRANSLATION-EXPR-CAST
 
      // TODO(dwightguth): 5.4:4.3-5
      rule ParenthesizedCast(T:CPPType, V:Val)
-          => tryConvert(convertConst(T, V)
+          => tryConvert(ConstCast(T, V)
            , tryConvert(convertStatic(T, V, hasTrace(ParenthesizedCast(T, V)))
-           , tryConvert(.K, .K)))
+           , tryConvert(ConstCast(T, tryConvert(convertStatic(getStaticThenConstIntermediateType(T), V, hasTrace(ParenthesizedCast(T, V))), V))
+           , tryConvert(ReinterpretCast(T, V)
+           , tryConvert(.K, .K)))))
+
+     // TODO(dwightguth): is this actually sufficient to catch all cases where a static + const cast would succeed? This seems
+     // to be equivalent to what clang does internally, but the standard also does not appear to provide any obvious
+     // examples for what it describes or even provide an algorithm that might encompass said description. If we're serious
+     // about doing exactly what the standard says, we would have to exhaustively consider all intermediate types, which seems
+     // very strange and is definitely /not/ what clang does.
+     syntax CPPType ::= getStaticThenConstIntermediateType(CPPType) [function]
+     rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
+          => t(Q, Mods, pointerType(t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
+     rule getStaticThenConstIntermediateType(t(Q::Quals, Mods::Set, memberPointerType(C::CPPClassType, t(Q'::Quals, Mods::Set, T::CPPSimpleType))))
+          => t(Q, Mods, memberPointerType(C, t(Q' +Qual Const() +Qual Volatile(), Mods, T)))
+     rule getStaticThenConstIntermediateType(T::CPPType) => T [owise]
 
      syntax Expr ::= tryConvert(Expr, Expr) [strict(1)]
      rule tryConvert(cannot-convert, E::Expr) => E
@@ -45,7 +60,7 @@ module CPP-TRANSLATION-EXPR-CAST
      syntax Expr ::= tryInit(CPPType, Val, K) [strict(3)]
 
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
-          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, AutoStorage, V, V)) [owise]
+          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, AutoStorage, V)) [owise]
 
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
      rule tryInit(_, _, V:Val) => V
@@ -67,5 +82,10 @@ module CPP-TRANSLATION-EXPR-CAST
           requires ((isObjectType(innerType(T2)) andBool isObjectType(type(V)))
                orBool (isCPPFunctionType(innerType(T2)) andBool isCPPFunctionType(type(V))))
                andBool isUnnamedXValue(T2)
+
+     rule convertReinterpret(T2::CPPType, V:PRExpr)
+          => pre(ReinterpretCast(T2, stripHold(V)), trace(V), T2)
+          requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V)) 
+                    andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
 
 endmodule

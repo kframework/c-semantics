@@ -214,7 +214,7 @@ module CPP-DECL-DECLARATOR
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set) ~> Next:KItem
               => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init, Init), Type, AutoStorage, S)
+              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init), Type, AutoStorage, S)
               ~> Next
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -280,7 +280,7 @@ module CPP-DECL-DECLARATOR
      rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage),
-                   T, StaticStorage, Init, Init), Type) ...</k>
+                   T, StaticStorage, Init), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
      syntax Decl ::= defineLocalStaticObject(CId, SymBase, CPPType, Init, DeclarationType, Set)
@@ -289,7 +289,7 @@ module CPP-DECL-DECLARATOR
           ~> #if notBool isCPPRefType(T) #then allocObject(Base, T, byteSizeofType(T)) #else .K #fi
           ~> initializeObject(NoNamespace(), X, T, figureInit(
                lv(lnew(Base, T), noTrace, T),
-               T, StaticStorage, Init, Init), Type) ...</k>
+               T, StaticStorage, Init), Type) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, NoNamespace() :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>

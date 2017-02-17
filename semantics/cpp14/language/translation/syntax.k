@@ -204,8 +204,7 @@ module CPP-ABSTRACT-SYNTAX
                    | NewExpr(AType, AExpr, Init, List) [strict(1)]
                    | DeleteExpr(Bool, Bool, Expr)
 
-     syntax Expr ::= Throw(Expr)
-                   | Lambda(CaptureDefault, List, AType, AStmt)
+     syntax Expr ::= Lambda(CaptureDefault, List, AType, AStmt)
                    | PackExpansionExpr(Expr)
                    | StringLiteral(CharKind, String)
                    | CharacterLiteral(CharKind, Int)

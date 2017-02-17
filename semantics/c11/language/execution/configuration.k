@@ -96,6 +96,9 @@ module C-CONFIGURATION
                               <local-addresses color="lightgray">
                                    .Set
                               </local-addresses>
+                              // used to store the catch handlers if this
+                              // block is a try block in C++
+                              <catch-handlers> .List </catch-handlers>
                          </block-control>
 
                          // used to control initialization when gotoing

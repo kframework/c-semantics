@@ -16,15 +16,21 @@ module CPP-EXPR-CAST
      imports BITS-SYNTAX
      imports COMMON-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
+     imports CPP-BITSIZE-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
+     imports CPP-SETTINGS-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule ConstCast(T:CPPType, V:Val) => convertConst(
-T, V)
+     context ConstCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
+             requires isUnnamedPRValue(T) [result(PRVal)]
+     rule ConstCast(T:CPPType, V:PRVal) => convertConst(T, V)
+     rule ConstCast(T:CPPType, V:Val) => convertConst(T, V)
+          requires notBool isUnnamedPRValue(T)
+
      rule convertConst(T2::CPPType, prv(V::CPPValue, Tr::Trace, T1::CPPType))
           => prv(V, Tr, T2)
           requires isSimilar(T2, T1)
@@ -46,11 +52,12 @@ T, V)
                                  type(pointerType(T1)))
      rule convertConst(t(_, _, rvRefType(T2::CPPType)), prv(Loc::SymLoc, Tr::Trace, T1:CPPClassType))
           => xv(Loc, Tr, T2)
-     rule convertConst(_, V::Val) => cannot-convert
+     rule convertConst(_, V::Val) => cannot-convert [owise]
 
      rule #convertStatic(T::CPPType, V:PRVal) => inverseConvertType(T, V)
 
      syntax PRVal ::= inverseConvertType(CPPType, PRVal) [function]
+     syntax PRVal ::= inverseConvertType(CPPType, PRExpr) [function]
      syntax KItem ::= inverseConvertTypeHold(CPPType, PRVal)
      rule inverseConvertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPScopedEnumType))
           => prv(C, Tr, T)
@@ -84,17 +91,35 @@ T, V)
 
      rule inverseConvertType(t(_, _, memberPointerType(B::CPPClassType, t(Q::Quals, _, _) #as T1::CPPType)) #as T::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(D::CPPClassType, t(Q'::Quals, _, _) #as T2::CPPType))))
           => prv(baseClassSubobject(L, B, D), Tr, T)
-          requires isBaseClassOf(B, D) andBool T1 ==Type T2 andBool Q' <=Quals Q andBool containsMember(L, B)
+          requires isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool containsMember(L, B)
      rule inverseConvertType(t(_, _, memberPointerType(B::CPPClassType, t(Q::Quals, _, _) #as T1::CPPType)) #as T::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(D::CPPClassType, t(Q'::Quals, _, _) #as T2::CPPType))) #as V::PRVal)
           => UNDEF("CEC3", "Static cast to pointer to member of base class of pointer to member not contained in base class.") ~> inverseConvertTypeHold(T, V)
-          requires isBaseClassOf(B, D) andBool T1 ==Type T2 andBool Q' <=Quals Q andBool notBool containsMember(L, B)
+          requires isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool notBool containsMember(L, B)
 
      rule inverseConvertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, T::CPPSimpleType))), prv(Loc::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, void)))))
           => #if getAlign(Loc) <=Int getAlignof(t(Q', Mods', T)) #then prv(Loc, Tr, t(Q, Mods, pointerType(t(Q', Mods', T)))) #else prv(unknown(Loc), Tr, t(Q, Mods, pointerType(t(Q', Mods', T)))) #fi
           requires isObjectType(t(Q', Mods', T)) andBool Q2 <=Quals Q'
 
+
+     rule inverseConvertType(T::CPPType, V:PRExpr) => pre(#convertStatic(T, stripHold(V)), trace(V), T)
+          requires (isCPPIntegerType(T) andBool isCPPScopedEnumType(type(V)))
+               orBool (isCPPFloatingType(T) andBool isCPPScopedEnumType(type(V)))
+               orBool (isCPPEnumType(T) andBool isCPPIntegerType(type(V)))
+               orBool (isCPPEnumType(T) andBool isCPPEnumType(type(V)))
+               orBool (isCPPEnumType(T) andBool isCPPFloatingType(type(V)))
+
+     rule inverseConvertType(t(... st: pointerType(t(... q: Q::Quals) #as D:CPPClassType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: pointerType(t(... q: Q'::Quals) #as B:CPPClassType))))
+          => pre(#convertStatic(T, E), Tr, T)
+          requires isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D)
+     rule inverseConvertType(t(... st: memberPointerType(B::CPPClassType, t(... q: Q::Quals) #as T1::CPPType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: memberPointerType(D::CPPClassType, t(... q: Q'::Quals) #as T2::CPPType))))
+          => pre(#convertStatic(T, E), Tr, T)
+          requires isBaseClassOf(B, D) andBool T1 ==Type T2 andBool Q' <=Quals Q
+     rule inverseConvertType(t(... st: pointerType(t(... q: Q::Quals) #as T1::CPPType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: pointerType(t(Q'::Quals, _, void)))))
+          => pre(#convertStatic(T, E), Tr, T)
+          requires isObjectType(T1) andBool Q' <=Quals Q
+
      rule inverseConvertType(T::CPPType, V::PRVal) => cannot-convert
-          requires notBool isTExpr(V) andBool notBool isCPPRefType(T) [owise]
+          requires notBool isCPPRefType(T) [owise]
 
      context ReinterpretCast(T:CPPType, (HOLE:Expr => reval(HOLE)))
              requires isUnnamedPRValue(T) [result(PRVal)]
@@ -105,6 +130,10 @@ T, V)
      rule convertReinterpret(T2::CPPType, prv(V::CPPValue, Tr::Trace, T1::CPPType))
           => prv(V, Tr, T2)
           requires T1 ==Type T2
+
+     rule convertReinterpret(T2:CPPIntegerType, prv(V::SymLoc, Tr::Trace, T1:CPPPointerType))
+          => prv(cfg:pointerToInt(V, T2), Tr, T2)
+          requires byteSizeofType(T2) >=Int byteSizeofType(T1)
 
      rule convertReinterpret(T2:CPPRefType, lv(Loc::SymLoc, Tr::Trace, T1::CPPType))
           => lv(Loc, Tr, innerType(T2))

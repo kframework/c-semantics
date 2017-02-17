@@ -54,6 +54,8 @@ module CPP-TYPING-CANONICALIZATION
           => Name(N, X)
      rule QualifiedTypeName(NoTag(), N::NNS, TemplateParameterType(X::CId))
           => Name(N, X)
+     rule QualifiedTypeName(T::Tag, N::NNS, Name(NoNNS(), X::CId))
+          => ElaboratedTypeSpecifier(T, X, N)
      rule QualifiedTypeName(T::Tag, N::NNS, TemplateSpecializationType(X::CId, L::List))
           => ElaboratedTypeSpecifier(T, X, N, L)
      rule TypedefType(X::CId) => Name(NoNNS(), X)
