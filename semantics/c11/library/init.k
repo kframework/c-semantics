@@ -185,20 +185,20 @@ module LIBC-INIT
 
      syntax KItem ::= "initStdio" [function]
      rule initStdio
-          => alloc(!Stdin:Int @ stdio, file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(!Stdin @ stdio) := stdin))
+          => alloc(!Stdin:Int @ static("builtin"), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(!Stdin @ static("builtin")) := stdin))
           ~> alloc(builtinSymbol("stdin"), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(builtinSymbol("stdin")) := & fileLVal(!Stdin @ stdio)))
+          ~> allowInit(Computation(filePtr(builtinSymbol("stdin")) := & fileLVal(!Stdin @ static("builtin"))))
 
-          ~> alloc(!Stdout:Int @ stdio, file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(!Stdout @ stdio) := stdout))
+          ~> alloc(!Stdout:Int @ static("builtin"), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(!Stdout @ static("builtin")) := stdout))
           ~> alloc(builtinSymbol("stdout"), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(builtinSymbol("stdout")) := & fileLVal(!Stdout @ stdio)))
+          ~> allowInit(Computation(filePtr(builtinSymbol("stdout")) := & fileLVal(!Stdout @ static("builtin"))))
 
-          ~> alloc(!Stderr:Int @ stdio, file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(!Stderr @ stdio) := stderr))
+          ~> alloc(!Stderr:Int @ static("builtin"), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(!Stderr @ static("builtin")) := stderr))
           ~> alloc(builtinSymbol("stderr"), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(builtinSymbol("stderr")) := & fileLVal(!Stderr @ stdio)))
+          ~> allowInit(Computation(filePtr(builtinSymbol("stderr")) := & fileLVal(!Stderr @ static("builtin"))))
 
      rule fileLVal(Base::SymBase) => lv(lnew(Base, file), file)
      rule filePtr(Base::SymBase) => lv(lnew(Base, file), type(pointerType(file)))
