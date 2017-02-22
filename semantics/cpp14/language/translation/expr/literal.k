@@ -3,6 +3,7 @@ module CPP-EXPR-LITERAL
      imports FLOAT
      imports STRING
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
@@ -38,21 +39,23 @@ module CPP-EXPR-LITERAL
 
      syntax Expr ::= stringLiteral(String, CPPType)
 
-     rule <k> (.K => runInit(allocString(string(S), T, S)))
-               ~> stringLiteral(S::String, T::CPPType)
+     rule <k> (.K => runInit(allocString(obj(0, byteAlignofType(T), string(S)), T, S)))
+               ~> stringLiteral(S::String, T::CPPType, _)
           ...</k>
           <mem> Mem::Map </mem>
-          requires notBool (string(S) in_keys(Mem))
+          requires notBool (obj(0, byteAlignofType(T), string(S)) in_keys(Mem))
 
-     rule <k> stringLiteral(S::String, T::CPPType)
-              => lv(lnew(string(S), T), hasTrace(StringLiteral(S, T)), T)
+     rule stringLiteral(S::String, T::CPPType) => stringLiteral(S, T, byteAlignofType(T))
+     syntax KItem ::= stringLiteral(String, CPPType, Int)
+     rule <k> stringLiteral(S::String, T::CPPType, Align::Int)
+              => lv(lnew(obj(0, Align, string(S))), hasTrace(StringLiteral(S, T)), T)
           ...</k>
-          <mem>... string(S) |-> _ ...</mem>
+          <mem>... obj(0, Align, string(S)) |-> _ ...</mem>
 
      syntax KItem ::= allocString(SymBase, CPPType, String)
      rule allocString(Base::SymBase, T::CPPType, S::String)
           => allocObject(Base, T, lengthString(S))
-          ~> writeString(lnew(Base, T), S)
-          ~> lv(lnew(Base, T), hasTrace(StringLiteral(S, T)), T)
+          ~> writeString(lnew(Base), S)
+          ~> lv(lnew(Base), hasTrace(StringLiteral(S, T)), T)
 
 endmodule

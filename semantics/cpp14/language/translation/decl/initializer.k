@@ -85,7 +85,7 @@ module CPP-DECL-INITIALIZER
                orBool simpleType(innerType(DestT)) ==K char16_t
                orBool simpleType(innerType(DestT)) ==K char32_t
 
-     rule #figureInit(lv(loc(Base::SymBase, _, _), _, _), _, _, S:Stmt, _, _)
+     rule #figureInit(lv(loc(Base::SymBase, _), _, _), _, _, S:Stmt, _, _)
           => functionDef(Base, S)
 
      syntax KItem ::= listInit(LVal, CPPType, Duration, List)

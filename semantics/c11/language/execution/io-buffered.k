@@ -168,7 +168,7 @@ module C-IO-BUFFERED
      rule writeBuffer(M::Map, Base::SymBase, object(T::Type, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
           => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
 
-     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure, canTakeSteps]
+     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
      rule <buffer>
                ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
@@ -262,7 +262,7 @@ module C-IO-BUFFERED
                     M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)], Locs, Mem)
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M))) [owise]
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure, canTakeSteps]
+     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type, .K, .K, .K, Locs::Set, Mem::List)
                => assertSeq(Loc, Locs)
                ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T, .K, .K, .K, Locs, Mem)

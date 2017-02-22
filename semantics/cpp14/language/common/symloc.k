@@ -8,7 +8,9 @@ module CPP-SYMLOC-SYNTAX
      imports SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     syntax SymLoc ::= lnew(SymBase, CPPType) [function, klabel(lnewCpp)]
+     syntax SymBase ::= bnew(Int, CPPType, Set, Duration) [function, klabel(bnewCPP)]
+     syntax SymBase ::= linc(CPPType, Set, Duration) [function, klabel(lincCPP)]
+     syntax SymLoc ::= lnew(SymBase) [function, klabel(lnewCpp)]
      syntax Bool ::= ifFromArrayInBounds(SymLoc, CPPType, Int) [function, klabel(ifFromArrayInBoundsCPP)]
 
      syntax MemberPtr ::= "NullMemberPointer"
@@ -33,10 +35,14 @@ module CPP-SYMLOC
      imports CPP-SYMLOC-SYNTAX
      imports BOOL
      imports INT
+     imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
 
-     rule lnew(Base::SymBase, T::CPPType)
-          => loc(Base, 0, .Set)
+     rule bnew(I::Int, T::CPPType, Mods::Set, D::Duration)
+          => obj(I, getAlignas(T, Mods), D)
+     rule linc(T::CPPType, Mods::Set, D::Duration) => bnew(!I:Int, T, Mods, D)
+     rule lnew(Base::SymBase)
+          => loc(Base, 0)
 
      syntax Bool ::= #ifFromArrayInBounds(K, Int) [function, klabel(#ifFromArrayInBoundsCPP)]
 

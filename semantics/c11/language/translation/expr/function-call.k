@@ -69,6 +69,5 @@ module C-EXPR-FUNCTION-CALL
 
      rule bindParam(_, T:Type, V:RValue)
           => runInit(Computation(ncle(fauxParam, T) := V))
-     rule bindParam(_) => .K
 
 endmodule

@@ -31,7 +31,6 @@ module C-DECL-GLOBAL
      imports STRING
      imports COMMON-SORTS
      imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
@@ -41,6 +40,7 @@ module C-DECL-GLOBAL
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
      imports C-TYPING-SYNTAX
@@ -387,7 +387,7 @@ module C-DECL-GLOBAL
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, bnew(!I:Int, T, link(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, external,
@@ -395,10 +395,9 @@ module C-DECL-GLOBAL
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-link-loc> Base:SymBase => linc(Base) </next-link-loc>
           <externals>
                Exts:Map
-               (.Map => X |-> declState(Base, T, declared, false))
+               (.Map => X |-> declState(bnew(!I, T, link(Tu)), T, declared, false))
           </externals>
           <internals> Ints:Map </internals>
           requires notBool isStaticType(T)
@@ -408,18 +407,17 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, internal, Static())
           ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <externals> Exts:Map </externals>
           <internals>
                Ints:Map
-               (.Map => X |-> declState(Base, T, declared, false))
+               (.Map => X |-> declState(bnew(!I, T, static(Tu)), T, declared, false))
           </internals>
           requires isStaticType(T)
                andBool notBool (X in_keys(Exts))
@@ -684,15 +682,14 @@ module C-DECL-GLOBAL
           requires notBool isLinkerLoc(Base)
           [structural]
      rule <k> allocateDecl(X:CId)
-               => addToEnv(X, Base')
-               ~> allocObject(Base', T)
+               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
+               ~> allocObject(bnew(!I, T, static(Tu)), T)
           ...</k>
           <types>... X |-> T:Type ...</types>
           <env>... X |-> Base:SymBase ...</env>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Base':SymBase => linc(Base') </next-static-loc>
-          <linkings>... .Map => Base |-> Base' ...</linkings>
+          <linkings>... .Map => Base |-> bnew(!I, T, static(Tu)) ...</linkings>
           requires isLinkerLoc(Base)
           [structural]
 

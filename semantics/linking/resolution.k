@@ -156,7 +156,7 @@ module C-LINKING-RESOLUTION
           <main-tu>... .Set => SetItem(MainTu) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
           <external-defs>...
-               Identifier("main") |-> _ @ static(MainTu:String)
+               Identifier("main") |-> obj(... d: static(MainTu:String))
           ...</external-defs>
           <external-types>...
                Identifier("main") |-> _
@@ -166,7 +166,7 @@ module C-LINKING-RESOLUTION
      rule <k> resolveMain => .K ...</k>
           <main-tu>... (.Set => SetItem(MainTu)) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
-          <odr-defs>... GlobalNamespace() :: Identifier("main") |-> (_ |-> _ @ static(MainTu:String)) ...</odr-defs>
+          <odr-defs>... GlobalNamespace() :: Identifier("main") |-> (_ |-> obj(... d: static(MainTu:String))) ...</odr-defs>
 
      // TODO(dwightguth): make this a better error message when we take the C++ semantics live
      rule <k> (.K => EXT-UNDEF("TDR2",

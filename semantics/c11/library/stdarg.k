@@ -118,7 +118,7 @@ module LIBC-STDARG
      rule filterVarArgs(ListItem(_) P:List) => filterVarArgs(P) [owise]
 
      syntax KItem ::= lookupInCaller(CId)
-     rule <k> lookupInCaller(X:CId) => lv(lnew(Base, T), T) ...</k>
+     rule <k> lookupInCaller(X:CId) => lv(lnew(Base), T) ...</k>
           <call-stack> ListItem(
                <call-stack-frame>...
                     <stack-function-control> <function-control>...

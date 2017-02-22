@@ -23,8 +23,8 @@ module CPP-EXPR-REFERENCE
           requires notBool isCPPBitfieldType(T2)  andBool isReferenceCompatible(innerType(T1), T2) andBool notBool isCPPClassType(T2)
 
      rule <k> bindReference(lv(Loc::SymLoc, Tr1::Trace, T1::CPPType), prv(V::CPPValue, Tr2::Trace, T2::CPPType))
-              => allocObject(!I @ D, innerType(T1), byteSizeofType(innerType(T1)))
-              ~> bindReference(lv(Loc, Tr1, T1), lv(lnew(!I:Int @ D, innerType(T1)), noTrace, innerType(T1)) := prv(V, Tr2, T2)) ...</k>
+              => allocObject(bnew(!I:Int, innerType(T1), .Set, D), innerType(T1), byteSizeofType(innerType(T1)))
+              ~> bindReference(lv(Loc, Tr1, T1), lv(lnew(bnew(!I:Int, innerType(T1), .Set, D)), noTrace, innerType(T1)) := prv(V, Tr2, T2)) ...</k>
           <duration> D::Duration </duration>
           requires notBool isCPPClassType(T2) andBool notBool isCPPArrayType(T2) andBool notBool isCPPClassType(T1)
 

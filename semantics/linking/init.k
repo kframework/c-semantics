@@ -28,7 +28,9 @@ module C-LINKING-INIT
      imports ERROR-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
 
@@ -48,8 +50,9 @@ module C-LINKING-INIT
           <translation-units>...
                (.Bag => <tu>...
                     <tu-id> TU </tu-id>
-                    <next-link-loc> 0 @ link(TU) </next-link-loc>
-                    <next-static-loc> 0 @ static(TU) </next-static-loc>
+                    // without this line the tu-linking-state cell doesn't get created
+                    // this is a bug in krun but I'm going with a temporary fix for now.
+                    <externals> .Map </externals>
                ...</tu>)
           ...</translation-units>
           [structural]
@@ -60,12 +63,12 @@ module C-LINKING-INIT
      // We should use this mechanism only for symbols that are considered weak
      // by the C and C++ standards, or for native symbols.
 
-     rule (.K => addBuiltin(Identifier(B), T, builtinSymbol(B), true))
+     rule (.K => addBuiltin(Identifier(B), T, obj(0, byteAlignofType(T), builtinSymbol(B)), true))
                ~> addBuiltins((B:String |-> T:Type => .Map) _)
      rule addBuiltins(.Map) => .K
 
      syntax KItem ::= addNativeSymbols(Map)
-     rule (.K => addBuiltin(Identifier(B), T, nativeSymbol(B), false))
+     rule (.K => addBuiltin(Identifier(B), T, obj(0, byteAlignofType(T), nativeSymbol(B)), false))
                ~> addNativeSymbols((B:String |-> T:Type => .Map) _)
      rule addNativeSymbols(.Map) => .K
 

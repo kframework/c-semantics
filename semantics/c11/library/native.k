@@ -15,13 +15,13 @@ module C-NATIVE-BRIDGE
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-SYNTAX
 
-     syntax K ::= #nativeCall(String, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax K ::= #nativeCall(String, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure]
      rule <generatedTop>... 
             <k> nativeCall(S:String, Args:List, VarArgs:List) ~> Rest:K </k>
             <types>... Identifier(S) |-> T:Type ...</types>
           ...</generatedTop> => #nativeCall(S, T, Args, VarArgs, Rest)
 
-     syntax K ::= #nativeCall(Int, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure, canTakeSteps]
+     syntax K ::= #nativeCall(Int, Type, List, List, K) [function, hook(C_SEMANTICS.nativeCall), impure]
      rule <generatedTop>... 
             <k> nativeCall(I:Int, Args:List, VarArgs:List) ~> Rest:K </k>
             <types>... nativeFunction(I) |-> T:Type ...</types>

@@ -54,8 +54,6 @@ module COMMON-CONFIGURATION
                <tu-linking-state multiplicity="?" initial="">
                     <externals> .Map </externals>
                     <internals> .Map </internals>
-                    <next-link-loc> .K </next-link-loc>
-                    <next-static-loc> .K </next-static-loc>
                     <uses> SetItem(Identifier("main")) </uses>
                     <genums> .Map </genums>
                     // QualId |-> (CPPType |-> TemplateInfo)

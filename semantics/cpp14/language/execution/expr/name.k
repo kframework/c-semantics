@@ -11,7 +11,7 @@ module CPP-EXECUTION-EXPR-NAME
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule <k> Name(NoNNS(), X:CId) => lv(lnew(Base, T), noTrace, T) ...</k>
+     rule <k> Name(NoNNS(), X:CId) => lv(lnew(Base), noTrace, T) ...</k>
           <env>... X |-> (T::CPPType |-> kpair(_, Base::SymBase)) ...</env>
 
      rule <k> Name(NoNNS(), X:CId) => T ...</k>
@@ -22,9 +22,9 @@ module CPP-EXECUTION-EXPR-NAME
           requires #NoName(I) in_keys(Env)
 
      rule <k> temp(I::Int, T::CPPType) 
-              => #if isCPPRefType(T) #then .K #else allocObject(!I @ D, T, byteSizeofType(T)) #fi
-              ~> addToEnv(#NoName(I), T, !I @ D, false)
-              ~> lv(lnew(!I:Int @ D, T), noTrace, T) ...</k>
+              => #if isCPPRefType(T) #then .K #else allocObject(bnew(!I:Int, T, .Set, D), T, byteSizeofType(T)) #fi
+              ~> addToEnv(#NoName(I), T, bnew(!I:Int, T, .Set, D), false)
+              ~> lv(lnew(bnew(!I:Int, T, .Set, D)), noTrace, T) ...</k>
           <duration> D::Duration </duration>
           
 

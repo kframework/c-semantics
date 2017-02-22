@@ -6,7 +6,6 @@ module C-BINDING-SYNTAX
      // RValues, Types, CIds
      syntax KItem ::= bind(List, List, List)
      syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
-     syntax KItem ::= bindParam(CId)
 endmodule
 
 module C-BINDING

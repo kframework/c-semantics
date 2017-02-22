@@ -263,8 +263,8 @@ module LIBC-STDIO
           [structural]
 
      rule builtin("fopen", Filename::RValue, Mode::RValue)
-          => alloc(!FDLoc:Int @ stdio, file, byteSizeofType(type(file)))
-          ~> fopen(!FDLoc @ stdio, getString(Filename), getString(Mode))
+          => alloc(bnew(!FDLoc:Int, file, stdio), file, byteSizeofType(type(file)))
+          ~> fopen(bnew(!FDLoc, file, stdio), getString(Filename), getString(Mode))
           [structural]
      rule builtin("freopen", Filename::RValue, Mode::RValue, tv(Loc:SymLoc, T::UType))
           => freopen(Filename, Mode, base(Loc), (* tv(Loc, T)))
@@ -283,8 +283,8 @@ module LIBC-STDIO
           [structural]
      // TODO(chathhorn): delete on close and program exit?
      rule S:RValue ~> builtin("tmpfile")
-          => alloc(!FDLoc:Int @ stdio, file, byteSizeofType(type(file)))
-          ~> fopen(!FDLoc @ stdio, getString(S), str("wb+"))
+          => alloc(bnew(!FDLoc:Int, file, stdio), file, byteSizeofType(type(file)))
+          ~> fopen(bnew(!FDLoc, file, stdio), getString(S), str("wb+"))
           [structural]
 
      // TODO(chathhorn): need another level of indirection here so e.g.
@@ -831,19 +831,19 @@ module LIBC-STDIO
 
      syntax KItem ::= stringToFloat(String, UType, UType)
      rule stringToFloat(S::String, T::UType, ut(_, float))
-          => allocString(!N:Int @ stdio, S)
-          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtof"), list(
-               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+          => allocString(obj(!N:Int, 1, stdio), S)
+          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtof"), list(
+               ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
      rule stringToFloat(S::String, T::UType, ut(_, double))
-          => allocString(!N:Int @ stdio, S)
-          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtod"), list(
-               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+          => allocString(obj(!N:Int, 1, stdio), S)
+          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtod"), list(
+               ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
      rule stringToFloat(S::String, T::UType, ut(_, long-double))
-          => allocString(!N:Int @ stdio, S)
-          ~> stringToFloat'(!N @ stdio, T, Call(Identifier("strtold"), list(
-               ListItem(tv(lnew(string(S), type(pointerType(type(char)))), utype(pointerType(type(char)))))
+          => allocString(obj(!N:Int, 1, stdio), S)
+          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtold"), list(
+               ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
 
      syntax KItem ::= "stringToFloat'" "(" SymBase "," UType "," K ")"

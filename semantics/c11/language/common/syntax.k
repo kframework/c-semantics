@@ -76,7 +76,6 @@ module C-SYNTAX
 
      syntax Modifier ::= Inline()
      syntax Modifier ::= Noreturn()
-     syntax Modifier ::= Packed()
 
      /*
      | IF of expression * statement * statement * cabsloc

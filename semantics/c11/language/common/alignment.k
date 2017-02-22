@@ -4,7 +4,7 @@ module C-ALIGNMENT-SYNTAX
      imports SYMLOC-SORTS
 
      syntax Int ::= getAlign(SymLoc) [function]
-     syntax Int ::= getNativeAlign(Int) [function]
+     syntax Int ::= getNativeAlign(address: Int, max: Int) [function]
 
      syntax Int ::= getAlignas(Type) [function]
 
@@ -18,7 +18,6 @@ module C-ALIGNMENT
      imports C-ALIGNMENT-SYNTAX
      imports C-CONFIGURATION
      imports C-SETTINGS-SYNTAX
-     imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports INT
      imports K-REFLECTION
@@ -62,6 +61,8 @@ module C-ALIGNMENT
      rule byteAlignofType'(t(_, _, bitfieldType(T::SimpleType, _)))
           => byteAlignofType'(type(T))
 
+     rule byteAlignofType'(t(_, _, functionType(_, _))) => 0
+
      // TODO(dwightguth): make sure we correctly handle all the corner cases
      rule byteAlignofType'(_) => 1 [owise]
 
@@ -80,44 +81,35 @@ module C-ALIGNMENT
           => byteAlignofType'(type(T))
      rule byteAlignofTagged(_) => 1 [owise]
 
-     rule getAlignas(T::Type) => getAlignasMod(getModifiers(T))
-          requires hasAlignasMod(getModifiers(T))
-     rule getAlignas(T::Type) => byteAlignofType(T)
-          requires notBool hasAlignasMod(getModifiers(T))
+     syntax Int ::= #getAlignas(Type, Type) [function]
+     syntax Int ::= #getAlignas(Set, Int) [function, klabel(getAlignas2)]
+     // the alignas modifier is adhered to the type specified
+     // by the type specifier, so we need to push past the declarators
+     // to get to the type specifiers before we can check the modifiers
+     rule getAlignas(T::Type) => #getAlignas(T, T)
+     rule #getAlignas((T:PointerType => innerType(T)), _)
+     rule #getAlignas((T:ArrayType => innerType(T)), _)
+     rule #getAlignas((t(_, _, functionType(T::UType, _)) => type(T)), _)
+     rule #getAlignas(T::Type, T'::Type) => #getAlignas(getModifiers(T), byteAlignofType(T')) [owise]
+     rule #getAlignas(Mods::Set, _) => getAlignasMod(Mods)
+          requires hasAlignasMod(Mods)
+     rule #getAlignas(_, Align::Int) => Align [owise]
 
      syntax Bool ::= hasAlignasMod(Set) [function]
      rule hasAlignasMod(SetItem(alignas(_)) _) => true
      rule hasAlignasMod(_) => false [owise]
 
-     // Gets the alignment requirement of the type with the strictest alignment
-     // at the offset in the effective type of a location.
-     // TODO(chathhorn): This means alignment of a pointer could change if the
-     // effective type changes -- probably offsets (and padding) just need to
-     // be set initially based on alignment requirements (and then that
-     // _Alignas modifier can be forgotten).
-     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration)
-          requires notBool isNativeLoc(Loc) andBool Loc =/=K NullPointer
      rule getAlign(NullPointer) => cfg:alignofMalloc
-     rule getAlign(Loc::SymLoc) => getNativeAlign(offset(Loc))
-          requires isNativeLoc(Loc)
-
+     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration)
      syntax Int ::= "getAlign'" "(" SymBase "," Int "," K ")" [function]
-     rule getAlign'(Base::SymBase, Offset::Int, <generatedTop>... <mem>... Base |-> object(T::Type, _, _) ...</mem> ...</generatedTop>)
-          => getAlign''(1, getTypesAtOffset(unlockAll(T), Offset *Int cfg:bitsPerByte))
-     rule getAlign'(Base::SymBase => Base', _, <generatedTop>... <linkings>... Base |-> Base':SymBase ...</linkings> ...</generatedTop>)
-     rule getAlign'(_, _, _) => 1 [owise]
 
-     syntax Int ::= "getAlign''" "(" Int "," List ")" [function]
-     rule getAlign''(N::Int, ListItem(T:Type) Ts:List) => getAlign''(N, Ts)
-          requires N >=Int getAlignas(T)
-     rule getAlign''(N::Int, ListItem(T:Type) Ts:List) => getAlign''(getAlignas(T), Ts)
-          requires N <Int getAlignas(T)
-     rule getAlign''(N::Int, _) => N [owise]
-
+     rule getAlign'(obj(... align: 0), _, _) => 0
+     rule getAlign'((obj(... d: link(_)) #as Base::SymBase => Base'), _, <generatedTop>... <linkings>... Base |-> Base'::SymBase ...</linkings> ...</generatedTop>)
+     rule getAlign'(obj(... align: Align::Int), I::Int, _) => getNativeAlign(I %Int Align, Align) [owise]
      syntax Int ::= #getNativeAlign(Int, Int, Int) [function]
-     rule getNativeAlign(Address:Int) => #getNativeAlign(Address, 1, 0)
-     rule #getNativeAlign(Address:Int, Accum:Int, I:Int) => #getNativeAlign(Address /Int 2, Accum *Int 2, I +Int 1)
-          requires Address %Int 2 ==Int 0 andBool I <Int cfg:ptrsize *Int cfg:bitsPerByte
-     rule #getNativeAlign(_, Accum:Int, _) => Accum [owise]
+     rule getNativeAlign(Address::Int, Max::Int) => #getNativeAlign(Address, Max, 1)
+     rule #getNativeAlign(Address::Int, Max::Int, Accum::Int) => #getNativeAlign(Address, Max, Accum <<Int 1)
+          requires Address &Int Accum ==Int 0 andBool Accum <Int Max
+     rule #getNativeAlign(_, Accum::Int, _) => Accum [owise]
 
 endmodule

@@ -3,6 +3,7 @@ module C-COMPOUND-LITERAL
      imports LIST
      imports STRING
      imports C-ABSTRACT-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
@@ -69,30 +70,31 @@ module C-COMPOUND-LITERAL
 
      }*/
 
-     rule <k> (.K => runInit(allocString(string(S), S)))
+     rule <k> (.K => runInit(allocString(obj(0, 1, string(S)), S)))
                ~> stringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
-          requires notBool (string(S) in_keys(Mem))
+          requires notBool (obj(0, 1, string(S)) in_keys(Mem))
 
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
-     rule <k> (.K => runInit(allocWString(wstring(S), S)))
-               ~> wstringLiteral(S:List)
+     rule <k> (.K => runInit(allocWString(obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)), S)))
+               ~> wstringLiteral(S:List, _)
           ...</k>
           <mem> Mem:Map </mem>
-          requires notBool (wstring(S) in_keys(Mem))
+          requires notBool (obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)) in_keys(Mem))
 
      rule <k> stringLiteral(S:String)
-               => lv(lnew(string(S), type(arrayType(type(char), lengthString(S) +Int 1))),
+               => lv(lnew(obj(0, 1, string(S))),
                     type(arrayType(type(char), lengthString(S) +Int 1)))
           ...</k>
-          <mem>... string(S) |-> _ ...</mem>
-     rule <k> wstringLiteral(S:List)
-               => lv(lnew(wstring(S), type(arrayType(type(cfg:wcharut), size(S) +Int 1))),
+          <mem>... obj(0, 1, string(S)) |-> _ ...</mem>
+     rule wstringLiteral(S:List) => wstringLiteral(S, byteAlignofType(type(cfg:wcharut)))
+     syntax KItem ::= wstringLiteral(List, Int) [klabel(wstringLiteral2)]
+     rule <k> wstringLiteral(S:List, Align:Int)
+               => lv(lnew(obj(0, Align, wstring(S))),
                     type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
           ...</k>
-          <mem>... wstring(S) |-> _ ...</mem>
-
+          <mem>... obj(0, Align, wstring(S)) |-> _ ...</mem>
 
 endmodule

@@ -8,6 +8,8 @@ module CPP-SETTINGS-SYNTAX
      syntax Int ::= "cfg:memberFunctionPtrSize" [function]
      syntax Int ::= "cfg:memberDataPtrAlign" [function]
      syntax Int ::= "cfg:memberFunctionPtrAlign" [function]
+     syntax Int ::= "cfg:alignofReference" [function]
+     syntax Int ::= "cfg:alignofNullPtrT" [function]
 
      syntax CPPValue ::= "cfg:intToPointer" "(" CPPValue "," CPPType ")" [function]
      syntax CPPValue ::= "cfg:pointerToInt" "(" CPPValue "," CPPType ")" [function]

@@ -139,14 +139,13 @@ module CPP-DECL-CLASS
 
      // Declare static member inside class (no definition)
      rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var, ExternalLinkage, StaticStorage, S::Set)
-              => addToEnv(C :: X, T, Base, false)
+              => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
           ...</k>
           <curr-scope> classScope(C) </curr-scope>
           <class-id> C </class-id>
-          <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, C :: X, T)] </odr-decls>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
 
      syntax ValResult ::= noObject()
 
@@ -159,22 +158,21 @@ module CPP-DECL-CLASS
 
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Type::DeclarationType, StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
-                   allocateDecl(C :: X, T, StaticStorage),
+                   allocateDecl(C :: X, T, StaticStorage, S),
                    T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init)), Type)
           requires notBool (Init ==K NoInit() andBool isCPPFunctionType(T)) andBool isCompleteType(T)
 
-     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage)
-              => addToEnv(C :: X, T, Base', false)
-              ~> #if notBool isCPPRefType(T) #then allocObject(Base', T, byteSizeofType(T)) #else .K #fi
-              ~> lv(lnew(Base', T), noTrace, T) ...</k>
+     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set)
+              => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
+              ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
+              ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</cenv>
-          <next-static-loc> Base'::SymBase => linc(Base') </next-static-loc>
-          <linkings>... .Map => Base |-> Base' ...</linkings>
-          <odr-decls> Decls::Map => Decls[Base' += ktriple(Tu, C :: X, T)] </odr-decls>
-          <odr-defs> Defs::Map => Defs[C :: X, T <- Base'] </odr-defs>
+          <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
+          <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
 
 

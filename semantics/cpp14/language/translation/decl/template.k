@@ -162,7 +162,7 @@ module CPP-DECL-TEMPLATE
      rule TemplateDefinitionStmt(K:K) => K
 
      syntax KItem ::= setTemplateArgs(QualId, CPPTypeExpr, Map)
-     rule <k> setTemplateArgs(N::Namespace :: X::CId, T::CPPType, Old::Map) => lv(lnew(Base, T), noTrace, T) ...</k>
+     rule <k> setTemplateArgs(N::Namespace :: X::CId, T::CPPType, Old::Map) => lv(lnew(Base), noTrace, T) ...</k>
           <template-arguments> _ => Old </template-arguments>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>

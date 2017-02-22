@@ -16,7 +16,6 @@ module C-EXPR-FUNCTION-CALL
      imports INT
      imports STRING
      imports COMMON-BUILTIN-SYNTAX
-     imports SYMLOC-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
      imports C-CHECK-LOC-SYNTAX
@@ -27,6 +26,7 @@ module C-EXPR-FUNCTION-CALL
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SYNTAX
@@ -89,9 +89,9 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> Call(
-               tv(loc(0 @ nativeAddress(), Address:Int), ut(_, pointerType(T:FunctionType))),
+               tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, 0 @ nativeAddress(), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, callBuiltin), T, CLinkage, krlist(L))
+               => sequencePoint ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, callBuiltin), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
@@ -160,7 +160,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
-               => bindParamHelper(X, T, V, !I:Int @ D)
+               => bindParamHelper(X, T, V, linc(T, D))
           ...</k>
           <duration> D:Duration </duration>
           [structural]
@@ -170,21 +170,6 @@ module C-EXPR-FUNCTION-CALL
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
                ~> allowInit(Computation(X := V))
-          ...</k>
-          <curr-function-params>...
-               (.List => ListItem(X))
-          </curr-function-params>
-          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
-          [structural]
-
-     rule <k> bindParam(X:CId) => bindParamHelper(X, !I:Int @ D) ...</k>
-          <duration> D:Duration </duration>
-          [structural]
-     syntax KItem ::= bindParamHelper(CId, SymBase)
-     rule <k> bindParamHelper(X:CId, Base:SymBase)
-               => allocObject(Base, type(no-type))
-               ~> addToEnv(X, Base)
-               ~> giveType(X, type(no-type))
           ...</k>
           <curr-function-params>...
                (.List => ListItem(X))

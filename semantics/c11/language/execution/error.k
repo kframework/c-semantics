@@ -5,7 +5,7 @@ module C-EXECUTION-ERROR-SYNTAX
      imports C-DYNAMIC-SORTS
      imports ERROR-SYNTAX
 
-     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function, hook(C_SEMANTICS.printStackTrace), canTakeSteps]
+     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function, hook(C_SEMANTICS.printStackTrace)]
 endmodule
 
 module C-EXECUTION-ERROR

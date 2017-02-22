@@ -24,8 +24,6 @@ module C-CONFIGURATION
      // Scope |-> activity(Int, SymLoc |-> Int)
      <active-blocks> .Map </active-blocks>
 
-     <next-newed> 0 @ dynamic </next-newed>
-
      <extensions-global/>
 
      <next-thread-id color="black"> 1 </next-thread-id>
@@ -156,7 +154,6 @@ module C-CONFIGURATION
 <library>
      // stdlib.h support
      <malloced color="lightgray"> .Map </malloced>
-     <next-malloced> 0 @ alloc </next-malloced>
      // Stderr is unbuffered by default, but it can be changed.
      <atexit> flush(#stdout) ~> flush(#stderr) </atexit>
      <at-quick-exit> .K </at-quick-exit>

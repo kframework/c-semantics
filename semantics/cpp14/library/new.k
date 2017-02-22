@@ -14,12 +14,11 @@ module LIBCPP-NEW
           => builtin(GlobalNamespace() :: operatornew, V)
 
      rule <k> builtin(GlobalNamespace() :: operatornew, prv(Len::Int, _, _))
-              => allocObject(Base, type(no-type), Len)
-              ~> prv(addProv(fromArray(0, Len), lnew(Base, type(no-type))), noTrace,
+              => allocObject(bnew(!I:Int, type(no-type), .Set, dynamic), type(no-type), Len)
+              ~> prv(addProv(fromArray(0, Len), lnew(bnew(!I, type(no-type), .Set, dynamic))), noTrace,
                    type(pointerType(type(void))))
           ...</k>
-          <malloced>... .Map => Base |-> Len ...</malloced>
-          <next-newed> Base::SymBase => linc(Base) </next-newed>
+          <malloced>... .Map => bnew(!I, type(no-type), .Set, dynamic) |-> Len ...</malloced>
           requires notBool hasLint andBool Len <=Int cfg:maxHeapBound
 
 endmodule

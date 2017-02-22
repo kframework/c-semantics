@@ -70,7 +70,8 @@ module CPP-SYNTAX
                    | "operator++_"
                    | "operator_--"
                    | "operator--_"
-                   
+
+     syntax Specifier ::= Alignas(Int)
 
      syntax Expr ::= temp(Int, CPPType)
                    | newSize(Int)

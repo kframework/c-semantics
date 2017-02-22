@@ -396,6 +396,12 @@ public:
     AddKApplyNode(str, 0);
   }
 
+  void AddSpecifier(const char *str, unsigned n) {
+    AddKApplyNode("Specifier", 2);
+    AddKApplyNode(str, 1);
+    VisitUnsigned(n);
+  }
+
   bool TraverseConstructorInitializer(CXXCtorInitializer *Init) {
     if (Init->isBaseInitializer()) {
       AddKApplyNode("ConstructorBase", 4);
@@ -544,6 +550,9 @@ public:
     AddThreadStorageClass(D->getTSCSpec());
     if (D->isConstexpr()) {
       AddSpecifier("Constexpr");
+    }
+    if (unsigned align = D->getMaxAlignment()) {
+      AddSpecifier("Alignas", align / 8);
     }
     AddKApplyNode("VarDecl", 4);
 

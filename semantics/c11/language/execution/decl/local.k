@@ -3,12 +3,12 @@ module C-DECL-LOCAL
      imports BOOL
      imports INT
      imports K-EQUAL
-     imports SYMLOC-SORTS
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-TYPING-SYNTAX
 
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
@@ -78,7 +78,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareOnly(CId, Type)
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, .K, !I:Int @ D)
+               => defineAndInit(X, T, .K, linc(T, D))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -87,7 +87,7 @@ module C-DECL-LOCAL
                andBool (notBool X in Vars)
           [structural]
      rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, .K, autoToRegister(!I:Int @ D))
+               => defineAndInit(X, T, .K, autoToRegister(linc(T, D)))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -104,7 +104,7 @@ module C-DECL-LOCAL
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
      rule <k> declareAndDefine(X:CId, T:Type, Init:K)
-               => defineAndInit(X, T, Init, !I:Int @ D)
+               => defineAndInit(X, T, Init, linc(T, D))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
@@ -112,7 +112,7 @@ module C-DECL-LOCAL
                andBool notBool isRegisterType(T)
           [structural]
      rule <k> declareAndDefine(X:CId, T:Type, Init:K)
-               => defineAndInit(X, T, Init, autoToRegister(!I:Int @ D))
+               => defineAndInit(X, T, Init, autoToRegister(linc(T, D)))
           ...</k>
           <duration> D:Duration </duration>
           <local-vars> Vars:List (.List => ListItem(X)) </local-vars>

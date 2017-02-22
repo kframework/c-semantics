@@ -139,7 +139,7 @@ module CPP-OVERLOADING
 
      // no overloading
      rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
-              => CallExpr(lv(lnew(Base, T), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
+              => CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
@@ -159,7 +159,7 @@ module CPP-OVERLOADING
 
      // no overloading
      rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
-              => CallExpr(lv(lnew(Base, T), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
+              => CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
@@ -175,9 +175,9 @@ module CPP-OVERLOADING
 
      rule (.K => instantiateObjectTemplate(Spec)) ~> resolveOverload(cSet(T::CPPType |-> Spec:TemplateSpecialization => .Map), _, _, _, _, _)
 
-     rule (lv(loc(Base::SymBase, 0, _), _, T::CPPType) => .K) ~> resolveOverload(cSet(.Map => T |-> kpair(false, Base)), _, _, _, _, _)
+     rule (lv(loc(Base::SymBase, 0), _, T::CPPType) => .K) ~> resolveOverload(cSet(.Map => T |-> kpair(false, Base)), _, _, _, _, _)
 
-     rule <k> resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
@@ -191,7 +191,7 @@ module CPP-OVERLOADING
      rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires notBool loc(Base, 0) in_keys(Refs)
-     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base, T), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
 
      rule resolveUniqueDecl(V:KResult, _) => V

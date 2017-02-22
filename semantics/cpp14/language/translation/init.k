@@ -10,7 +10,6 @@ module CPP-TRANSLATION-INIT
      imports COMMON-BUILTIN-SYNTAX
      imports COMPAT-SYNTAX
      imports MEMORY-SYNTAX
-     imports SYMLOC-SYNTAX
      imports C-LINKING-INIT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
@@ -18,6 +17,7 @@ module CPP-TRANSLATION-INIT
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -79,13 +79,14 @@ module CPP-TRANSLATION-INIT
      rule addCPPBuiltins(.K, _) => .K
 
      syntax KItem ::= addBuiltin(QualId, CPPType, Bool) [klabel(addBuiltinCpp)]
-
+ 
+     // we use the empty modifier set because this is a function and can't really
+     // have an alignment anyway since it's not an object.
      rule <k> addBuiltin(Q::QualId, T:CPPFunctionType, AddAll:Bool)
-              => declareBuiltinFunction(Q, T, Base) ...</k>
+              => declareBuiltinFunction(Q, T, linc(T, .Set, static(Tu))) ...</k>
           <odr-defs> Defs:Map </odr-defs>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Base::SymBase => linc(Base) </next-static-loc>
           requires (notBool (Q, T in_keys(Defs))) orBool AddAll
 
      rule <k> addBuiltin(Q::QualId, T::CPPType, false) => checkReplaceable(Q, T, Defs) ...</k>

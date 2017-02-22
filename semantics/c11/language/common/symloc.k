@@ -5,8 +5,10 @@ module C-SYMLOC-SYNTAX
      imports COMMON-SORTS
 
      // Base, type
-     syntax SymLoc ::= lnew(SymBase, Type) [function]
-     syntax SymLoc ::= restrictedNew(SymBase, Type, Scope) [function]
+     syntax SymBase ::= bnew(Int, Type, Duration) [function]
+     syntax SymBase ::= linc(Type, Duration) [function]
+     syntax SymLoc ::= lnew(SymBase) [function]
+     syntax SymLoc ::= restrictedNew(SymBase, Scope) [function]
 
      syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
@@ -38,14 +40,17 @@ module C-SYMLOC
      imports K-REFLECTION
      imports SET
      imports COMPAT-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule lnew(Base:SymBase, T:Type)
-          => loc(Base, 0, .Set)
-     rule restrictedNew(Base:SymBase, T:Type, Tag:Scope)
-          => addProv(basedOn(Base, Tag), lnew(Base, T))
+     rule bnew(I::Int, T::Type, D::Duration)
+          => obj(I, getAlignas(T), D)
+     rule linc(T::Type, D::Duration) => bnew(!I:Int, T, D)
+     rule lnew(Base::SymBase) => loc(Base, 0)
+     rule restrictedNew(Base:SymBase, Tag:Scope)
+          => addProv(basedOn(Base, Tag), lnew(Base))
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 

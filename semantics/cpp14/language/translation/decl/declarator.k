@@ -144,32 +144,30 @@ module CPP-DECL-DECLARATOR
 
      // ExternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
-              => addToEnv(N :: X, T, Base, false)
+              => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals> 
               Exts::Map
-              => Exts[LN :: X, T <- declState(Base, declared)]
+              => Exts[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </externals>
-          <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
-          <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, LN :: X, T)] </odr-decls>
           <curr-template-context> noTemplate </curr-template-context>
           requires notBool LN :: X, T in_keys(Exts)
                andBool completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
-              => addToEnv(N :: X, T, Base, false)
+              => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <internals> 
               Ints::Map
-              => Ints[LN :: X, T <- declState(Base, declared)]
+              => Ints[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </internals>
-          <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
-          <next-link-loc> Base::SymBase => linc(Base) </next-link-loc>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, LN :: X, T)] </odr-decls>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           requires notBool LN :: X, T in_keys(Ints)
@@ -224,14 +222,13 @@ module CPP-DECL-DECLARATOR
 
      // NoLinkage, StaticStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, StaticStorage, Set::Set)
-              => defineLocalStaticObject(X, Base, T, Init, Type, Set) ...</k>
+              => defineLocalStaticObject(X, bnew(!I:Int, T, Set, static(Tu)), T, Init, Type, Set) ...</k>
           <curr-scope> S::Scope </curr-scope>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <next-static-loc> Base::SymBase => linc(Base) </next-static-loc>
-          <local-statics> LocalStatics::Map (.Map => kpair(X, S) |-> kpair(Base, T)) </local-statics>
-          <elab>... .K => declareLocalStaticObject(X, Base, T) </elab>
+          <local-statics> LocalStatics::Map (.Map => kpair(X, S) |-> kpair(bnew(!I, T, Set, static(Tu)), T)) </local-statics>
+          <elab>... .K => declareLocalStaticObject(X, bnew(!I, T, Set, static(Tu)), T) </elab>
           requires notBool (kpair(X, S) in_keys(LocalStatics))
                andBool completeDeclaration(T, Init) ==K T
 
@@ -279,7 +276,7 @@ module CPP-DECL-DECLARATOR
 
      rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
-                   allocateDecl(N :: X, T, StaticStorage),
+                   allocateDecl(N :: X, T, StaticStorage, S),
                    T, StaticStorage, Init), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
@@ -288,26 +285,25 @@ module CPP-DECL-DECLARATOR
           => addToEnv(NoNamespace() :: X, T, Base, false)
           ~> #if notBool isCPPRefType(T) #then allocObject(Base, T, byteSizeofType(T)) #else .K #fi
           ~> initializeObject(NoNamespace(), X, T, figureInit(
-               lv(lnew(Base, T), noTrace, T),
+               lv(lnew(Base), noTrace, T),
                T, StaticStorage, Init), Type) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, NoNamespace() :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>
 
-     syntax Expr ::= allocateDecl(QualId, CPPType, Duration)
+     syntax Expr ::= allocateDecl(QualId, CPPType, Duration, Set)
 
-     rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage)
-              => addToEnv(N :: X, T, Base', false)
-              ~> #if notBool isCPPRefType(T) #then allocObject(Base', T, byteSizeofType(T)) #else .K #fi
-              ~> lv(lnew(Base', T), noTrace, T) ...</k>
+     rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage, S::Set)
+              => addToEnv(N :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
+              ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
+              ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</nenv>
-          <next-static-loc> Base'::SymBase => linc(Base') </next-static-loc>
-          <linkings>... .Map => Base |-> Base' ...</linkings>
-          <odr-decls> Decls::Map => Decls[Base' += ktriple(Tu, N :: X, T)] </odr-decls>
-          <odr-defs> Defs::Map => Defs[N :: X, T <- Base'] </odr-defs>
+          <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, N :: X, T)] </odr-decls>
+          <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
 
      rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))

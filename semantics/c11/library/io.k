@@ -316,25 +316,25 @@ module LIBC-IO
 
      rule pointerToString(Loc:SymLoc => stripProv(Loc))
           requires isNativeLoc(Loc)
-     rule pointerToString(loc(0 @ nativeAddress(), Addr:Int))
+     rule pointerToString(loc(obj(0,_,nativeAddress()), Addr:Int))
           => "0x" +String Base2String(Addr, 16)
 
      rule pointerToString(NullPointer) => "NullPointer"
 
      syntax String ::= symBaseToString(SymBase) [function]
-     rule symBaseToString(B:Int @ threadLocal(Th:Int))
+     rule symBaseToString(obj(B:Int,_,threadLocal(Th:Int)))
           => Int2String(B) +String " @ "
           +String "threadLocal(" +String Int2String(Th) +String ")"
-     rule symBaseToString(B:Int @ alloc)
+     rule symBaseToString(obj(B:Int,_,alloc))
           => Int2String(B) +String " @ "
           +String "allocated"
-     rule symBaseToString(B:Int @ static(Tu:String))
+     rule symBaseToString(obj(B:Int,_,static(Tu:String)))
           => Int2String(B) +String " @ "
           +String "static(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-     rule symBaseToString(B:Int @ link(Tu:String))
+     rule symBaseToString(obj(B:Int,_,link(Tu:String)))
           => Int2String(B) +String " @ "
           +String "link(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-     rule symBaseToString(B:Int @ auto(Th:Int))
+     rule symBaseToString(obj(B:Int,_,auto(Th:Int)))
           => Int2String(B) +String " @ "
           +String "auto(" +String Int2String(Th) +String ")"
 

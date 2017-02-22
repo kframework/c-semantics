@@ -1,9 +1,10 @@
 module CPP-ALIGNMENT-SYNTAX
+     imports SET
      imports SYMLOC-SORTS
      imports CPP-TYPING-SORTS
 
      syntax Int ::= getAlign(SymLoc) [function, klabel(getAlignCpp)]
-                  | getAlignof(CPPType) [function]
+                  | getAlignas(CPPType, Set) [function, klabel(getAlignasCpp)]
 
      syntax Int ::= byteAlignofType(CPPType) [function, klabel(byteAlignofTypeCpp)]
 
@@ -14,7 +15,11 @@ module CPP-ALIGNMENT
      imports BOOL
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-SETTINGS-SYNTAX
+     imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+
+     rule getAlignas(_, SetItem(Alignas(I::Int)) _) => I
+     rule getAlignas(T::CPPType, _) => byteAlignofType(T) [owise]
 
      syntax Int ::= byteAlignofType(CPPSimpleType) [klabel(byteAlignofSimpleTypeCpp), function]
      rule byteAlignofType(T:CPPClassType) => byteAlignofClass(getClassInfo(T))
@@ -25,10 +30,14 @@ module CPP-ALIGNMENT
           => A
 
      rule byteAlignofType(pointerType(_)) => cfg:alignofPointer
+     rule byteAlignofType(lvRefType(_)) => cfg:alignofReference
+     rule byteAlignofType(rvRefType(_)) => cfg:alignofReference
+     rule byteAlignofType(nullptr_t) => cfg:alignofNullPtrT
      rule byteAlignofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrAlign
      rule byteAlignofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrAlign
           requires notBool isCPPFunctionType(T)
      rule byteAlignofType(arrayType(t(_, _, T::CPPSimpleType), _) => T)
+     rule byteAlignofType(incompleteArrayType(t(_, _, T::CPPSimpleType)) => T)
      rule byteAlignofType(bool) => cfg:alignofBool
      rule byteAlignofType(signed-char) => cfg:alignofSignedChar
      rule byteAlignofType(unsigned-char) => cfg:alignofSignedChar
@@ -45,4 +54,6 @@ module CPP-ALIGNMENT
      rule byteAlignofType(double) => cfg:alignofDouble
      rule byteAlignofType(long-double) => cfg:alignofLongDouble
      rule byteAlignofType(T:CPPSimpleWideCharType) => byteAlignofType(underlyingType(T))
+     rule byteAlignofType(functionType(_, _, _, _)) => 0
+     rule byteAlignofType(no-type) => cfg:alignofMalloc
 endmodule

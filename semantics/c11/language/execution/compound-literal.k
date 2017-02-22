@@ -1,12 +1,12 @@
 module C-COMPOUND-LITERAL
      imports C-CONFIGURATION
      imports BOOL
-     imports SYMLOC-SYNTAX
      imports C-TYPING-SORTS
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
+     imports C-SYMLOC-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.5}{3--7}}}{
      A postfix expression that consists of a parenthesized type name followed
@@ -36,14 +36,14 @@ module C-COMPOUND-LITERAL
      compound literal.*/
      // comes back from figureInit as initValue(id, type, inits)
      rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
+               => initCompoundLiteralHelper(initValue(X, T, Init), linc(T, D))
           ...</k>
           <compound-lit-map> M:Map </compound-lit-map>
           <duration> D:Duration </duration>
           requires notBool (X in_keys(M))
           [structural]
      rule <k> initCompoundLiteral(initValue(X:CId, T:Type, Init:K))
-               => initCompoundLiteralHelper(initValue(X, T, Init), !I:Int @ D)
+               => initCompoundLiteralHelper(initValue(X, T, Init), linc(T, D))
           ...</k>
           <compound-lit-map>... X |-> Base:SymBase ...</compound-lit-map>
           <local-addresses> Addrs:Set </local-addresses>

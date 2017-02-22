@@ -4,7 +4,6 @@ module C-DECL-LOCAL
      imports BOOL
      imports STRING
      imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
      imports C-DECL-GLOBAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -12,6 +11,7 @@ module C-DECL-LOCAL
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -115,17 +115,16 @@ module C-DECL-LOCAL
 
      syntax KItem ::= initLocalStatic(CId, K)
      rule <k> initLocalStatic(X:CId, initValue(_, T:Type, Init:K))
-               => allocObject(Base, T)
-               ~> addToEnv(X, Base)
+               => allocObject(bnew(!I:Int, T, static(TU)), T)
+               ~> addToEnv(X, bnew(!I, T, static(TU)))
                ~> giveType(X, T)
                ~> runInit(stripInitHolds(Init))
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
-          <next-static-loc> Base:SymBase => linc(Base) </next-static-loc>
           <local-statics>
-               LocalStatics:Map (.Map =>  kpair(X, S) |-> kpair(Base, T))
+               LocalStatics:Map (.Map =>  kpair(X, S) |-> kpair(bnew(!I, T, static(TU)), T))
           </local-statics>
           <local-types>
                LocalTypes:Map (.Map => X |-> T)

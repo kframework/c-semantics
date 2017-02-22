@@ -255,6 +255,8 @@ module C-TYPING-SYNTAX
 
      syntax Modifier ::= "noModifier"
 
+     syntax Modifier ::= Packed()
+
      // Returns both type qualifiers, storage class specifiers, and any the
      // other information stored in the modifiers list (e.g., oldStyle).
      syntax Set ::= getModifiers(Type) [function]

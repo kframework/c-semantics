@@ -59,12 +59,11 @@ module LIBC-STDLIB
      allocated space.
      }*/
      rule <k> builtin("malloc", tv(Len:Int, _))
-               => alloc(Base, type(no-type), Len:Int)
-               ~> tv(addProv(fromArray(0, Len), lnew(Base, type(no-type))),
+               => alloc(bnew(!I:Int, type(no-type), alloc), type(no-type), Len:Int)
+               ~> tv(addProv(fromArray(0, Len), lnew(bnew(!I, type(no-type), alloc))),
                     utype(pointerType(type(void))))
           ...</k>
-          <malloced>... .Map => Base |-> Len ...</malloced>
-          <next-malloced> Base:SymBase => linc(Base) </next-malloced>
+          <malloced>... .Map => bnew(!I, type(no-type), alloc) |-> Len ...</malloced>
           requires notBool hasLint andBool Len <=Int cfg:maxHeapBound
           [structural]
 
@@ -98,14 +97,13 @@ module LIBC-STDLIB
      rule builtin("realloc", tv((loc(Base:SymBase, Offset:Int, _) => loc(Base, Offset)), _), _)
      rule [realloc]:
           <k> builtin("realloc", tv(loc(OldBase:SymBase, 0), _), tv(NewLen:Int, _))
-               => realloc(OldBase, NewBase, OldLen, NewLen)
-               ~> tv(loc(NewBase, 0, SetItem(fromArray(0, NewLen))),
+               => realloc(OldBase, bnew(!I:Int, type(no-type), alloc), OldLen, NewLen)
+               ~> tv(loc(bnew(!I, type(no-type), alloc), 0, SetItem(fromArray(0, NewLen))),
                     utype(pointerType(type(void))))
           ...</k>
           <malloced>...
-               (OldBase => NewBase) |-> (OldLen:Int => NewLen)
+               (OldBase => bnew(!I, type(no-type), alloc)) |-> (OldLen:Int => NewLen)
           ...</malloced>
-          <next-malloced> NewBase:SymBase => linc(NewBase) </next-malloced>
           requires notBool hasLint
           [structural]
 
