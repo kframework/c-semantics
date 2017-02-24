@@ -1,5 +1,5 @@
 module C-LINKING-RESOLUTION-SYNTAX
-     imports COMMON-RESOLUTION-SYNTAX
+     imports BASIC-K
 
      syntax KItem ::= "resolveReferences"
      syntax KItem ::= "removeUnusedIdentifiers"
@@ -8,6 +8,7 @@ endmodule
 
 module C-LINKING-RESOLUTION
      imports C-LINKING-RESOLUTION-SYNTAX
+     imports COMMON-RESOLUTION-SYNTAX
      imports C-CONFIGURATION
      imports COLLECTIONS
      imports LIST

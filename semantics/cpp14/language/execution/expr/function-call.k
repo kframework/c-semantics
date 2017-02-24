@@ -14,6 +14,7 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-EXECUTION-EXPR-MEMBERS-SYNTAX
 
      // Function call (from C++ function)
      rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _), _)
@@ -27,12 +28,29 @@ module CPP-EXPR-FUNCTION-CALL
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           requires notBool isLinkerLoc(Base)
 
+     // Method call (from C++ function)
+     rule BuiltinMethodCallOp(_, lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _), _)
+     rule <k> BuiltinMethodCallOp(_, lv(loc((Base::SymBase => Base'), _), _, _), _) ...</k>
+          <linkings>... Base |-> Base'::SymBase ...</linkings>
+
+     rule <k> BuiltinMethodCallOp(Obj::Expr, lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), Args::List)
+              => prepareMethodArguments(Obj, CurrLoc, Base, Fun, T, Args)
+          ...</k>
+          <functions>... Base |-> Fun:K ...</functions>
+          <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
+          requires notBool isLinkerLoc(Base)
+
      syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, CPPType, List)
 
      rule prepareArguments(CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::CPPType, Args::List)
           => application(CurrLoc, Base, Fun, CallT, CPPLinkage, list(mapList(Args, #klabel(`allowInit`))))
 
-     // evaluating arguments for call to C function
+     syntax Expr ::= prepareMethodArguments(Expr, CabsLoc, SymBase, K, CPPType, List)
+
+     rule prepareMethodArguments(Obj::Expr, CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::CPPType, Args::List)
+          => methodApplication(Obj, CurrLoc, Base, Fun, CallT, CPPLinkage, list(mapList(Args, #klabel(`allowInit`))))
+
+ // evaluating arguments for call to C function
      context application(_, _, functionObject(_::CId, _, _, _), _, _, HOLE:StrictList => prval(HOLE))
      // evaluating arguments for call to C++ function
      context application(_, _, functionObject(_::QualId, _, _, _), _, _, HOLE:StrictList)
@@ -60,6 +78,36 @@ module CPP-EXPR-FUNCTION-CALL
           => <function-control>...
                <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, Base, 0) </curr-scope>
+               <curr-program-loc> CurrLoc </curr-program-loc>
+          ...</function-control>)
+
+     syntax KItem ::= methodApplication(Expr, CabsLoc, SymBase, K, EffectiveType, LanguageLinkage, StrictList) [strict(1,7)]
+
+     // Function call (into C++ function)
+     rule <k> methodApplication(Obj:Val, CurrLoc::CabsLoc, Base::SymBase,
+                    functionObject(C::Class :: X::CId, DefT::CPPFunctionType, Params::List, Blk:K),
+                    _, CallingLang::LanguageLinkage, krlist(L::List))
+              ~> K:K
+              => sequencePoint
+              ~> enterRestrictScope(blockScope(C :: X, Base, 0))
+              ~> bind(Params, getParams(DefT), L)
+              // 5.1.1:3
+              ~> setThis(setType(t(noQuals, .Set, pointerType(t(getCVSQuals(DefT), .Set, classType(C)))), Obj))
+              ~> Blk
+          </k>
+          <call-stack> .List => ListItem(
+               <call-stack-frame>
+                    <continuation> K:K </continuation>
+                    <stack-function-control>
+                         <function-control> Cxt <curr-program-loc> CurrLoc </curr-program-loc> </function-control>
+                    </stack-function-control>
+                    <stack-lang-linkage> CallingLang </stack-lang-linkage>
+               </call-stack-frame>
+          ) ...</call-stack>
+          (<function-control> Cxt::Bag <curr-program-loc> _ </curr-program-loc> </function-control>
+          => <function-control>...
+               <curr-tu> getTU(loc(Base, 0)) </curr-tu>
+               <curr-scope> blockScope(C :: X, Base, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
           ...</function-control>)
 

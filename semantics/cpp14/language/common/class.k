@@ -10,4 +10,4 @@ endmodule
 
 module CPP-CLASS
      imports CPP-CLASS-SYNTAX
-endmodule
+ endmodule

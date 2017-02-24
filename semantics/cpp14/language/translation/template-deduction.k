@@ -32,7 +32,7 @@ module CPP-TEMPLATE-DEDUCTION
                     | deducePair(CPPTypeExpr, CPPType, Bool, DeductionContext) //P, A, P is reference type in function call context, context
                     | deducePairs(TemplateParams, TemplateArgs, Bool, DeductionContext)
                     | finishDeduction(TemplateInfo)
-     rule (.K => getTypesForDeduction(Param, I, I)) ~> deduceTemplateFromCall(t(_, _, functionType(_, (Param::CPPTypeExpr, Ps::CPPTypeExprs => Ps), _, _)), (ListItem(I::Init) => .List) _, _::List (.List => ListItem(Param)), _)
+     rule (.K => getTypesForDeduction(Param, I, I)) ~> deduceTemplateFromCall(t(_, _, functionType(... paramTypes: (Param::CPPTypeExpr, Ps::CPPTypeExprs => Ps))), (ListItem(I::Init) => .List) _, _::List (.List => ListItem(Param)), _)
      context getTypesForDeduction(_, HOLE:TypeExpr => typeof(HOLE), _) [result(CPPType)]
      context getTypesForDeduction(_, _, HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
 
@@ -57,7 +57,7 @@ module CPP-TEMPLATE-DEDUCTION
 
      rule deducePair((t(Q::Quals, _, pointerType(P::CPPTypeExpr)) => P), (t(Q::Quals, _, pointerType(A::CPPType)) => A), _, _)
      rule deducePair(t(Q::Quals, _, classType(N::Namespace :: Class(T::Tag, X::CId, P::TemplateParams))), t(Q::Quals, _, classType(N :: Class(T, X, A::TemplateArgs))), B::Bool, C::DeductionContext) => deducePairs(P, A, B, C)
-     rule deducePair(t(Q::Quals, _, functionType(P::CPPTypeExpr, Ps::CPPTypeExprs, _, _)), t(Q::Quals, _, functionType(A::CPPType, As::CPPTypes, _, _)), B::Bool, C::DeductionContext) => deducePairs(toTemplateParams(toList(P, Ps)), toTemplateArgs(toList(A, As)), B, C)
+     rule deducePair(t(Q::Quals, _, functionType(... returnType: P::CPPTypeExpr, paramTypes: Ps::CPPTypeExprs)), t(Q::Quals, _, functionType(... returnType: A::CPPType, paramTypes: As::CPPTypes)), B::Bool, C::DeductionContext) => deducePairs(toTemplateParams(toList(P, Ps)), toTemplateArgs(toList(A, As)), B, C)
      rule deducePair(P:CPPType, A::CPPType, _, _) => .K
      rule <k> deducePair(t(Q::Quals, _, dependentType(P::String)), t(Q::Quals, Mods::Set, A::CPPSimpleType), _, _) => .K ...</k>
           <template-deduction>... .Map => dependentType(P) |-> t(Q, Mods, A) ...</template-deduction>
@@ -67,10 +67,10 @@ module CPP-TEMPLATE-DEDUCTION
      rule (.K => deducePair(P, A, B, C)) ~> deducePairs((P:CPPTypeExpr, Ps::TemplateParams => Ps), (A:CPPType, As::TemplateArgs => As), B::Bool, C::DeductionContext)
      rule deducePairs(.TemplateParams, .TemplateArgs, _, _) => .K
 
-     rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
+     rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, RQ::RefQualifier, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... X |-> (_ t(Q, Mods, functionType(Ret, toCPPTypes(Params), L, E)) |-> T:TemplateInfo) ...</templates>
+          <templates>... X |-> (_ t(Q, Mods, functionType(Ret, toCPPTypes(Params), RQ, CVS, L, E)) |-> T:TemplateInfo) ...</templates>
 
      rule <k> finishDeduction(T::TemplateInfo) => instantiateTemplateType(T, Args) ...</k>
           <template-deduction> Args::Map </template-deduction>
@@ -82,7 +82,7 @@ module CPP-TEMPLATE-DEDUCTION
      
      rule deduceAuto(P::CPPTypeExpr, I::Init) => getTypesForDeduction(P, I, I) ~> finishAutoDeduction
           requires notBool isStmt(I) andBool isBraceInit(I)
-     rule deduceAuto(t(_, _, functionType(P::CPPTypeExpr, _, _, _)), S:Stmt) => locateReturns(P, ListItem(S)) ~> finishAutoDeduction
+     rule deduceAuto(t(_, _, functionType(... returnType: P::CPPTypeExpr)), S:Stmt) => locateReturns(P, ListItem(S)) ~> finishAutoDeduction
      syntax KItem ::= locateReturns(CPPTypeExpr, List)
      // TODO(dwightguth): replace this with a generic visitor of syntax
      rule locateReturns(_, (ListItem(BlockStmt(_, L::List)) => L) _)

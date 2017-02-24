@@ -369,7 +369,7 @@ module CPP-DYNAMIC
 
      rule signatureToString(Q::QualId, T::CPPType) => idToString(Q)
           requires notBool isCPPFunctionType(T)
-     rule signatureToString(Q::QualId, t(_, _, functionType(_, T::CPPTypes, _, _))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
+     rule signatureToString(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
 
      rule X:K, T::CPPType in_keys(M::Map) => X in_keys(M) andBool typeInKey(M[X], T)
      syntax Bool ::= typeInKey(K, CPPType) [function]

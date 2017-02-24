@@ -12,6 +12,7 @@ require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/inc-and-dec.k"
 require "expr/logical.k"
+require "expr/members.k"
 require "expr/name.k"
 require "expr/new.k"
 require "expr/reference.k"
@@ -44,6 +45,7 @@ module CPP-EXECUTION
      imports CPP-EXPR-FUNCTION-CALL
      imports CPP-EXPR-INC-AND-DEC
      imports CPP-EXPR-LOGICAL
+     imports CPP-EXECUTION-EXPR-MEMBERS
      imports CPP-EXECUTION-EXPR-NAME
      imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE

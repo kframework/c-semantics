@@ -52,7 +52,7 @@ module CPP-TRANSLATION-INIT
           ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), type(size_t), noexcept(true))
 
      rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
-          => declareObject(N, N, X, type(functionType(Ret, Args, CPPLinkage, E)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
+          => declareObject(N, N, X, type(functionType(Ret, Args, RefNone(), noQuals, CPPLinkage, E)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -95,11 +95,11 @@ module CPP-TRANSLATION-INIT
 
      syntax K ::= checkReplaceable(QualId, CPPType, Map) [function]
      syntax Error ::= "replaceableError"
-     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), CPPLinkage, _)), Defs::Map)
+     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(... returnType: t(_, _, void), paramTypes: t(_, _, pointerType(t(_, _, void))), linkage: CPPLinkage)), Defs::Map)
           => ILL("TIN1", "Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).")
           ~> replaceableError
           requires notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void)), type(size_t)) in_keys(Defs))
-     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(t(_, _, void), t(_, _, pointerType(t(_, _, void))), t(_, _, T::CPPSimpleType), CPPLinkage, _)), Defs::Map)
+     rule checkReplaceable(GlobalNamespace() :: operatordelete, t(_, _, functionType(... returnType: t(_, _, void), paramTypes: (t(_, _, pointerType(t(_, _, void))), t(_, _, T::CPPSimpleType)), linkage: CPPLinkage)), Defs::Map)
           => ILL("TIN2", "Declared replacement function operator delete(void *, std::size_t) but no operator delete(void *).")
           ~> replaceableError
           requires T ==K size_t andBool notBool(GlobalNamespace() :: operatordelete, func(type(void), ptr(type(void))) in_keys(Defs))
@@ -113,11 +113,11 @@ module CPP-TRANSLATION-INIT
 
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]
-     rule getDummyParams(t(_, _, functionType(_, Ts::CPPTypes, _, _))) => #getDummyParams(Ts, 0)
+     rule getDummyParams(t(_, _, functionType(... paramTypes: Ts::CPPTypes))) => #getDummyParams(Ts, 0)
      rule #getDummyParams(T::CPPType, Ts::CPPTypes, I::Int) => ListItem(Identifier("_" +String Int2String(I))) #getDummyParams(Ts, I +Int 1)
      rule #getDummyParams(.CPPTypes, _) => .List
 
-     rule isCLinkage(t(_, _, functionType(_, _::CPPTypes, CLinkage, _))) => true
+     rule isCLinkage(t(_, _, functionType(... linkage: CLinkage))) => true
      rule isCLinkage(_) => false [owise]
 
      rule combine(hasTrace(E::Expr), #klabel(Lbl:KLabel)) => hasTrace(Lbl(E))

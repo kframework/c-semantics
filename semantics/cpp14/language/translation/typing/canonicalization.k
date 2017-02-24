@@ -39,11 +39,14 @@ module CPP-TYPING-CANONICALIZATION
      rule RValRefType(T:CPPTypeExpr) => t(noQuals, .Set, rvRefType(T))
 
      rule Qualifier(Q::Qualifier, t(Quals::Quals, Mods::Set, S::CPPSimpleType)) => t(Quals +Qual Q, Mods, S)
+     rule RefQualifier(Q::RefQualifier, T:CPPFunctionType) => setRefQualifier(T, Q)
 
      rule FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E::ExceptionSpec, true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), E, false)
      context FunctionPrototype(_, _, HOLE:ExceptionSpec, _)
-     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), L, E))) ...</k>
+     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), RefNone(), noQuals, L, E))) ...</k>
           <curr-lang-linkage> L::LanguageLinkage </curr-lang-linkage>
+
+     rule MethodPrototype(t(_, _, pointerType(t(CVS::Quals, _, _))), T:CPPFunctionType) => setCVSQuals(T, CVS)
 
      rule ThrowSpec(krlist(.List)) => exSet(.Set)
      rule NoExceptionSpec() => noexcept(false)
@@ -79,17 +82,17 @@ module CPP-TYPING-CANONICALIZATION
      rule <k> EXIT(_) => recover ...</k>
           <curr-eval-context> noEval </curr-eval-context>
 
-     rule isAdjustedType(t(_, _, functionType(_, (T::CPPType, _), _, _))) => false
+     rule isAdjustedType(t(_, _, functionType(... paramTypes: (T::CPPType, _)))) => false
           requires isCPPFunctionTypeExpr(T) orBool isCPPArrayTypeExpr(T) orBool (isCPPTypeExpr(T) andBool getQuals(T) =/=K noQuals)
-     rule isAdjustedType(t(_, _, functionType(_, (_, Ts::CPPTypes => Ts), _, _))) [owise]
-     rule isAdjustedType(t(_, _, functionType(_, .CPPTypes, _, _))) => true
+     rule isAdjustedType(t(_, _, functionType(... paramTypes: (_, Ts::CPPTypes => Ts)))) [owise]
+     rule isAdjustedType(t(_, _, functionType(... paramTypes: .CPPTypes))) => true
 
      syntax CPPFunctionType ::= #adjustFunctionType(CPPFunctionTypeExpr, List) [function]
      rule adjustFunctionType(T::CPPFunctionType) => #adjustFunctionType(T, .List)
-     rule #adjustFunctionType(t(_, _, functionType(_, (t(Q::Quals, Mods::Set, T:CPPSimpleArrayTypeExpr), Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, Mods, pointerType(innerType(t(Q, Mods, T)))))))
-     rule #adjustFunctionType(t(_, _, functionType(_, (variadic, Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(variadic)))
-     rule #adjustFunctionType(t(_, _, functionType(_, (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
-     rule #adjustFunctionType(t(_, _, functionType(_, (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts), _, _)), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
-     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), L, E))
+     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(Q::Quals, Mods::Set, T:CPPSimpleArrayTypeExpr), Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, Mods, pointerType(innerType(t(Q, Mods, T)))))))
+     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (variadic, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(variadic)))
+     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
+     rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
+     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, RQ::RefQualifier, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), RQ, CVS, L, E))
 
 endmodule

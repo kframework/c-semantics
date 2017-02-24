@@ -3,6 +3,7 @@ require "domains.k"
 require "language/translation/translation.k"
 require "language/common/common.k"
 require "../linking/linking.k"
+require "language/linking/resolution.k"
 require "cpp-settings.k"
 
 module CPP14-TRANSLATION-SYNTAX
@@ -14,6 +15,7 @@ module CPP14-TRANSLATION
      imports CPP-TRANSLATION
      imports CPP-COMMON
      imports C-LINKING
+     imports CPP-LINKING-RESOLUTION
      imports COMMON
      imports CPP-SETTINGS
 endmodule

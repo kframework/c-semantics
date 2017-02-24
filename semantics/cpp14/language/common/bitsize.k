@@ -32,7 +32,7 @@ module CPP-BITSIZE
      rule byteSizeofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrSize
           requires notBool(isCPPFunctionType(T))
      rule byteSizeofType(arrayType(t(_, _, S::CPPSimpleType), N::Int)) => N *Int byteSizeofType(S)
-     rule byteSizeofType(functionType(_, _, _, _)) => 0
+     rule byteSizeofType(functionType(...)) => 0
      rule byteSizeofType(bool) => cfg:sizeofBool
      rule byteSizeofType(signed-char) => cfg:sizeofSignedChar
      rule byteSizeofType(unsigned-char) => cfg:sizeofSignedChar

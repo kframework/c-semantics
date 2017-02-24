@@ -89,7 +89,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
      syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
-     syntax CPPSimpleFunctionTypeExpr ::= functionType(CPPTypeExpr, CPPTypeExprs, LanguageLinkage, ExceptionSet) [klabel(cppFunctionType)]
+     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, refQual: RefQualifier, cvQuals: Quals, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
 
      syntax CPPSimpleArrayType ::= CPPSimpleFixedArrayType | CPPSimpleIncompleteArrayType
@@ -102,7 +102,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
      syntax CPPSimpleRVRefType ::= rvRefType(CPPType)
      // TODO: exception specification
-     syntax CPPSimpleFunctionType ::= functionType(CPPType, CPPTypes, LanguageLinkage, ExceptionSet) [klabel(cppFunctionType)]
+     syntax CPPSimpleFunctionType ::= functionType(returnType: CPPType, paramTypes: CPPTypes, refQual: RefQualifier, cvQuals: Quals, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassType ::= classType(Class)
 
      syntax CPPSimpleDependentType ::= dependentType(String)
@@ -156,6 +156,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPVariadic ::= "variadic"
 
+     syntax Expr ::= setType(CPPType, Expr) [strict]
+
      syntax Quals ::= getQuals(CPPType) [function]
      syntax CPPType ::= addQuals(Quals, CPPType) [function]
 
@@ -164,6 +166,10 @@ module CPP-TYPING-SYNTAX
 
      syntax List ::= getParams(CPPFunctionTypeExpr) [function, klabel(cppgetParams)]
                    | getRealParams(CPPFunctionTypeExpr) [function]
+     syntax RefQualifier ::= getRefQualifier(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setRefQualifier(CPPFunctionType, RefQualifier) [function]
+     syntax Quals ::= getCVSQuals(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setCVSQuals(CPPFunctionType, Quals) [function]
      syntax Bool ::= isVariadicFunction(CPPFunctionTypeExpr) [function]
      syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
@@ -204,6 +210,7 @@ module CPP-TYPING-SYNTAX
 
      syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
+                   | isBaseClassOf(Class, Class) [function, klabel(isClassBaseClassOf)]
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
@@ -229,14 +236,21 @@ module CPP-TYPING
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
 
-     rule getParams(t(_, _, functionType(_, L::CPPTypes, _, _))) => toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes))) => toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
-     rule getReturnType(t(_, _, functionType(T::CPPType, _, _, _))) => T
+     rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
 
      syntax List ::= #getRealParams(List) [function]
      rule #getRealParams(L::List ListItem(variadic)) => L
      rule #getRealParams(L::List) => L [owise]
+
+     rule getRefQualifier(t(_, _, functionType(... refQual: Q::RefQualifier))) => Q
+     rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, _, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), Q::RefQualifier)
+          => t(Quals, Mods, functionType(RetT, ParamT, Q, CVS, L, E))
+
+     rule getCVSQuals(t(_, _, functionType(... cvQuals: CVS::Quals))) => CVS
+     rule setCVSQuals(t(Q::Quals, Mods::Set, functionType(RT::CPPType, PT::CPPTypes, RQ::RefQualifier, _, L::LanguageLinkage, ES::ExceptionSet)), CVS::Quals) => t(Q, Mods, functionType(RT, PT, RQ, CVS, L, ES))
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
 
@@ -303,7 +317,7 @@ module CPP-TYPING
      rule t(Q::Quals, _, lvRefType(T1::CPPType)) ==Type t(Q, _, lvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, rvRefType(T1::CPPType)) ==Type t(Q, _, rvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
-     rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2)
+     rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, RQ1::RefQualifier, CVS1::Quals, _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, RQ2::RefQualifier, CVS2::Quals, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool RQ1 ==K RQ2 andBool CVS1 ==K CVS2
      rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
@@ -364,6 +378,22 @@ module CPP-TYPING
           => isCPPRVRefType(T) andBool isObjectType(innerType(T))
      rule isUnnamedPRValue(T::CPPType) 
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
+    
+     rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
+     rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
+
+     syntax Bool ::= #isBaseClassOf(base: Class, derived: List, K) [function]
+     rule #isBaseClassOf(B::Class, ListItem(B) _, _) => true
+     rule #isBaseClassOf(_, .List, _) => false
+     rule #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _, 
+            <generatedTop>... 
+              <class-id> D </class-id>
+              <base-classes> BC::List </base-classes>
+            ...</generatedTop>)
+         requires D =/=K B
+
+     rule setType(T::CPPType, lv(Loc::SymLoc, Tr::Trace, _)) => lv(Loc, Tr, T)
+     rule setType(T::CPPType, prv(Loc::SymLoc, Tr::Trace, _)) => prv(Loc, Tr, T)
 
 endmodule
 
@@ -373,7 +403,7 @@ module C-CPP-TYPING
      imports COMPAT-SYNTAX
      imports SETTINGS-SYNTAX
 
-     rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, Args::CPPTypes, CLinkage, _))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
+     rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes, linkage: CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, bool::CPPSimpleBoolType)) => t(Q, Mods, bool::SimpleBoolType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)

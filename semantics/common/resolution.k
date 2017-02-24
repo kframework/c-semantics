@@ -4,3 +4,7 @@ module COMMON-RESOLUTION-SYNTAX
 
      syntax KItem ::= resolveCPPReference(SymBase)
 endmodule
+
+module COMMON-RESOLUTION
+     imports COMMON-RESOLUTION-SYNTAX
+endmodule

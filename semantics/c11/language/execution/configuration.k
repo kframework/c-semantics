@@ -68,6 +68,9 @@ module C-CONFIGURATION
                               UnknownCabsLoc
                          </curr-program-loc>
 
+                         // this pointer
+                         <this> .K </this>
+
                          // stack of block-control cells
                          <block-stack color="violet"> .List </block-stack>
                          <block-control>

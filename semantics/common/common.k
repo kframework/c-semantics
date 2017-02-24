@@ -13,10 +13,10 @@ require "syntax.k"
 module COMMON
   imports BITS
   imports COMMON-BUILTIN
+  imports COMMON-RESOLUTION
   imports COMPAT
   imports ERROR
   imports COMMON-INIT
   imports MEMORY
-  imports COMMON-RESOLUTION-SYNTAX
   imports SYMLOC
 endmodule

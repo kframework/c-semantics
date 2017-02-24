@@ -126,15 +126,16 @@ module CPP-DECL-INITIALIZER
                            initList: .List,
                            initExp: E::Expr)
        => compoundInit(E, Base)
-     rule (.K => figureNarrowInit(le(Base . no-template Name(NoNNS(), F), noTrace, T), T, D, Init, Init))
+     rule (.K => figureNarrowInit(le(Base . no-template Name(C, F), noTrace, T), T, D, Init, Init))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(F:CId) => .List) FL::List,
                            initList: (ListItem(Init::Expr) => .List) _,
                            initializers: (F |-> (T::CPPType |-> _)) _,
-                           duration: D::Duration)
+                           duration: D::Duration,
+                           class: C::Class)
      rule (V:Val => .K) ~> classAggInit(... initExp: (E::Expr => compoundInit(E, V)))
 
-     rule (.K => figureInit(le(Base . no-template Name(NoNNS(), F), noTrace, T), T, D, evalBraceOrEqualInitializer(C, Base, Init)))
+     rule (.K => figureInit(le(Base . no-template Name(C, F), noTrace, T), T, D, evalBraceOrEqualInitializer(C, Base, Init)))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(F:CId) => .List) _,
                            initList: .List,

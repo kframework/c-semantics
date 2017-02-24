@@ -103,6 +103,7 @@ module CPP-ABSTRACT-SYNTAX
                     | ElaboratedTypeSpecifier(Tag, CId, NNS)
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
                     | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1)]
+                    | MethodPrototype(AType, AType) [strict]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]
                     | MemberPointerType(AType, AType) [strict]
@@ -150,6 +151,8 @@ module CPP-ABSTRACT-SYNTAX
                             | Bool() | UChar() | UShort() | UInt() | ULong() 
                             | ULongLong() | SChar() | Short() | Int() | Long()
                             | LongLong() | Float() | Double() | LongDouble()
+     
+     syntax AType ::= RefQualifier(RefQualifier, AType) [strict(2)]
 
      syntax AType ::= Qualifier(Qualifier, AType) [strict(2)]
      context Qualifier(_, HOLE:CPPTypeExpr)
@@ -186,6 +189,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr)
                    | Subscript(Expr, Expr)
                    | CallExpr(Expr, StrictList)
+                   | MethodCallExpr(Expr, Expr, StrictList) [strict(1)]
                    | Name
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)

@@ -6,6 +6,7 @@ module CPP-SORTS
      syntax Stmt ::= Block
      syntax Block
      syntax OpId
+     syntax RefQualifier
      syntax Tag
 endmodule
 
@@ -81,6 +82,8 @@ module CPP-SYNTAX
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
 
+     syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
+
      syntax TemplateKeyword ::= "template" | "no-template"
 
      syntax Expr ::= left:
@@ -88,6 +91,7 @@ module CPP-SYNTAX
                    | Expr "++" [strict]
                    | Expr "--" [strict]
                    | BuiltinCallOp(Expr, List)
+                   | BuiltinMethodCallOp(Expr, Expr, List)
                    | ReinterpretCast(AType, Expr) [strict]
                    | ConstCast(AType, Expr) [strict]
                    > right:

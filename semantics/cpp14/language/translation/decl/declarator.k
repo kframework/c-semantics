@@ -11,7 +11,7 @@ module CPP-DECL-DECLARATOR-SYNTAX
      syntax Decl ::= DeclaratorAndSpecifiers(Declarator, Set)
                     | declareObject(NNSVal, NNSVal, CId, CPPTypeExpr, Init, DeclarationType, Linkage, Duration, Set)
                     | defineObject(NNSVal, CId, CPPType, Init, DeclarationType, Duration, Set)
-                    | initializeObject(NNSVal, CId, CPPType, K, DeclarationType) [strict(4)]
+                    | initializeObject(NNSVal, CId, CPPType, init: K, DeclarationType) [strict(4)]
      syntax Declarator ::= NormalizedDecl(nns: NNS, id: CId, type: AType, init: Init, dtype: DeclarationType)
 
      syntax DeclState ::= "declared" | "completed" | "defined" | "initialized"
@@ -29,6 +29,7 @@ module CPP-DECL-DECLARATOR
      imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
@@ -39,9 +40,9 @@ module CPP-DECL-DECLARATOR
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule FunctionDecl(N::Namespace, X::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, T, NoInit(), Function(Params)) [anywhere]
-     rule VarDecl(N::Namespace, X::CId, T::CPPType, Init::Expr) => NormalizedDecl(N, X, T, Init, Var) [anywhere]
-     rule FunctionDefinition(N::Namespace, X::CId, T::CPPFunctionType, Params::List, Body::Stmt) => NormalizedDecl(N, X, T, Body, Function(Params)) [anywhere]
+     rule FunctionDecl(N::NNSVal, X::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, T, NoInit(), Function(Params)) [anywhere]
+     rule VarDecl(N::NNSVal, X::CId, T::CPPType, Init::Expr) => NormalizedDecl(N, X, T, Init, Var) [anywhere]
+     rule FunctionDefinition(N::NNSVal, X::CId, T::CPPFunctionType, Params::List, Body::Stmt) => NormalizedDecl(N, X, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
 
@@ -51,7 +52,7 @@ module CPP-DECL-DECLARATOR
      rule Specifier(Auto(), D::Decl) => D [anywhere]
      rule Specifier(Spec::Specifier, DeclaratorAndSpecifiers(D::Declarator, S::Set)) => DeclaratorAndSpecifiers(D, S SetItem(Spec)) [anywhere]
 
-     rule NormalizedDecl(N::Namespace, X::CId, T::AType, Init::Init, Type::DeclarationType) => DeclaratorAndSpecifiers(NormalizedDecl(N, X, T, Init, Type), .Set)
+     rule NormalizedDecl(N::NNSVal, X::CId, T::AType, Init::Init, Type::DeclarationType) => DeclaratorAndSpecifiers(NormalizedDecl(N, X, T, Init, Type), .Set)
 
      context DeclaratorAndSpecifiers(NormalizedDecl(... nns: HOLE:NNS), _)
              requires HOLE =/=K NoNNS()
@@ -82,6 +83,10 @@ module CPP-DECL-DECLARATOR
      rule mkQualId(N:Namespace, X::CId) => N :: X
      rule mkQualId(C:Class, X::CId) => C :: X
 
+     syntax CId ::= getId(QualId) [function]
+     rule getId(N:Namespace :: X::CId) => X
+     rule getId(C:Class :: X::CId) => X
+
      rule <k> DeclaratorAndSpecifiers(_, (S::Set => SetItem(Extern()) S)) ...</k>
           <curr-extern> true </curr-extern>
           requires notBool (Extern() in S)
@@ -89,9 +94,10 @@ module CPP-DECL-DECLARATOR
      syntax Linkage ::= getLinkage(Set, NNSVal, Scope, Quals, K, DeclarationType) [function]
                       | getNamespaceLinkage(Namespace, DeclarationType) [function]
                       | getNamespaceLinkage(Namespace) [function, klabel(getNamespaceLinkage1)]
+                      | getClassLinkage(Class) [function]
      syntax KItem ::= getPreviousLinkage(QualId, CPPType, Map, Map) [function]
      syntax Duration ::= getDuration(Set, Scope) [function]
-     syntax NNSVal ::= getInnermostNamespace(NNSVal, Scope) [function]
+     syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
 
      rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::Map) _::Map, _) => ExternalLinkage
      rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::Map) _::Map) => InternalLinkage
@@ -105,11 +111,19 @@ module CPP-DECL-DECLARATOR
           requires notBool Volatile() inQuals Q andBool Const() inQuals Q andBool notBool Extern() in S andBool notBool L ==K ExternalLinkage
      //TODO(dwightguth): 3.5:3.3
 
-     rule getLinkage(_, DeclNamespace::Namespace, _:NamespaceScope, _, _, Type::DeclarationType) => getNamespaceLinkage(DeclNamespace, Type) [owise]
+     rule getLinkage(_, DeclNamespace:Namespace, _:NamespaceScope, _, _, Type::DeclarationType) => getNamespaceLinkage(DeclNamespace, Type) [owise]
 
-     // 9.4.2:5
-     rule getLinkage(S::Set, C:Class, _, _, _, _) => ExternalLinkage
+     // 9.4.2:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     rule getLinkage(S::Set, C:Class, _, _, _, Type::DeclarationType) => getClassLinkage(C)
           requires Static() in S
+            orBool isFunctionDeclarationType(Type) 
+     rule getLinkage(_, C:Class, _, _, L:Linkage, _) => L
+
+     // 3.5:4
+     rule getClassLinkage(Parent:Namespace :: _) => getNamespaceLinkage(Parent)
+     // 3.5:5 with revision http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#1603
+     rule getClassLinkage(Parent:Class :: _) => getClassLinkage(Parent)
+     rule getClassLinkage(_:LocalQualifier :: _) => NoLinkage
 
      // 3.5:4
      rule getNamespaceLinkage(N:UnnamedNamespace) => InternalLinkage 
@@ -134,6 +148,9 @@ module CPP-DECL-DECLARATOR
      rule getDuration(_, _) => StaticStorage [owise]
 
      rule getInnermostNamespace(NoNamespace(), blockScope(N:Namespace :: _, _, _)) => N
+     rule getInnermostNamespace(NoNamespace(), blockScope((N:Namespace :: _::ClassSpecifier) :: _, _, _)) => N
+     rule getInnermostNamespace(NoNamespace(), blockScope((C:Class :: _::ClassSpecifier => C) :: _, _, _))
+     rule getInnermostNamespace(NoNamespace(), blockScope((localQual(Scope::BlockScope) :: _::ClassSpecifier) :: _, _, _) => Scope)
      rule getInnermostNamespace(N::Namespace, _) => N
           requires N =/=K NoNamespace()
 
@@ -235,6 +252,44 @@ module CPP-DECL-DECLARATOR
      rule declareObject(_, _, _, (T::CPPType => completeDeclaration(T, Init)), Init::Init, _, _, _, _)
           requires T =/=K completeDeclaration(T, Init)
 
+     // Declare static data member inside class (no definition)
+     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var, ExternalLinkage, StaticStorage, S::Set)
+              => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
+          ...</k>
+          <curr-scope> classScope(C) </curr-scope>
+          <class-id> C </class-id>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals> 
+              Exts::Map
+              => Exts[C :: X, T <- declState(bnew(!I:Int, T, S, link(Tu)), declared)]
+          </externals>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
+
+     // Declare function member inside class
+     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+              => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
+              ~> registerStaticAndVirtual(C, X, T, S)
+              ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
+          ...</k>
+          <curr-scope> classScope(C) </curr-scope>
+          <class-id> C </class-id>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <externals> 
+              Exts::Map
+              => Exts[C :: X, T <- declState(bnew(!I:Int, T, S, link(Tu)), declared)]
+          </externals>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
+           requires Type =/=K Var
+
+     // Static member declaration/definition, in the enclosing namespace.
+     rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+           => defineObject(C, X, T, Init, Type, StaticStorage, S)
+          ...</k>
+          <curr-scope> namespaceScope(N) </curr-scope>
+          requires completeDeclaration(T, Init) ==K T
+
      rule <k> (.K => deduceAuto(T, Init)) 
               ~> declareObject(_, _, _, T::CPPTypeExpr, Init::Init, _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
@@ -280,6 +335,22 @@ module CPP-DECL-DECLARATOR
                    T, StaticStorage, Init), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
+     // Static data member definition
+     rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Var, StaticStorage, S::Set)
+          => initializeObject(C, X, T, figureInit(
+                   allocateDecl(C :: X, T, StaticStorage, S),
+                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init)), Var)
+          requires Init =/=K NoInit()
+           andBool isCompleteType(T)
+
+     // Function member definition
+     rule defineObject(C:Class, X::CId, T::CPPType, Init::Init, Type:FunctionDeclarationType, StaticStorage, S::Set)
+          => initializeObject(C, X, T, figureInit(
+                   allocateDecl(C :: X, T, StaticStorage, S),
+                   T, StaticStorage,  Init), Type)
+          requires Init =/=K NoInit()
+           andBool isCompleteType(T)
+
      syntax Decl ::= defineLocalStaticObject(CId, SymBase, CPPType, Init, DeclarationType, Set)
      rule <k> defineLocalStaticObject(X::CId, Base::SymBase, T::CPPType, Init::Init, Type::DeclarationType, S::Set)
           => addToEnv(NoNamespace() :: X, T, Base, false)
@@ -306,26 +377,39 @@ module CPP-DECL-DECLARATOR
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
 
-     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
-              => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
-              ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
+     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set)
+              => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
+              ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
+              ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <cenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</cenv>
+          <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
+          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
+          <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
+          requires isLinkerLoc(Base)
+
+     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
+              => initFunction(Base, functionObject(mkQualId(N,X), T, .List, GotoStmt(funLabel(X))))
+              ~> processFunDef(Base, mkQualId(N, X), T, Params, Body) ...</k>
 
      syntax KItem ::= initFunction(SymBase, K)
 
      rule <k> initFunction(Base::SymBase, Val:K) => .K ...</k>
           <functions> F::Map => F[Base <- Val] </functions>
 
-     rule <k> processFunDef(Base::SymBase, N::Namespace :: X::CId, T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
-              => scope(blockScope(N :: X, Base, 0),
-                   elaborateTemplateBody(dummyBind(Params) ~> getFunDefBody(I, N :: X, T, Body))
+     rule <k> processFunDef(Base::SymBase, QX::QualId, T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
+              => scope(blockScope(QX, Base, 0),
+                   elaborateTemplateBody(dummyBind(Params) ~> getFunDefBody(I, QX, T, Body))
                    ~> calculateGotoMap)
           ...</k>
           <curr-function> _ => Base </curr-function>
           <curr-template-context> I::TemplateInfo </curr-template-context>
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
      syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionTypeExpr, Stmt) [function]
-     rule getFunDefBody(noTemplate, N::Namespace :: X::CId, T::CPPFunctionTypeExpr, Body::Stmt)
-          => LabelStmt(funLabel(X), ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(N :: X, getReturnType(T)))))
+     rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
+          => LabelStmt(funLabel(getId(QX)), ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
 
      syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
@@ -348,13 +432,13 @@ module CPP-DECL-DECLARATOR
           <curr-template-context> noTemplate </curr-template-context>
 
 
-     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, Init:Val, Var)
+     rule <k> initializeObject(... init: Init:Val)
               => runInit(stripInitHolds(Init))
           ...</k>
           requires isStaticInitialization(Init)
 
      // TODO(dwightguth): wrap in try-block and call std::terminate in catch
-     rule <k> initializeObject(N::Namespace, X::CId, T::CPPType, Init:Val, Var) => .K ...</k>
+     rule <k> initializeObject(... init: Init:Val) => .K ...</k>
           <dynamic-init>... .K => ExpressionStmt(Init) </dynamic-init>
           requires notBool isStaticInitialization(Init)
 

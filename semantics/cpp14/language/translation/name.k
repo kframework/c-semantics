@@ -1,6 +1,7 @@
 module CPP-TRANSLATION-NAME-SYNTAX
-     imports CPP-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
+     imports BOOL
+     imports CPP-SORTS
+     imports COMMON-SORTS
 
      syntax Expr ::= nameLookupInNamespace(CId, Namespace, Tag, isnns: Bool)
      syntax Expr ::= nameLookup(CId, Tag, isnns: Bool)
@@ -10,6 +11,8 @@ module CPP-TRANSLATION-NAME
      imports CPP-TRANSLATION-NAME-SYNTAX
      imports COLLECTIONS
      imports COMPAT-SYNTAX
+     imports CPP-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
@@ -177,11 +180,22 @@ module CPP-TRANSLATION-NAME
      rule CallExpr(Name(NoNNS(), X::CId), Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag(), false))
      rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-     rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N::NNS, X::CId), _)
-          requires N =/=K NoNNS()
-     rule cSet(Y::Map) ~> CallExpr(Name(N::NNS, X::CId), Args::StrictList)
+     context CallExpr(Name(HOLE:NNS, _), _)
+             requires HOLE =/=K NoNNS()
+             [result(NNSVal)]
+     rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _)
+     rule cSet(Y::Map) ~> CallExpr(Name(N:Namespace, X::CId), Args::StrictList)
           => resolveOverload(cSet(Y), Args, Args, Args, X, operator())
-          requires N =/=K NoNNS()
+
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Obj::Expr . no-template _, list(Args::List))
+          => resolveOverload(classSet(C, X, Y), list(ListItem(Obj) Args), list(ListItem(Obj) Args), list(ListItem(Obj) Args), X, operator())
+
+     rule classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Name(_, _), list(Args::List))
+          => resolveOverload(classSet(C, X, Y), list(ListItem(impliedObjArg(C)) Args), list(ListItem(impliedObjArg(C)) Args), list(ListItem(impliedObjArg(C)) Args), X, operator())
+
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (classSet(C::Class, _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
      syntax Bool ::= isQualifiedName(Expr)
      rule isQualifiedName(Name(N::NNS, _)) => true

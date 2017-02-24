@@ -1,5 +1,6 @@
 module CPP-EXPR-CONDITIONAL
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-TYPING-SYNTAX
      imports CPP-SYNTAX
 
      context ConditionalOp((HOLE:Expr => reval(HOLE)), _, _, _, _) [result(PRVal)]
@@ -11,8 +12,5 @@ module CPP-EXPR-CONDITIONAL
           => setType(T, E)
      rule ConditionalOp(prv(1, _, _), E::Expr, _, lvalue, T::CPPType)
           => setType(T, E)
-
-     syntax Expr ::= setType(CPPType, Expr) [strict]
-     rule setType(T::CPPType, lv(Loc::SymLoc, Tr::Trace, _)) => lv(Loc, Tr, T)
 
 endmodule

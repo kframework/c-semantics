@@ -1,10 +1,15 @@
 module CPP-DECL-CLASS-SYNTAX
      imports BOOL-SYNTAX
      imports LIST
+     imports SET
      imports COMMON-SORTS
      imports CPP-SORTS
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPING-SORTS
      syntax AType ::= declareClassName(Tag, CId, Bool)
      syntax KItem ::= classContext(AType, List) [strict(1)]
+                    | registerStaticAndVirtual(Class, CId, CPPType, Set)
+     syntax ValResult ::= noObject()
 endmodule
 
 module CPP-DECL-CLASS
@@ -13,9 +18,9 @@ module CPP-DECL-CLASS
      imports K-REFLECTION
      imports MAP
      imports COMMON-SYNTAX
-     imports COMMON-RESOLUTION-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -24,8 +29,6 @@ module CPP-DECL-CLASS
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
-     imports CPP-ALIGNMENT
-     imports CPP-DECL-DECLARATOR
 
      rule TypeDecl(ElaboratedTypeSpecifier(T:ClassKey, X::CId, NoNNS()) => declareClassName(T, X, true))
 
@@ -96,6 +99,21 @@ module CPP-DECL-CLASS
           ...</class>
           requires notBool (X in_keys(CE))
 
+     rule <k> registerStaticAndVirtual(C::Class, X::CId, T:CPPFunctionType, 
+                       (SetItem(Virtual()) => .Set) _)
+          ...</k>
+          <class-id> C </class-id>
+          <virtual-function-members>... .Set => SetItem(kpair(X,T)) ...</virtual-function-members>
+     rule <k> registerStaticAndVirtual(C::Class, X::CId, T:CPPFunctionType, 
+                       (SetItem(Static()) => .Set) _)
+          ...</k>
+          <class-id> C </class-id>
+          <static-function-members>... .Set => SetItem(kpair(X,T)) ...</static-function-members>
+     rule registerStaticAndVirtual(_, _, T::CPPType, _) => .K
+          requires notBool isCPPFunctionType(T)
+     rule registerStaticAndVirtual(_, _, _, S::Set) => .K
+          requires notBool Virtual() in S andBool notBool Static() in S
+
      rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
           <curr-scope> classScope(C::Class) </curr-scope>
           <class>...
@@ -136,46 +154,6 @@ module CPP-DECL-CLASS
      // boundary have 1-bit alignment (no padding).
 //     rule pad(V::Int, _) => V [owise]
 
-
-     // Declare static member inside class (no definition)
-     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var, ExternalLinkage, StaticStorage, S::Set)
-              => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
-          ...</k>
-          <curr-scope> classScope(C) </curr-scope>
-          <class-id> C </class-id>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
-
-     syntax ValResult ::= noObject()
-
-     // Static data member definition, in the enclosing namespace.
-     rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Var, ExternalLinkage, StaticStorage, S::Set)
-           => defineObject(C, X, T, Init, Var, StaticStorage, S)
-          ...</k>
-          <curr-scope> namespaceScope(N) </curr-scope>
-          requires completeDeclaration(T, Init) ==K T
-
-     rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Type::DeclarationType, StaticStorage, S::Set)
-          => initializeObject(C, X, T, figureInit(
-                   allocateDecl(C :: X, T, StaticStorage, S),
-                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init)), Type)
-          requires notBool (Init ==K NoInit() andBool isCPPFunctionType(T)) andBool isCompleteType(T)
-
-     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set)
-              => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
-              ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
-              ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</cenv>
-          <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
-          <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
-          <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
-          requires isLinkerLoc(Base)
-
-
      // brace-or-equal initializers need to be evalauted in class scope
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
      rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
@@ -209,28 +187,4 @@ module CPP-DECL-CLASS
           <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
-
-
-     // Linking resolution for static class members
-     rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
-          <odr-decls>...
-               OdrBase |-> (SetItem(ktriple(Tu::String, C:Class :: X::CId, T:K)) => .Set) _::Set
-          ...</odr-decls>
-          <odr-defs>... C :: X |-> (T |-> Base'::SymBase _::Map) ...</odr-defs>
-          <tu-id> Tu </tu-id>
-          <class-id> C </class-id>
-          <cenv>... X |-> (T |-> kpair(_, (Base::SymBase => Base')) _::Map) ...</cenv>
-          <linkings>... (.Map => Base |-> Base') ...</linkings>
-          requires isLinkerLoc(Base)
-
-     rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
-          <odr-decls>...
-               OdrBase |-> (SetItem(ktriple(Tu::String, C:Class :: X::CId, T:K)) => .Set) _::Set
-          ...</odr-decls>
-          <odr-defs>... C :: X |-> (T |-> _ _::Map) ...</odr-defs>
-          <tu-id> Tu </tu-id>
-          <class-id> C </class-id>
-          <cenv>... X |-> (T |-> kpair(_, Base::SymBase) _::Map) ...</cenv>
-          requires notBool isLinkerLoc(Base)
-
 endmodule

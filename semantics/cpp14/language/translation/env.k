@@ -54,6 +54,13 @@ module CPP-ENV
          <env> NE::Map => NE[X <- T |-> kpair(IsUsing, Base)] </env>
          requires notBool isCPPFunctionType(T)
 
+    rule <k> addToEnv(C:Class :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
+             => .K
+         ...</k>
+         <class-id> C </class-id>
+         <cenv> CE::Map => CE[X, T <- kpair(IsUsing, Base)] </cenv>
+         requires isCPPFunctionType(T)
+
     rule <k> addToEnv(C:Class :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>

@@ -75,7 +75,8 @@ module CPP-TYPING-EXPR
      rule typeof(NullPointerLiteral() => type(nullptr_t))
      context typeof(HOLE:TypeExpr)
              requires getKLabel(HOLE) ==K #klabel(`Name`)
-                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`) //[result(Val)]
+                  orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
+                  orBool getKLabel(HOLE) ==K #klabel(`MethodCallExpr`)
                   orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
      rule typeof(T:Typed => type(T))
 

@@ -480,6 +480,12 @@ public:
       if (Ctor->isExplicitSpecified()) {
         AddSpecifier("Explicit");
       }
+    } else if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
+      if (Method->isInstance()) {
+        if (Method->isVirtual()) { 
+          AddSpecifier("Virtual");
+        }
+      }
     }
 
     if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
@@ -509,6 +515,21 @@ public:
     TRY_TO(TraverseDeclarationNameInfo(D->getNameInfo()));
   
     if (TypeSourceInfo *TSI = D->getTypeSourceInfo()) {
+      if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
+        if (Method->isInstance()) {
+          switch(Method->getRefQualifier()) {
+            case RQ_LValue:
+            AddKApplyNode("RefQualifier",2);
+            AddKApplyNode("RefLValue", 0);
+            break;
+            case RQ_RValue:
+            AddKApplyNode("RefQualifier",2);
+            AddKApplyNode("RefRValue", 0);
+          }
+          AddKApplyNode("MethodPrototype", 2);
+          TRY_TO(TraverseType(Method->getThisType(*Context)));
+        }
+      }
       TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));
     } else {
       doThrow("something implicit in functions??");

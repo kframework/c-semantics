@@ -9,6 +9,9 @@ module CPP-OVERLOADING-SYNTAX
 
      syntax Expr ::= wrapInThis(TypeExpr) [strict]
 
+     syntax ImpliedObjArg ::= impliedObjArg(Class)
+     syntax Expr ::= ImpliedObjArg
+
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, StrictList, StrictList, CId, CId)
      syntax Expr ::= resolveUniqueDecl(K, Expr) [strict(1)]
      syntax Expr ::= cSetUnion(K, K) [strict]
@@ -33,6 +36,7 @@ module CPP-OVERLOADING
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
      imports CPP-CLASS-SYNTAX
+     imports CPP-DECL-CLASS-SYNTAX
 
      rule cSetUnion(notFound(_), E::Expr) => E
      rule cSetUnion(E::Expr, notFound(_)) => E
@@ -144,7 +148,25 @@ module CPP-OVERLOADING
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
 
-     rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
+     // no overloading -- static-method
+     rule <k> resolveOverload(classSet(C::Class, X::CId, T::CPPType |-> kpair(_, Base::SymBase)), list(ListItem(impliedObjArg(_)) Args::List), _, _, _, operator()) 
+              => CallExpr(lv(lnew(Base), hasTrace(Name(C, X)), T), list(Args)) ...</k>
+          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+          requires notBool isCPPClassType(T)
+               andBool Base =/=K nonStatic
+
+     // no overloading -- non-static-method
+     rule <k> resolveOverload(classSet(C::Class, X::CId, T::CPPFunctionType |-> kpair(_, Base::SymBase)), list(ListItem(Obj::Expr) Args::List), _, _, _, operator()) 
+              => MethodCallExpr(& Obj, lv(lnew(Base), hasTrace(Name(C, X)), T), list(Args)) ...</k>
+          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+          <class-id> C </class-id>
+          <virtual-function-members> S::Set </virtual-function-members>
+          requires notBool isCPPClassType(T)
+               andBool Base =/=K nonStatic
+               andBool notBool isImpliedObjArg(Obj)
+               andBool notBool (kpair(X,T) in S)
+
+      rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
      rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
@@ -182,7 +204,7 @@ module CPP-OVERLOADING
           requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
 
-     rule resolveUniqueDecl(wrapInThis(classSet(_, X::CId, T::CPPType |-> classOffset(_))), E::Expr) => le(This() . no-template Name(NoNNS(), X), hasTrace(E), T)
+     rule resolveUniqueDecl(wrapInThis(classSet(C::Class, X::CId, T::CPPType |-> classOffset(_))), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
      rule resolveUniqueDecl(wrapInThis(classSet(_, _, (_ |-> kpair(_, _)) #as S::Map)) => cSet(S), _)
      rule resolveUniqueDecl(classSet(C::Class, X::CId, T::CPPType |-> _:ClassOffset), E::Expr)
        => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
@@ -198,4 +220,29 @@ module CPP-OVERLOADING
           requires notBool isCandidateSet(V)
 
      rule wrapInThis(T:CPPType) => T
+     rule catof(impliedObjArg(_) => prvalue)
+     rule <k> typeof(impliedObjArg(C::Class) 
+                  => #if isBaseClassOf(C, C') andBool notBool kpair(X, T) in S
+                     #then t(getCVSQuals(T), .Set, classType(C'))
+                     #else t(noQuals, .Set, classType(C))
+                     #fi)
+          ...</k>
+          <curr-scope> blockScope(C'::Class :: X::CId, Base::SymBase, _) </curr-scope>
+          <class-id> C' </class-id>
+          <cenv>... X |-> ((T:CPPFunctionType |-> kpair(_, Base)) _::Map) ...</cenv>
+          <static-function-members> S::Set </static-function-members>
+
+     rule <k> typeof(impliedObjArg(C::Class) 
+                  => t(noQuals, .Set, classType(C)))
+          ...</k>
+          <curr-scope> blockScope(N::Namespace :: X::CId, _, _) </curr-scope>
+
+     rule <k> typeof(impliedObjArg(C::Class) 
+                  => t(noQuals, .Set, classType(C)))
+          ...</k>
+          <curr-scope> Scope::Scope </curr-scope>
+          requires notBool isBlockScope(Scope)
+
+
+
 endmodule

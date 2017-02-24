@@ -8,14 +8,21 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(V:K, Tr::Trace, t(Q::Quals, S::Set, functionType(T::CPPType, P::CPPTypes, L::LanguageLinkage, E::ExceptionSet))), list(A::List))
-          => elabCall(Lbl(V, Tr, t(Q, S, functionType(T, P, L, E))), A, T, list(bindParams(toList(P), A)))
+     rule CallExpr(Lbl:KLabel(_::K, _::K, t(_, _, functionType(... returnType: T::CPPType, paramTypes: P::CPPTypes))) #as V::Val, list(A::List))
+          => elabCall(V, A, T, list(bindParams(toList(P), A)))
+          requires isLKLabel(#klabel(Lbl))
+
+     rule MethodCallExpr(Obj:Val, Lbl:KLabel(_::K, _::K, t(_, _, functionType(... returnType: T::CPPType, paramTypes: P::CPPTypes))) #as V::Val, list(A::List))
+          => elabMethodCall(Obj, V, A, T, list(bindParams(toList(P), A)))
           requires isLKLabel(#klabel(Lbl))
 
      syntax KItem ::= elabCall(Val, List, CPPType, StrictList) [strict(4)]
-
      rule elabCall(Fun::Val, Args::List, T::CPPType, krlist(Temps::List))
           => makeCall(BuiltinCallOp(Fun, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
+
+     syntax KItem ::= elabMethodCall(Expr, Val, List, CPPType, StrictList) [strict(5)]
+     rule elabMethodCall(Obj::Expr, Fun::Val, Args::List, T::CPPType, krlist(Temps::List))
+          => makeCall(BuiltinMethodCallOp(Obj, Fun, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
 
      syntax TExpr ::= makeCall(Expr, Trace, CPPType) [function]
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => le(E, Tr, T)

@@ -100,7 +100,7 @@ module C-ALIGNMENT
      rule hasAlignasMod(_) => false [owise]
 
      rule getAlign(NullPointer) => cfg:alignofMalloc
-     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration)
+     rule getAlign(Loc::SymLoc) => getAlign'(base(Loc), offset(Loc), #configuration) [owise]
      syntax Int ::= "getAlign'" "(" SymBase "," Int "," K ")" [function]
 
      rule getAlign'(obj(... align: 0), _, _) => 0

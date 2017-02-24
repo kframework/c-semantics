@@ -11,7 +11,7 @@ module CPP-TYPING-DEPENDENT
      rule areDependentInScope(T::CPPTypeExprs) => #areDependentInScope(T, #configuration)
      rule #isDependentInScope(T:CPPDType, _) => false
      rule #isDependentInScope(t(_, _, classType(_ :: Class(_, _, L::TemplateParams))), Config:K) => #areDependentInScope(L, Config)
-     rule #isDependentInScope(t(_, _, functionType(T::CPPTypeExpr, L::CPPTypeExprs, _, _)), Config:K) => #isDependentInScope(T, Config) orBool #areDependentInScope(L, Config)
+     rule #isDependentInScope(t(_, _, functionType(... returnType: T::CPPTypeExpr, paramTypes: L::CPPTypeExprs)), Config:K) => #isDependentInScope(T, Config) orBool #areDependentInScope(L, Config)
      rule #isDependentInScope(t(_, _, pointerType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
      rule #isDependentInScope(t(_, _, lvRefType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
      rule #isDependentInScope(t(_, _, rvRefType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
@@ -26,7 +26,7 @@ module CPP-TYPING-DEPENDENT
 
      rule isAuto(T:CPPDType) => false
      rule isAuto(t(_, _, classType(_ :: Class(_, _, L::TemplateParams)))) => areAuto(L)
-     rule isAuto(t(_, _, functionType(T::CPPTypeExpr, L::CPPTypeExprs, _, _))) => isAuto(T) orBool areAuto(L)
+     rule isAuto(t(_, _, functionType(... returnType: T::CPPTypeExpr, paramTypes: L::CPPTypeExprs))) => isAuto(T) orBool areAuto(L)
      rule isAuto(t(_, _, pointerType(T::CPPTypeExpr))) => isAuto(T)
      rule isAuto(t(_, _, lvRefType(T::CPPTypeExpr))) => isAuto(T)
      rule isAuto(t(_, _, rvRefType(T::CPPTypeExpr))) => isAuto(T)
