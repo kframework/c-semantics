@@ -151,9 +151,9 @@ module CPP-SYNTAX
                    | Expr "<<=" Init [strict(1)]
                    | Expr ">>=" Init [strict(1)]
                    | ConditionalOp(Expr, Expr, Expr, ValueCategory, CPPType)
-                   | Throw(Expr)
+                   | ThrowOp(Expr) [strict]
                    > left:
-                     Comma(Expr, Expr)
+                     Comma(Expr, Expr) [strict(1)]
      syntax Name ::= Name(NNS, CId)
                    | Name(NNS, CId, List)
 

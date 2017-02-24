@@ -1,3 +1,4 @@
+require "alignment.k"
 require "bits.k"
 require "builtin.k"
 require "compat.k"
@@ -11,6 +12,7 @@ require "symloc.k"
 require "syntax.k"
 
 module COMMON
+  imports ALIGNMENT
   imports BITS
   imports COMMON-BUILTIN
   imports COMMON-RESOLUTION

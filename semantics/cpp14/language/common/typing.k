@@ -335,6 +335,8 @@ module CPP-TYPING
           => I <=Int max(T) andBool I >=Int min(T)
      rule inRange(F:Float, T::CPPFloatingType)
           => F <=Float fmax(T) andBool F >=Float fmin(T)
+     rule inRange(Loc:SymLoc, T::CPPIntegerType)
+          => byteSizeofType(T) >=Int cfg:ptrsize
 
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, signed-char))
           => t(Q, Mods, unsigned-char)

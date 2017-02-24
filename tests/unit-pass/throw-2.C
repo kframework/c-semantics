@@ -18,12 +18,10 @@ void bar()
         i=j=k=0;
   	for (i=0; i < global; i++)
 	  for (j=0; j < i; j++)
-	    {
-	      global2 = k;
-	      throw 0;
-	    }
-	if (check_int ((int *) &a,  __alignof__(a)) != a)
+     		global2 = k;
+	if (check_int ((int *) &a,  __alignof__(a)) != 20)
 	  abort ();
+	throw 0;
 }
 
 int main()

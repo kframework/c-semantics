@@ -113,6 +113,8 @@ module C-CONFIGURATION
                               .Set
                          </locs-written>
 
+                         <uncaught-exception> true </uncaught-exception>
+
                          // stdarg
                          <live-va-lists> .Set </live-va-lists>
 

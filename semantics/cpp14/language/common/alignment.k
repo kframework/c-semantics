@@ -2,9 +2,9 @@ module CPP-ALIGNMENT-SYNTAX
      imports SET
      imports SYMLOC-SORTS
      imports CPP-TYPING-SORTS
+     imports ALIGNMENT-SYNTAX
 
-     syntax Int ::= getAlign(SymLoc) [function, klabel(getAlignCpp)]
-                  | getAlignas(CPPType, Set) [function, klabel(getAlignasCpp)]
+     syntax Int ::= getAlignas(CPPType, Set) [function, klabel(getAlignasCpp)]
 
      syntax Int ::= byteAlignofType(CPPType) [function, klabel(byteAlignofTypeCpp)]
 
@@ -56,4 +56,5 @@ module CPP-ALIGNMENT
      rule byteAlignofType(T:CPPSimpleWideCharType) => byteAlignofType(underlyingType(T))
      rule byteAlignofType(functionType(...)) => 0
      rule byteAlignofType(no-type) => cfg:alignofMalloc
+
 endmodule

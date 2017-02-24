@@ -11,6 +11,8 @@ module CPP-SETTINGS-SYNTAX
      syntax Int ::= "cfg:alignofReference" [function]
      syntax Int ::= "cfg:alignofNullPtrT" [function]
 
+     syntax Bool ::= "cfg:unwindBeforeTerminate" [function]
+
      syntax CPPValue ::= "cfg:intToPointer" "(" CPPValue "," CPPType ")" [function]
      syntax CPPValue ::= "cfg:pointerToInt" "(" CPPValue "," CPPType ")" [function]
 endmodule

@@ -17,6 +17,7 @@ module CPP-STMT-BLOCK
           <curr-scope> blockScope(F::QualId, Base::SymBase, (_ => Tag)) </curr-scope>
           <block-control>
                C::Bag
+               <catch-handlers> Catch::List => .List </catch-handlers>
                <local-vars> Vars::List => .List </local-vars>
                <local-addresses> Addresses::Set => .Set </local-addresses>
                <nesting-depth> N::Int => N +Int 1 </nesting-depth>
@@ -24,6 +25,7 @@ module CPP-STMT-BLOCK
           <block-stack> .List
                => ListItem(<block-control>
                     C
+                    <catch-handlers> Catch </catch-handlers>
                     <local-vars> Vars </local-vars>
                     <local-addresses> Addresses </local-addresses>
                     <nesting-depth> N </nesting-depth>

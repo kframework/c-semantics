@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-skip-if "Stack alignment is too small" { hppa*-*-hpux* } "*" "" } */
 
 #include "check.h"
 
@@ -14,23 +13,14 @@ int global, global2;
 void bar()
 {
 	volatile t_align a = 1;
-        int i,j,k,l,m,n;
+        int i,j,k;
         i=j=k=0;
   	for (i=0; i < global; i++)
 	  for (j=0; j < i; j++)
-	  for (k=0; k < j; k++)
-	  for (l=0; l < k; l++)
-	  for (m=0; m < l; m++)
-	  for (n=0; n < m; n++)
      		global2 = k;
-	if (check_int ((int *) &a,  __alignof__(a)) != a)
-	  abort ();
 	throw 0;
-}
-
-void foo()
-{
-	bar();
+	if (check_int ((int *) &a,  __alignof__(a)) != 20)
+	  abort ();
 }
 
 int main()
@@ -45,7 +35,7 @@ int main()
 	  for (; m < l; m++)
 	  for (; n < m; n++)
      		global2 = k;
-	  foo();
+	  bar ();
 	}
 	catch (...)
 	{

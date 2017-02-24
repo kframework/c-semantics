@@ -8,6 +8,7 @@ require "decl/declarator.k"
 require "decl/initializer.k"
 
 require "expr/assignment.k"
+require "expr/comma.k"
 require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/inc-and-dec.k"
@@ -41,6 +42,7 @@ module CPP-EXECUTION
      imports CPP-DECL-INITIALIZER
 
      imports CPP-EXPR-ASSIGNMENT
+     imports CPP-EXPR-COMMA
      imports CPP-EXPR-CONDITIONAL
      imports CPP-EXPR-FUNCTION-CALL
      imports CPP-EXPR-INC-AND-DEC

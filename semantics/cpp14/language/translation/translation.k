@@ -27,6 +27,7 @@ require "expr/alignof.k"
 require "expr/assignment.k"
 require "expr/bitwise.k"
 require "expr/cast.k"
+require "expr/comma.k"
 require "expr/conditional.k"
 require "expr/function-call.k"
 require "expr/eval.k"
@@ -39,7 +40,6 @@ require "expr/new.k"
 require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sizeof.k"
-require "expr/throw.k"
 require "expr/unary.k"
 
 require "stmt/block.k"
@@ -87,6 +87,7 @@ module CPP-TRANSLATION
      imports CPP-EXPR-ASSIGNMENT
      imports CPP-TRANSLATION-EXPR-BITWISE
      imports CPP-TRANSLATION-EXPR-CAST
+     imports CPP-EXPR-COMMA
      imports CPP-EXPR-CONDITIONAL
      imports CPP-TRANSLATION-EXPR-EVAL
      imports CPP-EXPR-FUNCTION-CALL
@@ -99,7 +100,6 @@ module CPP-TRANSLATION
      imports CPP-EXPR-REFERENCE
      imports CPP-TRANSLATION-EXPR-RELATIONAL
      imports CPP-EXPR-SIZEOF
-     imports CPP-EXPR-THROW
      imports CPP-TRANSLATION-EXPR-UNARY
 
      imports CPP-STMT-BLOCK

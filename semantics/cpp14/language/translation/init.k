@@ -83,7 +83,7 @@ module CPP-TRANSLATION-INIT
      // we use the empty modifier set because this is a function and can't really
      // have an alignment anyway since it's not an object.
      rule <k> addBuiltin(Q::QualId, T:CPPFunctionType, AddAll:Bool)
-              => declareBuiltinFunction(Q, T, linc(T, .Set, static(Tu))) ...</k>
+              => declareBuiltinFunction(Q, T, linc(T, .Set, builtinSymbol(signatureToString(Q, T)))) ...</k>
           <odr-defs> Defs:Map </odr-defs>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>

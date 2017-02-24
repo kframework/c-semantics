@@ -216,6 +216,7 @@ module CPP-ABSTRACT-SYNTAX
                    | FloatingLiteral(Float, AType) [strict(2)]
                    | NullPointerLiteral()
                    | BoolLiteral(Bool)
+                   | Throw(AExpr)
 
      context IntegerLiteral(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
