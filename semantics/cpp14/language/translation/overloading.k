@@ -37,6 +37,7 @@ module CPP-OVERLOADING
      imports CPP-VALUE-CATEGORY-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
+     imports ERROR-SYNTAX
 
      rule cSetUnion(notFound(_), E::Expr) => E
      rule cSetUnion(E::Expr, notFound(_)) => E
@@ -218,6 +219,8 @@ module CPP-OVERLOADING
 
      rule resolveUniqueDecl(V:KResult, _) => V
           requires notBool isCandidateSet(V)
+
+     rule resolveUniqueDecl(notFound(_) => ILL("", "name not found"), _)
 
      rule wrapInThis(T:CPPType) => T
      rule catof(impliedObjArg(_) => prvalue)
