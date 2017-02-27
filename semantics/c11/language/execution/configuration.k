@@ -100,6 +100,7 @@ module C-CONFIGURATION
                               // used to store the catch handlers if this
                               // block is a try block in C++
                               <catch-handlers> .List </catch-handlers>
+                              <current-exception> .K </current-exception>
                          </block-control>
 
                          // used to control initialization when gotoing
@@ -113,7 +114,7 @@ module C-CONFIGURATION
                               .Set
                          </locs-written>
 
-                         <uncaught-exception> true </uncaught-exception>
+                         <uncaught-exception> false </uncaught-exception>
 
                          // stdarg
                          <live-va-lists> .Set </live-va-lists>

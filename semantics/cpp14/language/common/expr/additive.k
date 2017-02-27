@@ -1,5 +1,6 @@
 module CPP-EXPR-ADDITIVE
      imports BOOL
+     imports FLOAT
      imports INT
      imports STRING
      imports CPP-BITSIZE-SYNTAX
@@ -58,9 +59,18 @@ module CPP-EXPR-ADDITIVE
           => arithInterpret(T1, I1 +Int I2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
           requires isPromoted(T1) andBool T1 ==Type T2
 
+     rule prv(F1:Float, Tr1::Trace, T1:CPPFloatingType) + prv(F2:Float, Tr2::Trace, T2:CPPFloatingType)
+          => arithInterpret(T1, F1 +Float F2, combine(Tr1, Tr2, #klabel(`_+__CPP-SYNTAX`)))
+          requires isPromoted(T1) andBool T1 ==Type T2
+
      rule prv(I1:Int, Tr1::Trace, T1:CPPIntegerType) - prv(I2:Int, Tr2::Trace, T2:CPPIntegerType)
           => arithInterpret(T1, I1 -Int I2, combine(Tr1, Tr2, #klabel(`_-__CPP-SYNTAX`)))
           requires isPromoted(T1) andBool T1 ==Type T2
+
+     rule prv(F1:Float, Tr1::Trace, T1:CPPFloatingType) - prv(F2:Float, Tr2::Trace, T2:CPPFloatingType)
+          => arithInterpret(T1, F1 -Float F2, combine(Tr1, Tr2, #klabel(`_-__CPP-SYNTAX`)))
+          requires isPromoted(T1) andBool T1 ==Type T2
+
 
      rule L:LVal [ R:Val ] => * (L + R)
      rule L:Val [ R:Val ] => * (L + R)

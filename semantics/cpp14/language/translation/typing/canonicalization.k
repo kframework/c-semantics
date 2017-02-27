@@ -1,5 +1,6 @@
 module CPP-TYPING-CANONICALIZATION
      imports C-CONFIGURATION
+     imports COLLECTIONS
      imports K-REFLECTION
      imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
@@ -48,8 +49,14 @@ module CPP-TYPING-CANONICALIZATION
 
      rule MethodPrototype(t(_, _, pointerType(t(CVS::Quals, _, _))), T:CPPFunctionType) => setCVSQuals(T, CVS)
 
-     rule ThrowSpec(krlist(.List)) => exSet(.Set)
+     rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
      rule NoExceptionSpec() => noexcept(false)
+
+     syntax List ::= adjustExcTypes(List) [function]
+     rule adjustExcTypes(ListItem(T:CPPArrayType) L::List) => ListItem(type(pointerType(innerType(T)))) adjustExcTypes(L)
+     rule adjustExcTypes(ListItem(T:CPPFunctionType) L::List) => ListItem(type(pointerType(T))) adjustExcTypes(L)
+     rule adjustExcTypes(ListItem(T::CPPType) L::List) => ListItem(utype(T)) adjustExcTypes(L) [owise]
+     rule adjustExcTypes(.List) => .List
 
      rule QualifiedTypeName(NoTag(), N::NNS, Name(NoNNS(), X::CId))
           => Name(N, X)

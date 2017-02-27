@@ -17,6 +17,7 @@ module CPP-EXECUTION-INIT
                => K ~> reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
+          <uncaught-exception> _ => true </uncaught-exception>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> GlobalNamespace() </ns-id>

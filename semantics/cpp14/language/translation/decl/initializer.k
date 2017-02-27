@@ -5,7 +5,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= figureInit(Expr, CPPTypeExpr, Duration, Init)
+     syntax Expr ::= figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, init: Init)
      syntax Expr ::= valueInit(LVal, CPPType)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
@@ -30,14 +30,15 @@ module CPP-DECL-INITIALIZER
      imports CPP-VALUE-CATEGORY-SYNTAX
 
      rule figureInit(Base::Expr, DestT::CPPTypeExpr, Duration::Duration, Init::Init) => #figureInit(Base, DestT, Duration, Init, Init, Init)
-     syntax Expr ::= #figureInit(Expr, CPPTypeExpr, Duration, Init, K, K)
+     syntax Expr ::= #figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, init: Init, srcT: K, srcCat: K)
 
-     context #figureInit(HOLE:Expr, _, _, _, _, _) [result(LVal)]
+     context #figureInit(... base: HOLE:Expr) [result(LVal)]
 
-     context #figureInit(_, _, _, _, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPType)]
-     context #figureInit(_, _, _, _, _, (HOLE:CatExpr => catof(HOLE))) [result(ValueCategory)]
+     context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
 
-     rule <k> #figureInit(_, _, _, (ExprLoc(L::CabsLoc, I::Init) => I), _, _) ...</k>
+     context #figureInit(... srcCat: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
+
+     rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
 
      // expression initializer, non-class type
@@ -85,7 +86,7 @@ module CPP-DECL-INITIALIZER
                orBool simpleType(innerType(DestT)) ==K char16_t
                orBool simpleType(innerType(DestT)) ==K char32_t
 
-     rule #figureInit(lv(loc(Base::SymBase, _), _, _), _, _, S:Stmt, _, _)
+     rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)
           => functionDef(Base, S)
 
      syntax KItem ::= listInit(LVal, CPPType, Duration, List)

@@ -24,7 +24,7 @@ module CPP-STMT-CANONICALIZATION
 
       rule TryAStmt(S:Block, L::List) => TryStmt(canonicalizeAStmt(S), canonicalizeAStmts(L)) [anywhere]
       rule CatchAStmt(D:Decl, S:Block) => CatchStmt(D, canonicalizeAStmt(S)) [anywhere]
-      rule CatchAStmt(Ellipsis(), S:Block) => CatchAnyStmt(canonicalizeAStmt(S)) [anywhere]
+      rule CatchAStmt(Ellipsis(), S:Block) => CatchAnyOp(canonicalizeAStmt(S)) [anywhere]
 
       syntax List ::= canonicalizeAStmts(List) [function]
       rule canonicalizeAStmts(ListItem(E:Expr) L::List) => ListItem(ExpressionStmt(E)) canonicalizeAStmts(L)

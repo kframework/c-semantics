@@ -255,7 +255,7 @@ module CPP-CONVERSION
      rule usualArithmeticConversions(t(_, _, T::CPPSimpleType), t(_, _, float)) => t(noQuals, .Set, float)
           requires T =/=K long-double andBool T =/=K double
      // 5:10.5
-     rule usualArithmeticConversions(T1::CPPType, T2::CPPType) => #usualArithmeticConversions(promote(T1), promote(T2))
+     rule usualArithmeticConversions(T1::CPPType, T2::CPPType) => #usualArithmeticConversions(promote(T1), promote(T2)) [owise]
      syntax CPPType ::= #usualArithmeticConversions(CPPType, CPPType) [function]
                       | #usualArithmeticConversions2(CPPType, CPPType) [function]
      // 5:10.5.1

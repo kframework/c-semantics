@@ -4,8 +4,8 @@ module CPP-EXPR-CONDITIONAL-SYNTAX
     imports CPP-TYPING-EXPR-SORTS
     imports CPP-TYPING-SORTS
 
-    syntax KItem ::= typeAndCatOfConditional(Expr, TypeExpr, CatExpr, Expr, TypeExpr, CatExpr)
-                   | typeAndCat(CPPType, ValueCategory)
+    syntax KItem ::= typeAndCatOfConditional(Expr, Expr) [function]
+    syntax KResult ::= typeAndCat(CPPType, ValueCategory)
 
 endmodule
 
@@ -26,13 +26,21 @@ module CPP-EXPR-CONDITIONAL
      rule ConditionalOperator((V:PRVal => convertType(type(bool), V)), _, _)
           requires notBool isCPPBoolType(type(V))
 
-     context ConditionalOperator(_, HOLE:Expr, _)
-     context ConditionalOperator(_, _, HOLE:Expr)
+     syntax Expr ::= makeCondOp(PRVal, Expr, Expr, K) [strict(4)]
 
-     rule (.K => typeof(ConditionalOperator(V1, V2, V3))) ~> ConditionalOperator(V1:PRVal, V2:Val, V3:Val)
+     rule ConditionalOperator(V1:PRVal, E2::Expr, E3::Expr) => makeCondOp(V1, E2, E3, typeAndCatOfConditional(E2, E3))
           requires isCPPBoolType(type(V1))
-     rule (.K => catof(ConditionalOperator(V1, V2, V3))) ~> typeof(T:CPPType) ~> ConditionalOperator(V1::PRVal, V2::Val, V3::Val)
-     rule catof(V:ValueCategory) ~> typeof(T::CPPType) ~> ConditionalOperator(V1:PRExpr, V2::Val, V3::Val) => makeExpr(V, T, ConditionalOp(V1, V2, V3, V, T), combine(trace(V1), trace(V2), trace(V3), V, T))
+
+     context makeCondOp(_, HOLE:Expr, _, typeAndCat(_, _))
+     context makeCondOp(_, _, HOLE:Expr, typeAndCat(_, _))
+
+     rule makeCondOp(V1:PRExpr, V2:Val, V3:Val, typeAndCat(T::CPPType, V::ValueCategory)) => makeExpr(V, T, ConditionalOp(V1, V2, V3, V, T), combine(trace(V1), trace(V2), trace(V3), V, T))
+
+     syntax KItem ::= typeAndCatOfConditional(Expr, TypeExpr, CatExpr, Expr, TypeExpr, CatExpr) [klabel(typeAndCatOfConditional0)]
+
+     rule typeAndCatOfConditional(ExprLoc(_, E::Expr) => E, _)
+     rule typeAndCatOfConditional(_, ExprLoc(_, E::Expr) => E)
+     rule typeAndCatOfConditional(E1::Expr, E2::Expr) => typeAndCatOfConditional(E1, E1, E1, E2, E2, E2) [owise]
 
 
      context typeAndCatOfConditional(_, (HOLE:TypeExpr => typeof(HOLE)), _, _, _, _) [result(CPPType)]

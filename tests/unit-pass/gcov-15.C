@@ -2,9 +2,11 @@
 // { dg-options "-fprofile-arcs -ftest-coverage" }
 // { dg-do run { target native } }
 
+extern "C" void exit(int);
+
 void catchEx ()		// count(1)
 {
-  __builtin_exit (0);	// count(1)
+  exit (0);	// count(1)
   try
   {}
   catch (int)

@@ -179,6 +179,7 @@ module CPP-ABSTRACT-SYNTAX
                     | IfAStmt(Expr, AStmt, AStmt)
                     | TryAStmt(AStmt, List)
                     | CatchAStmt(CatchDecl, AStmt)
+                    | CatchStmt(Decl, Stmt)
                     | Expr //expression statement, handled later
 
      syntax CatchDecl ::= Decl | Ellipsis()             

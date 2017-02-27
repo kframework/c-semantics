@@ -77,7 +77,6 @@ module CPP-TYPING-EXPR
              requires getKLabel(HOLE) ==K #klabel(`Name`)
                   orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
                   orBool getKLabel(HOLE) ==K #klabel(`MethodCallExpr`)
-                  orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
      rule typeof(T:Typed => type(T))
 
      rule typeof(SizeofExpr(_) => type(size_t))
@@ -113,6 +112,9 @@ module CPP-TYPING-EXPR
      rule typeof(NewExpr(T:CPPType, _, _, _) => type(pointerType(T)))
           requires notBool isCPPArrayType(T)
      rule typeof(NewExpr(T:CPPArrayType, _, _, _) => type(pointerType(innerType(T))))
+
+     rule typeof(Throw(_) => type(void))
+     rule typeof(exceptionObject(T::CPPType) => T)
 
      rule typeof(ConditionalOperator(_, E2::Expr, E3::Expr))
           => typeofConditional(E2, E3)
@@ -238,7 +240,7 @@ module CPP-TYPING-EXPR
           => typeof(type(memberPointerType(t(noQuals, .Set, classType(C)), T)))
      rule type(dataMemberValue(memberPointer(C::Class, _, T::CPPType), _, _)) => dataMember(C, T)
 
-     rule (.K => typeAndCatOfConditional(E2, E2, E2, E3, E3, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
+     rule (.K => typeAndCatOfConditional(E2, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(T:CPPType, _) ~> typeofConditional(_, _) => typeof(T)
 
 endmodule

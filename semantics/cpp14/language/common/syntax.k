@@ -219,8 +219,12 @@ module CPP-SYNTAX
                    | IfStmt(Expr, Stmt, Stmt)
                    | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
                    | TryStmt(Stmt, List)
-                   | CatchStmt(Decl, Stmt)
-                   | CatchAnyStmt(Stmt)
+                   | CatchOp(CPPType, Stmt)
+                   | CatchAnyOp(Stmt)
+
+     // returns the current exception object. Used to initialize
+     // catch declarations.
+     syntax Expr ::= exceptionObject(CPPType)
 
      context IfStmt((HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
 

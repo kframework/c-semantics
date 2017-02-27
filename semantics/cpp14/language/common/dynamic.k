@@ -90,10 +90,12 @@ module CPP-DYNAMIC-SYNTAX
      syntax FunctionDeclarationType ::= "Function" "(" List ")" 
      syntax VarDeclarationType ::= "Var"
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
-     syntax Decl ::= declareNonStaticObject(CId, CPPType, K, DeclarationType, Duration, Set)
+     syntax Decl ::= declareNonStaticObject(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
      syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)
      syntax KItem ::= frozenDeclaration(Int, Int, Decl) [klabel(frozenDeclarationCpp)]
      syntax Expr ::= compoundInit(Expr, Expr) [strict(1)]
+
+     syntax Expr ::= "callTerminate"
 
      syntax UnnamedNamespace
      syntax NNS ::= NoNNS()
@@ -446,5 +448,7 @@ module CPP-DYNAMIC
      rule makePRVal(R:PRVal) => R
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
+
+     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("std::terminate (void)")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, RefNone(), noQuals, CLinkage, noexcept(false)))), .List) 
 
 endmodule

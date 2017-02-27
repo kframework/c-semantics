@@ -437,7 +437,6 @@ module CPP-DECL-DECLARATOR
           ...</k>
           requires isStaticInitialization(Init)
 
-     // TODO(dwightguth): wrap in try-block and call std::terminate in catch
      rule <k> initializeObject(... init: Init:Val) => .K ...</k>
           <dynamic-init>... .K => ExpressionStmt(Init) </dynamic-init>
           requires notBool isStaticInitialization(Init)

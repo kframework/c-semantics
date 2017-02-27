@@ -96,6 +96,9 @@ module CPP-VALUE-CATEGORY
      syntax ValueCategory ::= unnamedCat(CPPType) [function]
      rule unnamedCat(T::CPPType) => #if isUnnamedLValue(T) #then lvalue #else #if isUnnamedXValue(T) #then xvalue #else prvalue #fi #fi
 
+     rule catof(Throw(_) => prvalue)
+     rule catof(exceptionObject(_) => lvalue)
+
      rule catof(BinaryOperator(O::OpId, E1::Expr, E2::Init))
           => catofOperator(O, E1, E1, E2)
 
@@ -152,7 +155,7 @@ module CPP-VALUE-CATEGORY
      rule catofBuiltinOperator(operator&, _) => catof(prvalue)
      rule catofBuiltinOperator(operator*, _) => catof(lvalue)
 
-     rule (.K => typeAndCatOfConditional(E2, E2, E2, E3, E3, E3)) ~> catofConditional(E2::Expr, E3::Expr)
+     rule (.K => typeAndCatOfConditional(E2, E3)) ~> catofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(_, V:ValueCategory) ~> catofConditional(_, _) => catof(V)
 
 endmodule

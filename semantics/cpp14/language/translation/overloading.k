@@ -101,6 +101,7 @@ module CPP-OVERLOADING
      rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPUnscopedEnumType) => computeSCS3(C, floatingIntegralConversion, P, P)
      rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPIntegerType) => computeSCS3(C, pointerConversion, P, P)
      rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPNullPtrTType) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPNullPtrTType, A:CPPIntegerType) => computeSCS3(C, pointerConversion, P, P)
      rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: void))) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _)))) 
           => computeSCS3(C, pointerConversion, P, t(Q, Mods, pointerType(t(Q', Mods', void))))
      rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: T:CPPSimpleClassType) #as B::CPPClassType)) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _) #as D:CPPClassType)))
