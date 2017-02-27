@@ -22,6 +22,7 @@ module CPP-OVERLOADING
      imports CPP-OVERLOADING-SYNTAX
      imports C-CONFIGURATION
      imports INT
+     imports STRING
      imports K-EQUAL
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
@@ -218,9 +219,9 @@ module CPP-OVERLOADING
           <references>... loc(Base, 0) |-> _ ...</references>
 
      rule resolveUniqueDecl(V:KResult, _) => V
-          requires notBool isCandidateSet(V)
+          requires notBool isCandidateSet(V) andBool notBool isNotFoundNameRef(V)
 
-     rule resolveUniqueDecl(notFound(_) => ILL("", "name not found"), _)
+     rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _)
 
      rule wrapInThis(T:CPPType) => T
      rule catof(impliedObjArg(_) => prvalue)
