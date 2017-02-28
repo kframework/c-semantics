@@ -81,6 +81,8 @@ module CPP-VALUE-CATEGORY
      rule catof(AlignofType(_) => prvalue)
      rule catof(NewExpr(_, _, _, _) => prvalue)
      rule catof(DeleteExpr(_, _, _) => prvalue)
+     rule catof(SizeofType(_) => prvalue)
+     rule catof(SizeofExpr(_) => prvalue)
 
      context catof(ParenthesizedCast(HOLE:AType, _))
      rule catof(ParenthesizedCast(T:CPPType, _) => unnamedCat(T))
