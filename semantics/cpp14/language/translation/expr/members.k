@@ -1,4 +1,5 @@
 module CPP-TRANSLATION-EXPR-MEMBERS
+     imports C-CONFIGURATION
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
@@ -8,4 +9,7 @@ module CPP-TRANSLATION-EXPR-MEMBERS
 
      rule fieldExp(le(E::Expr, Trace::Trace, _), N::Name, T::CPPType, _)
           => le(E . no-template N, Trace, T)
+
+     rule <k> setThis(Obj:PRVal) => Obj ...</k>
+          <this> _ => Obj </this>
 endmodule

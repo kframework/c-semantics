@@ -14,6 +14,8 @@ module CPP-BINDING
      imports C-CONFIGURATION
      imports INT
      imports CPP-TYPING-SYNTAX
+     imports CPP-EXPR-MEMBERS-SYNTAX
+     imports CPP-SYNTAX
 
      rule <k> (.K => bindParam(X, T, V))
           ~> bind(
@@ -21,6 +23,18 @@ module CPP-BINDING
                (ListItem(T:CPPType) => .List) _,
                (ListItem(V::Init) => .List) _)
           ...</k>
+
+     rule <k> (.K => setThis(V))
+          ~> bind(
+               _,
+               (ListItem(implicitObjectParameter(T::CPPType)) => .List) _,
+               (ListItem(V:PRVal) => .List) _)
+          ...</k>
+          requires T =/=K type(no-type)
+     rule bind(_,
+               (ListItem(implicitObjectParameter(t(... st: no-type))) => .List) _,
+               (ListItem(_) => .List) _)
+        
 
      rule bind(.List, ListItem(variadic), Vs::List)
           => bindVariadics(Vs)

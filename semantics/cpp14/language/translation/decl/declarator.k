@@ -78,7 +78,7 @@ module CPP-DECL-DECLARATOR
           <curr-extern> IsExtern:Bool </curr-extern>
           requires ((notBool IsExtern) orBool Extern() in S)
                andBool (notBool isCPPFunctionType(T) orBool isAdjustedType({T}:>CPPFunctionType))
-     
+
      syntax QualId ::= mkQualId(NNSVal, CId) [function]
      rule mkQualId(N:Namespace, X::CId) => N :: X
      rule mkQualId(C:Class, X::CId) => C :: X
@@ -269,7 +269,6 @@ module CPP-DECL-DECLARATOR
      // Declare function member inside class
      rule <k> declareObject(C:Class, C, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
-              ~> registerStaticAndVirtual(C, X, T, S)
               ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-scope> classScope(C) </curr-scope>

@@ -50,6 +50,7 @@ module C-CONFIGURATION
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
           <block-history> .List </block-history>
+          <this> .K </this>
      </block-control>
 
      <template-deduction> .Map </template-deduction>

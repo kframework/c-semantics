@@ -449,6 +449,6 @@ module CPP-DYNAMIC
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("std::terminate (void)")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, RefNone(), noQuals, CLinkage, noexcept(false)))), .List) 
+     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("std::terminate (void)")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), .List) 
 
 endmodule

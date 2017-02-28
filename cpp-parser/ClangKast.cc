@@ -480,12 +480,6 @@ public:
       if (Ctor->isExplicitSpecified()) {
         AddSpecifier("Explicit");
       }
-    } else if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(D)) {
-      if (Method->isInstance()) {
-        if (Method->isVirtual()) { 
-          AddSpecifier("Virtual");
-        }
-      }
     }
 
     if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
@@ -500,9 +494,6 @@ public:
     }
     if (D->isConstexpr()) {
       AddSpecifier("Constexpr");
-    }
-    if (D->isVirtualAsWritten()) {
-      AddSpecifier("Virtual");
     }
 
     if (D->isThisDeclarationADefinition()) {
@@ -528,6 +519,11 @@ public:
           }
           AddKApplyNode("MethodPrototype", 2);
           TRY_TO(TraverseType(Method->getThisType(*Context)));
+          if (Method->isVirtual()) {
+            AddKApplyNode("Virtual", 1);
+          }
+        } else {
+          AddKApplyNode("StaticMethodPrototype", 1);
         }
       }
       TRY_TO(TraverseTypeLoc(TSI->getTypeLoc()));

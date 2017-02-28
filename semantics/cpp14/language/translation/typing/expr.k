@@ -76,7 +76,6 @@ module CPP-TYPING-EXPR
      context typeof(HOLE:TypeExpr)
              requires getKLabel(HOLE) ==K #klabel(`Name`)
                   orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
-                  orBool getKLabel(HOLE) ==K #klabel(`MethodCallExpr`)
      rule typeof(T:Typed => type(T))
 
      rule typeof(SizeofExpr(_) => type(size_t))

@@ -1,5 +1,6 @@
 module CPP-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
+     imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
@@ -9,7 +10,7 @@ module CPP-OVERLOADING-SYNTAX
 
      syntax Expr ::= wrapInThis(TypeExpr) [strict]
 
-     syntax ImpliedObjArg ::= impliedObjArg(Class)
+     syntax ImpliedObjArg ::= impliedObjArg(Expr)
      syntax Expr ::= ImpliedObjArg
 
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, StrictList, StrictList, CId, CId)
@@ -51,7 +52,7 @@ module CPP-OVERLOADING
 
      syntax Bool ::= notViableTypes(List, List, List) [function]
                    | viableType(CPPType, CPPType, ValueCategory) [function]
-
+    
      rule notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List) => notBool viableType(P, A, C) orBool notViableTypes(Ps, As, Cs)
      rule notViableTypes(ListItem(variadic), _, _) => false
      rule notViableTypes(.List, .List, .List) => false
@@ -151,24 +152,6 @@ module CPP-OVERLOADING
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
 
-     // no overloading -- static-method
-     rule <k> resolveOverload(classSet(C::Class, X::CId, T::CPPType |-> kpair(_, Base::SymBase)), list(ListItem(impliedObjArg(_)) Args::List), _, _, _, operator()) 
-              => CallExpr(lv(lnew(Base), hasTrace(Name(C, X)), T), list(Args)) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          requires notBool isCPPClassType(T)
-               andBool Base =/=K nonStatic
-
-     // no overloading -- non-static-method
-     rule <k> resolveOverload(classSet(C::Class, X::CId, T::CPPFunctionType |-> kpair(_, Base::SymBase)), list(ListItem(Obj::Expr) Args::List), _, _, _, operator()) 
-              => MethodCallExpr(& Obj, lv(lnew(Base), hasTrace(Name(C, X)), T), list(Args)) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          <class-id> C </class-id>
-          <virtual-function-members> S::Set </virtual-function-members>
-          requires notBool isCPPClassType(T)
-               andBool Base =/=K nonStatic
-               andBool notBool isImpliedObjArg(Obj)
-               andBool notBool (kpair(X,T) in S)
-
       rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
@@ -225,29 +208,12 @@ module CPP-OVERLOADING
      rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _)
 
      rule wrapInThis(T:CPPType) => T
-     rule catof(impliedObjArg(_) => prvalue)
-     rule <k> typeof(impliedObjArg(C::Class) 
-                  => #if isBaseClassOf(C, C') andBool notBool kpair(X, T) in S
-                     #then t(getCVSQuals(T), .Set, classType(C'))
-                     #else t(noQuals, .Set, classType(C))
-                     #fi)
-          ...</k>
-          <curr-scope> blockScope(C'::Class :: X::CId, Base::SymBase, _) </curr-scope>
-          <class-id> C' </class-id>
-          <cenv>... X |-> ((T:CPPFunctionType |-> kpair(_, Base)) _::Map) ...</cenv>
-          <static-function-members> S::Set </static-function-members>
+     rule catof(impliedObjArg(E::Expr) => E)
+     // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as  the conversion sequence for the implicit object parameter will be ignored in this case 
+     // See also 13.3.3.1.4:3 http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#1278
+     rule catof(contrivedObject(_) => lvalue)
+     rule typeof(impliedObjArg(E::Expr) => E)
+     rule typeof(contrivedObject(T::CPPType) => T)
 
-     rule <k> typeof(impliedObjArg(C::Class) 
-                  => t(noQuals, .Set, classType(C)))
-          ...</k>
-          <curr-scope> blockScope(N::Namespace :: X::CId, _, _) </curr-scope>
-
-     rule <k> typeof(impliedObjArg(C::Class) 
-                  => t(noQuals, .Set, classType(C)))
-          ...</k>
-          <curr-scope> Scope::Scope </curr-scope>
-          requires notBool isBlockScope(Scope)
-
-
-
+     rule contrivedObject(T::CPPType) => noObject()
 endmodule

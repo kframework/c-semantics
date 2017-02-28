@@ -89,7 +89,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
      syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
-     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, refQual: RefQualifier, cvQuals: Quals, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
+     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, methodInfo:MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
 
      syntax CPPSimpleArrayType ::= CPPSimpleFixedArrayType | CPPSimpleIncompleteArrayType
@@ -102,7 +102,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleLVRefType ::= lvRefType(CPPType)
      syntax CPPSimpleRVRefType ::= rvRefType(CPPType)
      // TODO: exception specification
-     syntax CPPSimpleFunctionType ::= functionType(returnType: CPPType, paramTypes: CPPTypes, refQual: RefQualifier, cvQuals: Quals, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
+     syntax CPPSimpleFunctionType ::= functionType(returnType: CPPType, paramTypes: CPPTypes, methodInfo: MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassType ::= classType(Class)
 
      syntax CPPSimpleDependentType ::= dependentType(String)
@@ -170,6 +170,12 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionType ::= setRefQualifier(CPPFunctionType, RefQualifier) [function]
      syntax Quals ::= getCVSQuals(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setCVSQuals(CPPFunctionType, Quals) [function]
+     syntax Bool ::= isMethodStatic(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
+     syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax Class ::= getMethodClass(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodClass(CPPFunctionType, Class) [function]
      syntax Bool ::= isVariadicFunction(CPPFunctionTypeExpr) [function]
      syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
@@ -208,6 +214,12 @@ module CPP-TYPING-SYNTAX
                         | #getClassInfo(CPPClassType, K) [function]
      syntax ClassInfo ::= ClassCell | "#incomplete"
 
+     syntax MethodInfo ::= "noMethod"
+                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, class: K)
+                         | defaultMethodInfo() [function]
+
+     syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
+
      syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(Class, Class) [function, klabel(isClassBaseClassOf)]
@@ -235,8 +247,10 @@ module CPP-TYPING
      imports C-SETTINGS-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-SYNTAX
 
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes))) => toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
@@ -245,12 +259,70 @@ module CPP-TYPING
      rule #getRealParams(L::List ListItem(variadic)) => L
      rule #getRealParams(L::List) => L [owise]
 
-     rule getRefQualifier(t(_, _, functionType(... refQual: Q::RefQualifier))) => Q
-     rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, _, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), Q::RefQualifier)
-          => t(Quals, Mods, functionType(RetT, ParamT, Q, CVS, L, E))
+     // TODO(traiansf): Handle conversion functions and functions introduced by using declarations
+     syntax CPPTypeExpr ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
+     // 13.3.1:4
+     rule getImpliedParamType(... static: true) => type(no-type)
+     // 13.3.1:4.2
+     rule getImpliedParamType(RefRValue(), Q::Quals, false, C::Class) => type( rvRefType(t(Q, .Set, classType(C))))
+     // 13.3.1:4.1
+     rule getImpliedParamType(_, Q::Quals, false, C::Class) => type(lvRefType(t(Q, .Set, classType(C)))) [owise]
 
-     rule getCVSQuals(t(_, _, functionType(... cvQuals: CVS::Quals))) => CVS
-     rule setCVSQuals(t(Q::Quals, Mods::Set, functionType(RT::CPPType, PT::CPPTypes, RQ::RefQualifier, _, L::LanguageLinkage, ES::ExceptionSet)), CVS::Quals) => t(Q, Mods, functionType(RT, PT, RQ, CVS, L, ES))
+     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, .K)
+
+     rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
+     rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), RQ::RefQualifier)
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIRefQualifier(MI, RQ), L, E))
+
+     syntax RefQualifier ::= getMIRefQualifier(MethodInfo) [function]
+     rule getMIRefQualifier(methodInfo(... refQual: RQ::RefQualifier)) => RQ
+     rule getMIRefQualifier(noMethod) => RefNone()
+     syntax MethodInfo ::= setMIRefQualifier(MethodInfo, RefQualifier) [function]
+     rule setMIRefQualifier(methodInfo(_, CVS::Quals, IsStatic::Bool, IsVirtual::Bool, C::Class), RQ::RefQualifier) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMIRefQualifier(noMethod => defaultMethodInfo(), RQ::RefQualifier)
+
+     rule getCVSQuals(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMICVSQuals(MI)
+     rule setCVSQuals(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), CVS::Quals)
+          => t(Quals, Mods, functionType(RetT, ParamT, setMICVSQuals(MI, CVS), L, E))
+
+     syntax Quals ::= getMICVSQuals(MethodInfo) [function]
+     rule getMICVSQuals(methodInfo(... cvQuals: CVS::Quals)) => CVS
+     rule getMICVSQuals(noMethod) => noQuals
+     syntax MethodInfo ::= setMICVSQuals(MethodInfo, Quals) [function]
+     rule setMICVSQuals(methodInfo(RQ::RefQualifier, _, IsStatic::Bool, IsVirtual::Bool, C::Class), CVS::Quals) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMICVSQuals(noMethod => defaultMethodInfo(), CVS::Quals)
+     
+     rule isMethodStatic(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIStatic(MI)
+     rule setMethodStatic(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIStatic(MI), L, E))
+
+     syntax Bool ::= getMIStatic(MethodInfo) [function]
+     rule getMIStatic(methodInfo(... static: IsStatic::Bool)) => IsStatic
+     rule getMIStatic(noMethod) => false
+     syntax MethodInfo ::= setMIStatic(MethodInfo) [function]
+     rule setMIStatic(methodInfo(RQ::RefQualifier, CVS::Quals, _, IsVirtual::Bool, C::Class)) => methodInfo(RQ, CVS, true, IsVirtual, C)
+     rule setMIStatic(noMethod => defaultMethodInfo())
+
+     rule isMethodVirtual(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIVirtual(MI)
+     rule setMethodVirtual(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIVirtual(MI), L, E))
+
+     syntax Bool ::= getMIVirtual(MethodInfo) [function]
+     rule getMIVirtual(methodInfo(... virtual: IsVirtual::Bool)) => IsVirtual
+     rule getMIVirtual(noMethod) => false
+     syntax MethodInfo ::= setMIVirtual(MethodInfo) [function]
+     rule setMIVirtual(methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class)) => methodInfo(RQ, CVS, IsStatic, true, C)
+     rule setMIVirtual(noMethod => defaultMethodInfo())
+     
+     rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
+     rule setMethodClass(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), C::Class)
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIClass(MI, C), L, E))
+
+     syntax Class ::= getMIClass(MethodInfo) [function]
+     rule getMIClass(methodInfo(... class: C::Class)) => C
+     syntax MethodInfo ::= setMIClass(MethodInfo, Class) [function]
+     rule setMIClass(methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, IsVirtual::Bool, _), C::Class) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMIClass(noMethod => defaultMethodInfo(), C::Class)
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
 
@@ -317,7 +389,14 @@ module CPP-TYPING
      rule t(Q::Quals, _, lvRefType(T1::CPPType)) ==Type t(Q, _, lvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, rvRefType(T1::CPPType)) ==Type t(Q, _, rvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
-     rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, RQ1::RefQualifier, CVS1::Quals, _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, RQ2::RefQualifier, CVS2::Quals, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool RQ1 ==K RQ2 andBool CVS1 ==K CVS2
+     rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, MI1::MethodInfo,  _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, MI2::MethodInfo, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
+
+     syntax Bool ::= MethodInfo "==Type" MethodInfo [function]
+     rule noMethod ==Type noMethod => true
+     rule methodInfo(... refQual: RQ1::RefQualifier, cvQuals: CVS1::Quals) ==Type methodInfo(... refQual: RQ2::RefQualifier, cvQuals: CVS2::Quals) =>  RQ1 ==K RQ2 andBool CVS1 ==K CVS2
+     rule methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) ==Type noMethod => RQ ==K RefNone() andBool Q ==K noQuals 
+     rule noMethod ==Type methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) => RQ ==K RefNone() andBool Q ==K noQuals 
+
      rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2

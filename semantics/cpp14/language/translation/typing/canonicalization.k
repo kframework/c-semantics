@@ -44,10 +44,12 @@ module CPP-TYPING-CANONICALIZATION
 
      rule FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E::ExceptionSpec, true) => FunctionPrototype(T, krlist(Args ListItem(variadic)), E, false)
      context FunctionPrototype(_, _, HOLE:ExceptionSpec, _)
-     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), RefNone(), noQuals, L, E))) ...</k>
+     rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), noMethod, L, E))) ...</k>
           <curr-lang-linkage> L::LanguageLinkage </curr-lang-linkage>
 
-     rule MethodPrototype(t(_, _, pointerType(t(CVS::Quals, _, _))), T:CPPFunctionType) => setCVSQuals(T, CVS)
+     rule MethodPrototype(t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), T:CPPFunctionType) => setMethodClass(setCVSQuals(T, CVS), C)
+     rule StaticMethodPrototype(T:CPPFunctionType) => setMethodStatic(T)
+     rule Virtual(T:CPPFunctionType) => setMethodVirtual(T)
 
      rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
      rule NoExceptionSpec() => noexcept(false)
@@ -100,6 +102,6 @@ module CPP-TYPING-CANONICALIZATION
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (variadic, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(variadic)))
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
-     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, RQ::RefQualifier, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), RQ, CVS, L, E))
+     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI::MethodInfo, L, E))
 
 endmodule

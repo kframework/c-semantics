@@ -67,10 +67,10 @@ module CPP-TEMPLATE-DEDUCTION
      rule (.K => deducePair(P, A, B, C)) ~> deducePairs((P:CPPTypeExpr, Ps::TemplateParams => Ps), (A:CPPType, As::TemplateArgs => As), B::Bool, C::DeductionContext)
      rule deducePairs(.TemplateParams, .TemplateArgs, _, _) => .K
 
-     rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, RQ::RefQualifier, CVS::Quals, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
+     rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... X |-> (_ t(Q, Mods, functionType(Ret, toCPPTypes(Params), RQ, CVS, L, E)) |-> T:TemplateInfo) ...</templates>
+          <templates>... X |-> (_ t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI, L, E)) |-> T:TemplateInfo) ...</templates>
 
      rule <k> finishDeduction(T::TemplateInfo) => instantiateTemplateType(T, Args) ...</k>
           <template-deduction> Args::Map </template-deduction>

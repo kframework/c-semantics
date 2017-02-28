@@ -8,8 +8,6 @@ module CPP-DECL-CLASS-SYNTAX
      imports CPP-TYPING-SORTS
      syntax AType ::= declareClassName(Tag, CId, Bool)
      syntax KItem ::= classContext(AType, List) [strict(1)]
-                    | registerStaticAndVirtual(Class, CId, CPPType, Set)
-     syntax ValResult ::= noObject()
 endmodule
 
 module CPP-DECL-CLASS
@@ -98,21 +96,6 @@ module CPP-DECL-CLASS
             <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
           ...</class>
           requires notBool (X in_keys(CE))
-
-     rule <k> registerStaticAndVirtual(C::Class, X::CId, T:CPPFunctionType, 
-                       (SetItem(Virtual()) => .Set) _)
-          ...</k>
-          <class-id> C </class-id>
-          <virtual-function-members>... .Set => SetItem(kpair(X,T)) ...</virtual-function-members>
-     rule <k> registerStaticAndVirtual(C::Class, X::CId, T:CPPFunctionType, 
-                       (SetItem(Static()) => .Set) _)
-          ...</k>
-          <class-id> C </class-id>
-          <static-function-members>... .Set => SetItem(kpair(X,T)) ...</static-function-members>
-     rule registerStaticAndVirtual(_, _, T::CPPType, _) => .K
-          requires notBool isCPPFunctionType(T)
-     rule registerStaticAndVirtual(_, _, _, S::Set) => .K
-          requires notBool Virtual() in S andBool notBool Static() in S
 
      rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
           <curr-scope> classScope(C::Class) </curr-scope>

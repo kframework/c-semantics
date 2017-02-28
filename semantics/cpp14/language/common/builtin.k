@@ -20,8 +20,8 @@ module CPP-BUILTIN
 
      rule cppBuiltins => .K
 
-     rule func(T::CPPType, Ts::CPPTypes) => type(functionType(T, Ts, RefNone(), noQuals, CPPLinkage, noexcept(false)))
-     rule func(T::CPPType, Ts::CPPTypes, E::ExceptionSet) => type(functionType(T, Ts, RefNone(), noQuals, CPPLinkage, E))
+     rule func(T::CPPType, Ts::CPPTypes) => type(functionType(T, Ts, noMethod, CPPLinkage, noexcept(false)))
+     rule func(T::CPPType, Ts::CPPTypes, E::ExceptionSet) => type(functionType(T, Ts, noMethod, CPPLinkage, E))
      rule ptr(T::CPPType) => type(pointerType(T))
 
      rule weakCppBuiltins => GlobalNamespace() :: operatornew -> func(ptr(type(void)), type(size_t))

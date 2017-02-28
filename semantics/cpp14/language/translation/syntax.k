@@ -55,7 +55,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Init ::= NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
-     syntax FunctionSpecifier ::= Inline() | Virtual() | Explicit()
+     syntax FunctionSpecifier ::= Inline() | Explicit()
      syntax AccessSpecifier ::= Public() | Private() | Protected() | NoAccessSpec()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
                         | Constexpr() | Friend() | Auto()
@@ -104,6 +104,8 @@ module CPP-ABSTRACT-SYNTAX
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
                     | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1)]
                     | MethodPrototype(AType, AType) [strict]
+                    | StaticMethodPrototype(AType) [strict]
+                    | Virtual(AType) [strict]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]
                     | MemberPointerType(AType, AType) [strict]
@@ -190,7 +192,6 @@ module CPP-ABSTRACT-SYNTAX
      syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr)
                    | Subscript(Expr, Expr)
                    | CallExpr(Expr, StrictList)
-                   | MethodCallExpr(Expr, Expr, StrictList) [strict(1)]
                    | Name
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)

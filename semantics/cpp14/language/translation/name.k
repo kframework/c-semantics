@@ -187,12 +187,34 @@ module CPP-TRANSLATION-NAME
      rule cSet(Y::Map) ~> CallExpr(Name(N:Namespace, X::CId), Args::StrictList)
           => resolveOverload(cSet(Y), Args, Args, Args, X, operator())
 
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
      rule classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Obj::Expr . no-template _, list(Args::List))
-          => resolveOverload(classSet(C, X, Y), list(ListItem(Obj) Args), list(ListItem(Obj) Args), list(ListItem(Obj) Args), X, operator())
+          => resolveOverload(cSet(Y),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               X, operator())
 
-     rule classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Name(_, _), list(Args::List))
-          => resolveOverload(classSet(C, X, Y), list(ListItem(impliedObjArg(C)) Args), list(ListItem(impliedObjArg(C)) Args), list(ListItem(impliedObjArg(C)) Args), X, operator())
+     rule <k> classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Name(_, _), list(Args::List))
+          => resolveOverload(cSet(Y),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               X, operator())
+          ...</k>
+          <this> Obj:Expr </this>
+          requires isOfDerivedClassOf(Obj, C)
+
+     rule <k> classSet(C::Class, X::CId, Y::Map) ~> CallExpr(Name(_, _), list(Args::List))
+          => resolveOverload(cSet(Y),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               X, operator())
+          ...</k>
+          <this> Obj::Expr </this>
+          requires Obj ==K .K
+            orBool notBool isOfDerivedClassOf(Obj, C)
 
      rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId)
      rule (classSet(C::Class, _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)

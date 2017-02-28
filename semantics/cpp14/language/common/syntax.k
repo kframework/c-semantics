@@ -91,7 +91,6 @@ module CPP-SYNTAX
                    | Expr "++" [strict]
                    | Expr "--" [strict]
                    | BuiltinCallOp(Expr, List)
-                   | BuiltinMethodCallOp(Expr, Expr, List)
                    | ReinterpretCast(AType, Expr) [strict]
                    | ConstCast(AType, Expr) [strict]
                    > right:
