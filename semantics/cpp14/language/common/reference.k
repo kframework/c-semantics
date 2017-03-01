@@ -13,11 +13,12 @@ module CPP-REFERENCE
      imports CPP-TYPING-SYNTAX
 
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => true
-          requires T1 ==Type T2
-     // TODO(dwightguth): base classes
+          requires utype(T1) ==Type utype(T2)
+     rule isReferenceRelated(T1:CPPClassType, T2:CPPClassType) => isBaseClassOf(T1, T2)
      rule isReferenceRelated(T1::CPPType, T2::CPPType) => false
-          requires notBool isCPPClassType(T1) orBool notBool isCPPClassType(T2) [owise]
-     rule isReferenceCompatible(T1::CPPType, T2::CPPType) => isReferenceRelated(utype(T1), utype(T2)) andBool getQuals(T2) <=Quals getQuals(T1)
+          [owise]
+
+     rule isReferenceCompatible(T1::CPPType, T2::CPPType) => isReferenceRelated(T1, T2) andBool getQuals(T2) <=Quals getQuals(T1)
 
 
 endmodule

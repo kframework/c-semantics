@@ -4,11 +4,7 @@ module CPP-OVERLOADING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
-     syntax CandidateSet ::= cSet(Map)
-                           | classSet(Class, CId, Map)
-                           | wrapInThis(CandidateSet)
-
-     syntax Expr ::= wrapInThis(TypeExpr) [strict]
+     syntax CandidateSet ::= cSet(candidates: Map, id: QualId, this: K)
 
      syntax ImpliedObjArg ::= impliedObjArg(Expr)
      syntax Expr ::= ImpliedObjArg
@@ -43,21 +39,28 @@ module CPP-OVERLOADING
 
      rule cSetUnion(notFound(_), E::Expr) => E
      rule cSetUnion(E::Expr, notFound(_)) => E
-     rule cSetUnion(cSet(M1::Map), cSet(M2::Map)) => cSet(M1 M2)
+     rule cSetUnion(cSet(M1::Map, QX::QualId, Obj:K), cSet(M2::Map, QX, Obj)) => cSet(M1 M2, QX, Obj)
 
      context resolveOverload(_, _, (HOLE:StrictList => types(HOLE)), _, _, _)
      context resolveOverload(_, _, _, (HOLE:StrictList => cats(HOLE)), _, _)
-     rule resolveOverload(cSet((T:CPPFunctionType |-> _ => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
+     rule resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> _ => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
           requires (size(Args) >Int size(getRealParams(T)) andBool notBool isVariadicFunction(T)) orBool notViableTypes(getParams(T), Types, Cats)
 
      syntax Bool ::= notViableTypes(List, List, List) [function]
                    | viableType(CPPType, CPPType, ValueCategory) [function]
+                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory) [function]
     
      rule notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List) => notBool viableType(P, A, C) orBool notViableTypes(Ps, As, Cs)
+     rule notViableTypes(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List) => notBool viableImplicitObjectParameter(P, A, C) orBool notViableTypes(Ps, As, Cs)
      rule notViableTypes(ListItem(variadic), _, _) => false
      rule notViableTypes(.List, .List, .List) => false
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C) =/=K cannot-convert
+
+     // TODO(traiansf): implement 13.3.1:5
+     rule viableImplicitObjectParameter(t(... st: lvRefType(T1:CPPClassType)), T2:CPPClassType, lvalue) => true
+          requires isReferenceCompatible(T1, T2)
+     rule viableImplicitObjectParameter(t(... st: no-type), _, _) => true
 
      rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C) =/=K cannot-convert
 
@@ -146,16 +149,16 @@ module CPP-OVERLOADING
                          | "booleanConversion"
 
      // no overloading
-     rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
+     rule <k> resolveOverload(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
               => CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
 
-      rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
+      rule resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
+     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
 
      syntax Conversion ::= "identity"
@@ -166,40 +169,38 @@ module CPP-OVERLOADING
                          | "pointerConversion"
 
      // no overloading
-     rule <k> resolveOverload(cSet(T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
+     rule <k> resolveOverload(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, X::CId, operator()) 
               => CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), X)), T), Args) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
 
-     rule resolveOverload(cSet((T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
+     rule resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _, _)
           requires notBool isAdjustedType(T)
 
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet((T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
+     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _, _) ...</k>
           <template-deduction> _ => .Map </template-deduction>
           requires isAdjustedType(T)
 
-     rule (templateSpecialization(T:CPPType, I::TemplateInfo, Args::Map) => .K) ~> resolveOverload(cSet((.Map => T |-> templateSpecialization(T, I, Args)) _), _, _, _, _, _)
+     rule (templateSpecialization(T:CPPType, I::TemplateInfo, Args::Map) => .K) ~> resolveOverload(cSet(... candidates: (.Map => T |-> templateSpecialization(T, I, Args)) _), _, _, _, _, _)
 
-     rule (.K => instantiateObjectTemplate(Spec)) ~> resolveOverload(cSet(T::CPPType |-> Spec:TemplateSpecialization => .Map), _, _, _, _, _)
+     rule (.K => instantiateObjectTemplate(Spec)) ~> resolveOverload(cSet(... candidates: T::CPPType |-> Spec:TemplateSpecialization => .Map), _, _, _, _, _)
 
-     rule (lv(loc(Base::SymBase, 0), _, T::CPPType) => .K) ~> resolveOverload(cSet(.Map => T |-> kpair(false, Base)), _, _, _, _, _)
+     rule (lv(loc(Base::SymBase, 0), _, T::CPPType) => .K) ~> resolveOverload(cSet(... candidates: .Map => T |-> kpair(false, Base)), _, _, _, _, _)
 
-     rule <k> resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
-     rule resolveUniqueDecl(cSet(T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
 
-     rule resolveUniqueDecl(wrapInThis(classSet(C::Class, X::CId, T::CPPType |-> classOffset(_))), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
-     rule resolveUniqueDecl(wrapInThis(classSet(_, _, (_ |-> kpair(_, _)) #as S::Map)) => cSet(S), _)
-     rule resolveUniqueDecl(classSet(C::Class, X::CId, T::CPPType |-> _:ClassOffset), E::Expr)
+     rule resolveUniqueDecl(cSet(T::CPPType |-> classOffset(_), C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, .K), E::Expr)
        => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
-     rule resolveUniqueDecl(classSet(_, _, (_ |-> kpair(_, _)) #as S::Map) => cSet(S), _)
 
-     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires notBool loc(Base, 0) in_keys(Refs)
-     rule <k> resolveUniqueDecl(cSet(T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
 
      rule resolveUniqueDecl(V:KResult, _) => V
@@ -207,7 +208,6 @@ module CPP-OVERLOADING
 
      rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _)
 
-     rule wrapInThis(T:CPPType) => T
      rule catof(impliedObjArg(E::Expr) => E)
      // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as  the conversion sequence for the implicit object parameter will be ignored in this case 
      // See also 13.3.3.1.4:3 http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#1278

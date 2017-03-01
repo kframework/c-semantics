@@ -78,7 +78,7 @@ module CPP-TEMPLATE-DEDUCTION
      context deduceTemplateFromDecl(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
      // no partial ordering required
-     rule deduceTemplateFromDecl(cSet(P::CPPTypeExpr |-> T::TemplateInfo), A:CPPType) => deducePair(P, A, false, FunctionDecl) ~> finishDeduction(T)
+     rule deduceTemplateFromDecl(cSet(... candidates: P::CPPTypeExpr |-> T::TemplateInfo), A:CPPType) => deducePair(P, A, false, FunctionDecl) ~> finishDeduction(T)
      
      rule deduceAuto(P::CPPTypeExpr, I::Init) => getTypesForDeduction(P, I, I) ~> finishAutoDeduction
           requires notBool isStmt(I) andBool isBraceInit(I)
