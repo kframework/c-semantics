@@ -185,11 +185,13 @@ module C-CONFIGURATION
                <sending> .List </sending>
                <done> "" </done>
                <feof> false </feof>
-               <ferror> .K </ferror>
+               <ferror> 0 </ferror>
+               <last-op> noLastOp </last-op>
           </file>
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
+     <errno> 0 </errno>
 </library>
 
 

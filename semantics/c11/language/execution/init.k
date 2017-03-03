@@ -23,6 +23,7 @@ module C-EXECUTION-INIT
      imports C-TYPING-SYNTAX
      imports K-EQUAL
      imports K-IO
+     imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
      imports STRING
 
@@ -123,7 +124,8 @@ module C-EXECUTION-INIT
      rule <threads>
                <thread>...
                     <k> initMainThread'(MainTU:String)
-                         => enterRestrictScope(fileScope)
+                         => initBuiltins
+                         ~> enterRestrictScope(fileScope)
                          ~> populateFromGlobal(.K)
                     ...</k>
                     <duration> _ => auto(0) </duration>

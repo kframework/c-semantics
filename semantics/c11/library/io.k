@@ -7,11 +7,11 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= writeFD(FD, Int)
      syntax KItem ::= writeFD(FD, String)
      syntax KItem ::= unget(FD, String)
-     syntax KItem ::= readFD(FD, Int)
+     syntax KItem ::= readFD(FauxFD, Int)
      syntax KItem ::= flush(FD)
      syntax KItem ::= tell(FD)
      syntax KItem ::= seek(FD, Int, SeekWhence)
-     syntax KItem ::= close(FD)
+     syntax KItem ::= close(FauxFD)
      syntax KItem ::= setBuf(FD, BufMode, Int)
 
      syntax ExecOpts ::= NoIO()
@@ -19,7 +19,8 @@ module LIBC-IO-SYNTAX
      syntax SeekWhence ::= "seekSet" | "seekCur"
      syntax BufMode ::= "fullBuf" | "lineBuf" | "noBuf"
 
-     syntax FD ::= Int | String
+     syntax FD ::= Int
+     syntax FauxFD ::= FD | String
 
      // getString returns the string without the null terminator
      syntax KItem ::= getString(K) [strict]
@@ -35,6 +36,11 @@ module LIBC-IO-SYNTAX
 
      syntax Int ::= "bufSiz" [function]
 
+     syntax LastFileOp ::= "noLastOp"
+                         | "outputOp" | "flushOp"
+                         | "seekOp"
+                         | "inputOp"
+
 endmodule
 
 module LIBC-IO
@@ -42,6 +48,7 @@ module LIBC-IO
      imports C-BITSIZE-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
@@ -56,79 +63,120 @@ module LIBC-IO
      // Line buffered.
      rule <k> writeFD(FD::FD, S':String) => .K ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S') </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S') </pos>
           <write-buffer> S:String => S +String S' </write-buffer>
+          <read-buffer> RS:String </read-buffer>
           <buffer-mode> lineBuf </buffer-mode>
+          <feof> Eof:Bool </feof>
+          <last-op> Op:LastFileOp => outputOp </last-op>
           requires findChar(S', "\n", 0) ==Int -1
+               andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))
           [observable]
      rule <k> writeFD(FD::FD, S':String) => flush(FD) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S') </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S') </pos>
           <write-buffer> S:String => S +String S' </write-buffer>
+          <read-buffer> RS:String </read-buffer>
           <buffer-mode> lineBuf </buffer-mode>
+          <feof> Eof:Bool </feof>
+          <last-op> Op:LastFileOp => outputOp </last-op>
           requires findChar(S', "\n", 0) =/=Int -1
+               andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))
           [observable]
      // Fully buffered.
      rule <k> writeFD(FD::FD, S':String) => .K ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S') </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S') </pos>
           <write-buffer> S:String => S +String S' </write-buffer>
+          <read-buffer> RS:String </read-buffer>
           <buffer-mode> fullBuf </buffer-mode>
           <buffer-size> N:Int </buffer-size>
+          <feof> Eof:Bool </feof>
+          <last-op> Op:LastFileOp => outputOp </last-op>
           requires lengthString(S +String S') <Int N
+               andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))
           [observable]
      rule <k> writeFD(FD::FD, S':String) => flush(FD) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S') </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S') </pos>
           <write-buffer> S:String => S +String S' </write-buffer>
+          <read-buffer> RS:String </read-buffer>
           <buffer-mode> fullBuf </buffer-mode>
           <buffer-size> N:Int </buffer-size>
+          <feof> Eof:Bool </feof>
+          <last-op> Op:LastFileOp => outputOp </last-op>
           requires lengthString(S +String S') >=Int N
+               andBool notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))
           [observable]
      // No buffer.
      rule <k> writeFD(FD::FD, S':String) => flush(FD) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S') </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S') </pos>
           <write-buffer> S:String => S +String S' </write-buffer>
+          <read-buffer> RS:String </read-buffer>
           <buffer-mode> noBuf </buffer-mode>
+          <feof> Eof:Bool </feof>
+          <last-op> Op:LastFileOp => outputOp </last-op>
+          requires notBool (Op ==K inputOp andBool (Eof impliesBool (RS =/=String "")))
           [observable]
+     rule <k> (.K => UNDEF("IO1", "Stream input operation followed by an output operation without an intervening call to a file positioning function."))
+               ~> writeFD(FD::FD, _:String)
+          ...</k>
+          <fid> FD </fid>
+          <feof> Eof:Bool </feof>
+          <read-buffer> RS:String </read-buffer>
+          <last-op> inputOp </last-op>
+          requires Eof impliesBool (RS =/=String "")
+          [structural]
 
      // TODO(chathhorn): need separate unget buffer.
      rule <k> unget(FD::FD, S':String) => .K ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos -Int 1 </pos>
+          <pos> Pos:Int => Pos -Int 1 </pos>
           <next-byte> _ => .K </next-byte>
           <read-buffer> S:String => S' +String S </read-buffer>
           [observable]
 
      rule <k> readFD(FD::FD, N::Int) => str(substrString(S, 0, N)) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int N </pos>
+          <pos> Pos:Int => Pos +Int N </pos>
           <read-buffer> S:String => substrString(S, N, lengthString(S)) </read-buffer>
+          <last-op> Op:LastFileOp => inputOp </last-op>
           // don't compare with "" in order to only treat string sort
           requires lengthString(S) >=Int N
+               andBool Op =/=K outputOp
           [observable]
      rule <k> readFD(FD::FD, N::Int) => str(S) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S) </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S) </pos>
           <feof> Eof:Bool </feof>
-          <ferror> Err:K </ferror>
+          <ferror> Err:Int </ferror>
           <read-buffer> S:String => "" </read-buffer>
+          <last-op> Op:LastFileOp => inputOp </last-op>
           requires lengthString(S) <Int N
-               andBool (Eof ==K true orBool Err =/=K .K)
+               andBool (Eof orBool Err =/=Int 0)
+               andBool Op =/=K outputOp
           [observable]
      rule <k> readFD(FD:String, N::Int) => str(S) ...</k>
           <fid> FD </fid>
-          <pos> Pos::Int => Pos +Int lengthString(S) </pos>
+          <pos> Pos:Int => Pos +Int lengthString(S) </pos>
           <read-buffer> S:String </read-buffer>
+          <last-op> Op:LastFileOp => inputOp </last-op>
           requires lengthString(S) <Int N
+               andBool Op =/=K outputOp
           [observable]
      rule <k> (.K => fillBuffer(FD)) ~> readFD(FD:Int, N::Int) ...</k>
           <fid> FD </fid>
           <feof> false </feof>
-          <ferror> .K </ferror>
+          <ferror> 0 </ferror>
           <read-buffer> S:String </read-buffer>
           requires lengthString(S) <Int N
+          [structural]
+     rule <k> (.K => UNDEF("IO2", "Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function."))
+               ~> readFD(FD::FD, N::Int)
+          ...</k>
+          <fid> FD </fid>
+          <last-op> outputOp </last-op>
           [structural]
 
      syntax KItem ::= fillBuffer(FD)
@@ -218,6 +266,7 @@ module LIBC-IO
           <next-byte> _ => .K </next-byte>
           <read-buffer> _ => "" </read-buffer>
           <write-buffer> _ => "" </write-buffer>
+          <last-op> _ => seekOp </last-op>
           [structural]
 
      rule <k> flush(FD:Int)

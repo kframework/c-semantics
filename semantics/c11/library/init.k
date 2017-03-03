@@ -9,8 +9,6 @@ module LIBC-SYNTAX
      syntax Map ::= "builtins" [function]
                   | "extensionBuiltins" [function]
 
-     syntax KItem ::= "initBuiltins"
-
      syntax Type ::= "mtx_t" [function]
                    | "jmp_buf" [function]
                    | "va_list" [function]
@@ -22,7 +20,7 @@ module LIBC-SYNTAX
 
      syntax CValue ::= Opaque
      syntax EffectiveValue ::= Opaque
-     syntax Opaque ::= opaque(Int, UType)
+     syntax Opaque ::= opaque(K, UType)
 
      syntax RValue ::= "stdin"  [function]
                      | "stdout" [function]
@@ -30,16 +28,13 @@ module LIBC-SYNTAX
 
      syntax LValue ::= fileLVal(SymBase) [function]
      syntax LValue ::= filePtr(SymBase) [function]
-     syntax Duration ::= "stdio"
 
 endmodule
 
 module LIBC-INIT
      imports BOOL-SYNTAX
-     imports C-BITSIZE-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -178,27 +173,6 @@ module LIBC-INIT
      rule size_t => type(cfg:sizeut)
 
      rule eof => tv(-1, utype(int))
-
-     rule initBuiltins => initStdio
-
-     rule isStaticDuration(obj(... d: stdio)) => true
-
-     syntax KItem ::= "initStdio" [function]
-     rule initStdio
-          => alloc(bnew(!Stdin:Int, file, static("builtin")), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, static("builtin"))) := stdin))
-          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdin")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, static("builtin")))))
-
-          ~> alloc(bnew(!Stdout:Int, file, static("builtin")), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, static("builtin"))) := stdout))
-          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdout")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, static("builtin")))))
-
-          ~> alloc(bnew(!Stderr:Int, file, static("builtin")), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, static("builtin"))) := stderr))
-          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, static("builtin")))))
 
      rule fileLVal(Base::SymBase) => lv(lnew(Base), file)
      rule filePtr(Base::SymBase) => lv(lnew(Base), type(pointerType(file)))

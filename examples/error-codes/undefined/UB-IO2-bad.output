@@ -1,0 +1,7 @@
+ Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function.
+   at fread(UB-IO2-bad.c:27:7)
+   by main(UB-IO2-bad.c:27:7)
+  Undefined behavior (UB-IO2).
+   see C11 section 7.21.5.3:7 http://rvdoc.org/C11/7.21.5.3
+   see C11 section J.2:1 item 151 http://rvdoc.org/C11/J.2
+   see CERT-C section FIO39-C http://rvdoc.org/CERT-C/FIO39-C

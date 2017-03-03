@@ -11,6 +11,7 @@ module LIBC-STDIO
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
+     imports C-OS-SETTINGS-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
@@ -45,15 +46,57 @@ module LIBC-STDIO
      syntax KItem ::= fsetpos(K, K)
      context fsetpos(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
      context fsetpos(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     rule fsetpos(FD:RValue, tv(opaque(Pos::Int, _), _))
-          => fseek(FD, Pos, 0)
+     rule <k> fsetpos(tv(opaque(FD:FD, _), _) #as V::RValue, tv(opaque(fpos(Path::String, Pos::Int), _), _))
+               => fseek(V, Pos, 0)
+          ...</k>
+          <fid> FD </fid>
+          <uri> Path </uri>
           [structural]
+     rule <k> fsetpos(V:RValue, _) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          <errno> _ => EBADF </errno>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
+          [structural]
+     rule <k> (.K => UNDEF("STDIO9", "'fsetpos': called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file."))
+               ~> fsetpos(tv(opaque(FD:FD, _), _), tv(V::CValue, _))
+          ...</k>
+          <fid> FD </fid>
+          <uri> Path':String </uri>
+          requires fposPath(V) =/=String Path'
+          [structural]
+
+     syntax FauxFD ::= getFD(RValue) [function]
+     rule getFD(tv(opaque(FD:FD, _), _)) => FD
+     rule getFD(_) => "" [owise]
+
+     syntax String ::= fposPath(CValue) [function]
+     rule fposPath(opaque(fpos(Path::String, _), _)) => Path
+     rule fposPath(_) => "" [owise]
 
      syntax KItem ::= fflush(K)
      context fflush(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule fflush(tv(opaque(FD::Int, _), _))
-          => flush(FD)
-          ~> success
+     rule <k> fflush(tv(opaque(FD:Int, _), _))
+               => flush(FD)
+               ~> success
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <last-op> Op:LastFileOp => flushOp </last-op>
+          requires isWritable(Mode) andBool (Op =/=K inputOp)
+          [structural]
+     rule <k> fflush(V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          <errno> _ => EBADF </errno>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
+     rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an update stream on which the most recent operation was input."))
+               ~> fflush(tv(opaque(FD:Int, _), _))
+          ...</k>
+          <fid> FD </fid>
+          <mode> Mode:String </mode>
+          <last-op> Op:LastFileOp </last-op>
+          requires notBool (isWritable(Mode) andBool (Op =/=K inputOp))
           [structural]
 
      syntax KItem ::= fflushAll(Set)
@@ -65,13 +108,13 @@ module LIBC-STDIO
      // TODO(chathhorn): SEEK_END.
      syntax KItem ::= fseek(K, Int, Int)
      context fseek(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
-     rule fseek(tv(opaque(FD::Int, _), _), Offset::Int, 0)
+     rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 0)
           => flush(FD)
           ~> seek(FD, Offset, seekSet)
           ~> cleareof(FD)
           ~> success
           [structural]
-     rule fseek(tv(opaque(FD::Int, _), _), Offset::Int, 1)
+     rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 1)
           => flush(FD)
           ~> seek(FD, Offset, seekCur)
           ~> cleareof(FD)
@@ -88,20 +131,33 @@ module LIBC-STDIO
      syntax KItem ::= ftell(K)
      context ftell(HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule (.K => tell(FD))
-          ~> ftell(tv(opaque(FD::Int, _), _))
+          ~> ftell(tv(opaque(FD:Int, _), _))
           [structural]
      rule tv(Pos:Int, _) ~> ftell(_)
           => tv(Pos, utype(long-int))
           [structural]
 
      syntax KItem ::= fgetpos(K, RValue)
+                    | fpos(String, Int)
      context fgetpos(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     rule (.K => tell(FD))
-          ~> fgetpos(tv(opaque(FD::Int, _), _), _)
+     rule <k> (.K => tell(FD))
+               ~> fgetpos(tv(opaque(FD:Int, _), _), _)
+          ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires FD in OpenFiles
           [structural]
-     rule tv(Pos:Int, _) ~> fgetpos(_, PosPtr::RValue)
-          => Computation((* PosPtr) := tv(opaque(Pos, utype(fpos_t)), utype(fpos_t)))
-          ~> success
+     rule <k> fgetpos(V:RValue, _) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          <errno> _ => EBADF </errno>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
+          [structural]
+     rule <k> tv(Pos:Int, _) ~> fgetpos(tv(opaque(FD:Int, _), _), PosPtr::RValue)
+               => Computation((* PosPtr) := tv(opaque(fpos(Path, Pos), utype(fpos_t)), utype(fpos_t)))
+               ~> success
+          ...</k>
+          <fid> FD </fid>
+          <uri> Path:String </uri>
           [structural]
 
      rule builtin("fputc", tv(N:Int, _), FDPtr::RValue)
@@ -118,7 +174,7 @@ module LIBC-STDIO
 
      syntax KItem ::= fputc(Int, K)
      context fputc(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> fputc(N::Int, tv(opaque(FD::Int, _), _))
+     rule <k> fputc(N::Int, tv(opaque(FD:Int, _), _))
                => writeFD(FD, N)
                ~> tv(N, utype(int))
           ...</k>
@@ -126,12 +182,17 @@ module LIBC-STDIO
           <mode> Mode:String </mode>
           requires isWritable(Mode)
           [structural]
-     rule <k> fputc(N::Int, tv(opaque(FD::Int, _), _))
+     rule <k> fputc(_, V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
+          [structural]
+     rule <k> fputc(N::Int, tv(opaque(FD:Int, _), _))
                => eof
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isWritable(Mode)
           [structural]
 
@@ -158,18 +219,23 @@ module LIBC-STDIO
      syntax KItem ::= fgetc(K)
      context fgetc(HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule <k> (.K => readFD(FD, 1))
-               ~> fgetc(tv(opaque(FD::Int, _), _))
+               ~> fgetc(tv(opaque(FD:Int, _), _))
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
           requires isReadable(Mode)
           [structural]
-     rule <k> fgetc(tv(opaque(FD::Int, _), _))
+     rule <k> fgetc(V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
+          [structural]
+     rule <k> fgetc(tv(opaque(FD:Int, _), _))
                => eof
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isReadable(Mode)
           [structural]
      rule str(S::String) ~> fgetc(_)
@@ -181,10 +247,18 @@ module LIBC-STDIO
 
      syntax KItem ::= ungetc(Int, K)
      context ungetc(_, HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule ungetc(C::Int, tv(opaque(FD::Int, _), _))
-          => unget(FD, chrChar(C))
-          ~> cleareof(FD)
-          ~> tv(C, utype(int))
+     rule <k> ungetc(C::Int, tv(opaque(FD:Int, _), _))
+               => unget(FD, chrChar(C))
+               ~> cleareof(FD)
+               ~> tv(C, utype(int))
+          ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires FD in OpenFiles
+          [structural]
+     rule <k> ungetc(_, V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
           [structural]
 
      rule builtin("feof", FDPtr::RValue) => feof(* FDPtr)
@@ -196,29 +270,48 @@ module LIBC-STDIO
 
      syntax KItem ::= feof(K)
      context feof(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> feof(tv(opaque(FD::Int, _), _)) => tv(1, utype(int)) ...</k>
+     rule <k> feof(tv(opaque(FD:Int, _), _)) => tv(1, utype(int)) ...</k>
           <fid> FD </fid>
           <feof> true </feof>
           [structural]
-     rule <k> feof(tv(opaque(FD::Int, _), _)) => tv(0, utype(int)) ...</k>
+     rule <k> feof(tv(opaque(FD:Int, _), _)) => tv(0, utype(int)) ...</k>
           <fid> FD </fid>
           <feof> false </feof>
+          [structural]
+     rule <k> feof(V:RValue) => tv(0, utype(int)) ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
           [structural]
 
      syntax KItem ::= ferror(K)
      context ferror(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> ferror(tv(opaque(FD::Int, _), _)) => tv(1, utype(int)) ...</k>
+     rule <k> ferror(tv(opaque(FD:Int, _), _)) => tv(1, utype(int)) ...</k>
           <fid> FD </fid>
-          <ferror> _:IOError </ferror>
+          <ferror> Err:Int </ferror>
+          requires Err =/=Int 0
           [structural]
-     rule <k> ferror(tv(opaque(FD::Int, _), _)) => tv(0, utype(int)) ...</k>
+     rule <k> ferror(tv(opaque(FD:Int, _), _)) => tv(0, utype(int)) ...</k>
           <fid> FD </fid>
-          <ferror> .K </ferror>
+          <ferror> 0 </ferror>
+          [structural]
+     rule <k> ferror(V:RValue) => tv(0, utype(int)) ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool (notBool getFD(V) in OpenFiles)
           [structural]
 
      syntax KItem ::= fileno(K)
      context fileno(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule fileno(tv(opaque(FD::Int, _), _)) => tv(FD, utype(int))
+     rule <k> fileno(tv(opaque(FD:Int, _), _)) => tv(FD, utype(int)) ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires FD in OpenFiles
+          [structural]
+     rule <k> fileno(V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          <errno> _ => EBADF </errno>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      rule builtin("clearerr", FDPtr::RValue)
@@ -227,11 +320,16 @@ module LIBC-STDIO
 
      syntax KItem ::= clearerr(K)
      context clearerr(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> clearerr(tv(opaque(FD::Int, _), _))
+     rule <k> clearerr(tv(opaque(FD:Int, _), _))
                => cleareof(FD) ~> voidVal
           ...</k>
           <fid> FD </fid>
-          <ferror> _ => .K </ferror>
+          <ferror> _ => 0 </ferror>
+          [structural]
+     rule <k> clearerr(V:RValue) => voidVal ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      syntax KItem ::= cleareof(Int)
@@ -240,16 +338,21 @@ module LIBC-STDIO
           <feof> _ => false </feof>
           [structural]
 
-     rule builtin("fclose", FDPtr::RValue) => fclose(* FDPtr)
+     rule builtin("fclose", FDPtr::RValue) => fclose(* FDPtr, FDPtr)
           requires notBool isNull(FDPtr)
           [structural]
      rule builtin("fclose", FDPtr::RValue) => eof
           requires isNull(FDPtr)
           [structural]
 
-     syntax KItem ::= fclose(K)
-     context fclose(HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> fclose(tv(opaque(FD::Int, _), _))
+     syntax KItem ::= fclose(K, RValue)
+                    | "fclose'" "(" Int ")"
+     context fclose(HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     rule fclose(tv(opaque(FD:Int, _), _), tv(Loc::SymLoc, _))
+          => deleteObject(base(Loc))
+          ~> fclose'(FD)
+          [structural]
+     rule <k> fclose'(FD::Int)
                => flush(FD)
                ~> close(FD)
                ~> success
@@ -257,7 +360,7 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> fclose(tv(opaque(FD::Int, _), _)) => eof ...</k>
+     rule <k> fclose'(FD::Int) => eof ...</k>
           <open-files> OpenFiles:Set </open-files>
           requires notBool (FD in OpenFiles)
           [structural]
@@ -291,13 +394,13 @@ module LIBC-STDIO
      // stdin/out can be redirected.
      syntax KItem ::= freopen(RValue, RValue, SymBase, K)
      context freopen(_, _, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD::Int, T::UType), T'::UType))
-          => fclose(tv(opaque(FD, T), T')) ~> discard
+     rule freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD:Int, T::UType), T'::UType))
+          => fclose'(FD) ~> discard
           ~> fopen(Base, getString(Filename), getString(Mode))
           requires notBool isNull(Filename)
           [structural]
-     rule <k> freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD::Int, T::UType), T'::UType))
-               => fclose(tv(opaque(FD, T), T')) ~> discard
+     rule <k> freopen(Filename::RValue, Mode::RValue, Base:SymBase, tv(opaque(FD:Int, T::UType), T'::UType))
+               => fclose'(FD) ~> discard
                ~> fopen(Base, Filename', getString(Mode))
           ...</k>
           <fid> FD </fid>
@@ -306,12 +409,17 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= fopen(SymBase, K, K) [strict(2,3)]
-     rule fopen(Base::SymBase, str(Filename:String), str(Mode:String))
+     rule fopen(Base::SymBase, str(Filename::String), str(Mode::String))
           => fopen'(Base, Filename, Mode, #open(Filename, Mode))
+          requires isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode)
+          [structural]
+     rule (.K => UNDEF("STDIO8", "'fopen' or 'freopen': invalid open mode \"" +String Mode +String "\"."))
+          ~> fopen(_, _, str(Mode::String))
+          requires notBool (isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode))
           [structural]
 
      syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")" [strict(4)]
-     rule <k> fopen'(Base::SymBase, Filename:String, Mode:String, tv(FD:Int, _))
+     rule <k> fopen'(Base::SymBase, Filename::String, Mode::String, tv(FD:Int, _))
                => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
                ~> & fileLVal(Base)
           ...</k>
@@ -327,47 +435,66 @@ module LIBC-STDIO
           ...</files>
           [structural]
 
-     rule builtin("setbuf", FDPtr::RValue, Buf::RValue)
-          => setbuf((* FDPtr), fullBuf, bufSiz)
+     rule builtin("setbuf", FDPtr::RValue, tv(Loc:SymLoc, _) #as BufPtr::RValue)
+          => trapBuf(Loc, bufSiz)
+          ~> setbuf((* FDPtr), fullBuf, bufSiz) ~> discard
           ~> voidVal
-          requires notBool isNull(Buf)
+          requires notBool isNull(BufPtr)
           [structural]
-     rule builtin("setbuf", FDPtr::RValue, Buf::RValue)
-          => setbuf((* FDPtr), noBuf, bufSiz)
+     rule builtin("setbuf", FDPtr::RValue, BufPtr::RValue)
+          => setbuf((* FDPtr), noBuf, bufSiz) ~> discard
           ~> voidVal
-          requires isNull(Buf)
+          requires isNull(BufPtr)
           [structural]
-     rule builtin("setbuffer", FDPtr::RValue, Buf::RValue, tv(Sz:Int, _))
-          => setbuf((* FDPtr), fullBuf, Sz)
+     rule builtin("setbuffer", FDPtr::RValue, tv(Loc:SymLoc, _) #as BufPtr::RValue, tv(Sz:Int, _))
+          => trapBuf(Loc, Sz)
+          ~> setbuf((* FDPtr), fullBuf, Sz) ~> discard
           ~> voidVal
-          requires notBool isNull(Buf)
+          requires notBool isNull(BufPtr)
           [structural]
-     rule builtin("setbuffer", FDPtr::RValue, Buf::RValue, tv(Sz:Int, _))
-          => setbuf((* FDPtr), noBuf, Sz)
+     rule builtin("setbuffer", FDPtr::RValue, BufPtr::RValue, tv(Sz:Int, _))
+          => setbuf((* FDPtr), noBuf, Sz) ~> discard
           ~> voidVal
-          requires isNull(Buf)
+          requires isNull(BufPtr)
           [structural]
-     rule builtin("setvbuf", FDPtr::RValue, _, tv(0, _), tv(Sz:Int, _))
-          => setbuf((* FDPtr), fullBuf, Sz)
-          ~> success
+     rule builtin("setvbuf", FDPtr::RValue, tv(Loc:SymLoc, _), tv(0, _), tv(Sz:Int, _))
+          => trapBuf(Loc, Sz)
+          ~> setbuf((* FDPtr), fullBuf, Sz)
           [structural]
-     rule builtin("setvbuf", FDPtr::RValue, _, tv(1, _), tv(Sz:Int, _))
-          => setbuf((* FDPtr), lineBuf, Sz)
-          ~> success
+     rule builtin("setvbuf", FDPtr::RValue, tv(Loc:SymLoc, _), tv(1, _), tv(Sz:Int, _))
+          => trapBuf(Loc, Sz)
+          ~> setbuf((* FDPtr), lineBuf, Sz)
           [structural]
-     rule builtin("setvbuf", FDPtr::RValue, _, tv(2, _), tv(Sz:Int, _))
-          => setbuf((* FDPtr), noBuf, Sz)
-          ~> success
+     rule builtin("setvbuf", FDPtr::RValue, tv(Loc:SymLoc, _), tv(2, _), tv(Sz:Int, _))
+          => trapBuf(Loc, Sz)
+          ~> setbuf((* FDPtr), noBuf, Sz)
           [structural]
      rule builtin("setlinebuf", FDPtr::RValue)
-          => setbuf((* FDPtr), lineBuf, bufSiz)
+          => setbuf((* FDPtr), lineBuf, bufSiz) ~> discard
           ~> voidVal
           [structural]
 
+     syntax KItem ::= trapBuf(SymLoc, Int)
+     rule trapBuf(Loc::SymLoc, Sz::Int)
+          => writeBytes(stripProv(Loc), dataList(times(Sz, piece(trap, cfg:bitsPerByte))), type(arrayType(type(unsigned-char), Sz)))
+          requires notBool isNull(tv(Loc, utype(pointerType(type(void)))))
+               andBool Sz >Int 0
+     rule trapBuf(_, _) => .K [owise]
+
      syntax KItem ::= setbuf(K, BufMode, Int)
      context setbuf(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
-     rule setbuf(tv(opaque(FD::Int, _), _), Mode::BufMode, Sz::Int)
-          => setBuf(FD, Mode, Sz)
+     rule <k> setbuf(tv(opaque(FD:Int, _), _), Mode::BufMode, Sz::Int)
+               => setBuf(FD, Mode, Sz)
+               ~> success
+          ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires FD in OpenFiles
+          [structural]
+     rule <k> setbuf(V:RValue, _, _) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          <errno> _ => EBADF </errno>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      rule builtin("fread", Ptr::RValue, tv(Size:Int, _), tv(NMemb:Int, _), FDPtr::RValue)
@@ -383,26 +510,38 @@ module LIBC-STDIO
      syntax KItem ::= fread(RValue, Int, Int, K)
      context fread(_, _, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
 
-     rule <k> fread(tv(Loc:SymLoc, _), Size::Int, NMemb::Int, tv(opaque(FD::Int, _), _))
+     rule <k> fread(tv(Loc:SymLoc, _), Size::Int, NMemb::Int, tv(opaque(FD:Int, _), _))
                => fread'(Loc, Size, readFD(FD, Size *Int NMemb))
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
           requires isReadable(Mode)
           [structural]
-     rule <k> fread(_, _, _, tv(opaque(FD::Int, _), _))
+     rule <k> fread(_, _, _, tv(opaque(FD:Int, _), _))
                => eof
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isReadable(Mode)
+          [structural]
+     rule <k> fread(_, _, _, V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      syntax KItem ::= "fread'" "(" SymLoc "," Int "," K ")" [strict(3)]
      rule fread'(Loc:SymLoc, Size::Int, str(Read::String))
           => writeChars(Loc, Read)
+          ~> trapBuf(Loc +bytes lengthString(Read), Size -Int (lengthString(Read) %Int Size))
           ~> tv(lengthString(Read) /Int Size, utype(size_t))
+          requires (lengthString(Read) %Int Size) =/=Int 0
+          [structural]
+     rule fread'(Loc:SymLoc, Size::Int, str(Read::String))
+          => writeChars(Loc, Read)
+          ~> tv(lengthString(Read) /Int Size, utype(size_t))
+          requires (lengthString(Read) %Int Size) ==Int 0
           [structural]
 
      syntax KItem ::= fgets(RValue, Int, K)
@@ -417,8 +556,9 @@ module LIBC-STDIO
      rule tv(1, _) ~> fgets(Ptr::RValue, _, _)
           => Ptr
           [structural]
-     rule tv(V::CValue, _) ~> fgets(_, _, _)
-          => tv(NullPointer, utype(pointerType(type(char))))
+     rule tv(V::CValue, _) ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, _)
+          => trapBuf(Loc, NMemb)
+          ~> tv(NullPointer, utype(pointerType(type(char))))
           requires V =/=K 1
           [structural]
 
@@ -456,7 +596,7 @@ module LIBC-STDIO
 
      syntax KItem ::= fprintf(K, K) [strict(2)]
      context fprintf(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     rule <k> fprintf(tv(opaque(FD::Int, _), _), formattedResult(S:String))
+     rule <k> fprintf(tv(opaque(FD:Int, _), _), formattedResult(S:String))
                => writeFD(FD, S)
                ~> tv(lengthString(S), utype(int))
           ...</k>
@@ -464,18 +604,23 @@ module LIBC-STDIO
           <mode> Mode:String </mode>
           requires isWritable(Mode)
           [structural]
-     rule <k> fprintf(tv(opaque(FD::Int, _), _), formattedResult(S:String))
+     rule <k> fprintf(tv(opaque(FD:Int, _), _), formattedResult(S:String))
                => eof
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isWritable(Mode)
+          [structural]
+     rule <k> fprintf(V:RValue, _) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      syntax KItem ::= fwrite(K, Int, K) [strict(1)]
      context fwrite(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
-     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD::Int, _), _))
+     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD:Int, _), _))
                => writeFD(FD, S)
                ~> tv(lengthString(S) /Int Size, utype(size_t))
           ...</k>
@@ -483,13 +628,18 @@ module LIBC-STDIO
           <mode> Mode:String </mode>
           requires isWritable(Mode)
           [structural]
-     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD::Int, _), _))
+     rule <k> fwrite(str(S::String), Size::Int, tv(opaque(FD:Int, _), _))
                => eof
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isWritable(Mode)
+          [structural]
+     rule <k> fwrite(_, _, V:RValue) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
 
      rule [vprintf]:
@@ -637,14 +787,21 @@ module LIBC-STDIO
 
      syntax KItem ::= fscanf(K, K, List) [strict(2)]
      context fscanf(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
-     rule <k> fscanf(tv(opaque(FD::Int, _), _), str(S::String), VarArgs::List)
+     rule <k> fscanf(tv(opaque(FD:Int, _), _), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs)
           ...</k>
+          <open-files> OpenFiles:Set </open-files>
           (.Bag =>
                <formatting>...
                     <format> parseFormat(stringToList(S)) </format>
                ...</formatting>
           )
+          requires FD in OpenFiles
+          [structural]
+     rule <k> fscanf(tv(_, _) #as V:RValue, _, _) => eof ...</k>
+          <open-files> OpenFiles:Set </open-files>
+          requires (getFD(V) ==K "")
+               orBool notBool (getFD(V) in OpenFiles)
           [structural]
      rule <k> fscanf(str(FD::String), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs)
@@ -665,9 +822,9 @@ module LIBC-STDIO
           ...</files>
           [structural]
 
-     syntax KItem ::= "fscanf'" "(" FD "," List ")"
+     syntax KItem ::= "fscanf'" "(" FauxFD "," List ")"
      rule <k> (.K => readFD(FD, 1))
-               ~> fscanf'(FD::FD, _)
+               ~> fscanf'(FD::FauxFD, _)
           ...</k>
           <format> Format:List </format>
           <fid> FD </fid>
@@ -675,10 +832,10 @@ module LIBC-STDIO
           requires Format =/=K .List
                andBool isReadable(Mode)
           [structural]
-     rule <k> fscanf'(FD::FD, _) => eof ...</k>
+     rule <k> fscanf'(FD::FauxFD, _) => eof ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => #EBADF </ferror>
+          <ferror> _ => EBADF </ferror>
           requires notBool isReadable(Mode)
           [structural]
 

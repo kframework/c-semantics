@@ -21,7 +21,6 @@ module C-TRANSLATION-INIT
      rule <k> builtinTu
                => makeTu("builtin")
                ~> addBuiltins(builtins)
-               ~> initBuiltins
                ~> removeUnusedIdentifiers
           ...</k>
           <options>... SetItem(XBuiltins()) ...</options>

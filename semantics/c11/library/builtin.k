@@ -19,6 +19,10 @@ module LIBC-BUILTIN-SYNTAX
 
      syntax RValue ::= "success" [function]
 
+     syntax KItem ::= "initBuiltins"
+
+     syntax Duration ::= "stdio"
+
 endmodule
 
 module LIB-BUILTIN-SYNTAX
@@ -29,16 +33,20 @@ endmodule
 
 module LIBC-BUILTIN
      imports BOOL
+     imports C-BITSIZE-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports COMMON-BUILTIN-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports INT
      imports LIB-BUILTIN-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
+     imports LIBC-SYNTAX
      imports MAP
 
      syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
@@ -121,5 +129,26 @@ module LIBC-BUILTIN
                andBool allRValueInHeatList(VarArgs)
 
      rule success => tv(0, utype(int))
+
+     rule isAllocatedDuration(obj(... d: stdio)) => true
+
+     rule initBuiltins => initStdio
+
+     syntax KItem ::= "initStdio" [function]
+     rule initStdio
+          => alloc(bnew(!Stdin:Int, file, stdio), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, stdio)) := stdin))
+          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdin")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, stdio))))
+
+          ~> alloc(bnew(!Stdout:Int, file, stdio), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, stdio)) := stdout))
+          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdout")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, stdio))))
+
+          ~> alloc(bnew(!Stderr:Int, file, stdio), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, stdio)) := stderr))
+          ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, stdio))))
 
 endmodule
