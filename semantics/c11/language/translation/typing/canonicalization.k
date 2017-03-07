@@ -92,10 +92,8 @@ module C-TYPING-CANONICALIZATION
           => addMods(Mods, addQualifier(Restrict(), T))
           requires cfg:reservedKeywordSupported(Tok)
           [structural]
-     rule <k>addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
-          => reportError(ErrorMsg(Syntax(CLinkage),"TCANON2",("Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict).")), S, Loc, .K) ~> HALT ...</k>
-          // Scope needed for error reporting
-          <curr-scope>S::Scope</curr-scope>
+     rule addMods(Mods::List ListItem(RestrictReserved(Tok::String, Loc::CabsLoc)), T:Type)
+          => SE("TCANON2","Unsupported reserved identifier "+String Tok +String " (reserved variant of restrict).")
           requires notBool cfg:reservedKeywordSupported(Tok)
           [structural]
      rule addMods(Mods::List ListItem(Q:Qualifier), T:Type)
