@@ -21,6 +21,11 @@ module CPP-EXPR-LOGICAL
      rule ! (V:PRVal => convertType(type(bool), V))
           requires notBool isCPPBoolType(type(V))
 
+     rule ! prv(0, Tr::Trace, T:CPPBoolType)
+          => prv(1, combine(Tr, #klabel(`!__CPP-SYNTAX`)), T)
+     rule ! prv(1, Tr::Trace, T:CPPBoolType)
+          => prv(0, combine(Tr, #klabel(`!__CPP-SYNTAX`)), T)
+
      context (HOLE:Expr => reval(HOLE)) || _ [result(PRVal)]
      context _ || (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context (HOLE:Expr => reval(HOLE)) && _ [result(PRVal)]
