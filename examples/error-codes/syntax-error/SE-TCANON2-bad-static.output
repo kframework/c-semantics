@@ -1,2 +1,0 @@
-SE-TCANON2-bad-static.c:3:9: error: Unsupported reserved identifier __restrict (reserved variant of restrict).
-  Syntax error (SE-TCANON2).
