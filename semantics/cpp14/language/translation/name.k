@@ -156,8 +156,13 @@ module CPP-TRANSLATION-NAME
           orIfNotFound guardedFind(X, hasParentNamespace(N),  nameLookupInFullNamespace(X, getParentNamespace(N), T, IsNNS))
 
      // unqualified name lookup
+     rule <k> lookupNameInBlock(X::CId, NoTag(), false) => lookupEnumerator(X, E) ...</k>
+          <bl-unscoped-enumerators>... X |-> E::Enum ...</bl-unscoped-enumerators>
+
      rule <k> lookupNameInBlock(X::CId, NoTag(), false) => cSet(S, NoNamespace() :: X, .K) ...</k>
           <env>... X |-> S::Map ...</env>
+          <bl-unscoped-enumerators> UE::Map </bl-unscoped-enumerators>
+          requires notBool X in_keys(UE)
 
      rule <k> lookupNameInBlock(X::CId, NoTag(), _) => T ...</k>
           <types>... X |-> (_ |-> T::CPPType) ...</types>
@@ -168,8 +173,11 @@ module CPP-TRANSLATION-NAME
      rule <k> lookupNameInBlock(X::CId, _, IsNNS:Bool) => notFound(X) ...</k>
           <env> Env::Map </env>
           <types> Types::Map </types>
+          <bl-unscoped-enumerators> UE::Map </bl-unscoped-enumerators>
+
           requires (notBool X in_keys(Env) orBool IsNNS)
            andBool notBool X in_keys(Types)
+           andBool notBool X in_keys(UE)
 
      rule <k> lookupEnumerator(X::CId, E::Enum) => V ... </k>
           <curr-scope> enumScope(enumId(E)) </curr-scope>

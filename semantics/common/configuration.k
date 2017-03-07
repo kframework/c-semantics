@@ -106,6 +106,8 @@ module COMMON-CONFIGURATION
                          <max-offset> 0 </max-offset>
                          <max-align> 1 </max-align>
                          <access-specifier> .K </access-specifier>
+                         // CId |-> EnumId
+                         <cl-unscoped-enumerators> .Map </cl-unscoped-enumerators>
                     </class>
                </classes>
 

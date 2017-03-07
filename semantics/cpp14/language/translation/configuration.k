@@ -58,6 +58,8 @@ module C-CONFIGURATION
           <types color="lightgray"> .Map </types>
           <block-history> .List </block-history>
           <this> .K </this>
+          // CId |-> EnumId
+          <bl-unscoped-enumerators> .Map </bl-unscoped-enumerators>
      </block-control>
 
      <template-deduction> .Map </template-deduction>

@@ -37,6 +37,8 @@ module CPP-DECL-ENUM
 
      syntax Scope ::= getEnumScope(EnumId) [function]
      rule getEnumScope(enumId(N:Namespace :: _)) => namespaceScope(N)
+     rule getEnumScope(enumId(C:Class :: _)) => classScope(C)
+     rule getEnumScope(enumId(localQual(B:BlockScope) :: _)) => B
 
      syntax KItem ::= addEnumToEnv(CId, CPPEnumType)
      rule addEnumToEnv(X::CId, E::CPPEnumType) => #addEnumToEnv(X, getEnumScope(getEnumId(E)), E)
@@ -48,12 +50,29 @@ module CPP-DECL-ENUM
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X, Enum() <- E] </ntypes>
 
+     rule <k> #addEnumToEnv(X::CId, classScope(C::Class), E::CPPEnumType) => . ... </k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <ctypes> NT::Map => NT[X, Enum() <- E] </ctypes>
+
+     rule <k> #addEnumToEnv(X::CId, blockScope(_, _, _), E::CPPEnumType) => . ... </k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <types> NT::Map => NT[X, Enum() <- E] </types>
+
+
      syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType) [strict(2)]
 
      rule enumContext(X::CId, E::CPPEnumType, Enumerators:List, Fixed::Bool, UT::CPPIntegerType)
           => newEnum(E, Fixed)
           ~> addEnumToEnv(X, E)
-          ~> scope(enumScope(getEnumId(E)), declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true))
+          ~> inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true))
+
+     syntax KItem ::= inEnumScope(CPPEnumType, K)
+     rule <k> inEnumScope(E::CPPEnumType, K:K) => K ~> setScope(OldScope) ... </k>
+          <curr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-scope>
+
 
      // second param -underlying type
      syntax KItem ::= newEnum(CPPEnumType, fixed: Bool)
@@ -153,19 +172,31 @@ module CPP-DECL-ENUM
           <enum-id> E </enum-id>
           <scoped> true </scoped>
 
-     rule <k> addEnumeratorToEnv(enumId(N::Namespace :: Enum(_)) #as EId::EnumId, X::CId) => addUnscopedEnumeratorToNamespace(X, EId, N) ...</k>
+     rule <k> addEnumeratorToEnv(enumId(E::Enum) #as EId::EnumId, X::CId) => addUnscopedEnumeratorToEnv(X, E) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <enum-id> EId </enum-id>
           <scoped> false </scoped>
 
-     syntax KItem ::= addUnscopedEnumeratorToNamespace(CId, EnumId, Namespace)
+     syntax KItem ::= addUnscopedEnumeratorToEnv(CId, Enum)
 
-     rule <k> addUnscopedEnumeratorToNamespace(X::CId, enumId(E::Enum), N::Namespace) => . ... </k>
+     rule <k> addUnscopedEnumeratorToEnv(X::CId, (N:Namespace :: _) #as E::Enum) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <unscoped-enumerators> UE::Map (.Map => X |-> E ) </unscoped-enumerators>
+
+     rule <k> addUnscopedEnumeratorToEnv(X::CId, (C:Class :: _) #as E::Enum) => . ... </k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <cl-unscoped-enumerators> UE::Map (.Map => X |-> E ) </cl-unscoped-enumerators>
+
+     rule <k> addUnscopedEnumeratorToEnv(X::CId, (localQual(_:BlockScope) :: _) #as E::Enum) => . ... </k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <bl-unscoped-enumerators> UE::Map (.Map => X |-> E ) </bl-unscoped-enumerators>
+
 
      // For unscoped enums without fixed type,
      // compute their minimal and maximal value
