@@ -223,6 +223,7 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(Class, Class) [function, klabel(isClassBaseClassOf)]
+                   | hasVirtualMembers(CPPClassType) [function]
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
@@ -244,6 +245,7 @@ module CPP-TYPING
      imports FLOAT
      imports K-REFLECTION
      imports COMMON-SYNTAX
+     imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -473,6 +475,13 @@ module CPP-TYPING
             ...</generatedTop>)
          requires D =/=K B
 
+     rule hasVirtualMembers(T::CPPClassType) => #hasVirtualMembers(getClassInfo(T))
+     syntax Bool ::= #hasVirtualMembers(ClassInfo) [function]
+     // TODO(dwightguth): non-virtual base classes
+     rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(kpair(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: true))))) ...</function-members> ...</class>) => true
+     rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(_) => .List ...</function-members> ...</class>) [owise]
+     rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> .List </function-members> ...</class>) => false
+
      rule setType(T::CPPType, lv(Loc::SymLoc, Tr::Trace, _)) => lv(Loc, Tr, T)
      rule setType(T::CPPType, prv(Loc::SymLoc, Tr::Trace, _)) => prv(Loc, Tr, T)
 
@@ -481,7 +490,6 @@ endmodule
 module C-CPP-TYPING
      imports C-TYPING-SYNTAX
      imports CPP-TYPING
-     imports COMPAT-SYNTAX
      imports SETTINGS-SYNTAX
 
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes, linkage: CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))

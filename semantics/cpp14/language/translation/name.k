@@ -348,8 +348,8 @@ module CPP-TRANSLATION-NAME
      rule getAssociatedNamespaces((ListItem(T:CPPFundamentalType) => .List) _, _)
      rule getAssociatedNamespaces((ListItem(t(_, _, no-type)) => .List) _, _)
      // 3.4.2:2.2
-     rule getAssociatedNamespaces(ListItem(t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, X::CId, Args::TemplateParams)))) L::List, B::NamespacesCell)
-          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(t(Q, Mods, classType(N :: Class(Tag, X, Args)))), #klabel(`getInnermostNamespace1`))), B)
+     rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateParams))) #as T::CPPClassType) L::List, B::NamespacesCell)
+          => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
      // 3.4.2:2.4
      rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) _, _)
           requires isCPPPointerType(T) orBool isCPPArrayType(T)
@@ -371,7 +371,8 @@ module CPP-TRANSLATION-NAME
      rule #getAssociatedNamespaces(S::Set, _) => S [owise]
 
      rule getAssociatedClasses(T::CPPClassType) => #getAssociatedClasses(T, getClassInfo(T))
-     rule #getAssociatedClasses(t(_, _, classType(N:Namespace :: C::ClassSpecifier)), #incomplete) => ListItem(classScope(N :: C))
+     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), #incomplete) => ListItem(classScope(N :: C))
+     rule #getAssociatedClasses(t(... st: classType(N:Namespace :: C::ClassSpecifier)), <class>... <base-classes> Bases::List </base-classes> ...</class>) => ListItem(classScope(N :: C)) mapList(mapList(mapList(Bases, #klabel(`classType`)), #klabel(`cppType`)), #klabel(`getAssociatedClasses`))
 
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleTypeExpr), Ps::TemplateParams) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
      rule getTemplateArgTypes(.TemplateParams) => .List

@@ -41,7 +41,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-TYPING-SYNTAX
 
      rule FunctionDecl(N::NNSVal, X::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, T, NoInit(), Function(Params)) [anywhere]
-     rule VarDecl(N::NNSVal, X::CId, T::CPPType, Init::Expr) => NormalizedDecl(N, X, T, Init, Var) [anywhere]
+     rule VarDecl(N::NNSVal, X::CId, T::CPPType, Init::Expr, IsDirect:Bool) => NormalizedDecl(N, X, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
      rule FunctionDefinition(N::NNSVal, X::CId, T::CPPFunctionType, Params::List, Body::Stmt) => NormalizedDecl(N, X, T, Body, Function(Params)) [anywhere]
 
      rule DeclStmt(L::List) => listToK(L)
@@ -131,15 +131,15 @@ module CPP-DECL-DECLARATOR
      rule getNamespaceLinkage(Parent::Namespace :: _) => getNamespaceLinkage(Parent) [owise]
 
      // 3.5:4.1
-     rule getNamespaceLinkage(N::Namespace, Var) => getNamespaceLinkage(N)
+     rule getNamespaceLinkage(N::Namespace, Var(_)) => getNamespaceLinkage(N)
      // 3.5:4.2
      rule getNamespaceLinkage(N::Namespace, Function(_)) => getNamespaceLinkage(N)
 
      // 3.5:6
      rule getLinkage(S::Set, _, _:BlockScope, _, L::Linkage, Type::DeclarationType) => #if L ==K .K #then ExternalLinkage #else L #fi
-          requires isFunctionDeclarationType(Type) orBool (Type ==K Var andBool Extern() in S)
+          requires isFunctionDeclarationType(Type) orBool (isVarDeclarationType(Type) andBool Extern() in S)
      rule getLinkage(S::Set, _, _:BlockScope, _, _, Type::DeclarationType) => NoLinkage
-          requires Type ==K Var andBool notBool (Extern() in S)
+          requires isVarDeclarationType(Type) andBool notBool (Extern() in S)
 
      rule getDuration(S::Set, _) => ThreadStorage
           requires ThreadLocal() in S
@@ -227,9 +227,9 @@ module CPP-DECL-DECLARATOR
      context declareNonStaticObject(_, _, HOLE:Expr, _, _, _)
 
      // NoLinkage, AutoStorage, not previously declared
-     rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Type::DeclarationType, NoLinkage, AutoStorage, S::Set) ~> Next:KItem
+     rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
               => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init), Type, AutoStorage, S)
+              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init, Type), Var(Type), AutoStorage, S)
               ~> Next
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -253,7 +253,7 @@ module CPP-DECL-DECLARATOR
           requires T =/=K completeDeclaration(T, Init)
 
      // Declare static data member inside class (no definition)
-     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var(_), ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
           ...</k>
           <curr-scope> classScope(C) </curr-scope>
@@ -273,6 +273,7 @@ module CPP-DECL-DECLARATOR
           ...</k>
           <curr-scope> classScope(C) </curr-scope>
           <class-id> C </class-id>
+          <function-members>... .List => ListItem(kpair(X, T)) </function-members>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <externals> 
@@ -280,7 +281,7 @@ module CPP-DECL-DECLARATOR
               => Exts[C :: X, T <- declState(bnew(!I:Int, T, S, link(Tu)), declared)]
           </externals>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
-           requires Type =/=K Var
+           requires notBool isVarDeclarationType(Type)
 
      // Static member declaration/definition, in the enclosing namespace.
      rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
@@ -331,14 +332,18 @@ module CPP-DECL-DECLARATOR
      rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage, S),
-                   T, StaticStorage, Init), Type) ...</k>
+                   T, StaticStorage, Init, getInitType(Type)), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
+     syntax InitType ::= getInitType(DeclarationType) [function]
+     rule getInitType(Var(Type::InitType)) => Type
+     rule getInitType(_) => CopyInit() [owise]
+
      // Static data member definition
-     rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Var, StaticStorage, S::Set)
+     rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Var(Type::InitType), StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
                    allocateDecl(C :: X, T, StaticStorage, S),
-                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init)), Var)
+                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init), Type), Var(Type))
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
 
@@ -346,17 +351,17 @@ module CPP-DECL-DECLARATOR
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Init, Type:FunctionDeclarationType, StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
                    allocateDecl(C :: X, T, StaticStorage, S),
-                   T, StaticStorage,  Init), Type)
+                   T, StaticStorage, Init, CopyInit()), Type)
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
 
      syntax Decl ::= defineLocalStaticObject(CId, SymBase, CPPType, Init, DeclarationType, Set)
-     rule <k> defineLocalStaticObject(X::CId, Base::SymBase, T::CPPType, Init::Init, Type::DeclarationType, S::Set)
+     rule <k> defineLocalStaticObject(X::CId, Base::SymBase, T::CPPType, Init::Init, Var(Type::InitType), S::Set)
           => addToEnv(NoNamespace() :: X, T, Base, false)
           ~> #if notBool isCPPRefType(T) #then allocObject(Base, T, byteSizeofType(T)) #else .K #fi
           ~> initializeObject(NoNamespace(), X, T, figureInit(
                lv(lnew(Base), noTrace, T),
-               T, StaticStorage, Init), Type) ...</k>
+               T, StaticStorage, Init, Type), Var(Type)) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, NoNamespace() :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>

@@ -213,9 +213,12 @@ module CPP-SYNTAX
                    | GotoStmt(CId)
                    | ExpressionStmt(Expr) [strict]
                    | PRValExpressionStmt(Expr) [strict]
+                   | BreakStmt()
                    | ReturnOp(Expr)
                    | IfStmt(Decl, Stmt, Stmt)
                    | IfStmt(Expr, Stmt, Stmt)
+                   | WhileStmt(Decl, Stmt)
+                   | WhileStmt(Expr, Stmt)
                    | ForStmt(Expr, Stmt, Stmt) [klabel(ForStmt3)]
                    | TryStmt(Stmt, List)
                    | CatchOp(CPPType, Stmt)

@@ -117,8 +117,10 @@ module CPP-VALUE-CATEGORY
                     | catofConditional(Expr, Expr)
 
      context catofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _, _) [result(CPPDType)]
-     context catofOperator(_, _, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
-     context catofOperator(_, _, (HOLE:CatExpr => catof(HOLE)), _) [result(ValueCategory)]
+     context catofOperator(O::OpId, _, _, (HOLE:TypeExpr => typeof(HOLE)))
+             requires O =/=K operator-> [result(CPPDType)]
+     context catofOperator(O::OpId, _, (HOLE:CatExpr => catof(HOLE)), _)
+             requires O =/=K operator-> [result(ValueCategory)]
      context catofOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
      rule catofOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType)
           => catofBuiltinOperator(O, T1, C, T2)
@@ -126,6 +128,9 @@ module CPP-VALUE-CATEGORY
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
      rule catofOperator(O::OpId, T1:CPPDType)
           => catofBuiltinOperator(O, T1)
+          requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
+     rule catofOperator(operator->, T1:CPPDType, E1::Expr, E2::Expr)
+          => catofBuiltinOperator(operator->, T1, E1, E2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
      rule catofBuiltinOperator(operator=, _, _, _) => catof(lvalue)
@@ -143,6 +148,8 @@ module CPP-VALUE-CATEGORY
      rule catofBuiltinOperator(operator[], _:CPPPointerType, _, _) => catof(lvalue)
      rule catofBuiltinOperator(operator[], _:CPPArrayType, lvalue, _) => catof(lvalue)
      rule catofBuiltinOperator(operator[], _:CPPArrayType, _:RValueCategory, _) => catof(xvalue)
+     rule catofBuiltinOperator(operator->, _, E1::Expr, E2::Name)
+          => catof((* E1) . no-template E2)
      rule catofBuiltinOperator(operator+, _, _, _) => catof(prvalue)
      rule catofBuiltinOperator(operator-, _, _, _) => catof(prvalue)
      rule catofBuiltinOperator(operator<<, _, _, _) => catof(prvalue)

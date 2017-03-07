@@ -84,24 +84,24 @@ module CPP-EXPR-CAST
 
      rule inverseConvertType(t(_, _, pointerType(t(Q::Quals, _, _) #as D:CPPClassType)) #as T::CPPType, prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, _, _) #as B:CPPClassType))))
           => prv(derivedClassSuperobject(L, B, D), Tr, T)
-          requires isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D) andBool isBaseClassSubobject(L, B, D)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D) andBool isBaseClassSubobject(L, B, D)
      rule inverseConvertType(t(_, _, pointerType(t(Q::Quals, _, _) #as D:CPPClassType)) #as T::CPPType, prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, _, _) #as B::CPPClassType))) #as V::PRVal)
           => UNDEF("CEC2", "Static cast to pointer to derived class type of pointer which does not point to object of that type.") ~> inverseConvertTypeHold(T, V)
-          requires isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D) andBool notBool isBaseClassSubobject(L, B, D)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D) andBool notBool isBaseClassSubobject(L, B, D)
 
      rule inverseConvertType(t(_, _, memberPointerType(B::CPPClassType, t(Q::Quals, _, _) #as T1::CPPType)) #as T::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(D::CPPClassType, t(Q'::Quals, _, _) #as T2::CPPType))))
           => prv(baseClassSubobject(L, B, D), Tr, T)
-          requires isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool containsMember(L, B)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool containsMember(L, B)
      rule inverseConvertType(t(_, _, memberPointerType(B::CPPClassType, t(Q::Quals, _, _) #as T1::CPPType)) #as T::CPPType, prv(L::MemberPtr, Tr::Trace, t(_, _, memberPointerType(D::CPPClassType, t(Q'::Quals, _, _) #as T2::CPPType))) #as V::PRVal)
           => UNDEF("CEC3", "Static cast to pointer to member of base class of pointer to member not contained in base class.") ~> inverseConvertTypeHold(T, V)
-          requires isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool notBool containsMember(L, B)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool utype(T1) ==Type utype(T2) andBool Q' <=Quals Q andBool notBool containsMember(L, B)
 
      rule inverseConvertType(t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, T::CPPSimpleType))), prv(Loc::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q2::Quals, Mods2::Set, void)))))
           => #if getAlign(Loc) <=Int byteAlignofType(t(Q', Mods', T)) #then prv(Loc, Tr, t(Q, Mods, pointerType(t(Q', Mods', T)))) #else prv(unknown(Loc), Tr, t(Q, Mods, pointerType(t(Q', Mods', T)))) #fi
           requires isObjectType(t(Q', Mods', T)) andBool Q2 <=Quals Q'
 
 
-     rule inverseConvertType(T::CPPType, V:PRExpr) => pre(#convertStatic(T, stripHold(V)), trace(V), T)
+     rule inverseConvertType(T::CPPType, V:PRExpr) => pre(#convertStatic(T, makePRVal(stripHold(V))), trace(V), T)
           requires (isCPPIntegerType(T) andBool isCPPScopedEnumType(type(V)))
                orBool (isCPPFloatingType(T) andBool isCPPScopedEnumType(type(V)))
                orBool (isCPPEnumType(T) andBool isCPPIntegerType(type(V)))
@@ -109,13 +109,13 @@ module CPP-EXPR-CAST
                orBool (isCPPEnumType(T) andBool isCPPFloatingType(type(V)))
 
      rule inverseConvertType(t(... st: pointerType(t(... q: Q::Quals) #as D:CPPClassType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: pointerType(t(... q: Q'::Quals) #as B:CPPClassType))))
-          => pre(#convertStatic(T, E), Tr, T)
-          requires isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D)
+          => pre(#convertStatic(T, makePRVal(E)), Tr, T)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q' <=Quals Q andBool notBool isVirtualBaseClassOf(B, D)
      rule inverseConvertType(t(... st: memberPointerType(B::CPPClassType, t(... q: Q::Quals) #as T1::CPPType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: memberPointerType(D::CPPClassType, t(... q: Q'::Quals) #as T2::CPPType))))
-          => pre(#convertStatic(T, E), Tr, T)
-          requires isBaseClassOf(B, D) andBool T1 ==Type T2 andBool Q' <=Quals Q
+          => pre(#convertStatic(T, makePRVal(E)), Tr, T)
+          requires B =/=K D andBool isBaseClassOf(B, D) andBool T1 ==Type T2 andBool Q' <=Quals Q
      rule inverseConvertType(t(... st: pointerType(t(... q: Q::Quals) #as T1::CPPType)) #as T::CPPType, pre(E::Expr, Tr::Trace, t(... st: pointerType(t(Q'::Quals, _, void)))))
-          => pre(#convertStatic(T, E), Tr, T)
+          => pre(#convertStatic(T, makePRVal(E)), Tr, T)
           requires isObjectType(T1) andBool Q' <=Quals Q
 
      rule inverseConvertType(T::CPPType, V::PRVal) => cannot-convert

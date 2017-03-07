@@ -23,4 +23,19 @@ module CPP-STMT-LOOP
           ...</k>
           <elab>... .K => ForStmt(Condition, Inc, Block) </elab>
 
+     context WhileStmt((HOLE:Expr => reval(HOLE)), _) [result(PRVal)]
+     rule WhileStmt((Condition:PRVal => convertType(type(bool), Condition)), Block::Stmt)
+          requires notBool isCPPBoolType(type(Condition))
+
+     rule (.K => elaborate(Block)) ~> WhileStmt(Condition:PRVal, Block::Stmt)
+          requires isCPPBoolType(type(Condition))
+     rule <k> elaborateDone(Block:K)
+              ~> WhileStmt(Condition::PRVal, _)
+              => lintZero(Condition) ~> lintEmpty(Block)
+          ...</k>
+          <elab>... .K => WhileStmt(Condition, Block) </elab>
+
+     rule <k> BreakStmt() => .K ...</k>
+          <elab>... .K => BreakStmt() </elab>
+
 endmodule

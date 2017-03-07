@@ -35,4 +35,6 @@ module CPP-EXPR-MEMBERS
      rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
           => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
           requires notBool isCPPBitfieldType(T)
+
+     rule E::Expr -> T::TemplateKeyword N::Name => (* E) . T N [anywhere]
 endmodule

@@ -93,6 +93,7 @@ module COMMON-CONFIGURATION
                          <initializers> .Map </initializers>
                          <ctypes> .Map </ctypes>
                          <non-static-data-members> .List </non-static-data-members>
+                         <function-members> .List </function-members>
                          <access> .Map </access>
                          <max-offset> 0 </max-offset>
                          <max-align> 1 </max-align>

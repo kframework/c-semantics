@@ -48,7 +48,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Declarator ::= FunctionDefinition(NNS, CId, AType, List, AStmt)
                          | FunctionDecl(NNS, CId, AType, List)
-                         | VarDecl(NNS, CId, AType, Init)
+                         | VarDecl(NNS, CId, AType, Init, isDirect: Bool)
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr)
 
@@ -162,7 +162,6 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax AStmt ::= Stmt
      syntax Stmt ::= DeclStmt(List)
-                   | BreakStmt()
                   // GotoStmt(CId)
                    | ReturnStmt(Init)
                    | NullStmt()
@@ -175,6 +174,7 @@ module CPP-ABSTRACT-SYNTAX
                     | LabelAStmt(CId, List)
                     | ForAStmt(AStmt, AExpr, AExpr, AStmt)
                     | ForAStmt(AStmt, Decl, AExpr, AStmt)
+                    | WhileAStmt(Decl, AStmt)
                     | WhileAStmt(Expr, AStmt)
                     | DoWhileAStmt(AStmt, Expr)
                     | IfAStmt(Decl, AStmt, AStmt)
@@ -197,7 +197,7 @@ module CPP-ABSTRACT-SYNTAX
                    | BinaryOperator(OpId, Expr, Init)
                    | ConditionalOperator(Expr, Expr, Expr)
                    | ParenthesizedCast(AType, Expr) [strict]
-                   | StaticCast(AType, Expr)
+                   | StaticCast(AType, Expr) [strict]
                    | DynamicCast(AType, Expr)
                    | FunctionalCast(AType, List) [strict(1)]
                    | SizeofType(AType) [strict]
@@ -241,6 +241,8 @@ module CPP-ABSTRACT-SYNTAX
      // things that are not technically expressions, but will be transformed out
      // of existence by the semantics
      syntax Expr ::= MaterializeTemporaryExpr(Expr)
+                   | ConstructorCall(AType, List)
+                   | TemporaryObjectExpr(AType, List)
                    | ParenList(List)
                    | DefaultArg()
 
@@ -251,10 +253,15 @@ endmodule
 module CPP-ABSTRACT-REWRITING
      imports CPP-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-DECL-DECLARATOR-SYNTAX
 
      rule MemberExpr(false, false, N::Name, E::Expr) => E . no-template N [anywhere]
+     rule MemberExpr(true, false, N::Name, E::Expr) => BinaryOperator(operator->, E, N) [anywhere]
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
+     rule ConstructorCall(T::AType, ListItem(TemporaryObjectExpr(T, .List))) => FunctionalCast(T, .List) [anywhere]
+     rule ConstructorCall(T::AType, .List) => NoInit() [anywhere]
+     rule ConstructorCall(_, ListItem(E::Expr)) => E [owise, anywhere]
 endmodule

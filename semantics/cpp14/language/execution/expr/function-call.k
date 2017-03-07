@@ -66,23 +66,19 @@ module CPP-EXPR-FUNCTION-CALL
 
      rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
                Name(NoNNS(), X) := V, 
-               Var, AutoStorage, .Set) ...</k>
+               Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires notBool isCPPRefType(T)
                andBool X =/=K #NoName
      rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T,
                bindReference(Name(NoNNS(), X), V),
-               Var, AutoStorage, .Set) ...</k>
+               Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires isCPPRefType(T)
                andBool X =/=K #NoName
 
      rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObject(#NoName, T, V,
-               Var, AutoStorage, .Set)
-          requires notBool isCPPRefType(T)
-     rule bindParam(#NoName, T::CPPType, V:Val) => declareNonStaticObject(#NoName, T, V,
-               Var, AutoStorage, .Set)
-          requires isCPPRefType(T)
+               Var(CopyInit()), AutoStorage, .Set)
 
      // Function call conversion (C linkage)
      rule application(_, _, functionObject(X::CId, _, _, _),

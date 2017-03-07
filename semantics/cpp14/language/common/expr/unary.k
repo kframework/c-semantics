@@ -1,4 +1,5 @@
 module CPP-EXPR-UNARY
+     imports FLOAT
      imports INT
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -19,10 +20,16 @@ module CPP-EXPR-UNARY
      rule - prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, 0 -Int I, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
           requires isPromoted(T)
+     rule - prv(F:Float, Tr::Trace, T::CPPType)
+          => arithInterpret(T, --Float F, combine(Tr, #klabel(`-__CPP-SYNTAX`)))
+          requires isPromoted(T)
 
      context + (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      rule + prv(I:Int, Tr::Trace, T::CPPType)
           => arithInterpret(T, I, combine(Tr, #klabel(`+__CPP-SYNTAX`)))
+          requires isPromoted(T)
+     rule + prv(F:Float, Tr::Trace, T::CPPType)
+          => arithInterpret(T, F, combine(Tr, #klabel(`+__CPP-SYNTAX`)))
           requires isPromoted(T)
 
 endmodule

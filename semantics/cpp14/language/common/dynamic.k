@@ -20,6 +20,7 @@ module CPP-DYNAMIC-SORTS
      syntax ClassTemplate
      syntax NNSSpecifier
      syntax DeclarationType
+     syntax InitType
      syntax Linkage
      syntax Duration
      syntax QualId
@@ -88,7 +89,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax Trace ::= combine(Trace, Trace, Trace, ValueCategory, CPPType) [function, klabel(combine3)]
  
      syntax FunctionDeclarationType ::= "Function" "(" List ")" 
-     syntax VarDeclarationType ::= "Var"
+     syntax VarDeclarationType ::= "Var" "(" InitType ")"
+     syntax InitType ::= CopyInit() | DirectInit()
      syntax DeclarationType ::= FunctionDeclarationType | VarDeclarationType
      syntax Decl ::= declareNonStaticObject(id: CId, t: CPPType, init: K, DeclarationType, Duration, Set)
      syntax Decl ::= declareLocalStaticObject(CId, SymBase, CPPType)

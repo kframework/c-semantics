@@ -1,6 +1,8 @@
 // PR target/39002
 // { dg-do run }
 
+extern "C" double sqrt(double);
+
 struct S
 {
   double x;
@@ -14,7 +16,7 @@ void bar (S *, S *, S *, double &, double &, double &);
 double
 foo (S *a1, S *a2)
 {
-  return __builtin_sqrt ((a1->x - a2->x) * (a1->x - a2->x)
+  return sqrt ((a1->x - a2->x) * (a1->x - a2->x)
 			 + (a1->y - a2->y) * (a1->y - a2->y)
 			 + (a1->z - a2->z) * (a1->z - a2->z));
 }
@@ -50,7 +52,7 @@ bar (S *p, S *q, S *r, double &x, double &y, double &z)
   a1 = q->x - p->x;
   b1 = q->y - p->y;
   c1 = q->z - p->z;
-  e1 = __builtin_sqrt (a1 * a1 + b1 * b1 + c1 * c1);
+  e1 = sqrt (a1 * a1 + b1 * b1 + c1 * c1);
   a1 = a1 / e1;
   b1 = b1 / e1;
   c1 = c1 / e1;

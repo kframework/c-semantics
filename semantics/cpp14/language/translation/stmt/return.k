@@ -7,7 +7,7 @@ module CPP-STMT-RETURN
 
      context ReturnOp(HOLE:Expr) [result(Val)]
 
-     rule <k> ReturnStmt(I::Init) => ReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, AutoStorage, I)) ...</k>
+     rule <k> ReturnStmt(I::Init) => ReturnOp(figureInit(le(temp(!I:Int, Ret), noTrace, Ret), Ret, AutoStorage, I, CopyInit())) ...</k>
           <curr-function> Base::SymBase </curr-function>
           <functions>... Base |-> functionObject(_, t(_, _, functionType(... returnType: Ret::CPPType)), _, _) ...</functions>
 

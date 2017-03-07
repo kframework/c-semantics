@@ -28,9 +28,14 @@ module CPP-TRANSLATION-EXPR-ADDITIVE
 
      rule L:PRVal - R:PRVal => pre(stripHold(L) - stripHold(R), combine(trace(L), trace(R), #klabel(`_-__CPP-SYNTAX`)), type(L))
           requires (isPRExpr(L) orBool isPRExpr(R))
-               andBool isCPPIntegerType(type(L))
+               andBool (isCPPIntegerType(type(L)) orBool isCPPFloatingType(type(L)))
                andBool isPromoted(type(L))
                andBool type(L) ==Type type(R)
 
+     rule L:PRVal - R:PRVal => pre(stripHold(L) - stripHold(R), combine(trace(L), trace(R), #klabel(`_-__CPP-SYNTAX`)), type(L))
+          requires (isPRExpr(L) orBool isPRExpr(R))
+               andBool isCPPPointerType(type(L)) andBool isCPPIntegerType(type(R))
+                    andBool isCompleteType(innerType(type(L))) 
+                    andBool isObjectType(innerType(type(L)))
 
 endmodule

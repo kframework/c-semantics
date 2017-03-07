@@ -15,8 +15,13 @@ module CPP-OPERATORS
      syntax Expr ::= #BinaryOperator(OpId, Expr, TypeExpr, Init, K)
                    | #UnaryOperator(OpId, Expr, TypeExpr)
      context #BinaryOperator(_, _, (HOLE:TypeExpr => typeof(HOLE)), _, _) [result(CPPDType)]
-     context #BinaryOperator(_, _, _, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context #BinaryOperator(O::OpId, _, _, _, (HOLE:TypeExpr => typeof(HOLE)))
+             requires O =/=K operator-> [result(CPPDType)]
      context #UnaryOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+
+     rule #BinaryOperator(operator->, E1::Expr, T1:CPPType, E2::Init, _)
+          => builtinOperator(operator->, E1, E2)
+          requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
      rule #BinaryOperator(O::OpId, E1::Expr, T1:CPPType, E2::Init, T2:CPPType)
           => builtinOperator(O, E1, E2)
@@ -33,6 +38,8 @@ module CPP-OPERATORS
           => E1 := E2
      rule builtinOperator(operator[], E1::Expr, E2::Expr)
           => E1[E2]
+     rule builtinOperator(operator->, E1::Expr, E2::Name)
+          => E1 -> no-template E2
      rule builtinOperator(operator+, E1::Expr, E2::Expr)
           => E1 + E2
      rule builtinOperator(operator-, E1::Expr, E2::Expr)

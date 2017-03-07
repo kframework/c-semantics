@@ -132,11 +132,15 @@ module CPP-TYPING-EXPR
      syntax CPPDType ::= dataMember(Class, CPPType)
      context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPDType)]
      context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
-     context typeofOperator(_, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context typeofOperator(O::OpId, _, (HOLE:TypeExpr => typeof(HOLE)))
+             requires notBool O ==K operator-> [result(CPPDType)]
      rule typeofOperator(O::OpId, T1:CPPDType, T2:CPPDType)
           => typeofBuiltinOperator(O, T1, T2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
+     rule typeofOperator(operator->, T1:CPPDType, T2::TypeExpr)
+          => typeofBuiltinOperator(operator->, T1, T2)
+          requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
      rule typeofOperator(O::OpId, T1:CPPDType)
           => typeofBuiltinOperator(O, T1)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
@@ -163,6 +167,8 @@ module CPP-TYPING-EXPR
           => typeof(T)
      rule typeofBuiltinOperator(operator>>=, T::CPPType, _)
           => typeof(T)
+     rule typeofBuiltinOperator(operator->, T:CPPPointerType, Name(NoNNS(), X::CId))
+          => typeofField(innerType(T), X)
      rule typeofBuiltinOperator(operator||, _, _)
           => typeof(type(bool))
      rule typeofBuiltinOperator(operator&&, _, _)

@@ -138,7 +138,6 @@ module CPP-DECL-CLASS
 //     rule pad(V::Int, _) => V [owise]
 
      // brace-or-equal initializers need to be evalauted in class scope
-     syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
      rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
           <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
      rule <k> le(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)

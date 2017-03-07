@@ -136,6 +136,35 @@ public:
     return RecursiveASTVisitor::TraverseStmt(S);
   }
 
+// copied from RecursiveASTVisitor.h with a change made: D->isImplicit() -> isImplicitDecl(D)
+bool TraverseDecl(Decl *D) {
+  if (!D)
+    return true;
+
+  // As a syntax visitor, by default we want to ignore declarations for
+  // implicit declarations (ones not typed explicitly by the user).
+  if (!getDerived().shouldVisitImplicitCode() && isImplicitDecl(D))
+    return true;
+
+  switch (D->getKind()) {
+#define ABSTRACT_DECL(DECL)
+#define DECL(CLASS, BASE)                                                      \
+  case Decl::CLASS:                                                            \
+    if (!getDerived().Traverse##CLASS##Decl(static_cast<CLASS##Decl *>(D)))    \
+      return false;                                                            \
+    break;
+#include "clang/AST/DeclNodes.inc"
+  }
+
+  // Visit any attributes attached to this declaration.
+  for (auto *I : D->attrs()) {
+    if (!getDerived().TraverseAttr(I))
+      return false;
+  }
+  return true;
+}
+
+
   void AddCabsLoc(SourceLocation loc) {
     AddKApplyNode("CabsLoc", 5);
     SourceManager &mgr = Context->getSourceManager();
@@ -202,11 +231,44 @@ public:
     nodes.push_back(node);
   }
 
+ // backported from later version of clang into this binary because we need it to check
+ // for anonymous unions
+ template <typename T>
+ inline T getTypeLocAsAdjusted(TypeLoc Cur) const {
+   while (!Cur.getAs<T>()) {
+     if (auto PTL = Cur.getAs<ParenTypeLoc>())
+       Cur = PTL.getInnerLoc();
+     else if (auto ATL = Cur.getAs<AttributedTypeLoc>())
+       Cur = ATL.getModifiedLoc();
+     else if (auto ETL = Cur.getAs<ElaboratedTypeLoc>())
+       Cur = ETL.getNamedTypeLoc();
+     else if (auto ATL = Cur.getAs<AdjustedTypeLoc>())
+       Cur = ATL.getOriginalLoc();
+     else
+       break;
+   }
+   return Cur.getAs<T>();
+ }
+
+  bool isAnonymousUnionVarDecl(const clang::Decl *D) {
+    if (const VarDecl *VD = dyn_cast<VarDecl>(D)) {
+      TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
+      if (RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL)) {
+        return RTL.getDecl()->isAnonymousStructOrUnion();
+      } 
+    }
+    return false;
+  }
+
+  bool isImplicitDecl(clang::Decl const *d) {
+    return d->isImplicit() && !isAnonymousUnionVarDecl(d);
+  }
+
   void AddDeclContextNode(DeclContext *D) {
     int i = 0;
     for (DeclContext::decl_iterator iter = D->decls_begin(), end = D->decls_end(); iter != end; ++iter) {
       clang::Decl const *d = *iter;
-      if (!d->isImplicit()) {
+      if (!isImplicitDecl(d)) {
         i++;
       }
     }
@@ -216,7 +278,7 @@ public:
   bool TraverseDeclContextNode(DeclContext *D) {
     for (DeclContext::decl_iterator iter = D->decls_begin(), end = D->decls_end(); iter != end; ++iter) {
       clang::Decl *d = *iter;
-      if (!d->isImplicit()) {
+      if (!isImplicitDecl(d)) {
         TRY_TO(TraverseDecl(d));
       }
     }
@@ -516,6 +578,9 @@ public:
             case RQ_RValue:
             AddKApplyNode("RefQualifier",2);
             AddKApplyNode("RefRValue", 0);
+            break;
+            case RQ_None: // do nothing
+            break;
           }
           AddKApplyNode("MethodPrototype", 2);
           TRY_TO(TraverseType(Method->getThisType(*Context)));
@@ -571,7 +636,7 @@ public:
     if (unsigned align = D->getMaxAlignment()) {
       AddSpecifier("Alignas", align / 8);
     }
-    AddKApplyNode("VarDecl", 4);
+    AddKApplyNode("VarDecl", 5);
 
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
@@ -581,11 +646,28 @@ public:
     } else {
       AddKApplyNode("NoInit", 0);
     }
+    VisitBool(D->isDirectInit());
     return true;
   }
 
   bool TraverseVarDecl(VarDecl *D) {
-    return TraverseVarHelper(D);
+    if (D->isImplicit() && !isImplicitDecl(D) && isAnonymousUnionVarDecl(D)) {
+      // for some reason clang doesn't emit a RecordDecl in this case, even
+      // though one exists implicitly within the VarDecl it creates. We need
+      // this but we don't actually need the VarDecl, so I am manually
+      // inserting it here when we visit the implicit VarDecl.
+      // this is a hideously ugly hack but aside from using a different
+      // version of clang and potentially fixing the issue ourselves,
+      // there's not much else we can do.
+      
+      const VarDecl *VD = dyn_cast<VarDecl>(D);
+      TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
+      RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL);
+      TRY_TO(TraverseDecl(RTL.getDecl()));
+      return true;
+    } else {
+      return TraverseVarHelper(D);
+    }
   }
 
   bool TraverseFieldDecl(FieldDecl *D) {
@@ -1385,9 +1467,15 @@ public:
     return true;
   }
 
-  bool VisitWhileStmt(WhileStmt *S) {
+  bool TraverseWhileStmt(WhileStmt *S) {
     AddKApplyNode("WhileAStmt", 2);
-    return false;
+    if (S->getConditionVariable()) {
+      TRY_TO(TraverseDecl(S->getConditionVariable()));
+    } else {
+      TRY_TO(TraverseStmt(S->getCond()));
+    }
+    TRY_TO(TraverseStmt(S->getBody()));
+    return true;
   }
 
   bool VisitDoStmt(DoStmt *S) {
@@ -1743,8 +1831,8 @@ public:
     return false;
   }
 
-  bool TraverseCXXConstructHelper(QualType T, Expr **begin, Expr **end) {
-    AddKApplyNode("FunctionalCast", 2);
+  bool TraverseCXXConstructHelper(const char *klabel, QualType T, Expr **begin, Expr **end) {
+    AddKApplyNode(klabel, 2);
     TRY_TO(TraverseType(T));
     int i = 0;
     for (Expr **iter = begin; iter != end; ++iter) {
@@ -1758,24 +1846,24 @@ public:
   }
 
   bool TraverseCXXUnresolvedConstructExpr(CXXUnresolvedConstructExpr *E) {
-    return TraverseCXXConstructHelper(E->getTypeAsWritten(), E->arg_begin(), E->arg_end());
+    return TraverseCXXConstructHelper("UnresolvedConstructorCall", E->getTypeAsWritten(), E->arg_begin(), E->arg_end());
   }
 
   bool TraverseCXXFunctionalCastExpr(CXXFunctionalCastExpr *E) {
     Expr *arg = E->getSubExprAsWritten();
-    return TraverseCXXConstructHelper(E->getTypeInfoAsWritten()->getType(), &arg, &arg+1);
+    return TraverseCXXConstructHelper("FunctionalCast", E->getTypeInfoAsWritten()->getType(), &arg, &arg+1);
   }
 
   bool TraverseCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), 0, 0);
+    return TraverseCXXConstructHelper("FunctionalCast", E->getTypeSourceInfo()->getType(), 0, 0);
   }
 
   bool TraverseCXXConstructExpr(CXXConstructExpr *E) {
-    return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    return TraverseCXXConstructHelper("ConstructorCall", E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) { 
-    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    return TraverseCXXConstructHelper("TemporaryObjectExpr", E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {

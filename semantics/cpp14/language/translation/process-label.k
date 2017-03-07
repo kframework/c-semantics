@@ -61,6 +61,8 @@ module CPP-PROCESS-LABEL
      rule <k> waitingOnGotoMap ...</k>
           <computation> ExpressionStmt(_) => .K ...</computation>
      rule <k> waitingOnGotoMap ...</k>
+          <computation> BreakStmt() => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
           <computation> ReturnOp(_) => .K ...</computation>
      rule <k> waitingOnGotoMap ...</k>
           <computation> GotoStmt(_) => .K ...</computation>
@@ -125,6 +127,24 @@ module CPP-PROCESS-LABEL
           </goto-calc>)
 
      rule <k> waitingOnGotoMap ...</k>
+          <computation>
+               (.K => S ~> loopMarked)
+               ~> WhileStmt(_:Expr, S::Stmt)
+               ~> (.K => popLoop)
+               ~> K:K
+          </computation>
+          <computation-tail> Tail:K </computation-tail>
+          <goto-block-history> ListItem(Num::Int) ...</goto-block-history>
+          <goto-loop-stack>
+               (.List => ListItem(kpair(Num, (K ~> Tail))))
+          ...</goto-loop-stack>
+
+     rule <k> waitingOnGotoMap ...</k>
+          <computation>
+               (loopMarked ~> WhileStmt(_:Expr, _) => .K) ~> popLoop ~> _
+          </computation>
+
+     rule <k> waitingOnGotoMap ...</k>
           <goto-calc>
                <computation>
                     (IfStmt(_:Expr, S1::Block, S2::Block) => .K) ~> K:K
@@ -142,6 +162,10 @@ module CPP-PROCESS-LABEL
                <computation-tail> K ~>  Tail </computation-tail>
                B
           </goto-calc>)
+
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> popLoop => .K ...</computation>
+          <goto-loop-stack> ListItem(_) => .List ...</goto-loop-stack>
 
      rule <k> waitingOnGotoMap ...</k>
           <goto-calc>

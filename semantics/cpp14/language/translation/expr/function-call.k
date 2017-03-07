@@ -28,7 +28,7 @@ module CPP-EXPR-FUNCTION-CALL
 
      syntax List ::= bindParams(List, List) [function]
      rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List)
-          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, AutoStorage, Init)) bindParams(P, A)
+          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, AutoStorage, Init, CopyInit())) bindParams(P, A)
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
      // in this case we are calling bindReference instead of the regular initialization scenario, but
      // bindReference shouldn't be executed in the calling context, it needs to be executed only in the 

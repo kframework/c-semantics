@@ -22,5 +22,8 @@ module CPP-EXPR-INC-AND-DEC
      rule ++ LV:LVal
           => LV := prv(1, noTrace, type(bool))
           requires isCPPBoolType(type(LV))
+     rule -- LV:LVal
+          => LV -= prv(1, noTrace, type(int))
+          requires notBool isCPPBoolType(type(LV))
 
 endmodule

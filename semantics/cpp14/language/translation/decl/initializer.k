@@ -5,7 +5,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-SORTS
      imports CPP-TYPING-SORTS
 
-     syntax Expr ::= figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, init: Init)
+     syntax Expr ::= figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, init: Init, type: InitType)
      syntax Expr ::= valueInit(LVal, CPPType)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
@@ -29,8 +29,8 @@ module CPP-DECL-INITIALIZER
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
 
-     rule figureInit(Base::Expr, DestT::CPPTypeExpr, Duration::Duration, Init::Init) => #figureInit(Base, DestT, Duration, Init, Init, Init)
-     syntax Expr ::= #figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, init: Init, srcT: K, srcCat: K)
+     rule figureInit(Base::Expr, DestT::CPPTypeExpr, Duration::Duration, Init::Init, Type::InitType) => #figureInit(Base, DestT, Duration, Type, Init, Init, Init)
+     syntax Expr ::= #figureInit(base: Expr, destT: CPPTypeExpr, storage: Duration, type: InitType, init: Init, srcT: K, srcCat: K)
 
      context #figureInit(... base: HOLE:Expr) [result(LVal)]
 
@@ -41,72 +41,63 @@ module CPP-DECL-INITIALIZER
      rule <k> #figureInit(... init: ExprLoc(L::CabsLoc, I::Init) => I) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
 
-     // expression initializer, non-class type
-     rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory)
-          => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) := E #else ill-formed #fi
-          requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT) 
-
-     rule #figureInit(Base:LVal, DestT:CPPRefType, _, E:Expr, _, _)
-          => bindReference(le(Base, trace(Base), DestT), E)
-
      // 8.5:12
-     rule #figureInit(Base:LVal, DestT::CPPType, StaticStorage, NoInit(), _, _)
-          => zeroInit(Base, DestT, StaticStorage)
-     rule #figureInit(Base:LVal, DestT::CPPType, AutoStorage, NoInit(), _, _)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, _, NoInit(), _, _)
           => defaultInit(Base, DestT)
-     rule #figureInit(Base:LVal, DestT::CPPTypeExpr, DynamicStorage, NoInit(), _, _)
-          => defaultInit(Base, DestT)
-     // 8.5:6.1, 6.4 (scalar type or array of scalars, initialized implicitly by memory read)
-     rule zeroInit(Base:LVal, T::CPPType, StaticStorage) => Base
-          requires notBool isCPPClassType(T)
-           andBool (notBool isCPPArrayType(T) orBool notBool isCPPClassType(innerType(T))) andBool notBool isCPPRefType(T)
      // 8.5:7.2-7.3 (non-class, non-array-of-classes, initialized implicitly by memory read)
      rule defaultInit(Base:LVal, T::CPPType) => Base
           requires notBool isCPPClassType(T) andBool (notBool isCPPArrayType(T) orBool notBool isCPPClassType(innerType(T)))
-     // 8.5:6.1 for non-statically declared scalars
-     rule zeroInit(Base:LVal, T:CPPScalarType, D::Duration) => le(Base, trace(Base), T) := interpret(prv(0, noTrace, T))
-          requires D =/=K StaticStorage
+     // 8.5:6.1
+     rule zeroInit(Base:LVal, T:CPPScalarType) => le(Base, trace(Base), T) := interpret(prv(0, noTrace, T))
 
      // 8.5:8.4
-     rule valueInit(Base:LVal, T::CPPType) => zeroInit(Base, T, AutoStorage)
+     rule valueInit(Base:LVal, T::CPPType) => zeroInit(Base, T)
           requires notBool isCPPClassType(T)
            andBool notBool isCPPArrayType(T)
            andBool notBool isCPPRefType(T)
 
-
      // 8.5:17.1 (list initializer)
-     rule #figureInit(Base:LVal, DestT::CPPType, D::Duration, BraceInit(L::List), _, _)
-          => listInit(Base, DestT, D, L)
+     rule #figureInit(Base:LVal, DestT::CPPType, D::Duration, Type::InitType, BraceInit(L::List), _, _)
+          => listInit(Base, DestT, D, Type, L)
 
-     // 8.5:17.3
-     rule #figureInit(Base:LVal, DestT:CPPArrayType, D::Duration, StringLiteral(Kind::CharKind, S::String), _, _)
+     // 8.5:17.2 (reference destination type)
+     rule #figureInit(Base:LVal, DestT:CPPRefType, _, _, E:Expr, _, _)
+          => bindReference(le(Base, trace(Base), DestT), E)
+
+     // 8.5:17.3 (string literal)
+     rule #figureInit(Base:LVal, DestT:CPPArrayType, D::Duration, _, StringLiteral(Kind::CharKind, S::String), _, _)
           => strInit(Base, DestT, D, Kind, S, 0, .K)
           requires isCPPCharType(innerType(DestT)) 
                orBool simpleType(innerType(DestT)) ==K wchar_t 
                orBool simpleType(innerType(DestT)) ==K char16_t
                orBool simpleType(innerType(DestT)) ==K char32_t
 
+     // expression initializer, non-class type
+     rule #figureInit(Base:LVal, DestT::CPPType, _, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory)
+          => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) := E #else ill-formed #fi
+          requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT) 
+
      rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)
           => functionDef(Base, S)
 
-     syntax KItem ::= listInit(LVal, CPPType, Duration, List)
+     syntax KItem ::= listInit(LVal, CPPType, Duration, InitType, List)
                     | aggInit(LVal, CPPType, Duration, List)
                     | arrayInit(LVal, CPPType, Duration, Int, List, K)
                     | strInit(LVal, CPPType, Duration, CharKind, String, Int, K)
-                    | zeroInit(LVal, CPPType, Duration)
+                    | zeroInit(LVal, CPPType)
                     | defaultInit(LVal, CPPTypeExpr)
 
      // TODO(dwightguth): all the cases for class type
-     rule listInit(Base::LVal, T::CPPType, D::Duration, L::List)
-          => #if isAggregateType(T) #then aggInit(Base, T, D, L)
-             #else #if size(L) ==Int 1 andBool notBool isCPPRefType(T) #then figureInit(Base, T, D, {L[0]}:>Init) #else ill-formed #fi #fi
-          requires notBool isCPPClassType(T) 
-               andBool notBool (isCPPArrayType(T) andBool isCPPCharType(innerType(T)) andBool size(L) ==Int 1 andBool getKLabel(L[0]) ==K #klabel(`StringLiteral`))
-
-     // 8.5.4:3.1
-     rule listInit(Base::LVal, T::CPPType, D::Duration, L::List)
+     rule listInit(Base::LVal, T::CPPType, D::Duration, _, L::List)
           => aggInit(Base, T, D, L)
-          requires isCPPClassType(T) andBool isAggregateType(T)
+          requires isAggregateType(T)
+
+     rule listInit(Base::LVal, T::CPPType, D::Duration, Type::InitType, L::List)
+          => figureNarrowInit(Base, T, D, Type, {L[0]}:>Init, {L[0]}:>Init)
+          requires notBool isAggregateType(T)
+               andBool notBool isCPPClassType(T)
+               andBool notBool isCPPRefType(T)
+               andBool size(L) ==Int 1
 
      rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), _, L::List)
      rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), D::Duration, L::List)
@@ -127,7 +118,7 @@ module CPP-DECL-INITIALIZER
                            initList: .List,
                            initExp: E::Expr)
        => compoundInit(E, Base)
-     rule (.K => figureNarrowInit(le(Base . no-template Name(C, F), noTrace, T), T, D, Init, Init))
+     rule (.K => figureNarrowInit(le(Base . no-template Name(C, F), noTrace, T), T, D, CopyInit(), Init, Init))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(F:CId) => .List) FL::List,
                            initList: (ListItem(Init::Expr) => .List) _,
@@ -136,7 +127,7 @@ module CPP-DECL-INITIALIZER
                            class: C::Class)
      rule (V:Val => .K) ~> classAggInit(... initExp: (E::Expr => compoundInit(E, V)))
 
-     rule (.K => figureInit(le(Base . no-template Name(C, F), noTrace, T), T, D, evalBraceOrEqualInitializer(C, Base, Init)))
+     rule (.K => figureInit(le(Base . no-template Name(C, F), noTrace, T), T, D, evalBraceOrEqualInitializer(C, Base, Init), CopyInit()))
        ~> classAggInit(... base: Base::LVal,
                            fields: (ListItem(F:CId) => .List) _,
                            initList: .List,
@@ -144,10 +135,10 @@ module CPP-DECL-INITIALIZER
                            duration: D::Duration,
                            class: C::Class)
 
-     syntax Expr ::= figureNarrowInit(Expr, CPPTypeExpr, Duration, Init, K)
-     context figureNarrowInit(_, _, _, _, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPType)]
-     rule figureNarrowInit(Base::Expr, DestT::CPPType, D::Duration, Init::Init, SrcT:CPPType)
-          => figureInit(Base, DestT, D, Init)
+     syntax Expr ::= figureNarrowInit(Expr, CPPTypeExpr, Duration, InitType, Init, srcT: K)
+     context figureNarrowInit(... srcT: (HOLE:TypeExpr => typeof(HOLE))) [result(CPPType)]
+     rule figureNarrowInit(Base::Expr, DestT::CPPType, D::Duration, Type::InitType, Init::Init, SrcT:CPPType)
+          => figureInit(Base, DestT, D, Init, Type)
           requires notBool isNarrowingConversion(DestT, SrcT, Init)
 
      syntax Bool ::= isNarrowingConversion(dest: CPPType, src: CPPType, Init) [function]
@@ -155,13 +146,16 @@ module CPP-DECL-INITIALIZER
      rule isNarrowingConversion(DestT:CPPIntegerType, SrcT:CPPFloatingType, _) => true
      rule isNarrowingConversion(T1::CPPType, T2::CPPType, _) => false
           requires T1 ==Type T2
+     rule isNarrowingConversion(T1::CPPType, T2::CPPType, _) => false
+          requires notBool (isCPPIntegerType(T1) orBool isCPPFloatingType(T1) orBool isCPPUnscopedEnumType(T1))
+               orBool notBool (isCPPIntegerType(T2) orBool isCPPFloatingType(T2) orBool isCPPUnscopedEnumType(T2))
 
      syntax List ::= getNonStaticDataMembers(ClassInfo) [function]
      rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
      syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
      rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
 
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, D, Init))
+     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, D, Init, CopyInit()))
           ~> arrayInit(Base::LVal, t(_, _, arrayType(T::CPPType, _)), D::Duration, (I::Int => I +Int 1), (ListItem(Init::Init) => .List) _, _)
           requires notBool isAggregateType(T) orBool isBraceInit(Init)
      rule (V:Val => .K)
@@ -169,9 +163,9 @@ module CPP-DECL-INITIALIZER
      rule arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), _, Size::Int, .List, E::Expr)
           => compoundInit(E, Base)
 
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], innerType(T), D, CharacterLiteral(C, ordChar(firstChar(S))))) ~> strInit(Base:LVal, T::CPPArrayType, D::Duration, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
+     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], innerType(T), D, CharacterLiteral(C, ordChar(firstChar(S))), CopyInit())) ~> strInit(Base:LVal, T::CPPArrayType, D::Duration, C::CharKind, (S::String => butFirstChar(S)), (I::Int => I +Int 1), _)
           requires S =/=String ""
-     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, D, CharacterLiteral(C, 0))) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), D::Duration, C::CharKind, "", (I::Int => I +Int 1), _)
+     rule (.K => figureInit(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T, D, CharacterLiteral(C, 0), CopyInit())) ~> strInit(Base:LVal, t(_, _, arrayType(T::CPPType, N::Int)), D::Duration, C::CharKind, "", (I::Int => I +Int 1), _)
           requires I <Int N
      rule (V:Val => .K)
           ~> strInit(_, _, _, _, _, _, (E::Expr => compoundInit(E, V)))

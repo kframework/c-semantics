@@ -57,10 +57,13 @@ module CPP-TRANSLATION-EXPR-CAST
      rule tryConvert(V:Val, _) => V
           requires V =/=K cannot-convert
 
+     rule StaticCast(T:CPPType, V:Val)
+          => convertStatic(T, V, hasTrace(StaticCast(T, V)))
+
      syntax Expr ::= tryInit(CPPType, Val, K) [strict(3)]
 
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
-          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, AutoStorage, V)) [owise]
+          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, AutoStorage, V, DirectInit())) [owise]
 
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
      rule tryInit(_, _, V:Val) => V
@@ -87,5 +90,9 @@ module CPP-TRANSLATION-EXPR-CAST
           => pre(ReinterpretCast(T2, stripHold(V)), trace(V), T2)
           requires (isCPPIntegerType(T2) andBool isCPPPointerType(type(V)) 
                     andBool byteSizeofType(T2) >=Int byteSizeofType(type(V)))
+
+     rule convertReinterpret(t(... st: pointerType(t(Q::Quals, _, _))) #as T::CPPType, V:PRVal)
+          => StaticCast(T, StaticCast(type(pointerType(t(Q, .Set, void))), V))
+
 
 endmodule
