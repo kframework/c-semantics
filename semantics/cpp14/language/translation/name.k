@@ -398,6 +398,12 @@ module CPP-TRANSLATION-NAME
      // 3.4.2:2.2
      rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateParams))) #as T::CPPClassType) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
+     // 3.4.2:2.3
+     rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(enumId(N::Namespace :: _), _))) L::List, B::NamespacesCell)
+          => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
+     rule getAssociatedNamespaces(ListItem(t(_, _, unscopedEnum(enumId(N::Namespace :: _), _, _))) L::List, B::NamespacesCell)
+          => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
+
      // 3.4.2:2.4
      rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) _, _)
           requires isCPPPointerType(T) orBool isCPPArrayType(T)
