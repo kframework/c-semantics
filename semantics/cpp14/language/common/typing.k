@@ -281,7 +281,7 @@ module CPP-TYPING
      rule getMIRefQualifier(methodInfo(... refQual: RQ::RefQualifier)) => RQ
      rule getMIRefQualifier(noMethod) => RefNone()
      syntax MethodInfo ::= setMIRefQualifier(MethodInfo, RefQualifier) [function]
-     rule setMIRefQualifier(methodInfo(_, CVS::Quals, IsStatic::Bool, IsVirtual::Bool, C::Class), RQ::RefQualifier) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMIRefQualifier(methodInfo(...) #as MI::MethodInfo, RQ::RefQualifier) => #fun(methodInfo(... refQual: _ => RQ))(MI)
      rule setMIRefQualifier(noMethod => defaultMethodInfo(), RQ::RefQualifier)
 
      rule getCVSQuals(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMICVSQuals(MI)
@@ -292,7 +292,7 @@ module CPP-TYPING
      rule getMICVSQuals(methodInfo(... cvQuals: CVS::Quals)) => CVS
      rule getMICVSQuals(noMethod) => noQuals
      syntax MethodInfo ::= setMICVSQuals(MethodInfo, Quals) [function]
-     rule setMICVSQuals(methodInfo(RQ::RefQualifier, _, IsStatic::Bool, IsVirtual::Bool, C::Class), CVS::Quals) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMICVSQuals(methodInfo(...) #as MI::MethodInfo, CVS::Quals) => #fun(methodInfo(... cvQuals: _ => CVS))(MI)
      rule setMICVSQuals(noMethod => defaultMethodInfo(), CVS::Quals)
      
      rule isMethodStatic(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIStatic(MI)
@@ -303,7 +303,7 @@ module CPP-TYPING
      rule getMIStatic(methodInfo(... static: IsStatic::Bool)) => IsStatic
      rule getMIStatic(noMethod) => false
      syntax MethodInfo ::= setMIStatic(MethodInfo) [function]
-     rule setMIStatic(methodInfo(RQ::RefQualifier, CVS::Quals, _, IsVirtual::Bool, C::Class)) => methodInfo(RQ, CVS, true, IsVirtual, C)
+     rule setMIStatic(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... static: _ => true))(MI)
      rule setMIStatic(noMethod => defaultMethodInfo())
 
      rule isMethodVirtual(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIVirtual(MI)
@@ -314,7 +314,7 @@ module CPP-TYPING
      rule getMIVirtual(methodInfo(... virtual: IsVirtual::Bool)) => IsVirtual
      rule getMIVirtual(noMethod) => false
      syntax MethodInfo ::= setMIVirtual(MethodInfo) [function]
-     rule setMIVirtual(methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class)) => methodInfo(RQ, CVS, IsStatic, true, C)
+     rule setMIVirtual(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... virtual: _ => true))(MI)
      rule setMIVirtual(noMethod => defaultMethodInfo())
      
      rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
@@ -324,7 +324,7 @@ module CPP-TYPING
      syntax Class ::= getMIClass(MethodInfo) [function]
      rule getMIClass(methodInfo(... class: C::Class)) => C
      syntax MethodInfo ::= setMIClass(MethodInfo, Class) [function]
-     rule setMIClass(methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, IsVirtual::Bool, _), C::Class) => methodInfo(RQ, CVS, IsStatic, IsVirtual, C)
+     rule setMIClass(methodInfo(...) #as MI::MethodInfo, C::Class) => #fun(methodInfo(... class: _ => C))(MI)
      rule setMIClass(noMethod => defaultMethodInfo(), C::Class)
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
