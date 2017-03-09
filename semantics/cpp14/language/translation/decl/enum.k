@@ -21,7 +21,7 @@ module CPP-DECL-ENUM
      imports STRING
 
      rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, Enumerators::List)
-          => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, Fixed), Enumerators, Fixed, UT) ...</k>
+          => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, Fixed), Enumerators, Fixed, UT, false) ...</k>
           <curr-scope> Sc::Scope </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -62,42 +62,62 @@ module CPP-DECL-ENUM
           <types> NT::Map => NT[X, Enum() <- E] </types>
 
 
-     syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType) [strict(2)]
+     syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType, opaque: Bool) [strict(2)]
 
-     rule enumContext(X::CId, E::CPPEnumType, Enumerators:List, Fixed::Bool, UT::CPPIntegerType)
-          => newEnum(E, Fixed)
+     rule enumContext(X::CId, E::CPPEnumType, Enumerators:List, Fixed::Bool, UT::CPPIntegerType, Opaque:Bool)
+          => newEnum(getEnumId(E), E, Fixed, Opaque)
           ~> addEnumToEnv(X, E)
-          ~> inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true))
+          ~> #if Opaque #then .K #else inEnumScope(E, declareEnumerators(E, 0, 0, 0, int, Enumerators, Fixed, true)) #fi
 
      syntax KItem ::= inEnumScope(CPPEnumType, K)
      rule <k> inEnumScope(E::CPPEnumType, K:K) => K ~> setScope(OldScope) ... </k>
           <curr-scope> OldScope::Scope => enumScope(getEnumId(E))  </curr-scope>
 
 
-     // second param -underlying type
-     syntax KItem ::= newEnum(CPPEnumType, fixed: Bool)
+     syntax KItem ::= newEnum(EnumId, CPPEnumType, fixed: Bool, opaque: Bool)
 
-     rule <k> newEnum(E:CPPEnumType, true) => . ... </k>
+     rule <k> newEnum(EI::EnumId, E:CPPEnumType, true, Opaque::Bool) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
-               <enum-id> getEnumId(E) </enum-id>
+               <enum-id> EI </enum-id>
                <enum-type> E </enum-type>
                <scoped> getScoped(E) </scoped>
                <enum-complete> true </enum-complete>
+               <enum-opaque> Opaque </enum-opaque>
                <enum-min> min(underlyingType(E)) </enum-min>
                <enum-max> max(underlyingType(E)) </enum-max>
            ...</cppenum>)
+          requires getEnumInfo(E) ==K #incomplete
 
-     rule <k> newEnum(E:CPPUnscopedEnumType, false) => . ... </k>
+     rule <k> newEnum(EI::EnumId, E:CPPUnscopedEnumType, false, false) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           (.Bag => <cppenum>...
-               <enum-id> getEnumId(E) </enum-id>
+               <enum-id> EI </enum-id>
                <enum-type> E </enum-type>
                <scoped> false </scoped>
+               <enum-opaque> false </enum-opaque>
                <enum-complete> false </enum-complete>
            ...</cppenum>)
+
+     // Redeclaration
+     rule <k> newEnum(EI::EnumId, E1:CPPEnumType, true, Opaque:Bool) => . ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <enum-id> EI </enum-id>
+          <enum-type> E2:CPPEnumType </enum-type>
+          <enum-opaque> OldOpaque:Bool => OldOpaque andBool Opaque </enum-opaque>
+          requires E1 ==K E2
+
+     rule <k> (.K => ILL("TDE5", "A scoped/unscoped enumeration shall not be later redeclared as unscoped/scoped or with a different underlying type")) ~>
+               newEnum(EI::EnumId, E1:CPPEnumType, true, _) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <enum-id> EI </enum-id>
+          <enum-type> E2:CPPEnumType </enum-type>
+          requires E1 =/=K E2
+
 
      syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, List, fixed: Bool, first: Bool)
 
@@ -265,6 +285,18 @@ module CPP-DECL-ENUM
           <enum-max> _ => Max </enum-max>
           <enum-complete> _ => true </enum-complete>
 
+
+     // 7.2/3: ... An opaque-enum-declaration is either a redeclaration of an enumeration in the current scope...
+     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) => . ...</k>
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+          <enum-id> enumId(N::Namespace :: Enum(X)) </enum-id>
+
+     // 7.2/3 ... or a declaration of a new enumeration.
+     rule <k> OpaqueEnumDeclaration(X::CId, Scoped::Bool, UT::CPPIntegerType) 
+     => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, true), .List, true, UT, true) ...</k>
+          <curr-scope> Sc::Scope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
 
 endmodule
 
