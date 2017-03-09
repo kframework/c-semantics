@@ -143,6 +143,8 @@ module CPP-DYNAMIC-SYNTAX
      rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
 
      syntax QualId ::= Class "::" CId
+     syntax QualId ::= mkQualId(NNSVal, CId) [function]
+     syntax CId ::= getId(QualId) [function]
 
      syntax NamespaceScope ::= namespaceScope(Namespace)
      syntax ClassScope ::= classScope(Class)
@@ -452,5 +454,11 @@ module CPP-DYNAMIC
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
      rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("std::terminate (void)")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), .List) 
+
+     rule mkQualId(N:Namespace, X::CId) => N :: X
+     rule mkQualId(C:Class, X::CId) => C :: X
+
+     rule getId(N:Namespace :: X::CId) => X
+     rule getId(C:Class :: X::CId) => X
 
 endmodule

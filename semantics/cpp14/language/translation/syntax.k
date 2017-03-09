@@ -89,6 +89,7 @@ module CPP-ABSTRACT-SYNTAX
                    | UsingDirective(CId, NNS)
 
      syntax Decl ::= DeclLoc(CabsLoc, Decl)
+                   | NoDecl()
 
      syntax BaseSpecifier ::= BaseClass(Bool, Bool, AccessSpecifier, AType)
      syntax Enumerator ::= Enumerator(CId, AExpr)

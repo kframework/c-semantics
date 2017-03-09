@@ -11,6 +11,7 @@ module CPP-CLASS-SYNTAX
      syntax Bool ::= isOfDerivedClassOf(Expr, Class) [function]
      syntax Expr ::= contrivedObject(CPPType)
      syntax ValResult ::= noObject()
+     syntax CId ::= unnamedObject(Class)
 endmodule
 
 module CPP-CLASS

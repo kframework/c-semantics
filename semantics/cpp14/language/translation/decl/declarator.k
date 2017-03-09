@@ -79,14 +79,6 @@ module CPP-DECL-DECLARATOR
           requires ((notBool IsExtern) orBool Extern() in S)
                andBool (notBool isCPPFunctionType(T) orBool isAdjustedType({T}:>CPPFunctionType))
 
-     syntax QualId ::= mkQualId(NNSVal, CId) [function]
-     rule mkQualId(N:Namespace, X::CId) => N :: X
-     rule mkQualId(C:Class, X::CId) => C :: X
-
-     syntax CId ::= getId(QualId) [function]
-     rule getId(N:Namespace :: X::CId) => X
-     rule getId(C:Class :: X::CId) => X
-
      rule <k> DeclaratorAndSpecifiers(_, (S::Set => SetItem(Extern()) S)) ...</k>
           <curr-extern> true </curr-extern>
           requires notBool (Extern() in S)

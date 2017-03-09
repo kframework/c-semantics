@@ -104,12 +104,29 @@ module CPP-DECL-INITIALIZER
           => arrayInit(Base, t(Q, Mods, arrayType(T, N)), D, 0, L, .K)
 
      rule <k> aggInit(Base::LVal, t(_, _, classType(C::Class)), D::Duration, L::List)
-           => classAggInit(Base, NSDM, L, Inits, D, C, .K)
+           => classAndUnionAggInit(getTag(C), Base, NSDM, L, Inits, D, C, .K)
           ...</k>
           <class-id> C </class-id>
           <non-static-data-members> NSDM::List </non-static-data-members>
           <initializers> Inits::Map </initializers>
 
+     syntax Expr ::= classAndUnionAggInit(tag: Tag, base: LVal, fields: List, initList: List, initializers: Map, duration: Duration, class: Class, initExp: Expr) [function]
+
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X::CId) _, ListItem(XInit::Init), InitMap::Map, D::Duration, C::Class, Init::Expr)
+       => classAggInit(Base, ListItem(X), ListItem(XInit), InitMap, D, C, Init)
+
+     rule classAndUnionAggInit(... tag: Union(),
+                                   fields: (ListItem(X::CId) => .List) _,
+                                   initList: .List,
+                                   initializers: (X |-> (_ |-> NoInit())) _)
+
+     rule classAndUnionAggInit(Union(), Base::LVal, ListItem(X::CId) _::List, .List, (X |-> (_ |-> XInit::Init) _) #as InitMap::Map, D::Duration, C::Class, Init::Expr)
+       => classAggInit(Base, ListItem(X), .List, InitMap, D, C, Init)
+       requires XInit =/=K NoInit()
+
+     rule classAndUnionAggInit(T::Tag, Base::LVal, Fields::List, InitL::List, InitMap::Map, D::Duration, C::Class, Init::Expr)
+       => classAggInit(Base, Fields, InitL, InitMap, D, C, Init)
+       requires T =/=K Union()
 
      syntax KItem ::= classAggInit(base: LVal, fields: List, initList: List, initializers: Map, duration: Duration, class: Class, initExp: Expr)
 
@@ -120,11 +137,12 @@ module CPP-DECL-INITIALIZER
        => compoundInit(E, Base)
      rule (.K => figureNarrowInit(le(Base . no-template Name(C, F), noTrace, T), T, D, CopyInit(), Init, Init))
        ~> classAggInit(... base: Base::LVal,
-                           fields: (ListItem(F:CId) => .List) FL::List,
+                           fields: (ListItem(F:CId) => .List) _,
                            initList: (ListItem(Init::Expr) => .List) _,
                            initializers: (F |-> (T::CPPType |-> _)) _,
                            duration: D::Duration,
                            class: C::Class)
+
      rule (V:Val => .K) ~> classAggInit(... initExp: (E::Expr => compoundInit(E, V)))
 
      rule (.K => figureInit(le(Base . no-template Name(C, F), noTrace, T), T, D, evalBraceOrEqualInitializer(C, Base, Init), CopyInit()))

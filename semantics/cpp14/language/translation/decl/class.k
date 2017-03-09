@@ -6,8 +6,10 @@ module CPP-DECL-CLASS-SYNTAX
      imports CPP-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
+     imports SYMLOC-SORTS
      syntax AType ::= declareClassName(Tag, CId, Bool)
      syntax KItem ::= classContext(AType, List) [strict(1)]
+     syntax SymBase ::= memberBase(CId, CId)
 endmodule
 
 module CPP-DECL-CLASS
@@ -50,7 +52,37 @@ module CPP-DECL-CLASS
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
 
-     rule <k> ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List) => classContext(declareClassName(T, X, true), Members) ...</k>
+     rule ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List) => classContext(declareClassName(T, X, true), Members)
+          requires notBool isUnnamedCId(X) orBool T =/=K Union()
+
+     rule ClassDef(Union(), X:UnnamedCId, NoNNS(), .List, Members::List)
+           => defAnonymousUnion(declareClassName(Union(), X, true), Members)
+     
+     syntax KItem ::= defAnonymousUnion(AType, List) [strict(1)]
+     rule defAnonymousUnion(t(_, _, classType(_ #as C::Class)) #as T::CPPType, Members::List)
+          => classContext(T, Members) ~> defineUnnamedObject(C) ~> addMembersToScope(C)
+
+     syntax KItem ::= defineUnnamedObject(Class)
+     rule <k> defineUnnamedObject(C::Class) => VarDecl(N, unnamedObject(C), type(classType(C)), NoInit(), false) ...</k>
+          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+
+     syntax KItem ::= addMembersToScope(Class)
+     rule <k> addMembersToScope(C::Class) => addMembersToScope(C, Members) ...</k>
+          <class-id> C </class-id>
+          <non-static-data-members> Members::List </non-static-data-members>
+
+     syntax KItem ::= addMembersToScope(Class, List)
+     rule addMembersToScope(_, .List) => .K
+     rule <k> (.K => addToEnv(mkQualId(getNamespace(Scope), X), T, memberBase(unnamedObject(C), X), false))
+           ~> addMembersToScope(C::Class, (ListItem(X:CId) => .List) _)
+          ...</k>
+          <class-id> C::Class </class-id>
+          <cenv>... X |-> (T::CPPType |-> classOffset(0)) ...</cenv>
+          <curr-scope> Scope:Scope </curr-scope>
+
+     syntax Namespace ::= getNamespace(Scope) [function]
+     rule getNamespace(namespaceScope(N::Namespace)) => N
+     rule getNamespace(_:BlockScope) => NoNamespace()
 
      rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
               => setScope(classScope(C))

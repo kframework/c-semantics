@@ -209,6 +209,7 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= inRange(CPPValue, CPPType) [function, klabel(inRangeCpp)]
 
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
+     syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
      syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
                         | #getClassInfo(CPPClassType, K) [function]
@@ -352,8 +353,10 @@ module CPP-TYPING
 
      rule isVolatileType(t(Q::Quals, _, _)) => Volatile() inQuals Q
 
-     rule getTag(t(_, _, classType(_::ClassQualifier :: Class(Tag::Tag, _, _)))) => Tag
-     rule getTag(_) => .K [owise]
+     rule getTag(t(_, _, classType(C::Class))) => getTag(C)
+     rule getTag(_::CPPType) => .K [owise]
+
+     rule getTag(_::ClassQualifier :: Class(Tag::Tag, _, _)) => Tag
 
      rule addQuals(Qs'::Quals, t(Qs::Quals, Mods::Set, T::CPPSimpleType))
           => t(Qs +Quals Qs', Mods, T)

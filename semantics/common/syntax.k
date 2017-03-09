@@ -19,10 +19,11 @@ module COMMON-SYNTAX
      imports SET
      imports STRING-SYNTAX
 
+     syntax UnnamedCId ::= unnamed(Int, String)  // Unnamed struct/union/enums.
      syntax NoName ::= "#NoName" | #NoName(Int)  // Unnamed struct/union fields.
      syntax CId ::= NoName
      syntax CId ::= Identifier(String)
-     syntax CId ::= unnamed(Int, String)         // Unnamed struct/union/enums.
+     syntax CId ::= UnnamedCId
 
      syntax CabsLoc ::= "UnknownCabsLoc"
      syntax CabsLoc ::= CabsLoc(rel: String, abs: String, line: Int, col: Int, systemHeader: Bool)

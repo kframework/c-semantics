@@ -652,18 +652,23 @@ bool TraverseDecl(Decl *D) {
 
   bool TraverseVarDecl(VarDecl *D) {
     if (D->isImplicit() && !isImplicitDecl(D) && isAnonymousUnionVarDecl(D)) {
-      // for some reason clang doesn't emit a RecordDecl in this case, even
-      // though one exists implicitly within the VarDecl it creates. We need
-      // this but we don't actually need the VarDecl, so I am manually
-      // inserting it here when we visit the implicit VarDecl.
-      // this is a hideously ugly hack but aside from using a different
-      // version of clang and potentially fixing the issue ourselves,
-      // there's not much else we can do.
-      
-      const VarDecl *VD = dyn_cast<VarDecl>(D);
-      TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
-      RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL);
-      TRY_TO(TraverseDecl(RTL.getDecl()));
+      if (D->isLocalVarDecl()) {
+        // for some reason clang doesn't emit a RecordDecl in this case, even
+        // though one exists implicitly within the VarDecl it creates. We need
+        // this but we don't actually need the VarDecl, so I am manually
+        // inserting it here when we visit the implicit VarDecl.
+        // this is a hideously ugly hack but aside from using a different
+        // version of clang and potentially fixing the issue ourselves,
+        // there's not much else we can do.
+        
+        const VarDecl *VD = dyn_cast<VarDecl>(D);
+        TypeLoc TL = VD->getTypeSourceInfo()->getTypeLoc();
+        RecordTypeLoc RTL = getTypeLocAsAdjusted<RecordTypeLoc>(TL);
+        AddStorageClass(VD->getStorageClass());
+        TRY_TO(TraverseDecl(RTL.getDecl()));
+      } else {
+        AddKApplyNode("NoDecl", 0);
+      }
       return true;
     } else {
       return TraverseVarHelper(D);
