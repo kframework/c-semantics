@@ -14,9 +14,11 @@ module CPP-DECL-ENUM
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
+     imports CPP-ERROR-SYNTAX
      imports CPP-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports INT
+     imports STRING
 
      rule <k> EnumDef(X::CId, NoNNS(), Scoped::Bool, Fixed::Bool, UT::CPPIntegerType, Enumerators::List)
           => enumContext(X, declareEnumName(createEnumName(X, Sc), UT, Scoped, Fixed), Enumerators, Fixed, UT) ...</k>
@@ -107,8 +109,12 @@ module CPP-DECL-ENUM
      // Not fixed
      rule declareEnumerator(E::EnumId, X::CId, prv(_,_,_) #as Pr::PRVal, false, _) => addEnumerator(E, X, Pr)
 
-     // Fixed enumerator. TODO check that the value fits into the UT
+     // Fixed enumerator.
      rule declareEnumerator(E::EnumId, X::CId, prv(V::CPPValue, Tr::Trace, _), true, UT::CPPIntegerType) => addEnumerator(E, X, prv(V, Tr, UT))
+     requires inRange(V, UT)
+
+     rule (.K => ILL("TDE1", "Value of enumerator '" +String idToString(X) +String "' does not fit to underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
+     requires notBool inRange(V, UT)
 
      syntax KItem ::= addEnumerator(enum: EnumId, id: CId, v: PRVal)
      rule <k> addEnumerator(E::EnumId, X::CId, V::PRVal) => addEnumeratorToEnv(E, X) ... </k>
