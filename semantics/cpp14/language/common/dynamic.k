@@ -13,7 +13,8 @@ module CPP-DYNAMIC-SORTS
      syntax RExpr ::= XExpr | PRExpr
      syntax TExpr ::= GLExpr | RExpr
      syntax Expr ::= TExpr
-     syntax NNSVal ::= Namespace | Class | ClassTemplate
+     syntax Enum
+     syntax NNSVal ::= Namespace | Class | ClassTemplate | Enum
      syntax NNS ::= NNSVal | NNSSpecifier
      syntax Namespace
      syntax Class
@@ -34,7 +35,7 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateArg
      syntax CPPValue
      syntax ValueCategory
-     syntax EnumId
+     syntax EnumId ::= enumId(Enum)
 endmodule
 
 module CPP-REVAL-SYNTAX
@@ -124,6 +125,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax ClassTemplateSpecifier ::= Class(Tag, CId, TemplateParams) [klabel(classSpecifier)]
                                      | ClassSpecifier //not technically a class template, but this type exists primarily to support CPPClassTypeExpr, so it's needed
 
+     syntax Enum ::= ClassQualifier "::" EnumSpecifier
+     syntax EnumSpecifier ::= Enum(CId) [klabel(enumSpecifier)]
+
      syntax MaybeNNS ::= NNS | "noNNS"
      syntax MaybeNNS ::= getOuterClass(Class) [function]
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
@@ -159,6 +163,7 @@ module CPP-DYNAMIC-SYNTAX
      rule inClassScope(_:NamespaceScope) => false
      rule inClassScope(_:ClassScope) => true
      rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
+     rule inClassScope(enumScope(enumId(CQ::ClassQualifier :: _))) => isClass(CQ)
 
      syntax Bool ::= isClassQualId(QualId) [function]
      rule isClassQualId(C:Class :: _::CId) => true

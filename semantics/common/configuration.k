@@ -77,6 +77,8 @@ module COMMON-CONFIGURATION
                          <ntypes> .Map </ntypes>
                          // CId |-> Namespace
                          <nested-namespaces> .Map </nested-namespaces>
+                         // CId |-> EnumId
+                         <unscoped-enumerators> .Map </unscoped-enumerators>
                          <is-inline> false </is-inline>
                          <using-namespaces> .Set </using-namespaces>
                          <inline-namespaces> .Set </inline-namespaces>

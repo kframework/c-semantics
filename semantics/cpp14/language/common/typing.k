@@ -238,8 +238,6 @@ module CPP-TYPING-SYNTAX
                        | #getEnumInfo(EnumId, K) [function]
      syntax EnumInfo ::= CppenumCell | "#incomplete"
 
-     syntax EnumId ::= enumId(QualId)
-
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
 
