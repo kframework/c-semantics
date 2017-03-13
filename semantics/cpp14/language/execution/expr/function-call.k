@@ -45,6 +45,7 @@ module CPP-EXPR-FUNCTION-CALL
               ~> K:K
               => sequencePoint
               ~> enterRestrictScope(blockScope(X, Base, 0))
+              ~> #if Obj ==K .K #then .K #else setThis(& Obj) #fi
               ~> bind(Params, getParams(DefT), L)
               ~> Blk
           </k>
@@ -52,12 +53,12 @@ module CPP-EXPR-FUNCTION-CALL
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
-                         <function-control> C <curr-program-loc> CurrLoc </curr-program-loc> </function-control>
+                         <function-control> C <constructing> Obj </constructing> <curr-program-loc> CurrLoc </curr-program-loc> </function-control>
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
           ) ...</call-stack>
-          (<function-control> C::Bag <curr-program-loc> _ </curr-program-loc> </function-control>
+          (<function-control> C::Bag <constructing> Obj:K </constructing> <curr-program-loc> _ </curr-program-loc> </function-control>
           => <function-control>...
                <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, Base, 0) </curr-scope>

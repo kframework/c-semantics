@@ -2,7 +2,8 @@ module COMMON-INIT-SYNTAX
      imports BASIC-K
 
      syntax KItem ::= loadObj(K)
-     syntax K ::= unwrapObj(K) [function]
+     // this takes input from a file which is not split by thread, so we don't want to split this rule.
+     syntax K ::= unwrapObj(K) [function, noThread]
 endmodule
 
 module COMMON-INIT

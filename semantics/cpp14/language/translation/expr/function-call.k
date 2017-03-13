@@ -1,7 +1,6 @@
 module CPP-EXPR-FUNCTION-CALL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports CPP-BINDING-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
@@ -28,7 +27,7 @@ module CPP-EXPR-FUNCTION-CALL
 
      syntax List ::= bindParams(List, List) [function]
      rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List)
-          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, AutoStorage, Init, CopyInit())) bindParams(P, A)
+          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) bindParams(P, A)
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
      // in this case we are calling bindReference instead of the regular initialization scenario, but
      // bindReference shouldn't be executed in the calling context, it needs to be executed only in the 
@@ -37,10 +36,10 @@ module CPP-EXPR-FUNCTION-CALL
           => ListItem(Init) bindParams(P, A)
      // ignore implicit object parameter for static function member
      rule bindParams(ListItem(implicitObjectParameter(t(... st: no-type))) P::List,
-                     ListItem(impliedObjArg(Obj::Expr)) A::List)
+                     ListItem(Obj::Expr) A::List)
           => ListItem(Obj) bindParams(P, A)
-     rule bindParams(ListItem(implicitObjectParameter(T::CPPType)) P::List, ListItem(impliedObjArg(Obj::Expr)) A::List)
-          => ListItem(setThis(& ParenthesizedCast(T, Obj))) bindParams(P, A)
+     rule bindParams(ListItem(implicitObjectParameter(T::CPPType)) P::List, ListItem(Obj::Expr) A::List)
+          => ListItem(& ParenthesizedCast(T, Obj)) bindParams(P, A)
           requires T =/=K type(no-type)
      rule bindParams(.List, .List) => .List
      rule bindParams(ListItem(variadic), .List) => .List

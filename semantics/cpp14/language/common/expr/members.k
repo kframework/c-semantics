@@ -4,7 +4,6 @@ module CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
      syntax KItem ::= fieldExp(LVal, Name, CPPType, Int)
-     syntax KItem ::= setThis(Expr) [strict]
 endmodule
 
 module CPP-EXPR-MEMBERS
