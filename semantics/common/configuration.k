@@ -94,6 +94,8 @@ module COMMON-CONFIGURATION
                          <ctypes> .Map </ctypes>
                          <non-static-data-members> .List </non-static-data-members>
                          <function-members> .List </function-members>
+                         <variant-members> .Set </variant-members>
+                         <has-user-provided-default-constructor> .K </has-user-provided-default-constructor>
                          <access> .Map </access>
                          <max-offset> 0 </max-offset>
                          <max-align> 1 </max-align>

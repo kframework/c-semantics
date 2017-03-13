@@ -7,15 +7,18 @@ module CPP-BINDING-SYNTAX
      syntax KItem ::= bind(List, List, List) [klabel(bindCpp)]
      syntax KItem ::= bindParam(CId, CPPType, Init) [klabel(bindParamCpp3)]
 
+     syntax KItem ::= setThis(Expr) [strict]
 endmodule
 
 module CPP-BINDING
      imports CPP-BINDING-SYNTAX
      imports C-CONFIGURATION
      imports INT
-     imports CPP-TYPING-SYNTAX
+     imports CPP-CLASS-SYNTAX
+     imports CPP-DYNAMIC-SORTS
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule <k> (.K => bindParam(X, T, V))
           ~> bind(
@@ -43,4 +46,12 @@ module CPP-BINDING
 
      syntax KItem ::= bindVariadics(List) [klabel(bindVariadicsCpp)]
      rule bindVariadics(.List) => .K
+
+     rule <k> setThis(Obj:PRVal) => .K ...</k>
+          <this> _ => Obj </this>
+
+     rule <k> beginConstruction(Obj:LVal) => Obj ...</k>
+          <constructing> _ => Obj </constructing>
+     rule <k> endConstruction(Obj:LVal) => Obj ...</k>
+          <constructing> _ => .K </constructing>
 endmodule

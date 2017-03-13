@@ -7,7 +7,6 @@ module CPP-MEMORY-READING-SYNTAX
 
      syntax KItem ::= read(SymLoc, Trace, CPPType) [klabel(readCpp)]
                     | readBytes(SymLoc, Int, CPPType) [klabel(readBytesCpp)]
-     syntax Expr ::= concretize(K, Trace, CPPType) [klabel(concretizeCpp), strict(1)]
      syntax PRVal ::= interpret(PRVal) [function, klabel(interpretCpp)]
 
 endmodule
@@ -25,10 +24,16 @@ module CPP-MEMORY-READING
      imports CPP-TYPING-SYNTAX
 
      rule read(Loc::SymLoc, Tr::Trace, T::CPPType)
-          => concretize(readBytes(stripProv(Loc), byteSizeofType(T), T), Tr, utype(T))
+          => concretize(readBytes(stripProv(Loc), byteSizeofType(T), T), Loc, Tr, utype(T))
 
-     rule concretize(dataList(L::List), Tr::Trace, T::CPPType)
+     syntax Expr ::= concretize(K, SymLoc, Trace, CPPType) [klabel(concretizeCpp), strict(1)]
+
+     rule concretize(dataList(L::List), _, Tr::Trace, T::CPPType)
           => interpret(prv(joinBytes(L), Tr, prvalType(T)))
+          requires notBool isCPPClassType(T)
+
+     rule concretize(_, Loc::SymLoc, Tr::Trace, T:CPPClassType)
+          => prv(Loc, Tr, prvalType(T))
 
      rule interpret(prv(encodedValue(L:SymLoc, 0, To::Int), Tr::Trace, T:CPPPointerType)) => prv(L, Tr, T)
           requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)

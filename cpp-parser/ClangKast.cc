@@ -434,7 +434,7 @@ bool TraverseDecl(Decl *D) {
       }
     case DeclarationName::CXXDestructorName:
       {
-        AddKApplyNode("Destructor", 1);
+        AddKApplyNode("DestructorId", 1);
         TRY_TO(TraverseType(Name.getCXXNameType()));
         return true;
       }
@@ -525,20 +525,6 @@ bool TraverseDecl(Decl *D) {
     }
 
     if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-      AddKApplyNode("Constructor", 2);
-      int i = 0;
-      for (auto *I : Ctor->inits()) {
-        if(I->isWritten()) {
-          i++;
-        }
-      }
-      AddKSequenceNode(i);
-      for (auto *I : Ctor->inits()) {
-        if(I->isWritten()) {
-          TRY_TO(TraverseConstructorInitializer(I));
-        }
-      }
-
       if (Ctor->isExplicitSpecified()) {
         AddSpecifier("Explicit");
       }
@@ -582,7 +568,9 @@ bool TraverseDecl(Decl *D) {
             case RQ_None: // do nothing
             break;
           }
-          AddKApplyNode("MethodPrototype", 2);
+          AddKApplyNode("MethodPrototype", 4);
+          VisitBool(true);
+          VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
           TRY_TO(TraverseType(Method->getThisType(*Context)));
           if (Method->isVirtual()) {
             AddKApplyNode("Virtual", 1);
@@ -602,6 +590,21 @@ bool TraverseDecl(Decl *D) {
     }
 
     if (D->isThisDeclarationADefinition()) {
+      if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
+        AddKApplyNode("Constructor", 2);
+        int i = 0;
+        for (auto *I : Ctor->inits()) {
+          if(I->isWritten()) {
+            i++;
+          }
+        }
+        AddKSequenceNode(i);
+        for (auto *I : Ctor->inits()) {
+          if(I->isWritten()) {
+            TRY_TO(TraverseConstructorInitializer(I));
+          }
+        }
+      }
       TRY_TO(TraverseStmt(D->getBody()));
     }
     return true;

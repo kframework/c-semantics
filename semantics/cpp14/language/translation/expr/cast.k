@@ -63,7 +63,7 @@ module CPP-TRANSLATION-EXPR-CAST
      syntax Expr ::= tryInit(CPPType, Val, K) [strict(3)]
 
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
-          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, AutoStorage, V, DirectInit())) [owise]
+          => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
 
      rule tryInit(T::CPPType, V::Val, ill-formed) => #convertStatic(T, makePRVal(V))
      rule tryInit(_, _, V:Val) => V

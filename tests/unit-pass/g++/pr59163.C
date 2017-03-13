@@ -1,6 +1,8 @@
 // PR target/59163
 // { dg-do run }
 
+extern "C" void abort(void);
+
 struct A { float a[4]; };
 struct B { int b; A a; };
 
@@ -8,7 +10,7 @@ __attribute__((noinline, noclone)) void
 bar (A &a)
 {
   if (a.a[0] != 36.0f || a.a[1] != 42.0f || a.a[2] != 48.0f || a.a[3] != 54.0f)
-    __builtin_abort ();
+    abort ();
 }
 
 __attribute__((noinline, noclone)) void

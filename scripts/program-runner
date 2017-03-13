@@ -121,9 +121,11 @@ sub main {
             print "(with non-deterministic thread interleaving)\n";
       }
 
+      my $encodedJson = getJson();
+
       push @cmd, "-cOPTIONS=$options";
       push @cmd, '-pOPTIONS=printf %s';
-      push @cmd, '-cJSON=#token("\"\"", "String")';
+      push @cmd, '-cJSON=#token(' . $encodedJson . ', "String")';
       push @cmd, '-pJSON=printf %s';
 
       # Execute krun with the arguments in @cmd

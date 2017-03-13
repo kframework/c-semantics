@@ -164,6 +164,7 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isAdjustedType(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionTypeExpr ::= adjustFunctionType(CPPFunctionTypeExpr) [function]
 
+     syntax Bool ::= isFunctionMember(CPPFunctionTypeExpr) [function]
      syntax List ::= getParams(CPPFunctionTypeExpr) [function, klabel(cppgetParams)]
                    | getRealParams(CPPFunctionTypeExpr) [function]
      syntax RefQualifier ::= getRefQualifier(CPPFunctionTypeExpr) [function]
@@ -174,15 +175,23 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
      syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax Bool ::= isMethodUserProvided(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodUserProvided(CPPFunctionType, Bool) [function]
+     syntax Bool ::= isMethodConstructor(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodConstructor(CPPFunctionType, Bool) [function]
      syntax Class ::= getMethodClass(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodClass(CPPFunctionType, Class) [function]
      syntax Bool ::= isVariadicFunction(CPPFunctionTypeExpr) [function]
      syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
 
+     syntax Bool ::= acceptsNArgs(Int, CPPFunctionType) [function]
+
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
 
      syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
+     // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
+     syntax CPPClassType ::= type(CPPSimpleClassType) [function, klabel(cppType)]
      syntax CPPType ::= utype(Typed) [function, klabel(cppUTypeVal)]
      syntax CPPType ::= type(Typed) [function, klabel(cppTypeVal)]
      syntax CPPType ::= utype(CPPTypeExpr) [function, klabel(cppUTypeType)]
@@ -191,6 +200,7 @@ module CPP-TYPING-SYNTAX
                    | isCompleteType(CPPType) [function, klabel(isCompleteTypeCPP)]
                    | isAggregateType(CPPType) [function, klabel(isAggregateTypeCPP)]
                    | isVolatileType(CPPType) [function, klabel(isVolatileTypeCPP)]
+                   | isConstType(CPPType) [function, klabel(isConstTypeCPP)]
 
      syntax Type ::= convertTypeToC(CPPType) [function]
      syntax DType ::= convertTypeToC(CPPDType) [function]
@@ -212,11 +222,12 @@ module CPP-TYPING-SYNTAX
      syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
      syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
-                        | #getClassInfo(CPPClassType, K) [function]
+                        | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
+                        | #getClassInfo(Class, K) [function]
      syntax ClassInfo ::= ClassCell | "#incomplete"
 
      syntax MethodInfo ::= "noMethod"
-                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, class: K)
+                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
 
      syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
@@ -225,6 +236,9 @@ module CPP-TYPING-SYNTAX
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(Class, Class) [function, klabel(isClassBaseClassOf)]
                    | hasVirtualMembers(CPPClassType) [function]
+                   | isUnionLikeClass(Class) [function]
+     
+     syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
@@ -253,7 +267,8 @@ module CPP-TYPING
      imports CPP-SYNTAX
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
@@ -261,6 +276,17 @@ module CPP-TYPING
      syntax List ::= #getRealParams(List) [function]
      rule #getRealParams(L::List ListItem(variadic)) => L
      rule #getRealParams(L::List) => L [owise]
+
+     // 13.3.2:2.1
+     rule acceptsNArgs(M::Int, T::CPPFunctionType) => true
+          requires size(getRealParams(T)) ==Int M
+     // 13.3.2:2.2
+     rule acceptsNArgs(M::Int, T::CPPFunctionType) => isVariadicFunction(T)
+          requires size(getRealParams(T)) <Int M
+     // TODO(dwightguth): default function arguments
+
+     rule isFunctionMember(t(... st: functionType(... methodInfo: methodInfo(...)))) => true
+     rule isFunctionMember(_) => false [owise]
 
      // TODO(traiansf): Handle conversion functions and functions introduced by using declarations
      syntax CPPTypeExpr ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
@@ -271,7 +297,7 @@ module CPP-TYPING
      // 13.3.1:4.1
      rule getImpliedParamType(_, Q::Quals, false, C::Class) => type(lvRefType(t(Q, .Set, classType(C)))) [owise]
 
-     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, .K)
+     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, .K, true, false)
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
      rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), RQ::RefQualifier)
@@ -305,6 +331,28 @@ module CPP-TYPING
      syntax MethodInfo ::= setMIStatic(MethodInfo) [function]
      rule setMIStatic(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... static: _ => true))(MI)
      rule setMIStatic(noMethod => defaultMethodInfo())
+
+     rule isMethodUserProvided(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIUserProvided(MI)
+     rule setMethodUserProvided(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), B::Bool)
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIUserProvided(MI, B), L, E))
+
+     syntax Bool ::= getMIUserProvided(MethodInfo) [function]
+     rule getMIUserProvided(methodInfo(... userProvided: IsUserProvided::Bool)) => IsUserProvided
+     rule getMIUserProvided(noMethod) => true
+     syntax MethodInfo ::= setMIUserProvided(MethodInfo, Bool) [function]
+     rule setMIUserProvided(methodInfo(...) #as MI::MethodInfo, UserProvided::Bool) => #fun(methodInfo(... userProvided: _ => UserProvided))(MI)
+     rule setMIUserProvided(noMethod => defaultMethodInfo(), _)
+
+     rule isMethodConstructor(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIConstructor(MI)
+     rule setMethodConstructor(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), B::Bool)
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIConstructor(MI, B), L, E))
+
+     syntax Bool ::= getMIConstructor(MethodInfo) [function]
+     rule getMIConstructor(methodInfo(... constructor: IsConstructor::Bool)) => IsConstructor
+     rule getMIConstructor(noMethod) => false
+     syntax MethodInfo ::= setMIConstructor(MethodInfo, Bool) [function]
+     rule setMIConstructor(methodInfo(...) #as MI::MethodInfo, IsConstructor::Bool) => #fun(methodInfo(... constructor: _ => IsConstructor))(MI)
+     rule setMIConstructor(noMethod => defaultMethodInfo(), _)
 
      rule isMethodVirtual(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIVirtual(MI)
      rule setMethodVirtual(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
@@ -352,6 +400,7 @@ module CPP-TYPING
      rule utype(t(_, Mods::Set, T::CPPSimpleType)) => t(noQuals, Mods, T)
 
      rule isVolatileType(t(Q::Quals, _, _)) => Volatile() inQuals Q
+     rule isConstType(t(Q::Quals, _, _)) => Const() inQuals Q
 
      rule getTag(t(_, _, classType(C::Class))) => getTag(C)
      rule getTag(_::CPPType) => .K [owise]
@@ -362,8 +411,9 @@ module CPP-TYPING
           => t(Qs +Quals Qs', Mods, T)
      rule getQuals(t(Q::Quals, _, _)) => Q
 
-     rule getClassInfo(T::CPPClassType) => #getClassInfo(T, #configuration)
-     rule #getClassInfo(t(_, _, classType(C::Class)), <generatedTop>... <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
+     rule getClassInfo(t(... st: classType(C::Class))) => getClassInfo(C)
+     rule getClassInfo(C::Class) => #getClassInfo(C, #configuration)
+     rule #getClassInfo(C::Class, <generatedTop>... <curr-tu> Tu::String </curr-tu> <tu-id> Tu </tu-id> <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
      rule #getClassInfo(_, _) => #incomplete [owise]
 
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
@@ -484,6 +534,14 @@ module CPP-TYPING
      rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(kpair(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: true))))) ...</function-members> ...</class>) => true
      rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(_) => .List ...</function-members> ...</class>) [owise]
      rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> .List </function-members> ...</class>) => false
+
+     rule isUnionLikeClass(_ :: Class(Union(), _, _)) => true
+     rule isUnionLikeClass(C::Class) => #isUnionLikeClass(getClassInfo(C)) [owise]
+     syntax Bool ::= #isUnionLikeClass(ClassInfo) [function]
+     rule #isUnionLikeClass(<class>... <variant-members> S::Set </variant-members> ...</class>) => size(S) >Int 0
+
+     rule getMostDerivedArrayElement(T:CPPArrayType => innerType(T))
+     rule getMostDerivedArrayElement(T::CPPType) => T [owise]
 
      rule setType(T::CPPType, lv(Loc::SymLoc, Tr::Trace, _)) => lv(Loc, Tr, T)
      rule setType(T::CPPType, prv(Loc::SymLoc, Tr::Trace, _)) => prv(Loc, Tr, T)

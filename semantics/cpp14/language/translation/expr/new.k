@@ -15,11 +15,11 @@ module CPP-EXPR-NEW
      rule (.K => CallExpr(Name(GlobalNamespace(), operatornew), list(ListItem(prv(byteSizeofType(T), noTrace, type(size_t))) P))) ~> NewExpr(T:CPPType, NoExpression(), _, P::List)
 
      rule R:PRExpr ~> I:Int ~> NewExpr(T:CPPType, Size:PRExpr, Init::Init, P::List)
-          => computeNewInit(R, T, Size, P, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, dynamicArrayType(T, newSize(I)))), t(noQuals, .Set, dynamicArrayType(T, newSize(I))), DynamicStorage, Init, DirectInit()))
+          => computeNewInit(R, T, Size, P, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, dynamicArrayType(T, newSize(I)))), t(noQuals, .Set, dynamicArrayType(T, newSize(I))), Init, DirectInit()))
      rule R:PRExpr ~> I:Int ~> NewExpr(T:CPPType, prv(Size:Int, Tr::Trace, SizeT::CPPType), Init::Init, P::List)
-          => computeNewInit(R, T, prv(Size, Tr, SizeT), P, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, arrayType(T, Size))), t(noQuals, .Set, arrayType(T, Size)), DynamicStorage, Init, DirectInit()))
+          => computeNewInit(R, T, prv(Size, Tr, SizeT), P, I, figureInit(le(Name(NoNNS(), #NoName(I)), noTrace, t(noQuals, .Set, arrayType(T, Size))), t(noQuals, .Set, arrayType(T, Size)), Init, DirectInit()))
      rule R:PRExpr ~> NewExpr(T:CPPType, NoExpression(), Init::Init, P::List)
-          => computeNewInit(R, T, NoExpression(), P, !I, figureInit(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, T), T, DynamicStorage, Init, DirectInit()))
+          => computeNewInit(R, T, NoExpression(), P, !I, figureInit(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, T), T, Init, DirectInit()))
 
      syntax Expr ::= computeNewInit(Expr, CPPType, AExpr, List, Int, K) [strict(6)]
 
