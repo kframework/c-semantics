@@ -12,8 +12,9 @@ module C-STMT-BLOCK
      imports C-IO-BUFFERED-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
-               => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Tag))
+               => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Tag))
           ...</k>
+          <curr-tu> Tu::String </curr-tu>
           <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
           <block-control>
                C::Bag
@@ -40,8 +41,8 @@ module C-STMT-BLOCK
           <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
-     rule <k> popBlock => updateScope ~> exitRestrictScope(blockScope(F, OldTag)) ...</k>
-          <curr-scope> blockScope(F:CId, OldTag:Int) </curr-scope>
+     rule <k> popBlock => updateScope ~> exitRestrictBlock(S) ...</k>
+          <curr-scope> S::Scope </curr-scope>
           (<block-control>...
                <local-addresses> .Set </local-addresses>
           ...</block-control> => C)

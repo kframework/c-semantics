@@ -80,10 +80,6 @@ module C-TYPING-INTERPRETATION
           => pushTypeDown(T, makePointerType(listToSet(Mods)))
           [structural]
 
-     syntax Set ::= listToSet(List) [function]
-     rule listToSet(ListItem(K:K) L:List) => SetItem(K) listToSet(L)
-     rule listToSet(.List) => .Set
-
      rule FunctionType(T:Type) => T
           [structural]
 

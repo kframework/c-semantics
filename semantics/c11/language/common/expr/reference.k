@@ -1,10 +1,4 @@
-module C-COMMON-EXPR-REFERENCE-SYNTAX
-     imports SYMLOC-SORTS
-     syntax KItem ::= checkRestrict(SymLoc)
-endmodule
-
 module C-COMMON-EXPR-REFERENCE
-     imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports BOOL
      imports K-EQUAL
      imports C-BITSIZE-SYNTAX
@@ -68,9 +62,8 @@ module C-COMMON-EXPR-REFERENCE
      \cinline{*} operator is undefined.
      }*/
      rule *(tv(Loc:SymLoc, T:PointerUType))
-          => checkRestrict(Loc)
-          ~> checkLoc(Loc)
-          ~> lv(stripBases(stripFromArray(Loc)), innerType(T))
+          => checkLoc(Loc)
+          ~> lv(stripFromArray(Loc), innerType(T))
           requires notBool isVoidType(innerType(T))
                andBool Loc =/=K NullPointer
                andBool ifFromArrayInBounds(Loc,

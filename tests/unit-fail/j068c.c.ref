@@ -1,5 +1,6 @@
  An object which has been modified is accessed through an expression based on a restrict-qualified pointer to a const-qualified type.
-   at f(j068c.c:9:7)
+   at g(j068c.c:3:7)
+   by f(j068c.c:8:7)
    by main(j068c.c:14:7)
   Undefined behavior (UB-ECL4).
    see C11 section 6.7.3.1:4 http://rvdoc.org/C11/6.7.3.1

@@ -11,8 +11,6 @@ module C-IO-BUFFERED-SYNTAX
 
      syntax KItem ::= writeBytes(SymLoc, List)
 
-     syntax KItem ::= setModified(SymLoc, Int, K, Map) [klabel(setModified4)]
-
      syntax Set ::= locations(List) [function]
 
      syntax Quals ::= getQualsAtOffset(List) [function]
@@ -37,46 +35,17 @@ module C-IO-BUFFERED
      syntax KItem ::= bwrite(SymLoc, List)
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
-               => checkWrite(Loc, T)
-               ~> checkBounds(Loc, size(Bytes))
-               ~> setModified(Loc, T)
-               ~> writeBytes(Loc, Bytes)
+               => checkRestrict(true, Loc)
+               ~> checkWrite(stripProv(Loc), T)
+               ~> checkBounds(stripProv(Loc), size(Bytes))
+               ~> writeBytes(stripProv(Loc), Bytes)
           ...</k>
           <initializing> false </initializing>
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), _)
-               => checkBounds(Loc, size(Bytes))
-               ~> writeBytes(Loc, Bytes)
+               => checkBounds(stripProv(Loc), size(Bytes))
+               ~> writeBytes(stripProv(Loc), Bytes)
           ...</k>
           <initializing> true </initializing>
-
-     syntax KItem ::= setModified(SymLoc, Type)
-     rule <k> setModified(Loc::SymLoc, T::Type)
-               => setModified(Loc, byteSizeofType(T), .K, Modified)
-          ...</k>
-          <active-blocks> Modified::Map </active-blocks>
-
-     syntax Map ::= updateModified(K, K, Map, SymLoc, Int) [function, klabel(updateModified5)]
-     rule updateModified(activity(N::Int, Offsets::Map), Tag::Scope, M::Map, Loc::SymLoc, I::Int)
-          => M[Tag <- activity(N, updateModified(Offsets, Loc, I))]
-     syntax Map ::= updateModified(Map, SymLoc, Int) [function]
-     rule updateModified(M::Map, Loc::SymLoc, I::Int)
-          => updateModified(M, Loc, I, M[Loc])
-     syntax Map ::= updateModified(Map, SymLoc, Int, K) [function, klabel(updateModified4)]
-     rule updateModified(M::Map, Loc::SymLoc, I::Int, I2:Int)
-          => M[Loc <- maxInt(I, I2)]
-     rule updateModified(M::Map, Loc::SymLoc, I::Int, _)
-          => M[Loc <- I] [owise]
-
-     rule <k> setModified(Loc::SymLoc, Size::Int,
-                (Tag:KItem => .K), _)
-           ...</k>
-           <active-blocks>
-             M::Map => updateModified(M[Tag], Tag, M, Loc, Size)
-           </active-blocks>
-     rule setModified(Loc::SymLoc, Size::Int, .K, K:K |-> _ M::Map)
-          => setModified(Loc, Size, K, M)
-     rule setModified(_, _, .K, .Map) => .K
-
 
      syntax KItem ::= checkWrite(SymLoc, Type)
      syntax KItem ::= checkBounds(SymLoc, Int)
@@ -178,7 +147,6 @@ module C-IO-BUFFERED
           ...</buffer>
           requires isNativeLoc(Loc)
 
-
      rule locations(.List) => .Set
      rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)
           => #locations(Loc, size(Bytes)) locations(L)
@@ -187,8 +155,11 @@ module C-IO-BUFFERED
           requires I >Int 0
      rule #locations(Loc::SymLoc, 0) => .Set
 
-     rule <k> readBytes(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc, Size::Int, T::Type)
-               => readBytes-aux(loc(Base, Offset +Int Size -Int 1), Size, .List, T, ObjT, Len, M, Locs, Mem)
+     rule readBytes(loc(Base::SymBase, Offset::Int) => loc(Base, Offset, .Set), _, _)
+          [structural]
+     rule <k> readBytes(loc(Base::SymBase, _, _) #as Loc::SymLoc, Size::Int, T::Type)
+               => checkRestrict(false, Loc)
+               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, ObjT, Len, M, Locs, Mem)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <mem>...
@@ -199,8 +170,9 @@ module C-IO-BUFFERED
           requires notBool ((isThreadDuration(Loc) orBool isAutoDuration(Loc))
                     andBool (ThreadId =/=K getThreadId(Loc)))
           [structural]
-     rule <k> readBytes(Loc::SymLoc, Size::Int, T::Type)
-               => readBytes-aux(Loc +bytes (Size -Int 1), Size, .List, T, .K, .K, .K, Locs, Mem)
+     rule <k> readBytes(loc(_, _, _) #as Loc::SymLoc, Size::Int, T::Type)
+               => checkRestrict(false, Loc)
+               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, .K, .K, .K, Locs, Mem)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <locs-written> Locs::Set </locs-written>
@@ -210,7 +182,7 @@ module C-IO-BUFFERED
                andBool isNativeLoc(Loc)
 
      rule <k> (.K => IMPL("EIO6", "Attempting to access an object with thread or auto storage duration in a thread other than the one in which the object is associated."))
-               ~> readBytes(Loc::SymLoc, _, _)
+               ~> readBytes(loc(_, _, _) #as Loc::SymLoc, _, _)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))

@@ -112,7 +112,7 @@ module C-MEMORY-WRITING
 
      syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
      rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
-          => writeBytes(stripProv(Loc), splitBytes(tv(V, utype(T))), T)
+          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (isBitfieldType(T) =/=K true)
                andBool (notBool hasUnionMarker(Loc))
@@ -166,7 +166,7 @@ module C-MEMORY-WRITING
      // TODO(chathhorn): breaks open a lot of abstractions.
      rule <k> makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
                F |-> T::Type _, _, _))
-          => writeBytes(stripProv(resolveLinking(Loc, Linkings)) +bytes byteSizeofType(T),
+          => writeBytes(resolveLinking(Loc, Linkings) +bytes byteSizeofType(T),
                dataList(times(
                     maxByteSizeofList(L) -Int byteSizeofType(T),
                     piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
@@ -180,7 +180,7 @@ module C-MEMORY-WRITING
 
      rule <k> makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
                F |-> T::Type M::Map, Offsets::Map, PaddingOffs::Set), I::Int)
-          => writeBytes(stripProv(resolveLinking(Loc, Linkings)) +bytes I,
+          => writeBytes(resolveLinking(Loc, Linkings) +bytes I,
                dataList(ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
           ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs), I +Int 1)
           ...</k>
@@ -220,7 +220,7 @@ module C-MEMORY-WRITING
           [structural]
 
      rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
-          => writeBytes(stripProv(Loc),
+          => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)

@@ -17,14 +17,11 @@ module C-CONFIGURATION
 <result-value color="red"> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
-     // These are used for verifying the aliasing restrictions on
-     // restrict-qualified pointers.
-     // SymLoc |-> set(basedOns)
-     <restrict> .Map </restrict>
-     // Scope |-> activity(Int, SymLoc |-> Int)
-     <active-blocks> .Map </active-blocks>
-
      <extensions-global/>
+
+     // Used for verifying the aliasing restrictions on
+     // restrict-qualified pointers.
+     <restrict> .List </restrict>
 
      <next-thread-id color="black"> 1 </next-thread-id>
 

@@ -48,6 +48,8 @@ module COMPAT-SYNTAX
      syntax Set ::= filterSet(Set, K) [function]
      syntax List ::= filterList(List, K) [function]
 
+     syntax Set ::= listToSet(List) [function]
+
      syntax Bool ::= some(Set, K) [function]
 
      //TODO(liyi): might not need this later
@@ -316,6 +318,9 @@ module COMPAT
      rule #filterList(K:K, ListItem(K':K) L:List, #klabel(Pred:KLabel))
           => #filterList(K', L, #klabel(Pred))
           requires Pred(K) =/=K true
+
+     rule listToSet(ListItem(K:K) Tail::List) => SetItem(K) listToSet(Tail)
+     rule listToSet(.List) => .Set
 
      rule some(S:Set, Lbl:K) => some'(.K, S, Lbl)
 

@@ -167,7 +167,18 @@ module C-TYPING-MISC
           => variableLengthArrayType(tagRestrict(Tag, T), K)
      rule tagRestrict(Tag::Scope, pointerType(T::Type))
           => pointerType(tagRestrict(Tag, T))
-     rule tagRestrict(_, T::SimpleType) => T [owise]
+     rule tagRestrict(_, T:SimpleType) => T [owise]
+     //TODO(chathhorn): structs/unions?
+
+     rule hasRestrict(t(Qs::Quals, _, _)) => true
+          requires Restrict() inQuals Qs
+     rule hasRestrict(t(Qs::Quals, _, _:SimpleArrayType) #as T::Type)
+          => hasRestrict(innerType(T))
+          requires notBool (Restrict() inQuals Qs)
+     rule hasRestrict(t(Qs::Quals, _, _:SimplePointerType) #as T::Type)
+          => hasRestrict(innerType(T))
+          requires notBool (Restrict() inQuals Qs)
+     rule hasRestrict(_) => false [owise]
      //TODO(chathhorn): structs/unions?
 
      rule getRestrictBlock(t(_, Mods::Set, _)) => getRestrictBlock'(.K, Mods)

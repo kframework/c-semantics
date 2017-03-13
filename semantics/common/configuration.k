@@ -48,6 +48,10 @@ module COMMON-CONFIGURATION
                <genv color="lightgray"> .Map </genv>
                <gtypes color="lightgray"> .Map </gtypes>
 
+               // Set of blocks containing decls for restrict-qualified
+               // pointers.
+               <has-restrict> .Set </has-restrict>
+
                // kpair(CId, Scope) |-> kpair(SymBase, Type)
                <local-statics> .Map </local-statics>
 

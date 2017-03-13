@@ -370,7 +370,7 @@ module LIBC-STDIO
           ~> fopen(bnew(!FDLoc, file, stdio), getString(Filename), getString(Mode))
           [structural]
      rule builtin("freopen", Filename::RValue, Mode::RValue, tv(Loc:SymLoc, T::UType))
-          => freopen(Filename, Mode, base(Loc), (* tv(Loc, T)))
+          => freopen(Filename, Mode, base(Loc), (* tv(stripProv(Loc), T)))
           requires notBool isNull(tv(Loc, T))
           [structural]
      rule builtin("freopen", _, _, FDPtr::RValue)

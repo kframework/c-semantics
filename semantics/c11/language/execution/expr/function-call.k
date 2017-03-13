@@ -128,7 +128,7 @@ module C-EXPR-FUNCTION-CALL
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => sequencePoint
-               ~> enterRestrictScope(blockScope(X, 0))
+               ~> enterRestrictBlock(blockScope(X, 0))
                ~> populateFromGlobal(DefT)
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint

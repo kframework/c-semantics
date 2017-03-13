@@ -74,11 +74,28 @@ module C-ENV
                => giveGlobalType(X, tagRestrict(fileScope, stripStorageSpecifiers(T)))
           ...</k>
           <curr-scope> fileScope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <has-restrict>... .Set => SetItem(fileScope) </has-restrict>
+          requires hasRestrict(T)
+     rule <k> giveType(X:CId, T:Type)
+               => giveGlobalType(X, stripStorageSpecifiers(T))
+          ...</k>
+          <curr-scope> fileScope </curr-scope>
+          requires notBool hasRestrict(T)
      rule <k> giveType(X:CId, T:Type)
                => giveLocalType(X, tagRestrict(S, stripStorageSpecifiers(T)))
           ...</k>
+          <curr-scope> S::Scope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <has-restrict>... .Set => SetItem(S) </has-restrict>
+          requires S =/=K fileScope andBool hasRestrict(T)
+     rule <k> giveType(X:CId, T:Type)
+               => giveLocalType(X, stripStorageSpecifiers(T))
+          ...</k>
           <curr-scope> S:Scope </curr-scope>
-          requires S =/=K fileScope
+          requires S =/=K fileScope andBool notBool hasRestrict(T)
 
      syntax KItem ::= giveGlobalType(K, Type)
      rule <k> giveGlobalType(X:CId, T:Type) => .K ...</k>

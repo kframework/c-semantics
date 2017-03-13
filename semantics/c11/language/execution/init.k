@@ -125,7 +125,7 @@ module C-EXECUTION-INIT
                <thread>...
                     <k> initMainThread'(MainTU:String)
                          => initBuiltins
-                         ~> enterRestrictScope(fileScope)
+                         ~> enterRestrictBlock(fileScope)
                          ~> populateFromGlobal(.K)
                     ...</k>
                     <duration> _ => auto(0) </duration>

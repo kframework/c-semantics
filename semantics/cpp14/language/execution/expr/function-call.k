@@ -44,7 +44,7 @@ module CPP-EXPR-FUNCTION-CALL
                     _, CallingLang::LanguageLinkage, krlist(L::List))
               ~> K:K
               => sequencePoint
-              ~> enterRestrictScope(blockScope(X, Base, 0))
+              ~> enterRestrictBlock(blockScope(X, Base, 0))
               ~> #if Obj ==K .K #then .K #else setThis(& Obj) #fi
               ~> bind(Params, getParams(DefT), L)
               ~> Blk

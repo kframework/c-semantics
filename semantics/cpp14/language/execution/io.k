@@ -16,7 +16,6 @@ module CPP-EXECUTION-IO
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
               => checkWrite(Loc, T)
-              ~> setModified(Loc, T)
               ~> writeBytes(Loc, Bytes)
           ...</k>
           <initializing> false </initializing>
@@ -33,12 +32,6 @@ module CPP-EXECUTION-IO
 
      syntax KItem ::= checkWrite(SymLoc, CPPType) [klabel(cppCheckWrite)]
      rule checkWrite(loc(Base::SymBase, Offset::Int), T::CPPType) => .K
-
-     syntax KItem ::= setModified(SymLoc, CPPType) [klabel(cppSetModified)]
-     rule <k> setModified(Loc::SymLoc, T::CPPType)
-              => setModified(Loc, byteSizeofType(T), .K, Modified)
-          ...</k>
-          <active-blocks> Modified::Map </active-blocks>
 
      syntax Error ::= "errorReadOutOfBounds"
      syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]

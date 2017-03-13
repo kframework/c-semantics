@@ -16,7 +16,7 @@ module C-IO-DIRECT
      syntax KItem ::= writeBytes(SymLoc, DataList)
      syntax KItem ::= writeByte(SymLoc, Bits)
 
-     rule writeBytes(Loc::SymLoc, D:DataList, _) => writeBytes(Loc, D)
+     rule writeBytes(Loc::SymLoc, D:DataList, _) => writeBytes(stripProv(Loc), D)
           [structural]
 
      rule writeBytes(Loc::SymLoc, dataList(ListItem(V:Bits) L::List))
@@ -34,7 +34,7 @@ module C-IO-DIRECT
           [structural]
 
      rule readBytes(Loc:SymLoc, Size:Int, _)
-          => readBytes'(Loc, Size, .List)
+          => readBytes'(stripProv(Loc), Size, .List)
           [structural]
      rule readBytesForWriting(Loc:SymLoc, Size:Int, .List, _)
           => readBytes'(Loc, Size, .List)

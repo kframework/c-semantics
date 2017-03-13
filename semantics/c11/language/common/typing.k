@@ -331,6 +331,7 @@ module C-TYPING-SYNTAX
      syntax List ::= idsFromParams(List) [function]
 
      syntax Type ::= tagRestrict(Scope, Type) [function]
+     syntax Bool ::= hasRestrict(Type) [function]
      syntax Scope ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]

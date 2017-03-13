@@ -58,7 +58,7 @@ module CPP-STMT-RETURN
 
      // Return (to C++ function)
      rule <k> return(V:Val) ~> _
-              => exitRestrictScope(Scope)
+              => exitRestrictBlock(Scope)
               ~> sequencePoint
               ~> V
               ~> K

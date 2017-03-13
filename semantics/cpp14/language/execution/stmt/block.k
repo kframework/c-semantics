@@ -12,7 +12,7 @@ module CPP-STMT-BLOCK
      imports CPP-ENV-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
-               => addToHistory(Tag) ~> enterRestrictScope(blockScope(F, Base, Tag))
+               => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Base, Tag))
           ...</k>
           <curr-scope> blockScope(F::QualId, Base::SymBase, (_ => Tag)) </curr-scope>
           <block-control>
@@ -41,8 +41,8 @@ module CPP-STMT-BLOCK
           <curr-scope> blockScope(_, _, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
-     rule <k> popBlock => updateScope ~> exitRestrictScope(blockScope(F, Base, OldTag)) ...</k>
-          <curr-scope> blockScope(F::QualId, Base::SymBase, OldTag::Int) </curr-scope>
+     rule <k> popBlock => updateScope ~> exitRestrictBlock(S) ...</k>
+          <curr-scope> S::Scope </curr-scope>
           (<block-control>...
                <local-addresses> .Set </local-addresses>
           ...</block-control> => C)

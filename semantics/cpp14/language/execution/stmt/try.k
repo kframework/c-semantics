@@ -66,7 +66,7 @@ module CPP-STMT-TRY
           requires size(S) >Int 0
 
      rule <k> unwindFunction ~> throw(V::LVal) ~> _ 
-              => exitRestrictScope(Scope)
+              => exitRestrictBlock(Scope)
               ~> sequencePoint
               ~> throw(V)
               ~> K

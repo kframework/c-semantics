@@ -17,20 +17,28 @@ module C-EXPR-IDENTIFIER
      rule <k> X:CId => lv(lnew(Base), T) ...</k>
           <env>... X |-> Base::SymBase ...</env>
           <types>... X |-> T::Type ...</types>
-          requires notBool isRestrictType(T)
-          [structural]
-     rule <k> X:CId => lv(restrictedNew(Base, getRestrictBlock(T)), T) ...</k>
-          <env>... X |-> Base::SymBase ...</env>
-          <types>... X |-> T::Type ...</types>
-          requires isRestrictType(T)
           [structural]
 
      rule instantiate(Loc::SymLoc, T::Type)
-          => transferProv(getBases(Loc), read(Loc, T))
+          => transferProv(basedOn(base(Loc), getRestrictBlock(T)), read(Loc, T))
           requires isRestrictType(T)
           [structural]
      rule instantiate(Loc::SymLoc, T::Type) => read(Loc, T)
           requires notBool isRestrictType(T)
+          [structural]
+
+     // From, to.
+     syntax KItem ::= transferProv(Provenance, K) [strict(2)]
+     rule transferProv(Prov::Provenance, tv(Loc:SymLoc, T::UType))
+          => tv(addProv(Prov, Loc), T)
+          [structural]
+     rule transferProv(_, tv(V::CValue, T::UType)) => tv(V, T)
+          requires notBool isSymLoc(V)
+          [structural]
+     rule transferProv(_, trap(T::UType)) => trap(T)
+          [structural]
+     rule transferProv(Prov::Provenance, nclv(Loc::SymLoc, T::Type))
+          => lv(addProv(Prov, Loc), T)
           [structural]
 
      rule <k> (.K => SE("CID1",

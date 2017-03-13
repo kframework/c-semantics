@@ -13,9 +13,6 @@ module C-SYMLOC-SYNTAX
      syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
 
-     // From, to.
-     syntax KItem ::= transferProv(Set, K) [strict(2)]
-
      syntax SymLoc ::= stripLastAccessType(CValue) [function]
 
      // Used for detecting violations of aliasing restictions on
@@ -59,16 +56,6 @@ module C-SYMLOC
      syntax Bool ::= isBase(Provenance) [function]
      rule isBase(basedOn(_, _)) => true
      rule isBase(_) => false [owise]
-
-     rule transferProv(Prov:Set, tv(Loc:SymLoc, T::UType))
-          => tv(addProv(Prov, Loc), T)
-          [structural]
-     rule transferProv(_:Set, tv(V:CValue, T::UType)) => tv(V, T)
-          requires isSymLoc(V:CValue) =/=K true
-          [structural]
-     rule transferProv(Prov:Set, nclv(Loc:SymLoc, T:Type))
-          => lv(addProv(Prov, Loc), T)
-          [structural]
 
      rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
           => getKLabel(K) ==K #klabel(`fromUnion`)

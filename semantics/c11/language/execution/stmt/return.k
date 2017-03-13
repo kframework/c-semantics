@@ -106,7 +106,7 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> return(V:RValue) ~> _
-               => exitRestrictScope(Scope)
+               => exitRestrictBlock(Scope)
                ~> sequencePoint
                ~> checkUse(stripConstants(V))
                ~> K

@@ -5,7 +5,6 @@ module C-TRANSLATION-INIT
      imports COMPAT-SYNTAX
      imports LIBC-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-COMMON-EXPR-REFERENCE-SYNTAX
      imports C-CONFIGURATION
      imports C-DECL-RESOLUTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
@@ -88,7 +87,5 @@ module C-TRANSLATION-INIT
      // Totally elide pure expressions from the translated program.
      rule Computation(V:RValue) => .K
           requires notBool isHold(V)
-
-     rule checkRestrict(_) => .K
 
 endmodule
