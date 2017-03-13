@@ -8,11 +8,10 @@ module CPP-CLASS-SYNTAX
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
      syntax This ::= This()
      syntax Expr ::= This
+     syntax Bool ::= isOfDerivedClassOf(Expr, Class) [function]
      syntax Expr ::= contrivedObject(CPPType)
      syntax ValResult ::= noObject()
      syntax CId ::= unnamedObject(Class)
-     syntax Expr ::= beginConstruction(LVal)
-     syntax Expr ::= endConstruction(LVal)
 endmodule
 
 module CPP-CLASS

@@ -29,7 +29,7 @@ module CPP-STMT-TRY
      rule prepareThrow(_, T:CPPArrayType => type(pointerType(innerType(T))))
      rule prepareThrow(_, T:CPPFunctionType => type(pointerType(T)))
      rule prepareThrow(E::Expr, T:CPPType)
-          => evalThrow(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
+          => evalThrow(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), AutoStorage, E, CopyInit()), E)
      rule prepareThrow(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))
 

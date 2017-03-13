@@ -551,8 +551,6 @@ sub main {
     } else {
       print $programRunner "sub nativeLibraries {\n return undef;\n}\n";
     }
-    my $encodedJsonAsPerlString = quote(backslash($encodedJson));
-    print $programRunner "sub getJson {\n return $encodedJsonAsPerlString;\n}\n";
     close($programRunner);
 
   } else {

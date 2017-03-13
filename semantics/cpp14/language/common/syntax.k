@@ -77,8 +77,7 @@ module CPP-SYNTAX
      syntax Expr ::= temp(Int, CPPType)
                    | newSize(Int)
 
-     syntax CId ::= DestructorId(CId)
-                  | ConstructorId(CId)
+     syntax CId ::= Destructor(CId)
 
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
@@ -87,8 +86,7 @@ module CPP-SYNTAX
 
      syntax TemplateKeyword ::= "template" | "no-template"
 
-     syntax Expr ::= ResolvedExpr
-     syntax ResolvedExpr ::= left:
+     syntax Expr ::= left:
                      Expr "[" Expr "]" [strict]
                    | Expr "++" [strict]
                    | Expr "--" [strict]

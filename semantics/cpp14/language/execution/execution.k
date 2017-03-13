@@ -1,4 +1,3 @@
-require "binding.k"
 require "conversion.k"
 require "env.k"
 require "error.k"
@@ -33,7 +32,6 @@ require "cpp-extensions-execution.k"
 module CPP-EXECUTION
      imports C-CONFIGURATION
 
-     imports CPP-BINDING
      imports CPP-EXECUTION-CONVERSION
      imports CPP-ENV
      imports CPP-EXECUTION-ERROR

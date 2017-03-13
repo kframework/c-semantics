@@ -47,7 +47,7 @@ module CPP-TYPING-CANONICALIZATION
      rule <k> FunctionPrototype(T:CPPTypeExpr, krlist(Args::List), E:ExceptionSet, false) => adjustFunctionType(t(noQuals, .Set, functionType(T, toCPPTypes(Args), noMethod, L, E))) ...</k>
           <curr-lang-linkage> L::LanguageLinkage </curr-lang-linkage>
 
-     rule MethodPrototype(IsUserProvided::Bool, IsConstructor::Bool, t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), T:CPPFunctionType) => setMethodConstructor(setMethodUserProvided(setMethodClass(setCVSQuals(T, CVS), C), IsUserProvided), IsConstructor)
+     rule MethodPrototype(t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), T:CPPFunctionType) => setMethodClass(setCVSQuals(T, CVS), C)
      rule StaticMethodPrototype(T:CPPFunctionType) => setMethodStatic(T)
      rule Virtual(T:CPPFunctionType) => setMethodVirtual(T)
 

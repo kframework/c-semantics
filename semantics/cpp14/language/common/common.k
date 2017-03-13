@@ -1,4 +1,5 @@
 require "alignment.k"
+require "binding.k"
 require "bitsize.k"
 require "builtin.k"
 require "class.k"
@@ -31,6 +32,7 @@ require "cpp-extensions-common.k"
 
 module CPP-COMMON
      imports CPP-ALIGNMENT
+     imports CPP-BINDING
      imports CPP-BITSIZE
      imports CPP-BUILTIN
      imports CPP-CLASS

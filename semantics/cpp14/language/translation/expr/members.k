@@ -9,4 +9,7 @@ module CPP-TRANSLATION-EXPR-MEMBERS
 
      rule fieldExp(le(E::Expr, Trace::Trace, _), N::Name, T::CPPType, _)
           => le(E . no-template N, Trace, T)
+
+     rule <k> setThis(Obj:PRVal) => Obj ...</k>
+          <this> _ => Obj </this>
 endmodule

@@ -2,36 +2,31 @@ module CPP-TRANSLATION-NAME-SYNTAX
      imports BOOL
      imports CPP-SORTS
      imports COMMON-SORTS
-     imports CPP-TYPING-EXPR-SORTS
 
      syntax Expr ::= nameLookupInNamespace(CId, Namespace, Tag, isnns: Bool)
      syntax Expr ::= nameLookup(CId, Tag, isnns: Bool)
-     syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
-                   | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
 endmodule
 
 module CPP-TRANSLATION-NAME
      imports CPP-TRANSLATION-NAME-SYNTAX
-     imports C-CONFIGURATION
      imports COLLECTIONS
-     imports K-EQUAL
      imports COMPAT-SYNTAX
+     imports CPP-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
-     imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports CPP-OVERLOADING-SYNTAX
-     imports CPP-SYMLOC-SYNTAX
-     imports CPP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
+     imports CPP-OVERLOADING-SYNTAX
+     imports CPP-CLASS-SYNTAX
+     imports C-CONFIGURATION
      imports CPP-TYPING-SYNTAX
-     imports CPP-VALUE-CATEGORY-SYNTAX
+     imports K-EQUAL
      
      syntax Expr ::= wrapInThis(TypeExpr) [strict]
      rule wrapInThis(cSet(M::Map, QX::QualId, .K)) => cSet(M, QX, This())
      rule wrapInThis(T:CPPType) => T
-     rule wrapInThis(notFound(X::CId)) => notFound(X)
 
      syntax CandidateSet ::= classSet(Class, CId, Map) [function]
      rule classSet(C::Class, X::CId, M::Map) => cSet(M, C :: X, .K)
@@ -189,20 +184,46 @@ module CPP-TRANSLATION-NAME
           orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, IsNNS))                    // 3.4.1:8.4
           orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, IsNNS)   // 3.4.1:8.5
 
-     rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList)
+     rule CallExpr(Name(NoNNS(), X::CId), Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag(), false))
      rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
      context CallExpr(Name(HOLE:NNS, _), _)
              requires HOLE =/=K NoNNS()
              [result(NNSVal)]
      rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule cSet(Y::Map, N:Namespace :: X::CId, .K) ~> CallExpr(_, Args::StrictList)
+          => resolveOverload(cSet(Y, N :: X, .K), Args, Args, Args, X, operator())
 
-     rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList)
-          => resolveOverload(cSet(Y, X, .K), Args, E)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule cSet(Y::Map, C:Class :: X::CId, .K) ~> CallExpr(Obj::Expr . no-template _, list(Args::List))
+          => resolveOverload(cSet(Y, C :: X, .K),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               X, operator())
+
+     rule <k> cSet(Y::Map, C:Class :: X::CId, .K) ~> CallExpr(_:Name, list(Args::List))
+          => resolveOverload(cSet(Y, C :: X, .K),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               list(ListItem(impliedObjArg(Obj)) Args),
+               X, operator())
+          ...</k>
+          <this> Obj:Expr </this>
+          requires isOfDerivedClassOf(Obj, C)
+
+     rule <k> cSet(Y::Map, C:Class :: X::CId, .K) ~> CallExpr(_:Name, list(Args::List))
+          => resolveOverload(cSet(Y, C :: X, .K),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               list(ListItem(impliedObjArg(contrivedObject(type(classType(C))))) Args),
+               X, operator())
+          ...</k>
+          <this> Obj::Expr </this>
+          requires Obj ==K .K
+            orBool notBool isOfDerivedClassOf(Obj, C)
 
      rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-
      rule (cSet(_, C:Class :: _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
      syntax Bool ::= isQualifiedName(Expr)
@@ -240,8 +261,7 @@ module CPP-TRANSLATION-NAME
      rule extractNNS(nsRef(N::Namespace)) => N
      rule extractNNS(t(_, _, classType(C::Class))) => C
 
-     syntax Expr ::= argDependentNameLookup(CId, StrictList)
-                   | argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
+     syntax Expr ::= argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
                    | #argDependentNameLookup(CId, StrictList, List, Set, CandidateSet)
                    | qualifiedNameLookup(CId, NNS, isnns: Bool)
      syntax AType ::= resolveElabSpecifier(Tag, K) [strict(2)]
@@ -260,13 +280,11 @@ module CPP-TRANSLATION-NAME
           requires notBool inClassScope(Scope)
 
      // arg dependent name lookup
-     rule argDependentNameLookup(X::CId, Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag(), false))
-
      context argDependentNameLookup(_, _, (HOLE:StrictList => types(HOLE)), _)
 
-     rule <k> (.K => isDependentName(X, Args, Types)) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), _:CandidateSet) ...</k>
+     rule <k> (.K => isDependentName(X, Args, Types)) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(...)) ...</k>
           <curr-template-context> templateInfo(...) </curr-template-context>
-     rule <k> (.K => false) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), _:CandidateSet) ...</k>
+     rule <k> (.K => false) ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(...)) ...</k>
           <curr-template-context> noTemplate </curr-template-context>
 
      // TODO(dwightguth): class member stuff
@@ -283,7 +301,7 @@ module CPP-TRANSLATION-NAME
           requires notBool isDependentInScope(T)
      rule cSet(... candidates: .Map) ~> isTypeDependent(Name(NoNNS(), _), _) => false
 
-     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::Map, QX::QualId, Obj:K)) => cSet(Y, QX, Obj) ...</k>
+     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::Map, QX::QualId, Obj:K)) => resolveOverload(cSet(Y, QX, Obj), Args, Types, Args, X, operator()) ...</k>
            <env> Env::Map </env>
            requires hasSpecialDeclInArgLookup(X, Y, Env)
 
@@ -299,9 +317,6 @@ module CPP-TRANSLATION-NAME
               ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(... candidates: Y::Map)) ...</k>
           <env> Env::Map </env>
           requires notBool hasSpecialDeclInArgLookup(X, Y, Env)
-     rule <k> (.K => getFunctionAddressTypes(Args)) 
-              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), notFound(_)) ...</k>
-          <env> Env::Map </env>
 
      // if the argument is the name or address of a set of overloaded functions
      // and/or function templates, its associated classes and namespaces are 
@@ -318,7 +333,7 @@ module CPP-TRANSLATION-NAME
      rule isAddressOfName(& N:Name) => true
      rule isAddressOfName(_) => false [owise]
 
-     rule <k> getFunctionAddressTypes(.List) ~> false ~> argDependentNameLookup(X::CId, Args::StrictList, krlist(Types::List), Y:CandidateSet) => #argDependentNameLookup(X, Args, Types, getAssociatedNamespaces(Types, <namespaces> B </namespaces>), Y) ...</k>
+     rule <k> getFunctionAddressTypes(.List) ~> false ~> argDependentNameLookup(X::CId, Args::StrictList, krlist(Types::List), cSet(Y::Map, QX::QualId, Obj:K)) => #argDependentNameLookup(X, Args, Types, getAssociatedNamespaces(Types, <namespaces> B </namespaces>), cSet(Y, QX, Obj)) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <namespaces> B::Bag </namespaces>
@@ -362,9 +377,9 @@ module CPP-TRANSLATION-NAME
      rule getTemplateArgTypes(t(Q::Quals, Mods::Set, T::CPPSimpleTypeExpr), Ps::TemplateParams) => ListItem(t(Q, Mods, T)) getTemplateArgTypes(Ps)
      rule getTemplateArgTypes(.TemplateParams) => .List
 
-     rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, Y:CandidateSet) => Y
+     rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, cSet(Y::Map, QX::QualId, Obj:K)) => resolveOverload(cSet(Y, QX, Obj), Args, krlist(Types), Args, X, operator())
      rule (.K => qualifiedNameLookup(X, N, false)) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
-     rule (M:CandidateSet => .K) ~> #argDependentNameLookup(_, _, _, _, Y:CandidateSet => cSetUnion2(M, Y))
+     rule (cSet(M::Map, QX::QualId, Obj:K) => .K) ~> #argDependentNameLookup(_, _, _, _, cSet(_::Map (.Map => M), QX, Obj))
 
      // elaborated type specifiers
      rule resolveElabSpecifier(_, T:CPPTypeExpr) => T
@@ -372,70 +387,5 @@ module CPP-TRANSLATION-NAME
 
      rule resolveElabSpecifier(templateRef(Q::QualId, T::CPPClassType), krlist(Args::List)) => specializeTypeTemplate(Q, T, Args)
      rule <k> specializeTypeTemplate(X::QualId, t(Q::Quals, Mods::Set, classType(N::Namespace :: Class(Tag::Tag, C::CId, .TemplateArgs))), Args::List) => t(Q, Mods, classType(N :: Class(Tag, C, toTemplateArgs(Args)))) ...</k>
-
-     // lookup of operator functions for overloading
-     rule resolveOverloadedOperator(O::OpId, E1::Expr, T1::CPPType)
-          => addBuiltinCandidates(O, E1, T1, E1, memberCandidates(O, T1), nonMemberCandidates(O, E1, utype(T1)))
-     rule resolveOverloadedOperator(O::OpId, E1::Expr, T1::CPPType, E2::Init, T2::CPPType)
-          => addBuiltinCandidates(O, E1, T1, E1, E2, T2, E2, memberCandidates(O, T1), nonMemberCandidates(O, E1, utype(T1), E2, utype(T2)))
-
-     syntax Expr ::= memberCandidates(OpId, CPPType) [function]
-                   | nonMemberCandidates(OpId, Expr, CPPType)
-                   | nonMemberCandidates(OpId, Expr, CPPType, Init, CPPType)
-                   | addBuiltinCandidates(OpId, Expr, CPPType, cat: CatExpr, Expr, Expr) [strict(5, 6)]
-                   | addBuiltinCandidates(OpId, Expr, CPPType, cat1: CatExpr, Init, CPPType, cat2: K, Expr, Expr) [strict(8, 9)]
-                   | filterNonMemberLookupSet(Expr, CPPType) [strict(1)]
-                   | filterNonMemberLookupSet(Expr, CPPType, CPPType) [strict(1)]
-     context addBuiltinCandidates(... cat: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
-     context addBuiltinCandidates(... cat1: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
-     context addBuiltinCandidates(... cat2: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
-
-     rule memberCandidates(O::OpId, t(... st: classType(C::Class)) #as T::CPPType) => qualifiedNameLookup(O, C, false)
-          requires isCompleteType(T)
-     rule memberCandidates(O::OpId, _) => notFound(O) [owise]
-         
-     rule nonMemberCandidates(O::OpId, E1::Expr, T1::CPPType)
-          => filterNonMemberLookupSet(argDependentNameLookup(O, list(ListItem(E1))), T1)
-     rule nonMemberCandidates(O::OpId, E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
-          => filterNonMemberLookupSet(argDependentNameLookup(O, list(ListItem(E1) ListItem(E2))), T1, T2)
-     rule filterNonMemberLookupSet(notFound(_) #as C::CandidateSet, _) => C
-     rule filterNonMemberLookupSet(notFound(_) #as C::CandidateSet, _, _) => C
-     rule filterNonMemberLookupSet(cSet(M::Map, Q::QualId, Obj:K), T::CPPType)
-          => #if isCPPClassType(T) #then cSet(stripMemberFunctions(M), Q, Obj) #else cSet(stripEnum1(stripMemberFunctions(M), T), Q, Obj) #fi
-     rule filterNonMemberLookupSet(cSet(M::Map, Q::QualId, Obj:K), T1::CPPType, T2::CPPType)
-          => #if isCPPClassType(T1) orBool isCPPClassType(T2) #then cSet(stripMemberFunctions(M), Q, Obj) #else cSet(stripEnum1(stripEnum2(stripMemberFunctions(M), T2), T1), Q, Obj) #fi
-
-     syntax Map ::= stripMemberFunctions(Map) [function]
-     rule stripMemberFunctions(M::Map T:CPPFunctionType |-> _) => stripMemberFunctions(M)
-          requires isFunctionMember(T)
-     rule stripMemberFunctions(.Map) => .Map
-     rule stripMemberFunctions(M::Map T::CPPType |-> K:K) => T |-> K stripMemberFunctions(M) [owise]
-     syntax Map ::= stripEnum1(Map, CPPType) [function]
-                  | stripEnum2(Map, CPPType) [function]
-     syntax Bool ::= stripEnum(Int, List, CPPType) [function]
-     rule stripEnum1(M::Map T:CPPFunctionType |-> K:K, T1:CPPEnumType)
-          => #if stripEnum(0, getParams(T), T1) #then .Map #else T |-> K #fi stripEnum1(M, T1)
-     rule stripEnum2(M::Map T:CPPFunctionType |-> K:K, T2:CPPEnumType)
-          => #if stripEnum(1, getParams(T), T2) #then .Map #else T |-> K #fi stripEnum1(M, T2)
-
-     rule stripEnum(I::Int, L::List, T::CPPType)
-          => size(L) <=Int I orBool ({L[I]}:>CPPType =/=Type T andBool notBool (isCPPRefType(L[I]) andBool utype(innerType({L[I]}:>CPPType)) ==Type T))
-
-     rule stripEnum1(.Map, _) => .Map
-     rule stripEnum2(.Map, _) => .Map
-     rule stripEnum1(M::Map T::CPPType |-> K:K, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
-     rule stripEnum2(M::Map T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
-
-     rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet) 
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))
-     rule addBuiltinCandidates(operator&, E1::Expr, _, _, C1:CandidateSet, C2:CandidateSet)
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1)), & E1, UnaryOperator(operator&, E1))
-     rule addBuiltinCandidates(operator->, E1::Expr, _, _, E2::Name, _, _, C1:CandidateSet, C2:CandidateSet)
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1) ListItem(E2)), E1 -> no-template E2, BinaryOperator(operator->, E1, E2))
-
-     syntax Expr ::= resolveEmptyOverload(K, StrictList, Expr, Expr) [strict(1)]
-     rule resolveEmptyOverload(notFound(_), _, E::Expr, _) => E
-     rule resolveEmptyOverload(cSet(...) #as C::CandidateSet, Args::StrictList, _, E::Expr)
-          => resolveOverload(C, Args, E)
 
 endmodule

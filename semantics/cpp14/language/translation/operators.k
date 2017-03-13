@@ -2,9 +2,9 @@ module CPP-OPERATORS
      imports BASIC-K
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYNTAX
-     imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-TYPING-SORTS
 
      rule BinaryOperator(O::OpId, E1::Expr, E2::Init)
           => #BinaryOperator(O, E1, E1, E2, E2)
@@ -28,19 +28,9 @@ module CPP-OPERATORS
           requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
 
-     rule #BinaryOperator(O::OpId, E1::Expr, T1:CPPType, E2::Init, T2:CPPType)
-          => resolveOverloadedOperator(O, E1, T1, E2, T2)
-          requires isCPPClassType(T1) orBool isCPPClassType(T2)
-               orBool isCPPEnumType(T1) orBool isCPPEnumType(T2)
-
      rule #UnaryOperator(O::OpId, E1::Expr, T1:CPPDType)
           => builtinOperator(O, E1)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
-
-     rule #UnaryOperator(O::OpId, E1::Expr, T1:CPPDType)
-          => resolveOverloadedOperator(O, E1, T1)
-          requires isCPPClassType(T1) orBool isCPPEnumType(T1)
- 
 
      syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
                    | builtinOperator(OpId, Expr) [function, klabel(builtinOperator2)]

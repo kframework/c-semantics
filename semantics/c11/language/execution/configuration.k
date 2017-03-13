@@ -70,8 +70,6 @@ module C-CONFIGURATION
 
                          // this pointer
                          <this> .K </this>
-                         // object being constructed
-                         <constructing> .K </constructing>
 
                          // stack of block-control cells
                          <block-stack color="violet"> .List </block-stack>

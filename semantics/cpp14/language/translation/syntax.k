@@ -35,6 +35,7 @@ module CPP-ABSTRACT-SYNTAX
                    | NamespaceDecl(CId, Bool, List)
                    | Specifier(Specifier, Decl)
                    | Declarator
+                   | Constructor(List, Decl)
 
      context TypedefDecl(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -103,7 +104,7 @@ module CPP-ABSTRACT-SYNTAX
                     | ElaboratedTypeSpecifier(Tag, CId, NNS)
                     | ElaboratedTypeSpecifier(Tag, CId, NNS, List)
                     | FunctionPrototype(AType, StrictList, ExceptionSpec, Bool) [strict(1)]
-                    | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4)]
+                    | MethodPrototype(AType, AType) [strict]
                     | StaticMethodPrototype(AType) [strict]
                     | Virtual(AType) [strict]
                     | BuiltinType(TypeSpecifier)
@@ -184,10 +185,6 @@ module CPP-ABSTRACT-SYNTAX
                     | CatchStmt(Decl, Stmt)
                     | Expr //expression statement, handled later
 
-     syntax Stmt ::= Defaulted()
-                    | Deleted()
-                    | Constructor(List, Stmt)
-
      syntax CatchDecl ::= Decl | Ellipsis()             
 
      syntax AExpr ::= Expr
@@ -195,6 +192,7 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr)
                    | Subscript(Expr, Expr)
+                   | CallExpr(Expr, StrictList)
                    | Name
                    | UnaryOperator(OpId, Expr)
                    | BinaryOperator(OpId, Expr, Init)
@@ -212,8 +210,6 @@ module CPP-ABSTRACT-SYNTAX
                    | Noexcept(Expr)
                    | NewExpr(AType, AExpr, Init, List) [strict(1)]
                    | DeleteExpr(Bool, Bool, Expr)
-
-     syntax ResolvedExpr ::= CallExpr(Expr, StrictList)
 
      syntax Expr ::= Lambda(CaptureDefault, List, AType, AStmt)
                    | PackExpansionExpr(Expr)
@@ -266,8 +262,7 @@ module CPP-ABSTRACT-REWRITING
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
+     rule ConstructorCall(T::AType, ListItem(TemporaryObjectExpr(T, .List))) => FunctionalCast(T, .List) [anywhere]
      rule ConstructorCall(T::AType, .List) => NoInit() [anywhere]
      rule ConstructorCall(_, ListItem(E::Expr)) => E [owise, anywhere]
-     rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
-
 endmodule

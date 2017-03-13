@@ -29,7 +29,6 @@ module CPP-DECL-DECLARATOR
      imports STRING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
-     imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
@@ -222,7 +221,7 @@ module CPP-DECL-DECLARATOR
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
               => addToEnv(NoNamespace() :: X, T, nonStatic, false)
-              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, Init, Type), Var(Type), AutoStorage, S)
+              ~> declareNonStaticObject(X, T, figureInit(le(Name(NoNNS(), X), hasTrace(Name(NoNNS(), X)), T), T, AutoStorage, Init, Type), Var(Type), AutoStorage, S)
               ~> Next
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -325,7 +324,7 @@ module CPP-DECL-DECLARATOR
      rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
                    allocateDecl(N :: X, T, StaticStorage, S),
-                   T, Init, getInitType(Type)), Type) ...</k>
+                   T, StaticStorage, Init, getInitType(Type)), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
      syntax InitType ::= getInitType(DeclarationType) [function]
@@ -336,7 +335,7 @@ module CPP-DECL-DECLARATOR
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Var(Type::InitType), StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
                    allocateDecl(C :: X, T, StaticStorage, S),
-                   T, evalBraceOrEqualInitializer(C, noObject(), Init), Type), Var(Type))
+                   T, StaticStorage,  evalBraceOrEqualInitializer(C, noObject(), Init), Type), Var(Type))
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
 
@@ -344,7 +343,7 @@ module CPP-DECL-DECLARATOR
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Init, Type:FunctionDeclarationType, StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
                    allocateDecl(C :: X, T, StaticStorage, S),
-                   T, Init, CopyInit()), Type)
+                   T, StaticStorage, Init, CopyInit()), Type)
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
 
@@ -354,7 +353,7 @@ module CPP-DECL-DECLARATOR
           ~> #if notBool isCPPRefType(T) #then allocObject(Base, T, byteSizeofType(T)) #else .K #fi
           ~> initializeObject(NoNamespace(), X, T, figureInit(
                lv(lnew(Base), noTrace, T),
-               T, Init, Type), Var(Type)) ...</k>
+               T, StaticStorage, Init, Type), Var(Type)) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, NoNamespace() :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>
@@ -396,9 +395,9 @@ module CPP-DECL-DECLARATOR
      rule <k> initFunction(Base::SymBase, Val:K) => .K ...</k>
           <functions> F::Map => F[Base <- Val] </functions>
 
-     rule <k> processFunDef(Base::SymBase, QX::QualId, t(... st: functionType(... methodInfo: MI::MethodInfo)) #as T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
+     rule <k> processFunDef(Base::SymBase, QX::QualId, T::CPPFunctionTypeExpr, Params::List, Body::Stmt)
               => scope(blockScope(QX, Base, 0),
-                   elaborateTemplateBody(dummyBind(Params) ~> #if hasThis(MI) #then setThis(QX, MI) #else .K #fi ~> getFunDefBody(I, QX, T, Body))
+                   elaborateTemplateBody(dummyBind(Params) ~> getFunDefBody(I, QX, T, Body))
                    ~> calculateGotoMap)
           ...</k>
           <curr-function> _ => Base </curr-function>
@@ -408,13 +407,6 @@ module CPP-DECL-DECLARATOR
      rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
           => LabelStmt(funLabel(getId(QX)), ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
-
-     syntax Bool ::= hasThis(MethodInfo) [function]
-     rule hasThis(methodInfo(... static: false)) => true
-     rule hasThis(_) => false [owise]
-     syntax KItem ::= setThis(QualId, MethodInfo)
-     rule <k> setThis(C:Class :: _, methodInfo(... cvQuals: Q::Quals)) => .K ...</k>
-          <this> _ => pre(This(), hasTrace(This()), type(pointerType(t(Q::Quals, .Set, classType(C))))) </this>
 
      syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
      rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)
@@ -446,17 +438,12 @@ module CPP-DECL-DECLARATOR
           requires notBool isStaticInitialization(Init)
 
      syntax Bool ::= isStaticInitialization(K) [function]
-     rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
-     rule isStaticInitialization(le(beginConstruction(_), _, _)) => true
-     rule isStaticInitialization(le(endConstruction(_), _, _)) => true
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
           requires notBool (isVal(V) andBool notBool isTExpr(V))
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
           requires notBool (isVal(V) andBool notBool isTExpr(V))
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
-     rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
-     rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => true
           requires (isVal(V) andBool notBool isTExpr(V))
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true

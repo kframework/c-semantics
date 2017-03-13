@@ -185,7 +185,6 @@ module CPP-DYNAMIC-SYNTAX
      syntax KItem ::= gotoObject(Int, List, K, List, List) [klabel(gotoObjectCpp)]
 
      syntax NotFoundNameRef ::= notFound(CId)
-     syntax CandidateSet ::= NotFoundNameRef
      syntax NameRef ::= nsRef(Namespace) | NotFoundNameRef
                       | templateRef(QualId, CPPTypeExpr)
      syntax Val ::= NameRef
@@ -372,7 +371,7 @@ module CPP-DYNAMIC
      rule idToString(operator->) => "operator ->"
      rule idToString(operator()) => "operator ()"
      rule idToString(operator[]) => "operator []"
-     rule idToString(DestructorId(Identifier(S::String))) => "~" +String S
+     rule idToString(Destructor(Identifier(S::String))) => "~" +String S
 
      rule signatureToString(Q::QualId, T::CPPType) => idToString(Q)
           requires notBool isCPPFunctionType(T)
