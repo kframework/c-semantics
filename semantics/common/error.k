@@ -8,12 +8,14 @@ module ERROR-SYNTAX
 
      syntax ErrorTrace ::= errorTrace(String, String)
 
-     syntax KItem ::= reportError(ErrorMsg, Scope, CabsLoc, K) [function, hook(C_SEMANTICS.error)]
+     syntax K ::= reportError(ErrorMsg, Scope, CabsLoc, K) [function, hook(C_SEMANTICS.error)]
 
      syntax ErrorCategory ::= Undef(LanguageLinkage) | Unspec(LanguageLinkage) | Impl(LanguageLinkage) | Cond() | Ill() | Drafting(LanguageLinkage) | Constraint() | Syntax(LanguageLinkage)
      syntax KItem ::= EXIT(ErrorMsg)
      syntax ErrorExit ::= "HALT"
      syntax KItem ::= FATAL()
+
+     syntax KItem ::= recoverFromError(K)
 
      syntax Error
      syntax K ::= assert(Bool, Error)

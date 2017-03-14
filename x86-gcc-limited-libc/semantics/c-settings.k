@@ -1,10 +1,13 @@
 module C-SETTINGS
+     imports BOOL
+     imports INT
+     imports K-IO
+     imports STRING
      imports BITS-SYNTAX
+     imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports BOOL
 
      rule cfg:enumAlias => int
 
@@ -59,12 +62,34 @@ module C-SETTINGS
 
      rule cfg:maxHeapBound => (1 <<Int 32) -Int 2
 
-     rule isErrorRecovery => false
+     rule isErrorRecovery => true
      rule hasLint => false
 
      rule cfg:stackSize(_, _) => 0
 
      rule cfg:reservedKeywordSupported(_) => false
+
+     // Error Recovery
+     rule HALT ~> _:Error => .K
+          requires isErrorRecovery
+     rule HALT ~> recoverFromError(K:K) => K
+          requires isErrorRecovery
+
+     rule reportError(ErrorMsg(E::ErrorCategory, ErrorCode::String, Description::String, _), _, C::CabsLoc, _) => #write(2, printLocation(C) +String ": " +String "warning: " +String Description +String printCategory(E))
+
+     syntax String ::= printLocation(CabsLoc) [function]
+                     | printCategory(ErrorCategory) [function]
+
+     rule printLocation(UnknownCabsLoc) => "<unknown>"
+     rule printLocation(CabsLoc(File::String, _, Line::Int, Column::Int, _)) => File +String ":" +String Int2String(Line) +String ":" +String Int2String(Column)
+     rule printCategory(Undef(_)) => " (Undefined behavior)\n"
+     rule printCategory(Unspec(_)) => " (Unspecified value or behavior)\n"
+     rule printCategory(Impl(_)) => " (Implementation defined behavior)\n"
+     rule printCategory(Cond()) => " (Conditionally-supported behavior)\n"
+     rule printCategory(Ill()) => " (Ill-formed program)\n"
+     rule printCategory(Drafting(_)) => " (Behavior underspecified by standard)\n"
+     rule printCategory(Constraint()) => " (Constraint violation)\n"
+     rule printCategory(Syntax(_)) => " (Syntax error)\n"
 
 endmodule
 
