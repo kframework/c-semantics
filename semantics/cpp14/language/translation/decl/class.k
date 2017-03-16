@@ -9,7 +9,8 @@ module CPP-DECL-CLASS-SYNTAX
      imports SYMLOC-SORTS
      syntax AType ::= declareClassName(Tag, CId, Bool)
      syntax KItem ::= classContext(AType, List) [strict(1)]
-     syntax SymBase ::= memberBase(CId, CId)
+     syntax MemberBase ::= memberBase(CId, CId, CPPType)
+     syntax SymBase ::= MemberBase
 endmodule
 
 module CPP-DECL-CLASS
@@ -23,6 +24,7 @@ module CPP-DECL-CLASS
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
+     imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
@@ -57,15 +59,25 @@ module CPP-DECL-CLASS
           requires notBool isUnnamedCId(X) orBool T =/=K Union()
 
      rule ClassDef(Union(), X:UnnamedCId, NoNNS(), .List, Members::List)
-           => defAnonymousUnion(declareClassName(Union(), X, true), Members)
+          => DeclaratorAndSpecifiers(defAnonymousUnion(declareClassName(Union(), X, true), Members), .Set)
      
-     syntax KItem ::= defAnonymousUnion(AType, List) [strict(1)]
-     rule defAnonymousUnion(t(_, _, classType(_ #as C::Class)) #as T::CPPType, Members::List)
-          => classContext(T, Members) ~> defineUnnamedObject(C) ~> addMembersToScope(C)
+     syntax Declarator ::= defAnonymousUnion(AType, List)
+     context DeclaratorAndSpecifiers(defAnonymousUnion(HOLE:AType,_), _)
+     rule DeclaratorAndSpecifiers(defAnonymousUnion(t(... st: classType(C::Class)) #as T::CPPType, Members::List), S::Set)
+          => classContext(T, Members) ~> defineUnnamedObject(C, S) ~> addMembersToScope(C)
 
-     syntax KItem ::= defineUnnamedObject(Class)
-     rule <k> defineUnnamedObject(C::Class) => VarDecl(N, unnamedObject(C), type(classType(C)), NoInit(), false) ...</k>
-          <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+     rule NoDecl() => .K
+
+     syntax KItem ::= defineUnnamedObject(Class, Set)
+     rule <k> defineUnnamedObject(C::Class, S::Set)
+           => DeclaratorAndSpecifiers(
+                VarDecl(getNamespace(Scope), unnamedObject(C), type(classType(C)), NoInit(), false),
+                #if isNamespaceScope(Scope)
+                #then SetItem(Static()) S // kast does not add Specifiers if in namespaceScope
+                #else S
+                #fi
+              ) ...</k>
+          <curr-scope> Scope::Scope </curr-scope>
 
      syntax KItem ::= addMembersToScope(Class)
      rule <k> addMembersToScope(C::Class) => addMembersToScope(C, Members) ...</k>
@@ -75,12 +87,11 @@ module CPP-DECL-CLASS
      syntax KItem ::= addMembersToScope(Class, List)
      rule addMembersToScope(_, .List) => .K
      // TODO(traiansf): propagate variant-members upward if the anonymous union was declared in class scope.
-     rule <k> (.K => addToEnv(mkQualId(getNamespace(Scope), X), T, memberBase(unnamedObject(C), X), false))
-           ~> addMembersToScope(C::Class, (ListItem(X:CId) => .List) _)
+     rule <k> (.K => addToEnv(mkQualId(getNamespace(Scope), X), T, memberBase(unnamedObject(C), X, T), false))
+           ~> addMembersToScope(C::Class, (ListItem(kpair(X::CId, T::CPPType)) => .List) _)
           ...</k>
-          <class-id> C::Class </class-id>
-          <cenv>... X |-> (T::CPPType |-> classOffset(0)) ...</cenv>
-          <curr-scope> Scope:Scope </curr-scope>
+          <curr-scope> Scope::Scope </curr-scope>
+          requires notBool isClassScope(Scope)
 
      syntax Namespace ::= getNamespace(Scope) [function]
      rule getNamespace(namespaceScope(N::Namespace)) => N

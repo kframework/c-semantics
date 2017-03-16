@@ -201,7 +201,8 @@ module CPP-TRANSLATION-NAME
      rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList)
           => resolveOverload(cSet(Y, X, .K), Args, E)
 
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(_, _, classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
 
      rule (cSet(_, C:Class :: _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 

@@ -1538,6 +1538,18 @@ bool TraverseDecl(Decl *D) {
       AddKApplyNode("Name", 2);
       TRY_TO(TraverseNestedNameSpecifierLoc(E->getQualifierLoc()));
       TRY_TO(TraverseDeclarationNameInfo(E->getMemberNameInfo()));
+      QualType qualType = E->getBase()->getType();
+      const Type* type = qualType.getTypePtrOrNull();
+      if (0 != type) {
+        if (type->isUnionType()) {
+          RecordDecl* typeDecl = type->getAsUnionType()->getDecl();
+          if (typeDecl->isAnonymousStructOrUnion()) {
+            AddKApplyNode("AnonymousUnionObject", 1);
+            TRY_TO(TraverseType(qualType));
+            return true;
+          }
+        }
+      }
       TRY_TO(TraverseStmt(E->getBase()));
     }
     return true;

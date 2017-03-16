@@ -226,8 +226,12 @@ module CPP-OVERLOADING
 
      rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          requires Base =/=K nonStatic andBool notBool isCPPRefType(T)
+          requires Base =/=K nonStatic
+           andBool notBool isCPPRefType(T)
+           andBool notBool isMemberBase(Base)
      rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+     // resolve anonymous union member lookup
+     rule resolveUniqueDecl(cSet(... candidates: _ |-> kpair(_, memberBase(unnamedObject(C::Class), X::CId, _))), _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
      rule resolveUniqueDecl(cSet(T::CPPType |-> classOffset(_), C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, .K), E::Expr)

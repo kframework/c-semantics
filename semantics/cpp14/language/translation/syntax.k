@@ -194,6 +194,7 @@ module CPP-ABSTRACT-SYNTAX
                     | NoExpression()
 
      syntax Expr ::= MemberExpr(Bool, Bool, Name, Expr)
+                   | AnonymousUnionObject(AType)
                    | Subscript(Expr, Expr)
                    | Name
                    | UnaryOperator(OpId, Expr)
@@ -260,8 +261,17 @@ module CPP-ABSTRACT-REWRITING
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-DECLARATOR-SYNTAX
 
-     rule MemberExpr(false, false, N::Name, E::Expr) => E . no-template N [anywhere]
+     rule MemberExpr(false, false, N::Name, E::Expr) 
+       => #if hasAnonymousUnionObject(E)
+          #then N
+          #else E . no-template N
+          #fi [anywhere]
      rule MemberExpr(true, false, N::Name, E::Expr) => BinaryOperator(operator->, E, N) [anywhere]
+
+     syntax Bool ::= hasAnonymousUnionObject(Expr) [function]
+     rule hasAnonymousUnionObject(ExprLoc(_, E::Expr) => E)
+     rule hasAnonymousUnionObject(AnonymousUnionObject(_)) => true
+     rule hasAnonymousUnionObject(_) => false [owise]
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
