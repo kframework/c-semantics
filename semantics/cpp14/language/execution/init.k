@@ -28,6 +28,14 @@ module CPP-EXECUTION-INIT
      rule #callMain(T::CPPFunctionType, Base::SymBase, _, _, _)
           => BuiltinCallOp(lv(lnew(Base), noTrace, T), .List)
           requires getParams(T) ==K .List
+     rule #callMain(T::CPPFunctionType, Base::SymBase, Argc:Int, X:CId, Args:K)
+          => Args ~> setupCppEnv(Argc) ~> BuiltinCallOp(lv(lnew(Base), noTrace, T), ListItem(prv(Argc, noTrace, type(int))) ListItem(Name(NoNNS(), X)))
+          requires size(getParams(T)) ==Int 2
+
+     syntax KItem ::= setupCppEnv(Int)
+     rule <k> setupCppEnv(Argc::Int) => .K ...</k>
+          // adjust environment to C++ form
+          <env>... Identifier("#incomingArgumentsArray") |-> (Argv::SymBase => (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> kpair(false, Argv))) ...</env>
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>

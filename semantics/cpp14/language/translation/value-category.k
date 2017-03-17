@@ -26,6 +26,7 @@ module CPP-VALUE-CATEGORY
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-EXPR-CONDITIONAL-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -45,8 +46,9 @@ module CPP-VALUE-CATEGORY
      rule ofSCatList(.SCatList) => .List
      rule ofSCatList(K:K cats:: L::SCatList) => ListItem(K) ofSCatList(L) [owise]
 
-     rule (I:Init => lvalue) cats:: _
-          requires notBool isExpr(I)
+     rule (ExprLoc(_, BraceInit(L::List)) => BraceInit(L)) cats:: _
+     rule (.K => cats(list(L))) ~> BraceInit(L::List) cats:: _
+     rule (cats(krlist(L::List)) => .K) ~> (BraceInit(_) => initListCat(L)) cats:: _
 
      context (HOLE:CatExpr => catof(HOLE)) cats:: _ [result(ValueCategory)]
      context K:KResult cats:: HOLE:SCatList
@@ -79,7 +81,7 @@ module CPP-VALUE-CATEGORY
 
      rule catof(AlignofExpr(_) => prvalue)
      rule catof(AlignofType(_) => prvalue)
-     rule catof(NewExpr(_, _, _, _) => prvalue)
+     rule catof(NewExpr(...) => prvalue)
      rule catof(DeleteExpr(_, _, _) => prvalue)
      rule catof(SizeofType(_) => prvalue)
      rule catof(SizeofExpr(_) => prvalue)
@@ -101,11 +103,8 @@ module CPP-VALUE-CATEGORY
      rule catof(Throw(_) => prvalue)
      rule catof(exceptionObject(_) => lvalue)
 
-     rule catof(BinaryOperator(O::OpId, E1::Expr, E2::Init))
-          => catofOperator(O, E1, E1, E2)
-
-     rule catof(UnaryOperator(O::OpId, E1::Expr))
-          => catofOperator(O, E1)
+     rule (.K => catofOperator(O, E1, E1, E2)) ~> catof(BinaryOperator(O::OpId, E1::Expr, E2::Init))
+     rule (.K => catofOperator(O, E1)) ~> catof(UnaryOperator(O::OpId, E1::Expr))
 
      rule catof(ConditionalOperator(_, E2::Expr, E3::Expr))
           => catofConditional(E2, E3)
@@ -130,16 +129,30 @@ module CPP-VALUE-CATEGORY
      context catofBuiltinOperator(O::OpId, _, (HOLE:CatExpr => catof(HOLE)), _)
              requires O =/=K operator-> [result(ValueCategory)]
      context catofBuiltinOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
-     rule catofOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType)
+     rule catofOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType) ~> catof(_)
           => #catofBuiltinOperator(O, T1, C, T2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
-     rule catofOperator(O::OpId, T1:CPPDType)
+     rule catofOperator(O::OpId, T1:CPPDType) ~> catof(_)
           => #catofBuiltinOperator(O, T1)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
-     rule catofOperator(operator->, T1:CPPDType, E1::Expr, E2::Expr)
+     rule catofOperator(operator->, T1:CPPDType, E1::Expr, E2::Expr) ~> catof(_)
           => #catofBuiltinOperator(operator->, T1, E1, E2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
+
+     rule catofOperator(O::OpId, T1:CPPDType) ~> catof(UnaryOperator(_, E1::Expr))
+          => catof(resolveOverloadedOperator(O, E1, T1))
+          requires isCPPClassType(T1) orBool isCPPEnumType(T1)
+     rule catofOperator(O::OpId, T1:CPPDType, _, T2:CPPDType) ~> catof(BinaryOperator(_, E1::Expr, E2::Expr))
+          => catof(resolveOverloadedOperator(O, E1, T1, E2, T2))
+          requires isCPPClassType(T1) orBool isCPPClassType(T2)
+               orBool isCPPEnumType(T1) orBool isCPPEnumType(T2)
+
+     // these contexts require the structural attribute to ensure that they always apply prior to the rules
+     // for evaluating expressions. Otherwise we might evaluate too far even though this expression
+     // is not potentially evaluated in this context.
+     context catof(resolveOverloadedOperator(_, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
+     context catof(resolveOverloadedOperator(_, _, _, _, _) #as HOLE:Expr) [result(ResolvedExpr), structural]
 
      rule catofBuiltinOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType)
           => #catofBuiltinOperator(O, T1, C, T2)

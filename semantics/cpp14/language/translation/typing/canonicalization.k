@@ -50,6 +50,7 @@ module CPP-TYPING-CANONICALIZATION
      rule MethodPrototype(IsUserProvided::Bool, IsConstructor::Bool, t(_, _, pointerType(t(CVS::Quals, _, classType(C::Class)))), T:CPPFunctionType) => setMethodConstructor(setMethodUserProvided(setMethodClass(setCVSQuals(T, CVS), C), IsUserProvided), IsConstructor)
      rule StaticMethodPrototype(T:CPPFunctionType) => setMethodStatic(T)
      rule Virtual(T:CPPFunctionType) => setMethodVirtual(T)
+     rule Explicit(T:CPPFunctionType) => setMethodExplicit(T)
 
      rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
      rule NoExceptionSpec() => noexcept(false)

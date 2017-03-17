@@ -9,6 +9,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
      syntax Expr ::= figureInit(base: Expr, destT: CPPTypeExpr, init: Init, type: InitType)
      syntax Expr ::= valueInit(base: Expr, CPPType)
                    | defaultInit(base: Expr, CPPTypeExpr)
+                   | zeroInit(LVal, CPPType)
                    | constructorInit(LVal, InitType, Class, List)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
@@ -24,6 +25,7 @@ module CPP-DECL-INITIALIZER
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-CONVERSION-SYNTAX
+     imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-MEMORY-READING-SYNTAX
@@ -62,14 +64,32 @@ module CPP-DECL-INITIALIZER
      // 8.5:7.2-7.3 (non-class, non-array-of-classes)
      rule defaultInit(Base:LVal, T::CPPType) => Base
           requires notBool isCPPClassType(getMostDerivedArrayElement(T))
+               andBool notBool isCPPRefType(T)
+
+     // 8.5:8.1 (class with no defaulted default constructor)
+     rule valueInit(Base:LVal, T:CPPClassType) => defaultInit(Base, T)
+          requires (notBool hasConstructorThat(T, #klabel(`isDefaultConstructor`)))
+               orBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`)) 
+               orBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`))
+
+     // 8.5:8.2 (class without user-provided or deleted default constructor)
+     rule valueInit(Base:LVal, T:CPPClassType) 
+          => #if hasConstructorThat(T, #klabel(`isNonTrivialDefaultConstructor`)) #then
+               zeroInit(Base, T)
+          #else
+               compoundInit(zeroInit(Base, T), defaultInit(Base, T))
+          #fi
+          requires (notBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`)))
+               andBool (notBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`)))
+
+     // 8.5:8.3 (array)
+     rule valueInit(Base:LVal, T:CPPArrayType) => initEachElement(Base, T, #klabel(`valueInit`), 0, .K)
 
      // 8.5:8.4 (non-class, non-array)
      rule valueInit(Base:LVal, T::CPPType) => zeroInit(Base, T)
           requires notBool isCPPClassType(T)
                andBool notBool isCPPArrayType(T)
-
-     // 8.5:8.3 (array)
-     rule valueInit(Base:LVal, T:CPPArrayType) => initEachElement(Base, T, #klabel(`valueInit`), 0, .K)
+               andBool notBool isCPPRefType(T)
 
      syntax Expr ::= initEachElement(LVal, CPPArrayType, K, Int, initExp: K)
      rule (.K => Lbl(Base[prv(I, noTrace, t(noQuals, .Set, size_t))], T)) 
@@ -94,6 +114,15 @@ module CPP-DECL-INITIALIZER
                orBool simpleType(innerType(DestT)) ==K char16_t
                orBool simpleType(innerType(DestT)) ==K char32_t
 
+     // 8.5:17.4 (value init)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, ValueInit(), _, _)
+          => valueInit(Base, DestT)
+
+     // 8.5:17.6.1 (direct init or copy init from derived class)
+     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPClassType, Type::InitType, E:Expr, SrcT::CPPType, _)
+          => constructorInit(Base, Type, DestC, ListItem(E))
+          requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, {SrcT}:>CPPClassType))
+
      // expression initializer, non-class type
      rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory)
           => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) := E #else ill-formed #fi
@@ -106,7 +135,6 @@ module CPP-DECL-INITIALIZER
                     | aggInit(LVal, CPPType, List)
                     | arrayInit(LVal, CPPType, Int, List, K)
                     | strInit(LVal, CPPType, CharKind, String, Int, K)
-                    | zeroInit(LVal, CPPType)
 
      // TODO(dwightguth): all the cases for class type
      rule listInit(Base::LVal, T::CPPType, _, L::List)
@@ -199,11 +227,19 @@ module CPP-DECL-INITIALIZER
      rule arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), Size::Int, .List, E::Expr)
           => compoundInit(E, Base)
 
-     rule <k> (.K => resolveOverload(cSet(M, C :: ConstructorId(X), .K), list(L), constructorInit(Base, DirectInit(), C, L))) ~> constructorInit(Base::LVal, DirectInit(), _ :: Class(_, X::CId, _) #as C::Class, L::List) ...</k>
+     rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X), .K), list(L), constructor)) 
+              ~> constructorInit(Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List)
+          ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::Map ...</cenv>
+
+     syntax Map ::= stripExplicit(Map) [function]
+     rule stripExplicit(T::CPPFunctionType |-> K1:K M::Map) => T |-> K1 stripExplicit(M)
+          requires notBool isMethodExplicit(T)
+     rule stripExplicit(_ |-> _ M::Map) => stripExplicit(M) [owise]
+     rule stripExplicit(.Map) => .Map
 
      rule V:Val ~> constructorInit(Base::LVal, _, _, _) => compoundInit(compoundInit(le(beginConstruction(Base), trace(Base), type(Base)), V), le(endConstruction(Base), trace(Base), type(Base)))
 

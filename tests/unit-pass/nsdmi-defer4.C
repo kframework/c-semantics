@@ -1,5 +1,7 @@
 // { dg-do run { target c++11 } }
 
+extern "C" void abort(void);
+
 struct A
 {
   int i = 42;
@@ -13,5 +15,5 @@ A a;
 int main()
 {
   if (a.j != 42 || a.k != 43 || a.i != 44)
-    __builtin_abort();
+    abort();
 }

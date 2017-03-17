@@ -1,7 +1,7 @@
 export K_OPTS := -Xmx2048m -Xss32m
 KOMPILE = kompile -O2
 KDEP = kdep
-KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --exit-code "<result-value> _:Int </result-value>"
+KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict --exit-code "<result-value> _:Int </result-value>" -w2e
 CPP_KOMPILE_FLAGS=--opaque-klabels c11/c11-translation.k
 EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14/cpp14-translation.k --no-expand-macros
 KDEP_DEFAULT_FLAGS=

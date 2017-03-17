@@ -78,8 +78,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax PRValueCategory ::= "prvalue"
      syntax GLValueCategory ::= LValueCategory | XValueCategory
      syntax RValueCategory ::= XValueCategory | PRValueCategory
-     syntax ValueCategory ::= GLValueCategory | RValueCategory
+     syntax ValueCategory ::= GLValueCategory | RValueCategory | InitListCategory
      syntax KResult ::= ValueCategory
+     syntax InitListCategory ::= initListCat(List)
 
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
@@ -144,6 +145,7 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax QualId ::= Class "::" CId
      syntax QualId ::= mkQualId(NNSVal, CId) [function]
+     syntax NNSVal ::= getQual(QualId) [function]
      syntax CId ::= getId(QualId) [function]
 
      syntax NamespaceScope ::= namespaceScope(Namespace)
@@ -186,6 +188,7 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax NotFoundNameRef ::= notFound(CId)
      syntax CandidateSet ::= NotFoundNameRef
+     syntax ResolvedExpr ::= NotFoundNameRef
      syntax NameRef ::= nsRef(Namespace) | NotFoundNameRef
                       | templateRef(QualId, CPPTypeExpr)
      syntax Val ::= NameRef
@@ -227,6 +230,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax ValResult
      syntax Val ::= ValResult
      syntax KResult ::= ValResult
+
+     syntax KItem ::= resolve(Expr)
 
 endmodule
 
@@ -461,5 +466,9 @@ module CPP-DYNAMIC
 
      rule getId(N:Namespace :: X::CId) => X
      rule getId(C:Class :: X::CId) => X
+     rule getQual(N:Namespace :: X::CId) => N
+     rule getQual(C:Class :: X::CId) => C
+
+     context resolve(HOLE:Expr) [result(ResolvedExpr), structural]
 
 endmodule

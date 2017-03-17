@@ -6,6 +6,7 @@ module CPP-TRANSLATION-EXPR-MEMBERS
      imports CPP-DYNAMIC-SYNTAX
 
      context CallExpr(HOLE:Expr . _ _, _)
+     context CallExpr(BinaryOperator(operator->, _, _) #as HOLE:Expr, _) [result(ResolvedExpr), structural]
 
      rule fieldExp(le(E::Expr, Trace::Trace, _), N::Name, T::CPPType, _)
           => le(E . no-template N, Trace, T)

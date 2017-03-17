@@ -22,9 +22,9 @@ module CPP-ALIGNMENT
      rule getAlignas(T::CPPType, _) => byteAlignofType(T) [owise]
 
      syntax Int ::= byteAlignofType(CPPSimpleType) [klabel(byteAlignofSimpleTypeCpp), function]
-     rule byteAlignofType(T:CPPClassType) => byteAlignofClass(getClassInfo(T))
-     rule byteAlignofType(t(_, _, T::CPPSimpleType)) => byteAlignofType(T) [owise]
+     rule byteAlignofType(t(_, _, T::CPPSimpleType)) => byteAlignofType(T)
 
+     rule byteAlignofType(classType(C::Class)) => byteAlignofClass(getClassInfo(C))
      syntax Int ::= byteAlignofClass(ClassInfo) [function]
      rule byteAlignofClass(<class>... <max-align> A::Int </max-align> ...</class>)
           => A

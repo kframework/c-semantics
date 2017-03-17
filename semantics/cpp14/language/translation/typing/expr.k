@@ -41,17 +41,18 @@ module CPP-TYPING-EXPR
      syntax STypeList ::= K "types::" STypeList
                      | ".STypeList"
      rule isKResult(.STypeList) => true
-     rule isKResult(S1:K types:: S2::STypeList) => isCPPType(S1) andBool isKResult(S2)
+     rule isKResult(S1:K types:: S2::STypeList) => isCPPDType(S1) andBool isKResult(S2)
      rule toSTypeList(ListItem(K:K) L::List) => K types:: toSTypeList(L)
      rule toSTypeList(.List) => .STypeList
      rule ofSTypeList(krlist(L1::List) types:: L2::STypeList) => L1 ofSTypeList(L2)
      rule ofSTypeList(.STypeList) => .List
      rule ofSTypeList(K:K types:: L::STypeList) => ListItem(K) ofSTypeList(L) [owise]
 
-     rule (I:Init => t(noQuals, .Set, no-type)) types:: _
-          requires notBool isExpr(I)
+     rule (ExprLoc(_, BraceInit(L::List)) => BraceInit(L)) types:: _
+     rule (.K => types(list(L))) ~> BraceInit(L::List) types:: _
+     rule (types(krlist(L::List)) => .K) ~> (BraceInit(_) => initListType(L)) types:: _
 
-     context (HOLE:TypeExpr => typeof(HOLE)) types:: _ [result(CPPType)]
+     context (HOLE:TypeExpr => typeof(HOLE)) types:: _ [result(CPPDType)]
      context K:KResult types:: HOLE:STypeList
 
      // ----------------------------------
@@ -78,6 +79,9 @@ module CPP-TYPING-EXPR
              requires getKLabel(HOLE) ==K #klabel(`Name`)
                   orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
      rule typeof(T:Typed => type(T))
+
+     rule <k> typeof(This() => type(V)) ...</k>
+          <this> V:PRVal </this>
 
      rule typeof(SizeofExpr(_) => type(size_t))
      rule typeof(SizeofType(_) => type(size_t))
@@ -108,10 +112,10 @@ module CPP-TYPING-EXPR
           <class-id> C </class-id>
           <cenv>... X |-> (T::CPPType |-> _:ClassOffset) ...</cenv>
 
-     context typeof(NewExpr(HOLE:AType, _, _, _))
-     rule typeof(NewExpr(T:CPPType, _, _, _) => type(pointerType(T)))
+     context typeof(NewExpr(_, HOLE:AType, _, _, _))
+     rule typeof(NewExpr(_, T:CPPType, _, _, _) => type(pointerType(T)))
           requires notBool isCPPArrayType(T)
-     rule typeof(NewExpr(T:CPPArrayType, _, _, _) => type(pointerType(innerType(T))))
+     rule typeof(NewExpr(_, T:CPPArrayType, _, _, _) => type(pointerType(innerType(T))))
 
      rule typeof(Throw(_) => type(void))
      rule typeof(exceptionObject(T::CPPType) => T)
@@ -250,6 +254,8 @@ module CPP-TYPING-EXPR
           => typeof(promote(T))
      rule #typeofBuiltinOperator(operator>>, T:CPPType, _)
           => typeof(promote(T))
+     rule #typeofBuiltinOperator(operator,, _, T:CPPType)
+          => typeof(T)
 
      rule #typeofBuiltinOperator(operator-, T::CPPType)
           => typeof(promote(T))

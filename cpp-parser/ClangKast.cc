@@ -524,18 +524,6 @@ bool TraverseDecl(Decl *D) {
       }
     }
 
-    if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-      if (Ctor->isExplicitSpecified()) {
-        AddSpecifier("Explicit");
-      }
-    }
-
-    if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
-      if (Conv->isExplicitSpecified()) {
-        AddSpecifier("Explicit");
-      }
-    }
-
     AddStorageClass(D->getStorageClass());
     if (D->isInlineSpecified()) {
       AddSpecifier("Inline");
@@ -544,7 +532,7 @@ bool TraverseDecl(Decl *D) {
       AddSpecifier("Constexpr");
     }
 
-    if (D->isThisDeclarationADefinition()) {
+    if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
       AddKApplyNode("FunctionDefinition", 5);
     } else {
       AddKApplyNode("FunctionDecl", 4);
@@ -574,6 +562,18 @@ bool TraverseDecl(Decl *D) {
           TRY_TO(TraverseType(Method->getThisType(*Context)));
           if (Method->isVirtual()) {
             AddKApplyNode("Virtual", 1);
+          }
+
+          if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
+            if (Conv->isExplicitSpecified()) {
+              AddKApplyNode("Explicit", 1);
+            }
+          }
+
+          if (CXXConstructorDecl *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
+            if (Ctor->isExplicitSpecified()) {
+              AddKApplyNode("Explicit", 1);
+            }
           }
         } else {
           AddKApplyNode("StaticMethodPrototype", 1);
@@ -606,6 +606,9 @@ bool TraverseDecl(Decl *D) {
         }
       }
       TRY_TO(TraverseStmt(D->getBody()));
+    }
+    if (D->isExplicitlyDefaulted()) {
+      AddKApplyNode("Defaulted", 0);
     }
     return true;
   }
@@ -1851,8 +1854,7 @@ bool TraverseDecl(Decl *D) {
     return false;
   }
 
-  bool TraverseCXXConstructHelper(const char *klabel, QualType T, Expr **begin, Expr **end) {
-    AddKApplyNode(klabel, 2);
+  bool TraverseCXXConstructHelper(QualType T, Expr **begin, Expr **end) {
     TRY_TO(TraverseType(T));
     int i = 0;
     for (Expr **iter = begin; iter != end; ++iter) {
@@ -1866,24 +1868,30 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool TraverseCXXUnresolvedConstructExpr(CXXUnresolvedConstructExpr *E) {
-    return TraverseCXXConstructHelper("UnresolvedConstructorCall", E->getTypeAsWritten(), E->arg_begin(), E->arg_end());
+    AddKApplyNode("UnresolvedConstructorCall", 2);
+    return TraverseCXXConstructHelper(E->getTypeAsWritten(), E->arg_begin(), E->arg_end());
   }
 
   bool TraverseCXXFunctionalCastExpr(CXXFunctionalCastExpr *E) {
     Expr *arg = E->getSubExprAsWritten();
-    return TraverseCXXConstructHelper("FunctionalCast", E->getTypeInfoAsWritten()->getType(), &arg, &arg+1);
+    AddKApplyNode("FunctionalCast", 2);
+    return TraverseCXXConstructHelper(E->getTypeInfoAsWritten()->getType(), &arg, &arg+1);
   }
 
   bool TraverseCXXScalarValueInitExpr(CXXScalarValueInitExpr *E) {
-    return TraverseCXXConstructHelper("FunctionalCast", E->getTypeSourceInfo()->getType(), 0, 0);
+    AddKApplyNode("FunctionalCast", 2);
+    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), 0, 0);
   }
 
   bool TraverseCXXConstructExpr(CXXConstructExpr *E) {
-    return TraverseCXXConstructHelper("ConstructorCall", E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    AddKApplyNode("ConstructorCall", 3);
+    VisitBool(E->requiresZeroInitialization());
+    return TraverseCXXConstructHelper(E->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool TraverseCXXTemporaryObjectExpr(CXXTemporaryObjectExpr *E) { 
-    return TraverseCXXConstructHelper("TemporaryObjectExpr", E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
+    AddKApplyNode("TemporaryObjectExpr", 2);
+    return TraverseCXXConstructHelper(E->getTypeSourceInfo()->getType(), E->getArgs(), E->getArgs() + E->getNumArgs());
   }
 
   bool VisitUnaryExprOrTypeTraitExpr(UnaryExprOrTypeTraitExpr *E) {
@@ -1935,8 +1943,9 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool TraverseCXXNewExpr(CXXNewExpr *E) {
-    AddKApplyNode("NewExpr", 4);
-    TRY_TO(TraverseTypeLoc(E->getAllocatedTypeSourceInfo()->getTypeLoc()));
+    AddKApplyNode("NewExpr", 5);
+    VisitBool(E->isGlobalNew());
+    TRY_TO(TraverseType(E->getAllocatedType()));
     if (E->isArray()) {
       TRY_TO(TraverseStmt(E->getArraySize()));
     } else {

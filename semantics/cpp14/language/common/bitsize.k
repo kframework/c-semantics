@@ -20,9 +20,9 @@ module CPP-BITSIZE
           => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
      syntax Int ::= byteSizeofType(CPPSimpleType) [klabel(byteSizeofSimpleTypeCpp), function]
-     rule byteSizeofType(T:CPPClassType) => byteSizeofClass(getClassInfo(T))
-     rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T) [owise]
+     rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
 
+     rule byteSizeofType(classType(C::Class)) => byteSizeofClass(getClassInfo(C))
      syntax Int ::= byteSizeofClass(ClassInfo) [function]
      rule byteSizeofClass(<class>... <max-offset> V::Int </max-offset> <max-align> A::Int </max-align> ...</class>)
           => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte)

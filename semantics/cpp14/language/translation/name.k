@@ -2,10 +2,12 @@ module CPP-TRANSLATION-NAME-SYNTAX
      imports BOOL
      imports CPP-SORTS
      imports COMMON-SORTS
+     imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-EXPR-SORTS
 
      syntax Expr ::= nameLookupInNamespace(CId, Namespace, Tag, isnns: Bool)
      syntax Expr ::= nameLookup(CId, Tag, isnns: Bool)
+                   | qualifiedNameLookup(CId, NNS, isnns: Bool)
      syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
                    | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
 endmodule
@@ -197,9 +199,12 @@ module CPP-TRANSLATION-NAME
              [result(NNSVal)]
      rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _)
      rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
 
      rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList)
           => resolveOverload(cSet(Y, X, .K), Args, E)
+     rule cSet(Y::Map, X::QualId, This()) ~> CallExpr(N:Name, Args::StrictList)
+          => resolveOverload(cSet(Y, X, This()), Args, (* This()) . no-template N)
 
      rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
      rule (.K => qualifiedNameLookup(X, C, false)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
@@ -244,7 +249,6 @@ module CPP-TRANSLATION-NAME
      syntax Expr ::= argDependentNameLookup(CId, StrictList)
                    | argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
                    | #argDependentNameLookup(CId, StrictList, List, Set, CandidateSet)
-                   | qualifiedNameLookup(CId, NNS, isnns: Bool)
      syntax AType ::= resolveElabSpecifier(Tag, K) [strict(2)]
                     | resolveElabSpecifier(K, StrictList) [strict(1, 2), klabel(resolveElabSpecifier2)]
                     | specializeTypeTemplate(QualId, CPPType, List)
@@ -339,6 +343,7 @@ module CPP-TRANSLATION-NAME
      // 3.4.2:2.4
      rule getAssociatedNamespaces(ListItem(T::CPPType => innerType(T)) _, _)
           requires isCPPPointerType(T) orBool isCPPArrayType(T)
+     rule getAssociatedNamespaces((ListItem(initListType(_)) => .List) _, _)
      rule getAssociatedNamespaces(.List, _) => .Set
 
      // If an associated namespace is an inline namespace (7.3.1), its enclosing
@@ -428,15 +433,21 @@ module CPP-TRANSLATION-NAME
      rule stripEnum2(M::Map T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
 
      rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet) 
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))
      rule addBuiltinCandidates(operator&, E1::Expr, _, _, C1:CandidateSet, C2:CandidateSet)
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1)), & E1, UnaryOperator(operator&, E1))
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1)), & E1, UnaryOperator(operator&, E1))
      rule addBuiltinCandidates(operator->, E1::Expr, _, _, E2::Name, _, _, C1:CandidateSet, C2:CandidateSet)
-          => resolveEmptyOverload(cSetUnion(C1, C2), list(ListItem(E1) ListItem(E2)), E1 -> no-template E2, BinaryOperator(operator->, E1, E2))
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 -> no-template E2, BinaryOperator(operator->, E1, E2))
 
      syntax Expr ::= resolveEmptyOverload(K, StrictList, Expr, Expr) [strict(1)]
-     rule resolveEmptyOverload(notFound(_), _, E::Expr, _) => E
-     rule resolveEmptyOverload(cSet(...) #as C::CandidateSet, Args::StrictList, _, E::Expr)
-          => resolveOverload(C, Args, E)
+                   | #resolveEmptyOverload(Expr, Expr)
+     rule resolveEmptyOverload(C::CandidateSet, Args::StrictList, Builtin::Expr, E::Expr)
+          => #resolveEmptyOverload(resolveOverload(C, Args, E), Builtin)
+     context #resolveEmptyOverload(HOLE:Expr, _) [result(ResolvedExpr), structural]
+     rule #resolveEmptyOverload(E:ResolvedExpr, _) => E
+          requires notBool isNotFoundNameRef(E)
+     // no viable candidates
+     rule #resolveEmptyOverload(notFound(_), E::Expr) => E
+     
 
 endmodule

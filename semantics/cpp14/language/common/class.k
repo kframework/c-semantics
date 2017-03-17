@@ -11,8 +11,8 @@ module CPP-CLASS-SYNTAX
      syntax Expr ::= contrivedObject(CPPType)
      syntax ValResult ::= noObject()
      syntax CId ::= unnamedObject(Class)
-     syntax Expr ::= beginConstruction(LVal)
-     syntax Expr ::= endConstruction(LVal)
+     syntax Expr ::= beginConstruction(Expr) [strict]
+     syntax Expr ::= endConstruction(Expr) [strict]
 endmodule
 
 module CPP-CLASS

@@ -278,7 +278,7 @@ module CPP-CONVERSION
      rule isNullPointerConstant(prv(_, _, _:CPPNullPtrTType)) => true
      rule isNullPointerConstant(pre(_, _, _:CPPNullPtrTType)) => true
      rule isNullPointerConstant(V::PRVal) => false
-          requires trace(V) =/=K noTrace
+          requires trace(V) =/=K noTrace [owise]
 
      rule isCompositePointerType(T::CPPType) => isCPPPointerType(T) orBool isCPPMemberPointerType(T) orBool isCPPNullPtrTType(T)
 

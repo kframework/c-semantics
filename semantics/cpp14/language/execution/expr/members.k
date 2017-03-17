@@ -6,9 +6,6 @@ module CPP-EXECUTION-EXPR-MEMBERS
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule <k> This() => Obj ...</k>
-          <this> Obj::Expr </this>
-
      rule contrivedObject(_) => noObject()
 
      rule <k> evalBraceOrEqualInitializer(C::Class, lv(Loc::SymLoc, Tr::Trace, T::CPPType) #as Base::LVal, E::Expr) => setThis(prv(Loc, Tr, type(pointerType(type(classType(C)))))) ~> E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ~> setThis(OldThis) ...</k>

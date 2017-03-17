@@ -51,6 +51,7 @@ module COMPAT-SYNTAX
      syntax Set ::= listToSet(List) [function]
 
      syntax Bool ::= some(Set, K) [function]
+                   | some(Map, K) [function]
 
      //TODO(liyi): might not need this later
      syntax KItem ::= "dotK"
@@ -332,6 +333,9 @@ module COMPAT
           requires Lbl(K) =/=K true
                andBool (K =/=K .K)
      rule some'(.K, .Set, _) => false
+
+     rule some(.Map, Lbl:K) => false
+     rule some(K1:K |-> K2:K M:Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl))
 
      //TODO(liyi): might not need this
      rule dotK => .K [structural]

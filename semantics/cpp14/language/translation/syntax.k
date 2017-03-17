@@ -52,6 +52,7 @@ module CPP-ABSTRACT-SYNTAX
                          | BitFieldDecl(NNS, CId, AType, Expr)
 
      syntax Init ::= NoInit()
+                   | ValueInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
      syntax FunctionSpecifier ::= Inline() | Explicit()
@@ -106,6 +107,7 @@ module CPP-ABSTRACT-SYNTAX
                     | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4)]
                     | StaticMethodPrototype(AType) [strict]
                     | Virtual(AType) [strict]
+                    | Explicit(AType) [strict]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]
                     | MemberPointerType(AType, AType) [strict]
@@ -211,7 +213,7 @@ module CPP-ABSTRACT-SYNTAX
                    | SizeofPack(CId)
                    | PseudoDestructor(Expr, Bool, NNS, AType, AType)
                    | Noexcept(Expr)
-                   | NewExpr(AType, AExpr, Init, List) [strict(1)]
+                   | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
                    | DeleteExpr(Bool, Bool, Expr)
 
      syntax ResolvedExpr ::= CallExpr(Expr, StrictList)
@@ -247,7 +249,7 @@ module CPP-ABSTRACT-SYNTAX
      // things that are not technically expressions, but will be transformed out
      // of existence by the semantics
      syntax Expr ::= MaterializeTemporaryExpr(Expr)
-                   | ConstructorCall(AType, List)
+                   | ConstructorCall(Bool, AType, List)
                    | TemporaryObjectExpr(AType, List)
                    | ParenList(List)
                    | DefaultArg()
@@ -260,6 +262,7 @@ module CPP-ABSTRACT-REWRITING
      imports CPP-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-DECLARATOR-SYNTAX
+     imports CPP-DYNAMIC-SYNTAX
 
      rule MemberExpr(false, false, N::Name, E::Expr) 
        => #if hasAnonymousUnionObject(E)
@@ -276,8 +279,14 @@ module CPP-ABSTRACT-REWRITING
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
 
      rule MaterializeTemporaryExpr(E::Expr) => E [anywhere]
-     rule ConstructorCall(T::AType, .List) => NoInit() [anywhere]
-     rule ConstructorCall(_, ListItem(E::Expr)) => E [owise, anywhere]
+     // technically speaking this case could still be value initialization, but in that
+     // case value initialization and default initialization have the same semantics.
+     // ideally we would get the distinction between the two correct, but clang doesn't fully
+     // distinguish by the time we reach the point of abstract syntax, so this will have to do.
+     rule ConstructorCall(false, _, .List) => NoInit() [anywhere]
+     rule ConstructorCall(true, _, .List) => ValueInit() [anywhere]
+     rule ConstructorCall(_, _, ListItem(E::Expr)) => E [owise, anywhere]
      rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
+     rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
 
 endmodule

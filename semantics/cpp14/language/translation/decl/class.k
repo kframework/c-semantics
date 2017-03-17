@@ -11,6 +11,20 @@ module CPP-DECL-CLASS-SYNTAX
      syntax KItem ::= classContext(AType, List) [strict(1)]
      syntax MemberBase ::= memberBase(CId, CId, CPPType)
      syntax SymBase ::= MemberBase
+
+     // these functions don't check for whether or not it's a constructor and
+     // therefore should only be called after we know that something is a
+     // constructor. The exception is hasConstructorThat which checks
+     // whether any constructor in a given class meets the specified constructor
+     // property.
+     syntax Bool ::= isTrivialDefaultConstructor(CPPFunctionType, K) [function]
+                   | isNonTrivialDefaultConstructor(CPPFunctionType, K) [function]
+                   | isDefaultConstructor(CPPFunctionType, K) [function]
+                   | isUserProvidedConstructor(CPPFunctionType, K) [function]
+                   | isUserProvidedDefaultConstructor(CPPFunctionType, K) [function]
+                   | isDeleted(CPPFunctionType, K) [function]
+                   | isDeletedDefaultConstructor(CPPFunctionType, K) [function, klabel(isDeletedDefaultConstructor2)]
+                   | hasConstructorThat(CPPClassType, K) [function]
 endmodule
 
 module CPP-DECL-CLASS
@@ -28,6 +42,7 @@ module CPP-DECL-CLASS
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
+     imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -167,9 +182,8 @@ module CPP-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
-     // TODO(dwightguth): class type members
      // 12.1:4.6-4.7
-     rule <k> (.K => figureConstructItem(.K, X, T, true, .K, .K)) ~> figureConstruct(.List, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
+     rule <k> (.K => checkCtorAndDtor(.K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tu> Tu::String </curr-tu>
@@ -177,8 +191,36 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
-          requires notBool isCPPClassType(T)
-               andBool notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
+          requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
+
+     syntax K ::= checkCtorAndDtor(K, CId, CPPType, Bool, Init, CPPType) [function]
+     syntax KItem ::= checkCtor(Class)
+                    | checkDtor(Class)
+     rule checkCtorAndDtor(K:K, X::CId, T::CPPType, B::Bool, _, M::CPPType)
+          => figureConstructItem(K, X, T, B)
+          requires notBool isCPPClassType(M)
+     rule checkCtorAndDtor(K:K, X::CId, T::CPPType, B:Bool, I::Init, t(... st: classType(M::Class)))
+          => checkCtor(M) ~> checkDtor(M) ~> figureConstructItem(K, X, T, B)
+          requires notBool (B andBool I =/=K NoInit())
+     rule checkCtorAndDtor(K:K, X::CId, T::CPPType, B::Bool, _, t(... st: classType(M::Class)))
+          => checkDtor(M) ~> figureConstructItem(K, X, T, B) [owise]
+     rule <k> (.K => resolve(resolveOverload(cSet(Candidates, M :: ConstructorId(X), .K), list(.List), constructor)))
+              ~> checkCtor(_ :: Class(_, X::CId, _) #as M::Class)
+          ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> M </class-id>
+          <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
+     rule resolve(_:ResolvedExpr) ~> checkCtor(_) => .K
+     // this rule should never actually apply once we finish destructors since all classes will have a destructor.
+     // we keep it here for now so that when we add default destructors to classes we will get stuck and remember to
+     // fix this check.
+     rule <k> checkDtor(_ :: Class(_, X::CId, _) #as M::Class) => .K ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> M </class-id>
+          <cenv> CE::Map </cenv>
+          requires notBool DestructorId(X) in_keys(CE)
 
      syntax Bool  ::= isDeletedDefaultConstructor(CId, CPPType, Class, CPPFunctionType, Set, Init) [function]
 
@@ -186,29 +228,29 @@ module CPP-DECL-CLASS
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, C::Class, FuncT::CPPFunctionType, VM::Set, _) => true
           requires X in VM andBool isUnionLikeClass(C) andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) 
                andBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isNonTrivialDefaultConstructor`)))(getMostDerivedArrayElement(T))
-               andBool notBool isUserProvidedConstructor(FuncT)
+               andBool notBool isUserProvidedConstructor(FuncT, .K)
      // 12.1:4.2
      rule isDeletedDefaultConstructor(_, T:CPPRefType, C::Class, FuncT::CPPFunctionType, _, NoInit()) => true
-          requires notBool isUserProvidedConstructor(FuncT)
+          requires notBool isUserProvidedConstructor(FuncT, .K)
      // 12.1:4.3
      rule isDeletedDefaultConstructor(X::CId, T::CPPType, _, FuncT::CPPFunctionType, VM::Set, NoInit()) => true
           requires notBool X in VM andBool #fun(InnerT::CPPType => isCPPClassType(InnerT) andBool isConstType(InnerT) andBool notBool hasConstructorThat({InnerT}:>CPPClassType, #klabel(`isUserProvidedDefaultConstructor`)))(getMostDerivedArrayElement(T))
-               andBool notBool isUserProvidedConstructor(FuncT)
-     rule isDeletedDefaultConstructor(...) => false [owise]
+               andBool notBool isUserProvidedConstructor(FuncT, .K)
+     rule isDeletedDefaultConstructor(_::CId, _, _, _, _, _) => false [owise]
 
      // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(_, .List, .List, _, _, false) => Deleted() ...</k>
           <curr-scope> blockScope((_ :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
-          requires notBool isUserProvidedConstructor(FuncT)
+          requires notBool isUserProvidedConstructor(FuncT, .K)
  
 
-     syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool, ctor: K, dtor: K)
+     syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool)
 
      // 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true, .K, .K) => .K) ~> figureConstruct(.List, _, _, _, 
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, 
                    (Res:K => ExpressionStmt(figureInit(Name(NoNNS(), X), T, I, DirectInit())) ~> Res),
                    B:Bool => B orBool (X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
@@ -222,7 +264,7 @@ module CPP-DECL-CLASS
      // we insert a placeholder NullStmt here because it facilitates generating the implicit exception handlers later on.
      // this will get elided automatically by the semantics when we evaluate the actual constructor we generate.
      // TODO(traiansf): anonymous unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool, .K, .K) => .K) ~> figureConstruct(_, _, _, _, 
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(_, _, _, _, 
                    (Res:K => NullStmt() ~> Res),
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
@@ -234,7 +276,7 @@ module CPP-DECL-CLASS
           requires notBool (I =/=K NoInit() andBool IsMember) andBool X in VM
 
      // 12.6.2:8.3
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool, .K, .K) => .K) ~> figureConstruct(_, _, _, _, 
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(_, _, _, _, 
                    (Res:K => ExpressionStmt(defaultInit(Name(NoNNS(), X), T)) ~> Res), _) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -259,41 +301,38 @@ module CPP-DECL-CLASS
      // variant members do not get automatically destructed and only classes have destructors to call
      rule addExceptions(_, _, _::List (ListItem(kpair(X::CId, T::CPPType)) => .List), VM::Set, (Init:KItem => .K) ~> Rest:K, (.K => Init) ~> Result:K)
           requires X in VM orBool notBool isCPPClassType(T)
-     rule addExceptions(C::Class, _, _::List (ListItem(kpair(X::CId, t(... st: classType(_::ClassQualifier :: Class(_::Tag, ObjClass::CId, _::TemplateArgs))))) => .List), VM::Set, (Init:KItem => .K) ~> Rest:K, Res:K => Init ~> TryAStmt(Res, ListItem(CatchAStmt(Ellipsis(),CompoundAStmt(ListItem(ExpressionStmt(CallExpr(Name(C, X) . no-template Name(NoNNS(), DestructorId(ObjClass)), list(.List)))) ListItem(Throw(NoExpression())))))))
+     rule addExceptions(C::Class, _, _::List (ListItem(kpair(X::CId, t(... st: classType(_::ClassQualifier :: Class(_::Tag, ObjClass::CId, _::TemplateArgs))))) => .List), VM::Set, (Init:KItem => .K) ~> Rest:K, Res:K => Init ~> TryAStmt(CompoundAStmt(ListItem(Res)), ListItem(CatchAStmt(Ellipsis(),CompoundAStmt(ListItem(ExpressionStmt(CallExpr(Name(NoNNS(), X) . no-template Name(NoNNS(), DestructorId(ObjClass)), list(.List)))) ListItem(Throw(NoExpression())))))))
           requires notBool (X in VM)
      rule addExceptions(_, .List, .List, _, .K, Result:K) => Result
  
-     // these functions don't check for whether or not it's a constructor and
-     // therefore should only be called after we know that something is a
-     // constructor. The exception is hasConstructorThat which checks
-     // whether any constructor in a given class meets the specified constructor
-     // property.
-     syntax Bool ::= isTrivialDefaultConstructor(CPPFunctionType) [function]
-                   | #isTrivialDefaultConstructor(ClassInfo) [function]
-                   | isNonTrivialDefaultConstructor(CPPFunctionType) [function]
-                   | isDefaultConstructor(CPPFunctionType) [function]
-                   | isUserProvidedConstructor(CPPFunctionType) [function]
-                   | isUserProvidedDefaultConstructor(CPPFunctionType) [function]
-                   | hasConstructorThat(CPPClassType, K) [function]
+     syntax Bool ::= #isTrivialDefaultConstructor(ClassInfo) [function]
                    | #hasConstructorThat(CId, ClassInfo, K) [function]
+                   | #isDeleted(SymBase, K) [function]
      // 12.1:4.8
-     rule isTrivialDefaultConstructor(T::CPPFunctionType) => isDefaultConstructor(T) andBool notBool isUserProvidedConstructor(T) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
+     rule isTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isUserProvidedConstructor(T, K) andBool notBool hasVirtualMembers(type(classType(getMethodClass(T)))) andBool #isTrivialDefaultConstructor(getClassInfo(getMethodClass(T)))
      // 12.1:4.10
      rule #isTrivialDefaultConstructor(<class>... <base-classes> ListItem(C::Class) => .List ...</base-classes> ...</class>)
           requires hasConstructorThat(type(classType(C)), #klabel(`isTrivialDefaultConstructor`))
      // 12.1:4.9,4.11
      rule #isTrivialDefaultConstructor(<class>... <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members> <initializers>... X |-> (T |-> NoInit()) ...</initializers> ...</class>)
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasConstructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDefaultConstructor`)) #else true #fi
+     rule #isTrivialDefaultConstructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
+     rule #isTrivialDefaultConstructor(...) => false [owise]
 
-     rule isNonTrivialDefaultConstructor(T::CPPFunctionType) => isDefaultConstructor(T) andBool notBool isTrivialDefaultConstructor(T)
+     rule isNonTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isTrivialDefaultConstructor(T, K)
 
-     rule isDefaultConstructor(T::CPPFunctionType) => acceptsNArgs(0, T)
-     rule isUserProvidedConstructor(T::CPPFunctionType) => isMethodUserProvided(T)
-     rule isUserProvidedDefaultConstructor(T::CPPFunctionType) => isDefaultConstructor(T) andBool isUserProvidedConstructor(T)
+     rule isDefaultConstructor(T::CPPFunctionType, _) => acceptsNArgs(0, T)
+     rule isUserProvidedConstructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
+     rule isUserProvidedDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)
 
      rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasConstructorThat(X, getClassInfo(T), Lbl)
      rule #hasConstructorThat(X::CId, <class>... <cenv>... ConstructorId(X) |-> M::Map ...</cenv> ...</class>, Lbl:K)
-          => some(keys(M), Lbl)
+          => some(M, Lbl)
+
+     rule isDeleted(_, kpair(_, Base::SymBase)) => #isDeleted(Base, #configuration)
+     rule #isDeleted(Base::SymBase, <generatedTop>... <functions>... Base |-> Deleted() ...</functions> ...</generatedTop>) => true
+     rule #isDeleted(...) => false [owise]
+     rule isDeletedDefaultConstructor(T::CPPFunctionType, K:K) => isDeleted(T, K) andBool isDefaultConstructor(T, K)
      
      syntax AccessSpecifier ::= getDefaultAccessType(Tag) [function]
      rule getDefaultAccessType(Class()) => Private()

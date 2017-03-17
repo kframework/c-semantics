@@ -10,6 +10,9 @@ module CPP-OVERLOADING-SYNTAX
                    | resolveUniqueDecl(K, Expr) [strict(1)]
                    | cSetUnion(K, K) [strict]
 
+     // not a real expression, but getArgs understands it.
+     syntax Expr ::= "constructor"
+
      syntax CandidateSet ::= cSetUnion2(CandidateSet, CandidateSet) [function]
 
 endmodule
@@ -36,6 +39,8 @@ module CPP-OVERLOADING
      imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports ERROR-SYNTAX
+
+     rule resolveOverload(notFound(X::CId), _, _) => notFound(X)
 
      rule <k> resolveOverload(cSet(... id: Q::QualId) #as C::CandidateSet, list(Args::List), E::Expr)
               => #resolveOverload(C,
@@ -65,7 +70,7 @@ module CPP-OVERLOADING
      rule getArgs(Args::List, _, UnaryOperator(...), _) => Args
      rule getArgs(Args::List, _, BinaryOperator(...), _) => Args
      // 13.3.1.3:1
-     rule getArgs(Args::List, _, constructorInit(...), _) => Args
+     rule getArgs(Args::List, _, constructor, _) => Args
 
      // strict version
      rule cSetUnion(notFound(_), E::Expr) => E
@@ -80,88 +85,150 @@ module CPP-OVERLOADING
      context #resolveOverload(_, _, (HOLE:StrictList => types(HOLE)), _, _)
      context #resolveOverload(_, _, _, (HOLE:StrictList => cats(HOLE)), _)
      rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> _ => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _)
-          requires notBool acceptsNArgs(size(Args), T) orBool notViableTypes(getParams(T), Types, Cats)
+          requires notBool acceptsNArgs(size(Args), T) orBool notViableTypes(T, Types, Cats)
 
-     syntax Bool ::= notViableTypes(List, List, List) [function]
+     syntax Bool ::= #notViableTypes(List, List, List, isNonStaticRefNone: Bool) [function]
+                   | notViableTypes(CPPType, List, List) [function]
                    | viableType(CPPType, CPPType, ValueCategory) [function]
-                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory) [function]
+                   | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+
+     rule notViableTypes(T::CPPFunctionType, Types::List, Cats::List)
+          => #notViableTypes(getParams(T), Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
     
-     rule notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List) => notBool viableType(P, A, C) orBool notViableTypes(Ps, As, Cs)
-     rule notViableTypes(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List) => notBool viableImplicitObjectParameter(P, A, C) orBool notViableTypes(Ps, As, Cs)
-     rule notViableTypes(ListItem(variadic), _, _) => false
-     rule notViableTypes(.List, .List, .List) => false
+     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool)
+     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, Cs, B)
+     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool) 
+     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, Cs, B)
+     rule #notViableTypes(ListItem(variadic), _, _, _) => false
+     rule #notViableTypes(.List, .List, .List, _) => false
 
-     rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C) =/=K cannot-convert
+     rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false) =/=K cannot-convert
 
-     // TODO(traiansf): implement 13.3.1:5
-     rule viableImplicitObjectParameter(t(... st: lvRefType(T1:CPPClassType)), T2:CPPClassType, lvalue) => true
-          requires isReferenceCompatible(T1, T2)
-     rule viableImplicitObjectParameter(t(... st: no-type), _, _) => true
+     rule viableImplicitObjectParameter(P:CPPRefType, A::CPPType, C::ValueCategory, B::Bool)
+          => conversionSequence(P, A, C, B, true) =/=K cannot-convert
+     rule viableImplicitObjectParameter(t(... st: no-type), _, _, _) => true
 
-     rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C) =/=K cannot-convert
+     rule canConvertWithStandardConversion(P::CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C, false) =/=K cannot-convert
 
      syntax ConversionSequence ::= CannotConvert
-                                 | conversionSequence(CPPType, CPPType, ValueCategory) [function]
+                                 | conversionSequence(CPPType, CPPDType, ValueCategory, isNonStaticRefNone: Bool, isImplicit: Bool) [function]
                                  | "ellipsisConversionSequence"
-                                 | computeSCS(CPPType, CPPType, ValueCategory) [function]
-                                 | computeSCS2(Conversion, CPPType, CPPType) [function]
+                                 | computeSCS(CPPType, CPPType, ValueCategory, isOverload: Bool) [function]
+                                 | computeSCS2(Conversion, CPPType, CPPType, isOverload: Bool) [function]
                                  | computeSCS3(Conversion, Conversion, CPPType, CPPType) [function]
                                  | standardConversionSequence(Conversion, Conversion, Conversion)
 
 
-     rule conversionSequence(P:CPPLVRefType, A::CPPType, lvalue) => standardConversionSequence(identity, identity, identity)
-          requires notBool isCPPBitfieldType(A) andBool isReferenceCompatible(innerType(P), A) andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A))
-     rule conversionSequence(P:CPPRVRefType, A::CPPType, xvalue) => standardConversionSequence(identity, identity, identity)
-          requires notBool isCPPBitfieldType(A) andBool isReferenceCompatible(innerType(P), A) andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A))
-     rule conversionSequence(P:CPPLVRefType, A::CPPType, _:RValueCategory) => cannot-convert
-          requires notBool isCPPClassType(A) andBool getQuals(innerType(P)) =/=K quals(SetItem(Const()))
+     // 13.3.3.1.4:1 (identity conversion)
+     rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, B::Bool, _)
+          => standardConversionSequence(identity, identity, identity)
+          requires bindsDirectlyToExp(P, A, C, B)
+               andBool notBool (isCPPClassType(innerType(P)) andBool isCPPClassType(A) 
+                    andBool isBaseClassOf({innerType(P)}:>CPPClassType, {A}:>CPPClassType))
+     rule conversionSequence(P:CPPRefType, A:CPPClassType, C::ValueCategory, B::Bool, _)
+          => standardConversionSequence(identity, derivedToBaseConversion, identity)
+          requires bindsDirectlyToExp(P, A, C, B) andBool isCPPClassType(innerType(P))
+               andBool isBaseClassOf({innerType(P)}:>CPPClassType, A)
+     rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, false, false)
+          => conversionSequence(innerType(P), A, C, false, false)
+          requires notBool bindsDirectlyToExp(P, A, C, false)
+               andBool notBool bindsDirectlyToConversion(P, A, C)
+               andBool isValidReferenceType(P)
+     rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, false, false)
+          => cannot-convert
+          requires notBool bindsDirectlyToExp(P, A, C, false)
+               andBool notBool bindsDirectlyToConversion(P, A, C)
+               andBool notBool isValidReferenceType(P)
+     // 13.3.1:5.1-5.2
+     rule conversionSequence(P:CPPRefType, A:CPPType, C::ValueCategory, B::Bool, true)
+          => cannot-convert
+          requires notBool bindsDirectlyToExp(P, A, C, B)
 
-     rule conversionSequence(P:CPPType, A::CPPType, C::ValueCategory) => computeSCS(P, A, C)
-          requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P)
-     rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory) => computeSCS2(lvalueConversion, P, prvalType(A))
+     rule conversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), C::ValueCategory, false, false)
+          => conversionSequence(P, A, C, false, false)
+          requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
+     rule conversionSequence(P::CPPType, initListType(.List), _, false, false)
+          => standardConversionSequence(identity, identity, identity)
+          requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
+     rule conversionSequence(P::CPPType, initListType(L::List), _, false, false)
+          => cannot-convert
+          requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
+               andBool size(L) >Int 1
+          
+     syntax Bool ::= bindsDirectlyToExp(CPPRefType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
+                   | bindsDirectlyToConversion(CPPRefType, CPPType, ValueCategory) [function]
+                   | isValidReferenceType(CPPRefType) [function]
+
+     rule bindsDirectlyToExp(t(... st: lvRefType(T1::CPPType)), T2::CPPType, lvalue, _) => true
+          requires isReferenceCompatible(T1, T2)
+     rule bindsDirectlyToExp(T::CPPRefType, T2::CPPType, xvalue, _) => true
+          requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
+     rule bindsDirectlyToExp(T::CPPRefType, T2:CPPClassType, prvalue, _) => true
+          requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
+     rule bindsDirectlyToExp(T::CPPRefType, T2:CPPArrayType, prvalue, _) => true
+          requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
+     rule bindsDirectlyToExp(T::CPPRefType, T2:CPPFunctionType, lvalue, _) => true
+          requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
+     rule bindsDirectlyToExp(t(... q: Q::Quals => Q +Qual Const()), _, _:RValueCategory, true => false)
+     rule bindsDirectlyToExp(...) => false [owise]
+     rule isValidReferenceType(t(... st: rvRefType(_))) => true
+     rule isValidReferenceType(t(... st: lvRefType(t(... q: Q::Quals)))) => Const() inQuals Q andBool notBool Volatile() inQuals Q
+
+     rule bindsDirectlyToConversion(T::CPPRefType, T2::CPPType, C::ValueCategory) => false
+          requires notBool (isCPPClassType(T2) andBool notBool isReferenceRelated(innerType(T), T2))
+               orBool bindsDirectlyToExp(T, T2, C, false)
+
+     rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false) => computeSCS(utype(P), utype(A), C, true)
+          requires notBool isCPPRefType(P) 
+               andBool (notBool isCPPClassType(P) 
+                    orBool utype(A) ==Type utype(P)
+                    orBool (isCPPClassType(A) andBool isBaseClassOf({P}:>CPPClassType, {A}:>CPPClassType)))
+     rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory, B::Bool) => computeSCS2(lvalueConversion, P, prvalType(A), B)
           requires notBool isCPPFunctionType(A) andBool notBool isCPPArrayType(A)
-     rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory) => computeSCS2(arrayConversion, P, type(pointerType(innerType(A))))
+     rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory, B::Bool) => computeSCS2(arrayConversion, P, type(pointerType(innerType(A))), B)
           requires isCPPArrayType(A)
-     rule computeSCS(P::CPPType, A::CPPType, _:LValueCategory) => computeSCS2(functionConversion, P, type(pointerType(A)))
+     rule computeSCS(P::CPPType, A::CPPType, _:LValueCategory, B::Bool) => computeSCS2(functionConversion, P, type(pointerType(A)), B)
           requires isCPPFunctionType(A)
-     rule computeSCS(P::CPPType, A::CPPType, prvalue) => computeSCS2(identity, P, A)
+     rule computeSCS(P::CPPType, A::CPPType, prvalue, B::Bool) => computeSCS2(identity, P, A, B)
           requires notBool isCPPArrayType(A)
-     rule computeSCS(_, _, _) => cannot-convert [owise]
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType) => computeSCS3(C, integralPromotion, P, A)
+     rule computeSCS(...) => cannot-convert [owise]
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType, _) => computeSCS3(C, integralPromotion, P, A)
           requires promote(A) ==Type P
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType) => computeSCS3(C, integralPromotion, P, A)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType, _) => computeSCS3(C, integralPromotion, P, A)
           requires promote(A) ==Type P
-     rule computeSCS2(C::Conversion, t(... st: double) #as P::CPPType, t(... st: float)) => computeSCS3(C, floatingPromotion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType) => computeSCS3(C, integralConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: double) #as P::CPPType, t(... st: float), _) => computeSCS3(C, floatingPromotion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType, _) => computeSCS3(C, integralConversion, P, P)
           requires promote(A) =/=Type P andBool notBool isCPPBoolType(P)
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType) => computeSCS3(C, integralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType, _) => computeSCS3(C, integralConversion, P, P)
           requires promote(A) =/=Type P andBool notBool isCPPBoolType(P)
-     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPFloatingType) => computeSCS3(C, floatingConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPFloatingType, _) => computeSCS3(C, floatingConversion, P, P)
           requires notBool (simpleType(P) ==K double andBool simpleType(P) ==K float)
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPFloatingType) => computeSCS3(C, floatingIntegralConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPIntegerType) => computeSCS3(C, floatingIntegralConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPUnscopedEnumType) => computeSCS3(C, floatingIntegralConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPIntegerType) => computeSCS3(C, pointerConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPNullPtrTType) => computeSCS3(C, pointerConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPNullPtrTType, A:CPPIntegerType) => computeSCS3(C, pointerConversion, P, P)
-     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: void))) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _)))) 
+     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPFloatingType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPIntegerType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPFloatingType, A:CPPUnscopedEnumType, _) => computeSCS3(C, floatingIntegralConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPIntegerType, _) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPPointerType, A:CPPNullPtrTType, _) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPNullPtrTType, A:CPPIntegerType, _) => computeSCS3(C, pointerConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: void))) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _))), _) 
           => computeSCS3(C, pointerConversion, P, t(Q, Mods, pointerType(t(Q', Mods', void))))
-     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: T:CPPSimpleClassType) #as B::CPPClassType)) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _) #as D:CPPClassType)))
+     rule computeSCS2(C::Conversion, t(... st: pointerType(t(... st: T:CPPSimpleClassType) #as B::CPPClassType)) #as P::CPPType, t(Q::Quals, Mods::Set, pointerType(t(Q'::Quals, Mods'::Set, _) #as D:CPPClassType)), _)
           => computeSCS3(C, pointerConversion, P, t(Q, Mods, pointerType(t(Q', Mods', T))))
           requires B =/=K D andBool isBaseClassOf(B, D)
-     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPIntegerType) => computeSCS3(C, memberPointerConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPNullPtrTType) => computeSCS3(C, memberPointerConversion, P, P)
-     rule computeSCS2(C::Conversion, t(... st: memberPointerType(D:CPPClassType, t(... st: T::CPPSimpleType))) #as P::CPPType, t(Q::Quals, Mods::Set, memberPointerType(B:CPPClassType, t(Q'::Quals, Mods'::Set, T))))
+     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPIntegerType, _) => computeSCS3(C, memberPointerConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPMemberPointerType, A:CPPNullPtrTType, _) => computeSCS3(C, memberPointerConversion, P, P)
+     rule computeSCS2(C::Conversion, t(... st: memberPointerType(D:CPPClassType, t(... st: T::CPPSimpleType))) #as P::CPPType, t(Q::Quals, Mods::Set, memberPointerType(B:CPPClassType, t(Q'::Quals, Mods'::Set, T))), _)
           => computeSCS3(C, memberPointerConversion, P, t(Q, Mods, memberPointerType(D, t(Q', Mods', T))))
-     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPIntegerType) => computeSCS3(C, booleanConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPUnscopedEnumType) => computeSCS3(C, booleanConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPPointerType) => computeSCS3(C, booleanConversion, P, P)
-     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPMemberPointerType) => computeSCS3(C, booleanConversion, P, P)
-     // this case includes the case when A is a BraceInit
-     rule computeSCS2(C::Conversion, P::CPPType, A::CPPType)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPIntegerType, _) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPUnscopedEnumType, _) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPPointerType, _) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P:CPPBoolType, A:CPPMemberPointerType, _) => computeSCS3(C, booleanConversion, P, P)
+     rule computeSCS2(C::Conversion, P::CPPType, A::CPPType, _)
           => computeSCS3(C, identity, P, A)
-          requires utype(P) ==Type utype(A) orBool simpleType(A) ==K no-type
-     rule computeSCS2(_, _, _) => cannot-convert [owise]
+          requires utype(P) ==Type utype(A)
+     rule computeSCS2(C::Conversion, P:CPPClassType, A:CPPClassType, true)
+          => computeSCS3(C, derivedToBaseConversion, P, A)
+          requires isBaseClassOf(P, A)
+     rule computeSCS2(...) => cannot-convert [owise]
      rule computeSCS3(C1::Conversion, C2::Conversion, P::CPPType, A::CPPType)
           => standardConversionSequence(C1, C2, identity)
           requires cvQualificationSignature(P) ==K cvQualificationSignature(A)
@@ -183,35 +250,21 @@ module CPP-OVERLOADING
                          | "pointerConversion"
                          | "memberPointerConversion"
                          | "booleanConversion"
+                         | "derivedToBaseConversion"
 
-     // no overloading
-     rule <k> #resolveOverload(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, E::Expr) 
-              => CallExpr(lv(lnew(Base), hasTrace(E), T), Args) ...</k>
+     // only one viable candidate
+     rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> kpair(_, Base::SymBase)), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
+              => CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args)) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires notBool isCPPClassType(T)
                andBool Base =/=K nonStatic
+               andBool acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
+
+      // no viable candidates
+      // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators
+      rule #resolveOverload(cSet(... candidates: .Map, id: X::QualId), _, _, _, _) => notFound(getId(X))
 
       rule #resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _)
-          requires notBool isAdjustedType(T)
-
-     rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> #resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _) ...</k>
-          <template-deduction> _ => .Map </template-deduction>
-
-     syntax Conversion ::= "identity"
-                         | "lvalueConversion" 
-                         | "arrayConversion" 
-                         | "functionConversion" 
-                         | "qualificationConversion"
-                         | "pointerConversion"
-
-     // no overloading
-     rule <k> #resolveOverload(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), Args::StrictList, _, _, E::Expr)
-              => CallExpr(lv(lnew(Base), hasTrace(E), T), Args) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          requires notBool isCPPClassType(T)
-               andBool Base =/=K nonStatic
-
-     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr => adjustFunctionType(T)) |-> _:TemplateInfo), _, _, _, _)
           requires notBool isAdjustedType(T)
 
      rule <k> (.K => deduceTemplateFromCall(T, Args, .List, Q)) ~> #resolveOverload(cSet(... candidates: (T:CPPFunctionTypeExpr |-> templateInfo(... id: Q::QualId) => .Map) _), list(Args::List), _, _, _) ...</k>

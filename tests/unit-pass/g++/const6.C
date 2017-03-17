@@ -1,6 +1,10 @@
 // PR c++/36688
 // { dg-do run }
 // { dg-options "-O2" }
+#include <stddef.h>
+
+extern "C" int memcmp(const void *, const void *, size_t);
+extern "C" void abort(void);
 
 struct S
 {
@@ -22,6 +26,6 @@ int
 main ()
 {
   T x = t;
-  if (__builtin_memcmp (&x, &t, sizeof (T)))
-    __builtin_abort ();
+  if (memcmp (&x, &t, sizeof (T)))
+    abort ();
 }

@@ -1,6 +1,8 @@
 // PR c++/55446
 // { dg-do run }
 
+extern "C" void abort(void);
+
 struct S
 {
   S() { }
@@ -18,5 +20,5 @@ int main()
 {
   new S[0];
   if (n != -1)
-    __builtin_abort();
+    abort();
 }

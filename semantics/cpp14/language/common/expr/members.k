@@ -17,6 +17,9 @@ module CPP-EXPR-MEMBERS
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
 
+     rule <k> This() => Obj ...</k>
+          <this> Obj::Expr </this>
+
      context HOLE:Expr . _ _
 
      rule LV:LVal . no-template (Name(C:Class, X::CId) #as N::Name)

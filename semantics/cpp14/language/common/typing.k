@@ -1,8 +1,10 @@
 module CPP-TYPING-SORTS
      syntax AType
-     syntax CPPType
-     syntax CPPDType ::= CPPType | CPPVariadic
+     syntax CPPType ::= CPPFunctionType
+                      | CPPClassType
+     syntax CPPDType ::= CPPType | CPPVariadic | InitListType
      syntax CPPVariadic
+     syntax InitListType
      syntax CPPSimpleType
      syntax EffectiveType ::= CPPType
      syntax CPPTypeExpr ::= CPPType
@@ -11,6 +13,8 @@ module CPP-TYPING-SORTS
      syntax CPPTypes ::= List{CPPDType, ","}
      syntax CPPTypeExprs ::= CPPTypes
      syntax ExceptionSet
+     syntax CPPFunctionType
+     syntax CPPClassType
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
@@ -136,11 +140,9 @@ module CPP-TYPING-SYNTAX
      syntax CPPEnumType ::= CPPScopedEnumType | CPPUnscopedEnumType
      syntax CPPScopedEnumType
      syntax CPPUnscopedEnumType
-     syntax CPPType ::= CPPFunctionType
-                      | CPPScalarType
+     syntax CPPType ::= CPPScalarType
                       | CPPRefType
                       | CPPArrayType 
-                      | CPPClassType 
                       | CPPFundamentalType
 
      syntax CPPFunctionTypeExpr ::= CPPFunctionType | t(q: Quals, m: Set, st: CPPSimpleFunctionTypeExpr) [klabel(tcpp)]
@@ -155,6 +157,7 @@ module CPP-TYPING-SYNTAX
                           | CPPRefTypeExpr
 
      syntax CPPVariadic ::= "variadic"
+     syntax InitListType ::= initListType(List)
 
      syntax Expr ::= setType(CPPType, Expr) [strict]
 
@@ -175,6 +178,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
      syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax Bool ::= isMethodExplicit(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodExplicit(CPPFunctionType) [function]
      syntax Bool ::= isMethodUserProvided(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodUserProvided(CPPFunctionType, Bool) [function]
      syntax Bool ::= isMethodConstructor(CPPFunctionTypeExpr) [function]
@@ -227,14 +232,14 @@ module CPP-TYPING-SYNTAX
      syntax ClassInfo ::= ClassCell | "#incomplete"
 
      syntax MethodInfo ::= "noMethod"
-                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, class: K, userProvided: Bool, constructor: Bool)
+                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
 
      syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
 
-     syntax Bool ::= isBaseClassOf(CPPClassType, CPPClassType) [function]
+     syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
-                   | isBaseClassOf(Class, Class) [function, klabel(isClassBaseClassOf)]
+                   | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
      
@@ -268,7 +273,7 @@ module CPP-TYPING
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
@@ -297,7 +302,7 @@ module CPP-TYPING
      // 13.3.1:4.1
      rule getImpliedParamType(_, Q::Quals, false, C::Class) => type(lvRefType(t(Q, .Set, classType(C)))) [owise]
 
-     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, .K, true, false)
+     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, .K, true, false)
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
      rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), RQ::RefQualifier)
@@ -364,6 +369,17 @@ module CPP-TYPING
      syntax MethodInfo ::= setMIVirtual(MethodInfo) [function]
      rule setMIVirtual(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... virtual: _ => true))(MI)
      rule setMIVirtual(noMethod => defaultMethodInfo())
+
+     rule isMethodExplicit(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIExplicit(MI)
+     rule setMethodExplicit(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
+          => t(Quals, Mods, functionType(RetT, ParamT, setMIExplicit(MI), L, E))
+
+     syntax Bool ::= getMIExplicit(MethodInfo) [function]
+     rule getMIExplicit(methodInfo(... explicit: IsExplicit::Bool)) => IsExplicit
+     rule getMIExplicit(noMethod) => false
+     syntax MethodInfo ::= setMIExplicit(MethodInfo) [function]
+     rule setMIExplicit(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... explicit: _ => true))(MI)
+     rule setMIExplicit(noMethod => defaultMethodInfo())
      
      rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
      rule setMethodClass(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), C::Class)
@@ -556,19 +572,41 @@ module C-CPP-TYPING
      rule convertTypeToC(t(Q::Quals, Mods::Set, functionType(... returnType: Ret::CPPType, paramTypes: Args::CPPTypes, linkage: CLinkage))) => t(Q, Mods, functionType(utype(convertTypeToC(Ret)), mapList(toList(Args), #klabel(`convertTypeToC`))))
      rule convertTypeToC(t(Q::Quals, Mods::Set, void::CPPSimpleVoidType)) => t(Q, Mods, void::SimpleVoidType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, bool::CPPSimpleBoolType)) => t(Q, Mods, bool::SimpleBoolType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, signed-char::CPPSimpleSignedCharType)) => t(Q, Mods, signed-char::SimpleSignedCharType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-char::CPPSimpleUnsignedCharType)) => t(Q, Mods, unsigned-char::SimpleUnsignedCharType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, char::CPPSimpleCharType)) => t(Q, Mods, char::SimpleCharType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, short)) => t(Q, Mods, short-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-short)) => t(Q, Mods, unsigned-short-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, int::CPPSimpleSignedType)) => t(Q, Mods, int::SimpleSignedIntType)
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned)) => t(Q, Mods, unsigned-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, long)) => t(Q, Mods, long-int)
      rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-long)) => t(Q, Mods, unsigned-long-int)
-     rule convertTypeToC(t(Q::Quals, Mods::Set, signed-char::CPPSimpleSignedCharType)) => t(Q, Mods, signed-char::SimpleSignedCharType)
-     rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-char::CPPSimpleUnsignedCharType)) => t(Q, Mods, unsigned-char::SimpleUnsignedCharType)
-     rule convertTypeToC(t(Q::Quals, Mods::Set, char::CPPSimpleCharType)) => t(Q, Mods, char::SimpleCharType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, long-long)) => t(Q, Mods, long-long-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, unsigned-long-long)) => t(Q, Mods, unsigned-long-long-int)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, float::CPPSimpleFloatingType)) => t(Q, Mods, float::SimpleFloatType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, double::CPPSimpleFloatingType)) => t(Q, Mods, double::SimpleFloatType)
+     rule convertTypeToC(t(Q::Quals, Mods::Set, long-double::CPPSimpleFloatingType)) => t(Q, Mods, long-double::SimpleFloatType)
      rule convertTypeToC(variadic::CPPVariadic) => variadic::Variadic
      rule convertTypeToC(t(Q::Quals, Mods::Set, pointerType(T::CPPType))) => t(Q, Mods, pointerType(convertTypeToC(T)))
      rule convertTypeToC(t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int))) => t(Q, Mods, arrayType(convertTypeToC(T), N))
 
 
-     rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleSignedIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
-     rule convertTypeToCPP(t(Q::Quals, Mods::Set, void::SimpleVoidType)) => t(Q, Mods, void::CPPSimpleVoidType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, pointerType(T::Type))) => t(Q, Mods, pointerType(convertTypeToCPP(T)))
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, void::SimpleVoidType)) => t(Q, Mods, void::CPPSimpleVoidType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, bool::SimpleBoolType)) => t(Q, Mods, bool::CPPSimpleBoolType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, signed-char::SimpleSignedCharType)) => t(Q, Mods, signed-char::CPPSimpleSignedCharType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-char::SimpleUnsignedCharType)) => t(Q, Mods, unsigned-char::CPPSimpleUnsignedCharType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, char::SimpleCharType)) => t(Q, Mods, char::CPPSimpleCharType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, short-int)) => t(Q, Mods, short)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-short-int)) => t(Q, Mods, unsigned-short)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, int::SimpleSignedIntType)) => t(Q, Mods, int::CPPSimpleSignedType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-int)) => t(Q, Mods, unsigned)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-int)) => t(Q, Mods, long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-long-int)) => t(Q, Mods, unsigned-long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-long-int)) => t(Q, Mods, long-long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, unsigned-long-long-int)) => t(Q, Mods, unsigned-long-long)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, float::SimpleFloatType)) => t(Q, Mods, float::CPPSimpleFloatingType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, double::SimpleFloatType)) => t(Q, Mods, double::CPPSimpleFloatingType)
+     rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-double::SimpleFloatType)) => t(Q, Mods, long-double::CPPSimpleFloatingType)
+ 
 endmodule
