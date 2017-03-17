@@ -2,6 +2,7 @@ module CPP-EXECUTION-INIT
      imports C-CONFIGURATION
      imports K-EQUAL
      imports K-IO
+     imports C-CHECK-LOC-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -14,7 +15,7 @@ module CPP-EXECUTION-INIT
      rule le(E::Expr, _, _) => E
 
      rule <k> callMain(N:Int, Args:K)
-               => K ~> reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
+               => enterRestrictTU ~> K ~> reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
           <uncaught-exception> _ => true </uncaught-exception>

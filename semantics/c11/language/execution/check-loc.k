@@ -6,7 +6,8 @@ module C-CHECK-LOC-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= enterRestrictBlock(Scope)
-                    | exitRestrictBlock(Scope)
+                    | exitRestrictBlock(Set)
+                    | "enterRestrictTU"
 
      // is write?, obj being accessed
      syntax KItem ::= checkRestrict(Bool, SymLoc)
@@ -26,218 +27,180 @@ module C-CHECK-LOC
      syntax RestrictStatus ::= restrictStatus(Scope, Map)
 
      rule <k> enterRestrictBlock(Tag::Scope) => .K ...</k>
-          <restrict> (.List => ListItem(restrictStatus(Tag, .Map))) ...</restrict>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
+          <restrict> .List => ListItem(restrictStatus(Tag, .Map)) </restrict>
+          <curr-tu> TU::String </curr-tu>
+          <tu-id> TU </tu-id>
           <has-restrict> RestrictBlocks:Set </has-restrict>
           requires Tag in RestrictBlocks
           [structural]
      rule <k> enterRestrictBlock(Tag::Scope) => .K ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
+          <restrict> .List </restrict>
+          <curr-tu> TU::String </curr-tu>
+          <tu-id> TU </tu-id>
           <has-restrict> RestrictBlocks:Set </has-restrict>
           requires notBool (Tag in RestrictBlocks)
           [structural]
+     rule <k> enterRestrictBlock(Tag::Scope) => .K ...</k>
+          <restrict> (.List => ListItem(restrictStatus(Tag, .Map))) RestrictStack::List </restrict>
+          requires size(RestrictStack) >=Int 1
+          [structural]
 
-     rule <k> exitRestrictBlock(Tag::Scope) => .K ...</k>
-          <restrict> (ListItem(restrictStatus(Tag, _)) => .List) ...</restrict>
+     rule <k> exitRestrictBlock(Locals::Set) => mergeRestricts(Tag, Locals, keys_list(R), R) ...</k>
+          <restrict> (ListItem(restrictStatus(Tag::Scope, R::Map)) => .List) RestrictStack::List </restrict>
+          requires size(RestrictStack) >=Int 1
           [structural]
-     rule <k> exitRestrictBlock(Tag::Scope) => .K ...</k>
-          <restrict> ListItem(restrictStatus(Tag'::Scope, _)) ...</restrict>
-          requires Tag =/=K Tag'
+     rule <k> exitRestrictBlock(_) => .K ...</k>
+          <restrict> RestrictStack::List => .List </restrict>
+          requires size(RestrictStack) <=Int 1
           [structural]
-     rule <k> exitRestrictBlock(Tag::Scope) => .K ...</k>
-          <restrict> .List </restrict>
+
+     rule <k> enterRestrictTU => .K ...</k>
+          <curr-tu> TU::String </curr-tu>
+          <tu-id> TU </tu-id>
+          <has-restrict> RestrictBlocks:Set </has-restrict>
+          requires notBool (fileScope in RestrictBlocks)
+          [structural]
+     rule <k> enterRestrictTU => .K ...</k>
+          <restrict>... ListItem(restrictStatus(fileScope, _)) </restrict>
+          [structural]
+     rule <k> enterRestrictTU => .K ...</k>
+          <restrict>... ListItem(restrictStatus(Tag::Scope, _)) (.List => ListItem(restrictStatus(fileScope, .Map))) </restrict>
+          <curr-tu> TU::String </curr-tu>
+          <tu-id> TU </tu-id>
+          <has-restrict> RestrictBlocks:Set </has-restrict>
+          requires (fileScope in RestrictBlocks)
+               andBool (Tag =/=K fileScope)
+          [structural]
+     rule <k> enterRestrictTU => .K ...</k>
+          <restrict> .List => ListItem(restrictStatus(fileScope, .Map)) </restrict>
+          <curr-tu> TU::String </curr-tu>
+          <tu-id> TU </tu-id>
+          <has-restrict> RestrictBlocks:Set </has-restrict>
+          requires fileScope in RestrictBlocks
+          [structural]
+
+     syntax RestrictState ::= filterBases(RestrictState, Scope) [function]
+     rule filterBases(onlyRead(Bases::Set, SrcLoc::CabsLoc), S::Scope) => onlyRead(filterBases'(Bases, S), SrcLoc)
+     rule filterBases(restricted(Bases::Set, SrcLoc::CabsLoc), S::Scope) => restricted(filterBases'(Bases, S), SrcLoc)
+     rule filterBases(R::RestrictState, _) => R [owise]
+
+     syntax Set ::= "filterBases'" "(" Set "," Scope ")" [function]
+     rule filterBases'(SetItem(basedOn(Base::SymBase, S)) Bases::Set, S::Scope)
+          => filterBases'(Bases, S)
+     rule filterBases'(SetItem(basedOn(Base::SymBase, S'::Scope)) Bases::Set, S::Scope)
+          => SetItem(basedOn(Base, S')) filterBases'(Bases, S)
+          requires S =/=K S'
+     rule filterBases'(.Set, _) => .Set
+
+     syntax RestrictState ::= onlyRead(Set, CabsLoc)
+                            | unrestricted(CabsLoc)
+                            | restricted(Set, CabsLoc)
+
+     syntax CabsLoc ::= getSrcLoc(RestrictState) [function]
+     rule getSrcLoc(onlyRead(_, SrcLoc::CabsLoc)) => SrcLoc
+     rule getSrcLoc(unrestricted(SrcLoc::CabsLoc)) => SrcLoc
+     rule getSrcLoc(restricted(_, SrcLoc::CabsLoc)) => SrcLoc
+
+     syntax KItem ::= mergeRestricts(Scope, Set, List, Map)
+     rule mergeRestricts(Tag::Scope, Locals::Set, ListItem(Loc::SymLoc) Locs::List, R::Map)
+          => mergeRestrict(Tag, Loc, filterBases({R::Map[Loc]}:>RestrictState, Tag)) ~> mergeRestricts(Tag, Locals, Locs, R)
+          requires notBool (base(Loc) in Locals)
+          [structural]
+     rule mergeRestricts(Tag::Scope, Locals::Set, ListItem(Loc::SymLoc) Locs::List, R::Map)
+          => mergeRestricts(Tag, Locals, Locs, R)
+          requires base(Loc) in Locals
+          [structural]
+     rule mergeRestricts(_, _, .List, _) => .K
+          [structural]
+
+     // Assumes no conflict.
+     syntax RestrictState ::= joinRestrictState(RestrictState, RestrictState) [function]
+     rule joinRestrictState(restricted(S::Set, SrcLoc::CabsLoc), _) => restricted(S, SrcLoc)
+     rule joinRestrictState(State::RestrictState, restricted(S::Set, _)) => restricted(S, getSrcLoc(State))
+     rule joinRestrictState(onlyRead(S::Set, SrcLoc::CabsLoc), onlyRead(S, _)) => onlyRead(S, SrcLoc)
+     rule joinRestrictState(State::RestrictState, _) => unrestricted(getSrcLoc(State)) [owise]
+
+     syntax Bool ::= isRestrictConflict(RestrictState, RestrictState) [function]
+     rule isRestrictConflict(restricted(S::Set, _), restricted(S, _)) => false
+     rule isRestrictConflict(unrestricted(_), unrestricted(_)) => false
+     rule isRestrictConflict(onlyRead(_, _), onlyRead(_, _)) => false
+     rule isRestrictConflict(onlyRead(_, _), unrestricted(_)) => false
+     rule isRestrictConflict(unrestricted(_), onlyRead(_, _)) => false
+     rule isRestrictConflict(onlyRead(S::Set, _), restricted(S, _)) => false
+     rule isRestrictConflict(restricted(S::Set, _), onlyRead(S, _)) => false
+     rule isRestrictConflict(_, _) => true [owise]
+
+     syntax KItem ::= mergeRestrict(Scope, SymLoc, RestrictState)
+     rule <k> mergeRestrict(_, Loc::SymLoc, State::RestrictState) => .K ...</k>
+          <restrict> ListItem(restrictStatus(_, R::Map => R[Loc <- State])) ...</restrict>
+          requires notBool (Loc in_keys(R))
+          [structural]
+     rule <k> mergeRestrict(_, Loc::SymLoc, State::RestrictState) => .K ...</k>
+          <restrict> ListItem(restrictStatus(_, _
+               Loc |-> (State'::RestrictState => joinRestrictState(State, State'))))
+          ...</restrict>
+          requires notBool isRestrictConflict(State, State')
+          [structural]
+     rule <k> mergeRestrict(_, Loc::SymLoc, State::RestrictState) => restrictViolation ...</k>
+          <restrict> ListItem(restrictStatus(_, _ Loc |-> State'::RestrictState)) ...</restrict>
+          <curr-program-loc> _ => getSrcLoc(State) </curr-program-loc>
+          requires isRestrictConflict(State, State')
           [structural]
 
      rule <k> checkRestrict(_, _) => .K ...</k>
           <restrict> .List </restrict>
           [structural]
-     rule <k> checkRestrict(Write::Bool, Loc::SymLoc)
-               => checkRestrict'(Write, stripProv(Loc), intersectProv(getBases(Loc), scopeSet(R)))
-               ~> checkRestrict(.List, Write, stripProv(Loc), getBases(Loc))
+     rule <k> checkRestrict(Write::Bool, loc(Base::SymBase, Offset::Int, Prov::Set))
+               => checkRestrict'(Write, loc(Base, Offset), getBases(Prov))
           ...</k>
           <restrict> R::List </restrict>
-          <local-addresses> Locals::Set </local-addresses>
           requires R =/=K .List
-               andBool notBool (base(Loc) in Locals)
           [structural]
-     // Two minor optimizations: (1) if it's an object with a lifetime of this
-     // block, then we don't need to track accesses at blocks that outlive this
-     // block, and
-     rule <k> checkRestrict(Write::Bool, Loc::SymLoc)
-               => checkRestrict'(Write, stripProv(Loc), intersectProv(getBases(Loc), scopeSet(ListItem(Head) Tail)))
-               ~> checkRestrict(Tail, Write, stripProv(Loc), getBases(Loc))
+     rule <k> checkRestrict(Write::Bool, loc(Base::SymBase, Offset::Int))
+               => checkRestrict'(Write, loc(Base, Offset), .Set)
           ...</k>
-          <restrict> ListItem(Head:RestrictStatus) (Tail::List => .List) </restrict>
-          <local-addresses> Locals::Set </local-addresses>
-          requires base(Loc) in Locals
+          <restrict> R::List </restrict>
+          requires R =/=K .List
           [structural]
-
-     syntax KItem ::= checkRestrict(List, Bool, SymLoc, Set) [klabel(checkRestrictList)]
-     rule <k> (.K => checkRestrict'(Write, Loc, intersectProv(Prov, scopeSet(ListItem(Next) ActiveScopes))))
-               ~> checkRestrict(_::List (.List => ListItem(Head)), Write::Bool, Loc::SymLoc, Prov::Set)
-          ...</k>
-          <restrict> (ListItem(Head::RestrictStatus) => .List) ListItem(Next:RestrictStatus) ActiveScopes::List </restrict>
-          [structural]
-     rule <k> checkRestrict(Restrict'::List, _, _, _) => .K ...</k>
-          <restrict> .List => Restrict' </restrict>
-          [structural]
-     rule <k> checkRestrict(Restrict'::List, _, _, _) => .K ...</k>
-          <restrict> (.List => Restrict') ListItem(_) </restrict>
-          [structural]
-
-     syntax Set ::= scopeSet(List) [function]
-     rule scopeSet(ListItem(R:RestrictStatus) L::List) => SetItem(scope(R)) scopeSet(L)
-     rule scopeSet(.List) => .Set
-
-     syntax Scope ::= scope(RestrictStatus) [function]
-     rule scope(restrictStatus(S::Scope, _)) => S
-
-     syntax Set ::= intersectProv(Set, Set) [function]
-     rule intersectProv(SetItem(basedOn(Base::SymBase, S::Scope)) Prov::Set, Scopes::Set)
-          => SetItem(basedOn(Base, S)) intersectProv(Prov, Scopes)
-          requires S in Scopes
-     rule intersectProv(SetItem(basedOn(Base::SymBase, S::Scope)) Prov::Set, Scopes::Set)
-          => intersectProv(Prov, Scopes)
-          requires notBool (S in Scopes)
-     rule intersectProv(.Set, _) => .Set
-
-     syntax KItem ::= "noRestrictAccess"  // Only non-restrict lvals.
-                    | "unrestricted"      // Mult. non-restrict lvals or write.
-                    | restrictAccess(Set) // Access via restrict lval.
-                    | restricted(Set)     // Write via restrict lval.
 
      syntax KItem ::= "checkRestrict'" "(" Bool "," SymLoc "," Set ")" [klabel(checkRestrictBlock)]
-     // (2) if it's an auto duration object then we don't need to track
-     // accesses at the file scope (more generally, we don't need to track
-     // accesses in any blocks with a longer lifetime than this auto-duration
-     // object, but this is harder to calculate for cases other than these two).
-     rule <k> checkRestrict'(_, Loc::SymLoc, _) => .K ...</k>
-          <restrict> ListItem(restrictStatus(fileScope, _)) </restrict>
-          requires isAutoDuration(Loc)
-          [structural]
-     rule <k> checkRestrict'(false, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(S::Scope, R::Map))
-               => ListItem(restrictStatus(S, R (Loc |-> noRestrictAccess)))
-          ...</restrict>
-          requires notBool (Loc in_keys(R))
-               andBool (S ==K fileScope impliesBool notBool isAutoDuration(Loc))
-          [structural]
-     rule <k> checkRestrict'(true, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(S::Scope, R::Map))
-               => ListItem(restrictStatus(S, R (Loc |-> unrestricted)))
-          ...</restrict>
-          requires notBool (Loc in_keys(R))
-               andBool (S ==K fileScope impliesBool notBool isAutoDuration(Loc))
-          [structural]
      rule <k> checkRestrict'(false, Loc::SymLoc, Bases::Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(S::Scope, R::Map))
-               => ListItem(restrictStatus(S, R (Loc |-> restrictAccess(Bases))))
-          ...</restrict>
+          <restrict> ListItem(restrictStatus(_, R::Map => R[Loc <- onlyRead(Bases, SrcLoc)])) ...</restrict>
+          <curr-program-loc> SrcLoc::CabsLoc </curr-program-loc>
           requires notBool (Loc in_keys(R))
-               andBool Bases =/=K .Set
-               andBool (S ==K fileScope impliesBool notBool isAutoDuration(Loc))
           [structural]
      rule <k> checkRestrict'(true, Loc::SymLoc, Bases::Set) => checkConst(Bases) ...</k>
-          <restrict> ListItem(restrictStatus(S::Scope, R::Map))
-               => ListItem(restrictStatus(S, R (Loc |-> restricted(Bases))))
-          ...</restrict>
+          <restrict> ListItem(restrictStatus(_, R::Map => R[Loc <- restricted(Bases, SrcLoc)])) ...</restrict>
+          <curr-program-loc> SrcLoc::CabsLoc </curr-program-loc>
           requires notBool (Loc in_keys(R))
-               andBool Bases =/=K .Set
-               andBool (S ==K fileScope impliesBool notBool isAutoDuration(Loc))
-          [structural]
-
-     rule <k> checkRestrict'(false, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> noRestrictAccess))
-          ...</restrict>
-          [structural]
-     rule <k> checkRestrict'(true, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> (noRestrictAccess => unrestricted)))
-          ...</restrict>
-          [structural]
-     rule <k> checkRestrict'(_, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> unrestricted))
-          ...</restrict>
-          [structural]
-     rule <k> checkRestrict'(_, Loc::SymLoc, .Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> (restrictAccess(_) => unrestricted)))
-          ...</restrict>
-          [structural]
-     rule <k> checkRestrict'(_, Loc::SymLoc, .Set) => restrictViolation ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restricted(_)))
-          ...</restrict>
           [structural]
 
      rule <k> checkRestrict'(false, Loc::SymLoc, Bases::Set) => .K ...</k>
           <restrict> ListItem(restrictStatus(_, _
-               Loc |-> (noRestrictAccess => unrestricted)))
+               Loc |-> (State'::RestrictState => joinRestrictState(onlyRead(Bases, SrcLoc), State'))))
           ...</restrict>
-          requires Bases =/=K .Set
+          <curr-program-loc> SrcLoc::CabsLoc </curr-program-loc>
+          requires notBool isRestrictConflict(onlyRead(Bases, UnknownCabsLoc), State')
+          [structural]
+     rule <k> checkRestrict'(false, Loc::SymLoc, Bases::Set) => restrictViolation ...</k>
+          <restrict> ListItem(restrictStatus(_, _
+               Loc |-> State'::RestrictState))
+          ...</restrict>
+          requires isRestrictConflict(onlyRead(Bases, UnknownCabsLoc), State')
+          [structural]
+
+     rule <k> checkRestrict'(true, Loc::SymLoc, Bases::Set) => .K ...</k>
+          <restrict> ListItem(restrictStatus(_, _
+               Loc |-> (State'::RestrictState => joinRestrictState(restricted(Bases, SrcLoc), State'))))
+          ...</restrict>
+          <curr-program-loc> SrcLoc::CabsLoc </curr-program-loc>
+          requires notBool isRestrictConflict(onlyRead(Bases, UnknownCabsLoc), State')
           [structural]
      rule <k> checkRestrict'(true, Loc::SymLoc, Bases::Set) => checkConst(Bases) ~> restrictViolation ...</k>
           <restrict> ListItem(restrictStatus(_, _
-               Loc |-> noRestrictAccess))
+               Loc |-> State'::RestrictState))
           ...</restrict>
-          requires Bases =/=K .Set
-          [structural]
-     rule <k> checkRestrict'(_, Loc::SymLoc, Bases::Set) => restrictViolation ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> unrestricted))
-          ...</restrict>
-          requires Bases =/=K .Set
-          [structural]
-     rule <k> checkRestrict'(false, Loc::SymLoc, Bases::Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restrictAccess(Bases)))
-          ...</restrict>
-          requires Bases =/=K .Set
-          [structural]
-     rule <k> checkRestrict'(true, Loc::SymLoc, Bases::Set) => checkConst(Bases) ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> (restrictAccess(Bases) => restricted(Bases))))
-          ...</restrict>
-          requires Bases =/=K .Set
-          [structural]
-     rule <k> checkRestrict'(false, Loc::SymLoc, Bases'::Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> (restrictAccess(Bases::Set) => unrestricted)))
-          ...</restrict>
-          requires Bases =/=K .Set
-               andBool Bases =/=K Bases'
-          [structural]
-     rule <k> checkRestrict'(true, Loc::SymLoc, Bases'::Set) => checkConst(Bases') ~> restrictViolation ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restrictAccess(Bases::Set)))
-          ...</restrict>
-          requires Bases =/=K .Set
-               andBool Bases =/=K Bases'
-          [structural]
-
-     rule <k> checkRestrict'(_, Loc::SymLoc, Bases::Set) => .K ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restricted(Bases)))
-          ...</restrict>
-          requires Bases =/=K .Set
-          [structural]
-     rule <k> checkRestrict'(false, Loc::SymLoc, Bases'::Set) => restrictViolation ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restricted(Bases::Set)))
-          ...</restrict>
-          requires Bases =/=K .Set
-               andBool Bases =/=K Bases'
-          [structural]
-     rule <k> checkRestrict'(true, Loc::SymLoc, Bases'::Set) => checkConst(Bases') ~> restrictViolation ...</k>
-          <restrict> ListItem(restrictStatus(_, _
-               Loc |-> restricted(Bases::Set)))
-          ...</restrict>
-          requires Bases =/=K .Set
-               andBool Bases =/=K Bases'
+          requires isRestrictConflict(restricted(Bases, UnknownCabsLoc), State')
           [structural]
 
      syntax KItem ::= "restrictViolation"

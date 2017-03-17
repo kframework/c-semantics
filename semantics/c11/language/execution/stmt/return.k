@@ -14,8 +14,8 @@ module C-STMT-RETURN
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
-     imports C-STMT-BLOCK-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -94,9 +94,12 @@ module C-STMT-RETURN
           <block-stack> ListItem(_) ...</block-stack>
           [structural]
      /* delete the locals when the function body is not wrapped in Block */
-     rule <k> (.K => deleteLocals)
-               ~> (Return'(V:RValue) => return(V))
+     rule <k> Return'(V:RValue)
+               => deleteObjects(Locals)
+               ~> exitRestrictBlock(Locals)
+               ~> return(V)
           ...</k>
+          <local-addresses> Locals::Set </local-addresses>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>
           [structural]
@@ -106,25 +109,21 @@ module C-STMT-RETURN
      //  this is used for returns with no return value as well, since we return
      //  "emptyValue", which will hopefully be cast to void
      rule <k> return(V:RValue) ~> _
-               => exitRestrictBlock(Scope)
-               ~> sequencePoint
+               => sequencePoint
                ~> checkUse(stripConstants(V))
                ~> K
           </k>
           (<function-control>
                <curr-scope> Scope::BlockScope </curr-scope>
                <live-va-lists> .Set </live-va-lists>
-               <block-control>...
-                    <local-addresses> .Set </local-addresses>
-               ...</block-control>
                <block-stack> .List </block-stack>
-          ...</function-control> => C)
+          ...</function-control> => <function-control> C <curr-tu> Tu </curr-tu> </function-control>)
           <call-stack>
                ListItem(
                     <call-stack-frame>
                          <continuation> K:K </continuation>
                          <stack-function-control>
-                              C:FunctionControlCell
+                              <function-control> C::Bag <curr-tu> Tu:String </curr-tu> </function-control>
                          </stack-function-control>
                          <stack-lang-linkage> CLinkage </stack-lang-linkage>
                     </call-stack-frame>

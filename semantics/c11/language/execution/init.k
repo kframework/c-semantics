@@ -125,7 +125,6 @@ module C-EXECUTION-INIT
                <thread>...
                     <k> initMainThread'(MainTU:String)
                          => initBuiltins
-                         ~> enterRestrictBlock(fileScope)
                          ~> populateFromGlobal(.K)
                     ...</k>
                     <duration> _ => auto(0) </duration>
@@ -188,7 +187,9 @@ module C-EXECUTION-INIT
       correct, and to call it with the appropriate arguments */
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
-               => reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
+               => enterRestrictTU
+               ~> reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args))
+               ~> callAtExit
           ...</k>
           <types>... Identifier("main") |-> T::Type ...</types>
           <status> _ => mainCalled </status>

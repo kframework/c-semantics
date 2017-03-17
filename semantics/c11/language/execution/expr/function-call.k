@@ -128,6 +128,7 @@ module C-EXPR-FUNCTION-CALL
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => sequencePoint
+               ~> #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
                ~> enterRestrictBlock(blockScope(X, 0))
                ~> populateFromGlobal(DefT)
                ~> bind(getParams(DefT), getParams(CallT), L)
@@ -139,12 +140,12 @@ module C-EXPR-FUNCTION-CALL
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
-                         C
+                         <function-control> C <curr-tu> OldTu </curr-tu> </function-control>
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
           ) ...</call-stack>
-          (C:FunctionControlCell
+          (<function-control> C::Bag <curr-tu> OldTu::String </curr-tu> </function-control>
           => <function-control>...
                <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, 0) </curr-scope>

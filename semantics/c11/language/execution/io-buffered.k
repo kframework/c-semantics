@@ -8,6 +8,7 @@ module C-IO-BUFFERED-SYNTAX
 
      // deletes the base object from memory, given a location
      syntax KItem ::= deleteObject(SymBase)
+     syntax KItem ::= deleteObjects(Set)
 
      syntax KItem ::= writeBytes(SymLoc, List)
 
@@ -376,6 +377,12 @@ module C-IO-BUFFERED
 
      syntax K ::= #freeNativeObject(SymBase) [function, hook(C_SEMANTICS.freeNativeObject)]
      rule #freeNativeObject(_) => .K [owise]
+
+     rule deleteObjects(SetItem(Base::SymBase) Locals::Set)
+          => deleteObject(Base) ~> deleteObjects(Locals)
+          [structural]
+     rule deleteObjects(.Set) => .K
+          [structural]
 
      rule <k> deleteObject(Base:SymBase) => #freeNativeObject(Base) ...</k>
           <mem> M::Map => M[Base <- undef] </mem>

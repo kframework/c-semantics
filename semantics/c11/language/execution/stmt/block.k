@@ -1,9 +1,4 @@
-module C-STMT-BLOCK-SYNTAX
-     syntax KItem ::= "deleteLocals"
-endmodule
-
 module C-STMT-BLOCK
-     imports C-STMT-BLOCK-SYNTAX
      imports C-CONFIGURATION
      imports INT
      imports C-CHECK-LOC-SYNTAX
@@ -41,24 +36,12 @@ module C-STMT-BLOCK
           <curr-scope> blockScope(_, (_ => 0)) </curr-scope>
           <block-history> .List </block-history>
 
-     rule <k> popBlock => updateScope ~> exitRestrictBlock(S) ...</k>
-          <curr-scope> S::Scope </curr-scope>
+     rule <k> popBlock => deleteObjects(Locals) ~> exitRestrictBlock(Locals) ~> updateScope ...</k>
           (<block-control>...
-               <local-addresses> .Set </local-addresses>
+               <local-addresses> Locals::Set </local-addresses>
           ...</block-control> => C)
           <block-stack> ListItem(C:BlockControlCell) => .List ...</block-stack>
           [structural]
-     rule <k> (.K => deleteLocals) ~> popBlock ...</k>
-          <local-addresses>... SetItem(_) ...</local-addresses>
-          [structural]
-
-     rule <k> (.K => deleteObject(Base)) ~> deleteLocals ...</k>
-          <local-addresses>...
-               SetItem(Base:SymBase) => .Set
-          ...</local-addresses>
-          [structural]
-     rule <k> deleteLocals => .K ...</k>
-          <local-addresses> .Set </local-addresses>
 
      /*@ \fromStandard{\source[n1570]{\para{6.8}{3}}}{
      A block allows a set of declarations and statements to be grouped into one

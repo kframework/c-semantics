@@ -2,12 +2,12 @@ module CPP-STMT-TRY
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports C-CHECK-LOC-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SETTINGS-SYNTAX
-     imports CPP-STMT-BLOCK-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -60,19 +60,19 @@ module CPP-STMT-TRY
      syntax KItem ::= "unwindFunction" | tryMark(Int)
 
      // delete locals when function body is not wrapped in Block
-     rule <k> (.K => deleteLocals) ~> unwindFunction ...</k>
+     rule <k> (.K => deleteObjects(S)) ~> unwindFunction ...</k>
           <block-stack> .List </block-stack>
-          <local-addresses> S::Set </local-addresses>
+          <local-addresses> S::Set => .Set </local-addresses>
           requires size(S) >Int 0
 
-     rule <k> unwindFunction ~> throw(V::LVal) ~> _ 
-              => exitRestrictBlock(Scope)
+     rule <k> unwindFunction ~> throw(V::LVal) ~> _
+              => exitRestrictBlock(.Set)
               ~> sequencePoint
               ~> throw(V)
               ~> K
           </k>
           (<function-control>
-               <curr-scope> blockScope(_, Base::SymBase, _) #as Scope::BlockScope </curr-scope>
+               <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-control>...
                     <local-addresses> .Set </local-addresses>

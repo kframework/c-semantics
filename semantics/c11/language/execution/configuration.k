@@ -19,10 +19,6 @@ module C-CONFIGURATION
 <exec multiplicity="?">
      <extensions-global/>
 
-     // Used for verifying the aliasing restrictions on
-     // restrict-qualified pointers.
-     <restrict> .List </restrict>
-
      <next-thread-id color="black"> 1 </next-thread-id>
 
      <thread-info color="yellow">
@@ -35,6 +31,10 @@ module C-CONFIGURATION
           <thread multiplicity="*" color="yellow" type="Map">
                <thread-id color="yellow"> 0 </thread-id>
                <buffer color="lightgray"> .List </buffer>
+
+               // Used for verifying the aliasing restrictions on
+               // restrict-qualified pointers.
+               <restrict> .List </restrict>
 
                <k color="green" multiplicity="?">
                     loadObj(unwrapObj($PGM:K))

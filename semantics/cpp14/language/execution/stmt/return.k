@@ -9,12 +9,12 @@ module CPP-STMT-RETURN
      imports C-CONFIGURATION
      imports BOOL
      imports C-CHECK-LOC-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-MEMORY-ALLOC-SYNTAX
-     imports CPP-STMT-BLOCK-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
@@ -52,23 +52,20 @@ module CPP-STMT-RETURN
           <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
 
-     rule <k> Return''(V:Val) => fullExpression ~> deleteLocals ~> return(V) ...</k>
+     rule <k> Return''(V:Val) => fullExpression ~> deleteObjects(Locals) ~> return(V) ...</k>
+          <local-addresses> Locals::Set </local-addresses>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>
 
      // Return (to C++ function)
      rule <k> return(V:Val) ~> _
-              => exitRestrictBlock(Scope)
+              => exitRestrictBlock(.Set)
               ~> sequencePoint
               ~> V
               ~> K
           </k>
           (<function-control>
-               <curr-scope> Scope::BlockScope </curr-scope>
                <live-va-lists> .Set </live-va-lists>
-               <block-control>...
-                    <local-addresses> .Set </local-addresses>
-               ...</block-control>
                <block-stack> .List </block-stack>
           ...</function-control> => C)
           <call-stack>
