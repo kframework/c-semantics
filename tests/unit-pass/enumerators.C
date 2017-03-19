@@ -90,6 +90,37 @@ void check_6()
 	assert((int)sizeof_E6_A == (int)sizeof_E6_B);
 }
 
+enum E7
+{
+	E7_A = 0ull,
+	E7_B = sizeof(E7_A)
+};
+
+void check_7()
+{
+	// Type of E7_A inside the enumeration
+	// should be 'unsigned long long'
+	assert((int)E7_B == sizeof(unsigned long long));
+}
+
+enum E8 : int
+{
+	E8_A = 10
+};
+
+enum E9
+{
+	// Type of E9_A here should be
+	// the underlying type of E8, which is 'int'
+	E9_A = E8_A,
+	E9_B = sizeof(E9_A)
+};
+
+void check_8()
+{
+	assert((int)E9_B == sizeof(int));
+}
+
 int main()
 {
 
@@ -99,6 +130,8 @@ int main()
 	check_4();
 	check_5();
 	check_6();
+	check_7();
+	check_8();
 
 	return 0;
 }

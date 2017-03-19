@@ -307,7 +307,7 @@ module CPP-TRANSLATION-NAME
      rule <k> nameLookup(X::CId, Tag::Tag, IsNNS::Bool) => nameLookupInScope(X, Tag, IsNNS, Scope) ...</k>
           <curr-scope> Scope::Scope </curr-scope>
 
-     rule <k> nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, Scope::Scope) => lookupNameInFullClass(X, classFromScope(Scope), isBlockScope(Scope), Tag, IsNNS) ...</k>
+     rule nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, Scope::Scope) => lookupNameInFullClass(X, classFromScope(Scope), isBlockScope(Scope), Tag, IsNNS)
           requires inClassScope(Scope)
 
      rule nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, enumScope(E::EnumId)) => nameLookupInEnumScope(X, Tag, IsNNS, enumScope(E))

@@ -241,7 +241,7 @@ module CPP-CONVERSION
                #if broaderTypeThan(type(unsigned-long), type(T)) #then type(unsigned-long) #else
                #if broaderTypeThan(type(long-long), type(T)) #then type(long-long) #else
                #if broaderTypeThan(type(unsigned-long-long), type(T)) #then type(unsigned-long-long) #else
-               type(underlyingType(T))
+               type(underlyingType(T)) // Not reachable without extended integer types
                #fi #fi #fi #fi #fi #fi
 
      // 4.5:4

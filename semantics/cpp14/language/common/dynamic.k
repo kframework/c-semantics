@@ -163,7 +163,6 @@ module CPP-DYNAMIC-SYNTAX
      rule inClassScope(_:NamespaceScope) => false
      rule inClassScope(_:ClassScope) => true
      rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
-     rule inClassScope(enumScope(enumId(CQ::ClassQualifier :: _))) => isClass(CQ)
 
      syntax Bool ::= isClassQualId(QualId) [function]
      rule isClassQualId(C:Class :: _::CId) => true

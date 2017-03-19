@@ -80,23 +80,52 @@ module CPP-DECL-ENUM
                <enum-complete> false </enum-complete>
            ...</cppenum>)
 
-     syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, nextType: CPPSimpleType, List, fixed: Bool, first: Bool)
+     syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, List, fixed: Bool, first: Bool)
 
-     rule declareEnumerators(_, _, _, Next::Int, NextType::CPPSimpleType, ListItem(Enumerator(_, NoExpression() => prv(Next, noTrace, type(NextType)))) _::List, _, _)
+     // First enumerator, fixed underlying type.
+     rule declareEnumerators(E::CPPEnumType, _, _, _, _, ListItem(Enumerator(_, NoExpression() => prv(0, noTrace, underlyingType(E)))) _::List, true, true)
+
+     // First enumerator, underlying type not fixed
+     rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator")) ~> (
+          declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, true)
+          => recoverFromError(
+          declareEnumerators(E, Min, Max, Next, PrevType, ListItem(Enumerator(X, prv(0, noTrace, type(int)))) L, false, true)
+          ))
+
+     // Second or more enumerator, fixed underlying type
+     rule declareEnumerators(E::CPPEnumType, _, _, Next::Int, _,
+               ListItem(Enumerator(_, NoExpression() => prv(Next, noTrace, underlyingType(E)))) _::List, true, false)
+
+     // Second or more enumerator, underlying type not fixed, value fits.
+     rule declareEnumerators(_, _, _, Next::Int, PrevType::CPPSimpleType,
+               ListItem(Enumerator(_, NoExpression() => prv(Next, noTrace, type(PrevType)))) _::List, false, false)
+          requires inRange(Next, type(PrevType))
+
+     // Second or more enumerator, underlype type not fixed, value does not fit to previous type but fits to some.
+     rule (.K => UNSPEC("TDE3", "Value does not fit to type of preceding enumerator")) ~> (
+          declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, false)
+          => recoverFromError(
+          declareEnumerators(E, Min, Max, Next::Int, PrevType, ListItem(Enumerator(X, prv(Next, noTrace, type(firstSuitableType(Next, Next, allIntegralTypes))))) L, false, false)
+          ))
+          requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) =/=K no-type
+
+     rule (.K => ILL("TDE4", "Incremented enumerator value is not representable in any integer type")) ~>
+          declareEnumerators(_, _, _, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(_, NoExpression())) _::List, false, false)
+          requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) ==K no-type
+
+     rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPEnumType => underlyingType(T)))) _::List, _, _)
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr)) _::List, _, _)
 
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
      // Hence we need to store the type of underlying expression...
-     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed::Bool, true)
+     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed::Bool, First::Bool)
           => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
-          ~> declareEnumerators(T, V, V, V +Int 1, chooseEnumeratorType(EType, V +Int 1), L, Fixed, false)
+          ~> declareEnumerators(T, ite(First, V, minInt(Min, V)), ite(First, V, maxInt(Max, V)), V +Int 1, EType, L, Fixed, false)
 
-     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed::Bool, false)
-          => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
-          ~> declareEnumerators(T, minInt(Min, V), maxInt(Max, V), V +Int 1, chooseEnumeratorType(EType, V +Int 1), L, Fixed, false)
-
-
+     syntax Int ::= ite(Bool, Int, Int) [function]
+     rule ite(true, X::Int, _) => X
+     rule ite(false, _, X::Int) => X
 
      // Enums with fixed underlying type are finished by now.
      rule declareEnumerators(T::CPPEnumType, _, _, _, _, .List, true, _) => .
@@ -113,8 +142,8 @@ module CPP-DECL-ENUM
      rule declareEnumerator(E::EnumId, X::CId, prv(V::CPPValue, Tr::Trace, _), true, UT::CPPIntegerType) => addEnumerator(E, X, prv(V, Tr, UT))
      requires inRange(V, UT)
 
-     rule (.K => ILL("TDE1", "Value of enumerator '" +String idToString(X) +String "' does not fit to underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
-     requires notBool inRange(V, UT)
+     rule (.K => ILL("TDE1", "Value of enumerator '" +String idToString(X) +String "' does not fit to fixed underlying type.")) ~> declareEnumerator(_, X::CId, prv(V::CPPValue, _, _), true, UT::CPPIntegerType)
+          requires notBool inRange(V, UT)
 
      syntax KItem ::= addEnumerator(enum: EnumId, id: CId, v: PRVal)
      rule <k> addEnumerator(E::EnumId, X::CId, V::PRVal) => addEnumeratorToEnv(E, X) ... </k>
@@ -141,9 +170,6 @@ module CPP-DECL-ENUM
           <ns-id> N </ns-id>
           <unscoped-enumerators> UE::Map (.Map => X |-> E ) </unscoped-enumerators>
 
-     syntax CPPSimpleType ::= chooseEnumeratorType(CPPSimpleType, Int) [function]
-     rule chooseEnumeratorType(T::CPPSimpleType, Val::Int) => #if inRange(Val, type(T)) #then T #else firstSuitableType(Val, Val, allIntegralTypes) #fi
-
      // For unscoped enums without fixed type,
      // compute their minimal and maximal value
      // as well as their underlying type
@@ -158,7 +184,6 @@ module CPP-DECL-ENUM
              ListItem(long-long)
              ListItem(unsigned-long-long)
 
-     //
      syntax List ::= "allIntegralTypes" [function]
      rule allIntegralTypes
           => ListItem(signed-char)
@@ -167,12 +192,11 @@ module CPP-DECL-ENUM
              ListItem(unsigned-short)
              integralTypesGreaterThanInt
 
-
-     
      syntax CPPSimpleType ::= firstSuitableType(Int, Int, List) [function]
      rule firstSuitableType(Min::Int, Max::Int, ListItem(T::CPPSimpleType) _) => T
           requires Min >=Int min(type(T)) andBool Max <=Int max(type(T))
-     rule firstSuitableType(_, _, .List) => int
+
+     rule firstSuitableType(_, _, .List) => no-type
      rule firstSuitableType(_, _, (ListItem(_) => .List) _) [owise]
 
 
