@@ -305,8 +305,8 @@ module CPP-TYPING
      rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, .K, true, false)
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
-     rule setRefQualifier(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), RQ::RefQualifier)
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIRefQualifier(MI, RQ), L, E))
+     rule setRefQualifier(T::CPPFunctionType, RQ::RefQualifier)
+       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIRefQualifier(MI, RQ))))(T)
 
      syntax RefQualifier ::= getMIRefQualifier(MethodInfo) [function]
      rule getMIRefQualifier(methodInfo(... refQual: RQ::RefQualifier)) => RQ
@@ -316,8 +316,8 @@ module CPP-TYPING
      rule setMIRefQualifier(noMethod => defaultMethodInfo(), RQ::RefQualifier)
 
      rule getCVSQuals(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMICVSQuals(MI)
-     rule setCVSQuals(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), CVS::Quals)
-          => t(Quals, Mods, functionType(RetT, ParamT, setMICVSQuals(MI, CVS), L, E))
+     rule setCVSQuals(T::CPPFunctionType, CVS::Quals)
+       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMICVSQuals(MI, CVS))))(T)
 
      syntax Quals ::= getMICVSQuals(MethodInfo) [function]
      rule getMICVSQuals(methodInfo(... cvQuals: CVS::Quals)) => CVS
@@ -327,8 +327,8 @@ module CPP-TYPING
      rule setMICVSQuals(noMethod => defaultMethodInfo(), CVS::Quals)
      
      rule isMethodStatic(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIStatic(MI)
-     rule setMethodStatic(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIStatic(MI), L, E))
+     rule setMethodStatic(T::CPPFunctionType)
+      => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIStatic(MI))))(T)
 
      syntax Bool ::= getMIStatic(MethodInfo) [function]
      rule getMIStatic(methodInfo(... static: IsStatic::Bool)) => IsStatic
@@ -338,8 +338,8 @@ module CPP-TYPING
      rule setMIStatic(noMethod => defaultMethodInfo())
 
      rule isMethodUserProvided(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIUserProvided(MI)
-     rule setMethodUserProvided(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), B::Bool)
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIUserProvided(MI, B), L, E))
+     rule setMethodUserProvided(T::CPPFunctionType, B::Bool)
+       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIUserProvided(MI, B))))(T)
 
      syntax Bool ::= getMIUserProvided(MethodInfo) [function]
      rule getMIUserProvided(methodInfo(... userProvided: IsUserProvided::Bool)) => IsUserProvided
@@ -349,8 +349,8 @@ module CPP-TYPING
      rule setMIUserProvided(noMethod => defaultMethodInfo(), _)
 
      rule isMethodConstructor(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIConstructor(MI)
-     rule setMethodConstructor(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), B::Bool)
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIConstructor(MI, B), L, E))
+     rule setMethodConstructor(T::CPPFunctionType, B::Bool)
+       => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIConstructor(MI, B))))(T)
 
      syntax Bool ::= getMIConstructor(MethodInfo) [function]
      rule getMIConstructor(methodInfo(... constructor: IsConstructor::Bool)) => IsConstructor
@@ -360,8 +360,8 @@ module CPP-TYPING
      rule setMIConstructor(noMethod => defaultMethodInfo(), _)
 
      rule isMethodVirtual(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIVirtual(MI)
-     rule setMethodVirtual(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIVirtual(MI), L, E))
+     rule setMethodVirtual(T::CPPFunctionType)
+          => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIVirtual(MI))))(T)
 
      syntax Bool ::= getMIVirtual(MethodInfo) [function]
      rule getMIVirtual(methodInfo(... virtual: IsVirtual::Bool)) => IsVirtual
@@ -382,8 +382,8 @@ module CPP-TYPING
      rule setMIExplicit(noMethod => defaultMethodInfo())
      
      rule getMethodClass(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIClass(MI)
-     rule setMethodClass(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), C::Class)
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIClass(MI, C), L, E))
+     rule setMethodClass(T::CPPFunctionType, C::Class)
+          => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIClass(MI, C))))(T)
 
      syntax Class ::= getMIClass(MethodInfo) [function]
      rule getMIClass(methodInfo(... class: C::Class)) => C
@@ -460,7 +460,7 @@ module CPP-TYPING
      rule t(Q::Quals, _, lvRefType(T1::CPPType)) ==Type t(Q, _, lvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, rvRefType(T1::CPPType)) ==Type t(Q, _, rvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
-     rule t(Q::Quals, _, functionType(R1::CPPType, P1::CPPTypes, MI1::MethodInfo,  _, _)) ==Type t(Q, _, functionType(R2::CPPType, P2::CPPTypes, MI2::MethodInfo, _, _)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
+     rule t(Q::Quals, _, functionType(... returnType: R1::CPPType, paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)) ==Type t(Q, _, functionType(... returnType: R2::CPPType, paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
 
      syntax Bool ::= MethodInfo "==Type" MethodInfo [function]
      rule noMethod ==Type noMethod => true

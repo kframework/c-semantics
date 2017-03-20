@@ -103,6 +103,6 @@ module CPP-TYPING-CANONICALIZATION
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (variadic, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(variadic)))
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (T:CPPFunctionTypeExpr, Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, .Set, pointerType(T)))))
      rule #adjustFunctionType(t(_, _, functionType(... paramTypes: (t(_, Mods::Set, T::CPPSimpleType), Ts::CPPTypeExprs => Ts))), _::List (.List => ListItem(t(noQuals, Mods, T)))) [owise]
-     rule #adjustFunctionType(t(Q::Quals, Mods::Set, functionType(Ret::CPPTypeExpr, .CPPTypeExprs, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), Params::List) => t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI::MethodInfo, L, E))
+     rule #adjustFunctionType(t(... st: functionType(... paramTypes: .CPPTypeExprs)) #as T::CPPFunctionType, Params::List) => #fun(t(... st: functionType(... paramTypes: _ => toCPPTypes(Params))))(T)
 
 endmodule
