@@ -119,13 +119,9 @@ module CPP-DECL-ENUM
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
      // Hence we need to store the type of underlying expression...
-     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed::Bool, First::Bool)
+     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
           => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
-          ~> declareEnumerators(T, ite(First, V, minInt(Min, V)), ite(First, V, maxInt(Max, V)), V +Int 1, EType, L, Fixed, false)
-
-     syntax Int ::= ite(Bool, Int, Int) [function]
-     rule ite(true, X::Int, _) => X
-     rule ite(false, _, X::Int) => X
+          ~> declareEnumerators(T, #if First #then V #else minInt(Min, V) #fi, #if First #then V #else maxInt(Max, V) #fi, V +Int 1, EType, L, Fixed, false)
 
      // Enums with fixed underlying type are finished by now.
      rule declareEnumerators(T::CPPEnumType, _, _, _, _, .List, true, _) => .
