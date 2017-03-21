@@ -86,7 +86,7 @@ module CPP-DECL-ENUM
      rule declareEnumerators(E::CPPEnumType, _, _, _, _, ListItem(Enumerator(_, NoExpression() => prv(0, noTrace, underlyingType(E)))) _::List, true, true)
 
      // First enumerator, underlying type not fixed
-     rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator")) ~> (
+     rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator, underlying type of enumerator is unspecified")) ~> (
           declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, true)
           => recoverFromError(
           declareEnumerators(E, Min, Max, Next, PrevType, ListItem(Enumerator(X, prv(0, noTrace, type(int)))) L, false, true)

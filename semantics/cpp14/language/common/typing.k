@@ -477,8 +477,8 @@ module CPP-TYPING
      rule min(t(_, _, scopedEnum(_, UT::CPPIntegerType))) => min(UT)
      rule max(t(_, _, scopedEnum(_, UT::CPPIntegerType))) => max(UT)
 
-     rule min(t(_, _, unscopedEnum(_, UT::CPPIntegerType, _))) => min(UT)
-     rule max(t(_, _, unscopedEnum(_, UT::CPPIntegerType, _))) => max(UT)
+     rule min(t(_, _, unscopedEnum(_, UT::CPPIntegerType, true))) => min(UT)
+     rule max(t(_, _, unscopedEnum(_, UT::CPPIntegerType, true))) => max(UT)
 
      rule min(t(_, _, unscopedEnum(E::EnumId, _, false))) => #getEnumMin(#getEnumInfo(E, #configuration))
      rule max(t(_, _, unscopedEnum(E::EnumId, _, false))) => #getEnumMax(#getEnumInfo(E, #configuration))
