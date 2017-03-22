@@ -121,6 +121,18 @@ void check_8()
 	assert((int)E9_B == sizeof(int));
 }
 
+enum E10 : char {
+	E10_A = 0ull,
+	E10_B = sizeof(E10_A)
+};
+
+void check_9()
+{
+	// similar to check_7, but with fixed underlying type
+	assert((int)E10_B == sizeof(char));
+	assert((int)E10_B != sizeof(unsigned long long));
+}
+
 int main()
 {
 
@@ -132,6 +144,7 @@ int main()
 	check_6();
 	check_7();
 	check_8();
+	check_9();
 
 	return 0;
 }
