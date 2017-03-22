@@ -113,15 +113,16 @@ module CPP-DECL-ENUM
           declareEnumerators(_, _, _, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(_, NoExpression())) _::List, false, false)
           requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) ==K no-type
 
-     rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPEnumType => underlyingType(T)))) _::List, _, _)
+     rule declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, prv(_, _, T:CPPUnscopedEnumType => underlyingType(T)))) _::List, _, _)
      context declareEnumerators(_, _, _, _, _, ListItem(Enumerator(_, HOLE:Expr)) _::List, _, _)
 
      // Type of an enumerator inside the declaration is enum's underlying type
      // if it is fixed, and type of initializing expression otherwise,
      // Hence we need to store the type of underlying expression...
-     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType::CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
+     rule declareEnumerators(T::CPPEnumType, Min::Int, Max::Int, Next::Int, _, ListItem(Enumerator(X::CId, prv(V::Int, _, t(_, _, EType:CPPSimpleType)) #as Pr::PRVal)) L::List, Fixed:Bool, First:Bool)
           => declareEnumerator(getEnumId(T), X, Pr, Fixed, underlyingType(T))
           ~> declareEnumerators(T, #if First #then V #else minInt(Min, V) #fi, #if First #then V #else maxInt(Max, V) #fi, V +Int 1, EType, L, Fixed, false)
+     requires notBool isCPPSimpleUnscopedEnumType(EType)
 
      // Enums with fixed underlying type are finished by now.
      rule declareEnumerators(T::CPPEnumType, _, _, _, _, .List, true, _) => .
