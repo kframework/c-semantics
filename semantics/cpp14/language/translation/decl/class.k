@@ -39,7 +39,7 @@ module CPP-DECL-CLASS
              requires notBool isClassNameElabSpecifier(HOLE) [result(CPPTypeExpr)]
      context TypeDecl(HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE)
-                  andBool notBool isClassNameElabSpecifier(HOLE) [resullt(CPPType)]
+                  andBool notBool isClassNameElabSpecifier(HOLE) [result(CPPType)]
 
      syntax Bool ::= isClassNameElabSpecifier(K) [function]
      rule isClassNameElabSpecifier(ElaboratedTypeSpecifier(_:ClassKey, _, NoNNS())) => true

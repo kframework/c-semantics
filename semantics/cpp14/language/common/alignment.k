@@ -54,6 +54,7 @@ module CPP-ALIGNMENT
      rule byteAlignofType(double) => cfg:alignofDouble
      rule byteAlignofType(long-double) => cfg:alignofLongDouble
      rule byteAlignofType(T:CPPSimpleWideCharType) => byteAlignofType(underlyingType(T))
+     rule byteAlignofType(T:CPPSimpleEnumType) => byteAlignofType(underlyingType(T))
      rule byteAlignofType(functionType(...)) => 0
      rule byteAlignofType(no-type) => cfg:alignofMalloc
 

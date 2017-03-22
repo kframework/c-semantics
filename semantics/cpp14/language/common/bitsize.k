@@ -20,6 +20,7 @@ module CPP-BITSIZE
           => N +Int ((A *Int cfg:bitsPerByte) -Int (N %Int (A *Int cfg:bitsPerByte))) [owise]
 
      syntax Int ::= byteSizeofType(CPPSimpleType) [klabel(byteSizeofSimpleTypeCpp), function]
+     rule byteSizeofType(T:CPPEnumType) => byteSizeofType(underlyingType(T))
      rule byteSizeofType(T:CPPClassType) => byteSizeofClass(getClassInfo(T))
      rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T) [owise]
 

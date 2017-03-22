@@ -16,6 +16,7 @@ require "configuration.k"
 
 require "decl/class.k"
 require "decl/declarator.k"
+require "decl/enum.k"
 require "decl/initializer.k"
 require "decl/linkage.k"
 require "decl/namespace.k"
@@ -75,6 +76,7 @@ module CPP-TRANSLATION
      imports CPP-VALUE-CATEGORY
 
      imports CPP-DECL-CLASS
+     imports CPP-DECL-ENUM
      imports CPP-DECL-DECLARATOR
      imports CPP-DECL-INITIALIZER
      imports CPP-DECL-LINKAGE

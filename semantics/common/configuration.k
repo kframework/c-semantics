@@ -81,6 +81,8 @@ module COMMON-CONFIGURATION
                          <ntypes> .Map </ntypes>
                          // CId |-> Namespace
                          <nested-namespaces> .Map </nested-namespaces>
+                         // CId |-> EnumId
+                         <unscoped-enumerators> .Map </unscoped-enumerators>
                          <is-inline> false </is-inline>
                          <using-namespaces> .Set </using-namespaces>
                          <inline-namespaces> .Set </inline-namespaces>
@@ -106,6 +108,19 @@ module COMMON-CONFIGURATION
                          <access-specifier> .K </access-specifier>
                     </class>
                </classes>
+
+               <cpp-enums>
+                    <cppenum multiplicity="*" type="Map">
+                         <enum-id> .K </enum-id>
+                         <enum-type> .K </enum-type>
+                         <scoped> false </scoped>
+                         <enumerators> .Map </enumerators>
+                         <enum-complete> false </enum-complete>
+                         <enum-min> 0 </enum-min>
+                         <enum-max> 0 </enum-max>
+                    </cppenum>
+               </cpp-enums>
+
           </tu>
      </translation-units>
    </global>
