@@ -52,4 +52,6 @@ module CPP-MEMORY-READING
      rule interpret(prv(0, Tr::Trace, T:CPPNullPtrTType)) => prv(nullptrVal, Tr, T)
      rule interpret(prv(0, Tr::Trace, T:CPPPointerType)) => prv(NullPointer, Tr, T)
 
+     rule interpret(prv(I:Int, Tr::Trace, T:CPPEnumType)) => #fun(prv(I::Int, Tr::Trace, (T => T)))(interpret(prv(I, Tr, underlyingType(T))))
+
 endmodule

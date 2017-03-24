@@ -23,6 +23,8 @@ module CPP-BITSIZE
      rule byteSizeofType(t(_, _, T::CPPSimpleType)) => byteSizeofType(T)
 
      rule byteSizeofType(classType(C::Class)) => byteSizeofClass(getClassInfo(C))
+     rule byteSizeofType(scopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
+     rule byteSizeofType(unscopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
      syntax Int ::= byteSizeofClass(ClassInfo) [function]
      rule byteSizeofClass(<class>... <max-offset> V::Int </max-offset> <max-align> A::Int </max-align> ...</class>)
           => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte)

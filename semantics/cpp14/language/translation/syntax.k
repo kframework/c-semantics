@@ -16,6 +16,8 @@ module CPP-ABSTRACT-SYNTAX
      imports CPP-DEPENDENT-SYNTAX
      imports CPP-CLASS-SYNTAX
 
+     syntax CPPIntegerType
+
      syntax LVal ::= LExpr
      syntax XVal ::= XExpr
      syntax PRVal ::= PRExpr
@@ -82,7 +84,8 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax Decl ::= ClassDef(Tag, CId, NNS, List, List)
                    | TypeDecl(AType)
-                   | EnumDef(CId, NNS, List)
+                   | EnumDef(id: CId, nns: NNS, scoped: Bool, fixed: Bool, ut: AType, List) [strict(5)]
+                   | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType)
                    | AccessSpec(AccessSpecifier)
                    | StaticAssert(Expr, Expr)
                    | UsingDecl(Bool, NNS, CId)

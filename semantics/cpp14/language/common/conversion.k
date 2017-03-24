@@ -86,9 +86,9 @@ module CPP-CONVERSION
           ~> convertTypeHold(T, prv(C, Tr, T'))
           requires isCPPSignedType(underlyingType(T)) andBool notBool inRange(C, T)
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
-          requires isCPPUnsignedType(underlyingType(T)) andBool inRange(C, T)
+          requires notBool isCPPEnumType(T) andBool isCPPUnsignedType(underlyingType(T)) andBool inRange(C, T)
      rule convertType(T::CPPType, prv(N:Int, Tr::Trace, T':CPPIntegerType)) => prv(N modInt (max(T) +Int 1), Tr, T)
-          requires isCPPUnsignedType(underlyingType(T)) andBool notBool inRange(N, T)
+          requires notBool isCPPEnumType(T) andBool isCPPUnsignedType(underlyingType(T)) andBool notBool inRange(N, T)
      rule convertType(T:CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPBoolType)) => prv(C, Tr, T)
      rule convertType(T:CPPBoolType, prv(0, Tr::Trace, T':CPPIntegerType)) => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(I:Int, Tr::Trace, T':CPPIntegerType)) => prv(1, Tr, T)
@@ -230,7 +230,25 @@ module CPP-CONVERSION
                                                 type(underlyingType(T)) 
                                                 #fi #fi #fi #fi #fi #fi
           requires T ==K char16_t orBool T ==K char32_t orBool T ==K wchar_t
-     // TODO(dwightguth): 4.5:3-5
+
+     // 4.5:3
+     // TODO(h0nzZik) (1) store the type in configuration for performance reasons,
+     //               (2) what if we have an extended integer type other then the underlying type?
+     rule promote(t(_, _, unscopedEnum(_, _, false) #as T::CPPSimpleType)) =>
+               #if broaderTypeThan(type(int), type(T)) #then type(int) #else
+               #if broaderTypeThan(type(unsigned), type(T)) #then type(unsigned) #else
+               #if broaderTypeThan(type(long), type(T)) #then type(long) #else
+               #if broaderTypeThan(type(unsigned-long), type(T)) #then type(unsigned-long) #else
+               #if broaderTypeThan(type(long-long), type(T)) #then type(long-long) #else
+               #if broaderTypeThan(type(unsigned-long-long), type(T)) #then type(unsigned-long-long) #else
+               type(underlyingType(T)) // Not reachable without extended integer types
+               #fi #fi #fi #fi #fi #fi
+
+     // 4.5:4
+     rule promote(t(_, _, unscopedEnum(_, UT::CPPIntegerType, true))) => promote(UT)
+
+     // TODO(dwightguth): 4.5:5
+
      // 4.5:6
      rule promote(t(_, _, bool)) => type(int)
      rule promote(T::CPPType) => T
