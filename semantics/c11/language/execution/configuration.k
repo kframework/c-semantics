@@ -14,7 +14,7 @@ module C-CONFIGURATION
 
      configuration
 <global/>
-<result-value color="red"> 139:EffectiveValue </result-value>
+<result-value color="red" exit=""> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">
      <extensions-global/>

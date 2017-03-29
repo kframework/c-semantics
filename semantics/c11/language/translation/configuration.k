@@ -9,7 +9,7 @@ module C-CONFIGURATION
 
      configuration
 <global/>
-<result-value color="red"> 1 </result-value>
+<result-value color="red" exit=""> 1 </result-value>
 <T multiplicity="?">
 <exec>
      <final-computation multiplicity="?" color="lightgray">
