@@ -102,7 +102,7 @@ module CPP-DECL-CLASS
      syntax KItem ::= addMembersToScope(Class, List)
      rule addMembersToScope(_, .List) => .K
      // TODO(traiansf): propagate variant-members upward if the anonymous union was declared in class scope.
-     rule <k> (.K => addToEnv(mkQualId(getNamespace(Scope), X), T, memberBase(unnamedObject(C), X, T), false))
+     rule <k> (.K => addToEnv(getNamespace(Scope) :: X, T, memberBase(unnamedObject(C), X, T), false))
            ~> addMembersToScope(C::Class, (ListItem(kpair(X::CId, T::CPPType)) => .List) _)
           ...</k>
           <curr-scope> Scope::Scope </curr-scope>
@@ -134,7 +134,6 @@ module CPP-DECL-CLASS
           ...</class>)
 
      syntax KItem ::= implicitDeclarations()
-     syntax Bool ::= computeUserProvidedDefault(K) [function]
      // no implicit constructor if one was already declared
      rule <k> implicitDeclarations() => .K...</k>
           <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class) </curr-scope>
@@ -142,9 +141,6 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> _ ...</cenv>
-
-     rule computeUserProvidedDefault(B:Bool) => B
-     rule computeUserProvidedDefault(.K) => false
 
      // TODO(dwightguth): implicit exception spec
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(), 
@@ -211,7 +207,8 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
           <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
-     rule resolve(_:ResolvedExpr) ~> checkCtor(_) => .K
+     rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
+          requires notBool isNotFoundNameRef(E)
      // this rule should never actually apply once we finish destructors since all classes will have a destructor.
      // we keep it here for now so that when we add default destructors to classes we will get stuck and remember to
      // fix this check.
@@ -240,7 +237,7 @@ module CPP-DECL-CLASS
 
      // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
      rule <k> figureConstruct(_, .List, .List, _, _, false) => Deleted() ...</k>
-          <curr-scope> blockScope((_ :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
+          <curr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isUserProvidedConstructor(FuncT, .K)
  
@@ -287,7 +284,7 @@ module CPP-DECL-CLASS
           requires notBool (I =/=K NoInit() andBool IsMember) andBool notBool X in VM
 
      rule <k> figureConstruct(_, .List, .List, Body::Stmt, Res:K, HasNonConst:Bool) => addExceptions(C, Bases, NSDM, VM, Res, Body) ...</k>
-          <curr-scope> blockScope(_ :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-scope>
+          <curr-scope> blockScope(_::ClassQualifier :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>

@@ -1,0 +1,3 @@
+#!/bin/sh
+export KCC_COMMAND_NAME=`basename "$0"`
+"$(dirname "$0")/kcc" "$@" -Xk++

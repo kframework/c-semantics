@@ -134,7 +134,7 @@ module LIBC-BUILTIN
 
      rule initBuiltins => initStdio
 
-     syntax KItem ::= "initStdio" [function]
+     syntax K ::= "initStdio" [function]
      rule initStdio
           => alloc(bnew(!Stdin:Int, file, stdio), file, byteSizeofType(file))
           ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, stdio)) := stdin))

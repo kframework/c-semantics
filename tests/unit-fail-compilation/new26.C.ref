@@ -11,4 +11,4 @@ inline void operator delete (void*) {}
 <unknown>: error: Declared replacement function operator delete(void *) but no operator delete(void *, std::size_t).
   Ill-formed program (ILF-TIN1).
    see C++14 section 18.6.1.1:11 http://rvdoc.org/C++14/18.6.1.1
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors new26.C to see commands run.
+Translation failed (config dumped). Run k++ -d -Werror -Wfatal-errors new26.C to see commands run.

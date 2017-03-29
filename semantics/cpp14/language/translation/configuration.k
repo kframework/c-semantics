@@ -24,6 +24,7 @@ module C-CONFIGURATION
 
      <k color="green">
           $PGM:K
+          ~> builtinTu
           ~> load($OBJS:K)
           ~> link
           ~> cleanup
@@ -31,6 +32,10 @@ module C-CONFIGURATION
 
      <elab> .K </elab>
      <elab-stack> .List </elab-stack>
+
+     // Toggle to allow writes and other special treatment
+     // for initializers.
+     <initializing> false </initializing>
 
      <curr-state>
          <curr-tu color="lightgray"> "" </curr-tu>

@@ -15,7 +15,6 @@ module COMPAT-SYNTAX
      syntax String ::= listToString(List) [function]
 
      syntax String ::= idToString(CId) [function]
-                     | idToString(QualId) [function, klabel(qualIdToString)]
 
      syntax String ::= toUpperCase(String) [function]
 
@@ -94,85 +93,6 @@ module COMPAT
      rule idToString(#NoName(_)) => "<anonymous>"
      rule idToString(unnamed(_, _)) => "<anonymous>"
      rule idToString(_::CId) => "<unknown>" [owise]
-
-     rule idToString(GlobalNamespace() :: X::CId)
-          => "::" +String idToString(X)
-
-     rule [firstChar]:
-          firstChar(S:String) => substrString(S, 0, 1)
-
-     rule [nthChar]:
-          nthChar(S:String, N:Int) => substrString(S, N, N +Int 1)
-
-     rule [butFirstChar]:
-          butFirstChar(S:String)
-          => substrString(S:String, 1, lengthString(S:String))
-
-     rule all(ListItem(K:K) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K:K) andBool all(L, #klabel(Lbl))
-     rule all(.List, _) => true
-
-     rule some(ListItem(K:K) L:List, #klabel(Lbl:KLabel))
-          => Lbl(K:K) orBool some(L, #klabel(Lbl))
-     rule some(.List, _) => false
-
-     rule toUpperCase(S:String)
-          => toUpperCase(firstChar(S:String))
-               +String toUpperCase(butFirstChar(S:String))
-          requires lengthString(S) >Int 1
-
-     rule toUpperCase(C:String)
-          => C:String
-          requires (lengthString(C) ==Int 1)
-               andBool (ordChar(C) <Int ordChar("a")
-                    orBool ordChar(C) >Int ordChar("z"))
-     rule toUpperCase(C:String)
-          => chrChar(absInt(ordChar(C)
-               -Int (ordChar("a") -Int ordChar("A"))))
-          requires (lengthString(C) ==Int 1)
-               andBool (ordChar(C) >=Int ordChar("a")
-                    andBool ordChar(C) <=Int ordChar("z"))
-
-     rule removeListItem(.List, _) => .List
-     rule removeListItem(ListItem(A:K) M:List, A) => M
-     rule removeListItem(ListItem(A:K) M:List, A':K)
-          => ListItem(A) removeListItem(M, A')
-          requires A =/=K A'
-
-     syntax Bool ::= subset(K, Set, Set) [function]
-
-     rule subset(K:K, S1:Set, S2:Set) => S1 <=Set (S2 -Set SetItem(K))
-          requires K in S2
-     rule subset(K:K, _, S2:Set) => false
-          requires notBool (K in S2)
-
-     syntax Map ::= removeBagItemFromMap(Map, K) [function]
-     rule removeBagItemFromMap(K |-> 1 M::Map, K:K) => M
-     rule removeBagItemFromMap(K |-> I::Int M::Map, K:K) => K |-> (I -Int 1) M
-
-     syntax KItem ::= "seqstrict()"
-     rule seqstrict(list(HOLE:List)) => toSSList(HOLE) ~> seqstrict() [heat]
-     rule HOLE:SSList ~> seqstrict() => seqstrict(krlist(ofSSList(HOLE))) [cool]
-
-     syntax SSList ::= K "seqstrict::" SSList [seqstrict]
-                     | ".SSList"
-     rule isKResult(.SSList) => true
-     rule isKResult(S1::SSList seqstrict:: S2::SSList) => isKResult(S1) andBool isKResult(S2)
-     rule toSSList(ListItem(K:K) L::List) => K seqstrict:: toSSList(L)
-     rule toSSList(.List) => .SSList
-     rule ofSSList(krlist(L1::List) seqstrict:: L2::SSList) => L1 ofSSList(L2)
-     rule ofSSList(.SSList) => .List
-     rule ofSSList(K:K seqstrict:: L::SSList) => ListItem(K) ofSSList(L) [owise]
-
-     syntax KItem ::= "strict()"
-     rule list(HOLE:List) => toSList(HOLE) ~> strict() [heat]
-     rule HOLE:SList ~> strict() => krlist(ofSList(HOLE)) [cool]
-
-     syntax SList ::= K "strict::" SList [strict]
-     rule idToString(_::CId) => "<unknown>" [owise]
-
-     rule idToString(GlobalNamespace() :: X::CId)
-          => "::" +String idToString(X)
 
      rule firstChar(S::String) => substrString(S, 0, 1)
           requires lengthString(S) >=Int 1

@@ -25,6 +25,7 @@ module C-EXECUTION-INIT
      imports K-IO
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
+     imports LIBCPP-BOOTSTRAP-SYNTAX
      imports STRING
 
      syntax TCell ::= ".TCell" [klabel(.TCell)]
@@ -125,6 +126,7 @@ module C-EXECUTION-INIT
                <thread>...
                     <k> initMainThread'(MainTU:String)
                          => initBuiltins
+                         ~> initCPPBuiltins
                          ~> populateFromGlobal(.K)
                     ...</k>
                     <duration> _ => auto(0) </duration>

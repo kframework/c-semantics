@@ -33,6 +33,8 @@ my $MAGIC = "\x7fKAST";
 my $distDirectory = dirname(rel2abs($0));
 if (defined $ENV{KCC_COMMAND_NAME}) {
   $0 = $ENV{KCC_COMMAND_NAME};
+} else {
+  $0 = basename($0);
 }
 
 our $profile;
@@ -283,7 +285,7 @@ my $spec = q(
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
   -fissue-report=<file>	Write issues to the specified file in CSV format.
-  -fworkspace=<dir>	Use <dir> for the workspace of kcc when reporting
+  -fworkspace=<dir>	Use <dir> for the workspace of ) . $0 . q( when reporting
 			errors.
   -Wlint		Generate lint errors for potentially undesirable
 			behaviors.*
@@ -388,13 +390,13 @@ my $spec = q(
                         Setting the environment error KCC_NO_LICENCE_MESSAGE
                         has the same effect.
   -Xbuiltins		[undocumented]
+  -Xk++			[undocumented]
   -soname <name>	[undocumented]
 
   * Indicates flags that require RV-Match from
     http://www.runtimeverification.com/match to run.
 
-  For a complete list of other flags ignored by kcc, refer to ) 
-  . "\n  $distDirectory" . q(/ignored-flags,
+  For a complete list of other flags ignored by ) . "$0, refer to\n  $distDirectory" . q(/ignored-flags,
   which contains one regular expression per line.
 
   The following lines of output are added to this message for compatibility
@@ -411,6 +413,11 @@ exit main();
 
 sub main {
   @originalArgv = @ARGV;
+  if ($originalArgv[-1] eq '-Xk++') {
+    # special case for k++ wrapper script which we don't want
+    # to display as an argument
+    pop(@originalArgv);
+  }
   $args->parse() or error("Failed to parse the command line.\n");
 
   my $noLicense = exists($args->{'--no-license-message'})
@@ -509,9 +516,12 @@ sub main {
     return 0;
   }
 
-  if (!$args->{'-s'}) {
+  if (!$args->{'-nodefaultlibs'}) {
     $xLang = "none";
     classify(catfile($profileDirectory, 'lib', 'libc.so'));
+    if ($args->{'-Xk++'}) {
+      classify(catfile($profileDirectory, 'lib', 'libstdc++.so'));
+    }
   }
 
   # Reduce our remaining source files to object files
@@ -815,7 +825,7 @@ sub getKRunCommand {
     push(@krun_args, '--debug');
   }
   my @options = initOptions();
-  if ($lang ne 'c++' && !$hasBuiltins && $args->{'-Xbuiltins'}) {
+  if (!$hasBuiltins && $args->{'-Xbuiltins'}) {
     push(@options, "`XBuiltins`(.KList)");
     $hasBuiltins = 1;
   }
@@ -973,7 +983,7 @@ sub checkError {
       print STDERR "Translation failed (config dumped). Refer to last command run for details.\n";
       exit $retval;
     } else {
-      print STDERR "Translation failed (config dumped). Run kcc -d @originalArgv to see commands run.\n";
+      print STDERR "Translation failed (config dumped). Run $0 -d @originalArgv to see commands run.\n";
       exit $retval;
     }
   }

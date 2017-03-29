@@ -148,8 +148,7 @@ module CPP-DYNAMIC-SYNTAX
      rule getClassNamespace(localQual(blockScope(N:Namespace :: _:CId, _, _)) :: _::ClassSpecifier) => N
      rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
 
-     syntax QualId ::= Class "::" CId
-     syntax QualId ::= mkQualId(NNSVal, CId) [function]
+     syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
      syntax NNSVal ::= getQual(QualId) [function]
      syntax CId ::= getId(QualId) [function]
 
@@ -179,6 +178,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
 
      syntax CId ::= "funLabel" "(" CId ")"
+                  | "destructorLabel" "(" CId ")"
 
      syntax KItem ::= functionObject(QualId, CPPType, List, K) [klabel(cppFunctionObject)]
 
@@ -217,6 +217,8 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax String ::= typesToString(CPPTypes) [function]
                      | typeToString(CPPType) [function]
+                     | signatureToString(QualId, CPPType) [function]
+                     | idToString(QualId) [function, klabel(qualIdToString)]
 
      syntax Bool ::= isValKLabel(K) [function, klabelPredicate]
      syntax Bool ::= isTExprKLabel(K) [function, klabelPredicate]
@@ -339,8 +341,13 @@ module CPP-DYNAMIC
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
      rule toList(.CPPTypes) => .List
 
-     rule idToString(NoNamespace() :: X::CId)
-          => idToString(X)
+     syntax String ::= namespaceToString(Namespace) [function]
+     rule idToString(N:Namespace :: X::CId)
+          => namespaceToString(N) +String idToString(X)
+     rule namespaceToString(NoNamespace()) => ""
+     rule namespaceToString(GlobalNamespace()) => "::"
+     rule namespaceToString(N::Namespace :: Namespace(X::CId))
+          => namespaceToString(N) +String idToString(X) +String "::"
 
      rule idToString(operatornew) => "operator new"
      rule idToString(operatordelete) => "operator delete"
@@ -423,6 +430,10 @@ module CPP-DYNAMIC
      rule typeToString(char32_t) => "char32_t"
      rule typeToString(nullptr_t) => "std::nullptr_t"
      rule typeToString(pointerType(T::CPPType)) => typeToString("", pointerType(T))
+     rule typeToString(classType(N:Namespace :: Class(_, X::CId, .TemplateArgs)))
+          => namespaceToString(N) +String idToString(X)
+     rule typeToString(classType(N:Namespace :: Class(_, X::CId, T::TemplateArg, Ts::TemplateArgs)))
+          => namespaceToString(N) +String idToString(X) +String "<" +String templateArgsToString(T, Ts) +String ">"
      syntax String ::= typeToString(String, CPPSimpleType) [function, klabel(compoundTypeToString)]
      rule typeToString(DDL::String, pointerType(T::CPPType))
           => typeToString(parens(T, "*" +String DDL), simpleType(T))
@@ -433,6 +444,11 @@ module CPP-DYNAMIC
      rule parens(_:CPPFunctionType, S::String) => "(" +String S +String ")"
      rule parens(_:CPPArrayType, S::String) => "(" +String S +String ")"
      rule parens(_, S::String) => S [owise]
+
+     syntax String ::= templateArgsToString(TemplateArgs) [function]
+     rule templateArgsToString(T:CPPType, .TemplateArgs) => typeToString(T)
+     rule templateArgsToString(T:CPPType, T2:TemplateArg, Ts::TemplateArgs)
+          => typeToString(T) +String "," +String templateArgsToString(T2, Ts)
 
      rule fillRHoles(V::PRVal, RHOLE) => V
      rule fillRHoles(V::PRVal, Lbl:KLabel(L:K))
@@ -466,15 +482,10 @@ module CPP-DYNAMIC
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("std::terminate (void)")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), .List) 
+     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("::std::terminate()")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), .List) 
 
-     rule mkQualId(N:Namespace, X::CId) => N :: X
-     rule mkQualId(C:Class, X::CId) => C :: X
-
-     rule getId(N:Namespace :: X::CId) => X
-     rule getId(C:Class :: X::CId) => X
-     rule getQual(N:Namespace :: X::CId) => N
-     rule getQual(C:Class :: X::CId) => C
+     rule getId(_ :: X::CId) => X
+     rule getQual(N::NNSVal :: _) => N
 
      context resolve(HOLE:Expr) [result(ResolvedExpr), structural]
 

@@ -27,7 +27,7 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %-link1.C.kcc.out: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -Werror -Wfatal-errors $^ > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc.out: %.c
 	@echo -n "Compiling $<... "
@@ -35,7 +35,7 @@ cpp-comparison: ${CPP_TEST_COMPARISON}
 
 %.C.kcc.out: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -Werror -Wfatal-errors $< > $@.tmp 2>&1; ${CHECK_RESULT_COMPILE}
 
 
 %.cmp: %.kcc.out %.ref

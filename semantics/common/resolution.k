@@ -3,6 +3,7 @@ module COMMON-RESOLUTION-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= resolveCPPReference(SymBase)
+                    | "resolveMain"
 endmodule
 
 module COMMON-RESOLUTION

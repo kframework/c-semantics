@@ -48,7 +48,6 @@ module COMMON-SYNTAX
      syntax Bool ::= Quals "<=Quals" Quals [function]
 
      syntax Namespace ::= GlobalNamespace()
-     syntax QualId ::= Namespace "::" CId
 
      syntax Scope ::= "none" | FileScope
      syntax FileScope ::= "fileScope"
@@ -59,8 +58,6 @@ module COMMON-SYNTAX
 
      syntax KItem ::= allowInit(K)
      syntax Expr ::= allowInit(Expr)
-
-     syntax String ::= signatureToString(QualId, K) [function]
 
      syntax KItem ::= CodeLoc(K, CabsLoc)
 

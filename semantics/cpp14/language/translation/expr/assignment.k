@@ -1,4 +1,5 @@
 module CPP-EXPR-ASSIGNMENT
+     imports C-CONFIGURATION
      imports BOOL
      imports SYMLOC-SYNTAX
      imports CPP-CONVERSION-SYNTAX
@@ -11,15 +12,19 @@ module CPP-EXPR-ASSIGNMENT
                => le(L := stripHold(convertType(utype(T), PR)), combine(Tr, trace(PR), #klabel(`_:=__CPP-SYNTAX`)), T)
           requires notBool isCPPClassType(T)
 
-     rule lv(Loc::SymLoc, Tr::Trace, T::CPPType) := prv(V::CPPValue, Tr'::Trace, T'::CPPType)
-               => write(Loc, convertType(utype(T), prv(V, combine(Tr, Tr', #klabel(`_:=__CPP-SYNTAX`)), T')), T)
-               ~> lv(Loc, combine(Tr, Tr', #klabel(`_:=__CPP-SYNTAX`)), T)
+     rule <k> lv(Loc::SymLoc, Tr::Trace, T::CPPType) := prv(V::CPPValue, Tr'::Trace, T'::CPPType)
+              => write(Loc, convertType(utype(T), prv(V, combine(Tr, Tr', #klabel(`_:=__CPP-SYNTAX`)), T')), T)
+              ~> lv(Loc, combine(Tr, Tr', #klabel(`_:=__CPP-SYNTAX`)), T)
+          ...</k>
+          <initializing> true </initializing>
           requires notBool isCPPClassType(T)
                andBool notBool isLinkerLoc(Loc)
 
-     rule lv(Loc::SymLoc, Tr::Trace, T::CPPType) := PR:PRVal
-          => le(lv(Loc, Tr, T) := stripHold(convertType(utype(T), PR)), combine(Tr, trace(PR), #klabel(`_:=__CPP-SYNTAX`)), T)
-          requires isLinkerLoc(Loc) orBool isPRExpr(PR)
+     rule <k> lv(Loc::SymLoc, Tr::Trace, T::CPPType) := PR:PRVal
+              => le(lv(Loc, Tr, T) := stripHold(convertType(utype(T), PR)), combine(Tr, trace(PR), #klabel(`_:=__CPP-SYNTAX`)), T)
+          ...</k>
+          <initializing> Init:Bool </initializing>
+          requires isLinkerLoc(Loc) orBool isPRExpr(PR) orBool notBool Init
 
 
      rule L:LVal += R:PRVal

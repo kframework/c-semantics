@@ -1,6 +1,7 @@
 module CPP-STMT-TRY
      imports C-CONFIGURATION
      imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
@@ -21,7 +22,8 @@ module CPP-STMT-TRY
 
      context evalThrow(HOLE:Expr, _) [result(Val)]
 
-     rule Throw(E::Expr) => prepareThrow(E, E)
+     rule <k> Throw(E::Expr) => prepareThrow(E, E) ...</k>
+          <odr-uses>... .Set => SetItem(obj(0, 0, builtinSymbol("::std::terminate()"))) ...</odr-uses>
 
      syntax Expr ::= prepareThrow(AExpr, K)
      context prepareThrow(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]

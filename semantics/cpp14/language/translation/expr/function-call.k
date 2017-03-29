@@ -2,6 +2,7 @@ module CPP-EXPR-FUNCTION-CALL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
+     imports CPP-CONVERSION-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -13,6 +14,9 @@ module CPP-EXPR-FUNCTION-CALL
      rule CallExpr(Lbl:KLabel(_::K, _::K, T:CPPFunctionType) #as V::Val, list(A::List))
           => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A)))
           requires isLKLabel(#klabel(Lbl))
+
+     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(T:CPPFunctionType))) #as V:Val, list(A::List))
+          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A)))
 
      syntax KItem ::= elabCall(Val, List, CPPType, StrictList) [strict(4)]
      rule elabCall(Fun::Val, Args::List, T::CPPType, krlist(Temps::List))
@@ -38,9 +42,22 @@ module CPP-EXPR-FUNCTION-CALL
      rule bindParams(ListItem(implicitObjectParameter(t(... st: no-type))) P::List,
                      ListItem(Obj::Expr) A::List)
           => ListItem(Obj) bindParams(P, A)
-     rule bindParams(ListItem(implicitObjectParameter(T::CPPType)) P::List, ListItem(Obj::Expr) A::List)
-          => ListItem(& ParenthesizedCast(T, Obj)) bindParams(P, A)
+     // we use getAddress instead of & because technically speaking the this argument can be any value category
+     rule bindParams(ListItem(implicitObjectParameter(T:CPPRefType)) P::List, ListItem(Obj::Expr) A::List)
+          => ListItem(ParenthesizedCast(type(pointerType(innerType(T))), getAddress(Obj))) bindParams(P, A)
           requires T =/=K type(no-type)
      rule bindParams(.List, .List) => .List
-     rule bindParams(ListItem(variadic), .List) => .List
+     rule bindParams(ListItem(variadic), L::List) => bindVariadic(L)
+     syntax List ::= bindVariadic(List) [function]
+     rule bindVariadic(ListItem(Obj::Expr) L::List) => ListItem(defaultArgPromote(Obj)) bindVariadic(L)
+     rule bindVariadic(.List) => .List
+
+     syntax Expr ::= defaultArgPromote(Expr)
+     context defaultArgPromote(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     rule defaultArgPromote(V:PRVal) => convertType(argPromoteType(type(V)), V)
+     syntax CPPType ::= argPromoteType(CPPType) [function, klabel(argPromoteTypeCpp)]
+     rule argPromoteType(t(... st: nullptr_t)) => type(pointerType(type(void)))
+     rule argPromoteType(t(... st: float)) => type(double)
+     rule argPromoteType(T::CPPType) => promote(T) [owise]
+     
 endmodule

@@ -2,6 +2,9 @@ module LIBCPP-BOOTSTRAP-SYNTAX
      imports CPP-DYNAMIC-SORTS
 
      syntax Expr ::= builtin(QualId, Val) [klabel(builtin1Cpp)]
+                   | builtin(QualId) [klabel(builtin0Cpp)]
+     syntax KItem ::= "initCPPBuiltins"
+     syntax K ::= "initException" [function]
 
 endmodule
 
@@ -30,7 +33,11 @@ module LIBCPP-BOOTSTRAP
      syntax Name ::= makeNamesFromCIds(CId) [function]
      rule makeNamesFromCIds(X::CId) => Name(NoNNS(), X)
 
+     rule prepareBuiltin(Q::QualId, false, krlist(.List), krlist(.List))
+          => builtin(Q)
      rule prepareBuiltin(Q::QualId, false, krlist(ListItem(V::Val)), krlist(.List))
           => builtin(Q, V)
+
+     rule initCPPBuiltins => initException
 
 endmodule

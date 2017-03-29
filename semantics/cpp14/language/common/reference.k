@@ -3,6 +3,7 @@ module CPP-REFERENCE-SYNTAX
 
      syntax Bool ::= isReferenceCompatible(CPPType, CPPType) [function]
                    | isReferenceRelated(CPPType, CPPType) [function]
+                   | isValidReferenceType(CPPRefType) [function]
 
 endmodule
 
@@ -20,5 +21,7 @@ module CPP-REFERENCE
 
      rule isReferenceCompatible(T1::CPPType, T2::CPPType) => isReferenceRelated(T1, T2) andBool getQuals(T2) <=Quals getQuals(T1)
 
+     rule isValidReferenceType(t(... st: rvRefType(_))) => true
+     rule isValidReferenceType(t(... st: lvRefType(t(... q: Q::Quals)))) => Const() inQuals Q andBool notBool Volatile() inQuals Q
 
 endmodule

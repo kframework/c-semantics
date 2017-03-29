@@ -54,6 +54,7 @@ module CPP-TYPING-CANONICALIZATION
 
      rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
      rule NoExceptionSpec() => noexcept(false)
+     rule NoexceptSpec(NoExpression()) => noexcept(true)
 
      syntax List ::= adjustExcTypes(List) [function]
      rule adjustExcTypes(ListItem(T:CPPArrayType) L::List) => ListItem(type(pointerType(innerType(T)))) adjustExcTypes(L)

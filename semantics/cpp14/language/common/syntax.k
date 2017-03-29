@@ -77,7 +77,8 @@ module CPP-SYNTAX
      syntax Expr ::= temp(Int, CPPType)
                    | newSize(Int)
 
-     syntax CId ::= DestructorId(CId)
+     syntax DestructorId ::= DestructorId(CId)
+     syntax CId ::= DestructorId
                   | ConstructorId(CId)
 
      syntax ClassKey ::= Struct() | Union() | Class() 
@@ -102,6 +103,8 @@ module CPP-SYNTAX
                    | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
                    | "&" Expr [strict]
+                   // like & but applies to all objects including xvalues and class prvalues
+                   | getAddress(Expr) [strict]
                    | "!" Expr
                    | "-" Expr
                    | "+" Expr

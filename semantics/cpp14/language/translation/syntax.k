@@ -28,6 +28,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax SymBase ::= "nonStatic" 
 
      syntax TypeId ::= TypeId(AType)
+                     | DestructorTypeId(AType)
      syntax CId ::= TypeId
 
      syntax Decl ::= TranslationUnit(String, List)
@@ -192,6 +193,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Stmt ::= Defaulted()
                     | Deleted()
                     | Constructor(List, Stmt)
+                    | Destructor()
 
      syntax CatchDecl ::= Decl | Ellipsis()             
 
@@ -291,5 +293,6 @@ module CPP-ABSTRACT-REWRITING
      rule ConstructorCall(_, _, ListItem(E::Expr)) => E [owise, anywhere]
      rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
+     rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
 
 endmodule

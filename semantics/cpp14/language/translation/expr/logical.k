@@ -48,5 +48,6 @@ module CPP-EXPR-LOGICAL
      rule prv((unknown(I::Int) => #if I ==Int 0 #then 0 #else 1 #fi), _, _:CPPBoolType) && _:PRVal
 
      rule ! V:PRExpr => pre(! stripHold(V), combine(trace(V), #klabel(`!__CPP-SYNTAX`)), type(bool))
+          requires isCPPBoolType(type(V))
 
 endmodule

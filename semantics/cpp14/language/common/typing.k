@@ -2,6 +2,7 @@ module CPP-TYPING-SORTS
      syntax AType
      syntax CPPType ::= CPPFunctionType
                       | CPPClassType
+                      | CPPRefType
      syntax CPPDType ::= CPPType | CPPVariadic | InitListType
      syntax CPPVariadic
      syntax InitListType
@@ -15,6 +16,7 @@ module CPP-TYPING-SORTS
      syntax ExceptionSet
      syntax CPPFunctionType
      syntax CPPClassType
+     syntax CPPRefType
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
@@ -148,7 +150,6 @@ module CPP-TYPING-SYNTAX
      syntax CPPUnscopedEnumType ::= t(q: Quals, m: Set, st: CPPSimpleUnscopedEnumType) [klabel(tcpp)]
 
      syntax CPPType ::= CPPScalarType
-                      | CPPRefType
                       | CPPArrayType 
                       | CPPFundamentalType
 

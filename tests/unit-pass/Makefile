@@ -44,14 +44,14 @@ compile: ${KCC_COMPILED_TESTS}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
 	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-link1.c.gcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^ (reference)... "

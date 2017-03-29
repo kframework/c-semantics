@@ -80,13 +80,9 @@ module CPP-TRANSLATION-INIT
 
      syntax KItem ::= addBuiltin(QualId, CPPType, Bool) [klabel(addBuiltinCpp)]
  
-     // we use the empty modifier set because this is a function and can't really
-     // have an alignment anyway since it's not an object.
      rule <k> addBuiltin(Q::QualId, T:CPPFunctionType, AddAll:Bool)
-              => declareBuiltinFunction(Q, T, linc(T, .Set, builtinSymbol(signatureToString(Q, T)))) ...</k>
+              => declareBuiltinFunction(Q, T, obj(0, 0, builtinSymbol(signatureToString(Q, T)))) ...</k>
           <odr-defs> Defs:Map </odr-defs>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
           requires (notBool (Q, T in_keys(Defs))) orBool AddAll
 
      rule <k> addBuiltin(Q::QualId, T::CPPType, false) => checkReplaceable(Q, T, Defs) ...</k>
@@ -110,6 +106,7 @@ module CPP-TRANSLATION-INIT
           <mem> Mem::Map => Mem[Base <- object(T, 0, makeEmptyArray(0))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(N :: X, T, getDummyParams(T), callBuiltin)] </functions>
           <odr-defs> Defs::Map => Defs[N :: X, T <- Base] </odr-defs>
+          <odr-decls> Decls::Map => Decls[Base += ktriple("cpp-builtin", N :: X, T)] </odr-decls>
 
      syntax List ::= getDummyParams(CPPType) [function]
      syntax List ::= #getDummyParams(CPPTypes, Int) [function]

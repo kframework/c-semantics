@@ -12,6 +12,12 @@ module CPP-EXPR-UNARY
 
      rule &(lv(Loc:SymLoc, Tr::Trace, T::CPPType))
           => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+     rule getAddress(lv(Loc:SymLoc, Tr::Trace, T::CPPType))
+          => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+     rule getAddress(xv(Loc:SymLoc, Tr::Trace, T::CPPType))
+          => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
+     rule getAddress(prv(Loc:SymLoc, Tr::Trace, T::CPPType))
+          => prv(Loc, combine(Tr, #klabel(`&__CPP-SYNTAX`)), type(pointerType(T)))
 
      rule &(dataMemberValue(memberPointer(C::Class, X::CId, T::CPPType), Tr::Trace, _))
           => prv(memberPointer(C, X, T), Tr, t(noQuals, .Set, memberPointerType(t(noQuals, .Set, classType(C)),T)))

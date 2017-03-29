@@ -70,7 +70,7 @@ module CPP-DECL-DECLARATOR
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:CPPTypeExpr, _, _), _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(mkQualId(getInnermostNamespace(N, Scope), X), T, Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
+     rule <k> DeclaratorAndSpecifiers(NormalizedDecl(N:NNSVal, X::CId, t(Q::Quals, _, _) #as T::CPPType, Body::Init, Type::DeclarationType), S::Set) => declareObject(N, getInnermostNamespace(N, Scope), X, T, Body, Type, getLinkage(S, N, Scope, Q, getPreviousLinkage(getInnermostNamespace(N, Scope) :: X, T, Exts, Ints), Type), getDuration(S, Scope), S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <curr-scope> Scope::Scope </curr-scope>
@@ -141,9 +141,9 @@ module CPP-DECL-DECLARATOR
      rule getDuration(_, _) => StaticStorage [owise]
 
      rule getInnermostNamespace(NoNamespace(), blockScope(N:Namespace :: _, _, _)) => N
-     rule getInnermostNamespace(NoNamespace(), blockScope((N:Namespace :: _::ClassSpecifier) :: _, _, _)) => N
-     rule getInnermostNamespace(NoNamespace(), blockScope((C:Class :: _::ClassSpecifier => C) :: _, _, _))
-     rule getInnermostNamespace(NoNamespace(), blockScope((localQual(Scope::BlockScope) :: _::ClassSpecifier) :: _, _, _) => Scope)
+     rule getInnermostNamespace(NoNamespace(), blockScope((N:Namespace :: _:ClassSpecifier) :: _, _, _)) => N
+     rule getInnermostNamespace(NoNamespace(), blockScope((C:Class :: _:ClassSpecifier => C) :: _, _, _))
+     rule getInnermostNamespace(NoNamespace(), blockScope((localQual(Scope::BlockScope) :: _:ClassSpecifier) :: _, _, _) => Scope)
      rule getInnermostNamespace(N::Namespace, _) => N
           requires N =/=K NoNamespace()
 
@@ -388,8 +388,8 @@ module CPP-DECL-DECLARATOR
           requires isLinkerLoc(Base)
 
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
-              => initFunction(Base, functionObject(mkQualId(N,X), T, .List, GotoStmt(funLabel(X))))
-              ~> processFunDef(Base, mkQualId(N, X), T, Params, Body) ...</k>
+              => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
+              ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
 
      syntax KItem ::= initFunction(SymBase, K)
 
@@ -406,8 +406,13 @@ module CPP-DECL-DECLARATOR
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
      syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionTypeExpr, Stmt) [function]
      rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
-          => LabelStmt(funLabel(getId(QX)), ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
+          => LabelStmt(funLabel(getId(QX)), ListItem(Body) getReturnStmts(QX, T))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
+     syntax List ::= getReturnStmts(QualId, CPPFunctionTypeExpr) [function]
+     rule getReturnStmts(_ :: DestructorId(_) #as QX::QualId, T::CPPFunctionTypeExpr)
+          => ListItem(LabelStmt(destructorLabel(getId(QX)), ListItem(Destructor()) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T))))))
+     rule getReturnStmts(QX::QualId, T::CPPFunctionTypeExpr)
+          => ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T))))
 
      syntax Bool ::= hasThis(MethodInfo) [function]
      rule hasThis(methodInfo(... static: false)) => true

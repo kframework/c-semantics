@@ -11,8 +11,11 @@ module CPP-STMT-EXPR
      rule ExpressionStmt(V::GLVal => prDiscardedExpr(V))
           requires isConvertableDiscardedExpr(V)
 
+     // we add the first clause of this side condition in order to ensure
+     // translation gets stuck if the expression evaluates to something that
+     // makes the program ill-formed, like "cannot-convert" or "notFound"
      rule ExpressionStmt(V:Val) => .K
-          requires notBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
+          requires (isLVal(V) orBool isXVal(V) orBool isPRVal(V)) andBool notBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
 
      rule prDiscardedExpr(pre(E::Expr, Tr::Trace, T::CPPType)) => pre(prDiscardedExpr(E), Tr, T)
      rule glDiscardedExpr(le(E::Expr, Tr::Trace, T::CPPType)) => pre(glDiscardedExpr(E), Tr, T)

@@ -437,7 +437,7 @@ bool TraverseDecl(Decl *D) {
       }
     case DeclarationName::CXXDestructorName:
       {
-        AddKApplyNode("DestructorId", 1);
+        AddKApplyNode("DestructorTypeId", 1);
         TRY_TO(TraverseType(Name.getCXXNameType()));
         return true;
       }
@@ -560,7 +560,7 @@ bool TraverseDecl(Decl *D) {
             break;
           }
           AddKApplyNode("MethodPrototype", 4);
-          VisitBool(true);
+          VisitBool(Method->isUserProvided());
           VisitBool(dyn_cast<CXXConstructorDecl>(D)); // converts to true if this is a constructor
           TRY_TO(TraverseType(Method->getThisType(*Context)));
           if (Method->isVirtual()) {

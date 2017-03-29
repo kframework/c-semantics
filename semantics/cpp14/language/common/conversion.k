@@ -177,6 +177,10 @@ module CPP-CONVERSION
 
      rule convertArray(lv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
           => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+     rule convertArray(xv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
+          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+     rule convertArray(prv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
+          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, CPPType) [function, klabel(arrayToPtrLocCpp)]
      rule arrayToPtrLoc(Loc::SymLoc, t(_, _, arrayType(T::CPPType, N::Int)))
@@ -192,7 +196,11 @@ module CPP-CONVERSION
 
      rule convertLVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType))
           => instantiate(Loc, Tr, T)
+     rule convertLVal(xv(Loc::SymLoc, Tr::Trace, T::CPPType))
+          => instantiate(Loc, Tr, T)
      rule convertLVal(le(E::Expr, Tr::Trace, T::CPPType))
+          => pre(E, Tr, prvalType(T))
+     rule convertLVal(xe(E::Expr, Tr::Trace, T::CPPType))
           => pre(E, Tr, prvalType(T))
 
      syntax Int ::= rank(CPPType) [function, klabel(rankcpp)]

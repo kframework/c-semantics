@@ -144,7 +144,7 @@ module CPP-OVERLOADING
           => cannot-convert
           requires notBool bindsDirectlyToExp(P, A, C, B)
 
-     rule conversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), C::ValueCategory, false, false)
+     rule conversionSequence(P::CPPType, initListType(ListItem(A::CPPType)), initListCat(ListItem(C::ValueCategory)), false, false)
           => conversionSequence(P, A, C, false, false)
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
      rule conversionSequence(P::CPPType, initListType(.List), _, false, false)
@@ -157,7 +157,6 @@ module CPP-OVERLOADING
           
      syntax Bool ::= bindsDirectlyToExp(CPPRefType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
                    | bindsDirectlyToConversion(CPPRefType, CPPType, ValueCategory) [function]
-                   | isValidReferenceType(CPPRefType) [function]
 
      rule bindsDirectlyToExp(t(... st: lvRefType(T1::CPPType)), T2::CPPType, lvalue, _) => true
           requires isReferenceCompatible(T1, T2)
@@ -169,10 +168,9 @@ module CPP-OVERLOADING
           requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
      rule bindsDirectlyToExp(T::CPPRefType, T2:CPPFunctionType, lvalue, _) => true
           requires isReferenceCompatible(innerType(T), T2) andBool isValidReferenceType(T)
-     rule bindsDirectlyToExp(t(... q: Q::Quals => Q +Qual Const()), _, _:RValueCategory, true => false)
+     rule bindsDirectlyToExp(t(... st: lvRefType(t(... q: Q::Quals => Q +Qual Const()))), _, _:RValueCategory, true => false)
+     rule bindsDirectlyToExp(t(... st: rvRefType(t(... q: Q::Quals => Q +Qual Const()))), _, _:RValueCategory, true => false)
      rule bindsDirectlyToExp(...) => false [owise]
-     rule isValidReferenceType(t(... st: rvRefType(_))) => true
-     rule isValidReferenceType(t(... st: lvRefType(t(... q: Q::Quals)))) => Const() inQuals Q andBool notBool Volatile() inQuals Q
 
      rule bindsDirectlyToConversion(T::CPPRefType, T2::CPPType, C::ValueCategory) => false
           requires notBool (isCPPClassType(T2) andBool notBool isReferenceRelated(innerType(T), T2))
@@ -252,12 +250,18 @@ module CPP-OVERLOADING
                          | "booleanConversion"
                          | "derivedToBaseConversion"
 
+     // do not actually perform overload resolution, this was a function call
+     // in which the postfix expression was a function pointer
+     rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> kpair(_, Base::SymBase)), list(Args::List), _, _, E::Expr)
+              => CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args)) ...</k>
+          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+          requires isCPPFunctionType(innerType(T))
+
      // only one viable candidate
      rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> kpair(_, Base::SymBase)), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
               => CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args)) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
-          requires notBool isCPPClassType(T)
-               andBool Base =/=K nonStatic
+          requires Base =/=K nonStatic
                andBool acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
 
       // no viable candidates

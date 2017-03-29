@@ -42,7 +42,7 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 
 %-link1.C.kcc: %-link1.C %-link2.C
 	@echo -n "Compiling $^... "
-	@../../dist/kcc -Wfatal-errors -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -Wfatal-errors -o $@ $^ > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.c.kcc: %.c
 	@echo -n "Compiling $<... "
@@ -50,7 +50,7 @@ c-compile: ${C_KCC_COMPILED_TESTS}
 
 %.C.kcc: %.C
 	@echo -n "Compiling $<... "
-	@../../dist/kcc -Wfatal-errors -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@../../dist/k++ -Wfatal-errors -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.cmp: %.out %.ref
 	@echo -n "Comparing $^... "

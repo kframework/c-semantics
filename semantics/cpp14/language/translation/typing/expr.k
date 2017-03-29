@@ -276,6 +276,8 @@ module CPP-TYPING-EXPR
      rule #typeofBuiltinOperator(operator&, dataMember(C::Class, T::CPPType))
           => typeof(type(memberPointerType(t(noQuals, .Set, classType(C)), T)))
      rule type(dataMemberValue(memberPointer(C::Class, _, T::CPPType), _, _)) => dataMember(C, T)
+     rule #typeofBuiltinOperator(operator!, _)
+          => typeof(type(bool))
 
      rule (.K => typeAndCatOfConditional(E2, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(T:CPPType, _) ~> typeofConditional(_, _) => typeof(T)

@@ -16,9 +16,13 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-TYPING-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
 
+     rule BuiltinCallOp(lv(_, _, T:CPPPointerType) #as L::LVal => * L, _)
+          requires isCPPFunctionType(innerType(T))
+     context BuiltinCallOp((* _) #as HOLE:Expr, _)
+
      // Function call (from C++ function)
-     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _), _)
-     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, _), _) ...</k>
+     rule BuiltinCallOp(lv((loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset)), _, _:CPPFunctionType), _)
+     rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, _:CPPFunctionType), _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
      rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), Args::List)
