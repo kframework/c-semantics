@@ -41,6 +41,7 @@ module LIBC-SETJMP
      rule [ignoreLocals]:
           <k> ignoreLocals => .K ...</k>
           <local-addresses> _ => .Set </local-addresses>
+          <locally-constructed> _ => .List </locally-constructed>
           [structural]
 
      /*@

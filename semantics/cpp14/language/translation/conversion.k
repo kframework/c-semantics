@@ -14,6 +14,6 @@ module CPP-TRANSLATION-CONVERSION
      rule convertType(T::CPPType, pre(E::Expr, Tr::Trace, _)) => pre(ConvertType(T, E), Tr, T)
 
      rule isNullPointerConstant(prv(_, hasTrace(IntegerLiteral(0, _)), _)) => true
-     rule isNullPointerConstant(pre(_, hasTrace(IntegerLiteral(0, _)), _)) => true
+     rule isNullPointerConstant(pre(_, _, _)) => false
 
 endmodule

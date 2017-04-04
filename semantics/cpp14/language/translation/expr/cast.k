@@ -29,7 +29,7 @@ module CPP-TRANSLATION-EXPR-CAST
      rule FunctionalCast(T:CPPType, ListItem(E::Expr)) => ParenthesizedCast(T, E)
      //5.2.3:2
      rule FunctionalCast(T:CPPType, .List)
-          => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T))
+          => makePRVal(valueInit(le(temp(!I:Int, T), noTrace, T), T, false))
           requires notBool isCPPArrayType(T)
 
      // TODO(dwightguth): 5.4:4.3-5

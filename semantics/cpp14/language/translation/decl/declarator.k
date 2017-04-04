@@ -387,9 +387,16 @@ module CPP-DECL-DECLARATOR
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
 
-     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
+     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
               ~> processFunDef(Base, N :: X, T, Params, Body) ...</k>
+          <curr-scope> S::Scope </curr-scope>
+          requires notBool isClassScope(S)
+
+     rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
+              => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X)))) ...</k>
+          <member-function-bodies>... .K => processFunDef(Base, N :: X, T, Params, Body) </member-function-bodies>
+          <curr-scope> classScope(...) </curr-scope>
 
      syntax KItem ::= initFunction(SymBase, K)
 
@@ -406,13 +413,8 @@ module CPP-DECL-DECLARATOR
           requires I =/=K noTemplate orBool isCPPFunctionType(T)
      syntax Stmt ::= getFunDefBody(TemplateInfo, QualId, CPPFunctionTypeExpr, Stmt) [function]
      rule getFunDefBody(noTemplate, QX::QualId, T::CPPFunctionTypeExpr, Body::Stmt)
-          => LabelStmt(funLabel(getId(QX)), ListItem(Body) getReturnStmts(QX, T))
+          => LabelStmt(funLabel(getId(QX)), #if isDestructorId(getId(QX)) #then ListItem(Destructor()) #else .List #fi ListItem(Body) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T)))))
      rule getFunDefBody(_, _, _, Body::Stmt) => Body [owise]
-     syntax List ::= getReturnStmts(QualId, CPPFunctionTypeExpr) [function]
-     rule getReturnStmts(_ :: DestructorId(_) #as QX::QualId, T::CPPFunctionTypeExpr)
-          => ListItem(LabelStmt(destructorLabel(getId(QX)), ListItem(Destructor()) ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T))))))
-     rule getReturnStmts(QX::QualId, T::CPPFunctionTypeExpr)
-          => ListItem(ReturnOp(getDefaultReturnOp(QX, getReturnType(T))))
 
      syntax Bool ::= hasThis(MethodInfo) [function]
      rule hasThis(methodInfo(... static: false)) => true
@@ -453,7 +455,7 @@ module CPP-DECL-DECLARATOR
      syntax Bool ::= isStaticInitialization(K) [function]
      rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
      rule isStaticInitialization(le(beginConstruction(_), _, _)) => true
-     rule isStaticInitialization(le(endConstruction(_), _, _)) => true
+     rule isStaticInitialization(le(endConstruction(...), _, _)) => true
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
           requires notBool (isVal(V) andBool notBool isTExpr(V))
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false

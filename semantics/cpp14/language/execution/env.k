@@ -4,6 +4,8 @@ module CPP-ENV-SYNTAX
 
      syntax KItem ::= addToEnv(CId, CPPType, SymBase, Bool) [klabel(cppAddToEnv)]
      syntax KItem ::= addToHistory(Int) [klabel(cppAddToHistory)]
+
+     syntax KItem ::= destructLocals(isException: Bool)
 endmodule
 
 module CPP-ENV

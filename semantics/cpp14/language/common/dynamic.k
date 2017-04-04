@@ -178,7 +178,6 @@ module CPP-DYNAMIC-SYNTAX
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
 
      syntax CId ::= "funLabel" "(" CId ")"
-                  | "destructorLabel" "(" CId ")"
 
      syntax KItem ::= functionObject(QualId, CPPType, List, K) [klabel(cppFunctionObject)]
 
@@ -241,6 +240,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax KResult ::= ValResult
 
      syntax KItem ::= resolve(Expr)
+     // used by destructors
+     syntax KItem ::= addToConstructed(Expr, CPPType) [strict(1)]
 
 endmodule
 

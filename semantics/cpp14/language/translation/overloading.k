@@ -9,11 +9,14 @@ module CPP-OVERLOADING-SYNTAX
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveUniqueDecl(K, Expr) [strict(1)]
                    | cSetUnion(K, K) [strict]
+                   | checkAccess(Expr)
 
      // not a real expression, but getArgs understands it.
      syntax Expr ::= "constructor"
 
      syntax CandidateSet ::= cSetUnion2(CandidateSet, CandidateSet) [function]
+
+     syntax BuiltinOp ::= builtinOp(Expr)
 
 endmodule
 
@@ -39,6 +42,9 @@ module CPP-OVERLOADING
      imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports ERROR-SYNTAX
+
+     // access checking stub (not implemented yet)
+     rule checkAccess(E::Expr) => E
 
      rule resolveOverload(notFound(X::CId), _, _) => notFound(X)
 
@@ -178,9 +184,9 @@ module CPP-OVERLOADING
 
      rule conversionSequence(P::CPPType, A:CPPType, C::ValueCategory, false, false) => computeSCS(utype(P), utype(A), C, true)
           requires notBool isCPPRefType(P) 
-               andBool (notBool isCPPClassType(P) 
+               andBool ((notBool isCPPClassType(P) andBool notBool isCPPClassType(A))
                     orBool utype(A) ==Type utype(P)
-                    orBool (isCPPClassType(A) andBool isBaseClassOf({P}:>CPPClassType, {A}:>CPPClassType)))
+                    orBool (isCPPClassType(A) andBool isCPPClassType(P) andBool isBaseClassOf({P}:>CPPClassType, {A}:>CPPClassType)))
      rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory, B::Bool) => computeSCS2(lvalueConversion, P, prvalType(A), B)
           requires notBool isCPPFunctionType(A) andBool notBool isCPPArrayType(A)
      rule computeSCS(P::CPPType, A::CPPType, _:GLValueCategory, B::Bool) => computeSCS2(arrayConversion, P, type(pointerType(innerType(A))), B)
@@ -253,16 +259,22 @@ module CPP-OVERLOADING
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
      rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> kpair(_, Base::SymBase)), list(Args::List), _, _, E::Expr)
-              => CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args)) ...</k>
+              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+          requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
+     rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> kpair(_, nonStatic)), list(Args::List), _, _, E::Expr)
+          => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args)))
           requires isCPPFunctionType(innerType(T))
 
      // only one viable candidate
      rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> kpair(_, Base::SymBase)), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
-              => CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args)) ...</k>
+              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic
                andBool acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
+
+     rule #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> builtinOp(E::Expr)), list(Args::List), krlist(Types::List), krlist(Cats::List), _) => E
+          requires acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
 
       // no viable candidates
       // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators

@@ -90,6 +90,8 @@ module CPP-VALUE-CATEGORY
      rule catof(ParenthesizedCast(T:CPPType, _) => unnamedCat(T))
      context catof(ReinterpretCast(HOLE:AType, _))
      rule catof(ReinterpretCast(T:CPPType, _) => unnamedCat(T))
+     context catof(StaticCast(HOLE:AType, _))
+     rule catof(StaticCast(T:CPPType, _) => unnamedCat(T))
 
      // 5.2.3:2
      rule catof(FunctionalCast(_, .List) => prvalue)

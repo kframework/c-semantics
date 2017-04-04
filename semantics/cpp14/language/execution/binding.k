@@ -52,6 +52,7 @@ module CPP-BINDING
 
      rule <k> beginConstruction(Obj:LVal) => Obj ...</k>
           <constructing> _ => Obj </constructing>
-     rule <k> endConstruction(Obj:LVal) => Obj ...</k>
+     rule <k> endConstruction(Obj:LVal, IsConstructor::Bool) => Obj ...</k>
           <constructing> _ => .K </constructing>
+          <locally-constructed> .List => ListItem(ktriple(Obj, true, IsConstructor)) ...</locally-constructed>
 endmodule

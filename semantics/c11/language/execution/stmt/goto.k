@@ -98,7 +98,7 @@ module C-STMT-GOTO
                F |-> K:K
           ...</goto-map>
      rule preprocessGoto(map(M:Map), Lbl:CId)
-          => preprocessGoto(lookup(M, Lbl), Lbl)
+          => preprocessGoto(M[Lbl], Lbl)
      rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
           requires getKLabel(GotoInfo) =/=K #klabel(`map`)
                andBool getKLabel(Lbl) =/=K #klabel(`funLabel`)

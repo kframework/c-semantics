@@ -52,7 +52,7 @@ module CPP-STMT-RETURN
           <block-history> ListItem(_) ...</block-history>
           <block-stack> ListItem(_) ...</block-stack>
 
-     rule <k> Return''(V:Val) => fullExpression ~> deleteObjects(Locals) ~> return(V) ...</k>
+     rule <k> Return''(V:Val) => fullExpression ~> destructLocals(false) ~> deleteObjects(Locals) ~> return(V) ...</k>
           <local-addresses> Locals::Set </local-addresses>
           <block-history> .List </block-history>
           <block-stack> .List </block-stack>

@@ -12,13 +12,7 @@ module CPP-STMT-RETURN
           <functions>... Base |-> functionObject(_, t(_, _, functionType(... returnType: Ret::CPPType)), _, _) ...</functions>
           requires I =/=K NoInit()
 
-     rule <k> ReturnStmt(NoInit()) => ReturnOp(prv(voidVal, noTrace, type(void))) ...</k>
-          <curr-scope> blockScope(_ :: X::CId, _, _) </curr-scope>
-          requires notBool isDestructorId(X)
-
-     // 12.4:8
-     rule <k> ReturnStmt(NoInit()) => GotoStmt(destructorLabel(X)) ...</k>
-          <curr-scope> blockScope(_ :: DestructorId(_) #as X::CId, _, _) </curr-scope>
+     rule ReturnStmt(NoInit()) => ReturnOp(prv(voidVal, noTrace, type(void)))
 
      rule <k> ReturnOp(V:Val) => .K ...</k>
           <elab>... .K => ReturnOp(V) </elab>

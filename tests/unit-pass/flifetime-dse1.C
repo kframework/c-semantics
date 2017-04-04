@@ -1,6 +1,8 @@
 // { dg-options "-O3 -fno-lifetime-dse" }
 // { dg-do run }
 
+extern "C" void abort(void);
+
 typedef __SIZE_TYPE__ size_t;
 inline void * operator new (size_t, void *p) { return p; }
 
@@ -19,5 +21,5 @@ int main()
   ap->i = 42;
   ap->~A();
 
-  if (ar[0] != 42) __builtin_abort();
+  if (ar[0] != 42) abort();
 }

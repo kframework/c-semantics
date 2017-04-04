@@ -12,7 +12,7 @@ module CPP-CLASS-SYNTAX
      syntax ValResult ::= noObject()
      syntax CId ::= unnamedObject(Class)
      syntax Expr ::= beginConstruction(Expr) [strict]
-     syntax Expr ::= endConstruction(Expr) [strict]
+     syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]
 endmodule
 
 module CPP-CLASS

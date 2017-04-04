@@ -97,6 +97,10 @@ module CPP-TYPING-EXPR
      rule typeof(ReinterpretCast(T:CPPType, _) => T)
           requires notBool isCPPRefType(T)
      rule typeof(ReinterpretCast(T:CPPRefType, _) => innerType(T))
+     context typeof(StaticCast(HOLE:AType, _))
+     rule typeof(StaticCast(T:CPPType, _) => T)
+          requires notBool isCPPRefType(T)
+     rule typeof(StaticCast(T:CPPRefType, _) => innerType(T))
 
      context typeof(FunctionalCast(HOLE:AType, _))
      // 5.2.3:2

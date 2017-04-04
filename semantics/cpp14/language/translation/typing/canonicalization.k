@@ -5,6 +5,7 @@ module CPP-TYPING-CANONICALIZATION
      imports ERROR-SYNTAX
      imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-CONVERSION-SYNTAX
      imports CPP-ELABORATOR-SYNTAX
      imports CPP-ENV-SYNTAX
      imports CPP-SYNTAX
@@ -55,6 +56,11 @@ module CPP-TYPING-CANONICALIZATION
      rule ThrowSpec(krlist(L::List)) => exSet(List2Set(adjustExcTypes(L)))
      rule NoExceptionSpec() => noexcept(false)
      rule NoexceptSpec(NoExpression()) => noexcept(true)
+     context NoexceptSpec(HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     rule NoexceptSpec(V:PRVal => convertType(type(bool), V))
+          requires notBool(isCPPBoolType(type(V)))
+     rule NoexceptSpec(prv(0, _, _:CPPBoolType)) => noexcept(false)
+     rule NoexceptSpec(prv(1, _, _:CPPBoolType)) => noexcept(true)
 
      syntax List ::= adjustExcTypes(List) [function]
      rule adjustExcTypes(ListItem(T:CPPArrayType) L::List) => ListItem(type(pointerType(innerType(T)))) adjustExcTypes(L)

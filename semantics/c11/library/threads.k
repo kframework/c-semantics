@@ -94,7 +94,7 @@ module LIBC-THREADS
                <k> join-aux(ThId:Int, Ptr:RValue)
                     => #if (notBool isNull(Ptr))
                        #then Computation((* Ptr) := V)
-                       #else dotK
+                       #else .K
                        #fi
                     ~> success
                ...</k>

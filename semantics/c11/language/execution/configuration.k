@@ -96,6 +96,8 @@ module C-CONFIGURATION
                               <local-addresses color="lightgray">
                                    .Set
                               </local-addresses>
+                              // used to call destructors on leaving a block
+                              <locally-constructed> .List </locally-constructed>
                               // used to store the catch handlers if this
                               // block is a try block in C++
                               <catch-handlers> .List </catch-handlers>

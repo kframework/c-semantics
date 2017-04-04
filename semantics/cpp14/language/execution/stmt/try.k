@@ -6,6 +6,7 @@ module CPP-STMT-TRY
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-ENV-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-SYNTAX
@@ -60,10 +61,11 @@ module CPP-STMT-TRY
      syntax KItem ::= "unwindFunction" | tryMark(Int)
 
      // delete locals when function body is not wrapped in Block
-     rule <k> (.K => deleteObjects(S)) ~> unwindFunction ...</k>
+     rule <k> (.K => destructLocals(true) ~> deleteObjects(S)) ~> unwindFunction ...</k>
           <block-stack> .List </block-stack>
           <local-addresses> S::Set => .Set </local-addresses>
-          requires size(S) >Int 0
+          <locally-constructed> L::List </locally-constructed>
+          requires size(S) >Int 0 orBool size(L) >Int 0
 
      rule <k> unwindFunction ~> throw(V::LVal) ~> _
               => exitRestrictBlock(.Set)
@@ -76,6 +78,7 @@ module CPP-STMT-TRY
                <live-va-lists> .Set </live-va-lists>
                <block-control>...
                     <local-addresses> .Set </local-addresses>
+                    <locally-constructed> .List </locally-constructed>
                ...</block-control>
                <block-stack> .List </block-stack>
           ...</function-control> => <function-control>

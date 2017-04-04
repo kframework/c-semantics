@@ -33,6 +33,8 @@ module C-CONFIGURATION
      <elab> .K </elab>
      <elab-stack> .List </elab-stack>
 
+     <member-function-bodies> .K </member-function-bodies>
+
      // Toggle to allow writes and other special treatment
      // for initializers.
      <initializing> false </initializing>

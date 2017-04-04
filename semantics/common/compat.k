@@ -29,7 +29,6 @@ module COMPAT-SYNTAX
 
      syntax List ::= reverseList(List) [function]
 
-     //TODO(liyi): syntax List ::= ListItem(Bag)
      syntax StrictList ::= list(List)
      syntax KItem ::= map(Map)
      syntax KItem ::= set(Set)
@@ -51,10 +50,6 @@ module COMPAT-SYNTAX
 
      syntax Bool ::= some(Set, K) [function]
                    | some(Map, K) [function]
-
-     //TODO(liyi): might not need this later
-     syntax KItem ::= "dotK"
-                    | lookup(Map, K) [function]
 
      syntax Int ::= ceilDiv(Int, Int) [function]
      syntax List ::= mapList(List, K) [function]
@@ -256,10 +251,6 @@ module COMPAT
 
      rule some(.Map, Lbl:K) => false
      rule some(K1:K |-> K2:K M:Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl))
-
-     //TODO(liyi): might not need this
-     rule dotK => .K [structural]
-     rule lookup(Key |-> Val:K _:Map, Key:K) => Val
 
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 
