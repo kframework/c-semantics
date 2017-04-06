@@ -497,6 +497,36 @@ module CPP-TRANSLATION-NAME
      rule addBuiltinCandidates(operator->, E1::Expr, _, _, E2::Name, _, _, C1:CandidateSet, C2:CandidateSet)
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 -> no-template E2, BinaryOperator(operator->, E1, E2))
 
+     // 13.6:15
+     rule addBuiltinCandidates(operator<, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 < E2, BinaryOperator(operator<, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator>, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 > E2, BinaryOperator(operator>, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator<=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 <= E2, BinaryOperator(operator<=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator>=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 >= E2, BinaryOperator(operator>=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator==, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 == E2, BinaryOperator(operator==, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator!=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 != E2, BinaryOperator(operator!=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     // 13.6:20
+     rule addBuiltinCandidates(operator=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 := E2, BinaryOperator(operator=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
      syntax Expr ::= resolveEmptyOverload(K, StrictList, Expr, Expr) [strict(1)]
                    | #resolveEmptyOverload(Expr, Expr)
      rule resolveEmptyOverload(C::CandidateSet, Args::StrictList, Builtin::Expr, E::Expr)
