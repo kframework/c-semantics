@@ -14,6 +14,8 @@ module CPP-SETTINGS
      rule cfg:memberFunctionPtrSize => 8
      rule cfg:memberDataPtrAlign => 4
      rule cfg:memberFunctionPtrAlign => 8
+     rule cfg:alignofReference => 4
+
 endmodule
 
 module CPP-COMPILER-SETTINGS
