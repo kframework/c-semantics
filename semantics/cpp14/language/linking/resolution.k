@@ -8,8 +8,8 @@ module CPP-LINKING-RESOLUTION
      imports STRING
      imports COMPAT-SYNTAX
      imports ERROR-SYNTAX
-     imports SYMLOC-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
 
      // used by local statics
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
@@ -31,7 +31,7 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... N :: X |-> (T |-> Base'::SymBase _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> kpair(_, (Base::SymBase => Base')) _::Map) ...</nenv>
+          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase => Base') _::Map) ...</nenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
           requires isLinkerLoc(Base)
 
@@ -42,7 +42,7 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... N :: X |-> (T |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> kpair(_, Base::SymBase) _::Map) ...</nenv>
+          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::Map) ...</nenv>
           requires notBool isLinkerLoc(Base)
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
@@ -52,7 +52,7 @@ module CPP-LINKING-RESOLUTION
           <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> kpair(_, (Base::SymBase => Base')) _::Map) ...</nenv>
+          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase => Base') _::Map) ...</nenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
           requires isLinkerLoc(Base) andBool isCLinkage(T)
 
@@ -63,7 +63,7 @@ module CPP-LINKING-RESOLUTION
           <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> kpair(_, Base::SymBase) _::Map) ...</nenv>
+          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::Map) ...</nenv>
           requires notBool isLinkerLoc(Base) andBool isCLinkage(T)
 
      rule <k> (.K => ILL("TDR3",
@@ -117,7 +117,7 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... C :: X |-> (T |-> Base'::SymBase _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> kpair(_, (Base::SymBase => Base')) _::Map) ...</cenv>
+          <cenv>... X |-> (T |-> envEntry(... base: (Base::SymBase => Base')) _::Map) ...</cenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
           requires isLinkerLoc(Base)
 
@@ -128,7 +128,7 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... C :: X |-> (T |-> _ _::Map) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> kpair(_, Base::SymBase) _::Map) ...</cenv>
+          <cenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::Map) ...</cenv>
           requires notBool isLinkerLoc(Base)
 
 endmodule

@@ -95,7 +95,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimplePointerTypeExpr ::= pointerType(CPPTypeExpr) [klabel(cppPointerType)]
      syntax CPPSimpleLVRefTypeExpr ::= lvRefType(CPPTypeExpr)
      syntax CPPSimpleRVRefTypeExpr ::= rvRefType(CPPTypeExpr)
-     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, methodInfo:MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
+     syntax CPPSimpleFunctionTypeExpr ::= functionType(returnType: CPPTypeExpr, paramTypes: CPPTypeExprs, methodInfo: MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassTypeExpr ::= classType(ClassTemplate)
 
      syntax CPPSimpleArrayType ::= CPPSimpleFixedArrayType | CPPSimpleIncompleteArrayType
@@ -176,6 +176,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionTypeExpr ::= adjustFunctionType(CPPFunctionTypeExpr) [function]
 
      syntax Bool ::= isFunctionMember(CPPFunctionTypeExpr) [function]
+                   | hasImplicitParameter(CPPFunctionTypeExpr) [function]
      syntax List ::= getParams(CPPFunctionTypeExpr) [function, klabel(cppgetParams)]
                    | getRealParams(CPPFunctionTypeExpr) [function]
      syntax RefQualifier ::= getRefQualifier(CPPFunctionTypeExpr) [function]
@@ -198,7 +199,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPTypeExpr ::= getReturnType(CPPFunctionTypeExpr) [function, klabel(cppgetReturnType)]
      syntax CPPType ::= getReturnType(CPPFunctionType) [function, klabel(cppgetReturnType)]
 
-     syntax Bool ::= acceptsNArgs(Int, CPPFunctionType) [function]
+     syntax Bool ::= acceptsNArgs(Int, CPPFunctionType, List) [function]
 
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
 
@@ -268,6 +269,7 @@ module CPP-TYPING-SYNTAX
                    | isUnnamedXValue(CPPType) [function]
                    | isUnnamedPRValue(CPPType) [function]
 
+     syntax StrictListResult ::= emptyDefaultArguments(CPPType) [function]
      syntax EnumId ::= getEnumId(CPPEnumType) [function]
      syntax Bool ::= getScoped(CPPEnumType) [function]
 endmodule
@@ -277,6 +279,7 @@ module CPP-TYPING
      imports C-CONFIGURATION
      imports BOOL
      imports FLOAT
+     imports LIST
      imports K-REFLECTION
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
@@ -297,15 +300,21 @@ module CPP-TYPING
      rule #getRealParams(L::List) => L [owise]
 
      // 13.3.2:2.1
-     rule acceptsNArgs(M::Int, T::CPPFunctionType) => true
+     rule acceptsNArgs(M::Int, T::CPPFunctionType, _) => true
           requires size(getRealParams(T)) ==Int M
      // 13.3.2:2.2
-     rule acceptsNArgs(M::Int, T::CPPFunctionType) => isVariadicFunction(T)
+     rule acceptsNArgs(M::Int, T::CPPFunctionType, _) => isVariadicFunction(T)
           requires size(getRealParams(T)) <Int M
-     // TODO(dwightguth): default function arguments
+     // 13.3.2:2.3
+     rule acceptsNArgs(M::Int, T::CPPFunctionType, DArgs::List)
+          => notBool isNoArg(DArgs[#if hasImplicitParameter(T) #then M -Int 1 #else M #fi])
+          requires size(getRealParams(T)) >Int M
 
      rule isFunctionMember(t(... st: functionType(... methodInfo: methodInfo(...)))) => true
      rule isFunctionMember(_) => false [owise]
+
+     rule hasImplicitParameter(t(_, _, functionType(... methodInfo: methodInfo(... constructor: IsConstructor:Bool)))) => notBool IsConstructor
+     rule hasImplicitParameter(_) => false [owise]
 
      // TODO(traiansf): Handle conversion functions and functions introduced by using declarations
      syntax CPPTypeExpr ::= getImpliedParamType(RefQualifier, Quals, static: Bool, Class) [function]
@@ -385,8 +394,8 @@ module CPP-TYPING
      rule setMIVirtual(noMethod => defaultMethodInfo())
 
      rule isMethodExplicit(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIExplicit(MI)
-     rule setMethodExplicit(t(Quals::Quals, Mods::Set, functionType(RetT::CPPType, ParamT::CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)))
-          => t(Quals, Mods, functionType(RetT, ParamT, setMIExplicit(MI), L, E))
+     rule setMethodExplicit(T::CPPFunctionType)
+          => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIExplicit(MI))))(T)
 
      syntax Bool ::= getMIExplicit(MethodInfo) [function]
      rule getMIExplicit(methodInfo(... explicit: IsExplicit::Bool)) => IsExplicit
@@ -653,5 +662,4 @@ module C-CPP-TYPING
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, float::SimpleFloatType)) => t(Q, Mods, float::CPPSimpleFloatingType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, double::SimpleFloatType)) => t(Q, Mods, double::CPPSimpleFloatingType)
      rule convertTypeToCPP(t(Q::Quals, Mods::Set, long-double::SimpleFloatType)) => t(Q, Mods, long-double::CPPSimpleFloatingType)
- 
-endmodule
+ endmodule

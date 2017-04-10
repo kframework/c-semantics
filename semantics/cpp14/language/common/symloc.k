@@ -1,6 +1,8 @@
 module CPP-SYMLOC-SORTS
      imports SYMLOC-SORTS
      syntax MemberPtr
+     syntax EnvEntry
+     syntax EnvEntryExpr ::= EnvEntry
 endmodule
 
 module CPP-SYMLOC-SYNTAX
@@ -29,6 +31,9 @@ module CPP-SYMLOC-SYNTAX
      syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
                    | isBaseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
 
+     syntax EnvEntry ::= envEntry(base: SymBase, using: Bool, defaultArgs: StrictListResult)
+     syntax SymBase ::= getBase(EnvEntry) [function, klabel(getEnvEntryBase)]
+
 endmodule
 
 module CPP-SYMLOC
@@ -50,4 +55,7 @@ module CPP-SYMLOC
      rule #ifFromArrayInBounds(fromArray(Offset::Int, Len::Int), NewOffset::Int) => Offset +Int NewOffset >=Int 0 andBool Offset +Int NewOffset <=Int Len
      rule #ifFromArrayInBounds(.K, _) => true
 
+     rule getBase(envEntry(... base: B::SymBase)) => B
+     // To catch objects coming from C
+     rule getBase({kpair(_, B::SymBase)}:>EnvEntry) => B
 endmodule

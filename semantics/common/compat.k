@@ -1,5 +1,6 @@
 module COMPAT-SORTS
      syntax StrictList
+     syntax StrictListResult
 endmodule
 
 module COMPAT-SYNTAX

@@ -80,7 +80,7 @@ module CPP-STMT-BLOCK
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... DestructorId(X) |-> (FuncT::CPPFunctionType |-> kpair(_, Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (FuncT::CPPFunctionType |-> envEntry(... base: Base::SymBase)) ...</cenv>
           requires notBool CanBeVirtual orBool notBool isMethodVirtual(FuncT)
 
 endmodule

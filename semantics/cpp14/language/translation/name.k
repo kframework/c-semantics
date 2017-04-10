@@ -224,23 +224,23 @@ module CPP-TRANSLATION-NAME
           orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, IsNNS))                    // 3.4.1:8.4
           orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, IsNNS)   // 3.4.1:8.5
 
-     rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList)
-     rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList) ...</k>
+     rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList, krlist(.List))
+     rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList, krlist(.List)) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-     context CallExpr(Name(HOLE:NNS, _), _)
+     context CallExpr(Name(HOLE:NNS, _), _, _)
              requires HOLE =/=K NoNNS()
              [result(NNSVal)]
-     rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _)
+     rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _)
+     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
-     rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList)
+     rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X, .K), Args, E)
-     rule cSet(Y::Map, X::QualId, This()) ~> CallExpr(N:Name, Args::StrictList)
+     rule cSet(Y::Map, X::QualId, This()) ~> CallExpr(N:Name, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X, This()), Args, (* This()) . no-template N)
 
      rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
@@ -346,7 +346,7 @@ module CPP-TRANSLATION-NAME
 
      syntax Bool ::= hasSpecialDeclInArgLookup(CId, Map, Map) [function]
      // 3.4.2:3.2
-     rule hasSpecialDeclInArgLookup(X::CId, _, _::Map (X |-> ((T:CPPFunctionTypeExpr |-> kpair(false, _)) _))) => true
+     rule hasSpecialDeclInArgLookup(X::CId, _, _::Map (X |-> ((T:CPPFunctionTypeExpr |-> envEntry(... using: false)) _))) => true
      rule hasSpecialDeclInArgLookup(_, T::CPPType |-> _, _) => true
           requires notBool isCPPFunctionType(T)
      rule hasSpecialDeclInArgLookup(_, _, _) => false [owise]

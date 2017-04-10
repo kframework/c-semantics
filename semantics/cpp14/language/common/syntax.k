@@ -1,6 +1,7 @@
 module CPP-SORTS
      syntax CId ::= OpId
      syntax Init ::= Stmt | Expr
+     syntax NoArg
      syntax Expr ::= Name
      syntax Name
      syntax Stmt ::= Block

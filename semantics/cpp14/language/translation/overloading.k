@@ -23,6 +23,7 @@ endmodule
 module CPP-OVERLOADING
      imports CPP-OVERLOADING-SYNTAX
      imports C-CONFIGURATION
+     imports COMPAT
      imports INT
      imports STRING
      imports K-EQUAL
@@ -32,6 +33,7 @@ module CPP-OVERLOADING
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-ENV-SYNTAX
      imports CPP-REFERENCE-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -90,23 +92,26 @@ module CPP-OVERLOADING
 
      context #resolveOverload(_, _, (HOLE:StrictList => types(HOLE)), _, _)
      context #resolveOverload(_, _, _, (HOLE:StrictList => cats(HOLE)), _)
-     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> _ => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _)
-          requires notBool acceptsNArgs(size(Args), T) orBool notViableTypes(T, Types, Cats)
+     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> Entry:EnvEntry => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _)
+          requires notBool acceptsNArgs(size(Args), T, getDefaultArgs(Entry))
+            orBool notViableTypes(T, getDefaultArgs(Entry), Types, Cats)
 
-     syntax Bool ::= #notViableTypes(List, List, List, isNonStaticRefNone: Bool) [function]
-                   | notViableTypes(CPPType, List, List) [function]
+     syntax Bool ::= #notViableTypes(params: List, defaultArgs: List, types: List, cats: List, isNonStaticRefNone: Bool) [function]
+                   | notViableTypes(CPPType, List, List, List) [function]
                    | viableType(CPPType, CPPType, ValueCategory) [function]
                    | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
 
-     rule notViableTypes(T::CPPFunctionType, Types::List, Cats::List)
-          => #notViableTypes(getParams(T), Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
+     rule notViableTypes(T::CPPFunctionType, DArgs::List, Types::List, Cats::List)
+          => #notViableTypes(getParams(T), DArgs, Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
     
-     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool)
-     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, Cs, B)
-     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType)) Ps::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool) 
-     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, Cs, B)
-     rule #notViableTypes(ListItem(variadic), _, _, _) => false
-     rule #notViableTypes(.List, .List, .List, _) => false
+     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(_) Args::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool)
+     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, Args, As, Cs, B)
+     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, Args::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool) 
+     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, Args, As, Cs, B)
+     rule #notViableTypes(... params: ListItem(variadic)) => false
+     rule #notViableTypes(... params: .List, types: .List, cats: .List) => false
+     // default arguments
+     rule #notViableTypes(ListItem(P:CPPType) _, ListItem(Arg:Val) _, .List, .List, _) => false
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false) =/=K cannot-convert
 
@@ -258,23 +263,24 @@ module CPP-OVERLOADING
 
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
-     rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> kpair(_, Base::SymBase)), list(Args::List), _, _, E::Expr)
-              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args))) ...</k>
+     rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase)), list(Args::List), _, _, E::Expr)
+              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), emptyDefaultArguments(innerType(T)))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
-     rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> kpair(_, nonStatic)), list(Args::List), _, _, E::Expr)
-          => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args)))
+     rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr)
+          => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), emptyDefaultArguments(innerType(T))))
           requires isCPPFunctionType(innerType(T))
 
      // only one viable candidate
-     rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> kpair(_, Base::SymBase)), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
-              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args))) ...</k>
+     rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> envEntry(... base: Base::SymBase, defaultArgs: krlist(DArgs::List))), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
+              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(DArgs))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic
-               andBool acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
+               andBool acceptsNArgs(size(Args), T, DArgs)
+               andBool notBool notViableTypes(T, DArgs, Types, Cats)
 
      rule #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> builtinOp(E::Expr)), list(Args::List), krlist(Types::List), krlist(Cats::List), _) => E
-          requires acceptsNArgs(size(Args), T) andBool notBool notViableTypes(T, Types, Cats)
+          requires acceptsNArgs(size(Args), T, Args) andBool notBool notViableTypes(T, Args, Types, Cats)
 
       // no viable candidates
       // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators
@@ -291,25 +297,26 @@ module CPP-OVERLOADING
 
      rule (.K => instantiateObjectTemplate(Spec)) ~> #resolveOverload(cSet(... candidates: T::CPPType |-> Spec:TemplateSpecialization => .Map), _, _, _, _)
 
-     rule (lv(loc(Base::SymBase, 0), _, T::CPPType) => .K) ~> #resolveOverload(cSet(... candidates: .Map => T |-> kpair(false, Base)), _, _, _, _)
+     // TODO(traiansf): properly resolve default arguments for templates
+     rule (lv(loc(Base::SymBase, 0), _, T::CPPType) => .K) ~> #resolveOverload(cSet(... candidates: .Map => T |-> envEntry(Base, false, emptyDefaultArguments(T))), _, _, _, _)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic
            andBool notBool isCPPRefType(T)
            andBool notBool isMemberBase(Base)
-     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> kpair(_, nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr) => le(E, hasTrace(E), T)
      // resolve anonymous union member lookup
-     rule resolveUniqueDecl(cSet(... candidates: _ |-> kpair(_, memberBase(unnamedObject(C::Class), X::CId, _))), _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
+     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
      rule resolveUniqueDecl(cSet(T::CPPType |-> classOffset(_), C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, .K), E::Expr)
        => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires notBool loc(Base, 0) in_keys(Refs)
-     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> kpair(_, Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
 
      rule resolveUniqueDecl(V:KResult, _) => V

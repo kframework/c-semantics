@@ -38,6 +38,7 @@ module CPP-DECL-CLASS
      imports MAP
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
+     imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -49,6 +50,7 @@ module CPP-DECL-CLASS
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -238,13 +240,13 @@ module CPP-DECL-CLASS
           <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
      rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
           requires notBool isNotFoundNameRef(E)
-     rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List)))))
+     rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List)))))
               ~> checkDtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
-          <cenv>... DestructorId(X) |-> (T::CPPType |-> kpair(_, Base::SymBase)) ...</cenv>
+          <cenv>... DestructorId(X) |-> (T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
      rule resolve(E:ResolvedExpr) ~> checkDtor(_) => .K
           requires notBool isNotFoundNameRef(E)
 
@@ -335,7 +337,7 @@ module CPP-DECL-CLASS
 
      rule isNonTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isTrivialDefaultConstructor(T, K)
 
-     rule isDefaultConstructor(T::CPPFunctionType, _) => acceptsNArgs(0, T)
+     rule isDefaultConstructor(T::CPPFunctionType, Entry:EnvEntry) => acceptsNArgs(0, T, getDefaultArgs(Entry))
      rule isUserProvidedConstructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
      rule isUserProvidedDestructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
      rule isUserProvidedDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)
@@ -345,7 +347,7 @@ module CPP-DECL-CLASS
      rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::Map ...</cenv> ...</class>, Lbl:K)
           => some(M, Lbl)
 
-     rule isDeleted(_, kpair(_, Base::SymBase)) => #isDeleted(Base, #configuration)
+     rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base, #configuration)
      rule #isDeleted(Base::SymBase, <generatedTop>... <functions>... Base |-> Deleted() ...</functions> ...</generatedTop>) => true
      rule #isDeleted(...) => false [owise]
      rule isDeletedDefaultConstructor(T::CPPFunctionType, K:K) => isDeleted(T, K) andBool isDefaultConstructor(T, K)
