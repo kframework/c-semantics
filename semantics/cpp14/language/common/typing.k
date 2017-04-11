@@ -202,6 +202,8 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= acceptsNArgs(Int, CPPFunctionType, List) [function]
 
      syntax CPPType ::= const(CPPSimpleType) [function, klabel(constCpp)]
+     syntax CPPType ::= volatile(CPPSimpleType) [function, klabel(volatileCpp)]
+
 
      syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
      // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
@@ -415,6 +417,7 @@ module CPP-TYPING
      rule setMIClass(noMethod => defaultMethodInfo(), C::Class)
 
      rule const(T::CPPSimpleType) => t(toQuals(SetItem(Const())), .Set, T)
+     rule volatile(T::CPPSimpleType) => t(toQuals(SetItem(Volatile())), .Set, T)
 
      rule type(T::CPPSimpleType) => t(noQuals, .Set, T)
      rule type(lv(_, _, T::CPPType)) => T

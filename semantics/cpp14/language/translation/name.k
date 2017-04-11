@@ -497,6 +497,76 @@ module CPP-TRANSLATION-NAME
      rule addBuiltinCandidates(operator->, E1::Expr, _, _, E2::Name, _, _, C1:CandidateSet, C2:CandidateSet)
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 -> no-template E2, BinaryOperator(operator->, E1, E2))
 
+     // 13.6:15
+/*
+     rule addBuiltinCandidates(operator<, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 < E2, BinaryOperator(operator<, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator>, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 > E2, BinaryOperator(operator>, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator<=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 <= E2, BinaryOperator(operator<=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator>=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 >= E2, BinaryOperator(operator>=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator==, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 == E2, BinaryOperator(operator==, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+
+     rule addBuiltinCandidates(operator!=, E1::Expr, T1:CPPEnumType, _, E2::Expr, T2:CPPEnumType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), E1 != E2, BinaryOperator(operator!=, E1, E2))
+          requires simpleType(T1) ==K simpleType(T2)
+*/
+
+
+     syntax Map ::= builtinNonvolatileEnumAssignOperator(Expr, CPPType, Expr, CPPType, ValueCategory) [function]
+     syntax Map ::= builtinVolatileEnumAssignOperator(Expr, CPPType, Expr, CPPType, ValueCategory) [function]
+     syntax Map ::= builtinNonvolatileArithAssignOperator(Expr, CPPType, ValueCategory, Expr, CPPType, ValueCategory) [function]
+
+     rule builtinNonvolatileEnumAssignOperator(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType, VC::ValueCategory) =>
+                (type(functionType(type(simpleType(T1)),
+                      toCPPTypes(ListItem(type(lvRefType(type(simpleType(T1))))) ListItem(type(simpleType(T1)))),
+                      noMethod, CPPLinkage, exSet(.Set)))
+                |-> builtinOp(E1 := E2))
+
+          requires isCPPEnumType(T1) andBool notBool isVolatileType(T1) andBool viableType(type(simpleType(T1)), T2, VC)
+
+     rule builtinNonvolatileEnumAssignOperator(...) => .Map [owise]
+
+     rule builtinVolatileEnumAssignOperator(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType, VC::ValueCategory) =>
+                (type(functionType(type(simpleType(T1)),
+                      toCPPTypes(ListItem(type(lvRefType(volatile(simpleType(T1))))) ListItem(type(simpleType(T1)))),
+                      noMethod, CPPLinkage, exSet(.Set)))
+                |-> builtinOp(E1 := E2))
+
+          requires isCPPEnumType(T1) andBool isVolatileType(T1) andBool viableType(type(simpleType(T1)), T2, VC)
+
+     rule builtinVolatileEnumAssignOperator(...) => .Map [owise]
+
+     rule builtinNonvolatileArithAssignOperator(E1::Expr, T1::CPPType, VC1::ValueCategory, E2::Expr, T2::CPPType, VC2::ValueCategory) =>
+                   (type(functionType(type(simpleType(T1)),
+                             toCPPTypes(ListItem(type(lvRefType(type(simpleType(T1))))) ListItem(type(simpleType(T1)))),
+                             noMethod, CPPLinkage, exSet(.Set))))
+               |-> builtinOp(E1 := E2)
+          requires isCPPArithmeticType(type(simpleType(T1))) andBool viableType(type(lvRefType(type(simpleType(T1)))), T1, VC1) andBool viableType(type(simpleType(T1)), T2, VC2)
+
+     rule builtinNonvolatileArithAssignOperator(...) => .Map [owise]
+
+     // There shouldn't be any user overload with the same parameter list for non-class T1.
+     rule addBuiltinCandidates(operator=, E1::Expr, T1:CPPType, VC1:ValueCategory, E2::Expr, T2:CPPType, VC2:ValueCategory, C1:CandidateSet, C2:CandidateSet)
+          => resolveOverload(cSetUnion2(cSetUnion2(C1, C2), cSet(
+                              builtinNonvolatileEnumAssignOperator(E1, T1, E2, T2, VC2)
+                              builtinVolatileEnumAssignOperator(E1, T1, E2, T2, VC2)
+                              builtinNonvolatileArithAssignOperator(E1, T1, VC1, E2, T2, VC2)
+                              , NoNamespace() :: operator=, .K
+            )), list(ListItem(E1) ListItem(E2)), BinaryOperator(operator=, E1, E2))
+
      syntax Expr ::= resolveEmptyOverload(K, StrictList, Expr, Expr) [strict(1)]
                    | #resolveEmptyOverload(Expr, Expr)
      rule resolveEmptyOverload(C::CandidateSet, Args::StrictList, Builtin::Expr, E::Expr)
