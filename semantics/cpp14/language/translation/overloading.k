@@ -18,6 +18,8 @@ module CPP-OVERLOADING-SYNTAX
 
      syntax BuiltinOp ::= builtinOp(Expr)
 
+     syntax Bool ::= viableType(CPPType, CPPType, ValueCategory) [function]
+
 endmodule
 
 module CPP-OVERLOADING
@@ -95,7 +97,6 @@ module CPP-OVERLOADING
 
      syntax Bool ::= #notViableTypes(List, List, List, isNonStaticRefNone: Bool) [function]
                    | notViableTypes(CPPType, List, List) [function]
-                   | viableType(CPPType, CPPType, ValueCategory) [function]
                    | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
 
      rule notViableTypes(T::CPPFunctionType, Types::List, Cats::List)
