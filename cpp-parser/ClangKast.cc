@@ -1587,7 +1587,7 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool TraverseCallExpr(CallExpr *E) {
-    AddKApplyNode("CallExpr", 2);
+    AddKApplyNode("CallExpr", 3);
     unsigned i = 0;
     for (Stmt *SubStmt : E->children()) {
       i++;
@@ -1604,6 +1604,8 @@ bool TraverseDecl(Decl *D) {
       }
       first = false;
     }
+    AddKApplyNode("krlist", 1);
+    AddKApplyNode(".List", 0);
     return true;
   }
 

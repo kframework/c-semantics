@@ -15,6 +15,7 @@ module CPP-DECL-DECLARATOR-SYNTAX
      syntax Declarator ::= NormalizedDecl(nns: NNS, id: CId, type: AType, init: Init, dtype: DeclarationType)
 
      syntax DeclState ::= "declared" | "completed" | "defined" | "initialized"
+     syntax DeclarationType ::= makeFunctionDeclarationType(NNSVal, CPPTypes) [function]
  
      syntax KItem ::= declState(SymBase, DeclState)
      syntax KItem ::= processFunDef(SymBase, QualId, CPPTypeExpr, List, Stmt)
@@ -155,6 +156,7 @@ module CPP-DECL-DECLARATOR
      // ExternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
+              ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -170,6 +172,7 @@ module CPP-DECL-DECLARATOR
      // InternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
+              ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -194,6 +197,7 @@ module CPP-DECL-DECLARATOR
      // ExternalLinkage, StaticStorage, redeclare complete type
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
+              ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -207,6 +211,7 @@ module CPP-DECL-DECLARATOR
      // InternalLinkage, StaticStorage, redeclare complete type
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, Base, false)
+              ~> updateDefaultArguments(N :: X, T, computeDefaultArgs(T, Type))
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -217,7 +222,7 @@ module CPP-DECL-DECLARATOR
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
           requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
 
-     context declareNonStaticObject(_, _, HOLE:Expr, _, _, _)
+     context declareNonStaticObject(... init: HOLE:Expr)
 
      // NoLinkage, AutoStorage, not previously declared
      rule <k> declareObject(NoNamespace(), _, X::CId, T::CPPType, Init::Init, Var(Type::InitType), NoLinkage, AutoStorage, S::Set) ~> Next:KItem
@@ -264,6 +269,7 @@ module CPP-DECL-DECLARATOR
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
+          <member-function-bodies> .K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ...</member-function-bodies>
           <curr-scope> classScope(C) </curr-scope>
           <class-id> C </class-id>
           <function-members>... .List => ListItem(kpair(X, T)) </function-members>
@@ -278,7 +284,8 @@ module CPP-DECL-DECLARATOR
 
      // Static member declaration/definition, in the enclosing namespace.
      rule <k> declareObject((N::Namespace :: _::ClassSpecifier) #as C:Class, C, X::CId, T:CPPType, Init::Expr, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
-           => defineObject(C, X, T, Init, Type, StaticStorage, S)
+           => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type))
+           ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
           <curr-scope> namespaceScope(N) </curr-scope>
           requires completeDeclaration(T, Init) ==K T
@@ -296,8 +303,8 @@ module CPP-DECL-DECLARATOR
      rule <k> stripAuto => .K ...</k>
           <template-arguments>... auto |-> _ => .Map ...</template-arguments>
 
-     rule <k> declareNonStaticObject(X::CId, T::CPPType, Init:KResult, Type::DeclarationType, D::Duration, S::Set) => .K ...</k>
-          <elab>... .K => declareNonStaticObject(X, T, Init, Type, D, S) </elab>
+     rule <k> declareNonStaticObject(... init: Init:KResult) #as D:KItem => .K ...</k>
+          <elab>... .K => D </elab>
 
      syntax CPPType ::= completeDeclaration(CPPType, Init) [function]
      rule completeDeclaration(T::CPPType, (ExprLoc(_, I::Init) => I))
@@ -324,7 +331,7 @@ module CPP-DECL-DECLARATOR
 
      rule <k> defineObject(N:Namespace, X::CId, T::CPPType, Init::Init, Type::DeclarationType, StaticStorage, S::Set)
               => initializeObject(N, X, T, figureInit(
-                   allocateDecl(N :: X, T, StaticStorage, S),
+                   allocateDecl(N :: X, T, StaticStorage, S, Type),
                    T, Init, getInitType(Type)), Type) ...</k>
           requires notBool (Init ==K NoInit() andBool (Extern() in S orBool isCPPFunctionType(T))) andBool isCompleteType(T)
 
@@ -335,7 +342,7 @@ module CPP-DECL-DECLARATOR
      // Static data member definition
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Expr, Var(Type::InitType), StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
-                   allocateDecl(C :: X, T, StaticStorage, S),
+                   allocateDecl(C :: X, T, StaticStorage, S, Var(Type)),
                    T, evalBraceOrEqualInitializer(C, noObject(), Init), Type), Var(Type))
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
@@ -343,7 +350,7 @@ module CPP-DECL-DECLARATOR
      // Function member definition
      rule defineObject(C:Class, X::CId, T::CPPType, Init::Init, Type:FunctionDeclarationType, StaticStorage, S::Set)
           => initializeObject(C, X, T, figureInit(
-                   allocateDecl(C :: X, T, StaticStorage, S),
+                   allocateDecl(C :: X, T, StaticStorage, S, Type),
                    T, Init, CopyInit()), Type)
           requires Init =/=K NoInit()
            andBool isCompleteType(T)
@@ -359,29 +366,29 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, NoNamespace() :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[NoNamespace() :: X, T <- Base] </odr-defs>
 
-     syntax Expr ::= allocateDecl(QualId, CPPType, Duration, Set)
+     syntax Expr ::= allocateDecl(QualId, CPPType, Duration, Set, DeclarationType)
 
-     rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage, S::Set)
+     rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</nenv>
+          <nenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</nenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, N :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
 
-     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set)
+     rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> kpair(_, Base::SymBase)) ...</cenv>
+          <cenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</cenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
@@ -431,7 +438,8 @@ module CPP-DECL-DECLARATOR
      syntax KItem ::= dummyBind(List)
      rule (.K => K) ~> dummyBind((ListItem(K:K) => .List) _)
      rule dummyBind(.List) => .K
-     rule (declareObject(NoNamespace(), _, X::CId, T::CPPType, NoInit(), _, NoLinkage, AutoStorage, _)
+     // as functions can have default arguments we allow any initializers here
+     rule (declareObject(NoNamespace(), _, X::CId, T::CPPType, _, _, NoLinkage, AutoStorage, _)
               => addToEnv(NoNamespace() :: X, T, nonStatic, false) ~> addParam(X)) ~> dummyBind(_)
 
      rule <k> addParam(X::CId) => .K ...</k>
@@ -477,4 +485,38 @@ module CPP-DECL-DECLARATOR
      rule stripInitHolds(V:Val) => V
           requires notBool isTExpr(V)
 
+     syntax StrictList ::= computeDefaultArgs(CPPType, DeclarationType) [function]
+     rule computeDefaultArgs(T:CPPFunctionType, Function(Params::List))
+          => list(#computeDefaultArgs(getRealParams(T), Params, hasImplicitParameter(T)))
+     rule computeDefaultArgs(...) => krlist(.List) [owise]
+     
+     syntax List ::= #computeDefaultArgs(types: List, defaultArgs: List, hasImplicitParam: Bool) [function]
+     rule #computeDefaultArgs(ListItem(_) Types::List, Args::List, true) => #computeDefaultArgs(Types, Args, false)
+
+     // This part is very similar to bindParams
+     rule #computeDefaultArgs(ListItem(T:CPPType) P::List, ListItem(NormalizedDecl(... init: Init::Init)) A::List, false)
+          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) #computeDefaultArgs(P, A, false)
+          requires notBool (isCPPRefType(T) andBool isExpr(Init))
+           andBool Init =/=K NoInit()
+     rule #computeDefaultArgs(ListItem(T:CPPRefType) P::List, ListItem(NormalizedDecl(... init: Init::Init)) A::List, false)
+          => ListItem(Init) #computeDefaultArgs(P, A, false)
+          requires Init =/=K NoInit()
+     rule #computeDefaultArgs(ListItem(_) P::List, ListItem(NormalizedDecl(... init: NoInit())) A::List, false)
+          => ListItem(NoArg()) #computeDefaultArgs(P, A, false)
+     rule #computeDefaultArgs(.List, .List, _) => .List
+
+     rule makeFunctionDeclarationType(N::NNSVal, Types::CPPTypes)
+       => Function(#makeFunctionDeclarationType(N, toList(Types)))
+     syntax List ::= #makeFunctionDeclarationType(NNSVal, List) [function]
+     rule #makeFunctionDeclarationType(N::Namespace, ListItem(T::CPPType) Types::List)
+          => ListItem(VarDecl(N, #NoName, T, NoInit(), false)) #makeFunctionDeclarationType(N, Types)
+     rule #makeFunctionDeclarationType(_, .List) => .List
+
+     rule emptyDefaultArguments(T:CPPFunctionType)
+       => krlist(#emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi))
+     rule emptyDefaultArguments(_) => krlist(.List) [owise]
+
+     syntax List ::= #emptyDefaultArguments(Int) [function]
+     rule #emptyDefaultArguments(0) => .List
+     rule #emptyDefaultArguments(N::Int) => ListItem(NoArg()) #emptyDefaultArguments(N -Int 1) [owise]
 endmodule

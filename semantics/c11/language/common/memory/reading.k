@@ -124,18 +124,21 @@ module C-MEMORY-READING
      rule hasUnknown(.List) => false
      rule hasUnknown(ListItem(piece(B::BitValue, _) => B) _)
      rule hasUnknown((ListItem(pieces(L::List)) => L) _)
+     rule hasUnknown(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasUnknown(ListItem(unknown(_)) _) => true
      rule hasUnknown(ListItem(_) L::List) => hasUnknown(L) [owise]
 
      rule hasTrap(.List) => false
      rule hasTrap(ListItem(piece(B::BitValue, _) => B) _)
      rule hasTrap((ListItem(pieces(L::List)) => L) _)
+     rule hasTrap(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasTrap(ListItem(trap) _) => true
      rule hasTrap(ListItem(_) L::List) => hasTrap(L) [owise]
 
      rule hasInt(.List) => false
      rule hasInt(ListItem(piece(B::BitValue, _) => B) _)
      rule hasInt((ListItem(pieces(L::List)) => L) _)
+     rule hasInt(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
      rule hasInt(ListItem(B:Int) _) => true
           requires B =/=Int 0
      rule hasInt(ListItem(_) L::List) => hasInt(L) [owise]
@@ -143,13 +146,15 @@ module C-MEMORY-READING
      rule hasFloat(.List) => false
      rule hasFloat(ListItem(piece(B::BitValue, _) => B) _)
      rule hasFloat((ListItem(pieces(L::List)) => L) _)
-     rule hasFloat(ListItem(encodedValue(_:Float, _, _)) _) => true
+     rule hasFloat(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
+     rule hasFloat(ListItem(_:Float) _) => true
      rule hasFloat(ListItem(_) L::List) => hasFloat(L) [owise]
 
      rule hasOpaque(.List) => false
      rule hasOpaque(ListItem(piece(B::BitValue, _) => B) _)
      rule hasOpaque((ListItem(pieces(L::List)) => L) _)
-     rule hasOpaque(ListItem(encodedValue(_:Opaque, _, _)) _) => true
+     rule hasOpaque(ListItem(encodedValue(V::EffectiveValue, _, _) => V) _)
+     rule hasOpaque(ListItem(_:Opaque) _) => true
      rule hasOpaque(ListItem(_) L::List) => hasOpaque(L) [owise]
 
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)

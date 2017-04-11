@@ -11,12 +11,12 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(_::K, _::K, T:CPPFunctionType) #as V::Val, list(A::List))
-          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A)))
+     rule CallExpr(Lbl:KLabel(_::K, _::K, T:CPPFunctionType) #as V::Val, list(A::List), krlist(DArgs::List))
+          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
           requires isLKLabel(#klabel(Lbl))
 
-     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(T:CPPFunctionType))) #as V:Val, list(A::List))
-          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A)))
+     rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(T:CPPFunctionType))) #as V:Val, list(A::List), krlist(DArgs::List))
+          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
      syntax KItem ::= elabCall(Val, List, CPPType, StrictList) [strict(4)]
      rule elabCall(Fun::Val, Args::List, T::CPPType, krlist(Temps::List))
@@ -29,25 +29,29 @@ module CPP-EXPR-FUNCTION-CALL
           requires isUnnamedXValue(T)
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => pre(E, Tr, T) [owise]
 
-     syntax List ::= bindParams(List, List) [function]
-     rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List)
-          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) bindParams(P, A)
+     syntax List ::= bindParams(List, List, List) [function]
+     rule bindParams(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List, ListItem(_) DArgs::List)
+          => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) bindParams(P, A, DArgs)
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
      // in this case we are calling bindReference instead of the regular initialization scenario, but
      // bindReference shouldn't be executed in the calling context, it needs to be executed only in the 
      // called function, otherwise we will end up with an lvalue where the parameter should be an xvalue.
-     rule bindParams(ListItem(T:CPPRefType) P::List, ListItem(Init:Expr) A::List)
-          => ListItem(Init) bindParams(P, A)
+     rule bindParams(ListItem(T:CPPRefType) P::List, ListItem(Init:Expr) A::List, ListItem(_) DArgs::List)
+          => ListItem(Init) bindParams(P, A, DArgs)
      // ignore implicit object parameter for static function member
      rule bindParams(ListItem(implicitObjectParameter(t(... st: no-type))) P::List,
-                     ListItem(Obj::Expr) A::List)
-          => ListItem(Obj) bindParams(P, A)
+                     ListItem(Obj::Expr) A::List, DArgs::List)
+          => ListItem(Obj) bindParams(P, A, DArgs)
      // we use getAddress instead of & because technically speaking the this argument can be any value category
-     rule bindParams(ListItem(implicitObjectParameter(T:CPPRefType)) P::List, ListItem(Obj::Expr) A::List)
-          => ListItem(ParenthesizedCast(type(pointerType(innerType(T))), getAddress(Obj))) bindParams(P, A)
+     rule bindParams(ListItem(implicitObjectParameter(T:CPPRefType)) P::List, ListItem(Obj::Expr) A::List, DArgs::List)
+          => ListItem(ParenthesizedCast(type(pointerType(innerType(T))), getAddress(Obj))) bindParams(P, A, DArgs)
           requires T =/=K type(no-type)
-     rule bindParams(.List, .List) => .List
-     rule bindParams(ListItem(variadic), L::List) => bindVariadic(L)
+     rule bindParams(.List, .List, .List) => .List
+     rule bindParams(ListItem(variadic), L::List, .List) => bindVariadic(L)
+     rule bindParams(ListItem(_) P::List, .List, ListItem(Arg:K) A::List)
+          => ListItem(Arg) bindParams(P, .List, A)
+          requires Arg =/=K NoArg()
+
      syntax List ::= bindVariadic(List) [function]
      rule bindVariadic(ListItem(Obj::Expr) L::List) => ListItem(defaultArgPromote(Obj)) bindVariadic(L)
      rule bindVariadic(.List) => .List

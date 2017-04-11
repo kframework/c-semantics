@@ -52,7 +52,7 @@ module CPP-TRANSLATION-INIT
           ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), type(size_t), noexcept(true))
 
      rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
-          => declareObject(N, N, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), Function(.List), ExternalLinkage, StaticStorage, .Set)
+          => declareObject(N, N, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
 
      rule <k> makeNs(N::Namespace) => .K ...</k>
           <curr-tu> Tu::String </curr-tu>

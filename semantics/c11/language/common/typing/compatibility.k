@@ -106,7 +106,7 @@ module C-TYPING-COMPATIBILITY
 
      syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
      rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _), Cache::Set)
-          => #areCompatFields(Fs, Fs', Cache) andBool #areBitFieldsCompat(Fs, Fs')
+          => #areCompatFields(Fs, Fs', Cache)
      rule #areStructsCompat(#incomplete, _, _) => true
      rule #areStructsCompat(_, #incomplete, _) => true
 
@@ -115,31 +115,10 @@ module C-TYPING-COMPATIBILITY
      rule #areTagsCompat(unnamed(_, _), unnamed(_, _)) => true
      rule #areTagsCompat(_, _) => false [owise]
 
-     syntax Bool ::= #areBitFieldsCompat(List, List) [function]
-     rule #areBitFieldsCompat(
-               ListItem(typedDeclaration(t(_, _, bitfieldType(_, Size::Int)), _)) Fs::List,
-               ListItem(typedDeclaration(t(_, _, bitfieldType(_, Size::Int)), _)) Fs'::List)
-          => #areBitFieldsCompat(Fs, Fs')
-     rule #areBitFieldsCompat(
-               ListItem(typedDeclaration(T::Type, _)) Fs::List,
-               ListItem(typedDeclaration(T'::Type, _)) Fs'::List)
-          => #areBitFieldsCompat(Fs, Fs')
-     requires notBool isBitfieldType(T) andBool notBool isBitfieldType(T')
-     rule #areBitFieldsCompat(.List, .List) => true
-     rule #areBitFieldsCompat(_, _) => false [owise]
-
-     // bit fields aren't really types, so they aren't part of type
-     // compatibility. According to the standard, they are part of the
-     // compatibility of the type of the struct, hence #areBitFieldsCompat
-     // above.
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, _)),
-               T'::Type, Cache::Set)
-          => #areCompat(t(Qs, Mods, T), T', Cache)
-     rule #areCompat(
-               T'::Type,
-               t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, _)), Cache::Set)
-          => #areCompat(t(Qs, Mods, T), T', Cache)
+               t(Qs::Quals, Mods::Set, bitfieldType(T::SimpleType, Width::Int)),
+               t(Qs'::Quals, Mods'::Set, bitfieldType(T'::SimpleType, Width::Int)), Cache::Set)
+          => #areCompat(t(Qs, Mods, T), t(Qs', Mods', T'), Cache)
 
      rule #areCompat(
                t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)),

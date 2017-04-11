@@ -107,6 +107,7 @@ endmodule
 
 module SYMLOC
      imports SYMLOC-SYNTAX
+     imports COMPAT
      imports K-REFLECTION
      imports MAP
 
@@ -279,6 +280,5 @@ module SYMLOC
      rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)
      rule resolveLinking(Loc::SymLoc, _) => Loc
           requires notBool isLinkerLoc(Loc) [owise]
-
 endmodule
 

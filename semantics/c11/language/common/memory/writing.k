@@ -114,7 +114,7 @@ module C-MEMORY-WRITING
      rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
           => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
-               andBool (isBitfieldType(T) =/=K true)
+               andBool (notBool isBitfieldType(T))
                andBool (notBool hasUnionMarker(Loc))
           [structural]
 
@@ -226,6 +226,13 @@ module C-MEMORY-WRITING
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
                orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
           [structural]
 
      syntax KItem ::= calculateNewBytes(Bits, K, Int)

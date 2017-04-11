@@ -11,8 +11,8 @@ module CPP-EXECUTION-EXPR-NAME
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule <k> Name(NoNNS(), X:CId) => lv(lnew(Base), noTrace, T) ...</k>
-          <env>... X |-> (T::CPPType |-> kpair(_, Base::SymBase)) ...</env>
+     rule <k> Name(NoNNS(), X:CId) => lv(lnew(getBase(Entry)), noTrace, T) ...</k>
+          <env>... X |-> (T::CPPType |-> Entry::EnvEntry) ...</env>
 
      rule <k> Name(NoNNS(), X:CId) => T ...</k>
           <types>... X |-> (_ |-> T::CPPType) ...</types>

@@ -10,6 +10,8 @@ module CPP-CLASS-SYNTAX
      syntax Expr ::= This
      syntax Expr ::= contrivedObject(CPPType)
      syntax ValResult ::= noObject()
+     syntax NoArg ::= NoArg()
+     syntax ValResult ::= NoArg
      syntax CId ::= unnamedObject(Class)
      syntax Expr ::= beginConstruction(Expr) [strict]
      syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]

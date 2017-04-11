@@ -15,14 +15,14 @@ module CPP-EXECUTION-INIT
      rule le(E::Expr, _, _) => E
 
      rule <k> callMain(N:Int, Args:K)
-               => enterRestrictTU ~> K ~> reval(#callMain(T, Base, N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
+               => enterRestrictTU ~> K ~> reval(#callMain(T, getBase(Entry), N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
           <uncaught-exception> _ => true </uncaught-exception>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> GlobalNamespace() </ns-id>
-          <nenv>... Identifier("main") |-> (T::CPPType |-> kpair(_, Base::SymBase)) ...</nenv>
+          <nenv>... Identifier("main") |-> (T::CPPType |-> Entry::EnvEntry) ...</nenv>
           <status> _ => mainCalled </status>
 
      syntax Expr ::= "#callMain" "(" K "," SymBase "," Int "," CId "," K ")"

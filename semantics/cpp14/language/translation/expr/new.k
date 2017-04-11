@@ -50,7 +50,7 @@ module CPP-EXPR-NEW
           => pre(NewOp(T, R, Init, .K, I), hasTrace(E), type(pointerType(T)))
 
      context DeleteExpr(_, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
-     rule (.K => CallExpr(Name(GlobalNamespace(), operatordelete), list(ListItem(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) ListItem(pre(newSize(!I), noTrace, type(size_t))))) ~> !I) ~> DeleteExpr(false, false, V:PRVal)
+     rule (.K => CallExpr(Name(GlobalNamespace(), operatordelete), list(ListItem(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) ListItem(pre(newSize(!I), noTrace, type(size_t)))), krlist(.List)) ~> !I) ~> DeleteExpr(false, false, V:PRVal)
           requires isCPPPointerType(type(V)) andBool notBool isCPPClassType(innerType(type(V)))
      rule R:PRExpr ~> I:Int ~> DeleteExpr(false, false, V:PRVal) => pre(DeleteOp(V, R, .K, I), hasTrace(DeleteExpr(false, false, V)), type(void))
 

@@ -54,8 +54,7 @@ module CPP-ABSTRACT-SYNTAX
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr)
 
-     syntax Init ::= NoInit()
-                   | ValueInit()
+     syntax Init ::= ValueInit() | NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
      syntax FunctionSpecifier ::= Inline() | Explicit()
@@ -221,7 +220,7 @@ module CPP-ABSTRACT-SYNTAX
                    | NewExpr(Bool, AType, AExpr, Init, List) [strict(2)]
                    | DeleteExpr(Bool, Bool, Expr)
 
-     syntax ResolvedExpr ::= CallExpr(Expr, StrictList)
+     syntax ResolvedExpr ::= CallExpr(Expr, StrictList, StrictListResult)
 
      syntax Expr ::= Lambda(CaptureDefault, List, AType, AStmt)
                    | PackExpansionExpr(Expr)
@@ -294,5 +293,6 @@ module CPP-ABSTRACT-REWRITING
      rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
+     rule ExprLoc(_, DefaultArg()) => .K [anywhere]
 
 endmodule
