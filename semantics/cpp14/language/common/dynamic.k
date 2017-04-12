@@ -84,6 +84,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax KResult ::= ValueCategory
      syntax InitListCategory ::= initListCat(List)
 
+     syntax ValueCategory ::= NoInitValueCategory
+     syntax NoInitValueCategory ::= NoInitCat()
+
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
      syntax Trace ::= hasTrace(K) | trace(Typed) [function] | "noTrace"

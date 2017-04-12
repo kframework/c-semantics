@@ -92,26 +92,26 @@ module CPP-OVERLOADING
 
      context #resolveOverload(_, _, (HOLE:StrictList => types(HOLE)), _, _)
      context #resolveOverload(_, _, _, (HOLE:StrictList => cats(HOLE)), _)
-     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> Entry:EnvEntry => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _)
-          requires notBool acceptsNArgs(size(Args), T, getDefaultArgs(Entry))
-            orBool notViableTypes(T, getDefaultArgs(Entry), Types, Cats)
+     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _)
+          requires notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
+            orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
 
-     syntax Bool ::= #notViableTypes(params: List, defaultArgs: List, types: List, cats: List, isNonStaticRefNone: Bool) [function]
-                   | notViableTypes(CPPType, List, List, List) [function]
+     syntax Bool ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool) [function]
+                   | notViableTypes(CPPType, List, List, List, List) [function]
                    | viableType(CPPType, CPPType, ValueCategory) [function]
                    | viableImplicitObjectParameter(CPPType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
 
-     rule notViableTypes(T::CPPFunctionType, DArgs::List, Types::List, Cats::List)
-          => #notViableTypes(getParams(T), DArgs, Types, Cats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
+     rule notViableTypes(T::CPPFunctionType, Types::List, DATypes::List, Cats::List, DACats::List)
+          => #notViableTypes(getParams(T), Types, DATypes, Cats, DACats, isFunctionMember(T) andBool notBool isMethodStatic(T) andBool getRefQualifier(T) ==K RefNone())
     
-     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(_) Args::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool)
-     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, Args, As, Cs, B)
-     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, Args::List, ListItem(A::CPPType) As::List, ListItem(C::ValueCategory) Cs::List, B::Bool) 
-     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, Args, As, Cs, B)
+     rule #notViableTypes(ListItem(P:CPPType) Ps::List, ListItem(A::CPPType) As::List, ListItem(_) DAs::List, ListItem(C::ValueCategory) Cs::List, ListItem(_) DCs::List, B::Bool)
+     => notBool viableType(P, A, C) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
+     rule #notViableTypes(ListItem(implicitObjectParameter(P:CPPType))  Ps::List, ListItem(A::CPPType) As::List, DAs::List, ListItem(C::ValueCategory) Cs::List, DCs::List, B::Bool) 
+     => notBool viableImplicitObjectParameter(P, A, C, B) orBool #notViableTypes(Ps, As, DAs, Cs, DCs, B)
      rule #notViableTypes(... params: ListItem(variadic)) => false
      rule #notViableTypes(... params: .List, types: .List, cats: .List) => false
      // default arguments
-     rule #notViableTypes(ListItem(P:CPPType) _, ListItem(Arg:Val) _, .List, .List, _) => false
+     rule #notViableTypes(ListItem(P:CPPType) _, .List => ListItem(A) DAs, ListItem(A::CPPType) DAs::List, .List => DCs, DCs::List, _)
 
      rule viableType(P::CPPType, A::CPPType, C::ValueCategory) => conversionSequence(P, A, C, false, false) =/=K cannot-convert
 
@@ -264,23 +264,23 @@ module CPP-OVERLOADING
      // do not actually perform overload resolution, this was a function call
      // in which the postfix expression was a function pointer
      rule <k> #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: Base::SymBase)), list(Args::List), _, _, E::Expr)
-              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), emptyDefaultArguments(innerType(T)))) ...</k>
+              => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T)))))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires isCPPFunctionType(innerType(T)) andBool Base =/=K nonStatic
      rule #resolveOverload(cSet(... candidates: T:CPPPointerType |-> envEntry(... base: nonStatic)), list(Args::List), _, _, E::Expr)
-          => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), emptyDefaultArguments(innerType(T))))
+          => checkAccess(CallExpr(le(E, hasTrace(E), T), list(Args), krlist(getDefaultArgsVals(emptyDefaultArguments(innerType(T))))))
           requires isCPPFunctionType(innerType(T))
 
      // only one viable candidate
-     rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> envEntry(... base: Base::SymBase, defaultArgs: krlist(DArgs::List))), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
+     rule <k> #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> envEntry(... base: Base::SymBase, defaultArgs: defArgs(krlist(DArgs::List), krlist(DATypes::List), krlist(DACats::List)) #as DA::DefaultArgumentsResult)), list(Args::List), krlist(Types::List), krlist(Cats::List), E::Expr) 
               => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), krlist(DArgs))) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           requires Base =/=K nonStatic
                andBool acceptsNArgs(size(Args), T, DArgs)
-               andBool notBool notViableTypes(T, DArgs, Types, Cats)
+               andBool notBool notViableTypes(T, Types, DATypes, Cats, DACats)
 
      rule #resolveOverload(cSet(... candidates: T:CPPFunctionType |-> builtinOp(E::Expr)), list(Args::List), krlist(Types::List), krlist(Cats::List), _) => E
-          requires acceptsNArgs(size(Args), T, Args) andBool notBool notViableTypes(T, Args, Types, Cats)
+          requires acceptsNArgs(size(Args), T, Args) andBool notBool notViableTypes(T, Types, Types, Cats, Cats)
 
       // no viable candidates
       // normally this is ill formed, but it can be well formed in some cases such as operator overloading of certain operators

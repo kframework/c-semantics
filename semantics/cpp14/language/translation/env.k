@@ -13,13 +13,16 @@ module CPP-ENV-SYNTAX
                     | noEval(K)
                     | "recover"
      syntax KItem ::= "pushLocals" | "popLocals"
-     syntax KItem ::= updateDefaultArguments(QualId, CPPType, StrictList) [strict(3)]
+     syntax KItem ::= updateDefaultArguments(QualId, CPPType, DefaultArguments) [strict(3)]
+     
+     syntax DefaultArguments ::= defArgs(vals: StrictList, types: StrictList, cats: StrictList) [strict(1)]
+     syntax DefaultArguments ::= DefaultArgumentsResult
+     syntax DefaultArgumentsResult ::= defArgs(vals: StrictListResult, types: StrictListResult, cats: StrictListResult)
+     syntax KResult ::= DefaultArgumentsResult
 
-     syntax KResult ::= EnvEntry
-
-     syntax Bool ::= isUsing(EnvEntry) [function, klabel(getEnvEntryUsing)]
-     syntax List ::= getDefaultArgs(EnvEntry) [function, klabel(getEnvEntryDefaultArgs)]
-     syntax List ::= setDefaultArgs(EnvEntry, List) [function, klabel(setEnvEntryDefaultArgs)]
+     syntax List ::= getDefaultArgsVals(DefaultArgumentsResult) [function]
+     syntax List ::= getDefaultArgsTypes(DefaultArgumentsResult) [function]
+     syntax List ::= getDefaultArgsCats(DefaultArgumentsResult) [function]
 
 endmodule
 
@@ -46,11 +49,11 @@ module CPP-ENV
          <nenv> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </nenv>
          requires N =/=K NoNamespace()
     
-    rule <k> updateDefaultArguments(N:Namespace :: X::CId, T:CPPFunctionType, krlist(A1::List)) => .K ...</k>
+    rule <k> updateDefaultArguments(N:Namespace :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
          <curr-tu> Tu::String </curr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
-         <nenv>... X |-> (_ T |-> envEntry(... defaultArgs: krlist(A2::List => #updateDefaultArgs(A1, A2)))) ...</nenv>
+         <nenv>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</nenv>
          requires N =/=K NoNamespace()
 
     rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
@@ -59,7 +62,7 @@ module CPP-ENV
          <curr-tu> Tu::String </curr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
-         <nenv> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, krlist(.List))] </nenv>
+         <nenv> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </nenv>
          requires N =/=K NoNamespace() andBool notBool isCPPFunctionType(T)
 
     rule <k> addToEnv(NoNamespace() :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
@@ -67,13 +70,13 @@ module CPP-ENV
          ...</k>
          <env> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </env>
 
-    rule <k> updateDefaultArguments(NoNamespace() :: X::CId, T:CPPFunctionType, krlist(A1::List)) => .K ...</k>
-         <env>... X |-> (_ T |-> envEntry(... defaultArgs: krlist(A2::List => #updateDefaultArgs(A1, A2)))) ...</env>
+    rule <k> updateDefaultArguments(NoNamespace() :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
+         <env>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</env>
 
     rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
          ...</k>
-         <env> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, krlist(.List))] </env>
+         <env> NE::Map => NE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </env>
          requires notBool isCPPFunctionType(T)
 
     rule <k> addToEnv(C:Class :: X::CId, T:CPPFunctionType, Base::SymBase, IsUsing::Bool) 
@@ -82,21 +85,20 @@ module CPP-ENV
          <class-id> C </class-id>
          <cenv> CE::Map => CE[X <- updateFnEnv(CE, X, T, Base, IsUsing)] </cenv>
 
-     rule <k> updateDefaultArguments(C:Class :: X::CId, T:CPPFunctionType, krlist(A1::List)) => .K ...</k>
+     rule <k> updateDefaultArguments(C:Class :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
           <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> envEntry(... defaultArgs: krlist(A2::List => #updateDefaultArgs(A1, A2)))) ...</cenv>
+          <cenv>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</cenv>
 
     rule <k> addToEnv(C:Class :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
          ...</k>
          <class-id> C </class-id>
-         <cenv> CE::Map => CE[X <- T |-> envEntry(Base, IsUsing, krlist(.List))] </cenv>
+         <cenv> CE::Map => CE[X <- T |-> envEntry(Base, IsUsing, NoDefArgs())] </cenv>
          requires notBool isCPPFunctionType(T)
 
-     rule isUsing(envEntry(... using: IsUsing::Bool)) => IsUsing
-     rule getDefaultArgs(envEntry(... defaultArgs: krlist(Args::List))) => Args
-     rule setDefaultArgs(Entry::EnvEntry, Args::List)
-          => #fun(envEntry(... defaultArgs: _ => krlist(Args::List)))(Entry)
+     rule getDefaultArgsVals(defArgs(... vals: krlist(Args::List))) => Args
+     rule getDefaultArgsTypes(defArgs(... types: krlist(Types::List))) => Types
+     rule getDefaultArgsCats(defArgs(... cats: krlist(Cats::List))) => Cats
 
      syntax Map ::= updateFnEnv(Map, CId, CPPFunctionType, SymBase, Bool) [function]
      rule updateFnEnv(Env::Map, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T))
@@ -109,15 +111,39 @@ module CPP-ENV
           => XEnv T |-> #fun(envEntry(... base: _ => Base, using: _ => IsUsing))(Entry)
      rule #updateFnEnv(XEnv::Map, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => XEnv T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T)) [owise]
 
-     syntax List ::= #updateDefaultArgs(newArgs: List, oldArgs: List) [function]
+     syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult) [function]
+     rule #updateDefaultArgs(NewArgs::DefaultArgumentsResult, OldArgs::DefaultArgumentsResult)
+          => #updateDefaultArgs(NewArgs, OldArgs, defArgs(krlist(.List), krlist(.List), krlist(.List)))
+
+     syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult, resultArgs: DefaultArgumentsResult) [function, klabel(updateDefaultArgsHelper)]
     // The next rule compensates for the clang policy to aggregate existing default args from previous declarations
     // Hence, we'll trust clang to check that the user does not redefine an old def. arg.
-     rule #updateDefaultArgs(ListItem(_) New::List, ListItem(I::Init) Old::List)
-          => ListItem(I) #updateDefaultArgs(New, Old)
+     rule #updateDefaultArgs(
+            defArgs(krlist((ListItem(_) => .List) _),
+                    krlist((ListItem(_) => .List) _),
+                    krlist((ListItem(_) => .List) _)),
+            defArgs(krlist((ListItem(I::Init) => .List) _),
+                    krlist((ListItem(C::ValueCategory) => .List) _),
+                    krlist((ListItem(T::CPPDType) => .List) _)),
+            defArgs(krlist(_::List (.List => ListItem(I::Init))),
+                    krlist(_::List (.List => ListItem(C::ValueCategory))),
+                    krlist(_::List (.List => ListItem(T::CPPDType)))))
           requires I =/=K NoArg()
-     rule #updateDefaultArgs(ListItem(I::Init) New::List, ListItem(NoArg()) Old::List)
-          => ListItem(I) #updateDefaultArgs(New, Old)
-     rule #updateDefaultArgs(.List, .List) => .List
+
+     rule #updateDefaultArgs(
+            defArgs(krlist((ListItem(I::Init) => .List) _),
+                    krlist((ListItem(C::ValueCategory) => .List) _),
+                    krlist((ListItem(T::CPPDType) => .List) _)),
+            defArgs(krlist((ListItem(NoArg()) => .List) _),
+                    krlist((ListItem(_) => .List) _),
+                    krlist((ListItem(_) => .List) _)),
+            defArgs(krlist(_::List (.List => ListItem(I::Init))),
+                    krlist(_::List (.List => ListItem(C::ValueCategory))),
+                    krlist(_::List (.List => ListItem(T::CPPDType)))))
+     rule #updateDefaultArgs(
+            defArgs(krlist(.List), krlist(.List), krlist(.List)),
+            defArgs(krlist(.List), krlist(.List), krlist(.List)),
+            DA::DefaultArgumentsResult) => DA
 
 
      rule <k> scope(Scope::Scope, K:K)

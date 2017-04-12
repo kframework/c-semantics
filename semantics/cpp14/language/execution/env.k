@@ -18,6 +18,6 @@ module CPP-ENV
      rule <k> addToEnv(X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
               => .K
           ...</k>
-          <env> E::Map => E[X, T <- envEntry(Base, IsUsing, krlist(.List))] </env>
+          <env> E::Map => E[X, T <- envEntry(Base, IsUsing, NoDefArgs())] </env>
 
 endmodule

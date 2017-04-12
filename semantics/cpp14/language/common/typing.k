@@ -3,9 +3,10 @@ module CPP-TYPING-SORTS
      syntax CPPType ::= CPPFunctionType
                       | CPPClassType
                       | CPPRefType
-     syntax CPPDType ::= CPPType | CPPVariadic | InitListType
+     syntax CPPDType ::= CPPType | CPPVariadic | InitListType | NoInitType
      syntax CPPVariadic
      syntax InitListType
+     syntax NoInitType
      syntax CPPSimpleType
      syntax EffectiveType ::= CPPType
      syntax CPPTypeExpr ::= CPPType
@@ -166,6 +167,7 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPVariadic ::= "variadic"
      syntax InitListType ::= initListType(List)
+     syntax NoInitType ::= NoInitType()
 
      syntax Expr ::= setType(CPPType, Expr) [strict]
 
@@ -269,7 +271,7 @@ module CPP-TYPING-SYNTAX
                    | isUnnamedXValue(CPPType) [function]
                    | isUnnamedPRValue(CPPType) [function]
 
-     syntax StrictListResult ::= emptyDefaultArguments(CPPType) [function]
+     syntax DefaultArgumentsResult ::= emptyDefaultArguments(CPPType) [function]
      syntax EnumId ::= getEnumId(CPPEnumType) [function]
      syntax Bool ::= getScoped(CPPEnumType) [function]
 endmodule

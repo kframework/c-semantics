@@ -337,7 +337,7 @@ module CPP-DECL-CLASS
 
      rule isNonTrivialDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool notBool isTrivialDefaultConstructor(T, K)
 
-     rule isDefaultConstructor(T::CPPFunctionType, Entry:EnvEntry) => acceptsNArgs(0, T, getDefaultArgs(Entry))
+     rule isDefaultConstructor(T::CPPFunctionType, envEntry(... defaultArgs: DA::DefaultArgumentsResult)) => acceptsNArgs(0, T, getDefaultArgsVals(DA))
      rule isUserProvidedConstructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
      rule isUserProvidedDestructor(T::CPPFunctionType, _) => isMethodUserProvided(T)
      rule isUserProvidedDefaultConstructor(T::CPPFunctionType, K:K) => isDefaultConstructor(T, K) andBool isUserProvidedConstructor(T, K)

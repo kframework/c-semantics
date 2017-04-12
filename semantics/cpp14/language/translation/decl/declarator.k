@@ -40,7 +40,9 @@ module CPP-DECL-DECLARATOR
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
+     imports CPP-VALUE-CATEGORY-SYNTAX
 
      rule FunctionDecl(N::NNSVal, X::CId, T::CPPFunctionType, Params::List) => NormalizedDecl(N, X, T, NoInit(), Function(Params)) [anywhere]
      rule VarDecl(N::NNSVal, X::CId, T::CPPType, Init::Expr, IsDirect:Bool) => NormalizedDecl(N, X, T, Init, Var(#if IsDirect #then DirectInit() #else CopyInit() #fi)) [anywhere]
@@ -485,23 +487,32 @@ module CPP-DECL-DECLARATOR
      rule stripInitHolds(V:Val) => V
           requires notBool isTExpr(V)
 
-     syntax StrictList ::= computeDefaultArgs(CPPType, DeclarationType) [function]
+     context defArgs(_, (HOLE:StrictList => types(HOLE)), _)
+     context defArgs(_, _, (HOLE:StrictList => cats(HOLE)))
+
+     syntax DefaultArguments ::= computeDefaultArgs(CPPType, DeclarationType)
      rule computeDefaultArgs(T:CPPFunctionType, Function(Params::List))
-          => list(#computeDefaultArgs(getRealParams(T), Params, hasImplicitParameter(T)))
-     rule computeDefaultArgs(...) => krlist(.List) [owise]
+          => #fun(DI::List => defArgs(list(#computeDefaultArgs(getRealParams(T), DI, hasImplicitParameter(T))), list(DI), list(DI)))(getDefArgsInitializers(Params)) 
+     rule computeDefaultArgs(T::CPPType, _) => krlist(.List)
+          requires notBool isCPPFunctionType(T)
+
+     syntax List ::= getDefArgsInitializers(List) [function]
+     rule getDefArgsInitializers(ListItem(NormalizedDecl(... init: Init::Init)) A::List)
+          => ListItem(Init) getDefArgsInitializers(A)
+     rule getDefArgsInitializers(.List) => .List
      
      syntax List ::= #computeDefaultArgs(types: List, defaultArgs: List, hasImplicitParam: Bool) [function]
      rule #computeDefaultArgs(ListItem(_) Types::List, Args::List, true) => #computeDefaultArgs(Types, Args, false)
 
      // This part is very similar to bindParams
-     rule #computeDefaultArgs(ListItem(T:CPPType) P::List, ListItem(NormalizedDecl(... init: Init::Init)) A::List, false)
+     rule #computeDefaultArgs(ListItem(T:CPPType) P::List, ListItem(Init::Init) A::List, false)
           => ListItem(figureInit(le(temp(!I:Int, T), noTrace, T), T, Init, CopyInit())) #computeDefaultArgs(P, A, false)
           requires notBool (isCPPRefType(T) andBool isExpr(Init))
            andBool Init =/=K NoInit()
-     rule #computeDefaultArgs(ListItem(T:CPPRefType) P::List, ListItem(NormalizedDecl(... init: Init::Init)) A::List, false)
+     rule #computeDefaultArgs(ListItem(T:CPPRefType) P::List, ListItem(Init::Init) A::List, false)
           => ListItem(Init) #computeDefaultArgs(P, A, false)
           requires Init =/=K NoInit()
-     rule #computeDefaultArgs(ListItem(_) P::List, ListItem(NormalizedDecl(... init: NoInit())) A::List, false)
+     rule #computeDefaultArgs(ListItem(_) P::List, ListItem(NoInit()) A::List, false)
           => ListItem(NoArg()) #computeDefaultArgs(P, A, false)
      rule #computeDefaultArgs(.List, .List, _) => .List
 
@@ -513,10 +524,13 @@ module CPP-DECL-DECLARATOR
      rule #makeFunctionDeclarationType(_, .List) => .List
 
      rule emptyDefaultArguments(T:CPPFunctionType)
-       => krlist(#emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi))
-     rule emptyDefaultArguments(_) => krlist(.List) [owise]
+       => #emptyDefaultArguments(#if hasImplicitParameter(T) #then size(getRealParams(T)) -Int 1 #else size(getRealParams(T)) #fi, defArgs(krlist(.List), krlist(.List), krlist(.List)))
+     rule emptyDefaultArguments(_) => NoDefArgs() [owise]
 
-     syntax List ::= #emptyDefaultArguments(Int) [function]
-     rule #emptyDefaultArguments(0) => .List
-     rule #emptyDefaultArguments(N::Int) => ListItem(NoArg()) #emptyDefaultArguments(N -Int 1) [owise]
+     syntax DefaultArgumentsResult ::= #emptyDefaultArguments(Int, DefaultArgumentsResult) [function]
+     rule #emptyDefaultArguments(0, DA::DefaultArgumentsResult) => DA
+     rule #emptyDefaultArguments(N::Int => N -Int 1,
+            defArgs(krlist(_::List (.List => ListItem(NoArg()))),
+                    krlist(_::List (.List => ListItem(NoInitCat()))),
+                    krlist(_::List (.List => ListItem(NoInitType()))))) [owise]
 endmodule

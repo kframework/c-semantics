@@ -52,6 +52,9 @@ module CPP-TYPING-EXPR
      rule (.K => types(list(L))) ~> BraceInit(L::List) types:: _
      rule (types(krlist(L::List)) => .K) ~> (BraceInit(_) => initListType(L)) types:: _
 
+     rule (NoInit() => NoInitType()) types:: _
+     syntax KResult ::= NoInitType
+
      context (HOLE:TypeExpr => typeof(HOLE)) types:: _ [result(CPPDType)]
      context K:KResult types:: HOLE:STypeList
 

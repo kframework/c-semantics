@@ -50,6 +50,8 @@ module CPP-VALUE-CATEGORY
      rule (.K => cats(list(L))) ~> BraceInit(L::List) cats:: _
      rule (cats(krlist(L::List)) => .K) ~> (BraceInit(_) => initListCat(L)) cats:: _
 
+     rule (NoInit() => NoInitCat()) cats:: _
+
      context (HOLE:CatExpr => catof(HOLE)) cats:: _ [result(ValueCategory)]
      context K:KResult cats:: HOLE:SCatList
 

@@ -2,7 +2,7 @@ module CPP-SYMLOC-SORTS
      imports SYMLOC-SORTS
      syntax MemberPtr
      syntax EnvEntry
-     syntax EnvEntryExpr ::= EnvEntry
+     syntax DefaultArgumentsResult
 endmodule
 
 module CPP-SYMLOC-SYNTAX
@@ -31,7 +31,8 @@ module CPP-SYMLOC-SYNTAX
      syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
                    | isBaseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
 
-     syntax EnvEntry ::= envEntry(base: SymBase, using: Bool, defaultArgs: StrictListResult)
+     syntax EnvEntry ::= envEntry(base: SymBase, using: Bool, defaultArgs: DefaultArgumentsResult)
+     syntax DefaultArgumentsResult ::= NoDefArgs()
      syntax SymBase ::= getBase(EnvEntry) [function, klabel(getEnvEntryBase)]
 
 endmodule
