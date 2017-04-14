@@ -204,22 +204,22 @@ module C-EXECUTION-INIT
           => Call(Identifier("main"), list(.List))
           requires Qs ==K noQuals
           [structural]
+     // we cast argv to the type of the parameter in case the user has written an undefined program in which they provided
+     // type qualifiers for argv
      // int main(int argc, char* argv[])
      rule #callMain(t(_, _, functionType(ut(_, int),
-               ListItem(typedDeclaration(t(Qs:Quals, _, int), _))
-               ListItem(typedDeclaration(t(Qs, _, incompleteArrayType(t(Qs, _, pointerType(T::Type)))), _)))),
+               ListItem(typedDeclaration(t(_, _, int), _))
+               ListItem(typedDeclaration(t(_, _, incompleteArrayType(t(_, _, pointerType(t(_, _, char))) #as T::Type)), _)))),
                N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          requires T ==K type(char) andBool Qs ==K noQuals
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(Cast(type(pointerType(T)), X))))
           [structural]
      // int main(int argc, char** argv)
      rule #callMain(t(_, _,
                functionType(ut(.Set, int),
-               ListItem(typedDeclaration(t(Qs:Quals, _, int), _))
-               ListItem(typedDeclaration(t(Qs, _, pointerType(t(Qs, _, pointerType(T::Type)))), _)))),
+               ListItem(typedDeclaration(t(_, _, int), _))
+               ListItem(typedDeclaration(t(_, _, pointerType(t(_, _, pointerType(t(_, _, char))) #as T::Type)), _)))),
                N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
-          requires T ==K type(char) andBool Qs ==K noQuals
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(Cast(type(pointerType(T)), X))))
           [structural]
 
      rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>

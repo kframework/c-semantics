@@ -137,12 +137,10 @@ module C-FUNCTION-DEF
           [structural]
 
      syntax Bool ::= isArgvType(Type) [function]
-     rule isArgvType(t(_, _, incompleteArrayType(t(_, _, pointerType(t(_, _, T:SimpleType))))))
+     rule isArgvType(t(_, _, incompleteArrayType(t(quals(.Set), _, pointerType(t(quals(.Set), _, char))))))
           => true
-          requires T ==K char // char is an alias.
-     rule isArgvType(t(_, _, pointerType(t(_, _, pointerType(t(_, _, T:SimpleType))))))
+     rule isArgvType(t(_, _, pointerType(t(quals(.Set), _, pointerType(t(quals(.Set), _, char))))))
           => true
-          requires T ==K char
      rule isArgvType(_) => false [owise]
 
      rule initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue)
