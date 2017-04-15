@@ -204,18 +204,24 @@ module CPP-DECL-ENUM
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
+          <nenv> NE::Map </nenv>
           <unscoped-enumerators> UE::Map (.Map => X |-> E ) </unscoped-enumerators>
+          requires notBool X in_keys(NE)
 
      rule <k> addUnscopedEnumeratorToEnv(X::CId, (C:Class :: _) #as E::Enum) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
+          <cenv> CE::Map </cenv>
           <cl-unscoped-enumerators> UE::Map (.Map => X |-> E ) </cl-unscoped-enumerators>
+          requires notBool X in_keys(CE)
 
      rule <k> addUnscopedEnumeratorToEnv(X::CId, (localQual(_:BlockScope) :: _) #as E::Enum) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
+          <env> BE::Map </env>
           <bl-unscoped-enumerators> UE::Map (.Map => X |-> E ) </bl-unscoped-enumerators>
+          requires notBool X in_keys(BE)
 
 
      // For unscoped enums without fixed type,

@@ -33,6 +33,7 @@ module CPP-TRANSLATION-NAME
      syntax Expr ::= wrapInThis(TypeExpr) [strict]
      rule wrapInThis(cSet(M::Map, QX::QualId, .K)) => cSet(M, QX, This())
      rule wrapInThis(T:CPPType) => T
+     rule wrapInThis(V:PRVal) => V
      rule wrapInThis(notFound(X::CId)) => notFound(X)
 
      syntax CandidateSet ::= classSet(Class, CId, Map) [function]
@@ -174,7 +175,6 @@ module CPP-TRANSLATION-NAME
           <env> Env::Map </env>
           <types> Types::Map </types>
           <bl-unscoped-enumerators> UE::Map </bl-unscoped-enumerators>
-
           requires (notBool X in_keys(Env) orBool IsNNS)
            andBool notBool X in_keys(Types)
            andBool notBool X in_keys(UE)
@@ -197,9 +197,15 @@ module CPP-TRANSLATION-NAME
           requires notBool X in_keys(Enumerators)
 
      // lookup member in class (and base-classes)
+     rule <k> lookupMember(X::CId, C::Class, NoTag(), false) => lookupEnumerator(X, E) ...</k>
+          <class-id> C </class-id>
+          <cl-unscoped-enumerators>... X |-> E::Enum ...</cl-unscoped-enumerators>
+
      rule <k> lookupMember(X::CId, C::Class, NoTag(), false) => classSet(C, X, S) ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> S::Map ...</cenv>
+          <cl-unscoped-enumerators> UE::Map </cl-unscoped-enumerators>
+          requires notBool X in_keys(UE)
 
      rule <k> lookupMember(X::CId, C::Class, NoTag(), _) => T ...</k>
           <class-id> C </class-id>
@@ -214,8 +220,10 @@ module CPP-TRANSLATION-NAME
           <base-classes> BaseClasses::List </base-classes>
           <cenv> Env::Map </cenv>
           <ctypes> Types::Map </ctypes>
+          <cl-unscoped-enumerators> UE::Map </cl-unscoped-enumerators>
           requires (notBool X in_keys(Env) orBool IsNNS)
            andBool notBool X in_keys(Types)
+           andBool notBool X in_keys(UE)
 
      // TODO(traiansf): Define name lookup in base classes
      rule lookupMemberInBaseClasses(X::CId, .List, _, _) => notFound(X)
