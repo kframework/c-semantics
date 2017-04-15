@@ -85,7 +85,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Decl ::= ClassDef(Tag, CId, NNS, List, List)
                    | TypeDecl(AType)
                    | EnumDef(id: CId, nns: NNS, scoped: Bool, fixed: Bool, ut: AType, List) [strict(5)]
-                   | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType)
+                   | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType) [strict(3)]
                    | AccessSpec(AccessSpecifier)
                    | StaticAssert(Expr, Expr)
                    | UsingDecl(Bool, NNS, CId)
