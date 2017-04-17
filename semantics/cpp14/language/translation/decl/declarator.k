@@ -28,6 +28,7 @@ module CPP-DECL-DECLARATOR
      imports C-CONFIGURATION
      imports K-REFLECTION
      imports STRING
+     imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
@@ -155,6 +156,11 @@ module CPP-DECL-DECLARATOR
      context declareObject(_, _, _, HOLE:CPPTypeExpr, _, _, _, _, _)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
+     syntax Map ::= addOdrDecl(Map, CId, CPPType) [function]
+     rule addOdrDecl(ET::Map, X::CId, T::CPPType) => ET X |-> convertTypeToC(T)
+          requires isCLinkage(T)
+     rule addOdrDecl(ET::Map, _, _) => ET [owise]
+
      // ExternalLinkage, StaticStorage, not previously declared
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
@@ -167,6 +173,7 @@ module CPP-DECL-DECLARATOR
               => Exts[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </externals>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, LN :: X, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           requires notBool LN :: X, T in_keys(Exts)
                andBool completeDeclaration(T, Init) ==K T
@@ -183,6 +190,7 @@ module CPP-DECL-DECLARATOR
               => Ints[LN :: X, T <- declState(bnew(!I, T, S, link(Tu)), declared)]
           </internals>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, LN :: X, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           requires notBool LN :: X, T in_keys(Ints)
@@ -205,6 +213,7 @@ module CPP-DECL-DECLARATOR
           <tu-id> Tu </tu-id>
           <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
@@ -219,6 +228,7 @@ module CPP-DECL-DECLARATOR
           <tu-id> Tu </tu-id>
           <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</internals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
+          <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
@@ -497,6 +507,7 @@ module CPP-DECL-DECLARATOR
           requires notBool isCPPFunctionType(T)
 
      syntax List ::= getDefArgsInitializers(List) [function]
+     rule getDefArgsInitializers(ListItem(DeclLoc(_, D::Decl) => D) _)
      rule getDefArgsInitializers(ListItem(NormalizedDecl(... init: Init::Init)) A::List)
           => ListItem(Init) getDefArgsInitializers(A)
      rule getDefArgsInitializers(.List) => .List

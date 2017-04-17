@@ -37,6 +37,8 @@ module COMPAT-SYNTAX
      syntax K ::= listToK(List) [function]
      syntax List ::= kSeqToList(K) [function]
 
+     syntax List ::= Map2List(Map) [function]
+
      syntax KItem ::= kpair(K, K)
                     | ktriple(K, K, K)
 
@@ -263,5 +265,8 @@ module COMPAT
 
      rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
      rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
+
+     rule Map2List(K1:K |-> K2:K M::Map) => ListItem(kpair(K1, K2)) Map2List(M)
+     rule Map2List(.Map) => .List
 
 endmodule

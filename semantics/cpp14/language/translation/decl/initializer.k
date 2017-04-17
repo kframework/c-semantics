@@ -112,9 +112,7 @@ module CPP-DECL-INITIALIZER
      rule #figureInit(Base:LVal, DestT:CPPArrayType, _, StringLiteral(Kind::CharKind, S::String), _, _, _)
           => strInit(Base, DestT, Kind, S, 0, .K)
           requires isCPPCharType(innerType(DestT)) 
-               orBool simpleType(innerType(DestT)) ==K wchar_t 
-               orBool simpleType(innerType(DestT)) ==K char16_t
-               orBool simpleType(innerType(DestT)) ==K char32_t
+               orBool isCPPWideCharType(innerType(DestT))
 
      // 8.5:17.4 (value init)
      rule #figureInit(Base:LVal, DestT::CPPType, _, ValueInit(), _, _, IsConstructor::Bool)

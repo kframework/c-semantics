@@ -64,7 +64,7 @@ module CPP-DECL-ENUM
           (.Bag => <cppenum>...
                <enum-id> getEnumId(E) </enum-id>
                <enum-type> E </enum-type>
-               <scoped> getScoped(E) </scoped>
+               <scoped> isEnumScoped(E) </scoped>
                <enum-complete> true </enum-complete>
                <enum-min> min(underlyingType(E)) </enum-min>
                <enum-max> max(underlyingType(E)) </enum-max>
@@ -80,13 +80,15 @@ module CPP-DECL-ENUM
                <enum-complete> false </enum-complete>
            ...</cppenum>)
 
-     syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, List, fixed: Bool, first: Bool)
+     syntax KItem ::= declareEnumerators(CPPEnumType, min: Int, max: Int, next: Int, prevType: CPPSimpleType, enums: List, fixed: Bool, first: Bool)
+
+     rule (.K => C) ~> declareEnumerators(... enums: ListItem(DeclLoc(C::CabsLoc, D::Decl) => D) _)
 
      // First enumerator, fixed underlying type.
      rule declareEnumerators(E::CPPEnumType, _, _, _, _, ListItem(Enumerator(_, NoExpression() => prv(0, noTrace, underlyingType(E)))) _::List, true, true)
 
      // First enumerator, underlying type not fixed
-     rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator, underlying type of enumerator is unspecified")) ~> (
+     rule (.K => UNSPEC("TDE2", "No initializer specified for the first enumerator, underlying type of enumerator is unspecified.")) ~> (
           declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, true)
           => recoverFromError(
           declareEnumerators(E, Min, Max, Next, PrevType, ListItem(Enumerator(X, prv(0, noTrace, type(int)))) L, false, true)
@@ -102,14 +104,14 @@ module CPP-DECL-ENUM
           requires inRange(Next, type(PrevType))
 
      // Second or more enumerator, underlype type not fixed, value does not fit to previous type but fits to some.
-     rule (.K => UNSPEC("TDE3", "Value does not fit to type of preceding enumerator")) ~> (
+     rule (.K => UNSPEC("TDE3", "Value does not fit to type of preceding enumerator.")) ~> (
           declareEnumerators(E::CPPEnumType, Min::Int, Max::Int, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(X::CId, NoExpression())) L::List, false, false)
           => recoverFromError(
           declareEnumerators(E, Min, Max, Next::Int, PrevType, ListItem(Enumerator(X, prv(Next, noTrace, type(firstSuitableType(Next, Next, allIntegralTypes))))) L, false, false)
           ))
           requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) =/=K no-type
 
-     rule (.K => ILL("TDE4", "Incremented enumerator value is not representable in any integer type")) ~>
+     rule (.K => ILL("TDE4", "Incremented enumerator value is not representable in any integer type.")) ~>
           declareEnumerators(_, _, _, Next::Int, PrevType::CPPSimpleType, ListItem(Enumerator(_, NoExpression())) _::List, false, false)
           requires notBool inRange(Next, type(PrevType)) andBool firstSuitableType(Next, Next, allIntegralTypes) ==K no-type
 

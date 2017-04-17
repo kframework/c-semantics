@@ -50,6 +50,7 @@ module CPP-TRANSLATION-INIT
           ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), noexcept(true))
           ~> func(GlobalNamespace(), operatordelete, type(void), ptr(type(void)), type(size_t), noexcept(true))
           ~> func(GlobalNamespace(), operatordelete[], type(void), ptr(type(void)), type(size_t), noexcept(true))
+          ~> TypedefDecl(Identifier("__builtin_va_list"), type(ptrdiff_t))
 
      rule func(N::Namespace, X::CId, Ret::CPPType, Args::CPPTypes, E::ExceptionSet) 
           => declareObject(N, N, X, type(functionType(Ret, Args, noMethod, CPPLinkage, E)), NoInit(), makeFunctionDeclarationType(N, Args), ExternalLinkage, StaticStorage, .Set)
@@ -126,6 +127,8 @@ module CPP-TRANSLATION-INIT
 
      rule DeclLoc(L::CabsLoc, D::Decl) => L ~> D
      rule StmtLoc(L::CabsLoc, S::Stmt) => L ~> S
+
+     rule DeclLoc(L::CabsLoc, D::Decl) => L ~> D
 
      rule <k> L:CabsLoc => .K ...</k>
           <elab>... .K => L </elab>

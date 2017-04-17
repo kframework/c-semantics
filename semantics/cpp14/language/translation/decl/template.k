@@ -50,10 +50,11 @@ module CPP-DECL-TEMPLATE
      syntax Decl ::= declareTemplate(Name, Decl, K)
 
      syntax Name ::= getTemplateName(Decl) [function]
+     rule getTemplateName(DeclLoc(_, D::Decl) => D)
      rule getTemplateName(TypeDecl(ElaboratedTypeSpecifier(_, X::CId, N::NNS))) => Name(N, X)
      rule getTemplateName(NormalizedDecl(N::NNS, X::CId, _, _, _)) => Name(N, X)
      rule getTemplateName(DeclaratorAndSpecifiers(D::Declarator, _) => D)
-     rule getTemplateName(ClassDef(_, X::CId, N::NNS, _, _)) => Name(N, X)
+     rule getTemplateName(ClassDef(_, X::CId, N::NNS, _, _, _)) => Name(N, X)
 
      rule <k> declareTemplate(Name(NoNNS(), X::CId), D::Decl, Params:K) => templateContext(N :: X, Params, D) ...</k>
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
@@ -137,7 +138,7 @@ module CPP-DECL-TEMPLATE
      // template instantiation
 
      rule <k> TemplateInstantiationDefinition(TemplateSpecializationType(X::CId), NormalizedDecl(NoNNS(), X::CId, A::AType, _, _)) 
-              => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), false), A)) ~> finishExplicitInstantiation ...</k>
+              => instantiateTemplate(deduceTemplateFromDecl(nameLookup(X, NoTag(), defaultMask), A)) ~> finishExplicitInstantiation ...</k>
 
      syntax KItem ::= "finishExplicitInstantiation"
      rule _:LVal ~> finishExplicitInstantiation => .K

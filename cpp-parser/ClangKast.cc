@@ -149,6 +149,9 @@ bool TraverseDecl(Decl *D) {
   if (!getDerived().shouldVisitImplicitCode() && isImplicitDecl(D))
     return true;
 
+  AddKApplyNode("DeclLoc", 2);
+  AddCabsLoc(D->getLocation());
+
   switch (D->getKind()) {
 #define ABSTRACT_DECL(DECL)
 #define DECL(CLASS, BASE)                                                      \
@@ -169,18 +172,23 @@ bool TraverseDecl(Decl *D) {
 
 
   void AddCabsLoc(SourceLocation loc) {
-    AddKApplyNode("CabsLoc", 5);
     SourceManager &mgr = Context->getSourceManager();
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
-    AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
-    StringRef filename(presumed.getFilename());
-    SmallString<64> vector(filename);
-    llvm::sys::fs::make_absolute(vector);
-    const char *absolute = vector.c_str();
-    AddKTokenNode(escape(absolute, strlen(absolute)), "String");
-    VisitUnsigned(presumed.getLine());
-    VisitUnsigned(presumed.getColumn());
-    VisitBool(mgr.isInSystemHeader(loc));
+    const char *filename = presumed.getFilename();
+    if (filename) {
+      AddKApplyNode("CabsLoc", 5);
+      AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
+      StringRef filename(presumed.getFilename());
+      SmallString<64> vector(filename);
+      llvm::sys::fs::make_absolute(vector);
+      const char *absolute = vector.c_str();
+      AddKTokenNode(escape(absolute, strlen(absolute)), "String");
+      VisitUnsigned(presumed.getLine());
+      VisitUnsigned(presumed.getColumn());
+      VisitBool(mgr.isInSystemHeader(loc));
+    } else {
+      AddKApplyNode("UnknownCabsLoc_COMMON-SYNTAX", 0);
+    }
   }
 
 // modify the evaluation strategy so that we walk up from the base to the
@@ -338,6 +346,14 @@ bool TraverseDecl(Decl *D) {
     TRY_TO(TraverseDeclarationName(D->getDeclName()));
     VisitBool(D->isInline());
     AddDeclContextNode(D);
+    return false;
+  }
+
+  bool VisitNamespaceAliasDecl(NamespaceAliasDecl *D) {
+    AddKApplyNode("NamespaceAliasDecl", 3);
+    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    TRY_TO(TraverseDeclarationAsName(D->getNamespace()));
+    TRY_TO(TraverseNestedNameSpecifier(D->getQualifier()));
     return false;
   }
 
@@ -964,7 +980,7 @@ bool TraverseDecl(Decl *D) {
 
   bool TraverseCXXRecordHelper(CXXRecordDecl *D) {
     if (D->isCompleteDefinition()) {
-      AddKApplyNode("ClassDef", 5);
+      AddKApplyNode("ClassDef", 6);
     } else {
       AddKApplyNode("TypeDecl", 1);
       AddKApplyNode("ElaboratedTypeSpecifier", 3);
@@ -987,6 +1003,7 @@ bool TraverseDecl(Decl *D) {
       }
       AddDeclContextNode(D);
       TraverseDeclContextNode(D);
+      VisitBool(D->isAnonymousStructOrUnion());
     }
     return true;
   }
@@ -1006,7 +1023,7 @@ bool TraverseDecl(Decl *D) {
     }
 
     AddKApplyNode("EnumDef", 6);
-    TRY_TO(TraverseDeclarationName(D->getDeclName()));
+    TRY_TO(TraverseDeclarationAsName(D));
     TRY_TO(TraverseNestedNameSpecifierLoc(D->getQualifierLoc()));
     VisitBool(D->isScoped());
     VisitBool(D->isFixed());
@@ -1515,6 +1532,32 @@ bool TraverseDecl(Decl *D) {
       AddKApplyNode("NoStatement", 0);
     }
     return true;
+  }
+
+  bool TraverseSwitchStmt(SwitchStmt *S) {
+    AddKApplyNode("SwitchAStmt", 2);
+    if (VarDecl *D = S->getConditionVariable()) {
+      TRY_TO(TraverseDecl(D));
+    } else {
+      TRY_TO(TraverseStmt(S->getCond()));
+    }
+    TRY_TO(TraverseStmt(S->getBody()));
+    return true;
+  }
+
+  bool TraverseCaseStmt(CaseStmt *S) {
+    AddKApplyNode("CaseAStmt", 2);
+    if (S->getRHS()) {
+      doThrow("unimplemented: gnu case stmt extensions");
+    }
+    TRY_TO(TraverseStmt(S->getLHS()));
+    TRY_TO(TraverseStmt(S->getSubStmt()));
+    return true;
+  }
+
+  bool VisitDefaultStmt(DefaultStmt *S) {
+    AddKApplyNode("DefaultAStmt", 1);
+    return false;
   }
 
   bool TraverseCXXTryStmt(CXXTryStmt *S) {

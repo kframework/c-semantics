@@ -56,6 +56,7 @@ module C-CONFIGURATION
      <block-control>
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
+          <using-namespaces> .Set </using-namespaces>
           <block-history> .List </block-history>
           <this> .K </this>
      </block-control>

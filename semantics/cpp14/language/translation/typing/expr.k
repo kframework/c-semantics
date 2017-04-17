@@ -258,9 +258,9 @@ module CPP-TYPING-EXPR
      rule #typeofBuiltinOperator(operator^, T1::CPPType, T2::CPPType)
           => typeof(usualArithmeticConversions(T1, T2))
      rule #typeofBuiltinOperator(operator<<, T:CPPType, _)
-          => typeof(promote(T))
+          => typeof(promote(promote(T)))
      rule #typeofBuiltinOperator(operator>>, T:CPPType, _)
-          => typeof(promote(T))
+          => typeof(promote(promote(T)))
      rule #typeofBuiltinOperator(operator,, _, T:CPPType)
           => typeof(T)
 

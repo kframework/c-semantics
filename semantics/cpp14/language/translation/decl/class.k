@@ -69,6 +69,8 @@ module CPP-DECL-CLASS
      
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(N :: Class(T, X, .TemplateArgs))) ...</k>
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
+     rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(C :: Class(T, X, .TemplateArgs))) ...</k>
+          <curr-scope> classScope(C::Class) </curr-scope>
 
      rule <k> TypeDecl(t(_, _, classType(N::Namespace :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
@@ -76,11 +78,17 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
+     rule <k> TypeDecl(t(_, _, classType(C::Class :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
+          <curr-template-context> noTemplate </curr-template-context>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>
 
-     rule ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List) => classContext(declareClassName(T, X, true), Members)
-          requires notBool isUnnamedCId(X) orBool T =/=K Union()
+     rule ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List, IsAnon:Bool) => classContext(declareClassName(T, X, true), Members)
+          requires notBool IsAnon orBool T =/=K Union()
 
-     rule ClassDef(Union(), X:UnnamedCId, NoNNS(), .List, Members::List)
+     rule ClassDef(Union(), X::CId, NoNNS(), .List, Members::List, true)
           => DeclaratorAndSpecifiers(defAnonymousUnion(declareClassName(Union(), X, true), Members), .Set)
      
      syntax Declarator ::= defAnonymousUnion(AType, List)
@@ -92,13 +100,17 @@ module CPP-DECL-CLASS
 
      syntax KItem ::= defineUnnamedObject(Class, Set)
      rule <k> defineUnnamedObject(C::Class, S::Set)
-           => DeclaratorAndSpecifiers(
-                VarDecl(getNamespace(Scope), unnamedObject(C), type(classType(C)), NoInit(), false),
+           => #if isClassScope(Scope)
+              #then FieldDecl(NoNNS(), unnamedObject(C), type(classType(C)), NoInit())
+              #else 
+              DeclaratorAndSpecifiers(
+                VarDecl(getNNSVal(Scope), unnamedObject(C), type(classType(C)), NoInit(), false),
                 #if isNamespaceScope(Scope)
                 #then SetItem(Static()) S // kast does not add Specifiers if in namespaceScope
                 #else S
                 #fi
-              ) ...</k>
+              )
+              #fi ...</k>
           <curr-scope> Scope::Scope </curr-scope>
 
      syntax KItem ::= addMembersToScope(Class)
@@ -108,25 +120,25 @@ module CPP-DECL-CLASS
 
      syntax KItem ::= addMembersToScope(Class, List)
      rule addMembersToScope(_, .List) => .K
-     // TODO(traiansf): propagate variant-members upward if the anonymous union was declared in class scope.
-     rule <k> (.K => addToEnv(getNamespace(Scope) :: X, T, memberBase(unnamedObject(C), X, T), false))
+     // TODO(traiansf): propagate addToEnv upward if getNNSVal(Scope) is an anonymous union.
+     rule <k> (.K => addToEnv(getNNSVal(Scope) :: X, T, memberBase(unnamedObject(C), X, T), false))
            ~> addMembersToScope(C::Class, (ListItem(kpair(X::CId, T::CPPType)) => .List) _)
           ...</k>
           <curr-scope> Scope::Scope </curr-scope>
-          requires notBool isClassScope(Scope)
 
-     syntax Namespace ::= getNamespace(Scope) [function]
-     rule getNamespace(namespaceScope(N::Namespace)) => N
-     rule getNamespace(_:BlockScope) => NoNamespace()
+     syntax NNSVal ::= getNNSVal(Scope) [function]
+     rule getNNSVal(namespaceScope(N::Namespace)) => N
+     rule getNNSVal(classScope(C::Class)) => C
+     rule getNNSVal(_:BlockScope) => NoNamespace()
 
      rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
               => setScope(classScope(C))
               ~> listToK(Members)
               ~> implicitDeclarations()
-              ~> defineFunctions(OldClass)
+              ~> defineFunctions(.K)
               ~> setScope(OldScope)
           ...</k>
-          <member-function-bodies> OldClass:K => .K </member-function-bodies>
+          <member-function-bodies> .K </member-function-bodies>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> OldScope::Scope </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -141,6 +153,30 @@ module CPP-DECL-CLASS
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
+
+     rule <k> classContext(t(_, _, classType((C2::Class :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
+              => setScope(classScope(C))
+              ~> listToK(Members)
+              ~> implicitDeclarations()
+              ~> defineFunctions(OldClass)
+              ~> setScope(OldScope)
+          ...</k>
+          <member-function-bodies> OldClass:K => .K </member-function-bodies>
+          <curr-template-context> noTemplate </curr-template-context>
+          <curr-scope> OldScope::Scope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          (<class-id> C2 </class-id>
+          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>)
+          (.Bag => <class>...
+            <class-id> C </class-id>
+            <class-type> ClassKey </class-type>
+            // injected class name
+            <ctypes> X |-> (ClassKey |-> T) </ctypes>
+            <access> X |-> Public() </access>
+            <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
+          ...</class>)
+
 
      syntax KItem ::= defineFunctions(K)
 
@@ -427,17 +463,24 @@ module CPP-DECL-CLASS
           requires #if isCPPClassType(getMostDerivedArrayElement(T)) #then hasDestructorThat({getMostDerivedArrayElement(T)}:>CPPClassType, #klabel(`isTrivialDestructor`)) #else true #fi
      rule #isTrivialDestructor(<class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>) => true
      rule #isTrivialDestructor(...) => false [owise]
+
+     rule isNonTrivialDestructor(T::CPPFunctionType, K:K) 
+          => notBool isTrivialDestructor(T, K)
      
      syntax AccessSpecifier ::= getDefaultAccessType(Tag) [function]
      rule getDefaultAccessType(Class()) => Private()
      rule getDefaultAccessType(Struct()) => Public()
      rule getDefaultAccessType(Union()) => Public()
 
-     rule FieldDecl(NoNNS(), X::CId, T::CPPType, Init::Expr) => declareField(X, T, Init)
+     context BitFieldDecl(_, _, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
 
-     syntax KItem ::= declareField(CId, CPPType, Expr) [strict(2)]
+     rule BitFieldDecl(NoNNS(), X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType), prv(N::Int, _, _)) => declareField(X, t(Q, Mods, bitfieldType(T, N)), NoInit())
 
-     rule <k> declareField(X::CId, T::CPPType, Init::Expr) => .K ...</k>
+     rule FieldDecl(NoNNS(), X::CId, T::CPPType, Init::Init) => declareField(X, T, Init)
+
+     syntax KItem ::= declareField(CId, CPPType, Init) [strict(2)]
+
+     rule <k> declareField(X::CId, T::CPPType, Init::Init) => .K ...</k>
           <curr-scope> classScope(C::Class) </curr-scope>
           <class>...
             <class-type> Key::ClassKey </class-type>
@@ -452,7 +495,16 @@ module CPP-DECL-CLASS
             <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
             <variant-members> VM::Set => #if Key ==K Union() #then VM SetItem(X) #else VM #fi </variant-members>
           ...</class>
-          requires notBool (X in_keys(CE))
+          requires notBool (X in_keys(CE)) andBool X =/=K #NoName
+
+     rule <k> declareField(#NoName, T:CPPBitfieldType, NoInit()) => .K ...</k>
+          <curr-scope> classScope(C::Class) </curr-scope>
+          <class>...
+            <class-type> Key::ClassKey </class-type>
+            <class-id> C </class-id>
+            <max-offset> V::Int => updateMaxOffset(V, T, Key) </max-offset>
+            <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
+          ...</class>
 
      rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
           <curr-scope> classScope(C::Class) </curr-scope>
@@ -470,7 +522,6 @@ module CPP-DECL-CLASS
      rule padOrNot(V::Int, T::CPPType, _) => pad(V, T) [owise]
 
      // TODO(traiansf): Handle pack directives
-     // TODO(traiansf): Handle bit fields
      // taken from c-semantics/semantics/c11/language/translation/decl/tagged.k
      //
      // The padding associated with a particular field precedes it, with
@@ -482,17 +533,17 @@ module CPP-DECL-CLASS
      // Non-bitfields are aligned according to their type (if we note that
      // fields tagged with the Packed() attribute have an alignment of 1 byte).
      rule pad(V::Int, T::CPPType) => padTo(V, byteAlignofType(T))
-          // requires notBool isBitfieldType(T)
+          requires notBool isCPPBitfieldType(T)
      // Non-packed bitfields that would cross an alignment boundary and
      // zero-length bitfields have an alignment of the bitfield field type.
-//     rule pad(V::Int, T:BitfieldType) => padTo(V, byteAlignofType(innerType(T)))
-//          requires // notBool (Packed() in getModifiers(T)) andBool
-//            (V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))
-//     rule pad(V::Int, T:BitfieldType) => padTo(V, byteAlignofType(innerType(T)))
-//          requires bitSizeofType(T) ==Int 0
+     rule pad(V::Int, T:CPPBitfieldType) => padTo(V, byteAlignofType(innerType(T)))
+          requires // notBool (Packed() in getModifiers(T)) andBool
+            (V +Int bitSizeofType(T)) >Int padTo(V, byteAlignofType(innerType(T)))
+     rule pad(V::Int, T:CPPBitfieldType) => padTo(V, byteAlignofType(innerType(T)))
+          requires bitSizeofType(T) ==Int 0
      // Packed bitfields and non-packed bitfields that don't cross an alignment
      // boundary have 1-bit alignment (no padding).
-//     rule pad(V::Int, _) => V [owise]
+     rule pad(V::Int, _) => V [owise]
 
      // brace-or-equal initializers need to be evalauted in class scope
      rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>

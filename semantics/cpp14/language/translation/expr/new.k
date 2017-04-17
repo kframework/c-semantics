@@ -17,12 +17,12 @@ module CPP-EXPR-NEW
      rule (.K => lookupAllocationFunction(operatornew[], getMostDerivedArrayElement(T), IsGlobal)) ~> NewExpr(IsGlobal::Bool, T:CPPArrayType, _, _, _)
 
      syntax KItem ::= lookupAllocationFunction(CId, CPPType, Bool)
-     rule lookupAllocationFunction(X::CId, T::CPPType, IsGlobal:Bool) => qualifiedNameLookup(X, GlobalNamespace(), false)
+     rule lookupAllocationFunction(X::CId, T::CPPType, IsGlobal:Bool) => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)
           requires IsGlobal orBool notBool isCPPClassType(T)
-     rule lookupAllocationFunction(X::CId, t(... st: classType(C::Class)), false) => qualifiedNameLookup(X, C, false)
+     rule lookupAllocationFunction(X::CId, t(... st: classType(C::Class)), false) => qualifiedNameLookup(X, C, defaultMask)
      // this operator is implicitly declared in every TU, so we should never
      // actually hit the infinite recursion case here
-     rule (notFound(X::CId) => qualifiedNameLookup(X, GlobalNamespace(), false)) ~> NewExpr(...)
+     rule (notFound(X::CId) => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)) ~> NewExpr(...)
 
      rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(pre(newSize(!I), noTrace, type(size_t)) * prv(byteSizeofType(T), noTrace, type(size_t))) P), 
                                              Name(getQual(Q), operatornew[]))

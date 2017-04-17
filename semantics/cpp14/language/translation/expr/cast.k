@@ -62,6 +62,15 @@ module CPP-TRANSLATION-EXPR-CAST
 
      syntax Expr ::= tryInit(CPPType, Val, K) [strict(3)]
 
+     // this is needed to be able to treat certain expressions as constant expressions.
+     // it should be safe since the side condition guarantees that the initialization
+     // we are conceptually performing is well formed and would simply perform this conversion
+     rule convertStatic(T::CPPType, V:PRVal, Tr2::Trace)
+          => convertType(T, V)
+          requires canConvertWithStandardConversion(T, type(V), prvalue)
+               andBool notBool isCPPRefType(T) andBool notBool isCPPArrayType(T)
+               andBool notBool isCPPClassType(T) andBool notBool isCPPClassType(type(V))
+
      rule convertStatic(T::CPPType, V::Val, Tr::Trace)
           => tryInit(T, V, figureInit(le(temp(!I:Int, T), Tr, T), T, V, DirectInit())) [owise]
 

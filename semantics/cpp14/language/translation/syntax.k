@@ -36,8 +36,10 @@ module CPP-ABSTRACT-SYNTAX
                    | TypeAliasDecl(CId, AType) [strict(2)]
                    | LinkageSpec(String, Bool, List)
                    | NamespaceDecl(CId, Bool, List)
+                   | NamespaceAliasDecl(CId, CId, NNS)
                    | Specifier(Specifier, Decl)
                    | Declarator
+                   | DeclLoc(CabsLoc, Decl)
 
      context TypedefDecl(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -52,7 +54,7 @@ module CPP-ABSTRACT-SYNTAX
                          | FunctionDecl(NNS, CId, AType, List)
                          | VarDecl(NNS, CId, AType, Init, isDirect: Bool)
                          | FieldDecl(NNS, CId, AType, Init)
-                         | BitFieldDecl(NNS, CId, AType, Expr)
+                         | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
      syntax Init ::= ValueInit() | NoInit()
 
@@ -82,7 +84,7 @@ module CPP-ABSTRACT-SYNTAX
                    | TemplateInstantiationDefinition(AType, Decl)
                    | PartialSpecialization(List, List, Decl)
 
-     syntax Decl ::= ClassDef(Tag, CId, NNS, List, List)
+     syntax Decl ::= ClassDef(Tag, CId, NNS, List, List, Bool)
                    | TypeDecl(AType)
                    | EnumDef(id: CId, nns: NNS, scoped: Bool, fixed: Bool, ut: AType, List) [strict(5)]
                    | OpaqueEnumDeclaration(id: CId, scoped: Bool, ut: AType)
@@ -184,6 +186,10 @@ module CPP-ABSTRACT-SYNTAX
                     | DoWhileAStmt(AStmt, Expr)
                     | IfAStmt(Decl, AStmt, AStmt)
                     | IfAStmt(Expr, AStmt, AStmt)
+                    | SwitchAStmt(Decl, AStmt)
+                    | SwitchAStmt(Expr, AStmt)
+                    | CaseAStmt(Expr, AStmt)
+                    | DefaultAStmt(AStmt)
                     | TryAStmt(AStmt, List)
                     | CatchAStmt(CatchDecl, AStmt)
                     | CatchStmt(Decl, Stmt)
@@ -254,6 +260,7 @@ module CPP-ABSTRACT-SYNTAX
      // of existence by the semantics
      syntax Expr ::= MaterializeTemporaryExpr(Expr)
                    | ConstructorCall(Bool, AType, List)
+                   | UnresolvedConstructorCall(AType, List)
                    | TemporaryObjectExpr(AType, List)
                    | ParenList(List)
                    | DefaultArg()

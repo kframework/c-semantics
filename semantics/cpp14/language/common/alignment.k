@@ -28,7 +28,9 @@ module CPP-ALIGNMENT
      syntax Int ::= byteAlignofClass(ClassInfo) [function]
      rule byteAlignofClass(<class>... <max-align> A::Int </max-align> ...</class>)
           => A
+     rule byteAlignofClass(#incomplete) => 0
 
+     rule byteAlignofType(bitfieldType(T::CPPSimpleType, _) => T)
      rule byteAlignofType(pointerType(_)) => cfg:alignofPointer
      rule byteAlignofType(lvRefType(_)) => cfg:alignofReference
      rule byteAlignofType(rvRefType(_)) => cfg:alignofReference

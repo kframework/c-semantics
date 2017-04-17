@@ -84,7 +84,7 @@ module COMMON-CONFIGURATION
                          // CId |-> EnumId
                          <unscoped-enumerators> .Map </unscoped-enumerators>
                          <is-inline> false </is-inline>
-                         <using-namespaces> .Set </using-namespaces>
+                         <nusing-namespaces> .Set </nusing-namespaces>
                          <inline-namespaces> .Set </inline-namespaces>
                     </ns>
                </namespaces>

@@ -198,6 +198,7 @@ module CPP-VALUE-CATEGORY
      rule #catofBuiltinOperator(operator_--, _) => catof(prvalue)
      rule #catofBuiltinOperator(operator&, _) => catof(prvalue)
      rule #catofBuiltinOperator(operator*, _) => catof(lvalue)
+     rule #catofBuiltinOperator(operator!, _) => catof(prvalue)
 
      rule (.K => typeAndCatOfConditional(E2, E3)) ~> catofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(_, V:ValueCategory) ~> catofConditional(_, _) => catof(V)

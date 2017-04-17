@@ -3,6 +3,7 @@ module CPP-STMT-TRY
      imports COMPAT-SYNTAX
      imports SYMLOC-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-BUILTIN-SYNTAX
      imports CPP-DECL-DECLARATOR-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
@@ -41,6 +42,8 @@ module CPP-STMT-TRY
 
      rule exceptionObject(T::CPPType) => le(exceptionObject(T), noTrace, T)
 
+     rule <k> CatchStmt(DeclLoc(Loc::CabsLoc, D::Decl) => D, _) ...</k>
+          <curr-program-loc> _ => Loc </curr-program-loc>
      context CatchStmt(NormalizedDecl(... type: HOLE:AType), _)
      context CatchStmt(DeclaratorAndSpecifiers(NormalizedDecl(... type: HOLE:AType), _), _)
      rule (.K => elaborate(BlockStmt(I, ListItem(processCatchDecl(D)) L))) ~> CatchStmt(NormalizedDecl(... type: _:CPPType) #as D::Decl, BlockStmt(I::Int, L::List))

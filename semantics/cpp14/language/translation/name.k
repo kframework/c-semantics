@@ -1,15 +1,19 @@
 module CPP-TRANSLATION-NAME-SYNTAX
-     imports BOOL
+     import SET
      imports CPP-SORTS
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-EXPR-SORTS
 
-     syntax Expr ::= nameLookupInNamespace(CId, Namespace, Tag, isnns: Bool)
-     syntax Expr ::= nameLookup(CId, Tag, isnns: Bool)
-                   | qualifiedNameLookup(CId, NNS, isnns: Bool)
+     syntax Expr ::= nameLookupInNamespace(CId, Namespace, Tag, mask: Set)
+     syntax Expr ::= nameLookup(CId, Tag, mask: Set)
+                   | qualifiedNameLookup(CId, NNS, mask: Set)
      syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
                    | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
+
+      syntax Set ::= "defaultMask" [function]
+                   | "namespaceMask" [function]
+                   | "nnsMask" [function]
 endmodule
 
 module CPP-TRANSLATION-NAME
@@ -46,18 +50,25 @@ module CPP-TRANSLATION-NAME
      rule guardedFind(X::CId, false, _) => notFound(X)
      rule guardedFind(_, true, E::K) => E
 
-     syntax Expr ::= lookupNameInFullClass(id: CId, class: Class, isblock: Bool, tag: Tag, isnns: Bool)
-                   | lookupNameInBlock(CId, Tag, isnns: Bool)
-                   | lookupMember(CId, Class, Tag, isnns: Bool)
-                   | lookupMemberInBaseClasses(CId, baseClasses: List, Tag, isnns: Bool)
-                   | lookupOuterMember(CId, outerClass: MaybeNNS, Tag, isnns: Bool)
-                   | lookupLocalBeforeClass(CId, Class, Tag, isnns: Bool)
-                   | nameLookupInFullNamespace(CId, MaybeNNS, Tag, isnns: Bool)
-                   | nameLookupInNamespaceScope(CId, NNS, Tag, isnns: Bool)
-                   | nameLookupInNamespaces(CId, set: Set, Tag, isnns: Bool, result: Expr)
-                   | nameLookupInEnumScope(CId, Tag, isnns: Bool, EnumScope)
-                   | nameLookupInScope(CId, Tag, isnns: Bool, scope: Scope)
-                   | lookupEnumerator(CId, Enum)
+     syntax LookupCategory ::= "type" | "namespace" | "variable" | "function"
+
+     rule defaultMask => SetItem(type) SetItem(namespace) SetItem(variable) SetItem(function)
+     rule namespaceMask => SetItem(namespace)
+     rule nnsMask => SetItem(type) SetItem(namespace)
+
+     syntax Expr ::= lookupNameInFullClass(id: CId, class: Class, isblock: Bool, tag: Tag, mask: Set)
+                   | lookupNameInBlock(CId, Tag, mask: Set)
+                   | lookupMember(CId, Class, Tag, mask: Set)
+                   | lookupMemberInBaseClasses(CId, baseClasses: List, Tag, mask: Set)
+                   | lookupOuterMember(CId, outerClass: MaybeNNS, Tag, mask: Set)
+                   | lookupLocalBeforeClass(CId, Class, Tag, mask: Set)
+                   | nameLookupInFullNamespace(CId, MaybeNNS, Tag, mask: Set, usingDirectives: Set)
+                   | nameLookupInNamespaceScope(CId, NNS, Tag, mask: Set)
+                   | nameLookupInUsingDirectives(CId, set: Set, Tag, Set, usingS: Set, result: Expr)
+                   | nameLookupInNamespaces(CId, set: Set, Tag, mask: Set, result: Expr)
+                   | nameLookupInEnumScope(CId, Tag, mask: Set, EnumScope)
+                   | nameLookupInScope(CId, Tag, mask: Set, scope: Scope)
+                   | lookupEnumerator(CId, Enum, mask: Set)
 
      syntax Namespace ::= getInnermostNamespace(Scope) [function, klabel(getInnermostNamespace1)]
      rule getInnermostNamespace(blockScope(N:Namespace :: _, _, _)) => N
@@ -69,33 +80,46 @@ module CPP-TRANSLATION-NAME
      rule getRestOfScope(enumScope(enumId(N:Namespace :: _))) => namespaceScope(N)
 
      // name lookup in namespace scope
-     rule <k> nameLookupInNamespaceScope(X::CId, N::Namespace, Tag::Tag, IsNNS::Bool)
-          => nameLookupInNamespaces(X, SetItem(N) InlineS, Tag, IsNNS, notFound(X))
-          orIfNotFound nameLookupInNamespaces(X, SetItem(N) UsingS, Tag, IsNNS, notFound(X))
+     rule <k> nameLookupInNamespaceScope(X::CId, N::Namespace, Tag::Tag, Mask::Set)
+          => nameLookupInNamespaces(X, SetItem(N) InlineS, Tag, Mask, notFound(X))
+          orIfNotFound nameLookupInUsingDirectives(X, SetItem(N) InlineS, Tag, Mask, .Set, notFound(X))
           ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <inline-namespaces> InlineS::Set </inline-namespaces>
-          <using-namespaces> UsingS::Set </using-namespaces>
+          <nusing-namespaces> UsingS::Set </nusing-namespaces>
+
+     rule <k> nameLookupInUsingDirectives(... set: (SetItem(N::Namespace) => .Set) _, 
+                   usingS: (.Set => UsingS) _)
+          ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <ns-id> N </ns-id>
+          <nusing-namespaces> UsingS::Set </nusing-namespaces>
+     rule nameLookupInUsingDirectives(X::CId, .Set, Tag::Tag, Mask::Set, 
+               (SetItem(N::Namespace) => .Set ) _, 
+               R::Expr => cSetUnion(nameLookupInNamespaceScope(X, N, Tag, Mask), R))
+     rule nameLookupInUsingDirectives(... set: .Set, usingS: .Set, result: R::Expr) => R
 
      rule nameLookupInNamespaces(... set: .Set, result: R::Expr) => R
      rule nameLookupInNamespaces(X::CId,
             (SetItem(N::Namespace) => .Set) _::Set,
             Tag::Tag,
-            IsNNS::Bool,
-            R::Expr => cSetUnion(nameLookupInNamespace(X, N, Tag, IsNNS), R))
+            Mask::Set,
+            R::Expr => cSetUnion(nameLookupInNamespace(X, N, Tag, Mask), R))
 
      // name lookup in a single namespace
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), false) => lookupEnumerator(X, E)  ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask)  ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <unscoped-enumerators>... X |-> E::Enum ...</unscoped-enumerators>
           <templates> T::Map </templates>
           requires notBool N :: X in_keys(T)
+               andBool variable in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), false) => cSet(M, N :: X, .K) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(M, N :: X, .K) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
@@ -103,44 +127,50 @@ module CPP-TRANSLATION-NAME
           <templates> T::Map </templates>
           <unscoped-enumerators> UE::Map </unscoped-enumerators>
           requires notBool N :: X in_keys(T) andBool notBool X in_keys(UE)
+               andBool envMask(X |-> M, X, Mask)
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), _) => nsRef(NS) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => nsRef(NS) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nested-namespaces>... X |-> NS::Namespace ...</nested-namespaces>
+          requires namespace in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, _) => T ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, Mask::Set) => T ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes>... X |-> (_ Tag |-> T::CPPType) ...</ntypes>
+          requires type in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), _) => T ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => T ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <ntypes>... X |-> (_ |-> T::CPPType) ...</ntypes>
+          requires type in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), _) => templateRef(N :: X, T) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
+          requires type in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, _) => templateRef(N :: X, T) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
-          requires getTag(T) ==K Tag
+          requires getTag(T) ==K Tag andBool type in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), false) => cSet(T |-> I M, N :: X, .K) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(T |-> I M, N :: X, .K) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <nenv> NE::Map </nenv>
           <templates>... N :: X |-> (T:CPPFunctionTypeExpr |-> I::TemplateInfo M::Map) ...</templates>
           requires notBool X in_keys(NE)
+               andBool function in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, _, IsNNS:Bool) => notFound(X) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, _, Mask::Set) => notFound(X) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
@@ -148,81 +178,115 @@ module CPP-TRANSLATION-NAME
           <ntypes> NT::Map </ntypes>
           <nested-namespaces> NN::Map </nested-namespaces>
           <templates> T::Map </templates>
-          requires (notBool X in_keys(NE) orBool IsNNS) andBool notBool X in_keys(NT) andBool notBool X in_keys(NN)
-               andBool notBool N :: X in_keys(T)
+          requires (notBool X in_keys(NE) orBool notBool envMask(NE, X, Mask)) andBool (notBool X in_keys(NT) orBool notBool type in Mask) andBool (notBool X in_keys(NN) orBool notBool namespace in Mask)
+               andBool (notBool N :: X in_keys(T) orBool notBool templateMask(T, N :: X, Mask))
 
-     rule nameLookupInFullNamespace(X::CId, N::Namespace, T::Tag, IsNNS::Bool)
-          =>                                                  nameLookupInNamespaceScope(X, N, T, IsNNS)
-          orIfNotFound guardedFind(X, hasParentNamespace(N),  nameLookupInFullNamespace(X, getParentNamespace(N), T, IsNNS))
+     syntax Bool ::= templateMask(Map, QualId, Set) [function]
+                   | envMask(Map, CId, Set) [function]
+     rule templateMask((N :: X |-> ((T:CPPFunctionTypeExpr |-> _) _)) _, N::NNSVal :: X::CId, Mask::Set)
+          => function in Mask
+     rule templateMask((N :: X |-> ((T:CPPClassTypeExpr |-> _) _)) _, N::NNSVal :: X::CId, Mask::Set)
+          => type in Mask
+     rule templateMask((N :: X |-> _) _, N::NNSVal :: X::CId, Mask::Set)
+          => variable in Mask [owise]
+     rule envMask((X |-> ((T:CPPFunctionType |-> _) _)) _, X::CId, Mask::Set)
+          => function in Mask
+     rule envMask((X |-> _) _, X::CId, Mask::Set)
+          => variable in Mask
+
+     rule <k> nameLookupInFullNamespace(X::CId, N::Namespace, T::Tag, Mask::Set, OldUsingDirectives::Set)
+          =>                                                  nameLookupInNamespaces(X, SetItem(N) getUsingNamespaces(BlockUsingDirectives NewUsingDirectives OldUsingDirectives, N), T, Mask, notFound(X))
+          orIfNotFound guardedFind(X, hasParentNamespace(N),  nameLookupInFullNamespace(X, getParentNamespace(N), T, Mask, (OldUsingDirectives NewUsingDirectives) -Set getUsingNamespaces(BlockUsingDirectives NewUsingDirectives OldUsingDirectives, N)))
+          ...</k>
+          <using-namespaces> BlockUsingDirectives::Set </using-namespaces>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <ns-id> N </ns-id> 
+          <nusing-namespaces> NewUsingDirectives::Set </nusing-namespaces> 
+
+     syntax Set ::= getUsingNamespaces(Set, Namespace) [function]
+     rule getUsingNamespaces(SetItem(Using::Namespace) S::Set, N::Namespace) => SetItem(Using) getUsingNamespaces(S, N)
+          requires enclosesNamespace(N, Using)
+     rule getUsingNamespaces(.Set, _) => .Set
+     rule getUsingNamespaces(SetItem(_) S::Set, N::Namespace) => getUsingNamespaces(S, N) [owise]
 
      // unqualified name lookup
-     rule <k> lookupNameInBlock(X::CId, NoTag(), false) => cSet(S, NoNamespace() :: X, .K) ...</k>
+     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => cSet(S, NoNamespace() :: X, .K) ...</k>
+          <curr-scope> Scope:BlockScope </curr-scope>
           <env>... X |-> S::Map ...</env>
+          requires envMask(X |-> S, X, Mask)
 
-     rule <k> lookupNameInBlock(X::CId, NoTag(), _) => T ...</k>
+     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => T ...</k>
           <types>... X |-> (_ |-> T::CPPType) ...</types>
+          requires type in Mask
 
-     rule <k> lookupNameInBlock(X::CId, Tag::Tag, _) => T ...</k>
+     rule <k> lookupNameInBlock(X::CId, Tag::Tag, Mask::Set) => T ...</k>
           <types>... X |-> (_ Tag |-> T::CPPType) ...</types>
+          requires type in Mask
 
-     rule <k> lookupNameInBlock(X::CId, _, IsNNS:Bool) => notFound(X) ...</k>
+     rule <k> lookupNameInBlock(X::CId, _, Mask::Set) => notFound(X) ...</k>
           <env> Env::Map </env>
           <types> Types::Map </types>
-          requires (notBool X in_keys(Env) orBool IsNNS)
-           andBool notBool X in_keys(Types)
+          requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
+           andBool (notBool X in_keys(Types) orBool notBool type in Mask)
 
-     rule <k> lookupEnumerator(X::CId, E::Enum) => V ... </k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set) => V ... </k>
           <curr-scope> enumScope(enumId(E)) </curr-scope>
           <enum-id> enumId(E) </enum-id>
           <enumerators>... X |-> V::PRVal </enumerators>
+          requires variable in Mask
 
-     rule <k> lookupEnumerator(X::CId, E::Enum) => prv(V, Tr, ET) ... </k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set) => prv(V, Tr, ET) ... </k>
           <curr-scope> Sc::Scope </curr-scope>
           <enum-id> enumId(E) </enum-id>
           <enum-type> ET::CPPType </enum-type>
           <enumerators>... X |-> prv(V::CPPValue, Tr::Trace, _) </enumerators>
           requires Sc =/=K enumScope(enumId(E))
+               andBool variable in Mask
 
-     rule <k> lookupEnumerator(X::CId, E::Enum) => notFound(X) ...</k>
+     rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set) => notFound(X) ...</k>
           <enum-id> enumId(E) </enum-id>
           <enumerators> Enumerators::Map </enumerators>
-          requires notBool X in_keys(Enumerators)
+          requires notBool X in_keys(Enumerators) orBool notBool variable in Mask
 
      // lookup member in class (and base-classes)
-     rule <k> lookupMember(X::CId, C::Class, NoTag(), false) => classSet(C, X, S) ...</k>
+     rule <k> lookupMember(X::CId, C::Class, NoTag(), Mask::Set) => classSet(C, X, S) ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> S::Map ...</cenv>
+          requires envMask(X |-> S, X, Mask)
 
-     rule <k> lookupMember(X::CId, C::Class, NoTag(), _) => T ...</k>
+     rule <k> lookupMember(X::CId, C::Class, NoTag(), Mask::Set) => T ...</k>
           <class-id> C </class-id>
           <ctypes>... X |-> (_ |-> T::CPPType) ...</ctypes>
+          requires type in Mask
 
-     rule <k> lookupMember(X::CId, C::Class, Tag::Tag, _) => T ...</k>
+     rule <k> lookupMember(X::CId, C::Class, Tag::Tag, Mask::Set) => T ...</k>
           <class-id> C </class-id>
           <ctypes>... X |-> (_ Tag |-> T::CPPType) ...</ctypes>
+          requires type in Mask
 
-     rule <k> lookupMember(X::CId, C::Class, T::Tag, IsNNS:Bool) => lookupMemberInBaseClasses(X, BaseClasses, T, IsNNS) ...</k>
+     rule <k> lookupMember(X::CId, C::Class, T::Tag, Mask::Set) => lookupMemberInBaseClasses(X, BaseClasses, T, Mask) ...</k>
           <class-id> C </class-id>
           <base-classes> BaseClasses::List </base-classes>
           <cenv> Env::Map </cenv>
           <ctypes> Types::Map </ctypes>
-          requires (notBool X in_keys(Env) orBool IsNNS)
-           andBool notBool X in_keys(Types)
+          requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
+           andBool (notBool X in_keys(Types) orBool notBool type in Mask)
 
      // TODO(traiansf): Define name lookup in base classes
      rule lookupMemberInBaseClasses(X::CId, .List, _, _) => notFound(X)
 
      // lookup in inner classes
-     rule lookupOuterMember(X::CId, C::Class, Tag::Tag, IsNNS::Bool) => lookupMember(X, C, Tag, IsNNS)
-          orIfNotFound guardedFind(X, isInnerClass(C),     lookupOuterMember(X, getOuterClass(C), Tag, IsNNS))
+     rule lookupOuterMember(X::CId, C::Class, Tag::Tag, Mask::Set) => lookupMember(X, C, Tag, Mask)
+          orIfNotFound guardedFind(X, isInnerClass(C),     lookupOuterMember(X, getOuterClass(C), Tag, Mask))
 
      // 3.4.1:8
-     rule lookupNameInFullClass(X::CId, C::Class, BlockScope::Bool, Tag::Tag, IsNNS::Bool)
-       => guardedFind(X, BlockScope,                        lookupNameInBlock(X, Tag, IsNNS))                            // 3.4.1:8.1
-          orIfNotFound                          wrapInThis( lookupMember(X, C, Tag, IsNNS) )                             // 3.4.1:8.2
-          orIfNotFound guardedFind(X, isInnerClass(C),      lookupOuterMember(X, getOuterClass(C), Tag, IsNNS))          // 3.4.1:8.3
-          orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, IsNNS))                    // 3.4.1:8.4
-          orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, IsNNS)   // 3.4.1:8.5
+     rule lookupNameInFullClass(X::CId, C::Class, BlockScope::Bool, Tag::Tag, Mask::Set)
+       => guardedFind(X, BlockScope,                        lookupNameInBlock(X, Tag, Mask))                            // 3.4.1:8.1
+          orIfNotFound                          wrapInThis( lookupMember(X, C, Tag, Mask) )                             // 3.4.1:8.2
+          orIfNotFound guardedFind(X, isInnerClass(C),      lookupOuterMember(X, getOuterClass(C), Tag, Mask))          // 3.4.1:8.3
+          orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, Mask))                    // 3.4.1:8.4
+          orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, Mask, .Set)   // 3.4.1:8.5
 
      rule (.K => argDependentNameLookup(X, Args)) ~> CallExpr(Name(NoNNS(), X::CId), Args::StrictList, krlist(.List))
      rule <k> CallExpr((ExprLoc(L::CabsLoc, E::Expr) => E), Args::StrictList, krlist(.List)) ...</k>
@@ -230,21 +294,21 @@ module CPP-TRANSLATION-NAME
      context CallExpr(Name(HOLE:NNS, _), _, _)
              requires HOLE =/=K NoNNS()
              [result(NNSVal)]
-     rule (.K => qualifiedNameLookup(X, N, false)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, N, defaultMask)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
 
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
      rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X, .K), Args, E)
      rule cSet(Y::Map, X::QualId, This()) ~> CallExpr(N:Name, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X, This()), Args, (* This()) . no-template N)
 
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-     rule (.K => qualifiedNameLookup(X, C, false)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
 
      rule (cSet(_, C:Class :: _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
@@ -253,19 +317,19 @@ module CPP-TRANSLATION-NAME
           requires N =/=K NoNNS()
      rule isQualifiedName(_) => false [owise]
 
-     rule qualifiedNameLookup(X::CId, N:Namespace, IsNNS::Bool) => nameLookupInNamespaceScope(X, N, NoTag(), IsNNS)
-     rule qualifiedNameLookup(X::CId, C:Class, IsNNS::Bool) => lookupMember(X, C, NoTag(), IsNNS)
-     rule qualifiedNameLookup(X::CId, E:Enum, IsNNS::Bool) => lookupEnumerator(X::CId, E)
+     rule qualifiedNameLookup(X::CId, N:Namespace, Mask::Set) => nameLookupInNamespaceScope(X, N, NoTag(), Mask)
+     rule qualifiedNameLookup(X::CId, C:Class, Mask::Set) => lookupMember(X, C, NoTag(), Mask)
+     rule qualifiedNameLookup(X::CId, E:Enum, Mask::Set) => lookupEnumerator(X::CId, E, Mask)
 
      rule Name(N::NNS, X::CId)
        => resolveUniqueDecl(#if N ==K NoNNS()
-                            #then nameLookup(X, NoTag(), false)
-                            #else qualifiedNameLookup(X, N, false)
+                            #then nameLookup(X, NoTag(), defaultMask)
+                            #else qualifiedNameLookup(X, N, defaultMask)
                             #fi, Name(N, X))
 
-     rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T, false))
+     rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T, SetItem(type)))
      requires T =/=K NoTag()
-     rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS(), Args::List) => resolveElabSpecifier(nameLookup(X, T, false), list(Args))
+     rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS(), Args::List) => resolveElabSpecifier(nameLookup(X, T, SetItem(type)), list(Args))
      requires T =/=K NoTag()
 
      context qualifiedNameLookup(_, (HOLE:NNS), _) [result(NNSVal)]
@@ -275,8 +339,8 @@ module CPP-TRANSLATION-NAME
      rule <k> NoNNS() => NoNamespace() ...</k>
           <curr-scope> _:BlockScope </curr-scope>
 
-     rule NNS(X:CId) => extractNNS(nameLookup(X, NoTag(), true))
-     rule NNS(Name(N::NNS, X::CId)) => extractNNS(qualifiedNameLookup(X, N, true))
+     rule NNS(X:CId) => extractNNS(nameLookup(X, NoTag(), nnsMask))
+     rule NNS(Name(N::NNS, X::CId)) => extractNNS(qualifiedNameLookup(X, N, nnsMask))
           requires N =/=K NoNNS()
      rule NNS(Name(NoNNS(), X::CId)) => NNS(X)
 
@@ -293,31 +357,31 @@ module CPP-TRANSLATION-NAME
                     | resolveElabSpecifier(K, StrictList) [strict(1, 2), klabel(resolveElabSpecifier2)]
                     | specializeTypeTemplate(QualId, CPPType, List)
 
-     rule <k> nameLookup(X::CId, Tag::Tag, IsNNS::Bool) => nameLookupInScope(X, Tag, IsNNS, Scope) ...</k>
+     rule <k> nameLookup(X::CId, Tag::Tag, Mask::Set) => nameLookupInScope(X, Tag, Mask, Scope) ...</k>
           <curr-scope> Scope::Scope </curr-scope>
 
-     rule nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, Scope::Scope) => lookupNameInFullClass(X, classFromScope(Scope), isBlockScope(Scope), Tag, IsNNS)
+     rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, Scope::Scope) => lookupNameInFullClass(X, classFromScope(Scope), isBlockScope(Scope), Tag, Mask)
           requires inClassScope(Scope)
 
-     rule nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, enumScope(E::EnumId)) => nameLookupInEnumScope(X, Tag, IsNNS, enumScope(E))
+     rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::EnumId)) => nameLookupInEnumScope(X, Tag, Mask, enumScope(E))
 
      // 3.4.1: 6
-     rule nameLookupInScope(X::CId, Tag::Tag, IsNNS::Bool, Scope::Scope) => lookupNameInBlock(X, Tag, IsNNS)
-                                 orIfNotFound nameLookupInFullNamespace(X, getInnermostNamespace(Scope), Tag, IsNNS)
+     rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, Scope::Scope) => lookupNameInBlock(X, Tag, Mask)
+                                 orIfNotFound nameLookupInFullNamespace(X, getInnermostNamespace(Scope), Tag, Mask, .Set)
           requires notBool inClassScope(Scope) andBool notBool isEnumScope(Scope)
 
      rule <k> nameLookupInEnumScope(X::CId, _, _, enumScope(E::EnumId)) => V ... </k>
           <enum-id> E </enum-id>
           <enumerators>... X |-> V::PRVal ...</enumerators>
 
-     rule <k> nameLookupInEnumScope(X::CId, Tag::Tag, IsNNS::Bool, enumScope(E::EnumId)) => nameLookupInScope(X, Tag, IsNNS, getRestOfScope(enumScope(E))) ... </k>
+     rule <k> nameLookupInEnumScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::EnumId)) => nameLookupInScope(X, Tag, Mask, getRestOfScope(enumScope(E))) ... </k>
           <enum-id> E </enum-id>
           <enumerators> Enumerators::Map </enumerators>
-          requires notBool X in_keys(Enumerators)
+          requires notBool X in_keys(Enumerators) orBool notBool variable in Mask
 
 
      // arg dependent name lookup
-     rule argDependentNameLookup(X::CId, Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag(), false))
+     rule argDependentNameLookup(X::CId, Args::StrictList) => argDependentNameLookup(X, Args, Args, nameLookup(X, NoTag(), defaultMask))
 
      context argDependentNameLookup(_, _, (HOLE:StrictList => types(HOLE)), _)
 
@@ -335,7 +399,7 @@ module CPP-TRANSLATION-NAME
      rule isDependentName(_, .List, .List) => false
      syntax KItem ::= isTypeDependent(Expr, CPPTypeExpr)
      rule isTypeDependent(StringLiteral(_, _), _) => false
-     rule (.K => nameLookup(X, NoTag(), false)) ~> isTypeDependent(Name(NoNNS(), X::CId), _)
+     rule (.K => nameLookup(X, NoTag(), defaultMask)) ~> isTypeDependent(Name(NoNNS(), X::CId), _)
      rule cSet(... candidates: (T::CPPTypeExpr |-> _ => .Map) _) ~> isTypeDependent(Name(NoNNS(), _), _)
           requires notBool isDependentInScope(T)
      rule cSet(... candidates: .Map) ~> isTypeDependent(Name(NoNNS(), _), _) => false
@@ -366,13 +430,14 @@ module CPP-TRANSLATION-NAME
      // i.e., the classes and namespaces associated with its parameter types
      // and return type
      syntax KItem ::= getFunctionAddressTypes(List)
-     rule (.K => nameLookup(X, NoTag(), false)) ~> getFunctionAddressTypes((ListItem(Name(NoNNS(), X::CId)) => .List) _)
+     rule (.K => nameLookup(X, NoTag(), defaultMask)) ~> getFunctionAddressTypes((ListItem(Name(NoNNS(), X::CId)) => .List) _)
      rule (cSet(... candidates: M::Map) => .K) ~> getFunctionAddressTypes(_) ~> false ~> argDependentNameLookup(_, _, krlist(_::List (.List => filterList(keys_list(M), #klabel(`isCPPFunctionType`)))), _)
      rule getFunctionAddressTypes((ListItem(N::Init) => .List) _)
           requires notBool isName(N) andBool notBool isAddressOfName(N)
 
      syntax Bool ::= isAddressOfName(Init) [function]
      rule isAddressOfName(& N:Name) => true
+     rule isAddressOfName(UnaryOperator(operator&, N:Name)) => true
      rule isAddressOfName(_) => false [owise]
 
      rule <k> getFunctionAddressTypes(.List) ~> false ~> argDependentNameLookup(X::CId, Args::StrictList, krlist(Types::List), Y:CandidateSet) => #argDependentNameLookup(X, Args, Types, getAssociatedNamespaces(Types, <namespaces> B </namespaces>), Y) ...</k>
@@ -427,7 +492,7 @@ module CPP-TRANSLATION-NAME
      rule getTemplateArgTypes(.TemplateParams) => .List
 
      rule #argDependentNameLookup(X::CId, Args::StrictList, Types::List, .Set, Y:CandidateSet) => Y
-     rule (.K => qualifiedNameLookup(X, N, false)) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
+     rule (.K => qualifiedNameLookup(X, N, SetItem(function))) ~> #argDependentNameLookup(X::CId, _, _, (SetItem(N::Namespace) => .Set) _, _)
      rule (M:CandidateSet => .K) ~> #argDependentNameLookup(_, _, _, _, Y:CandidateSet => cSetUnion2(M, Y))
 
      // elaborated type specifiers
@@ -454,7 +519,7 @@ module CPP-TRANSLATION-NAME
      context addBuiltinCandidates(... cat1: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
      context addBuiltinCandidates(... cat2: HOLE:CatExpr => catof(HOLE)) [result(ValueCategory)]
 
-     rule memberCandidates(O::OpId, t(... st: classType(C::Class)) #as T::CPPType) => qualifiedNameLookup(O, C, false)
+     rule memberCandidates(O::OpId, t(... st: classType(C::Class)) #as T::CPPType) => qualifiedNameLookup(O, C, defaultMask)
           requires isCompleteType(T)
      rule memberCandidates(O::OpId, _) => notFound(O) [owise]
          

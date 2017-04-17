@@ -76,40 +76,31 @@ module C-LINKING-INIT
      rule <k> addBuiltin(B:CId, T:FunctionType, Base:SymBase, AddAll:Bool)
                => declareBuiltinFunction(B, T, Base)
           ...</k>
-          <external-types> Types:Map </external-types>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires (notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in_keys(Uses))
+          requires (notBool (B in_keys(Defs)) andBool B in_keys(Uses))
                orBool AddAll
 
      rule <k> addBuiltin(B:CId, T:Type, Base:SymBase, AddAll:Bool)
                => declareBuiltinConstant(B, T, Base)
           ...</k>
-          <external-types> Types:Map </external-types>
           <external-uses> Uses:Map </external-uses>
           <external-defs> Defs:Map </external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(B) ...</uses>
-          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Types) andBool B in_keys(Uses))
+          requires ((notBool (B in_keys(Defs)) andBool B in_keys(Uses))
                orBool AddAll)
                andBool notBool isFunctionType(T)
 
      rule <k> addBuiltin(B::CId, _, _, false) => .K ...</k>
-          <external-types> Types:Map </external-types>
           <external-defs> Defs:Map </external-defs>
-          requires (B in_keys(Defs))
-               orBool (notBool (B in_keys(Types)))
-
-     rule <k> addBuiltin(B::CId, _, _, false) => .K ...</k>
-          <external-types>... B |-> _ ...</external-types>
           <external-uses> Uses:Map </external-uses>
-          <external-defs> Defs:Map </external-defs>
-          requires notBool (B in_keys(Defs))
-               andBool notBool (B in_keys(Uses))
+          requires (B in_keys(Defs))
+               orBool notBool (B in_keys(Uses))
 
      syntax Set ::= getIds(Set) [function]
      rule getIds(SetItem(CodeLoc(X::CId, _)) S::Set)
@@ -123,6 +114,7 @@ module C-LINKING-INIT
      rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, callBuiltin)] </functions>
+          <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>
@@ -131,6 +123,7 @@ module C-LINKING-INIT
           <gtypes> Types::Map => Types[B <- T] </gtypes>
 
      rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase) => .K ...</k>
+          <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>

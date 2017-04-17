@@ -7,10 +7,19 @@ module CPP-PROMOTION
 
      rule Lbl:KLabel(V:PRVal)
           => Lbl(
-               convertType(promote(type(V)), V))
+               convertType(promote(promote(type(V))), V))
           requires isPromoteOp(#klabel(Lbl))
                andBool (isCPPArithmeticType(type(V)) orBool isCPPEnumType(type(V)))
                andBool notBool isPromoted(type(V))
+
+     rule Lbl:KLabel(L:PRVal, R:PRVal)
+          => Lbl(
+               convertType(promote(promote(type(L))), L),
+               convertType(promote(promote(type(R))), R))
+          requires isPromoteOp(#klabel(Lbl))
+               andBool (isCPPArithmeticType(type(L)) orBool isCPPEnumType(type(L)))
+               andBool (isCPPArithmeticType(type(R)) orBool isCPPEnumType(type(R)))
+               andBool (notBool isPromoted(type(L)) orBool notBool isPromoted(type(R)))
 
      rule Lbl:KLabel(L:PRVal, R:PRVal)
           => Lbl(

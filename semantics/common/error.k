@@ -16,6 +16,7 @@ module ERROR-SYNTAX
      syntax KItem ::= FATAL()
 
      syntax KItem ::= recoverFromError(K)
+                    | errorFuncResult(K, K)
 
      syntax Error
      syntax K ::= assert(Bool, Error)
@@ -42,5 +43,7 @@ module ERROR
 
      rule ILL(Title:String, Msg:String)
           => EXIT(ErrorMsg(Ill(), Title, Msg))
+
+     rule errorFuncResult(K1:K, K2:K) => K1 ~> K2
 
 endmodule

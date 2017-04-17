@@ -22,6 +22,11 @@ module CPP-CONVERSION-SYNTAX
 
      syntax CPPType ::= prvalType(CPPType) [function]
 
+     // remember to call promote twice if you want to get the promoted
+     // type of another type. calling promote once is intended to
+     // allow differentiation between the underlying type of an enum
+     // and the promoted underlying type, both of which are conversions
+     // considered "promotion".
      syntax CPPType ::= promote(CPPType) [function, klabel(promoteCpp)]
      syntax Bool ::= isPromoted(CPPType) [function, klabel(isPromotedCpp)]
                    | isCompositePointerType(CPPType) [function]
@@ -62,7 +67,7 @@ module CPP-CONVERSION
      rule arithInterpret(T:CPPUnsignedType, N:Int, Tr::Trace) => prv(N modInt (max(T) +Int 1), Tr, T)
           requires (N >Int max(T) orBool N <Int min(T)) andBool notBool hasLint
      rule arithInterpret(T:CPPSignedType, N:Int, Tr::Trace) 
-          => UNDEF("CCV1", "Signed integer overflow.") ~> arithInterpretHold(T, N, Tr)
+          => errorFuncResult(UNDEF("CCV1", "Signed integer overflow."), arithInterpretHold(T, N, Tr))
           requires notBool (min(T) <=Int N andBool max(T) >=Int N)
      rule arithInterpret(T:CPPFloatingType, (F:Float => roundFloat(F, precision(T), exponent(T))), _)
           requires precisionFloat(F) =/=Int precision(T) orBool exponentBitsFloat(F) =/=Int exponent(T)
@@ -70,8 +75,8 @@ module CPP-CONVERSION
           requires precisionFloat(F) ==Int precision(T) andBool exponentBitsFloat(F) ==Int exponent(T)
                andBool notBool isInfinite(F)
      rule arithInterpret(T:CPPFloatingType, F:Float, Tr::Trace)
-          => UNDEF("CCV2", "Floating point overflow.")
-          ~> arithInterpretHold(T, F, Tr)
+          => errorFuncResult(UNDEF("CCV2", "Floating point overflow."),
+             arithInterpretHold(T, F, Tr))
           requires isInfinite(F)
 
      rule convertType(T1::CPPType, prv(V::CPPValue, Tr::Trace, T2::CPPType)) => prv(V, Tr, T2)
@@ -82,8 +87,8 @@ module CPP-CONVERSION
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => prv(C, Tr, T)
           requires isCPPSignedType(underlyingType(T)) andBool inRange(C, T)
      rule convertType(T::CPPIntegerType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType))
-          => IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented.")
-          ~> convertTypeHold(T, prv(C, Tr, T'))
+          => errorFuncResult(IMPL("CCV3", "Integral conversion to signed integer type in which value cannot be represented."),
+             convertTypeHold(T, prv(C, Tr, T')))
           requires isCPPSignedType(underlyingType(T)) andBool notBool inRange(C, T)
      rule convertType(T::CPPType, prv(C::CPPValue, Tr::Trace, T':CPPIntegerType)) => arithInterpret(T, C, Tr)
           requires notBool isCPPEnumType(T) andBool isCPPUnsignedType(underlyingType(T)) andBool inRange(C, T)
@@ -98,16 +103,16 @@ module CPP-CONVERSION
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType)) => arithInterpret(T, F, Tr)
           requires inRange(F, T)
      rule convertType(T:CPPFloatingType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDEF("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values.")
-          ~> convertTypeHold(T, prv(F, Tr, T'))
+          => errorFuncResult(UNDEF("CCV4", "Floating point conversion to type in which value is not between any two adjacent destination values."),
+             convertTypeHold(T, prv(F, Tr, T')))
           requires notBool inRange(F, T)
 
      rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
           => arithInterpret(T, Float2Int(F), Tr)
           requires notBool isCPPBoolType(T) andBool inRange(Float2Int(F), T)
      rule convertType(T:CPPIntegerType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
-          => UNDEF("CCV5", "Floating-integral conversion to integer type in which value cannot be represented.")
-          ~> convertTypeHold(T, prv(F, Tr, T'))
+          => errorFuncResult(UNDEF("CCV5", "Floating-integral conversion to integer type in which value cannot be represented."),
+             convertTypeHold(T, prv(F, Tr, T')))
           requires notBool isCPPBoolType(T) andBool notBool inRange(Float2Int(F), T)
      rule convertType(T:CPPBoolType, prv(F:Float, Tr::Trace, T':CPPFloatingType))
           => prv(0, Tr, T)
@@ -120,8 +125,8 @@ module CPP-CONVERSION
           => arithInterpret(T, Int2Float(I, precision(T), exponent(T)), Tr)
           requires notBool isInfinite(Int2Float(I, precision(T), exponent(T)))
      rule convertType(T:CPPFloatingType, prv(I:Int, Tr::Trace, T':CPPIntegerType))
-          => UNDEF("CCV6", "Floating-integral conversion to floating point type in which value is outside range that can be represented.")
-          ~> convertTypeHold(T, prv(I, Tr, T'))
+          => errorFuncResult(UNDEF("CCV6", "Floating-integral conversion to floating point type in which value is outside range that can be represented."),
+             convertTypeHold(T, prv(I, Tr, T')))
           requires isInfinite(Int2Float(I, precision(T), exponent(T)))
 
      rule convertType(T:CPPPointerType, prv(_, Tr::Trace, _:CPPNullPtrTType)) => prv(NullPointer, Tr, T)
@@ -130,7 +135,7 @@ module CPP-CONVERSION
           requires isObjectType(T') andBool Q' <=Quals Q
      rule convertType(t(_, _, pointerType(t(Q::Quals, _, _) #as B:CPPClassType)) #as T::CPPType, prv(L::SymLoc, Tr::Trace, t(_, _, pointerType(t(Q'::Quals, _, _) #as D:CPPClassType))))
           => prv(baseClassSubobject(L, B, D), Tr, T)
-          requires B =/=K D andBool isBaseClassOf(B, D) andBool Q' <=Quals Q
+          requires utype(B) =/=Type utype(D) andBool isBaseClassOf(B, D) andBool Q' <=Quals Q
      rule convertType(T:CPPBoolType, prv(NullPointer, Tr::Trace, T':CPPPointerType))
           => prv(0, Tr, T)
      rule convertType(T:CPPBoolType, prv(Loc::SymLoc, Tr::Trace, T':CPPPointerType))
@@ -219,6 +224,7 @@ module CPP-CONVERSION
      rule rank(t(_, _, char16_t)) => rank(type(underlyingType(char16_t)))
      rule rank(t(_, _, char32_t)) => rank(type(underlyingType(char32_t)))
      rule rank(t(_, _, wchar_t)) => rank(type(underlyingType(wchar_t)))
+     rule rank(t(_, _, bitfieldType(T::CPPSimpleType, _))) => rank(type(T))
 
      syntax Bool ::= broaderTypeThan(CPPType, CPPType) [function]
      rule broaderTypeThan(T1::CPPIntegerType, T2::CPPIntegerType)
@@ -253,15 +259,21 @@ module CPP-CONVERSION
                #fi #fi #fi #fi #fi #fi
 
      // 4.5:4
-     rule promote(t(_, _, unscopedEnum(_, UT::CPPIntegerType, true))) => promote(UT)
+     rule promote(t(_, _, unscopedEnum(_, UT::CPPIntegerType, true))) => UT
 
-     // TODO(dwightguth): 4.5:5
+     // 4.5:5
+     rule promote(t(_, _, bitfieldType(T::CPPSimpleType, N::Int))) => 
+          #if broaderTypeThan(type(int), type(bitfieldType(T, N))) #then type(int) #else
+          #if broaderTypeThan(type(unsigned), type(bitfieldType(T, N))) #then type(unsigned) #else
+          type(bitfieldType(T, N))
+          #fi #fi
+          requires notBool isCPPSimpleEnumType(T)
+     rule promote(t(_, _, bitfieldType(T:CPPSimpleEnumType, _) => T))
 
      // 4.5:6
      rule promote(t(_, _, bool)) => type(int)
-     rule promote(T::CPPType) => T
-          requires notBool isCPPBitfieldType(T) andBool notBool isCPPUnscopedEnumType(T) [owise]
-     rule isPromoted(T::CPPType) => T ==Type promote(T)
+     rule promote(T::CPPType) => T [owise]
+     rule isPromoted(T::CPPType) => T ==Type promote(promote(T))
      
 
      // TODO(dwightguth): handle modifiers if we need them
@@ -281,7 +293,7 @@ module CPP-CONVERSION
      rule usualArithmeticConversions(t(_, _, T::CPPSimpleType), t(_, _, float)) => t(noQuals, .Set, float)
           requires T =/=K long-double andBool T =/=K double
      // 5:10.5
-     rule usualArithmeticConversions(T1::CPPType, T2::CPPType) => #usualArithmeticConversions(promote(T1), promote(T2)) [owise]
+     rule usualArithmeticConversions(T1::CPPType, T2::CPPType) => #usualArithmeticConversions(promote(promote(T1)), promote(promote(T2))) [owise]
      syntax CPPType ::= #usualArithmeticConversions(CPPType, CPPType) [function]
                       | #usualArithmeticConversions2(CPPType, CPPType) [function]
      // 5:10.5.1

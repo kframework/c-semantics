@@ -70,6 +70,10 @@ module CPP-PROCESS-LABEL
           <computation> addToConstructed(...) => .K ...</computation>
 
      rule <k> waitingOnGotoMap ...</k>
+          <computation> L:CabsLoc => .K ...</computation>
+          <curr-program-loc> _ => L </curr-program-loc>
+
+     rule <k> waitingOnGotoMap ...</k>
           <computation>
                declareNonStaticObject(X::CId, T::CPPType, Init:K, Type::DeclarationType, D::Duration, S::Set) => .K
           ...</computation>

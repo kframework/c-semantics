@@ -62,6 +62,6 @@ module CPP-EXPR-FUNCTION-CALL
      syntax CPPType ::= argPromoteType(CPPType) [function, klabel(argPromoteTypeCpp)]
      rule argPromoteType(t(... st: nullptr_t)) => type(pointerType(type(void)))
      rule argPromoteType(t(... st: float)) => type(double)
-     rule argPromoteType(T::CPPType) => promote(T) [owise]
+     rule argPromoteType(T::CPPType) => promote(promote(T)) [owise]
      
 endmodule

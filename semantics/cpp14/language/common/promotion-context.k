@@ -39,6 +39,8 @@ module CPP-COMMON-PROMOTION-CONTEXT
      rule isPromoteOp(#klabel(`-__CPP-SYNTAX`)) => true
      rule isPromoteOp(#klabel(`+__CPP-SYNTAX`)) => true
      rule isPromoteOp(#klabel(`~__CPP-SYNTAX`)) => true
+     rule isPromoteOp(#klabel(`_<<__CPP-SYNTAX`)) => true
+     rule isPromoteOp(#klabel(`_>>__CPP-SYNTAX`)) => true
      rule isPromoteOp(_) => false [owise]
 
 endmodule

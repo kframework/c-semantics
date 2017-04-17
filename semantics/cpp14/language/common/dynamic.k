@@ -84,6 +84,8 @@ module CPP-DYNAMIC-SYNTAX
      syntax KResult ::= ValueCategory
      syntax InitListCategory ::= initListCat(List)
 
+     syntax ValueCategory ::= cat(Typed) [function]
+
      syntax ValueCategory ::= NoInitValueCategory
      syntax NoInitValueCategory ::= NoInitCat()
 
@@ -134,22 +136,12 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax MaybeNNS ::= NNS | "noNNS"
      syntax MaybeNNS ::= getOuterClass(Class) [function]
-     rule getOuterClass(C:Class :: _::ClassSpecifier) => C
-     rule getOuterClass(_) => noNNS [owise]
 
      syntax MaybeNNS ::= getParentNamespace(Namespace) [function]
-     rule getParentNamespace(N:Namespace :: _::NamespaceSpecifier) => N
-     rule getParentNamespace(_) => noNNS [owise]
 
      syntax Bool ::= hasParentNamespace(Namespace) [function]
-     rule hasParentNamespace(N:Namespace :: _::NamespaceSpecifier) => true
-     rule hasParentNamespace(_) => false [owise]
 
      syntax Namespace ::= getClassNamespace(Class) [function]
-     rule getClassNamespace(N:Namespace :: _::ClassSpecifier) => N
-     rule getClassNamespace(C:Class :: _::ClassSpecifier => C)
-     rule getClassNamespace(localQual(blockScope(N:Namespace :: _:CId, _, _)) :: _::ClassSpecifier) => N
-     rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
 
      syntax QualId ::= NNSVal "::" CId [klabel(QualId)]
      syntax NNSVal ::= getQual(QualId) [function]
@@ -163,19 +155,13 @@ module CPP-DYNAMIC-SYNTAX
      syntax EnumScope ::= enumScope(EnumId)
      syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope | EnumScope
 
+     syntax Bool ::= enclosesNamespace(Namespace, Namespace) [function]
+
      syntax Bool ::= inClassScope(Scope) [function]
-     rule inClassScope(_:NamespaceScope) => false
-     rule inClassScope(_:ClassScope) => true
-     rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
-     rule inClassScope(enumScope(enumId(_))) => false
 
      syntax Bool ::= isClassQualId(QualId) [function]
-     rule isClassQualId(C:Class :: _::CId) => true
-     rule isClassQualId(_) => false [owise]
 
      syntax Class ::= classFromScope(Scope) [function]
-     rule classFromScope(classScope(C::Class)) => C
-     rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
 
      syntax Linkage ::= "ExternalLinkage" | "InternalLinkage" | "NoLinkage"
      syntax Duration ::= "StaticStorage" | "ThreadStorage" | "AutoStorage" | "DynamicStorage"
@@ -255,6 +241,37 @@ module CPP-DYNAMIC
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
+
+     rule getOuterClass(C:Class :: _::ClassSpecifier) => C
+     rule getOuterClass(_) => noNNS [owise]
+
+     rule getParentNamespace(N:Namespace :: _::NamespaceSpecifier) => N
+     rule getParentNamespace(_) => noNNS [owise]
+
+     rule hasParentNamespace(N:Namespace :: _::NamespaceSpecifier) => true
+     rule hasParentNamespace(_) => false [owise]
+
+     rule getClassNamespace(N:Namespace :: _::ClassSpecifier) => N
+     rule getClassNamespace(C:Class :: _::ClassSpecifier => C)
+     rule getClassNamespace(localQual(blockScope(N:Namespace :: _:CId, _, _)) :: _::ClassSpecifier) => N
+
+     rule getClassNamespace(localQual(blockScope(C:Class :: _:CId, _, _)) :: _::ClassSpecifier => C)
+
+     rule inClassScope(_:NamespaceScope) => false
+     rule inClassScope(_:ClassScope) => true
+     rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
+     rule inClassScope(enumScope(enumId(_))) => false
+
+     rule isClassQualId(C:Class :: _::CId) => true
+     rule isClassQualId(_) => false [owise]
+
+     rule classFromScope(classScope(C::Class)) => C
+     rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
+
+     rule enclosesNamespace(N::Namespace, N :: _) => true
+     rule enclosesNamespace(N::Namespace, M::Namespace :: _) => enclosesNamespace(N, M)
+          requires N =/=K M
+     rule enclosesNamespace(...) => false [owise]
 
      rule isValKLabel(#klabel(`prv`)) => true
      rule isValKLabel(#klabel(`xv`)) => true
@@ -492,5 +509,12 @@ module CPP-DYNAMIC
      rule getQual(N::NNSVal :: _) => N
 
      context resolve(HOLE:Expr) [result(ResolvedExpr), structural]
+
+     rule cat(prv(...)) => prvalue
+     rule cat(pre(...)) => prvalue
+     rule cat(lv(...)) => lvalue
+     rule cat(le(...)) => lvalue
+     rule cat(xv(...)) => xvalue
+     rule cat(xe(...)) => xvalue
 
 endmodule
