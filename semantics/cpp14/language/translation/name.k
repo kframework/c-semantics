@@ -37,6 +37,7 @@ module CPP-TRANSLATION-NAME
      syntax Expr ::= wrapInThis(TypeExpr) [strict]
      rule wrapInThis(cSet(M::Map, QX::QualId, .K)) => cSet(M, QX, This())
      rule wrapInThis(T:CPPType) => T
+     rule wrapInThis(V:PRVal) => V
      rule wrapInThis(notFound(X::CId)) => notFound(X)
 
      syntax CandidateSet ::= classSet(Class, CId, Map) [function]
@@ -211,8 +212,11 @@ module CPP-TRANSLATION-NAME
      rule getUsingNamespaces(SetItem(_) S::Set, N::Namespace) => getUsingNamespaces(S, N) [owise]
 
      // unqualified name lookup
+     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask) ...</k>
+          <bl-unscoped-enumerators>... X |-> E::Enum ...</bl-unscoped-enumerators>
+          requires variable in Mask
+
      rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => cSet(S, NoNamespace() :: X, .K) ...</k>
-          <curr-scope> Scope:BlockScope </curr-scope>
           <env>... X |-> S::Map ...</env>
           requires envMask(X |-> S, X, Mask)
 
@@ -227,8 +231,10 @@ module CPP-TRANSLATION-NAME
      rule <k> lookupNameInBlock(X::CId, _, Mask::Set) => notFound(X) ...</k>
           <env> Env::Map </env>
           <types> Types::Map </types>
+          <bl-unscoped-enumerators> UE::Map </bl-unscoped-enumerators>
           requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
            andBool (notBool X in_keys(Types) orBool notBool type in Mask)
+           andBool (notBool X in_keys(UE) orBool notBool variable in Mask)
 
      rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set) => V ... </k>
           <curr-scope> enumScope(enumId(E)) </curr-scope>
@@ -250,6 +256,11 @@ module CPP-TRANSLATION-NAME
           requires notBool X in_keys(Enumerators) orBool notBool variable in Mask
 
      // lookup member in class (and base-classes)
+     rule <k> lookupMember(X::CId, C::Class, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask) ...</k>
+          <class-id> C </class-id>
+          <cl-unscoped-enumerators>... X |-> E::Enum ...</cl-unscoped-enumerators>
+          requires variable in Mask
+
      rule <k> lookupMember(X::CId, C::Class, NoTag(), Mask::Set) => classSet(C, X, S) ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> S::Map ...</cenv>
@@ -270,8 +281,10 @@ module CPP-TRANSLATION-NAME
           <base-classes> BaseClasses::List </base-classes>
           <cenv> Env::Map </cenv>
           <ctypes> Types::Map </ctypes>
+          <cl-unscoped-enumerators> UE::Map </cl-unscoped-enumerators>
           requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
            andBool (notBool X in_keys(Types) orBool notBool type in Mask)
+           andBool (notBool X in_keys(UE) orBool notBool variable in Mask)
 
      // TODO(traiansf): Define name lookup in base classes
      rule lookupMemberInBaseClasses(X::CId, .List, _, _) => notFound(X)
