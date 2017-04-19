@@ -81,8 +81,8 @@ module COMMON-CONFIGURATION
                          <ntypes> .Map </ntypes>
                          // CId |-> Namespace
                          <nested-namespaces> .Map </nested-namespaces>
-                         // CId |-> EnumId
-                         <unscoped-enumerators> .Map </unscoped-enumerators>
+                         // CId |-> Enum
+                         <nenums> .Map </nenums>
                          <is-inline> false </is-inline>
                          <nusing-namespaces> .Set </nusing-namespaces>
                          <inline-namespaces> .Set </inline-namespaces>
@@ -97,22 +97,21 @@ module COMMON-CONFIGURATION
                          <base-classes> .List </base-classes>
                          <virtual-bases> .Set </virtual-bases>
                          <cenv> .Map </cenv>
-                         <initializers> .Map </initializers>
                          <ctypes> .Map </ctypes>
+                         <cenums> .Map </cenums>
+                         <initializers> .Map </initializers>
                          <non-static-data-members> .List </non-static-data-members>
                          <function-members> .List </function-members>
                          <variant-members> .Set </variant-members>
-                         <has-user-provided-default-constructor> .K </has-user-provided-default-constructor>
+                         <converts-to> .List </converts-to>
                          <access> .Map </access>
                          <base-access> .Map </base-access>
+                         <access-specifier> .K </access-specifier>
                          <sizeof> 0 </sizeof>
                          <align> 1 </align>
                          <dsize> 0 </dsize>
                          <nvsize> -1 </nvsize>
                          <nvalign> -1 </nvalign>
-                         <access-specifier> .K </access-specifier>
-                         // CId |-> EnumId
-                         <cl-unscoped-enumerators> .Map </cl-unscoped-enumerators>
                     </class>
                </classes>
 

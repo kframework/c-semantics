@@ -59,7 +59,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Init ::= ValueInit() | NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
-     syntax FunctionSpecifier ::= Inline() | Explicit()
+     syntax FunctionSpecifier ::= Inline() | Explicit() | Pure()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
                         | Constexpr() | Friend() | Auto()
 

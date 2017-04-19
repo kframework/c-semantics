@@ -9,6 +9,7 @@ module CPP-PROCESS-LABEL
      imports BOOL
      imports INT
      imports COMPAT-SYNTAX
+     imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 
@@ -68,6 +69,8 @@ module CPP-PROCESS-LABEL
           <computation> GotoStmt(_) => .K ...</computation>
      rule <k> waitingOnGotoMap ...</k>
           <computation> addToConstructed(...) => .K ...</computation>
+     rule <k> waitingOnGotoMap ...</k>
+          <computation> writeVTables => .K ...</computation>
 
      rule <k> waitingOnGotoMap ...</k>
           <computation> L:CabsLoc => .K ...</computation>

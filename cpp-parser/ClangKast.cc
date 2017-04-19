@@ -550,6 +550,9 @@ bool TraverseDecl(Decl *D) {
     if (D->isConstexpr()) {
       AddSpecifier("Constexpr");
     }
+    if (D->isPure()) {
+      AddSpecifier("Pure");
+    }
 
     if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
       AddKApplyNode("FunctionDefinition", 5);

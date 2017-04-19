@@ -35,7 +35,6 @@ module CPP-DYNAMIC-SORTS
      syntax TemplateArg
      syntax CPPValue
      syntax ValueCategory
-     syntax EnumId ::= enumId(Enum)
 endmodule
 
 module CPP-REVAL-SYNTAX
@@ -62,6 +61,7 @@ module CPP-DYNAMIC-SYNTAX
                        | NullPtrVal // value of type std::nullptr_t
                        | Float
                        | MemberPtr
+                       | vtable(Class) // virtual table pointer in class object
      syntax EffectiveValue ::= CPPValue
      syntax NullPtrVal ::= "nullptrVal"
 
@@ -120,6 +120,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax NamespaceSpecifier ::= Namespace(CId)
 
      syntax LocalQualifier ::= localQual(BlockScope)
+     // a large amount of code changes behavior based on whether it is within a namespace, a class, or a block.
+     // in the event that new values must be added to this sort, please make sure to extensively examine existing
+     // code involving ClassQualifier and NNSVal.
      syntax ClassQualifier ::= Namespace | Class | LocalQualifier
      syntax Class ::= ClassQualifier "::" ClassSpecifier
      syntax LocalClass ::= LocalQualifier "::" ClassSpecifier
@@ -152,7 +155,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
      syntax TemplateParameterScope ::= "templateParameterScope"
      syntax FunctionPrototypeScope ::= "prototypeScope"
-     syntax EnumScope ::= enumScope(EnumId)
+     syntax EnumScope ::= enumScope(Enum)
      syntax Scope ::= NamespaceScope | ClassScope | BlockScope | TemplateParameterScope | FunctionPrototypeScope | EnumScope
 
      syntax Bool ::= enclosesNamespace(Namespace, Namespace) [function]
@@ -263,7 +266,7 @@ module CPP-DYNAMIC
      rule inClassScope(_:NamespaceScope) => false
      rule inClassScope(_:ClassScope) => true
      rule inClassScope(blockScope(QX::QualId, _, _)) => isClassQualId(QX)
-     rule inClassScope(enumScope(enumId(_))) => false
+     rule inClassScope(enumScope(_)) => false
 
      rule isClassQualId(C:Class :: _::CId) => true
      rule isClassQualId(_) => false [owise]
@@ -506,7 +509,7 @@ module CPP-DYNAMIC
      rule makeXVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType)) => xv(Loc, Tr, T)
      rule makeXVal(le(E::Expr, Tr::Trace, T::CPPType)) => xe(E, Tr, T)
 
-     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("::std::terminate()")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), .List) 
+     rule callTerminate => BuiltinCallOp(lv(loc(obj(0, 0, builtinSymbol("::std::terminate()")), 0), noTrace, type(functionType(type(void), .CPPTypeExprs, noMethod, CLinkage, noexcept(false)))), false, .List) 
 
      rule getId(_ :: X::CId) => X
      rule getQual(N::NNSVal :: _) => N

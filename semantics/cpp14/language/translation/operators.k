@@ -1,4 +1,11 @@
+module CPP-OPERATORS-SYNTAX
+     imports CPP-SORTS
+     syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
+                   | builtinOperator(OpId, Expr) [function, klabel(builtinOperator2)]
+endmodule
+
 module CPP-OPERATORS
+     imports CPP-OPERATORS-SYNTAX
      imports BASIC-K
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-SYNTAX
@@ -42,8 +49,6 @@ module CPP-OPERATORS
           requires isCPPClassType(T1) orBool isCPPEnumType(T1)
  
 
-     syntax Expr ::= builtinOperator(OpId, Expr, Init) [function]
-                   | builtinOperator(OpId, Expr) [function, klabel(builtinOperator2)]
      rule builtinOperator(operator=, E1::Expr, E2::Init)
           => E1 := E2
      rule builtinOperator(operator[], E1::Expr, E2::Expr)

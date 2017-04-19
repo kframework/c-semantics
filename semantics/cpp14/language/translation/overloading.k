@@ -110,6 +110,11 @@ module CPP-OVERLOADING
      rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
           requires notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
             orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
+     rule #resolveOverload(cSet(... candidates: (T:CPPFunctionType |-> builtinOp(_) => .Map) _), list(Args::List), krlist(Types::List), krlist(Cats::List), _, _)
+          requires #fun(DA::DefaultArgumentsResult =>
+               notBool acceptsNArgs(size(Args), T, getDefaultArgsVals(DA))
+                 orBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))
+               (emptyDefaultArguments(T))
 
      syntax Bool ::= #notViableTypes(params: List, types: List, daTypes:List, cats: List, daCats: List, isNonStaticRefNone: Bool) [function]
                    | notViableTypes(CPPType, List, List, List, List) [function]
@@ -222,7 +227,6 @@ module CPP-OVERLOADING
           requires utype(P) =/=Type utype(A) andBool (promote(A) ==Type P orBool promote(promote(A)) ==Type P)
      rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType, _) => computeSCS3(C, integralPromotion(P, A), P, A)
           requires utype(P) =/=Type utype(A) andBool (promote(A) ==Type P orBool promote(promote(A)) ==Type P)
-     rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPUnscopedEnumType, _) => computeSCS3(C, integralPromotion(P, A), P, A)
      rule computeSCS2(C::Conversion, t(... st: double) #as P::CPPType, t(... st: float), _) => computeSCS3(C, floatingPromotion, P, P)
      rule computeSCS2(C::Conversion, P:CPPIntegerType, A:CPPIntegerType, _) => computeSCS3(C, integralConversion, P, P)
           requires utype(P) =/=Type utype(A) andBool promote(A) =/=Type P andBool promote(promote(A)) =/=Type P andBool notBool isCPPBoolType(P)
@@ -264,7 +268,7 @@ module CPP-OVERLOADING
           requires cvQualificationSignature(P) ==K cvQualificationSignature(A)
      rule computeSCS3(C1::Conversion, C2::Conversion, P::CPPType, A::CPPType)
           => standardConversionSequence(C1, C2, qualificationConversion, false, P)
-          requires cvQualificationSignature(A) <=QualSig cvQualificationSignature(P)
+          requires cvQualificationSignature(P) =/=K cvQualificationSignature(A) andBool cvQualificationSignature(A) <=QualSig cvQualificationSignature(P)
      rule computeSCS3(_, _, _, _) => cannot-convert [owise]
 
      syntax ConversionSequence ::= adjustParamType(ConversionSequence, CPPType) [function]
@@ -317,7 +321,7 @@ module CPP-OVERLOADING
 
      rule (.K => computeBestViable(M, Types, Cats, O)) 
           ~> #resolveOverload(cSet(... candidates: M::Map), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
-          requires allViable(M, size(Args), Types, Cats)
+          requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
 
      syntax Bool ::= allViable(cands: Map, Int, List, List) [function]
      rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::Map, NArgs::Int, Types::List, Cats::List)
@@ -325,11 +329,12 @@ module CPP-OVERLOADING
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
                andBool allViable(M, NArgs, Types, Cats)
      // TODO(traiansf): properly resolve default arguments for templates
-     rule allViable(T::CPPType |-> _:TemplateSpecialization M::Map, NArgs::Int, Types::List, Cats::List)
+     rule allViable(T::CPPType |-> Val:K M::Map, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
                acceptsNArgs(NArgs, {T}:>CPPFunctionType, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))(emptyDefaultArguments(T))
                andBool allViable(M, NArgs, Types, Cats)
+          requires isTemplateSpecialization(Val) orBool isBuiltinOp(Val)
      rule allViable(T::CPPType |-> templateInfo(...) _, _, _, _) => false
      rule allViable(... cands: .Map) => true
 

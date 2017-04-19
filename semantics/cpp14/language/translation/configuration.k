@@ -56,11 +56,11 @@ module C-CONFIGURATION
      <block-control>
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
+          // CId |-> Enum
+          <enums> .Map </enums>
           <using-namespaces> .Set </using-namespaces>
           <block-history> .List </block-history>
           <this> .K </this>
-          // CId |-> EnumId
-          <bl-unscoped-enumerators> .Map </bl-unscoped-enumerators>
      </block-control>
 
      <template-deduction> .Map </template-deduction>

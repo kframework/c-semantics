@@ -69,6 +69,8 @@ module C-CONFIGURATION
                          <this> .K </this>
                          // object being constructed
                          <constructing> .K </constructing>
+                         // most derived class being constructed
+                         <most-derived-class> .K </most-derived-class>
 
                          // stack of block-control cells
                          <block-stack color="violet"> .List </block-stack>

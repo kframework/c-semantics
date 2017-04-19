@@ -127,8 +127,8 @@ module CPP-TYPING-SYNTAX
                                 | "decltype(auto)"
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
 
-     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: EnumId, underlyingType: CPPIntegerType)
-     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: EnumId, underlyingType: CPPIntegerType, utFixed: Bool)
+     syntax CPPSimpleScopedEnumType ::= scopedEnum(id: Enum, underlyingType: CPPIntegerType)
+     syntax CPPSimpleUnscopedEnumType ::= unscopedEnum(id: Enum, underlyingType: CPPIntegerType, utFixed: Bool)
      syntax CPPSimpleEnumType ::= CPPSimpleScopedEnumType | CPPSimpleUnscopedEnumType
      syntax CPPSimpleCompoundType ::= CPPSimpleEnumType
 
@@ -273,11 +273,13 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
      syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
-                       | #getEnumInfo(EnumId, K) [function]
+                       | #getEnumInfo(Enum, K) [function]
      syntax EnumInfo ::= CppenumCell | "#incomplete"
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
+
+     syntax Bool ::= overrides(CPPType, CPPType) [function]
 
      syntax ExceptionSet ::= exSet(Set) | "noexcept(true)" | "noexcept(false)"
      syntax KResult ::= ExceptionSet
@@ -288,7 +290,7 @@ module CPP-TYPING-SYNTAX
                    | isUnnamedPRValue(CPPType) [function]
 
      syntax DefaultArgumentsResult ::= emptyDefaultArguments(CPPType) [function]
-     syntax EnumId ::= getEnumId(CPPEnumType) [function]
+     syntax Enum ::= getEnumId(CPPEnumType) [function]
      syntax Bool ::= isEnumScoped(CPPEnumType) [function]
                    | isEnumFixed(CPPEnumType) [function]
 endmodule
@@ -484,7 +486,7 @@ module CPP-TYPING
 
      rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumId(E), #configuration)
 
-     rule #getEnumInfo(X::EnumId, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
+     rule #getEnumInfo(X::Enum, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
      rule #getEnumInfo(_, _) => #incomplete [owise]
 
      rule isCompleteType(t(_, _, incompleteArrayType(_))) => false
@@ -518,7 +520,7 @@ module CPP-TYPING
      rule t(Q::Quals, _, lvRefType(T1::CPPType)) ==Type t(Q, _, lvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, rvRefType(T1::CPPType)) ==Type t(Q, _, rvRefType(T2::CPPType)) => T1 ==Type T2
      rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
-     rule t(Q::Quals, _, functionType(... returnType: R1::CPPType, paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)) ==Type t(Q, _, functionType(... returnType: R2::CPPType, paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
+     rule t(Q::Quals, _, functionType(... returnType: R1::CPPType, paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo, linkage: L1::LanguageLinkage)) ==Type t(Q, _, functionType(... returnType: R2::CPPType, paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo, linkage: L2::LanguageLinkage)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2 andBool L1 ==K L2
 
      syntax Bool ::= MethodInfo "==Type" MethodInfo [function]
      rule noMethod ==Type noMethod => true
@@ -526,9 +528,15 @@ module CPP-TYPING
      rule methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) ==Type noMethod => RQ ==K RefNone() andBool Q ==K noQuals 
      rule noMethod ==Type methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) => RQ ==K RefNone() andBool Q ==K noQuals 
 
-     rule t(Q::Quals, _, classType(N1::Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2::Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
-     rule t(Q::Quals, _, scopedEnum(X::EnumId, _)) ==Type t(Q, _, scopedEnum(X::EnumId, _)) => true
-     rule t(Q::Quals, _, unscopedEnum(X::EnumId, _, _)) ==Type t(Q, _, unscopedEnum(X::EnumId, _, _)) => true
+     rule t(Q::Quals, _, classType(N1:Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2:Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
+     rule t(Q::Quals, _, classType(C1:Class :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(C2:Class :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => type(classType(C1)) ==Type type(classType(C2)) andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
+     rule t(Q::Quals, _, classType(localQual(B1::BlockScope) :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(localQual(B2::BlockScope) :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => B1 ==K B2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
+     rule t(Q::Quals, _, scopedEnum(N1:Namespace :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(N2:Namespace :: Enum(X2::CId), _)) => N1 ==K N2 andBool X1 ==K X2
+     rule t(Q::Quals, _, scopedEnum(C1:Class :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(C2:Class :: Enum(X2::CId), _)) => type(classType(C1)) ==Type type(classType(C2)) andBool X1 ==K X2
+     rule t(Q::Quals, _, scopedEnum(localQual(B1::BlockScope) :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(localQual(B2::BlockScope) :: Enum(X2::CId), _)) => B1 ==K B2 andBool X1 ==K X2
+     rule t(Q::Quals, _, unscopedEnum(N1:Namespace :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(N2:Namespace :: Enum(X2::CId), _, _)) => N1 ==K N2 andBool X1 ==K X2
+     rule t(Q::Quals, _, unscopedEnum(C1:Class :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(C2:Class :: Enum(X2::CId), _, _)) => type(classType(C1)) ==Type type(classType(C2)) andBool X1 ==K X2
+     rule t(Q::Quals, _, unscopedEnum(localQual(B1::BlockScope) :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(localQual(B2::BlockScope) :: Enum(X2::CId), _, _)) => B1 ==K B2 andBool X1 ==K X2
 
      syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
      rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
@@ -537,6 +545,11 @@ module CPP-TYPING
           requires Q1 =/=K Q2 orBool getKLabel(T1) =/=K getKLabel(T2)
      rule _ ==Types _ => false [owise]
      rule T1::CPPType =/=Type T2::CPPType => notBool (T1 ==Type T2)
+
+     rule overrides(t(... st: functionType(... paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)), 
+                    t(... st: functionType(... paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo)))
+          => toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
+     rule overrides(...) => false [owise]
 
      rule underlyingType(T::CPPSimpleType) => T [owise]
      rule underlyingType(t(Q::Quals, Mods::Set, T::CPPSimpleType))
@@ -661,8 +674,8 @@ module CPP-TYPING
      rule isEnumFixed(t(... st: scopedEnum(...))) => true
      rule isEnumFixed(t(... st: unscopedEnum(_, _, B::Bool))) => B
      rule isEnumFixed({T:CPPBitfieldType => innerType(T)}:>CPPEnumType)
-     rule getEnumId(t(_, _, scopedEnum(X::EnumId, _))) => X
-     rule getEnumId(t(_, _, unscopedEnum(X::EnumId, _, _))) => X
+     rule getEnumId(t(_, _, scopedEnum(X::Enum, _))) => X
+     rule getEnumId(t(_, _, unscopedEnum(X::Enum, _, _))) => X
      rule getEnumId({T:CPPBitfieldType => innerType(T)}:>CPPEnumType)
 
      syntax Int ::= #getEnumMin(K) [function]

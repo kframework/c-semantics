@@ -13,10 +13,11 @@ module CPP-CLASS-SYNTAX
      syntax NoArg ::= NoArg()
      syntax ValResult ::= NoArg
      syntax CId ::= unnamedObject(Class)
-     syntax Expr ::= beginConstruction(Expr) [strict]
+     syntax Expr ::= beginConstruction(Expr, isBaseClassSubobject: Bool) [strict]
      syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]
      syntax BaseClass ::= baseClass(Class)
      syntax CId ::= BaseClass
+     syntax Stmt ::= "writeVTables"
 endmodule
 
 module CPP-CLASS

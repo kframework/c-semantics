@@ -11,16 +11,23 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule CallExpr(Lbl:KLabel(_::K, _::K, T:CPPFunctionType) #as V::Val, list(A::List), krlist(DArgs::List))
-          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
+     rule CallExpr(Lbl:KLabel(_::K, Tr::Trace, T:CPPFunctionType) #as V::Val, list(A::List), krlist(DArgs::List))
+          => elabCall(V, isVirtualCall(Tr, T), A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
           requires isLKLabel(#klabel(Lbl))
 
      rule CallExpr(_:KLabel(_::K, _::K, t(... st: pointerType(T:CPPFunctionType))) #as V:Val, list(A::List), krlist(DArgs::List))
-          => elabCall(V, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
+          => elabCall(V, false, A, getReturnType(T), list(bindParams(getParams(T), A, DArgs)))
 
-     syntax KItem ::= elabCall(Val, List, CPPType, StrictList) [strict(4)]
-     rule elabCall(Fun::Val, Args::List, T::CPPType, krlist(Temps::List))
-          => makeCall(BuiltinCallOp(Fun, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
+     syntax KItem ::= elabCall(Val, Bool, List, CPPType, StrictList) [strict(5)]
+     rule elabCall(Fun::Val, IsVirtualCall::Bool, Args::List, T::CPPType, krlist(Temps::List))
+          => makeCall(BuiltinCallOp(Fun, IsVirtualCall, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
+
+     syntax Bool ::= isVirtualCall(Trace, CPPFunctionType) [function]
+     rule isVirtualCall(hasTrace(Name(N::NNS, _)), _) => false
+          requires N =/=K NoNNS()
+     rule isVirtualCall(_, T::CPPFunctionType) => false
+          requires notBool isMethodVirtual(T)
+     rule isVirtualCall(hasTrace(_), _) => true [owise]
 
      syntax TExpr ::= makeCall(Expr, Trace, CPPType) [function]
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => le(E, Tr, T)

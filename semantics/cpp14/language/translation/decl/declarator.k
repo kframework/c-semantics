@@ -474,7 +474,7 @@ module CPP-DECL-DECLARATOR
 
      syntax Bool ::= isStaticInitialization(K) [function]
      rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
-     rule isStaticInitialization(le(beginConstruction(_), _, _)) => true
+     rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
           requires notBool (isVal(V) andBool notBool isTExpr(V))

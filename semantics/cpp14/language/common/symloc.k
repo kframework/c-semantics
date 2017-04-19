@@ -45,6 +45,7 @@ module CPP-SYMLOC
      imports C-CONFIGURATION
      imports BOOL
      imports INT
+     imports SETTINGS-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
@@ -76,6 +77,6 @@ module CPP-SYMLOC
           requires L =/=K NullPointer
      syntax SymLoc ::= #baseClassSubobject(SymLoc, Class, ClassInfo) [function]
      rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_ |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
-          => L +bytes Offset
+          => L +bytes Offset /Int cfg:bitsPerByte
 
 endmodule

@@ -24,10 +24,12 @@ module CPP-TRANSLATION-NAME
      imports K-EQUAL
      imports COMPAT-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
+     imports CPP-BUILTIN-SYNTAX
      imports CPP-CLASS-SYNTAX
      imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-TEMPLATE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
+     imports CPP-OPERATORS-SYNTAX
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
@@ -77,10 +79,10 @@ module CPP-TRANSLATION-NAME
      rule getInnermostNamespace(blockScope(N:Namespace :: _, _, _)) => N
      rule getInnermostNamespace(classScope(N:Namespace :: _, _)) => N
      rule getInnermostNamespace(namespaceScope(N::Namespace)) => N
-     rule getInnermostNamespace(enumScope(enumId(N:Namespace :: _))) => N
+     rule getInnermostNamespace(enumScope(N:Namespace :: _)) => N
 
      syntax Scope ::= getRestOfScope(EnumScope) [function]
-     rule getRestOfScope(enumScope(enumId(N:Namespace :: _))) => namespaceScope(N)
+     rule getRestOfScope(enumScope(N:Namespace :: _)) => namespaceScope(N)
 
      // name lookup in namespace scope
      rule <k> nameLookupInNamespaceScope(X::CId, N::Namespace, Tag::Tag, Mask::Set)
@@ -117,20 +119,15 @@ module CPP-TRANSLATION-NAME
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <unscoped-enumerators>... X |-> E::Enum ...</unscoped-enumerators>
-          <templates> T::Map </templates>
-          requires notBool N :: X in_keys(T)
-               andBool variable in Mask
+          <nenums>... X |-> E::Enum ...</nenums>
+          requires variable in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(M, N :: X, .K) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
           <nenv>... X |-> M::Map ...</nenv>
-          <templates> T::Map </templates>
-          <unscoped-enumerators> UE::Map </unscoped-enumerators>
-          requires notBool N :: X in_keys(T) andBool notBool X in_keys(UE)
-               andBool envMask(X |-> M, X, Mask)
+          requires envMask(X |-> M, X, Mask)
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => nsRef(NS) ...</k>
           <curr-tu> Tu::String </curr-tu>
@@ -215,7 +212,7 @@ module CPP-TRANSLATION-NAME
 
      // unqualified name lookup
      rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask, .K) ...</k>
-          <bl-unscoped-enumerators>... X |-> E::Enum ...</bl-unscoped-enumerators>
+          <enums>... X |-> E::Enum ...</enums>
           requires variable in Mask
 
      rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => cSet(S, NoNamespace() :: X, .K) ...</k>
@@ -233,27 +230,27 @@ module CPP-TRANSLATION-NAME
      rule <k> lookupNameInBlock(X::CId, _, Mask::Set) => notFound(X) ...</k>
           <env> Env::Map </env>
           <types> Types::Map </types>
-          <bl-unscoped-enumerators> UE::Map </bl-unscoped-enumerators>
+          <enums> UE::Map </enums>
           requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
            andBool (notBool X in_keys(Types) orBool notBool type in Mask)
            andBool (notBool X in_keys(UE) orBool notBool variable in Mask)
 
      rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then V #else classSet(V, {C}:>Class :: X, SetItem(C)) #fi ... </k>
-          <curr-scope> enumScope(enumId(E)) </curr-scope>
-          <enum-id> enumId(E) </enum-id>
+          <curr-scope> enumScope(E) </curr-scope>
+          <enum-id> E </enum-id>
           <enumerators>... X |-> V::PRVal </enumerators>
           requires variable in Mask
 
      rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, C:K) => #if C ==K .K #then prv(V, Tr, ET) #else classSet(prv(V, Tr, ET), {C}:>Class :: X, SetItem(C)) #fi ... </k>
           <curr-scope> Sc::Scope </curr-scope>
-          <enum-id> enumId(E) </enum-id>
+          <enum-id> E </enum-id>
           <enum-type> ET::CPPType </enum-type>
           <enumerators>... X |-> prv(V::CPPValue, Tr::Trace, _) </enumerators>
-          requires Sc =/=K enumScope(enumId(E))
+          requires Sc =/=K enumScope(E)
                andBool variable in Mask
 
      rule <k> lookupEnumerator(X::CId, E::Enum, Mask::Set, _) => notFound(X) ...</k>
-          <enum-id> enumId(E) </enum-id>
+          <enum-id> E </enum-id>
           <enumerators> Enumerators::Map </enumerators>
           requires notBool X in_keys(Enumerators) orBool notBool variable in Mask
 
@@ -267,11 +264,6 @@ module CPP-TRANSLATION-NAME
      rule resolveClassSet(notFound(X::CId)) => notFound(X)
 
      // lookup member in class (and base-classes)
-     rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask, C) ...</k>
-          <class-id> C </class-id>
-          <cl-unscoped-enumerators>... X |-> E::Enum ...</cl-unscoped-enumerators>
-          requires variable in Mask
-
      rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => classSet(S, C :: X, SetItem(C)) ...</k>
           <class-id> C </class-id>
           <cenv>... X |-> S::Map ...</cenv>
@@ -287,12 +279,19 @@ module CPP-TRANSLATION-NAME
           <ctypes>... X |-> (_ Tag |-> T::CPPType) ...</ctypes>
           requires type in Mask
 
+     rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask, C) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <cenums>... X |-> E::Enum </cenums>
+          requires variable in Mask
+
      rule <k> #lookupMember(X::CId, C::Class, IsBody:Bool, T::Tag, Mask::Set) => #if IsBody #then lookupMemberInBaseClasses(X, BaseClasses, T, Mask, notFound(X)) #else notFound(X) #fi ...</k>
           <class-id> C </class-id>
           <base-classes> BaseClasses::List </base-classes>
           <cenv> Env::Map </cenv>
           <ctypes> Types::Map </ctypes>
-          <cl-unscoped-enumerators> UE::Map </cl-unscoped-enumerators>
+          <cenums> UE::Map </cenums>
           requires (notBool X in_keys(Env) orBool notBool envMask(Env, X, Mask))
            andBool (notBool X in_keys(Types) orBool notBool type in Mask)
            andBool (notBool X in_keys(UE) orBool notBool variable in Mask)
@@ -404,8 +403,8 @@ module CPP-TRANSLATION-NAME
      syntax KItem ::= extractNNS(K) [strict]
      rule extractNNS(nsRef(N::Namespace)) => N
      rule extractNNS(t(_, _, classType(C::Class))) => C
-     rule extractNNS(t(_, _, scopedEnum(enumId(E::Enum), _))) => E
-     rule extractNNS(t(_, _, unscopedEnum(enumId(E::Enum), _, _))) => E
+     rule extractNNS(t(_, _, scopedEnum(E::Enum, _))) => E
+     rule extractNNS(t(_, _, unscopedEnum(E::Enum, _, _))) => E
 
      syntax Expr ::= argDependentNameLookup(CId, StrictList)
                    | argDependentNameLookup(CId, StrictList, StrictList, Expr) [strict(4)]
@@ -424,18 +423,18 @@ module CPP-TRANSLATION-NAME
      rule isInBody(blockScope(...)) => true
      rule isInBody(classScope(_, IsBody::Bool)) => IsBody
 
-     rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::EnumId)) => nameLookupInEnumScope(X, Tag, Mask, enumScope(E))
+     rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::Enum)) => nameLookupInEnumScope(X, Tag, Mask, enumScope(E))
 
      // 3.4.1: 6
      rule nameLookupInScope(X::CId, Tag::Tag, Mask::Set, Scope::Scope) => lookupNameInBlock(X, Tag, Mask)
                                  orIfNotFound nameLookupInFullNamespace(X, getInnermostNamespace(Scope), Tag, Mask, .Set)
           requires notBool inClassScope(Scope) andBool notBool isEnumScope(Scope)
 
-     rule <k> nameLookupInEnumScope(X::CId, _, _, enumScope(E::EnumId)) => V ... </k>
+     rule <k> nameLookupInEnumScope(X::CId, _, _, enumScope(E::Enum)) => V ... </k>
           <enum-id> E </enum-id>
           <enumerators>... X |-> V::PRVal ...</enumerators>
 
-     rule <k> nameLookupInEnumScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::EnumId)) => nameLookupInScope(X, Tag, Mask, getRestOfScope(enumScope(E))) ... </k>
+     rule <k> nameLookupInEnumScope(X::CId, Tag::Tag, Mask::Set, enumScope(E::Enum)) => nameLookupInScope(X, Tag, Mask, getRestOfScope(enumScope(E))) ... </k>
           <enum-id> E </enum-id>
           <enumerators> Enumerators::Map </enumerators>
           requires notBool X in_keys(Enumerators) orBool notBool variable in Mask
@@ -519,9 +518,9 @@ module CPP-TRANSLATION-NAME
      rule getAssociatedNamespaces(ListItem(t(... st: classType(_ :: Class(_, _, Args::TemplateParams))) #as T::CPPClassType) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(getTemplateArgTypes(Args) L, B) #getAssociatedNamespaces(List2Set(mapList(getAssociatedClasses(T), #klabel(`getInnermostNamespace1`))), B)
      // 3.4.2:2.3
-     rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(enumId(N::Namespace :: _), _))) L::List, B::NamespacesCell)
+     rule getAssociatedNamespaces(ListItem(t(_, _, scopedEnum(N::Namespace :: _, _))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
-     rule getAssociatedNamespaces(ListItem(t(_, _, unscopedEnum(enumId(N::Namespace :: _), _, _))) L::List, B::NamespacesCell)
+     rule getAssociatedNamespaces(ListItem(t(_, _, unscopedEnum(N::Namespace :: _, _, _))) L::List, B::NamespacesCell)
           => getAssociatedNamespaces(L, B) #getAssociatedNamespaces(SetItem(N), B)
 
      // 3.4.2:2.4
@@ -637,6 +636,82 @@ module CPP-TRANSLATION-NAME
           requires notBool isNotFoundNameRef(E)
      // no viable candidates
      rule #resolveEmptyOverload(notFound(_), E::Expr, _) => E
-     
+
+     rule addBuiltinCandidates(O::OpId, E1::Expr, T1::CPPType, _, E2::Expr, T2::CPPType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveOverload(cSetUnion2(C1, cSetUnion2(C2, builtinCandidates(O, T1, T2, C2, builtinOperator(O, E1, E2)))), list(ListItem(E1) ListItem(E2)), BinaryOperator(O, E1, E2))
+          requires O =/=K operator, andBool O =/=K operator->
+     rule addBuiltinCandidates(O::OpId, E1::Expr, T1::CPPType, _, C1:CandidateSet, C2:CandidateSet)
+          => resolveOverload(cSetUnion2(C1, cSetUnion2(C2, builtinCandidates(O, T1, C2, builtinOperator(O, E1)))), list(ListItem(E1)), UnaryOperator(O, E1))
+          requires O =/=K operator&
+
+     syntax CandidateSet ::= builtinCandidates(OpId, CPPType, CPPType, CandidateSet, Expr) [function, klabel(builtinCandidates2)]
+                           | #builtinCandidates(OpId, CPPType, CPPType, Expr) [function, klabel(#builtinCandidates2)]
+                           | builtinCandidates(OpId, CPPType, CandidateSet, Expr) [function]
+                           | #builtinCandidates(OpId, CPPType, Expr) [function]
+                           | filterBuiltinCandidates(CandidateSet, CandidateSet) [function]
+
+     rule builtinCandidates(O::OpId, T1::CPPType, T2::CPPType, NonMemberCandidates::CandidateSet, E::Expr)
+          => filterBuiltinCandidates(#builtinCandidates(O, T1, T2, E), NonMemberCandidates)
+     rule filterBuiltinCandidates(C:CandidateSet, notFound(_)) => C
+
+     rule #builtinCandidates(O::OpId, T1::CPPType, T2::CPPType, E::Expr)
+          => cSetUnion2(pairwiseReturning(type(bool), promotedArithmeticTypes, E, O), cSetUnion2(identicalReturning(type(bool), enumTypesFrom(T1) enumTypesFrom(T2), E, O), identicalReturning(type(bool), pointerTypesFrom(T1) pointerTypesFrom(T2), E, O)))
+          requires O ==K operator< orBool O ==K operator<= orBool O ==K operator> orBool O ==K operator>=
+
+     syntax CandidateSet ::= pairwiseReturning(CPPType, Set, Expr, OpId) [function]
+                           | identicalReturning(CPPType, Set, Expr, OpId) [function]
+                           | makeSet(Map, OpId) [function]
+     syntax Set ::= enumTypesFrom(CPPType) [function]
+                  | pointerTypesFrom(CPPType) [function]
+                  | "promotedArithmeticTypes" [function]
+                  | "promotedIntegralTypes" [function]
+
+     syntax Map ::= #identicalReturning(CPPType, Set, Expr) [function]
+                  | #pairwiseReturning(CPPType, Set, Set, Expr) [function]
+                  | #pairwiseReturning2(CPPType, CPPType, Set, Expr) [function]
+
+     rule enumTypesFrom(T:CPPEnumType) => SetItem(utype(T))
+     rule enumTypesFrom(T::CPPType) => .Set
+          requires notBool isCPPClassType(T) [owise]
+     rule pointerTypesFrom(T::CPPType) => .Set
+          requires notBool isCPPIntegerType(T)
+               andBool notBool isCPPNullPtrTType(T)
+               andBool notBool isCPPPointerType(T)
+               andBool notBool isCPPClassType(T)
+
+     rule promotedArithmeticTypes =>
+          SetItem(type(float))
+          SetItem(type(double))
+          SetItem(type(long-double))
+          promotedIntegralTypes
+
+     rule promotedIntegralTypes =>
+          SetItem(type(int))
+          SetItem(type(unsigned))
+          SetItem(type(long))
+          SetItem(type(unsigned-long))
+          SetItem(type(long-long))
+          SetItem(type(unsigned-long-long))
+
+     rule makeSet(M::Map, O::OpId) => cSet(M, NoNamespace() :: O, .K)
+
+     rule identicalReturning(Ret::CPPType, S::Set, E::Expr, O::OpId)
+          => makeSet(#identicalReturning(Ret, S, E), O)
+
+     rule #identicalReturning(Ret::CPPType, SetItem(T::CPPType) S::Set, E::Expr)
+          => func(Ret, T, T) |-> builtinOp(E) #identicalReturning(Ret, S, E)
+     rule #identicalReturning(...) => .Map [owise]
+
+     rule pairwiseReturning(Ret::CPPType, S::Set, E::Expr, O::OpId)
+          => makeSet(#pairwiseReturning(Ret, S, S, E), O)
+
+     // technically this will create some duplicates but because the values are the same
+     // they should merge together cleanly
+     rule #pairwiseReturning(Ret::CPPType, SetItem(L::CPPType) S::Set, R::Set, E::Expr)
+          => #pairwiseReturning2(Ret, L, R, E) #pairwiseReturning(Ret, S, R, E)
+     rule #pairwiseReturning(...) => .Map [owise]
+     rule #pairwiseReturning2(Ret::CPPType, L::CPPType, SetItem(R::CPPType) S::Set, E::Expr)
+          => func(Ret, L, R) |-> builtinOp(E) #pairwiseReturning2(Ret, L, S, E)
+     rule #pairwiseReturning2(...) => .Map [owise]
 
 endmodule
