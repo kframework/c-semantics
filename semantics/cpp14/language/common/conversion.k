@@ -21,6 +21,7 @@ module CPP-CONVERSION-SYNTAX
      syntax Bool ::= List "<=QualSig" List [function]
 
      syntax CPPType ::= prvalType(CPPType) [function]
+                      | revalType(CPPType) [function]
 
      // remember to call promote twice if you want to get the promoted
      // type of another type. calling promote once is intended to
@@ -32,6 +33,7 @@ module CPP-CONVERSION-SYNTAX
                    | isCompositePointerType(CPPType) [function]
 
      syntax CPPType ::= compositePointerType(PRVal, PRVal) [function]
+                      | compositePointerType(Expr, CPPType, Expr, CPPType) [function, klabel(compositePointerType4)]
                       | usualArithmeticConversions(CPPType, CPPType) [function]
 
      syntax Expr ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
@@ -180,12 +182,12 @@ module CPP-CONVERSION
      rule isSimilar(T1::CPPType, T2::CPPType)
           => utype(T1) ==Type utype(T2) [owise]
 
-     rule convertArray(lv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
-          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
-     rule convertArray(xv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
-          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
-     rule convertArray(prv(Loc::SymLoc, Tr::Trace, t(Q::Quals, Mods::Set, T::CPPSimpleArrayType)))
-          => prv(arrayToPtrLoc(Loc, t(Q, Mods, T)), Tr, t(Q, Mods, pointerType(innerType(t(Q, Mods, T)))))
+     rule convertArray(lv(Loc::SymLoc, Tr::Trace, T::CPPArrayType))
+          => prv(arrayToPtrLoc(Loc, T), Tr, revalType(T))
+     rule convertArray(xv(Loc::SymLoc, Tr::Trace, T::CPPArrayType))
+          => prv(arrayToPtrLoc(Loc, T), Tr, revalType(T))
+     rule convertArray(prv(Loc::SymLoc, Tr::Trace, T::CPPArrayType))
+         => prv(arrayToPtrLoc(Loc, T), Tr, revalType(T))
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, CPPType) [function, klabel(arrayToPtrLocCpp)]
      rule arrayToPtrLoc(Loc::SymLoc, t(_, _, arrayType(T::CPPType, N::Int)))
@@ -193,11 +195,15 @@ module CPP-CONVERSION
      rule arrayToPtrLoc(Loc::SymLoc, _) => Loc [owise]
 
      rule convertFunction(lv(Loc::SymLoc, Tr::Trace, T::CPPFunctionType))
-          => prv(Loc, Tr, t(noQuals, .Set, pointerType(T)))
+          => prv(Loc, Tr, revalType(T))
 
      rule prvalType(T:CPPArrayType) => T
      rule prvalType(T:CPPClassType) => T
      rule prvalType(T::CPPType) => utype(T) [owise]
+
+     rule revalType(t(Q::Quals, Mods::Set, arrayType(T::CPPType, _))) => t(Q, Mods, pointerType(T))
+     rule revalType(T:CPPFunctionType) => type(pointerType(T))
+     rule revalType(T::CPPType) => prvalType(T) [owise]
 
      rule convertLVal(lv(Loc::SymLoc, Tr::Trace, T::CPPType))
           => instantiate(Loc, Tr, T)
@@ -320,6 +326,10 @@ module CPP-CONVERSION
 
      rule isCompositePointerType(T::CPPType) => isCPPPointerType(T) orBool isCPPMemberPointerType(T) orBool isCPPNullPtrTType(T)
 
+     // we only use the prval to check the type and to check if it's a null pointer constant,
+     // which only uses the trace and type, so this should be safe.
+     rule compositePointerType(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
+          => compositePointerType(prv(0, hasTrace(E1), T1), prv(0, hasTrace(E2), T2))
      //5:13.3
      rule compositePointerType(L::PRVal, R::PRVal) => type(nullptr_t)
           requires isNullPointerConstant(L) andBool isNullPointerConstant(R)

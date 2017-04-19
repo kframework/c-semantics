@@ -95,6 +95,7 @@ module COMMON-CONFIGURATION
                          <class-type> .K </class-type>
                          <is-aggregate> true </is-aggregate>
                          <base-classes> .List </base-classes>
+                         <virtual-bases> .Set </virtual-bases>
                          <cenv> .Map </cenv>
                          <initializers> .Map </initializers>
                          <ctypes> .Map </ctypes>
@@ -103,8 +104,12 @@ module COMMON-CONFIGURATION
                          <variant-members> .Set </variant-members>
                          <has-user-provided-default-constructor> .K </has-user-provided-default-constructor>
                          <access> .Map </access>
-                         <max-offset> 0 </max-offset>
-                         <max-align> 1 </max-align>
+                         <base-access> .Map </base-access>
+                         <sizeof> 0 </sizeof>
+                         <align> 1 </align>
+                         <dsize> 0 </dsize>
+                         <nvsize> -1 </nvsize>
+                         <nvalign> -1 </nvalign>
                          <access-specifier> .K </access-specifier>
                          // CId |-> EnumId
                          <cl-unscoped-enumerators> .Map </cl-unscoped-enumerators>

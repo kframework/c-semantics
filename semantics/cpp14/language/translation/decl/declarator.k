@@ -68,7 +68,7 @@ module CPP-DECL-DECLARATOR
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => NoNamespace()), _, _, _, _), _) ...</k>
           <curr-scope> _:BlockScope </curr-scope> 
      rule <k> DeclaratorAndSpecifiers(NormalizedDecl((NoNNS() => C), _, _, _, _), _) ...</k>
-          <curr-scope> classScope(C::Class) </curr-scope>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
 
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:AType, _, _), _) [result(CPPTypeExpr)]
      context DeclaratorAndSpecifiers(NormalizedDecl(_, _, HOLE:CPPTypeExpr, _, _), _)
@@ -266,7 +266,7 @@ module CPP-DECL-DECLARATOR
      rule <k> declareObject(C:Class, C, X::CId, T:CPPType, NoInit(), Var(_), ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, link(Tu)), false)
           ...</k>
-          <curr-scope> classScope(C) </curr-scope>
+          <curr-scope> classScope(C, _) </curr-scope>
           <class-id> C </class-id>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -281,8 +281,8 @@ module CPP-DECL-DECLARATOR
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
-          <member-function-bodies> .K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ...</member-function-bodies>
-          <curr-scope> classScope(C) </curr-scope>
+          <deferred-class-actions> _ |> _ |> (K:K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ~> K) |> .Ordering </deferred-class-actions>
+          <curr-scope> classScope(C, _) </curr-scope>
           <class-id> C </class-id>
           <function-members>... .List => ListItem(kpair(X, T)) </function-members>
           <curr-tu> Tu::String </curr-tu>
@@ -414,7 +414,7 @@ module CPP-DECL-DECLARATOR
 
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X)))) ...</k>
-          <member-function-bodies>... .K => processFunDef(Base, N :: X, T, Params, Body) </member-function-bodies>
+          <deferred-class-actions> _ |> _ |> (K:K => K ~> processFunDef(Base, N :: X, T, Params, Body)) |> .Ordering </deferred-class-actions>
           <curr-scope> classScope(...) </curr-scope>
 
      syntax KItem ::= initFunction(SymBase, K)
@@ -502,7 +502,7 @@ module CPP-DECL-DECLARATOR
 
      syntax DefaultArguments ::= computeDefaultArgs(CPPType, DeclarationType)
      rule computeDefaultArgs(T:CPPFunctionType, Function(Params::List))
-          => #fun(DI::List => defArgs(list(#computeDefaultArgs(getRealParams(T), DI, hasImplicitParameter(T))), list(DI), list(DI)))(getDefArgsInitializers(Params)) 
+          => #fun((DI::List => defArgs(list(#computeDefaultArgs(getRealParams(T), DI, hasImplicitParameter(T))), list(DI), list(DI))))(getDefArgsInitializers(Params)) 
      rule computeDefaultArgs(T::CPPType, _) => krlist(.List)
           requires notBool isCPPFunctionType(T)
 

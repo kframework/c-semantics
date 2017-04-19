@@ -74,23 +74,18 @@ module CPP-EXPR-CONDITIONAL
      syntax KItem ::= typeAndCatOfConditional3(Expr, CPPType, ValueCategory, Expr, CPPType, ValueCategory) [function]
      rule typeAndCatOfConditional3(_, T1:CPPType, V:GLValueCategory, _, T2:CPPType, V)
           => typeAndCat(T1, V)
-          requires T1 ==Type T2
+          requires T1 ==Type T2 andBool (isCPPBitfieldType(T1) orBool notBool isCPPBitfieldType(T2))
+     rule typeAndCatOfConditional3(_, T1:CPPType, V:GLValueCategory, _, T2:CPPType, V)
+          => typeAndCat(T2, V)
+          requires T1 ==Type T2 andBool (isCPPBitfieldType(T2) orBool notBool isCPPBitfieldType(T1))
      // TODO(dwightguth): 5.16:5
      rule typeAndCatOfConditional3(E1::Expr, T1:CPPType, _, E2::Expr, T2:CPPType, _)
           => typeAndCatOfConditional5(E1, T1, E2, T2)
           requires notBool (T1 =/=Type T2 andBool (isCPPClassType(T1) orBool isCPPClassType(T2))) [owise]
 
      syntax KItem ::= typeAndCatOfConditional5(Expr, CPPType, Expr, CPPType) [function]
-     rule typeAndCatOfConditional5(_, (T:CPPFunctionType => type(pointerType(T))), _, _)
-     rule typeAndCatOfConditional5(_, _, _, (T:CPPFunctionType => type(pointerType(T))))
-     rule typeAndCatOfConditional5(_, (T:CPPArrayType => type(pointerType(innerType(T)))), _, _)
-     rule typeAndCatOfConditional5(_, _, _, (T:CPPArrayType => type(pointerType(innerType(T)))))
-     rule typeAndCatOfConditional5(_, (T::CPPType => utype(T)), _, _)
-          requires notBool isCPPClassType(T) andBool getQuals(T) =/=K noQuals
-     rule typeAndCatOfConditional5(_, _, _, (T::CPPType => utype(T)))
-          requires notBool isCPPClassType(T) andBool getQuals(T) =/=K noQuals
      rule typeAndCatOfConditional5(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
-          => typeAndCatOfConditional6(E1, T1, E2, T2) [owise]
+          => typeAndCatOfConditional6(E1, prvalType(T1), E2, prvalType(T2))
 
      syntax KItem ::= typeAndCatOfConditional6(Expr, CPPType, Expr, CPPType) [function]
      rule typeAndCatOfConditional6(_, T1::CPPType, _, T2::CPPType)
@@ -99,7 +94,12 @@ module CPP-EXPR-CONDITIONAL
      rule typeAndCatOfConditional6(_, T1::CPPType, _, T2::CPPType)
           => typeAndCat(usualArithmeticConversions(T1, T2), prvalue)
           requires (isCPPArithmeticType(T1) orBool isCPPEnumType(T1)) andBool (isCPPArithmeticType(T2) orBool isCPPEnumType(T2))
-     // TODO(dwightguth): 5.16:6.3-4
+     rule typeAndCatOfConditional6(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
+          => typeAndCat(compositePointerType(E1, T1, E2, T2), prvalue)
+          requires isCPPPointerType(T1) orBool isCPPPointerType(T2)
+     rule typeAndCatOfConditional6(E1::Expr, T1::CPPType, E2::Expr, T2::CPPType)
+          => typeAndCat(compositePointerType(E1, T1, E2, T2), prvalue)
+          requires isCPPMemberPointerType(T1) orBool isCPPMemberPointerType(T2)
      rule typeAndCatOfConditional6(_, T:CPPNullPtrTType, _, _:CPPNullPtrTType)
           => typeAndCat(T, prvalue)
      rule typeAndCatOfConditional6(_, T:CPPNullPtrTType, IntegerLiteral(0, _), _)

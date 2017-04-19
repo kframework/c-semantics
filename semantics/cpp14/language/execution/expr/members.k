@@ -9,7 +9,7 @@ module CPP-EXECUTION-EXPR-MEMBERS
      rule contrivedObject(_) => noObject()
 
      rule <k> evalBraceOrEqualInitializer(C::Class, lv(Loc::SymLoc, Tr::Trace, T::CPPType) #as Base::LVal, E::Expr) => setThis(prv(Loc, Tr, type(pointerType(type(classType(C)))))) ~> E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ~> setThis(OldThis) ...</k>
-          <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
+          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
           <this> OldThis::PRVal </this>
 
      rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) ~> setThis(OldThis::PRVal) => .K) ...</k>

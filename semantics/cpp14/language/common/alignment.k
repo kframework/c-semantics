@@ -26,7 +26,7 @@ module CPP-ALIGNMENT
 
      rule byteAlignofType(classType(C::Class)) => byteAlignofClass(getClassInfo(C))
      syntax Int ::= byteAlignofClass(ClassInfo) [function]
-     rule byteAlignofClass(<class>... <max-align> A::Int </max-align> ...</class>)
+     rule byteAlignofClass(<class>... <align> A::Int </align> ...</class>)
           => A
      rule byteAlignofClass(#incomplete) => 0
 

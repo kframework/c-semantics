@@ -26,10 +26,12 @@ module CPP-BITSIZE
      rule byteSizeofType(scopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
      rule byteSizeofType(unscopedEnum(... underlyingType: T::CPPIntegerType)) => byteSizeofType(T)
      syntax Int ::= byteSizeofClass(ClassInfo) [function]
-     rule byteSizeofClass(<class>... <max-offset> V::Int </max-offset> <max-align> A::Int </max-align> ...</class>)
-          => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte)
+     rule byteSizeofClass(<class>... <sizeof> V::Int </sizeof> ...</class>)
+          => V
 
      rule byteSizeofType(pointerType(_)) => cfg:ptrsize
+     rule byteSizeofType(lvRefType(_)) => cfg:refsize
+     rule byteSizeofType(rvRefType(_)) => cfg:refsize
      rule byteSizeofType(memberPointerType(_, T:CPPFunctionType)) => cfg:memberFunctionPtrSize
      rule byteSizeofType(memberPointerType(_, T::CPPType)) => cfg:memberDataPtrSize
           requires notBool(isCPPFunctionType(T))

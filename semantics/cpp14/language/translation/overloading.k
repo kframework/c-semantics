@@ -607,7 +607,7 @@ module CPP-OVERLOADING
      // resolve anonymous union member lookup
      rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
-     rule resolveUniqueDecl(cSet(T::CPPType |-> classOffset(_), C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
      rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, .K), E::Expr)
        => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 

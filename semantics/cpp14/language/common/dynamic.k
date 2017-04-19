@@ -148,7 +148,7 @@ module CPP-DYNAMIC-SYNTAX
      syntax CId ::= getId(QualId) [function]
 
      syntax NamespaceScope ::= namespaceScope(Namespace)
-     syntax ClassScope ::= classScope(Class)
+     syntax ClassScope ::= classScope(Class, isInBody: Bool)
      syntax BlockScope ::= blockScope(QualId, SymBase, Int) [klabel(blockScopeCpp)]
      syntax TemplateParameterScope ::= "templateParameterScope"
      syntax FunctionPrototypeScope ::= "prototypeScope"
@@ -232,6 +232,9 @@ module CPP-DYNAMIC-SYNTAX
      // used by destructors
      syntax KItem ::= addToConstructed(Expr, CPPType) [strict(1)]
 
+     syntax Ordering ::= K "|>" Ordering [right]
+                       | ".Ordering"
+
 endmodule
 
 module CPP-DYNAMIC
@@ -265,7 +268,7 @@ module CPP-DYNAMIC
      rule isClassQualId(C:Class :: _::CId) => true
      rule isClassQualId(_) => false [owise]
 
-     rule classFromScope(classScope(C::Class)) => C
+     rule classFromScope(classScope(C::Class, _)) => C
      rule classFromScope(blockScope(C:Class :: _::CId, _, _)) => C
 
      rule enclosesNamespace(N::Namespace, N :: _) => true

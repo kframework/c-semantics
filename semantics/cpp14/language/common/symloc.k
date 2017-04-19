@@ -8,7 +8,8 @@ endmodule
 module CPP-SYMLOC-SYNTAX
      imports CPP-SYMLOC-SORTS
      imports SYMLOC-SYNTAX
-     imports CPP-TYPING-SYNTAX
+     imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPING-SORTS
 
      syntax SymBase ::= bnew(Int, CPPType, Set, Duration) [function, klabel(bnewCPP)]
      syntax SymBase ::= linc(CPPType, Set, Duration) [function, klabel(lincCPP)]
@@ -24,14 +25,16 @@ module CPP-SYMLOC-SYNTAX
      syntax ValResult ::= dataMemberValue(MemberPtr, Trace, CPPType)
 
      syntax MemberPtr ::= derivedClassSuperobject(MemberPtr, CPPClassType, CPPClassType) [function]
-                        | baseClassSubobject(MemberPtr, CPPClassType, CPPClassType) [function]
-     syntax SymLoc ::= baseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
+                        | baseClassSubobject(MemberPtr, base: CPPClassType, derived: CPPClassType) [function]
+     syntax SymLoc ::= baseClassSubobject(SymLoc, base: CPPClassType, derived: CPPClassType) [function]
                      | derivedClassSuperobject(SymLoc, CPPClassType, CPPClassType) [function]
 
      syntax Bool ::= containsMember(MemberPtr, CPPClassType) [function]
                    | isBaseClassSubobject(SymLoc, CPPClassType, CPPClassType) [function]
 
      syntax EnvEntry ::= envEntry(base: SymBase, using: Bool, defaultArgs: DefaultArgumentsResult)
+     syntax MemberBase ::= memberBase(CId, CId, CPPType)
+     syntax SymBase ::= MemberBase
      syntax DefaultArgumentsResult ::= NoDefArgs()
      syntax SymBase ::= getBase(EnvEntry) [function, klabel(getEnvEntryBase)]
 
@@ -39,10 +42,13 @@ endmodule
 
 module CPP-SYMLOC
      imports CPP-SYMLOC-SYNTAX
+     imports C-CONFIGURATION
      imports BOOL
      imports INT
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-CLASS-SYNTAX
+     imports CPP-TYPING-SYNTAX
 
      rule bnew(I::Int, T::CPPType, Mods::Set, D::Duration)
           => obj(I, getAlignas(T, Mods), D)
@@ -57,6 +63,19 @@ module CPP-SYMLOC
      rule #ifFromArrayInBounds(.K, _) => true
 
      rule getBase(envEntry(... base: B::SymBase)) => B
-     // To catch objects coming from C
-     rule getBase({kpair(_, B::SymBase)}:>EnvEntry) => B
+
+     rule baseClassSubobject(NullPointer, _, _) => NullPointer
+     rule baseClassSubobject(NullMemberPointer, _, _) => NullMemberPointer
+     rule baseClassSubobject(NullMemberFunctionPointer, _, _) => NullMemberFunctionPointer
+     rule derivedClassSuperobject(NullPointer, _, _) => NullPointer
+     rule derivedClassSuperobject(NullMemberPointer, _, _) => NullMemberPointer
+     rule derivedClassSuperobject(NullMemberFunctionPointer, _, _) => NullMemberFunctionPointer
+
+     rule baseClassSubobject(L:SymLoc, t(... st: classType(B::Class)), D::CPPClassType)
+          => #baseClassSubobject(L, B, getClassInfo(D))
+          requires L =/=K NullPointer
+     syntax SymLoc ::= #baseClassSubobject(SymLoc, Class, ClassInfo) [function]
+     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_ |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
+          => L +bytes Offset
+
 endmodule

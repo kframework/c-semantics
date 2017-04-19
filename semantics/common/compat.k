@@ -56,6 +56,7 @@ module COMPAT-SYNTAX
 
      syntax Int ::= ceilDiv(Int, Int) [function]
      syntax List ::= mapList(List, K) [function]
+                   | flatMapList(List, K) [function]
 
      syntax SSList ::= toSSList(List) [function]
      syntax List ::= ofSSList(SSList) [function]
@@ -259,6 +260,8 @@ module COMPAT
 
      rule mapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
      rule mapList(.List, _) => .List
+     rule flatMapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => {Lbl(K)}:>List flatMapList(L, #klabel(Lbl))
+     rule flatMapList(.List, _) => .List
 
      rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> (M2[B <- C])) M1
      rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C) [owise]

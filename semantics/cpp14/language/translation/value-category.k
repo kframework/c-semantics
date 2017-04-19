@@ -160,8 +160,6 @@ module CPP-VALUE-CATEGORY
 
      rule catofBuiltinOperator(O::OpId, T1:CPPDType, C:ValueCategory, T2:CPPDType)
           => #catofBuiltinOperator(O, T1, C, T2)
-     rule catofOperator(operator->, T1::CPPDType, C:ValueCategory, T2::TypeExpr)
-          => #catofBuiltinOperator(operator->, T1, C, T2)
      rule catofBuiltinOperator(O::OpId, T1:CPPDType)
           => #catofBuiltinOperator(O, T1)
 

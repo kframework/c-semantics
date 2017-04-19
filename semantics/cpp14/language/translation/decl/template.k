@@ -96,13 +96,13 @@ module CPP-DECL-TEMPLATE
           <curr-template-context> templateInfo(...) </curr-template-context>
      // class definition
      rule <k> (.K => elaborate(listToK(Members)))
-          ~> classContext(t(_, _, _), Members::List) ...</k>
+          ~> classContext(t(_, _, _), .List, Members::List) ...</k>
           <curr-template-context> templateInfo(...) </curr-template-context>
 
-     rule <k> elaborateDone(Done:K) ~> classContext(t(_, _, _) #as T::CPPType, _)
+     rule <k> elaborateDone(Done:K) ~> classContext(t(_, _, _) #as T::CPPType, .List,  _)
               => declareTemplate(T)
           ...</k>
-          <elab>... .K => classContext(T, kSeqToList(Done)) </elab>
+          <elab>... .K => classContext(T, .List, kSeqToList(Done)) </elab>
           <curr-template-context> templateInfo(...) </curr-template-context>
 
      // TODO(dwightguth): check the syntax of template definitions and generate

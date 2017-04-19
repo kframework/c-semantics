@@ -28,7 +28,7 @@ module CPP-DECL-ENUM
 
      syntax Enum ::= createEnumName(CId, Scope) [function]
      rule createEnumName(X::CId, namespaceScope(N::Namespace)) => N :: Enum(X)
-     rule createEnumName(X::CId, classScope(C::Class)) => C :: Enum(X)
+     rule createEnumName(X::CId, classScope(C::Class, _)) => C :: Enum(X)
      rule createEnumName(X::CId, blockScope(_, _, _) #as B::BlockScope) => localQual(B) :: Enum(X)
 
      syntax CPPEnumType ::= declareEnumName(Enum, ut: CPPIntegerType, scoped: Bool, fixed: Bool) [function]
@@ -37,7 +37,7 @@ module CPP-DECL-ENUM
 
      syntax Scope ::= getEnumScope(EnumId) [function]
      rule getEnumScope(enumId(N:Namespace :: _)) => namespaceScope(N)
-     rule getEnumScope(enumId(C:Class :: _)) => classScope(C)
+     rule getEnumScope(enumId(C:Class :: _)) => classScope(C, false)
      rule getEnumScope(enumId(localQual(B:BlockScope) :: _)) => B
 
      syntax KItem ::= addEnumToEnv(CId, CPPEnumType)
@@ -50,7 +50,7 @@ module CPP-DECL-ENUM
           <ns-id> N </ns-id>
           <ntypes> NT::Map => NT[X, Enum() <- E] </ntypes>
 
-     rule <k> #addEnumToEnv(X::CId, classScope(C::Class), E::CPPEnumType) => . ... </k>
+     rule <k> #addEnumToEnv(X::CId, classScope(C::Class, _), E::CPPEnumType) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>

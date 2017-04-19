@@ -8,9 +8,7 @@ module CPP-DECL-CLASS-SYNTAX
      imports CPP-TYPING-SORTS
      imports SYMLOC-SORTS
      syntax AType ::= declareClassName(Tag, CId, Bool)
-     syntax KItem ::= classContext(AType, List) [strict(1)]
-     syntax MemberBase ::= memberBase(CId, CId, CPPType)
-     syntax SymBase ::= MemberBase
+     syntax KItem ::= classContext(AType, List, List) [strict(1)]
 
      // these functions don't check for whether or not it's a constructor and
      // therefore should only be called after we know that something is a
@@ -29,6 +27,7 @@ module CPP-DECL-CLASS-SYNTAX
                    | isUserProvidedDestructor(CPPFunctionType, K) [function]
                    | hasConstructorThat(CPPClassType, K) [function]
                    | hasDestructorThat(CPPClassType, K) [function]
+     syntax Bool ::= isPODLayoutType(CPPType) [function]
 endmodule
 
 module CPP-DECL-CLASS
@@ -38,7 +37,7 @@ module CPP-DECL-CLASS
      imports MAP
      imports COMMON-SYNTAX
      imports COMPAT-SYNTAX
-     imports SYMLOC-SYNTAX
+     imports SETTINGS-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -51,6 +50,7 @@ module CPP-DECL-CLASS
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-TRANSLATION-NAME-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -70,7 +70,7 @@ module CPP-DECL-CLASS
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(N :: Class(T, X, .TemplateArgs))) ...</k>
           <curr-scope> namespaceScope(N::Namespace) </curr-scope>
      rule <k> declareClassName(T::Tag, X::CId, true) => t(noQuals, .Set, classType(C :: Class(T, X, .TemplateArgs))) ...</k>
-          <curr-scope> classScope(C::Class) </curr-scope>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
 
      rule <k> TypeDecl(t(_, _, classType(N::Namespace :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
@@ -85,16 +85,16 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>
 
-     rule ClassDef(T:ClassKey, X::CId, NoNNS(), .List, Members::List, IsAnon:Bool) => classContext(declareClassName(T, X, true), Members)
+     rule ClassDef(T:ClassKey, X::CId, NoNNS(), Bases::List, Members::List, IsAnon:Bool) => classContext(declareClassName(T, X, true), Bases, Members)
           requires notBool IsAnon orBool T =/=K Union()
 
-     rule ClassDef(Union(), X::CId, NoNNS(), .List, Members::List, true)
-          => DeclaratorAndSpecifiers(defAnonymousUnion(declareClassName(Union(), X, true), Members), .Set)
+     rule ClassDef(Union(), X::CId, NoNNS(), Bases::List, Members::List, true)
+          => DeclaratorAndSpecifiers(defAnonymousUnion(declareClassName(Union(), X, true), Bases, Members), .Set)
      
-     syntax Declarator ::= defAnonymousUnion(AType, List)
-     context DeclaratorAndSpecifiers(defAnonymousUnion(HOLE:AType,_), _)
-     rule DeclaratorAndSpecifiers(defAnonymousUnion(t(... st: classType(C::Class)) #as T::CPPType, Members::List), S::Set)
-          => classContext(T, Members) ~> defineUnnamedObject(C, S) ~> addMembersToScope(C)
+     syntax Declarator ::= defAnonymousUnion(AType, List, List)
+     context DeclaratorAndSpecifiers(defAnonymousUnion(HOLE:AType,_,_), _)
+     rule DeclaratorAndSpecifiers(defAnonymousUnion(t(... st: classType(C::Class)) #as T::CPPType, Bases::List, Members::List), S::Set)
+          => classContext(T, Bases, Members) ~> defineUnnamedObject(C, S) ~> addMembersToScope(C)
 
      rule NoDecl() => .K
 
@@ -128,17 +128,19 @@ module CPP-DECL-CLASS
 
      syntax NNSVal ::= getNNSVal(Scope) [function]
      rule getNNSVal(namespaceScope(N::Namespace)) => N
-     rule getNNSVal(classScope(C::Class)) => C
+     rule getNNSVal(classScope(C::Class, _)) => C
      rule getNNSVal(_:BlockScope) => NoNamespace()
 
-     rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
-              => setScope(classScope(C))
+     rule <k> classContext(t(_, _, classType((N::Namespace :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Bases::List, Members::List) 
+              => setScope(classScope(C, false))
+              ~> listToK(Bases)
+              ~> setScope(classScope(C, true))
               ~> listToK(Members)
               ~> implicitDeclarations()
-              ~> defineFunctions(.K)
+              ~> deferredActions(OldClass)
               ~> setScope(OldScope)
           ...</k>
-          <member-function-bodies> .K </member-function-bodies>
+          <deferred-class-actions> OldClass:K => layoutBases(false, .List) |> layoutBases(true, .List) |> .K |> .Ordering </deferred-class-actions>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> OldScope::Scope </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -154,14 +156,16 @@ module CPP-DECL-CLASS
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
 
-     rule <k> classContext(t(_, _, classType((C2::Class :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Members::List) 
-              => setScope(classScope(C))
+     rule <k> classContext(t(_, _, classType((C2::Class :: Class(ClassKey::Tag, X::CId, _)) #as C::Class)) #as T::CPPType, Bases::List, Members::List) 
+              => setScope(classScope(C, false))
+              ~> listToK(Bases)
+              ~> setScope(classScope(C, true))
               ~> listToK(Members)
               ~> implicitDeclarations()
-              ~> defineFunctions(OldClass)
+              ~> deferredActions(OldClass)
               ~> setScope(OldScope)
           ...</k>
-          <member-function-bodies> OldClass:K => .K </member-function-bodies>
+          <deferred-class-actions> OldClass:K => layoutBases(false, .List) |> layoutBases(true, .List) |> .K |> .Ordering </deferred-class-actions>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> OldScope::Scope </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -178,19 +182,15 @@ module CPP-DECL-CLASS
           ...</class>)
 
 
-     syntax KItem ::= defineFunctions(K)
+     syntax KItem ::= deferredActions(K)
 
-     rule <k> (.K => Functions:K) ~> defineFunctions(_) ...</k>
-          <member-function-bodies> Functions:K => .K </member-function-bodies>
-          requires Functions =/=K .K
-
-     rule <k> defineFunctions(OldClass:K) => .K ...</k>
-          <member-function-bodies> .K => OldClass </member-function-bodies>
+     rule <k> deferredActions(OldClass:K) => Functions ...</k>
+          <deferred-class-actions> Functions::Ordering => OldClass </deferred-class-actions>
 
      syntax KItem ::= implicitDeclarations()
      // no implicit constructor if one was already declared
      rule <k> implicitDeclarations() => .K...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class) </curr-scope>
+          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -203,7 +203,7 @@ module CPP-DECL-CLASS
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class) </curr-scope>
+          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -216,7 +216,7 @@ module CPP-DECL-CLASS
                              FunctionPrototype(type(void), list(.List), NoExceptionSpec(), false)),
                         .List, Defaulted())))
               ~> implicitDeclarations() ...</k>
-          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class) </curr-scope>
+          <curr-scope> classScope(_ :: Class(_, X::CId, _) #as C::Class, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
@@ -255,6 +255,7 @@ module CPP-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
+     rule (.K => checkCtorAndDtor(.K, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, (ListItem(C::Class) => .List) _, _, _, _, _)
 
      syntax K ::= checkCtorAndDtor(K, CId, CPPType, Bool, Init, CPPType) [function]
      syntax KItem ::= checkCtor(Class)
@@ -326,7 +327,7 @@ module CPP-DECL-CLASS
           requires I =/=K NoInit()
      // 12.6.2:8.2
      // TODO(traiansf): anonymous unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(_, _, _, _, _,
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(_, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -334,10 +335,10 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           <variant-members> VM::Set </variant-members>
-          requires notBool (I =/=K NoInit() andBool IsMember) andBool X in VM
+          requires I ==K NoInit() andBool X in VM
 
      // 12.6.2:8.3
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(_, _, _, _, 
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(_, _, _, _, 
                    (Res:K => Res ~> ExpressionStmt(defaultInit(Name(NoNNS(), X), T, true))), _) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -345,7 +346,9 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           <variant-members> VM::Set </variant-members>
-          requires notBool (I =/=K NoInit() andBool IsMember) andBool notBool X in VM
+          requires I ==K NoInit() andBool notBool X in VM
+     rule (figureConstructItem(.K, X::CId, T::CPPType, false) => .K) ~> figureConstruct(_, _, _, _, 
+                   (Res:K => Res ~> ExpressionStmt(defaultInit(Name(NoNNS(), X), T, true))), _)
 
      rule <k> figureConstruct(_, .List, .List, Body::Stmt, Res:K, HasNonConst:Bool) => Res ~> Body ...</k>
           <curr-scope> blockScope(_::ClassQualifier :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-scope>
@@ -382,6 +385,7 @@ module CPP-DECL-CLASS
      rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
      rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::Map ...</cenv> ...</class>, Lbl:K)
           => some(M, Lbl)
+     rule #hasMethodThat(...) => false [owise]
 
      rule isDeleted(_, envEntry(... base: Base::SymBase)) => #isDeleted(Base, #configuration)
      rule #isDeleted(Base::SymBase, <generatedTop>... <functions>... Base |-> Deleted() ...</functions> ...</generatedTop>) => true
@@ -419,6 +423,14 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           requires notBool isDeletedDefaultDestructor(X, T, C, FuncT, VM)
+     rule <k> (.K => checkDtor(baseClass(M), type(classType(M)), type(classType(M)), VM)) ~> figureDestruct((ListItem(M::Class) => .List) _, _, _) ...</k>
+          <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
+          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <variant-members> VM::Set </variant-members>
+          <virtual-bases> .Set </virtual-bases>
 
      syntax K ::= checkDtor(CId, CPPType, CPPType, Set) [function, klabel(checkDtor3)]
      rule checkDtor(X::CId, T::CPPType, M::CPPType, VM::Set)
@@ -480,8 +492,117 @@ module CPP-DECL-CLASS
 
      syntax KItem ::= declareField(CId, CPPType, Init) [strict(2)]
 
+     syntax ClassOffset ::= "uninitialized"
+
+     syntax KItem ::= layoutField(CId, CPPType)
+                    | layoutBases(isVirtual: Bool, List)
+                    | computePrimaryBase(List)
+
+     rule First:K |> Second::Ordering => First ~> Second
+     rule .Ordering => .K
+
+     // POD for the purposes of layout is a concept in the Itanium C++ ABI.
+     // we do not currently support non-GNU-Linux ABI layouts for class/struct/union types.
+     // thus we encode the layout in the semantics directly.
+     // eventually we will want to support arbitrary ABIs which means this will
+     // get moved to an extension specific to the Itanium ABI.
+     rule isPODLayoutType(T:CPPScalarType) => true
+     rule isPODLayoutType(T:CPPArrayType) => isPODLayoutType(innerType(T))
+     rule isPODLayoutType(T:CPPClassType) => isPODLayoutClass(T, getClassInfo(T))
+     rule isPODLayoutType(_) => false [owise]
+     rule isPOD03Type(T:CPPScalarType) => true
+     rule isPOD03Type(T:CPPArrayType) => isPOD03Type(innerType(T))
+     rule isPOD03Type(T:CPPClassType) => isPOD03Class(T, getClassInfo(T))
+     rule isPOD03Type(_) => false [owise]
+     syntax Bool ::= isPODLayoutClass(CPPType, ClassInfo) [function]
+                   | isEmptyClass(CPPType, ClassInfo) [function]
+                   | isPOD03Type(CPPType) [function]
+                   | isPOD03Class(CPPType, ClassInfo) [function]
+     rule isPODLayoutClass(_,
+               <class>...
+                 <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members>
+                 <access>... X |-> Public() ...</access>
+               ...</class>)
+          requires notBool (isCPPClassType(getMostDerivedArrayElement(T)) andBool notBool isPODLayoutType(T))
+               andBool notBool isCPPRefType(T)
+               andBool notBool isWideBitfield(T)
+     rule isPODLayoutClass(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPClassType,
+               <class>...
+                 <non-static-data-members> .List </non-static-data-members>
+                 <base-classes> .List </base-classes>
+               ...</class>)
+          => notBool (#hasMethodThat(operator=, getClassInfo(T), #klabel(`isUserProvidedCopyAssignment`))
+               orBool hasDestructorThat(T, #klabel(`isUserProvidedDestructor`))
+               orBool hasConstructorThat(T, #klabel(`isUserProvidedConstructor`))
+               orBool hasVirtualMembers(T))
+               andBool (Key ==K Struct() orBool Key ==K Union())
+     rule isPODLayoutClass(...) => false [owise]
+
+     rule isPOD03Class(_,
+               <class>...
+                 <non-static-data-members> ListItem(kpair(X::CId, T::CPPType)) => .List ...</non-static-data-members>
+                 <access>... X |-> Public() ...</access>
+               ...</class>)
+          requires notBool (isCPPClassType(getMostDerivedArrayElement(T)) andBool notBool isPOD03Type(T))
+               andBool notBool isCPPRefType(T)
+     rule isPOD03Class(t(... st: classType(_ :: Class(Key::ClassKey, X::CId, _))) #as T::CPPClassType,
+               <class>...
+                 <non-static-data-members> .List </non-static-data-members>
+                 <base-classes> .List </base-classes>
+               ...</class>)
+          => notBool (#hasMethodThat(operator=, getClassInfo(T), #klabel(`isUserProvidedCopyAssignment`))
+               orBool hasDestructorThat(T, #klabel(`isUserProvidedDestructor`))
+               orBool hasConstructorThat(T, #klabel(`isUserProvidedConstructor`))
+               orBool hasVirtualMembers(T))
+               andBool (Key ==K Struct() orBool Key ==K Union())
+     rule isPOD03Class(...) => false [owise]
+
+     rule isEmptyClass(T::CPPClassType, <class>... <base-classes> .List </base-classes> <non-static-data-members> .List </non-static-data-members> ...</class>)
+          => notBool hasVirtualMembers(T)
+     rule isEmptyClass(_, <class>... <base-classes> ListItem(B::Class) => .List ...</base-classes> ...
+</class>)
+          requires isEmptyClass(type(classType(B)), getClassInfo(B))
+     rule isEmptyClass(...) => false [owise]
+
+     syntax Bool ::= isUserProvidedCopyAssignment(CPPFunctionType, K) [function]
+     rule isUserProvidedCopyAssignment(t(... st: functionType(... paramTypes: t(quals(.Set), _, classType(X::Class)), methodInfo: methodInfo(... static: false, class: X, userProvided: true))), envEntry(...)) => true
+     rule isUserProvidedCopyAssignment(t(... st: functionType(... paramTypes: t(... st: lvRefType(t(... st: classType(X::Class)))), methodInfo: methodInfo(... static: false, class: X, userProvided: true))), envEntry(...)) => true
+     rule isUserProvidedCopyAssignment(...) => false [owise]
+
+     syntax Bool ::= isWideBitfield(CPPType) [function]
+     rule isWideBitfield(T:CPPBitfieldType) => bitSizeofType(T) >Int bitSizeofType(innerType(T))
+     rule isWideBitfield(_) => false [owise]
+
+     rule (.K => nameLookup(X, NoTag(), typeMask)) ~> BaseClass(_, false, _, Name(NoNNS(), X::CId))
+     rule <k> t(... st: classType(D::Class)) #as T:KItem ~> BaseClass(false, false, AS::AccessSpecifier, _) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <is-aggregate> _ => false </is-aggregate>
+            <base-classes>... .List => ListItem(D) </base-classes>
+            <cenv> CE::Map => CE[baseClass(D), T <- uninitialized] </cenv>
+            <base-access> AE::Map => AE [D <- AS] </base-access>
+          ...</class>
+          <deferred-class-actions> layoutBases(false, _::List (.List => ListItem(D))) |> _ |> _ |> .Ordering </deferred-class-actions>
+     rule <k> t(... st: classType(D::Class)) #as T:KItem ~> BaseClass(true, false, AS::AccessSpecifier, _) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <is-aggregate> _ => false </is-aggregate>
+            <base-classes>... .List => ListItem(D) </base-classes>
+            <cenv> CE::Map => CE[baseClass(D), T <- uninitialized] </cenv>
+            <base-access> AE::Map => AE [D <- AS] </base-access>
+          ...</class>
+          <deferred-class-actions> _ |> layoutBases(true, _::List (.List => ListItem(D))) |> _ |> _ |> .Ordering </deferred-class-actions>
+
      rule <k> declareField(X::CId, T::CPPType, Init::Init) => .K ...</k>
-          <curr-scope> classScope(C::Class) </curr-scope>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
           <class>...
             <class-type> Key::ClassKey </class-type>
             <class-id> C </class-id>
@@ -489,25 +610,311 @@ module CPP-DECL-CLASS
             <non-static-data-members>... .List => ListItem(kpair(X, T)) </non-static-data-members>
             <access-specifier> AS::AccessSpecifier </access-specifier>
             <access> AE::Map => AE[X <- AS] </access>
-            <cenv> CE::Map => CE[X, T <- classOffset(padOrNot(V, T, Key))] </cenv>
+            <cenv> CE::Map => CE[X, T <- uninitialized] </cenv>
             <initializers> Inits::Map => Inits[X, T <- Init] </initializers>
-            <max-offset> V::Int => updateMaxOffset(V, T, Key) </max-offset>
-            <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
             <variant-members> VM::Set => #if Key ==K Union() #then VM SetItem(X) #else VM #fi </variant-members>
           ...</class>
+          <deferred-class-actions> (K:K => K ~> layoutField(X, T)) |> _ |> _ |> .Ordering </deferred-class-actions>
           requires notBool (X in_keys(CE)) andBool X =/=K #NoName
 
      rule <k> declareField(#NoName, T:CPPBitfieldType, NoInit()) => .K ...</k>
-          <curr-scope> classScope(C::Class) </curr-scope>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
           <class>...
             <class-type> Key::ClassKey </class-type>
             <class-id> C </class-id>
-            <max-offset> V::Int => updateMaxOffset(V, T, Key) </max-offset>
-            <max-align> M::Int => maxInt(M, byteAlignofType(T)) </max-align>
           ...</class>
+          <deferred-class-actions> (K:K => K ~> layoutField(#NoName, T)) |> _ |> _ |> .Ordering </deferred-class-actions>
+
+     // POD layout
+     rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, T, Key))] #fi </cenv>
+            <sizeof> V::Int => updateMaxOffset(V, T, Key) </sizeof>
+            <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
+          ...</class>
+          requires isPODLayoutType(type(classType(C)))
+
+     // non-POD-layout, non-wide bitfield
+     rule <k> layoutField(X::CId, T:CPPBitfieldType) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, T, Key))] #fi </cenv>
+            <dsize> V::Int => updateMaxOffset(V, T, Key) </dsize>
+            <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
+            <sizeof> V2::Int => maxInt(V2, padTo(updateMaxOffset(V, T, Key), 1)) </sizeof>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool notBool isWideBitfield(T)
+
+     // non-POD-layout, wide bitfield
+     rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => #if X ==K #NoName #then CE #else CE[X, T <- classOffset(padOrNot(V, getT'(T), Key))] #fi </cenv>
+            <dsize> V::Int => updateMaxOffset(V, T, Key) </dsize>
+            <align> M::Int => maxInt(M, byteAlignofType(getT'(T))) </align>
+            <sizeof> V2::Int => maxInt(V2, padTo(updateMaxOffset(V, T, Key), 1)) </sizeof>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool isWideBitfield(T)
+
+     syntax CPPType ::= "getT'" "(" CPPType ")" [function]
+     rule getT'(t(... st: bitfieldType(_, N::Int))) => 
+          #if byteSizeofType(type(long-long)) *Int cfg:bitsPerByte <=Int N #then type(long-long) #else
+          #if byteSizeofType(type(long)) *Int cfg:bitsPerByte <=Int N #then type(long) #else
+	  #if byteSizeofType(type(int)) *Int cfg:bitsPerByte <=Int N #then type(int) #else
+          #if byteSizeofType(type(short)) *Int cfg:bitsPerByte <=Int N #then type(short) #else
+          type(char)
+          #fi #fi #fi #fi
+
+     // non-POD-layout union, non-bitfield, data member
+     rule <k> layoutField(X::CId, T::CPPType) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Union() </class-type>
+            <cenv> CE::Map => CE[X, T <- classOffset(0)] </cenv>
+            <dsize> V::Int => maxInt(V, bitSizeofType(T)) </dsize>
+            <align> M::Int => maxInt(M, byteAlignofType(T)) </align>
+            <sizeof> V2::Int => maxInt(V2, maxInt(V, bitSizeofType(T))) </sizeof>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool notBool isCPPBitfieldType(T)
+
+     // non-POD-layout non-union, non-bitfield, non-empty-base-class
+     rule <k> layoutField(X::CId, T::CPPType) => tryLayoutField(X, T, padTo(V, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi), false) ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <dsize> V::Int </dsize>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool notBool isCPPBitfieldType(T)
+               andBool Key =/=K Union()
+               andBool notBool (isBaseClass(X) andBool isEmptyClass(T, getClassInfo({T}:>CPPClassType)))
+
+     syntax Int ::= nvSizeof(CPPType) [function]
+                  | #nvSizeof(ClassInfo) [function]
+                  | nvAlignof(CPPType) [function]
+                  | #nvAlignof(ClassInfo) [function]
+
+     rule nvSizeof(T::CPPClassType) => #nvSizeof(getClassInfo(T))
+     rule nvAlignof(T::CPPClassType) => #nvAlignof(getClassInfo(T))
+     rule #nvSizeof(<class>... <nvsize> V::Int </nvsize> ...</class>) => V
+     rule #nvAlignof(<class>... <nvalign> V::Int </nvalign> ...</class>) => V
+
+     syntax KItem ::= tryLayoutField(CId, CPPType, offset: Int, isEmptyBase: Bool)
+     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int, false) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => CE[X, T <- classOffset(Offset)] </cenv>
+            <dsize> V::Int => Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi </dsize>
+            <align> M::Int => maxInt(M, #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi) </align>
+            <sizeof> V2::Int => maxInt(V2, Offset +Int #if isBaseClass(X) #then nvSizeof(T) #else bitSizeofType(T) #fi) </sizeof>
+          ...</class>
+          requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
+     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int, true) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => CE[X, T <- classOffset(Offset)] </cenv>
+            <align> M::Int => maxInt(M, nvAlignof(T)) </align>
+            <sizeof> V2::Int => maxInt(V2, Offset +Int bitSizeofType(T)) </sizeof>
+          ...</class>
+          requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) ==Int 0
+
+     rule <k> tryLayoutField(X::CId, T::CPPType, Offset::Int => Offset +Int #if isBaseClass(X) #then nvAlignof(T) #else byteAlignofType(T) #fi *Int cfg:bitsPerByte, _) ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          requires size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), Offset))) >Int 0
+
+     // non-POD-layout non-union, empty base class, layout at 0
+     rule <k> layoutField(baseClass(D::Class), T::CPPType) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <cenv> CE::Map => CE[baseClass(D), T <- classOffset(0)] </cenv>
+            <align> M::Int => maxInt(M, nvAlignof(T)) </align>
+            <sizeof> V2::Int => maxInt(V2, bitSizeofType(T)) </sizeof>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool Key =/=K Union()
+               andBool isEmptyClass(T, getClassInfo(D))
+               andBool size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), 0))) ==Int 0
+
+     // non-POD-layout non-union, empty base class, type conflict at 0
+     rule <k> layoutField(baseClass(D::Class), T::CPPType) => tryLayoutField(baseClass(D), T, padTo(V, nvAlignof(T)), true) ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <class-type> Key::ClassKey </class-type>
+            <dsize> V::Int </dsize>
+          ...</class>
+          requires notBool isPODLayoutType(type(classType(C)))
+               andBool Key =/=K Union()
+               andBool isEmptyClass(T, getClassInfo(D))
+               andBool size(intersectSet(getTypesAtOffsetForLayout(T, 0), getTypesAtOffsetForLayout(type(classType(C)), 0))) >Int 0
+
+     syntax Set ::= getTypesAtOffsetForLayout(CPPType, Int) [function]
+     rule getTypesAtOffsetForLayout(t(... st: bitfieldType(T::CPPSimpleType, _)), 0)
+          => SetItem(type(T))
+     rule getTypesAtOffsetForLayout(t(... st: arrayType(InnerT::CPPType, _)) #as T::CPPType, 0)
+          => SetItem(utype(T)) getTypesAtOffsetForLayout(InnerT, 0)
+     rule getTypesAtOffsetForLayout(t(... st: incompleteArrayType(InnerT::CPPType)) #as T::CPPType, 0)
+          => SetItem(utype(T)) getTypesAtOffsetForLayout(InnerT, 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPClassType, 0)
+          => SetItem(utype(T)) getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPClassType, 0)
+          => SetItem(utype(T)) getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), 0)
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPClassType, 0)
+          => SetItem(utype(T)) getTypesAtOffsetForLayoutInUnion(T, getClassInfo(T), 0)
+
+     rule getTypesAtOffsetForLayout(t(... st: arrayType(InnerT::CPPType, _)) #as T::CPPType, Offset::Int)
+          => getTypesAtOffsetForLayout(InnerT, Offset %Int bitSizeofType(InnerT))
+          requires Offset >Int 0
+     rule getTypesAtOffsetForLayout(t(... st: incompleteArrayType(InnerT::CPPType)) #as T::CPPType, Offset::Int)
+          => getTypesAtOffsetForLayout(InnerT, Offset %Int bitSizeofType(InnerT))
+          requires Offset >Int 0
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Struct(), _, _))) #as T::CPPClassType, Offset::Int)
+          => getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), Offset)
+          requires Offset >Int 0
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Class(), _, _))) #as T::CPPClassType, Offset::Int)
+          => getTypesAtOffsetForLayoutInStruct(T, getClassInfo(T), Offset)
+          requires Offset >Int 0
+     rule getTypesAtOffsetForLayout(t(... st: classType(_ :: Class(Union(), _, _))) #as T::CPPClassType, Offset::Int)
+          => getTypesAtOffsetForLayoutInUnion(T, getClassInfo(T), Offset)
+          requires Offset >Int 0
+     rule getTypesAtOffsetForLayout(T::CPPType, Offset::Int) => #if Offset ==Int 0 #then SetItem(utype(T)) #else .Set #fi [owise]
+
+     syntax Set ::= getTypesAtOffsetForLayoutInStruct(CPPType, ClassInfo, Int) [function]
+                  | getTypesAtOffsetForLayoutInUnion(CPPType, ClassInfo, Int) [function]
+     rule getTypesAtOffsetForLayoutInStruct(_, <class>...
+               <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
+               <cenv>... X |-> (_ T |-> classOffset(FOffset::Int)) ...</cenv>
+          ...</class>, Offset::Int)
+          requires FOffset >Int Offset
+     rule getTypesAtOffsetForLayoutInStruct(_, <class>...
+               <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
+               <cenv>... X |-> (_ T |-> uninitialized) ...</cenv>
+          ...</class>, Offset::Int)
+     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+               <non-static-data-members>... ListItem(kpair(X::CId, T'::CPPType)) </non-static-data-members>
+               <cenv>... X |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+          ...</class>, Offset::Int)
+          => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
+          requires FOffset <=Int Offset
+     rule getTypesAtOffsetForLayoutInStruct(_, <class>...
+               <base-classes>... ListItem(C:Class => type(classType(C))) </base-classes>
+          ...</class>, _)
+     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+               <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
+               <non-static-data-members> .List </non-static-data-members>
+               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+          ...</class>, Offset::Int)
+          requires FOffset >Int Offset
+     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+               <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
+               <non-static-data-members> .List </non-static-data-members>
+               <cenv>... baseClass(C) |-> (_ T' |-> uninitialized) ...</cenv>
+          ...</class>, Offset::Int)
+     rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
+               <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>
+               <non-static-data-members> .List </non-static-data-members>
+               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+          ...</class>, Offset::Int)
+          => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
+          requires FOffset <=Int Offset
+     rule getTypesAtOffsetForLayoutInStruct(_, <class>...
+               <base-classes> .List </base-classes>
+               <non-static-data-members> .List </non-static-data-members>
+          ...</class>, _) => .Set
+
+     rule getTypesAtOffsetForLayoutInUnion(T::CPPType, <class>
+               <non-static-data-members> ListItem(kpair(_, T'::CPPType)) Ds::List </non-static-data-members>
+               Rest::Bag
+          </class>, Offset::Int)
+          => getTypesAtOffsetForLayout(T', Offset)
+               getTypesAtOffsetForLayoutInUnion(T, <class> <non-static-data-members> Ds </non-static-data-members> Rest </class>, Offset)
+     rule getTypesAtOffsetForLayoutInUnion(...) => .Set [owise]
+
+     rule <k> layoutBases(false, .List) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          requires isPODLayoutType(type(classType(C)))
+     rule <k> layoutBases(true, .List) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <sizeof> V::Int => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte) </sizeof> // becomes size in bytes after completing layout
+            <align> A::Int </align>
+            <nvsize> _ => maxInt(1, padTo(V,A) /Int cfg:bitsPerByte) *Int cfg:bitsPerByte </nvsize> // becomes final size in bits
+            <nvalign> _ => A </nvalign> // align in bytes
+          ...</class>
+          requires isPOD03Type(type(classType(C)))
+
+          
+     rule <k> layoutBases(true, .List) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class>...
+            <class-id> C </class-id>
+            <align> A::Int </align>
+            <sizeof> V::Int => maxInt(1, padTo(V, A) /Int cfg:bitsPerByte) </sizeof> // becomes size in bytes after completing layout
+            <nvalign> _ => A </nvalign> // align in bytes
+            <nvsize> _ => V </nvsize> // becomes sizeof in bits
+          ...</class>
+          requires notBool isPOD03Type(type(classType(C)))
+
+     rule <k> layoutBases(false, Bases::List) => computePrimaryBase(Bases) ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          requires hasVirtualMembers(type(classType(C)))
+
+     rule <k> (.K => layoutField(baseClass(B), type(classType(B))))
+              ~> layoutBases(false, (ListItem(B::Class) => .List) _) ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          requires notBool hasVirtualMembers(type(classType(C)))
+
+     rule <k> layoutBases(false, .List) => .K ...</k>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          requires notBool hasVirtualMembers(type(classType(C)))
 
      rule <k> AccessSpec(AS::AccessSpecifier) => .K ...</k>
-          <curr-scope> classScope(C::Class) </curr-scope>
+          <curr-scope> classScope(C::Class, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
             <access-specifier> _ => AS </access-specifier>
@@ -515,7 +922,9 @@ module CPP-DECL-CLASS
 
      syntax Int ::= updateMaxOffset(Int, CPPType, ClassKey) [function]
      rule updateMaxOffset(V::Int, T::CPPType, Union()) => maxInt(V, bitSizeofType(T))
-     rule updateMaxOffset(V::Int, T::CPPType, _) => pad(V,T) +Int bitSizeofType(T)  [owise]
+     rule updateMaxOffset(V::Int, T::CPPType, _) => pad(V,T) +Int bitSizeofType(T)
+          requires notBool isWideBitfield(T)
+     rule updateMaxOffset(V::Int, T::CPPType, _) => pad(V, getT'(T)) +Int bitSizeofType(T) [owise]
 
      syntax Int ::= padOrNot(Int, CPPType, ClassKey) [function]
      rule padOrNot(_, _, Union()) => 0
@@ -547,19 +956,19 @@ module CPP-DECL-CLASS
 
      // brace-or-equal initializers need to be evalauted in class scope
      rule <k> evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E ~> returnFromBraceOrEqualInitializer(Base, OldScope) ...</k>
-          <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
+          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
      rule <k> le(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class) => Scope </curr-scope>
+          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
      rule <k> xe(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class) => Scope </curr-scope>
+          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
      rule <k> pre(E::Expr => evalBraceOrEqualInitializer(C, Base, E), _, _)
            ~> (returnFromBraceOrEqualInitializer(Base::LVal, Scope::Scope) => .K)
           ...</k>
-          <curr-scope> classScope(C::Class) => Scope </curr-scope>
+          <curr-scope> classScope(C::Class, _) => Scope </curr-scope>
 
      rule <k> V:Val ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
@@ -568,13 +977,13 @@ module CPP-DECL-CLASS
      rule <k> typeof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
            ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
           ...</k>
-          <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
+          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
      rule <k> typeof(V:CPPType) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
      rule <k> catof(evalBraceOrEqualInitializer(C::Class, Base::LVal, E::Expr) => E)
            ~> (.K => returnFromBraceOrEqualInitializer(Base, OldScope))
           ...</k>
-          <curr-scope> OldScope::Scope => classScope(C) </curr-scope>
+          <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
 endmodule

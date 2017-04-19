@@ -15,6 +15,8 @@ module CPP-CLASS-SYNTAX
      syntax CId ::= unnamedObject(Class)
      syntax Expr ::= beginConstruction(Expr) [strict]
      syntax Expr ::= endConstruction(Expr, isConstructor: Bool) [strict]
+     syntax BaseClass ::= baseClass(Class)
+     syntax CId ::= BaseClass
 endmodule
 
 module CPP-CLASS

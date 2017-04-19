@@ -54,9 +54,9 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleFundamentalType ::= CPPSimpleSignedType | CPPSimpleUnsignedType | CPPSimpleFloatingType
                             | CPPSimpleCharType | CPPSimpleBoolType | CPPSimpleVoidType
                             | CPPSimpleWideCharType | CPPSimpleNullPtrTType
-                            | CPPSimpleBitfieldType
      syntax CPPSimpleType ::= CPPSimpleFundamentalType
                             | CPPSimpleCompoundType
+                            | CPPSimpleBitfieldType
 
      syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
      syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
@@ -266,6 +266,7 @@ module CPP-TYPING-SYNTAX
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
+                   | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
      
@@ -617,8 +618,10 @@ module CPP-TYPING
     
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
      rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
+     rule isDirectBaseClassOf(B::Class, D::Class) => #isDirectBaseClassOf(B, D, #configuration)
 
      syntax Bool ::= #isBaseClassOf(base: Class, derived: List, K) [function]
+                   | #isDirectBaseClassOf(base: Class, derived: Class, K) [function]
      rule #isBaseClassOf(B::Class, ListItem(B) _, _) => true
      rule #isBaseClassOf(_, .List, _) => false
      rule #isBaseClassOf(B::Class, (ListItem(D::Class) => BC) _, 
@@ -627,13 +630,20 @@ module CPP-TYPING
               <base-classes> BC::List </base-classes>
             ...</generatedTop>)
          requires D =/=K B
+     rule #isDirectBaseClassOf(B::Class, D::Class,
+            <generatedTop>... 
+              <class-id> D </class-id>
+              <base-classes> BC::List </base-classes>
+            ...</generatedTop>)
+          => B in BC
 
      rule hasVirtualMembers(T::CPPClassType) => #hasVirtualMembers(getClassInfo(T))
      syntax Bool ::= #hasVirtualMembers(ClassInfo) [function]
-     // TODO(dwightguth): non-virtual base classes
-     rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(kpair(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: true))))) ...</function-members> ...</class>) => true
-     rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> ListItem(_) => .List ...</function-members> ...</class>) [owise]
+     rule #hasVirtualMembers(<class>... <function-members> ListItem(kpair(_, t(... st: functionType(... methodInfo: methodInfo(... virtual: false))))) => .List ...</function-members> ...</class>)
+     rule #hasVirtualMembers(<class>... <base-classes> ListItem(B::Class) => .List ...</base-classes> <virtual-bases> VirtualBases::Set </virtual-bases> ...</class>)
+          requires notBool B in VirtualBases andBool notBool #hasVirtualMembers(getClassInfo(B))
      rule #hasVirtualMembers(<class>... <base-classes> .List </base-classes> <function-members> .List </function-members> ...</class>) => false
+     rule #hasVirtualMembers(...) => true [owise]
 
      rule isUnionLikeClass(_ :: Class(Union(), _, _)) => true
      rule isUnionLikeClass(C::Class) => #isUnionLikeClass(getClassInfo(C)) [owise]

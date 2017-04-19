@@ -9,6 +9,7 @@ module CPP-SORTS
      syntax OpId
      syntax RefQualifier
      syntax Tag
+     syntax AccessSpecifier
 endmodule
 
 module CPP-SYNTAX
@@ -84,6 +85,7 @@ module CPP-SYNTAX
 
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
+     syntax AccessSpecifier ::= Public() | Private() | Protected() | NoAccessSpec()
 
      syntax RefQualifier ::= RefLValue() | RefRValue() | RefNone()
 

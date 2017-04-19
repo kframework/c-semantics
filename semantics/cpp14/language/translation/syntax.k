@@ -60,7 +60,6 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
      syntax FunctionSpecifier ::= Inline() | Explicit()
-     syntax AccessSpecifier ::= Public() | Private() | Protected() | NoAccessSpec()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
                         | Constexpr() | Friend() | Auto()
 
@@ -278,13 +277,16 @@ module CPP-ABSTRACT-REWRITING
      rule MemberExpr(false, false, N::Name, E::Expr) 
        => #if hasAnonymousUnionObject(E)
           #then N
-          #else E . no-template N
+          #else #if hasAnonymousUnionObject(N)
+                #then E
+                #else E . no-template N
+                #fi
           #fi [anywhere]
      rule MemberExpr(true, false, N::Name, E::Expr) => BinaryOperator(operator->, E, N) [anywhere]
 
      syntax Bool ::= hasAnonymousUnionObject(Expr) [function]
      rule hasAnonymousUnionObject(ExprLoc(_, E::Expr) => E)
-     rule hasAnonymousUnionObject(AnonymousUnionObject(_)) => true
+     rule hasAnonymousUnionObject(Name(NoNNS(), #NoName)) => true
      rule hasAnonymousUnionObject(_) => false [owise]
 
      rule Subscript(E1::Expr, E2::Expr) => BinaryOperator(operator[], E1, E2) [anywhere]
