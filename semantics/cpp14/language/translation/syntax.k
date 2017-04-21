@@ -56,7 +56,7 @@ module CPP-ABSTRACT-SYNTAX
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
-     syntax Init ::= ValueInit() | NoInit()
+     syntax Init ::= NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
      syntax FunctionSpecifier ::= Inline() | Explicit() | Pure()
@@ -250,6 +250,8 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax BraceInit ::= BraceInit(List)
      syntax Init ::= BraceInit
+     syntax ExpressionList ::= ExpressionList(List)
+     syntax Init ::= ExpressionList
 
      // extensions
      syntax Expr ::= GnuTypeTrait(String, List)
@@ -297,9 +299,10 @@ module CPP-ABSTRACT-REWRITING
      // ideally we would get the distinction between the two correct, but clang doesn't fully
      // distinguish by the time we reach the point of abstract syntax, so this will have to do.
      rule ConstructorCall(false, _, .List) => NoInit() [anywhere]
-     rule ConstructorCall(true, _, .List) => ValueInit() [anywhere]
-     rule ConstructorCall(_, _, ListItem(E::Expr)) => E [owise, anywhere]
-     rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
+     rule ConstructorCall(true, _, .List) => ExpressionList(.List) [anywhere]
+     rule ConstructorCall(_, _, ListItem(E::Expr)) => E [anywhere]
+     rule ConstructorCall(_, _, L::List) => ExpressionList(L) [owise, anywhere]
+     rule TemporaryObjectExpr(T::AType, L::List) => FunctionalCast(T, L) [anywhere]
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]

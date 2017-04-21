@@ -4,12 +4,12 @@ module CPP-OVERLOADING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
-     syntax CandidateSet ::= cSet(candidates: Map, id: QualId, this: K)
+     syntax CandidateSet ::= cSet(candidates: Map, id: QualId)
 
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveConversionOverload(CandidateSet, StrictList, Expr, CPPType)
                    | resolveRefConversionOverload(CandidateSet, StrictList, Expr, CPPType)
-                   | resolveUniqueDecl(K, Expr) [strict(1)]
+                   | resolveUniqueDecl(K, Expr, Bool) [strict(1)]
                    | cSetUnion(K, K) [strict]
                    | checkAccess(Expr)
 
@@ -98,12 +98,12 @@ module CPP-OVERLOADING
      // strict version
      rule cSetUnion(notFound(_), E::Expr) => E
      rule cSetUnion(E::Expr, notFound(_)) => E
-     rule cSetUnion(cSet(M1::Map, QX::QualId, Obj:K), cSet(M2::Map, QX, Obj)) => cSet(M1 M2, QX, Obj)
+     rule cSetUnion(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
      // function version
      rule cSetUnion2(notFound(_), E::CandidateSet) => E
      rule cSetUnion2(E::CandidateSet, notFound(_)) => E
-     rule cSetUnion2(cSet(M1::Map, QX::QualId, Obj:K), cSet(M2::Map, QX, Obj)) => cSet(M1 M2, QX, Obj)
+     rule cSetUnion2(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
 
      context #resolveOverload(... types: (HOLE:StrictList => types(HOLE)))
      context #resolveOverload(... cats: (HOLE:StrictList => cats(HOLE)))
@@ -601,31 +601,31 @@ module CPP-OVERLOADING
      // TODO(traiansf): properly resolve default arguments for templates
      rule (lv(loc(Base::SymBase, 0), _, _) => .K) ~> bestViable(T::CPPFunctionType, (_ => envEntry(Base, false, emptyDefaultArguments(T))))
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: Base::SymBase), id: X::QualId), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
           <external-uses> EU::Map => addOdrUse(EU, X, T, L) </external-uses>
           <curr-program-loc> L::CabsLoc </curr-program-loc>
           requires Base =/=K nonStatic
            andBool notBool isCPPRefType(T)
            andBool notBool isMemberBase(Base)
-     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr) => le(E, hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(... candidates: T::CPPType |-> envEntry(... base: nonStatic)), E::Expr, _) => le(E, hasTrace(E), T)
      // resolve anonymous union member lookup
-     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
+     rule resolveUniqueDecl(cSet(... candidates: _ |-> envEntry(... base: memberBase(unnamedObject(C::Class), X::CId, _))), _, _) => Name(NoNNS(), unnamedObject(C)) . no-template Name(NoNNS(), X)
 
-     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, This()), E::Expr) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
-     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId, .K), E::Expr)
+     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, false) => le((*This()) . no-template Name(C, X), hasTrace(E), T)
+     rule resolveUniqueDecl(cSet(T::CPPType |-> _:ClassOffset, C:Class :: X::CId), E::Expr, true)
        => dataMemberValue(memberPointer(C, X, T), hasTrace(E), T)
 
-     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr) => le(E, hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => le(E, hasTrace(E), T) ...</k>
           <references> Refs::Map </references>
           requires notBool loc(Base, 0) in_keys(Refs)
-     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr) => lv(lnew(Base), hasTrace(E), T) ...</k>
+     rule <k> resolveUniqueDecl(cSet(... candidates: T:CPPRefType |-> envEntry(... base: Base::SymBase)), E::Expr, _) => lv(lnew(Base), hasTrace(E), T) ...</k>
           <references>... loc(Base, 0) |-> _ ...</references>
 
-     rule resolveUniqueDecl(V:KResult, _) => V
+     rule resolveUniqueDecl(V:KResult, _, _) => V
           requires notBool isCandidateSet(V) andBool notBool isNotFoundNameRef(V)
 
-     rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _)
+     rule (.K => ILL("TOL1", "No declaration found for name '" +String idToString(X) +String "'.")) ~> resolveUniqueDecl(notFound(X::CId), _, _)
 
      // NOTE: the category of the contrivedObject is defaulted to lvalue as its value does not matter, as  the conversion sequence for the implicit object parameter will be ignored in this case 
      // See also 13.3.3.1.4:3 http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_active.html#1278

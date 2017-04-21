@@ -18,6 +18,7 @@ require "expr/members.k"
 require "expr/name.k"
 require "expr/new.k"
 require "expr/reference.k"
+require "expr/unary.k"
 
 require "stmt/block.k"
 require "stmt/expr.k"
@@ -53,6 +54,7 @@ module CPP-EXECUTION
      imports CPP-EXECUTION-EXPR-NAME
      imports CPP-EXPR-NEW
      imports CPP-EXPR-REFERENCE
+     imports CPP-EXECUTION-EXPR-UNARY
 
      imports CPP-STMT-BLOCK
      imports CPP-STMT-EXPR

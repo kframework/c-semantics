@@ -122,13 +122,16 @@ module CPP-DECL-INITIALIZER
                orBool isCPPWideCharType(innerType(DestT))
 
      // 8.5:17.4 (value init)
-     rule #figureInit(Base:LVal, DestT::CPPType, _, ValueInit(), _, _, IsConstructor::ConstructorType)
+     rule #figureInit(Base:LVal, DestT::CPPType, _, ExpressionList(.List), _, _, IsConstructor::ConstructorType)
           => #valueInit(Base, DestT, IsConstructor)
 
      // 8.5:17.6.1 (direct init or copy init from derived class)
      rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)) #as DestT::CPPClassType, Type::InitType, E:Expr, SrcT::CPPType, _, IsConstructor::ConstructorType)
           => constructorInit(Base, Type, DestC, ListItem(E), IsConstructor)
           requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, {SrcT}:>CPPClassType))
+     rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType)
+          => constructorInit(Base, DirectInit(), DestC, L, IsConstructor)
+
 
      // expression initializer, non-class type
      rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory, _)
@@ -234,7 +237,7 @@ module CPP-DECL-INITIALIZER
      rule arrayInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, Size::Int)), Size::Int, .List, E::Expr)
           => compoundInit(E, Base)
 
-     rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X), .K), list(L), constructor)) 
+     rule <k> (.K => resolveOverload(cSet(#if Type ==K DirectInit() #then M #else stripExplicit(M) #fi, C :: ConstructorId(X)), list(L), constructor)) 
               ~> constructorInit(Base::LVal, Type::InitType, _ :: Class(_, X::CId, _) #as C::Class, L::List, _)
           ...</k>
           <curr-tu> Tu::String </curr-tu>

@@ -30,10 +30,7 @@ module CPP-EXPR-NEW
 
      rule lookupAllocationFunction(X::CId, T::CPPType, IsGlobal:Bool) => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)
           requires IsGlobal orBool notBool isCPPClassType(T)
-     rule lookupAllocationFunction(X::CId, t(... st: classType(C::Class)), false) => qualifiedNameLookup(X, C, defaultMask)
-     // this operator is implicitly declared in every TU, so we should never
-     // actually hit the infinite recursion case here
-     rule (notFound(X::CId) => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)) ~> NewExpr(...)
+     rule lookupAllocationFunction(X::CId, t(... st: classType(C::Class)), false) => qualifiedNameLookup(X, C, defaultMask) orIfNotFound qualifiedNameLookup(X, GlobalNamespace(), defaultMask)
 
      rule (cSet(... id: Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(pre(newSize(!I), noTrace, type(size_t)) * prv(byteSizeofType(T), noTrace, type(size_t))) P), 
                                              Name(NoNNS(), operatornew[]))
