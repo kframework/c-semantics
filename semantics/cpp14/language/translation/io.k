@@ -1,17 +1,13 @@
 module CPP-TRANSLATION-IO
      imports CPP-MEMORY-READING-SYNTAX
-
      imports CPP-MEMORY-WRITING-SYNTAX
      imports C-CONFIGURATION
-     imports INT
      imports BITS-SYNTAX
      imports MEMORY-SYNTAX
-     imports SYMLOC-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-BITSIZE-SYNTAX
-     imports CPP-ERROR-SYNTAX
-     imports SETTINGS-SYNTAX
+     imports CPP-COMMON-IO-SYNTAX
 
 
      rule <k> writeBytes(loc(Base::SymBase, Offset::Int), dataList(ListItem(V::Bits) L::List), T::CPPType)
@@ -61,21 +57,5 @@ module CPP-TRANSLATION-IO
                Base |-> object(ObjT::CPPType, Len::Int, M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)])
           ...</mem>
           requires Size >Int 0 andBool notBool (Offset in_keys(M))
-
-     syntax Bits ::= getUninitializedBits(SymLoc, CPPType) [function, klabel(getUninitializedBitsCpp)]
-     rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
-          requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
-     rule getUninitializedBits(L::SymLoc, _) => piece(0, cfg:bitsPerByte) [owise]
-
-     syntax Error ::= "errorReadOutOfBounds"
-     syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
-
-     rule assertInBounds(Offset::Int, Len::Int)
-          => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
-
-     rule (.K => DRAFTING("TIO1",
-               "Reading outside the bounds of an object."))
-          ~> errorReadOutOfBounds
-          [structural]
 
 endmodule
