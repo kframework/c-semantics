@@ -60,6 +60,7 @@ module CPP-EXECUTION-IO
           <locs-written> Locs::Set </locs-written>
           <buffer> .List </buffer>
           requires Size >Int 0 andBool Offset in_keys(M)
+
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
               => assertInBounds(Offset, Len)
               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T)
@@ -70,6 +71,7 @@ module CPP-EXECUTION-IO
           <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
+
      rule <k> readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::CPPType)
               => assertInBounds(Offset, Len)
               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T) ...</k>

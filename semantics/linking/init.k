@@ -246,6 +246,7 @@ module C-LINKING-INIT
                <linkings> Links1:Map </linkings>
                <main-tu> Main1:Set </main-tu>
                <dynamic-init> Init1:K </dynamic-init>
+               <constexpr-symbase> CS1::Set</constexpr-symbase>
 
                <translation-units> TUs1::Bag </translation-units>
           </global>),
@@ -270,6 +271,7 @@ module C-LINKING-INIT
                <linkings> Links2:Map </linkings>
                <main-tu> Main2:Set </main-tu>
                <dynamic-init> Init2:K </dynamic-init>
+               <constexpr-symbase> CS2::Set</constexpr-symbase>
 
                <translation-units> TUs2::Bag </translation-units>
           </global>))
@@ -295,6 +297,7 @@ module C-LINKING-INIT
                <linkings> updateMap(Links1, Links2) </linkings>
                <main-tu> Main1 Main2 </main-tu>
                <dynamic-init> Init1 ~> Init2:K </dynamic-init>
+               <constexpr-symbase> CS1 CS2</constexpr-symbase>
 
                <translation-units> TUs1 TUs2 </translation-units>
           </global>

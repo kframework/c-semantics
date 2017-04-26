@@ -42,6 +42,8 @@ module COMMON-CONFIGURATION
 
      <dynamic-init> .K </dynamic-init>
 
+     <constexpr-symbase> .Set </constexpr-symbase>
+
      <translation-units>
           <tu multiplicity="*" type="Map">
                <tu-id> "" </tu-id>

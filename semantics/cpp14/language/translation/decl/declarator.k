@@ -383,6 +383,7 @@ module CPP-DECL-DECLARATOR
      rule <k> allocateDecl(N:Namespace :: X::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(N :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
+              ~> markAsConstexpr(bnew(!I:Int, T, S, static(Tu)), S)
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -396,6 +397,7 @@ module CPP-DECL-DECLARATOR
      rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
               ~> #if notBool isCPPRefType(T) #then allocObject(bnew(!I, T, S, static(Tu)), T, byteSizeofType(T)) #else .K #fi
+              ~> markAsConstexpr(bnew(!I:Int, T, S, static(Tu)), S)
               ~> lv(lnew(bnew(!I, T, S, static(Tu))), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -405,6 +407,14 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
           requires isLinkerLoc(Base)
+
+     syntax KItem ::= markAsConstexpr(SymBase, Set)
+     rule <k> markAsConstexpr(B::SymBase, S::Set) => . ...</k>
+          <constexpr-symbase> CS::Set => CS SetItem(B)</constexpr-symbase>
+          requires Constexpr() in S
+
+     rule markAsConstexpr(_, S::Set) => .
+          requires notBool Constexpr() in S
 
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))
