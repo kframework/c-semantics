@@ -301,7 +301,8 @@ module CPP-ABSTRACT-REWRITING
      rule ConstructorCall(false, _, .List) => NoInit() [anywhere]
      rule ConstructorCall(true, _, .List) => ExpressionList(.List) [anywhere]
      rule ConstructorCall(_, _, ListItem(E::Expr)) => E [anywhere]
-     rule ConstructorCall(_, _, L::List) => ExpressionList(L) [owise, anywhere]
+     rule ConstructorCall(_, _, L::List) => ExpressionList(L)
+          requires size(L) >Int 1 [anywhere]
      rule TemporaryObjectExpr(T::AType, L::List) => FunctionalCast(T, L) [anywhere]
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
