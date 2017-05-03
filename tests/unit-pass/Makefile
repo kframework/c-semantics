@@ -11,7 +11,7 @@ TEST_COMPARISON = ${TESTS:=.cmp}
 CPP_TEST_COMPARISON = ${CPP_TESTS:=.cmp}
 C_TEST_COMPARISON = ${C_TESTS:=.cmp}
 CC=gcc-4.9
-CXX=g++-4.9
+CXX=g++-5
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi

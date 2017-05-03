@@ -332,10 +332,35 @@ module CPP-DECL-DECLARATOR
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, wchar_t))), StringLiteral(Wide(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', wchar_t), lengthString(S) +Int 1))
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char16_t))), StringLiteral(UTF16(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char16_t), lengthString(S) +Int 1))
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), StringLiteral(UTF32(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
-     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(L::List)) => t(Q, Mods, arrayType(T, size(L)))
-         requires size(L) =/=Int 1 orBool getKLabel(L[0]) =/=K #klabel(`StringLiteral`)
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(ListItem(Init::Init) L::List)) => t(Q, Mods, arrayType(T, size(L) +Int 1))
+         requires (size(L) =/=Int 0 orBool getKLabel(Init) =/=K #klabel(`StringLiteral`))
+          andBool (notBool isAggregateType(T) orBool isBraceInit(Init))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T:CPPClassType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))
+         requires isAggregateType(T)
+          andBool notBool isBraceInit(Init)
      rule completeDeclaration(T::CPPType, _) => T [owise]
 
+     syntax Int ::= computeAggArraySize(ClassInfo, List) [function]
+                  | #computeAggArraySize(fields: List, types: Map, initList: List, callStack: List, size: Int, agg: ClassInfo) [function]
+
+     rule computeAggArraySize(CI::ClassInfo, L::List) => #computeAggArraySize(.List, .Map, L, .List, 0, CI)
+     rule #computeAggArraySize((.List => getNonStaticDataMembers(CI)), (_ => getDataMembersInitializers(CI)), ListItem(_) _, .List, (N::Int => N +Int 1), CI::ClassInfo)
+     rule #computeAggArraySize(... fields: (.List => Fields), types: (_ => Types), callStack: (ListItem(kpair(Fields::List, Types::Map)) => .List) _)
+     rule #computeAggArraySize(... initList: .List, size: N::Int) => N
+     rule #computeAggArraySize(...
+                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           types: (F |-> (T::CPPType |-> _)) _,
+                           initList: (ListItem(Init::Expr) => .List) _
+                           )
+          requires (notBool isAggregateType(T) orBool isBraceInit(Init))
+     rule #computeAggArraySize(...
+                           fields: (ListItem(kpair(F:CId, _)) Fields::List => getNonStaticDataMembers(getClassInfo(T))),
+                           types: (((F |-> (T::CPPClassType |-> _)) _) #as Types::Map => getDataMembersInitializers(getClassInfo(T))),
+                           initList: ListItem(Init::Expr) _,
+                           callStack: (.List => ListItem(kpair(Fields, Types))) _
+                           )
+          requires isAggregateType(T)
+           andBool notBool isBraceInit(Init)
 
      rule defineObject(_, _, _, NoInit(), Function(_), _, _) => .K
      rule defineObject(_, _, _, NoInit(), _, _, S::Set) => .K

@@ -18,6 +18,7 @@ module CPP-TYPING-SORTS
      syntax CPPFunctionType
      syntax CPPClassType
      syntax CPPRefType
+     syntax IncompleteInfo
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
@@ -252,11 +253,6 @@ module CPP-TYPING-SYNTAX
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
      syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
-     syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
-                        | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
-                        | #getClassInfo(Class, K) [function]
-     syntax ClassInfo ::= ClassCell | "#incomplete"
-
      syntax MethodInfo ::= "noMethod"
                          | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
@@ -272,9 +268,10 @@ module CPP-TYPING-SYNTAX
      
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
+     syntax IncompleteInfo ::= "#incomplete"
      syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
                        | #getEnumInfo(Enum, K) [function]
-     syntax EnumInfo ::= CppenumCell | "#incomplete"
+     syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
      syntax Bool ::= CPPType "==Type" CPPType [function]
                    | CPPType "=/=Type" CPPType [function]
@@ -306,6 +303,7 @@ module CPP-TYPING
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 
@@ -478,11 +476,6 @@ module CPP-TYPING
      rule addQuals(Qs'::Quals, t(Qs::Quals, Mods::Set, T::CPPSimpleType))
           => t(Qs +Quals Qs', Mods, T)
      rule getQuals(t(Q::Quals, _, _)) => Q
-
-     rule getClassInfo(t(... st: classType(C::Class))) => getClassInfo(C)
-     rule getClassInfo(C::Class) => #getClassInfo(C, #configuration)
-     rule #getClassInfo(C::Class, <generatedTop>... <curr-tu> Tu::String </curr-tu> <tu-id> Tu </tu-id> <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
-     rule #getClassInfo(_, _) => #incomplete [owise]
 
      rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumId(E), #configuration)
 

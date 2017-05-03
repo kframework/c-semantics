@@ -4,6 +4,7 @@ module CPP-DECL-CLASS-SYNTAX
      imports SET
      imports COMMON-SORTS
      imports CPP-SORTS
+     imports CPP-CLASS-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
      imports SYMLOC-SORTS
@@ -29,6 +30,8 @@ module CPP-DECL-CLASS-SYNTAX
                    | hasConstructorThat(CPPClassType, K) [function]
                    | hasDestructorThat(CPPClassType, K) [function]
      syntax Bool ::= isPODLayoutType(CPPType) [function]
+     syntax List ::= getNonStaticDataMembers(ClassInfo) [function]
+     syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
 endmodule
 
 module CPP-DECL-CLASS
@@ -1065,4 +1068,7 @@ module CPP-DECL-CLASS
           <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
+
+     rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+     rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
 endmodule

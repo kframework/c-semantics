@@ -187,7 +187,7 @@ module CPP-OVERLOADING
           => cannot-convert
           requires notBool isCPPRefType(P) andBool notBool isCPPClassType(P) andBool notBool isCPPArrayType(P)
                andBool size(L) >Int 1
-          
+
      syntax Bool ::= bindsDirectlyToExp(CPPRefType, CPPType, ValueCategory, isNonStaticRefNone: Bool) [function]
                    | bindsDirectlyToConversion(CPPRefType, CPPType, ValueCategory) [function]
 
