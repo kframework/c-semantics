@@ -608,8 +608,7 @@ sub main {
       '-w', 'none', '--parser', 'cat', $programConfFile,
       "-cOPTIONS=$opts ", "-pOPTIONS=$printf",
       "-cJSON=#token($encodedJson, $quoteString)", "-pJSON=$printf",
-      '--output-file', $oval, '--ocaml-compile', '--ocaml-dump-exit-code', '139',
-      '--ocaml-serialize-config', '$PGM'
+      '--output-file', $oval, '--ocaml-compile'
     );
 
     if ($args->{'-d'}) {
