@@ -313,7 +313,7 @@ module CPP-OVERLOADING
      // only one viable candidate
      rule <k> bestViable(T::CPPFunctionType, envEntry(... base: Base::SymBase, defaultArgs: defArgs(... vals: DArgs::StrictListResult))) ~> #resolveOverload(cSet(... id: X::QualId), list(Args::List), _, _, E::Expr, _) 
               => checkAccess(CallExpr(lv(lnew(Base), hasTrace(E), T), list(Args), DArgs)) ...</k>
-          <odr-uses>... .Set => SetItem(Base) ...</odr-uses>
+          <odr-uses>... .Set => #if isMethodPure(T) andBool isVirtualCall(hasTrace(E), T) #then .Set #else SetItem(Base) #fi ...</odr-uses>
           <external-uses> EU::Map => addOdrUse(EU, X, T, L) </external-uses>
           <curr-program-loc> L::CabsLoc </curr-program-loc>
 

@@ -277,10 +277,12 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
 
      // Declare function member inside class
-     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(C:Class, C, X::CId, T:CPPFunctionType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
+          // pure functions need to have a dummy functionObject in order for virtual call semantics to know their QualId if they have no definition
+          <functions> Funcs::Map => #if isMethodPure(T) #then Funcs bnew(!I, T, S, link(Tu)) |-> functionObject(C :: X, T, .List, .K) #else Funcs #fi </functions>
           <deferred-class-actions> _ |> _ |> (K:K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ~> K) |> .Ordering </deferred-class-actions>
           <curr-scope> classScope(C, _) </curr-scope>
           <class-id> C </class-id>

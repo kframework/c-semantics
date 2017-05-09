@@ -369,12 +369,19 @@ module CPP-DYNAMIC
      rule toList(.CPPTypes) => .List
 
      syntax String ::= namespaceToString(Namespace) [function]
+                     | classToString(Class) [function]
      rule idToString(N:Namespace :: X::CId)
           => namespaceToString(N) +String idToString(X)
+     rule idToString(C:Class :: X::CId)
+          => classToString(C) +String idToString(X)
      rule namespaceToString(NoNamespace()) => ""
      rule namespaceToString(GlobalNamespace()) => "::"
      rule namespaceToString(N::Namespace :: Namespace(X::CId))
           => namespaceToString(N) +String idToString(X) +String "::"
+     rule classToString(N:Namespace :: Class(Key::ClassKey, X::CId, .TemplateArgs))
+          => namespaceToString(N) +String idToString(X) +String "::"
+     rule classToString(C:Class :: Class(Key::ClassKey, X::CId, .TemplateArgs))
+          => classToString(C) +String idToString(X) +String "::"
 
      rule idToString(operatornew) => "operator new"
      rule idToString(operatordelete) => "operator delete"

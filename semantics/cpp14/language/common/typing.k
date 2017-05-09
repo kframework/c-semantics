@@ -204,6 +204,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
      syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax Bool ::= isMethodPure(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodPure(CPPFunctionType) [function]
      syntax Bool ::= isMethodExplicit(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodExplicit(CPPFunctionType) [function]
      syntax Bool ::= isMethodUserProvided(CPPFunctionTypeExpr) [function]
@@ -254,7 +256,7 @@ module CPP-TYPING-SYNTAX
      syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
      syntax MethodInfo ::= "noMethod"
-                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
+                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, pure: Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
 
      syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
@@ -265,6 +267,7 @@ module CPP-TYPING-SYNTAX
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
+                   | isVirtualCall(Trace, CPPFunctionType) [function]
      
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
@@ -309,7 +312,7 @@ module CPP-TYPING
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
@@ -347,7 +350,7 @@ module CPP-TYPING
      // 13.3.1:4.1
      rule getImpliedParamType(_, Q::Quals, false, C::Class) => type(lvRefType(t(Q, .Set, classType(C)))) [owise]
 
-     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, .K, true, false)
+     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, false, .K, true, false)
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
      rule setRefQualifier(T::CPPFunctionType, RQ::RefQualifier)
@@ -414,6 +417,17 @@ module CPP-TYPING
      syntax MethodInfo ::= setMIVirtual(MethodInfo) [function]
      rule setMIVirtual(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... virtual: _ => true))(MI)
      rule setMIVirtual(noMethod => defaultMethodInfo())
+
+     rule isMethodPure(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIPure(MI)
+     rule setMethodPure(T::CPPFunctionType)
+          => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIPure(MI))))(T)
+
+     syntax Bool ::= getMIPure(MethodInfo) [function]
+     rule getMIPure(methodInfo(... pure: IsPure::Bool)) => IsPure
+     rule getMIPure(noMethod) => false
+     syntax MethodInfo ::= setMIPure(MethodInfo) [function]
+     rule setMIPure(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... pure: _ => true))(MI)
+     rule setMIPure(noMethod => defaultMethodInfo())
 
      rule isMethodExplicit(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIExplicit(MI)
      rule setMethodExplicit(T::CPPFunctionType)
@@ -675,6 +689,14 @@ module CPP-TYPING
                   | #getEnumMax(K) [function]
      rule #getEnumMin(<cppenum>... <enum-min>Min::Int</enum-min>  ...</cppenum>) => Min
      rule #getEnumMax(<cppenum>... <enum-max>Max::Int</enum-max>  ...</cppenum>) => Max
+
+     rule isVirtualCall(hasTrace(Name(N::NNS, _)), _) => false
+          requires N =/=K NoNNS()
+     rule isVirtualCall(hasTrace(_ . _ Name(N::NNS, _)), _) => false
+          requires N =/=K NoNNS()
+     rule isVirtualCall(_, T::CPPFunctionType) => false
+          requires notBool isMethodVirtual(T)
+     rule isVirtualCall(hasTrace(_), _) => true [owise]
 
 endmodule
 

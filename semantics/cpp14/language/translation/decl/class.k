@@ -353,7 +353,7 @@ module CPP-DECL-CLASS
      syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool)
 
      // 12.6.2:7
-     rule <k> (figureConstructItem(I:Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
+     rule <k> (figureConstructItem(I::Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
                    (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
                    B:Bool => B orBool (IsMember andBool X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
@@ -361,6 +361,7 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
+          requires I =/=K .K
 
      // 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
@@ -976,8 +977,8 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
-            <sizeof> 0 => byteSizeofType(type(pointerType(type(void)))) </sizeof>
-            <dsize> 0 => byteSizeofType(type(pointerType(type(void)))) </dsize>
+            <sizeof> 0 => bitSizeofType(type(pointerType(type(void)))) </sizeof>
+            <dsize> 0 => bitSizeofType(type(pointerType(type(void)))) </dsize>
             <align> 1 => byteAlignofType(type(pointerType(type(void)))) </align>
           ...</class>
      rule computePrimaryBase(.List, .List, NonPrimary::List, Primary:Class) => #layoutBases(ListItem(Primary) NonPrimary)

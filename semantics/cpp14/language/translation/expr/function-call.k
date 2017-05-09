@@ -22,13 +22,6 @@ module CPP-EXPR-FUNCTION-CALL
      rule elabCall(Fun::Val, IsVirtualCall::Bool, Args::List, T::CPPType, krlist(Temps::List))
           => makeCall(BuiltinCallOp(Fun, IsVirtualCall, Temps), combine(trace(Fun), hasTrace(list(Args)), #klabel(`CallExpr`)), T)
 
-     syntax Bool ::= isVirtualCall(Trace, CPPFunctionType) [function]
-     rule isVirtualCall(hasTrace(Name(N::NNS, _)), _) => false
-          requires N =/=K NoNNS()
-     rule isVirtualCall(_, T::CPPFunctionType) => false
-          requires notBool isMethodVirtual(T)
-     rule isVirtualCall(hasTrace(_), _) => true [owise]
-
      syntax TExpr ::= makeCall(Expr, Trace, CPPType) [function]
      rule makeCall(E::Expr, Tr::Trace, T::CPPType) => le(E, Tr, T)
           requires isUnnamedLValue(T)

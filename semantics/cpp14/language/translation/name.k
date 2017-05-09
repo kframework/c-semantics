@@ -402,6 +402,7 @@ module CPP-TRANSLATION-NAME
      rule NNS(Name(N::NNS, X::CId)) => extractNNS(qualifiedNameLookup(X, N, nnsMask))
           requires N =/=K NoNNS()
      rule NNS(Name(NoNNS(), X::CId)) => NNS(X)
+     rule N::NNS :: NNS(X:CId) => NNS(Name(N, X)) [anywhere]
 
      syntax KItem ::= extractNNS(K) [strict]
      rule extractNNS(nsRef(N::Namespace)) => N

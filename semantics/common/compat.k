@@ -67,6 +67,7 @@ module COMPAT-SYNTAX
 
      syntax Map ::= Map "[" K "," K "<-" K "]" [function]
      syntax Map ::= Map "[" K "+=" K "]" [function]
+     syntax Map ::= Map "[" K "<+" Map "]" [function]
      syntax Bool ::= K "," K "in_keys" "(" Map ")" [function]
 
 endmodule
@@ -268,6 +269,9 @@ module COMPAT
 
      rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
      rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
+
+     rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> M2 B) M1
+     rule M::Map [A:K <+ B::Map] => M A |-> B [owise]
 
      rule Map2List(K1:K |-> K2:K M::Map) => ListItem(kpair(K1, K2)) Map2List(M)
      rule Map2List(.Map) => .List

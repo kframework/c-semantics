@@ -59,7 +59,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax Init ::= NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
-     syntax FunctionSpecifier ::= Inline() | Explicit() | Pure()
+     syntax FunctionSpecifier ::= Inline() | Explicit()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
                         | Constexpr() | Friend() | Auto()
 
@@ -111,6 +111,7 @@ module CPP-ABSTRACT-SYNTAX
                     | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4)]
                     | StaticMethodPrototype(AType) [strict]
                     | Virtual(AType) [strict]
+                    | Pure(AType) [strict]
                     | Explicit(AType) [strict]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]

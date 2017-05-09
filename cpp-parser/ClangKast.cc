@@ -550,9 +550,6 @@ bool TraverseDecl(Decl *D) {
     if (D->isConstexpr()) {
       AddSpecifier("Constexpr");
     }
-    if (D->isPure()) {
-      AddSpecifier("Pure");
-    }
 
     if (D->isThisDeclarationADefinition() || D->isExplicitlyDefaulted()) {
       AddKApplyNode("FunctionDefinition", 5);
@@ -584,6 +581,9 @@ bool TraverseDecl(Decl *D) {
           TRY_TO(TraverseType(Method->getThisType(*Context)));
           if (Method->isVirtual()) {
             AddKApplyNode("Virtual", 1);
+          }
+          if (Method->isPure()) {
+            AddKApplyNode("Pure", 1);
           }
 
           if (CXXConversionDecl *Conv = dyn_cast<CXXConversionDecl>(D)) {
@@ -2210,7 +2210,8 @@ bool TraverseDecl(Decl *D) {
   }
 
   bool VisitImplicitValueInitExpr(ImplicitValueInitExpr *E) {
-    AddKApplyNode("NoExpression", 0);
+    AddKApplyNode("ExpressionList", 1);
+    AddKSequenceNode(0);
     return false;
   }
   

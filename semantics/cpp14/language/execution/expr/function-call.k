@@ -27,12 +27,12 @@ module CPP-EXPR-FUNCTION-CALL
      rule <k> BuiltinCallOp(lv(loc((Base::SymBase => Base'), _), _, _:CPPFunctionType), _, _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
-     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), IsVirtual::Bool, Args::List)
+     rule <k> BuiltinCallOp(lv(loc(Base::SymBase, 0), _, T:CPPFunctionType), IsVirtual:Bool, Args::List)
               => prepareArguments(CurrLoc, Base, Fun, T, IsVirtual, Args)
           ...</k>
           <functions>... Base |-> Fun:K ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
-          requires notBool isLinkerLoc(Base)
+          requires notBool isLinkerLoc(Base) orBool (isMethodPure(T) andBool IsVirtual)
 
      syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, CPPType, Bool, List)
 
@@ -100,8 +100,8 @@ module CPP-EXPR-FUNCTION-CALL
      rule getOverride(_, (_ |-> _ => .Map) _) [owise]
      rule getOverride(_, .Map) => type(no-type)
 
-     rule virtualCall(StaticT::CPPType, L:LVal, krlist(Args::List))
-          => setType(StaticT, BuiltinCallOp(L, false, Args))
+     rule virtualCall(StaticT::CPPFunctionType, L:LVal, krlist(Args::List))
+          => setType(#fun(Ret::CPPType => #if isCPPRefType(Ret) #then innerType(Ret) #else Ret #fi)(getReturnType(StaticT)), BuiltinCallOp(L, false, Args))
 
      // Function call (into C++ function)
      rule <k> application(CurrLoc::CabsLoc, Base::SymBase,
