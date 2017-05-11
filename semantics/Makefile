@@ -3,7 +3,7 @@ KOMPILE = kompile -O2
 KDEP = kdep
 KOMPILE_DEFAULT_FLAGS=--backend ocaml --non-strict
 CPP_KOMPILE_FLAGS=--opaque-klabels c11/c11-translation.k
-EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14/cpp14-translation.k --no-expand-macros
+EXECUTION_KOMPILE_FLAGS=--opaque-klabels cpp14/cpp14-translation.k --no-expand-macros --ocaml-serialize-config '$$PGM' --ocaml-dump-exit-code 139
 KDEP_DEFAULT_FLAGS=
 
 C11_TRANSLATION_FILES = $(wildcard *.k) \
