@@ -48,6 +48,15 @@ my $profileDirectory;
   close FILE;
 }
 
+my $use_bytecode;
+{
+  $use_bytecode = -e "$profileDirectory/cpp14-translation-kompiled/cpp14-translation-kompiled/realdef.cmo";
+  my $has_native = -e "$profileDirectory/cpp14-translation-kompiled/cpp14-translation-kompiled/realdef.cmx";
+  if ($use_bytecode && $has_native) {
+    error("Profile $profile was built incorrectly");
+  }
+}
+
 our $defaultProfile;
 {
   local $/=undef;
@@ -544,7 +553,7 @@ sub main {
   my $programConf = join("", <FILE>);
   close(FILE);
 
-  if ($args->{'-frunner-script'}) {
+  if ($args->{'-frunner-script'} || $use_bytecode) {
     $programConf = encode_base64($programConf);
     open(FILE, catfile($distDirectory, 'program-runner')) or error("Couldn't open file: $!\n");
     my $template = join("", <FILE>);
@@ -830,9 +839,13 @@ sub getKRunCommand {
   }
   if (!$link) {
     push(@options, "`NoLink`(.KList)");
-    push(@krun_args, "--interpret");
+    if (!$use_bytecode) {
+      push(@krun_args, "--interpret");
+    }
   } else {
-    push(@krun_args, '--mini-krun');
+    if (!$use_bytecode) {
+      push(@krun_args, '--mini-krun');
+    }
   }
 
   my $opts = makeSet(@options);
