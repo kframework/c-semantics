@@ -58,7 +58,7 @@ sub main {
 
       my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
                  'cat', $fileInput);
-      my $options = '`.Set`(.KList)';
+      my $options = getOptions();
 
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
@@ -105,7 +105,7 @@ sub main {
 
       if (defined $ENV{SEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NoIO`(.KList))';
+            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
             push @cmd, '-d';
             push @cmd, $EXEC_ND_DEF;
             print 'Searching reachable states... ';
@@ -114,7 +114,7 @@ sub main {
 
       if (defined $ENV{THREADSEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NoIO`(.KList))';
+            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
             push @cmd, '-d';
             push @cmd, $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';

@@ -553,6 +553,43 @@ sub main {
   my $programConf = join("", <FILE>);
   close(FILE);
 
+  # add space to end of args with () so that batch scripts work on windows
+  my @options = initOptions();
+  if ($args->{'-flint'} || $args->{'-Wlint'}) {
+    my $heapSize;
+    if ($args->{'-fheap-size='}) {
+      $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+      chop($heapSize);
+    } else {
+      $heapSize = 1024 * 1024 * 1024;
+    }
+    my $heapSizeInt = $heapSize;
+    $heapSize = quote(backslash($heapSize));
+    if ($cygwin) {
+      $heapSize = backslash($heapSize);
+    }
+    my $stackSize;
+    if ($args->{'-fstack-size='}) {
+      $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
+      chop($stackSize);
+    } else {
+      $stackSize = `bash -c 'ulimit -s'`;
+      chop($stackSize);
+      if ($stackSize eq 'unlimited') {
+        $stackSize = $heapSizeInt;
+      } else {
+        $stackSize = $stackSize * 1024; # result was in kb
+      }
+    }
+    $stackSize = quote(backslash($stackSize));
+    if ($cygwin) {
+      $stackSize = backslash($stackSize);
+    }
+    push(@options, "`Heap`(#token($heapSize, $quoteInt))");
+    push(@options, "`Stack`(#token($stackSize, $quoteInt))");
+  }
+  my $opts = makeSet(@options);
+
   if ($args->{'-frunner-script'} || $use_bytecode) {
     $programConf = encode_base64($programConf);
     open(FILE, catfile($distDirectory, 'program-runner')) or error("Couldn't open file: $!\n");
@@ -572,46 +609,12 @@ sub main {
     }
     my $encodedJsonAsPerlString = quote(backslash($encodedJson));
     print $programRunner "sub getJson {\n return $encodedJsonAsPerlString;\n}\n";
+
+    my $encodedOptsAsPerlString = quote(backslash($opts));
+    print $programRunner "sub getOptions {\n return $encodedOptsAsPerlString;\n}\n";
+
     close($programRunner);
-
   } else {
-    # add space to end of args with () so that batch scripts work on windows
-    my @options = initOptions();
-    if ($args->{'-flint'} || $args->{'-Wlint'}) {
-      my $heapSize;
-      if ($args->{'-fheap-size='}) {
-        $heapSize = `echo $args->{'-fheap-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
-        chop($heapSize);
-      } else {
-        $heapSize = 1024 * 1024 * 1024;
-      }
-      my $heapSizeInt = $heapSize;
-      $heapSize = quote(backslash($heapSize));
-      if ($cygwin) {
-        $heapSize = backslash($heapSize);
-      }
-      my $stackSize;
-      if ($args->{'-fstack-size='}) {
-        $stackSize = `echo $args->{'-fstack-size='} | sed -e 's/[Tt]/kg/i;s/[Gg]/km/i;s/[Mm]/kk/i;s/k/*1024/ig' | bc`;
-        chop($stackSize);
-      } else {
-        $stackSize = `bash -c 'ulimit -s'`;
-        chop($stackSize);
-        if ($stackSize eq 'unlimited') {
-          $stackSize = $heapSizeInt;
-        } else {
-          $stackSize = $stackSize * 1024; # result was in kb
-        }
-      }
-      $stackSize = quote(backslash($stackSize));
-      if ($cygwin) {
-        $stackSize = backslash($stackSize);
-      }
-      push(@options, "`Heap`(#token($heapSize, $quoteInt))");
-      push(@options, "`Stack`(#token($stackSize, $quoteInt))");
-    }
-    my $opts = makeSet(@options);
-
     my @cmd = ('-d', catfile($profileDirectory, "c11-cpp14-kompiled"),
       '-cARGV=`#argv`(.KList) ', "-pARGV=$printf",
       '-w', 'none', '--parser', 'cat', $programConfFile,
