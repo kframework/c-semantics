@@ -36,6 +36,7 @@ module CPP-ENV
     imports CPP-DYNAMIC-SYNTAX
     imports CPP-SYMLOC-SYNTAX
     imports CPP-TYPING-SYNTAX
+    imports CPP-TYPE-MAP-SYNTAX
 
     rule updateDefaultArguments(_, T::CPPType, _) => .K 
          requires notBool isCPPFunctionType(T)
@@ -53,7 +54,7 @@ module CPP-ENV
          <curr-tu> Tu::String </curr-tu>
          <tu-id> Tu </tu-id>
          <ns-id> N </ns-id>
-         <nenv>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</nenv>
+         <nenv>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</nenv>
          requires N =/=K NoNamespace()
 
     rule <k> addToEnv(N:Namespace :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
@@ -71,7 +72,7 @@ module CPP-ENV
          <env> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </env>
 
     rule <k> updateDefaultArguments(NoNamespace() :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
-         <env>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</env>
+         <env>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</env>
 
     rule <k> addToEnv(NoNamespace() :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool) 
              => .K
@@ -87,7 +88,7 @@ module CPP-ENV
 
      rule <k> updateDefaultArguments(C:Class :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
           <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</cenv>
+          <cenv>... X |-> (_::TypeMap T |-> envEntry(... defaultArgs: A2::DefaultArgumentsResult => #updateDefaultArgs(A1, A2))) ...</cenv>
 
     rule <k> addToEnv(C:Class :: X::CId, T::CPPType, Base::SymBase, IsUsing::Bool)
              => .K
@@ -100,16 +101,16 @@ module CPP-ENV
      rule getDefaultArgsTypes(defArgs(... types: krlist(Types::List))) => Types
      rule getDefaultArgsCats(defArgs(... cats: krlist(Cats::List))) => Cats
 
-     syntax Map ::= updateFnEnv(Map, CId, CPPFunctionType, SymBase, Bool) [function]
+     syntax TypeMap ::= updateFnEnv(Map, CId, CPPFunctionType, SymBase, Bool) [function]
      rule updateFnEnv(Env::Map, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T))
           requires notBool X in_keys(Env)
-     rule updateFnEnv(_ X |-> XEnv::Map, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
+     rule updateFnEnv(_ X |-> XEnv::TypeMap, X::CId, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
           => #updateFnEnv(XEnv, T, Base, IsUsing)
 
-     syntax Map ::= #updateFnEnv(Map, CPPFunctionType, SymBase, Bool) [function]
-     rule #updateFnEnv(XEnv::Map T |-> Entry:EnvEntry, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
+     syntax TypeMap ::= #updateFnEnv(TypeMap, CPPFunctionType, SymBase, Bool) [function]
+     rule #updateFnEnv(XEnv::TypeMap T |-> Entry:EnvEntry, T::CPPFunctionType, Base::SymBase, IsUsing::Bool)
           => XEnv T |-> #fun(envEntry(... base: _ => Base, using: _ => IsUsing))(Entry)
-     rule #updateFnEnv(XEnv::Map, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => XEnv T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T)) [owise]
+     rule #updateFnEnv(XEnv::TypeMap, T::CPPFunctionType, Base::SymBase, IsUsing::Bool) => XEnv T |-> envEntry(Base, IsUsing, emptyDefaultArguments(T)) [owise]
 
      syntax DefaultArgumentsResult ::= #updateDefaultArgs(newArgs: DefaultArgumentsResult, oldArgs: DefaultArgumentsResult) [function]
      rule #updateDefaultArgs(NewArgs::DefaultArgumentsResult, OldArgs::DefaultArgumentsResult)

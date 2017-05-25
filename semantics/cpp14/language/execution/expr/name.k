@@ -9,13 +9,14 @@ module CPP-EXECUTION-EXPR-NAME
      imports CPP-MEMORY-READING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule <k> Name(NoNNS(), X:CId) => lv(lnew(getBase(Entry)), noTrace, T) ...</k>
           <env>... X |-> (T::CPPType |-> Entry::EnvEntry) ...</env>
 
      rule <k> Name(NoNNS(), X:CId) => T ...</k>
-          <types>... X |-> (_ |-> T::CPPType) ...</types>
+          <types>... X |-> T::CPPType ...</types>
 
      rule <k> temp(I::Int, T::CPPType) => Name(NoNNS(), #NoName(I)) ...</k>
           <env> Env::Map </env>

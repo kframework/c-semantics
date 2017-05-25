@@ -49,6 +49,7 @@ module CPP-SYMLOC
      imports CPP-ALIGNMENT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-CLASS-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule bnew(I::Int, T::CPPType, Mods::Set, D::Duration)
@@ -76,7 +77,7 @@ module CPP-SYMLOC
           => #baseClassSubobject(L, B, getClassInfo(D))
           requires L =/=K NullPointer
      syntax SymLoc ::= #baseClassSubobject(SymLoc, Class, ClassInfo) [function]
-     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_ |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
+     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
           => L +bytes Offset /Int cfg:bitsPerByte
 
 endmodule

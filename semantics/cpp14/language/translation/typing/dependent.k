@@ -15,7 +15,7 @@ module CPP-TYPING-DEPENDENT
      rule #isDependentInScope(t(_, _, pointerType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
      rule #isDependentInScope(t(_, _, lvRefType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
      rule #isDependentInScope(t(_, _, rvRefType(T::CPPTypeExpr)), Config:K) => #isDependentInScope(T, Config)
-     rule #isDependentInScope(t(_, _, dependentType(Arg::String)), <generatedTop>... <template-arguments> Args::Map </template-arguments> ...</generatedTop>) => notBool dependentType(Arg) in_keys(Args)
+     rule #isDependentInScope(t(_, _, dependentType(Arg::String, I::Int)), <generatedTop>... <template-arguments> Args::Map </template-arguments> ...</generatedTop>) => notBool dependentType(Arg, I) in_keys(Args)
      rule #isDependentInScope(t(_, _, T:CPPSimpleAutoType), <generatedTop>... <template-arguments> Args::Map </template-arguments> ...</generatedTop>) => notBool T in_keys(Args)
      syntax Bool ::= #areDependentInScope(TemplateParams, K) [function]
      syntax Bool ::= #areDependentInScope(CPPTypeExprs, K) [function]
@@ -31,7 +31,7 @@ module CPP-TYPING-DEPENDENT
      rule isAuto(t(_, _, lvRefType(T::CPPTypeExpr))) => isAuto(T)
      rule isAuto(t(_, _, rvRefType(T::CPPTypeExpr))) => isAuto(T)
      rule isAuto(t(_, _, auto)) => true
-     rule isAuto(t(_, _, dependentType(_))) => false
+     rule isAuto(t(_, _, dependentType(...))) => false
      syntax Bool ::= areAuto(CPPTypeExprs) [function] 
      syntax Bool ::= areAuto(TemplateParams) [function] 
      rule areAuto(T::CPPTypeExpr, Ts::TemplateParams) => isAuto(T) orBool areAuto(Ts)

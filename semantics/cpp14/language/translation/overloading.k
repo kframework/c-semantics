@@ -1,10 +1,11 @@
 module CPP-OVERLOADING-SYNTAX
      imports COMPAT-SYNTAX
      imports CPP-DYNAMIC-SORTS
+     imports CPP-TYPE-MAP-SORTS 
      imports CPP-TYPING-EXPR-SYNTAX
 
      syntax ValResult ::= CandidateSet
-     syntax CandidateSet ::= cSet(candidates: Map, id: QualId)
+     syntax CandidateSet ::= cSet(candidates: TypeMap, id: QualId)
 
      syntax Expr ::= resolveOverload(CandidateSet, StrictList, Expr)
                    | resolveConversionOverload(CandidateSet, StrictList, Expr, CPPType)
@@ -42,6 +43,7 @@ module CPP-OVERLOADING
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -98,12 +100,12 @@ module CPP-OVERLOADING
      // strict version
      rule cSetUnion(notFound(_), E::Expr) => E
      rule cSetUnion(E::Expr, notFound(_)) => E
-     rule cSetUnion(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
+     rule cSetUnion(cSet(M1::TypeMap, QX::QualId), cSet(M2::TypeMap, QX)) => cSet(M1 M2, QX)
 
      // function version
      rule cSetUnion2(notFound(_), E::CandidateSet) => E
      rule cSetUnion2(E::CandidateSet, notFound(_)) => E
-     rule cSetUnion2(cSet(M1::Map, QX::QualId), cSet(M2::Map, QX)) => cSet(M1 M2, QX)
+     rule cSetUnion2(cSet(M1::TypeMap, QX::QualId), cSet(M2::TypeMap, QX)) => cSet(M1 M2, QX)
 
      context #resolveOverload(... types: (HOLE:StrictList => types(HOLE)))
      context #resolveOverload(... cats: (HOLE:StrictList => cats(HOLE)))
@@ -320,16 +322,16 @@ module CPP-OVERLOADING
      rule bestViable(T::CPPFunctionType, builtinOp(E::Expr)) ~> #resolveOverload(...) => E
 
      rule (.K => computeBestViable(M, Types, Cats, O)) 
-          ~> #resolveOverload(cSet(... candidates: M::Map), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
+          ~> #resolveOverload(cSet(... candidates: M::TypeMap), list(Args::List), krlist(Types::List), krlist(Cats::List), _, O::OverloadType)
           requires allViable(M, size(Args), Types, Cats) [owise] //allViable is expensive so we evaluate this rule late in order to avoid recomputing it over and over unnecessarily
 
-     syntax Bool ::= allViable(cands: Map, Int, List, List) [function]
-     rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::Map, NArgs::Int, Types::List, Cats::List)
+     syntax Bool ::= allViable(cands: TypeMap, Int, List, List) [function]
+     rule allViable(T::CPPType |-> envEntry(... defaultArgs: DA::DefaultArgumentsResult) M::TypeMap, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool acceptsNArgs(NArgs, {T}:>CPPFunctionType, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA))
                andBool allViable(M, NArgs, Types, Cats)
      // TODO(traiansf): properly resolve default arguments for templates
-     rule allViable(T::CPPType |-> Val:K M::Map, NArgs::Int, Types::List, Cats::List)
+     rule allViable(T::CPPType |-> Val:K M::TypeMap, NArgs::Int, Types::List, Cats::List)
           => isCPPFunctionType(T) andBool #fun(DA::DefaultArgumentsResult =>
                acceptsNArgs(NArgs, {T}:>CPPFunctionType, getDefaultArgsVals(DA))
                andBool notBool notViableTypes(T, Types, getDefaultArgsTypes(DA), Cats, getDefaultArgsCats(DA)))(emptyDefaultArguments(T))
@@ -338,14 +340,14 @@ module CPP-OVERLOADING
      rule allViable(T::CPPType |-> templateInfo(...) _, _, _, _) => false
      rule allViable(... cands: .Map) => true
 
-     syntax KItem ::= computeBestViable(Map, List, List, OverloadType) [function]
+     syntax KItem ::= computeBestViable(TypeMap, List, List, OverloadType) [function]
                     | #computeBestViable(CPPFunctionType, K, List, List, List, OverloadType, List) [function]
                     | checkIsBest(CPPFunctionType, K, List, List, OverloadType, List) [function]
                     | bestViable(CPPFunctionType, K)
                     | "noBestViable"
 
      rule computeBestViable(.Map, _, _, _) => noBestViable
-     rule computeBestViable(T::CPPFunctionType |-> K:K M::Map, Types::List, Cats::List, O::OverloadType)
+     rule computeBestViable(T::CPPFunctionType |-> K:K M::TypeMap, Types::List, Cats::List, O::OverloadType)
           => #computeBestViable(T, K, Map2List(M), Types, Cats, O, .List)
      rule #computeBestViable(T1::CPPFunctionType, K1:K, (ListItem(kpair(T2::CPPFunctionType, K2:K)) => .List) _, Types::List, Cats::List, O::OverloadType, (.List => ListItem(kpair(T2, K2))) _)
           requires notBool isBetterFunctionThan(T2, K2, T1, K1, Types, Cats, O)

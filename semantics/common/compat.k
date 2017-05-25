@@ -37,10 +37,11 @@ module COMPAT-SYNTAX
      syntax K ::= listToK(List) [function]
      syntax List ::= kSeqToList(K) [function]
 
-     syntax List ::= Map2List(Map) [function]
-
-     syntax KItem ::= kpair(K, K)
+     syntax KTuple ::= kpair(K, K)
                     | ktriple(K, K, K)
+
+     syntax K ::= fst(KTuple) [function]
+                | snd(KTuple) [function]
 
      syntax List ::= Int "to" Int [function]
 
@@ -254,9 +255,9 @@ module COMPAT
                andBool (K =/=K .K)
      rule some'(.K, .Set, _) => false
 
-     rule some(.Map, Lbl:K) => false
-     rule some(K1:K |-> K2:K M:Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl))
-
+     rule some(.Map::Map, Lbl:K) => false
+     rule some(K1:K |-> K2:K M::Map, #klabel(Lbl:KLabel)) => Lbl(K1, K2) orBool some(M, #klabel(Lbl)) [owise]
+     
      rule ceilDiv(X:Int, Y:Int) => (X +Int Y -Int 1) /Int Y
 
      rule mapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => ListItem(Lbl(K)) mapList(L, #klabel(Lbl))
@@ -264,16 +265,12 @@ module COMPAT
      rule flatMapList(ListItem(K:K) L:List, #klabel(Lbl:KLabel)) => {Lbl(K)}:>List flatMapList(L, #klabel(Lbl))
      rule flatMapList(.List, _) => .List
 
-     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> (M2[B <- C])) M1
-     rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C) [owise]
-
      rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
      rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
 
      rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> M2 B) M1
      rule M::Map [A:K <+ B::Map] => M A |-> B [owise]
 
-     rule Map2List(K1:K |-> K2:K M::Map) => ListItem(kpair(K1, K2)) Map2List(M)
-     rule Map2List(.Map) => .List
-
+     rule fst(kpair(K:K, _)) => K
+     rule snd(kpair(_, K:K)) => K
 endmodule

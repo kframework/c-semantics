@@ -15,6 +15,7 @@ module CPP-EXPR-FUNCTION-CALL
      imports CPP-MEMORY-ALLOC-SYNTAX
      imports CPP-MEMORY-READING-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-EXPR-MEMBERS-SYNTAX
 
@@ -78,27 +79,27 @@ module CPP-EXPR-FUNCTION-CALL
           <tu-id> Tu </tu-id>
           <class-id> Candidate </class-id>
           <base-classes> Bases::List </base-classes>
-          <cenv>... VF |-> M::Map ...</cenv>
+          <cenv>... VF |-> M::TypeMap ...</cenv>
           requires isBaseClassOf(C, Candidate) andBool getOverride(T, M) ==K type(no-type)::CPPType
      rule <k> getOverrides((C::Class => Candidate), VF::CId, (T::CPPType => getOverride(T, M)), (ListItem(Candidate::Class) => .List) _) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> Candidate </class-id>
           <base-classes> Bases::List </base-classes>
-          <cenv>... VF |-> M::Map ...</cenv>
+          <cenv>... VF |-> M::TypeMap ...</cenv>
           requires isBaseClassOf(C, Candidate) andBool getOverride(T, M) =/=K type(no-type)::CPPType
      rule <k> getOverrides(C::Class, VF::CId, T::CPPType, .List) => lv(lnew(Base), noTrace, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... VF |-> (_ T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... VF |-> (_::TypeMap T::CPPType |-> envEntry(... base: Base::SymBase)) ...</cenv>
 
-     syntax CPPType ::= getOverride(CPPType, Map) [function]
+     syntax CPPType ::= getOverride(CPPType, TypeMap) [function]
      rule getOverride(BaseClassFunc::CPPType, DerivedClassFunc::CPPType |-> envEntry(Base::SymBase, false, _) _)
           => DerivedClassFunc
           requires overrides(DerivedClassFunc, BaseClassFunc)
      rule getOverride(_, (_ |-> _ => .Map) _) [owise]
-     rule getOverride(_, .Map) => type(no-type)
+     rule getOverride(_, .Map) => type(no-type)::CPPType
 
      rule virtualCall(StaticT::CPPFunctionType, L:LVal, krlist(Args::List))
           => setType(#fun(Ret::CPPType => #if isCPPRefType(Ret) #then innerType(Ret) #else Ret #fi)(getReturnType(StaticT)), BuiltinCallOp(L, false, Args))

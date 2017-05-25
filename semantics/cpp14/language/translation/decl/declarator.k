@@ -41,6 +41,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -96,8 +97,8 @@ module CPP-DECL-DECLARATOR
      syntax Duration ::= getDuration(Set, Scope) [function]
      syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
 
-     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::Map) _::Map, _) => ExternalLinkage
-     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::Map) _::Map) => InternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::TypeMap) _::Map, _) => ExternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::TypeMap) _::Map) => InternalLinkage
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
      // 3.5:3.1
@@ -211,7 +212,7 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</externals>
+          <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
@@ -226,7 +227,7 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</internals>
+          <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
@@ -414,7 +415,7 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</nenv>
+          <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</nenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, N :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
@@ -427,7 +428,7 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</cenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>

@@ -31,6 +31,7 @@ module CPP-DECL-INITIALIZER
      imports CPP-MEMORY-READING-SYNTAX
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -292,12 +293,12 @@ module CPP-DECL-INITIALIZER
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... ConstructorId(X) |-> M::Map ...</cenv>
+          <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>
 
-     syntax Map ::= stripExplicit(Map) [function]
-     rule stripExplicit(T::CPPFunctionType |-> K1:K M::Map) => T |-> K1 stripExplicit(M)
+     syntax TypeMap ::= stripExplicit(TypeMap) [function]
+     rule stripExplicit(T::CPPFunctionType |-> K1:K M::TypeMap) => T |-> K1 stripExplicit(M)
           requires notBool isMethodExplicit(T)
-     rule stripExplicit(_ |-> _ M::Map) => stripExplicit(M) [owise]
+     rule stripExplicit(_ |-> _ M::TypeMap) => stripExplicit(M) [owise]
      rule stripExplicit(.Map) => .Map
 
      rule V:Val ~> constructorInit(Base::LVal, _, _, _, NoConstructorInit) => compoundInit(compoundInit(le(beginConstruction(Base, false), trace(Base), type(Base)), V), le(endConstruction(Base, false), trace(Base), type(Base)))

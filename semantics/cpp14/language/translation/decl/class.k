@@ -56,6 +56,7 @@ module CPP-DECL-CLASS
      imports CPP-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -82,13 +83,13 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
+          <ntypes> NT::Map => NT[X <- T] </ntypes>
      rule <k> TypeDecl(t(_, _, classType(C::Class :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>
+          <ctypes> CT::Map => CT[X <- T] </ctypes>
 
      rule ClassDef(T:ClassKey, X::CId, NoNNS(), Bases::List, Members::List, IsAnon:Bool) => classContext(declareClassName(T, X, true), Bases, Members)
           requires notBool IsAnon orBool T =/=K Union()
@@ -151,12 +152,12 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
+          <ntypes> NT::Map => NT[X <- T] </ntypes>
           (.Bag => <class>...
             <class-id> C </class-id>
             <class-type> ClassKey </class-type>
             // injected class name
-            <ctypes> X |-> (ClassKey |-> T) </ctypes>
+            <ctypes> X |-> T </ctypes>
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
@@ -176,12 +177,12 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           (<class-id> C2 </class-id>
-          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>)
+          <ctypes> CT::Map => CT[X <- T] </ctypes>)
           (.Bag => <class>...
             <class-id> C </class-id>
             <class-type> ClassKey </class-type>
             // injected class name
-            <ctypes> X |-> (ClassKey |-> T) </ctypes>
+            <ctypes> X |-> T </ctypes>
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
@@ -314,7 +315,7 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
-          <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
+          <cenv>... ConstructorId(X) |-> Candidates::TypeMap ...</cenv>
      rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
           requires notBool isNotFoundNameRef(E)
      rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List)))))
@@ -436,7 +437,7 @@ module CPP-DECL-CLASS
 
      rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(ConstructorId(X), getClassInfo(T), Lbl)
      rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
-     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::Map ...</cenv> ...</class>, Lbl:K)
+     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::TypeMap ...</cenv> ...</class>, Lbl:K)
           => some(M, Lbl)
      rule #hasMethodThat(...) => false [owise]
 
@@ -520,7 +521,7 @@ module CPP-DECL-CLASS
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
-     rule (cSet(... candidates: Cands::Map, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, 0)), Name(NoNNS(), operatordelete))))
+     rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, 0)), Name(NoNNS(), operatordelete))))
           ~> figureDestruct(...)
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)
@@ -886,16 +887,16 @@ module CPP-DECL-CLASS
                   | getTypesAtOffsetForLayoutInUnion(CPPType, ClassInfo, Int) [function]
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_ T |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_ T |-> uninitialized) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T |-> uninitialized) ...</cenv>
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T'::CPPType)) </non-static-data-members>
-               <cenv>... X |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -905,18 +906,18 @@ module CPP-DECL-CLASS
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> uninitialized) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> uninitialized) ...</cenv>
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset

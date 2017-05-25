@@ -6,6 +6,7 @@ module CPP-EXECUTION-INIT
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      imports LIBC-IO-SYNTAX

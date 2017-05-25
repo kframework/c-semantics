@@ -201,7 +201,9 @@ module CPP-DYNAMIC-SYNTAX
      syntax TemplateParams ::= toTemplateParams(List) [function]
      syntax List ::= toList(CPPTypes) [function]
                    | toList(CPPTypeExprs) [function]
+                   | toList(TemplateArgs) [function]
      syntax CPPTypes ::= toCPPTypes(List) [function]
+                       | toCPPTypes(TemplateArgs) [function, klabel(TemplateArgsToCPPTypes)]
 
      syntax TemplateParam ::= CPPTypeExpr
      syntax TemplateArg ::= CPPType
@@ -246,6 +248,7 @@ module CPP-DYNAMIC
      imports STRING
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule getOuterClass(C:Class :: _::ClassSpecifier) => C
@@ -363,10 +366,13 @@ module CPP-DYNAMIC
      rule toTemplateArgs(.List) => .TemplateArgs
      rule toCPPTypes(ListItem(A::CPPType) L::List) => A, toCPPTypes(L)
      rule toCPPTypes(.List) => .CPPTypes
+     rule toCPPTypes(T::TemplateArgs) => toCPPTypes(toList(T))
      rule toTemplateParams(ListItem(P::TemplateParam) L::List) => P, toTemplateParams(L)
      rule toTemplateParams(.List) => .TemplateParams
      rule toList(T::CPPType, Ts::CPPTypes) => ListItem(T) toList(Ts)
      rule toList(.CPPTypes) => .List
+     rule toList(T::TemplateArg, Ts::TemplateArgs) => ListItem(T) toList(Ts)
+     rule toList(.TemplateArgs) => .List
 
      syntax String ::= namespaceToString(Namespace) [function]
                      | classToString(Class) [function]
@@ -431,12 +437,16 @@ module CPP-DYNAMIC
           requires notBool isCPPFunctionType(T)
      rule signatureToString(Q::QualId, t(_, _, functionType(... paramTypes: T::CPPTypes))) => idToString(Q) +String "(" +String typesToString(T) +String ")"
 
-     rule X:K, T::CPPType in_keys(M::Map) => X in_keys(M) andBool typeInKey(M[X], T)
-     syntax Bool ::= typeInKey(K, CPPType) [function]
-     rule typeInKey(T1::CPPType |-> _ _::Map, T2::CPPType) => true
-          requires T1 ==Type T2
-     rule typeInKey((_ |-> _ => .Map) _, _) [owise]
-     rule typeInKey(.Map, _) => false
+     rule X:K, T:CPPType in_keys(M::Map) => (X in_keys(M)) andBool (T in_keys({M[X]}:>TypeMap))
+     rule X:K, Y:K in_keys(M::Map) => (X in_keys(M)) andBool (Y in_keys({M[X]}:>Map)) [owise]
+
+     rule ((A |-> M2:TypeMap) M1::Map) [A:K, B:CPPType <- C:K] => (A |-> (M2[B <- C])) M1
+     rule ((A |-> M2::Map) M1::Map) [A:K, B:K <- C:K] => (A |-> (M2[B <- C])) M1
+          requires notBool isCPPType(B)
+     rule M::Map [A:K, B:CPPType <- C:K] => M A |-> (B |-> C) [owise]
+     rule M::Map [A:K, B:K <- C:K] => M A |-> (B |-> C)::Map
+          requires notBool isCPPType(B)
+          [owise]
 
      rule typesToString(.CPPTypes) => ""
      rule typesToString(T::CPPType) => typeToString(T)

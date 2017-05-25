@@ -3,9 +3,10 @@ module CPP-EXPR-NEW-SYNTAX
      imports INT-SYNTAX
      imports MAP
      imports COMMON-SORTS
+     imports CPP-TYPE-MAP-SORTS
      imports CPP-TYPING-SORTS
      syntax KItem ::= lookupAllocationFunction(CId, CPPType, Bool)
-     syntax List ::= getSecondDeleteArg(Map, Int) [function]
+     syntax List ::= getSecondDeleteArg(TypeMap, Int) [function]
 endmodule
 
 module CPP-EXPR-NEW
@@ -19,6 +20,7 @@ module CPP-EXPR-NEW
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      context NewExpr(_, _, (HOLE:Expr => reval(HOLE)), _, _) [result(PRVal)]
@@ -57,9 +59,9 @@ module CPP-EXPR-NEW
      rule computeNewInit(R::Expr, T::CPPType, NoExpression(), E::Expr, I::Int, Init:KResult)
           => pre(NewOp(T, R, Init, .K, I), hasTrace(E), type(pointerType(T)))
 
-     rule getSecondDeleteArg(M::Map, I::Int) => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), I)
-     syntax List ::= #getSecondDeleteArg(Map, CPPType, CPPType, Int) [function]
-     rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::Map, T1::CPPType, T2::CPPType, I::Int) => ListItem(prv(I, noTrace, type(size_t)))
+     rule getSecondDeleteArg(M::TypeMap, I::Int) => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), I)
+     syntax List ::= #getSecondDeleteArg(TypeMap, CPPType, CPPType, Int) [function]
+     rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::TypeMap, T1::CPPType, T2::CPPType, I::Int) => ListItem(prv(I, noTrace, type(size_t)))
      rule #getSecondDeleteArg(...) => .List [owise]
 
      context DeleteExpr(_, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]

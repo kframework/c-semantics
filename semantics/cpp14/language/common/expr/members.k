@@ -15,6 +15,7 @@ module CPP-EXPR-MEMBERS
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      rule <k> This() => Obj ...</k>
@@ -35,7 +36,7 @@ module CPP-EXPR-MEMBERS
 
      rule <k> lookupFieldCPP(V::Val, Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
           <class-id> FC </class-id>
-          <cenv>... F |-> (_ |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_ |-> classOffset(Offset::Int)) ...</cenv>
+          <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv>
 
      rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
           => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)

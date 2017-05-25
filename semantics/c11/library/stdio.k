@@ -1451,10 +1451,10 @@ module LIBC-STDIO
      rule tail(ListItem(_) L::List) => L
      rule tail(_) => .List [owise]
 
-     syntax String ::= fst(ParseStrResult) [function]
+     syntax String ::= fst(ParseStrResult) [function, klabel(fstParseStr)]
      rule fst(parseStrResult(S::String, _)) => S
 
-     syntax List ::= snd(ParseStrResult) [function]
+     syntax List ::= snd(ParseStrResult) [function, klabel(sndParseStr)]
      rule snd(parseStrResult(_, L::List)) => L
 
      syntax KItem ::= formatter(K, List) [strict(1)]
