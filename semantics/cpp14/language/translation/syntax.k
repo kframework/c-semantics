@@ -25,6 +25,24 @@ module CPP-ABSTRACT-SYNTAX
      syntax RVal ::= RExpr
      syntax Val ::= TExpr
 
+     syntax LDep ::= ld(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax XDep ::= xd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax PRDep ::= prd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax GLDep ::= LDep | XDep
+     syntax RDep ::= XDep | PRDep
+     syntax Dep ::= GLDep | RDep
+
+     syntax LVal ::= LDep
+     syntax XVal ::= XDep
+     syntax PRVal ::= PRDep
+     syntax GLVal ::= GLDep
+     syntax RVal ::= RDep 
+     syntax Val ::= Dep
+
+     syntax Bool ::= isDepKLabel(K) [function, klabelPredicate]
+
+     syntax TemplateParam ::= param(Dep) [function]
+
      syntax SymBase ::= "nonStatic" 
 
      syntax TypeId ::= TypeId(AType)
@@ -40,6 +58,7 @@ module CPP-ABSTRACT-SYNTAX
                    | Specifier(Specifier, Decl)
                    | Declarator
                    | DeclLoc(CabsLoc, Decl)
+                   | FriendDecl(Decl)
 
      context TypedefDecl(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -61,7 +80,7 @@ module CPP-ABSTRACT-SYNTAX
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
      syntax FunctionSpecifier ::= Inline() | Explicit()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
-                        | Constexpr() | Friend() | Auto()
+                        | Constexpr() | Auto()
 
      syntax Decl ::= Template(Decl, List)
                    | TemplateWithInstantiations(Decl, List, List)
@@ -308,5 +327,12 @@ module CPP-ABSTRACT-REWRITING
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]
+
+     rule ld(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
+     rule xd(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
+     rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
 
 endmodule

@@ -103,7 +103,7 @@ module COMMON-CONFIGURATION
                          <non-static-data-members> .List </non-static-data-members>
                          <function-members> .List </function-members>
                          <variant-members> .Set </variant-members>
-                         <converts-to> .List </converts-to>
+                         <conversion-functions> .List </conversion-functions>
                          <access> .Map </access>
                          <base-access> .Map </base-access>
                          <access-specifier> .K </access-specifier>

@@ -13,6 +13,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
                    | zeroInit(LVal, CPPType)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
+     syntax TypeMap ::= stripExplicit(TypeMap) [function]
 endmodule
 
 module CPP-DECL-INITIALIZER
@@ -109,8 +110,8 @@ module CPP-DECL-INITIALIZER
      rule initEachElement(Base::LVal, t(... st: arrayType(_, N::Int)), _, _, N, Res::Expr) => compoundInit(Res, Base)
 
      // 8.5:17.1 (list initializer)
-     rule #figureInit(Base:LVal, DestT::CPPType, Type::InitType, BraceInit(L::List), _, _, _)
-          => listInit(Base, DestT, Type, L)
+     rule #figureInit(Base:LVal, DestT::CPPType, Type::InitType, BraceInit(L::List), _, _, CT::ConstructorType)
+          => listInit(Base, DestT, Type, L, CT)
 
      // 8.5:17.2 (reference destination type)
      rule #figureInit(Base:LVal, DestT:CPPRefType, _, E:Expr, _, _, _)
@@ -142,34 +143,36 @@ module CPP-DECL-INITIALIZER
      rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)
           => functionDef(Base, S)
 
-     syntax KItem ::= listInit(LVal, CPPType, InitType, List)
+     syntax KItem ::= listInit(LVal, CPPType, InitType, List, ConstructorType)
                     | aggInit(LVal, CPPType, List)
                     | arrayInit(LVal, CPPType, Int, List, K)
                     | strInit(LVal, CPPType, CharKind, String, Int, K)
 
-     // TODO(dwightguth): all the cases for class type
-     rule listInit(Base::LVal, T::CPPType, _, L::List)
+     // 8.5.4:3.1 (aggregate init)
+     rule listInit(Base::LVal, T::CPPType, _, L::List, _)
           => aggInit(Base, T, L)
           requires isAggregateType(T)
-     // 8.5.4:3.2
-     rule listInit(Base::LVal, T:CPPClassType, _, .List)
-          => valueInit(Base, T)
-          requires notBool isAggregateType(T)
-           andBool hasConstructorThat(T, #klabel(`isDefaultConstructor`))
 
+     // 8.5.4:3.2 (empty init list, default-constructible class)
+     rule listInit(Base::LVal, T:CPPClassType, _, .List, CT::ConstructorType)
+          => #valueInit(Base, T, CT)
+          requires notBool isAggregateType(T) 
+               andBool hasConstructorThat(T, #klabel(`isDefaultConstructor`))
+
+     // 8.5.4:3.5 (single element, non-aggregate, non-class, non-reference)
      // see comment below about narrowing conversions in classAggInit
-     rule listInit(Base::LVal, T::CPPType, Type::InitType, L::List)
-          => figureInit(Base, T, {L[0]}:>Init, Type)
+     rule listInit(Base::LVal, T::CPPType, Type::InitType, ListItem(Init::Init), CT::ConstructorType)
+          => #figureInit(Base, T, Type, Init, Init, Init, CT)
           requires notBool isAggregateType(T)
                andBool notBool isCPPClassType(T)
                andBool notBool isCPPRefType(T)
-               andBool size(L) ==Int 1
-     // 8.5.4:3.7
-     rule listInit(Base::LVal, T::CPPType, _, .List)
-          => valueInit(Base, T)
-          requires notBool isCPPArrayType(T)
-           andBool notBool isCPPClassType(T)
-           andBool notBool isCPPRefType(T)
+
+     // 8.5.4:3.7 (empty init list, non-aggregate, non-class, non-reference)
+     rule listInit(Base::LVal, T::CPPType, _, .List, CT::ConstructorType)
+          => #valueInit(Base, T, CT)
+          requires notBool isAggregateType(T)
+               andBool notBool isCPPClassType(T)
+               andBool notBool isCPPRefType(T)
 
      rule aggInit(_, (t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)) => t(Q, Mods, arrayType(T, size(L)))), L::List)
      rule aggInit(Base::LVal, t(Q::Quals, Mods::Set, arrayType(T::CPPType, N::Int)), L::List)
@@ -295,7 +298,6 @@ module CPP-DECL-INITIALIZER
           <class-id> C </class-id>
           <cenv>... ConstructorId(X) |-> M::TypeMap ...</cenv>
 
-     syntax TypeMap ::= stripExplicit(TypeMap) [function]
      rule stripExplicit(T::CPPFunctionType |-> K1:K M::TypeMap) => T |-> K1 stripExplicit(M)
           requires notBool isMethodExplicit(T)
      rule stripExplicit(_ |-> _ M::TypeMap) => stripExplicit(M) [owise]
@@ -318,7 +320,7 @@ module CPP-DECL-INITIALIZER
      rule compoundInit(V:TExpr, XV:XVal) => xe(compoundInit(stripCompoundInit(V), XV), noTrace, type(XV))
      rule compoundInit(V:TExpr, PRV:PRVal) => pre(compoundInit(stripCompoundInit(V), PRV), noTrace, type(PRV))
      rule compoundInit(V:Val, E::Expr) => E
-          requires notBool isTExpr(V)
+          requires isEvalVal(V)
      syntax Val ::= stripCompoundInit(Val) [function]
      rule stripCompoundInit(le(compoundInit(E1::Expr, E2::Expr), _, _)) => compoundInit(E1, E2)
      rule stripCompoundInit(V::Val) => V [owise]

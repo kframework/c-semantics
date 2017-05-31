@@ -8,7 +8,7 @@ module CPP-CONVERSION-SYNTAX
      // performs standard type conversions only
      syntax PRVal ::= convertType(CPPType, PRVal) [function]
                     | convertType(CPPType, PRExpr) [function]
-     syntax KItem ::= convertTypeHold(CPPType, Expr)
+     syntax Expr ::= convertTypeHold(CPPType, Expr)
 
      syntax PRVal ::= convertLVal(GLVal) [function]
                     | convertLVal(GLExpr) [function]
@@ -37,7 +37,7 @@ module CPP-CONVERSION-SYNTAX
                       | usualArithmeticConversions(CPPType, CPPType) [function]
 
      syntax Expr ::= arithInterpret(CPPType, CPPValue, Trace) [function, klabel(arithInterpretCpp)]
-                    | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
+                   | arithInterpretHold(CPPType, CPPValue, Trace) [klabel(arithInterpretHoldCpp)]
 
      syntax Bool ::= isNullPointerConstant(PRVal) [function, klabel(isNullPointerConstantCpp)]
                    | isNullPointerConstant(PRExpr) [function, klabel(isNullPointerConstantCpp)]
@@ -60,6 +60,8 @@ module CPP-CONVERSION
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-SYNTAX
+
+     rule isExpr(errorFuncResult(_, _:Expr)) => true
 
      context ConvertType(_, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
      rule ConvertType(T::CPPType, R:PRVal) => convertType(T, R)

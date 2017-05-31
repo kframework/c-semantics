@@ -4,6 +4,7 @@ module CPP-DECL-USING
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SORTS
 
      context UsingDecl(_, HOLE:NNS, _) [result(NNSVal)]
@@ -19,7 +20,7 @@ module CPP-DECL-USING
           ...</ns>
           <ns>...
             <ns-id> UsingN </ns-id>
-            <nenv>... X |-> UsingM::Map ...</nenv>
+            <nenv>... X |-> UsingM::TypeMap ...</nenv>
           ...</ns>
 
      // using a type
@@ -29,17 +30,17 @@ module CPP-DECL-USING
           <tu-id> Tu </tu-id>
           <ns>...
             <ns-id> N </ns-id>
-            <ntypes> NE::Map => NE [X, Tag <- UsingT] </ntypes>
+            <ntypes> NE::Map => NE [X <- UsingT] </ntypes>
           ...</ns>
           <ns>...
             <ns-id> UsingN </ns-id>
-            <ntypes>... X |-> (Tag::ClassKey |-> UsingT::CPPType) ...</ntypes>
+            <ntypes>... X |-> UsingT::CPPType ...</ntypes>
           ...</ns>
 
 
-     syntax Map ::= makeUsing(Map) [function]
+     syntax TypeMap ::= makeUsing(TypeMap) [function]
 
-     rule makeUsing(T::CPPType |-> envEntry(Base::SymBase, _, Args::DefaultArgumentsResult) M::Map)
+     rule makeUsing(T::CPPType |-> envEntry(Base::SymBase, _, Args::DefaultArgumentsResult) M::TypeMap)
           => T |-> envEntry(Base, true, Args) makeUsing(M)
      rule makeUsing(.Map) => .Map
 

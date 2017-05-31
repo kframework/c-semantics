@@ -82,6 +82,7 @@ module CPP-SYNTAX
      syntax DestructorId ::= DestructorId(CId)
      syntax CId ::= DestructorId
                   | ConstructorId(CId)
+                  | ConversionId(CPPType)
 
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()

@@ -22,6 +22,8 @@ module CPP-TYPE-MAP-SYNTAX
      syntax TypeMap ::= TypeMap "[" CPPTypeExpr "<-" K "]" [function]
      syntax TypeMap ::= TypeMap "[" CPPTypeExpr "<-" "undef" "]" [function]
 
+     syntax Map ::= Map "[" K "<+" TypeMap "]" [function]
+
      syntax Bool ::= CPPTypeExpr "in_keys" "(" TypeMap ")" [function]
                    | some(TypeMap, K) [function, klabel(someTypeMap)]
 
@@ -38,6 +40,7 @@ module CPP-TYPE-MAP
      imports COMPAT-SYNTAX
      imports BOOL
      imports LIST
+     imports MAP
 
      syntax TypeMap ::= elem(CPPType, K) [function, hook(MAP.element), klabel(elemTypeMap)]
      syntax K ::= lookup(TypeMap, CPPType) [function, hook(MAP.lookup), klabel(lookupTypeMap)]
@@ -69,4 +72,7 @@ module CPP-TYPE-MAP
 
      rule Map2List(K1::CPPType |-> K2:K M::TypeMap) => ListItem(kpair(K1, K2)) Map2List(M)
      rule Map2List(.Map) => .List
+
+     rule ((A |-> M2:TypeMap) M1::Map) [A:K <+ B:TypeMap] => (A |-> (M2 B)) M1
+     rule M::Map [A:K <+ B:TypeMap] => M A |-> B [owise]
 endmodule

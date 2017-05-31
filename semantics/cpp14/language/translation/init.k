@@ -25,6 +25,29 @@ module CPP-TRANSLATION-INIT
 
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)
           requires isTExprKLabel(#klabel(Lbl))
+     rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, _:KItem, T:CPPTypeExpr)) => isDependentInScope(T)
+          requires isDepKLabel(#klabel(Lbl))
+
+     rule isDepKLabel(#klabel(`prd`)) => true
+     rule isDepKLabel(#klabel(`xd`)) => true
+     rule isDepKLabel(#klabel(`ld`)) => true
+     rule isDepKLabel(_) => false [owise]
+
+     rule stripHold(ld(E::Expr, _, _, _)) => E
+     rule stripHold(xd(E::Expr, _, _, _)) => E
+     rule stripHold(prd(E::Expr, _, _, _)) => E
+
+     rule trace(ld(_, Tr::Trace, _, _)) => Tr
+     rule trace(xd(_, Tr::Trace, _, _)) => Tr
+     rule trace(prd(_, Tr::Trace, _, _)) => Tr
+
+     rule type(ld(_, _, T::CPPTypeExpr, _)) => T
+     rule type(xd(_, _, T::CPPTypeExpr, _)) => T
+     rule type(prd(_, _, T::CPPTypeExpr, _)) => T
+
+     rule param(ld(_, _, _, T::TemplateParam)) => T
+     rule param(xd(_, _, _, T::TemplateParam)) => T
+     rule param(prd(_, _, _, T::TemplateParam)) => T
 
      rule <k> TranslationUnit(TU:String, Decls:List)
                => makeTu(TU +String newUUID)
@@ -140,12 +163,18 @@ module CPP-TRANSLATION-INIT
      syntax Expr ::= #ExprLoc(CabsLoc, Expr) [strict(2)]
      rule <k> #ExprLoc(L::CabsLoc, V:Val) => V ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-          requires notBool isTExpr(V)
+          requires isEvalVal(V)
      rule <k> #ExprLoc(L::CabsLoc, V:PRExpr) => pre(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:XExpr) => xe(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
      rule <k> #ExprLoc(L::CabsLoc, V:LExpr) => le(ExprLoc(L, stripHold(V)), trace(V), type(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> #ExprLoc(L::CabsLoc, V:PRDep) => prd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> #ExprLoc(L::CabsLoc, V:XDep) => xd(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
+     rule <k> #ExprLoc(L::CabsLoc, V:LDep) => ld(ExprLoc(L, stripHold(V)), trace(V), type(V), param(V)) ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
      
 endmodule

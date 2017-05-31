@@ -212,13 +212,13 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
+          <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
+          requires completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, redeclare complete type
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
@@ -227,13 +227,13 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
+          <internals>... LN :: X |-> (T::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
+          requires completeDeclaration(T, Init) ==K T
 
      context declareNonStaticObject(... init: HOLE:Expr)
 
@@ -505,25 +505,25 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
-          requires notBool (isVal(V) andBool notBool isTExpr(V))
+          requires notBool isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
-          requires notBool (isVal(V) andBool notBool isTExpr(V))
+          requires notBool isEvalVal(V)
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => true
-          requires (isVal(V) andBool notBool isTExpr(V))
+          requires isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true
-          requires (isVal(V) andBool notBool isTExpr(V))
+          requires isEvalVal(V)
      rule isStaticInitialization(lv(_, _, _)) => true
 
      syntax Expr ::= stripInitHolds(K) [function]
      rule stripInitHolds(le(compoundInit(E1::Expr, E2::Expr), _, _)) => stripInitHolds(compoundInit(E1, E2))
      rule stripInitHolds(compoundInit(E1::Expr, E2::Expr)) => compoundInit(stripInitHolds(E1), stripInitHolds(E2))
      rule stripInitHolds(le(E::Expr, _, _)) => E [owise]
-     rule stripInitHolds(V:Val) => V
-          requires notBool isTExpr(V)
+     rule stripInitHolds(V::Val) => V
+          requires isEvalVal(V)
 
      context defArgs(_, (HOLE:StrictList => types(HOLE)), _)
      context defArgs(_, _, (HOLE:StrictList => cats(HOLE)))

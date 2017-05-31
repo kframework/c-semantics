@@ -49,7 +49,7 @@ module CPP-ENV
          <ns-id> N </ns-id>
          <nenv> NE::Map => NE[X <- updateFnEnv(NE, X, T, Base, IsUsing)] </nenv>
          requires N =/=K NoNamespace()
-    
+
     rule <k> updateDefaultArguments(N:Namespace :: X::CId, T:CPPFunctionType, A1:DefaultArgumentsResult) => .K ...</k>
          <curr-tu> Tu::String </curr-tu>
          <tu-id> Tu </tu-id>

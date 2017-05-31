@@ -268,7 +268,7 @@ module COMPAT
      rule ((A |-> S::Set) M::Map) [A:K += B:K] => (A |-> (S SetItem(B))) M
      rule M::Map [A:K += B:K] => M A |-> SetItem(B) [owise]
 
-     rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> M2 B) M1
+     rule ((A |-> M2::Map) M1::Map) [A:K <+ B::Map] => (A |-> (M2 B)) M1
      rule M::Map [A:K <+ B::Map] => M A |-> B [owise]
 
      rule fst(kpair(K:K, _)) => K

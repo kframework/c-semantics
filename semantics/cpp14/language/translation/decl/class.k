@@ -200,7 +200,8 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... ConstructorId(X) |-> _ DestructorId(X) |-> _ ...</cenv>
+          <cenv>... ConstructorId(X) |-> M::TypeMap DestructorId(X) |-> _ ...</cenv>
+          <is-aggregate> B:Bool => B andBool notBool some(M, #klabel(`isUserProvidedConstructor`)) andBool notBool hasVirtualMembers(type(classType(C))) </is-aggregate>
 
      // TODO(dwightguth): implicit exception spec
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(), 
@@ -521,7 +522,7 @@ module CPP-DECL-CLASS
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
-     rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, 0)), Name(NoNNS(), operatordelete))))
+     rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
           ~> figureDestruct(...)
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)

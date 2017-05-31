@@ -3,10 +3,11 @@ module CPP-EXPR-NEW-SYNTAX
      imports INT-SYNTAX
      imports MAP
      imports COMMON-SORTS
+     imports CPP-DYNAMIC-SORTS
      imports CPP-TYPE-MAP-SORTS
      imports CPP-TYPING-SORTS
      syntax KItem ::= lookupAllocationFunction(CId, CPPType, Bool)
-     syntax List ::= getSecondDeleteArg(TypeMap, Int) [function]
+     syntax List ::= getSecondDeleteArg(TypeMap, PRVal) [function]
 endmodule
 
 module CPP-EXPR-NEW
@@ -15,6 +16,7 @@ module CPP-EXPR-NEW
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-BUILTIN-SYNTAX
+     imports CPP-DECL-CLASS-SYNTAX
      imports CPP-DECL-INITIALIZER-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-OVERLOADING-SYNTAX
@@ -59,14 +61,17 @@ module CPP-EXPR-NEW
      rule computeNewInit(R::Expr, T::CPPType, NoExpression(), E::Expr, I::Int, Init:KResult)
           => pre(NewOp(T, R, Init, .K, I), hasTrace(E), type(pointerType(T)))
 
-     rule getSecondDeleteArg(M::TypeMap, I::Int) => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), I)
-     syntax List ::= #getSecondDeleteArg(TypeMap, CPPType, CPPType, Int) [function]
-     rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::TypeMap, T1::CPPType, T2::CPPType, I::Int) => ListItem(prv(I, noTrace, type(size_t)))
+     rule getSecondDeleteArg(M::TypeMap, V::PRVal) => #getSecondDeleteArg(M, func(type(void), ptr(type(void))), func(type(void), ptr(type(void)), type(size_t)), V)
+     syntax List ::= #getSecondDeleteArg(TypeMap, CPPType, CPPType, PRVal) [function]
+     rule #getSecondDeleteArg((T1 |-> _) (T2 |-> _) M::TypeMap, T1::CPPType, T2::CPPType, V::PRVal) => ListItem(V)
      rule #getSecondDeleteArg(...) => .List [owise]
 
      context DeleteExpr(_, _, (HOLE:Expr => reval(HOLE))) [result(PRVal)]
-     rule (.K => CallExpr(Name(GlobalNamespace(), operatordelete), list(ListItem(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) ListItem(pre(newSize(!I), noTrace, type(size_t)))), krlist(.List)) ~> !I) ~> DeleteExpr(false, false, V:PRVal)
-          requires isCPPPointerType(type(V)) andBool notBool isCPPClassType(innerType(type(V)))
-     rule R:PRExpr ~> I:Int ~> DeleteExpr(false, false, V:PRVal) => pre(DeleteOp(V, R, .K, I), hasTrace(DeleteExpr(false, false, V)), type(void))
+     rule (.K => lookupAllocationFunction(operatordelete, innerType(type(V)), IsGlobal)) ~> DeleteExpr(IsGlobal::Bool, false, V:PRVal)
+          requires isCPPPointerType(type(V)) andBool #fun(InnerT::CPPType => notBool isCPPClassType(InnerT) orBool notBool hasDestructorThat({InnerT}:>CPPClassType, #klabel(`isVirtualDestructor`)))(innerType(type(V)))
+     rule (cSet(Cands::TypeMap, Q::QualId) #as C:CandidateSet => resolveOverload(C, list(ListItem(le(Name(NoNNS(), #NoName(!I:Int)), noTrace, type(V))) getSecondDeleteArg(Cands, pre(newSize(!I), noTrace, type(size_t)))), Name(NoNNS(), operatordelete))
+          ~> !I:Int)
+          ~> DeleteExpr(_, false, V::PRVal)
+     rule R:PRExpr ~> I:Int ~> DeleteExpr(IsGlobal::Bool, false, V:PRVal) => pre(DeleteOp(V, R, .K, I), hasTrace(DeleteExpr(IsGlobal, false, V)), type(void))
 
 endmodule

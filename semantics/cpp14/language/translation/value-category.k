@@ -15,6 +15,7 @@ module CPP-VALUE-CATEGORY-SYNTAX
 
      syntax StrictList ::= cats(StrictList)
 
+     syntax ValueCategory ::= unnamedCat(CPPType) [function]
 endmodule
 
 module CPP-VALUE-CATEGORY
@@ -101,7 +102,6 @@ module CPP-VALUE-CATEGORY
      rule catof(FunctionalCast(T::AType, ListItem(A::K)) => ParenthesizedCast(T, A))
      rule catof(FunctionalCast(_, ListItem(_) ListItem(_) _::List) => prvalue)
 
-     syntax ValueCategory ::= unnamedCat(CPPType) [function]
      rule unnamedCat(T::CPPType) => #if isUnnamedLValue(T) #then lvalue #else #if isUnnamedXValue(T) #then xvalue #else prvalue #fi #fi
 
      rule catof(Throw(_) => prvalue)

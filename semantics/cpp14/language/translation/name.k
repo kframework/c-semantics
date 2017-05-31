@@ -180,7 +180,7 @@ module CPP-TRANSLATION-NAME
      rule envMask((X |-> ((T:CPPFunctionType |-> _) _::TypeMap)) _, X::CId, Mask::Set)
           => function in Mask
      rule envMask((X |-> _) _, X::CId, Mask::Set)
-          => variable in Mask
+          => variable in Mask [owise]
 
      rule <k> nameLookupInFullNamespace(X::CId, N::Namespace, T::Tag, Mask::Set, OldUsingDirectives::Set)
           =>                                                  nameLookupInNamespaces(X, SetItem(N) getUsingNamespaces(BlockUsingDirectives NewUsingDirectives OldUsingDirectives, N), T, Mask, notFound(X))
@@ -330,18 +330,20 @@ module CPP-TRANSLATION-NAME
              requires HOLE =/=K NoNNS()
              [result(NNSVal)]
      rule (.K => qualifiedNameLookup(X, N, defaultMask)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+          requires isTExprKLabel(#klabel(Lbl))
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
      rule cSet(Y::TypeMap, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
           => resolveOverload(cSet(Y, X), Args, E)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+          requires isTExprKLabel(#klabel(Lbl))
 
      rule (cSet(_, C:Class :: _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
@@ -373,6 +375,8 @@ module CPP-TRANSLATION-NAME
 
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T, typeMask))
      requires T =/=K NoTag()
+     rule ElaboratedTypeSpecifier(T::Tag, X::CId, N::NNS) => qualifiedNameLookup(X, N, typeMask)
+     requires T =/=K NoTag() andBool N =/=K NoNNS()
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS(), Args::List) => resolveElabSpecifier(nameLookup(X, T, typeMask), list(Args))
      requires T =/=K NoTag()
 

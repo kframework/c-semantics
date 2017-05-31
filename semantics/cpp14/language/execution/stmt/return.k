@@ -99,5 +99,6 @@ module C-CPP-STMT-RETURN
      syntax PRVal ::= convertValToCPP(RValue) [function]
      rule convertValToCPP(tv(V::CValue, T::UType)) => prv({V}:>CPPValue, noTrace, convertTypeToCPP(type(T)))
           requires isCPPValue(V)
+     rule convertValToCPP(voidVal) => prv(voidVal, noTrace, type(void))
 
 endmodule

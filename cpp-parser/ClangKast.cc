@@ -733,7 +733,7 @@ bool TraverseDecl(Decl *D) {
 
 
   bool VisitFriendDecl(FriendDecl *D) {
-    AddSpecifier("Friend");
+    AddKApplyNode("FriendDecl", 1);
     return false;
   }
 

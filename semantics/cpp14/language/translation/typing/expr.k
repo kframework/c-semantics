@@ -11,7 +11,7 @@ module CPP-TYPING-EXPR-SYNTAX
 
      syntax StrictList ::= types(StrictList)
      syntax TypeExpr ::= typeof(TypeExpr)
-     syntax TypeExpr ::= Expr | CPPDType | Typed
+     syntax TypeExpr ::= Expr | CPPDTypeExpr | Typed
 
 endmodule
 

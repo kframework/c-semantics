@@ -132,7 +132,12 @@ module CPP-DECL-TEMPLATE
      syntax KItem ::= declareTemplate(CPPType)
      rule <k> declareTemplate(T::CPPType) => .K ...</k>
           <curr-template-context> templateInfo(X::QualId, Decls::List, Types::Map, Default::Map, (_ => T), _) </curr-template-context>
-          <templates>... .Map => X |-> (T |-> templateInfo(X, Decls, Types, Default, T, .K)) ...</templates>
+          <templates> Temp:Map => Temp X |-> (T |-> templateInfo(X, Decls, Types, Default, T, .K)) </templates>
+          requires notBool X, T in_keys(Temp)
+     rule <k> declareTemplate(T::CPPType) => .K ...</k>
+          <curr-template-context> templateInfo(... id: X::QualId, type: _ => T) </curr-template-context>
+          <templates> Temp:Map </templates>
+          requires X, T in_keys(Temp)
 
      // template arguments
      rule TypeArg(t(_, _, _) #as T::CPPType) => T

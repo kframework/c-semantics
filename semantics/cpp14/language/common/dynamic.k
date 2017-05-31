@@ -91,6 +91,8 @@ module CPP-DYNAMIC-SYNTAX
 
      syntax Expr ::= stripHold(Expr) [function, klabel(stripHoldCpp)]
 
+     syntax Bool ::= isEvalVal(K) [function]
+
      syntax Trace ::= hasTrace(K) | trace(Typed) [function] | "noTrace"
      syntax Trace ::= combine(Trace, K) [function]
      syntax Trace ::= combine(Trace, Trace, K) [function, klabel(combine2)]
@@ -290,6 +292,11 @@ module CPP-DYNAMIC
      rule isTExprKLabel(#klabel(`xe`)) => true
      rule isTExprKLabel(#klabel(`lecpp`)) => true
      rule isTExprKLabel(_) => false [owise]
+
+     rule isEvalVal(lv(...)) => true
+     rule isEvalVal(xv(...)) => true
+     rule isEvalVal(prv(...)) => true
+     rule isEvalVal(_) => false [owise]
 
      // references aren't kresults because they need to get transformed into the object they refer to.
      rule isKResult(Lbl:KLabel(_::CPPValue, _::Trace, T::CPPType)) => notBool isCPPRefType(T)

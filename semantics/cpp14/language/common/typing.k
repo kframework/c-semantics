@@ -52,17 +52,24 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleType ::= underlyingType(CPPSimpleType) [function, klabel(underlyingSimpleType)]
      syntax CPPType ::= underlyingType(CPPType) [function]
 
+     // removes all syntax not part of the type of the entity.
+     syntax CPPType ::= stripType(CPPType) [function]
+     syntax CPPClassType ::= stripType(CPPClassType) [function]
+     syntax CPPTypeExpr ::= stripType(CPPTypeExpr) [function]
+
+     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType
+                                   | CPPSimpleUnsignedType
+                                   | CPPSimpleCharType
+                                   | CPPSimpleBoolType
+                                   | CPPSimpleWideCharType
      syntax CPPSimpleFundamentalType ::= CPPSimpleIntegerType 
                                        | CPPSimpleFloatingType
                                        | CPPSimpleVoidType
                                        | CPPSimpleNullPtrTType
+
      syntax CPPSimpleType ::= CPPSimpleFundamentalType
                             | CPPSimpleCompoundType
                             | CPPSimpleBitfieldType
-
-     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType | CPPSimpleUnsignedType
-                                   | CPPSimpleCharType | CPPSimpleBoolType
-                                   | CPPSimpleWideCharType
 
      syntax CPPSimpleSignedType ::= bitfieldType(CPPSimpleSignedType, Int) [klabel(bitfieldTypeCpp)]
      syntax CPPSimpleUnsignedType ::= bitfieldType(CPPSimpleUnsignedType, Int) [klabel(bitfieldTypeCpp)]
@@ -230,7 +237,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
      // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
      syntax CPPClassType ::= type(CPPSimpleClassType) [function, klabel(cppType)]
-     // for stripType
+     // useful for stripType
      syntax CPPIntegerType ::= type(CPPSimpleIntegerType) [function, klabel(cppType)]
      syntax CPPType ::= utype(Typed) [function, klabel(cppUTypeVal)]
      syntax CPPType ::= type(Typed) [function, klabel(cppTypeVal)]
@@ -268,6 +275,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
 
+     syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
+
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
@@ -283,12 +292,8 @@ module CPP-TYPING-SYNTAX
                        | #getEnumInfo(Enum, K) [function]
      syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
-     syntax Bool ::= CPPType "==Type" CPPType [function]
-                   | CPPType "=/=Type" CPPType [function]
-
-     syntax CPPType ::= stripType(CPPType) [function]
-     syntax CPPTypeExpr ::= stripType(CPPTypeExpr) [function]
-     syntax CPPClassType ::= stripType(CPPClassType) [function]
+     syntax Bool ::= CPPTypeExpr "==Type" CPPTypeExpr [function]
+                   | CPPTypeExpr "=/=Type" CPPTypeExpr [function]
 
      syntax Bool ::= overrides(CPPType, CPPType) [function]
 
@@ -327,6 +332,8 @@ module CPP-TYPING
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
+
+     rule implicitObjectParameterType(T::CPPFunctionType) => #fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])
 
      syntax List ::= #getRealParams(List) [function]
      rule #getRealParams(L::List ListItem(variadic)) => L

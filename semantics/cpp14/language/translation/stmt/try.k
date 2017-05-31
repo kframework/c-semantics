@@ -27,12 +27,17 @@ module CPP-STMT-TRY
           <odr-uses>... .Set => SetItem(obj(0, 0, builtinSymbol("::std::terminate()"))) ...</odr-uses>
 
      syntax Expr ::= prepareThrow(AExpr, K)
-     context prepareThrow(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
+     context prepareThrow(_, HOLE:TypeExpr => typeof(HOLE)) [result(CPPTypeExpr)]
+     context prepareThrow(_, HOLE:CPPTypeExpr)
+             requires notBool isDependentInScope(HOLE) [result(CPPType)]
 
-     rule prepareThrow(_, T:CPPArrayType => type(pointerType(innerType(T))))
-     rule prepareThrow(_, T:CPPFunctionType => type(pointerType(T)))
+     rule prepareThrow(_, T:CPPArrayTypeExpr => type(pointerType(innerType(T))))
+     rule prepareThrow(_, T:CPPFunctionTypeExpr => type(pointerType(T)))
      rule prepareThrow(E::Expr, T:CPPType)
           => evalThrow(figureInit(le(temp(!I:Int, utype(T)), noTrace, utype(T)), utype(T), E, CopyInit()), E)
+     rule prepareThrow(E::Expr, T:CPPTypeExpr)
+          => prd(prepareThrow(E, T), hasTrace(Throw(E)), type(void), T)
+          requires isDependentInScope(T)
      rule prepareThrow(NoExpression(), NoExpression())
           => pre(ThrowOp(exceptionObject(type(no-type))), hasTrace(Throw(NoExpression())), type(void))
 
