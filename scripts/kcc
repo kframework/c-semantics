@@ -293,7 +293,8 @@ my $spec = q(
     { push(@main::cppArgs, "-d$chars"); }
   -fmessage-length=0	Write all error messages on a single line.
   -frunner-script	Compile program to perl script with analysis tool options. [undocumented]
-  -fissue-report=<file>	Write issues to the specified file in CSV format.
+  -fissue-report=<file>	Write issues to the specified file.
+			Format (CSV/JSON) is inferred from the specified file extension.
   -fworkspace=<dir>	Use <dir> for the workspace of ) . $0 . q( when reporting
 			errors.
   -Wlint		Generate lint errors for potentially undesirable
@@ -437,8 +438,15 @@ sub main {
   my $format;
   my $output;
   if ($args->{"-fissue-report="}) {
-    $format = "CSV";
-    $output = quote(backslash(abs_path($args->{"-fissue-report="})));
+    my ($file) = $args->{"-fissue-report="};
+    my ($base, $dir, $ext) = fileparse($file, ('\.json', '\.JSON', '\.csv', '\.CSV'));
+    if (!$ext) {
+      error("Format not supported for the issue report file '$file'.
+The format for the issue report (JSON/CSV) is inferred from the file extension.
+");
+    }
+    $format = uc substr($ext,1);
+    $output = quote(backslash(abs_path($file)));
     $output = ", \"output\": $output";
   } else {
     $format = "Console";
