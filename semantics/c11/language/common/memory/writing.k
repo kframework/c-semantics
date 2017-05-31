@@ -321,6 +321,8 @@ module C-MEMORY-WRITING
           => splitBytes(Loc, byteSizeofType(T))
      rule splitBytes(tv(V:Opaque, T::UType))
           => splitBytes(V, byteSizeofType(T))
+     rule splitBytes(tv(V:Trap, T::UType))
+          => splitBytes(V, byteSizeofType(T))
      rule splitBytes(tv(agg(L:List), T::UType))
           => splitStructBytes(dataList(L), T,
                byteSizeofType(T))
