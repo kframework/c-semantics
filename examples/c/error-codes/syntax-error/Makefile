@@ -1,7 +1,7 @@
 TUS = $(wildcard ./*.c)
 EXCLUDES=
 TESTS = $(filter-out $(EXCLUDES), $(filter-out %-link2.c, $(filter-out %-link3.c, ${TUS:-link1.c=.c})))
-CC=gcc-4.9
+CC=gcc
 TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
