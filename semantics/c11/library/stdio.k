@@ -90,7 +90,7 @@ module LIBC-STDIO
           <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
-     rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an update stream on which the most recent operation was input."))
+     rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an input/output stream on which the most recent operation was input."))
                ~> fflush(tv(opaque(FD:Int, _), _))
           ...</k>
           <fid> FD </fid>
