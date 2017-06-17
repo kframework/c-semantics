@@ -16,7 +16,7 @@ module LIBC-IO-SYNTAX
 
      syntax ExecOpts ::= NoIO()
 
-     syntax SeekWhence ::= "seekSet" | "seekCur"
+     syntax SeekWhence ::= "seekSet" | "seekCur" | "seekEnd"
      syntax BufMode ::= "fullBuf" | "lineBuf" | "noBuf"
 
      syntax FD ::= Int
@@ -258,6 +258,11 @@ module LIBC-IO
           <fid> FD </fid>
           <pos> Pos:Int </pos>
           [structural]
+     rule seek(FD:Int, Offset::Int, seekEnd)
+          => #seekEnd(FD, Offset)
+          ~> seek'(FD)
+          [structural]
+
 
      syntax KItem ::= "seek'" "(" Int ")"
      rule <k> seek'(FD:Int) => .K ...</k>

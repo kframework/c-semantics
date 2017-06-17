@@ -105,7 +105,6 @@ module LIBC-STDIO
      rule fflushAll(.Set) => success
           [structural]
 
-     // TODO(chathhorn): SEEK_END.
      syntax KItem ::= fseek(K, Int, Int)
      context fseek(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
      rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 0)
@@ -117,6 +116,12 @@ module LIBC-STDIO
      rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 1)
           => flush(FD)
           ~> seek(FD, Offset, seekCur)
+          ~> cleareof(FD)
+          ~> success
+          [structural]
+     rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 2)
+          => flush(FD)
+          ~> seek(FD, Offset, seekEnd)
           ~> cleareof(FD)
           ~> success
           [structural]
