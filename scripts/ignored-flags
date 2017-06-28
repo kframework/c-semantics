@@ -4,7 +4,6 @@
 -fPIC
 -m64
 -m32
--std=.*
 -soname=.*
 -rpath=.*
 -pedantic

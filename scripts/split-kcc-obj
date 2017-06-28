@@ -1,0 +1,9 @@
+#!/bin/bash
+export LC_ALL=C
+in="$1"
+objout="$2"
+kastout="$3"
+cp "$in" "$objout"
+size=`du -b "$in" | cut -f1`
+len=`od -An -t u8 -j $(($size-13)) -N8 $in`
+dd if="$in" of="$kastout" iflag=skip_bytes,count_bytes skip=$(($size-13-$len)) "count=$len" >/dev/null 2>&1

@@ -44,15 +44,25 @@ sub main {
             TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', 
             SUFFIX => '.bin', 
             UNLINK => 0);
+      my $objInput = File::Temp->new(
+            TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX',
+            SUFFIX => '.o',
+            UNLINK => 0);
       my $fileOutput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0);
 
       push(@temporaryFiles, $fileInput);
+      push(@temporaryFiles, $objInput);
       push(@temporaryFiles, $fileOutput);
 
       print $fileInput decode_base64(linkedProgram());
+      if (defined nativeObjFile()) {
+        print $objInput decode_base64(nativeObjFile());
+      } else {
+        $objInput = '';
+      }
 
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
@@ -86,10 +96,10 @@ sub main {
            push @cmd, '--verbose';
       }
 
-      if (defined nativeLibraries()) {
-           push @cmd, '--native-libraries';
-           push @cmd, nativeLibraries();
-      }
+      push @cmd, '--native-libraries';
+      my $libs = nativeLibraries();
+      # kcc may have been run as k++ so this is necessary
+      push @cmd, "-lstdc++ $libs $objInput";
 
       if (defined $ENV{PROVE}) {
             push @cmd, '--prove';

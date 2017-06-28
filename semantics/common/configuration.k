@@ -23,6 +23,7 @@ module COMMON-CONFIGURATION
           <odr-defs> .Map </odr-defs>
           // dummy link base |-> real base
           <linkings> .Map </linkings>
+          <function-tus> .Map </function-tus>
      </global-state>
 
      <linking-state multiplicity="?" initial="">

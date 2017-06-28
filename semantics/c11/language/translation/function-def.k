@@ -216,4 +216,14 @@ module C-FUNCTION-DEF
           ~> dummyBind(Params)
           requires notBool isVoidType(T)
           [structural]
+
+     rule <k> OtherStatement() => .K ...</k>
+          <external-defs>... X |-> _ => .Map ...</external-defs>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </genv>
+          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <block-stack>... ListItem(<block-control>... <env> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </env> ...</block-control>) </block-stack>
+          <function-tus>... .Map => X |-> Tu </function-tus>
+
 endmodule

@@ -1,0 +1,6 @@
+j023b.c: In function ‘main’:
+j023b.c:4:14: error: void value not ignored as it ought to be
+       return f();
+              ^
+compilation terminated due to -Wfatal-errors.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j023b.c to see commands run.

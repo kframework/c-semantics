@@ -22,7 +22,7 @@ comparison: ${TEST_COMPARISON}
 
 %-bad.kcc: %-bad.c
 	@echo -n "Compiling $<... "
-	@kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -fno-native-compilation -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 %-good.kcc: %-good.c
 	@echo -n "Compiling $<... "
 	@kcc -o $@ $< > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}

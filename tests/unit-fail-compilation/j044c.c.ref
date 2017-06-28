@@ -1,0 +1,6 @@
+j044c.c: In function ‘main’:
+j044c.c:6:15: error: conversion to non-scalar type requested
+       (struct str)p;
+               ^
+compilation terminated due to -Wfatal-errors.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j044c.c to see commands run.

@@ -21,6 +21,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax DType ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
 
+     syntax CId ::= id(String) [function]
 endmodule
 
 module C-TYPE-BUILDER
@@ -31,6 +32,8 @@ module C-TYPE-BUILDER
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
      imports K-REFLECTION
+
+     rule id(S::String) => Identifier(S)
 
      rule fun(R:FlexType)
           => fun(R, void)
