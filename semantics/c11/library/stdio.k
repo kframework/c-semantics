@@ -2289,7 +2289,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "hh") => type(signed-char)
      rule getFormatType'("%i", "hh") => type(signed-char)
-     rule getFormatType'("%o", "hh") => type(signed-char)
+     rule getFormatType'("%o", "hh") => type(unsigned-char)
      rule getFormatType'("%u", "hh") => type(unsigned-char)
      rule getFormatType'("%x", "hh") => type(unsigned-char)
      rule getFormatType'("%X", "hh") => type(unsigned-char)
@@ -2297,7 +2297,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "h") => type(short-int)
      rule getFormatType'("%i", "h") => type(short-int)
-     rule getFormatType'("%o", "h") => type(short-int)
+     rule getFormatType'("%o", "h") => type(unsigned-short-int)
      rule getFormatType'("%u", "h") => type(unsigned-short-int)
      rule getFormatType'("%x", "h") => type(unsigned-short-int)
      rule getFormatType'("%X", "h") => type(unsigned-short-int)
@@ -2305,7 +2305,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "") => type(int)
      rule getFormatType'("%i", "") => type(int)
-     rule getFormatType'("%o", "") => type(int)
+     rule getFormatType'("%o", "") => type(unsigned-int)
      rule getFormatType'("%u", "") => type(unsigned-int)
      rule getFormatType'("%x", "") => type(unsigned-int)
      rule getFormatType'("%X", "") => type(unsigned-int)
@@ -2313,7 +2313,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "l") => type(long-int)
      rule getFormatType'("%i", "l") => type(long-int)
-     rule getFormatType'("%o", "l") => type(long-int)
+     rule getFormatType'("%o", "l") => type(unsigned-long-int)
      rule getFormatType'("%u", "l") => type(unsigned-long-int)
      rule getFormatType'("%x", "l") => type(unsigned-long-int)
      rule getFormatType'("%X", "l") => type(unsigned-long-int)
@@ -2321,7 +2321,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "ll") => type(long-long-int)
      rule getFormatType'("%i", "ll") => type(long-long-int)
-     rule getFormatType'("%o", "ll") => type(long-long-int)
+     rule getFormatType'("%o", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%u", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%x", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%X", "ll") => type(unsigned-long-long-int)
@@ -2329,7 +2329,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
      rule getFormatType'("%i", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType'("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType'("%o", "z") => type(cfg:sizeut)
      rule getFormatType'("%u", "z") => type(cfg:sizeut)
      rule getFormatType'("%x", "z") => type(cfg:sizeut)
      rule getFormatType'("%X", "z") => type(cfg:sizeut)
@@ -2337,7 +2337,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "t") => type(cfg:ptrdiffut)
      rule getFormatType'("%i", "t") => type(cfg:ptrdiffut)
-     rule getFormatType'("%o", "t") => type(cfg:ptrdiffut)
+     rule getFormatType'("%o", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%u", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))

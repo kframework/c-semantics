@@ -1,0 +1,9 @@
+ 'va_start' called on function whose last fixed argument is declared with the register storage class.
+   at __va_start(va_start-1.c:5:4)
+   by foo(va_start-1.c:5:4)
+   by main(va_start-1.c:11:3)
+  Undefined behavior (UB-STDARG10).
+   see C11 section 7.16.1.4:4 http://rvdoc.org/C11/7.16.1.4
+   see C11 section J.2:1 item 143 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Execution failed (configuration dumped)
