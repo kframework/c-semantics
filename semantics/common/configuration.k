@@ -41,6 +41,8 @@ module COMMON-CONFIGURATION
 
      <tags color="lightgray"> .Map </tags>
 
+     <unnamed-locs> .Map </unnamed-locs>
+
      <dynamic-init> .K </dynamic-init>
 
      <translation-units>

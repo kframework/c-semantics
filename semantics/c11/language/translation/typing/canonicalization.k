@@ -247,6 +247,8 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
      rule <k> canonicalizeSpecifier(_ ListItem(
@@ -254,6 +256,8 @@ module C-TYPING-CANONICALIZATION
            ...</k>
            <curr-tu> TU:String </curr-tu>
            <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
            <next-unnamed> N:Int => N +Int 1 </next-unnamed>
            [structural]
      rule <k> canonicalizeSpecifier(_ ListItem(
@@ -261,6 +265,8 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
 
