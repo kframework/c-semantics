@@ -174,7 +174,7 @@ bool TraverseDecl(Decl *D) {
   void AddCabsLoc(SourceLocation loc) {
     SourceManager &mgr = Context->getSourceManager();
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
-    const char *filename = presumed.getFilename();
+    const char *filename = presumed.isValid()? presumed.getFilename() : nullptr;
     if (filename) {
       AddKApplyNode("CabsLoc", 5);
       AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
