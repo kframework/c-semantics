@@ -2,6 +2,10 @@ CV-TTE3-bad-static.c:5:3: error: if one of a conditional expression's branches h
   Constraint violation (CV-TTE3).
    see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+CV-TTE3-bad-static.c:5:3: warning: Conversion from an integer to non-null pointer.
+  Implementation defined behavior (IMPL-CCV13).
+   see C11 section 6.3.2.3:5 http://rvdoc.org/C11/6.3.2.3
+   see CERT section INT36-C http://rvdoc.org/CERT/INT36-C
 CV-TTE3-bad-static.c:5:3: error: Indeterminate value used in an expression.
   Undefined behavior (UB-CEE2).
    see C11 section 6.2.4 http://rvdoc.org/C11/6.2.4

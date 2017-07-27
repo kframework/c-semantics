@@ -6,6 +6,7 @@ TEST_COMPARISON = ${TESTS:.c=.cmp}
 
 CHECK_RESULT_COMPILE = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp.out $@.out; else echo "failed $<"; cat $@.tmp.out; exit 1; fi
 CHECK_RESULT_RUN = if [ $$? -eq 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
+CHECK_RESULT_CRASH = if [ $$? -ne 0 ] ; then echo "passed $<"; mv $@.tmp $@; else echo "failed $<"; cat $@.tmp; exit 1; fi
 
 .PHONY: clean comparison
 .PRECIOUS: %.kcc %.out
@@ -30,6 +31,10 @@ comparison: ${TEST_COMPARISON}
 %-bad.out: %-bad.kcc
 	@echo -n "Running $<... "
 	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_RUN}
+
+%-bad-crash.out: %-bad-crash.kcc
+	@echo -n "Running $<... "
+	@./$< > $@.tmp 2>&1; ${CHECK_RESULT_CRASH}
 
 %-good.gcc: %-good.c
 	@echo -n "Compiling $< (reference)... "

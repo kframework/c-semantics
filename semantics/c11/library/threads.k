@@ -7,7 +7,7 @@ module LIBC-THREADS-SYNTAX
                      | "thrd-busy" [function]
                      | "thrd-nomem" [function]
 
-     syntax KItem ::= "threadRunning"
+     syntax KItem ::= "threadRunning" | "threadJoined"
      syntax KItem ::= "spawn-aux" "(" Int "," RValue "," RValue ")"
 endmodule
 
@@ -15,6 +15,7 @@ module LIBC-THREADS
      imports BOOL
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
      imports C-EXECUTION-ERROR-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
@@ -58,7 +59,7 @@ module LIBC-THREADS
           ...</thread>
           <genv> Env:Map </genv>
           <thread-status>
-               Status:Map => Status[ThId:Int <- threadRunning]
+               Status:Map => Status[ThId <- threadRunning]
           </thread-status>
           (.Bag =>
           <thread>...
@@ -98,12 +99,30 @@ module LIBC-THREADS
                        #fi
                     ~> success
                ...</k>
+               <thread-id> ThisThread:Int </thread-id>
                <buffer> .List </buffer>
           ...</thread>
+          <thread-status>
+               Status:Map => Status[ThId <- threadJoined]
+          </thread-status>
           (<thread>...
                <k> V:KResult </k>
-               <thread-id> ThId:Int </thread-id>
+               <thread-id> ThId </thread-id>
           ...</thread> => .Bag)
+          requires (ThId in_keys(Status))
+               andThenBool (Status[ThId] =/=K threadJoined)
+               andBool ThId =/=K ThisThread
+          [ndthread]
+     rule <k> (.K => UNDEF("THREADS1", "'thrd_join' or 'pthread_join' called for an invalid or already-joined thread."))
+               ~> join-aux(ThId:Int, _)
+          ...</k>
+          <thread-status>
+               Status:Map
+          </thread-status>
+          <thread-id> ThisThread:Int </thread-id>
+          requires notBool ((ThId in_keys(Status))
+               andThenBool (Status[ThId] =/=K threadJoined)
+               andBool ThId =/=K ThisThread)
           [ndthread]
 
      rule [mtx-init]:
