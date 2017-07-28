@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE 700
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/RecursiveASTVisitor.h"
@@ -174,8 +175,7 @@ bool TraverseDecl(Decl *D) {
   void AddCabsLoc(SourceLocation loc) {
     SourceManager &mgr = Context->getSourceManager();
     PresumedLoc presumed = mgr.getPresumedLoc(loc);
-    const char *filename = presumed.getFilename();
-    if (filename) {
+    if (presumed.isValid()) {
       AddKApplyNode("CabsLoc", 5);
       AddKTokenNode(escape(presumed.getFilename(), strlen(presumed.getFilename())), "String");
       StringRef filename(presumed.getFilename());
@@ -2161,6 +2161,9 @@ bool TraverseDecl(Decl *D) {
     case CharacterLiteral::Wide:
       AddKApplyNode("Wide", 0);
       break;
+    case CharacterLiteral::UTF8:
+      AddKApplyNode("UTF8", 0);
+      break;
     case CharacterLiteral::UTF16:
       AddKApplyNode("UTF16", 0);
       break;
@@ -2276,7 +2279,7 @@ bool TraverseDecl(Decl *D) {
     TRAIT(BTT_IsConvertibleTo, "IsConvertibleTo")
     TRAIT(BTT_IsSame, "IsSame")
     TRAIT(BTT_TypeCompatible, "TypeCompatible")
-    //TRAIT(BTT_IsAssignable, "IsAssignable") // not found in LLVM 3.6
+    TRAIT(BTT_IsAssignable, "IsAssignable")
     TRAIT(BTT_IsNothrowAssignable, "IsNothrowAssignable")
     TRAIT(BTT_IsTriviallyAssignable, "IsTriviallyAssignable")
     TRAIT(TT_IsConstructible, "IsConstructible")
