@@ -75,9 +75,6 @@ endmodule
 
 module COMPAT
      imports COMPAT-SYNTAX
-     imports C-TYPING-SYNTAX
-     imports C-CONFIGURATION
-     imports K-REFLECTION
      imports BOOL
      imports MAP
      imports STRING
@@ -95,14 +92,8 @@ module COMPAT
      rule idToString(Identifier(S:String)) => S
      rule idToString(#NoName) => "<anonymous>"
      rule idToString(#NoName(_)) => "<anonymous>"
-     rule idToString(vararg(N::Int)) => "<vararg " +String Int2String(N) +String ">"
-     rule idToString(X:UnnamedCId) => #idToString(X, #configuration)
+     rule idToString(unnamed(_, _)) => "<anonymous>"
      rule idToString(_::CId) => "<unknown>" [owise]
-
-     syntax String ::= #idToString(CId, K) [function]
-     rule #idToString(X::UnnamedCId, <generatedTop>... <unnamed-locs>... X |-> CabsLoc(File::String, _, Line::Int, _, _) ...</unnamed-locs> ...</generatedTop>)
-          => "<anonymous at " +String File +String ":" +String Int2String(Line) +String ">"
-     rule #idToString(_, _) => "<unknown>" [owise]
 
      rule firstChar(S::String) => substrString(S, 0, 1)
           requires lengthString(S) >=Int 1

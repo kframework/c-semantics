@@ -1,4 +1,4 @@
- Type of lvalue (struct <anonymous at effective_type_2.c:4>) not compatible with the effective type of the object being accessed (struct <anonymous at effective_type_2.c:3>).
+ Type of lvalue (struct <anonymous>) not compatible with the effective type of the object being accessed (struct <anonymous>).
    at f(effective_type_2.c:7:3)
    by main(effective_type_2.c:15:3)
   Undefined behavior (UB-EIO10).

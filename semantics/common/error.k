@@ -1,6 +1,5 @@
 module ERROR-SYNTAX
      imports LIST
-     imports MAP
      imports STRING-SYNTAX
      imports COMMON-SORTS
 
@@ -9,7 +8,7 @@ module ERROR-SYNTAX
 
      syntax ErrorTrace ::= errorTrace(String, String)
 
-     syntax K ::= reportError(ErrorMsg, tu: String, Scope, CabsLoc, Map, K) [function, hook(C_SEMANTICS.error)]
+     syntax K ::= reportError(ErrorMsg, Scope, CabsLoc, K) [function, hook(C_SEMANTICS.error)]
 
      syntax ErrorCategory ::= Undef(LanguageLinkage) | Unspec(LanguageLinkage) | Impl(LanguageLinkage) | Cond() | Ill() | Drafting(LanguageLinkage) | Constraint() | Syntax(LanguageLinkage)
      syntax KItem ::= EXIT(ErrorMsg)

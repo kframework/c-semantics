@@ -224,8 +224,7 @@ module C-MEMORY-WRITING
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-                    orBool isBitfieldType(T))
-               andBool notBool hasUnionMarker(Loc)
+               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
                andBool (V >=Int 0)
           [structural]
      rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)

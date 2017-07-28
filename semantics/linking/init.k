@@ -248,7 +248,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs1:Map </tags>
-               <unnamed-locs> Locs1:Map </unnamed-locs>
                <main-tu> Main1:Set </main-tu>
                <dynamic-init> Init1:K </dynamic-init>
 
@@ -274,7 +273,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs2:Map </tags>
-               <unnamed-locs> Locs2:Map </unnamed-locs>
                <main-tu> Main2:Set </main-tu>
                <dynamic-init> Init2:K </dynamic-init>
 
@@ -301,7 +299,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> updateMap(Structs1, Structs2) </tags>
-               <unnamed-locs> updateMap(Locs1, Locs2) </unnamed-locs>
                <main-tu> Main1 Main2 </main-tu>
                <dynamic-init> Init1 ~> Init2:K </dynamic-init>
 

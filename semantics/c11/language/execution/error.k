@@ -1,12 +1,11 @@
 module C-EXECUTION-ERROR-SYNTAX
      imports LIST
-     imports MAP
      imports STRING-SYNTAX
      imports COMMON-SORTS
      imports C-DYNAMIC-SORTS
      imports ERROR-SYNTAX
 
-     syntax String ::= printStackTrace(List, String, Scope, CabsLoc, Map) [function, hook(C_SEMANTICS.printStackTrace)]
+     syntax String ::= printStackTrace(List, CabsLoc, Scope) [function, hook(C_SEMANTICS.printStackTrace)]
 endmodule
 
 module C-EXECUTION-ERROR
@@ -22,14 +21,12 @@ module C-EXECUTION-ERROR
 
      rule assert(B::Bool, E::Error) => #if B #then .K #else E #fi [macro]
 
-     rule <k> EXIT(E:ErrorMsg) => reportError(E, Tu, S, Loc, Env, L) ~> HALT ...</k>
-          <curr-tu> Tu::String </curr-tu>
+     rule <k> EXIT(E:ErrorMsg) => reportError(E, S, Loc, L) ~> HALT ...</k>
           <curr-scope> S::Scope </curr-scope>
           <curr-program-loc> Loc::CabsLoc </curr-program-loc>
           <call-stack> L::List </call-stack>
-          <env> Env::Map </env>
 
      // this rule prevents the open source semantics from getting stuck on this function
-     rule printStackTrace(_, _, _, _, _) => ""
+     rule printStackTrace(_, _, _) => ""
 
 endmodule
