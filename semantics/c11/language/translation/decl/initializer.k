@@ -411,9 +411,9 @@ module C-DECL-INITIALIZER
      // fixme unsafe, might have started to initialize other things
      rule <k> initFromStructRHS(K':K, t(_, _, structType(S::TagId))) => .K ...</k>
           <curr-subobject>
-               ListItem(findStruct(t(_, _, structType(S::TagId))))
+               (ListItem(findStruct(t(_, _, structType(S::TagId))))
+               => ListItem(next))
                ListItem(ncle(K:K, t(_, _, structType(S::TagId))))
-               => ListItem(next)
           ...</curr-subobject>
           <incomplete-length>
                N:Int => maxInt(N, getTopArrayUse(K))
