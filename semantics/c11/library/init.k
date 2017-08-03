@@ -159,10 +159,13 @@ module LIBC-INIT
           (id("__va_inc") |-> fun(ptr(void), va_list)
           (id("__va_start") |-> fun(void, ptr(va_list), ptr(void))
 
+          // errno
+          (id("errno") |-> type(int)
+
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => struct("__typeref_mtx_t")
      rule jmp_buf => ptr(cfg:ptrdiffut)

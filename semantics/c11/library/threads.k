@@ -110,7 +110,7 @@ module LIBC-THREADS
                <thread-id> ThId </thread-id>
           ...</thread> => .Bag)
           requires (ThId in_keys(Status))
-               andThenBool (Status[ThId] =/=K threadJoined)
+               andBool (Status[ThId] =/=K threadJoined)
                andBool ThId =/=K ThisThread
           [ndthread]
      rule <k> (.K => UNDEF("THREADS1", "'thrd_join' or 'pthread_join' called for an invalid or already-joined thread."))
@@ -121,7 +121,7 @@ module LIBC-THREADS
           </thread-status>
           <thread-id> ThisThread:Int </thread-id>
           requires notBool ((ThId in_keys(Status))
-               andThenBool (Status[ThId] =/=K threadJoined)
+               andBool (Status[ThId] =/=K threadJoined)
                andBool ThId =/=K ThisThread)
           [ndthread]
 

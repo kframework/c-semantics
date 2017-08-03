@@ -52,9 +52,8 @@ module LIBC-STDIO
           <fid> FD </fid>
           <uri> Path </uri>
           [structural]
-     rule <k> fsetpos(V:RValue, _) => eof ...</k>
+     rule <k> fsetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
           [structural]
@@ -85,9 +84,8 @@ module LIBC-STDIO
           <last-op> Op:LastFileOp => flushOp </last-op>
           requires isWritable(Mode) andBool (Op =/=K inputOp)
           [structural]
-     rule <k> fflush(V:RValue) => eof ...</k>
+     rule <k> fflush(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
      rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an input/output stream on which the most recent operation was input."))
@@ -151,9 +149,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> fgetpos(V:RValue, _) => eof ...</k>
+     rule <k> fgetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
           [structural]
@@ -197,7 +194,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
 
@@ -240,7 +237,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
      rule str(S::String) ~> fgetc(_)
@@ -312,9 +309,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> fileno(V:RValue) => eof ...</k>
+     rule <k> fileno(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool notBool (getFD(V) in OpenFiles)
           [structural]
@@ -423,8 +419,8 @@ module LIBC-STDIO
           requires notBool (isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode))
           [structural]
 
-     syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")" [strict(4)]
-     rule <k> fopen'(Base::SymBase, Filename::String, Mode::String, tv(FD:Int, _))
+     syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")"
+     rule <k> fopen'(Base::SymBase, Filename::String, Mode::String, FD:Int)
                => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
                ~> & fileLVal(Base)
           ...</k>
@@ -439,6 +435,11 @@ module LIBC-STDIO
                )
           ...</files>
           [structural]
+
+     rule <k> fopen'(_, _, _, Err:IOError) 
+              => setErrno(Err)
+              ~> tv(NullPointer, utype(pointerType(type(file)))) ...</k>
+          
 
      rule builtin("setbuf", FDPtr::RValue, tv(Loc:SymLoc, _) #as BufPtr::RValue)
           => trapBuf(Loc, bufSiz)
@@ -495,9 +496,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> setbuf(V:RValue, _, _) => eof ...</k>
+     rule <k> setbuf(V:RValue, _, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool notBool (getFD(V) in OpenFiles)
           [structural]
@@ -527,7 +527,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
      rule <k> fread(_, _, _, V:RValue) => eof ...</k>
@@ -614,7 +614,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fprintf(V:RValue, _) => eof ...</k>
@@ -638,7 +638,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fwrite(_, _, V:RValue) => eof ...</k>
@@ -840,7 +840,7 @@ module LIBC-STDIO
      rule <k> fscanf'(FD::FauxFD, _) => eof ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
 
@@ -1617,6 +1617,11 @@ module LIBC-STDIO
           [structural]
 
      rule <k> formatter'(_) ...</k>
+          <format> ListItem("*") => .List ...</format>
+          <format-field-width> "" => "*" </format-field-width>
+          <format-state> "%" </format-state>
+
+     rule <k> formatter'(_) ...</k>
           <format> ListItem(".") => .List ...</format>
           <format-state> "%" => "%." </format-state>
           [structural]
@@ -1633,17 +1638,20 @@ module LIBC-STDIO
           <format-precision> P:String </format-precision>
           <format-state> "%." => "%" </format-state>
           requires P =/=K ""
-               andBool notBool isDigit(C, 10)
+               andBool notBool isDigit(C, 10) andBool notBool C ==K "*"
           [structural]
 
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
-          <format-precision> P:String => "0" </format-precision>
+          <format-precision> "" => "0" </format-precision>
           <format-state> "%." => "%" </format-state>
-          requires P ==K ""
-               andBool notBool isDigit(C, 10)
+          requires notBool isDigit(C, 10) andBool notBool C ==K "*"
           [structural]
 
+     rule <k> formatter'(_) ...</k>
+          <format> ListItem("*") => .List ...</format>
+          <format-precision> "" => "*" </format-precision>
+          <format-state> "%." => "%" </format-state>
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
@@ -2024,18 +2032,20 @@ module LIBC-STDIO
           <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString'(Loc))
+          <k> (.K => getString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
                ~> formatter'(_)
           ...</k>
           <format-length> "" </format-length>
+          <format-precision> P::String </format-precision>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
      rule [format-%ls]:
-          <k> (.K => getWString'(Loc))
+          <k> (.K => getWString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
                ~> formatter'(_)
           ...</k>
           <format-length> "l" </format-length>
+          <format-precision> P::String </format-precision>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
@@ -2120,9 +2130,28 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= "formatter-next" "(" List ")"
-     rule formatter-next(ListItem(V:RValue) Args:List)
-          => formatter-arg(nextvarg(V, getFormatType), Args)
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-arg(nextvarg(V, getFormatType), Args)
+          ...</k>
+          <format-field-width> W::String </format-field-width>
+          <format-precision> P::String </format-precision>
+          requires W =/=String "*" andBool P =/=String "*"
           [structural]
+
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-width(nextvarg(V, type(int)), Args)
+          ...</k>
+          <format-field-width> "*" </format-field-width>
+          [structural]
+
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-prec(nextvarg(V, type(int)), Args)
+          ...</k>
+          <format-field-width> W::String </format-field-width>
+          <format-precision> "*" </format-precision>
+          requires W =/=String "*"
+          [structural]
+
 
      syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
      rule <k> formatter-arg(tv(V::CValue, _), Args:List)
@@ -2130,6 +2159,20 @@ module LIBC-STDIO
           ...</k>
           <format-arg> _ => V </format-arg>
           [structural]
+     syntax KItem ::= "formatter-prec" "(" K "," List ")" [strict(1)]
+     rule <k> formatter-prec(tv(V:Int, _), Args:List)
+               => formatter-next(Args)
+          ...</k>
+          <format-precision> _ => Int2String(V) </format-precision>
+          [structural]
+     syntax KItem ::= "formatter-width" "(" K "," List ")" [strict(1)]
+     rule <k> formatter-width(tv(V:Int, _), Args:List)
+               => formatter-next(Args)
+          ...</k>
+          <format-field-width> _ => Int2String(V) </format-field-width>
+          [structural]
+
+
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
      rule <k> nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T)) ...</k>
@@ -2137,7 +2180,7 @@ module LIBC-STDIO
           <format-length> Length:String </format-length>
           requires utype(T) ==Type T'
                orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
-               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T'))
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T))
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
@@ -2148,7 +2191,7 @@ module LIBC-STDIO
           <format-length> Length:String </format-length>
           requires notBool (utype(T) ==Type T'
                orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
-               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T')))
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T)))
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}

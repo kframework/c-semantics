@@ -26,8 +26,8 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= getString(K) [strict]
                     | getWString(K) [strict]
                     | getBytes(K, Int) [strict(1)]
-     syntax KItem ::= "getString'" "(" SymLoc ")" [function]
-                    | "getWString'" "(" SymLoc ")" [function]
+     syntax KItem ::= "getString'" "(" SymLoc "," K ")" [function]
+                    | "getWString'" "(" SymLoc "," K ")" [function]
 
      syntax RValue ::= str(String)
 
@@ -41,22 +41,27 @@ module LIBC-IO-SYNTAX
                          | "seekOp"
                          | "inputOp"
 
+     syntax KItem ::= setErrno(IOError) [function]
+
 endmodule
 
 module LIBC-IO
+     imports LIBC-IO-SYNTAX
+     imports C-CONFIGURATION
+     imports INT
+     imports K-IO
+     imports STRING
      imports BITS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-CONFIGURATION
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-OS-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports K-IO
-     imports LIBC-IO-SYNTAX
      imports LIBC-SYNTAX
-     imports STRING
 
      rule writeFD(FD::FD, N:Int) => writeFD(FD, chrChar(N %Int 256))
           [structural]
@@ -308,52 +313,68 @@ module LIBC-IO
           <done> Sent::String => Sent +String S </done>
           [structural]
 
-     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc)
+     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc, .K)
           [structural]
 
-     rule getString'(Loc::SymLoc) => getString'(Loc, "")
+     rule getString'(Loc::SymLoc, I:K) => getString'(Loc, I, "")
 
-     syntax KItem ::= "getString'" "(" SymLoc "," String ")"
-     rule (.K => read(Loc, type(unsigned-char)))
-          ~> getString'(Loc::SymLoc => Loc +bytes 1, _)
+     syntax KItem ::= "getString'" "(" SymLoc "," K "," String ")"
+     rule (.K => reval(instantiate(Loc, type(unsigned-char))))
+          ~> getString'(Loc::SymLoc => Loc +bytes 1, I:Int => I -Int 1, _)
+          requires I >Int 0
           [structural]
-     rule tv(C:Int, _) ~> getString'(Loc::SymLoc, S::String)
-          => getString'(Loc, S +String chrChar(C))
+     rule (.K => reval(instantiate(Loc, type(unsigned-char))))
+          ~> getString'(Loc::SymLoc => Loc +bytes 1, .K, _)
+          [structural]
+
+     rule reval(tv(C:Int, _)) ~> getString'(Loc::SymLoc, I:K, S::String)
+          => getString'(Loc, I, S +String chrChar(C))
           requires C =/=Int 0
           [structural]
-     rule tv(0, _) ~> getString'(_, S::String)
+     rule reval(tv(0, _)) ~> getString'(_, _, S::String)
           => str(S)
           [structural]
-
-     rule getWString(tv(Loc::SymLoc, _)) => getWString'(Loc)
+     rule getString'(_, I:Int, S::String) => str(S)
+          requires I <=Int 0
           [structural]
 
-     rule getWString'(Loc::SymLoc) => getWString'(Loc, "")
-
-     syntax KItem ::= "getWString'" "(" SymLoc "," String ")"
-     rule (.K => read(Loc, type(cfg:wcharut)))
-          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), _)
+     rule getWString(tv(Loc::SymLoc, _)) => getWString'(Loc, .K)
           [structural]
-     rule tv(C:Int, _) ~> getWString'(Loc::SymLoc, S::String)
-          => getWString'(Loc, S +String chrChar(C))
+
+     rule getWString'(Loc::SymLoc, I:K) => getWString'(Loc, I, "")
+
+     syntax KItem ::= "getWString'" "(" SymLoc "," K "," String ")"
+     rule (.K => reval(instantiate(Loc, type(cfg:wcharut))))
+          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), I:Int => I -Int byteSizeofType(type(cfg:wcharut)), _)
+          requires I >Int 0
+          [structural]
+     rule (.K => reval(instantiate(Loc, type(cfg:wcharut))))
+          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), .K, _)
+          [structural]
+
+     rule reval(tv(C:Int, _)) ~> getWString'(Loc::SymLoc, I:K, S::String)
+          => getWString'(Loc, I, S +String chrChar(C))
           requires C =/=Int 0
           [structural]
-     rule tv(0, _) ~> getWString'(_, S::String)
+     rule reval(tv(0, _)) ~> getWString'(_, _, S::String)
           => str(S)
+          [structural]
+     rule getWString'(_, I:Int, S::String) => str(S)
+          requires I <=Int 0
           [structural]
 
      rule getBytes(tv(Loc:SymLoc, _), N::Int) => getBytes'(Loc, N, "")
           [structural]
 
      syntax KItem ::= "getBytes'" "(" SymLoc "," Int "," String ")"
-     rule (.K => read(Loc, type(unsigned-char)))
+     rule (.K => reval(instantiate(Loc, type(unsigned-char))))
           ~> getBytes'(Loc::SymLoc => Loc +bytes 1, N::Int => N -Int 1, _)
           requires N >Int 0
           [structural]
-     rule tv(B:Int, _) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
+     rule reval(tv(B:Int, _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(B))
           [structural]
-     rule tv(encodedValue(B:SymLoc, From::Int, To::Int), _) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
+     rule reval(tv(encodedValue(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(bitsValue(pointerToInt(cfg:pointerToInt(B, utype(int))), From, To)))
           [structural]
      rule getBytes'(_, 0, S::String) => str(S)
@@ -393,6 +414,9 @@ module LIBC-IO
           +String "auto(" +String Int2String(Th) +String ")"
 
      rule bufSiz => 8192
+
+     rule getErrno(#unknownIOError(I::Int)) => I
+     rule setErrno(Err:IOError) => Computation(Identifier("errno") := tv(getErrno(Err), utype(int)))
 
 endmodule
 

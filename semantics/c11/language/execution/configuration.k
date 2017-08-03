@@ -194,7 +194,6 @@ module C-CONFIGURATION
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
-     <errno> 0 </errno>
 </library>
 
 
