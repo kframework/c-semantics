@@ -1496,6 +1496,7 @@ module LIBC-STDIO
      rule [format-reset]:
           <k> formatter'(_) ...</k>
           <format-pad-zero> _ => false </format-pad-zero>
+          <format-alt-form> _ => false </format-alt-form>
           <format-field-width> _ => "" </format-field-width>
           <format-precision> _ => "" </format-precision>
           <format-length> _ => "" </format-length>
@@ -1603,6 +1604,12 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           [structural]
      rule <k> formatter'(_) ...</k>
+          <format-alt-form> _ => true </format-alt-form>
+          <format-field-width> "" </format-field-width>
+          <format> ListItem("#") => .List ...</format>
+          <format-state> "%" </format-state>
+          [structural]
+     rule <k> formatter'(_) ...</k>
           <format-field-width> W:String => W +String "0" </format-field-width>
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
@@ -1653,6 +1660,33 @@ module LIBC-STDIO
           <format-precision> "" => "*" </format-precision>
           <format-state> "%." => "%" </format-state>
 
+     rule <k> (.K => UNDEF("STDIO10",
+               "'printf': Invalid conversion specifier with '#' flag."))
+              ~> formatter'(_)
+          ...</k>
+          <format-alt-form> true </format-alt-form>
+          <format-state> State::String </format-state>
+          requires State ==String "%d"
+               orBool State ==String "%i"
+               orBool State ==String "%u"
+               orBool State ==String "%c"
+               orBool State ==String "%s"
+               orBool State ==String "%p"
+               orBool State ==String "%n"
+               orBool State ==String "%%"
+
+     rule <k> (.K => UNDEF("STDIO11",
+               "'printf': Invalid conversion specifier with '0' flag."))
+              ~> formatter'(_)
+          ...</k>
+          <format-pad-zero> true </format-pad-zero>
+          <format-state> State::String </format-state>
+          requires State ==String "%c"
+               orBool State ==String "%s"
+               orBool State ==String "%p"
+               orBool State ==String "%n"
+               orBool State ==String "%%"
+
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
      \item[\texttt{d},\texttt{i}]
@@ -1665,22 +1699,13 @@ module LIBC-STDIO
      \end{description}
      */
 
-     rule <k> formatter'(_) ...</k>
-          <format> ListItem(S:String) ...</format>
-          <format-precision> P:String => "1" </format-precision>
-          <format-state> "%" </format-state>
-          requires P ==K ""
-               andBool (S ==String "d" orBool S ==String "i" orBool S ==String "u"
-                        orBool S ==String "x" orBool S ==String "X"
-                        orBool S ==String "o")
-          [structural]
-
      rule [format-%d-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%d" </format-state>
-          requires P =/=K "" andBool (S ==String "d" orBool S ==String "i")
+          requires S ==String "d" orBool S ==String "i"
           [structural]
 
      rule <k> formatter'(_) ...</k>
@@ -1696,11 +1721,12 @@ module LIBC-STDIO
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
+          <format-alt-form> false </format-alt-form>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
-                                             Z,
+                                             Z, "",
                                              String2Int(W)))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
@@ -1723,21 +1749,22 @@ module LIBC-STDIO
      rule [format-%o-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("o") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%o" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%o]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 8),
                                              String2Int(P),
-                                             Z,
+                                             Z, #if Hash #then "0" #else "" #fi,
                                              String2Int(W)))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
@@ -1745,21 +1772,22 @@ module LIBC-STDIO
      rule [format-%u-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("u") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%u" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%u]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
-                                             Z,
+                                             Z, "",
                                              String2Int(W)))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
@@ -1767,21 +1795,22 @@ module LIBC-STDIO
      rule [format-%x-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("x") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%x" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%x]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(P),
-                                             Z,
+                                             Z, #if Hash #then "0x" #else "" #fi,
                                              String2Int(W)))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
@@ -1789,22 +1818,23 @@ module LIBC-STDIO
      rule [format-%X-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("X") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%X" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%X]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(toUpperCase(Base2String(D, 16)),
+                        toUpperCase(formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(P),
-                                             Z,
-                                             String2Int(W)))
+                                             Z, #if Hash #then "0X" #else "" #fi,
+                                             String2Int(W))))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -1835,6 +1865,7 @@ module LIBC-STDIO
 
      //TODO(traiansf): missing formatting for long double
      //TODO(traiansf): width specs for floats are not working
+     //TODO(dwightguth): support alternate form
      rule [format-%f-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("f") => .List ...</format>
@@ -1992,6 +2023,8 @@ module LIBC-STDIO
      rule [format-%c]:
           <k> formatter'(_) ...</k>
           <format-arg> C:Int => .K </format-arg>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-result>...
                .List => ListItem(chrChar(((C:Int %Int 256) +Int 256)
                     %Int 256))
@@ -2037,6 +2070,8 @@ module LIBC-STDIO
           ...</k>
           <format-length> "" </format-length>
           <format-precision> P::String </format-precision>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
@@ -2046,6 +2081,8 @@ module LIBC-STDIO
           ...</k>
           <format-length> "l" </format-length>
           <format-precision> P::String </format-precision>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
@@ -2075,14 +2112,15 @@ module LIBC-STDIO
      rule [format-%p]:
           <k> formatter'(_) ...</k>
           <format-arg> Loc:SymLoc => .K </format-arg>
-          <format-precision> P:String </format-precision>
-          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-precision> "" </format-precision>
+          <format-alt-form> false </format-alt-form>
+          <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth("0x" +String Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
-                                             String2Int(P),
-                                             Z,
+                        formatPrecisionWidth(Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
+                                             1,
+                                             false, "0x",
                                              String2Int(W)))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
@@ -2109,10 +2147,18 @@ module LIBC-STDIO
      rule [format-%%]:
           <k> formatter'(_) ...</k>
           <format> ListItem("%") => .List ...</format>
+          <format-state> "%" => "%%" </format-state>
+          [structural]
+     rule <k> formatter'(_) ...</k>
+          <format-field-width> "" </format-field-width>
+          <format-alt-form> false </format-alt-form>
+          <format-pad-zero> false </format-pad-zero>
+          <format-length> "" </format-length>
+          <format-precision> "" </format-precision>
           <format-result>...
                .List => ListItem("%")
           </format-result>
-          <format-state> "%" => "reset" </format-state>
+          <format-state> "%%" => "reset" </format-state>
           [structural]
 
      rule [format-%l]:
@@ -2280,26 +2326,30 @@ module LIBC-STDIO
      rule pad'(X::String, W::Int, _) => X
           requires W ==Int 0
 
-    syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," Int ")" [function]
-                    | "formatPrecisionWidth'" "(" String "," Int "," Bool "," Int ")" [function]
-                    | "formatPrecisionWidth''" "(" String "," Int "," Int "," String ")" [function]
+    syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")" [function]
+                    | "formatPrecisionWidth'" "(" String "," Int "," Bool "," String "," Int ")" [function]
+                    | "formatPrecisionWidth''" "(" String "," Int "," String "," Int ")" [function]
 
-    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth'(V, P, Z, W)
-         requires V =/=String "0" orBool P =/=Int 0
-    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth'("", P, Z, W)
-         requires V ==String "0" andBool P ==Int 0
+    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, Prefix::String, W::Int)
+         => formatPrecisionWidth'(V, P, #if W <Int 0 #then false #else Z #fi, Prefix, W)
+         requires V =/=String "0" orBool P =/=Int 0 orBool Prefix ==String "0"
+    rule formatPrecisionWidth("0", 0, Z::Bool, Prefix::String, W::Int)
+         => formatPrecisionWidth'("", 0, #if W <Int 0 #then false #else Z #fi, Prefix, W)
+         requires Prefix =/=String "0"
 
-    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth''(V, P, W, "0")
-         requires Z ==Bool true
-    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth''(V, P, W, " ")
-         requires Z ==Bool false
+    rule formatPrecisionWidth'(V::String, P::Int, true, Prefix::String, W::Int)
+         => formatPrecisionWidth''(V, maxInt(P, W -Int lengthString(Prefix)), Prefix, 0)
+    rule formatPrecisionWidth'(V::String, P::Int, false, Prefix::String, W::Int)
+         => formatPrecisionWidth''(V, P, Prefix, W)
 
-    rule formatPrecisionWidth''(V::String, P::Int, W::Int, PZ::String)
-         => pad(pad(V, P, "0"), W, PZ)
+    rule formatPrecisionWidth''(V::String, P::Int, "0", W::Int)
+         => pad(#fun(V2::String => #if firstChar(V2) ==String "0" #then V2 #else "0" +String V2 #fi)(pad(V, P, "0")), W, " ")
+    rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
+         => pad(pad(V, P, "0"), W, " ")
+         requires ((V ==String "0" orBool V ==String "") andBool (Prefix ==String "0x" orBool Prefix ==String "0X")) orBool Prefix ==String ""
+    rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
+         => pad(Prefix +String pad(V, P, "0"), W, " ")
+         requires V =/=String "0" andBool V =/=String "" andBool (Prefix ==String "0x" orBool Prefix ==String "0X")
 
      syntax Int ::= signInt(Int) [function]
      rule signInt(X::Int) => X /Int absInt(X)
