@@ -10,7 +10,7 @@ module CPP-DECL-INITIALIZER-SYNTAX
                    | figureConstructorInit(base: Expr, destT: CPPTypeExpr, init: Init, constructorType: Bool)
      syntax Expr ::= valueInit(base: Expr, CPPType)
                    | defaultConstructorInit(base: Expr, CPPTypeExpr, constructorType: Bool)
-                   | zeroInit(LVal, CPPType)
+                   | zeroInit(base: Expr, type: CPPType)
      syntax KResult ::= functionDef(SymBase, Stmt)
      syntax KResult ::= "ill-formed"
      syntax TypeMap ::= stripExplicit(TypeMap) [function]
@@ -51,6 +51,7 @@ module CPP-DECL-INITIALIZER
 
      context #figureInit(... base: HOLE:Expr) [result(LVal)]
      context #valueInit(... base: HOLE:Expr) [result(LVal)]
+     context zeroInit(... base: HOLE:Expr) [result(LVal)]
      context defaultInit(... base: HOLE:Expr) [result(LVal)]
 
      context #figureInit(... srcT: HOLE:TypeExpr => typeof(HOLE)) [result(CPPType)]
@@ -62,6 +63,29 @@ module CPP-DECL-INITIALIZER
 
      // 8.5:6.1
      rule zeroInit(Base:LVal, T:CPPScalarType) => le(Base, trace(Base), T) := interpret(prv(0, noTrace, T))
+
+     // 8.5:6.2
+     // TODO do not forget to initialize base class subobjects and padding
+     rule <k> zeroInit(Base:LVal, t(_, _, classType(C::Class)) #as T:CPPClassType) => zeroInitClass(Base, T, Bases, NSDM, Inits, Base) ...</k>
+          <class-id> C </class-id>
+          <base-classes> Bases::List </base-classes>
+          <non-static-data-members> NSDM::List </non-static-data-members>
+          <initializers> Inits::Map </initializers>
+
+     syntax KItem ::= zeroInitClass(LVal, CPPClassType, bases: List, nsdm: List, inits: Map, init: Expr)
+     syntax KItem ::= zeroInitBaseClass(base: LVal, baseType: CPPClassType)
+
+     rule zeroInitBaseClass(Base:LVal, B:CPPClassType) => zeroInit(le(getBaseClassSubobject(Base, B), noTrace, B), B)
+
+     rule (.K => zeroInitBaseClass(Base, type(classType(BaseCl::Class))))
+          ~> zeroInitClass(Base:LVal, _, (ListItem(BaseCl::Class) => .List) _, _, _, _)
+
+    rule (.K => zeroInit(Base . no-template Name(C, X), T))
+          ~> zeroInitClass(Base:LVal, t(_, _, classType(C::Class)), .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _)
+
+     rule (V:Val => .K) ~> zeroInitClass(_, _, _, _, _, (E::Expr => compoundInit(E, V)))
+
+     rule zeroInitClass(Base:LVal, T::CPPClassType, .List, .List, _, E::Expr) => E
 
      // 8.5:12
      rule #figureInit(Base:LVal, DestT::CPPType, _, NoInit(), _, _, IsConstructor::ConstructorType)
@@ -83,10 +107,13 @@ module CPP-DECL-INITIALIZER
                orBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`)) 
                orBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`))
 
+     syntax Expr ::= strictCompoundInit(Expr, Expr) [strict]
+     rule strictCompoundInit(V1:Val, V2:Val) => compoundInit(V1, V2)
+
      // 8.5:8.2 (class without user-provided or deleted default constructor)
      rule #valueInit(Base:LVal, T:CPPClassType, IsConstructor::ConstructorType) 
           => #if hasConstructorThat(T, #klabel(`isNonTrivialDefaultConstructor`)) #then
-               compoundInit(zeroInit(Base, T), defaultInit(Base, T, IsConstructor))
+               strictCompoundInit(zeroInit(Base, T), defaultInit(Base, T, IsConstructor))
           #else
                zeroInit(Base, T)
           #fi
