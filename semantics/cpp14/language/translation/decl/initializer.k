@@ -133,6 +133,7 @@ module CPP-DECL-INITIALIZER
           requires Type ==K DirectInit() orBool (isCPPClassType(SrcT) andBool isBaseClassOf(DestT, {SrcT}:>CPPClassType))
      rule #figureInit(Base:LVal, t(... st: classType(DestC::Class)), DirectInit(), ExpressionList(L::List), _, _, IsConstructor::ConstructorType)
           => constructorInit(Base, DirectInit(), DestC, L, IsConstructor)
+          requires size(L) >Int 0
 
 
      // expression initializer, non-class type
