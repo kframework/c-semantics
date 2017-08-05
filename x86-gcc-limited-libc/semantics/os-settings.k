@@ -40,7 +40,7 @@ module C-OS-SETTINGS
   rule getErrno(#ENOSYS) => 38
   rule getErrno(#ENOTEMPTY) => 39
   rule getErrno(#ELOOP) => 40
-  rule getErrno(#EWOULDBLOCK) => getErrno(EAGAIN)
+  rule getErrno(#EWOULDBLOCK) => getErrno(#EAGAIN)
   rule getErrno(#EOVERFLOW) => 75
   rule getErrno(#ENOTSOCK) => 88
   rule getErrno(#EDESTADDRREQ) => 89
