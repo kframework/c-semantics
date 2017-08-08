@@ -4,6 +4,7 @@ module CPP-DECL-CLASS-SYNTAX
      imports SET
      imports COMMON-SORTS
      imports CPP-SORTS
+     imports CPP-CLASS-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
      imports SYMLOC-SORTS
@@ -29,6 +30,8 @@ module CPP-DECL-CLASS-SYNTAX
                    | hasConstructorThat(CPPClassType, K) [function]
                    | hasDestructorThat(CPPClassType, K) [function]
      syntax Bool ::= isPODLayoutType(CPPType) [function]
+     syntax List ::= getNonStaticDataMembers(ClassInfo) [function]
+     syntax Map ::= getDataMembersInitializers(ClassInfo) [function]
 endmodule
 
 module CPP-DECL-CLASS
@@ -53,6 +56,7 @@ module CPP-DECL-CLASS
      imports CPP-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-TRANSLATION-NAME-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -79,13 +83,13 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
+          <ntypes> NT::Map => NT[X <- T] </ntypes>
      rule <k> TypeDecl(t(_, _, classType(C::Class :: Class(ClassKey::Tag, X::CId, _))) #as T::CPPType) => .K ...</k>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>
+          <ctypes> CT::Map => CT[X <- T] </ctypes>
 
      rule ClassDef(T:ClassKey, X::CId, NoNNS(), Bases::List, Members::List, IsAnon:Bool) => classContext(declareClassName(T, X, true), Bases, Members)
           requires notBool IsAnon orBool T =/=K Union()
@@ -148,12 +152,12 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, ClassKey <- T] </ntypes>
+          <ntypes> NT::Map => NT[X <- T] </ntypes>
           (.Bag => <class>...
             <class-id> C </class-id>
             <class-type> ClassKey </class-type>
             // injected class name
-            <ctypes> X |-> (ClassKey |-> T) </ctypes>
+            <ctypes> X |-> T </ctypes>
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
@@ -173,12 +177,12 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           (<class-id> C2 </class-id>
-          <ctypes> CT::Map => CT[X, ClassKey <- T] </ctypes>)
+          <ctypes> CT::Map => CT[X <- T] </ctypes>)
           (.Bag => <class>...
             <class-id> C </class-id>
             <class-type> ClassKey </class-type>
             // injected class name
-            <ctypes> X |-> (ClassKey |-> T) </ctypes>
+            <ctypes> X |-> T </ctypes>
             <access> X |-> Public() </access>
             <access-specifier> getDefaultAccessType(ClassKey) </access-specifier>
           ...</class>)
@@ -196,7 +200,8 @@ module CPP-DECL-CLASS
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... ConstructorId(X) |-> _ DestructorId(X) |-> _ ...</cenv>
+          <cenv>... ConstructorId(X) |-> M::TypeMap DestructorId(X) |-> _ ...</cenv>
+          <is-aggregate> B:Bool => B andBool notBool some(M, #klabel(`isUserProvidedConstructor`)) andBool notBool hasVirtualMembers(type(classType(C))) </is-aggregate>
 
      // TODO(dwightguth): implicit exception spec
      rule <k> (.K => AccessSpec(Public()) ~> Specifier(Inline(), 
@@ -248,20 +253,25 @@ module CPP-DECL-CLASS
      rule <k> writeVTables => .K ...</k>
           <elab>... .K => writeVTables </elab>
 
-     rule <k> Constructor(Ctor::List, S::Stmt) => figureConstruct(Ctor, Bases, NSDM, S, writeVTables, false) ...</k>
+     rule <k> Constructor(Ctor::List, S::Stmt) => figureConstruct(Ctor, .Map, Bases, NSDM, S, writeVTables, false) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
           <base-classes> Bases::List </base-classes>
           <non-static-data-members> NSDM::List </non-static-data-members>
-          
+
      rule <k> Defaulted() => Constructor(.List, BlockStmt(!N:Int, .List)) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
 
-     syntax Stmt ::= figureConstruct(ctors: List, bases: List, dataMembers: List, body: Stmt, result: K, hasNonConstVariantMember: Bool)
+     syntax Stmt ::= figureConstruct(ctors: List, processedCtors: Map, bases: List, dataMembers: List, body: Stmt, result: K, hasNonConstVariantMember: Bool)
+
+     rule figureConstruct(... ctors: (ListItem(ConstructorMember(X::CId, I::Init)) => .List) _, processedCtors: M::Map => M[X <- I])
+     context figureConstruct(... ctors: ListItem(ConstructorBase(HOLE:AType, _, _, _)) _)
+     rule figureConstruct(... ctors: (ListItem(ConstructorBase(t(... st: classType(C::Class)), false, false, I::Init)) => .List) _, processedCtors: M::Map => M[C <- I])
+
      // 12.1:4
-     rule <k> figureConstruct(_, .List, ListItem(kpair(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
+     rule <k> figureConstruct(.List, _, .List, ListItem(kpair(X::CId, T::CPPType)) _, _, _, _) => Deleted() ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tu> Tu::String </curr-tu>
@@ -271,7 +281,7 @@ module CPP-DECL-CLASS
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
      // 12.1:4.6-4.7
-     rule <k> (.K => checkCtorAndDtor(.K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
+     rule <k> (.K => checkCtorAndDtor(MemInit[X] orDefault .K, X, T, true, I, getMostDerivedArrayElement(T))) ~> figureConstruct(.List, MemInit::Map, .List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _, _, _) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tu> Tu::String </curr-tu>
@@ -280,7 +290,14 @@ module CPP-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           requires notBool isDeletedDefaultConstructor(X, T, C, FuncT, VM, I)
-     rule (.K => checkCtorAndDtor(.K, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, (ListItem(C::Class) => .List) _, _, _, _, _)
+     rule <k> (.K => checkCtorAndDtor(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false, NoInit(), type(classType(C)))) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
+          <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
+          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          requires notBool isMethodUserProvided(FuncT)
+     rule <k> (.K => figureConstructItem(MemInit[C] orDefault .K, baseClass(C), type(classType(C)), false)) ~> figureConstruct(.List, MemInit::Map, (ListItem(C::Class) => .List) _, _, _, _, _) ...</k>
+          <curr-scope> blockScope(_, Base::SymBase, _) </curr-scope>
+          <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
+          requires isMethodUserProvided(FuncT)
 
      syntax K ::= checkCtorAndDtor(K, CId, CPPType, Bool, Init, CPPType) [function]
      syntax KItem ::= checkCtor(Class)
@@ -293,13 +310,13 @@ module CPP-DECL-CLASS
           requires notBool (B andBool I =/=K NoInit())
      rule checkCtorAndDtor(K:K, X::CId, T::CPPType, B::Bool, _, t(... st: classType(M::Class)))
           => checkDtor(M) ~> figureConstructItem(K, X, T, B) [owise]
-     rule <k> (.K => resolve(resolveOverload(cSet(Candidates, M :: ConstructorId(X), .K), list(.List), constructor)))
+     rule <k> (.K => resolve(resolveOverload(cSet(Candidates, M :: ConstructorId(X)), list(.List), constructor)))
               ~> checkCtor(_ :: Class(_, X::CId, _) #as M::Class)
           ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> M </class-id>
-          <cenv>... ConstructorId(X) |-> Candidates::Map ...</cenv>
+          <cenv>... ConstructorId(X) |-> Candidates::TypeMap ...</cenv>
      rule resolve(E:ResolvedExpr) ~> checkCtor(_) => .K
           requires notBool isNotFoundNameRef(E)
      rule <k> (.K => resolve(checkAccess(CallExpr(lv(lnew(Base), hasTrace(Name(NoNNS(), DestructorId(X))), T), list(.List), krlist(.List)))))
@@ -329,7 +346,7 @@ module CPP-DECL-CLASS
      rule isDeletedDefaultConstructor(_::CId, _, _, _, _, _) => false [owise]
 
      // 12.1:4.4 (4.5 is implicit when constructing the anonymous union)
-     rule <k> figureConstruct(_, .List, .List, _, _, false) => Deleted() ...</k>
+     rule <k> figureConstruct(.List, _, .List, .List, _, _, false) => Deleted() ...</k>
           <curr-scope> blockScope((_::ClassQualifier :: Class(Union(), _, _)) #as C::Class :: ConstructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires notBool isUserProvidedConstructor(FuncT, .K)
@@ -337,11 +354,22 @@ module CPP-DECL-CLASS
 
      syntax KItem ::= figureConstructItem(memInit: K, CId, CPPType, isMember: Bool)
 
+     // 12.6.2:7
+     rule <k> (figureConstructItem(I::Init, X::CId, T::CPPType, IsMember:Bool) => .K) ~> figureConstruct(.List, _, _, _, _,
+                   (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(C, X), T, I, notBool IsMember))),
+                   B:Bool => B orBool (IsMember andBool X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
+          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <class-id> C </class-id>
+          <variant-members> VM::Set </variant-members>
+          requires I =/=K .K
+
      // 12.6.2:8.1
      // TODO(dwightguth): ctor-initializers and base classes
      // TODO(traiansf): unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(NoNNS(), X), T, I, false))),
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, .Map, _, _, _, 
+                   (Res:K => Res ~> ExpressionStmt(figureConstructorInit(Name(C, X), T, I, false))),
                    B:Bool => B orBool (X in VM andBool notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -352,7 +380,7 @@ module CPP-DECL-CLASS
           requires I =/=K NoInit()
      // 12.6.2:8.2
      // TODO(traiansf): anonymous unions
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(_, _, _, _, _,
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, _,
                    B:Bool => B orBool (notBool isConstType(getMostDerivedArrayElement(T)))) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
@@ -363,8 +391,8 @@ module CPP-DECL-CLASS
           requires I ==K NoInit() andBool X in VM
 
      // 12.6.2:8.3
-     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(_, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(NoNNS(), X), T, false))), _) ...</k>
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, true) => .K) ~> figureConstruct(.List, _, _, _, _, 
+                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(C, X), T, false))), _) ...</k>
           <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -372,10 +400,11 @@ module CPP-DECL-CLASS
           <initializers>... X |-> (T |-> I::Init) ...</initializers>
           <variant-members> VM::Set </variant-members>
           requires I ==K NoInit() andBool notBool X in VM
-     rule (figureConstructItem(.K, X::CId, T::CPPType, false) => .K) ~> figureConstruct(_, _, _, _, 
-                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(NoNNS(), X), T, true))), _)
+     rule <k> (figureConstructItem(.K, X::CId, T::CPPType, false) => .K) ~> figureConstruct(.List, _, _, _, _, 
+                   (Res:K => Res ~> ExpressionStmt(defaultConstructorInit(Name(C, X), T, true))), _) ...</k>
+          <curr-scope> blockScope(C::Class :: ConstructorId(_), _, _) </curr-scope>
 
-     rule <k> figureConstruct(_, .List, .List, Body::Stmt, Res:K, HasNonConst:Bool) => Res ~> Body ...</k>
+     rule <k> figureConstruct(.List, _, .List, .List, Body::Stmt, Res:K, HasNonConst:Bool) => Res ~> Body ...</k>
           <curr-scope> blockScope(_::ClassQualifier :: Class(T::Tag, _, _) #as C::Class :: ConstructorId(_), _, _) </curr-scope>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -409,7 +438,7 @@ module CPP-DECL-CLASS
 
      rule hasConstructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(ConstructorId(X), getClassInfo(T), Lbl)
      rule hasDestructorThat(t(... st: classType(_ :: Class(_, X::CId, _))) #as T::CPPClassType, Lbl:K) => #hasMethodThat(DestructorId(X), getClassInfo(T), Lbl)
-     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::Map ...</cenv> ...</class>, Lbl:K)
+     rule #hasMethodThat(X::CId, <class>... <cenv>... X |-> M::TypeMap ...</cenv> ...</class>, Lbl:K)
           => some(M, Lbl)
      rule #hasMethodThat(...) => false [owise]
 
@@ -441,7 +470,7 @@ module CPP-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           requires isDeletedDefaultDestructor(X, T, C, FuncT, VM)
      // 12.4:5.2
-     rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM)) ~> figureDestruct(.List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _) ...</k>
+     rule <k> (.K => checkDtor(X, T, getMostDerivedArrayElement(T), VM, FuncT)) ~> figureDestruct(.List, (ListItem(kpair(X::CId, T::CPPType)) => .List) _, _) ...</k>
           <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tu> Tu::String </curr-tu>
@@ -449,7 +478,7 @@ module CPP-DECL-CLASS
           <class-id> C </class-id>
           <variant-members> VM::Set </variant-members>
           requires notBool isDeletedDefaultDestructor(X, T, C, FuncT, VM)
-     rule <k> (.K => checkDtor(baseClass(M), type(classType(M)), type(classType(M)), VM)) ~> figureDestruct((ListItem(M::Class) => .List) _, _, _) ...</k>
+     rule <k> (.K => checkDtor(baseClass(M), type(classType(M)), type(classType(M)), VM, FuncT)) ~> figureDestruct((ListItem(M::Class) => .List) _, _, _) ...</k>
           <curr-scope> blockScope(C::Class :: DestructorId(_), Base::SymBase, _) </curr-scope>
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           <curr-tu> Tu::String </curr-tu>
@@ -458,11 +487,11 @@ module CPP-DECL-CLASS
           <variant-members> VM::Set </variant-members>
           <virtual-bases> .Set </virtual-bases>
 
-     syntax K ::= checkDtor(CId, CPPType, CPPType, Set) [function, klabel(checkDtor3)]
-     rule checkDtor(X::CId, T::CPPType, M::CPPType, VM::Set)
+     syntax K ::= checkDtor(CId, CPPType, CPPType, Set, CPPFunctionType) [function, klabel(checkDtor3)]
+     rule checkDtor(X::CId, T::CPPType, M::CPPType, VM::Set, FuncT::CPPFunctionType)
           => figureDestructItem(X, T, VM)
-          requires notBool isCPPClassType(M)
-     rule checkDtor(X::CId, T::CPPType, t(... st: classType(M::Class)), VM::Set)
+          requires notBool isCPPClassType(M) orBool isMethodUserProvided(FuncT)
+     rule checkDtor(X::CId, T::CPPType, t(... st: classType(M::Class)), VM::Set, _)
           => checkDtor(M) ~> figureDestructItem(X, T, VM) [owise]
 
      syntax Bool ::= isDeletedDefaultDestructor(CId, CPPType, Class, CPPFunctionType, Set) [function]
@@ -493,9 +522,7 @@ module CPP-DECL-CLASS
           <functions>... Base |-> functionObject(_, FuncT::CPPFunctionType, _, _) ...</functions>
           requires isMethodVirtual(FuncT)
 
-     rule (notFound(X::CId) => qualifiedNameLookup(X, GlobalNamespace(), defaultMask)) ~> figureDestruct(...)
-
-     rule (cSet(... candidates: Cands::Map, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, 0)), Name(NoNNS(), operatordelete))))
+     rule (cSet(... candidates: Cands::TypeMap, id: Q::QualId) #as C:CandidateSet => resolve(resolveOverload(C, list(ListItem(prv(NullPointer, noTrace, type(pointerType(type(void))))) getSecondDeleteArg(Cands, prv(0, noTrace, type(size_t)))), Name(NoNNS(), operatordelete))))
           ~> figureDestruct(...)
      rule resolve(E:ResolvedExpr) ~> figureDestruct(.List, .List, Res:K) => Res
           requires notBool isNotFoundNameRef(E)
@@ -861,16 +888,16 @@ module CPP-DECL-CLASS
                   | getTypesAtOffsetForLayoutInUnion(CPPType, ClassInfo, Int) [function]
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_ T |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(_, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T::CPPType)) => .List </non-static-data-members>
-               <cenv>... X |-> (_ T |-> uninitialized) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T |-> uninitialized) ...</cenv>
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <non-static-data-members>... ListItem(kpair(X::CId, T'::CPPType)) </non-static-data-members>
-               <cenv>... X |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... X |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -880,18 +907,18 @@ module CPP-DECL-CLASS
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           requires FOffset >Int Offset
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) => .List </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> uninitialized) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> uninitialized) ...</cenv>
           ...</class>, Offset::Int)
      rule getTypesAtOffsetForLayoutInStruct(T::CPPType, <class>...
                <base-classes>... ListItem(t(... st: classType(C::Class)) #as T'::CPPType) </base-classes>
                <non-static-data-members> .List </non-static-data-members>
-               <cenv>... baseClass(C) |-> (_ T' |-> classOffset(FOffset::Int)) ...</cenv>
+               <cenv>... baseClass(C) |-> (_::TypeMap T' |-> classOffset(FOffset::Int)) ...</cenv>
           ...</class>, Offset::Int)
           => getTypesAtOffsetForLayout(T', Offset -Int FOffset)
           requires FOffset <=Int Offset
@@ -952,8 +979,8 @@ module CPP-DECL-CLASS
           <tu-id> Tu </tu-id>
           <class>...
             <class-id> C </class-id>
-            <sizeof> 0 => byteSizeofType(type(pointerType(type(void)))) </sizeof>
-            <dsize> 0 => byteSizeofType(type(pointerType(type(void)))) </dsize>
+            <sizeof> 0 => bitSizeofType(type(pointerType(type(void)))) </sizeof>
+            <dsize> 0 => bitSizeofType(type(pointerType(type(void)))) </dsize>
             <align> 1 => byteAlignofType(type(pointerType(type(void)))) </align>
           ...</class>
      rule computePrimaryBase(.List, .List, NonPrimary::List, Primary:Class) => #layoutBases(ListItem(Primary) NonPrimary)
@@ -1044,4 +1071,7 @@ module CPP-DECL-CLASS
           <curr-scope> OldScope::Scope => classScope(C, true) </curr-scope>
      rule <k> catof(V:ValueCategory) ~> (returnFromBraceOrEqualInitializer(_, Scope::Scope) => .K) ...</k>
           <curr-scope> _ => Scope </curr-scope>
+
+     rule getNonStaticDataMembers(<class>... <non-static-data-members> L::List </non-static-data-members> ...</class>) => L
+     rule getDataMembersInitializers(<class>... <initializers> M::Map </initializers> ...</class>) => M
 endmodule

@@ -278,6 +278,8 @@ module C-ABSTRACT-SYNTAX
      */
      syntax Statement ::= CompGoto(K)
 
+     syntax Statement ::= OtherStatement()
+
      /*
      and binary_operator =
      ADD | SUB | MUL | DIV | MOD

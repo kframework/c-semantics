@@ -10,6 +10,7 @@ endmodule
 module CPP-BITSIZE
      imports CPP-BITSIZE-SYNTAX
      imports INT
+     imports CPP-CLASS-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports C-CONFIGURATION

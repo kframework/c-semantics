@@ -1,13 +1,14 @@
 module LIBC-STDARG
-     imports BOOL
      imports C-CONFIGURATION
+     imports BOOL
+     imports K-REFLECTION
+     imports C-COMMON-PROMOTION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports K-REFLECTION
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-SYNTAX
      imports RETURN-SYNTAX
@@ -199,8 +200,13 @@ module LIBC-STDARG
           ...</call-stack>
           <tu-id> Tu </tu-id>
           <gtypes>... F |-> T:Type ...</gtypes>
-          requires variadic in getParams(T)
+          requires variadic in getParams(T) andBool isLastParamCorrect(T)
           [structural]
+
+     syntax Bool ::= isLastParamCorrect(Type) [function]
+     rule isLastParamCorrect(t(_, _, functionType(_, _ ListItem(T::DType) ListItem(variadic))))
+          => notBool (isRegisterType(type(T)) orBool isArrayOrFunctionType(type(T)) orBool argPromoteType(utype(T)) =/=Type utype(T))
+
      rule <k> (.K => UNDEF("STDARG1",
                     "'va_start' used in a function with fixed args."))
                ~> checkVarArgs
@@ -217,6 +223,54 @@ module LIBC-STDARG
           <gtypes>... F |-> T:Type ...</gtypes>
           requires notBool variadic in getParams(T)
           [structural]
+
+     rule <k> (.K => UNDEF("STDARG10",
+                    "'va_start' called on function whose last fixed argument is declared with the register storage class."))
+              ~> checkVarArgs
+          ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
+                         <curr-tu> Tu:String </curr-tu>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <tu-id> Tu </tu-id>
+          <gtypes>... F |-> t(_, _, functionType(_, _ ListItem(T::DType) ListItem(variadic))) ...</gtypes>
+          requires isRegisterType(type(T))
+
+     rule <k> (.K => UNDEF("STDARG11",
+                    "'va_start' called on function whose last fixed argument is declared with function or array type."))
+              ~> checkVarArgs
+          ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
+                         <curr-tu> Tu:String </curr-tu>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <tu-id> Tu </tu-id>
+          <gtypes>... F |-> t(_, _, functionType(_, _ ListItem(T::DType) ListItem(variadic))) ...</gtypes>
+          requires isArrayOrFunctionType(type(T))
+
+     rule <k> (.K => UNDEF("STDARG12",
+                    "'va_start' called on function whose last fixed argument is not compatible with type after default argument promotions."))
+              ~> checkVarArgs
+          ...</k>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <curr-scope> blockScope(F:CId, _) </curr-scope>
+                         <curr-tu> Tu:String </curr-tu>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <tu-id> Tu </tu-id>
+          <gtypes>... F |-> t(_, _, functionType(_, _ ListItem(T::DType) ListItem(variadic))) ...</gtypes>
+          requires argPromoteType(utype(T)) =/=Type utype(T)
 
      rule <k> (.K => UNDEF("STDARG9",
                     "Function exited without calling 'va_end' after 'va_start' or 'va_copy'."))

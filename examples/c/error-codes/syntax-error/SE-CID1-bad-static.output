@@ -1,0 +1,10 @@
+SE-CID1-bad-static.c:5:2: error: Trying to look up identifier printf, but no such identifier is in scope.
+  Syntax error (SE-CID1).
+   see C11 section 6.5.1:2 http://rvdoc.org/C11/6.5.1
+   see CERT-C section DCL31-C http://rvdoc.org/CERT-C/DCL31-C
+SE-CID1-bad-static.c: In function ‘main’:
+SE-CID1-bad-static.c:5:2: warning: implicit declaration of function ‘printf’ [-Wimplicit-function-declaration]
+  printf("%d\n", 0);
+  ^
+SE-CID1-bad-static.c:5:2: warning: incompatible implicit declaration of built-in function ‘printf’
+SE-CID1-bad-static.c:5:2: note: include ‘<stdio.h>’ or provide a declaration of ‘printf’

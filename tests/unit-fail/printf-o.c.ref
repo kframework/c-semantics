@@ -1,0 +1,8 @@
+ 'printf': Mismatch between the type expected by the conversion specifier %o and the type of the argument.
+   at printf(printf-o.c:5:3)
+   by main(printf-o.c:5:3)
+  Undefined behavior (UB-STDIO1).
+   see C11 section 7.21.6.1:9 http://rvdoc.org/C11/7.21.6.1
+   see C11 section J.2:1 item 153 http://rvdoc.org/C11/J.2
+   see CERT-C section FIO47-C http://rvdoc.org/CERT-C/FIO47-C
+Execution failed (configuration dumped)

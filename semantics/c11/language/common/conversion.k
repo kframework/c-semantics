@@ -292,7 +292,10 @@ module C-CONVERSION
      a trap representation.
      }*/
      rule cast(T':PointerUType, tv(V:CValue, T:IntegerUType))
-          => checkUse(tv(cfg:intToPointer(V, T), cast(T', T)))
+          => castHold(T', tv(V, T))
+          requires notBool isNullPointerConstant(tv(V, T))
+     rule (.K => IMPL("CCV13", "Conversion from an integer to non-null pointer."))
+          ~> castHold(T':PointerUType, tv(V:CValue, T:IntegerUType))
           requires notBool isNullPointerConstant(tv(V, T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.3}{6}}}{

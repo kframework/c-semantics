@@ -1,0 +1,6 @@
+j022b.c: In function ‘main’:
+j022b.c:3:7: error: address of register variable ‘a’ requested
+       a;
+       ^
+compilation terminated due to -Wfatal-errors.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j022b.c to see commands run.

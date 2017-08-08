@@ -160,7 +160,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readBytes(loc(Base::SymBase, _, _) #as Loc::SymLoc, Size::Int, T::Type)
                => checkRestrict(false, Loc)
-               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, ObjT, Len, M, Locs, Mem)
+               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, ObjT, Len, M, Locs, Mem, false, false, false, false)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <mem>...
@@ -173,7 +173,7 @@ module C-IO-BUFFERED
           [structural]
      rule <k> readBytes(loc(_, _, _) #as Loc::SymLoc, Size::Int, T::Type)
                => checkRestrict(false, Loc)
-               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, .K, .K, .K, Locs, Mem)
+               ~> readBytes-aux(stripProv(Loc) +bytes (Size -Int 1), Size, .List, T, .K, .K, .K, Locs, Mem, false, false, false, false)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <locs-written> Locs::Set </locs-written>
@@ -195,52 +195,87 @@ module C-IO-BUFFERED
                     | "errorNonVolatileLVal"
                     | "errorUninit"
 
-     syntax K ::= assertInBounds(Int, Int)
-     syntax K ::= assertSeq(SymLoc, Set)
-     syntax K ::= assertVolatile(Type, Int, Type)
-     syntax KItem ::= assertUninit(SymLoc)
+     syntax Bool ::= assertInBounds(Int, Int)
+     syntax Bool ::= assertSeq(SymLoc, Set)
+     syntax Bool ::= assertVolatile(Type, Int, Type)
+     syntax Bool ::= assertUninit(SymLoc)
 
      rule assertInBounds(Offset::Int, Len::Int)
-          => assert(Offset <Int Len, errorReadOutOfBounds) [macro]
+          => Offset >=Int Len [macro]
      rule assertSeq(Loc::SymLoc, Locs::Set)
-          => assert(notBool (Loc in Locs), errorUnseqEffects) [macro]
+          => (Loc in Locs) [macro]
      rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
-          => assert((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
-               orBool isVolatileType(T), errorNonVolatileLVal) [macro]
+          => ((Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
+               andBool notBool isVolatileType(T) [macro]
      rule assertUninit(L::SymLoc)
-          => assert(notBool hasLint orBool notBool (isStaticDuration(L) orBool isThreadDuration(L)),
-               errorUninit) [macro]
+          => hasLint andBool (isStaticDuration(L) orBool isThreadDuration(L)) [macro]
 
      // loc, size in bytes, aux list
-     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type "," K "," K "," K "," Set "," List ")" [function]
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, .List)
-               // TODO(chathhorn): do we really need to check this stuff every
-               // byte?
-               => assertSeq(loc(Base, Offset), Locs)
-               ~> assertInBounds(Offset, Len)
-               ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T, ObjT, Len, M, Locs, .List)
+     syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type "," K "," K "," K "," Set "," List "," Bool "," Bool "," Bool "," Bool ")" [function]
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+                        Size::Int => Size -Int 1,
+                        Aux::List => ListItem(M[Offset]) Aux,
+                        T::Type,
+                        ObjT::Type,
+                        Len:Int,
+                        M::Array,
+                        Locs::Set,
+                        .List,
+                        Seq:Bool => Seq orBool assertSeq(loc(Base, Offset), Locs),
+                        InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),
+                        VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
+                        _)
           requires Size >Int 0 andBool Offset in_keys(M)
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, Mem::List)
-               => assertSeq(loc(Base, Offset), Locs)
-               ~> assertInBounds(Offset, Len)
-               ~> assertVolatile(ObjT, Offset, T)
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(M[Offset]) Aux, T, ObjT, Len, M, Locs, Mem)
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+                        Size::Int => Size -Int 1,
+                        Aux::List => ListItem(M[Offset]) Aux,
+                        T::Type,
+                        ObjT::Type,
+                        Len:Int,
+                        M::Array,
+                        Locs::Set,
+                        Mem::List,
+                        Seq:Bool => Seq orBool assertSeq(loc(Base, Offset), Locs),
+                        InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),
+                        VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
+                        _)
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type, ObjT::Type, Len:Int, M::Array, Locs::Set, Mem::List)
-               => assertInBounds(Offset, Len)
-               ~> assertVolatile(ObjT, Offset, T)
-               ~> assertUninit(loc(Base, Offset))
-               ~> readBytes-aux(loc(Base, Offset) +bytes -1, Size -Int 1, ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux, T, ObjT, Len, 
-                    M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)], Locs, Mem)
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+                        Size::Int => Size -Int 1,
+                        Aux::List => ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux,
+                        T::Type,
+                        ObjT::Type,
+                        Len:Int,
+                        M::Array,
+                        Locs::Set,
+                        Mem::List,
+                        _,
+                        InBounds:Bool => InBounds orBool assertInBounds(Offset, Len),
+                        VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
+                        Uninit:Bool => Uninit orBool assertUninit(loc(Base, Offset)))
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M))) [owise]
      syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
-     rule readBytes-aux(Loc::SymLoc, Size::Int, Aux::List, T::Type, .K, .K, .K, Locs::Set, Mem::List)
-               => assertSeq(Loc, Locs)
-               ~> readBytes-aux(Loc +bytes -1, Size -Int 1, ListItem(#readNativeByte(Loc, size(Aux), T)) Aux, T, .K, .K, .K, Locs, Mem)
+     rule readBytes-aux(Loc::SymLoc => Loc +bytes -1,
+                        Size::Int => Size -Int 1,
+                        Aux::List => ListItem(#readNativeByte(Loc, size(Aux), T)) Aux,
+                        T::Type,
+                        .K,
+                        .K,
+                        .K,
+                        Locs::Set,
+                        Mem::List,
+                        Seq:Bool => Seq orBool assertSeq(Loc, Locs),
+                        _,
+                        _,
+                        _)
           requires Size >Int 0 andBool notBool (Loc in locations(Mem))
-     rule readBytes-aux(_, 0, Aux::List, _, _, _, _, _, _) => dataList(Aux)
+     rule readBytes-aux(_, 0, Aux::List, _, _, _, _, _, _, Seq:Bool, InBounds:Bool, VolatileErr:Bool, Uninit:Bool) 
+          => #if Seq #then errorUnseqEffects #else .K #fi ~> 
+             #if InBounds #then errorReadOutOfBounds #else .K #fi ~>
+             #if VolatileErr #then errorNonVolatileLVal #else .K #fi ~>
+             #if Uninit #then errorUninit #else .K #fi ~>
+             dataList(Aux)
           [structural]
 
      syntax Bits ::= getUninitializedBits(SymLoc, Type) [function]

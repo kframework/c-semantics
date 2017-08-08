@@ -1,9 +1,74 @@
 module C-OS-SETTINGS
   imports C-OS-SETTINGS-SYNTAX
   imports INT
-
-  rule EBADF => 9
-  rule EBUSY => 16
-  rule EINVAL => 22
+   
+  rule getErrno(#EPERM) => 1
+  rule getErrno(#ENOENT) => 2
+  rule getErrno(#ESRCH) => 3
+  rule getErrno(#EINTR) => 4
+  rule getErrno(#EIO) => 5
+  rule getErrno(#ENXIO) => 6
+  rule getErrno(#E2BIG) => 7
+  rule getErrno(#ENOEXEC) => 8
+  rule getErrno(#EBADF) => 9
+  rule getErrno(#ECHILD) => 10
+  rule getErrno(#EAGAIN) => 11
+  rule getErrno(#ENOMEM) => 12
+  rule getErrno(#EACCES) => 13
+  rule getErrno(#EFAULT) => 14
+  rule getErrno(#EBUSY) => 16
+  rule getErrno(#EEXIST) => 17
+  rule getErrno(#EXDEV) => 18
+  rule getErrno(#ENODEV) => 19
+  rule getErrno(#ENOTDIR) => 20
+  rule getErrno(#EISDIR) => 21
+  rule getErrno(#EINVAL) => 22
+  rule getErrno(#ENFILE) => 23
+  rule getErrno(#EMFILE) => 24
+  rule getErrno(#ENOTTY) => 25
+  rule getErrno(#EFBIG) => 27
+  rule getErrno(#ENOSPC) => 28
+  rule getErrno(#ESPIPE) => 29
+  rule getErrno(#EROFS) => 30
+  rule getErrno(#EMLINK) => 31
+  rule getErrno(#EPIPE) => 32
+  rule getErrno(#EDOM) => 33
+  rule getErrno(#ERANGE) => 34
+  rule getErrno(#EDEADLK) => 35
+  rule getErrno(#ENAMETOOLONG) => 36
+  rule getErrno(#ENOLCK) => 37
+  rule getErrno(#ENOSYS) => 38
+  rule getErrno(#ENOTEMPTY) => 39
+  rule getErrno(#ELOOP) => 40
+  rule getErrno(#EWOULDBLOCK) => getErrno(EAGAIN)
+  rule getErrno(#EOVERFLOW) => 75
+  rule getErrno(#ENOTSOCK) => 88
+  rule getErrno(#EDESTADDRREQ) => 89
+  rule getErrno(#EMSGSIZE) => 90
+  rule getErrno(#EPROTOTYPE) => 91
+  rule getErrno(#ENOPROTOOPT) => 92
+  rule getErrno(#EPROTONOSUPPORT) => 93
+  rule getErrno(#ESOCKTNOSUPPORT) => 94
+  rule getErrno(#EOPNOTSUPP) => 95
+  rule getErrno(#EPFNOSUPPORT) => 96
+  rule getErrno(#EAFNOSUPPORT) => 97
+  rule getErrno(#EADDRINUSE) => 98
+  rule getErrno(#EADDRNOTAVAIL) => 99
+  rule getErrno(#ENETDOWN) => 100
+  rule getErrno(#ENETUNREACH) => 101
+  rule getErrno(#ENETRESET) => 102
+  rule getErrno(#ECONNABORTED) => 103
+  rule getErrno(#ECONNRESET) => 104
+  rule getErrno(#ENOBUFS) => 105
+  rule getErrno(#EISCONN) => 106
+  rule getErrno(#ENOTCONN) => 107
+  rule getErrno(#ESHUTDOWN) => 108
+  rule getErrno(#ETOOMANYREFS) => 109
+  rule getErrno(#ETIMEDOUT) => 110
+  rule getErrno(#ECONNREFUSED) => 111
+  rule getErrno(#EHOSTDOWN) => 112
+  rule getErrno(#EHOSTUNREACH) => 113
+  rule getErrno(#EALREADY) => 114
+  rule getErrno(#EINPROGRESS) => 115
 
 endmodule

@@ -63,13 +63,16 @@ module C-LINKING-INIT
      // We should use this mechanism only for symbols that are considered weak
      // by the C and C++ standards, or for native symbols.
 
-     rule (.K => addBuiltin(Identifier(B), T, obj(0, byteAlignofType(T), builtinSymbol(B)), true))
-               ~> addBuiltins((B:String |-> T:Type => .Map) _)
+     syntax String ::= idToSymbol(CId) [function]
+     rule idToSymbol(Identifier(S::String)) => S
+
+     rule (.K => addBuiltin(X, T, obj(0, byteAlignofType(T), builtinSymbol(idToSymbol(X))), true))
+               ~> addBuiltins((X::CId |-> T:Type => .Map) _)
      rule addBuiltins(.Map) => .K
 
      syntax KItem ::= addNativeSymbols(Map)
-     rule (.K => addBuiltin(Identifier(B), T, obj(0, byteAlignofType(T), nativeSymbol(B)), false))
-               ~> addNativeSymbols((B:String |-> T:Type => .Map) _)
+     rule (.K => addBuiltin(X, T, obj(0, byteAlignofType(T), nativeSymbol(idToSymbol(X))), false))
+               ~> addNativeSymbols((X::CId |-> T:Type => .Map) _)
      rule addNativeSymbols(.Map) => .K
 
      syntax KItem ::= addBuiltin(CId, Type, SymBase, Bool)
@@ -233,6 +236,8 @@ module C-LINKING-INIT
                <external-types> ExtTypes1:Map </external-types>
                <external-defs> ExtDefs1:Map </external-defs>
                <odr-defs> OdrDefs1:Map </odr-defs>
+               <linkings> Links1:Map </linkings>
+               <function-tus> Funcs1:Map </function-tus>
 
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
@@ -243,7 +248,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs1:Map </tags>
-               <linkings> Links1:Map </linkings>
                <main-tu> Main1:Set </main-tu>
                <dynamic-init> Init1:K </dynamic-init>
                <constexpr-symbase> CS1::Set</constexpr-symbase>
@@ -258,6 +262,8 @@ module C-LINKING-INIT
                <external-types> ExtTypes2:Map </external-types>
                <external-defs> ExtDefs2:Map </external-defs>
                <odr-defs> OdrDefs2:Map </odr-defs>
+               <linkings> Links2:Map </linkings>
+               <function-tus> Funcs2:Map </function-tus>
 
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
@@ -268,7 +274,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs2:Map </tags>
-               <linkings> Links2:Map </linkings>
                <main-tu> Main2:Set </main-tu>
                <dynamic-init> Init2:K </dynamic-init>
                <constexpr-symbase> CS2::Set</constexpr-symbase>
@@ -284,6 +289,8 @@ module C-LINKING-INIT
                <external-types> updateMap(ExtTypes1, ExtTypes2) </external-types>
                <external-defs> updateMap(ExtDefs1, ExtDefs2) </external-defs>
                <odr-defs> mergeDefs(OdrDefs1, OdrDefs2) </odr-defs>
+               <linkings> updateMap(Links1, Links2) </linkings>
+               <function-tus> updateMap(Funcs1, Funcs2) </function-tus>
 
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
@@ -294,7 +301,6 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> updateMap(Structs1, Structs2) </tags>
-               <linkings> updateMap(Links1, Links2) </linkings>
                <main-tu> Main1 Main2 </main-tu>
                <dynamic-init> Init1 ~> Init2:K </dynamic-init>
                <constexpr-symbase> CS1 CS2</constexpr-symbase>

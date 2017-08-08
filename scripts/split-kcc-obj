@@ -1,0 +1,14 @@
+#!/bin/bash
+export LC_ALL=C
+in="$1"
+objout="$2"
+kastout="$3"
+cp "$in" "$objout"
+size=`du -b "$in" | cut -f1`
+len=`od -An -t u8 -j $(($size-13)) -N8 $in`
+version=`dd --version | head -1 | awk '{print $3}'`
+if [ "8.16" = "`printf "8.16\n%s" "$version" | sort -V | head -1`" ]; then
+  dd if="$in" of="$kastout" iflag=skip_bytes,count_bytes skip=$(($size-13-$len)) "count=$len" >/dev/null 2>&1
+else
+  dd if="$in" of="$kastout" bs=1 skip=$(($size-13-$len)) "count=$len" >/dev/null 2>&1
+fi

@@ -531,6 +531,9 @@ rule initial =
 |               "__asm"                 { if !Cprint.msvcMode then 
                                              MSASM (msasm lexbuf, currentLoc ()) 
                                           else (ASM (currentLoc ())) }
+|               "__asm__"                 { if !Cprint.msvcMode then 
+                                             MSASM (msasm lexbuf, currentLoc ()) 
+                                          else (ASM (currentLoc ())) }
 |		"__ltl"			{LTL}
 |		"__ltl_builtin"			{LTL_BUILTIN_TOK}
 |		"__atom"			{ATOM}

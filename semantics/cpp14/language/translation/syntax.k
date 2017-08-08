@@ -25,6 +25,24 @@ module CPP-ABSTRACT-SYNTAX
      syntax RVal ::= RExpr
      syntax Val ::= TExpr
 
+     syntax LDep ::= ld(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax XDep ::= xd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax PRDep ::= prd(Expr, Trace, CPPTypeExpr, TemplateParam)
+     syntax GLDep ::= LDep | XDep
+     syntax RDep ::= XDep | PRDep
+     syntax Dep ::= GLDep | RDep
+
+     syntax LVal ::= LDep
+     syntax XVal ::= XDep
+     syntax PRVal ::= PRDep
+     syntax GLVal ::= GLDep
+     syntax RVal ::= RDep 
+     syntax Val ::= Dep
+
+     syntax Bool ::= isDepKLabel(K) [function, klabelPredicate]
+
+     syntax TemplateParam ::= param(Dep) [function]
+
      syntax SymBase ::= "nonStatic" 
 
      syntax TypeId ::= TypeId(AType)
@@ -40,6 +58,7 @@ module CPP-ABSTRACT-SYNTAX
                    | Specifier(Specifier, Decl)
                    | Declarator
                    | DeclLoc(CabsLoc, Decl)
+                   | FriendDecl(Decl)
 
      context TypedefDecl(_, HOLE:CPPTypeExpr)
              requires notBool isDependentInScope(HOLE) [result(CPPType)]
@@ -56,12 +75,12 @@ module CPP-ABSTRACT-SYNTAX
                          | FieldDecl(NNS, CId, AType, Init)
                          | BitFieldDecl(NNS, CId, AType, Expr) [strict(3)]
 
-     syntax Init ::= ValueInit() | NoInit()
+     syntax Init ::= NoInit()
 
      syntax StorageClassSpecifier ::= Register() | Static() | ThreadLocal() | Extern() | Mutable()
-     syntax FunctionSpecifier ::= Inline() | Explicit() | Pure()
+     syntax FunctionSpecifier ::= Inline() | Explicit()
      syntax Specifier ::= StorageClassSpecifier | FunctionSpecifier
-                        | Constexpr() | Friend() | Auto()
+                        | Constexpr() | Auto()
 
      syntax Decl ::= Template(Decl, List)
                    | TemplateWithInstantiations(Decl, List, List)
@@ -111,6 +130,7 @@ module CPP-ABSTRACT-SYNTAX
                     | MethodPrototype(Bool, Bool, AType, AType) [strict(3, 4)]
                     | StaticMethodPrototype(AType) [strict]
                     | Virtual(AType) [strict]
+                    | Pure(AType) [strict]
                     | Explicit(AType) [strict]
                     | BuiltinType(TypeSpecifier)
                     | PointerType(AType) [strict]
@@ -250,6 +270,8 @@ module CPP-ABSTRACT-SYNTAX
 
      syntax BraceInit ::= BraceInit(List)
      syntax Init ::= BraceInit
+     syntax ExpressionList ::= ExpressionList(List)
+     syntax Init ::= ExpressionList
 
      // extensions
      syntax Expr ::= GnuTypeTrait(String, List)
@@ -297,11 +319,20 @@ module CPP-ABSTRACT-REWRITING
      // ideally we would get the distinction between the two correct, but clang doesn't fully
      // distinguish by the time we reach the point of abstract syntax, so this will have to do.
      rule ConstructorCall(false, _, .List) => NoInit() [anywhere]
-     rule ConstructorCall(true, _, .List) => ValueInit() [anywhere]
-     rule ConstructorCall(_, _, ListItem(E::Expr)) => E [owise, anywhere]
-     rule TemporaryObjectExpr(T::AType, .List) => FunctionalCast(T, .List) [anywhere]
+     rule ConstructorCall(true, _, .List) => ExpressionList(.List) [anywhere]
+     rule ConstructorCall(_, _, ListItem(E::Expr)) => E [anywhere]
+     rule ConstructorCall(_, _, L::List) => ExpressionList(L)
+          requires size(L) >Int 1 [anywhere]
+     rule TemporaryObjectExpr(T::AType, L::List) => FunctionalCast(T, L) [anywhere]
      rule TypeId(Name(NoNNS(), X::CId)) => ConstructorId(X) [anywhere]
      rule DestructorTypeId(Name(NoNNS(), X::CId)) => DestructorId(X) [anywhere]
      rule ExprLoc(_, DefaultArg()) => .K [anywhere]
+
+     rule ld(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
+     rule xd(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
+     rule prd(E::Expr, _, _, T:CPPTypeExpr) => E
+          requires notBool isDependentInScope(T)
 
 endmodule

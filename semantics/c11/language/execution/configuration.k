@@ -133,6 +133,7 @@ module C-CONFIGURATION
                                    "normal"
                               </format-state>
                               <format-pad-zero> false </format-pad-zero>
+                              <format-alt-form> false </format-alt-form>
                               <format-field-width> "" </format-field-width>
                               <format-length> "" </format-length>
                               <format-precision> "" </format-precision>
@@ -194,7 +195,6 @@ module C-CONFIGURATION
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
-     <errno> 0 </errno>
 </library>
 
 

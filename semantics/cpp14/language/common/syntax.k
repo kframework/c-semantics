@@ -82,6 +82,7 @@ module CPP-SYNTAX
      syntax DestructorId ::= DestructorId(CId)
      syntax CId ::= DestructorId
                   | ConstructorId(CId)
+                  | ConversionId(CPPType)
 
      syntax ClassKey ::= Struct() | Union() | Class() 
      syntax Tag ::= ClassKey | Enum() | Typename() | NoTag()
@@ -105,7 +106,7 @@ module CPP-SYNTAX
                    | NewOp(CPPType, Expr, K, K, Int)
                    | DeleteOp(Expr, Expr, K, Int)
                    | "*" Expr
-                   | "&" Expr [strict]
+                   | "&" Expr
                    // like & but applies to all objects including xvalues and class prvalues
                    | getAddress(Expr) [strict]
                    | "!" Expr
@@ -165,7 +166,8 @@ module CPP-SYNTAX
                    | Name(NNS, CId, List)
 
      syntax Expr ::= ConvertType(CPPType, Expr)
-                   | ExprLoc(CabsLoc, Expr)
+                   | ExprLoc
+     syntax ExprLoc ::= ExprLoc(CabsLoc, Expr)
 
      syntax Init ::= ExprLoc(CabsLoc, Init)
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)

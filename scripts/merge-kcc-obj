@@ -1,0 +1,9 @@
+#!/bin/bash
+export LC_ALL=C
+objin="$1"
+kastin="$2"
+out="$3"
+size=`du -b "$kastin" | cut -f1`
+cat "$objin" "$kastin" > "$out"
+writelong $size >> $out
+printf "\x7fKAST" >> $out

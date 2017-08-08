@@ -10,11 +10,13 @@ module CPP-TRANSLATION-NAME-SYNTAX
                    | qualifiedNameLookup(CId, NNS, mask: Set)
      syntax Expr ::= resolveOverloadedOperator(OpId, Expr, TypeExpr)
                    | resolveOverloadedOperator(OpId, Expr, TypeExpr, Init, K)
+     syntax KItem ::= K "orIfNotFound" K [right, strict(1)]
+                    | guardedFind(CId, Bool, K)
 
-      syntax Set ::= "defaultMask" [function]
-                   | "namespaceMask" [function]
-                   | "nnsMask" [function]
-                   | "typeMask" [function]
+     syntax Set ::= "defaultMask" [function]
+                  | "namespaceMask" [function]
+                  | "nnsMask" [function]
+                  | "typeMask" [function]
 endmodule
 
 module CPP-TRANSLATION-NAME
@@ -33,20 +35,13 @@ module CPP-TRANSLATION-NAME
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
      
-     syntax Expr ::= wrapInThis(TypeExpr) [strict]
-     rule wrapInThis(cSet(M::Map, QX::QualId, .K)) => cSet(M, QX, This())
-     rule wrapInThis(T:CPPType) => T
-     rule wrapInThis(V:PRVal) => V
-     rule wrapInThis(notFound(X::CId)) => notFound(X)
-
      syntax CandidateSet ::= classSet(K, QualId, Set)
 
-     syntax KItem ::= K "orIfNotFound" K [right, strict(1)]
-                   | guardedFind(CId, Bool, K)
      rule notFound(_) orIfNotFound E::K => E
      rule R:KResult orIfNotFound _ => R
           requires notBool isNotFoundNameRef(R)
@@ -122,11 +117,11 @@ module CPP-TRANSLATION-NAME
           <nenums>... X |-> E::Enum ...</nenums>
           requires variable in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(M, N :: X, .K) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(M, N :: X) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> M::Map ...</nenv>
+          <nenv>... X |-> M::TypeMap ...</nenv>
           requires envMask(X |-> M, X, Mask)
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => nsRef(NS) ...</k>
@@ -136,37 +131,30 @@ module CPP-TRANSLATION-NAME
           <nested-namespaces>... X |-> NS::Namespace ...</nested-namespaces>
           requires namespace in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, Mask::Set) => T ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, _, Mask::Set) => T ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes>... X |-> (_ Tag |-> T::CPPType) ...</ntypes>
-          requires type in Mask
-
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => T ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          <tu-id> Tu </tu-id>
-          <ns-id> N </ns-id>
-          <ntypes>... X |-> (_ |-> T::CPPType) ...</ntypes>
+          <ntypes>... X |-> T::CPPType ...</ntypes>
           requires type in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
+          <templates>... N :: X |-> (_::TypeMap T:CPPClassTypeExpr |-> _) ...</templates>
           requires type in Mask
 
      rule <k> nameLookupInNamespace(X::CId, N::Namespace, Tag::Tag, Mask::Set) => templateRef(N :: X, T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... N :: X |-> (_ T:CPPClassTypeExpr |-> _) ...</templates>
+          <templates>... N :: X |-> (_::TypeMap T:CPPClassTypeExpr |-> _) ...</templates>
           requires getTag(T) ==K Tag andBool type in Mask
 
-     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(T |-> I M, N :: X, .K) ...</k>
+     rule <k> nameLookupInNamespace(X::CId, N::Namespace, NoTag(), Mask::Set) => cSet(T |-> I M, N :: X) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <nenv> NE::Map </nenv>
-          <templates>... N :: X |-> (T:CPPFunctionTypeExpr |-> I::TemplateInfo M::Map) ...</templates>
+          <templates>... N :: X |-> (T:CPPFunctionTypeExpr |-> I::TemplateInfo M::TypeMap) ...</templates>
           requires notBool X in_keys(NE)
                andBool function in Mask
 
@@ -183,16 +171,16 @@ module CPP-TRANSLATION-NAME
 
      syntax Bool ::= templateMask(Map, QualId, Set) [function]
                    | envMask(Map, CId, Set) [function]
-     rule templateMask((N :: X |-> ((T:CPPFunctionTypeExpr |-> _) _)) _, N::NNSVal :: X::CId, Mask::Set)
+     rule templateMask((N :: X |-> ((T:CPPFunctionTypeExpr |-> _) _::TypeMap)) _, N::NNSVal :: X::CId, Mask::Set)
           => function in Mask
-     rule templateMask((N :: X |-> ((T:CPPClassTypeExpr |-> _) _)) _, N::NNSVal :: X::CId, Mask::Set)
+     rule templateMask((N :: X |-> ((T:CPPClassTypeExpr |-> _) _::TypeMap)) _, N::NNSVal :: X::CId, Mask::Set)
           => type in Mask
      rule templateMask((N :: X |-> _) _, N::NNSVal :: X::CId, Mask::Set)
           => variable in Mask [owise]
-     rule envMask((X |-> ((T:CPPFunctionType |-> _) _)) _, X::CId, Mask::Set)
+     rule envMask((X |-> ((T:CPPFunctionType |-> _) _::TypeMap)) _, X::CId, Mask::Set)
           => function in Mask
      rule envMask((X |-> _) _, X::CId, Mask::Set)
-          => variable in Mask
+          => variable in Mask [owise]
 
      rule <k> nameLookupInFullNamespace(X::CId, N::Namespace, T::Tag, Mask::Set, OldUsingDirectives::Set)
           =>                                                  nameLookupInNamespaces(X, SetItem(N) getUsingNamespaces(BlockUsingDirectives NewUsingDirectives OldUsingDirectives, N), T, Mask, notFound(X))
@@ -215,16 +203,12 @@ module CPP-TRANSLATION-NAME
           <enums>... X |-> E::Enum ...</enums>
           requires variable in Mask
 
-     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => cSet(S, NoNamespace() :: X, .K) ...</k>
-          <env>... X |-> S::Map ...</env>
+     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => cSet(S, NoNamespace() :: X) ...</k>
+          <env>... X |-> S::TypeMap ...</env>
           requires envMask(X |-> S, X, Mask)
 
-     rule <k> lookupNameInBlock(X::CId, NoTag(), Mask::Set) => T ...</k>
-          <types>... X |-> (_ |-> T::CPPType) ...</types>
-          requires type in Mask
-
-     rule <k> lookupNameInBlock(X::CId, Tag::Tag, Mask::Set) => T ...</k>
-          <types>... X |-> (_ Tag |-> T::CPPType) ...</types>
+     rule <k> lookupNameInBlock(X::CId, _, Mask::Set) => T ...</k>
+          <types>... X |-> T::CPPType ...</types>
           requires type in Mask
 
      rule <k> lookupNameInBlock(X::CId, _, Mask::Set) => notFound(X) ...</k>
@@ -258,7 +242,7 @@ module CPP-TRANSLATION-NAME
           => resolveClassSet(#lookupMember(X, C, IsBody, T, Mask))
  
      syntax Expr ::= resolveClassSet(Expr) [strict]
-     rule resolveClassSet(classSet(M:Map, X::QualId, _)) => cSet(M, X, .K)
+     rule resolveClassSet(classSet(M:TypeMap, X::QualId, _)) => cSet(M, X)
      rule resolveClassSet(classSet(T:CPPType, _, _)) => T
      rule resolveClassSet(classSet(V:PRVal, _, _)) => V
      rule resolveClassSet(notFound(X::CId)) => notFound(X)
@@ -266,17 +250,12 @@ module CPP-TRANSLATION-NAME
      // lookup member in class (and base-classes)
      rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => classSet(S, C :: X, SetItem(C)) ...</k>
           <class-id> C </class-id>
-          <cenv>... X |-> S::Map ...</cenv>
+          <cenv>... X |-> S::TypeMap ...</cenv>
           requires envMask(X |-> S, X, Mask)
 
-     rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => classSet(T, C :: X, SetItem(C)) ...</k>
+     rule <k> #lookupMember(X::CId, C::Class, _, _, Mask::Set) => classSet(T, C :: X, SetItem(C)) ...</k>
           <class-id> C </class-id>
-          <ctypes>... X |-> (_ |-> T::CPPType) ...</ctypes>
-          requires type in Mask
-
-     rule <k> #lookupMember(X::CId, C::Class, _, Tag::Tag, Mask::Set) => classSet(T, C :: X, SetItem(C)) ...</k>
-          <class-id> C </class-id>
-          <ctypes>... X |-> (_ Tag |-> T::CPPType) ...</ctypes>
+          <ctypes>... X |-> T::CPPType ...</ctypes>
           requires type in Mask
 
      rule <k> #lookupMember(X::CId, C::Class, _, NoTag(), Mask::Set) => lookupEnumerator(X, E, Mask, C) ...</k>
@@ -339,7 +318,7 @@ module CPP-TRANSLATION-NAME
      // 3.4.1:8
      rule lookupNameInFullClass(X::CId, C::Class, IsBody::Bool, BlockScope::Bool, Tag::Tag, Mask::Set)
        => guardedFind(X, BlockScope,                        lookupNameInBlock(X, Tag, Mask))                            // 3.4.1:8.1
-          orIfNotFound                          wrapInThis( lookupMember(X, C, IsBody, Tag, Mask) )                             // 3.4.1:8.2
+          orIfNotFound                                      lookupMember(X, C, IsBody, Tag, Mask)                             // 3.4.1:8.2
           orIfNotFound guardedFind(X, isInnerClass(C),      lookupOuterMember(X, getOuterClass(C), IsBody, Tag, Mask))          // 3.4.1:8.3
           orIfNotFound guardedFind(X, isLocalInnerClass(C), lookupLocalBeforeClass(X, C, Tag, Mask))                    // 3.4.1:8.4
           orIfNotFound                                      nameLookupInFullNamespace(X, getClassNamespace(C), Tag, Mask, .Set)   // 3.4.1:8.5
@@ -351,22 +330,22 @@ module CPP-TRANSLATION-NAME
              requires HOLE =/=K NoNNS()
              [result(NNSVal)]
      rule (.K => qualifiedNameLookup(X, N, defaultMask)) ~> CallExpr(Name(N:NNSVal, X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xe(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(xv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId), _, krlist(.List))
+          requires isTExprKLabel(#klabel(Lbl))
 
      rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> CallExpr(V:Val . no-template Name(C:NNSVal, X::CId), _, _)
 
-     rule cSet(Y::Map, X::QualId, .K) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
-          => resolveOverload(cSet(Y, X, .K), Args, E)
-     rule cSet(Y::Map, X::QualId, This()) ~> CallExpr(N:Name, Args::StrictList, krlist(.List))
-          => resolveOverload(cSet(Y, X, This()), Args, (* This()) . no-template N)
+     rule cSet(Y::TypeMap, X::QualId) ~> CallExpr(E::Expr, Args::StrictList, krlist(.List))
+          => resolveOverload(cSet(Y, X), Args, E)
 
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> le(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
-     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> lv(_, _, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+          requires isValKLabel(#klabel(Lbl))
+     rule (.K => qualifiedNameLookup(X, C, defaultMask)) ~> Lbl:KLabel(_::CPPValue, _::Trace, t(... st: classType(C::Class))) . no-template Name(NoNNS(), X::CId)
+          requires isTExprKLabel(#klabel(Lbl))
 
-     rule (cSet(_, C:Class :: _, _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
+     rule (cSet(_, C:Class :: _) => .K) ~> _ . no-template Name(NoNNS() => C, _)
 
      syntax Bool ::= isQualifiedName(Expr)
      rule isQualifiedName(Name(N::NNS, _)) => true
@@ -381,10 +360,23 @@ module CPP-TRANSLATION-NAME
        => resolveUniqueDecl(#if N ==K NoNNS()
                             #then nameLookup(X, NoTag(), defaultMask)
                             #else qualifiedNameLookup(X, N, defaultMask)
-                            #fi, Name(N, X))
+                            #fi, Name(N, X), false)
+
+     rule & Name(N::NNS, X::CId)
+       => & resolveUniqueDecl(#if N ==K NoNNS()
+                              #then nameLookup(X, NoTag(), defaultMask)
+                              #else qualifiedNameLookup(X, N, defaultMask)
+                              #fi, Name(N, X), N =/=K NoNNS())
+
+     context & HOLE:Expr
+             requires notBool isName(HOLE) andBool notBool isExprLoc(HOLE)
+     rule <k> & (ExprLoc(L::CabsLoc, E::Expr) => E) ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
 
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS()) => resolveElabSpecifier(T, nameLookup(X, T, typeMask))
      requires T =/=K NoTag()
+     rule ElaboratedTypeSpecifier(T::Tag, X::CId, N::NNS) => qualifiedNameLookup(X, N, typeMask)
+     requires T =/=K NoTag() andBool N =/=K NoNNS()
      rule ElaboratedTypeSpecifier(T::Tag, X::CId, NoNNS(), Args::List) => resolveElabSpecifier(nameLookup(X, T, typeMask), list(Args))
      requires T =/=K NoTag()
 
@@ -399,6 +391,7 @@ module CPP-TRANSLATION-NAME
      rule NNS(Name(N::NNS, X::CId)) => extractNNS(qualifiedNameLookup(X, N, nnsMask))
           requires N =/=K NoNNS()
      rule NNS(Name(NoNNS(), X::CId)) => NNS(X)
+     rule N::NNS :: NNS(X:CId) => NNS(Name(N, X)) [anywhere]
 
      syntax KItem ::= extractNNS(K) [strict]
      rule extractNNS(nsRef(N::Namespace)) => N
@@ -464,20 +457,20 @@ module CPP-TRANSLATION-NAME
           requires notBool isDependentInScope(T)
      rule cSet(... candidates: .Map) ~> isTypeDependent(Name(NoNNS(), _), _) => false
 
-     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::Map, QX::QualId, Obj:K)) => cSet(Y, QX, Obj) ...</k>
+     rule <k> false ~> argDependentNameLookup(X::CId, Args::StrictList, Types::StrictList, cSet(Y::TypeMap, QX::QualId)) => cSet(Y, QX) ...</k>
            <env> Env::Map </env>
            requires hasSpecialDeclInArgLookup(X, Y, Env)
 
-     syntax Bool ::= hasSpecialDeclInArgLookup(CId, Map, Map) [function]
+     syntax Bool ::= hasSpecialDeclInArgLookup(CId, TypeMap, Map) [function]
      // 3.4.2:3.2
-     rule hasSpecialDeclInArgLookup(X::CId, _, _::Map (X |-> ((T:CPPFunctionTypeExpr |-> envEntry(... using: false)) _))) => true
+     rule hasSpecialDeclInArgLookup(X::CId, _, _::Map (X |-> ((T:CPPFunctionTypeExpr |-> envEntry(... using: false)) _::TypeMap))) => true
      rule hasSpecialDeclInArgLookup(_, T::CPPType |-> _, _) => true
           requires notBool isCPPFunctionType(T)
      rule hasSpecialDeclInArgLookup(_, _, _) => false [owise]
 
      // associated namespaces
      rule <k> (.K => getFunctionAddressTypes(Args)) 
-              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(... candidates: Y::Map)) ...</k>
+              ~> false ~> argDependentNameLookup(X::CId, list(Args::List), krlist(Types::List), cSet(... candidates: Y::TypeMap)) ...</k>
           <env> Env::Map </env>
           requires notBool hasSpecialDeclInArgLookup(X, Y, Env)
      rule <k> (.K => getFunctionAddressTypes(Args)) 
@@ -491,7 +484,7 @@ module CPP-TRANSLATION-NAME
      // and return type
      syntax KItem ::= getFunctionAddressTypes(List)
      rule (.K => nameLookup(X, NoTag(), defaultMask)) ~> getFunctionAddressTypes((ListItem(Name(NoNNS(), X::CId)) => .List) _)
-     rule (cSet(... candidates: M::Map) => .K) ~> getFunctionAddressTypes(_) ~> false ~> argDependentNameLookup(_, _, krlist(_::List (.List => filterList(keys_list(M), #klabel(`isCPPFunctionType`)))), _)
+     rule (cSet(... candidates: M::TypeMap) => .K) ~> getFunctionAddressTypes(_) ~> false ~> argDependentNameLookup(_, _, krlist(_::List (.List => filterList(keys_list(M), #klabel(`isCPPFunctionType`)))), _)
      rule getFunctionAddressTypes((ListItem(N::Init) => .List) _)
           requires notBool isName(N) andBool notBool isAddressOfName(N)
 
@@ -589,22 +582,22 @@ module CPP-TRANSLATION-NAME
           => filterNonMemberLookupSet(argDependentNameLookup(O, list(ListItem(E1) ListItem(E2))), T1, T2)
      rule filterNonMemberLookupSet(notFound(_) #as C::CandidateSet, _) => C
      rule filterNonMemberLookupSet(notFound(_) #as C::CandidateSet, _, _) => C
-     rule filterNonMemberLookupSet(cSet(M::Map, Q::QualId, Obj:K), T::CPPType)
-          => #if isCPPClassType(T) #then cSet(stripMemberFunctions(M), Q, Obj) #else cSet(stripEnum1(stripMemberFunctions(M), T), Q, Obj) #fi
-     rule filterNonMemberLookupSet(cSet(M::Map, Q::QualId, Obj:K), T1::CPPType, T2::CPPType)
-          => #if isCPPClassType(T1) orBool isCPPClassType(T2) #then cSet(stripMemberFunctions(M), Q, Obj) #else cSet(stripEnum1(stripEnum2(stripMemberFunctions(M), T2), T1), Q, Obj) #fi
+     rule filterNonMemberLookupSet(cSet(M::TypeMap, Q::QualId), T::CPPType)
+          => #if isCPPClassType(T) #then cSet(stripMemberFunctions(M), Q) #else cSet(stripEnum1(stripMemberFunctions(M), T), Q) #fi
+     rule filterNonMemberLookupSet(cSet(M::TypeMap, Q::QualId), T1::CPPType, T2::CPPType)
+          => #if isCPPClassType(T1) orBool isCPPClassType(T2) #then cSet(stripMemberFunctions(M), Q) #else cSet(stripEnum1(stripEnum2(stripMemberFunctions(M), T2), T1), Q) #fi
 
-     syntax Map ::= stripMemberFunctions(Map) [function]
-     rule stripMemberFunctions(M::Map T:CPPFunctionType |-> _) => stripMemberFunctions(M)
+     syntax TypeMap ::= stripMemberFunctions(TypeMap) [function]
+     rule stripMemberFunctions(M::TypeMap T:CPPFunctionType |-> _) => stripMemberFunctions(M)
           requires isFunctionMember(T)
      rule stripMemberFunctions(.Map) => .Map
-     rule stripMemberFunctions(M::Map T::CPPType |-> K:K) => T |-> K stripMemberFunctions(M) [owise]
-     syntax Map ::= stripEnum1(Map, CPPType) [function]
-                  | stripEnum2(Map, CPPType) [function]
+     rule stripMemberFunctions(M::TypeMap T::CPPType |-> K:K) => T |-> K stripMemberFunctions(M) [owise]
+     syntax TypeMap ::= stripEnum1(TypeMap, CPPType) [function]
+                  | stripEnum2(TypeMap, CPPType) [function]
      syntax Bool ::= stripEnum(Int, List, CPPType) [function]
-     rule stripEnum1(M::Map T:CPPFunctionType |-> K:K, T1:CPPEnumType)
+     rule stripEnum1(M::TypeMap T:CPPFunctionType |-> K:K, T1:CPPEnumType)
           => #if stripEnum(0, getParams(T), T1) #then .Map #else T |-> K #fi stripEnum1(M, T1)
-     rule stripEnum2(M::Map T:CPPFunctionType |-> K:K, T2:CPPEnumType)
+     rule stripEnum2(M::TypeMap T:CPPFunctionType |-> K:K, T2:CPPEnumType)
           => #if stripEnum(1, getParams(T), T2) #then .Map #else T |-> K #fi stripEnum1(M, T2)
 
      rule stripEnum(I::Int, L::List, T::CPPType)
@@ -612,8 +605,8 @@ module CPP-TRANSLATION-NAME
 
      rule stripEnum1(.Map, _) => .Map
      rule stripEnum2(.Map, _) => .Map
-     rule stripEnum1(M::Map T::CPPType |-> K:K, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
-     rule stripEnum2(M::Map T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
+     rule stripEnum1(M::TypeMap T::CPPType |-> K:K, T1::CPPType) => T |-> K stripEnum1(M, T1) [owise]
+     rule stripEnum2(M::TypeMap T::CPPType |-> K:K, T2::CPPType) => T |-> K stripEnum2(M, T2) [owise]
 
      rule addBuiltinCandidates(operator,, E1::Expr, _, _, E2::Expr, _, _, C1:CandidateSet, C2:CandidateSet) 
           => resolveEmptyOverload(cSetUnion2(C1, C2), list(ListItem(E1) ListItem(E2)), Comma(E1, E2), BinaryOperator(operator,, E1, E2))
@@ -660,13 +653,13 @@ module CPP-TRANSLATION-NAME
 
      syntax CandidateSet ::= pairwiseReturning(CPPType, Set, Expr, OpId) [function]
                            | identicalReturning(CPPType, Set, Expr, OpId) [function]
-                           | makeSet(Map, OpId) [function]
+                           | makeSet(TypeMap, OpId) [function]
      syntax Set ::= enumTypesFrom(CPPType) [function]
                   | pointerTypesFrom(CPPType) [function]
                   | "promotedArithmeticTypes" [function]
                   | "promotedIntegralTypes" [function]
 
-     syntax Map ::= #identicalReturning(CPPType, Set, Expr) [function]
+     syntax TypeMap ::= #identicalReturning(CPPType, Set, Expr) [function]
                   | #pairwiseReturning(CPPType, Set, Set, Expr) [function]
                   | #pairwiseReturning2(CPPType, CPPType, Set, Expr) [function]
 
@@ -693,7 +686,7 @@ module CPP-TRANSLATION-NAME
           SetItem(type(long-long))
           SetItem(type(unsigned-long-long))
 
-     rule makeSet(M::Map, O::OpId) => cSet(M, NoNamespace() :: O, .K)
+     rule makeSet(M::TypeMap, O::OpId) => cSet(M, NoNamespace() :: O)
 
      rule identicalReturning(Ret::CPPType, S::Set, E::Expr, O::OpId)
           => makeSet(#identicalReturning(Ret, S, E), O)

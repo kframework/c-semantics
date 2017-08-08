@@ -52,9 +52,8 @@ module LIBC-STDIO
           <fid> FD </fid>
           <uri> Path </uri>
           [structural]
-     rule <k> fsetpos(V:RValue, _) => eof ...</k>
+     rule <k> fsetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
           [structural]
@@ -85,12 +84,11 @@ module LIBC-STDIO
           <last-op> Op:LastFileOp => flushOp </last-op>
           requires isWritable(Mode) andBool (Op =/=K inputOp)
           [structural]
-     rule <k> fflush(V:RValue) => eof ...</k>
+     rule <k> fflush(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
-     rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an update stream on which the most recent operation was input."))
+     rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an input/output stream on which the most recent operation was input."))
                ~> fflush(tv(opaque(FD:Int, _), _))
           ...</k>
           <fid> FD </fid>
@@ -105,7 +103,6 @@ module LIBC-STDIO
      rule fflushAll(.Set) => success
           [structural]
 
-     // TODO(chathhorn): SEEK_END.
      syntax KItem ::= fseek(K, Int, Int)
      context fseek(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
      rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 0)
@@ -117,6 +114,12 @@ module LIBC-STDIO
      rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 1)
           => flush(FD)
           ~> seek(FD, Offset, seekCur)
+          ~> cleareof(FD)
+          ~> success
+          [structural]
+     rule fseek(tv(opaque(FD:Int, _), _), Offset::Int, 2)
+          => flush(FD)
+          ~> seek(FD, Offset, seekEnd)
           ~> cleareof(FD)
           ~> success
           [structural]
@@ -146,9 +149,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> fgetpos(V:RValue, _) => eof ...</k>
+     rule <k> fgetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool (notBool getFD(V) in OpenFiles)
           [structural]
@@ -192,7 +194,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
 
@@ -235,7 +237,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
      rule str(S::String) ~> fgetc(_)
@@ -307,9 +309,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> fileno(V:RValue) => eof ...</k>
+     rule <k> fileno(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool notBool (getFD(V) in OpenFiles)
           [structural]
@@ -418,8 +419,8 @@ module LIBC-STDIO
           requires notBool (isReadable(Mode) orBool isWritable(Mode) orBool isReadWritable(Mode))
           [structural]
 
-     syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")" [strict(4)]
-     rule <k> fopen'(Base::SymBase, Filename::String, Mode::String, tv(FD:Int, _))
+     syntax KItem ::= "fopen'" "(" SymBase "," String "," String "," K ")"
+     rule <k> fopen'(Base::SymBase, Filename::String, Mode::String, FD:Int)
                => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
                ~> & fileLVal(Base)
           ...</k>
@@ -434,6 +435,11 @@ module LIBC-STDIO
                )
           ...</files>
           [structural]
+
+     rule <k> fopen'(_, _, _, Err:IOError) 
+              => setErrno(Err)
+              ~> tv(NullPointer, utype(pointerType(type(file)))) ...</k>
+          
 
      rule builtin("setbuf", FDPtr::RValue, tv(Loc:SymLoc, _) #as BufPtr::RValue)
           => trapBuf(Loc, bufSiz)
@@ -490,9 +496,8 @@ module LIBC-STDIO
           <open-files> OpenFiles:Set </open-files>
           requires FD in OpenFiles
           [structural]
-     rule <k> setbuf(V:RValue, _, _) => eof ...</k>
+     rule <k> setbuf(V:RValue, _, _) => setErrno(#EBADF) ~> eof ...</k>
           <open-files> OpenFiles:Set </open-files>
-          <errno> _ => EBADF </errno>
           requires (getFD(V) ==K "")
                orBool notBool (getFD(V) in OpenFiles)
           [structural]
@@ -522,7 +527,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
      rule <k> fread(_, _, _, V:RValue) => eof ...</k>
@@ -609,7 +614,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fprintf(V:RValue, _) => eof ...</k>
@@ -633,7 +638,7 @@ module LIBC-STDIO
           ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fwrite(_, _, V:RValue) => eof ...</k>
@@ -835,7 +840,7 @@ module LIBC-STDIO
      rule <k> fscanf'(FD::FauxFD, _) => eof ...</k>
           <fid> FD </fid>
           <mode> Mode:String </mode>
-          <ferror> _ => EBADF </ferror>
+          <ferror> _ => getErrno(#EBADF) </ferror>
           requires notBool isReadable(Mode)
           [structural]
 
@@ -1451,10 +1456,10 @@ module LIBC-STDIO
      rule tail(ListItem(_) L::List) => L
      rule tail(_) => .List [owise]
 
-     syntax String ::= fst(ParseStrResult) [function]
+     syntax String ::= fst(ParseStrResult) [function, klabel(fstParseStr)]
      rule fst(parseStrResult(S::String, _)) => S
 
-     syntax List ::= snd(ParseStrResult) [function]
+     syntax List ::= snd(ParseStrResult) [function, klabel(sndParseStr)]
      rule snd(parseStrResult(_, L::List)) => L
 
      syntax KItem ::= formatter(K, List) [strict(1)]
@@ -1491,6 +1496,7 @@ module LIBC-STDIO
      rule [format-reset]:
           <k> formatter'(_) ...</k>
           <format-pad-zero> _ => false </format-pad-zero>
+          <format-alt-form> _ => false </format-alt-form>
           <format-field-width> _ => "" </format-field-width>
           <format-precision> _ => "" </format-precision>
           <format-length> _ => "" </format-length>
@@ -1598,6 +1604,12 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           [structural]
      rule <k> formatter'(_) ...</k>
+          <format-alt-form> _ => true </format-alt-form>
+          <format-field-width> "" </format-field-width>
+          <format> ListItem("#") => .List ...</format>
+          <format-state> "%" </format-state>
+          [structural]
+     rule <k> formatter'(_) ...</k>
           <format-field-width> W:String => W +String "0" </format-field-width>
           <format> ListItem("0") => .List ...</format>
           <format-state> "%" </format-state>
@@ -1610,6 +1622,11 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           requires isSign(C) orBool (isDigit(C, 10) andBool C =/=String "0")
           [structural]
+
+     rule <k> formatter'(_) ...</k>
+          <format> ListItem("*") => .List ...</format>
+          <format-field-width> "" => "*" </format-field-width>
+          <format-state> "%" </format-state>
 
      rule <k> formatter'(_) ...</k>
           <format> ListItem(".") => .List ...</format>
@@ -1628,17 +1645,47 @@ module LIBC-STDIO
           <format-precision> P:String </format-precision>
           <format-state> "%." => "%" </format-state>
           requires P =/=K ""
-               andBool notBool isDigit(C, 10)
+               andBool notBool isDigit(C, 10) andBool notBool C ==K "*"
           [structural]
 
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
-          <format-precision> P:String => "0" </format-precision>
+          <format-precision> "" => "0" </format-precision>
           <format-state> "%." => "%" </format-state>
-          requires P ==K ""
-               andBool notBool isDigit(C, 10)
+          requires notBool isDigit(C, 10) andBool notBool C ==K "*"
           [structural]
 
+     rule <k> formatter'(_) ...</k>
+          <format> ListItem("*") => .List ...</format>
+          <format-precision> "" => "*" </format-precision>
+          <format-state> "%." => "%" </format-state>
+
+     rule <k> (.K => UNDEF("STDIO10",
+               "'printf': Invalid conversion specifier with '#' flag."))
+              ~> formatter'(_)
+          ...</k>
+          <format-alt-form> true </format-alt-form>
+          <format-state> State::String </format-state>
+          requires State ==String "%d"
+               orBool State ==String "%i"
+               orBool State ==String "%u"
+               orBool State ==String "%c"
+               orBool State ==String "%s"
+               orBool State ==String "%p"
+               orBool State ==String "%n"
+               orBool State ==String "%%"
+
+     rule <k> (.K => UNDEF("STDIO11",
+               "'printf': Invalid conversion specifier with '0' flag."))
+              ~> formatter'(_)
+          ...</k>
+          <format-pad-zero> true </format-pad-zero>
+          <format-state> State::String </format-state>
+          requires State ==String "%c"
+               orBool State ==String "%s"
+               orBool State ==String "%p"
+               orBool State ==String "%n"
+               orBool State ==String "%%"
 
      /*@ \source[n1570]{\para{7.21.6.1}{8}}
      \begin{description}
@@ -1652,22 +1699,13 @@ module LIBC-STDIO
      \end{description}
      */
 
-     rule <k> formatter'(_) ...</k>
-          <format> ListItem(S:String) ...</format>
-          <format-precision> P:String => "1" </format-precision>
-          <format-state> "%" </format-state>
-          requires P ==K ""
-               andBool (S ==String "d" orBool S ==String "i" orBool S ==String "u"
-                        orBool S ==String "x" orBool S ==String "X"
-                        orBool S ==String "o")
-          [structural]
-
      rule [format-%d-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem(S:String) => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%d" </format-state>
-          requires P =/=K "" andBool (S ==String "d" orBool S ==String "i")
+          requires S ==String "d" orBool S ==String "i"
           [structural]
 
      rule <k> formatter'(_) ...</k>
@@ -1683,11 +1721,12 @@ module LIBC-STDIO
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
           <format-field-width> W:String </format-field-width>
+          <format-alt-form> false </format-alt-form>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
-                                             Z,
+                                             Z, "",
                                              String2Int(W)))
           </format-result>
           <format-state> "%d" => "reset" </format-state>
@@ -1710,21 +1749,22 @@ module LIBC-STDIO
      rule [format-%o-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("o") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%o" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%o]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 8),
                                              String2Int(P),
-                                             Z,
+                                             Z, #if Hash #then "0" #else "" #fi,
                                              String2Int(W)))
           </format-result>
           <format-state> "%o" => "reset" </format-state>
@@ -1732,21 +1772,22 @@ module LIBC-STDIO
      rule [format-%u-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("u") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%u" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%u]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Int2String(D),
                                              String2Int(P),
-                                             Z,
+                                             Z, "",
                                              String2Int(W)))
           </format-result>
           <format-state> "%u" => "reset" </format-state>
@@ -1754,21 +1795,22 @@ module LIBC-STDIO
      rule [format-%x-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("x") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%x" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%x]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
                         formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(P),
-                                             Z,
+                                             Z, #if Hash #then "0x" #else "" #fi,
                                              String2Int(W)))
           </format-result>
           <format-state> "%x" => "reset" </format-state>
@@ -1776,22 +1818,23 @@ module LIBC-STDIO
      rule [format-%X-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("X") => .List ...</format>
-          <format-precision> P:String </format-precision>
+          <format-precision> P:String => #if P ==String "" #then "1" #else P #fi </format-precision>
+          <format-pad-zero> Z::Bool => #if P ==String "" #then Z #else false #fi </format-pad-zero>
           <format-state> "%" => "%X" </format-state>
-          requires P =/=K ""
           [structural]
      rule [format-%X]:
           <k> formatter'(_) ...</k>
           <format-arg> D:Int => .K </format-arg>
           <format-precision> P:String </format-precision>
           <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-alt-form> Hash:Bool </format-alt-form>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth(toUpperCase(Base2String(D, 16)),
+                        toUpperCase(formatPrecisionWidth(Base2String(D, 16),
                                              String2Int(P),
-                                             Z,
-                                             String2Int(W)))
+                                             Z, #if Hash #then "0X" #else "" #fi,
+                                             String2Int(W))))
           </format-result>
           <format-state> "%X" => "reset" </format-state>
           [structural]
@@ -1822,6 +1865,7 @@ module LIBC-STDIO
 
      //TODO(traiansf): missing formatting for long double
      //TODO(traiansf): width specs for floats are not working
+     //TODO(dwightguth): support alternate form
      rule [format-%f-start]:
           <k> formatter'(Args:List) => formatter-next(Args) ...</k>
           <format> ListItem("f") => .List ...</format>
@@ -1979,6 +2023,8 @@ module LIBC-STDIO
      rule [format-%c]:
           <k> formatter'(_) ...</k>
           <format-arg> C:Int => .K </format-arg>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-result>...
                .List => ListItem(chrChar(((C:Int %Int 256) +Int 256)
                     %Int 256))
@@ -2019,18 +2065,24 @@ module LIBC-STDIO
           <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString'(Loc))
+          <k> (.K => getString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
                ~> formatter'(_)
           ...</k>
           <format-length> "" </format-length>
+          <format-precision> P::String </format-precision>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
      rule [format-%ls]:
-          <k> (.K => getWString'(Loc))
+          <k> (.K => getWString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
                ~> formatter'(_)
           ...</k>
           <format-length> "l" </format-length>
+          <format-precision> P::String </format-precision>
+          <format-pad-zero> false </format-pad-zero>
+          <format-alt-form> false </format-alt-form>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
           [structural]
@@ -2060,14 +2112,15 @@ module LIBC-STDIO
      rule [format-%p]:
           <k> formatter'(_) ...</k>
           <format-arg> Loc:SymLoc => .K </format-arg>
-          <format-precision> P:String </format-precision>
-          <format-pad-zero> Z:Bool </format-pad-zero>
+          <format-precision> "" </format-precision>
+          <format-alt-form> false </format-alt-form>
+          <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
                .List => ListItem(
-                        formatPrecisionWidth("0x" +String Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
-                                             String2Int(P),
-                                             Z,
+                        formatPrecisionWidth(Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
+                                             1,
+                                             false, "0x",
                                              String2Int(W)))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
@@ -2094,10 +2147,18 @@ module LIBC-STDIO
      rule [format-%%]:
           <k> formatter'(_) ...</k>
           <format> ListItem("%") => .List ...</format>
+          <format-state> "%" => "%%" </format-state>
+          [structural]
+     rule <k> formatter'(_) ...</k>
+          <format-field-width> "" </format-field-width>
+          <format-alt-form> false </format-alt-form>
+          <format-pad-zero> false </format-pad-zero>
+          <format-length> "" </format-length>
+          <format-precision> "" </format-precision>
           <format-result>...
                .List => ListItem("%")
           </format-result>
-          <format-state> "%" => "reset" </format-state>
+          <format-state> "%%" => "reset" </format-state>
           [structural]
 
      rule [format-%l]:
@@ -2115,9 +2176,28 @@ module LIBC-STDIO
           [structural]
 
      syntax KItem ::= "formatter-next" "(" List ")"
-     rule formatter-next(ListItem(V:RValue) Args:List)
-          => formatter-arg(nextvarg(V, getFormatType), Args)
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-arg(nextvarg(V, getFormatType), Args)
+          ...</k>
+          <format-field-width> W::String </format-field-width>
+          <format-precision> P::String </format-precision>
+          requires W =/=String "*" andBool P =/=String "*"
           [structural]
+
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-width(nextvarg(V, type(int)), Args)
+          ...</k>
+          <format-field-width> "*" </format-field-width>
+          [structural]
+
+     rule <k> formatter-next(ListItem(V:RValue) Args:List)
+              => formatter-prec(nextvarg(V, type(int)), Args)
+          ...</k>
+          <format-field-width> W::String </format-field-width>
+          <format-precision> "*" </format-precision>
+          requires W =/=String "*"
+          [structural]
+
 
      syntax KItem ::= "formatter-arg" "(" K "," List ")" [strict(1)]
      rule <k> formatter-arg(tv(V::CValue, _), Args:List)
@@ -2125,6 +2205,20 @@ module LIBC-STDIO
           ...</k>
           <format-arg> _ => V </format-arg>
           [structural]
+     syntax KItem ::= "formatter-prec" "(" K "," List ")" [strict(1)]
+     rule <k> formatter-prec(tv(V:Int, _), Args:List)
+               => formatter-next(Args)
+          ...</k>
+          <format-precision> _ => Int2String(V) </format-precision>
+          [structural]
+     syntax KItem ::= "formatter-width" "(" K "," List ")" [strict(1)]
+     rule <k> formatter-width(tv(V:Int, _), Args:List)
+               => formatter-next(Args)
+          ...</k>
+          <format-field-width> _ => Int2String(V) </format-field-width>
+          [structural]
+
+
 
      syntax KItem ::= nextvarg(RValue, K) [strict(2)]
      rule <k> nextvarg(tv(V:CValue, T'::UType), T:Type) => tv(V, utype(T)) ...</k>
@@ -2132,7 +2226,7 @@ module LIBC-STDIO
           <format-length> Length:String </format-length>
           requires utype(T) ==Type T'
                orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
-               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T'))
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T))
           [structural]
      rule <k> (.K => UNDEF("STDIO1",
                "'printf': Mismatch between the type expected by the conversion specifier "
@@ -2143,7 +2237,7 @@ module LIBC-STDIO
           <format-length> Length:String </format-length>
           requires notBool (utype(T) ==Type T'
                orBool (isIntegerType(T) andBool promote(utype(T)) ==Type T')
-               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T')))
+               orBool (State ==K "%s" andBool Length ==K "" andBool isPointerToCharType(T') andBool isPointerType(T)))
           [structural]
 
      /*@ \source[n1570]{\para{7.21.6.1}{7}}
@@ -2232,26 +2326,30 @@ module LIBC-STDIO
      rule pad'(X::String, W::Int, _) => X
           requires W ==Int 0
 
-    syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," Int ")" [function]
-                    | "formatPrecisionWidth'" "(" String "," Int "," Bool "," Int ")" [function]
-                    | "formatPrecisionWidth''" "(" String "," Int "," Int "," String ")" [function]
+    syntax String ::= "formatPrecisionWidth" "(" String "," Int "," Bool "," String "," Int ")" [function]
+                    | "formatPrecisionWidth'" "(" String "," Int "," Bool "," String "," Int ")" [function]
+                    | "formatPrecisionWidth''" "(" String "," Int "," String "," Int ")" [function]
 
-    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth'(V, P, Z, W)
-         requires V =/=String "0" orBool P =/=Int 0
-    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth'("", P, Z, W)
-         requires V ==String "0" andBool P ==Int 0
+    rule formatPrecisionWidth(V::String, P::Int, Z::Bool, Prefix::String, W::Int)
+         => formatPrecisionWidth'(V, P, #if W <Int 0 #then false #else Z #fi, Prefix, W)
+         requires V =/=String "0" orBool P =/=Int 0 orBool Prefix ==String "0"
+    rule formatPrecisionWidth("0", 0, Z::Bool, Prefix::String, W::Int)
+         => formatPrecisionWidth'("", 0, #if W <Int 0 #then false #else Z #fi, Prefix, W)
+         requires Prefix =/=String "0"
 
-    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth''(V, P, W, "0")
-         requires Z ==Bool true
-    rule formatPrecisionWidth'(V::String, P::Int, Z::Bool, W::Int)
-         => formatPrecisionWidth''(V, P, W, " ")
-         requires Z ==Bool false
+    rule formatPrecisionWidth'(V::String, P::Int, true, Prefix::String, W::Int)
+         => formatPrecisionWidth''(V, maxInt(P, W -Int lengthString(Prefix)), Prefix, 0)
+    rule formatPrecisionWidth'(V::String, P::Int, false, Prefix::String, W::Int)
+         => formatPrecisionWidth''(V, P, Prefix, W)
 
-    rule formatPrecisionWidth''(V::String, P::Int, W::Int, PZ::String)
-         => pad(pad(V, P, "0"), W, PZ)
+    rule formatPrecisionWidth''(V::String, P::Int, "0", W::Int)
+         => pad(#fun(V2::String => #if firstChar(V2) ==String "0" #then V2 #else "0" +String V2 #fi)(pad(V, P, "0")), W, " ")
+    rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
+         => pad(pad(V, P, "0"), W, " ")
+         requires ((V ==String "0" orBool V ==String "") andBool (Prefix ==String "0x" orBool Prefix ==String "0X")) orBool Prefix ==String ""
+    rule formatPrecisionWidth''(V::String, P::Int, Prefix::String, W::Int)
+         => pad(Prefix +String pad(V, P, "0"), W, " ")
+         requires V =/=String "0" andBool V =/=String "" andBool (Prefix ==String "0x" orBool Prefix ==String "0X")
 
      syntax Int ::= signInt(Int) [function]
      rule signInt(X::Int) => X /Int absInt(X)
@@ -2284,7 +2382,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "hh") => type(signed-char)
      rule getFormatType'("%i", "hh") => type(signed-char)
-     rule getFormatType'("%o", "hh") => type(signed-char)
+     rule getFormatType'("%o", "hh") => type(unsigned-char)
      rule getFormatType'("%u", "hh") => type(unsigned-char)
      rule getFormatType'("%x", "hh") => type(unsigned-char)
      rule getFormatType'("%X", "hh") => type(unsigned-char)
@@ -2292,7 +2390,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "h") => type(short-int)
      rule getFormatType'("%i", "h") => type(short-int)
-     rule getFormatType'("%o", "h") => type(short-int)
+     rule getFormatType'("%o", "h") => type(unsigned-short-int)
      rule getFormatType'("%u", "h") => type(unsigned-short-int)
      rule getFormatType'("%x", "h") => type(unsigned-short-int)
      rule getFormatType'("%X", "h") => type(unsigned-short-int)
@@ -2300,7 +2398,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "") => type(int)
      rule getFormatType'("%i", "") => type(int)
-     rule getFormatType'("%o", "") => type(int)
+     rule getFormatType'("%o", "") => type(unsigned-int)
      rule getFormatType'("%u", "") => type(unsigned-int)
      rule getFormatType'("%x", "") => type(unsigned-int)
      rule getFormatType'("%X", "") => type(unsigned-int)
@@ -2308,7 +2406,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "l") => type(long-int)
      rule getFormatType'("%i", "l") => type(long-int)
-     rule getFormatType'("%o", "l") => type(long-int)
+     rule getFormatType'("%o", "l") => type(unsigned-long-int)
      rule getFormatType'("%u", "l") => type(unsigned-long-int)
      rule getFormatType'("%x", "l") => type(unsigned-long-int)
      rule getFormatType'("%X", "l") => type(unsigned-long-int)
@@ -2316,7 +2414,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "ll") => type(long-long-int)
      rule getFormatType'("%i", "ll") => type(long-long-int)
-     rule getFormatType'("%o", "ll") => type(long-long-int)
+     rule getFormatType'("%o", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%u", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%x", "ll") => type(unsigned-long-long-int)
      rule getFormatType'("%X", "ll") => type(unsigned-long-long-int)
@@ -2324,7 +2422,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
      rule getFormatType'("%i", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
-     rule getFormatType'("%o", "z") => type(correspondingSignedType(utype(cfg:sizeut)))
+     rule getFormatType'("%o", "z") => type(cfg:sizeut)
      rule getFormatType'("%u", "z") => type(cfg:sizeut)
      rule getFormatType'("%x", "z") => type(cfg:sizeut)
      rule getFormatType'("%X", "z") => type(cfg:sizeut)
@@ -2332,7 +2430,7 @@ module LIBC-STDIO
 
      rule getFormatType'("%d", "t") => type(cfg:ptrdiffut)
      rule getFormatType'("%i", "t") => type(cfg:ptrdiffut)
-     rule getFormatType'("%o", "t") => type(cfg:ptrdiffut)
+     rule getFormatType'("%o", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%u", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%x", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))
      rule getFormatType'("%X", "t") => type(correspondingUnsignedType(utype(cfg:ptrdiffut)))

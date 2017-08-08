@@ -48,14 +48,14 @@ module CPP-DECL-ENUM
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> NT::Map => NT[X, Enum() <- E] </ntypes>
+          <ntypes> NT::Map => NT[X <- E] </ntypes>
      rule <k> #addEnumToEnv(X::CId, C::Class, E::CPPEnumType) => . ... </k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <ctypes> NT::Map => NT[X, Enum() <- E] </ctypes>
+          <ctypes> NT::Map => NT[X <- E] </ctypes>
      rule <k> #addEnumToEnv(X::CId, NoNamespace(), E::CPPEnumType) => . ... </k>
-          <types> NT::Map => NT[X, Enum() <- E] </types>
+          <types> NT::Map => NT[X <- E] </types>
 
 
      syntax KItem ::= enumContext(CId, CPPEnumType, List, fixed: Bool, ut: CPPIntegerType, opaque: Bool) [strict(2)]

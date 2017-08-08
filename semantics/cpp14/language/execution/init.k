@@ -6,6 +6,7 @@ module CPP-EXECUTION-INIT
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-SYNTAX
 
      imports LIBC-IO-SYNTAX
@@ -37,6 +38,7 @@ module CPP-EXECUTION-INIT
      rule <k> setupCppEnv(Argc::Int) => .K ...</k>
           // adjust environment to C++ form
           <env>... Identifier("#incomingArgumentsArray") |-> (Argv::SymBase => (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs()))) ...</env>
+          <types>... Identifier("#incomingArgumentsArray") |-> _ => .Map ...</types>
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>

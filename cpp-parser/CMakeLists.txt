@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(clang-kast)
 
-set(LLVM_PATH /usr/lib/llvm-3.6)
+set(LLVM_PATH /usr/lib/llvm-3.9)
 link_directories(${LLVM_PATH}/lib)
 include_directories(${LLVM_PATH}/include)
 
@@ -30,6 +30,7 @@ target_link_libraries(clang-kast
 )
 
 target_link_libraries(clang-kast
+  LLVMProfileData
   LLVMX86AsmParser # MC, MCParser, Support, X86Desc, X86Info
   LLVMX86Desc # MC, Support, X86AsmPrinter, X86Info
   LLVMX86AsmPrinter # MC, Support, X86Utils

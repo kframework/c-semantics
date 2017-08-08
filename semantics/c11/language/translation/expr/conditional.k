@@ -18,16 +18,25 @@ module C-EXPR-CONDITIONAL
      equal to 0; the result is the value of the second or third operand
      (whichever is evaluated), converted to the type described below.
      }*/
-     rule (.K => typeof(E1 ? E2 : E3)) ~> E1:K ? E2:K : E3:K
 
-     rule typeof(T:Type) ~> E:K ? E1:K : E2:K
-          => evalConditional(simplifyTruth(E), Cast(T, E1), Cast(T, E2), utype(T))
+     rule E:K ? E1:K : E2:K
+          => evalConditional(simplifyTruth(E), E1, E2)
+
+     syntax KItem ::= evalConditional(K, K, K)
+     context evalConditional(HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
+     context evalConditional(_, HOLE:KItem => reval(HOLE), _) [result(RValue)]
+     context evalConditional(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
+
+     rule (.K => typeof(C ? E1 : E2)) ~> evalConditional(C:RValue, E1:RValue, E2:RValue)
+
+     rule typeof(T:Type) ~> evalConditional(E:K, E1:K, E2:K)
+          => evalConditional(E, Cast(T, E1), Cast(T, E2), utype(T))
           requires notBool isVariablyModifiedType(T)
-     rule typeof(T:Type) ~> E:K ? E1:K : E2:K
-          => evalConditional(simplifyTruth(E), E1, E2, utype(T))
+     rule typeof(T:Type) ~> evalConditional(E:K, E1:K, E2:K)
+          => evalConditional(E, E1, E2, utype(T))
           requires isVariablyModifiedType(T)
 
-     syntax KItem ::= evalConditional(K, K, K, UType)
+     syntax KItem ::= evalConditional(K, K, K, UType) [klabel(evalConditional4)]
      context evalConditional(HOLE:KItem => reval(HOLE), _, _, _) [result(RValue)]
      context evalConditional(_, HOLE:KItem => reval(HOLE), _, _) [result(RValue)]
      context evalConditional(_, _, HOLE:KItem => reval(HOLE), _) [result(RValue)]

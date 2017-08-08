@@ -41,6 +41,7 @@ module CPP-DECL-DECLARATOR
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TEMPLATE-DEDUCTION-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -96,8 +97,8 @@ module CPP-DECL-DECLARATOR
      syntax Duration ::= getDuration(Set, Scope) [function]
      syntax Namespace ::= getInnermostNamespace(NNSVal, Scope) [function]
 
-     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::Map) _::Map, _) => ExternalLinkage
-     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::Map) _::Map) => InternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, X |-> (T |-> _ _::TypeMap) _::Map, _) => ExternalLinkage
+     rule getPreviousLinkage(X::QualId, T::CPPType, _, X |-> (T |-> _ _::TypeMap) _::Map) => InternalLinkage
      rule getPreviousLinkage(_, _, _, _) => .K [owise]
 
      // 3.5:3.1
@@ -211,13 +212,13 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <externals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</externals>
+          <externals>... LN :: X |-> (T |-> declState(Base::SymBase, _) _::TypeMap) ...</externals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
+          requires completeDeclaration(T, Init) ==K T
 
      // InternalLinkage, StaticStorage, redeclare complete type
      rule <k> declareObject(N:Namespace, LN::Namespace, X::CId, T:CPPType, Init::Init, Type::DeclarationType, InternalLinkage, StaticStorage, S::Set)
@@ -226,13 +227,13 @@ module CPP-DECL-DECLARATOR
               ~> defineObject(N, X, T, Init, Type, StaticStorage, S) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <internals>... LN :: X |-> (T'::CPPType |-> declState(Base::SymBase, _) _) ...</internals>
+          <internals>... LN :: X |-> (T::CPPType |-> declState(Base::SymBase, _) _::TypeMap) ...</internals>
           <odr-decls> Decls::Map => Decls[Base += ktriple(Tu, LN :: X, T)] </odr-decls>
           <external-types> ET::Map => addOdrDecl(ET, X, T) </external-types>
           <curr-template-context> noTemplate </curr-template-context>
           <curr-scope> Scope::Scope </curr-scope>
           <elab>... .K => #if isBlockScope(Scope) #then declareLocalStaticObject(X, Base, T) #else .K #fi </elab>
-          requires T ==Type T' andBool completeDeclaration(T, Init) ==K T
+          requires completeDeclaration(T, Init) ==K T
 
      context declareNonStaticObject(... init: HOLE:Expr)
 
@@ -277,10 +278,12 @@ module CPP-DECL-DECLARATOR
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, link(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
 
      // Declare function member inside class
-     rule <k> declareObject(C:Class, C, X::CId, T:CPPType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
+     rule <k> declareObject(C:Class, C, X::CId, T:CPPFunctionType, Init::Init, Type::DeclarationType, ExternalLinkage, StaticStorage, S::Set)
               => addToEnv(C :: X, T, bnew(!I, T, S, link(Tu)), false)
               ~> defineObject(C, X, T, Init, Type, StaticStorage, S)
           ...</k>
+          // pure functions need to have a dummy functionObject in order for virtual call semantics to know their QualId if they have no definition
+          <functions> Funcs::Map => #if isMethodPure(T) #then Funcs bnew(!I, T, S, link(Tu)) |-> functionObject(C :: X, T, .List, .K) #else Funcs #fi </functions>
           <deferred-class-actions> _ |> _ |> (K:K => updateDefaultArguments(C :: X, T, computeDefaultArgs(T, Type)) ~> K) |> .Ordering </deferred-class-actions>
           <curr-scope> classScope(C, _) </curr-scope>
           <class-id> C </class-id>
@@ -332,10 +335,35 @@ module CPP-DECL-DECLARATOR
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, wchar_t))), StringLiteral(Wide(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', wchar_t), lengthString(S) +Int 1))
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char16_t))), StringLiteral(UTF16(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char16_t), lengthString(S) +Int 1))
      rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(t(Q'::Quals, Mods'::Set, char32_t))), StringLiteral(UTF32(), S::String)) => t(Q, Mods, arrayType(t(Q', Mods', char32_t), lengthString(S) +Int 1))
-     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(L::List)) => t(Q, Mods, arrayType(T, size(L)))
-         requires size(L) =/=Int 1 orBool getKLabel(L[0]) =/=K #klabel(`StringLiteral`)
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T::CPPType)), BraceInit(ListItem(Init::Init) L::List)) => t(Q, Mods, arrayType(T, size(L) +Int 1))
+         requires (size(L) =/=Int 0 orBool getKLabel(Init) =/=K #klabel(`StringLiteral`))
+          andBool (notBool isAggregateType(T) orBool isBraceInit(Init))
+     rule completeDeclaration(t(Q::Quals, Mods::Set, incompleteArrayType(T:CPPClassType)), BraceInit((ListItem(Init::Init) _) #as L::List)) => t(Q, Mods, arrayType(T, computeAggArraySize(getClassInfo(T), L)))
+         requires isAggregateType(T)
+          andBool notBool isBraceInit(Init)
      rule completeDeclaration(T::CPPType, _) => T [owise]
 
+     syntax Int ::= computeAggArraySize(ClassInfo, List) [function]
+                  | #computeAggArraySize(fields: List, types: Map, initList: List, callStack: List, size: Int, agg: ClassInfo) [function]
+
+     rule computeAggArraySize(CI::ClassInfo, L::List) => #computeAggArraySize(.List, .Map, L, .List, 0, CI)
+     rule #computeAggArraySize((.List => getNonStaticDataMembers(CI)), (_ => getDataMembersInitializers(CI)), ListItem(_) _, .List, (N::Int => N +Int 1), CI::ClassInfo)
+     rule #computeAggArraySize(... fields: (.List => Fields), types: (_ => Types), callStack: (ListItem(kpair(Fields::List, Types::Map)) => .List) _)
+     rule #computeAggArraySize(... initList: .List, size: N::Int) => N
+     rule #computeAggArraySize(...
+                           fields: (ListItem(kpair(F:CId, _)) => .List) _,
+                           types: (F |-> (T::CPPType |-> _)) _,
+                           initList: (ListItem(Init::Expr) => .List) _
+                           )
+          requires (notBool isAggregateType(T) orBool isBraceInit(Init))
+     rule #computeAggArraySize(...
+                           fields: (ListItem(kpair(F:CId, _)) Fields::List => getNonStaticDataMembers(getClassInfo(T))),
+                           types: (((F |-> (T::CPPClassType |-> _)) _) #as Types::Map => getDataMembersInitializers(getClassInfo(T))),
+                           initList: ListItem(Init::Expr) _,
+                           callStack: (.List => ListItem(kpair(Fields, Types))) _
+                           )
+          requires isAggregateType(T)
+           andBool notBool isBraceInit(Init)
 
      rule defineObject(_, _, _, NoInit(), Function(_), _, _) => .K
      rule defineObject(_, _, _, NoInit(), _, _, S::Set) => .K
@@ -388,7 +416,7 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</nenv>
+          <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</nenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, N :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
@@ -402,7 +430,7 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (_ T |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</cenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
@@ -487,25 +515,25 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
-          requires notBool (isVal(V) andBool notBool isTExpr(V))
+          requires notBool isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
-          requires notBool (isVal(V) andBool notBool isTExpr(V))
+          requires notBool isEvalVal(V)
      rule isStaticInitialization(compoundInit(E1::Expr, E2::Expr)) => isStaticInitialization(E1) andBool isStaticInitialization(E2)
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(le(_ := V::Expr, _, _)) => true
-          requires (isVal(V) andBool notBool isTExpr(V))
+          requires isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true
-          requires (isVal(V) andBool notBool isTExpr(V))
+          requires isEvalVal(V)
      rule isStaticInitialization(lv(_, _, _)) => true
 
      syntax Expr ::= stripInitHolds(K) [function]
      rule stripInitHolds(le(compoundInit(E1::Expr, E2::Expr), _, _)) => stripInitHolds(compoundInit(E1, E2))
      rule stripInitHolds(compoundInit(E1::Expr, E2::Expr)) => compoundInit(stripInitHolds(E1), stripInitHolds(E2))
      rule stripInitHolds(le(E::Expr, _, _)) => E [owise]
-     rule stripInitHolds(V:Val) => V
-          requires notBool isTExpr(V)
+     rule stripInitHolds(V::Val) => V
+          requires isEvalVal(V)
 
      context defArgs(_, (HOLE:StrictList => types(HOLE)), _)
      context defArgs(_, _, (HOLE:StrictList => cats(HOLE)))

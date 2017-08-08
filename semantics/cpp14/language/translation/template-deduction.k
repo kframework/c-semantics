@@ -21,6 +21,7 @@ module CPP-TEMPLATE-DEDUCTION
      imports CPP-DECL-TEMPLATE-SYNTAX
      imports CPP-OVERLOADING-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
      imports CPP-TYPING-EXPR-SYNTAX
      imports CPP-TYPING-SYNTAX
      imports CPP-VALUE-CATEGORY-SYNTAX
@@ -52,15 +53,15 @@ module CPP-TEMPLATE-DEDUCTION
      rule #getTypesForDeduction(P::CPPType, A::CPPType, OriginalP::CPPType, _) => #if isCPPRefType(OriginalP) #then deducePair(P, A, true, FunctionCall) #else deducePair(P, A, false, FunctionCall) #fi [owise]
 
      syntax Bool ::= isForwardingReference(CPPTypeExpr) [function]
-     rule isForwardingReference(t(_, _, rvRefType(t(quals(.Set), _, dependentType(_))))) => true
+     rule isForwardingReference(t(_, _, rvRefType(t(quals(.Set), _, dependentType(...))))) => true
      rule isForwardingReference(_) => false [owise]
 
      rule deducePair((t(Q::Quals, _, pointerType(P::CPPTypeExpr)) => P), (t(Q::Quals, _, pointerType(A::CPPType)) => A), _, _)
      rule deducePair(t(Q::Quals, _, classType(N::Namespace :: Class(T::Tag, X::CId, P::TemplateParams))), t(Q::Quals, _, classType(N :: Class(T, X, A::TemplateArgs))), B::Bool, C::DeductionContext) => deducePairs(P, A, B, C)
      rule deducePair(t(Q::Quals, _, functionType(... returnType: P::CPPTypeExpr, paramTypes: Ps::CPPTypeExprs)), t(Q::Quals, _, functionType(... returnType: A::CPPType, paramTypes: As::CPPTypes)), B::Bool, C::DeductionContext) => deducePairs(toTemplateParams(toList(P, Ps)), toTemplateArgs(toList(A, As)), B, C)
      rule deducePair(P:CPPType, A::CPPType, _, _) => .K
-     rule <k> deducePair(t(Q::Quals, _, dependentType(P::String)), t(Q::Quals, Mods::Set, A::CPPSimpleType), _, _) => .K ...</k>
-          <template-deduction>... .Map => dependentType(P) |-> t(Q, Mods, A) ...</template-deduction>
+     rule <k> deducePair(t(Q::Quals, _, dependentType(P::String, I::Int)), t(Q::Quals, Mods::Set, A::CPPSimpleType), _, _) => .K ...</k>
+          <template-deduction>... .Map => dependentType(P, I) |-> t(Q, Mods, A) ...</template-deduction>
      rule <k> deducePair(t(Q::Quals, _, auto), t(Q::Quals, Mods::Set, A::CPPSimpleType), _, _) => .K ...</k>
           <template-deduction>... .Map => auto |-> t(Q, Mods, A) ...</template-deduction>
 
@@ -71,7 +72,7 @@ module CPP-TEMPLATE-DEDUCTION
      rule <k> deduceTemplateFromCall(t(Q::Quals, Mods::Set, functionType(Ret::CPPType, .CPPTypes, MI::MethodInfo, L::LanguageLinkage, E::ExceptionSet)), _, Params::List, X::QualId) => finishDeduction(T) ...</k>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
-          <templates>... X |-> (_ t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI, L, E)) |-> T:TemplateInfo) ...</templates>
+          <templates>... X |-> (_::TypeMap t(Q, Mods, functionType(Ret, toCPPTypes(Params), MI, L, E)) |-> T:TemplateInfo) ...</templates>
 
      rule <k> finishDeduction(T::TemplateInfo) => instantiateTemplateType(T, Args) ...</k>
           <template-deduction> Args::Map </template-deduction>

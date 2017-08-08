@@ -1,0 +1,5 @@
+CV-SSA1-bad-static.c:7:16: error: Non-constant expression in static assertion.
+  Constraint violation (CV-SSA1).
+   see C11 section 6.7.10:2 http://rvdoc.org/C11/6.7.10
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+Translation failed (config dumped). Run kcc -d CV-SSA1-bad-static.c to see commands run.

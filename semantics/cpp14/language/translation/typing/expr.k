@@ -11,7 +11,7 @@ module CPP-TYPING-EXPR-SYNTAX
 
      syntax StrictList ::= types(StrictList)
      syntax TypeExpr ::= typeof(TypeExpr)
-     syntax TypeExpr ::= Expr | CPPDType | Typed
+     syntax TypeExpr ::= Expr | CPPDTypeExpr | Typed
 
 endmodule
 
@@ -82,6 +82,7 @@ module CPP-TYPING-EXPR
              requires getKLabel(HOLE) ==K #klabel(`Name`)
                   orBool getKLabel(HOLE) ==K #klabel(`CallExpr`)
                   orBool getKLabel(HOLE) ==K #klabel(`_.___CPP-SYNTAX`)
+                  orBool getKLabel(HOLE) ==K #klabel(`&__CPP-SYNTAX`)
      rule typeof(T:Typed => type(T))
 
      rule <k> typeof(This() => type(V)) ...</k>
@@ -124,14 +125,14 @@ module CPP-TYPING-EXPR
      rule typeof(ConditionalOperator(_, E2::Expr, E3::Expr))
           => typeofConditional(E2, E3)
 
-     rule (.K => typeofOperator(O, E1)) ~> typeof(UnaryOperator(O::OpId, E1::Expr))
+     rule (.K => typeofOperator(O, E1, E1)) ~> typeof(UnaryOperator(O::OpId, E1::Expr))
      rule (.K => typeofOperator(O, E1, E1, E2)) ~> typeof(BinaryOperator(O::OpId, E1::Expr, E2::Init))
 
      syntax KItem ::= typeofOperator(OpId, TypeExpr, Expr, K)
-                    | typeofOperator(OpId, TypeExpr)
-                    | typeofBuiltinOperator(OpId, TypeExpr)
+                    | typeofOperator(OpId, TypeExpr, Expr)
+                    | typeofBuiltinOperator(OpId, TypeExpr, Expr)
                     | typeofBuiltinOperator(OpId, TypeExpr, Expr, K)
-                    | #typeofBuiltinOperator(OpId, TypeExpr)
+                    | #typeofBuiltinOperator(OpId, TypeExpr, Expr)
                     | #typeofBuiltinOperator(OpId, TypeExpr, Expr, TypeExpr)
                     | typeofConditional(Expr, Expr)
 
@@ -139,23 +140,23 @@ module CPP-TYPING-EXPR
      context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _, _) [result(CPPDType)]
      context typeofOperator(O::OpId, _, _, (HOLE:TypeExpr => typeof(HOLE)))
              requires notBool O ==K operator-> [result(CPPDType)]
-     context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context typeofOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPDType)]
      context typeofBuiltinOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _, _) [result(CPPDType)]
      context typeofBuiltinOperator(O::OpId, _, _, (HOLE:TypeExpr => typeof(HOLE)))
              requires notBool O ==K operator-> [result(CPPDType)]
-     context typeofBuiltinOperator(_, (HOLE:TypeExpr => typeof(HOLE))) [result(CPPDType)]
+     context typeofBuiltinOperator(_, (HOLE:TypeExpr => typeof(HOLE)), _) [result(CPPDType)]
      rule typeofOperator(O::OpId, T1:CPPDType, E::Expr, T2:CPPDType) ~> typeof(_)
           => #typeofBuiltinOperator(O, T1, E, T2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPClassType(T2)
                andBool notBool isCPPEnumType(T1) andBool notBool isCPPEnumType(T2)
-     rule typeofOperator(O::OpId, T1:CPPDType) ~> typeof(_)
-          => #typeofBuiltinOperator(O, T1)
+     rule typeofOperator(O::OpId, T1:CPPDType, E::Expr) ~> typeof(_)
+          => #typeofBuiltinOperator(O, T1, E)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
      rule typeofOperator(operator->, T1:CPPDType, E1::Expr, E2::Expr) ~> typeof(_)
           => #typeofBuiltinOperator(operator->, T1, E1, E2)
           requires notBool isCPPClassType(T1) andBool notBool isCPPEnumType(T1)
 
-     rule typeofOperator(O::OpId, T1:CPPDType) ~> typeof(UnaryOperator(_, E1::Expr))
+     rule typeofOperator(O::OpId, T1:CPPDType, _) ~> typeof(UnaryOperator(_, E1::Expr))
           => typeof(resolveOverloadedOperator(O, E1, T1))
           requires isCPPClassType(T1) orBool isCPPEnumType(T1)
      rule typeofOperator(O::OpId, T1:CPPDType, _, T2:CPPDType) ~> typeof(BinaryOperator(_, E1::Expr, E2::Init))
@@ -171,8 +172,8 @@ module CPP-TYPING-EXPR
 
      rule typeofBuiltinOperator(O::OpId, T1:CPPDType, E::Expr, T2:CPPDType)
           => #typeofBuiltinOperator(O, T1, E, T2)
-     rule typeofBuiltinOperator(O::OpId, T1:CPPDType)
-          => #typeofBuiltinOperator(O, T1)
+     rule typeofBuiltinOperator(O::OpId, T1:CPPDType, E::Expr)
+          => #typeofBuiltinOperator(O, T1, E)
 
      rule #typeofBuiltinOperator(operator=, T::CPPType, _, _) => typeof(T)
      rule #typeofBuiltinOperator(operator||, _, _, _) => typeof(type(bool))
@@ -238,18 +239,15 @@ module CPP-TYPING-EXPR
      rule #typeofBuiltinOperator(operator,, _, _, T:CPPType)
           => typeof(T)
 
-     rule #typeofBuiltinOperator(operator-, T::CPPType) => typeof(promote(T))
-     rule #typeofBuiltinOperator(operator+, T::CPPType) => typeof(promote(T))
-     rule #typeofBuiltinOperator(operator++_, T::CPPType) => typeof(T)
-     rule #typeofBuiltinOperator(operator--_, T::CPPType) => typeof(T)
-     rule #typeofBuiltinOperator(operator_++, T::CPPType) => typeof(revalType(T))
-     rule #typeofBuiltinOperator(operator_--, T::CPPType) => typeof(revalType(T))
-     rule #typeofBuiltinOperator(operator&, T:CPPType) => typeof(type(pointerType(T)))
-     rule #typeofBuiltinOperator(operator&, dataMember(C::Class, T::CPPType))
-          => typeof(type(memberPointerType(t(noQuals, .Set, classType(C)), T)))
-     rule #typeofBuiltinOperator(operator*, T::CPPType) => typeof(innerType(T))
-     rule type(dataMemberValue(memberPointer(C::Class, _, T::CPPType), _, _)) => dataMember(C, T)
-     rule #typeofBuiltinOperator(operator!, _) => typeof(type(bool))
+     rule #typeofBuiltinOperator(operator-, T::CPPType, _) => typeof(promote(T))
+     rule #typeofBuiltinOperator(operator+, T::CPPType, _) => typeof(promote(T))
+     rule #typeofBuiltinOperator(operator++_, T::CPPType, _) => typeof(T)
+     rule #typeofBuiltinOperator(operator--_, T::CPPType, _) => typeof(T)
+     rule #typeofBuiltinOperator(operator_++, T::CPPType, _) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator_--, T::CPPType, _) => typeof(revalType(T))
+     rule #typeofBuiltinOperator(operator&, _, E::Expr) => typeof(& E)
+     rule #typeofBuiltinOperator(operator*, T::CPPType, _) => typeof(innerType(T))
+     rule #typeofBuiltinOperator(operator!, _, _) => typeof(type(bool))
 
      rule (.K => typeAndCatOfConditional(E2, E3)) ~> typeofConditional(E2::Expr, E3::Expr)
      rule typeAndCat(T:CPPType, _) ~> typeofConditional(_, _) => typeof(T)
@@ -289,13 +287,14 @@ module CPP-TYPING-EXPR
      rule typeof(E1::Expr >>= E2::Expr) => typeofBuiltinOperator(operator>>=, E1, E1, E2)
      rule typeof(Comma(E1::Expr, E2::Expr)) => typeofBuiltinOperator(operator,, E1, E1, E2)
 
-     rule typeof(E1::Expr ++) => typeofBuiltinOperator(operator_++, E1)
-     rule typeof(E1::Expr --) => typeofBuiltinOperator(operator_--, E1)
-     rule typeof(++ E1::Expr) => typeofBuiltinOperator(operator++_, E1)
-     rule typeof(-- E1::Expr) => typeofBuiltinOperator(operator--_, E1)
-     rule typeof(! E1::Expr) => typeofBuiltinOperator(operator!, E1)
-     rule typeof(- E1::Expr) => typeofBuiltinOperator(operator-, E1)
-     rule typeof(& E1::Expr) => typeofBuiltinOperator(operator&, E1)
-     rule typeof(* E1::Expr) => typeofBuiltinOperator(operator*, E1)
+     rule typeof(E1::Expr ++) => typeofBuiltinOperator(operator_++, E1, E1)
+     rule typeof(E1::Expr --) => typeofBuiltinOperator(operator_--, E1, E1)
+     rule typeof(++ E1::Expr) => typeofBuiltinOperator(operator++_, E1, E1)
+     rule typeof(-- E1::Expr) => typeofBuiltinOperator(operator--_, E1, E1)
+     rule typeof(! E1::Expr) => typeofBuiltinOperator(operator!, E1, E1)
+     rule typeof(- E1::Expr) => typeofBuiltinOperator(operator-, E1, E1)
+     // not used because we want to use name resolution mechanism to resolve builtin address operator
+     //rule typeof(& E1::Expr) => typeofBuiltinOperator(operator&, E1)
+     rule typeof(* E1::Expr) => typeofBuiltinOperator(operator*, E1, E1)
 
 endmodule

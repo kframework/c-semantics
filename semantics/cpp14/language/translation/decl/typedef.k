@@ -10,10 +10,10 @@ module CPP-DECL-TYPEDEF
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <ntypes> Env::Map => Env[X, NoTag() <- t(Q, Mods, T)] </ntypes>
+          <ntypes> Env::Map => Env[X <- t(Q, Mods, T)] </ntypes>
 
      rule <k> TypedefDecl(X::CId, t(Q::Quals, Mods::Set, T::CPPSimpleType)) => .K ...</k>
           <curr-scope> templateParameterScope </curr-scope>
-          <types> Env::Map => Env[X, NoTag() <- t(Q, Mods, T)] </types>
+          <types> Env::Map => Env[X <- t(Q, Mods, T)] </types>
 
 endmodule

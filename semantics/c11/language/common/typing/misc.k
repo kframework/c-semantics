@@ -51,6 +51,8 @@ module C-TYPING-MISC
      rule flipSignedness(long-int) => unsigned-long-int
      rule flipSignedness(long-long-int) => unsigned-long-long-int
 
+     rule flipSignedness(bool) => bool
+
      rule inRange(V:Int, T:IntegerUType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
      rule inRange(V:Float, T:FloatUType)

@@ -13,6 +13,6 @@ module CPP-EXPR-COMMA
           requires isConvertableDiscardedExpr(V)
 
      rule Comma(V:Val, E::Expr) => E
-          requires notBool isTExpr(V) andBool notBool isConvertableDiscardedExpr(V)
+          requires isEvalVal(V) andBool notBool isConvertableDiscardedExpr(V)
 
 endmodule

@@ -9,7 +9,10 @@ endmodule
 
 module COMMON-BUILTIN
      imports COMMON-BUILTIN-SYNTAX
+     imports C-CONFIGURATION
      imports MAP
+     imports K-REFLECTION
+     imports C-TYPING-SYNTAX
 
      syntax Map ::= #nativeDefinedBuiltins() [function, hook(C_SEMANTICS.nativeFunctions), impure]
      rule nativeDefinedBuiltins => #nativeDefinedBuiltins()

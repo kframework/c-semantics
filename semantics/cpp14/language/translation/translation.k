@@ -22,6 +22,7 @@ require "decl/linkage.k"
 require "decl/namespace.k"
 require "decl/template.k"
 require "decl/typedef.k"
+require "decl/using.k"
 
 require "expr/additive.k"
 require "expr/alignof.k"
@@ -83,6 +84,7 @@ module CPP-TRANSLATION
      imports CPP-DECL-NAMESPACE
      imports CPP-DECL-TEMPLATE
      imports CPP-DECL-TYPEDEF
+     imports CPP-DECL-USING
 
      imports CPP-TRANSLATION-EXPR-ADDITIVE
      imports CPP-EXPR-ALIGNOF

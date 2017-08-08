@@ -18,6 +18,7 @@ module CPP-TYPING-SORTS
      syntax CPPFunctionType
      syntax CPPClassType
      syntax CPPRefType
+     syntax IncompleteInfo
 endmodule
 
 module CPP-DEPENDENT-SYNTAX
@@ -51,9 +52,21 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleType ::= underlyingType(CPPSimpleType) [function, klabel(underlyingSimpleType)]
      syntax CPPType ::= underlyingType(CPPType) [function]
 
-     syntax CPPSimpleFundamentalType ::= CPPSimpleSignedType | CPPSimpleUnsignedType | CPPSimpleFloatingType
-                            | CPPSimpleCharType | CPPSimpleBoolType | CPPSimpleVoidType
-                            | CPPSimpleWideCharType | CPPSimpleNullPtrTType
+     // removes all syntax not part of the type of the entity.
+     syntax CPPType ::= stripType(CPPType) [function]
+     syntax CPPClassType ::= stripType(CPPClassType) [function]
+     syntax CPPTypeExpr ::= stripType(CPPTypeExpr) [function]
+
+     syntax CPPSimpleIntegerType ::= CPPSimpleSignedType
+                                   | CPPSimpleUnsignedType
+                                   | CPPSimpleCharType
+                                   | CPPSimpleBoolType
+                                   | CPPSimpleWideCharType
+     syntax CPPSimpleFundamentalType ::= CPPSimpleIntegerType 
+                                       | CPPSimpleFloatingType
+                                       | CPPSimpleVoidType
+                                       | CPPSimpleNullPtrTType
+
      syntax CPPSimpleType ::= CPPSimpleFundamentalType
                             | CPPSimpleCompoundType
                             | CPPSimpleBitfieldType
@@ -122,7 +135,7 @@ module CPP-TYPING-SYNTAX
      syntax CPPSimpleFunctionType ::= functionType(returnType: CPPType, paramTypes: CPPTypes, methodInfo: MethodInfo, linkage: LanguageLinkage, exceptions: ExceptionSet) [klabel(cppFunctionType)]
      syntax CPPSimpleClassType ::= classType(Class)
 
-     syntax CPPSimpleDependentType ::= dependentType(String)
+     syntax CPPSimpleDependentType ::= dependentType(String, Int)
      syntax CPPSimpleAutoType ::= "auto"
                                 | "decltype(auto)"
      syntax CPPSimpleArrayTypeExpr ::= dynamicArrayType(CPPType, Expr)
@@ -203,6 +216,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPFunctionType ::= setMethodStatic(CPPFunctionType) [function]
      syntax Bool ::= isMethodVirtual(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodVirtual(CPPFunctionType) [function]
+     syntax Bool ::= isMethodPure(CPPFunctionTypeExpr) [function]
+     syntax CPPFunctionType ::= setMethodPure(CPPFunctionType) [function]
      syntax Bool ::= isMethodExplicit(CPPFunctionTypeExpr) [function]
      syntax CPPFunctionType ::= setMethodExplicit(CPPFunctionType) [function]
      syntax Bool ::= isMethodUserProvided(CPPFunctionTypeExpr) [function]
@@ -222,6 +237,8 @@ module CPP-TYPING-SYNTAX
      syntax CPPType ::= type(CPPSimpleTypeExpr) [function, klabel(cppType)]
      // this significantly reduces the number of casts we have to do when converting between Class and CPPClassType
      syntax CPPClassType ::= type(CPPSimpleClassType) [function, klabel(cppType)]
+     // useful for stripType
+     syntax CPPIntegerType ::= type(CPPSimpleIntegerType) [function, klabel(cppType)]
      syntax CPPType ::= utype(Typed) [function, klabel(cppUTypeVal)]
      syntax CPPType ::= type(Typed) [function, klabel(cppTypeVal)]
      syntax CPPType ::= utype(CPPTypeExpr) [function, klabel(cppUTypeType)]
@@ -252,16 +269,13 @@ module CPP-TYPING-SYNTAX
      syntax Tag ::= getTag(CPPTypeExpr) [function, klabel(getTagCpp)]
      syntax Tag ::= getTag(Class) [function, klabel(getClassTag)]
 
-     syntax ClassInfo ::= getClassInfo(CPPClassType) [function]
-                        | getClassInfo(Class) [function, klabel(getClassInfoOfClass)]
-                        | #getClassInfo(Class, K) [function]
-     syntax ClassInfo ::= ClassCell | "#incomplete"
-
      syntax MethodInfo ::= "noMethod"
-                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
+                         | methodInfo(refQual: RefQualifier, cvQuals: Quals, static: Bool, virtual:Bool, pure: Bool, explicit: Bool, class: K, userProvided: Bool, constructor: Bool)
                          | defaultMethodInfo() [function]
 
      syntax CPPDType ::= implicitObjectParameter(CPPTypeExpr)
+
+     syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
 
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
@@ -269,15 +283,17 @@ module CPP-TYPING-SYNTAX
                    | isDirectBaseClassOf(base: Class, derived: Class) [function]
                    | hasVirtualMembers(CPPClassType) [function]
                    | isUnionLikeClass(Class) [function]
+                   | isVirtualCall(Trace, CPPFunctionType) [function]
      
      syntax CPPType ::= getMostDerivedArrayElement(CPPType) [function]
 
+     syntax IncompleteInfo ::= "#incomplete"
      syntax EnumInfo ::= getEnumInfo(CPPEnumType) [function]
                        | #getEnumInfo(Enum, K) [function]
-     syntax EnumInfo ::= CppenumCell | "#incomplete"
+     syntax EnumInfo ::= CppenumCell | IncompleteInfo
 
-     syntax Bool ::= CPPType "==Type" CPPType [function]
-                   | CPPType "=/=Type" CPPType [function]
+     syntax Bool ::= CPPTypeExpr "==Type" CPPTypeExpr [function]
+                   | CPPTypeExpr "=/=Type" CPPTypeExpr [function]
 
      syntax Bool ::= overrides(CPPType, CPPType) [function]
 
@@ -306,15 +322,18 @@ module CPP-TYPING
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports CPP-BITSIZE-SYNTAX
+     imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
-     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
+     rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(RQ::RefQualifier, CVS::Quals, IsStatic::Bool, _, _, _, C::Class, _, false)))) => ListItem(implicitObjectParameter(getImpliedParamType(RQ, CVS, IsStatic, C))) toList(L)
      rule getRealParams(T::CPPFunctionTypeExpr) => #getRealParams(getParams(T))
      rule getReturnType(t(_, _, functionType(... returnType: T::CPPType))) => T
      rule isVariadicFunction(T::CPPFunctionTypeExpr) => size(getParams(T)) =/=Int size(getRealParams(T))
+
+     rule implicitObjectParameterType(T::CPPFunctionType) => #fun((implicitObjectParameter(T2::CPPType) => T2))(getParams(T)[0])
 
      syntax List ::= #getRealParams(List) [function]
      rule #getRealParams(L::List ListItem(variadic)) => L
@@ -349,7 +368,7 @@ module CPP-TYPING
      // 13.3.1:4.1
      rule getImpliedParamType(_, Q::Quals, false, C::Class) => type(lvRefType(t(Q, .Set, classType(C)))) [owise]
 
-     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, .K, true, false)
+     rule defaultMethodInfo() => methodInfo(RefNone(), noQuals, false, false, false, false, .K, true, false)
 
      rule getRefQualifier(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIRefQualifier(MI)
      rule setRefQualifier(T::CPPFunctionType, RQ::RefQualifier)
@@ -417,6 +436,17 @@ module CPP-TYPING
      rule setMIVirtual(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... virtual: _ => true))(MI)
      rule setMIVirtual(noMethod => defaultMethodInfo())
 
+     rule isMethodPure(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIPure(MI)
+     rule setMethodPure(T::CPPFunctionType)
+          => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIPure(MI))))(T)
+
+     syntax Bool ::= getMIPure(MethodInfo) [function]
+     rule getMIPure(methodInfo(... pure: IsPure::Bool)) => IsPure
+     rule getMIPure(noMethod) => false
+     syntax MethodInfo ::= setMIPure(MethodInfo) [function]
+     rule setMIPure(methodInfo(...) #as MI::MethodInfo) => #fun(methodInfo(... pure: _ => true))(MI)
+     rule setMIPure(noMethod => defaultMethodInfo())
+
      rule isMethodExplicit(t(... st: functionType(... methodInfo: MI::MethodInfo))) => getMIExplicit(MI)
      rule setMethodExplicit(T::CPPFunctionType)
           => #fun(t(... st: functionType(... methodInfo: MI::MethodInfo => setMIExplicit(MI))))(T)
@@ -479,11 +509,6 @@ module CPP-TYPING
           => t(Qs +Quals Qs', Mods, T)
      rule getQuals(t(Q::Quals, _, _)) => Q
 
-     rule getClassInfo(t(... st: classType(C::Class))) => getClassInfo(C)
-     rule getClassInfo(C::Class) => #getClassInfo(C, #configuration)
-     rule #getClassInfo(C::Class, <generatedTop>... <curr-tu> Tu::String </curr-tu> <tu-id> Tu </tu-id> <class> <class-id> C </class-id> B::Bag </class> ...</generatedTop>) => <class> <class-id> C </class-id> B </class>
-     rule #getClassInfo(_, _) => #incomplete [owise]
-
      rule getEnumInfo(E::CPPEnumType) => #getEnumInfo(getEnumId(E), #configuration)
 
      rule #getEnumInfo(X::Enum, <generatedTop>... <cppenum> <enum-id> X </enum-id> B::Bag </cppenum> ...</generatedTop>) => <cppenum> <enum-id> X </enum-id> B </cppenum>
@@ -511,44 +536,44 @@ module CPP-TYPING
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long)) => t(Q, Mods, unsigned-long)
      rule correspondingUnsignedType(t(Q::Quals, Mods::Set, long-long)) => t(Q, Mods, unsigned-long-long)
 
-     rule t(Q::Quals, _, T:CPPSimpleFundamentalType) ==Type t(Q, _, T) => true
-     rule t(Q::Quals, _, bitfieldType(T::CPPSimpleType, _) => T) ==Type _
-     rule _ ==Type t(Q::Quals, _, bitfieldType(T::CPPSimpleType, _) => T)
-     rule t(Q::Quals, _, pointerType(T1::CPPType)) ==Type t(Q, _, pointerType(T2::CPPType)) => T1 ==Type T2
-     rule t(Q::Quals, _, arrayType(T1::CPPType, N::Int)) ==Type t(Q, _, arrayType(T2::CPPType, N)) => T1 ==Type T2
-     rule t(Q::Quals, _, incompleteArrayType(T1::CPPType)) ==Type t(Q, _, incompleteArrayType(T2::CPPType)) => T1 ==Type T2
-     rule t(Q::Quals, _, lvRefType(T1::CPPType)) ==Type t(Q, _, lvRefType(T2::CPPType)) => T1 ==Type T2
-     rule t(Q::Quals, _, rvRefType(T1::CPPType)) ==Type t(Q, _, rvRefType(T2::CPPType)) => T1 ==Type T2
-     rule t(Q::Quals, _, memberPointerType(C1::CPPClassType, T1::CPPType)) ==Type t(Q, _, memberPointerType(C2::CPPClassType, T2::CPPType)) => T1 ==Type T2 andBool C1 ==Type C2
-     rule t(Q::Quals, _, functionType(... returnType: R1::CPPType, paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo, linkage: L1::LanguageLinkage)) ==Type t(Q, _, functionType(... returnType: R2::CPPType, paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo, linkage: L2::LanguageLinkage)) => R1 ==Type R2 andBool toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2 andBool L1 ==K L2
+     rule stripType(t(Q::Quals, _, T:CPPSimpleFundamentalType)) => t(Q, .Set, T)
+     rule stripType(t(_, _, bitfieldType(T::CPPSimpleType, _) => T))
+     rule stripType(t(Q::Quals, _, pointerType(T::CPPType))) => t(Q, .Set, pointerType(stripType(T)))
+     rule stripType(t(Q::Quals, _, arrayType(T::CPPType, N::Int))) => t(Q, .Set, arrayType(stripType(T), N))
+     rule stripType(t(Q::Quals, _, incompleteArrayType(T::CPPType))) => t(Q, .Set, incompleteArrayType(stripType(T)))
+     rule stripType(t(Q::Quals, _, lvRefType(T::CPPType))) => t(Q, .Set, lvRefType(stripType(T)))
+     rule stripType(t(Q::Quals, _, rvRefType(T::CPPType))) => t(Q, .Set, rvRefType(stripType(T)))
+     rule stripType(t(Q::Quals, _, memberPointerType(C::CPPClassType, T::CPPType))) => t(Q, .Set, memberPointerType(stripType(C), stripType(T)))
+     rule stripType(t(Q::Quals, _, functionType(Ret::CPPType, Params::CPPTypes, MI::MethodInfo, L::LanguageLinkage, _))) => t(Q, .Set, functionType(stripType(Ret), toCPPTypes(stripTypes(toTemplateArgs(Params))), stripMI(MI), L, noexcept(false)))
+     rule stripType(t(Q::Quals, _, dependentType(_, I::Int))) => t(Q, .Set, dependentType("", I))
 
-     syntax Bool ::= MethodInfo "==Type" MethodInfo [function]
-     rule noMethod ==Type noMethod => true
-     rule methodInfo(... refQual: RQ1::RefQualifier, cvQuals: CVS1::Quals) ==Type methodInfo(... refQual: RQ2::RefQualifier, cvQuals: CVS2::Quals) =>  RQ1 ==K RQ2 andBool CVS1 ==K CVS2
-     rule methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) ==Type noMethod => RQ ==K RefNone() andBool Q ==K noQuals 
-     rule noMethod ==Type methodInfo(... refQual: RQ::RefQualifier, cvQuals: Q::Quals) => RQ ==K RefNone() andBool Q ==K noQuals 
+     syntax MethodInfo ::= stripMI(MethodInfo) [function]
+     rule stripMI(noMethod) => defaultMethodInfo()
+     rule stripMI(methodInfo(... refQual: RQ::RefQualifier, cvQuals: CVS::Quals)) => #fun(methodInfo(... refQual: _ => RQ, cvQuals: _ => CVS))(defaultMethodInfo())
 
-     rule t(Q::Quals, _, classType(N1:Namespace :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(N2:Namespace :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => N1 ==K N2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
-     rule t(Q::Quals, _, classType(C1:Class :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(C2:Class :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => type(classType(C1)) ==Type type(classType(C2)) andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
-     rule t(Q::Quals, _, classType(localQual(B1::BlockScope) :: Class(T1::Tag, X1::CId, Ts1::TemplateArgs))) ==Type t(Q::Quals, _, classType(localQual(B2::BlockScope) :: Class(T2::Tag, X2::CId, Ts2::TemplateArgs))) => B1 ==K B2 andBool T1 ==K T2 andBool X1 ==K X2 andBool Ts1 ==Types Ts2
-     rule t(Q::Quals, _, scopedEnum(N1:Namespace :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(N2:Namespace :: Enum(X2::CId), _)) => N1 ==K N2 andBool X1 ==K X2
-     rule t(Q::Quals, _, scopedEnum(C1:Class :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(C2:Class :: Enum(X2::CId), _)) => type(classType(C1)) ==Type type(classType(C2)) andBool X1 ==K X2
-     rule t(Q::Quals, _, scopedEnum(localQual(B1::BlockScope) :: Enum(X1::CId), _)) ==Type t(Q, _, scopedEnum(localQual(B2::BlockScope) :: Enum(X2::CId), _)) => B1 ==K B2 andBool X1 ==K X2
-     rule t(Q::Quals, _, unscopedEnum(N1:Namespace :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(N2:Namespace :: Enum(X2::CId), _, _)) => N1 ==K N2 andBool X1 ==K X2
-     rule t(Q::Quals, _, unscopedEnum(C1:Class :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(C2:Class :: Enum(X2::CId), _, _)) => type(classType(C1)) ==Type type(classType(C2)) andBool X1 ==K X2
-     rule t(Q::Quals, _, unscopedEnum(localQual(B1::BlockScope) :: Enum(X1::CId), _, _)) ==Type t(Q, _, unscopedEnum(localQual(B2::BlockScope) :: Enum(X2::CId), _, _)) => B1 ==K B2 andBool X1 ==K X2
+     rule stripType(t(Q::Quals, _, classType(C::Class))) => t(Q, .Set, classType(stripClass(C)))
+     syntax Class ::= stripClass(Class) [function]
+     rule stripClass(N:Namespace :: Class(T::Tag, X::CId, Ts::TemplateArgs)) => N :: Class(T, X, stripTypes(Ts))
+     rule stripClass(localQual(B::BlockScope) :: Class(T::Tag, X::CId, Ts::TemplateArgs)) => localQual(B) :: Class(T, X, stripTypes(Ts))
+     rule stripClass(C:Class :: Class(T::Tag, X::CId, Ts::TemplateArgs)) => stripClass(C) :: Class(T, X, stripTypes(Ts))
+     rule stripType(t(Q::Quals, _, scopedEnum(N:Namespace :: Enum(X::CId), _))) => t(Q, .Set, scopedEnum(N :: Enum(X), type(int)))
+     rule stripType(t(Q::Quals, _, scopedEnum(C:Class :: Enum(X::CId), _))) => t(Q, .Set, scopedEnum(stripClass(C) :: Enum(X), type(int)))
+     rule stripType(t(Q::Quals, _, scopedEnum(localQual(B::BlockScope) :: Enum(X::CId), _))) => t(Q, .Set, scopedEnum(localQual(B) :: Enum(X), type(int)))
+     rule stripType(t(Q::Quals, _, unscopedEnum(N:Namespace :: Enum(X::CId), _, _))) => t(Q, .Set, unscopedEnum(N :: Enum(X), type(int), false))
+     rule stripType(t(Q::Quals, _, unscopedEnum(C:Class :: Enum(X::CId), _, _))) => t(Q, .Set, unscopedEnum(stripClass(C) :: Enum(X), type(int), false))
+     rule stripType(t(Q::Quals, _, unscopedEnum(localQual(B::BlockScope) :: Enum(X::CId), _, _))) => t(Q, .Set, unscopedEnum(localQual(B) :: Enum(X), type(int), false))
+     rule stripType(T::CPPType) => T [owise]
 
-     syntax Bool ::= TemplateArgs "==Types" TemplateArgs [function]
-     rule T1::CPPType, Ts1::TemplateArgs ==Types T2::CPPType, Ts2::TemplateArgs => T1 ==Type T2 andBool Ts1 ==Types Ts2
-     rule .TemplateArgs ==Types .TemplateArgs => true
-     rule t(Q1::Quals, _, T1::CPPSimpleType) ==Type t(Q2::Quals, _, T2::CPPSimpleType) => false
-          requires Q1 =/=K Q2 orBool getKLabel(T1) =/=K getKLabel(T2)
-     rule _ ==Types _ => false [owise]
+     syntax TemplateArgs ::= stripTypes(TemplateArgs) [function]
+     rule stripTypes(T::CPPType, Ts::TemplateArgs) => stripType(T), stripTypes(Ts)
+     rule stripTypes(.TemplateArgs) => .TemplateArgs
+
+     rule T1::CPPType ==Type T2::CPPType => stripType(T1) ==K stripType(T2)
      rule T1::CPPType =/=Type T2::CPPType => notBool (T1 ==Type T2)
 
      rule overrides(t(... st: functionType(... paramTypes: P1::CPPTypes, methodInfo: MI1::MethodInfo)), 
                     t(... st: functionType(... paramTypes: P2::CPPTypes, methodInfo: MI2::MethodInfo)))
-          => toTemplateArgs(P1) ==Types toTemplateArgs(P2) andBool MI1 ==Type MI2
+          => stripTypes(toTemplateArgs(P1)) ==K stripTypes(toTemplateArgs(P2)) andBool stripMI(MI1) ==K stripMI(MI2)
      rule overrides(...) => false [owise]
 
      rule underlyingType(T::CPPSimpleType) => T [owise]
@@ -682,6 +707,14 @@ module CPP-TYPING
                   | #getEnumMax(K) [function]
      rule #getEnumMin(<cppenum>... <enum-min>Min::Int</enum-min>  ...</cppenum>) => Min
      rule #getEnumMax(<cppenum>... <enum-max>Max::Int</enum-max>  ...</cppenum>) => Max
+
+     rule isVirtualCall(hasTrace(Name(N::NNS, _)), _) => false
+          requires N =/=K NoNNS()
+     rule isVirtualCall(hasTrace(_ . _ Name(N::NNS, _)), _) => false
+          requires N =/=K NoNNS()
+     rule isVirtualCall(_, T::CPPFunctionType) => false
+          requires notBool isMethodVirtual(T)
+     rule isVirtualCall(hasTrace(_), _) => true [owise]
 
 endmodule
 

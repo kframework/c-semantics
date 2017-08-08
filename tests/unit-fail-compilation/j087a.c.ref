@@ -1,0 +1,7 @@
+In file included from j087a.c:1:0:
+j087a.c: In function ‘f’:
+j087a.c:5:7: error: ‘va_start’ used in function with fixed args
+       va_start(ap, y);
+       ^
+compilation terminated due to -Wfatal-errors.
+Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j087a.c to see commands run.

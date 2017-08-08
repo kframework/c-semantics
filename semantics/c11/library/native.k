@@ -31,48 +31,48 @@ module C-NATIVE-BRIDGE
      rule nativeFunctions => removeAll(nativeDefinedBuiltins, keys(builtins))
 
      rule builtin(S:String) => nativeCall(S, .List, .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
 
      rule builtin(S:String) => nativeCall(S, .List, .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue)
           => nativeCall(S, ListItem(A1), .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue, A2:RValue)
           => nativeCall(S, ListItem(A1) ListItem(A2), .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue)
           => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3),
                .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue)
           => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
                ListItem(A4), .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
                A5:RValue)
           => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
                ListItem(A4) ListItem(A5), .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin(S:String, A1:RValue, A2:RValue, A3:RValue, A4:RValue,
                A5:RValue, A6:RValue)
           => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3)
                ListItem(A4) ListItem(A5) ListItem(A6), .List)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
 
      rule builtin*(S:String, A1:RValue, VarArgs:List)
           => nativeCall(S, ListItem(A1), VarArgs)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin*(S:String, A1:RValue, A2:RValue, VarArgs:List)
           => nativeCall(S, ListItem(A1) ListItem(A2), VarArgs)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
      rule builtin*(S:String, A1:RValue, A2:RValue, A3:RValue, VarArgs:List)
           => nativeCall(S, ListItem(A1) ListItem(A2) ListItem(A3), VarArgs)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
 
      rule builtin*(S:String, Args:List, VarArgs:List)
           => nativeCall(S, Args, VarArgs)
-          requires S in_keys(nativeFunctions) [native-call]
+          requires Identifier(S) in_keys(nativeFunctions) [native-call]
 
      rule builtin*(I:Int, Args:List, VarArgs:List)
           => nativeCall(I, Args, VarArgs) [native-call]

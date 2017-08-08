@@ -1,9 +1,0 @@
- 'va_start' used in a function with fixed args.
-   at __va_start(j087a.c:5:8)
-   by f(j087a.c:5:8)
-   by main(j087a.c:10:7)
-  Undefined behavior (UB-STDARG1).
-   see C11 section 6.9.1:8 http://rvdoc.org/C11/6.9.1
-   see C11 section J.2:1 item 87 http://rvdoc.org/C11/J.2
-   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
-Execution failed (configuration dumped)

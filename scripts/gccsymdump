@@ -1,0 +1,5 @@
+#!/bin/bash
+for file in `gcc -Wl,-M "$@" 2>/dev/null | grep '^LOAD ' | sed 's/^LOAD //'`; do
+  nm "$file" -g --defined-only 2>/dev/null
+  nm "$file" -D -g --defined-only 2>/dev/null
+done | awk '{print $3; }' | sort | uniq

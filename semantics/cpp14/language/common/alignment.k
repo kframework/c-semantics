@@ -14,6 +14,7 @@ module CPP-ALIGNMENT
      imports C-CONFIGURATION
      imports BOOL
      imports CPP-ALIGNMENT-SYNTAX
+     imports CPP-CLASS-SYNTAX
      imports CPP-SETTINGS-SYNTAX
      imports CPP-SYNTAX
      imports CPP-TYPING-SYNTAX

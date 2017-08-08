@@ -44,21 +44,31 @@ sub main {
             TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX', 
             SUFFIX => '.bin', 
             UNLINK => 0);
+      my $objInput = File::Temp->new(
+            TEMPLATE => 'tmp-kcc-in-XXXXXXXXXXX',
+            SUFFIX => '.o',
+            UNLINK => 0);
       my $fileOutput = File::Temp->new(
             TEMPLATE => 'tmp-kcc-out-XXXXXXXXXXX', 
             SUFFIX => '.txt', 
             UNLINK => 0);
 
       push(@temporaryFiles, $fileInput);
+      push(@temporaryFiles, $objInput);
       push(@temporaryFiles, $fileOutput);
 
       print $fileInput decode_base64(linkedProgram());
+      if (defined nativeObjFile()) {
+        print $objInput decode_base64(nativeObjFile());
+      } else {
+        $objInput = '';
+      }
 
       my $argv = reduce { our ($a, $b); "`_List_`($a,$b)" } (map {qq|`ListItem`(#token($_, "String"))|} (map {quote(backslash(quote(backslash($_))))} ($0, @ARGV)));
 
       my @cmd = ('--output', 'kast', '-d', $EXEC_DEF, "-cARGV=$argv", '-pARGV=printf %s', '-w', 'none', '--parser',
                  'cat', $fileInput);
-      my $options = '`.Set`(.KList)';
+      my $options = getOptions();
 
       if (defined $ENV{HELP}) {
             print "Here are some configuration variables you can set to affect how this program is run:\n";
@@ -86,10 +96,10 @@ sub main {
            push @cmd, '--verbose';
       }
 
-      if (defined nativeLibraries()) {
-           push @cmd, '--native-libraries';
-           push @cmd, nativeLibraries();
-      }
+      push @cmd, '--native-libraries';
+      my $libs = nativeLibraries();
+      # kcc may have been run as k++ so this is necessary
+      push @cmd, "-lstdc++ $libs $objInput";
 
       if (defined $ENV{PROVE}) {
             push @cmd, '--prove';
@@ -105,7 +115,7 @@ sub main {
 
       if (defined $ENV{SEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NoIO`(.KList))';
+            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
             push @cmd, '-d';
             push @cmd, $EXEC_ND_DEF;
             print 'Searching reachable states... ';
@@ -114,7 +124,7 @@ sub main {
 
       if (defined $ENV{THREADSEARCH}) {
             push @cmd, '--search-final';
-            $options = '`SetItem`(`NoIO`(.KList))';
+            $options = "`_Set_`(`SetItem`(`NoIO`(.KList)), $options)";
             push @cmd, '-d';
             push @cmd, $EXEC_ND_THREAD_DEF;
             print 'Searching reachable states... ';

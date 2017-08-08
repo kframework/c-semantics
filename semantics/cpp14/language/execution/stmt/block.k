@@ -9,6 +9,7 @@ module CPP-STMT-BLOCK
      imports CPP-ENV-SYNTAX
      imports CPP-SYMLOC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-TYPE-MAP-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
                => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Base, Tag))

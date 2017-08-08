@@ -32,22 +32,23 @@ module LIB-BUILTIN-SYNTAX
 endmodule
 
 module LIBC-BUILTIN
-     imports BOOL
-     imports C-BITSIZE-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
+     imports LIB-BUILTIN-SYNTAX
      imports C-CONFIGURATION
-     imports C-DYNAMIC-SYNTAX
-     imports C-MEMORY-ALLOC-SYNTAX
+     imports BOOL
+     imports INT
+     imports MAP
      imports COMMON-BUILTIN-SYNTAX
      imports COMPAT-SYNTAX
+     imports C-ALIGNMENT-SYNTAX
+     imports C-BITSIZE-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports LIB-BUILTIN-SYNTAX
-     imports LIBC-BUILTIN-SYNTAX
      imports LIBC-SYNTAX
-     imports MAP
 
      syntax KItem ::= prepareBuiltin(CId, Bool, HeatList, HeatList) [strict(3, 4)]
      rule <k> callBuiltin
@@ -132,7 +133,7 @@ module LIBC-BUILTIN
 
      rule isAllocatedDuration(obj(... d: stdio)) => true
 
-     rule initBuiltins => initStdio
+     rule initBuiltins => initStdio ~> initErrno
 
      syntax K ::= "initStdio" [function]
      rule initStdio
@@ -150,5 +151,11 @@ module LIBC-BUILTIN
           ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, stdio)) := stderr))
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
           ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, stdio))))
+
+     // TODO(_Thread_local errno)
+     syntax K ::= "initErrno" [function]
+     rule initErrno
+          => alloc(obj(0, byteAlignofType(type(int)), builtinSymbol("errno")), type(int), byteSizeofType(type(int)))
+          ~> allowInit(Computation(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int))))
 
 endmodule

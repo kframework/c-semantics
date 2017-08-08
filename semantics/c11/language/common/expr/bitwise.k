@@ -263,7 +263,7 @@ module C-COMMON-EXPR-BITWISE
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be a trap representation.
-               "Potential negative zero produced via bitwise operations (this could be a false positive)."))
+               "Potential negative zero produced via bitwise operations, undefined under sign and magnitude or one's complement arithmetic, implementation-defined otherwise."))
           ~> bitwiseInterpret(tv(N:Int, T::UType))
           requires isNegZero(N, T)
 

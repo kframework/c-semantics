@@ -1,0 +1,15 @@
+CV-TTE3-bad-static.c:5:3: error: if one of a conditional expression's branches has pointer type and the other has integer type, the integer must be a null pointer constant.
+  Constraint violation (CV-TTE3).
+   see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15
+   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+CV-TTE3-bad-static.c:5:3: warning: Conversion from an integer to non-null pointer.
+  Implementation defined behavior (IMPL-CCV13).
+   see C11 section 6.3.2.3:5 http://rvdoc.org/C11/6.3.2.3
+   see CERT section INT36-C http://rvdoc.org/CERT/INT36-C
+CV-TTE3-bad-static.c:5:3: error: Indeterminate value used in an expression.
+  Undefined behavior (UB-CEE2).
+   see C11 section 6.2.4 http://rvdoc.org/C11/6.2.4
+   see C11 section 6.7.9 http://rvdoc.org/C11/6.7.9
+   see C11 section 6.8 http://rvdoc.org/C11/6.8
+   see C11 section J.2:1 item 11 http://rvdoc.org/C11/J.2
+   see CERT-C section EXP33-C http://rvdoc.org/CERT-C/EXP33-C
