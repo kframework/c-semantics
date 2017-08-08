@@ -192,10 +192,10 @@ module C-DECL-GLOBAL
 
      // Checks if the type is complete if there's an initializer.
      syntax KItem ::= checkComplete(Type, K)
-     rule checkComplete(_, _:NoInit) => .K
-          [structural]
-     rule checkComplete(T:Type, _) => .K
-          requires isCompleteType(T) orBool isArrayType(T)
+     rule checkComplete(T::Type, Init:K) => .K
+          requires isNoInit(Init)
+            orBool isCompleteType(T)
+            orBool isArrayType(T)
           [structural]
      rule (.K => CV("TDG8",
                "Declaration has initializer but incomplete type."))

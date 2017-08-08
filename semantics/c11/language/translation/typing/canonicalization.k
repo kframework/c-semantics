@@ -40,11 +40,6 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(M)))
           [structural]
-     // Ignore typedef.
-     rule canonicalizeType'(_::List (ListItem(SpecTypedef()) => .List),
-               _,
-               _)
-          [structural]
      rule canonicalizeType'(_::List (ListItem(S:K) => .List),
                _,
                _)
