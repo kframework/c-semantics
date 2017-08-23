@@ -82,6 +82,7 @@ UB-TEAS4,Void value as right operand in assignment,"6.3.2.2:1, J.2:1 item 23",Un
 UB-TEOFF1,Offsetof member designator specifies a bit-field.,"7.19:3, J.2:1 item 144",Undefined Behavior,
 UB-TDR1,Declaration for inline function not defined in the same translation unit.,"6.7.4:7, J.2:1 item 70",Undefined Behavior,
 UB-TDR2,No definition for symbol with external linkage.,"6.9:5, J.2:1 item 84",Undefined Behavior,
+UB-TDR3,Main is not a function.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior,
 UB-TIN1,Identifier declared with incompatible types in different translation units.,"6.2.7:2, J.2:1 item 15",Undefined Behavior,
 UB-TIN2,Multiple external definitions for Identifier.,"6.9:5, J.2:1 item 84",Undefined Behavior,
 UB-FD4,Definition of main requires a prototype.,"5.1.2.2.1:1, J.2:1 item 4",Undefined Behavior,
