@@ -1,4 +1,4 @@
- Initializing an already initialiized mutex.
+ Initializing an already initialized mutex.
    at pthread_mutex_init(UB-PTHREAD1-bad.c:17:5)
    by main(UB-PTHREAD1-bad.c:17:5)
   Undefined behavior (UB-PTHREAD1).

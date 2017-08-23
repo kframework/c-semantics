@@ -96,9 +96,9 @@ UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavi
 UB-SETJMP1,'longjmp' invoked to restore a nonexistent environment.,"7.13.2.1:2, J.2:1 item 126",Undefined Behavior,
 UB-STDARG1,'va_start' used in a function with fixed args.,"6.9.1:8, J.2:1 item 87",Undefined Behavior,
 UB-STDARG2,'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.,"7.16.1.4:3, J.2:1 item 142",Undefined Behavior,
-UB-STDARG3,'va_arg' called on an unintialized va_list.,"7.16.1.1:2, J.2:1 item 136",Undefined Behavior,
-UB-STDARG4,'va_copy' called on an unintialized source va_list.,"7.16.1.2:2, J.2:1 item 136",Undefined Behavior,
-UB-STDARG5,'va_end' called on an unintialized va_list.,"7.16.1.3:2, J.2:1 item 139",Undefined Behavior,
+UB-STDARG3,'va_arg' called on an uninitialized va_list.,"7.16.1.1:2, J.2:1 item 136",Undefined Behavior,
+UB-STDARG4,'va_copy' called on an uninitialized source va_list.,"7.16.1.2:2, J.2:1 item 136",Undefined Behavior,
+UB-STDARG5,'va_end' called on an uninitialized va_list.,"7.16.1.3:2, J.2:1 item 139",Undefined Behavior,
 UB-STDARG6,'va_arg' called with no arguments remaining.,"7.16.1.1:2, J.2:1 item 141",Undefined Behavior,
 UB-STDARG9,Function exited without calling 'va_end' after 'va_start' or 'va_copy'.,"7.16.1:1, J.2:1 item 139",Undefined Behavior,
 UB-STDARG10,'va_start' called on function whose last fixed argument is declared with the register storage class.,"7.16.1.4:4, J.2:1 item 143",Undefined Behavior,
@@ -121,7 +121,7 @@ UB-STDLIB4,Called the exit function more than once (from a call to atexit).,"7.2
 UB-STDLIB5,Called the quick_exit function more than once (from a call to at_quick_exit).,"7.22.4.7:2, J.2:1 item 182",Undefined Behavior,
 UB-TTE1,Program requires the formation of a composite type from a variable length array type whose size is specified by an expression that is not evaluated.,"6.2.7:3, J.2:1 item 16",Undefined Behavior,
 UB-THREADS1,'thrd_join' or 'pthread_join' called for an invalid or already-joined thread.,"7.26.5.6:2, POSIX 2008 sec. pthread_join",Undefined Behavior,X
-UB-PTHREAD1,Initializing an already initialiized mutex,POSIX 2008 sec. pthread_mutex_init,Undefined Behavior,X
+UB-PTHREAD1,Initializing an already initialized mutex,POSIX 2008 sec. pthread_mutex_init,Undefined Behavior,X
 UB-PTHREAD2,Destroying a locked mutex.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior,X
 UB-PTHREAD3,Called destroy on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_destroy,Undefined Behavior,X
 UB-PTHREAD4,Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior,X
@@ -132,7 +132,7 @@ UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mu
 USP-CEER6,Unspecified value returned from main function.,5.1.2.2.3:1,Unspecified Behavior,
 USP-CERL7,Comparison of unspecified value.,6.5.9,Unspecified Behavior,
 USP-CMR1,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,
-USP-CMR2,Trying to reinterpret floatng bytes as integer bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,
+USP-CMR2,Trying to reinterpret floating bytes as integer bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,
 USP-ESS1,Switching on an unspecified controlling expression.,6.8.4.2:5,Unspecified Behavior,
 USP-STDIO2,Printing an unspecified value.,7.21.6.1:8,Unspecified Behavior,
 USP-STDLIB3,Called the atexit function after normal program termination has begun.,"7.22.4.2:2, J.1:1 item 44",Unspecified Behavior,
@@ -157,8 +157,8 @@ CV-CER2,Unary '&' operator applied to a value with register storage class.,6.5.3
 CV-CER5,Unary '&' operator applied to a bit-field.,6.5.3.2:1,Constraint Violation,
 CV-CER6,Unary '*' operator applied to non-pointer.,6.5.3.2:2,Constraint Violation,
 CV-CERL5,Directly comparing an integer type with a pointer type.,6.5.8:2,Constraint Violation,
-CV-CERL8,Invalid opeand types to ==.,6.5.9:2,Constraint Violation,
-CV-CERL9,Invalid opeand types to !=.,6.5.9:2,Constraint Violation,
+CV-CERL8,Invalid operand types to ==.,6.5.9:2,Constraint Violation,
+CV-CERL9,Invalid operand types to !=.,6.5.9:2,Constraint Violation,
 CV-CMW2,Trying to write through a const lvalue.,6.5.16.1:1,Constraint Violation,
 CV-TCANON1,"Alignas attribute specifying an alignment less strict than would otherwise be required.",6.7.5:4,Constraint Violation,
 CV-TAL1,Trying to compute alignof of a type that is incomplete or a function type.,6.5.3.4:1,Constraint Violation,
