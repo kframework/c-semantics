@@ -53,7 +53,7 @@ module C-DECL-GLOBAL
 
      // Block scope declarations.
      rule <k> declare''(T::Type, X:CId, K:K)
-               => addToEnv(X, nonStatic)
+               => addToEnv(X, T, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -305,7 +305,7 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -337,7 +337,7 @@ module C-DECL-GLOBAL
 
      // Naked, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -356,7 +356,7 @@ module C-DECL-GLOBAL
 
      // Extern, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -387,7 +387,7 @@ module C-DECL-GLOBAL
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, bnew(!I:Int, T, link(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, link(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, external,
@@ -407,7 +407,7 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, static(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, internal, Static())
@@ -682,7 +682,7 @@ module C-DECL-GLOBAL
           requires notBool isLinkerLoc(Base)
           [structural]
      rule <k> allocateDecl(X:CId)
-               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, static(Tu)))
                ~> allocObject(bnew(!I, T, static(Tu)), T)
           ...</k>
           <types>... X |-> T:Type ...</types>

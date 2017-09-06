@@ -141,9 +141,11 @@ module LIBC-THREADS
           ...</k>
           <buffer> .List </buffer>
           <mutexes>... Loc |-> Type:Int ...</mutexes>
-          <glocks> M:Map (.Map => Loc |-> printStackTrace(CallStack, L, S)) </glocks>
+          <glocks> M:Map (.Map => Loc |-> printStackTrace(CallStack, Tu, S, L, Env)) </glocks>
           <locks> .List => ListItem(Loc) ...</locks>
           <call-stack> CallStack:List </call-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <renv> Env::Map </renv>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <curr-scope> S:Scope </curr-scope>
           requires (notBool (Loc in_keys(M)))

@@ -77,6 +77,7 @@ module C-CONFIGURATION
                          <block-control>
                               // maps from CIds
                               <env color="red"> .Map </env>
+                              <renv color="red"> .Map </renv>
                               <types color="lightgray"> .Map </types>
                               <compound-lit-map> .Map </compound-lit-map>
                               <new-size-map> .Map </new-size-map>

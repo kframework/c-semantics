@@ -67,6 +67,8 @@ module C-CONFIGURATION
           // maps from CIds
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
+          // reverse environment
+          <renv color="red"> .Map </renv>
           // Like the types cell, but used only for checking local declarations.
           <local-types> .Map </local-types>
           <enums> .Map </enums>

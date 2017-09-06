@@ -41,12 +41,16 @@ module COMMON-CONFIGURATION
 
      <tags color="lightgray"> .Map </tags>
 
+     <unnamed-locs> .Map </unnamed-locs>
+
      <dynamic-init> .K </dynamic-init>
 
      <translation-units>
           <tu multiplicity="*" type="Map">
                <tu-id> "" </tu-id>
                <genv color="lightgray"> .Map </genv>
+               // reverse global environment
+               <rgenv color="lightgray"> .Map </rgenv>
                <gtypes color="lightgray"> .Map </gtypes>
 
                // Set of blocks containing decls for restrict-qualified
