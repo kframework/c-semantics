@@ -46,12 +46,12 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      }*/
      rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isArithmeticType(type(L))
-               andBool isArithmeticType(type(R))
+          requires isArithmeticType(type(L)) andBool isArithmeticType(type(R))
                andBool utype(L) =/=Type utype(R)
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool notBool isNullPointerConstant(R)
                andBool stripQualifiers(innerType(type(L)))
                     ==Type stripQualifiers(innerType(type(R)))
                andBool getQualifiers(innerType(type(R)))
@@ -60,6 +60,9 @@ module C-COMMON-EXPR-ASSIGNMENT
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool notBool isNullPointerConstant(R)
+               andBool stripQualifiers(innerType(type(L)))
+                    =/=Type stripQualifiers(innerType(type(R)))
                andBool (isVoidType(innerType(type(L)))
                     orBool isVoidType(innerType(type(R))))
                andBool (getQualifiers(innerType(type(R)))
@@ -67,18 +70,10 @@ module C-COMMON-EXPR-ASSIGNMENT
                andBool utype(L) =/=Type utype(R)
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
-          requires isPointerType(type(L))
-               andBool isNullPointerConstant(R)
+          requires isPointerType(type(L)) andBool isNullPointerConstant(R)
                andBool utype(L) =/=Type utype(R)
-          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule L:KResult := (R:RValue => cast(utype(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
-
-
-     rule nclv(_, T::Type => stripConstants(T)) := _:RValue
-          requires fromConstantExpr(T)
-     rule _:KResult := tv(_:CValue, T::UType => stripConstants(T))
-          requires fromConstantExpr(T)
 
 endmodule

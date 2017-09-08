@@ -601,26 +601,6 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= updateLinkState(CId, Type, SymBase)
-     // No previous decl, this isn't a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <curr-program-loc> L:CabsLoc </curr-program-loc>
-          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
-          <external-types> Types::Map => Types[X <- T'] </external-types>
-          requires isLinkerLoc(Base')
-               andBool notBool (X in_keys(Decls))
-          [structural]
-     // No previous decl, this is a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <curr-program-loc> L:CabsLoc </curr-program-loc>
-          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
-          <external-types> Types::Map => Types[X <- T'] </external-types>
-          <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
-          <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
-          requires notBool isLinkerLoc(Base')
-               andBool notBool (X in_keys(Decls))
-          [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
      rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>

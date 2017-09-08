@@ -110,14 +110,6 @@ module C-MEMORY-WRITING
           => updateEffectiveType(Loc)
           ~> writeSpecific'(Loc, stripLastAccessType(V), T)
 
-     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
-     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
-          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
-               andBool (notBool isBitfieldType(T))
-               andBool (notBool hasUnionMarker(Loc))
-          [structural]
-
      syntax Set ::= keepUnion(Set) [function]
                   | stripUnion(Set) [function]
 
@@ -135,10 +127,38 @@ module C-MEMORY-WRITING
           #else (SetItem(K) stripUnion(S))
           #fi
 
+     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
+     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
+          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
+               andBool (notBool isBitfieldType(T))
+               andBool (notBool hasUnionMarker(Loc))
+          [structural]
      rule (.K => makeUnknown(.K, keepUnion(S)))
           ~> writeSpecific'(
                loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
           requires hasUnionMarker(loc(Base, Offset, S))
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
+          => writeSpecific'(Loc, justBits(I, utype(T)), T)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0 orBool isBitfieldType(T))
+               andBool (I <Int 0)
+               andBool notBool hasUnionMarker(Loc)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
+               andBool (V >=Int 0)
+               andBool notBool hasUnionMarker(Loc)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
+               andBool notBool hasUnionMarker(Loc)
           [structural]
 
      syntax KItem ::= makeUnionUnknown(SymLoc, CId, FieldInfo)
@@ -211,30 +231,6 @@ module C-MEMORY-WRITING
      rule justBits-aux(N::Int, ut(_, bitfieldType(_, Len::Int)))
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
-
-     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
-          => writeSpecific'(Loc, justBits(I, utype(T)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
-               orBool isBitfieldType(T))
-               andBool (I <Int 0)
-          [structural]
-
-     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-                    orBool isBitfieldType(T))
-               andBool notBool hasUnionMarker(Loc)
-               andBool (V >=Int 0)
-          [structural]
-     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
-          [structural]
 
      syntax KItem ::= calculateNewBytes(Bits, K, Int)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]

@@ -99,7 +99,7 @@ module C-TYPING-CANONICALIZATION
           => addMods(Mods, addModifier(M, T))
           requires notBool isQualifier(M)
           [structural]
-     rule addMods(Mods::List (ListItem(S:K) => .List), _)
+     rule addMods(Mods::List (ListItem(S:K) => .List), _:Type)
           requires notBool isModifier(S)
                andBool notBool isReducibleSpecifier(S)
           [structural]

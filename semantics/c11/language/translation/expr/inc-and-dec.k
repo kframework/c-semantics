@@ -19,12 +19,12 @@ module C-EXPR-INC-AND-DEC
      assignment for information on constraints, types, side effects, and
      conversions and the effects of operations on pointers.
      }*/
-     rule ++ E:K => E += tv(1, utype(int))
+     rule ++ E:KResult => E += tv(1, utype(int))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.1}{3}}}{
      The prefix \cinline{--} operator is analogous to the prefix \cinline{++}
      operator, except that the value of the operand is decremented.
      }*/
-     rule -- E:K => E -= tv(1, utype(int))
+     rule -- E:KResult => E -= tv(1, utype(int))
 
 endmodule
