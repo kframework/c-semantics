@@ -1,7 +1,7 @@
 module C-OS-SETTINGS
   imports C-OS-SETTINGS-SYNTAX
   imports INT
-   
+
   rule getErrno(#EPERM) => 1
   rule getErrno(#ENOENT) => 2
   rule getErrno(#ESRCH) => 3
@@ -70,5 +70,40 @@ module C-OS-SETTINGS
   rule getErrno(#EHOSTUNREACH) => 113
   rule getErrno(#EALREADY) => 114
   rule getErrno(#EINPROGRESS) => 115
+
+  rule getSigno(#SIGHUP) => 1
+  rule getSigno(#SIGINT) => 2
+  rule getSigno(#SIGQUIT) => 3
+  rule getSigno(#SIGILL) => 4
+  rule getSigno(#SIGABRT) => 6
+  rule getSigno(#SIGFPE) => 8
+  rule getSigno(#SIGKILL) => 9
+  rule getSigno(#SIGSEGV) => 11
+  rule getSigno(#SIGPIPE) => 13
+  rule getSigno(#SIGALRM) => 14
+  rule getSigno(#SIGTERM) => 15
+  rule getSigno(#SIGUSR1) => 10
+  rule getSigno(#SIGUSR2) => 12
+  rule getSigno(#SIGCHLD) => 17
+  rule getSigno(#SIGCONT) => 18
+  rule getSigno(#SIGSTOP) => 19
+  rule getSigno(#SIGTSTP) => 20
+  rule getSigno(#SIGTTIN) => 21
+  rule getSigno(#SIGTTOU) => 22
+  rule getSigno(#SIGBUS) => 7
+  rule getSigno(#SIGPOLL) => 29
+  rule getSigno(#SIGPROF) => 27
+  rule getSigno(#SIGSYS) => 31
+  rule getSigno(#SIGTRAP) => 5
+  rule getSigno(#SIGURG) => 23
+  rule getSigno(#SIGVTALRM) => 26
+  rule getSigno(#SIGXCPU) => 24
+  rule getSigno(#SIGXFSZ) => 25
+  rule getSigno(#SIGIOT) => 6
+  rule getSigno(#SIGSTKFLT) => 16
+  rule getSigno(#SIGIO) => 29
+  rule getSigno(#SIGPWR) => 30
+  rule getSigno(#SIGWINCH) => 28
+  rule getSigno(#SIGUNUSED) => 31
 
 endmodule

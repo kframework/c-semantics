@@ -1,0 +1,9 @@
+ A signal handler for a signal generated from a call to raise or abort calls the raise function.
+   at raise(UB-SIGNAL2-bad.c:3:26)
+   by handler(UB-SIGNAL2-bad.c:3:26)
+   by raise(UB-SIGNAL2-bad.c:9:7)
+   by main(UB-SIGNAL2-bad.c:9:7)
+  Undefined behavior (UB-SIGNAL2).
+   see C11 section 7.14.1.1:4 http://rvdoc.org/C11/7.14.1.1
+   see C11 section J.2:1 item 131 http://rvdoc.org/C11/J.2
+   see CERT-C section SIG33-C http://rvdoc.org/CERT-C/SIG33-C

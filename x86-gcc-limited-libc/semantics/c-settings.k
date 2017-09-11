@@ -39,6 +39,7 @@ module C-SETTINGS
      rule cfg:mtxPlain => 0
 
      rule cfg:sizeut => unsigned-int
+     rule cfg:wintut => unsigned-int
      rule cfg:wcharut => int
      rule cfg:ptrsize => 4
      rule cfg:ptrdiffut => int

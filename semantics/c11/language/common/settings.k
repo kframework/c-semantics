@@ -23,6 +23,7 @@ module C-SETTINGS-SYNTAX
      syntax SimpleBasicType ::= "cfg:thrdut" [function]
      syntax Int ::= "cfg:mtxPlain" [function]
      syntax SimpleBasicType ::= "cfg:sizeut" [function]
+     syntax SimpleBasicType ::= "cfg:wintut" [function]
      syntax SimpleBasicType ::= "cfg:wcharut" [function]
      syntax SimpleBasicType ::= "cfg:largestUnsigned" [function]
      syntax Int ::= "cfg:ptrsize" [function]

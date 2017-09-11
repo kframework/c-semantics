@@ -196,6 +196,14 @@ module C-CONFIGURATION
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
+     // env key string |-> value ptr
+     <strerror-cache> .Map </strerror-cache>
+     <sig-handling-state> .K </sig-handling-state>
+     // Cells to store pointers returned by these functions that are
+     // invalidated by subsequent calls.
+     <setlocale> .K </setlocale>
+     <localeconv> .K </localeconv>
+     <getenv> .K </getenv>
 </library>
 
 

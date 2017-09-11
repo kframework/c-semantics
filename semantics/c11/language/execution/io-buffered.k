@@ -32,6 +32,7 @@ module C-IO-BUFFERED
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
 
      syntax KItem ::= bwrite(SymLoc, List)
 
@@ -67,6 +68,8 @@ module C-IO-BUFFERED
                andBool notBool ((isThreadDuration(loc(Base, Offset))
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
+               // Libc fixed.
+               andBool (notBool isLibcFixedDuration(Base))
           [structural]
      rule <k> checkWrite(Loc::SymLoc, _) => .K ...</k>
           <locs-written>
@@ -120,6 +123,11 @@ module C-IO-BUFFERED
           <thread-id> ThreadId::Int </thread-id>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
+          [structural]
+     rule (.K => UNDEF("EIO11",
+               "Trying to modify an unmodifiable object returned by a library function."))
+          ~> checkWrite(loc(Base::SymBase, _), _)
+          requires isLibcFixedDuration(Base)
           [structural]
 
      rule <k> writeBytes(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>

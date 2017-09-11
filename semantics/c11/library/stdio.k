@@ -367,8 +367,8 @@ module LIBC-STDIO
           [structural]
 
      rule builtin("fopen", Filename::RValue, Mode::RValue)
-          => alloc(bnew(!FDLoc:Int, file, stdio), file, byteSizeofType(type(file)))
-          ~> fopen(bnew(!FDLoc, file, stdio), getString(Filename), getString(Mode))
+          => alloc(bnew(!FDLoc:Int, file, libc), file, byteSizeofType(type(file)))
+          ~> fopen(bnew(!FDLoc, file, libc), getString(Filename), getString(Mode))
           [structural]
      rule builtin("freopen", Filename::RValue, Mode::RValue, tv(Loc:SymLoc, T::UType))
           => freopen(Filename, Mode, base(Loc), (* tv(stripProv(Loc), T)))
@@ -387,8 +387,8 @@ module LIBC-STDIO
           [structural]
      // TODO(chathhorn): delete on close and program exit?
      rule S:RValue ~> builtin("tmpfile")
-          => alloc(bnew(!FDLoc:Int, file, stdio), file, byteSizeofType(type(file)))
-          ~> fopen(bnew(!FDLoc, file, stdio), getString(S), str("wb+"))
+          => alloc(bnew(!FDLoc:Int, file, libc), file, byteSizeofType(type(file)))
+          ~> fopen(bnew(!FDLoc, file, libc), getString(S), str("wb+"))
           [structural]
 
      // TODO(chathhorn): need another level of indirection here so e.g.
@@ -436,10 +436,10 @@ module LIBC-STDIO
           ...</files>
           [structural]
 
-     rule <k> fopen'(_, _, _, Err:IOError) 
+     rule <k> fopen'(_, _, _, Err:IOError)
               => setErrno(Err)
-              ~> tv(NullPointer, utype(pointerType(type(file)))) ...</k>
-          
+              ~> tv(NullPointer, utype(pointerType(type(file))))
+          ...</k>
 
      rule builtin("setbuf", FDPtr::RValue, tv(Loc:SymLoc, _) #as BufPtr::RValue)
           => trapBuf(Loc, bufSiz)
@@ -993,18 +993,18 @@ module LIBC-STDIO
 
      syntax KItem ::= stringToFloat(String, UType, UType)
      rule stringToFloat(S::String, T::UType, ut(_, float))
-          => allocString(obj(!N:Int, 1, stdio), S)
-          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtof"), list(
+          => allocString(obj(!N:Int, 1, libc), S)
+          ~> stringToFloat'(obj(!N, 1, libc), T, Call(Identifier("strtof"), list(
                ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
      rule stringToFloat(S::String, T::UType, ut(_, double))
-          => allocString(obj(!N:Int, 1, stdio), S)
-          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtod"), list(
+          => allocString(obj(!N:Int, 1, libc), S)
+          ~> stringToFloat'(obj(!N, 1, libc), T, Call(Identifier("strtod"), list(
                ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
      rule stringToFloat(S::String, T::UType, ut(_, long-double))
-          => allocString(obj(!N:Int, 1, stdio), S)
-          ~> stringToFloat'(obj(!N, 1, stdio), T, Call(Identifier("strtold"), list(
+          => allocString(obj(!N:Int, 1, libc), S)
+          ~> stringToFloat'(obj(!N, 1, libc), T, Call(Identifier("strtold"), list(
                ListItem(tv(lnew(obj(0, 1, string(S))), utype(pointerType(type(char)))))
                ListItem(tv(NullPointer, utype(pointerType(type(pointerType(type(char))))))))))
 
@@ -1615,14 +1615,24 @@ module LIBC-STDIO
           <format-state> "%" </format-state>
           requires W =/=K ""
           [structural]
-
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) => .List ...</format>
           <format-field-width> W:String => W +String C </format-field-width>
           <format-state> "%" </format-state>
           requires isSign(C) orBool (isDigit(C, 10) andBool C =/=String "0")
           [structural]
-
+     rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
+          <format> ListItem("*") ListItem(".") => .List ...</format>
+          <format-field-width> "" => Int2String(W') </format-field-width>
+          <format-state> "%" => "%." </format-state>
+          [structural]
+     rule <k> formatter'((ListItem(tv(W':Int, _)) => .List) _) ...</k>
+          <format> (ListItem("*") => .List) ListItem(C:String) ...</format>
+          <format-field-width> "" => Int2String(W') </format-field-width>
+          <format-state> "%" </format-state>
+          requires C =/=K "*"
+               andBool notBool isDigit(C, 10)
+          [structural]
      rule <k> formatter'(_) ...</k>
           <format> ListItem("*") => .List ...</format>
           <format-field-width> "" => "*" </format-field-width>
@@ -1630,6 +1640,7 @@ module LIBC-STDIO
 
      rule <k> formatter'(_) ...</k>
           <format> ListItem(".") => .List ...</format>
+          <format-precision> "" </format-precision>
           <format-state> "%" => "%." </format-state>
           [structural]
 
@@ -1639,7 +1650,6 @@ module LIBC-STDIO
           <format-state> "%." </format-state>
           requires isDigit(C, 10)
           [structural]
-
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
           <format-precision> P:String </format-precision>
@@ -1647,12 +1657,11 @@ module LIBC-STDIO
           requires P =/=K ""
                andBool notBool isDigit(C, 10) andBool notBool C ==K "*"
           [structural]
-
      rule <k> formatter'(_) ...</k>
           <format> ListItem(C:String) ...</format>
           <format-precision> "" => "0" </format-precision>
           <format-state> "%." => "%" </format-state>
-          requires notBool isDigit(C, 10) andBool notBool C ==K "*"
+          requires notBool isDigit(C, 10) andBool C =/=K "*"
           [structural]
 
      rule <k> formatter'(_) ...</k>
@@ -2065,18 +2074,19 @@ module LIBC-STDIO
           <format-state> "%" => "%s" </format-state>
           [structural]
      rule [format-%s]:
-          <k> (.K => getString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
+          <k> (.K => #if P ==String "" #then getString'(Loc) #else getString'(Loc, String2Int(P)) #fi)
                ~> formatter'(_)
           ...</k>
-          <format-length> "" </format-length>
+          <format-length> Len::String </format-length>
           <format-precision> P::String </format-precision>
           <format-pad-zero> false </format-pad-zero>
           <format-alt-form> false </format-alt-form>
           <format-arg> Loc:SymLoc => .K </format-arg>
           <format-state> "%s" => "%s-read" </format-state>
+          requires Len =/=String "l"
           [structural]
      rule [format-%ls]:
-          <k> (.K => getWString'(Loc, #if P ==String "" #then .K #else String2Int(P) #fi))
+          <k> (.K => #if P ==String "" #then getWString'(Loc) #else getWString'(Loc, String2Int(P)) #fi)
                ~> formatter'(_)
           ...</k>
           <format-length> "l" </format-length>
@@ -2182,6 +2192,9 @@ module LIBC-STDIO
           <format-field-width> W::String </format-field-width>
           <format-precision> P::String </format-precision>
           requires W =/=String "*" andBool P =/=String "*"
+          [structural]
+     rule (.K => UNDEF("STDIO12", "Insufficient arguments supplied for the format string."))
+          ~> formatter-next(.List)
           [structural]
 
      rule <k> formatter-next(ListItem(V:RValue) Args:List)
@@ -2365,16 +2378,25 @@ module LIBC-STDIO
           <format-state> State::String </format-state>
           [structural]
 
-     rule getFormatType'("%a", _) => type(double)
-     rule getFormatType'("%A", _) => type(double)
-     rule getFormatType'("%e", _) => type(double)
-     rule getFormatType'("%E", _) => type(double)
-     rule getFormatType'("%f", _) => type(double)
-     rule getFormatType'("%F", _) => type(double)
-     rule getFormatType'("%g", _) => type(double)
-     rule getFormatType'("%G", _) => type(double)
+     rule getFormatType'("%a", "") => type(double)
+     rule getFormatType'("%A", "") => type(double)
+     rule getFormatType'("%e", "") => type(double)
+     rule getFormatType'("%E", "") => type(double)
+     rule getFormatType'("%f", "") => type(double)
+     rule getFormatType'("%F", "") => type(double)
+     rule getFormatType'("%g", "") => type(double)
+     rule getFormatType'("%G", "") => type(double)
+     rule getFormatType'("%a", "L") => type(long-double)
+     rule getFormatType'("%A", "L") => type(long-double)
+     rule getFormatType'("%e", "L") => type(long-double)
+     rule getFormatType'("%E", "L") => type(long-double)
+     rule getFormatType'("%f", "L") => type(long-double)
+     rule getFormatType'("%F", "L") => type(long-double)
+     rule getFormatType'("%g", "L") => type(long-double)
+     rule getFormatType'("%G", "L") => type(long-double)
 
      rule getFormatType'("%c", "") => type(int)
+     rule getFormatType'("%c", "l") => type(cfg:wintut)
      rule getFormatType'("%s", "") => type(pointerType(type(char)))
      rule getFormatType'("%s", "l") => type(pointerType(type(cfg:wcharut)))
 
@@ -2404,6 +2426,14 @@ module LIBC-STDIO
      rule getFormatType'("%X", "") => type(unsigned-int)
      rule getFormatType'("%n", "") => type(pointerType(type(int)))
 
+     rule getFormatType'("%a", "l") => type(double)
+     rule getFormatType'("%A", "l") => type(double)
+     rule getFormatType'("%e", "l") => type(double)
+     rule getFormatType'("%E", "l") => type(double)
+     rule getFormatType'("%f", "l") => type(double)
+     rule getFormatType'("%F", "l") => type(double)
+     rule getFormatType'("%g", "l") => type(double)
+     rule getFormatType'("%G", "l") => type(double)
      rule getFormatType'("%d", "l") => type(long-int)
      rule getFormatType'("%i", "l") => type(long-int)
      rule getFormatType'("%o", "l") => type(unsigned-long-int)
@@ -2440,6 +2470,12 @@ module LIBC-STDIO
           requires substrString(D, 0, 2) ==String "%["
      rule getFormatType'(D::String, "l") => type(pointerType(type(cfg:wcharut)))
           requires substrString(D, 0, 2) ==String "%["
+
+     syntax KItem ::= invalidLength(String)
+     rule getFormatType'(D::String, L::String)
+          => UNDEF("STDIO13", "Invalid length modifier '" +String L +String "' for conversion specifier '" +String D +String "' in a format string.")
+          ~> invalidLength(D::String)
+          [owise]
 
      syntax Bool ::= isPointerToCharType(UType) [function]
      rule isPointerToCharType(ut(_, pointerType(t(_, _, char)))) => true

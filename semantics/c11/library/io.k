@@ -26,8 +26,12 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= getString(K) [strict]
                     | getWString(K) [strict]
                     | getBytes(K, Int) [strict(1)]
-     syntax KItem ::= "getString'" "(" SymLoc "," K ")" [function]
-                    | "getWString'" "(" SymLoc "," K ")" [function]
+     syntax KItem ::= "getString'" "(" SymLoc ")" [function]
+                    | "getString'" "(" SymLoc "," Int ")" [function]
+                    | "getWString'" "(" SymLoc ")" [function]
+                    | "getWString'" "(" SymLoc "," Int ")" [function]
+
+     syntax KItem ::= newFixedObject(K) [strict]
 
      syntax RValue ::= str(String)
 
@@ -56,11 +60,16 @@ module LIBC-IO
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-OS-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
      imports LIBC-SYNTAX
 
      rule writeFD(FD::FD, N:Int) => writeFD(FD, chrChar(N %Int 256))
@@ -313,54 +322,51 @@ module LIBC-IO
           <done> Sent::String => Sent +String S </done>
           [structural]
 
-     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc, .K)
+     rule getString(tv(Loc:SymLoc, _)) => getString'(Loc)
           [structural]
 
-     rule getString'(Loc::SymLoc, I:K) => getString'(Loc, I, "")
+     rule getString'(Loc::SymLoc, N::Int) => getString'(Loc, N, "")
 
-     syntax KItem ::= "getString'" "(" SymLoc "," K "," String ")"
+     rule getString'(Loc::SymLoc) => getString'(Loc, -1, "")
+
+     syntax KItem ::= "getString'" "(" SymLoc "," Int "," String ")"
      rule (.K => reval(instantiate(Loc, type(unsigned-char))))
-          ~> getString'(Loc::SymLoc => Loc +bytes 1, I:Int => I -Int 1, _)
-          requires I >Int 0
+          ~> getString'(Loc::SymLoc => Loc +bytes 1, N::Int => N -Int 1, _)
+          requires N =/=Int 0
           [structural]
-     rule (.K => reval(instantiate(Loc, type(unsigned-char))))
-          ~> getString'(Loc::SymLoc => Loc +bytes 1, .K, _)
-          [structural]
-
-     rule reval(tv(C:Int, _)) ~> getString'(Loc::SymLoc, I:K, S::String)
-          => getString'(Loc, I, S +String chrChar(C))
+     rule reval(tv(C:Int, _)) ~> getString'(Loc::SymLoc, N::Int, S::String)
+          => getString'(Loc, N, S +String chrChar(C))
           requires C =/=Int 0
           [structural]
      rule reval(tv(0, _)) ~> getString'(_, _, S::String)
           => str(S)
           [structural]
-     rule getString'(_, I:Int, S::String) => str(S)
-          requires I <=Int 0
+     rule getString'(_, 0, S::String)
+          => str(S)
           [structural]
 
      rule getWString(tv(Loc::SymLoc, _)) => getWString'(Loc, .K)
           [structural]
 
-     rule getWString'(Loc::SymLoc, I:K) => getWString'(Loc, I, "")
+     rule getWString'(Loc::SymLoc, N::Int) => getWString'(Loc, N, "")
 
-     syntax KItem ::= "getWString'" "(" SymLoc "," K "," String ")"
-     rule (.K => reval(instantiate(Loc, type(cfg:wcharut))))
-          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), I:Int => I -Int byteSizeofType(type(cfg:wcharut)), _)
-          requires I >Int 0
-          [structural]
-     rule (.K => reval(instantiate(Loc, type(cfg:wcharut))))
-          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), .K, _)
-          [structural]
+     rule getWString'(Loc::SymLoc) => getWString'(Loc, -1, "")
 
-     rule reval(tv(C:Int, _)) ~> getWString'(Loc::SymLoc, I:K, S::String)
-          => getWString'(Loc, I, S +String chrChar(C))
+     syntax KItem ::= "getWString'" "(" SymLoc "," Int "," String ")"
+     rule (.K => reval(instantiate(Loc, type(cfg:wcharut))))
+          ~> getWString'(Loc::SymLoc => Loc +bytes byteSizeofType(type(cfg:wcharut)), N::Int => N -Int byteSizeofType(type(cfg:wcharut)), _)
+          requires notBool (N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut)))
+          [structural]
+     rule reval(tv(C:Int, _)) ~> getWString'(Loc::SymLoc, N::Int, S::String)
+          => getWString'(Loc, N, S +String chrChar(C))
           requires C =/=Int 0
           [structural]
      rule reval(tv(0, _)) ~> getWString'(_, _, S::String)
           => str(S)
           [structural]
-     rule getWString'(_, I:Int, S::String) => str(S)
-          requires I <=Int 0
+     rule getWString'(_, N::Int, S::String)
+          => str(S)
+          requires N >=Int 0 andBool N <Int byteSizeofType(type(cfg:wcharut))
           [structural]
 
      rule getBytes(tv(Loc:SymLoc, _), N::Int) => getBytes'(Loc, N, "")
@@ -417,6 +423,36 @@ module LIBC-IO
 
      rule getErrno(#unknownIOError(I::Int)) => I
      rule setErrno(Err:IOError) => Computation(Identifier("errno") := tv(getErrno(Err), utype(int)))
+
+     rule newFixedObject(tv(_, T::UType) #as V::RValue => getString(V))
+          requires isCharType(innerType(T))
+          [structural]
+     rule newFixedObject(str(Value::String))
+          => newFixedString(bnew(!_:Int, arr(char, lengthString(Value) +Int 1), libcFixed), Value)
+          [structural]
+     rule newFixedObject(tv(Loc:SymLoc, T::UType) #as V::RValue)
+          => newFixedObject'(readBytes(Loc, byteSizeofType(innerType(T)), innerType(T)), innerType(T))
+          requires notBool isCharType(innerType(T))
+          [structural]
+
+     syntax KItem ::= "newFixedObject'" "(" K "," Type ")" [strict(1)]
+     rule newFixedObject'(dataList(Bytes::List), T::Type)
+          => newFixedBytes(bnew(!_:Int, T, libcFixed), Bytes, T)
+          [structural]
+
+     syntax KItem ::= newFixedString(SymBase, String)
+     rule newFixedString(Base::SymBase, Value::String)
+          => alloc(Base, arr(char, lengthString(Value) +Int 1), lengthString(Value) +Int 1)
+          ~> allowInit(writeString(loc(Base, 0), Value))
+          ~> tv(loc(Base, 0), utype(ptr(char)))
+          [structural]
+
+     syntax KItem ::= newFixedBytes(SymBase, List, Type)
+     rule newFixedBytes(Base::SymBase, Bytes::List, T::Type)
+          => alloc(Base, T, byteSizeofType(utype(T)))
+          ~> allowInit(writeBytes(loc(Base, 0), dataList(Bytes), T))
+          ~> tv(loc(Base, 0), utype(ptr(T)))
+          [structural]
 
 endmodule
 

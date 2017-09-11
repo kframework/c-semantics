@@ -1,0 +1,8 @@
+ Insufficient arguments supplied for the format string.
+   at printf(UB-STDIO12-bad.c:4:7)
+   by main(UB-STDIO12-bad.c:4:7)
+  Undefined behavior (UB-STDIO12).
+   see C11 section 7.21.6.1:2 http://rvdoc.org/C11/7.21.6.1
+   see C11 section J.2:1 item 153 http://rvdoc.org/C11/J.2
+   see CERT-C section FIO47-C http://rvdoc.org/CERT-C/FIO47-C
+10 
