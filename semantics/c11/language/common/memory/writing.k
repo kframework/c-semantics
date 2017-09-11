@@ -25,7 +25,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax KItem ::= writeWChars(SymLoc, List)
      syntax KItem ::= writeWString(SymLoc, List)
 
-     syntax KItem ::= setEffectiveType(SymLoc, Type)
+     syntax KItem ::= setEffectiveType(SymBase, Type)
 endmodule
 
 module C-MEMORY-WRITING
@@ -403,35 +403,38 @@ module C-MEMORY-WRITING
      // Set the new effective type to a last-access type attached to the
      // lvalue, if it exists.
      syntax KItem ::= updateEffectiveType(SymLoc)
-     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(stripProv(Loc), getObjectType(Loc))
+     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(base(Loc), getObjectType(Loc))
           requires hasObjectType(Loc)
           [structural]
      rule updateEffectiveType(Loc::SymLoc) => .K
           requires notBool hasObjectType(Loc)
           [structural]
 
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => T', _, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type => T', _, _) ...</mem>
           requires notBool isNoType(T)
           [structural]
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(dynamicType(_ => T'), _, _) ...</mem>
+          [structural]
      // Upgrade the effective type for a malloced region to an array.
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => type(arrayType(T', Len /Int byteSizeofType(T'))), Len::Int, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type => dynamicType(T'), Len::Int, _) ...</mem>
           requires isNoType(T) andBool notBool isNoType(T') andBool notBool isFlexibleType(T')
           [structural]
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type, _, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type, _, _) ...</mem>
           requires isNoType(T) andBool isNoType(T')
           [structural]
      // Also, set the length of the flexible array member for structs in a
      // malloced region.
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => lockFlexibleStruct(T', Len -Int byteSizeofType(T')), Len::Int, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
           requires isNoType(T) andBool isFlexibleType(T')
           [structural]
-     rule <k> setEffectiveType(Loc::SymLoc, _) => .K ...</k>
+     rule <k> setEffectiveType(Base::SymBase, _) => .K ...</k>
           <mem> Mem:Map </mem>
-          requires notBool base(Loc) in_keys(Mem)
+          requires notBool Base in_keys(Mem)
           [structural]
 
      syntax Bool ::= hasObjectType(SymLoc) [function]

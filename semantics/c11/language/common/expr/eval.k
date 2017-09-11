@@ -227,10 +227,26 @@ module C-COMMON-EXPR-EVAL
           requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
-     rule (.K => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ")."))
+     rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, dynamicType(Eff::Type))
+          => nclv(setLastAccessType(Loc, newLastAccessType(Eff, L, Offset)), L)
+          requires (effectivelyCompat(L, getTypesAtOffset(Eff, Offset)) orBool effectivelyCompat(Eff, getTypesAtOffset(L, Offset)))
+               andBool notBool isNoType(Eff)
+          [structural]
+     rule (.K => effectiveTypeViolation(L, Eff))
           ~> checkEffectiveType''(_, L::Type, Offset::Int, _, (t(...) #as Eff::Type))
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)
+          [structural]
+     rule (.K => effectiveTypeViolation(L, Eff))
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, dynamicType(Eff::Type))
+          requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
+               andBool notBool effectivelyCompat(Eff, getTypesAtOffset(L, Offset))
+               andBool notBool isNoType(Eff)
+          [structural]
+
+     syntax KItem ::= effectiveTypeViolation(Type, Type)
+     rule effectiveTypeViolation(L::Type, Eff::Type)
+          => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ").")
           [structural]
 
      syntax Type ::= newLastAccessType(Type, Type, Int) [function]
@@ -365,6 +381,9 @@ module C-COMMON-EXPR-EVAL
 
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
           <mem>... Base |-> object(t(...) #as T::Type, _, _) ...</mem>
+          [structural]
+     rule <k> getEffectiveType(Base::SymBase) => T ...</k>
+          <mem>... Base |-> object(T:DynamicType, _, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem:Map </mem>

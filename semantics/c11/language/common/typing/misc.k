@@ -238,8 +238,6 @@ module C-TYPING-MISC
                                       _, _)) _)
           => T
 
-     syntax List ::= getLockTypesAtOffset(Type, Int) [function]
-
      rule getTypesAtOffset(t(Qs::Quals, _, bitfieldType(InnerT::SimpleType, _)) #as T::Type, 0)
           => ListItem(T) ListItem(t(Qs, .Set, InnerT))
      // we have some redundancy here because we are trying to make matching as fast as possible,
@@ -259,14 +257,11 @@ module C-TYPING-MISC
      rule getTypesAtOffset(t(_, _, unionType(U::TagId)) #as T::Type, 0)
           => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffsetInUnion(T, getFieldInfo(U), 0) #else getLockTypesAtOffset(T, 0) #fi
 
-     rule getLockTypesAtOffset(T::Type, Offset::Int)
-          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)), Offset)
-
      rule getTypesAtOffset(t(Qs::Quals, _, arrayType(InnerT::Type, _)) #as T::Type, Offset::Int)
           => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
                getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
                getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
+          requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
      rule getTypesAtOffset(t(Qs::Quals, _, incompleteArrayType(InnerT::Type)) #as T::Type, Offset::Int)
           => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
                getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
@@ -286,16 +281,22 @@ module C-TYPING-MISC
           => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
                getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
                getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
+          requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
      rule getTypesAtOffset(t(_, _, structType(S::TagId)) #as T::Type, Offset::Int)
-          => getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset)
+          => #if Offset <Int bitSizeofType(T) #then getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset)
+               #else getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset) getTypesAtOffset(T, Offset %Int bitSizeofType(T)) #fi
           requires Offset >Int 0
      rule getTypesAtOffset(t(_, _, unionType(U::TagId)) #as T::Type, Offset::Int)
           => #if isNoType(getLock(0, T)) #then getTypesAtOffsetInUnion(T, getFieldInfo(U), Offset) #else 
                #if isCompleteType(T) #then getLockTypesAtOffset(T, Offset) #else .List #fi #fi
-          requires Offset >Int 0
+          requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
+     rule getTypesAtOffset(T::Type, Offset::Int)
+          => #if (bitSizeofType(T) >Int 0) andBool (Offset >=Int bitSizeofType(T)) #then getTypesAtOffset(T, Offset %Int bitSizeofType(T))
+               #else #if Offset ==Int 0 #then ListItem(T) #else .List #fi #fi [owise]
 
-     rule getTypesAtOffset(T::Type, Offset::Int) => #if Offset ==Int 0 #then ListItem(T) #else .List #fi [owise]
+     syntax List ::= getLockTypesAtOffset(Type, Int) [function]
+     rule getLockTypesAtOffset(T::Type, Offset::Int)
+          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)), Offset)
 
      syntax List ::= getTypesAtOffsetInStruct(Type, FieldInfo, Int) [function]
      rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
