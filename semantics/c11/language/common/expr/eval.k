@@ -122,11 +122,12 @@ module C-COMMON-EXPR-EVAL
           requires getKLabel(V) =/=K #klabel(`tv`)
           [structural]
      rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
-          requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
+          requires notBool (isSymLoc(V) andBool isPointerUType(T))
+               andBool notBool isTrap(V)
           [structural]
      rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]
-     rule checkUse(tv(V:SymLoc, T::UType)) => checkLoc(V) ~> tv(V, T)
+     rule checkUse(tv(V:SymLoc, T:PointerUType)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
      rule checkLoc(Loc::SymLoc) => checkLoc'(stripProv(Loc))

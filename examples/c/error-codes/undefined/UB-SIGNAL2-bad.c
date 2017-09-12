@@ -1,6 +1,7 @@
 #include <signal.h>
 void handler(int sig) {
-      if (sig == SIGUSR1) raise(SIGUSR2);
+      if (sig == SIGUSR1)
+            raise(SIGUSR2);
 }
 
 int main(void) {
