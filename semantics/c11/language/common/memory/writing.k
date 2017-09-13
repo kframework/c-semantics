@@ -431,6 +431,12 @@ module C-MEMORY-WRITING
      rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
           <mem>... Base |-> object(T:Type => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
           requires isNoType(T) andBool isFlexibleType(T')
+               andBool Len >Int byteSizeofType(T')
+          [structural]
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type => dynamicType(lockFlexibleStruct(T', 1)), Len::Int, _) ...</mem>
+          requires isNoType(T) andBool isFlexibleType(T')
+               andBool Len <=Int byteSizeofType(T')
           [structural]
      rule <k> setEffectiveType(Base::SymBase, _) => .K ...</k>
           <mem> Mem:Map </mem>

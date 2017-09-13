@@ -9,6 +9,11 @@ struct bar {
   struct foo x;
 };
 
+struct baz {
+      double x;
+      int y;
+};
+
 int main() {
   void *p = calloc(sizeof(struct foo), 1);
   int *p2 = (int *)p;
@@ -20,5 +25,9 @@ int main() {
   struct bar (*p5)[1] = p;
   (*p5)[0].x.y = "baz";
   free(p);
+  struct baz *q = malloc(2 * sizeof(struct baz));
+  q[1].x = 0.0;
+  q[1];
+  free(q);
 }
 

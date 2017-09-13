@@ -283,13 +283,11 @@ module C-TYPING-MISC
                getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
           requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
      rule getTypesAtOffset(t(_, _, structType(S::TagId)) #as T::Type, Offset::Int)
-          => #if Offset <Int bitSizeofType(T) #then getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset)
-               #else getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset) getTypesAtOffset(T, Offset %Int bitSizeofType(T)) #fi
-          requires Offset >Int 0
+          => getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset)
+          requires Offset >Int 0 andBool (isFlexibleType(T) orBool Offset <Int bitSizeofType(T))
      rule getTypesAtOffset(t(_, _, unionType(U::TagId)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then getTypesAtOffsetInUnion(T, getFieldInfo(U), Offset) #else 
-               #if isCompleteType(T) #then getLockTypesAtOffset(T, Offset) #else .List #fi #fi
-          requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
+          => getTypesAtOffsetInUnion(T, getFieldInfo(U), Offset)
+          requires Offset >Int 0 andBool (isFlexibleType(T) orBool Offset <Int bitSizeofType(T))
      rule getTypesAtOffset(T::Type, Offset::Int)
           => #if (bitSizeofType(T) >Int 0) andBool (Offset >=Int bitSizeofType(T)) #then getTypesAtOffset(T, Offset %Int bitSizeofType(T))
                #else #if Offset ==Int 0 #then ListItem(T) #else .List #fi #fi [owise]

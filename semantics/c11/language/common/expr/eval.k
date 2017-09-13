@@ -234,7 +234,7 @@ module C-COMMON-EXPR-EVAL
                andBool notBool isNoType(Eff)
           [structural]
      rule (.K => effectiveTypeViolation(L, Eff))
-          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, (t(...) #as Eff::Type))
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, t(...) #as Eff::Type)
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)
           [structural]
@@ -253,9 +253,13 @@ module C-COMMON-EXPR-EVAL
      syntax Type ::= newLastAccessType(Type, Type, Int) [function]
      rule newLastAccessType(Eff::Type, L::Type, _) => Eff
           requires isCharType(L)
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => L
-          requires notBool isCharType(L) andBool isNoType(tracePath(Eff, L, Offset))
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset) [owise]
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset)
+          requires isFlexibleType(Eff)
+               andBool notBool isNoType(tracePath(Eff, L, Offset))
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset %Int bitSizeofType(Eff))
+          requires notBool isFlexibleType(Eff) andBool bitSizeofType(Eff) >Int 0
+               andBool notBool isNoType(tracePath(Eff, L, Offset %Int bitSizeofType(Eff)))
+     rule newLastAccessType(_, L::Type, _) => L [owise]
 
      // We form a composite type by locating the lvalue type in the (larger)
      // object type and tracing the path (i.e., union variants) that gets us
@@ -265,9 +269,9 @@ module C-COMMON-EXPR-EVAL
      syntax Type ::= tracePath(Type, Type, Int) [function]
      rule tracePath(T::Type, L::Type, 0) => unlock(0, T)
           requires #effectivelyCompat(L, T)
-     rule tracePath(t(Qs::Quals, Mods::Set, bitfieldType(T'::SimpleType, N::Int)), L::Type, Offset::Int)
-          => t(Qs, Mods, bitfieldType(T', N))
-          requires notBool #effectivelyCompat(L, t(Qs, Mods, bitfieldType(T', N)))
+     rule tracePath(t(Qs::Quals, _, bitfieldType(T'::SimpleType, _)) #as T::Type, L::Type, _)
+          => T
+          requires notBool #effectivelyCompat(L, T)
                andBool #effectivelyCompat(L, addQualifiers(Qs, type(T')))
 
      // In the case of aggregates, the type might be the type of the aggregate
