@@ -105,6 +105,7 @@ module LIBC-INIT
           (id("thrd_join") |-> fun(int, int, ptr(int))
 
           // stdio
+          (id("asprintf") |-> fun(int, restrict(ptr(ptr(char))), restrict(ptr(const(char))), variadic)
           (id("clearerr") |-> fun(void, ptr(file))
           (id("fclose") |-> fun(int, ptr(file))
           (id("feof") |-> fun(int, ptr(file))
@@ -155,6 +156,7 @@ module LIBC-INIT
           (id("tmpfile") |-> fun(ptr(file))
           (id("tmpnam") |-> fun(ptr(char), ptr(char))
           (id("ungetc") |-> fun(int, int, ptr(file))
+          (id("vasprintf") |-> fun(int, restrict(ptr(ptr(char))), restrict(ptr(const(char))), va_list)
           (id("vfprintf") |-> fun(int, restrict(ptr(file)), restrict(ptr(const(char))), va_list)
           (id("vfscanf") |-> fun(int, restrict(ptr(file)), restrict(ptr(const(char))), va_list)
           (id("vprintf") |-> fun(int, restrict(ptr(const(char))), va_list)
@@ -179,7 +181,7 @@ module LIBC-INIT
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => struct("__typeref_mtx_t")
      rule jmp_buf => ptr(cfg:ptrdiffut)

@@ -251,15 +251,15 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax Type ::= newLastAccessType(Type, Type, Int) [function]
-     rule newLastAccessType(Eff::Type, L::Type, _) => Eff
-          requires isCharType(L)
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset)
-          requires isFlexibleType(Eff)
-               andBool notBool isNoType(tracePath(Eff, L, Offset))
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset %Int bitSizeofType(Eff))
-          requires notBool isFlexibleType(Eff) andBool bitSizeofType(Eff) >Int 0
-               andBool notBool isNoType(tracePath(Eff, L, Offset %Int bitSizeofType(Eff)))
-     rule newLastAccessType(_, L::Type, _) => L [owise]
+     rule newLastAccessType(Eff::Type, _:CharType, _) => Eff
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int)
+          => #if isNoType(tracePath(Eff, L, Offset))
+               #then L #else tracePath(Eff, L, Offset) #fi
+          requires isFlexibleType(Eff) andBool notBool isCharType(L)
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int)
+          => #if (bitSizeofType(Eff) ==Int 0) orBool isNoType(tracePath(Eff, L, Offset %Int bitSizeofType(Eff)))
+               #then L #else tracePath(Eff, L, Offset %Int bitSizeofType(Eff)) #fi
+          [owise]
 
      // We form a composite type by locating the lvalue type in the (larger)
      // object type and tracing the path (i.e., union variants) that gets us

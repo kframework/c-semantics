@@ -1,4 +1,10 @@
+module LIBC-STDLIB-SYNTAX
+     imports INT
+     syntax KItem ::= alignedAlloc(Int, Int)
+endmodule
+
 module LIBC-STDLIB
+     imports LIBC-STDLIB-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports INT
@@ -72,7 +78,6 @@ module LIBC-STDLIB
           requires (Sz %Int Align) =/=Int 0
           [structural]
 
-     syntax KItem ::= alignedAlloc(Int, Int)
      rule <k> alignedAlloc(Align::Int, Sz::Int)
                => alloc(obj(!I:Int, Align, alloc), type(no-type), Sz)
                ~> tv(addProv(fromArray(0, Sz), lnew(obj(!I, Align, alloc))),

@@ -174,7 +174,9 @@ module LIBC-IO
      rule <k> readFD(FD:String, N::Int) => str(S) ...</k>
           <fid> FD </fid>
           <pos> Pos:Int => Pos +Int lengthString(S) </pos>
-          <read-buffer> S:String </read-buffer>
+          <feof> false => true </feof>
+          <ferror> 0 </ferror>
+          <read-buffer> S:String => "" </read-buffer>
           <last-op> Op:LastFileOp => inputOp </last-op>
           requires lengthString(S) <Int N
                andBool Op =/=K outputOp

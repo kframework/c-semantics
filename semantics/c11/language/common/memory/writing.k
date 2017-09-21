@@ -419,24 +419,21 @@ module C-MEMORY-WRITING
           [structural]
      // Upgrade the effective type for a malloced region to an array.
      rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T:Type => dynamicType(T'), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool notBool isNoType(T') andBool notBool isFlexibleType(T')
+          <mem>... Base |-> object(_:NoType => dynamicType(T'), Len::Int, _) ...</mem>
+          requires notBool isNoType(T') andBool notBool isFlexibleType(T')
           [structural]
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T:Type, _, _) ...</mem>
-          requires isNoType(T) andBool isNoType(T')
+     rule <k> setEffectiveType(Base::SymBase, _:NoType) => .K ...</k>
+          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
           [structural]
      // Also, set the length of the flexible array member for structs in a
      // malloced region.
      rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T:Type => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool isFlexibleType(T')
-               andBool Len >Int byteSizeofType(T')
+          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
+          requires isFlexibleType(T') andBool Len >Int byteSizeofType(T')
           [structural]
      rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T:Type => dynamicType(lockFlexibleStruct(T', 1)), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool isFlexibleType(T')
-               andBool Len <=Int byteSizeofType(T')
+          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', 1)), Len::Int, _) ...</mem>
+          requires isFlexibleType(T') andBool Len <=Int byteSizeofType(T')
           [structural]
      rule <k> setEffectiveType(Base::SymBase, _) => .K ...</k>
           <mem> Mem:Map </mem>
