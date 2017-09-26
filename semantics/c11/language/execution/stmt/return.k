@@ -84,7 +84,6 @@ module C-STMT-RETURN
           requires Noreturn() in Mods
           [structural]
 
-
      syntax KItem ::= "Return'" "(" K ")"
      context Return'(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
@@ -114,22 +113,20 @@ module C-STMT-RETURN
                ~> K
           </k>
           (<function-control>
-               <curr-scope> Scope::BlockScope </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
-          ...</function-control> => <function-control> C <curr-tu> Tu </curr-tu> </function-control>)
+          ...</function-control> => <function-control> C </function-control>)
           <call-stack>
                ListItem(
                     <call-stack-frame>
                          <continuation> K:K </continuation>
                          <stack-function-control>
-                              <function-control> C::Bag <curr-tu> Tu:String </curr-tu> </function-control>
+                              <function-control> C::Bag </function-control>
                          </stack-function-control>
                          <stack-lang-linkage> CLinkage </stack-lang-linkage>
                     </call-stack-frame>
                ) => .List
           ...</call-stack>
-          <stack-depth> ListItem(_) => .List ...</stack-depth>
           [structural]
 
 endmodule

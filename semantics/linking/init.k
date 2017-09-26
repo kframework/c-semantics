@@ -116,7 +116,7 @@ module C-LINKING-INIT
 
      rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
-          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, callBuiltin)] </functions>
+          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List)] </functions>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>

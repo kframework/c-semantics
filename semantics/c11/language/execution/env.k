@@ -8,7 +8,6 @@ module C-ENV-SYNTAX
      syntax KItem ::= addToEnv(CId, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= populateFromGlobal(K)
-     syntax KItem ::= addToHistory(Int)
 
 endmodule
 
@@ -18,10 +17,6 @@ module C-ENV
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-TYPING-SYNTAX
-
-     rule <k> addToHistory(BlockNum:Int) => .K ...</k>
-          <block-history> .List => ListItem(BlockNum) ...</block-history>
-          [structural]
 
      rule <k> populateFromGlobal(_) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>

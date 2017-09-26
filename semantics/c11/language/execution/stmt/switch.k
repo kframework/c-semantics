@@ -43,7 +43,7 @@ module C-STMT-SWITCH
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... F |-> map(M:Map) ...</goto-map>
+          <goto-map>... F |-> M:Map ...</goto-map>
           [structural]
 
      // K to be evaluated, val it should be, casehelper

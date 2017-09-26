@@ -82,7 +82,8 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(
                tv(loc(Base:SymBase, 0), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, Base, Fun, T, CLinkage, krlist(L))
+               => sequencePoint
+               ~> application(CurrLoc, Base, Fun, T, CLinkage, krlist(L))
           ...</k>
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
@@ -91,7 +92,8 @@ module C-EXPR-FUNCTION-CALL
      rule <k> Call(
                tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
-               => sequencePoint ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List, callBuiltin), T, CLinkage, krlist(L))
+               => sequencePoint
+               ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
           ...</k>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
@@ -124,58 +126,58 @@ module C-EXPR-FUNCTION-CALL
         transition graph. */
      // Function call (into C function)
      rule <k> application(CurrLoc:CabsLoc, Base:SymBase,
-                    functionObject(X:CId, DefT:Type, Locals:List, Blk:K),
+                    functionObject(X:CId, DefT:Type, Locals:List),
                     CallT:Type, CallingLang::LanguageLinkage, krlist(L:List))
                ~> K:K
                => sequencePoint
                ~> #if (getTU(Base) =/=String OldTu) #then enterRestrictTU #else .K #fi
                ~> enterRestrictBlock(blockScope(X, 0))
                ~> populateFromGlobal(DefT)
+               ~> declareInternalVariable(funLabel, type(no-type), initValue(funLabel, type(no-type), .K))
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
                ~> checkStackDepth
-               ~> Blk
+               ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
+                  #then callBuiltin #else Goto(funLabel) #fi
           </k>
           <call-stack> .List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
-                         <function-control> C <curr-tu> OldTu </curr-tu> </function-control>
+                         <function-control>
+                              C
+                              <curr-tu> OldTu </curr-tu>
+                              <stack-depth> OldStackDepth </stack-depth>
+                         </function-control>
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
           ) ...</call-stack>
-          (<function-control> C::Bag <curr-tu> OldTu::String </curr-tu> </function-control>
+          (<function-control>
+               C::Bag
+               <curr-tu> OldTu::String </curr-tu>
+               <stack-depth> OldStackDepth:Int </stack-depth>
+          </function-control>
           => <function-control>...
                <curr-tu> getTU(Base) </curr-tu>
                <curr-scope> blockScope(X, 0) </curr-scope>
                <curr-program-loc> CurrLoc </curr-program-loc>
+               <stack-depth> OldStackDepth +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals) </stack-depth>
           ...</function-control>)
-          <stack-depth> ListItem(Old:Int) => ListItem(Old +Int cfg:stackSize(mapList(L, #klabel(`type`)), Locals)) ListItem(Old) ...</stack-depth>
           requires CallT ==Type toPrototype(DefT)
           [structural]
      rule (.K => UNDEF("EFNC1", "Attempt to call the function " +String
           idToString(X) +String " through a pointer with incompatible type."))
-          ~> application(_, _, functionObject(X:CId, DefT:Type, _, _), CallT:Type, _, _)
+          ~> application(_, _, functionObject(X:CId, DefT:Type, _), CallT:Type, _, _)
           requires CallT =/=Type toPrototype(DefT)
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
-               => bindParamHelper(X, T, V, linc(T, D))
-          ...</k>
-          <duration> D:Duration </duration>
-          [structural]
-     syntax KItem ::= bindParamHelper(CId, Type, RValue, SymBase) [klabel(bindParamHelper4)]
-     rule <k> bindParamHelper(X:CId, T:Type, V:RValue, Base:SymBase)
-               => allocObject(Base, T)
-               ~> addToEnv(X, Base)
-               ~> giveType(X, T)
-               ~> allowInit(Computation(X := V))
+               => declareInternalVariable(X, T, initValue(X, T, Computation(X := V)))
           ...</k>
           <curr-function-params>...
-               (.List => ListItem(X))
+               .List => ListItem(X)
           </curr-function-params>
-          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           [structural]
 
 endmodule

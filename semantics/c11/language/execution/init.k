@@ -85,19 +85,18 @@ module C-EXECUTION-INIT
           => allocObject(bnew(N +Int 1, strType(S), argv), strType(S))
           ~> writeString(lnew(bnew(N +Int 1, strType(S), argv)), S)
           ~> allowInit(Computation(
-               *(Identifier("#incomingArgumentsArray") + tv(N, utype(int)))
+               *(mainArguments + tv(N, utype(int)))
                     := lv(lnew(bnew(N +Int 1, strType(S), argv)), strType(S))))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)
           => allowInit(Computation(
-               *(Identifier("#incomingArgumentsArray") + tv(N, utype(int)))
+               *(mainArguments + tv(N, utype(int)))
                     := NullPointerConstant))
           [structural]
 
      rule pgmArgs(L:List)
-          => makeArgv(
-               Identifier("#incomingArgumentsArray"),
+          => makeArgv(mainArguments,
                type(arrayType(type(pointerType(type(char))),
                size(L) +Int 1)))
           [structural]
@@ -190,7 +189,7 @@ module C-EXECUTION-INIT
      rule [call-main]:
           <k> callMain(N:Int, Args:K)
                => enterRestrictTU
-               ~> reval(#callMain(T, N, Identifier("#incomingArgumentsArray"), Args))
+               ~> reval(#callMain(T, N, mainArguments, Args))
                ~> callAtExit
           ...</k>
           <types>... Identifier("main") |-> T::Type ...</types>

@@ -43,7 +43,7 @@ module CPP-EXPR-FUNCTION-CALL
      syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: K, CPPType, Bool, args: StrictList)
 
      // evaluating arguments for call to C function
-     context evalArgs(... fun: functionObject(_::CId, _, _, _), args: HOLE:StrictList => prval(HOLE))
+     context evalArgs(... fun: functionObject(_::CId, _, _), args: HOLE:StrictList => prval(HOLE))
      // evaluating arguments for call to C++ function
      context evalArgs(... fun: functionObject(_::QualId, _, _, _), args: HOLE:StrictList)
 
@@ -157,7 +157,7 @@ module CPP-EXPR-FUNCTION-CALL
                Var(CopyInit()), AutoStorage, .Set)
 
      // Function call conversion (C linkage)
-     rule application(_, _, functionObject(X::CId, _, _, _),
+     rule application(_, _, functionObject(X::CId, _, _),
                (T:CPPFunctionType => convertTypeToC(T)), _, krlist(L::List => mapList(L, #klabel(`convertValToC`))))
 
      syntax RValue ::= convertValToC(PRVal) [function]

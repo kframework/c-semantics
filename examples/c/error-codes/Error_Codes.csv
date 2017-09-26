@@ -96,6 +96,7 @@ UB-IO1,"Stream input operation followed by an output operation without an interv
 UB-IO2,"Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function.","7.21.5.3:7, J.2:1 item 151",Undefined Behavior,
 UB-CTI1,Arrays must have integer length.,"6.6:6, J.2:1 item 55",Undefined Behavior,
 UB-SETJMP1,'longjmp' invoked to restore a nonexistent environment.,"7.13.2.1:2, J.2:1 item 126",Undefined Behavior,
+UB-SETJMP2,'longjmp' invoked to restore the environment of a function that has since terminated.,"7.13.2.1:2, J.2:1 item 126",Undefined Behavior,
 UB-STDARG1,'va_start' used in a function with fixed args.,"6.9.1:8, J.2:1 item 87",Undefined Behavior,
 UB-STDARG2,'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end.,"7.16.1.4:3, J.2:1 item 142",Undefined Behavior,
 UB-STDARG3,'va_arg' called on an uninitialized va_list.,"7.16.1.1:2, J.2:1 item 136",Undefined Behavior,

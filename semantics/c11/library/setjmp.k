@@ -1,15 +1,15 @@
 module LIBC-SETJMP
      imports LIBC-BUILTIN-SYNTAX
-
      imports C-CONFIGURATION
+     imports INT
+     imports K-EQUAL
+     imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-IO-BUFFERED-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-SYNTAX
-
-     imports INT
-     imports K-EQUAL
 
      /*@
      \fromStandard{\source[n1570]{\para{7.13}{1--3}}}{
@@ -32,17 +32,6 @@ module LIBC-SETJMP
      order to access an actual function, or a program defines an external
      identifier with the name \cinline{setjmp}, the behavior is undefined.
      }*/
-
-
-     syntax KItem ::= "ignoreLocals"
-
-     // there seems to be a problem here related to locals.  what if longjmp is
-     // never called?
-     rule [ignoreLocals]:
-          <k> ignoreLocals => .K ...</k>
-          <local-addresses> _ => .Set </local-addresses>
-          <locally-constructed> _ => .List </locally-constructed>
-          [structural]
 
      /*@
      \begin{lrbox}{\LstBox}
@@ -91,52 +80,110 @@ module LIBC-SETJMP
      }*/
      // The (apparent) return value from setjmp indicates whether control
      // reached that point normally or from a call to longjmp
-     rule [setjmp]:
-          <k> (builtin("__setjmp", Ptr:RValue)
-               => ignoreLocals
-               ~> addJmpBuf(!N:Int, Ptr, K, C)
-               ~> success
-               )
+     rule <k> (builtin("__setjmp", Ptr:RValue)
+               => addJmpBuf(!N:Int, Ptr, K, C)
+               ~> success)
                ~> K:K
           </k>
           C:ThreadLocalCell
           [structural]
 
-     syntax KItem ::= jmpBuf(K, K)
+     syntax JmpBuf ::= jmpBuf(K, K, SymBase)
+     syntax KResult ::= JmpBuf
      syntax KItem ::= addJmpBuf(Int, RValue, K, K)
 
-     rule <k> addJmpBuf(N'::Int, JmpBufPtr::RValue, K:K, C:K)
-               => Computation((* JmpBufPtr) := tv(N', utype(innerType(jmp_buf))))
+     rule <k> addJmpBuf(N::Int, JmpBufPtr::RValue, K:K, C:K)
+               => Computation((* JmpBufPtr) := tv(opaque(N, utype(innerType(jmp_buf))), utype(innerType(jmp_buf))))
           ...</k>
-          <jmp-bufs>... .Map => N' |-> jmpBuf(K, C) </jmp-bufs>
+          <call-stack> ListItem(
+               <call-stack-frame>...
+                    <stack-function-control> <function-control>...
+                         <env>... funLabel |-> B::SymBase ...</env>
+                    ...</function-control> </stack-function-control>
+               ...</call-stack-frame>)
+          ...</call-stack>
+          <jmp-bufs>... .Map => N |-> jmpBuf(K, C, B) </jmp-bufs>
           [structural]
 
-     syntax KItem ::= "longjmp'" "(" K "," K ")" [strict(2)]
-     context longjmp'(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-     rule builtin("longjmp", V:RValue, V':RValue) => longjmp'(*(V), V')
+     syntax KItem ::= longjmp(K, RValue) [strict(1)]
+     rule builtin("longjmp", V:RValue, V':RValue) => longjmp(getJmpBuf(*(V)), V')
           [structural]
 
-     // fixme: memory leak here with extra ignoreLocals.  needed for recursive
-     // setjmp/longjmp as in Looping.c
-     rule [longjmp]:
-          <k> longjmp'(tv(N:Int, _), tv(I:Int, _))
-                ~> _
-                => ignoreLocals
-                ~> #if (I ==Int 0)
-                      #then tv(1, utype(int))
-                      #else tv(I, utype(int)) #fi
-                ~> K
+     syntax KItem ::= getJmpBuf(K)
+     context getJmpBuf(HOLE:KItem => reval(HOLE)) [result(RValue)]
+     rule <k> (.K => UNDEF("SETJMP1", "'longjmp' invoked to restore a nonexistent environment."))
+               ~> getJmpBuf(tv(V::CValue, _))
+          ...</k>
+          <jmp-bufs> JmpBufs::Map </jmp-bufs>
+          requires notBool (jmpBufId(V) in_keys(JmpBufs))
+     rule <k> getJmpBuf(tv(opaque(N:Int, _), _)) => JmpBuf ...</k>
+          <jmp-bufs>... N |-> JmpBuf::JmpBuf ...</jmp-bufs>
+
+     syntax Int ::= jmpBufId(CValue) [function]
+     rule jmpBufId(opaque(N:Int, _)) => N
+     rule jmpBufId(_) => -1 [owise]
+
+     rule <k> (.K => popBlock)
+               ~> longjmp(jmpBuf(_, _, B::SymBase), _)
+          ...</k>
+          <block-history> ListItem(_) ...</block-history>
+          <block-stack> ListItem(_) ...</block-stack>
+          <env> Env:Map </env>
+          <mem> Mem:Map </mem>
+          requires B in_keys(Mem)
+               andBool Env[funLabel] =/=K B
+          [structural]
+     rule <k> (.K => deleteObjects(Locals) ~> exitRestrictBlock(Locals))
+               ~> longjmp(jmpBuf(_, _, B::SymBase), _)
+          ...</k>
+          (<function-control>...
+               <env> Env:Map </env>
+               <block-stack> .List </block-stack>
+               <block-history> .List </block-history>
+               <local-addresses> Locals::Set </local-addresses>
+          ...</function-control> => C)
+          <call-stack>
+               ListItem(
+                    <call-stack-frame>...
+                         <stack-function-control>
+                              C:FunctionControlCell
+                         </stack-function-control>
+                         <stack-lang-linkage> CLinkage </stack-lang-linkage>
+                    ...</call-stack-frame>
+               ) => .List
+          ...</call-stack>
+          <mem> Mem:Map </mem>
+          requires B in_keys(Mem)
+               andBool Env[funLabel] =/=K B
+          [structural]
+     rule <k> longjmp(jmpBuf(K:K, C:ThreadLocalCell, B::SymBase), tv(I:Int, _))
+               ~> _
+               => deleteLocals(Locals)
+               ~> #if (I ==Int 0)
+                    #then tv(1, utype(int))
+                    #else tv(I, utype(int)) #fi
+               ~> K
           </k>
-          <thread-local> _::Bag => C </thread-local>
-          <jmp-bufs>...
-               N |-> jmpBuf(K:K, (<thread-local> C::Bag </thread-local>))
-          ...</jmp-bufs>
+          (<thread-local>...
+               <env>... funLabel |-> B ...</env>
+               <local-addresses> Locals::Set </local-addresses>
+          ...</thread-local> => C)
+          <mem> Mem:Map </mem>
+          requires B in_keys(Mem)
           [structural]
-     rule <k> (.K => UNDEF("SETJMP1",
-               "'longjmp' invoked to restore a nonexistent environment."))
-               ~> longjmp'(tv(N:Int, _), _)
+
+     rule <k> (.K => UNDEF("SETJMP2",
+               "'longjmp' invoked to restore the environment of a function that has since terminated."))
+               ~> longjmp(jmpBuf(_, _, B::SymBase), _)
           ...</k>
-          <jmp-bufs> JmpBufs:Map </jmp-bufs>
-          requires notBool N in_keys(JmpBufs)
+          <mem> Mem:Map </mem>
+          requires notBool B in_keys(Mem)
           [structural]
+
+     syntax KItem ::= deleteLocals(Set)
+     rule <k> deleteLocals(Locals::Set)
+               => deleteObjects(Locals -Set Locals')
+          ...</k>
+          <local-addresses> Locals'::Set </local-addresses>
+
 endmodule

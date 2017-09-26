@@ -36,7 +36,7 @@ module C-PROCESS-LABEL
      rule <k> calculateGotoMap(F:CId, K:K) => waitingOnGotoMap ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map> M:Map => M[F <- map(.Map)] </goto-map>
+          <goto-map> M:Map => M[F <- .Map] </goto-map>
           <goto-map-calc>
                .Bag => (<goto-calc>...
                          <computation>
@@ -55,13 +55,13 @@ module C-PROCESS-LABEL
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... F |-> map(.Map) => .Map ...</goto-map>
+          <goto-map>... (F |-> (.Map)) => .Map ...</goto-map>
      rule <k> waitingOnGotoMap => .K ...</k>
           <goto-map-calc> .Bag </goto-map-calc>
           <curr-scope> blockScope(F:CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
-          <goto-map>... F |-> map(M:Map) ...</goto-map>
+          <goto-map>... F |-> M:Map ...</goto-map>
           requires M =/=K .Map
 
      rule <computation> Nop() => .K ...</computation>
@@ -78,14 +78,11 @@ module C-PROCESS-LABEL
           <k> waitingOnGotoMap ...</k>
 
      rule <computation> pushBlock(Tag::Int) => .K ...</computation>
-          <goto-nesting-depth> N::Int => N +Int 1 </goto-nesting-depth>
           <goto-block-history> .List => ListItem(Tag) ...</goto-block-history>
           <k> waitingOnGotoMap ...</k>
      rule <computation> popBlock => .K ...</computation>
-          <goto-nesting-depth> I::Int => I -Int 1 </goto-nesting-depth>
           <goto-block-history> ListItem(_) => .List ...</goto-block-history>
           <k> waitingOnGotoMap ...</k>
-          requires I >Int 0
 
      rule <computation> L:CabsLoc => .K ...</computation>
           <curr-program-loc> _ => L </curr-program-loc>
@@ -96,18 +93,16 @@ module C-PROCESS-LABEL
           ...</computation>
           <decl-stack>...
                .List
-               => ListItem(frozenDeclaration(Depth, BlockNum,
+               => ListItem(frozenDeclaration(BlockNum,
                     declareInternalVariable(X, T, Init)))
           </decl-stack>
-          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
           <k> waitingOnGotoMap ...</k>
 
      rule <computation> typedef(X::CId, T::Type) => .K ...</computation>
           <decl-stack>... .List
-               => ListItem(frozenDeclaration(Depth, BlockNum, typedef(X, T)))
+               => ListItem(frozenDeclaration(BlockNum, typedef(X, T)))
           </decl-stack>
-          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> ListItem(BlockNum::Int) ...</goto-block-history>
           <k> waitingOnGotoMap ...</k>
 
@@ -119,7 +114,6 @@ module C-PROCESS-LABEL
                </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
-               <goto-nesting-depth> N::Int </goto-nesting-depth>
                <goto-block-history>
                     ListItem(Num::Int) OldBlockHistory::List
                </goto-block-history>
@@ -140,7 +134,6 @@ module C-PROCESS-LABEL
                          ~> Tail
                     </computation-tail>
                     B
-                    <goto-nesting-depth> N </goto-nesting-depth>
                     <goto-block-history>
                          ListItem(Num) OldBlockHistory
                     </goto-block-history>
@@ -173,7 +166,6 @@ module C-PROCESS-LABEL
                <computation> (DoWhile(E:K, S:K) => .K) ~> K:K </computation>
                <computation-tail> Tail:K </computation-tail>
                B::Bag
-               <goto-nesting-depth> N::Int </goto-nesting-depth>
                <goto-block-history>
                     ListItem(Num::Int) OldBlockHistory::List
                </goto-block-history>
@@ -189,7 +181,6 @@ module C-PROCESS-LABEL
                          ~> Tail
                     </computation-tail>
                     B
-                    <goto-nesting-depth> N </goto-nesting-depth>
                     <goto-block-history>
                          ListItem(Num) OldBlockHistory
                     </goto-block-history>
@@ -243,15 +234,13 @@ module C-PROCESS-LABEL
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
           <curr-scope> blockScope(F::CId, _) </curr-scope>
-          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> BlockHistory::List </goto-block-history>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
-               F |-> map(
-                    (M::Map => M[Target
-                         <- gotoObject(Depth, BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)]))
+               F |-> (M::Map => M[Target
+                         <- gotoObject(BlockHistory,
+                         (S ~> K ~> Tail), LoopStack, DeclStack)])
           ...</goto-map>
           <k> waitingOnGotoMap ...</k>
           requires notBool (Target in_keys(M))
@@ -263,15 +252,13 @@ module C-PROCESS-LABEL
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
           <curr-scope> blockScope(F::CId, _) </curr-scope>
-          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> BlockHistory::List </goto-block-history>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
-               F:CId |-> map(
-                    (M::Map => M[caseLabel(SwitchNum, Val)
-                         <- gotoObject(Depth, BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)]))
+               F:CId |-> (M::Map => M[caseLabel(SwitchNum, Val)
+                         <- gotoObject(BlockHistory,
+                         (S ~> K ~> Tail), LoopStack, DeclStack)])
           ...</goto-map>
           <k> waitingOnGotoMap ...</k>
           requires notBool (caseLabel(SwitchNum, Val) in_keys(M))
@@ -283,15 +270,13 @@ module C-PROCESS-LABEL
           <goto-loop-stack> LoopStack::List </goto-loop-stack>
           <decl-stack> DeclStack::List </decl-stack>
           <curr-scope> blockScope(F::CId, _) </curr-scope>
-          <goto-nesting-depth> Depth::Int </goto-nesting-depth>
           <goto-block-history> BlockHistory::List </goto-block-history>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
-               F:CId |-> map(
-                    (M::Map => M[caseLabel(SwitchNum, #klabel(`Default`))
-                         <- gotoObject(Depth, BlockHistory,
-                         (S ~> K ~> Tail), LoopStack, DeclStack)]))
+               F:CId |-> (M::Map => M[caseLabel(SwitchNum, #klabel(`Default`))
+                         <- gotoObject(BlockHistory,
+                         (S ~> K ~> Tail), LoopStack, DeclStack)])
           ...</goto-map>
           <k> waitingOnGotoMap ...</k>
           requires notBool (caseLabel(SwitchNum, #klabel(`Default`)) in_keys(M))

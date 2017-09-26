@@ -4,8 +4,8 @@ module C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SORTS
      imports COMMON-SORTS
 
-     // Function id, def return type, def params, local declarations, body.
-     syntax RValue ::= functionObject(CId, Type, List, K)
+     // Function id, def return type, def params, local declarations.
+     syntax RValue ::= functionObject(CId, Type, List)
 
 endmodule
 

@@ -26,9 +26,6 @@ module C-CONFIGURATION
                <decl-stack color="cyan">
                     .List
                </decl-stack>
-               <goto-nesting-depth color="cyan">
-                    0
-               </goto-nesting-depth>
                <goto-block-history color="cyan">
                     .List
                </goto-block-history>

@@ -60,7 +60,6 @@ module LIBC-STDARG
 
      // va_list __va_start(va_list* ap, void* pN);
      rule [va-start]:
-          // TODO(chathhorn): verify arg is last param and not register.
           <k> builtin("__va_start", tv(Loc:SymLoc, T:PointerUType), _)
                => checkVarArgs
                ~> checkDead(read(Loc, innerType(T)))
