@@ -150,14 +150,8 @@ module C-CHECK-LOC
      rule <k> checkRestrict(_, _) => .K ...</k>
           <restrict> .List </restrict>
           [structural]
-     rule <k> checkRestrict(Write::Bool, loc(Base::SymBase, Offset::Int, Prov::Set))
-               => checkRestrict'(Write, loc(Base, Offset), getBases(Prov))
-          ...</k>
-          <restrict> R::List </restrict>
-          requires R =/=K .List
-          [structural]
-     rule <k> checkRestrict(Write::Bool, loc(Base::SymBase, Offset::Int))
-               => checkRestrict'(Write, loc(Base, Offset), .Set)
+     rule <k> checkRestrict(Write::Bool, Loc::SymLoc)
+               => checkRestrict'(Write, stripProv(Loc), getBases(Loc))
           ...</k>
           <restrict> R::List </restrict>
           requires R =/=K .List
@@ -194,7 +188,7 @@ module C-CHECK-LOC
                Loc |-> (State'::RestrictState => joinRestrictState(restricted(Bases, SrcLoc), State'))))
           ...</restrict>
           <curr-program-loc> SrcLoc::CabsLoc </curr-program-loc>
-          requires notBool isRestrictConflict(onlyRead(Bases, UnknownCabsLoc), State')
+          requires notBool isRestrictConflict(restricted(Bases, UnknownCabsLoc), State')
           [structural]
      rule <k> checkRestrict'(true, Loc::SymLoc, Bases::Set) => checkConst(Bases) ~> restrictViolation ...</k>
           <restrict> ListItem(restrictStatus(_, _

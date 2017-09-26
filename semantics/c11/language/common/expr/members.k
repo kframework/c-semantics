@@ -1,9 +1,14 @@
 module C-COMMON-EXPR-MEMBERS
+     imports C-CONFIGURATION
      imports BOOL
+     imports INT
+     imports LIST
+     imports SET
+     imports SETTINGS-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-CONFIGURATION
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -11,10 +16,6 @@ module C-COMMON-EXPR-MEMBERS
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports LIST
-     imports SET
-     imports SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.3}{3}}}{
      A postfix expression followed by the \cinline{.} operator and an
@@ -57,14 +58,8 @@ module C-COMMON-EXPR-MEMBERS
           [structural]
 
      // The last two parameters are for convenience and should be the same.
-     // TODO(chathhorn): anonymous structs/unions.
      syntax KItem ::= lookupField(CId, SymLoc, Bool, Quals, CId, FieldInfo, FieldInfo)
           [function]
-     syntax KItem ::= addProvField(CId, SymLoc, Quals, Type, Int, List) [function]
-     syntax KItem ::= createLv(CId, SymLoc, Quals, Int, Type) [function]
-     syntax KItem ::= lookupFieldHold(CId, SymLoc, Quals, CId, FieldInfo, FieldInfo)
-     syntax KItem ::= checkAnons(CId, SymLoc, Bool, Quals, CId, FieldInfo, List, Int) [function]
-     syntax KItem ::= getLVItem(CId, SymLoc, Quals, CId, FieldInfo, List) [function]
 
      syntax SymLoc ::= setBitOffset(Int, SymLoc, Type) [function]
      rule setBitOffset(Offset:Int, Loc:SymLoc, T:BitfieldType) => addProv(bitOffset(Offset), Loc)
@@ -76,23 +71,24 @@ module C-COMMON-EXPR-MEMBERS
                F |-> Offset:Int _,
                _))
           => createLv(F, addProv(fromUnion(Loc, F, Fields, IsUnion), Loc), Qs, Offset, T)
-
-     rule createLv(F:CId, Loc:SymLoc, Qs::Quals, Offset:Int, T::Type)
-          => lv(setBitOffset(Offset modInt cfg:bitsPerByte,
-                    Loc +bytes Offset /Int cfg:bitsPerByte, T),
-              addQualifiers(Qs, T))
-
      rule lookupField(F:CId, Loc:SymLoc, IsUnion:Bool, Qs::Quals, S:CId, Fields:FieldInfo,
            fieldInfo(Decls:List, _, Types:Map, Offsets:Map, _))
           => checkAnons(F, Loc, IsUnion, Qs, S, Fields, Decls, 0)
           requires anonInDecls(Decls)
                    andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
+     rule lookupField(F:CId, Loc:SymLoc, IsUnion:Bool, Qs::Quals, S:CId, Fields:FieldInfo,
+               fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map, PaddingOffs:Set))
+          => lookupFieldHold(F, Loc, Qs, S, Fields, fieldInfo(Decls, Size, Types, Offsets, PaddingOffs))
+          requires notBool anonInDecls(Decls)
+                   andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
 
+     syntax KItem ::= checkAnons(CId, SymLoc, Bool, Quals, CId, FieldInfo, List, Int) [function]
      rule checkAnons(F:CId, Loc:SymLoc, IsUnion:Bool, Qs::Quals, S:CId,
             Fields:FieldInfo, Decls:List, Offset:Int)
           => getLVItem(F, Loc, Qs, S, Fields,
                 searchAnons(F, IsUnion, Fields, Offset, Decls, .List))
 
+     syntax KItem ::= getLVItem(CId, SymLoc, Quals, CId, FieldInfo, List) [function]
      rule getLVItem(F:CId, Loc:SymLoc, Qs::Quals, _, _,
             ListItem(fieldInfo(Decls:List, Size:Int,
                       F |-> T::Type Types:Map, F |-> Offset:Int Offsets:Map, PaddingOffs:Set))
@@ -100,30 +96,30 @@ module C-COMMON-EXPR-MEMBERS
           => addProvField(F, Loc, Qs, T, Offset +Int Offset',
               Structs ListItem(provInfo(F, IsUnion,
                                 fieldInfo(Decls, Size, F |-> T Types, F |-> Offset Offsets, PaddingOffs))))
-
      rule getLVItem(F:CId, Loc:SymLoc, Qs::Quals, S:CId, Fields:FieldInfo, .List)
           => lookupFieldHold(F, Loc, Qs, S, Fields, Fields)
 
+     syntax KItem ::= addProvField(CId, SymLoc, Quals, Type, Int, List) [function]
      rule addProvField(F:CId, Loc:SymLoc, Qs::Quals, T::Type, Offset:Int,
             ListItem(provInfo(CF:CId, IsUnion:Bool, Fields:FieldInfo))
             Rest:List)
           => addProvField(F, addProv(fromUnion(Loc, CF, Fields, IsUnion), Loc),
                 Qs, T, Offset, Rest)
           requires Rest =/=K .List
-
      rule addProvField(F:CId, Loc:SymLoc, Qs::Quals, T::Type, Offset:Int,
             ListItem(provInfo(F, IsUnion:Bool, Fields:FieldInfo)) .List)
           => createLv(F, addProv(fromUnion(Loc, F, Fields, IsUnion), Loc),
                 Qs, Offset, T)
 
-     rule lookupField(F:CId, Loc:SymLoc, IsUnion:Bool, Qs::Quals, S:CId, Fields:FieldInfo,
-               fieldInfo(Decls:List, Size:Int, Types:Map, Offsets:Map, PaddingOffs:Set))
-          => lookupFieldHold(F, Loc, Qs, S, Fields, fieldInfo(Decls, Size, Types, Offsets, PaddingOffs))
-          requires notBool anonInDecls(Decls)
-                   andBool notBool (F in_keys(Types)) andBool notBool (F in_keys(Offsets))
-
+     syntax KItem ::= lookupFieldHold(CId, SymLoc, Quals, CId, FieldInfo, FieldInfo)
      rule (.K => CV("CEM3", "Attempting to access member but it does not exist."))
           ~> lookupFieldHold(F:CId, _, _, _, _, fieldInfo(_, _, Types:Map, Offsets:Map, _))
+
+     syntax KItem ::= createLv(CId, SymLoc, Quals, Int, Type) [function]
+     rule createLv(F:CId, Loc:SymLoc, Qs::Quals, Offset:Int, T::Type)
+          => lv(setBitOffset(Offset modInt cfg:bitsPerByte,
+                    Loc +bytes Offset /Int cfg:bitsPerByte, T),
+              addQualifiers(Qs, T))
 
      // Same deal as above, only for byte lists.
      rule <k> tv(agg(L:List), ut(Mods::Set,
@@ -137,13 +133,7 @@ module C-COMMON-EXPR-MEMBERS
           <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> Fields:FieldInfo) ...</tags>
           [structural]
 
-     syntax KItem ::= extractField(CId, Bool, List, Set, CId, FieldInfo, FieldInfo)
-          [function]
-     syntax KItem ::= extractAnon(CId, List, Set, List)
-          [function]
-     syntax KItem ::= extractItem(CId, List, Set, Int, FieldInfo)
-          [function]
-
+     syntax KItem ::= extractField(CId, Bool, List, Set, CId, FieldInfo, FieldInfo) [function]
      rule extractField(F:CId, IsUnion:Bool, L:List, Mods:Set, S:CId, Fields:FieldInfo,
                fieldInfo(Decls:List, _, Types:Map, Offsets:Map, _))
           => extractAnon(F, L, Mods, searchAnons(F, IsUnion, Fields, 0, Decls, .List))
@@ -153,11 +143,13 @@ module C-COMMON-EXPR-MEMBERS
           => extractItem(F, L, Mods, 0, Info)
           [owise]
 
+     syntax KItem ::= extractAnon(CId, List, Set, List) [function]
      rule extractAnon(F::CId, L::List, Mods::Set,
                ListItem(Info:FieldInfo)
                ListItem(Offset':Int) _::List)
           => extractItem(F, L, Mods, Offset', Info)
 
+     syntax KItem ::= extractItem(CId, List, Set, Int, FieldInfo) [function]
      rule extractItem(F::CId, L::List, Mods::Set, Offset'::Int,
                fieldInfo(_, _,
                          F |-> t(_, Mods'::Set, T'::SimpleType) _,

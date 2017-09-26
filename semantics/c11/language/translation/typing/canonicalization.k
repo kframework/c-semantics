@@ -40,11 +40,6 @@ module C-TYPING-CANONICALIZATION
                _,
                _::List (.List => ListItem(M)))
           [structural]
-     // Ignore typedef.
-     rule canonicalizeType'(_::List (ListItem(SpecTypedef()) => .List),
-               _,
-               _)
-          [structural]
      rule canonicalizeType'(_::List (ListItem(S:K) => .List),
                _,
                _)
@@ -104,7 +99,7 @@ module C-TYPING-CANONICALIZATION
           => addMods(Mods, addModifier(M, T))
           requires notBool isQualifier(M)
           [structural]
-     rule addMods(Mods::List (ListItem(S:K) => .List), _)
+     rule addMods(Mods::List (ListItem(S:K) => .List), _:Type)
           requires notBool isModifier(S)
                andBool notBool isReducibleSpecifier(S)
           [structural]
@@ -247,6 +242,8 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
      rule <k> canonicalizeSpecifier(_ ListItem(
@@ -254,6 +251,8 @@ module C-TYPING-CANONICALIZATION
            ...</k>
            <curr-tu> TU:String </curr-tu>
            <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
            <next-unnamed> N:Int => N +Int 1 </next-unnamed>
            [structural]
      rule <k> canonicalizeSpecifier(_ ListItem(
@@ -261,6 +260,8 @@ module C-TYPING-CANONICALIZATION
           ...</k>
           <curr-tu> TU:String </curr-tu>
           <tu-id> TU </tu-id>
+          <curr-program-loc> L::CabsLoc </curr-program-loc>
+          <unnamed-locs>... .Map => unnamed(N,TU) |-> L ...</unnamed-locs>
           <next-unnamed> N:Int => N +Int 1 </next-unnamed>
           [structural]
 

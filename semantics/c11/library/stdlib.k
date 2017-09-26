@@ -1,19 +1,27 @@
+module LIBC-STDLIB-SYNTAX
+     imports INT
+     syntax KItem ::= alignedAlloc(Int, Int)
+endmodule
+
 module LIBC-STDLIB
-     imports BOOL
+     imports LIBC-STDLIB-SYNTAX
      imports C-CONFIGURATION
+     imports BOOL
+     imports INT
+     imports STRING
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
-     imports STRING
 
      rule [debug]:
           builtin("__debug", _) => voidVal
@@ -58,19 +66,30 @@ module LIBC-STDLIB
      The malloc function returns either a null pointer or a pointer to the
      allocated space.
      }*/
-     rule <k> builtin("malloc", tv(Len:Int, _))
-               => alloc(bnew(!I:Int, type(no-type), alloc), type(no-type), Len:Int)
-               ~> tv(addProv(fromArray(0, Len), lnew(bnew(!I, type(no-type), alloc))),
-                    utype(pointerType(type(void))))
-          ...</k>
-          <malloced>... .Map => bnew(!I, type(no-type), alloc) |-> Len ...</malloced>
-          requires notBool hasLint andBool Len <=Int cfg:maxHeapBound
+     rule builtin("malloc", tv(Sz:Int, _)) => alignedAlloc(cfg:alignofMalloc, Sz)
           [structural]
 
-     rule <k> builtin("malloc", tv(Len:Int, _))
+     rule builtin("aligned_alloc", tv(Align:Int, _), tv(Sz:Int, _))
+          => alignedAlloc(Align, Sz)
+          requires (Sz %Int Align) ==Int 0
+          [structural]
+     rule (.K => UNDEF("STDLIB7", "Called aligned_alloc with size parameter not an integral multiple of the requested alignment."))
+              ~> builtin("aligned_alloc", tv(Align:Int, _), tv(Sz:Int, _))
+          requires (Sz %Int Align) =/=Int 0
+          [structural]
+
+     rule <k> alignedAlloc(Align::Int, Sz::Int)
+               => alloc(obj(!I:Int, Align, alloc), type(no-type), Sz)
+               ~> tv(addProv(fromArray(0, Sz), lnew(obj(!I, Align, alloc))),
+                    utype(pointerType(type(void))))
+          ...</k>
+          <malloced>... .Map => obj(!I, Align, alloc) |-> Sz ...</malloced>
+          requires notBool hasLint andBool Sz <=Int cfg:maxHeapBound
+          [structural]
+     rule <k> alignedAlloc(Align::Int, Sz::Int)
                => tv(NullPointer, utype(pointerType(type(void))))
           ...</k>
-          requires notBool hasLint andBool Len >Int cfg:maxHeapBound
+          requires notBool hasLint andBool Sz >Int cfg:maxHeapBound
           [structural]
 
 
@@ -191,6 +210,22 @@ module LIBC-STDLIB
           [structural]
      rule builtin("strtold", NPtr::RValue, EndPtr::RValue)
           => nativeCall("strtold", ListItem(NPtr) ListItem(EndPtr), .List)
+          [structural]
+
+     rule builtin("secure_getenv" => "getenv", _)
+          [structural]
+     rule (.K => newFixedObject(nativeCall("getenv", ListItem(KeyPtr), .List)))
+          ~> builtin("getenv", KeyPtr::RValue)
+          [structural]
+     rule <k> Ptr:RValue ~> builtin("getenv", _)
+               => Ptr
+          ...</k>
+          <getenv> .K => Ptr </getenv>
+          [structural]
+     rule <k> Ptr:RValue ~> builtin("getenv", _)
+               => deleteObject(base(Loc)) ~> Ptr
+          ...</k>
+          <getenv> tv(Loc:SymLoc, _) => Ptr </getenv>
           [structural]
 
 endmodule

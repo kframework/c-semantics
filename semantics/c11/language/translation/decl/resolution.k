@@ -39,17 +39,12 @@ module C-DECL-RESOLUTION
           => declare(typedDeclaration(t(Qs, Mods, arrayType(T, 1)), X), NoInit())
           [structural]
      rule allocateIncompleteTentative(_,
-               declState(_, t(_, Mods::Set, _), State:DeclState, _))
+               declState(_, t(_, Mods::Set, _), State::DeclState, Tent:Bool))
           => .K
-          requires State =/=K declared
+          requires notBool (State ==K declared andBool Tent)
                // TODO(chathhorn): ... and we do this inline function check in
                // addition to completing tentatives.
                andBool notBool (State ==K completed andBool Inline() in Mods)
-          [structural]
-     rule allocateIncompleteTentative(_,
-               declState(_, t(_, Mods::Set, _), _, false))
-          => .K
-          requires notBool (Inline() in Mods)
           [structural]
      rule allocateIncompleteTentative(X::CId,
                declState(_, t(_, Mods::Set, _), completed, _))

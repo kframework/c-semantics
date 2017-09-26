@@ -25,7 +25,7 @@ module C-MEMORY-WRITING-SYNTAX
      syntax KItem ::= writeWChars(SymLoc, List)
      syntax KItem ::= writeWString(SymLoc, List)
 
-     syntax KItem ::= setEffectiveType(SymLoc, Type)
+     syntax KItem ::= setEffectiveType(SymBase, Type)
 endmodule
 
 module C-MEMORY-WRITING
@@ -110,14 +110,6 @@ module C-MEMORY-WRITING
           => updateEffectiveType(Loc)
           ~> writeSpecific'(Loc, stripLastAccessType(V), T)
 
-     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
-     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
-          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
-               andBool (notBool isBitfieldType(T))
-               andBool (notBool hasUnionMarker(Loc))
-          [structural]
-
      syntax Set ::= keepUnion(Set) [function]
                   | stripUnion(Set) [function]
 
@@ -135,10 +127,38 @@ module C-MEMORY-WRITING
           #else (SetItem(K) stripUnion(S))
           #fi
 
+     syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
+     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
+          => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
+               andBool (notBool isBitfieldType(T))
+               andBool (notBool hasUnionMarker(Loc))
+          [structural]
      rule (.K => makeUnknown(.K, keepUnion(S)))
           ~> writeSpecific'(
                loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
           requires hasUnionMarker(loc(Base, Offset, S))
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
+          => writeSpecific'(Loc, justBits(I, utype(T)), T)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0 orBool isBitfieldType(T))
+               andBool (I <Int 0)
+               andBool notBool hasUnionMarker(Loc)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
+               andBool (V >=Int 0)
+               andBool notBool hasUnionMarker(Loc)
+          [structural]
+     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
+          => writeBytes(Loc,
+               calculateNewBytes(piece(V, bitSizeofType(T)),
+                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
+               andBool notBool hasUnionMarker(Loc)
           [structural]
 
      syntax KItem ::= makeUnionUnknown(SymLoc, CId, FieldInfo)
@@ -211,29 +231,6 @@ module C-MEMORY-WRITING
      rule justBits-aux(N::Int, ut(_, bitfieldType(_, Len::Int)))
           => N +Int (1 <<Int (Len -Int 1))
           requires Len >Int 0 andBool N >=Int 0
-
-     rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
-          => writeSpecific'(Loc, justBits(I, utype(T)), T)
-          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0
-               orBool isBitfieldType(T))
-               andBool (I <Int 0)
-          [structural]
-
-     rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
-               andBool (V >=Int 0)
-          [structural]
-     rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
-          => writeBytes(Loc,
-               calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0)
-               orBool (isBitfieldType(T) andBool notBool hasUnionMarker(Loc)))
-          [structural]
 
      syntax KItem ::= calculateNewBytes(Bits, K, Int)
           [latex(\terminal{calcNewBytes(}{#1}, {#2}\terminal{)}), strict(2)]
@@ -406,35 +403,41 @@ module C-MEMORY-WRITING
      // Set the new effective type to a last-access type attached to the
      // lvalue, if it exists.
      syntax KItem ::= updateEffectiveType(SymLoc)
-     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(stripProv(Loc), getObjectType(Loc))
+     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(base(Loc), getObjectType(Loc))
           requires hasObjectType(Loc)
           [structural]
      rule updateEffectiveType(Loc::SymLoc) => .K
           requires notBool hasObjectType(Loc)
           [structural]
 
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => T', _, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(T:Type => T', _, _) ...</mem>
           requires notBool isNoType(T)
           [structural]
-     // Upgrade the effective type for a malloced region to an array.
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => type(arrayType(T', Len /Int byteSizeofType(T'))), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool notBool isNoType(T') andBool notBool isFlexibleType(T')
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(dynamicType(_ => T'), _, _) ...</mem>
           [structural]
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type, _, _) ...</mem>
-          requires isNoType(T) andBool isNoType(T')
+     // Upgrade the effective type for a malloced region to an array.
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(_:NoType => dynamicType(T'), Len::Int, _) ...</mem>
+          requires notBool isNoType(T') andBool notBool isFlexibleType(T')
+          [structural]
+     rule <k> setEffectiveType(Base::SymBase, _:NoType) => .K ...</k>
+          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
           [structural]
      // Also, set the length of the flexible array member for structs in a
      // malloced region.
-     rule <k> setEffectiveType(loc(Base::SymBase, _), T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T::Type => lockFlexibleStruct(T', Len -Int byteSizeofType(T')), Len::Int, _) ...</mem>
-          requires isNoType(T) andBool isFlexibleType(T')
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
+          requires isFlexibleType(T') andBool Len >Int byteSizeofType(T')
           [structural]
-     rule <k> setEffectiveType(Loc::SymLoc, _) => .K ...</k>
+     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
+          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', 1)), Len::Int, _) ...</mem>
+          requires isFlexibleType(T') andBool Len <=Int byteSizeofType(T')
+          [structural]
+     rule <k> setEffectiveType(Base::SymBase, _) => .K ...</k>
           <mem> Mem:Map </mem>
-          requires notBool base(Loc) in_keys(Mem)
+          requires notBool Base in_keys(Mem)
           [structural]
 
      syntax Bool ::= hasObjectType(SymLoc) [function]

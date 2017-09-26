@@ -383,4 +383,10 @@ module C-TYPING-SYNTAX
 
      syntax String ::= showType(Type) [function]
      syntax String ::= showDType(DType) [function]
+
+     // Effective type of malloced regions.
+     syntax DynamicType ::= dynamicType(Type)
+     syntax KResult ::= DynamicType
+     syntax EffectiveType ::= DynamicType
+
 endmodule

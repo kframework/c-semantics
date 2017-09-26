@@ -140,6 +140,7 @@ module C-DECL-LOCAL
           ...</k>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           <should-init> true </should-init>
+          requires K =/=K .K
           [structural]
      rule <k> defineAndInit(X:CId, T:Type, _, Base:SymBase)
                => allocObject(Base, T)

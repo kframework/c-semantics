@@ -24,7 +24,7 @@ module C-DECL-LOCAL
      //
      // Extern, external type and def exist.
      rule <k> declareInternalVariable(X:CId, T':Type, _:NoInit)
-               => addToEnv(X, Base)
+               => addToEnv(X, T, Base)
           ...</k>
           <elab>... .K => declareInternalVariable(X, T', NoInit()) </elab>
           <types> M:Map => M[X <- T] </types>
@@ -56,7 +56,7 @@ module C-DECL-LOCAL
           [structural]
      // Extern, external type does not exist.
      rule <k> declareInternalVariable(X:CId, T:Type, _:NoInit)
-               => addToEnv(X, nonStatic)
+               => addToEnv(X, T, nonStatic)
                ~> giveType(X, T)
           ...</k>
           <elab>... .K => declareInternalVariable(X, T, NoInit()) </elab>
@@ -116,7 +116,7 @@ module C-DECL-LOCAL
      syntax KItem ::= initLocalStatic(CId, K)
      rule <k> initLocalStatic(X:CId, initValue(_, T:Type, Init:K))
                => allocObject(bnew(!I:Int, T, static(TU)), T)
-               ~> addToEnv(X, bnew(!I, T, static(TU)))
+               ~> addToEnv(X, T, bnew(!I, T, static(TU)))
                ~> giveType(X, T)
                ~> runInit(stripInitHolds(Init))
           ...</k>
@@ -160,7 +160,7 @@ module C-DECL-LOCAL
           <functions>... Base |-> functionObject(_, _, (_:List (.List => ListItem(T))), _) ...</functions>
 
      rule <k> defineAndInit(X:CId, _, initValue(_, T:Type, _))
-               => addToEnv(X, nonStatic)
+               => addToEnv(X, T, nonStatic)
                ~> giveType(X, T)
                ~> addLocalToFunction(T)
           ...</k>

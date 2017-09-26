@@ -89,11 +89,25 @@ module C-LINKING-RESOLUTION
           <main-tu>... .Set => SetItem(MainTu) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
           <external-defs>...
-               Identifier("main") |-> obj(... d: static(MainTu:String))
+               Identifier("main") |-> (obj(... d: static(MainTu:String)) #as Main::SymBase)
           ...</external-defs>
           <external-types>...
                Identifier("main") |-> _
           ...</external-types>
+          <functions>... Main |-> _ ...</functions>
+          [structural]
+     rule <k> (.K => EXT-UNDEF("TDR3", "Main is not a function."))
+               ~> resolveMain
+          ...</k>
+          <external-defs>...
+               Identifier("main") |-> Main::SymBase
+          ...</external-defs>
+          <external-defs-loc>...
+               Identifier("main") |-> L::CabsLoc
+          ...</external-defs-loc>
+          <curr-program-loc> _ => L </curr-program-loc>
+          <functions> Functions:Map </functions>
+          requires notBool (Main in_keys(Functions))
           [structural]
 
      syntax KItem ::= removeFromExternalDecls(List)

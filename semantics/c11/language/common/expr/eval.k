@@ -122,11 +122,12 @@ module C-COMMON-EXPR-EVAL
           requires getKLabel(V) =/=K #klabel(`tv`)
           [structural]
      rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
-          requires isSymLoc(V) =/=K true andBool isTrap(V) =/=K true
+          requires notBool (isSymLoc(V) andBool isPointerUType(T))
+               andBool notBool isTrap(V)
           [structural]
      rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]
-     rule checkUse(tv(V:SymLoc, T::UType)) => checkLoc(V) ~> tv(V, T)
+     rule checkUse(tv(V:SymLoc, T:PointerUType)) => checkLoc(V) ~> tv(V, T)
           [structural]
 
      rule checkLoc(Loc::SymLoc) => checkLoc'(stripProv(Loc))
@@ -227,18 +228,38 @@ module C-COMMON-EXPR-EVAL
           requires effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                orBool isNoType(Eff)
           [structural]
-     rule (.K => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ")."))
-          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, (t(...) #as Eff::Type))
+     rule checkEffectiveType''(Loc::SymLoc, L::Type, Offset::Int, Base::SymBase, dynamicType(Eff::Type))
+          => nclv(setLastAccessType(Loc, newLastAccessType(Eff, L, Offset)), L)
+          requires (effectivelyCompat(L, getTypesAtOffset(Eff, Offset)) orBool effectivelyCompat(Eff, getTypesAtOffset(L, Offset)))
+               andBool notBool isNoType(Eff)
+          [structural]
+     rule (.K => effectiveTypeViolation(L, Eff))
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, t(...) #as Eff::Type)
           requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
                andBool notBool isNoType(Eff)
           [structural]
+     rule (.K => effectiveTypeViolation(L, Eff))
+          ~> checkEffectiveType''(_, L::Type, Offset::Int, _, dynamicType(Eff::Type))
+          requires notBool effectivelyCompat(L, getTypesAtOffset(Eff, Offset))
+               andBool notBool effectivelyCompat(Eff, getTypesAtOffset(L, Offset))
+               andBool notBool isNoType(Eff)
+          [structural]
+
+     syntax KItem ::= effectiveTypeViolation(Type, Type)
+     rule effectiveTypeViolation(L::Type, Eff::Type)
+          => UNDEF("EIO10", "Type of lvalue (" +String showType(L) +String ") not compatible with the effective type of the object being accessed (" +String showType(Eff) +String ").")
+          [structural]
 
      syntax Type ::= newLastAccessType(Type, Type, Int) [function]
-     rule newLastAccessType(Eff::Type, L::Type, _) => Eff
-          requires isCharType(L)
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => L
-          requires notBool isCharType(L) andBool isNoType(tracePath(Eff, L, Offset))
-     rule newLastAccessType(Eff::Type, L::Type, Offset::Int) => tracePath(Eff, L, Offset) [owise]
+     rule newLastAccessType(Eff::Type, _:CharType, _) => Eff
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int)
+          => #if isNoType(tracePath(Eff, L, Offset))
+               #then L #else tracePath(Eff, L, Offset) #fi
+          requires isFlexibleType(Eff) andBool notBool isCharType(L)
+     rule newLastAccessType(Eff::Type, L::Type, Offset::Int)
+          => #if (bitSizeofType(Eff) ==Int 0) orBool isNoType(tracePath(Eff, L, Offset %Int bitSizeofType(Eff)))
+               #then L #else tracePath(Eff, L, Offset %Int bitSizeofType(Eff)) #fi
+          [owise]
 
      // We form a composite type by locating the lvalue type in the (larger)
      // object type and tracing the path (i.e., union variants) that gets us
@@ -248,9 +269,9 @@ module C-COMMON-EXPR-EVAL
      syntax Type ::= tracePath(Type, Type, Int) [function]
      rule tracePath(T::Type, L::Type, 0) => unlock(0, T)
           requires #effectivelyCompat(L, T)
-     rule tracePath(t(Qs::Quals, Mods::Set, bitfieldType(T'::SimpleType, N::Int)), L::Type, Offset::Int)
-          => t(Qs, Mods, bitfieldType(T', N))
-          requires notBool #effectivelyCompat(L, t(Qs, Mods, bitfieldType(T', N)))
+     rule tracePath(t(Qs::Quals, _, bitfieldType(T'::SimpleType, _)) #as T::Type, L::Type, _)
+          => T
+          requires notBool #effectivelyCompat(L, T)
                andBool #effectivelyCompat(L, addQualifiers(Qs, type(T')))
 
      // In the case of aggregates, the type might be the type of the aggregate
@@ -365,6 +386,9 @@ module C-COMMON-EXPR-EVAL
 
      rule <k> getEffectiveType(Base::SymBase) => T ...</k>
           <mem>... Base |-> object(t(...) #as T::Type, _, _) ...</mem>
+          [structural]
+     rule <k> getEffectiveType(Base::SymBase) => T ...</k>
+          <mem>... Base |-> object(T:DynamicType, _, _) ...</mem>
           [structural]
      rule <k> getEffectiveType(Base::SymBase) => type(no-type) ...</k>
           <mem> Mem:Map </mem>

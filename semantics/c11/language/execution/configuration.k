@@ -77,6 +77,7 @@ module C-CONFIGURATION
                          <block-control>
                               // maps from CIds
                               <env color="red"> .Map </env>
+                              <renv color="red"> .Map </renv>
                               <types color="lightgray"> .Map </types>
                               <compound-lit-map> .Map </compound-lit-map>
                               <new-size-map> .Map </new-size-map>
@@ -195,6 +196,14 @@ module C-CONFIGURATION
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
+     // env key string |-> value ptr
+     <strerror-cache> .Map </strerror-cache>
+     <sig-handling-state> .K </sig-handling-state>
+     // Cells to store pointers returned by these functions that are
+     // invalidated by subsequent calls.
+     <setlocale> .K </setlocale>
+     <localeconv> .K </localeconv>
+     <getenv> .K </getenv>
 </library>
 
 

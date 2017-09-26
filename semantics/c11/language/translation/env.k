@@ -8,7 +8,7 @@ module C-ENV-SYNTAX
      imports C-TYPING-SORTS
 
 
-     syntax KItem ::= addToEnv(CId, SymBase)
+     syntax KItem ::= addToEnv(CId, Type, SymBase)
      syntax KItem ::= giveType(CId, Type)
      syntax KItem ::= addEnum(CId, Int)
      syntax KItem ::= "populateFromGlobal"
@@ -30,28 +30,33 @@ module C-ENV
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map </genv>
+          <rgenv> RG:Map </rgenv>
           <gtypes> GT:Map </gtypes>
           <genums> GE:Map </genums>
           <env> _ => G </env>
+          <renv> _ => RG </renv>
           <types> _ => GT </types>
           <enums> _ => GE </enums>
 
-     rule <k> addToEnv(X:CId, Base:SymBase) => addToGlobalEnv(X, Base) ...</k>
+     rule <k> addToEnv(X:CId, T::Type, Base:SymBase) => addToGlobalEnv(X, T, Base) ...</k>
           <curr-scope> fileScope </curr-scope>
-     rule <k> addToEnv(X:CId, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
+     rule <k> addToEnv(X:CId, _, Base:SymBase) => addToLocalEnv(X, Base) ...</k>
           <curr-scope> S:Scope </curr-scope>
           requires S =/=K fileScope
 
-     syntax KItem ::= addToGlobalEnv(K, SymBase)
-     rule <k> addToGlobalEnv(X:CId, Base:SymBase) => .K ...</k>
+     syntax KItem ::= addToGlobalEnv(K, Type, SymBase)
+     rule <k> addToGlobalEnv(X:CId, T::Type, Base:SymBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> G:Map => G[X <- Base] </genv>
+          <rgenv> RG:Map => #if isFunctionType(T) #then RG #else RG[Base <- X] #fi </rgenv>
           <env> E:Map => E[X <- Base] </env>
+          <renv> RE:Map => #if isFunctionType(T) #then RE #else RE[Base <- X] #fi </renv>
 
      syntax KItem ::= addToLocalEnv(K, SymBase)
      rule <k> addToLocalEnv(X:CId, Base:SymBase) => .K ...</k>
           <env> E:Map => E[X <- Base] </env>
+          <renv> RE:Map => RE[Base <- X] </renv>
 
      rule <k> addEnum(X:CId, Value:Int) => addGlobalEnum(X, Value) ...</k>
           <curr-scope> fileScope </curr-scope>

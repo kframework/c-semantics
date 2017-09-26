@@ -211,7 +211,7 @@ module C-FUNCTION-DEF
      rule dummyBind(ListItem(typedDeclaration(_:VoidType, _))) => .K
           [structural]
      rule dummyBind(ListItem(typedDeclaration(T:Type, X:CId)) Params:List)
-          => addToEnv(X, nonStatic)
+          => addToEnv(X, T, nonStatic)
           ~> giveType(X, T)
           ~> dummyBind(Params)
           requires notBool isVoidType(T)

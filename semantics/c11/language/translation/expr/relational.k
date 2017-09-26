@@ -13,7 +13,7 @@ module C-EXPR-RELATIONAL
                     (isPointerType(type(L)) andBool isPointerType(type(R)))
                     orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
                     orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
-               )
+               ) andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
 
      rule L:RValue <= R:RValue => te(stripHold(L) <= stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))
@@ -21,7 +21,7 @@ module C-EXPR-RELATIONAL
                     (isPointerType(type(L)) andBool isPointerType(type(R)))
                     orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
                     orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
-               )
+               ) andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
 
      rule L:RValue > R:RValue => te(stripHold(L) > stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))
@@ -29,7 +29,7 @@ module C-EXPR-RELATIONAL
                     (isPointerType(type(L)) andBool isPointerType(type(R)))
                     orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
                     orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
-               )
+               ) andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
 
      rule L:RValue >= R:RValue => te(stripHold(L) >= stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))
@@ -37,7 +37,7 @@ module C-EXPR-RELATIONAL
                     (isPointerType(type(L)) andBool isPointerType(type(R)))
                     orBool (utype(L) ==Type utype(R) andBool isPromoted(utype(L)))
                     orBool (utype(L) ==Type utype(R) andBool isFloatType(type(L)))
-               )
+               ) andBool notBool (fromConstantExpr(L) xorBool fromConstantExpr(R))
 
      rule L:RValue == R:RValue => te(stripHold(L) == stripHold(R), utype(int))
           requires (isHold(L) orBool isHold(R))

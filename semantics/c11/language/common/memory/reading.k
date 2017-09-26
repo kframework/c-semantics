@@ -68,16 +68,12 @@ module C-MEMORY-READING
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     rule concretize(T:CharUType, dataList(L::List))
-          => interpret(T, joinBytes(L))
-          requires (notBool hasUnknown(L))
-               andBool (notBool hasTrap(L))
      rule concretize(T::UType, dataList(L::List))
           => interpret(T, joinBytes(L))
           requires (notBool hasUnknown(L))
                andBool (notBool hasTrap(L))
                andBool (notBool isStructOrUnionType(type(T)))
-               andBool (isIntegerUType(T) impliesBool notBool hasFloat(L))
+               andBool ((isIntegerUType(T) andBool notBool isCharUType(T)) impliesBool notBool hasFloat(L))
                andBool (isFloatUType(T) impliesBool notBool hasInt(L))
           [structural]
      rule concretize(T::UType, dataList(L::List))

@@ -74,7 +74,7 @@ module C-EXPR-FUNCTION-CALL
                _:KResult)
           [structural]
      // Resolve a linker loc to a real loc.
-     rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _) ...</k>
+     rule <k> Call(tv(loc((Base:SymBase => Base'), _), _), _:KResult) ...</k>
           <linkings>... Base |-> Base':SymBase ...</linkings>
           [structural]
 

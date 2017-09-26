@@ -165,7 +165,7 @@ module C-STMT-GOTO
           <block-history>
                ListItem(CurrentBlock:Int) ActualHistory:List
           </block-history>
-          requires ActualDepth +Int 1 =/=Int TargetDepth
+          requires ActualDepth <Int TargetDepth
                andBool isSuffixOf(ActualHistory, BlockNums)
                andBool notBool (ActualHistory ==K BlockNums)
           [structural]
@@ -180,27 +180,9 @@ module C-STMT-GOTO
           ...</k>
           <nesting-depth> ActualDepth:Int </nesting-depth>
           <block-history> ActualHist:List </block-history>
-          requires ActualDepth +Int 1 =/=Int TargetDepth
+          requires ActualDepth <Int TargetDepth
                andBool isSuffixOf(ActualHist, BlockNums)
                andBool notBool (BlockNums ==K ActualHist)
-          [structural]
-
-     // We've made it to the block above the target
-     rule <k> L:KLabel(gotoObject(SIntDepth::Int,
-                    ListItem(TargetBlock::Int) BlockHistory:List,
-                    K:K,
-                    LoopStack::List,
-                    DeclStack::List))
-               ~> _
-               => pushBlock(TargetBlock)
-               ~> addVariablesForBlock(TargetBlock, DeclStack)
-               ~> K
-          </k>
-          <nesting-depth> Depth::Int </nesting-depth>
-          <block-history> BlockHistory:List </block-history>
-          <loop-stack> _ => LoopStack </loop-stack>
-          requires isGotoKLabel(#klabel(L))
-               andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 
      syntax Map ::= rewindEnv(Map, Map, List) [function]

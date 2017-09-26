@@ -1,0 +1,7 @@
+ A signal handler returned when the signal corresponded to a computational exception.
+   at raise(UB-SIGNAL3-bad.c:6:7)
+   by main(UB-SIGNAL3-bad.c:6:7)
+  Undefined behavior (UB-SIGNAL3).
+   see C11 section 7.14.1.1:3 http://rvdoc.org/C11/7.14.1.1
+   see C11 section J.2:1 item 129 http://rvdoc.org/C11/J.2
+   see CERT-C section SIG35-C http://rvdoc.org/CERT-C/SIG35-C

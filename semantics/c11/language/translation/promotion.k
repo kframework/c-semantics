@@ -14,20 +14,40 @@ module C-PROMOTION
                andBool notBool isPromoted(utype(V))
      rule L:KLabel(
                (V:RValue => cast(promote(utype(V)), V))
-               , _
+               , _:RValue
           )
           requires isIntegerType(type(V))
                andBool isArithBinOp(#klabel(L))
                andBool notBool isPromoted(utype(V))
      rule L:KLabel(
-               _,
+               _:RValue,
                (V:RValue => cast(promote(utype(V)), V))
           )
           requires isIntegerType(type(V))
                andBool isArithBinOp(#klabel(L))
                andBool notBool isPromoted(utype(V))
 
-     // fixme these could be done more cleanly
+     rule Lbl:KLabel(tv(_, (T::UType => stripConstants(T))), R:RValue)
+          requires isArithBinNonEqualityOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(R)
+               andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+     rule Lbl:KLabel(L:RValue, tv(_, (T::UType => stripConstants(T))))
+          requires isArithBinNonEqualityOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(L)
+               andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+
+     rule Lbl:KLabel(te(_, (T::UType => stripConstants(T))), R:RValue)
+          requires isArithBinNonEqualityOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(R)
+               andBool (notBool isIntegerUType(T) orBool isPromoted(T))
+     rule Lbl:KLabel(L:RValue, te(_, (T::UType => stripConstants(T))))
+          requires isArithBinNonEqualityOp(#klabel(Lbl))
+               andBool fromConstantExpr(T)
+               andBool notBool fromConstantExpr(L)
+               andBool (notBool isIntegerUType(T) orBool isPromoted(T))
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.1.8}{1}}}{
      Many operators that expect operands of arithmetic type cause conversions
@@ -47,24 +67,9 @@ module C-PROMOTION
           requires isArithBinConversionOp(#klabel(Lbl))
                andBool isArithmeticType(type(L))
                andBool isArithmeticType(type(R))
+               andBool (notBool isIntegerType(type(L)) orBool isPromoted(utype(L)))
+               andBool (notBool isIntegerType(type(R)) orBool isPromoted(utype(R)))
+               andBool notBool (isArithBinNonEqualityOp(#klabel(Lbl)) andBool (fromConstantExpr(L) xorBool fromConstantExpr(R)))
                andBool (utype(L) =/=Type utype(R))
-
-     rule Lbl:KLabel(tv(_, (T::UType => stripConstants(T))), R:RValue)
-          requires isArithBinNonEqualityOp(#klabel(Lbl))
-               andBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
-     rule Lbl:KLabel(L:RValue, tv(_, (T::UType => stripConstants(T))))
-          requires isArithBinNonEqualityOp(#klabel(Lbl))
-               andBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(L)
-
-     rule Lbl:KLabel(te(_, (T::UType => stripConstants(T))), R:RValue)
-          requires isArithBinNonEqualityOp(#klabel(Lbl))
-               andBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
-     rule Lbl:KLabel(L:RValue, te(_, (T::UType => stripConstants(T))))
-          requires isArithBinNonEqualityOp(#klabel(Lbl))
-               andBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(L)
 
 endmodule

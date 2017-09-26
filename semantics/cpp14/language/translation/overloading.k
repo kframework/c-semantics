@@ -30,7 +30,7 @@ module CPP-OVERLOADING
      imports INT
      imports K-EQUAL
      imports STRING
-     imports COMPAT
+     imports COMPAT-SYNTAX
      imports C-LINKING-RESOLUTION-SYNTAX
      imports CPP-ABSTRACT-SYNTAX
      imports CPP-CLASS-SYNTAX
