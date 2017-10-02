@@ -277,6 +277,8 @@ module CPP-TYPING-SYNTAX
 
      syntax CPPType ::= implicitObjectParameterType(CPPFunctionType) [function]
 
+     syntax LVal ::= getBaseClassSubobject(base: LVal, baseType: CPPClassType) [strict]
+
      syntax Bool ::= isBaseClassOf(base: CPPClassType, derived: CPPClassType) [function]
                    | isVirtualBaseClassOf(CPPClassType, CPPClassType) [function]
                    | isBaseClassOf(base: Class, derived: Class) [function, klabel(isClassBaseClassOf)]
@@ -654,6 +656,9 @@ module CPP-TYPING
      rule isUnnamedPRValue(T::CPPType) 
           => notBool isUnnamedLValue(T) andBool notBool isUnnamedXValue(T)
     
+     rule getBaseClassSubobject(lv(L::SymLoc, Tr::Trace, D::CPPClassType), B::CPPClassType) => lv(baseClassSubobject(L, B, D), Tr, B)
+     rule type(getBaseClassSubobject(_::LVal, B::CPPClassType)) => B
+
      rule isBaseClassOf(t(_, _, classType(B::Class)), t(_, _, classType(D::Class))) => isBaseClassOf(B, D)
      rule isBaseClassOf(B::Class, D::Class) => #isBaseClassOf(B, ListItem(D), #configuration)
      rule isDirectBaseClassOf(B::Class, D::Class) => #isDirectBaseClassOf(B, D, #configuration)
