@@ -1,3 +1,4 @@
+#define _KCC_EXPERIMENTAL_LOCALE
 #include <threads.h>
 #include <stdio.h>
 #include <locale.h>

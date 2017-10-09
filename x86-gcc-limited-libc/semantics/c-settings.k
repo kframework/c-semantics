@@ -76,7 +76,7 @@ module C-SETTINGS
      rule HALT ~> recoverFromError(K:K) => K
           requires isErrorRecovery
 
-     rule reportError(ErrorMsg(E::ErrorCategory, ErrorCode::String, Description::String, _), _, _, C::CabsLoc, _) => #write(2, printLocation(C) +String ": " +String "warning: " +String Description +String printCategory(E))
+     rule reportError(ErrorMsg(E::ErrorCategory, ErrorCode::String, Description::String, _), _, _, C::CabsLoc, _, _) => #write(2, printLocation(C) +String ": " +String "warning: " +String Description +String printCategory(E))
 
      syntax String ::= printLocation(CabsLoc) [function]
                      | printCategory(ErrorCategory) [function]
