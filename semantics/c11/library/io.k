@@ -383,43 +383,23 @@ module LIBC-IO
           => getBytes'(Loc, N, S +String chrChar(B))
           [structural]
      rule reval(tv(encodedValue(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
-          => getBytes'(Loc, N, S +String chrChar(bitsValue(pointerToInt(cfg:pointerToInt(B, utype(int))), From, To)))
+          => getBytes'(Loc, N, S +String chrChar(bitsValue(pointerToInt(B), From, To)))
           [structural]
      rule getBytes'(_, 0, S::String) => str(S)
           [structural]
 
-     rule pointerToInt(V:Int) => V
-     rule pointerToInt(_) => 0 [owise]
+     rule pointerToInt(Loc::SymLoc) => unknownToInt(cfg:pointerToInt(Loc, utype(int)))
 
-     rule pointerToString(Loc:SymLoc)
-          => "[sym(" +String symBaseToString(base(Loc)) +String ") + "
-               +String Int2String(offset(Loc)) +String "]"
-          requires notBool isNativeLoc(Loc)
-               andBool Loc =/=K NullPointer
+     syntax Int ::= unknownToInt(CValue) [function]
+     rule unknownToInt(V:Int) => V
+     rule unknownToInt(unknown(V:Int)) => V
+     rule unknownToInt(_) => 0 [owise]
 
-     rule pointerToString(Loc:SymLoc => stripProv(Loc))
-          requires isNativeLoc(Loc)
-     rule pointerToString(loc(obj(0,_,nativeAddress()), Addr:Int))
-          => "0x" +String Base2String(Addr, 16)
+     rule pointerToString(Loc::SymLoc) => zeroToNil(Base2String(pointerToInt(Loc), 16))
 
-     rule pointerToString(NullPointer) => "NullPointer"
-
-     syntax String ::= symBaseToString(SymBase) [function]
-     rule symBaseToString(obj(B:Int,_,threadLocal(Th:Int)))
-          => Int2String(B) +String " @ "
-          +String "threadLocal(" +String Int2String(Th) +String ")"
-     rule symBaseToString(obj(B:Int,_,alloc))
-          => Int2String(B) +String " @ "
-          +String "allocated"
-     rule symBaseToString(obj(B:Int,_,static(Tu:String)))
-          => Int2String(B) +String " @ "
-          +String "static(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-     rule symBaseToString(obj(B:Int,_,link(Tu:String)))
-          => Int2String(B) +String " @ "
-          +String "link(" +String substrString(Tu, 0, lengthString(Tu) -Int 36) +String ")"
-     rule symBaseToString(obj(B:Int,_,auto(Th:Int)))
-          => Int2String(B) +String " @ "
-          +String "auto(" +String Int2String(Th) +String ")"
+     syntax String ::= zeroToNil(String) [function]
+     rule zeroToNil("0") => "(nil)"
+     rule zeroToNil(S::String) => "0x" +String S [owise]
 
      rule bufSiz => 8192
 

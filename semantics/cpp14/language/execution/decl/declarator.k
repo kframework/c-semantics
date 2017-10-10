@@ -18,7 +18,7 @@ module CPP-DECL-DECLARATOR
               ~> initializeObject(Init)
           ...</k>
           <duration> D::Duration </duration>
-          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
+          <local-vars> Vars:Set (.Set => SetItem(X)) </local-vars>
           <local-addresses>... .Set => SetItem(bnew(!I:Int, T, Mods, D)) ...</local-addresses>
           requires notBool X in Vars andBool X =/=K #NoName
 

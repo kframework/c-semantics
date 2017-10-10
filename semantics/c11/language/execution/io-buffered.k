@@ -263,10 +263,10 @@ module C-IO-BUFFERED
                         Uninit:Bool => Uninit orBool assertUninit(loc(Base, Offset)))
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M))) [owise]
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
+     syntax CValue ::= #readNativeByte(SymLoc) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule readBytes-aux(Loc::SymLoc => Loc +bytes -1,
                         Size::Int => Size -Int 1,
-                        Aux::List => ListItem(#readNativeByte(Loc, size(Aux), T)) Aux,
+                        Aux::List => ListItem(#readNativeByte(Loc)) Aux,
                         T::Type,
                         .K,
                         .K,

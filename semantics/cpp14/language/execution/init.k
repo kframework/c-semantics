@@ -16,7 +16,7 @@ module CPP-EXECUTION-INIT
      rule le(E::Expr, _, _) => E
 
      rule <k> callMain(N:Int, Args:K)
-               => enterRestrictTU ~> K ~> reval(#callMain(T, getBase(Entry), N, Identifier("#incomingArgumentsArray"), Args)) ~> callAtExit
+               => enterRestrictTU ~> K ~> reval(#callMain(T, getBase(Entry), N, mainArguments, Args)) ~> callAtExit
           ...</k>
           <dynamic-init> K:K </dynamic-init>
           <uncaught-exception> _ => true </uncaught-exception>
@@ -37,8 +37,8 @@ module CPP-EXECUTION-INIT
      syntax KItem ::= setupCppEnv(Int)
      rule <k> setupCppEnv(Argc::Int) => .K ...</k>
           // adjust environment to C++ form
-          <env>... Identifier("#incomingArgumentsArray") |-> (Argv::SymBase => (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs()))) ...</env>
-          <types>... Identifier("#incomingArgumentsArray") |-> _ => .Map ...</types>
+          <env>... mainArguments |-> (Argv::SymBase => (type(arrayType(type(pointerType(type(char))), Argc +Int 1)) |-> envEntry(Argv, false, NoDefArgs()))) ...</env>
+          <types>... mainArguments |-> _ => .Map ...</types>
 
      rule <k> reval(V:PRVal) ~> callAtExit => AtExit:KItem ~> reval(V) ~> callAtExit ...</k>
           <atexit> AtExit:KItem => .K ...</atexit>

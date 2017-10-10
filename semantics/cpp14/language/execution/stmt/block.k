@@ -18,10 +18,9 @@ module CPP-STMT-BLOCK
           <block-control>
                C::Bag
                <catch-handlers> Catch::List => .List </catch-handlers>
-               <local-vars> Vars::List => .List </local-vars>
+               <local-vars> Vars::Set => .Set </local-vars>
                <local-addresses> Addresses::Set => .Set </local-addresses>
                <locally-constructed> Constructed::List => .List </locally-constructed>
-               <nesting-depth> N::Int => N +Int 1 </nesting-depth>
           </block-control>
           <block-stack> .List
                => ListItem(<block-control>
@@ -30,7 +29,6 @@ module CPP-STMT-BLOCK
                     <local-vars> Vars </local-vars>
                     <local-addresses> Addresses </local-addresses>
                     <locally-constructed> Constructed </locally-constructed>
-                    <nesting-depth> N </nesting-depth>
                </block-control>)
           ...</block-stack>
 

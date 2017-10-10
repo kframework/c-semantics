@@ -37,8 +37,7 @@ module C-FUNCTION-DEF
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
-                              elideList(getParams(emptyToVoid(T))))), .List,
-                         Goto(funLabel(X)))
+                              elideList(getParams(emptyToVoid(T))))), .List)
                )))
           )
           ~> processFunDef(X, Blk)
@@ -65,7 +64,7 @@ module C-FUNCTION-DEF
           ...</k>
           <env>... X |-> Base:SymBase ...</env>
           <functions>...
-               Base |-> functionObject(_, DefT::Type, _, _)
+               Base |-> functionObject(_, DefT::Type, _)
           ...</functions>
           <curr-function> _ => Base </curr-function>
           [structural]
@@ -167,7 +166,7 @@ module C-FUNCTION-DEF
      rule staticEval(X:CId, DefT:Type, Blk:K)
           => scope(blockScope(X, 0),
                generateRuleAnnotation(X)
-               ~> elaborate(dummyBind(getParams(DefT)) ~> Label(funLabel(X), safeBody(X, Blk)))
+               ~> elaborate(dummyBind(getParams(DefT)) ~> Label(funLabel, safeBody(X, Blk)))
                ~> calculateGotoMap(X))
 
      rule elaborateDone(K:K) ~> calculateGotoMap(X:CId)

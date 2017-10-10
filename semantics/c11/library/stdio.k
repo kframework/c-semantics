@@ -2263,11 +2263,7 @@ module LIBC-STDIO
           <format-pad-zero> false </format-pad-zero>
           <format-field-width> W:String </format-field-width>
           <format-result>...
-               .List => ListItem(
-                        formatPrecisionWidth(Base2String(pointerToInt(cfg:pointerToInt(Loc, utype(int))), 16),
-                                             1,
-                                             false, "0x",
-                                             String2Int(W)))
+               .List => ListItem(pad(pointerToString(Loc), String2Int(W), " "))
           </format-result>
           <format-state> "%p" => "reset" </format-state>
           [structural]
