@@ -30,10 +30,7 @@ module C-MEMORY-ALLOC
      imports STRING
      imports SYMLOC-SYNTAX
 
-     rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
-          requires notBool isVoidType(T)
-          [structural]
-     rule allocObject(_, _:VoidType) => .K
+     rule allocObject(Base::SymBase, T::Type) => #allocObject(Base, T, sizeof(T))
           [structural]
 
      syntax KItem ::= #allocObject(SymBase, Type, K)
@@ -42,11 +39,16 @@ module C-MEMORY-ALLOC
           => alloc(Base, T, I)
           [structural]
 
-     rule <k> alloc(Base::SymBase, T::Type, Len::Int) => .K ...</k>
+     rule <k> alloc(Base:DirectBase, T::Type, Len::Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(stripStorageSpecifiers(T), Len, makeEmptyArray(Len))
           ...</mem>
-          requires notBool isLinkerLoc(Base)
+          requires notBool isNoType(T)
+          [structural]
+     rule <k> alloc(Base:DirectBase, T:NoType, Len::Int) => .K ...</k>
+          <mem>...
+               .Map => Base |-> object(dynamicType(T), Len, makeEmptyArray(Len))
+          ...</mem>
           [structural]
 
      // Used by calloc.

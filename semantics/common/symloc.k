@@ -19,7 +19,6 @@ module SYMLOC-SYNTAX
      syntax Duration ::= "dynamic"
      // Static duration.
      syntax Duration ::= static(String)
-     syntax Duration ::= link(String)
      syntax Duration ::= string(String)
      syntax Duration ::= wstring(List)
      syntax Duration ::= builtinSymbol(String)
@@ -35,6 +34,8 @@ module SYMLOC-SYNTAX
 
      syntax Duration ::= nativeAddress()
 
+     syntax LinkDuration ::= link(String)
+
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      syntax Bool ::= isAllocatedDuration(SymBase) [function, klabel(isAllocatedDuration2)]
      // I.e., static or link.
@@ -46,7 +47,6 @@ module SYMLOC-SYNTAX
 
      syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
-     syntax Bool ::= isLinkerLoc(SymBase) [function, klabel(isLinkerLoc2)]
      syntax Bool ::= isBuiltinLoc(SymLoc) [function]
      syntax Bool ::= isBuiltinLoc(SymBase) [function, klabel(isBuiltinLoc2)]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
@@ -55,8 +55,10 @@ module SYMLOC-SYNTAX
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
-     syntax SymBase ::= obj(id: Int, align: Int, d: Duration)
+     syntax DirectBase ::= obj(id: Int, align: Int, d: Duration)
+     syntax LinkBase ::= obj(id: Int, align: Int, d: LinkDuration)
 
+     syntax SymBase ::= DirectBase | LinkBase
 
      syntax SymLoc ::= resolveLinking(SymLoc, Map) [function]
 
@@ -146,19 +148,13 @@ module SYMLOC
      rule isStringLoc(_) => false [owise]
 
      rule isLinkerLoc(NullPointer) => false
-     rule isLinkerLoc(Loc:SymLoc) => isLinkerLoc(base(Loc)) [owise]
-
-     rule isLinkerLoc(obj(... d: link(_))) => true
-     rule isLinkerLoc(_::SymBase) => false [owise]
+     rule isLinkerLoc(Loc:SymLoc) => isLinkBase(base(Loc)) [owise]
 
      rule isBuiltinLoc(NullPointer) => false
      rule isBuiltinLoc(Loc:SymLoc) => isBuiltinLoc(base(Loc)) [owise]
 
      rule isBuiltinLoc(obj(... d: builtinSymbol(_))) => true
      rule isBuiltinLoc(_::SymBase) => false [owise]
-
-     rule isLinkerLoc(NullPointer) => false
-     rule isLinkerLoc(Loc::SymLoc) => isLinkerLoc(base(Loc)) [owise]
 
      rule isRegisterLoc(loc(obj(... d: register(_)), _)) => true
      rule isRegisterLoc(loc(obj(... d: register(_)), _, _)) => true
@@ -278,7 +274,6 @@ module SYMLOC
 
      rule resolveLinking(loc(Base::SymBase, Offset::Int, Prov::Set), _ Base |-> Base'::SymBase) => loc(Base', Offset, Prov)
      rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)
-     rule resolveLinking(Loc::SymLoc, _) => Loc
-          requires notBool isLinkerLoc(Loc) [owise]
+     rule resolveLinking(Loc::SymLoc, _) => Loc [owise]
 endmodule
 

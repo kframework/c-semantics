@@ -33,7 +33,7 @@ module CPP-EXPR-FUNCTION-CALL
           ...</k>
           <functions>... Base |-> Fun:K ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
-          requires notBool isLinkerLoc(Base) orBool (isMethodPure(T) andBool IsVirtual)
+          requires isDirectBase(Base) orBool (isMethodPure(T) andBool IsVirtual)
 
      syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, CPPType, Bool, List)
 

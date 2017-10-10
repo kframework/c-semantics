@@ -50,12 +50,6 @@ module C-MEMORY-READING
                andBool Loc =/=K NullPointer
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
-     rule <k> read(loc((Base::SymBase => Base'), _), _) ...</k>
-          <linkings>... Base |-> Base'::SymBase ...</linkings>
-          [structural]
-     rule <k> read(loc((Base::SymBase => Base'), _, _), _) ...</k>
-          <linkings>... Base |-> Base'::SymBase ...</linkings>
-          [structural]
 
      syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc::SymLoc, T::Type)
@@ -83,7 +77,7 @@ module C-MEMORY-READING
                andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
      rule concretize(T::UType, dataList(L::List))
-          => makeUnknown2(concretize(T, stripUnknown(dataList(L))))
+          => makeUnknown(concretize(T, stripUnknown(dataList(L))))
           requires (hasUnknown(L) andBool notBool isPointerUType(T))
                andBool (notBool hasTrap(L))
                andBool notBool isStructOrUnionType(type(T))

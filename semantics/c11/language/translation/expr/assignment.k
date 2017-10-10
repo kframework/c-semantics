@@ -4,6 +4,7 @@ module C-EXPR-ASSIGNMENT
      imports BOOL
      imports K-EQUAL
      imports SYMLOC-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -95,7 +96,7 @@ module C-EXPR-ASSIGNMENT
           requires notBool isLinkerLoc(Loc)
                andBool (utype(T) ==Type T')
      rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(nclv(Loc, T) := tv(V, T'), stripConstants(utype(T')))
+               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           ...</k>
           <initializing> true </initializing>
           requires isLinkerLoc(Loc)
@@ -107,13 +108,13 @@ module C-EXPR-ASSIGNMENT
           requires utype(T) ==Type utype(R)
 
      rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(nclv(Loc, T) := tv(V, T'), stripConstants(utype(T')))
+               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           ...</k>
           <initializing> false </initializing>
           requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
      rule <k> nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
-               => te(nclv(Loc, T) := K, stripConstants(utype(T')))
+               => te(lv(Loc, T) := K, stripConstants(utype(T')))
           ...</k>
           <initializing> false </initializing>
           requires notBool isConstType(T)

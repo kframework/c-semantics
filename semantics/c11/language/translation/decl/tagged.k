@@ -11,24 +11,25 @@ module C-DECL-TAGGED-SYNTAX
 endmodule
 
 module C-DECL-TAGGED
+     imports C-DECL-TAGGED-SYNTAX
+     imports C-CONFIGURATION
      imports BOOL
+     imports INT
+     imports MAP
+     imports STRING
      imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-CONFIGURATION
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports MAP
      imports SETTINGS-SYNTAX
-     imports STRING
 
      context StructDef(_, HOLE:StrictList => seqstrict(HOLE), _)
      context UnionDef(_, HOLE:StrictList => seqstrict(HOLE), _)
@@ -119,18 +120,8 @@ module C-DECL-TAGGED
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
      rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L:List)
-          => hasNamedField(getFields(getFieldInfo(T)) L)
+          => hasNamedField(getFieldDecls(T) L)
      rule hasNamedField(.List) => false
-
-     syntax List ::= numberUnnamed(List) [function]
-                   | numberUnnamed(Int, List) [function, klabel(numberUnnamed2)]
-     rule numberUnnamed(Fs::List) => numberUnnamed(0, Fs)
-     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
-          => ListItem(typedDeclaration(T, #NoName(N))) numberUnnamed(N +Int 1, Fs)
-     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
-          => ListItem(typedDeclaration(T, F)) numberUnnamed(N +Int 1, Fs)
-          requires notBool isNoName(F)
-     rule numberUnnamed(_, .List) => .List
 
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)

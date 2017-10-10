@@ -323,7 +323,7 @@ module C-ABSTRACT-SYNTAX
      | PAREN of expression
      | VARIABLE of string
      */
-     syntax Expression ::= Constant(K)
+     syntax Expression ::= Constant(K) [function]
      /*
      | EXPR_SIZEOF of expression
      | TYPE_SIZEOF of specifier * decl_type
@@ -357,7 +357,7 @@ module C-ABSTRACT-SYNTAX
      | CONST_STRING of string
      | CONST_WSTRING of int64 list
      */
-     syntax IntConstant ::= DecimalConstant(K) [function]
+     syntax IntConstant ::= DecimalConstant(K)
      syntax IntConstant ::= OctalConstant(K) [function]
      syntax IntConstant ::= HexConstant(K) [function]
 
@@ -368,19 +368,20 @@ module C-ABSTRACT-SYNTAX
      syntax FloatConstant ::= HexFloatConstant(String, Int, Float)
           [function]
 
-     syntax Constant ::= LitU(Constant)
-     syntax Constant ::= LitL(Constant)
-     syntax Constant ::= LitLL(Constant)
-     syntax Constant ::= LitUL(Constant)
-     syntax Constant ::= LitULL(Constant)
-     syntax Constant ::= LitF(Constant)
+     syntax Constant ::= LitU(Constant) [function]
+     syntax Constant ::= LitL(Constant) [function]
+     syntax Constant ::= LitLL(Constant) [function]
+     syntax Constant ::= LitUL(Constant) [function]
+     syntax Constant ::= LitULL(Constant) [function]
+     syntax Constant ::= LitF(Constant) [function]
 
-     syntax Constant ::= NoSuffix(K)
+     syntax Constant ::= NoSuffix(K) [function]
 
-     syntax Constant ::= CharLiteral(Int)
-     syntax Constant ::= WCharLiteral(Int)
-     syntax Constant ::= StringLiteral(String)
-     syntax Constant ::= WStringLiteral(K)
+     syntax Constant ::= CharLiteral(Int) [function]
+     syntax Constant ::= WCharLiteral(Int) [function]
+     syntax Constant ::= StringLiteral
+     syntax StringLiteral ::= StringLiteral(String)
+     syntax StringLiteral ::= WStringLiteral(K)
 
      /*
      and init_expression =

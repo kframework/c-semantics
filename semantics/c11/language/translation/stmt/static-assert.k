@@ -4,7 +4,6 @@ module C-STMT-STATIC-ASSERT
      imports C-ABSTRACT-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-LITERAL-SYNTAX
 
      context StaticAssert((HOLE:KItem => reval(HOLE)), _) [result(RValue)]
      rule StaticAssert(tv(N:Int, _), _) => .K
@@ -12,7 +11,7 @@ module C-STMT-STATIC-ASSERT
      rule StaticAssert(te(_, _), _)
           => CV("SSA1",
                "Non-constant expression in static assertion.")
-     rule StaticAssert(tv(0, _), stringLiteral(Msg:String))
+     rule StaticAssert(tv(0, _), StringLiteral(Msg:String))
           => CV("SSA2",
                "Static assertion failed: " +String Msg +String ".")
 

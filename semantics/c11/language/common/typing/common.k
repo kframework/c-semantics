@@ -92,18 +92,26 @@ module C-TYPING-COMMON
      rule getEnumAlias'(enumAlias(T::SimpleType)) => T
      rule getEnumAlias'(_) => no-type [owise]
 
-     rule getFieldInfo(S:TagId) => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(t(_, Mods::Set, structType(S::TagId)))
-          => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(t(_, Mods::Set, unionType(S::TagId)))
-          => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(_:Type) => toFieldInfo(.K) [owise]
+     rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))
+
+     rule getFields(T:StructOrUnionType) => getFields({utype(T)}:>StructOrUnionUType)
+     rule getFields(ut(SetItem(Fields:FieldInfo) _, structType(_))) => Fields
+     rule getFields(ut(SetItem(Fields:FieldInfo) _, unionType(_))) => Fields
+     rule getFields(T::StructOrUnionUType) => getFieldInfo(getTagId(T)) [owise]
+
+     syntax TagId ::= getTagId(StructOrUnionUType) [function]
+     rule getTagId(ut(_, structType(S::TagId))) => S
+     rule getTagId(ut(_, unionType(S::TagId))) => S
 
      syntax FieldInfo ::= toFieldInfo(TagInfo) [function]
      rule toFieldInfo(Fields:FieldInfo) => Fields
      rule toFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
 
      rule getTagInfo(S:TagId) => #getTagInfo(S, #configuration)
+
+     syntax Bool ::= hasNoName(Map) [function]
+     rule hasNoName((_:NoName |-> _:StructOrUnionType) _::Map) => true
+     rule hasNoName(_) => false [owise]
 
      syntax TagInfo ::= #getTagInfo(TagId, K) [function]
      rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)

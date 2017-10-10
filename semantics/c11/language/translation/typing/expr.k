@@ -19,7 +19,6 @@ module C-TYPING-EXPR
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-COMPATIBILITY-SYNTAX
@@ -102,9 +101,9 @@ module C-TYPING-EXPR
      rule typeof(T:Typed => type(T))
           requires notBool isType(T)
 
-     rule typeof(stringLiteral(S:String)
+     rule typeof(StringLiteral(S:String)
           => type(arrayType(type(char), lengthString(S) +Int 1)))
-     rule typeof(wstringLiteral(L:List)
+     rule typeof(WStringLiteral(list(L:List))
           => type(arrayType(type(cfg:wcharut), size(L) +Int 1)))
 
      // postfix expressions
@@ -113,20 +112,7 @@ module C-TYPING-EXPR
      rule typeof(Call((T:Type => innerType(T)), _))
           requires isPointerType(T)
 
-     rule <k> typeof(t(_, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
-          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</tags>
-     rule <k> typeof(t(Qs::Quals, _, structType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId
-               => getTypeForField(F, searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF))))
-          ...</k>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
-          requires searchAnons(F, false, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
-     rule <k> typeof(t(_, _, unionType(tag(X:CId, Tu:String, B:BlockRef))) . F:CId => T) ...</k>
-          <tags>... Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(_, _, (_ F |-> T:Type), _, _)) ...</tags>
-     rule <k> typeof(t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef))) . F:CId
-               => getTypeForField(F, searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF))))
-          ...</k>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(_, _, AF:NoName |-> T::Type _, _, _)) ...</tags>
-          requires searchAnons(F, true, getFieldInfo(T), 0, getFields(getFieldInfo(T)), ListItem(AF)) =/=K .List
+     rule typeof(T:StructOrUnionType . F:CId => findFieldType(F, T))
 
      rule typeof(T:Type ++ => T)
      rule typeof(T:Type -- => T)

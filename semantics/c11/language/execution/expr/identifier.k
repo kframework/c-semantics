@@ -19,11 +19,17 @@ module C-EXPR-IDENTIFIER
           <types>... X |-> T::Type ...</types>
           [structural]
 
-     rule instantiate(Loc::SymLoc, T::Type)
-          => transferProv(basedOn(base(Loc), getRestrictBlock(T)), read(Loc, T))
+     rule <k> instantiate(Loc::SymLoc, T::Type)
+               => checkUse(transferProv(basedOn(base(resolveLinking(Loc, Linkings)), getRestrictBlock(T)),
+                    read(resolveLinking(Loc, Linkings), T)))
+          ...</k>
+          <linkings> Linkings::Map </linkings>
           requires isRestrictType(T)
           [structural]
-     rule instantiate(Loc::SymLoc, T::Type) => read(Loc, T)
+     rule <k> instantiate(Loc::SymLoc, T::Type)
+               => checkUse(read(resolveLinking(Loc, Linkings), T))
+          ...</k>
+          <linkings> Linkings::Map </linkings>
           requires notBool isRestrictType(T)
           [structural]
 

@@ -7,7 +7,6 @@ module C-COMPOUND-LITERAL
      imports C-DECL-DEFINITION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SETTINGS-SYNTAX
@@ -71,11 +70,19 @@ module C-COMPOUND-LITERAL
      }*/
 
      rule <k> (.K => runInit(allocString(obj(0, 1, string(S)), S)))
-               ~> stringLiteral(S:String)
+               ~> StringLiteral(S:String)
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (obj(0, 1, string(S)) in_keys(Mem))
+     rule <k> StringLiteral(S:String)
+               => lv(lnew(obj(0, 1, string(S))),
+                    type(arrayType(type(char), lengthString(S) +Int 1)))
+          ...</k>
+          <mem>... obj(0, 1, string(S)) |-> _ ...</mem>
 
+     rule WStringLiteral(list(S:List)) => wstringLiteral(S, byteAlignofType(type(cfg:wcharut)))
+
+     syntax KItem ::= wstringLiteral(List, Int)
      // TODO(chathhorn): possibly do string allocation lazily, although we'd
      // want to make sure all allocations got triggered statically.
      rule <k> (.K => runInit(allocWString(obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)), S)))
@@ -83,14 +90,6 @@ module C-COMPOUND-LITERAL
           ...</k>
           <mem> Mem:Map </mem>
           requires notBool (obj(0, byteAlignofType(type(cfg:wcharut)), wstring(S)) in_keys(Mem))
-
-     rule <k> stringLiteral(S:String)
-               => lv(lnew(obj(0, 1, string(S))),
-                    type(arrayType(type(char), lengthString(S) +Int 1)))
-          ...</k>
-          <mem>... obj(0, 1, string(S)) |-> _ ...</mem>
-     rule wstringLiteral(S:List) => wstringLiteral(S, byteAlignofType(type(cfg:wcharut)))
-     syntax KItem ::= wstringLiteral(List, Int) [klabel(wstringLiteral2)]
      rule <k> wstringLiteral(S:List, Align:Int)
                => lv(lnew(obj(0, Align, wstring(S))),
                     type(arrayType(type(cfg:wcharut), size(S) +Int 1)))

@@ -11,6 +11,7 @@ module C-MEMORY-WRITING-SYNTAX
 
      // Either buffered or unbuffered depending on whether we're executing.
      syntax KItem ::= writeBytes(SymLoc, K, Type) [strict(2), klabel(writeBytes3)]
+     syntax KItem ::= writeBytes(SymLoc, List)
 
      syntax List ::= explodeToBits(List) [function]
 
@@ -24,32 +25,32 @@ module C-MEMORY-WRITING-SYNTAX
 
      syntax KItem ::= writeWChars(SymLoc, List)
      syntax KItem ::= writeWString(SymLoc, List)
-
-     syntax KItem ::= setEffectiveType(SymBase, Type)
 endmodule
 
 module C-MEMORY-WRITING
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-CONFIGURATION
      imports BOOL
+     imports FLOAT-SYNTAX
+     imports INT
+     imports K-EQUAL
+     imports K-REFLECTION
+     imports MAP
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-CONFIGURATION
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
      imports COMMON-SORTS
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
-     imports FLOAT-SYNTAX
-     imports INT
-     imports K-EQUAL
-     imports K-REFLECTION
      imports LIBC-SYNTAX
-     imports MAP
      imports MEMORY-SYNTAX
 
      // Write thread-local or auto.
@@ -86,12 +87,6 @@ module C-MEMORY-WRITING
      rule write(Loc:SymLoc, V:CValue, T:Type) => writeSpecific(Loc, V, T)
           requires isNativeLoc(Loc)
           [ndtrans]
-     rule <k> write(loc((Base:SymBase => Base'), _), _, _) ...</k>
-          <linkings>... Base |-> Base':SymBase ...</linkings>
-          [structural]
-     rule <k> write(loc((Base:SymBase => Base'), _, _), _, _) ...</k>
-          <linkings>... Base |-> Base':SymBase ...</linkings>
-          [structural]
      rule <k> (.K => CV("CMW2", "Trying to write through a const lvalue.") )
                ~> write(_, _, T:Type)
           ...</k>
@@ -105,45 +100,33 @@ module C-MEMORY-WRITING
           requires isStringLoc(Loc)
           [structural]
 
-     syntax KItem ::= writeSpecific(SymLoc, CValue, Type) [function]
-     rule writeSpecific(Loc::SymLoc, V::CValue, T::Type)
-          => updateEffectiveType(Loc)
-          ~> writeSpecific'(Loc, stripLastAccessType(V), T)
+     syntax KItem ::= writeSpecific(SymLoc, CValue, Type)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type)
+               => updateEffectiveType(Loc)
+               ~> makePaddingUnknown(base(Loc), offset(Loc), getEffectiveType(base(Loc)))
+               ~> writeSpecific'(Loc, stripLastAccessType(V), T)
+          ...</k>
+          <mem> Mem::Map </mem>
+          requires base(Loc) in_keys(Mem)
+     rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type)
+               => writeSpecific'(Loc, stripLastAccessType(V), T)
+          ...</k>
+          <mem> Mem::Map </mem>
+          requires notBool (base(Loc) in_keys(Mem))
 
      syntax Set ::= keepUnion(Set) [function]
                   | stripUnion(Set) [function]
 
-     rule keepUnion(.Set) => .Set
-     rule keepUnion(SetItem(K:K) S:Set) =>
-          #if (getKLabel(K) ==K #klabel(`fromUnion`))
-          #then (SetItem(K) keepUnion(S))
-          #else keepUnion(S)
-          #fi
-
-     rule stripUnion(.Set) => .Set
-     rule stripUnion(SetItem(K:K) S:Set) =>
-          #if (getKLabel(K) ==K #klabel(`fromUnion`))
-          #then stripUnion(S)
-          #else (SetItem(K) stripUnion(S))
-          #fi
-
      syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
-     rule writeSpecific'(Loc:SymLoc, V:CValue, T:Type)
+     rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type)
           => writeBytes(Loc, splitBytes(tv(V, utype(T))), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte ==Int 0)
                andBool (notBool isBitfieldType(T))
-               andBool (notBool hasUnionMarker(Loc))
-          [structural]
-     rule (.K => makeUnknown(.K, keepUnion(S)))
-          ~> writeSpecific'(
-               loc(Base:SymBase, Offset:Int, S:Set => stripUnion(S)), _, _)
-          requires hasUnionMarker(loc(Base, Offset, S))
           [structural]
      rule writeSpecific'(Loc::SymLoc, I:Int, T::Type)
           => writeSpecific'(Loc, justBits(I, utype(T)), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0 orBool isBitfieldType(T))
                andBool (I <Int 0)
-               andBool notBool hasUnionMarker(Loc)
           [structural]
      rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
           => writeBytes(Loc,
@@ -151,72 +134,75 @@ module C-MEMORY-WRITING
                     readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
                andBool (V >=Int 0)
-               andBool notBool hasUnionMarker(Loc)
           [structural]
      rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
           => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
                     readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
-          requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
-               andBool notBool hasUnionMarker(Loc)
+          requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T)
           [structural]
 
-     syntax KItem ::= makeUnionUnknown(SymLoc, CId, FieldInfo)
-                    | makeStructUnknown(SymLoc, CId, FieldInfo, Int)
-                    | makeUnknown(K, Set)
+     syntax KItem ::= makeUnionUnknown(SymLoc, Type, Int)
+                    | makeStructUnknown(SymLoc, FieldInfo, Int)
+                    | makePaddingUnknown(SymBase, Int, K) [strict(3)]
+                    | makeStructUnionUnknown(Set) [function]
 
-     rule makeUnknown(.K, .Set) => .K
-          [structural]
-     rule makeUnknown(.K, SetItem(K:K) S:Set)
-          => makeUnknown(K, S)
-          [structural]
+     rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)
+          => makeStructUnionUnknown(getStructUnionInfo(Base, Offset, 0, EffT))
+     rule makePaddingUnknown(Base::SymBase, Offset::Int, dynamicType(EffT::Type))
+          => makeStructUnionUnknown(getStructUnionInfo(Base, Offset, 0, EffT))
+
+     syntax Set ::= getStructUnionInfo(SymBase, Int, Int, Type) [function]
+     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:ArrayType)
+          => getStructUnionInfo(Base, Offset, RelOffset +Int (Offset -Int (Offset %Int byteSizeofType(innerType(T)))), innerType(T))
+          requires RelOffset <=Int Offset
+     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:StructType)
+          => SetItem(fromStruct(loc(Base, RelOffset), getFields(T)))
+               getStructUnionInfo(Base, Offset,
+                    RelOffset +Int floorFieldOffset(Offset -Int RelOffset, T),
+                    getFieldTypeAtOffset(Offset -Int RelOffset, T))
+          requires RelOffset <=Int Offset
+     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:UnionType)
+          => SetItem(fromUnion(loc(Base, RelOffset), getActiveVariant(T), byteSizeofType(T)))
+               getStructUnionInfo(Base, Offset, RelOffset, getActiveVariant(T))
+          requires RelOffset <=Int Offset
+     rule getStructUnionInfo(_, _, _, _) => .Set [owise]
+
      // unions
-     rule makeUnknown(fromUnion(UnionLoc:SymLoc, F:CId, Fields:FieldInfo, true),
-               S:Set)
-          => allowInit(makeUnionUnknown(UnionLoc, F, Fields))
-          ~> makeUnknown(.K, S)
-          [structural]
+     syntax KItem ::= fromUnion(SymLoc, Type, Int)
+     rule makeStructUnionUnknown(SetItem(fromUnion(UnionLoc::SymLoc, T::Type, Sz::Int)) S::Set)
+          => allowInit(makeUnionUnknown(UnionLoc, T, Sz))
+          ~> makeStructUnionUnknown(S)
      // structs
-     rule makeUnknown(fromUnion(StructLoc:SymLoc, F:CId, Fields:FieldInfo, false),
-               S:Set)
-          => allowInit(makeStructUnknown(StructLoc, F, Fields, 0))
-          ~> makeUnknown(.K, S)
- 
+     syntax KItem ::= fromStruct(SymLoc, FieldInfo)
+     rule makeStructUnionUnknown(SetItem(fromStruct(StructLoc::SymLoc, Fields::FieldInfo)) S::Set)
+          => allowInit(makeStructUnknown(StructLoc, Fields, 0))
+          ~> makeStructUnionUnknown(S)
+     rule makeStructUnionUnknown(_) => .K [owise]
+
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
      // TODO(chathhorn): breaks open a lot of abstractions.
-     rule <k> makeUnionUnknown(Loc::SymLoc, F:CId, fieldInfo(L::List, _,
-               F |-> T::Type _, _, _))
-          => writeBytes(resolveLinking(Loc, Linkings) +bytes byteSizeofType(T),
-               dataList(times(
-                    maxByteSizeofList(L) -Int byteSizeofType(T),
-                    piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
-          ...</k>
-          <linkings> Linkings::Map </linkings>
-          requires maxByteSizeofList(L) >Int byteSizeofType(T)
+     rule makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
+          => writeBytes(Loc +bytes byteSizeofType(T),
+               times(Sz -Int byteSizeofType(T),
+                    piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
+          requires Sz >Int byteSizeofType(T) andBool notBool isNoType(T)
           [structural]
-     rule makeUnionUnknown(_, F::CId, fieldInfo(L::List, _, F |-> T::Type _, _, _)) => .K
-          requires maxByteSizeofList(L) <=Int byteSizeofType(T)
+     rule makeUnionUnknown(_, T::Type, Sz::Int) => .K
+          requires Sz <=Int byteSizeofType(T) orBool isNoType(T)
           [structural]
 
-     rule <k> makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
-               F |-> T::Type M::Map, Offsets::Map, PaddingOffs::Set), I::Int)
-          => writeBytes(resolveLinking(Loc, Linkings) +bytes I,
-               dataList(ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte))), T)
-          ~> makeStructUnknown(Loc, F, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs), I +Int 1)
-          ...</k>
-          <linkings> Linkings::Map </linkings>
-          requires isPaddingOffset(I, fieldInfo(L, N, F |-> T M, Offsets, PaddingOffs))
-               andBool I *Int cfg:bitsPerByte <Int N
-     rule makeStructUnknown(Loc::SymLoc, F::CId, fieldInfo(L::List, N::Int, 
-               Types::Map, Offsets::Map, PaddingOffs::Set), I::Int)
-          => makeStructUnknown(Loc, F, fieldInfo(L, N, Types, Offsets, PaddingOffs), I +Int 1)
-          requires notBool isPaddingOffset(I, fieldInfo(L, N, Types, Offsets, PaddingOffs))
-               andBool I *Int cfg:bitsPerByte <Int N
-     rule makeStructUnknown(_, _, fieldInfo(_, N::Int, _, _, _), I::Int)
+     rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
+          => writeBytes(Loc +bytes I,
+               ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
+          ~> makeStructUnknown(Loc, Fields, I +Int 1)
+          requires isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
+     rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
+          => makeStructUnknown(Loc, Fields, I +Int 1)
+          requires notBool isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
+     rule makeStructUnknown(_, fieldInfo(_, Sz::Int, _, _, _), I::Int)
           => .K
-          requires I *Int cfg:bitsPerByte >=Int N
-
-
+          requires I *Int cfg:bitsPerByte >=Int Sz
 
      syntax Int ::= justBits(Int, UType) [function]
      syntax Int ::= "justBits-aux" "(" Int "," UType ")" [function]
@@ -320,10 +306,9 @@ module C-MEMORY-WRITING
           => splitBytes(V, byteSizeofType(T))
      rule splitBytes(tv(V:Trap, T::UType))
           => splitBytes(V, byteSizeofType(T))
-     rule splitBytes(tv(agg(L:List), T::UType))
+     rule splitBytes(tv(agg(L:List), T:StructOrUnionUType))
           => splitStructBytes(dataList(L), T,
                byteSizeofType(T))
-          requires isStructOrUnionType(type(T))
 
      syntax KItem ::= makeUnknownAux(List, List) [function]
      rule makeUnknown(dataList(L::List)) => makeUnknownAux(L, .List)
@@ -331,24 +316,24 @@ module C-MEMORY-WRITING
      rule makeUnknownAux(.List, L::List) => dataList(L)
      rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]
 
-     syntax DataList ::= splitStructBytes(K, UType, Int) [function]
-     syntax DataList ::= #splitStructBytes(K, UType, Int, List)  [function]
+     syntax DataList ::= splitStructBytes(K, StructOrUnionUType, Int) [function]
+     syntax DataList ::= #splitStructBytes(K, StructOrUnionUType, Int, List)  [function]
 
-     rule splitStructBytes(dataList(L:List), T::UType, Len:Int)
+     rule splitStructBytes(dataList(L:List), T::StructOrUnionUType, Len:Int)
           => #splitStructBytes(dataList(L), T, Len, .List)
      rule #splitStructBytes(
           dataList(ListItem(piece(N::BitValue, PieceLen:Int)) Rest:List),
-               T::UType, Len:Int, L:List)
+               T::StructOrUnionUType, Len:Int, L:List)
           => #splitStructBytes(dataList(Rest), T, Len -Int 1,
                L ListItem(piece(N, PieceLen)))
           requires PieceLen ==Int cfg:bitsPerByte
                andBool Len >Int 0
-               andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
+               andBool (notBool isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                     orBool isUnknown(N))
      rule #splitStructBytes(
           dataList(ListItem(piece((N::BitValue => unknown(#if isInt(N) #then N #else 0 #fi)), _)) _),
-               T::UType, Len::Int, _)
-          requires isPaddingOffset(byteSizeofType(T) -Int Len, getFieldInfo(type(T)))
+               T::StructOrUnionUType, Len::Int, _)
+          requires isPaddingOffset(byteSizeofType(T) -Int Len, getFields(T))
                andBool notBool isUnknown(N)
      rule #splitStructBytes(_, _, 0, L::List) => dataList(L)
 
@@ -399,52 +384,5 @@ module C-MEMORY-WRITING
                * tv(Loc, utype(pointerType(type(cfg:wcharut))))
                := tv(0, utype(cfg:wcharut)))
           [structural]
-
-     // Set the new effective type to a last-access type attached to the
-     // lvalue, if it exists.
-     syntax KItem ::= updateEffectiveType(SymLoc)
-     rule updateEffectiveType(Loc::SymLoc) => setEffectiveType(base(Loc), getObjectType(Loc))
-          requires hasObjectType(Loc)
-          [structural]
-     rule updateEffectiveType(Loc::SymLoc) => .K
-          requires notBool hasObjectType(Loc)
-          [structural]
-
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(T:Type => T', _, _) ...</mem>
-          requires notBool isNoType(T)
-          [structural]
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(dynamicType(_ => T'), _, _) ...</mem>
-          [structural]
-     // Upgrade the effective type for a malloced region to an array.
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(_:NoType => dynamicType(T'), Len::Int, _) ...</mem>
-          requires notBool isNoType(T') andBool notBool isFlexibleType(T')
-          [structural]
-     rule <k> setEffectiveType(Base::SymBase, _:NoType) => .K ...</k>
-          <mem>... Base |-> object(_:NoType, _, _) ...</mem>
-          [structural]
-     // Also, set the length of the flexible array member for structs in a
-     // malloced region.
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', Len -Int byteSizeofType(T'))), Len::Int, _) ...</mem>
-          requires isFlexibleType(T') andBool Len >Int byteSizeofType(T')
-          [structural]
-     rule <k> setEffectiveType(Base::SymBase, T'::Type) => .K ...</k>
-          <mem>... Base |-> object(_:NoType => dynamicType(lockFlexibleStruct(T', 1)), Len::Int, _) ...</mem>
-          requires isFlexibleType(T') andBool Len <=Int byteSizeofType(T')
-          [structural]
-     rule <k> setEffectiveType(Base::SymBase, _) => .K ...</k>
-          <mem> Mem:Map </mem>
-          requires notBool Base in_keys(Mem)
-          [structural]
-
-     syntax Bool ::= hasObjectType(SymLoc) [function]
-     rule hasObjectType(loc(_, _, _:Set SetItem(objectType(_)))) => true
-     rule hasObjectType(_) => false [owise]
-
-     syntax Type ::= getObjectType(SymLoc) [function]
-     rule getObjectType(loc(_, _, _:Set SetItem(objectType(T::Type)))) => T
 
 endmodule

@@ -10,11 +10,12 @@ module C-IO-BUFFERED-SYNTAX
      syntax KItem ::= deleteObject(SymBase)
      syntax KItem ::= deleteObjects(Set)
 
-     syntax KItem ::= writeBytes(SymLoc, List)
-
      syntax Set ::= locations(List) [function]
 
      syntax Quals ::= getQualsAtOffset(List) [function]
+
+     syntax KItem ::= writeBytesBuffered(SymLoc, List) [function]
+
 endmodule
 
 module C-IO-BUFFERED
@@ -34,7 +35,7 @@ module C-IO-BUFFERED
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
 
-     syntax KItem ::= bwrite(SymLoc, List)
+     rule writeBytesBuffered(Loc::SymLoc, Bytes::List) => writeBytes(Loc, Bytes)
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
                => checkRestrict(true, Loc)
@@ -130,6 +131,7 @@ module C-IO-BUFFERED
           requires isLibcFixedDuration(Base)
           [structural]
 
+     syntax KItem ::= bwrite(SymLoc, List)
      rule <k> writeBytes(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), L))) </buffer>
           [structural]
@@ -306,7 +308,7 @@ module C-IO-BUFFERED
           => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
           requires N =/=Int 0
      rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType)
-          => getZeroedBits(Offset, N, T, getFieldInfo(T))
+          => getZeroedBits(Offset, N, T, getFlatFields(T))
           requires N =/=Int 0
 
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]

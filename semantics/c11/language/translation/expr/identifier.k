@@ -10,23 +10,21 @@ module C-EXPR-IDENTIFIER
      imports C-TYPING-SYNTAX
 
      rule <k> X:CId => lv(lnew(Base), T) ...</k>
-          <env>... X |-> Base::SymBase ...</env>
+          <env>... X |-> Base:DirectBase ...</env>
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
-          requires notBool isLinkerLoc(Base)
-               andBool Base =/=K nonStatic
+          requires Base =/=K nonStatic
                andBool notBool isRestrictType(T)
           [structural]
      rule <k> X:CId => lv(restrictedNew(Base, getRestrictBlock(T)), T) ...</k>
-          <env>... X |-> Base::SymBase ...</env>
+          <env>... X |-> Base:DirectBase ...</env>
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <uses>... .Set => SetItem(X) ...</uses>
-          requires notBool isLinkerLoc(Base)
-               andBool Base =/=K nonStatic
+          requires Base =/=K nonStatic
                andBool isRestrictType(T)
           [structural]
      rule <k> X:CId => le(X, T) ...</k>
@@ -40,7 +38,7 @@ module C-EXPR-IDENTIFIER
      // We need to record uses of external symbols because if an external
      // without a definition isn't ever used, then it isn't a link error.
      rule <k> X:CId => lv(lnew(Base), T) ...</k>
-          <env>... X |-> Base::SymBase ...</env>
+          <env>... X |-> Base:LinkBase ...</env>
           <types>... X |-> T::Type ...</types>
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
@@ -48,7 +46,6 @@ module C-EXPR-IDENTIFIER
           <external-uses> Uses::Map => Uses[X <- L] </external-uses>
           <uses>... .Set => SetItem(X) ...</uses>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
-          requires isLinkerLoc(Base)
           [structural]
 
      // according to C11 sec. 6.5.1, enumeration constants are constants and therefore

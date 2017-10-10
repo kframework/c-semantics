@@ -602,23 +602,21 @@ module C-DECL-GLOBAL
 
      syntax KItem ::= updateLinkState(CId, Type, SymBase)
      // Possibly no previous decl in this TU, but this isn't a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base':LinkBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
           <external-types> Types::Map => Types[X <- T'] </external-types>
-          requires isLinkerLoc(Base')
           [structural]
      // New def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base':DirectBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
           <external-types> Types::Map => Types[X <- T'] </external-types>
           <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
           <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
-          requires notBool isLinkerLoc(Base')
-               andBool (notBool (X in_keys(Defs)))
+          requires notBool (X in_keys(Defs))
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
@@ -628,11 +626,10 @@ module C-DECL-GLOBAL
 
      rule <k> (.K => CV("TDG13",
                "Redefinition of symbol: " +String idToString(X) +String "."))
-               ~> updateLinkState(X::CId, _, Base'::SymBase)
+               ~> updateLinkState(X::CId, _, Base':DirectBase)
           ...</k>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
-          requires notBool isLinkerLoc(Base')
-               andBool (Base =/=K Base')
+          requires Base =/=K Base'
           [structural]
 
      syntax KItem ::= recordTentDef(CId, Linkage)
@@ -657,20 +654,18 @@ module C-DECL-GLOBAL
      rule <k> allocateDecl(X:CId)
                => allocObject(Base, T)
           ...</k>
-          <types>... X |-> T:Type ...</types>
-          <env>... X |-> Base:SymBase ...</env>
-          requires notBool isLinkerLoc(Base)
+          <types>... X |-> T::Type ...</types>
+          <env>... X |-> Base:DirectBase ...</env>
           [structural]
      rule <k> allocateDecl(X:CId)
                => addToEnv(X, T, bnew(!I:Int, T, static(Tu)))
                ~> allocObject(bnew(!I, T, static(Tu)), T)
           ...</k>
-          <types>... X |-> T:Type ...</types>
-          <env>... X |-> Base:SymBase ...</env>
-          <curr-tu> Tu:String </curr-tu>
+          <types>... X |-> T::Type ...</types>
+          <env>... X |-> Base:LinkBase ...</env>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <linkings>... .Map => Base |-> bnew(!I, T, static(Tu)) ...</linkings>
-          requires isLinkerLoc(Base)
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff ***

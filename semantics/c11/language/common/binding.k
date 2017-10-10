@@ -5,7 +5,7 @@ module C-BINDING-SYNTAX
 
      // RValues, Types, CIds
      syntax KItem ::= bind(List, List, List)
-     syntax KItem ::= bindParam(CId, Type, K) [klabel(bindParam3)]
+     syntax KItem ::= bindParam(CId, Type, K) [strict(3), klabel(bindParam3)]
 endmodule
 
 module C-BINDING
@@ -108,7 +108,7 @@ module C-BINDING
           [structural]
 
      syntax KItem ::= bindVariadics(List, Int)
-     rule (.K => bindParam(vararg(N), stripConstants(type(argPromote(V))), argPromote(V)))
+     rule (.K => bindParam(vararg(N), stripConstants(type(argPromoteType(utype(V)))), argPromote(V)))
           ~> bindVariadics(
                (ListItem(V:RValue) => .List) _,
                (N:Int => N +Int 1))
@@ -164,7 +164,7 @@ module C-BINDING
      rule representable(V::Int, T::UType)
           => (V <=Int max(T)) andBool (V >=Int min(T))
 
-     syntax RValue ::= argPromote(RValue) [function]
+     syntax KItem ::= argPromote(RValue) [function]
      rule argPromote(V::RValue) => cast(argPromoteType(utype(V)), V)
 
 endmodule

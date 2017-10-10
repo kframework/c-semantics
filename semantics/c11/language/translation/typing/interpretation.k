@@ -1,9 +1,12 @@
 module C-TYPING-INTERPRETATION-SYNTAX
      imports BASIC-K
+     imports COMMON-SORTS
      imports C-DYNAMIC-SORTS
 
      syntax Type ::= pushTypeDown(Type, K) [function]
      syntax KItem ::= makeArrayType(RValue, K)
+
+     syntax List ::= numberUnnamed(List) [function]
 endmodule
 
 module C-TYPING-INTERPRETATION
@@ -132,11 +135,11 @@ module C-TYPING-INTERPRETATION
      syntax SimpleType ::= "functionType'" "(" Type "," List ")"
      rule applyTypeFunction(makeFunctionType(L:List), T::Type)
           => t(noQuals, getSpecifiers(T),
-               functionType'(stripSpecifiers(T), giveNamesToArgs(L)))
+               functionType'(stripSpecifiers(T), numberUnnamed(L)))
 
      rule applyTypeFunction(makeOldStyleFunctionType(L:List), T::Type)
           => t(noQuals, getSpecifiers(T) SetItem(oldStyle),
-               functionType'(stripSpecifiers(T), giveNamesToArgs(L)))
+               functionType'(stripSpecifiers(T), numberUnnamed(L)))
 
      rule applyTypeFunction(makePointerType(Mods::Set), T::Type)
           => t(toQuals(Mods), (Mods -Set typeQualifiers) getSpecifiers(T), pointerType(stripSpecifiers(T)))
@@ -154,19 +157,6 @@ module C-TYPING-INTERPRETATION
      rule applyTypeFunction(makeArrayType(N:RValue, Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), variableLengthArrayType(stripSpecifiers(T), N))
           requires isHold(N)
-
-     syntax List ::= giveNamesToArgs(List) [function]
-     syntax List ::= "giveNamesToArgs-aux" "(" Int "," List ")" [function]
-
-     rule giveNamesToArgs(L:List) => giveNamesToArgs-aux(0, L)
-     rule giveNamesToArgs-aux(N:Int, ListItem(K::K) L:List)
-          => ListItem(nameArg(N, K)) giveNamesToArgs-aux(N +Int 1, L)
-     rule giveNamesToArgs-aux(_, .List) => .List
-
-     syntax K ::= nameArg(Int, K) [function]
-     rule nameArg(N:Int, typedDeclaration(T:Type, #NoName))
-          => typedDeclaration(T, #NoName(N))
-     rule nameArg(_, T::K) => T [owise]
 
      rule <k> JustBase() => T ...</k>
           <decl-type-holder> T:Type => .K ...</decl-type-holder>
@@ -243,5 +233,10 @@ module C-TYPING-INTERPRETATION
           => type(pointerType(t(Qs, Mods, functionType(R, Params))))
      rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
      rule adjustParam(T::Type) => T [owise]
+
+     rule numberUnnamed(ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
+          => ListItem(typedDeclaration(T, #NoName(!N:Int))) numberUnnamed(Fs)
+     rule numberUnnamed(ListItem(K:K) Fs::List) => ListItem(K) numberUnnamed(Fs) [owise]
+     rule numberUnnamed(.List) => .List
 
 endmodule

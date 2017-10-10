@@ -22,14 +22,15 @@ endmodule
 
 module C-DYNAMIC-SYNTAX
      imports BASIC-K
+     imports FLOAT-SYNTAX
+     imports INT-SYNTAX 
+     imports K-REFLECTION
+     imports LIST
      imports BITS-SORTS
-     imports BITS-SORTS
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
      imports C-TYPING-SORTS
-     imports FLOAT-SYNTAX
-     imports INT-SYNTAX 
-     imports LIST
      imports SYMLOC-SORTS
 
      syntax Agg ::= agg(List)
@@ -155,6 +156,8 @@ module C-DYNAMIC
      rule stripHold(te(K:K, _)) => K
      rule stripHold(le(K:K, _)) => K
      rule stripHold(ncle(K:K, _)) => K
+     rule stripHold(tv(_, _) #as V::RValue) => checkUse(V)
+     rule stripHold(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
      rule stripHold(K:K) => K [owise]
 
      rule value(tv(V:CValue, _)) => V

@@ -47,7 +47,7 @@ module C-STMT-SWITCH
           [structural]
 
      // K to be evaluated, val it should be, casehelper
-     syntax KItem ::= tryCase(RValue, RValue, K)
+     syntax KItem ::= tryCase(K, RValue, K) [strict(1)]
 
      syntax KItem ::= "#handleSwitch-aux" "(" Int "," RValue "," K "," Map ")"
 
@@ -59,7 +59,7 @@ module C-STMT-SWITCH
           => #handleSwitch-aux(SN, V, Key, M)
           [structural]
 
-     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:K), M:Map)
+     rule #handleSwitch-aux(SN:Int, V:RValue, caseLabel(SN, Exp:RValue), M:Map)
           => (tryCase(Exp, V, caseLabel(SN, Exp))
           ~> #handleSwitch-aux(SN, V, .K, M))
           requires Exp =/=K #klabel(`Default`) andBool notBool (isUnknown(value(V))  orBool isIntPtr(value(V)))
@@ -88,7 +88,7 @@ module C-STMT-SWITCH
           [structural]
 
      rule tryCase(
-               (tv(V::CValue, T'::UType) => stripConstants({cast(T, tv(V, T'))}:>RValue)),
+               (tv(V::CValue, T'::UType) => cast(stripConstants(T), tv(V, stripConstants(T')))),
                tv(_, T::UType), _)
           requires T =/=Type T'
           [structural]

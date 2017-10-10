@@ -415,11 +415,10 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</nenv>
+          <nenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</nenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, N :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[N :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
-          requires isLinkerLoc(Base)
 
      rule <k> allocateDecl(C:Class :: X::CId, T::CPPType, StaticStorage, S::Set, Type::DeclarationType)
               => addToEnv(C :: X, T, bnew(!I:Int, T, S, static(Tu)), false)
@@ -428,11 +427,10 @@ module CPP-DECL-DECLARATOR
           <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base::SymBase)) ...</cenv>
+          <cenv>... X |-> (_::TypeMap T |-> envEntry(... base: Base:LinkBase)) ...</cenv>
           <linkings>... .Map => Base |-> bnew(!I, T, S, static(Tu)) ...</linkings>
           <odr-decls> Decls::Map => Decls[bnew(!I, T, S, static(Tu)) += ktriple(Tu, C :: X, T)] </odr-decls>
           <odr-defs> Defs::Map => Defs[C :: X, T <- bnew(!I, T, S, static(Tu))] </odr-defs>
-          requires isLinkerLoc(Base)
 
      rule <k> initializeObject(N::NNSVal, X::CId, T::CPPFunctionType, functionDef(Base::SymBase, Body::Stmt), Function(Params::List))
               => initFunction(Base, functionObject(N :: X, T, .List, GotoStmt(funLabel(X))))

@@ -43,9 +43,8 @@ module C-LINKING-RESOLUTION
           ...</external-decls>
           <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> (Base:SymBase => Base') ...</genv>
+          <genv>... X |-> (Base:LinkBase => Base') ...</genv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
-          requires isLinkerLoc(Base)
           [structural]
 
      rule <k> resolveReference(X:CId) ...</k>
@@ -54,8 +53,7 @@ module C-LINKING-RESOLUTION
           ...</external-decls>
           <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Base:SymBase ...</genv>
-          requires notBool isLinkerLoc(Base)
+          <genv>... X |-> Base:DirectBase ...</genv>
           [structural]
 
      rule <k> resolveReference(X:CId) => .K  ...</k>

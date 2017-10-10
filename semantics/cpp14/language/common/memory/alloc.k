@@ -14,10 +14,9 @@ module CPP-MEMORY-ALLOC
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
 
-     rule <k> allocObject(Base::SymBase, T::CPPType, Len::Int) => .K ...</k>
+     rule <k> allocObject(Base:DirectBase, T::CPPType, Len::Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(T, Len, makeEmptyArray(Len))
           ...</mem>
-          requires notBool isLinkerLoc(Base)
 
 endmodule

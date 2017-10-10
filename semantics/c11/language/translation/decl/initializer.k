@@ -24,7 +24,6 @@ module C-DECL-INITIALIZER
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-LITERAL-SYNTAX
      imports C-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
@@ -46,9 +45,9 @@ module C-DECL-INITIALIZER
      rule figureInit(
                _,
                t(_, _, arrayType(_:CharType, Len:Int)),
-               (SingleInit(stringLiteral(S:String))
+               (SingleInit(StringLiteral(S:String))
                => CompoundInit(list(ListItem(InitFragment(NextInit(),
-                    SingleInit(stringLiteral(S)))))))
+                    SingleInit(StringLiteral(S)))))))
           )
           requires lengthString(S) <=Int Len
           [structural]
@@ -56,29 +55,29 @@ module C-DECL-INITIALIZER
      rule figureInit(
                _,
                t(_, _, arrayType(T:Type, Len:Int)),
-               (SingleInit(wstringLiteral(S:List))
+               (SingleInit(WStringLiteral(list(S:List)))
                => CompoundInit(list(ListItem(InitFragment(NextInit(),
-                    SingleInit(wstringLiteral(S)))))))
+                    SingleInit(WStringLiteral(list(S))))))))
           )
           requires isWCharType(T) andBool (size(S) <=Int Len)
           [structural]
 
      rule figureInit(_, t(_, _, (incompleteArrayType(T:CharType)
           => arrayType(T, lengthString(S) +Int 1))),
-               SingleInit(stringLiteral(S:String)))
+               SingleInit(StringLiteral(S:String)))
           [structural]
 
      rule figureInit(_, t(_, _, (incompleteArrayType(T:Type)
           => arrayType(T, size(S) +Int 1))),
-               SingleInit(wstringLiteral(S:List)))
+               SingleInit(WStringLiteral(list(S:List))))
           requires isWCharType(T)
           [structural]
 
      rule figureInit(X:CId, t(Qs::Quals, Mods::Set, incompleteArrayType(T:CharType)),
                CompoundInit(list(ListItem(InitFragment(NextInit(),
-               SingleInit(stringLiteral(S:String)))))))
+               SingleInit(StringLiteral(S:String)))))))
           => figureInit(X, t(Qs, Mods, incompleteArrayType(T)),
-               SingleInit(stringLiteral(S)))
+               SingleInit(StringLiteral(S)))
           [structural]
 
      // this comes from function declarations.  should probably adjust this
@@ -115,8 +114,8 @@ module C-DECL-INITIALIZER
      rule (.K => UNDEF("CDI3",
                "Invalid initializer for aggregate type."))
           ~> figureInit(_, t(_, _, incompleteArrayType(T::Type)), SingleInit(K:K))
-          requires (notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`wstringLiteral`))
-               andBool (notBool isCharType(T) orBool getKLabel(K) =/=K #klabel(`stringLiteral`))
+          requires (notBool isWCharType(T) orBool getKLabel(K) =/=K #klabel(`WStringLiteral`))
+               andBool (notBool isCharType(T) orBool getKLabel(K) =/=K #klabel(`StringLiteral`))
 
      rule <k> figureInit-aux(_:CId, t(_, _,
                     (incompleteArrayType(T:Type)
@@ -235,25 +234,22 @@ module C-DECL-INITIALIZER
 
      rule thisField(K:K, F::CId, ListItem(typedDeclaration(T::Type, F)) L::List)
           => ncle(K . F, T)
-     rule thisField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule thisField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
      rule thisField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
           requires F =/=K F' andBool notBool isNoName(F')
      rule thisField(_, _, _) => noMoreFields [owise]
 
      rule followingField(K:K, F::CId, ListItem(typedDeclaration(_, F)) L::List)
           => firstField(K, L)
-     rule followingField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule followingField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
      rule followingField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
           requires F =/=K F' andBool notBool isNoName(F')
      rule followingField(_, _, _) => noMoreFields [owise]
 
-     rule firstField(K:K, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule firstField(K:K, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
      rule firstField(K:K, ListItem(typedDeclaration(T::Type, F::CId)) _) => ncle(K . F, T)
           requires notBool isNoName(F)
      rule firstField(_, _) => noMoreFields [owise]
-
-     syntax List ::= flattenField(Type) [function]
-     rule flattenField(T::Type) => getFields(getFieldInfo(T))
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
           <curr-subobject>
@@ -424,17 +420,17 @@ module C-DECL-INITIALIZER
           [structural]
 
      rule fillInit(SingleInit(K:K)) => initializeSingleInit(K)
-          requires getKLabel(K) =/=K #klabel(`stringLiteral`)
-               andBool getKLabel(K) =/=K #klabel(`wstringLiteral`)
+          requires getKLabel(K) =/=K #klabel(`StringLiteral`)
+               andBool getKLabel(K) =/=K #klabel(`WStringLiteral`)
           [structural]
 
-     rule <k> fillInit(SingleInit(stringLiteral(_))) ...</k>
+     rule <k> fillInit(SingleInit(StringLiteral(_))) ...</k>
           <curr-subobject>
                (.List => ListItem(down))
                ListItem(ncle(_, t(_, _, arrayType(T:CharType, _))))
           ...</curr-subobject>
           [structural]
-     rule <k> fillInit(SingleInit(wstringLiteral(_))) ...</k>
+     rule <k> fillInit(SingleInit(WStringLiteral(_))) ...</k>
           <curr-subobject>
                (.List => ListItem(down))
                ListItem(ncle(_, t(_, _, arrayType(T::Type, _))))
@@ -442,8 +438,8 @@ module C-DECL-INITIALIZER
           requires isWCharType(T)
           [structural]
 
-     rule <k> fillInit(SingleInit(stringLiteral(S:String)))
-               => fillInit-aux(SingleInit(stringLiteral(S)))
+     rule <k> fillInit(SingleInit(StringLiteral(S:String)))
+               => fillInit-aux(SingleInit(StringLiteral(S)))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:CharType))
@@ -451,8 +447,8 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires lengthString(S) ==Int Len
           [structural]
-     rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
-               => fillInit-aux(SingleInit(wstringLiteral(S)))
+     rule <k> fillInit(SingleInit(WStringLiteral(list(S:List))))
+               => fillInit-aux(SingleInit(WStringLiteral(list(S))))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T::Type))
@@ -460,8 +456,8 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires isWCharType(T) andBool size(S) ==Int Len
           [structural]
-     rule <k> fillInit(SingleInit(stringLiteral(S:String)))
-               => fillInit(SingleInit(stringLiteral(S +String "\x00")))
+     rule <k> fillInit(SingleInit(StringLiteral(S:String)))
+               => fillInit(SingleInit(StringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:CharType))
@@ -469,8 +465,8 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires lengthString(S) <Int Len
           [structural]
-     rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
-               => fillInit(SingleInit(wstringLiteral(S ListItem(0))))
+     rule <k> fillInit(SingleInit(WStringLiteral(list(S:List))))
+               => fillInit(SingleInit(WStringLiteral(list(S ListItem(0)))))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T::Type))
@@ -478,16 +474,16 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires isWCharType(T) andBool size(S) <Int Len
           [structural]
-     rule <k> fillInit(SingleInit(stringLiteral(S:String)))
-               => fillInit-aux(SingleInit(stringLiteral(S +String "\x00")))
+     rule <k> fillInit(SingleInit(StringLiteral(S:String)))
+               => fillInit-aux(SingleInit(StringLiteral(S +String "\x00")))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:CharType))
                ListItem(ncle(_, t(_, _, incompleteArrayType(T))))
           ...</curr-subobject>
           [structural]
-     rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
-               => fillInit-aux(SingleInit(wstringLiteral(S ListItem(0))))
+     rule <k> fillInit(SingleInit(WStringLiteral(list(S:List))))
+               => fillInit-aux(SingleInit(WStringLiteral(list(S ListItem(0)))))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T::Type))
@@ -495,7 +491,7 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           requires isWCharType(T)
           [structural]
-     rule <k> fillInit-aux(SingleInit(stringLiteral(S:String)))
+     rule <k> fillInit-aux(SingleInit(StringLiteral(S:String)))
                => fillInit(initHead(S))
                ~> fillInit-aux(initTail(S))
           ...</k>
@@ -508,23 +504,23 @@ module C-DECL-INITIALIZER
      rule initHead(S:String)
           => SingleInit(tv(ordChar(firstChar(S)), utype(char)))
      rule initTail(S:String)
-          => SingleInit(stringLiteral(butFirstChar(S)))
+          => SingleInit(StringLiteral(butFirstChar(S)))
 
-     rule <k> fillInit-aux(SingleInit(wstringLiteral(ListItem(N:Int) S:List)))
+     rule <k> fillInit-aux(SingleInit(WStringLiteral(list(ListItem(N:Int) S:List))))
                => fillInit(SingleInit(tv(N, utype(cfg:wcharut))))
-                    ~> fillInit-aux(SingleInit(wstringLiteral(S)))
+                    ~> fillInit-aux(SingleInit(WStringLiteral(list(S))))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:Type))
           ...</curr-subobject>
           requires isWCharType(T)
           [structural]
-     rule <k> fillInit-aux(SingleInit(stringLiteral(""))) => .K ...</k>
+     rule <k> fillInit-aux(SingleInit(StringLiteral(""))) => .K ...</k>
           <curr-subobject>
                ListItem(noMoreIndices => next)
           ...</curr-subobject>
           [structural]
-     rule <k> fillInit-aux(SingleInit(wstringLiteral(.List))) => .K ...</k>
+     rule <k> fillInit-aux(SingleInit(WStringLiteral(list(.List)))) => .K ...</k>
           <curr-subobject>
                ListItem(noMoreIndices => next)
           ...</curr-subobject>
@@ -533,8 +529,8 @@ module C-DECL-INITIALIZER
      // This rule assumes all unrollings have already occurred, so it needs to
      // be a rule. Alternatively, I've added the condition below which might be
      // enough.
-     rule <k> fillInit(SingleInit(stringLiteral(S:String)))
-               => initializeSingleInit(stringLiteral(S))
+     rule <k> fillInit(SingleInit(StringLiteral(S:String)))
+               => initializeSingleInit(StringLiteral(S))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:Type))
@@ -543,8 +539,8 @@ module C-DECL-INITIALIZER
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]
-     rule <k> fillInit(SingleInit(wstringLiteral(S:List)))
-               => initializeSingleInit(wstringLiteral(S))
+     rule <k> fillInit(SingleInit(WStringLiteral(list(S:List))))
+               => initializeSingleInit(WStringLiteral(list(S)))
           ...</k>
           <curr-subobject>
                ListItem(ncle(_, T:Type))
@@ -607,7 +603,7 @@ module C-DECL-INITIALIZER
           => zeroType(X . F, T) ~> zeroStruct(X, L)
           requires notBool isNoName(F)
           [structural]
-     rule zeroStruct(_, (ListItem(typedDeclaration(T::Type, _:NoName)) => flattenField(T)) _)
+     rule zeroStruct(_, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
           [structural]
      rule zeroStruct(_, .List) => .K
           [structural]
