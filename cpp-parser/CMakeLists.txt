@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(clang-kast)
 
-set(LLVM_PATH /usr/lib/llvm-3.9)
+set(LLVM_PATH /usr/lib/llvm-3.9 CACHE PATH "LLVM path")
 link_directories(${LLVM_PATH}/lib)
 include_directories(${LLVM_PATH}/include)
 
