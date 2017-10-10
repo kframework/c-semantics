@@ -86,9 +86,9 @@ module CPP-DECL-INITIALIZER
      // 8.5:8.2 (class without user-provided or deleted default constructor)
      rule #valueInit(Base:LVal, T:CPPClassType, IsConstructor::ConstructorType) 
           => #if hasConstructorThat(T, #klabel(`isNonTrivialDefaultConstructor`)) #then
-               zeroInit(Base, T)
-          #else
                compoundInit(zeroInit(Base, T), defaultInit(Base, T, IsConstructor))
+          #else
+               zeroInit(Base, T)
           #fi
           requires (notBool hasConstructorThat(T, #klabel(`isUserProvidedDefaultConstructor`)))
                andBool (notBool hasConstructorThat(T, #klabel(`isDeletedDefaultConstructor2`)))
