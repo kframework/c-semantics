@@ -32,11 +32,11 @@ module CPP-EXPR-MEMBERS
            => fieldExp(V, N, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
           ...</k>
           <class-id> FC </class-id>
-          <cenv>... F |-> (T::CPPType |-> classOffset(Offset::Int)) ...</cenv>
+          <cenv>... F |-> (T::CPPType |-> classOffset(_, Offset::Int)) ...</cenv>
 
      rule <k> lookupFieldCPP(V::Val, Name(FC::Class => C, F::CId), PrevOffset::Int => PrevOffset +Int Offset) ...</k>
           <class-id> FC </class-id>
-          <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv>
+          <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(_, Offset::Int)) ...</cenv>
 
      rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
           => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
