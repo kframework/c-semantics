@@ -8,6 +8,6 @@ module CPP-TRANSLATION-EXPR-MEMBERS
      context CallExpr(HOLE:Expr . _ _, _, _)
      context CallExpr(BinaryOperator(operator->, _, _) #as HOLE:Expr, _, _) [result(ResolvedExpr), structural]
 
-     rule fieldExp(E:LExpr, N::Name, T::CPPType, Offset::Int)
-          => le(fieldExp(E, N, T, Offset), trace(E), T)
+     rule fieldExp(E:LExpr, T::CPPType, Offset::Int)
+          => le(fieldExp(E, T, Offset), trace(E), T)
 endmodule

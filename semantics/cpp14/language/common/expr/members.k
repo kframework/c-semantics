@@ -3,7 +3,7 @@ module CPP-EXPR-MEMBERS-SYNTAX
      imports CPP-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
-     syntax Expr ::= fieldExp(Expr, Name, CPPType, Int) [strict(1)]
+     syntax Expr ::= fieldExp(Expr, CPPType, Int) [strict(1)]
 endmodule
 
 module CPP-EXPR-MEMBERS
@@ -28,8 +28,8 @@ module CPP-EXPR-MEMBERS
 
      syntax KItem ::= lookupFieldCPP(Val, CPPType, Name, Int)
      //TODO(traiansf): Check access permissions
-     rule <k> lookupFieldCPP(V::Val, TC::CPPType, Name(FC::Class, F::CId) #as N::Name, PrevOffset::Int)
-           => fieldExp(V, N, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
+     rule <k> lookupFieldCPP(V::Val, TC::CPPType, Name(FC::Class, F::CId), PrevOffset::Int)
+           => fieldExp(V, addQuals(getQuals(type(V)), T), Offset +Int PrevOffset)
           ...</k>
           <class-id> FC </class-id>
           <cenv>... F |-> (T::CPPType |-> classOffset(Offset::Int)) ...</cenv>
@@ -45,7 +45,7 @@ module CPP-EXPR-MEMBERS
           <class-id> FC </class-id>
           <cenv>... F |-> (_::CPPType |-> envEntry(... base: memberBase(unnamedObject(C::Class), _, _))) unnamedObject(C) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv>
 
-     rule fieldExp(lv(Loc:SymLoc, _, _), _, T::CPPType, Offset::Int)
+     rule fieldExp(lv(Loc:SymLoc, _, _), T::CPPType, Offset::Int)
           => lv(Loc +bytes Offset /Int cfg:bitsPerByte, noTrace, T)
           requires notBool isCPPBitfieldType(T)
 
