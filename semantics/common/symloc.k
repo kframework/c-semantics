@@ -13,6 +13,10 @@ module SYMLOC-SYNTAX
      syntax SymBase ::= base(IntPtr) [function]
      syntax Int ::= offset(SymLoc) [function]
 
+     // libc duration
+     syntax Duration ::= "libc"
+     syntax Duration ::= "libcFixed"
+
      // Allocated duration.
      syntax Duration ::= "alloc"
      // Dynamic duration. (C++)

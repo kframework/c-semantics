@@ -89,7 +89,7 @@ module C-TYPING-COMMON
      rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
 
      syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
-     rule getEnumAlias'(enumAlias(T::SimpleType)) => T
+     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleType)) => T
      rule getEnumAlias'(_) => no-type [owise]
 
      rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))
@@ -118,7 +118,7 @@ module C-TYPING-COMMON
           => extractTagInfo({M[Tu]}:>Map[tag(X, Tu, B)])
      syntax TagInfo ::= extractTagInfo(K) [function]
      rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
-     rule extractTagInfo(enumAlias(T::SimpleType)) => enumAlias(T)
+     rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI
      rule extractTagInfo(_) => #incomplete [owise]
 
      rule numBytes(bool) => cfg:sizeofBool
@@ -255,15 +255,15 @@ module C-TYPING-COMMON
      rule showQualifier(Restrict()) => "restrict"
      rule showQualifier(Atomic()) => "_Atomic"
      syntax String ::= showSpecifiedType(Type) [function]
-     rule showSpecifiedType(T::Type) 
+     rule showSpecifiedType(T::Type)
           => showQualifiedSpecifier(T) +String showTypeSpecifier(simpleType(T))
      syntax String ::= showQualifiedSpecifier(Type) [function]
      rule showQualifiedSpecifier(t(quals(.Set), _, _)) => ""
-     rule showQualifiedSpecifier(t(quals(S::Set), _, _)) 
+     rule showQualifiedSpecifier(t(quals(S::Set), _, _))
           => showQualifiers(S) +String " " [owise]
      syntax String ::= showQualifiedDeclarator(Quals) [function]
      rule showQualifiedDeclarator(quals(.Set)) => ""
-     rule showQualifiedDeclarator(quals(S::Set)) 
+     rule showQualifiedDeclarator(quals(S::Set))
           => " " +String showQualifiers(S) [owise]
      syntax String ::= showDeclarator(String, Type) [function]
      rule showDeclarator(DDL::String, t(Q::Quals, _, pointerType(T::Type)))

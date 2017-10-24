@@ -37,7 +37,7 @@ module C-DECL-TAGGED
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
      rule EnumDef(X::CId, list(L:List), list(Mods::List))
-          => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L)
+          => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L, .Map)
           [structural]
      rule StructDef(X::CId, krlist(L:List), list(Mods::List))
           => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
@@ -64,23 +64,23 @@ module C-DECL-TAGGED
           requires notBool allComplete(L)
           [structural]
 
-     syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List)
+     syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List, Map)
 
-     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List)
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List, M::Map)
           => initEnum(E, tv(Next, ut(SetItem(IntegerConstant), int)))
-          ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L)
+          ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L, M[Next <- E])
           [structural]
-     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem => reval(HOLE))) _) [result(RValue)]
-     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List)
+     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem => reval(HOLE))) _, _) [result(RValue)]
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List, M::Map)
           => initEnum(E, R)
-          ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L)
+          ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L, M[asInt(R) <- E])
           [structural]
       // Packed enums attempt to use a smaller type as the alias.
-     rule defEnumConstants(true, X::CId, Min::Int, Max::Int, _, .List)
-          => addTag(X, enumAlias(firstSuitableType(Min, Max, allEnumAliases)))
+     rule defEnumConstants(true, X::CId, Min::Int, Max::Int, _, .List, M::Map)
+          => addTag(X, enumInfo(firstSuitableType(Min, Max, allEnumAliases), M))
           [structural]
-     rule defEnumConstants(false, X::CId, _, _, _, .List)
-          => addTag(X, enumAlias(cfg:enumAlias))
+     rule defEnumConstants(false, X::CId, _, _, _, .List, M::Map)
+          => addTag(X, enumInfo(cfg:enumAlias, M))
           [structural]
 
      // Defaults to int (the largest allowed enum type alias).
@@ -266,8 +266,8 @@ module C-DECL-TAGGED
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
-     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
-               => addGlobalTag(S, enumAlias(T))
+     rule <k> addTag(S:CId, enumInfo(...) #as EI::EnumInfo)
+               => addGlobalTag(S, EI)
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
@@ -277,8 +277,8 @@ module C-DECL-TAGGED
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true
           [structural]
-     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
-               => addLocalTag(S, enumAlias(T))
+     rule <k> addTag(S:CId, enumInfo(...) #as EI::EnumInfo)
+               => addLocalTag(S, EI)
           ...</k>
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true

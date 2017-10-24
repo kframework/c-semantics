@@ -75,7 +75,7 @@ module C-ALIGNMENT
      syntax Int ::= byteAlignofTagged(TagInfo) [function]
      rule byteAlignofTagged(fieldInfo(Decls:List, _, _, _, _))
           => maxByteAlignofList(Decls)
-     rule byteAlignofTagged(enumAlias(T::SimpleType))
+     rule byteAlignofTagged(enumInfo(... enumAlias: T::SimpleType))
           => byteAlignofType'(type(T))
      rule byteAlignofTagged(_) => 1 [owise]
 
