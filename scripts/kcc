@@ -373,6 +373,7 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
       push(@main::cppArgs, "-Wfatal-errors");
       $main::fatalErrors = "true";
     }
+  -W		[undocumented]
   -W<errcode>		Do not ignore specified error code.*
     {
       if ($main::cppWarns{$errcode}) {
