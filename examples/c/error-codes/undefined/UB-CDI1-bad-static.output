@@ -3,3 +3,4 @@ UB-CDI1-bad-static.c:4:2: error: Initializer for scalar contains multiple expres
    see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9
    see C11 section J.2:1 item 81 http://rvdoc.org/C11/J.2
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1

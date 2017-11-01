@@ -4,8 +4,10 @@
    see C11 section 6.5:7 http://rvdoc.org/C11/6.5
    see C11 section J.2:1 item 37 http://rvdoc.org/C11/J.2
    see CERT-C section EXP39-C http://rvdoc.org/CERT-C/EXP39-C
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
  Trying to reinterpret integer bytes as floating bytes.
    at main(UB-EIO10-bad.c:6:2)
   Unspecified value or behavior (USP-CMR1).
    see C11 section 6.2.6.1:1 http://rvdoc.org/C11/6.2.6.1
    see C11 section J.1:1 item 9 http://rvdoc.org/C11/J.1
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1

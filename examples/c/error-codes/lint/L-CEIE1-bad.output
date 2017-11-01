@@ -4,3 +4,4 @@
    by main(L-CEIE1-bad.c:9:5)
   Possible unintended behavior (L-CEIE1).
    see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C
+   see MISRA-C section 8.22:1 http://rvdoc.org/MISRA-C/8.22

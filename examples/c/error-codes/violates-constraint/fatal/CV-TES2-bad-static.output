@@ -2,4 +2,5 @@ CV-TES2-bad-static.c:7:3: error: Trying to compute sizeof of an incomplete or fu
   Constraint violation (CV-TES2).
    see C11 section 6.5.3.4:1 http://rvdoc.org/C11/6.5.3.4
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 Translation failed (config dumped). Run kcc -d CV-TES2-bad-static.c to see commands run.

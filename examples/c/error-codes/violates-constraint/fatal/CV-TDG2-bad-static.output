@@ -2,4 +2,5 @@ CV-TDG2-bad-static.c:3:1: error: Declaration for x appears with multiple storage
   Constraint violation (CV-TDG2).
    see C11 section 6.7.1:2 http://rvdoc.org/C11/6.7.1
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 Translation failed (config dumped). Run kcc -d CV-TDG2-bad-static.c to see commands run.

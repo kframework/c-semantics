@@ -2,4 +2,5 @@ j502b.c:9:2: error: if one of a conditional expression's branches has struct or 
   Constraint violation (CV-TTE5).
    see C11 section 6.5.15:3 http://rvdoc.org/C11/6.5.15
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j502b.c to see commands run.

@@ -2,3 +2,4 @@
    at main(USP-ESS1-bad.c:9:2)
   Unspecified value or behavior (USP-ESS1).
    see C11 section 6.8.4.2:5 http://rvdoc.org/C11/6.8.4.2
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
