@@ -101,6 +101,11 @@ sub main {
       # kcc may have been run as k++ so this is necessary
       push @cmd, "-lstdc++ $libs $objInput";
 
+      if (defined $ENV{DEPTH}) {
+            push @cmd, '--depth';
+            push @cmd, $ENV{DEPTH};
+      }
+
       if (defined $ENV{PROVE}) {
             push @cmd, '--prove';
             push @cmd, $ENV{PROVE};
