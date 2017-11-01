@@ -8,7 +8,7 @@ module C-ALIGNMENT-SYNTAX
 
      syntax Int ::= byteAlignofType(Type) [function]
 
-     syntax Int ::= maxByteAlignofList(List) [function]
+     syntax Int ::= maxByteAlignofDecls(List) [function]
 endmodule
 
 module C-ALIGNMENT
@@ -64,17 +64,16 @@ module C-ALIGNMENT
      // TODO(dwightguth): make sure we correctly handle all the corner cases
      rule byteAlignofType'(_) => 1 [owise]
 
-     syntax Int ::= "maxByteAlignofList'" "(" Int "," List ")" [function]
-     rule maxByteAlignofList(L:List) => maxByteAlignofList'(1, L)
-     rule maxByteAlignofList'(Sz:Int, ListItem(T:Type) LL:List)
-          => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
-     rule maxByteAlignofList'(Sz:Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
-          => maxByteAlignofList'(maxInt(Sz, byteAlignofType(T)), LL)
-     rule maxByteAlignofList'(Sz:Int, .List) => Sz
+     rule maxByteAlignofDecls(L:List) => maxByteAlignofDecls'(1, L)
+
+     syntax Int ::= "maxByteAlignofDecls'" "(" Int "," List ")" [function]
+     rule maxByteAlignofDecls'(Sz::Int, ListItem(typedDeclaration(T::Type, _)) LL:List)
+          => maxByteAlignofDecls'(maxInt(Sz, byteAlignofType(T)), LL)
+     rule maxByteAlignofDecls'(Sz::Int, .List) => Sz
 
      syntax Int ::= byteAlignofTagged(TagInfo) [function]
      rule byteAlignofTagged(fieldInfo(Decls:List, _, _, _, _))
-          => maxByteAlignofList(Decls)
+          => maxByteAlignofDecls(Decls)
      rule byteAlignofTagged(enumInfo(... enumAlias: T::SimpleType))
           => byteAlignofType'(type(T))
      rule byteAlignofTagged(_) => 1 [owise]

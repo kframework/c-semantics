@@ -103,7 +103,7 @@ module C-MEMORY-WRITING
      syntax KItem ::= writeSpecific(SymLoc, CValue, Type)
      rule <k> writeSpecific(Loc::SymLoc, V::CValue, T::Type)
                => updateEffectiveType(Loc)
-               ~> makePaddingUnknown(base(Loc), offset(Loc), getEffectiveType(base(Loc)))
+               ~> makePaddingUnknown(base(Loc), bitOffset(Loc), getEffectiveType(base(Loc)))
                ~> writeSpecific'(Loc, stripLastAccessType(V), T)
           ...</k>
           <mem> Mem::Map </mem>
@@ -113,9 +113,6 @@ module C-MEMORY-WRITING
           ...</k>
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
-
-     syntax Set ::= keepUnion(Set) [function]
-                  | stripUnion(Set) [function]
 
      syntax KItem ::= "writeSpecific'" "(" SymLoc "," CValue "," Type ")"
      rule writeSpecific'(Loc::SymLoc, V::CValue, T::Type)
@@ -131,57 +128,39 @@ module C-MEMORY-WRITING
      rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
           => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
                andBool (V >=Int 0)
           [structural]
      rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
           => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), getBitOffset(Loc)), T)
+                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T)
           [structural]
 
      syntax KItem ::= makeUnionUnknown(SymLoc, Type, Int)
                     | makeStructUnknown(SymLoc, FieldInfo, Int)
                     | makePaddingUnknown(SymBase, Int, K) [strict(3)]
-                    | makeStructUnionUnknown(Set) [function]
+                    | makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
 
      rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)
-          => makeStructUnionUnknown(getStructUnionInfo(Base, Offset, 0, EffT))
+          => makeStructUnionUnknown(Base, 0, Offset , EffT)
      rule makePaddingUnknown(Base::SymBase, Offset::Int, dynamicType(EffT::Type))
-          => makeStructUnionUnknown(getStructUnionInfo(Base, Offset, 0, EffT))
+          => makeStructUnionUnknown(Base, 0, Offset, EffT)
 
-     syntax Set ::= getStructUnionInfo(SymBase, Int, Int, Type) [function]
-     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:ArrayType)
-          => getStructUnionInfo(Base, Offset, RelOffset +Int (Offset -Int (Offset %Int byteSizeofType(innerType(T)))), innerType(T))
-          requires RelOffset <=Int Offset
-     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:StructType)
-          => SetItem(fromStruct(loc(Base, RelOffset), getFields(T)))
-               getStructUnionInfo(Base, Offset,
-                    RelOffset +Int floorFieldOffset(Offset -Int RelOffset, T),
-                    getFieldTypeAtOffset(Offset -Int RelOffset, T))
-          requires RelOffset <=Int Offset
-     rule getStructUnionInfo(Base::SymBase, Offset::Int, RelOffset::Int, T:UnionType)
-          => SetItem(fromUnion(loc(Base, RelOffset), getActiveVariant(T), byteSizeofType(T)))
-               getStructUnionInfo(Base, Offset, RelOffset, getActiveVariant(T))
-          requires RelOffset <=Int Offset
-     rule getStructUnionInfo(_, _, _, _) => .Set [owise]
-
-     // unions
-     syntax KItem ::= fromUnion(SymLoc, Type, Int)
-     rule makeStructUnionUnknown(SetItem(fromUnion(UnionLoc::SymLoc, T::Type, Sz::Int)) S::Set)
-          => allowInit(makeUnionUnknown(UnionLoc, T, Sz))
-          ~> makeStructUnionUnknown(S)
-     // structs
-     syntax KItem ::= fromStruct(SymLoc, FieldInfo)
-     rule makeStructUnionUnknown(SetItem(fromStruct(StructLoc::SymLoc, Fields::FieldInfo)) S::Set)
-          => allowInit(makeStructUnknown(StructLoc, Fields, 0))
-          ~> makeStructUnionUnknown(S)
-     rule makeStructUnionUnknown(_) => .K [owise]
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:ArrayType)
+          => makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T),
+               RelOffset %Int bitSizeofType(innerType(T)), getElementType(RelOffset, T))
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:StructType)
+          => allowInit(makeStructUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getFields(T), 0))
+          ~> makeStructUnionUnknown(Base, Offset +Int floorBitOffset(RelOffset, T), RelOffset -Int floorBitOffset(RelOffset, T), getFieldTypeAtOffset(RelOffset, T))
+     rule makeStructUnionUnknown(Base::SymBase, Offset::Int, RelOffset::Int, T:UnionType)
+          => allowInit(makeUnionUnknown(loc(Base, Offset /Int cfg:bitsPerByte), getActiveVariant(T), byteSizeofType(T)))
+          ~> makeStructUnionUnknown(Base, Offset, RelOffset, getActiveVariant(T))
+     rule makeStructUnionUnknown(_, _, _, _) => .K [owise]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
-     // TODO(chathhorn): breaks open a lot of abstractions.
      rule makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
           => writeBytes(Loc +bytes byteSizeofType(T),
                times(Sz -Int byteSizeofType(T),

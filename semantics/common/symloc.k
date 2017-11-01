@@ -12,6 +12,9 @@ module SYMLOC-SYNTAX
 
      syntax SymBase ::= base(IntPtr) [function]
      syntax Int ::= offset(SymLoc) [function]
+     syntax Int ::= bitOffset(SymLoc) [function]
+     syntax Int ::= bitOffsetIntoLastByte(SymLoc) [function]
+     syntax SymLoc ::= setBitOffset(Int, SymLoc) [function]
 
      // libc duration
      syntax Duration ::= "libc"
@@ -89,7 +92,6 @@ module SYMLOC-SYNTAX
      syntax String ::= getTU(SymBase) [function, klabel(getTU2)]
      syntax ThreadId ::= getThreadId(SymLoc) [function]
      syntax ThreadId ::= Int | "no-thread"
-     syntax Int ::= getBitOffset(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
@@ -99,8 +101,6 @@ module SYMLOC-SYNTAX
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
      syntax Provenance ::= fromArray(Int, Int)
-     // used to tag bit fields so that we know how many bits into the current byte they begin
-     syntax Provenance ::= bitOffset(Int)
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
@@ -116,6 +116,7 @@ module SYMLOC
      imports COMPAT
      imports K-REFLECTION
      imports MAP
+     imports SETTINGS-SYNTAX
 
      rule isAllocatedDuration(NullPointer) => false
      rule isAllocatedDuration(Loc:SymLoc) => isAllocatedDuration(base(Loc)) [owise]
@@ -266,12 +267,23 @@ module SYMLOC
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(Loc:SymLoc) => Loc [owise]
 
-     rule getBitOffset(loc(_, _, _:Set SetItem(bitOffset(I::Int)))) => I
+     rule bitOffset(Loc::SymLoc) => (offset(Loc) *Int cfg:bitsPerByte) +Int getBitOffset(Loc)
+
+     rule bitOffsetIntoLastByte(Loc::SymLoc) => getBitOffset(Loc)
+
+     // used to tag bit fields so that we know how many bits into the current byte they begin
+     syntax Provenance ::= bits(Int)
+     syntax Int ::= getBitOffset(SymLoc) [function]
+     rule getBitOffset(loc(_, _, _:Set SetItem(bits(I::Int)))) => I
      rule getBitOffset(_) => 0 [owise]
+
+     rule setBitOffset(0, Loc::SymLoc) => Loc
+     rule setBitOffset(Offset::Int, Loc::SymLoc) => addProv(bits(Offset), Loc) [owise]
 
      rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:K) S::Set), Lbl:K) => loc(Base, Offset, S)
           requires getKLabel(K) ==K Lbl
      rule stripProv(Loc::SymLoc, _) => Loc [owise]
+
      rule getProv(loc(_, _, SetItem(K:K) _), Lbl:K) => K
           requires getKLabel(K) ==K Lbl
      rule getProv(_, _) => .K [owise]

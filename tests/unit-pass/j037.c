@@ -8,7 +8,7 @@ int main(void) {
       union { int x; float y; } u = { 0 };
       *((int*)&y);
       *((int*)&s);
-      *((int*)&u);
+      *((union {int x; float y; }*)&u);
 
       return 0;
 }

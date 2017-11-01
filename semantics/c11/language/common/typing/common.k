@@ -116,6 +116,7 @@ module C-TYPING-COMMON
      syntax TagInfo ::= #getTagInfo(TagId, K) [function]
      rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)
           => extractTagInfo({M[Tu]}:>Map[tag(X, Tu, B)])
+
      syntax TagInfo ::= extractTagInfo(K) [function]
      rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
      rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI

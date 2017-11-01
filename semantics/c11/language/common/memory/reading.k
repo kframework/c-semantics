@@ -148,10 +148,9 @@ module C-MEMORY-READING
      rule hasOpaque(ListItem(_) L::List) => hasOpaque(L) [owise]
 
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
-
      rule extractBitsFromMem(Loc:SymLoc, T::Type)
-          => extractBitsFromList(readBytes(Loc, (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
-               getBitOffset(Loc), bitSizeofType(T))
+          => extractBitsFromList(readBytes(Loc, (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
+               bitOffsetIntoLastByte(Loc), bitSizeofType(T))
           [structural]
 
      rule extractBitsFromList(dataList(L::List), N::Int, M::Int)

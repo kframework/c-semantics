@@ -213,11 +213,11 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
-     rule getFieldDecls(T:StructOrUnionType) => getFieldDecls'(getFields(T))
-     rule getFieldDecls(_) => .List [owise]
+     rule getFieldNames(T:StructOrUnionType) => getFieldNames'(getFields(T))
+     rule getFieldNames(_) => .List [owise]
 
-     rule findFieldDecls(T:StructOrUnionType) => getFieldDecls'(getFlatFields(T))
-     rule findFieldDecls(_) => .List [owise]
+     rule findFieldNames(T:StructOrUnionType) => getFieldNames'(getFlatFields(T))
+     rule findFieldNames(_) => .List [owise]
 
      rule getFieldTypes(T::StructOrUnionType) => getFieldTypes'(getFields(T))
 
@@ -226,8 +226,10 @@ module C-TYPING-MISC
           => ListItem(T) getFieldTypes'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
      rule getFieldTypes'(_) => .List [owise]
 
-     syntax List ::= "getFieldDecls'" "(" FieldInfo ")" [function]
-     rule getFieldDecls'(fieldInfo(L::List, _, _, _, _)) => L
+     syntax List ::= "getFieldNames'" "(" FieldInfo ")" [function]
+     rule getFieldNames'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Fields::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
+          => ListItem(F) getFieldNames'(fieldInfo(Fields, Sz, Types, Offsets, Padding))
+     rule getFieldNames'(_) => .List [owise]
 
      rule getFieldOffset(F::CId, T::StructOrUnionType) => getFieldOffset'(F, getFields(T))
 
@@ -235,11 +237,11 @@ module C-TYPING-MISC
 
      syntax Int ::= "getFieldOffset'" "(" CId "," FieldInfo ")" [function]
      rule getFieldOffset'(F::CId, fieldInfo(_, _, _, F |-> Offset::Int _, _)) => Offset
-     rule getFieldOffset'(_, _) => -1 [owise]
 
      rule getFieldType(F::CId, T::StructOrUnionType) => getFieldType'(F, getFields(T))
 
-     rule findFieldType(F::CId, T::StructOrUnionType) => getFieldType'(F, getFlatFields(T))
+     rule findFieldType(F::CId, T:StructOrUnionType) => getFieldType'(F, getFlatFields(T))
+     rule findFieldType(_, _) => type(no-type) [owise]
 
      syntax Type ::= "getFieldType'" "(" CId "," FieldInfo ")" [function]
      rule getFieldType'(F::CId, fieldInfo(_, _, F |-> T::Type _, _, _)) => T
@@ -250,16 +252,45 @@ module C-TYPING-MISC
           => getFieldType(F, T)
      rule getActiveVariant(_) => type(no-type) [owise]
 
-     rule setActiveVariant(F::CId, T::UnionType) => addModifier(activeVariant(F), T)
+     rule getActiveVariantId(t(_, SetItem(activeVariant(F'::CId)) _, _)) => F'
+
+     rule setActiveVariantId(F::CId, T::UnionType) => addModifier(activeVariant(F), clearActiveVariant(T))
+
+     rule setActiveVariant(A::Type, t(_, SetItem(activeVariant(F'::CId)) _, _) #as T::UnionType)
+          => setFieldType(F', A, T)
+     rule setActiveVariant(_, T::UnionType) => T [owise]
+
+     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, _) #as T:UnionType,
+               t(_, SetItem(activeVariant(F)) _, _) #as T':UnionType)
+          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
+     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _) #as _:ArrayType, t(_, SetItem(elementTypes(ETs'::Map)) _, _) #as T':ArrayType)
+          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeVariants(T:StructType, T':StructType)
+          => mergeStructVariants(T, T', getFieldNames(T'))
+     rule mergeVariants(_, T'::EffectiveType) => T' [owise]
+
+     syntax Map ::= mergeElementVariants(Map, Map) [function]
+     rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)
+          => mergeElementVariants(ETs, ETs'[N <- mergeVariants(T, {ETs'[N]}:>EffectiveType)])
+          requires N in_keys(ETs')
+     rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)
+          => mergeElementVariants(ETs, (N |-> T) ETs')
+          requires notBool (N in_keys(ETs'))
+     rule mergeElementVariants(.Map, ETs'::Map) => ETs'
+
+     syntax Type ::= mergeStructVariants(StructType, StructType, List) [function]
+     rule mergeStructVariants(T::StructType, T'::StructType, ListItem(F::CId) Fs'::List)
+          => mergeStructVariants(T, {setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')}:>StructType, Fs')
+     rule mergeStructVariants(_, T'::StructType, .List) => T'
 
      rule clearActiveVariant(t(_, _::Set (SetItem(activeVariant(_)) => .Set), unionType(_)))
      rule clearActiveVariant(T::Type) => T
           requires notBool isUnionType(T)
      rule clearActiveVariant(T:UnionType)
-          => setFields(clearActiveVariant'(getFieldDecls(T), getFields(T)), T) [owise]
+          => setFields(clearActiveVariant'(getFieldNames(T), getFields(T)), T) [owise]
 
      syntax FieldInfo ::= "clearActiveVariant'" "(" List "," FieldInfo ")" [function]
-     rule clearActiveVariant'(ListItem(typedDeclaration(_, F::CId)) Decls::List, Fields::FieldInfo)
+     rule clearActiveVariant'(ListItem(F::CId) Decls::List, Fields::FieldInfo)
           => clearActiveVariant'(Decls, setFieldType'(F, clearActiveVariant(getFieldType'(F, Fields)), Fields))
      rule clearActiveVariant'(_, Fields::FieldInfo) => Fields [owise]
 
@@ -268,8 +299,15 @@ module C-TYPING-MISC
           requires FOffset >Int Offset
      rule getFieldAtOffset'(_, fieldInfo(_ ListItem(typedDeclaration(_, F::CId)), _, _, _, _)) => F [owise]
 
-     rule floorFieldOffset(Offset::Int, T::StructOrUnionType)
+     rule floorBitOffset(Offset::Int, T:StructOrUnionType)
           => floorFieldOffset'(Offset, getFields(T))
+          requires Offset >=Int 0
+     rule floorBitOffset(Offset::Int, T:ArrayType)
+          => (Offset /Int bitSizeofType(innerType(T))) *Int bitSizeofType(innerType(T))
+          requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
+
+     rule lastFieldByteOffset(T::StructType)
+          => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
 
      syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
      rule floorFieldOffset'(Offset::Int, Fields::FieldInfo)
@@ -281,6 +319,32 @@ module C-TYPING-MISC
      syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
      rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
           => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields)
+
+     rule resizeFlexibleType(T::StructOrUnionType, F::CId, N::Int)
+          => setFieldsSize((N *Int cfg:bitsPerByte) +Int getFieldOffset(F, T), clearPaddingAfter(F, T))
+
+     syntax StructOrUnionType ::= setFieldsSize(Int, StructOrUnionType) [function]
+     rule setFieldsSize(Sz::Int, T::StructOrUnionType)
+          => setFields(setFieldsSize'(Sz, getFields(T)), T)
+
+     syntax FieldInfo ::= "setFieldsSize'" "(" Int "," FieldInfo ")" [function]
+     rule setFieldsSize'(Sz::Int, fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding::Set))
+          => fieldInfo(Decls, Sz, Types, Offsets, Padding)
+
+     syntax StructOrUnionType ::= clearPaddingAfter(CId, StructOrUnionType) [function]
+     rule clearPaddingAfter(F::CId, T::StructOrUnionType)
+          => setFields(clearPaddingAfter'(getFieldOffset(F, T), getFields(T)), T)
+
+     syntax FieldInfo ::= "clearPaddingAfter'" "(" Int "," FieldInfo ")" [function]
+     rule clearPaddingAfter'(Offset::Int, fieldInfo(_, _, _, _, (SetItem(N::Int) => .Set) _::Set))
+          requires N >=Int Offset
+     rule clearPaddingAfter'(_, Fields::FieldInfo) => Fields [owise]
+
+     rule getUnnamed(F::CId, T::StructOrUnionType)
+          => getFieldAtOffset'(findFieldOffset(F, T), getFields(T))
+          requires notBool isNoType(findFieldType(F, T))
+
+     rule getFirstField(T::StructOrUnionType) => getFieldAtOffset'(0, getFields(T))
 
      rule getFlatFields(T::StructOrUnionType) => toFlatFieldInfo(getFields(T))
 
@@ -331,23 +395,30 @@ module C-TYPING-MISC
           => fieldInfo(Decls, Sz, Types[F <- T], Offsets, Padding)
 
      syntax StructOrUnionType ::= setFields(FieldInfo, StructOrUnionType) [function]
-     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set), structType(_)))
-     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set), unionType(_)))
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, structType(_)))
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, unionType(_)))
      rule setFields(Fields::FieldInfo, T::StructOrUnionType) => addModifier(Fields, T) [owise]
 
      rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::StructOrUnionType)
           => setFields(setFieldType'(getFieldAtOffset'(Offset, getFields(T)), T', getFields(T)), T)
 
-     rule setInnerType(T::Type, t(Qs::Quals, Mods::Set, arrayType(_, N::Int)))
-          => t(Qs, Mods, arrayType(T, N))
-     rule setInnerType(T::Type, t(Qs::Quals, Mods::Set, flexibleArrayType(_)))
-          => t(Qs, Mods, flexibleArrayType(T))
-     rule setInnerType(T::Type, t(Qs::Quals, Mods::Set, incompleteArrayType(_)))
-          => t(Qs, Mods, incompleteArrayType(T))
-     rule setInnerType(T::Type, t(Qs::Quals, Mods::Set, unspecifiedArrayType(_)))
-          => t(Qs, Mods, unspecifiedArrayType(T))
-     rule setInnerType(T::Type, t(Qs::Quals, Mods::Set, variableLengthArrayType(_, N:K)))
-          => t(Qs, Mods, variableLengthArrayType(T, N))
+     syntax Modifier ::= elementTypes(Map)
+     rule setElementType(Offset::Int, T::Type, A::ArrayType)
+          => setElementTypes((getElementTypes(A))[floorBitOffset(Offset, A) <- T], A)
+          requires T =/=K innerType(A)
+     rule setElementType(_, _, A::ArrayType) => A [owise]
+
+     rule getElementType(Offset::Int, A::ArrayType)
+          => (getElementTypes(A))[floorBitOffset(Offset, A)] orDefault innerType(A)
+
+     syntax Map ::= getElementTypes(ArrayType) [function]
+     rule getElementTypes(t(_, SetItem(elementTypes(ETs::Map)) _, _)) => ETs
+     rule getElementTypes(_) => .Map [owise]
+
+     syntax ArrayType ::= setElementTypes(Map, ArrayType) [function]
+     rule setElementTypes(ETs::Map, t(Qs::Quals, SetItem(elementTypes(_)) Mods::Set, T::SimpleArrayType))
+          => t(Qs, SetItem(elementTypes(ETs)) Mods, T)
+     rule setElementTypes(ETs::Map, T::ArrayType) => addModifier(elementTypes(ETs), T) [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T::Type) ...</k>

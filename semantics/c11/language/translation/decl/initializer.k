@@ -179,16 +179,9 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
-               (ListItem(down) => ListItem(firstField(K, L)))
-               ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
+               (ListItem(down) => ListItem(firstField(K, findFieldNames(T), T)))
+               ListItem(ncle(K:K, T:StructOrUnionType))
           ...</curr-subobject>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
-          [structural]
-     rule <curr-subobject>
-               (ListItem(down) => ListItem(firstField(K, L)))
-               ListItem(ncle(K:K, t(_, _, unionType(tag(X::CId, Tu::String, B::BlockRef)))))
-          ...</curr-subobject>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
 
      rule <curr-subobject>
@@ -211,14 +204,14 @@ module C-DECL-INITIALIZER
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
-               (ListItem(next) ListItem(ncle(K:K . F::CId, T::Type)) => ListItem(followingField(K, F, L)))
-               ListItem(ncle(K:K, t(_, _, structType(tag(X::CId, Tu::String, B::BlockRef)))))
+               (ListItem(next) ListItem(ncle(K:K . F::CId, _))
+                    => ListItem(followingField(K, F, findFieldNames(T), T)))
+               ListItem(ncle(K:K, T:StructType))
           ...</curr-subobject>
-          <tags>... Tu |-> (_::Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _)) ...</tags>
           [structural]
      rule <curr-subobject>
                (ListItem(next) ListItem(ncle(K:K . _, _)) => ListItem(noMoreFields))
-               ListItem(ncle(K:K, t(_, _, unionType(_))))
+               ListItem(ncle(K:K, _:UnionType))
           ...</curr-subobject>
           [structural]
      rule <curr-subobject>
@@ -228,28 +221,27 @@ module C-DECL-INITIALIZER
           [structural]
 
      syntax KItem ::= "noMoreFields" | "noMoreIndices"
-     syntax KItem ::= thisField(K, CId, List) [function]
-                    | followingField(K, CId, List) [function]
-                    | firstField(K, List) [function]
+     syntax KItem ::= thisField(K, CId, List, StructOrUnionType) [function]
+                    | followingField(K, CId, List, StructType) [function]
+                    | firstField(K, List, StructOrUnionType) [function]
 
-     rule thisField(K:K, F::CId, ListItem(typedDeclaration(T::Type, F)) L::List)
-          => ncle(K . F, T)
-     rule thisField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
-     rule thisField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
-          requires F =/=K F' andBool notBool isNoName(F')
-     rule thisField(_, _, _) => noMoreFields [owise]
+     rule thisField(K:K, F::CId, ListItem(F) _::List, T::StructOrUnionType)
+          => ncle(K . F, findFieldType(F, T))
+     rule thisField(_, F::CId, (ListItem(F'::CId) => .List) _, _)
+          requires F =/=K F'
+     rule thisField(_, _, _, _) => noMoreFields [owise]
 
-     rule followingField(K:K, F::CId, ListItem(typedDeclaration(_, F)) L::List)
-          => firstField(K, L)
-     rule followingField(_, _, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
-     rule followingField(_, F::CId, (ListItem(typedDeclaration(_, F'::CId)) => .List) _)
-          requires F =/=K F' andBool notBool isNoName(F')
-     rule followingField(_, _, _) => noMoreFields [owise]
+     rule followingField(K:K, F::CId, ListItem(F) L::List, T::StructType)
+          => firstField(K, L, T)
+     rule followingField(_, F::CId, (ListItem(F'::CId) => .List) _, _)
+          requires F =/=K F'
+     rule followingField(_, _, _, _) => noMoreFields [owise]
 
-     rule firstField(K:K, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
-     rule firstField(K:K, ListItem(typedDeclaration(T::Type, F::CId)) _) => ncle(K . F, T)
+     rule firstField(K:K, (ListItem(_:NoName) => .List) _, _)
+     rule firstField(K:K, ListItem(F::CId) _, T::StructOrUnionType)
+          => ncle(K . F, findFieldType(F, T))
           requires notBool isNoName(F)
-     rule firstField(_, _) => noMoreFields [owise]
+     rule firstField(_, _, _) => noMoreFields [owise]
 
      rule <k> fillInit(InitFragment(NextInit(), Exp:K)) => fillInit(Exp) ...</k>
           <curr-subobject>
@@ -321,13 +313,9 @@ module C-DECL-INITIALIZER
                => buildDesignator(More)
           ...</k>
           <curr-subobject>
-               ListItem(block) (.List => ListItem(thisField(K, F, L)))
-                    ListItem(ncle(K:K, t(_, _, Lbl:KLabel(tag(X:CId, Tu:String, B:BlockRef)))))
+               ListItem(block) (.List => ListItem(thisField(K, F, findFieldNames(T), T)))
+                    ListItem(ncle(K:K, T:StructOrUnionType))
           ...</curr-subobject>
-          <tags>...
-               Tu |-> (_:Map tag(X, Tu, B) |-> fieldInfo(L::List, _, _, _, _))
-          ...</tags>
-          requires isStructOrUnionKLabel(#klabel(Lbl))
           [structural]
 
      rule <k> buildDesignator(NextInit()) => NextInit() ...</k>
@@ -567,46 +555,28 @@ module C-DECL-INITIALIZER
      rule <k> zero(X:CId) => zeroType(ncle(X, T), T) ...</k>
           <types>... X |-> T:Type ...</types>
 
-     syntax KItem ::= zeroType(K, Type)
+     syntax KItem ::= zeroType(K, Type) [function]
      rule zeroType(X:K, T::Type)
           => Computation(X := tv(getZero(T), utype(T)))
           requires isPointerType(T) orBool isArithmeticType(T)
-          [structural]
-
-     rule (.K => zeroType(X[Len -Int 1]::Expression, T))
-          ~> zeroType(X:K, t(_, _, arrayType(T:Type, (Len:Int => Len -Int 1))))
+     rule zeroType(X:K, t(Qs::Quals, Mods::Set, arrayType(T::Type, Len::Int)))
+          => zeroType(X[Len -Int 1]::Expression, T)
+          ~> zeroType(X, t(Qs, Mods, arrayType(T, Len -Int 1)))
           requires Len >Int 0
-          [structural]
-     rule zeroType(_, t(_, _, arrayType(_:Type, 0))) => .K
-          [structural]
+     rule zeroType(_, _) => .K [owise]
 
-     rule <k> zeroType(X:K, t(_, _, structType(tag(Tag:CId, Tu:String, B:BlockRef))))
-               => zeroStruct(X, Fields)
-          ...</k>
-          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(Fields:List, _, _, _, _)) ...</tags>
-          [structural]
-
-     rule <k> zeroType(X:K, t(_, _, unionType(tag(Tag:CId, Tu:String, B:BlockRef))))
-               => zeroStruct(X, ListItem(Field))
-          ...</k>
-          <tags>... Tu |-> (_:Map tag(Tag, Tu, B) |-> fieldInfo(ListItem(Field::DType) _, _, _, _, _)) ...</tags>
-          [structural]
+     rule zeroType(X:K, T:StructType) => zeroStruct(X, findFieldNames(T), T)
+     rule zeroType(X:K, T:UnionType)
+          => zeroStruct(X, ListItem({(findFieldNames(T))[0]}<:K), T)
 
      rule zeroType(_, _:FunctionType) => .K
-          [structural]
 
      rule zeroType(_, t(_, _, flexibleArrayType(_))) => .K
-          [structural]
 
-     syntax KItem ::= zeroStruct(K, List)
-     rule zeroStruct(X:K, ListItem(typedDeclaration(T::Type, F::CId)) L:List)
-          => zeroType(X . F, T) ~> zeroStruct(X, L)
-          requires notBool isNoName(F)
-          [structural]
-     rule zeroStruct(_, (ListItem(typedDeclaration(T::Type, _:NoName)) => getFieldDecls(T)) _)
-          [structural]
-     rule zeroStruct(_, .List) => .K
-          [structural]
+     syntax KItem ::= zeroStruct(K, List, StructOrUnionType) [function]
+     rule zeroStruct(X:K, ListItem(F::CId) L:List, T::StructOrUnionType)
+          => zeroType(X . F, findFieldType(F, T)) ~> zeroStruct(X, L, T)
+     rule zeroStruct(_, _, _) => .K [owise]
 
      syntax CValue ::= getZero(Type) [function]
      rule getZero(t(_, _, T:SimpleFloatType)) => zeroCFloat(utype(T))

@@ -1,6 +1,7 @@
 module C-TYPING-SORTS
      syntax EffectiveType ::= Type
      syntax Type ::= FunctionType
+     syntax CId
      syntax FunctionType
      syntax UType
      syntax DType
@@ -10,6 +11,7 @@ module C-TYPING-SORTS
      syntax FieldInfo
      syntax TagInfo
      syntax Variadic
+     syntax StructOrUnionType
 endmodule
 
 module C-TYPING-SYNTAX
@@ -53,22 +55,29 @@ module C-TYPING-SYNTAX
      syntax FieldInfo ::= getFields(StructOrUnionType) [function]
      syntax FieldInfo ::= getFields(StructOrUnionUType) [function]
      syntax FieldInfo ::= getFlatFields(StructOrUnionType) [function]
-     syntax List ::= getFieldDecls(Type) [function]
+     syntax List ::= getFieldNames(Type) [function]
      syntax List ::= getFieldTypes(StructOrUnionType) [function]
      syntax Int  ::= getFieldOffset(CId, StructOrUnionType) [function]
      syntax Type ::= getFieldType(CId, StructOrUnionType) [function]
      syntax Type ::= getActiveVariant(UnionType) [function]
-     syntax UnionType ::= setActiveVariant(CId, UnionType) [function]
+     syntax UnionType ::= setActiveVariant(Type, UnionType) [function]
+     syntax CId ::= getActiveVariantId(UnionType) [function]
+     syntax UnionType ::= setActiveVariantId(CId, UnionType) [function]
+     syntax EffectiveType ::= mergeVariants(EffectiveType, EffectiveType) [function]
      syntax Type ::= clearActiveVariant(Type) [function]
-     syntax Int  ::= floorFieldOffset(Int, StructOrUnionType) [function]
+     syntax Int  ::= floorBitOffset(Int, Type) [function]
      syntax Type ::= getFieldTypeAtOffset(Int, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldType(CId, Type, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldTypeAtOffset(Int, Type, StructOrUnionType) [function]
+     syntax Int ::= lastFieldByteOffset(StructType) [function]
+     syntax StructOrUnionType ::= resizeFlexibleType(StructOrUnionType, CId, Int) [function]
+     syntax CId ::= getUnnamed(CId, StructOrUnionType) [function]
+     syntax CId ::= getFirstField(StructOrUnionType) [function]
 
      // These include anonymous structs/unions when looking up fields.
-     syntax List ::= findFieldDecls(Type) [function]
+     syntax List ::= findFieldNames(Type) [function]
      syntax Int  ::= findFieldOffset(CId, StructOrUnionType) [function]
-     syntax Type ::= findFieldType(CId, StructOrUnionType) [function]
+     syntax Type ::= findFieldType(CId, Type) [function]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
                    | isCompleteType(Type) [function]
@@ -208,6 +217,7 @@ module C-TYPING-SYNTAX
                            | t(Quals, Set, SimpleBitfieldType)
      syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
                         | VariableLengthArrayType
+                        | t(Quals, Set, SimpleArrayType)
      syntax PointerOrArrayType ::= PointerType | ArrayType
 
      syntax StructOrUnionUType ::= StructUType | UnionUType
@@ -324,7 +334,9 @@ module C-TYPING-SYNTAX
      syntax Type ::= innerType(Type) [function]
      syntax Type ::= innerType(UType) [function]
 
-     syntax ArrayType ::= setInnerType(Type, ArrayType) [function]
+     // Offset of element in bits.
+     syntax ArrayType ::= setElementType(Int, Type, ArrayType) [function]
+     syntax Type ::= getElementType(Int, ArrayType) [function]
 
      syntax Bool ::= fromConstantExpr(UType) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
@@ -346,13 +358,6 @@ module C-TYPING-SYNTAX
      syntax Scope ::= getRestrictBlock(Type) [function]
 
      syntax Int ::= arrayLength(Type) [function]
-
-     // Returns all types at an offset -- i.e., for a struct, union, or array,
-     // it'll return the struct/union/array type in addition to the type or
-     // types of its members. It only returns the type of the active variant of
-     // a union, if there is one. Otherwise, it returns the types of all
-     // variants.
-     syntax List ::= getTypesAtOffset(Type, Int) [function]
 
      syntax Bool ::= isTruthValue(RValue) [function]
 

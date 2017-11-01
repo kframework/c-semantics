@@ -116,19 +116,21 @@ module C-DECL-TAGGED
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F::CId)) _) => true
           requires notBool isNoName(F)
+     rule hasNamedField(ListItem(F:CId) _) => true
+          requires notBool isNoName(F)
+     rule hasNamedField(ListItem(_:NoName) L:List)
+          => hasNamedField(L)
      rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L:List)
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
      rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L:List)
-          => hasNamedField(getFieldDecls(T) L)
+          => hasNamedField(findFieldNames(T) L)
      rule hasNamedField(.List) => false
 
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")"
-                         [function]
-
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
      rule makeStructFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                V::Int,
@@ -146,9 +148,9 @@ module C-DECL-TAGGED
                Types, Offsets,
                computePaddingOffsets(NL, padTo(V, 1), Types, Offsets, 0))
      rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, padTo(V, maxByteAlignofList(NL)),
+          => fieldInfo(NL, padTo(V, maxByteAlignofDecls(NL)),
                Types, Offsets,
-               computePaddingOffsets(NL, padTo(V, maxByteAlignofList(NL)), Types, Offsets, 0))
+               computePaddingOffsets(NL, padTo(V, maxByteAlignofDecls(NL)), Types, Offsets, 0))
 
      // The padding associated with a particular field precedes it, with
      // possibly some extra padding at the end of the whole struct not
@@ -180,13 +182,11 @@ module C-DECL-TAGGED
 
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T::Type, X:CId))
-          L:List)
-          => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
-          requires isCompleteType(T)
-     rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), X:CId)))
           => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
+     rule incompleteToFlexibleArrayMember(ListItem(D::K) L::List)
+          => ListItem(D) incompleteToFlexibleArrayMember(L)
+          [owise]
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      syntax Bool ::= structFieldsComplete(List) [function]
@@ -236,7 +236,7 @@ module C-DECL-TAGGED
                computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
      rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
           => makePaddedUnionFieldInfo(
-               padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofList(NL)),
+               padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
                Types, Offsets, NL)
 
      syntax FieldInfo ::= makePaddedUnionFieldInfo(Int, Map, Map, List) [function]

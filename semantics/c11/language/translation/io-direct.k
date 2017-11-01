@@ -11,6 +11,7 @@ module C-IO-DIRECT
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
      syntax KItem ::= writeByte(SymLoc, Bits)
@@ -64,5 +65,8 @@ module C-IO-DIRECT
           [structural]
      rule readBytes'(_, 0, Aux:List) => dataList(Aux)
           [structural]
+
+     rule checkEffectiveType(_, _, _) => .K
+     rule adjustPointerBounds(V::RValue) => V
 
 endmodule

@@ -60,13 +60,35 @@ module C-COMMON-EXPR-EVAL
           requires notBool isArrayOrFunctionType(T)
           [structural]
 
+     rule <k> lv(Loc::SymLoc => resolveLinking(Loc, Linkings), T::Type) ...</k>
+          <linkings> Linkings::Map </linkings>
+          requires Loc =/=K NullPointer andBool (base(Loc) in_keys(Linkings))
+          [structural]
      rule <k> lv(Loc::SymLoc, T::Type)
-               => checkEffectiveType(resolveLinking(Loc, Linkings), T)
+               => lvalConvert(Loc, T, getLastAccessType(Loc))
           ...</k>
           <linkings> Linkings::Map </linkings>
-          requires Loc =/=K NullPointer
+          requires Loc =/=K NullPointer andBool notBool base(Loc) in_keys(Linkings)
           [structural]
      rule lv(NullPointer, T::Type) => nclv(NullPointer, T)
+          [structural]
+
+     syntax KItem ::= lvalConvert(SymLoc, Type, K) [strict(3)]
+     rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
+               => checkEffectiveType(T, bitOffset(Loc), LAT)
+               // The new last access type becomes a composite of the current
+               // last-access object type and the type of the current lvalue
+               // expression.
+               ~> nclv(updateLastAccessType(Loc, T, LAT), T)
+          ...</k>
+          <mem> Mem::Map </mem>
+          requires base(Loc) in_keys(Mem)
+          [structural]
+     rule <k> lvalConvert(Loc::SymLoc, T::Type, _)
+               => nclv(Loc, T)
+          ...</k>
+          <mem> Mem::Map </mem>
+          requires notBool (base(Loc) in_keys(Mem))
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.3.2.1}{3}}}{

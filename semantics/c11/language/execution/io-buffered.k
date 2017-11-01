@@ -32,6 +32,7 @@ module C-IO-BUFFERED
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
 

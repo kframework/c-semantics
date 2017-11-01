@@ -2,4 +2,3 @@ CV-CTI5-bad-static.c:8:1: error: Structs containing a flexible array member must
   Constraint violation (CV-CTI5).
    see C11 section 6.7.2.1:2 http://rvdoc.org/C11/6.7.2.1
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d CV-CTI5-bad-static.c to see commands run.
