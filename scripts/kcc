@@ -559,7 +559,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     mergeObjs(1, 0);
     my $obj = tempFile();
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    system('merge-kcc-obj', $obj, $objFiles[0], $main::oflag || 'a.out');
+    system("$distDirectory/merge-kcc-obj", $obj, $objFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
@@ -821,7 +821,7 @@ sub classify {
     } elsif (isKObj($_)) {
       my $kast = tempFile();
       my $obj = tempFile();
-      system('split-kcc-obj', $_, $obj, $kast);
+      system("$distDirectory/split-kcc-obj", $_, $obj, $kast);
       push(@objFiles, $kast);
       push(@nativeObjFiles, $obj);
     } elsif (isAr($_)) {
@@ -866,7 +866,7 @@ sub extractStatic {
     if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
       if (isKObj("$tempDir/$_")) {
         my $kast = tempFile();
-        system('split-kcc-obj', "$tempDir/$_", "/dev/null", $kast);
+        system("$distDirectory/split-kcc-obj", "$tempDir/$_", "/dev/null", $kast);
         push(@objFiles, $kast);
       }
     }
@@ -900,7 +900,7 @@ sub compile {
       checkError($retval, $obj, 0);
     }
     system('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
-    system('merge-kcc-obj', $obj, $kast, $oval);
+    system("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -1028,7 +1028,7 @@ sub getKRunCommand {
 
 sub dumpSymbols {
   my $ret = tempFile();
-  system("gccsymdump @ldArgs @nativeObjFiles > $ret");
+  system("$distDirectory/gccsymdump @ldArgs @nativeObjFiles > $ret");
   return rel2abs($ret);
 }
 
