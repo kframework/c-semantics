@@ -39,7 +39,7 @@ module CPP-TYPING-SYNTAX
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
-     imports CPP-SYMLOC-SYNTAX
+     imports CPP-SYMLOC-SORTS
 
      syntax AType ::= CPPType
 
@@ -328,6 +328,7 @@ module CPP-TYPING
      imports CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SYNTAX
      imports CPP-SYNTAX
+     imports CPP-SYMLOC-SYNTAX
 
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: noMethod))) => toList(L)
      rule getParams(t(_, _, functionType(... paramTypes: L::CPPTypes, methodInfo: methodInfo(... constructor: true)))) => toList(L)
