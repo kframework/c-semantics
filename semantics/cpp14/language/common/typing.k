@@ -39,7 +39,7 @@ module CPP-TYPING-SYNTAX
      imports COMMON-SORTS
      imports CPP-DYNAMIC-SORTS
      imports CPP-SORTS
-     imports CPP-SYMLOC-SORTS
+     imports SYMLOC-SORTS
 
      syntax AType ::= CPPType
 
