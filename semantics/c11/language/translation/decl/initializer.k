@@ -263,7 +263,6 @@ module C-DECL-INITIALIZER
      rule isFieldAccess(ListItem(ncle(_ . _::CId, _)) _) => true
      rule isFieldAccess(_) => false [owise]
 
-     syntax KItem ::= finishCompoundInit(List)
      rule <k> fillInit(CompoundInit(list(L::List)))
                => fillInits(L)
                ~> finishCompoundInit(ListItem(next) ListItem(ncle(K, T)) Remainder)
@@ -277,11 +276,22 @@ module C-DECL-INITIALIZER
                .List => ListItem(ncle(K, T))
           ...</curr-object>
           [structural]
+
+     syntax KItem ::= finishCompoundInit(List)
      rule <k> finishCompoundInit(L::List) => .K ...</k>
           <curr-subobject> _ => L </curr-subobject>
           <curr-object>
                ListItem(ncle(_, _)) => .List
           ...</curr-object>
+          [structural]
+
+     rule <k> (.K => CV("CDI5", "Unexpected compound initializer (possibly attempting to directly initialize an anonymous member)."))
+               ~> fillInit(CompoundInit(list(L::List)))
+          ...</k>
+          <curr-subobject>
+               ListItem(ncle(_, T::Type))
+          ...</curr-subobject>
+          requires notBool isAggregateOrUnionType(T)
           [structural]
 
      context fillInit(InitFragment(HOLE:KItem, _))
