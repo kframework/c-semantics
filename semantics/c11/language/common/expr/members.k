@@ -25,7 +25,7 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> nclv(Loc:SymLoc, T:StructOrUnionType) . F:CId
+     rule <k> nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
                => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
           ...</k>
           <initializing> Initializing:Bool </initializing>
@@ -48,14 +48,13 @@ module C-COMMON-EXPR-MEMBERS
                andBool isNCLKLabel(#klabel(Lbl))
           [structural]
 
-     syntax KItem ::= lookupField(CId, SymLoc, Quals, FieldInfo) [function]
-
      syntax KItem ::= createLv(SymLoc, StructOrUnionType, CId, K, K) [strict(4, 5)]
+     rule createLv(NullPointer => loc(obj(0, 1, nativeAddress()), 0), _, _, _, _)
      rule createLv(Loc::SymLoc, T::StructOrUnionType, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
           => lv(setBitOffset(findFieldOffset(F, T) %Int cfg:bitsPerByte,
                     updateLastAccessVariant(Loc, F, LAT) +bytes (findFieldOffset(F, T) /Int cfg:bitsPerByte)),
                addQualifiers(getQualifiers(T), T'))
-          requires notBool isNoType(T')
+          requires Loc =/=K NullPointer andBool notBool isNoType(T')
      rule (.K => unknownMemberAccess)
           ~> createLv(_, _, _, _, _:NoType)
 

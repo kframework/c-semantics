@@ -63,6 +63,8 @@ module C-TYPING-EFFECTIVE
 
      rule updateLastAccessVariant(Loc::SymLoc, F::CId, LAT::EffectiveType)
           => setLastAccessType(Loc, setVariantAtOffset(LAT, F, bitOffset(Loc)))
+          requires Loc =/=K NullPointer
+     rule updateLastAccessVariant(Loc::SymLoc, _, _) => Loc [owise]
 
      rule <k> getLastAccessType(loc(Base::SymBase, _, _:Set SetItem(objectType(T::Type))))
                => fixFlexibleType(T, Len)
@@ -70,7 +72,9 @@ module C-TYPING-EFFECTIVE
           <mem>... Base |-> object(_, Len::Int, _) ...</mem>
      rule <k> getLastAccessType(Loc::SymLoc) => getEffectiveType(base(Loc)) ...</k>
           <mem> Mem::Map </mem>
-          requires notBool hasLAT(Loc) orBool notBool base(Loc) in_keys(Mem)
+          requires Loc =/=K NullPointer
+               andBool (notBool hasLAT(Loc) orBool notBool base(Loc) in_keys(Mem))
+     rule getLastAccessType(NullPointer) => type(no-type)
 
      syntax Bool ::= hasLAT(SymLoc) [function]
      rule hasLAT(loc(_, _, SetItem(objectType(_)) _)) => true

@@ -79,8 +79,7 @@ module C-COMMON-EXPR-REFERENCE
 
      rule (.K => UNDEF("CER3",
                "Dereferencing a null pointer."))
-          ~> *(tv(Loc:SymLoc, _))
-          requires Loc ==K NullPointer
+          ~> *(tv(NullPointer, _))
           [structural]
      rule (.K => UNDEF("CER4",
                "Dereferencing a pointer past the end of an array."))
