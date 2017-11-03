@@ -11,3 +11,6 @@
 -f(no-)?omit-frame-pointer
 -g[0123]?
 -rdynamic
+-pipe
+-ftrapv
+-s
