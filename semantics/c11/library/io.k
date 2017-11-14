@@ -9,6 +9,7 @@ module LIBC-IO-SYNTAX
      syntax KItem ::= unget(FD, String)
      syntax KItem ::= readFD(FauxFD, Int)
      syntax KItem ::= flush(FD)
+     syntax KItem ::= "flushAll"
      syntax KItem ::= tell(FD)
      syntax KItem ::= seek(FD, Int, SeekWhence)
      syntax KItem ::= close(FauxFD)
@@ -151,7 +152,18 @@ module LIBC-IO
           <read-buffer> S:String => S' +String S </read-buffer>
           [observable]
 
-     rule <k> readFD(FD::FD, N::Int) => str(substrString(S, 0, N)) ...</k>
+     rule <k> readFD(FD::FD, N::Int) => flushAll ~> readFD'(FD, N) ...</k>
+          <fid> FD </fid>
+          <buffer-mode> noBuf </buffer-mode>
+          [structural]
+     rule <k> readFD(FD::FD, N::Int) => readFD'(FD, N) ...</k>
+          <fid> FD </fid>
+          <buffer-mode> Mode::BufMode </buffer-mode>
+          requires Mode =/=K noBuf
+          [structural]
+
+     syntax KItem ::= "readFD'" "(" FauxFD "," Int ")"
+     rule <k> readFD'(FD::FD, N::Int) => str(substrString(S, 0, N)) ...</k>
           <fid> FD </fid>
           <pos> Pos:Int => Pos +Int N </pos>
           <read-buffer> S:String => substrString(S, N, lengthString(S)) </read-buffer>
@@ -160,7 +172,7 @@ module LIBC-IO
           requires lengthString(S) >=Int N
                andBool Op =/=K outputOp
           [observable]
-     rule <k> readFD(FD::FD, N::Int) => str(S) ...</k>
+     rule <k> readFD'(FD::FD, N::Int) => str(S) ...</k>
           <fid> FD </fid>
           <pos> Pos:Int => Pos +Int lengthString(S) </pos>
           <feof> Eof:Bool </feof>
@@ -171,7 +183,7 @@ module LIBC-IO
                andBool (Eof orBool Err =/=Int 0)
                andBool Op =/=K outputOp
           [observable]
-     rule <k> readFD(FD:String, N::Int) => str(S) ...</k>
+     rule <k> readFD'(FD:String, N::Int) => str(S) ...</k>
           <fid> FD </fid>
           <pos> Pos:Int => Pos +Int lengthString(S) </pos>
           <feof> false => true </feof>
@@ -181,7 +193,7 @@ module LIBC-IO
           requires lengthString(S) <Int N
                andBool Op =/=K outputOp
           [observable]
-     rule <k> (.K => fillBuffer(FD)) ~> readFD(FD:Int, N::Int) ...</k>
+     rule <k> (.K => fillBuffer(FD)) ~> readFD'(FD:Int, N::Int) ...</k>
           <fid> FD </fid>
           <feof> false </feof>
           <ferror> 0 </ferror>
@@ -189,24 +201,35 @@ module LIBC-IO
           requires lengthString(S) <Int N
           [structural]
      rule <k> (.K => UNDEF("IO2", "Stream output operation followed by an input operation without an intervening call to fflush or a file positioning function."))
-               ~> readFD(FD::FD, N::Int)
+               ~> readFD'(FD::FD, N::Int)
           ...</k>
           <fid> FD </fid>
           <last-op> outputOp </last-op>
           [structural]
 
      syntax KItem ::= fillBuffer(FD)
-     rule <k> fillBuffer(FD:Int) ...</k>
+     rule <k> fillBuffer(FD::FD) => flushAll ~> fillBuffer'(FD) ...</k>
+          <fid> FD </fid>
+          <buffer-mode> lineBuf </buffer-mode>
+          [structural]
+     rule <k> fillBuffer(FD::FD) => fillBuffer'(FD) ...</k>
+          <fid> FD </fid>
+          <buffer-mode> Mode::BufMode </buffer-mode>
+          requires Mode =/=K lineBuf
+          [structural]
+
+     syntax KItem ::= "fillBuffer'" "(" FD ")"
+     rule <k> fillBuffer'(FD:Int) ...</k>
           <fid> FD </fid>
           <next-byte> .K => #getc(FD) </next-byte>
           [structural]
-     rule <k> fillBuffer(FD::FD) => .K ...</k>
+     rule <k> fillBuffer'(FD::FD) => .K ...</k>
           <fid> FD </fid>
           <next-byte> -1 </next-byte>
           <feof> _ => true </feof>
           [structural]
      // Line buffered.
-     rule <k> fillBuffer(FD::FD) ...</k>
+     rule <k> fillBuffer'(FD::FD) ...</k>
           <fid> FD </fid>
           <next-byte> Byte:Int => .K </next-byte>
           <read-buffer> S:String => S +String chrChar(Byte) </read-buffer>
@@ -214,7 +237,7 @@ module LIBC-IO
           requires Byte =/=Int ordChar("\n")
                andBool Byte =/=Int -1
           [structural]
-     rule <k> fillBuffer(FD::FD) => .K ...</k>
+     rule <k> fillBuffer'(FD::FD) => .K ...</k>
           <fid> FD </fid>
           <next-byte> Byte:Int => .K </next-byte>
           <read-buffer> S:String => S +String chrChar(Byte) </read-buffer>
@@ -222,7 +245,7 @@ module LIBC-IO
           requires Byte ==Int ordChar("\n")
           [structural]
      // Fully buffered.
-     rule <k> fillBuffer(FD::FD) ...</k>
+     rule <k> fillBuffer'(FD::FD) ...</k>
           <fid> FD </fid>
           <next-byte> Byte:Int => .K </next-byte>
           <read-buffer> S:String => S +String chrChar(Byte) </read-buffer>
@@ -231,7 +254,7 @@ module LIBC-IO
           requires lengthString(S) +Int 1 <Int N
                andBool Byte =/=Int -1
           [structural]
-     rule <k> fillBuffer(FD::FD) => .K ...</k>
+     rule <k> fillBuffer'(FD::FD) => .K ...</k>
           <fid> FD </fid>
           <next-byte> Byte:Int => .K </next-byte>
           <read-buffer> S:String => S +String chrChar(Byte) </read-buffer>
@@ -241,7 +264,7 @@ module LIBC-IO
                andBool Byte =/=Int -1
           [structural]
      // No buffer.
-     rule <k> fillBuffer(FD::FD) => .K ...</k>
+     rule <k> fillBuffer'(FD::FD) => .K ...</k>
           <fid> FD </fid>
           <next-byte> Byte:Int => .K </next-byte>
           <read-buffer> S:String => S +String chrChar(Byte) </read-buffer>
@@ -288,6 +311,16 @@ module LIBC-IO
           <read-buffer> _ => "" </read-buffer>
           <write-buffer> _ => "" </write-buffer>
           <last-op> _ => seekOp </last-op>
+          [structural]
+
+     rule <k> flushAll => flushAll'(OpenFiles) ...</k>
+          <open-files> OpenFiles::Set </open-files>
+          [structural]
+
+     syntax KItem ::= "flushAll'" "(" Set ")"
+     rule (.K => flush(FD)) ~> flushAll'((SetItem(FD::FD) => .Set) _)
+          [structural]
+     rule flushAll'(.Set) => .K
           [structural]
 
      rule <k> flush(FD:Int)

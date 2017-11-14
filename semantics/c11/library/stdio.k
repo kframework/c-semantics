@@ -39,8 +39,8 @@ module LIBC-STDIO
           => fflush(* FDPtr)
           requires notBool isNull(FDPtr)
           [structural]
-     rule <k> builtin("fflush", FDPtr::RValue) => fflushAll(OpenFiles) ...</k>
-          <open-files> OpenFiles:Set </open-files>
+     rule builtin("fflush", FDPtr::RValue)
+          => flushAll ~> success
           requires isNull(FDPtr)
           [structural]
 
@@ -96,12 +96,6 @@ module LIBC-STDIO
           <mode> Mode:String </mode>
           <last-op> Op:LastFileOp </last-op>
           requires notBool (isWritable(Mode) andBool (Op =/=K inputOp))
-          [structural]
-
-     syntax KItem ::= fflushAll(Set)
-     rule (.K => flush(FD)) ~> fflushAll((SetItem(FD:Int) => .Set) _)
-          [structural]
-     rule fflushAll(.Set) => success
           [structural]
 
      syntax KItem ::= fseek(K, Int, Int)

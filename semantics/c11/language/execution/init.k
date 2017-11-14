@@ -198,27 +198,24 @@ module C-EXECUTION-INIT
 
      // int main(void) -- also, int main() gets normalized to main(void)
      syntax KItem ::= #callMain(K, Int, CId, K) [strict(1)]
-     rule #callMain(t(_, _,
-          functionType(ut(.Set, int), ListItem(typedDeclaration(t(Qs:Quals, .Set, void), _)))), _, _, _)
+     rule #callMain(t(quals(.Set), .Set,
+          functionType(ut(.Set, int), ListItem(typedDeclaration(t(quals(.Set), .Set, void), _)))), _, _, _)
           => Call(Identifier("main"), list(.List))
-          requires Qs ==K noQuals
           [structural]
-     // we cast argv to the type of the parameter in case the user has written an undefined program in which they provided
-     // type qualifiers for argv
      // int main(int argc, char* argv[])
-     rule #callMain(t(_, _, functionType(ut(_, int),
-               ListItem(typedDeclaration(t(_, _, int), _))
-               ListItem(typedDeclaration(t(_, _, incompleteArrayType(t(_, _, pointerType(t(_, _, char))) #as T::Type)), _)))),
+     rule #callMain(t(quals(.Set), .Set, functionType(ut(.Set, int),
+               ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
+               ListItem(typedDeclaration(t(quals(.Set), .Set, incompleteArrayType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))),
                N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(Cast(type(pointerType(T)), X))))
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           [structural]
      // int main(int argc, char** argv)
-     rule #callMain(t(_, _,
+     rule #callMain(t(quals(.Set), .Set,
                functionType(ut(.Set, int),
-               ListItem(typedDeclaration(t(_, _, int), _))
-               ListItem(typedDeclaration(t(_, _, pointerType(t(_, _, pointerType(t(_, _, char))) #as T::Type)), _)))),
+               ListItem(typedDeclaration(t(quals(.Set), .Set, int), _))
+               ListItem(typedDeclaration(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, pointerType(t(quals(.Set), .Set, char))) #as T::Type)), _)))),
                N:Int, X:CId, Args:K)
-          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(Cast(type(pointerType(T)), X))))
+          => Args ~> Call(Identifier("main"), list(ListItem(N) ListItem(X)))
           [structural]
 
      rule <k> reval(V:RValue) ~> callAtExit => AtExit ~> reval(V) ~> callAtExit ...</k>
