@@ -123,6 +123,12 @@ module C-TYPING-EFFECTIVE
           ...</k>
           <mem>... Base |-> object(_, Len::Int, _) ...</mem>
           requires isFlexibleArrayType(findFieldType(F, T))
+     rule <k> getFixedFieldType(loc(Base::SymBase, _), F::CId, T::StructOrUnionType)
+               => findFieldType(F, T)
+          ...</k>
+          <mem> Mem::Map </mem>
+          requires isFlexibleArrayType(findFieldType(F, T))
+               andBool notBool (Base in_keys(Mem))
      rule getFixedFieldType(_, F::CId, T::StructOrUnionType) => findFieldType(F, T)
           requires notBool isFlexibleArrayType(findFieldType(F, T))
 

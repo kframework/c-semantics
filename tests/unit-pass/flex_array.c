@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 struct s {
       int x;
       int f1[];
@@ -19,6 +20,9 @@ union ux {
 union u so;
 
 int main(void) {
+      if (offsetof(struct s, x) >= offsetof(struct s, f1))
+            abort();
+
       union u ao = {0};
       union u * po = malloc(sizeof(union u) + 32);
       ao.b.w = 1;
