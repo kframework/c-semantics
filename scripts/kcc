@@ -10,7 +10,7 @@ use File::Path qw(rmtree);
 use MIME::Base64;
 use String::Escape qw(quote backslash);
 use Getopt::Declare;
-use Cwd qw(abs_path);
+use Cwd qw(abs_path getcwd);
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -1120,15 +1120,16 @@ sub checkError {
   my ($retval, $output, $isBinary) = (@_);
   if ($retval) {
     if ($isBinary) {
-      system("k-bin-to-text", $output, 'config');
+      system("k-bin-to-text", $output, 'kcc_config');
     } else {
-      copy($output, 'config');
+      copy($output, 'kcc_config');
     }
     if ($args->{'-d'}) {
-      print STDERR "Translation failed (config dumped). Refer to last command run for details.\n";
+      print STDERR "Translation failed (kcc_config dumped). Refer to last command run for details.\n";
       exit $retval;
     } else {
-      print STDERR "Translation failed (config dumped). Run $0 -d @originalArgv to see commands run.\n";
+      my $dir=basename(getcwd());
+      print STDERR "Translation failed (kcc_config dumped). To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
       exit $retval;
     }
   }

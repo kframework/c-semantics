@@ -5,4 +5,5 @@ subtraction-null.c:3:3: error: Computing pointer difference between two differen
    see CERT-C section ARR36-C http://rvdoc.org/CERT-C/ARR36-C
    see MISRA-C section 8.18:2 http://rvdoc.org/MISRA-C/8.18
    see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors subtraction-null.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors subtraction-null.c

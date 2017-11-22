@@ -3,4 +3,5 @@ j044b.c:4:7: error: pointer value used where a floating point value was expected
        (float)p;
        ^
 compilation terminated due to -Wfatal-errors.
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j044b.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j044b.c

@@ -3,4 +3,5 @@ j027b.c:2:2: error: missing terminating " character [-Werror]
   ^
 compilation terminated due to -Wfatal-errors.
 cc1: all warnings being treated as errors
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j027b.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j027b.c

@@ -3,4 +3,5 @@ j079h.c:9:1: error: Conflicting types for f.
    see C11 section 6.7:4 http://rvdoc.org/C11/6.7
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
    see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j079h.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j079h.c
