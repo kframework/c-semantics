@@ -14,3 +14,4 @@
 -pipe
 -ftrapv
 -s
+-pg

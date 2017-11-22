@@ -278,6 +278,9 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
   -E			Preprocess only.
   -I <dir>		Look for headers in <dir>.
     { push(@main::cppArgs, '-I', $dir); }
+  -idirafter <dir>	Look for headers in <dir>, but only after directories
+			specified with -I and system directories.
+    { push(@main::cppArgs, '-idirafter', $dir); }
   -iquote <dir>		Look for headers with quotation marks in <dir>.
     { push(@main::cppArgs, '-iquote', $dir); }
   -isystem <dir>	Look for system headers in <dir>.
@@ -832,7 +835,7 @@ sub classify {
       push(@nativeObjFiles, $_);
     } else {
       if (!($_ =~ $ignoredFlags)) {
-        error("Unsupported option: $_\n");
+        warn("Unsupported option: $_\n");
       }
     }
   }
