@@ -8,7 +8,7 @@ module CPP-TRANSLATION-IO
      imports CPP-TYPING-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-COMMON-IO-SYNTAX
-
+     imports SYMLOC-SYNTAX
 
      rule <k> writeBytes(loc(Base::SymBase, Offset::Int), dataList(ListItem(V::Bits) L::List), T::CPPType)
               => writeBytes(loc(Base, Offset +Int 1), dataList(L), T)

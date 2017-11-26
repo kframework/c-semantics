@@ -1,6 +1,6 @@
 module CPP-COMMON-IO-SYNTAX
      imports INT
-     imports SYMLOC-SYNTAX
+     imports SYMLOC-SORTS
 
      syntax CPPType
      syntax K ::= assertInBounds(Int, Int) [klabel(cppAssertInBounds)]
@@ -13,6 +13,7 @@ module CPP-COMMON-IO
      imports CPP-ERROR-SYNTAX
      imports SETTINGS-SYNTAX
      imports BITS-SYNTAX
+     imports SYMLOC-SYNTAX
 
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
