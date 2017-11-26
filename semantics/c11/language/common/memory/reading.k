@@ -50,12 +50,6 @@ module C-MEMORY-READING
                andBool Loc =/=K NullPointer
                andBool notBool isLinkerLoc(Loc)
           [ndtrans]
-     rule <k> read(loc((Base::SymBase => Base'), _), _) ...</k>
-          <linkings>... Base |-> Base'::SymBase ...</linkings>
-          [structural]
-     rule <k> read(loc((Base::SymBase => Base'), _, _), _) ...</k>
-          <linkings>... Base |-> Base'::SymBase ...</linkings>
-          [structural]
 
      syntax KItem ::= readActual(SymLoc, Type)
      rule readActual(Loc::SymLoc, T::Type)
@@ -68,16 +62,12 @@ module C-MEMORY-READING
               fillToBytes(extractBitsFromMem(Loc, T)))
           [structural]
 
-     rule concretize(T:CharUType, dataList(L::List))
-          => interpret(T, joinBytes(L))
-          requires (notBool hasUnknown(L))
-               andBool (notBool hasTrap(L))
      rule concretize(T::UType, dataList(L::List))
           => interpret(T, joinBytes(L))
           requires (notBool hasUnknown(L))
                andBool (notBool hasTrap(L))
                andBool (notBool isStructOrUnionType(type(T)))
-               andBool (isIntegerUType(T) impliesBool notBool hasFloat(L))
+               andBool ((isIntegerUType(T) andBool notBool isCharUType(T)) impliesBool notBool hasFloat(L))
                andBool (isFloatUType(T) impliesBool notBool hasInt(L))
           [structural]
      rule concretize(T::UType, dataList(L::List))
@@ -87,7 +77,7 @@ module C-MEMORY-READING
                andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
      rule concretize(T::UType, dataList(L::List))
-          => makeUnknown2(concretize(T, stripUnknown(dataList(L))))
+          => makeUnknown(concretize(T, stripUnknown(dataList(L))))
           requires (hasUnknown(L) andBool notBool isPointerUType(T))
                andBool (notBool hasTrap(L))
                andBool notBool isStructOrUnionType(type(T))
@@ -158,10 +148,9 @@ module C-MEMORY-READING
      rule hasOpaque(ListItem(_) L::List) => hasOpaque(L) [owise]
 
      syntax KItem ::= extractBitsFromMem(SymLoc, Type)
-
      rule extractBitsFromMem(Loc:SymLoc, T::Type)
-          => extractBitsFromList(readBytes(Loc, (getBitOffset(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
-               getBitOffset(Loc), bitSizeofType(T))
+          => extractBitsFromList(readBytes(Loc, (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, T),
+               bitOffsetIntoLastByte(Loc), bitSizeofType(T))
           [structural]
 
      rule extractBitsFromList(dataList(L::List), N::Int, M::Int)

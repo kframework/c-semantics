@@ -4,8 +4,8 @@ module C-TYPING-COMMON-SYNTAX
      imports C-TYPING-SORTS
      imports COMMON-SORTS
 
-     // Function id, def return type, def params, local declarations, body.
-     syntax RValue ::= functionObject(CId, Type, List, K)
+     // Function id, def return type, def params, local declarations.
+     syntax RValue ::= functionObject(CId, Type, List)
 
 endmodule
 
@@ -89,15 +89,19 @@ module C-TYPING-COMMON
      rule getEnumAlias(S::TagId) => getEnumAlias'(getTagInfo(S))
 
      syntax SimpleType ::= "getEnumAlias'" "(" TagInfo ")" [function]
-     rule getEnumAlias'(enumAlias(T::SimpleType)) => T
+     rule getEnumAlias'(enumInfo(... enumAlias: T::SimpleType)) => T
      rule getEnumAlias'(_) => no-type [owise]
 
-     rule getFieldInfo(S:TagId) => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(t(_, Mods::Set, structType(S::TagId)))
-          => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(t(_, Mods::Set, unionType(S::TagId)))
-          => toFieldInfo(getTagInfo(S))
-     rule getFieldInfo(_:Type) => toFieldInfo(.K) [owise]
+     rule getFieldInfo(Tag::TagId) => toFieldInfo(getTagInfo(Tag))
+
+     rule getFields(T:StructOrUnionType) => getFields({utype(T)}:>StructOrUnionUType)
+     rule getFields(ut(SetItem(Fields:FieldInfo) _, structType(_))) => Fields
+     rule getFields(ut(SetItem(Fields:FieldInfo) _, unionType(_))) => Fields
+     rule getFields(T::StructOrUnionUType) => getFieldInfo(getTagId(T)) [owise]
+
+     syntax TagId ::= getTagId(StructOrUnionUType) [function]
+     rule getTagId(ut(_, structType(S::TagId))) => S
+     rule getTagId(ut(_, unionType(S::TagId))) => S
 
      syntax FieldInfo ::= toFieldInfo(TagInfo) [function]
      rule toFieldInfo(Fields:FieldInfo) => Fields
@@ -105,12 +109,17 @@ module C-TYPING-COMMON
 
      rule getTagInfo(S:TagId) => #getTagInfo(S, #configuration)
 
+     syntax Bool ::= hasNoName(Map) [function]
+     rule hasNoName((_:NoName |-> _:StructOrUnionType) _::Map) => true
+     rule hasNoName(_) => false [owise]
+
      syntax TagInfo ::= #getTagInfo(TagId, K) [function]
      rule #getTagInfo(tag(X::CId, Tu::String, B::BlockRef), <generatedTop>... <global>... <tags> M::Map </tags> ...</global> ...</generatedTop>)
           => extractTagInfo({M[Tu]}:>Map[tag(X, Tu, B)])
+
      syntax TagInfo ::= extractTagInfo(K) [function]
      rule extractTagInfo(fieldInfo(L::List, I::Int, M1::Map, M2::Map, S::Set)) => fieldInfo(L, I, M1, M2, S)
-     rule extractTagInfo(enumAlias(T::SimpleType)) => enumAlias(T)
+     rule extractTagInfo(enumInfo(...) #as EI::EnumInfo) => EI
      rule extractTagInfo(_) => #incomplete [owise]
 
      rule numBytes(bool) => cfg:sizeofBool
@@ -247,15 +256,15 @@ module C-TYPING-COMMON
      rule showQualifier(Restrict()) => "restrict"
      rule showQualifier(Atomic()) => "_Atomic"
      syntax String ::= showSpecifiedType(Type) [function]
-     rule showSpecifiedType(T::Type) 
+     rule showSpecifiedType(T::Type)
           => showQualifiedSpecifier(T) +String showTypeSpecifier(simpleType(T))
      syntax String ::= showQualifiedSpecifier(Type) [function]
      rule showQualifiedSpecifier(t(quals(.Set), _, _)) => ""
-     rule showQualifiedSpecifier(t(quals(S::Set), _, _)) 
+     rule showQualifiedSpecifier(t(quals(S::Set), _, _))
           => showQualifiers(S) +String " " [owise]
      syntax String ::= showQualifiedDeclarator(Quals) [function]
      rule showQualifiedDeclarator(quals(.Set)) => ""
-     rule showQualifiedDeclarator(quals(S::Set)) 
+     rule showQualifiedDeclarator(quals(S::Set))
           => " " +String showQualifiers(S) [owise]
      syntax String ::= showDeclarator(String, Type) [function]
      rule showDeclarator(DDL::String, t(Q::Quals, _, pointerType(T::Type)))

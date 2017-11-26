@@ -1,9 +1,11 @@
 require "builtin.k"
 require "init.k"
 require "io.k"
+require "locale.k"
 require "math.k"
 require "native.k"
 require "setjmp.k"
+require "signal.k"
 require "stdarg.k"
 require "stdio.k"
 require "stdlib.k"
@@ -18,8 +20,10 @@ module C-LIBRARY
      imports LIBC-IO
 
      imports LIBC-INIT
+     imports LIBC-LOCALE
      imports LIBC-MATH
      imports LIBC-SETJMP
+     imports LIBC-SIGNAL
      imports LIBC-STDARG
      imports LIBC-STDIO
      imports LIBC-STDLIB

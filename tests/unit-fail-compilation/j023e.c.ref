@@ -3,4 +3,5 @@ j023e.c:4:7: error: invalid use of void expression
        (int) f();
        ^
 compilation terminated due to -Wfatal-errors.
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j023e.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j023e.c

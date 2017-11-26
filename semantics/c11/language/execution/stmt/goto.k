@@ -4,10 +4,7 @@ module C-STMT-GOTO
      imports K-REFLECTION
      imports C-SYNTAX
      imports C-DYNAMIC-SYNTAX
-
-     syntax CId ::= getIdOfDeclaration(K) [function]
-     rule getIdOfDeclaration(declareInternalVariable(X:CId, _, _)) => X
-     rule getIdOfDeclaration(typedef(X:CId, _)) => X
+     imports C-IO-BUFFERED-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.6.1}{2}}}{
      A \cinline{goto} statement causes an unconditional jump to the statement
@@ -83,179 +80,182 @@ module C-STMT-GOTO
 
      */
 
-     syntax KItem ::= processGoto(K)
-     syntax KItem ::= processGotoDown(K)
-
-     // declaration stack, actual local variables
-     syntax KItem ::= processGotoSameBlock(List, List)
-                    | preprocessGoto(K, CId) [function]
-
-     rule <k> Goto(Lbl:CId) ~> _ => preprocessGoto(K, Lbl) </k>
-          <curr-scope> blockScope(F:CId, _) </curr-scope>
+     rule <k> Goto(Lbl:CId) => gotoUp({G[Lbl]}:>GotoObject) ...</k>
+          <curr-scope> blockScope(F::CId, _) </curr-scope>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <goto-map>...
-               F |-> K:K
+               F |-> G::Map
           ...</goto-map>
-     rule preprocessGoto(map(M:Map), Lbl:CId)
-          => preprocessGoto(M[Lbl], Lbl)
-     rule preprocessGoto(GotoInfo:K, Lbl:CId) => processGoto(GotoInfo)
-          requires getKLabel(GotoInfo) =/=K #klabel(`map`)
-               andBool getKLabel(Lbl) =/=K #klabel(`funLabel`)
-     rule preprocessGoto(gotoObject(_, _, Blk:K, _, _), Lbl:CId)
-          => Blk
-          requires getKLabel(Lbl) ==K #klabel(`funLabel`)
+          requires Lbl =/=K funLabel
+     rule <k> Goto(funLabel) ~> _ => Blk </k>
+          <curr-scope> blockScope(F::CId, _) </curr-scope>
+          <curr-tu> Tu:String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <goto-map>...
+               F |-> (_ funLabel |-> gotoObject(_, Blk:K, _, _))
+          ...</goto-map>
 
-     syntax Bool ::= isGotoKLabel(K) [function, klabelPredicate]
-     rule isGotoKLabel(#klabel(`processGoto`)) => true
-     rule isGotoKLabel(#klabel(`processGotoDown`)) => true
-     rule isGotoKLabel(_) => false [owise]
-
-     // isSuffixOf(A, B) => true if A is a suffix of B
-     syntax Bool ::= isSuffixOf(List, List) [function]
-     rule isSuffixOf(.List, _) => true
-     rule isSuffixOf(ListItem(_) _, .List) => false
-     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
-          => isSuffixOf(L, L')
-     rule isSuffixOf(_ ListItem(K:K), _ ListItem(K':K)) => false
-          requires K =/=K K'
-
-     // - first case, when we're in the same block
-     rule <k> L:KLabel(gotoObject(Depth::Int,
-                    ListItem(CurrentBlock::Int) BlockHistory::List,
-                    K:K, LoopStack::List, DeclStack::List))
-               ~> _
-               => addVariablesForBlock(CurrentBlock, DeclStack)
-               ~> K
-          </k>
-          <env> Env::Map => rewindEnv(Env', Env, filterIds(CurrentBlock, DeclStack)) </env>
-          <nesting-depth> Depth </nesting-depth>
-          <block-history>
-               ListItem(CurrentBlock) BlockHistory
-          </block-history>
-          <loop-stack> _ => LoopStack </loop-stack>
-          <block-stack>
-               ListItem(<block-control>... <env> Env':Map </env> ...</block-control>)
-          ...</block-stack>
-          requires isGotoKLabel(#klabel(L))
-          [structural]
-
-     // - second case, as long as there are entries in the actual block
-     // history that differ from the target block history, we need to pop
+     // - as long as there are entries in the actual block history that differ
+     // from the target block history, we need to pop
+     syntax KItem ::= gotoUp(GotoObject)
      rule <k> (.K => popBlock)
-               ~> processGoto(gotoObject(_, TargetHistory:List, _, _, _))
+               ~> gotoUp(gotoObject(TargetHistory::List, _, _, _))
           ...</k>
           <block-history>
-               ListItem(BlockNum:Int) ActualHistory:List
+               ActualHistory:List
           </block-history>
-          requires notBool BlockNum in TargetHistory
-               orBool notBool isSuffixOf(ListItem(BlockNum) ActualHistory, TargetHistory)
+          requires notBool (isSuffixOf(ActualHistory, TargetHistory)
+               andBool size(ActualHistory) <=Int size(TargetHistory))
           [structural]
-
      // once we share a history, we start to push
-     rule <k> processGoto(gotoObject(TargetDepth:Int,
-                    BlockNums:List, K:K, LoopStack:List, DeclStack:List))
-               => addVariablesForBlock(CurrentBlock, DeclStack)
-               ~> processGotoDown(gotoObject(TargetDepth,
-                     (range(BlockNums, 0, size(ActualHistory) +Int 1)
-                     ListItem(CurrentBlock) ActualHistory),
-                     K, LoopStack, DeclStack))
+     rule <k> gotoUp(gotoObject(TargetHistory::List, K:K, LoopStack::List, DeclStack::List))
+               => declVariables(filterDecls(BlockNum, Locals getStatics(Locals, Scope, Statics), DeclStack))
+               ~> rewindEnv(intersectSet(keys(Env) -Set filterIds(BlockNum, DeclStack), Locals getStatics(keys(Env), Scope, Statics)))
+               ~> gotoDown(reverseList(range(TargetHistory, 0, size(ActualHistory))),
+                    K,
+                    LoopStack,
+                    DeclStack)
           ...</k>
-          <nesting-depth> ActualDepth:Int </nesting-depth>
+          <env> Env:Map </env>
           <block-history>
-               ListItem(CurrentBlock:Int) ActualHistory:List
+               (ListItem(BlockNum::Int) ActualHistory'::List) #as ActualHistory::List
           </block-history>
-          requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool isSuffixOf(ActualHistory, BlockNums)
-               andBool notBool (ActualHistory ==K BlockNums)
+          <local-vars> Locals::Set </local-vars>
+          <curr-scope> Scope::Scope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-statics> Statics::Map </local-statics>
+          requires isSuffixOf(ActualHistory, TargetHistory)
+               andBool size(ActualHistory) <=Int size(TargetHistory)
           [structural]
 
-     rule <k> (.K => pushBlock(
-                        {BlockNums[-1 -Int size(ActualHist)]}:>Int)
-               ~> addVariablesForBlock(
-                        {BlockNums[-1 -Int size(ActualHist)]}:>Int, DeclStk)
-               ) ~> processGotoDown(gotoObject(TargetDepth:Int,
-                    BlockNums:List, _, _,
-                    DeclStk:List))
-          ...</k>
-          <nesting-depth> ActualDepth:Int </nesting-depth>
-          <block-history> ActualHist:List </block-history>
-          requires ActualDepth +Int 1 =/=Int TargetDepth
-               andBool isSuffixOf(ActualHist, BlockNums)
-               andBool notBool (BlockNums ==K ActualHist)
+     syntax KItem ::= gotoDown(List, K, List, List)
+     rule (.K => pushBlock(BlockNum) ~> declVariables(filterDecls(BlockNum, .Set, DeclStack)))
+          ~> gotoDown((ListItem(BlockNum::Int) => .List) _, _, _, DeclStack::List)
           [structural]
-
-     // We've made it to the block above the target
-     rule <k> L:KLabel(gotoObject(SIntDepth::Int,
-                    ListItem(TargetBlock::Int) BlockHistory:List,
-                    K:K,
-                    LoopStack::List,
-                    DeclStack::List))
+     // - when we're in the same block
+     rule <k> gotoDown(.List, K:K, LoopStack::List, _)
                ~> _
-               => pushBlock(TargetBlock)
-               ~> addVariablesForBlock(TargetBlock, DeclStack)
-               ~> K
+               => K
           </k>
-          <nesting-depth> Depth::Int </nesting-depth>
-          <block-history> BlockHistory:List </block-history>
           <loop-stack> _ => LoopStack </loop-stack>
-          requires isGotoKLabel(#klabel(L))
-               andBool (SIntDepth ==Int Depth +Int 1)
           [structural]
 
-     syntax Map ::= rewindEnv(Map, Map, List) [function]
-     rule rewindEnv(Env'::Map => Env'[X <- Env[X]], Env::Map, (ListItem(X:CId) => .List) _)
-          requires X in_keys(Env)
-     rule rewindEnv(_, _, (ListItem(_) => .List) _) [owise]
-     rule rewindEnv(Env'::Map, (K:K |-> _ => .Map) _, .List)
-          requires isIdent(K)
-     rule rewindEnv(Env'::Map => Env'[K <- V], (K:K |-> V:K => .Map) _, .List)
-          requires notBool isIdent(K)
-     rule rewindEnv(Env'::Map, .Map, .List) => Env'
+     syntax KItem ::= rewindEnv(Set)
+     rule <k> (.K => deleteObject(B) ~> revertLocal(X))
+               ~> rewindEnv((SetItem(X::CId) => .Set) _)
+          ...</k>
+          <env>...
+               X |-> B::SymBase
+          ...</env>
+          <renv>...
+               B |-> _ => .Map
+          ...</renv>
+          <local-vars>... SetItem(X) => .Set ...</local-vars>
+          <local-addresses>... SetItem(B) => .Set ...</local-addresses>
+          requires notBool isCompoundLiteralId(X)
+     rule <k> (.K => revertLocal(X))
+               ~> rewindEnv((SetItem(X::CId) => .Set) _)
+          ...</k>
+          <curr-scope> Scope::Scope </curr-scope>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <local-statics> Statics::Map </local-statics>
+          requires kpair(X, Scope) in_keys(Statics)
+     rule rewindEnv((SetItem(X::CId) => .Set) _)
+          requires isCompoundLiteralId(X)
+     rule rewindEnv(.Set) => .K
 
-     syntax Bool ::= isIdent(K) [function]
-     rule isIdent(Identifier(_)) => true
-     rule isIdent(_) => false [owise]
+     syntax KItem ::= revertLocal(CId)
+     rule <k> revertLocal(X::CId) => .K ...</k>
+          <env>... X |-> _ => .Map ...</env>
+          <types>... X |-> _ => .Map ...</types>
+          <block-stack>
+               ListItem(<block-control>...
+                    <env> Env::Map </env>
+               ...</block-control>)
+          ...</block-stack>
+          requires notBool X in_keys(Env)
+     rule <k> revertLocal(X::CId) => .K ...</k>
+          <env>... X |-> _ => .Map ...</env>
+          <types>... X |-> _ => .Map ...</types>
+          <block-stack> .List </block-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv> Env::Map </genv>
+          requires notBool X in_keys(Env)
+     rule <k> revertLocal(X::CId) => .K ...</k>
+          <env>... X |-> (_ => B) ...</env>
+          <types>... X |-> (_ => T) ...</types>
+          <block-stack>
+               ListItem(<block-control>...
+                    <env>...
+                         X |-> B::SymBase
+                    ...</env>
+                    <types>...
+                         X |-> T::Type
+                    ...</types>
+               ...</block-control>)
+          ...</block-stack>
+     rule <k> revertLocal(X::CId) => .K ...</k>
+          <env>... X |-> (_ => B) ...</env>
+          <types>... X |-> (_ => T) ...</types>
+          <block-stack> .List </block-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv>...
+               X |-> B::SymBase
+          ...</genv>
+          <gtypes>...
+               X |-> T::Type
+          ...</gtypes>
 
-     syntax List ::= filterIds(Int, List) [function]
-     rule filterIds(B::Int, ListItem(frozenDeclaration(_, B, Decl:K)) Ds::List)
-          => ListItem(getIdOfDeclaration(Decl)) filterIds(B, Ds)
+     syntax Set ::= filterIds(Int, List) [function]
+     rule filterIds(B::Int, ListItem(frozenDeclaration(B, Decl:K)) Ds::List)
+          => SetItem(getIdOfDecl(Decl)) filterIds(B, Ds)
      rule filterIds(_, (ListItem(_) => .List) _) [owise]
-     rule filterIds(_, .List) => .List
+     rule filterIds(_, .List) => .Set
 
-     syntax KItem ::= addVariablesForBlock(Int, List)
-          [latex(\terminal{addVarsForBlock}\!({#1},{#2}\!))]
+     syntax Set ::= filterDecls(Int, Set, List) [function]
+     rule filterDecls(B::Int, Locals::Set, ListItem(frozenDeclaration(B, Decl:K)) Ds::List)
+          => SetItem(Decl) filterDecls(B, Locals, Ds)
+          requires notBool (getIdOfDecl(Decl) in Locals)
+     rule filterDecls(_, _, (ListItem(_) => .List) _) [owise]
+     rule filterDecls(_, _, .List) => .Set
 
-     // skip variables from other blocks
-     rule addVariablesForBlock(TargetBlock::Int,
-               (ListItem(frozenDeclaration(_, BlockNum::Int, _)) => .List) _)
-          requires BlockNum =/=Int TargetBlock
-          [structural]
+     syntax CId ::= getIdOfDecl(K) [function]
+     rule getIdOfDecl(declareInternalVariable(X:CId, _, _)) => X
+     rule getIdOfDecl(typedef(X:CId, _)) => X
 
-     // skip variables in the real history
-     rule <k> addVariablesForBlock(TargetBlock::Int,
-                    (ListItem(frozenDeclaration(_, TargetBlock, Decl:K)) => .List) _)
-          ...</k>
-          <local-vars> Vars:List </local-vars>
-          requires getIdOfDeclaration(Decl) in Vars
-          [structural]
-
+     syntax KItem ::= declVariables(Set)
      rule <k> (.K => Decl ~> enableInits)
-               ~> addVariablesForBlock(TargetBlock::Int,
-                    (ListItem(frozenDeclaration(_, TargetBlock, Decl:K)) => .List) _)
+               ~> declVariables((SetItem(Decl:K) => .Set) _)
           ...</k>
-          <local-vars> Vars:List </local-vars>
           <should-init> _ => false </should-init>
-          requires notBool getIdOfDeclaration(Decl) in Vars
           [structural]
-
-     rule addVariablesForBlock(_, .List) => .K
+     rule declVariables(.Set) => .K
           [structural]
 
      syntax KItem ::= "enableInits"
-
      rule <k> enableInits => .K ...</k>
           <should-init> _ => true </should-init>
           [structural]
+
+     // isSuffixOf(A, B) => true iff list A is a suffix of B
+     syntax Bool ::= isSuffixOf(List, List) [function]
+     rule isSuffixOf(.List, _) => true
+     rule isSuffixOf(L:List ListItem(K:K), L':List ListItem(K))
+          => isSuffixOf(L, L')
+     rule isSuffixOf(_, _) => false [owise]
+
+     syntax Set ::= getStatics(Set, Scope, Map) [function]
+     rule getStatics(SetItem(X::CId) Ids::Set, Scope::Scope, Statics::Map)
+          => SetItem(X) getStatics(Ids, Scope, Statics)
+          requires kpair(X, Scope) in_keys(Statics)
+     rule getStatics(SetItem(X::CId) Ids::Set, Scope::Scope, Statics::Map)
+          => getStatics(Ids, Scope, Statics)
+          requires notBool kpair(X, Scope) in_keys(Statics)
+     rule getStatics(.Set, _, _) => .Set
 
 endmodule

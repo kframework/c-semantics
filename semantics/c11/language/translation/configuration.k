@@ -26,9 +26,6 @@ module C-CONFIGURATION
                <decl-stack color="cyan">
                     .List
                </decl-stack>
-               <goto-nesting-depth color="cyan">
-                    0
-               </goto-nesting-depth>
                <goto-block-history color="cyan">
                     .List
                </goto-block-history>
@@ -67,6 +64,8 @@ module C-CONFIGURATION
           // maps from CIds
           <env color="red"> .Map </env>
           <types color="lightgray"> .Map </types>
+          // reverse environment
+          <renv color="red"> .Map </renv>
           // Like the types cell, but used only for checking local declarations.
           <local-types> .Map </local-types>
           <enums> .Map </enums>

@@ -4,4 +4,6 @@ j039c-link2.c:1:1: error: Identifier foo declared with incompatible types in dif
    see C11 section J.2:1 item 15 http://rvdoc.org/C11/J.2
    see CERT-C section DCL23-C http://rvdoc.org/CERT-C/DCL23-C
    see CERT-C section DCL40-C http://rvdoc.org/CERT-C/DCL40-C
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j039c-link1.c j039c-link2.c to see commands run.
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j039c-link1.c j039c-link2.c

@@ -1,8 +1,50 @@
- 'vprintf': uninitialized va_list argument.
-   at vprintf(UB-STDIO3-bad.c:6:7)
-   by main(UB-STDIO3-bad.c:6:7)
+ 'v*printf': uninitialized va_list argument.
+   at vprintf(UB-STDIO3-bad.c:9:7)
+   by main(UB-STDIO3-bad.c:9:7)
   Undefined behavior (UB-STDIO3).
    see C11 section 7.21.6.10:2 http://rvdoc.org/C11/7.21.6.10
+   see C11 section 7.21.6.12:2 http://rvdoc.org/C11/7.21.6.12
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
+   see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Nothing
+ 'v*printf': uninitialized va_list argument.
+   at vsprintf(UB-STDIO3-bad.c:13:7)
+   by main(UB-STDIO3-bad.c:13:7)
+  Undefined behavior (UB-STDIO3).
+   see C11 section 7.21.6.10:2 http://rvdoc.org/C11/7.21.6.10
+   see C11 section 7.21.6.12:2 http://rvdoc.org/C11/7.21.6.12
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
+   see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Nothing
+ 'v*printf': uninitialized va_list argument.
+   at vsnprintf(UB-STDIO3-bad.c:17:7)
+   by main(UB-STDIO3-bad.c:17:7)
+  Undefined behavior (UB-STDIO3).
+   see C11 section 7.21.6.10:2 http://rvdoc.org/C11/7.21.6.10
+   see C11 section 7.21.6.12:2 http://rvdoc.org/C11/7.21.6.12
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
+   see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Nothing
+ 'v*printf': uninitialized va_list argument.
+   at vfprintf(UB-STDIO3-bad.c:21:7)
+   by main(UB-STDIO3-bad.c:21:7)
+  Undefined behavior (UB-STDIO3).
+   see C11 section 7.21.6.10:2 http://rvdoc.org/C11/7.21.6.10
+   see C11 section 7.21.6.12:2 http://rvdoc.org/C11/7.21.6.12
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
+   see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
+   see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
+Nothing
+ 'v*printf': uninitialized va_list argument.
+   at vasprintf(UB-STDIO3-bad.c:24:7)
+   by main(UB-STDIO3-bad.c:24:7)
+  Undefined behavior (UB-STDIO3).
+   see C11 section 7.21.6.10:2 http://rvdoc.org/C11/7.21.6.10
+   see C11 section 7.21.6.12:2 http://rvdoc.org/C11/7.21.6.12
+   see C11 section 7.21.6.13:2 http://rvdoc.org/C11/7.21.6.13
    see C11 section J.2:1 item 169 http://rvdoc.org/C11/J.2
    see CERT-C section DCL10-C http://rvdoc.org/CERT-C/DCL10-C
 Nothing

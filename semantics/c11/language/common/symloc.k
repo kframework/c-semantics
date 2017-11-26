@@ -6,6 +6,7 @@ module C-SYMLOC-SYNTAX
 
      // Base, type
      syntax SymBase ::= bnew(Int, Type, Duration) [function]
+     syntax SymBase ::= bnew(Int, Type, LinkDuration) [function, klabel(bnew2)]
      syntax SymBase ::= linc(Type, Duration) [function]
      syntax SymLoc ::= lnew(SymBase) [function]
      syntax SymLoc ::= restrictedNew(SymBase, Scope) [function]
@@ -13,17 +14,9 @@ module C-SYMLOC-SYNTAX
      syntax Set ::= getBases(SymLoc) [function, klabel(getBases)]
      syntax Set ::= getBases(Set) [function]
 
-     syntax SymLoc ::= stripLastAccessType(CValue) [function]
-
      // Used for detecting violations of aliasing restictions on
      // restrict-qualified pointers.
      syntax Provenance ::= basedOn(SymBase, Scope)
-     // Used to tag union and struct members so the rest of the bytes in the union 
-     // (or the padding bytes of the struct) can be marked as unspecified upon write.
-     syntax Provenance ::= fromUnion(SymLoc, CId, FieldInfo, Bool)
-     // Used to tag lvalues with their last-access type for checking and
-     // updating the effective types of accesses.
-     syntax Provenance ::= objectType(Type)
 
      syntax Bool ::= hasUnionMarker(SymLoc) [function]
      syntax Bool ::= ifFromArrayInBounds(SymLoc, UType, Int) [function]
@@ -42,12 +35,14 @@ module C-SYMLOC
      imports C-DYNAMIC-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule bnew(I::Int, T::Type, D::Duration)
-          => obj(I, getAlignas(T), D)
+     rule bnew(I::Int, T::Type, D::Duration) => obj(I, getAlignas(T), D)
+     rule bnew(I::Int, T::Type, D::LinkDuration) => obj(I, getAlignas(T), D)
+
      rule linc(T::Type, D::Duration) => bnew(!I:Int, T, D)
+
      rule lnew(Base::SymBase) => loc(Base, 0)
-     rule restrictedNew(Base:SymBase, Tag:Scope)
-          => addProv(basedOn(Base, Tag), lnew(Base))
+
+     rule restrictedNew(Base:SymBase, Tag:Scope) => addProv(basedOn(Base, Tag), lnew(Base))
 
      rule getBases(Loc:SymLoc) => getBases(prov(Loc))
 
@@ -56,11 +51,6 @@ module C-SYMLOC
      syntax Bool ::= isBase(Provenance) [function]
      rule isBase(basedOn(_, _)) => true
      rule isBase(_) => false [owise]
-
-     rule hasUnionMarker(loc(Base:SymBase, Offset:Int, SetItem(K:K) S:Set))
-          => getKLabel(K) ==K #klabel(`fromUnion`)
-          orBool hasUnionMarker(loc(Base, Offset, S))
-     rule hasUnionMarker(_) => false [owise]
 
      rule stripBases(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripBases(loc(Base:SymBase, Offset:Int, Prov:Set))
@@ -90,9 +80,5 @@ module C-SYMLOC
      rule #ifFromArrayInBounds(K:K, SetItem(K':K) S:Set, T::UType, I:Int)
           => #ifFromArrayInBounds(K', S, T, I)
           requires getKLabel(K) =/=K #klabel(`fromArray`)
-
-     rule stripLastAccessType(loc(Base::SymBase, Offset::Int, Prov:Set SetItem(objectType(_))))
-          => stripLastAccessType(loc(Base, Offset, Prov))
-     rule stripLastAccessType(V::CValue) => V [owise]
 
 endmodule

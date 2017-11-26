@@ -43,9 +43,6 @@ module C-TRANSLATION-INIT
      rule preDeclareStrings(.List) => .K
           [structural]
 
-     rule <k> reportSuccess => .K ...</k>
-          <result-value> _ => 0 </result-value>
-
      rule CodeLoc(K:K, L:CabsLoc) => filterCabsLoc(L) ~> K
      rule DefinitionLocRange(K:K, L1:CabsLoc, L2:CabsLoc)
           => filterCabsLoc(L1) ~> K ~> filterCabsLoc(L2)

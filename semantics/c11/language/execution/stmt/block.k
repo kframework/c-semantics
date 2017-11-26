@@ -3,26 +3,25 @@ module C-STMT-BLOCK
      imports INT
      imports C-CHECK-LOC-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-ENV-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
-               => addToHistory(Tag) ~> enterRestrictBlock(blockScope(F, Tag))
+               => enterRestrictBlock(blockScope(F, Tag))
           ...</k>
           <curr-tu> Tu::String </curr-tu>
           <curr-scope> blockScope(F:CId, (_ => Tag)) </curr-scope>
           <block-control>
                C::Bag
-               <local-vars> Vars:List => .List </local-vars>
+               <local-vars> Vars:Set => .Set </local-vars>
                <local-addresses> Addresses:Set => .Set </local-addresses>
-               <nesting-depth> N:Int => N:Int +Int 1 </nesting-depth>
+               <block-history> History:List => ListItem(Tag) History </block-history>
           </block-control>
           <block-stack> .List
                => ListItem(<block-control>
                     C
                     <local-vars> Vars </local-vars>
                     <local-addresses> Addresses </local-addresses>
-                    <nesting-depth> N </nesting-depth>
+                    <block-history> History </block-history>
                </block-control>)
           ...</block-stack>
           [structural]

@@ -30,10 +30,7 @@ module C-MEMORY-ALLOC
      imports STRING
      imports SYMLOC-SYNTAX
 
-     rule allocObject(Base:SymBase, T:Type) => #allocObject(Base, T, sizeof(T))
-          requires notBool isVoidType(T)
-          [structural]
-     rule allocObject(_, _:VoidType) => .K
+     rule allocObject(Base::SymBase, T::Type) => #allocObject(Base, T, sizeof(T))
           [structural]
 
      syntax KItem ::= #allocObject(SymBase, Type, K)
@@ -42,22 +39,30 @@ module C-MEMORY-ALLOC
           => alloc(Base, T, I)
           [structural]
 
-     rule <k> alloc(Base::SymBase, T::Type, Len::Int) => .K ...</k>
+     rule <k> alloc(Base:DirectBase, T::Type, Len::Int) => .K ...</k>
           <mem>...
                .Map => Base |-> object(stripStorageSpecifiers(T), Len, makeEmptyArray(Len))
           ...</mem>
-          requires notBool isLinkerLoc(Base)
+          requires notBool isNoType(T)
+          [structural]
+     rule <k> alloc(Base:DirectBase, T:NoType, Len::Int) => .K ...</k>
+          <mem>...
+               .Map => Base |-> object(dynamicType(T), Len, makeEmptyArray(Len))
+          ...</mem>
           [structural]
 
      // Used by calloc.
-     syntax Map ::= createMap(List, Bits) [function]
-     rule createMap(.List, _:Bits) => .Map
-     rule createMap(ListItem(I:K) L:List, B:Bits) => (I |-> B) createMap(L, B)
+     syntax Array ::= createArray(Int, Bits) [function]
+     rule createArray(I::Int, B::Bits) => fillArray(0, I, makeEmptyArray(I), B)
+     syntax Array ::= fillArray(Int, Int, Array, Bits) [function]
+     rule fillArray(I::Int, Len::Int, A::Array, B::Bits) => fillArray(I +Int 1, Len, A [ I <- B ], B)
+          requires I <Int Len
+     rule fillArray(Len::Int, Len, A::Array, _) => A
 
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int,
-                    _ => makeArray(Len, piece(0, cfg:bitsPerByte)))
+                    _ => createArray(Len, piece(0, cfg:bitsPerByte)))
           ...</mem>
           [structural]
 

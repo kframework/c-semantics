@@ -1,14 +1,17 @@
 module C-TYPING-SORTS
      syntax EffectiveType ::= Type
      syntax Type ::= FunctionType
+     syntax CId
      syntax FunctionType
      syntax UType
      syntax DType
+
      syntax SimpleType
      syntax SimpleUType
      syntax FieldInfo
      syntax TagInfo
      syntax Variadic
+     syntax StructOrUnionType
 endmodule
 
 module C-TYPING-SYNTAX
@@ -46,39 +49,59 @@ module C-TYPING-SYNTAX
      // TODO(chathhorn): move?
      // Offsets and field names for structs and unions.
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
-     syntax EnumInfo ::= enumAlias(SimpleType)
+     syntax EnumInfo ::= enumInfo(enumAlias: SimpleType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
      syntax SimpleType ::= getEnumAlias(TagId) [function]
-     syntax List ::= getFields(FieldInfo) [function]
-     syntax Map  ::= getFieldsTypes(FieldInfo) [function]
-     syntax Map  ::= getFieldsOffsets(FieldInfo) [function]
-     syntax Int  ::= getOffsetForField(CId, Type, FieldInfo) [function]
-     syntax Type ::= getTypeForField(CId, List) [function]
+     syntax FieldInfo ::= getFields(StructOrUnionType) [function]
+     syntax FieldInfo ::= getFields(StructOrUnionUType) [function]
+     syntax FieldInfo ::= getFlatFields(StructOrUnionType) [function]
+     syntax List ::= getFieldNames(Type) [function]
+     syntax List ::= getFieldTypes(StructOrUnionType) [function]
+     syntax Int  ::= getFieldOffset(CId, StructOrUnionType) [function]
+     syntax Type ::= getFieldType(CId, StructOrUnionType) [function]
+     syntax Type ::= getActiveVariant(UnionType) [function]
+     syntax UnionType ::= setActiveVariant(Type, UnionType) [function]
+     syntax CId ::= getActiveVariantId(UnionType) [function]
+     syntax UnionType ::= setActiveVariantId(CId, UnionType) [function]
+     syntax EffectiveType ::= mergeVariants(EffectiveType, EffectiveType) [function]
+     syntax Type ::= clearActiveVariant(Type) [function]
+     syntax Int  ::= floorBitOffset(Int, Type) [function]
+     syntax Type ::= getFieldTypeAtOffset(Int, StructOrUnionType) [function]
+     syntax StructOrUnionType ::= setFieldType(CId, Type, StructOrUnionType) [function]
+     syntax StructOrUnionType ::= setFieldTypeAtOffset(Int, Type, StructOrUnionType) [function]
+     syntax Int ::= lastFieldByteOffset(StructType) [function]
+     syntax StructOrUnionType ::= resizeFlexibleType(StructOrUnionType, CId, Int) [function]
+     syntax CId ::= getUnnamed(CId, StructOrUnionType) [function]
+     syntax CId ::= getFirstField(StructOrUnionType) [function]
+
+     // These include anonymous structs/unions when looking up fields.
+     syntax List ::= findFieldNames(Type) [function]
+     syntax Int  ::= findFieldOffset(CId, StructOrUnionType) [function]
+     syntax Type ::= findFieldType(CId, Type) [function]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
-     syntax Bool ::= isCompleteType(Type) [function]
-     syntax Bool ::= isConstType(Type) [function]
-     syntax Bool ::= isFlexibleArrayType(Type) [function]
-     syntax Bool ::= isFunctionPointerType(Type) [function]
-     syntax Bool ::= isIncompleteEnumType(Type) [function]
-     syntax Bool ::= isIncompleteStructType(Type) [function]
-     syntax Bool ::= isIncompleteUnionType(Type) [function]
-     syntax Bool ::= isOldStyleFunctionType(Type) [function]
-     syntax Bool ::= isVariablyModifiedType(Type) [function]
-     syntax Bool ::= isVolatileType(Type) [function]
-     syntax Bool ::= isWCharType(Type) [function]
+                   | isCompleteType(Type) [function]
+                   | isConstType(Type) [function]
+                   | isFlexibleArrayType(Type) [function]
+                   | isFunctionPointerType(Type) [function]
+                   | isIncompleteEnumType(Type) [function]
+                   | isIncompleteStructType(Type) [function]
+                   | isIncompleteUnionType(Type) [function]
+                   | isOldStyleFunctionType(Type) [function]
+                   | isVariablyModifiedType(Type) [function]
+                   | isVolatileType(Type) [function]
+                   | isWCharType(Type) [function]
 
      // Storage class specifiers.
      syntax Bool ::= isExternType(Type) [function]
-     syntax Bool ::= isStaticType(Type) [function]
-     syntax Bool ::= isRegisterType(Type) [function]
-
+                   | isStaticType(Type) [function]
+                   | isRegisterType(Type) [function]
      // Type qualifiers.
-     syntax Bool ::= isRestrictType(Type) [function]
+                   | isRestrictType(Type) [function]
 
      syntax Set ::= "typeQualifiers" [function]
-     syntax Set ::= "storageSpecifiers" [function]
-     syntax Set ::= "functionSpecifiers" [function]
+                  | "storageSpecifiers" [function]
+                  | "functionSpecifiers" [function]
 
      // Basic types
      syntax SimpleBitfieldType ::= SimpleSignedBitfieldType | SimpleUnsignedBitfieldType
@@ -159,7 +182,6 @@ module C-TYPING-SYNTAX
                                | SimpleIncompleteArrayUType
 
      syntax FieldInfo ::= getFieldInfo(TagId) [function]
-     syntax FieldInfo ::= getFieldInfo(Type) [function]
      syntax TagInfo ::= getTagInfo(TagId) [function]
      syntax CId ::= getTag(TagId) [function]
      syntax TagInfo ::= "#incomplete"
@@ -176,7 +198,7 @@ module C-TYPING-SYNTAX
      syntax Type ::= BasicType | PointerType | AggregateOrUnionType
                    | StructOrUnionType | ArrayOrFunctionType
      syntax UType ::= PointerUType
-                    | ArrayOrFunctionUType
+                    | StructOrUnionUType | ArrayOrFunctionUType
                     | IntegerUType
                     | FloatUType
 
@@ -195,8 +217,10 @@ module C-TYPING-SYNTAX
                            | t(Quals, Set, SimpleBitfieldType)
      syntax ArrayType ::= FixedLengthArrayType | IncompleteArrayType
                         | VariableLengthArrayType
+                        | t(Quals, Set, SimpleArrayType)
      syntax PointerOrArrayType ::= PointerType | ArrayType
 
+     syntax StructOrUnionUType ::= StructUType | UnionUType
      syntax ArrayOrFunctionUType ::= FunctionUType
                                    | FixedLengthArrayUType | IncompleteArrayUType
                                    | VariableLengthArrayUType
@@ -235,6 +259,8 @@ module C-TYPING-SYNTAX
      syntax BoolUType ::= ut(Set, SimpleBoolType)
      syntax FixedLengthArrayUType ::= ut(Set, SimpleFixedArrayUType)
      syntax VariableLengthArrayUType ::= ut(Set, SimpleVariableArrayUType)
+     syntax StructUType ::= ut(Set, SimpleStructType)
+     syntax UnionUType ::= ut(Set, SimpleUnionType)
      syntax IncompleteArrayUType ::= ut(Set, SimpleIncompleteArrayUType)
      syntax SignedBitfieldUType ::= ut(Set, SimpleSignedBitfieldType)
      syntax UnsignedBitfieldUType ::= ut(Set, SimpleUnsignedBitfieldType)
@@ -253,8 +279,6 @@ module C-TYPING-SYNTAX
      syntax Float ::= fmin(UType) [function]
      syntax Bool ::= inRange(CValue, UType) [function]
 
-     syntax Modifier ::= "noModifier"
-
      syntax Modifier ::= Packed()
 
      // Returns both type qualifiers, storage class specifiers, and any the
@@ -267,17 +291,12 @@ module C-TYPING-SYNTAX
      syntax Modifier ::= arrayStatic(Int)
      syntax Modifier ::= atomic(Type)
      syntax Modifier ::= alignas(Int)
+     syntax Modifier ::= FieldInfo
 
      syntax Bool ::= sameAlignas(Set, Set) [function]
      syntax Int ::= getAlignasMod(Set) [function]
 
      syntax Modifier ::= readFrom(SymLoc, Int)
-     // Lock an offset into a type to a certain type, for the purposes of
-     // setting active union variants for getTypesAtOffset. Note that we
-     // propagate these locks up through aggregates (which is the reason for
-     // the offset) because we need copies of the type information for fields
-     // stored in the global <tags> cell.
-     syntax Modifier ::= lock(Int, Type)
 
      // Special restrict modifier tagged with a block num.
      syntax Modifier ::= RestrictBlock(Scope)
@@ -315,6 +334,10 @@ module C-TYPING-SYNTAX
      syntax Type ::= innerType(Type) [function]
      syntax Type ::= innerType(UType) [function]
 
+     // Offset of element in bits.
+     syntax ArrayType ::= setElementType(Int, Type, ArrayType) [function]
+     syntax Type ::= getElementType(Int, ArrayType) [function]
+
      syntax Bool ::= fromConstantExpr(UType) [function]
      syntax Bool ::= fromConstantExpr(Type) [function]
      syntax Bool ::= fromConstantExpr(RValue) [function]
@@ -336,13 +359,6 @@ module C-TYPING-SYNTAX
 
      syntax Int ::= arrayLength(Type) [function]
 
-     // Returns all types at an offset -- i.e., for a struct, union, or array,
-     // it'll return the struct/union/array type in addition to the type or
-     // types of its members. It only returns the type of the active variant of
-     // a union, if there is one. Otherwise, it returns the types of all
-     // variants.
-     syntax List ::= getTypesAtOffset(Type, Int) [function]
-
      syntax Bool ::= isTruthValue(RValue) [function]
 
      syntax KItem ::= stabilizeVLA(Type)
@@ -353,15 +369,9 @@ module C-TYPING-SYNTAX
      // be promoted on call.
      syntax Type ::= toPrototype(Type) [function]
 
-     syntax Type ::= unlock(Int, Type) [function]
-     syntax Type ::= unlockAll(Type) [function]
-
      // A flexible type is a struct with a flexible array member or a union
      // with a member that has a flexible type.
-     syntax Bool ::= isFlexibleType(Type) [function]
-
-     // Locks the type of the flexible array member to a fixed array.
-     syntax Type ::= lockFlexibleStruct(Type, Int) [function]
+     syntax Bool ::= isFlexibleType(EffectiveType) [function]
 
      // moved from BITSIZE because type compatibility depends on it quite indirectly
      syntax Int ::= numBytes(SimpleType) [function]
@@ -374,13 +384,14 @@ module C-TYPING-SYNTAX
      syntax Int ::= "maxFloatPrecision" [function]
      syntax Int ::= "maxFloatExponent" [function]
 
-     syntax Bool ::= anonInDecls(List) [function]
-     // Search - anonymous fields
-     syntax ProvInfo ::= provInfo(CId, Bool, FieldInfo)
-     syntax List  ::= searchAnons(CId, Bool, FieldInfo, Int, List, List) [function]
-
      syntax UType ::= arrayToPtrType(Type) [function]
 
      syntax String ::= showType(Type) [function]
      syntax String ::= showDType(DType) [function]
+
+     // Effective type of malloced regions.
+     syntax DynamicType ::= dynamicType(Type)
+     syntax KResult ::= DynamicType
+     syntax EffectiveType ::= DynamicType
+
 endmodule

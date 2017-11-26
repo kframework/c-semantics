@@ -11,19 +11,19 @@ module C-IO-DIRECT
      imports C-DYNAMIC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= writeBytes(SymLoc, DataList)
      syntax KItem ::= writeByte(SymLoc, Bits)
 
-     rule writeBytes(Loc::SymLoc, D:DataList, _) => writeBytes(stripProv(Loc), D)
+     rule writeBytes(Loc::SymLoc, dataList(Bytes::List), _) => writeBytes(stripProv(Loc), Bytes)
           [structural]
 
-     rule writeBytes(Loc::SymLoc, dataList(ListItem(V:Bits) L::List))
-          => writeByte(Loc, V) ~> writeBytes(Loc +bytes 1, dataList(L))
+     rule writeBytes(Loc::SymLoc, ListItem(V:Bits) L::List)
+          => writeByte(Loc, V) ~> writeBytes(Loc +bytes 1, L)
           [structural]
 
-     rule writeBytes(_, dataList(.List)) => .K
+     rule writeBytes(_, .List) => .K
           [structural]
 
      rule <k> writeByte(loc(Base::SymBase, Offset::Int), V::Bits) => .K ...</k>
@@ -65,5 +65,8 @@ module C-IO-DIRECT
           [structural]
      rule readBytes'(_, 0, Aux:List) => dataList(Aux)
           [structural]
+
+     rule checkEffectiveType(_, _, _) => .K
+     rule adjustPointerBounds(V::RValue) => V
 
 endmodule

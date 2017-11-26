@@ -2,4 +2,6 @@ static-assert.c:1:16: error: Static assertion failed: fifty minus fifty must be 
   Constraint violation (CV-SSA2).
    see C11 section 6.7.10:2 http://rvdoc.org/C11/6.7.10
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors static-assert.c to see commands run.
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors static-assert.c

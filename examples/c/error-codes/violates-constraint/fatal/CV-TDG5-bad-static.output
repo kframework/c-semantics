@@ -2,4 +2,6 @@ CV-TDG5-bad-static.c:1:1: error: Function parameter appears with storage class o
   Constraint violation (CV-TDG5).
    see C11 section 6.7.6.3:2 http://rvdoc.org/C11/6.7.6.3
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d CV-TDG5-bad-static.c to see commands run.
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
+kcc -d CV-TDG5-bad-static.c

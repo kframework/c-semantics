@@ -12,6 +12,13 @@ module SYMLOC-SYNTAX
 
      syntax SymBase ::= base(IntPtr) [function]
      syntax Int ::= offset(SymLoc) [function]
+     syntax Int ::= bitOffset(SymLoc) [function]
+     syntax Int ::= bitOffsetIntoLastByte(SymLoc) [function]
+     syntax SymLoc ::= setBitOffset(Int, SymLoc) [function]
+
+     // libc duration
+     syntax Duration ::= "libc"
+     syntax Duration ::= "libcFixed"
 
      // Allocated duration.
      syntax Duration ::= "alloc"
@@ -19,7 +26,6 @@ module SYMLOC-SYNTAX
      syntax Duration ::= "dynamic"
      // Static duration.
      syntax Duration ::= static(String)
-     syntax Duration ::= link(String)
      syntax Duration ::= string(String)
      syntax Duration ::= wstring(List)
      syntax Duration ::= builtinSymbol(String)
@@ -35,6 +41,8 @@ module SYMLOC-SYNTAX
 
      syntax Duration ::= nativeAddress()
 
+     syntax LinkDuration ::= link(String)
+
      syntax Bool ::= isAllocatedDuration(SymLoc) [function]
      syntax Bool ::= isAllocatedDuration(SymBase) [function, klabel(isAllocatedDuration2)]
      // I.e., static or link.
@@ -46,7 +54,6 @@ module SYMLOC-SYNTAX
 
      syntax Bool ::= isStringLoc(SymLoc) [function]
      syntax Bool ::= isLinkerLoc(SymLoc) [function]
-     syntax Bool ::= isLinkerLoc(SymBase) [function, klabel(isLinkerLoc2)]
      syntax Bool ::= isBuiltinLoc(SymLoc) [function]
      syntax Bool ::= isBuiltinLoc(SymBase) [function, klabel(isBuiltinLoc2)]
      syntax Bool ::= isRegisterLoc(SymLoc) [function]
@@ -55,8 +62,10 @@ module SYMLOC-SYNTAX
 
      syntax SymBase ::= autoToRegister(SymBase) [function]
 
-     syntax SymBase ::= obj(id: Int, align: Int, d: Duration)
+     syntax DirectBase ::= obj(id: Int, align: Int, d: Duration)
+     syntax LinkBase ::= obj(id: Int, align: Int, d: LinkDuration)
 
+     syntax SymBase ::= DirectBase | LinkBase
 
      syntax SymLoc ::= resolveLinking(SymLoc, Map) [function]
 
@@ -83,7 +92,6 @@ module SYMLOC-SYNTAX
      syntax String ::= getTU(SymBase) [function, klabel(getTU2)]
      syntax ThreadId ::= getThreadId(SymLoc) [function]
      syntax ThreadId ::= Int | "no-thread"
-     syntax Int ::= getBitOffset(SymLoc) [function]
 
      syntax Set ::= prov(SymLoc) [function]
      syntax SymLoc ::= addProv(Provenance, SymLoc) [function]
@@ -93,8 +101,6 @@ module SYMLOC-SYNTAX
      // bounds of that array, even if that array happens to be part of a larger
      // object (i.e., surrounded by valid addresses).
      syntax Provenance ::= fromArray(Int, Int)
-     // used to tag bit fields so that we know how many bits into the current byte they begin
-     syntax Provenance ::= bitOffset(Int)
 
      syntax Bool ::= isFromArray(SymLoc) [function]
 
@@ -110,6 +116,7 @@ module SYMLOC
      imports COMPAT
      imports K-REFLECTION
      imports MAP
+     imports SETTINGS-SYNTAX
 
      rule isAllocatedDuration(NullPointer) => false
      rule isAllocatedDuration(Loc:SymLoc) => isAllocatedDuration(base(Loc)) [owise]
@@ -146,19 +153,13 @@ module SYMLOC
      rule isStringLoc(_) => false [owise]
 
      rule isLinkerLoc(NullPointer) => false
-     rule isLinkerLoc(Loc:SymLoc) => isLinkerLoc(base(Loc)) [owise]
-
-     rule isLinkerLoc(obj(... d: link(_))) => true
-     rule isLinkerLoc(_::SymBase) => false [owise]
+     rule isLinkerLoc(Loc:SymLoc) => isLinkBase(base(Loc)) [owise]
 
      rule isBuiltinLoc(NullPointer) => false
      rule isBuiltinLoc(Loc:SymLoc) => isBuiltinLoc(base(Loc)) [owise]
 
      rule isBuiltinLoc(obj(... d: builtinSymbol(_))) => true
      rule isBuiltinLoc(_::SymBase) => false [owise]
-
-     rule isLinkerLoc(NullPointer) => false
-     rule isLinkerLoc(Loc::SymLoc) => isLinkerLoc(base(Loc)) [owise]
 
      rule isRegisterLoc(loc(obj(... d: register(_)), _)) => true
      rule isRegisterLoc(loc(obj(... d: register(_)), _, _)) => true
@@ -266,19 +267,29 @@ module SYMLOC
      rule stripProv(loc(Base:SymBase, Offset:Int)) => loc(Base, Offset)
      rule stripProv(Loc:SymLoc) => Loc [owise]
 
-     rule getBitOffset(loc(_, _, _:Set SetItem(bitOffset(I::Int)))) => I
+     rule bitOffset(Loc::SymLoc) => (offset(Loc) *Int cfg:bitsPerByte) +Int getBitOffset(Loc)
+
+     rule bitOffsetIntoLastByte(Loc::SymLoc) => getBitOffset(Loc)
+
+     // used to tag bit fields so that we know how many bits into the current byte they begin
+     syntax Provenance ::= bits(Int)
+     syntax Int ::= getBitOffset(SymLoc) [function]
+     rule getBitOffset(loc(_, _, _:Set SetItem(bits(I::Int)))) => I
      rule getBitOffset(_) => 0 [owise]
+
+     rule setBitOffset(0, Loc::SymLoc) => Loc
+     rule setBitOffset(Offset::Int, Loc::SymLoc) => addProv(bits(Offset), Loc) [owise]
 
      rule stripProv(loc(Base::SymBase, Offset::Int, SetItem(K:K) S::Set), Lbl:K) => loc(Base, Offset, S)
           requires getKLabel(K) ==K Lbl
      rule stripProv(Loc::SymLoc, _) => Loc [owise]
+
      rule getProv(loc(_, _, SetItem(K:K) _), Lbl:K) => K
           requires getKLabel(K) ==K Lbl
      rule getProv(_, _) => .K [owise]
 
      rule resolveLinking(loc(Base::SymBase, Offset::Int, Prov::Set), _ Base |-> Base'::SymBase) => loc(Base', Offset, Prov)
      rule resolveLinking(loc(Base::SymBase, Offset::Int), _ Base |-> Base'::SymBase) => loc(Base', Offset)
-     rule resolveLinking(Loc::SymLoc, _) => Loc
-          requires notBool isLinkerLoc(Loc) [owise]
+     rule resolveLinking(Loc::SymLoc, _) => Loc [owise]
 endmodule
 

@@ -1,2 +1,3 @@
 j085c.c[1:5-29] : undeclared identifier in parameter identifier list
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j085c.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j085c.c

@@ -13,19 +13,18 @@ module CPP-LINKING-RESOLUTION
      imports CPP-TYPE-MAP-SYNTAX
 
      // used by local statics
-     rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
+     rule <k> resolveCPPReference(OdrBase:DirectBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(ktriple(Tu::String, QX::QualId, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
           <odr-defs>... QX |-> (T |-> _ _::TypeMap) ...</odr-defs>
-          requires notBool isLinkerLoc(OdrBase)
 
      rule <k> resolveCPPReference(Base::SymBase) => .K ...</k>
           <odr-decls>...
                (Base::SymBase |-> .Set => .Map)
           ...</odr-decls>
 
-     rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
+     rule <k> resolveCPPReference(OdrBase:LinkBase) ...</k>
           <odr-decls>...
                OdrBase |-> (SetItem(ktriple(Tu::String, N:Namespace :: X::CId, T::CPPType)) => .Set) _::Set
           ...</odr-decls>
@@ -34,7 +33,6 @@ module CPP-LINKING-RESOLUTION
           <ns-id> N </ns-id>
           <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase => Base') _::TypeMap) ...</nenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
-          requires isLinkerLoc(Base)
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -43,8 +41,7 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... N :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::TypeMap) ...</nenv>
-          requires notBool isLinkerLoc(Base)
+          <nenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</nenv>
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -53,9 +50,9 @@ module CPP-LINKING-RESOLUTION
           <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase => Base') _::TypeMap) ...</nenv>
+          <nenv>... X |-> (T |-> envEntry(... base: Base:LinkBase => Base') _::TypeMap) ...</nenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
-          requires isLinkerLoc(Base) andBool isCLinkage(T)
+          requires isCLinkage(T)
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -64,8 +61,8 @@ module CPP-LINKING-RESOLUTION
           <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
           <ns-id> N </ns-id>
-          <nenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::TypeMap) ...</nenv>
-          requires notBool isLinkerLoc(Base) andBool isCLinkage(T)
+          <nenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</nenv>
+          requires isCLinkage(T)
 
      rule <k> (.K => ILL("TDR3",
                     "No definition for function or variable which was odr-used: "
@@ -118,9 +115,8 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... C :: X |-> (T |-> Base'::SymBase _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> envEntry(... base: (Base::SymBase => Base')) _::TypeMap) ...</cenv>
+          <cenv>... X |-> (T |-> envEntry(... base: (Base:LinkBase => Base')) _::TypeMap) ...</cenv>
           <linkings>... (.Map => Base |-> Base') ...</linkings>
-          requires isLinkerLoc(Base)
 
      rule <k> resolveCPPReference(OdrBase::SymBase) ...</k>
           <odr-decls>...
@@ -129,7 +125,6 @@ module CPP-LINKING-RESOLUTION
           <odr-defs>... C :: X |-> (T |-> _ _::TypeMap) ...</odr-defs>
           <tu-id> Tu </tu-id>
           <class-id> C </class-id>
-          <cenv>... X |-> (T |-> envEntry(... base: Base::SymBase) _::TypeMap) ...</cenv>
-          requires notBool isLinkerLoc(Base)
+          <cenv>... X |-> (T |-> envEntry(... base: Base:DirectBase) _::TypeMap) ...</cenv>
 
 endmodule

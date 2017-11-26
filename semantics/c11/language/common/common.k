@@ -31,6 +31,7 @@ require "memory/writing.k"
 
 require "typing/common.k"
 require "typing/compatibility.k"
+require "typing/effective.k"
 require "typing/misc.k"
 require "typing/predicates.k"
 
@@ -68,6 +69,7 @@ module C-COMMON
 
      imports C-TYPING-COMMON
      imports C-TYPING-COMPATIBILITY
+     imports C-TYPING-EFFECTIVE
      imports C-TYPING-MISC
      imports C-TYPING-PREDICATES
 

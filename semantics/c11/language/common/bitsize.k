@@ -5,14 +5,9 @@ module C-BITSIZE-SYNTAX
 
      syntax Int ::= bitSizeofType(UType) [function]
      syntax Int ::= bitSizeofType(Type) [function]
-     syntax Int ::= bitSizeofType(SimpleType) [function, klabel(bitSizeofSimpleType)]
-     syntax Int ::= bitSizeofType(SimpleUType) [function, klabel(bitSizeofSimpleType)]
 
      syntax Int ::= byteSizeofType(UType) [function]
      syntax Int ::= byteSizeofType(Type) [function]
-
-     syntax Int ::= bitSizeofStruct(FieldInfo) [function]
-     syntax Int ::= bitSizeofUnion(FieldInfo) [function]
 
      syntax KItem ::= sizeof(K) [strict]
 
@@ -40,11 +35,26 @@ module C-BITSIZE
           requires notBool isVariableLengthArrayType(T)
           [structural]
 
-     rule bitSizeofType(t(_, _, T::SimpleType)) => bitSizeofType(T)
-     rule bitSizeofType(ut(_, T::SimpleUType)) => bitSizeofType(T)
+     rule byteSizeofType(t(...) #as T::Type) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
+     rule byteSizeofType(ut(...) #as T::UType) => (bitSizeofType(type(T)) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
 
-     rule byteSizeofType(t(_, _, T::SimpleType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
-     rule byteSizeofType(ut(_, T::SimpleUType)) => (bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte
+     rule bitSizeofType(T:StructOrUnionType) => bitSizeofFields(getFields(T))
+     rule bitSizeofType(t(_, _, T'::SimpleType) #as T::Type) => bitSizeofSimpleType(T')
+          requires notBool isStructOrUnionType(T)
+     rule bitSizeofType(ut(_, T'::SimpleUType) #as T::UType) => bitSizeofSimpleType(T')
+          requires notBool isStructOrUnionType(type(T))
+
+     syntax Int ::= bitSizeofSimpleType(SimpleType) [function]
+                  | bitSizeofSimpleType(SimpleUType) [function]
+     rule bitSizeofSimpleType(no-type) => 0
+     rule bitSizeofSimpleType(arrayUType(T::UType, N::Int)) => bitSizeofType(T) *Int N
+     rule bitSizeofSimpleType(arrayType(T::Type, N::Int)) => bitSizeofType(T) *Int N
+     rule bitSizeofSimpleType(flexibleArrayType(_)) => 0
+     rule bitSizeofSimpleType(flexibleArrayUType(_)) => 0
+     rule bitSizeofSimpleType(functionType(_, _)) => cfg:bitsPerByte
+     rule bitSizeofSimpleType(pointerType(_)) => cfg:ptrsize *Int cfg:bitsPerByte
+     rule bitSizeofSimpleType(bitfieldType(_, N::Int)) => N
+     rule bitSizeofSimpleType(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte [owise]
 
      syntax Int ::= "maxByteSizeofList'" "(" Int "," List ")" [function]
      rule maxByteSizeofList(L:List) => maxByteSizeofList'(0, L)
@@ -54,22 +64,8 @@ module C-BITSIZE
           => maxByteSizeofList'(maxInt(Sz, byteSizeofType(utype(T))), LL)
      rule maxByteSizeofList'(Sz:Int, .List) => Sz
 
-     rule bitSizeofType(no-type) => 0
-     rule bitSizeofType(arrayUType(T::UType, N::Int)) => bitSizeofType(T) *Int N
-     rule bitSizeofType(arrayType(T::Type, N::Int)) => bitSizeofType(T) *Int N
-     rule bitSizeofType(flexibleArrayType(_)) => 0
-     rule bitSizeofType(flexibleArrayUType(_)) => 0
-     rule bitSizeofType(functionType(_, _)) => cfg:bitsPerByte
-     rule bitSizeofType(pointerType(_)) => cfg:ptrsize *Int cfg:bitsPerByte
-     rule bitSizeofType(bitfieldType(_, N::Int)) => N
-     rule bitSizeofType(T::SimpleType) => numBytes(T) *Int cfg:bitsPerByte [owise]
-
-     rule bitSizeofType(structType(S::TagId))
-          => bitSizeofStruct(getFieldInfo(S))
-     rule bitSizeofType(unionType(S::TagId))
-          => bitSizeofUnion(getFieldInfo(S))
-
-     rule bitSizeofStruct(fieldInfo(_, NBits:Int, _, _, _)) => NBits
-     rule bitSizeofUnion(fieldInfo(_, NBits:Int, _, _, _)) => NBits
+     syntax Int ::= bitSizeofFields(FieldInfo) [function]
+     rule bitSizeofFields(fieldInfo(_, NBits:Int, _, _, _)) => NBits
+     rule bitSizeofFields(_) => 0 [owise]
 
 endmodule

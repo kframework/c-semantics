@@ -86,29 +86,29 @@ module C-TYPING-COMPATIBILITY
           => #areTagsCompat(getTag(S), getTag(S'))
 
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, structType(S::TagId)),
-               t(Qs, Mods'::Set, structType(S'::TagId)), Cache::Set)
+               t(Qs::Quals, _, structType(S::TagId)) #as T::StructType,
+               t(Qs, _, structType(S'::TagId)) #as T'::StructType, Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areStructsCompat(getTagInfo(S), getTagInfo(S'),
+                    andBool #areStructsCompat(getFields(T), getFields(T'),
                     Cache SetItem(kpair(S, S'))))
      rule #areCompat(
-               t(Qs::Quals, Mods::Set, unionType(S::TagId)),
-               t(Qs, Mods'::Set, unionType(S'::TagId)), Cache::Set)
+               t(Qs::Quals, _, unionType(S::TagId)) #as T::UnionType,
+               t(Qs, _, unionType(S'::TagId)) #as T'::UnionType, Cache::Set)
           => true
           requires S ==K S'
                orBool kpair(S, S') in Cache
                orBool (#areTagsCompat(getTag(S), getTag(S'))
-                    andBool #areStructsCompat(getTagInfo(S), getTagInfo(S'),
+                    andBool #areStructsCompat(getFields(T), getFields(T'),
                     Cache SetItem(kpair(S, S'))))
 
-     syntax Bool ::= #areStructsCompat(K, K, Set) [function, memo]
+     syntax Bool ::= #areStructsCompat(FieldInfo, FieldInfo, Set) [function, memo]
      rule #areStructsCompat(fieldInfo(Fs::List, _, _, _, _), fieldInfo(Fs'::List, _, _, _, _), Cache::Set)
           => #areCompatFields(Fs, Fs', Cache)
-     rule #areStructsCompat(#incomplete, _, _) => true
-     rule #areStructsCompat(_, #incomplete, _) => true
+          requires Fs =/=K .List andBool Fs' =/=K .List
+     rule #areStructsCompat(_, _, _) => true [owise]
 
      syntax Bool ::= #areTagsCompat(K, K) [function]
      rule #areTagsCompat(C::CId, C::CId) => true

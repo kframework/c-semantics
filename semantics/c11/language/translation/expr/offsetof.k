@@ -30,7 +30,7 @@ module C-EXPR-OFFSETOF
      rule offsetOf'(K:K, F:CId) => K . F
 
      syntax KItem ::= toOffset(K) [strict]
-     rule toOffset(nclv(Loc:SymLoc, T::Type)) => tv(offset(Loc), utype(cfg:sizeut))
+     rule toOffset(nclv(Loc:SymLoc, T::Type)) => tv(offset(Loc), addModifier(IntegerConstant, utype(cfg:sizeut)))
           requires notBool isBitfieldType(T)
           [structural]
      rule (.K => UNDEF("TEOFF1", "Offsetof member designator specifies a bit-field."))

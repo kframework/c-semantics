@@ -1,2 +1,3 @@
 no-return.c[1:1-4] : In C99 and higher, functions must have a return type
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors no-return.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors no-return.c

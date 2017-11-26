@@ -48,58 +48,39 @@ module C-DECL-LOCAL
           ...</local-statics>
           requires isStaticType(T)
           [structural]
-     rule declareInternalVariable(X:CId, _, initValue(_, T:Type, .K))
-          => declareOnly(X, T)
+     rule <k> declareInternalVariable(X:CId, _, initValue(_, T::Type, Init:K))
+               => declareAndDefine(X, T, Init)
+          ...</k>
+          <env> Env::Map </env>
           requires notBool isStaticType(T)
                andBool notBool isExternType(T)
                andBool notBool isFunctionType(T)
                andBool notBool isVariablyModifiedType(T)
+               andBool notBool (isCompoundLiteralId(X) andBool X in_keys(Env))
           [structural]
-     rule declareInternalVariable(X:CId, _, initValue(_, T:Type, Init:K))
-          => declareAndDefine(X, T, Init)
+     // Compound literal encountered again after goto.
+     rule <k> declareInternalVariable(X:CId, _, initValue(_, T::Type, Init:K))
+               => allowInit(Init)
+               ~> sequencePoint
+          ...</k>
+          <env> Env::Map </env>
           requires notBool isStaticType(T)
                andBool notBool isExternType(T)
                andBool notBool isFunctionType(T)
-               andBool Init =/=K .K
                andBool notBool isVariablyModifiedType(T)
+               andBool isCompoundLiteralId(X) andBool X in_keys(Env)
           [structural]
-     rule declareInternalVariable(_, _, (initValue(X:CId, T:Type, Init:K)
+     rule declareInternalVariable(_, _, (initValue(X::CId, T::Type, Init:K)
                => stabilizeInitType(initValue(X, T, Init))))
           requires isVariablyModifiedType(T)
           [structural]
 
      syntax KItem ::= stabilizeInitType(K)
-     rule (.K => stabilizeVLA(T)) ~> stabilizeInitType(initValue(_, T:Type, _))
+     rule (.K => stabilizeVLA(T)) ~> stabilizeInitType(initValue(_, T::Type, _))
           [structural]
      rule <k> T:Type ~> stabilizeInitType(initValue(X::CId, _, K:K))
           => checkStackDepth ~> initValue(X, T, K) ...</k>
-          <stack-depth> ListItem(I::Int => I +Int cfg:stackSize(.List, ListItem(T))) ...</stack-depth>
-          [structural]
-
-     syntax KItem ::= declareOnly(CId, Type)
-     rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, .K, linc(T, D))
-          ...</k>
-          <duration> D:Duration </duration>
-          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          requires isCompleteType(T)
-               andBool notBool isRegisterType(T)
-               andBool (notBool X in Vars)
-          [structural]
-     rule <k> declareOnly(X:CId, T:Type)
-               => defineAndInit(X, T, .K, autoToRegister(linc(T, D)))
-          ...</k>
-          <duration> D:Duration </duration>
-          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          requires isCompleteType(T)
-               andBool isRegisterType(T)
-               andBool (notBool X in Vars)
-          [structural]
-     // Same as above, but for the case where the variable has already been
-     // declared. This is seen if we goto earlier in the same block.
-     rule <k> declareOnly(X:CId, T:Type) => .K ...</k>
-          <local-vars> Vars:List </local-vars>
-          requires isCompleteType(T) andBool X in Vars
+          <stack-depth> I::Int => I +Int cfg:stackSize(.List, ListItem(T)) </stack-depth>
           [structural]
 
      syntax KItem ::= declareAndDefine(CId, Type, K)
@@ -107,61 +88,37 @@ module C-DECL-LOCAL
                => defineAndInit(X, T, Init, linc(T, D))
           ...</k>
           <duration> D:Duration </duration>
-          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          requires notBool X in Vars
-               andBool notBool isRegisterType(T)
+          <local-vars>... .Set => SetItem(X) </local-vars>
+          requires notBool isRegisterType(T)
           [structural]
      rule <k> declareAndDefine(X:CId, T:Type, Init:K)
                => defineAndInit(X, T, Init, autoToRegister(linc(T, D)))
           ...</k>
           <duration> D:Duration </duration>
-          <local-vars> Vars:List (.List => ListItem(X)) </local-vars>
-          requires notBool X in Vars
-               andBool isRegisterType(T)
-          [structural]
-     // This happens when we jump before a variable declaration with an
-     // initialization in the same block.
-     rule <k> declareAndDefine(X:CId, T:Type, Init:K)
-               => giveType(X, T)
-               ~> allowInit(Init)
-               ~> sequencePoint
-          ...</k>
-          <local-vars> Vars:List </local-vars>
-          requires X in Vars
+          <local-vars>... .Set => SetItem(X) </local-vars>
+          requires isRegisterType(T)
           [structural]
 
      syntax KItem ::= defineAndInit(CId, Type, K, SymBase)
-     rule <k> defineAndInit(X:CId, T:Type, K:K, Base:SymBase)
+     rule <k> defineAndInit(X:CId, T:Type, Init:K, Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> allowInit(K)
+               ~> allowInit(Init)
                ~> sequencePoint
           ...</k>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
           <should-init> true </should-init>
+          requires Init =/=K .K
           [structural]
-     rule <k> defineAndInit(X:CId, T:Type, _, Base:SymBase)
+     rule <k> defineAndInit(X:CId, T:Type, Init:K, Base:SymBase)
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
           ...</k>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
-          <should-init> false </should-init>
-          [structural]
-     rule <k> defineAndInit(X:CId, T:Type, .K, Base:SymBase)
-               => allocObject(Base, T)
-               ~> addToEnv(X, Base)
-               ~> giveType(X, T)
-          ...</k>
-          <local-addresses>... .Set => SetItem(Base) ...</local-addresses>
-          [structural]
-
-     syntax KItem ::= addLocalTag(CId, TagInfo)
-     rule <k> addLocalTag(X::CId, Info::TagInfo) => .K ...</k>
-          <tags>... Tu |-> (Structs:Map => Structs[tag(X, Tu, BlockNum) <- Info]) ...</tags>
-          <curr-tu> Tu:String </curr-tu>
-          <curr-scope> blockScope(_, BlockNum:Int) </curr-scope>
+          <should-init> ShouldInit:Bool </should-init>
+          requires Init ==K .K orBool notBool ShouldInit
           [structural]
 
 endmodule

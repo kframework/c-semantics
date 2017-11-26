@@ -3,4 +3,5 @@ j022b.c:3:7: error: address of register variable ‘a’ requested
        a;
        ^
 compilation terminated due to -Wfatal-errors.
-Translation failed (config dumped). Run kcc -d -Werror -Wfatal-errors j022b.c to see commands run.
+Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
+kcc -d -Werror -Wfatal-errors j022b.c

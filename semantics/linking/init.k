@@ -116,7 +116,7 @@ module C-LINKING-INIT
 
      rule <k> declareBuiltinFunction(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
-          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List, callBuiltin)] </functions>
+          <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List)] </functions>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
@@ -248,6 +248,7 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs1:Map </tags>
+               <unnamed-locs> Locs1:Map </unnamed-locs>
                <main-tu> Main1:Set </main-tu>
                <dynamic-init> Init1:K </dynamic-init>
                <constexpr-symbase> CS1::Set</constexpr-symbase>
@@ -274,6 +275,7 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> Structs2:Map </tags>
+               <unnamed-locs> Locs2:Map </unnamed-locs>
                <main-tu> Main2:Set </main-tu>
                <dynamic-init> Init2:K </dynamic-init>
                <constexpr-symbase> CS2::Set</constexpr-symbase>
@@ -301,6 +303,7 @@ module C-LINKING-INIT
                </linking-state>
 
                <tags> updateMap(Structs1, Structs2) </tags>
+               <unnamed-locs> updateMap(Locs1, Locs2) </unnamed-locs>
                <main-tu> Main1 Main2 </main-tu>
                <dynamic-init> Init1 ~> Init2:K </dynamic-init>
                <constexpr-symbase> CS1 CS2</constexpr-symbase>

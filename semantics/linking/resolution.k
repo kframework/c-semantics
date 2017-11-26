@@ -43,9 +43,8 @@ module C-LINKING-RESOLUTION
           ...</external-decls>
           <external-defs>... X |-> Base':SymBase ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> (Base:SymBase => Base') ...</genv>
+          <genv>... X |-> (Base:LinkBase => Base') ...</genv>
           <linkings>... .Map => Base |-> Base' ...</linkings>
-          requires isLinkerLoc(Base)
           [structural]
 
      rule <k> resolveReference(X:CId) ...</k>
@@ -54,8 +53,7 @@ module C-LINKING-RESOLUTION
           ...</external-decls>
           <external-defs>... X |-> _ ...</external-defs>
           <tu-id> Tu </tu-id>
-          <genv>... X |-> Base:SymBase ...</genv>
-          requires notBool isLinkerLoc(Base)
+          <genv>... X |-> Base:DirectBase ...</genv>
           [structural]
 
      rule <k> resolveReference(X:CId) => .K  ...</k>
@@ -89,11 +87,25 @@ module C-LINKING-RESOLUTION
           <main-tu>... .Set => SetItem(MainTu) </main-tu>
           (<linking-state>... .Bag ...</linking-state> => .Bag)
           <external-defs>...
-               Identifier("main") |-> obj(... d: static(MainTu:String))
+               Identifier("main") |-> (obj(... d: static(MainTu:String)) #as Main::SymBase)
           ...</external-defs>
           <external-types>...
                Identifier("main") |-> _
           ...</external-types>
+          <functions>... Main |-> _ ...</functions>
+          [structural]
+     rule <k> (.K => EXT-UNDEF("TDR3", "Main is not a function."))
+               ~> resolveMain
+          ...</k>
+          <external-defs>...
+               Identifier("main") |-> Main::SymBase
+          ...</external-defs>
+          <external-defs-loc>...
+               Identifier("main") |-> L::CabsLoc
+          ...</external-defs-loc>
+          <curr-program-loc> _ => L </curr-program-loc>
+          <functions> Functions:Map </functions>
+          requires notBool (Main in_keys(Functions))
           [structural]
 
      syntax KItem ::= removeFromExternalDecls(List)

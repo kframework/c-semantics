@@ -29,8 +29,9 @@ module CPP-EXECUTION-EXPR-NAME
               => #if isCPPRefType(T) #then .K #else allocObject(bnew(!I:Int, T, .Set, D), T, byteSizeofType(T)) #fi
               ~> addToEnv(#NoName(I), T, bnew(!I:Int, T, .Set, D), false)
               ~> lv(lnew(bnew(!I:Int, T, .Set, D)), noTrace, T) ...</k>
+          <env> Env::Map </env>
           <duration> D::Duration </duration>
-          
+          requires notBool (#NoName(I) in_keys(Env))
 
      // instantiate lives here for similarity to C semantics. Maybe we should move both?
      rule instantiate(Loc::SymLoc, Tr::Trace, T::CPPType)

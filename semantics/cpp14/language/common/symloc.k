@@ -12,6 +12,7 @@ module CPP-SYMLOC-SYNTAX
      imports CPP-TYPING-SORTS
 
      syntax SymBase ::= bnew(Int, CPPType, Set, Duration) [function, klabel(bnewCPP)]
+     syntax SymBase ::= bnew(Int, CPPType, Set, LinkDuration) [function, klabel(bnewCPP2)]
      syntax SymBase ::= linc(CPPType, Set, Duration) [function, klabel(lincCPP)]
      syntax SymLoc ::= lnew(SymBase) [function, klabel(lnewCpp)]
      syntax Bool ::= ifFromArrayInBounds(SymLoc, CPPType, Int) [function, klabel(ifFromArrayInBoundsCPP)]
@@ -53,6 +54,8 @@ module CPP-SYMLOC
      imports CPP-TYPING-SYNTAX
 
      rule bnew(I::Int, T::CPPType, Mods::Set, D::Duration)
+          => obj(I, getAlignas(T, Mods), D)
+     rule bnew(I::Int, T::CPPType, Mods::Set, D::LinkDuration)
           => obj(I, getAlignas(T, Mods), D)
      rule linc(T::CPPType, Mods::Set, D::Duration) => bnew(!I:Int, T, Mods, D)
      rule lnew(Base::SymBase)

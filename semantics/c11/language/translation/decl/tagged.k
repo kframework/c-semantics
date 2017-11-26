@@ -11,24 +11,25 @@ module C-DECL-TAGGED-SYNTAX
 endmodule
 
 module C-DECL-TAGGED
+     imports C-DECL-TAGGED-SYNTAX
+     imports C-CONFIGURATION
      imports BOOL
+     imports INT
+     imports MAP
+     imports STRING
      imports C-ABSTRACT-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-CONFIGURATION
      imports C-DECL-DEFINITION-SYNTAX
-     imports C-DECL-TAGGED-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports COMPAT-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
+     imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-TYPING-SYNTAX
-     imports INT
-     imports MAP
      imports SETTINGS-SYNTAX
-     imports STRING
 
      context StructDef(_, HOLE:StrictList => seqstrict(HOLE), _)
      context UnionDef(_, HOLE:StrictList => seqstrict(HOLE), _)
@@ -36,7 +37,7 @@ module C-DECL-TAGGED
      // TODO(chathhorn): handle global/local differently.
      // note that struct defs might appear buried in a type.
      rule EnumDef(X::CId, list(L:List), list(Mods::List))
-          => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L)
+          => defEnumConstants(Packed() in Mods, X, 0, 0, 0, L, .Map)
           [structural]
      rule StructDef(X::CId, krlist(L:List), list(Mods::List))
           => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
@@ -63,23 +64,23 @@ module C-DECL-TAGGED
           requires notBool allComplete(L)
           [structural]
 
-     syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List)
+     syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List, Map)
 
-     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List)
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, Next::Int, ListItem(EnumItem(E::CId)) L::List, M::Map)
           => initEnum(E, tv(Next, ut(SetItem(IntegerConstant), int)))
-          ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L)
+          ~> defEnumConstants(Pack, X, minInt(Min, Next), maxInt(Max, Next), Next +Int 1, L, M[Next <- E])
           [structural]
-     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem => reval(HOLE))) _) [result(RValue)]
-     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List)
+     context defEnumConstants(_, _, _, _, _, ListItem(EnumItemInit(_, HOLE:KItem => reval(HOLE))) _, _) [result(RValue)]
+     rule defEnumConstants(Pack::Bool, X::CId, Min::Int, Max::Int, _, ListItem(EnumItemInit(E::CId, R:RValue)) L::List, M::Map)
           => initEnum(E, R)
-          ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L)
+          ~> defEnumConstants(Pack, X, minInt(Min, asInt(R)), maxInt(Max, asInt(R)), asInt(R) +Int 1, L, M[asInt(R) <- E])
           [structural]
       // Packed enums attempt to use a smaller type as the alias.
-     rule defEnumConstants(true, X::CId, Min::Int, Max::Int, _, .List)
-          => addTag(X, enumAlias(firstSuitableType(Min, Max, allEnumAliases)))
+     rule defEnumConstants(true, X::CId, Min::Int, Max::Int, _, .List, M::Map)
+          => addTag(X, enumInfo(firstSuitableType(Min, Max, allEnumAliases), M))
           [structural]
-     rule defEnumConstants(false, X::CId, _, _, _, .List)
-          => addTag(X, enumAlias(cfg:enumAlias))
+     rule defEnumConstants(false, X::CId, _, _, _, .List, M::Map)
+          => addTag(X, enumInfo(cfg:enumAlias, M))
           [structural]
 
      // Defaults to int (the largest allowed enum type alias).
@@ -115,29 +116,21 @@ module C-DECL-TAGGED
      syntax Bool ::= hasNamedField(List) [function]
      rule hasNamedField(ListItem(typedDeclaration(_, F::CId)) _) => true
           requires notBool isNoName(F)
+     rule hasNamedField(ListItem(F:CId) _) => true
+          requires notBool isNoName(F)
+     rule hasNamedField(ListItem(_:NoName) L:List)
+          => hasNamedField(L)
      rule hasNamedField(ListItem(typedDeclaration(T::Type, _:NoName)) L:List)
           => hasNamedField(L)
           requires notBool isStructOrUnionType(T)
      rule hasNamedField(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) L:List)
-          => hasNamedField(getFields(getFieldInfo(T)) L)
+          => hasNamedField(findFieldNames(T) L)
      rule hasNamedField(.List) => false
-
-     syntax List ::= numberUnnamed(List) [function]
-                   | numberUnnamed(Int, List) [function, klabel(numberUnnamed2)]
-     rule numberUnnamed(Fs::List) => numberUnnamed(0, Fs)
-     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
-          => ListItem(typedDeclaration(T, #NoName(N))) numberUnnamed(N +Int 1, Fs)
-     rule numberUnnamed(N::Int, ListItem(typedDeclaration(T::Type, F::CId)) Fs::List)
-          => ListItem(typedDeclaration(T, F)) numberUnnamed(N +Int 1, Fs)
-          requires notBool isNoName(F)
-     rule numberUnnamed(_, .List) => .List
 
      rule makeStructFieldInfo(Pack::Bool, Fs::List)
           => makeStructFieldInfo'(Pack, Fs, 0, .Map, .Map, .List)
 
-     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")"
-                         [function]
-
+     syntax FieldInfo ::= "makeStructFieldInfo'" "(" Bool "," List "," Int "," Map ","  Map "," List ")" [function]
      rule makeStructFieldInfo'(Pack::Bool,
                ListItem(typedDeclaration(T::Type, Field::CId)) L::List,
                V::Int,
@@ -155,9 +148,9 @@ module C-DECL-TAGGED
                Types, Offsets,
                computePaddingOffsets(NL, padTo(V, 1), Types, Offsets, 0))
      rule makeStructFieldInfo'(false, .List, V::Int, Types::Map, Offsets::Map, NL::List)
-          => fieldInfo(NL, padTo(V, maxByteAlignofList(NL)),
+          => fieldInfo(NL, padTo(V, maxByteAlignofDecls(NL)),
                Types, Offsets,
-               computePaddingOffsets(NL, padTo(V, maxByteAlignofList(NL)), Types, Offsets, 0))
+               computePaddingOffsets(NL, padTo(V, maxByteAlignofDecls(NL)), Types, Offsets, 0))
 
      // The padding associated with a particular field precedes it, with
      // possibly some extra padding at the end of the whole struct not
@@ -189,13 +182,11 @@ module C-DECL-TAGGED
 
      syntax List ::= incompleteToFlexibleArrayMember(List) [function]
      rule incompleteToFlexibleArrayMember(
-          ListItem(typedDeclaration(T::Type, X:CId))
-          L:List)
-          => ListItem(typedDeclaration(T, X)) incompleteToFlexibleArrayMember(L)
-          requires isCompleteType(T)
-     rule incompleteToFlexibleArrayMember(
           ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)), X:CId)))
           => ListItem(typedDeclaration(t(Qs, Mods, flexibleArrayType(T)), X))
+     rule incompleteToFlexibleArrayMember(ListItem(D::K) L::List)
+          => ListItem(D) incompleteToFlexibleArrayMember(L)
+          [owise]
      rule incompleteToFlexibleArrayMember(.List) => .List
 
      syntax Bool ::= structFieldsComplete(List) [function]
@@ -245,7 +236,7 @@ module C-DECL-TAGGED
                computePaddingOffsets(NL, maxByteSizeofList(NL) *Int cfg:bitsPerByte, Types, Offsets, 0))
      rule makeUnionFieldInfo'(false, .List, Types::Map, Offsets::Map, NL::List)
           => makePaddedUnionFieldInfo(
-               padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofList(NL)),
+               padTo(maxByteSizeofList(NL) *Int cfg:bitsPerByte, maxByteAlignofDecls(NL)),
                Types, Offsets, NL)
 
      syntax FieldInfo ::= makePaddedUnionFieldInfo(Int, Map, Map, List) [function]
@@ -275,8 +266,8 @@ module C-DECL-TAGGED
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
-     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
-               => addGlobalTag(S, enumAlias(T))
+     rule <k> addTag(S:CId, enumInfo(...) #as EI::EnumInfo)
+               => addGlobalTag(S, EI)
           ...</k>
           <curr-scope> fileScope </curr-scope>
           [structural]
@@ -286,8 +277,8 @@ module C-DECL-TAGGED
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true
           [structural]
-     rule <k> addTag(S:CId, enumAlias(T::SimpleType))
-               => addLocalTag(S, enumAlias(T))
+     rule <k> addTag(S:CId, enumInfo(...) #as EI::EnumInfo)
+               => addLocalTag(S, EI)
           ...</k>
           <curr-scope> Scope:Scope </curr-scope>
           requires isFileScope(Scope) =/=K true

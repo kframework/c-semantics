@@ -1,5 +1,6 @@
 module LIBC-BUILTIN-SYNTAX
      imports C-DYNAMIC-SORTS
+     imports SYMLOC-SORTS
      imports INT-SYNTAX
      imports LIST
      imports STRING-SYNTAX
@@ -21,7 +22,9 @@ module LIBC-BUILTIN-SYNTAX
 
      syntax KItem ::= "initBuiltins"
 
-     syntax Duration ::= "stdio"
+     // Using "fixed" to mean objects returned by library functions that
+     // cause UB if the user tries to modify them.
+     syntax Bool ::= isLibcFixedDuration(SymBase) [function]
 
 endmodule
 
@@ -131,26 +134,30 @@ module LIBC-BUILTIN
 
      rule success => tv(0, utype(int))
 
-     rule isAllocatedDuration(obj(... d: stdio)) => true
+     rule isAllocatedDuration(obj(... d: libc)) => true
+     rule isAllocatedDuration(obj(... d: libcFixed)) => true
+
+     rule isLibcFixedDuration(obj(... d: libcFixed)) => true
+     rule isLibcFixedDuration(_) => false [owise]
 
      rule initBuiltins => initStdio ~> initErrno
 
      syntax K ::= "initStdio" [function]
      rule initStdio
-          => alloc(bnew(!Stdin:Int, file, stdio), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, stdio)) := stdin))
+          => alloc(bnew(!Stdin:Int, file, libc), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, libc)) := stdin))
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdin")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, stdio))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, libc))))
 
-          ~> alloc(bnew(!Stdout:Int, file, stdio), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, stdio)) := stdout))
+          ~> alloc(bnew(!Stdout:Int, file, libc), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, libc)) := stdout))
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdout")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, stdio))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, libc))))
 
-          ~> alloc(bnew(!Stderr:Int, file, stdio), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, stdio)) := stderr))
+          ~> alloc(bnew(!Stderr:Int, file, libc), file, byteSizeofType(file))
+          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, libc)) := stderr))
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, stdio))))
+          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, libc))))
 
      // TODO(_Thread_local errno)
      syntax K ::= "initErrno" [function]

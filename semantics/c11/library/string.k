@@ -1,12 +1,18 @@
 module LIBC-STRING
-     imports C-DYNAMIC-SYNTAX
-     imports C-ERROR-SYNTAX
-     imports C-MEMORY-WRITING-SYNTAX
-     imports C-TYPING-SYNTAX
+     imports C-CONFIGURATION
      imports INT
      imports K-EQUAL
-     imports LIBC-BUILTIN-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-DYNAMIC-SYNTAX
+     imports C-ERROR-SYNTAX
+     imports C-MEMORY-ALLOC-SYNTAX
+     imports C-MEMORY-WRITING-SYNTAX
+     imports C-NATIVE-BRIDGE-SYNTAX
+     imports C-SYMLOC-SYNTAX
+     imports C-TYPE-BUILDER-SYNTAX
+     imports C-TYPING-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
+     imports LIBC-IO-SYNTAX
 
      // try to use getString
      // fixme should detect overlaps
@@ -37,4 +43,20 @@ module LIBC-STRING
           => write(Dest, 0, type(T))
           ~> tv(Orig, utype(pointerType(type(char))))
           [structural]
+
+     rule <k> builtin("strerror", tv(Err:Int, _)) => ErrStr ...</k>
+          <strerror-cache>... Err |-> ErrStr::RValue ...</strerror-cache>
+          [structural]
+     rule <k> (.K => newFixedObject(nativeCall("strerror", ListItem(E), .List)))
+               ~> builtin("strerror", tv(Err:Int, _) #as E::RValue)
+          ...</k>
+          <strerror-cache> Errs:Map </strerror-cache>
+          requires notBool (Err in_keys(Errs))
+          [structural]
+     rule <k> ErrStr:RValue ~> builtin("strerror", tv(Err:Int, _))
+               => ErrStr
+          ...</k>
+          <strerror-cache>... .Map => Err |-> ErrStr </strerror-cache>
+          [structural]
+
 endmodule

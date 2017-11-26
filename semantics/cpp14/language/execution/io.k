@@ -6,6 +6,9 @@ module CPP-EXECUTION-IO
      imports BITS-SYNTAX
      imports MEMORY-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports SETTINGS-SYNTAX
+     imports SYMLOC-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -13,13 +16,13 @@ module CPP-EXECUTION-IO
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
               => checkWrite(Loc, T)
-              ~> writeBytes(Loc, Bytes)
+              ~> writeBytesBuffered(Loc, Bytes)
           ...</k>
           <initializing> false </initializing>
           requires notBool isLinkerLoc(Loc)
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
-              => writeBytes(Loc, Bytes)
+              => writeBytesBuffered(Loc, Bytes)
           ...</k>
           <initializing> true </initializing>
           requires notBool isLinkerLoc(Loc)

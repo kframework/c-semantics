@@ -10,7 +10,7 @@ use File::Path qw(rmtree);
 use MIME::Base64;
 use String::Escape qw(quote backslash);
 use Getopt::Declare;
-use Cwd qw(abs_path);
+use Cwd qw(abs_path getcwd);
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -278,6 +278,9 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
   -E			Preprocess only.
   -I <dir>		Look for headers in <dir>.
     { push(@main::cppArgs, '-I', $dir); }
+  -idirafter <dir>	Look for headers in <dir>, but only after directories
+			specified with -I and system directories.
+    { push(@main::cppArgs, '-idirafter', $dir); }
   -iquote <dir>		Look for headers with quotation marks in <dir>.
     { push(@main::cppArgs, '-iquote', $dir); }
   -isystem <dir>	Look for system headers in <dir>.
@@ -373,6 +376,7 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
       push(@main::cppArgs, "-Wfatal-errors");
       $main::fatalErrors = "true";
     }
+  -W		[undocumented]
   -W<errcode>		Do not ignore specified error code.*
     {
       if ($main::cppWarns{$errcode}) {
@@ -558,7 +562,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     mergeObjs(1, 0);
     my $obj = tempFile();
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    system('merge-kcc-obj', $obj, $objFiles[0], $main::oflag || 'a.out');
+    system("$distDirectory/merge-kcc-obj", $obj, $objFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
@@ -820,7 +824,7 @@ sub classify {
     } elsif (isKObj($_)) {
       my $kast = tempFile();
       my $obj = tempFile();
-      system('split-kcc-obj', $_, $obj, $kast);
+      system("$distDirectory/split-kcc-obj", $_, $obj, $kast);
       push(@objFiles, $kast);
       push(@nativeObjFiles, $obj);
     } elsif (isAr($_)) {
@@ -831,7 +835,7 @@ sub classify {
       push(@nativeObjFiles, $_);
     } else {
       if (!($_ =~ $ignoredFlags)) {
-        error("Unsupported option: $_\n");
+        warn("Unsupported option: $_\n");
       }
     }
   }
@@ -865,7 +869,7 @@ sub extractStatic {
     if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
       if (isKObj("$tempDir/$_")) {
         my $kast = tempFile();
-        system('split-kcc-obj', "$tempDir/$_", "/dev/null", $kast);
+        system("$distDirectory/split-kcc-obj", "$tempDir/$_", "/dev/null", $kast);
         push(@objFiles, $kast);
       }
     }
@@ -899,7 +903,7 @@ sub compile {
       checkError($retval, $obj, 0);
     }
     system('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
-    system('merge-kcc-obj', $obj, $kast, $oval);
+    system("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -1027,7 +1031,7 @@ sub getKRunCommand {
 
 sub dumpSymbols {
   my $ret = tempFile();
-  system("gccsymdump @ldArgs @nativeObjFiles > $ret");
+  system("$distDirectory/gccsymdump @ldArgs @nativeObjFiles > $ret");
   return rel2abs($ret);
 }
 
@@ -1119,15 +1123,16 @@ sub checkError {
   my ($retval, $output, $isBinary) = (@_);
   if ($retval) {
     if ($isBinary) {
-      system("k-bin-to-text", $output, 'config');
+      system("k-bin-to-text", $output, 'kcc_config');
     } else {
-      copy($output, 'config');
+      copy($output, 'kcc_config');
     }
     if ($args->{'-d'}) {
-      print STDERR "Translation failed (config dumped). Refer to last command run for details.\n";
+      print STDERR "Translation failed (kcc_config dumped). Refer to last command run for details.\n";
       exit $retval;
     } else {
-      print STDERR "Translation failed (config dumped). Run $0 -d @originalArgv to see commands run.\n";
+      my $dir=basename(getcwd());
+      print STDERR "Translation failed (kcc_config dumped). To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
       exit $retval;
     }
   }

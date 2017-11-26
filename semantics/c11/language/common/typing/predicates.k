@@ -101,8 +101,9 @@ module C-TYPING-PREDICATES
      rule isTruthValue(tv(V::CValue, ut(_, T::SimpleUType)))
           => T ==K int andBool (V ==K 0 orBool V ==K 1)
 
-     rule isFlexibleType(T:StructType) => isFlexibleStruct(getFieldInfo(T))
-     rule isFlexibleType(T:UnionType) => isFlexibleUnion(getFieldInfo(T))
+     rule isFlexibleType(dynamicType(T::Type)) => isFlexibleType(T)
+     rule isFlexibleType(T:StructType) => isFlexibleStruct(getFields(T))
+     rule isFlexibleType(T:UnionType) => isFlexibleUnion(getFields(T))
      rule isFlexibleType(_) => false [owise]
 
      syntax Bool ::= isFlexibleStruct(FieldInfo) [function]

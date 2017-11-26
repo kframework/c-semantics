@@ -22,14 +22,15 @@ endmodule
 
 module C-DYNAMIC-SYNTAX
      imports BASIC-K
+     imports FLOAT-SYNTAX
+     imports INT-SYNTAX 
+     imports K-REFLECTION
+     imports LIST
      imports BITS-SORTS
-     imports BITS-SORTS
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
      imports C-TYPING-SORTS
-     imports FLOAT-SYNTAX
-     imports INT-SYNTAX 
-     imports LIST
      imports SYMLOC-SORTS
 
      syntax Agg ::= agg(List)
@@ -75,7 +76,7 @@ module C-DYNAMIC-SYNTAX
 
      //  switchid, caseid, value (tv or 'Default)
      syntax CId ::= caseLabel(Int, K)
-     syntax CId ::= funLabel(CId)
+     syntax CId ::= "funLabel"
 
      syntax CId ::= nativeFunction(Int)
 
@@ -86,9 +87,9 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= "popLoop"
 
      //  nesting-depth, currentBlock, decl
-     syntax KItem ::= frozenDeclaration(Int, Int, K)
-     //  nesting-depth, block history, continuation, loop stack, decl stack
-     syntax KItem ::= gotoObject(Int, List, K, List, List)
+     syntax KItem ::= frozenDeclaration(Int, K)
+     //  block history, continuation, loop stack, decl stack
+     syntax GotoObject ::= gotoObject(List, K, List, List)
           [latex(\terminal{gotoObj}\!({#1},{#2},{#3},{#4},{#5}\!))]
 
      syntax KItem ::= "comma"
@@ -98,8 +99,8 @@ module C-DYNAMIC-SYNTAX
      syntax NoInit
      syntax KResult ::= NoInit
 
-     syntax CId ::= compoundLiteral(Int)
-     syntax KItem ::= initCompoundLiteral(K) [strict]
+     syntax CompoundLiteralId ::= compoundLiteral(Int)
+     syntax CId ::= CompoundLiteralId
 
      syntax KItem ::= typedef(CId, Type)
      syntax KItem ::= declareInternalVariable(CId, K, K) [strict(2,3)]
@@ -155,6 +156,8 @@ module C-DYNAMIC
      rule stripHold(te(K:K, _)) => K
      rule stripHold(le(K:K, _)) => K
      rule stripHold(ncle(K:K, _)) => K
+     rule stripHold(tv(_, _) #as V::RValue) => checkUse(V)
+     rule stripHold(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
      rule stripHold(K:K) => K [owise]
 
      rule value(tv(V:CValue, _)) => V

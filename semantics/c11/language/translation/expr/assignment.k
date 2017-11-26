@@ -4,6 +4,7 @@ module C-EXPR-ASSIGNMENT
      imports BOOL
      imports K-EQUAL
      imports SYMLOC-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
@@ -16,9 +17,6 @@ module C-EXPR-ASSIGNMENT
      function-call, or comma operators, except when they are contained within
      a subexpression that is not evaluated.
      }*/
-
-     rule _:KResult := te(_, T::UType => stripConstants(T))
-          requires fromConstantExpr(T)
 
      rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
           ~> L:KResult := R:RValue
@@ -37,7 +35,6 @@ module C-EXPR-ASSIGNMENT
                          orBool isStructOrUnionType(type(L))
                          orBool isBoolType(type(L)))
                ) andBool notBool R ==K voidVal
-          [structural] //TODO(dwightguth): this tag is needed for confluence with null pointer constants. Might want to find a better way.
 
      rule (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
           ~> L:KResult := R:RValue
@@ -93,52 +90,40 @@ module C-EXPR-ASSIGNMENT
 
      rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
                => write(Loc, V, T)
-               ~> tv(V, utype(T))
+               ~> tv(V, stripConstants(utype(T')))
           ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isLinkerLoc(Loc)
+          requires notBool isLinkerLoc(Loc)
                andBool (utype(T) ==Type T')
      rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(nclv(Loc, T) := tv(V, T'), utype(T))
+               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool isLinkerLoc(Loc)
+          requires isLinkerLoc(Loc)
                andBool (utype(T) ==Type T')
      rule <k> ncle(L:K, T::Type) := R:RValue
-               => te(L := stripHold(R), utype(T))
+               => te(L := stripHold(R), stripConstants(utype(R)))
           ...</k>
           <initializing> true </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
-               andBool (utype(T) ==Type utype(R))
+          requires utype(T) ==Type utype(R)
 
      rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(nclv(Loc, T) := tv(V, T'), utype(T))
+               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
      rule <k> nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
-               => te(nclv(Loc, T) := K, utype(T))
+               => te(lv(Loc, T) := K, stripConstants(utype(T')))
           ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(T')
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
      rule <k> ncle(L:K, T::Type) := R:RValue
-               => te(L := stripHold(R), utype(T))
+               => te(L := stripHold(R), stripConstants(utype(R)))
           ...</k>
           <initializing> false </initializing>
-          requires notBool fromConstantExpr(T)
-               andBool notBool fromConstantExpr(R)
-               andBool notBool isConstType(T)
+          requires notBool isConstType(T)
                andBool (utype(T) ==Type utype(R))
 
      rule E1:KResult *= E2:RValue

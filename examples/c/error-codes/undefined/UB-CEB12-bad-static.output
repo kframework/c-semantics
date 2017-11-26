@@ -4,3 +4,4 @@ UB-CEB12-bad-static.c:4:7: error: Potential negative zero produced via bitwise o
    see C11 section J.2:1 item 14 http://rvdoc.org/C11/J.2
    see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
    see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1

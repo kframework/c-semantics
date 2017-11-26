@@ -1,0 +1,7 @@
+ The 'signal' function is used in a multi-threaded program.
+   at signal(UB-SIGNAL1-bad.c:12:7)
+   by main(UB-SIGNAL1-bad.c:12:7)
+  Undefined behavior (UB-SIGNAL1).
+   see C11 section 7.14.1.1:7 http://rvdoc.org/C11/7.14.1.1
+   see C11 section J.2:1 item 135 http://rvdoc.org/C11/J.2
+   see CERT-C section CON37-C http://rvdoc.org/CERT-C/CON37-C

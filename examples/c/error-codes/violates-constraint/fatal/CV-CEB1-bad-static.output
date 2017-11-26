@@ -2,4 +2,6 @@ CV-CEB1-bad-static.c:5:3: error: Both bitwise shift operands must have integer t
   Constraint violation (CV-CEB1).
    see C11 section 6.5.7:2 http://rvdoc.org/C11/6.5.7
    see CERT-C section INT13-C http://rvdoc.org/CERT-C/INT13-C
-Translation failed (config dumped). Run kcc -d CV-CEB1-bad-static.c to see commands run.
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
+kcc -d CV-CEB1-bad-static.c

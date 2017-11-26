@@ -194,27 +194,16 @@ module C-TYPING-MISC
      rule getRestrictBlock''(SetItem(K:K) S:Set) => getRestrictBlock'(K, S)
      rule getRestrictBlock''(.Set) => none
 
-     syntax Modifier ::= getReadFrom(UType) [function]
-     rule getReadFrom(ut(Mods::Set, _::SimpleUType)) => getReadFrom'(.K, Mods)
+     rule getReadFromLoc(T::UType) => #getReadFromLoc(getModifiers(T))
 
-     syntax Modifier ::= "getReadFrom'" "(" K "," Set ")" [function]
-     rule getReadFrom'(readFrom(Loc:SymLoc, Len:Int), _) => readFrom(Loc, Len)
-     rule getReadFrom'(_, S:Set) => getReadFrom''(S) [owise]
-
-     syntax Modifier ::= "getReadFrom''" "(" Set ")" [function]
-     rule getReadFrom''(SetItem(K:K) S:Set) => getReadFrom'(K, S)
-     rule getReadFrom''(.Set) => noModifier
-
-     rule getReadFromLoc(T::UType) => #getReadFromLoc(getReadFrom(T))
-
-     syntax SymLoc ::= #getReadFromLoc(Modifier) [function]
-     rule #getReadFromLoc(readFrom(Loc:SymLoc, _)) => Loc
+     syntax SymLoc ::= #getReadFromLoc(Set) [function]
+     rule #getReadFromLoc(SetItem(readFrom(Loc:SymLoc, _)) _) => Loc
      rule #getReadFromLoc(_) => NullPointer [owise]
 
-     syntax Int ::= #getReadFromLen(Modifier) [function]
-     rule getReadFromLen(T::UType) => #getReadFromLen(getReadFrom(T))
+     syntax Int ::= #getReadFromLen(Set) [function]
+     rule getReadFromLen(T::UType) => #getReadFromLen(getModifiers(T))
 
-     rule #getReadFromLen(readFrom(_, Len:Int)) => Len
+     rule #getReadFromLen(SetItem(readFrom(_, Len:Int)) _) => Len
      rule #getReadFromLen(_) => 0 [owise]
 
      rule updateReadFrom(T::UType, Loc::SymLoc)
@@ -224,122 +213,212 @@ module C-TYPING-MISC
 
      rule arrayLength(t(_, _, arrayType(_, N:Int))) => N
 
-     rule getFields(fieldInfo(L:List, _, _, _, _)) => L
-     rule getFieldsTypes(fieldInfo(_, _, Ts:Map, _, _)) => Ts
-     rule getFieldsOffsets(fieldInfo(_, _, _, Offs:Map, _)) => Offs
-     rule getOffsetForField(F:CId, T:Type,
-            fieldInfo(_, _,
-                F |-> T _,
-                F |-> Offset:Int _, _))
-          => Offset
-     rule getTypeForField(F:CId, ListItem(
-                                  fieldInfo(_, _,
-                                      F |-> T::Type _,
-                                      _, _)) _)
-          => T
+     rule getFieldNames(T:StructOrUnionType) => getFieldNames'(getFields(T))
+     rule getFieldNames(_) => .List [owise]
 
-     syntax List ::= getLockTypesAtOffset(Type, Int) [function]
+     rule findFieldNames(T:StructOrUnionType) => getFieldNames'(getFlatFields(T))
+     rule findFieldNames(_) => .List [owise]
 
-     rule getTypesAtOffset(t(Qs::Quals, _, bitfieldType(InnerT::SimpleType, _)) #as T::Type, 0)
-          => ListItem(T) ListItem(t(Qs, .Set, InnerT))
-     // we have some redundancy here because we are trying to make matching as fast as possible,
-     // so we avoid side conditions on these rules as much as we can.
-     rule getTypesAtOffset(t(Qs::Quals, _, arrayType(InnerT::Type, _)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffset(addQualifiers(Qs, InnerT), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(Qs::Quals, _, incompleteArrayType(InnerT::Type)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffset(addQualifiers(Qs, InnerT), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(Qs::Quals, _, flexibleArrayType(InnerT::Type)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffset(addQualifiers(Qs, InnerT), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(Qs::Quals, _, unspecifiedArrayType(InnerT::Type)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffset(addQualifiers(Qs, InnerT), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(Qs::Quals, _, variableLengthArrayType(InnerT::Type, _)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffset(addQualifiers(Qs, InnerT), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(_, _, structType(S::TagId)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffsetInStruct(T, getFieldInfo(S), 0) #else getLockTypesAtOffset(T, 0) #fi
-     rule getTypesAtOffset(t(_, _, unionType(U::TagId)) #as T::Type, 0)
-          => ListItem(T) #if isNoType(getLock(0, T)) #then getTypesAtOffsetInUnion(T, getFieldInfo(U), 0) #else getLockTypesAtOffset(T, 0) #fi
+     rule getFieldTypes(T::StructOrUnionType) => getFieldTypes'(getFields(T))
 
-     rule getLockTypesAtOffset(T::Type, Offset::Int)
-          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(0, T)), Offset)
+     syntax List ::= "getFieldTypes'" "(" FieldInfo ")" [function]
+     rule getFieldTypes'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Decls::List, Sz::Int, Types::Map (F |-> T::Type), Offsets::Map, Padding::Set))
+          => ListItem(T) getFieldTypes'(fieldInfo(Decls, Sz, Types, Offsets, Padding))
+     rule getFieldTypes'(_) => .List [owise]
 
-     rule getTypesAtOffset(t(Qs::Quals, _, arrayType(InnerT::Type, _)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
-               getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
-               getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(Qs::Quals, _, incompleteArrayType(InnerT::Type)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
-               getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
-               getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(Qs::Quals, _, flexibleArrayType(InnerT::Type)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
-               getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
-               getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(Qs::Quals, _, unspecifiedArrayType(InnerT::Type)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
-               getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
-               getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(Qs::Quals, _, variableLengthArrayType(InnerT::Type, _)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0 #then 
-               getTypesAtOffset(addQualifiers(Qs, InnerT), Offset %Int bitSizeofType(InnerT)) #else .List #fi #else
-               getTypesAtOffset(addQualifiers(Qs, getLock(0, T)), Offset %Int bitSizeofType(InnerT)) #fi
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(_, _, structType(S::TagId)) #as T::Type, Offset::Int)
-          => getTypesAtOffsetInStruct(T, getFieldInfo(S), Offset)
-          requires Offset >Int 0
-     rule getTypesAtOffset(t(_, _, unionType(U::TagId)) #as T::Type, Offset::Int)
-          => #if isNoType(getLock(0, T)) #then getTypesAtOffsetInUnion(T, getFieldInfo(U), Offset) #else 
-               #if isCompleteType(T) #then getLockTypesAtOffset(T, Offset) #else .List #fi #fi
-          requires Offset >Int 0
+     syntax List ::= "getFieldNames'" "(" FieldInfo ")" [function]
+     rule getFieldNames'(fieldInfo(ListItem(typedDeclaration(_, F::CId)) Fields::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
+          => ListItem(F) getFieldNames'(fieldInfo(Fields, Sz, Types, Offsets, Padding))
+     rule getFieldNames'(_) => .List [owise]
 
-     rule getTypesAtOffset(T::Type, Offset::Int) => #if Offset ==Int 0 #then ListItem(T) #else .List #fi [owise]
+     rule getFieldOffset(F::CId, T::StructOrUnionType) => getFieldOffset'(F, getFields(T))
 
-     syntax List ::= getTypesAtOffsetInStruct(Type, FieldInfo, Int) [function]
-     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
-               Ds:List ListItem(typedDeclaration(_, FId::CId)),
-               N::Int,
-               Ts:Map,
-               Offs:Map FId |-> FOffset::Int,
-               PaddingOffs:Set
-          ), Offset::Int)
-          => getTypesAtOffsetInStruct(T, fieldInfo(Ds, N, Ts, Offs, PaddingOffs), Offset)
+     rule findFieldOffset(F::CId, T::StructOrUnionType) => getFieldOffset'(F, getFlatFields(T))
+
+     syntax Int ::= "getFieldOffset'" "(" CId "," FieldInfo ")" [function]
+     rule getFieldOffset'(F::CId, fieldInfo(_, _, _, F |-> Offset::Int _, _)) => Offset
+
+     rule getFieldType(F::CId, T::StructOrUnionType) => getFieldType'(F, getFields(T))
+
+     rule findFieldType(F::CId, T:StructOrUnionType) => getFieldType'(F, getFlatFields(T))
+     rule findFieldType(_, _) => type(no-type) [owise]
+
+     syntax Type ::= "getFieldType'" "(" CId "," FieldInfo ")" [function]
+     rule getFieldType'(F::CId, fieldInfo(_, _, F |-> T::Type _, _, _)) => T
+     rule getFieldType'(_, _) => type(no-type) [owise]
+
+     syntax Modifier ::= activeVariant(CId)
+     rule getActiveVariant(t(_, SetItem(activeVariant(F::CId)) _, _) #as T::UnionType)
+          => getFieldType(F, T)
+     rule getActiveVariant(_) => type(no-type) [owise]
+
+     rule getActiveVariantId(t(_, SetItem(activeVariant(F'::CId)) _, _)) => F'
+
+     rule setActiveVariantId(F::CId, T::UnionType) => addModifier(activeVariant(F), clearActiveVariant(T))
+
+     rule setActiveVariant(A::Type, t(_, SetItem(activeVariant(F'::CId)) _, _) #as T::UnionType)
+          => setFieldType(F', A, T)
+     rule setActiveVariant(_, T::UnionType) => T [owise]
+
+     rule mergeVariants(t(_, SetItem(activeVariant(F::CId)) _, _) #as T:UnionType,
+               t(_, SetItem(activeVariant(F)) _, _) #as T':UnionType)
+          => setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')
+     rule mergeVariants(t(_, SetItem(elementTypes(ETs::Map)) _, _) #as _:ArrayType, t(_, SetItem(elementTypes(ETs'::Map)) _, _) #as T':ArrayType)
+          => setElementTypes(mergeElementVariants(ETs, ETs'), T')
+     rule mergeVariants(T:StructType, T':StructType)
+          => mergeStructVariants(T, T', getFieldNames(T'))
+     rule mergeVariants(_, T'::EffectiveType) => T' [owise]
+
+     syntax Map ::= mergeElementVariants(Map, Map) [function]
+     rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)
+          => mergeElementVariants(ETs, ETs'[N <- mergeVariants(T, {ETs'[N]}:>EffectiveType)])
+          requires N in_keys(ETs')
+     rule mergeElementVariants((N:Int |-> T::Type) ETs::Map, ETs'::Map)
+          => mergeElementVariants(ETs, (N |-> T) ETs')
+          requires notBool (N in_keys(ETs'))
+     rule mergeElementVariants(.Map, ETs'::Map) => ETs'
+
+     syntax Type ::= mergeStructVariants(StructType, StructType, List) [function]
+     rule mergeStructVariants(T::StructType, T'::StructType, ListItem(F::CId) Fs'::List)
+          => mergeStructVariants(T, {setFieldType(F, {mergeVariants(getFieldType(F, T), getFieldType(F, T'))}:>Type, T')}:>StructType, Fs')
+     rule mergeStructVariants(_, T'::StructType, .List) => T'
+
+     rule clearActiveVariant(t(_, _::Set (SetItem(activeVariant(_)) => .Set), unionType(_)))
+     rule clearActiveVariant(T::Type) => T
+          requires notBool isUnionType(T)
+     rule clearActiveVariant(T:UnionType)
+          => setFields(clearActiveVariant'(getFieldNames(T), getFields(T)), T) [owise]
+
+     syntax FieldInfo ::= "clearActiveVariant'" "(" List "," FieldInfo ")" [function]
+     rule clearActiveVariant'(ListItem(F::CId) Decls::List, Fields::FieldInfo)
+          => clearActiveVariant'(Decls, setFieldType'(F, clearActiveVariant(getFieldType'(F, Fields)), Fields))
+     rule clearActiveVariant'(_, Fields::FieldInfo) => Fields [owise]
+
+     syntax CId ::= "getFieldAtOffset'" "(" Int "," FieldInfo ")" [function]
+     rule getFieldAtOffset'(Offset::Int, fieldInfo(_::List (ListItem(typedDeclaration(_, F::CId)) => .List), _, _, _::Map (F |-> FOffset::Int => .Map), _))
           requires FOffset >Int Offset
-     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
-               _ ListItem(typedDeclaration(T'::Type, FId::CId)),
-               _,
-               _,
-               _ FId |-> FOffset::Int,
-               _
-          ), Offset::Int)
-          => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset -Int FOffset)
-          requires FOffset <=Int Offset
-               andBool isNoType(getLock(FOffset, T))
-     rule getTypesAtOffsetInStruct(T::Type, fieldInfo(
-               _ ListItem(typedDeclaration(_, FId::CId)),
-               _,
-               _,
-               _ FId |-> FOffset::Int,
-               _
-          ), Offset::Int)
-          => getTypesAtOffset(addQualifiers(getQualifiers(T), getLock(FOffset, T)), Offset -Int FOffset)
-          requires FOffset <=Int Offset
-               andBool notBool isNoType(getLock(FOffset, T))
-     rule getTypesAtOffsetInStruct(_, _, _) => .List [owise]
+     rule getFieldAtOffset'(_, fieldInfo(_ ListItem(typedDeclaration(_, F::CId)), _, _, _, _)) => F [owise]
 
-     syntax List ::= getTypesAtOffsetInUnion(Type, FieldInfo, Int) [function]
-     rule getTypesAtOffsetInUnion(T::Type, fieldInfo(
-               ListItem(typedDeclaration(T'::Type, FId::CId)) Ds:List,
-               N::Int,
-               Ts:Map,
-               Offs:Map,
-               PaddingOffs:Set
-          ), Offset::Int)
-          => getTypesAtOffset(addQualifiers(getQualifiers(T), T'), Offset)
-               getTypesAtOffsetInUnion(T, fieldInfo(Ds, N, Ts, Offs, PaddingOffs), Offset)
-     rule getTypesAtOffsetInUnion(_, _, _) => .List [owise]
+     rule floorBitOffset(Offset::Int, T:StructOrUnionType)
+          => floorFieldOffset'(Offset, getFields(T))
+          requires Offset >=Int 0
+     rule floorBitOffset(Offset::Int, T:ArrayType)
+          => (Offset /Int bitSizeofType(innerType(T))) *Int bitSizeofType(innerType(T))
+          requires Offset >=Int 0 andBool bitSizeofType(innerType(T)) >Int 0
+
+     rule lastFieldByteOffset(T::StructType)
+          => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
+
+     syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
+     rule floorFieldOffset'(Offset::Int, Fields::FieldInfo)
+          => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields)
+
+     rule getFieldTypeAtOffset(Offset::Int, T::StructOrUnionType)
+          => getFieldTypeAtOffset'(Offset, getFields(T))
+
+     syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
+     rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
+          => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields)
+
+     rule resizeFlexibleType(T::StructOrUnionType, F::CId, N::Int)
+          => setFieldsSize((N *Int cfg:bitsPerByte) +Int getFieldOffset(F, T), clearPaddingAfter(F, T))
+
+     syntax StructOrUnionType ::= setFieldsSize(Int, StructOrUnionType) [function]
+     rule setFieldsSize(Sz::Int, T::StructOrUnionType)
+          => setFields(setFieldsSize'(Sz, getFields(T)), T)
+
+     syntax FieldInfo ::= "setFieldsSize'" "(" Int "," FieldInfo ")" [function]
+     rule setFieldsSize'(Sz::Int, fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding::Set))
+          => fieldInfo(Decls, Sz, Types, Offsets, Padding)
+
+     syntax StructOrUnionType ::= clearPaddingAfter(CId, StructOrUnionType) [function]
+     rule clearPaddingAfter(F::CId, T::StructOrUnionType)
+          => setFields(clearPaddingAfter'(getFieldOffset(F, T), getFields(T)), T)
+
+     syntax FieldInfo ::= "clearPaddingAfter'" "(" Int "," FieldInfo ")" [function]
+     rule clearPaddingAfter'(Offset::Int, fieldInfo(_, _, _, _, (SetItem(N::Int) => .Set) _::Set))
+          requires N >=Int Offset
+     rule clearPaddingAfter'(_, Fields::FieldInfo) => Fields [owise]
+
+     rule getUnnamed(F::CId, T::StructOrUnionType)
+          => getFieldAtOffset'(findFieldOffset(F, T), getFields(T))
+          requires notBool isNoType(findFieldType(F, T))
+
+     rule getFirstField(T::StructOrUnionType) => getFieldAtOffset'(0, getFields(T))
+
+     rule getFlatFields(T::StructOrUnionType) => toFlatFieldInfo(getFields(T))
+
+     syntax FieldInfo ::= toFlatFieldInfo(TagInfo) [function]
+     rule toFlatFieldInfo(Fields:FieldInfo) => flattenFieldInfo(.K, .K, Fields, fieldInfo(.List, 0, .Map, .Map, .Set))
+     rule toFlatFieldInfo(_) => fieldInfo(.List, 0, .Map, .Map, .Set) [owise]
+
+     syntax FieldInfo ::= flattenFieldInfo(K, K, FieldInfo, FieldInfo) [function]
+     rule flattenFieldInfo(.K => getFlatFields(T), .K => Offset,
+               fieldInfo((ListItem(typedDeclaration(T:StructOrUnionType, F:NoName)) => .List) _, _, _, (F |-> Offset::Int) _, _),
+               _)
+     rule flattenFieldInfo(.K, .K,
+               fieldInfo((ListItem(typedDeclaration(T::Type, F::CId)) => .List) _,
+                    _, (F |-> T'::Type) _, (F |-> Offset::Int) _, _),
+               fieldInfo(
+                    _::List (.List => ListItem(typedDeclaration(T, F))),
+                    _,
+                    _::Map (.Map => F |-> T'),
+                    _::Map (.Map => F |-> Offset),
+                    _)) [owise]
+     rule flattenFieldInfo(fieldInfo(Fields::List, _, Types::Map, Offsets::Map, Padding::Set) => .K, Offset:Int => .K,
+               _,
+               fieldInfo(
+                    _::List (.List => Fields),
+                    _,
+                    _::Map (.Map => Types),
+                    _::Map (.Map => addOffset(Offset, Offsets)),
+                    _::Set (.Set => addPaddingOffset(Offset, Padding))))
+     rule flattenFieldInfo(.K, .K, fieldInfo(.List, Sz::Int, _, _, Padding::Set),
+               fieldInfo(Decls::List, _, Types::Map, Offsets::Map, Padding'::Set))
+          => fieldInfo(Decls, Sz, Types, Offsets, Padding Padding')
+
+     syntax Map ::= addOffset(Int, Map) [function]
+     rule addOffset(Offset::Int, (K:K |-> N:Int) M::Map)
+          => K |-> (N +Int Offset) addOffset(Offset, M)
+     rule addOffset(_, _) => .Map [owise]
+
+     syntax Set ::= addPaddingOffset(Int, Set) [function]
+     rule addPaddingOffset(Offset::Int, SetItem(N::Int) S::Set)
+          => SetItem(N +Int Offset) addPaddingOffset(Offset, S)
+     rule addPaddingOffset(_, _) => .Set [owise]
+
+     rule setFieldType(F::CId, T'::Type, T::StructOrUnionType)
+          => setFields(setFieldType'(F, T', getFields(T)), T)
+
+     syntax FieldInfo ::= "setFieldType'" "(" CId "," Type "," FieldInfo ")" [function]
+     rule setFieldType'(F::CId, T::Type, fieldInfo(Decls::List, Sz::Int, Types::Map, Offsets::Map, Padding::Set))
+          => fieldInfo(Decls, Sz, Types[F <- T], Offsets, Padding)
+
+     syntax StructOrUnionType ::= setFields(FieldInfo, StructOrUnionType) [function]
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, structType(_)))
+     rule setFields(_, t(_, (SetItem(fieldInfo(_, _, _, _, _)) => .Set) _::Set, unionType(_)))
+     rule setFields(Fields::FieldInfo, T::StructOrUnionType) => addModifier(Fields, T) [owise]
+
+     rule setFieldTypeAtOffset(Offset::Int, T'::Type, T::StructOrUnionType)
+          => setFields(setFieldType'(getFieldAtOffset'(Offset, getFields(T)), T', getFields(T)), T)
+
+     syntax Modifier ::= elementTypes(Map)
+     rule setElementType(Offset::Int, T::Type, A::ArrayType)
+          => setElementTypes((getElementTypes(A))[floorBitOffset(Offset, A) <- T], A)
+          requires T =/=K innerType(A)
+     rule setElementType(_, _, A::ArrayType) => A [owise]
+
+     rule getElementType(Offset::Int, A::ArrayType)
+          => (getElementTypes(A))[floorBitOffset(Offset, A)] orDefault innerType(A)
+
+     syntax Map ::= getElementTypes(ArrayType) [function]
+     rule getElementTypes(t(_, SetItem(elementTypes(ETs::Map)) _, _)) => ETs
+     rule getElementTypes(_) => .Map [owise]
+
+     syntax ArrayType ::= setElementTypes(Map, ArrayType) [function]
+     rule setElementTypes(ETs::Map, t(Qs::Quals, SetItem(elementTypes(_)) Mods::Set, T::SimpleArrayType))
+          => t(Qs, SetItem(elementTypes(ETs)) Mods, T)
+     rule setElementTypes(ETs::Map, T::ArrayType) => addModifier(elementTypes(ETs), T) [owise]
 
      // TODO(chathhorn): move/refactor?
      rule <k> (.K => stabilize(T)) ~> stabilizeVLA(T::Type) ...</k>
@@ -396,89 +475,8 @@ module C-TYPING-MISC
                andBool notBool isVoidType(P)
      rule toPrototype(T::Type) => T [owise]
 
-     rule unlock(Offset::Int, t(Qs::Quals, Mods::Set SetItem(lock(Offset, _)), T::SimpleType))
-          => unlock(Offset, t(Qs, Mods, T))
-     rule unlock(_, T::Type) => T [owise]
-
-     rule unlockAll(t(Qs::Quals, Mods::Set SetItem(lock(_, _)), T::SimpleType))
-          => unlockAll(t(Qs, Mods, T))
-     rule unlockAll(T::Type) => T [owise]
-
-     syntax Type ::= getLock(Int, Type) [function]
-     rule getLock(Offset::Int, t(_, _:Set SetItem(lock(Offset, T::Type)), _)) => T
-     rule getLock(_, _) => type(no-type) [owise]
-
-     rule lockFlexibleStruct(T:StructType, N::Int) => lockFlexibleStruct'(T, getFieldInfo(T), N)
-     rule lockFlexibleStruct(T::Type, _) => T [owise]
-
-     syntax Type ::= "lockFlexibleStruct'" "(" Type "," FieldInfo "," Int ")" [function]
-     rule lockFlexibleStruct'(T::Type, fieldInfo(
-               _:List ListItem(typedDeclaration(t(Qs::Quals, Mods::Set, flexibleArrayType(T::Type)), FId::CId)),
-               _, _,
-               _:Map FId |-> FOffset:Int, _), N::Int)
-          => addModifier(lock(FOffset, t(Qs, Mods, arrayType(T, N /Int byteSizeofType(T)))), T)
-     rule lockFlexibleStruct'(T::Type, _, _) => T [owise]
-
      rule isStructOrUnionKLabel(#klabel(`structType`)) => true
      rule isStructOrUnionKLabel(#klabel(`unionType`)) => true
      rule isStructOrUnionKLabel(_) => false [owise]
-
-     rule anonInDecls(ListItem(typedDeclaration(T:StructOrUnionType, _:NoName)) _)
-          => true
-     rule anonInDecls(ListItem(typedDeclaration(T::Type, F::CId)) Decls'::List)
-          => anonInDecls(Decls')
-          requires notBool isNoName(F) orBool notBool isStructOrUnionType(T)
-     rule anonInDecls(.List) => false
-
-     // Search anonymous fields
-     syntax List  ::= searchAnonsNoName(CId, Bool, FieldInfo, Int, List, List,
-                                        CId, Bool, FieldInfo, Int, List, List) [function]
-     // recursion steps
-     rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
-                   ListItem(typedDeclaration(T:StructOrUnionType, #NoName(I:Int))) Decls:List, Path:List)
-          => searchAnonsNoName(F, IsUnion, Fields, Offset, Decls, Path,
-                #NoName(I), isUnionType(T), getFieldInfo(T),          // F', IsUnion', Fields'
-                Offset +Int getOffsetForField(#NoName(I), T, Fields), // Offset'
-                getFields(getFieldInfo(T)),                           // Decls'
-                Path ListItem(provInfo(#NoName(I), IsUnion, Fields))) // Path'
-
-     rule searchAnonsNoName(F :CId, IsUnion :Bool, Fields :FieldInfo, Offset :Int, Decls :List, Path :List,
-                            F':CId, IsUnion':Bool, Fields':FieldInfo, Offset':Int, Decls':List, Path':List)
-          => searchAnons(F, IsUnion', Fields', Offset', Decls', Path')
-             searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
-          requires (notBool F in_keys(getFieldsTypes(Fields')))
-           andBool (notBool F in_keys(getFieldsOffsets(Fields')))
-           andBool anonInDecls(Decls')
-
-     rule searchAnonsNoName(F:CId, IsUnion:Bool, Fields :FieldInfo, Offset:Int, Decls :List, Path:List,
-                            _    , _           , Fields':FieldInfo, _         , Decls':List, _)
-          => searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
-          requires (notBool F in_keys(getFieldsTypes(Fields')))
-           andBool (notBool F in_keys(getFieldsOffsets(Fields')))
-           andBool (notBool anonInDecls(Decls'))
-
-     rule searchAnons(F:CId, IsUnion:Bool, Fields:FieldInfo, Offset:Int,
-                   ListItem(typedDeclaration(T::Type, F':CId)) Decls:List, Path:List)
-          => searchAnons(F, IsUnion, Fields, Offset, Decls, Path)
-         requires F =/=K F' andBool notBool (isNoName(F') andBool isStructOrUnionType(T))
-
-     // recursion base cases
-     rule searchAnons(_, _, _, _, .List, _) => .List
-
-     // two bases cases to accomodate different clients
-     // note: instead of creating a new type wrapper,
-     //       the heterogenous list with element and the offset is returned
-     rule searchAnonsNoName(F:CId, _            , _                , _          , _          , _         ,
-                            _    , IsUnion':Bool, Fields':FieldInfo, Offset':Int, Decls':List, Path':List)
-          => ListItem(Fields') ListItem(Offset') ListItem(IsUnion') Path'
-          requires F in_keys(getFieldsTypes(Fields'))
-           andBool F in_keys(getFieldsOffsets(Fields'))
-
-     rule searchAnons(F:CId, IsUnion:Bool, fieldInfo(Decls:List, Size:Int,
-                   F |-> T::Type Tys:Map, F |-> I:Int Offs:Map, PO:Set), Offset:Int, _:List,
-                   Path:List)
-         => ListItem(fieldInfo(Decls, Size, F |-> T Tys, F |-> I Offs, PO))
-            ListItem(Offset) ListItem(IsUnion)
-            Path
 
 endmodule

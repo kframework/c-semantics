@@ -53,7 +53,7 @@ module C-DECL-GLOBAL
 
      // Block scope declarations.
      rule <k> declare''(T::Type, X:CId, K:K)
-               => addToEnv(X, nonStatic)
+               => addToEnv(X, T, nonStatic)
                ~> declareInternalVariable(X, T, figureInit(X, T, K))
           ...</k>
           <curr-scope> _:BlockScope </curr-scope>
@@ -192,16 +192,13 @@ module C-DECL-GLOBAL
 
      // Checks if the type is complete if there's an initializer.
      syntax KItem ::= checkComplete(Type, K)
-     rule checkComplete(_, _:NoInit) => .K
-          [structural]
-     rule checkComplete(T:Type, _) => .K
-          requires isCompleteType(T) orBool isArrayType(T)
+     rule checkComplete(T::Type, Init:K) => .K
+          requires isNoInit(Init) orBool isCompleteType(T) orBool isArrayType(T)
           [structural]
      rule (.K => CV("TDG8",
                "Declaration has initializer but incomplete type."))
           ~> checkComplete(T:Type, K:K)
-          requires notBool isNoInit(K)
-               andBool notBool (isCompleteType(T) orBool isArrayType(T))
+          requires notBool (isNoInit(K) orBool isCompleteType(T) orBool isArrayType(T))
           [structural]
 
      syntax Bool ::= validStorageClass(Type) [function]
@@ -305,7 +302,7 @@ module C-DECL-GLOBAL
 
      // Static or extern, previously declared static.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -337,7 +334,7 @@ module C-DECL-GLOBAL
 
      // Naked, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -356,7 +353,7 @@ module C-DECL-GLOBAL
 
      // Extern, previously declared extern.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, Base)
+               => addToEnv(X, OldT, Base)
                ~> giveType(X, OldT) // Tentative type.
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
@@ -387,7 +384,7 @@ module C-DECL-GLOBAL
 
      // Naked or extern, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, bnew(!I:Int, T, link(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, link(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, external,
@@ -407,7 +404,7 @@ module C-DECL-GLOBAL
 
      // Static, not previously declared.
      rule <k> declareExternalVariable(X:CId, T::Type, K:K)
-               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, static(Tu)))
                ~> declareExternalVariable'(isNoInit(K),
                     figureInit(X, T, K),
                     declared, internal, Static())
@@ -601,44 +598,22 @@ module C-DECL-GLOBAL
           [structural]
 
      syntax KItem ::= updateLinkState(CId, Type, SymBase)
-     // No previous decl, this isn't a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <curr-program-loc> L:CabsLoc </curr-program-loc>
-          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
-          <external-types> Types::Map => Types[X <- T'] </external-types>
-          requires isLinkerLoc(Base')
-               andBool notBool (X in_keys(Decls))
-          [structural]
-     // No previous decl, this is a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) ...</k>
-          <curr-tu> Tu:String </curr-tu>
-          <curr-program-loc> L:CabsLoc </curr-program-loc>
-          <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
-          <external-types> Types::Map => Types[X <- T'] </external-types>
-          <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
-          <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
-          requires notBool isLinkerLoc(Base')
-               andBool notBool (X in_keys(Decls))
-          [structural]
      // Possibly no previous decl in this TU, but this isn't a def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base':LinkBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
           <external-types> Types::Map => Types[X <- T'] </external-types>
-          requires isLinkerLoc(Base')
           [structural]
      // New def.
-     rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
+     rule <k> updateLinkState(X::CId, T'::Type, Base':DirectBase) => .K ...</k>
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
           <external-types> Types::Map => Types[X <- T'] </external-types>
           <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
           <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
-          requires notBool isLinkerLoc(Base')
-               andBool (notBool (X in_keys(Defs)))
+          requires notBool (X in_keys(Defs))
           [structural]
      // Def already encountered.
      rule <k> updateLinkState(X::CId, T'::Type, Base'::SymBase) => .K ...</k>
@@ -648,11 +623,10 @@ module C-DECL-GLOBAL
 
      rule <k> (.K => CV("TDG13",
                "Redefinition of symbol: " +String idToString(X) +String "."))
-               ~> updateLinkState(X::CId, _, Base'::SymBase)
+               ~> updateLinkState(X::CId, _, Base':DirectBase)
           ...</k>
           <external-defs>... X |-> Base:SymBase ...</external-defs>
-          requires notBool isLinkerLoc(Base')
-               andBool (Base =/=K Base')
+          requires Base =/=K Base'
           [structural]
 
      syntax KItem ::= recordTentDef(CId, Linkage)
@@ -677,20 +651,18 @@ module C-DECL-GLOBAL
      rule <k> allocateDecl(X:CId)
                => allocObject(Base, T)
           ...</k>
-          <types>... X |-> T:Type ...</types>
-          <env>... X |-> Base:SymBase ...</env>
-          requires notBool isLinkerLoc(Base)
+          <types>... X |-> T::Type ...</types>
+          <env>... X |-> Base:DirectBase ...</env>
           [structural]
      rule <k> allocateDecl(X:CId)
-               => addToEnv(X, bnew(!I:Int, T, static(Tu)))
+               => addToEnv(X, T, bnew(!I:Int, T, static(Tu)))
                ~> allocObject(bnew(!I, T, static(Tu)), T)
           ...</k>
-          <types>... X |-> T:Type ...</types>
-          <env>... X |-> Base:SymBase ...</env>
-          <curr-tu> Tu:String </curr-tu>
+          <types>... X |-> T::Type ...</types>
+          <env>... X |-> Base:LinkBase ...</env>
+          <curr-tu> Tu::String </curr-tu>
           <tu-id> Tu </tu-id>
           <linkings>... .Map => Base |-> bnew(!I, T, static(Tu)) ...</linkings>
-          requires isLinkerLoc(Base)
           [structural]
 
      // *** TODO(chathhorn) struct/union stuff ***

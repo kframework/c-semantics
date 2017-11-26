@@ -23,7 +23,6 @@ module C-CONFIGURATION
 
      <thread-info color="yellow">
           <thread-status color="yellow"> .Map </thread-status>
-          <stack-depth> ListItem(0) </stack-depth>
           <mutexes color="yellow"> .Map </mutexes>
           <glocks color="yellow"> .Map </glocks>
      </thread-info>
@@ -77,21 +76,17 @@ module C-CONFIGURATION
                          <block-control>
                               // maps from CIds
                               <env color="red"> .Map </env>
+                              <renv color="red"> .Map </renv>
                               <types color="lightgray"> .Map </types>
-                              <compound-lit-map> .Map </compound-lit-map>
                               <new-size-map> .Map </new-size-map>
 
-                              // information about the block we're in
-                              <nesting-depth color="lightgray">
-                                   0
-                              </nesting-depth>
                               <block-history color="lightgray">
                                    .List
                               </block-history>
                               // used to make sure we don't declare a
                               // variable twice in the same scope
                               <local-vars color="lightgray">
-                                   .List
+                                   .Set
                               </local-vars>
                               // used to deallocate memory on leaving a
                               // block
@@ -116,6 +111,9 @@ module C-CONFIGURATION
                          <locs-written color="lightgray">
                               .Set
                          </locs-written>
+
+                         // Used to catch potential stack size overflows.
+                         <stack-depth> 0 </stack-depth>
 
                          <uncaught-exception> false </uncaught-exception>
 
@@ -195,6 +193,14 @@ module C-CONFIGURATION
      </files>
      <input color="lightgray"> .List </input>
      <output color="lightgray"> .List </output>
+     // env key string |-> value ptr
+     <strerror-cache> .Map </strerror-cache>
+     <sig-handling-state> .K </sig-handling-state>
+     // Cells to store pointers returned by these functions that are
+     // invalidated by subsequent calls.
+     <setlocale> .K </setlocale>
+     <localeconv> .K </localeconv>
+     <getenv> .K </getenv>
 </library>
 
 

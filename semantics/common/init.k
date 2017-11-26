@@ -4,6 +4,8 @@ module COMMON-INIT-SYNTAX
      syntax KItem ::= loadObj(K)
      // this takes input from a file which is not split by thread, so we don't want to split this rule.
      syntax K ::= unwrapObj(K) [function, noThread]
+
+     syntax CId ::= "mainArguments"
 endmodule
 
 module COMMON-INIT

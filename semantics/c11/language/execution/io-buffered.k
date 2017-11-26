@@ -10,11 +10,12 @@ module C-IO-BUFFERED-SYNTAX
      syntax KItem ::= deleteObject(SymBase)
      syntax KItem ::= deleteObjects(Set)
 
-     syntax KItem ::= writeBytes(SymLoc, List)
-
      syntax Set ::= locations(List) [function]
 
      syntax Quals ::= getQualsAtOffset(List) [function]
+
+     syntax KItem ::= writeBytesBuffered(SymLoc, List) [function]
+
 endmodule
 
 module C-IO-BUFFERED
@@ -31,9 +32,11 @@ module C-IO-BUFFERED
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
+     imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIBC-BUILTIN-SYNTAX
 
-     syntax KItem ::= bwrite(SymLoc, List)
+     rule writeBytesBuffered(Loc::SymLoc, Bytes::List) => writeBytes(Loc, Bytes)
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
                => checkRestrict(true, Loc)
@@ -52,7 +55,7 @@ module C-IO-BUFFERED
      syntax KItem ::= checkBounds(SymLoc, Int)
      rule <k> checkWrite(loc(Base::SymBase, Offset::Int), T::Type) => .K ...</k>
           <thread-id> ThreadId::Int </thread-id>
-          <mem>... Base |-> object(ObjT::Type, Len::Int, _) ...</mem>
+          <mem>... Base |-> object(ObjT::EffectiveType, Len::Int, _) ...</mem>
           <locs-written>
                Locs::Set (.Set => SetItem(loc(Base, Offset)))
           </locs-written>
@@ -67,6 +70,8 @@ module C-IO-BUFFERED
                andBool notBool ((isThreadDuration(loc(Base, Offset))
                          orBool isAutoDuration(loc(Base, Offset)))
                     andBool (ThreadId =/=K getThreadId(loc(Base, Offset))))
+               // Libc fixed.
+               andBool (notBool isLibcFixedDuration(Base))
           [structural]
      rule <k> checkWrite(Loc::SymLoc, _) => .K ...</k>
           <locs-written>
@@ -102,14 +107,14 @@ module C-IO-BUFFERED
                "Trying to modify an object declared with const type."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
           ...</k>
-          <mem>... Base |-> object(ObjT::Type, _, _) ...</mem>
+          <mem>... Base |-> object(ObjT::EffectiveType, _, _) ...</mem>
           requires Const() inQuals getQualsAtOffset(ObjT, Offset)
           [structural]
      rule <k> (.K => UNDEF("EIO4",
                "Trying to modify an object declared with volatile type through a non-volatile lvalue."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), T::Type)
           ...</k>
-          <mem>... Base |-> object(ObjT::Type, _, _) ...</mem>
+          <mem>... Base |-> object(ObjT::EffectiveType, _, _) ...</mem>
           requires notBool isVolatileType(T)
                andBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset))
           [structural]
@@ -121,7 +126,13 @@ module C-IO-BUFFERED
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
                andBool (ThreadId =/=K getThreadId(Loc))
           [structural]
+     rule (.K => UNDEF("EIO11",
+               "Trying to modify an unmodifiable object returned by a library function."))
+          ~> checkWrite(loc(Base::SymBase, _), _)
+          requires isLibcFixedDuration(Base)
+          [structural]
 
+     syntax KItem ::= bwrite(SymLoc, List)
      rule <k> writeBytes(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
           <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), L))) </buffer>
           [structural]
@@ -135,7 +146,7 @@ module C-IO-BUFFERED
           [structural]
 
      syntax Map ::= writeBuffer(Map, SymBase, K, Int, List) [function]
-     rule writeBuffer(M::Map, Base::SymBase, object(T::Type, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
+     rule writeBuffer(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
           => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
 
      syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
@@ -164,7 +175,7 @@ module C-IO-BUFFERED
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <mem>...
-               Base |-> object(ObjT::Type, Len::Int, M::Array)
+               Base |-> object(ObjT::EffectiveType, Len::Int, M::Array)
           ...</mem>
           <locs-written> Locs::Set </locs-written>
           <buffer> Mem::List </buffer>
@@ -197,14 +208,14 @@ module C-IO-BUFFERED
 
      syntax Bool ::= assertInBounds(Int, Int)
      syntax Bool ::= assertSeq(SymLoc, Set)
-     syntax Bool ::= assertVolatile(Type, Int, Type)
+     syntax Bool ::= assertVolatile(EffectiveType, Int, Type)
      syntax Bool ::= assertUninit(SymLoc)
 
      rule assertInBounds(Offset::Int, Len::Int)
           => Offset >=Int Len [macro]
      rule assertSeq(Loc::SymLoc, Locs::Set)
           => (Loc in Locs) [macro]
-     rule assertVolatile(ObjT::Type, Offset::Int, T::Type)
+     rule assertVolatile(ObjT::EffectiveType, Offset::Int, T::Type)
           => ((Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
                andBool notBool isVolatileType(T) [macro]
      rule assertUninit(L::SymLoc)
@@ -216,7 +227,7 @@ module C-IO-BUFFERED
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(M[Offset]) Aux,
                         T::Type,
-                        ObjT::Type,
+                        ObjT::EffectiveType,
                         Len:Int,
                         M::Array,
                         Locs::Set,
@@ -230,7 +241,7 @@ module C-IO-BUFFERED
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(M[Offset]) Aux,
                         T::Type,
-                        ObjT::Type,
+                        ObjT::EffectiveType,
                         Len:Int,
                         M::Array,
                         Locs::Set,
@@ -244,7 +255,7 @@ module C-IO-BUFFERED
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux,
                         T::Type,
-                        ObjT::Type,
+                        ObjT::EffectiveType,
                         Len:Int,
                         M::Array,
                         Locs::Set,
@@ -255,10 +266,10 @@ module C-IO-BUFFERED
                         Uninit:Bool => Uninit orBool assertUninit(loc(Base, Offset)))
           requires Size >Int 0 andBool (notBool (loc(Base, Offset) in locations(Mem)))
                andBool (notBool (Offset in_keys(M))) [owise]
-     syntax CValue ::= #readNativeByte(SymLoc, Int, Type) [function, hook(C_SEMANTICS.readNativeByte), impure]
+     syntax CValue ::= #readNativeByte(SymLoc) [function, hook(C_SEMANTICS.readNativeByte), impure]
      rule readBytes-aux(Loc::SymLoc => Loc +bytes -1,
                         Size::Int => Size -Int 1,
-                        Aux::List => ListItem(#readNativeByte(Loc, size(Aux), T)) Aux,
+                        Aux::List => ListItem(#readNativeByte(Loc)) Aux,
                         T::Type,
                         .K,
                         .K,
@@ -278,13 +289,15 @@ module C-IO-BUFFERED
              dataList(Aux)
           [structural]
 
-     syntax Bits ::= getUninitializedBits(SymLoc, Type) [function]
+     syntax Bits ::= getUninitializedBits(SymLoc, EffectiveType) [function]
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
-     rule getUninitializedBits(L::SymLoc, T::Type)
+     rule getUninitializedBits(L::SymLoc, dynamicType(T::Type)) => getUninitializedBits(L, T)
+          requires isStaticDuration(L) orBool isThreadDuration(L)
+     rule getUninitializedBits(L::SymLoc, T:Type)
           => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
           requires isStaticDuration(L)
-     rule getUninitializedBits(L::SymLoc, T::Type)
+     rule getUninitializedBits(L::SymLoc, T:Type)
           => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
           requires isThreadDuration(L)
 
@@ -296,7 +309,7 @@ module C-IO-BUFFERED
           => getZeroedBits(Offset %Int bitSizeofType(T), N, T)
           requires N =/=Int 0
      rule getZeroedBits(Offset::Int, N::Int, T:StructOrUnionType)
-          => getZeroedBits(Offset, N, T, getFieldInfo(T))
+          => getZeroedBits(Offset, N, T, getFlatFields(T))
           requires N =/=Int 0
 
      syntax Bits ::= getZeroedBits(Int, Int, Type, FieldInfo) [function, klabel(getZeroedBits2)]
@@ -404,9 +417,9 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= copyObjectType(SymBase, SymBase)
-     rule <k> copyObjectType(Old:SymBase, New:SymBase) => .K ...</k>
+     rule <k> copyObjectType(Old::SymBase, New::SymBase) => .K ...</k>
           <mem>...
-               Old |-> object(T:Type, _, _)
+               Old |-> object(T::EffectiveType, _, _)
                New |-> object((_ => T), _, _)
           ...</mem>
 
@@ -442,16 +455,18 @@ module C-IO-BUFFERED
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
-               Base |-> object(ObjT::Type, _, (M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]))
+               Base |-> object(ObjT::EffectiveType, _, (M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]))
           ...</mem>
           requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
                andBool notBool (loc(Base, Offset) in locations(Mem))
      rule readBytesForWriting(_, 0, Aux::List, _) => dataList(Aux)
           [structural]
 
-     syntax Quals ::= getQualsAtOffset(Type, Int) [function, klabel(getQualsAtOffset2)]
-     rule getQualsAtOffset(T::Type, Offset::Int)
+     syntax Quals ::= getQualsAtOffset(EffectiveType, Int) [function, klabel(getQualsAtOffset2)]
+     rule getQualsAtOffset(dynamicType(T::Type), Offset::Int) => getQualsAtOffset(T, Offset)
+     rule getQualsAtOffset(T:Type, Offset::Int)
           => getQualsAtOffset(getTypesAtOffset(T, Offset *Int cfg:bitsPerByte))
+     rule getQualsAtOffset(_, _) => noQuals [owise]
 
      rule getQualsAtOffset(ListItem(T:Type) Ts:List)
           => getQualifiers(T) +Quals getQualsAtOffset(Ts)

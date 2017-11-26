@@ -1,13 +1,11 @@
+require "check-effective.k"
 require "check-loc.k"
-require "compound-literal.k"
 require "configuration.k"
 require "env.k"
 require "error.k"
-require "io-buffered.k"
-//require "ltlmc.k"
 require "init.k"
+require "io-buffered.k"
 require "sequence-point.k"
-
 
 require "stmt/block.k"
 require "stmt/break.k"
@@ -34,12 +32,11 @@ require "c-extensions-execution.k"
 module C-EXECUTION
      imports C-CONFIGURATION
      imports C-ENV
-     //imports C-LTLMC
      imports C-EXECUTION-ERROR
      imports C-EXECUTION-INIT
 
+     imports C-CHECK-EFFECTIVE
      imports C-CHECK-LOC
-     imports C-COMPOUND-LITERAL
      imports C-IO-BUFFERED
      imports C-SEQUENCE-POINT
 

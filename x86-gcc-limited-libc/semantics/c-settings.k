@@ -39,6 +39,7 @@ module C-SETTINGS
      rule cfg:mtxPlain => 0
 
      rule cfg:sizeut => unsigned-int
+     rule cfg:wintut => unsigned-int
      rule cfg:wcharut => int
      rule cfg:ptrsize => 4
      rule cfg:ptrdiffut => int
@@ -75,7 +76,7 @@ module C-SETTINGS
      rule HALT ~> recoverFromError(K:K) => K
           requires isErrorRecovery
 
-     rule reportError(ErrorMsg(E::ErrorCategory, ErrorCode::String, Description::String, _), _, C::CabsLoc, _) => #write(2, printLocation(C) +String ": " +String "warning: " +String Description +String printCategory(E))
+     rule reportError(ErrorMsg(E::ErrorCategory, ErrorCode::String, Description::String, _), _, _, C::CabsLoc, _, _) => #write(2, printLocation(C) +String ": " +String "warning: " +String Description +String printCategory(E))
 
      syntax String ::= printLocation(CabsLoc) [function]
                      | printCategory(ErrorCategory) [function]

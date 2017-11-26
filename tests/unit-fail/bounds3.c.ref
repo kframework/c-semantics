@@ -1,0 +1,13 @@
+ A pointer (or array subscript) outside the bounds of an object.
+   at memset(string.c:31:13)
+   by init_node(bounds3.c:11:3)
+   by main(bounds3.c:16:3)
+  Undefined behavior (UB-CEA1).
+   see C11 section 6.5.6:8 http://rvdoc.org/C11/6.5.6
+   see C11 section J.2:1 item 46 http://rvdoc.org/C11/J.2
+   see CERT-C section ARR30-C http://rvdoc.org/CERT-C/ARR30-C
+   see CERT-C section ARR37-C http://rvdoc.org/CERT-C/ARR37-C
+   see CERT-C section STR31-C http://rvdoc.org/CERT-C/STR31-C
+   see MISRA-C section 8.18:1 http://rvdoc.org/MISRA-C/8.18
+   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Execution failed (configuration dumped)

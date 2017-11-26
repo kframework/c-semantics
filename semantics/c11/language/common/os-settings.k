@@ -1,5 +1,41 @@
 module C-OS-SETTINGS-SYNTAX
   imports K-IO
 
+  syntax Signal ::= "#SIGHUP"
+                  | "#SIGINT"
+                  | "#SIGQUIT"
+                  | "#SIGILL"
+                  | "#SIGABRT"
+                  | "#SIGFPE"
+                  | "#SIGKILL"
+                  | "#SIGSEGV"
+                  | "#SIGPIPE"
+                  | "#SIGALRM"
+                  | "#SIGTERM"
+                  | "#SIGUSR1"
+                  | "#SIGUSR2"
+                  | "#SIGCHLD"
+                  | "#SIGCONT"
+                  | "#SIGSTOP"
+                  | "#SIGTSTP"
+                  | "#SIGTTIN"
+                  | "#SIGTTOU"
+                  | "#SIGBUS"
+                  | "#SIGPOLL"
+                  | "#SIGPROF"
+                  | "#SIGSYS"
+                  | "#SIGTRAP"
+                  | "#SIGURG"
+                  | "#SIGVTALRM"
+                  | "#SIGXCPU"
+                  | "#SIGXFSZ"
+                  | "#SIGIOT"
+                  | "#SIGSTKFLT"
+                  | "#SIGIO"
+                  | "#SIGPWR"
+                  | "#SIGWINCH"
+                  | "#SIGUNUSED"
+
   syntax Int ::= getErrno(IOError) [function]
+  syntax Int ::= getSigno(Signal) [function]
 endmodule

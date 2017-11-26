@@ -2,4 +2,6 @@ CV-CER6-bad-static.c:6:2: error: Unary '*' operator applied to non-pointer.
   Constraint violation (CV-CER6).
    see C11 section 6.5.3.2:2 http://rvdoc.org/C11/6.5.3.2
    see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-Translation failed (config dumped). Run kcc -d CV-CER6-bad-static.c to see commands run.
+   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Translation failed (kcc_config dumped). To repeat, run this command in directory fatal:
+kcc -d CV-CER6-bad-static.c

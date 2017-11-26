@@ -5,6 +5,7 @@ module C-EXPR-FUNCTION-CALL
      imports COMPAT-SYNTAX
      imports C-ABSTRACT-SORTS
      imports C-BINDING-SYNTAX
+     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
@@ -54,12 +55,12 @@ module C-EXPR-FUNCTION-CALL
      rule elabCall(te(K:K, _), L::List, T::UType, .List)
           => te(Call(K, list(L)), T)
      rule elabCall(tv(V::CValue, T::UType), L::List, T'::UType, .List)
-          => te(Call(tv(V, T), list(L)), T')
+          => te(Call(checkUse(tv(V, T)), list(L)), T')
      rule elabCall(te(K:K, _), _, T::UType, L::List)
           => te(Call(K, list(L)), T)
           requires L =/=K .List
      rule elabCall(tv(V::CValue, T::UType), _, T'::UType, L::List)
-          => te(Call(tv(V, T), list(L)), T')
+          => te(Call(checkUse(tv(V, T)), list(L)), T')
           requires L =/=K .List
 
      syntax KResult ::= "fauxParam"

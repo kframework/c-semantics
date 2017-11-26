@@ -1,13 +1,4 @@
-module C-LITERAL-SYNTAX
-     imports STRING-SYNTAX
-     imports LIST
-     syntax Constant ::= StringLiteral
-     syntax StringLiteral ::= stringLiteral(String)
-     syntax StringLiteral ::= wstringLiteral(List)
-endmodule
-
 module C-LITERAL
-     imports C-LITERAL-SYNTAX
      imports FLOAT-SYNTAX
      imports K-EQUAL
      imports STRING
@@ -37,14 +28,6 @@ module C-LITERAL
 
      rule OctalConstant(N:Int)
           => hexOrOctalConstant(String2Base(Base2String(N, 10), 8))
-
-     // Included for symmetry.
-     syntax IntConstant ::= decimalConstant(Int)
-     rule DecimalConstant(N:Int) => decimalConstant(N)
-     rule StringLiteral(S:String) => stringLiteral(S)
-          [anywhere, structural]
-     rule WStringLiteral(list(S:List)) => wstringLiteral(S)
-          [anywhere, structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.1}{4--6}}}{
 
@@ -94,7 +77,7 @@ module C-LITERAL
      cannot be represented by any type in its list and has no extended integer
      type, then the integer constant has no type.
      }*/
-     rule NoSuffix(decimalConstant(I:Int)) =>
+     rule NoSuffix(DecimalConstant(I:Int)) =>
           #if withinRange(I, int)
                #then tv(I, ut(SetItem(IntegerConstant), int))
           #else #if withinRange(I, long-int)
@@ -103,7 +86,6 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
-          [structural, anywhere]
 
      rule NoSuffix(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, int)
@@ -120,9 +102,8 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi #fi #fi #fi
-          [structural, anywhere]
 
-     rule LitU(decimalConstant(I:Int)) =>
+     rule LitU(DecimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-int))
           #else #if withinRange(I, unsigned-long-int)
@@ -131,7 +112,6 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
-          [structural, anywhere]
 
      rule LitU(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-int)
@@ -142,16 +122,14 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi
-          [structural, anywhere]
 
-     rule LitL(decimalConstant(I:Int)) =>
+     rule LitL(DecimalConstant(I:Int)) =>
           #if withinRange(I, long-int)
                #then tv(I, ut(SetItem(IntegerConstant), long-int))
           #else #if withinRange(I, long-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
-          [structural, anywhere]
 
      rule LitL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-int)
@@ -164,16 +142,14 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi #fi #fi
-          [structural, anywhere]
 
-     rule LitUL(decimalConstant(I:Int)) =>
+     rule LitUL(DecimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-int))
           #else #if withinRange(I, unsigned-long-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
-          [structural, anywhere]
 
      rule LitUL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-int)
@@ -182,14 +158,12 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
-          [structural, anywhere]
 
-     rule LitLL(decimalConstant(I:Int)) =>
+     rule LitLL(DecimalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
-          [structural, anywhere]
 
      rule LitLL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, long-long-int)
@@ -198,21 +172,18 @@ module C-LITERAL
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi #fi
-          [structural, anywhere]
 
-     rule LitULL(decimalConstant(I:Int)) =>
+     rule LitULL(DecimalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
-          [structural, anywhere]
 
      rule LitULL(hexOrOctalConstant(I:Int)) =>
           #if withinRange(I, unsigned-long-long-int)
                #then tv(I, ut(SetItem(IntegerConstant), unsigned-long-long-int))
           #else tv(I, ut(SetItem(IntegerConstant), no-type))
           #fi
-          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.2}{4}}}{
      An unsuffixed floating constant has type \cinline{double}. If suffixed by
@@ -226,13 +197,10 @@ module C-LITERAL
      rule HexFloatConstant(_, _, F:Float) => reducedFloat(F)
 
      rule NoSuffix(reducedFloat(F:Float)) => tv(roundCFloat(utype(double), F), utype(double))
-          [structural, anywhere]
 
      rule LitL(reducedFloat(F:Float)) => tv(roundCFloat(utype(long-double), F), utype(long-double))
-          [structural, anywhere]
 
      rule LitF(reducedFloat(F:Float)) => tv(roundCFloat(utype(float), F), utype(float))
-          [structural, anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.4.4.4}{10}}}{
      An integer character constant has type \cinline{int}. The value of an
@@ -252,14 +220,9 @@ module C-LITERAL
      // seems to call for char. Using (signed) char could potentially introduce
      // a trap, it seems to me, which really doesn't seem right.
      rule CharLiteral(N:Int)
-          => cast(utype(int), {cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int)))}:>RValue)
-          [structral, anywhere]
+          => cast(utype(int), cast(utype(unsigned-char), tv(N, ut(SetItem(IntegerConstant), int))))
      rule WCharLiteral(N:Int) => tv(N, utype(cfg:wcharut))
-          [structral, anywhere]
-     rule Constant(V:RValue) => V
-          [structral, anywhere]
-     rule Constant(S:StringLiteral) => S
-          [structral, anywhere]
+     rule Constant(K:K) => K
 
 endmodule
 
