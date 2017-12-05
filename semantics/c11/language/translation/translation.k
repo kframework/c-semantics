@@ -29,6 +29,7 @@ require "expr/cast.k"
 require "expr/conditional.k"
 require "expr/eval.k"
 require "expr/function-call.k"
+require "expr/generic.k"
 require "expr/identifier.k"
 require "expr/inc-and-dec.k"
 require "expr/logical.k"
@@ -90,6 +91,7 @@ module C-TRANSLATION
      imports C-EXPR-CONDITIONAL
      imports C-EXPR-EVAL
      imports C-EXPR-FUNCTION-CALL
+     imports C-EXPR-GENERIC
      imports C-EXPR-IDENTIFIER
      imports C-EXPR-INC-AND-DEC
      imports C-EXPR-LOGICAL

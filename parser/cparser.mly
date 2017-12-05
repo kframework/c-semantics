@@ -494,6 +494,7 @@ primary_expression:                     /*(* 6.5.1. *)*/
      /*(* Next is Scott's transformer *)*/
 |               AT_EXPR LPAREN IDENT RPAREN         /* expression pattern variable */
                          { EXPR_PATTERN(fst $3), $1 }
+|		generic_selection { $1 }
 ;
 
 postfix_expression:                     /*(* 6.5.2 *)*/
@@ -1431,11 +1432,11 @@ primary_attr:
                                              * attribute for functions,
                                              * synonim for noreturn **)*/
 |   VOLATILE                             { VARIABLE ("__noreturn__") }
-|  generic_selection { $1 }
+|  generic_selection { fst $1 }
 ;
 
 generic_selection:
-| GENERIC LPAREN assignment_expression COMMA generic_assoc_list RPAREN { GENERIC ((fst $3), $5) }
+| GENERIC LPAREN assignment_expression COMMA generic_assoc_list RPAREN { GENERIC ((fst $3), $5), $1 }
 ;
 generic_assoc_list:
     generic_assoc                             { [$1] }

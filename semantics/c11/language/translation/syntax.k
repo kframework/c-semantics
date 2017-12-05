@@ -334,6 +334,9 @@ module C-ABSTRACT-SYNTAX
      syntax Expression ::= SizeofType(K, K) [strict(1)]
      syntax Expression ::= AlignofExpression(K)
      syntax Expression ::= AlignofType(K, K) [strict(1)]
+     syntax Expression ::= Generic(K, K)
+     syntax Expression ::= GenericPair(K, K, K)
+     syntax Expression ::= GenericDefault(K)
      /*
      | INDEX of expression * expression
      */

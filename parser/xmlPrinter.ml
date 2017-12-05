@@ -239,6 +239,8 @@ and printInitExpressionForCast a castPrinter compoundLiteralPrinter = (* this is
 	| COMPOUND_INIT a -> compoundLiteralPrinter (wrap ((printInitFragmentList a) :: []) "CompoundInit")
 and printInitFragmentList a =
 	printNewList printInitFragment a
+and printGenericAssocs assocs =
+	printNewList printGenericAssoc assocs
 and printInitFragment (a, b) =
 	wrap ((printInitWhat a) :: (printInitExpression b) :: []) "InitFragment"
 and printInitWhat a = 
@@ -446,6 +448,7 @@ and printIntLiteral i =
 and printExpression exp =
 	match exp with
 	| OffsetOf ((spec, declType), exp, loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: (printExpression exp) :: []) "OffsetOf") loc
+	| GENERIC (exp, assocs) -> wrap (printExpression exp :: printGenericAssocs assocs :: []) "Generic"
 	| LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
 	| BINARY (op, exp1, exp2) -> printBinaryExpression op exp1 exp2
@@ -491,6 +494,10 @@ and printExpression exp =
 	| LTL_URW ("R", e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTLRelease"
 	| LTL_URW ("W", e1, e2) -> wrap ((printLTLExpression e1) :: (printLTLExpression e2) :: []) "LTLWeakUntil"
 	| LTL_O ("O", e) -> wrap ((printLTLExpression e) :: []) "LTLNext"
+and printGenericAssoc assoc =
+	match assoc with
+	| GENERIC_PAIR ((spec, declType), exp) -> wrap (printSpecifier spec :: printDeclType declType :: printExpression exp :: []) "GenericPair"
+	| GENERIC_DEFAULT (exp) -> wrap (printExpression exp :: []) "GenericDefault"
 and getUnaryOperator op =
 	let name = (
 	match op with
