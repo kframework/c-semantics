@@ -78,6 +78,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | Tenum of string * enum_item list option * attribute list
   | TtypeofE of expression                      (* GCC __typeof__ *)
   | TtypeofT of type_name       (* GCC __typeof__ *)
+  | TautoType
   | Tcomplex
   | Timaginary
   | Tatomic of type_name

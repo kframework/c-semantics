@@ -711,6 +711,7 @@ and printTypeSpec = function
 	| Tenum (a, b, c) -> printEnumType a b c
 	| TtypeofE e -> wrap ((printExpression e) :: []) "TypeofExpression"
 	| TtypeofT (s, d) -> wrap ((printSpecifier s) :: (printDeclType d) :: []) "TypeofType"
+	| TautoType -> kapply "AutoType" nil
 	| Tcomplex -> kapply "Complex"  nil
 	| Timaginary ->	kapply "Imaginary"  nil
 	| Tatomic (s, d) ->	wrap ((printSpecifier s) :: (printDeclType d) :: []) "TAtomic"

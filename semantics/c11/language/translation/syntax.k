@@ -1,17 +1,19 @@
 module C-ABSTRACT-SORTS
      imports C-DYNAMIC-SORTS
      syntax RValue ::= RHold
-     syntax KResult ::= NCLHold
+     syntax Nclv ::= NCLHold
 endmodule
 
 module C-ABSTRACT-SYNTAX
      imports C-ABSTRACT-SORTS
+     imports SET
      imports BOOL-SYNTAX
      imports INT-SYNTAX
      imports STRING-SYNTAX
      imports COMMON-SORTS
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
+     imports C-TYPING-SORTS
 
      syntax SymBase ::= "nonStatic"
 
@@ -97,6 +99,9 @@ module C-ABSTRACT-SYNTAX
 
      syntax TypeSpecifier ::= Complex()
      syntax TypeSpecifier ::= Imaginary()
+
+     syntax TypeSpecifier ::= AutoType()
+     syntax SimpleType ::= "auto-type"
 
      syntax SpecifierElem ::= TypeofExpression(K)
      syntax SpecifierElem ::= TypeofType(K, K)
@@ -338,14 +343,6 @@ module C-ABSTRACT-SYNTAX
      syntax Expression ::= GenericPair(K, K, K)
      syntax Expression ::= GenericDefault(K)
      /*
-     | INDEX of expression * expression
-     */
-     syntax Expression ::= K "[" K "]"
-     /*
-     | MEMBEROFPTR of expression * string
-     */
-     syntax Expression ::= K "->" CId [left]
-     /*
      | GNU_BODY of block
      | EXPR_PATTERN of String     (* pattern variable, and name *)
      */
@@ -495,7 +492,6 @@ module C-ABSTRACT-REWRITING
      rule StatementLoc(K::K, L::CabsLoc) => CodeLoc(K, L) [anywhere]
 
      rule Conditional(K1::K, K2::K, K3::K) => K1 ? K2 : K3 [anywhere]
-     rule ArrayIndex(K1::K, K2::K) => K1[K2]::Expression [anywhere]
      rule Negative(K::K) => - K [anywhere]
      rule Positive(K::K) => + K [anywhere]
      rule LogicalNot(K::K) => ! K [anywhere]
@@ -539,7 +535,6 @@ module C-ABSTRACT-REWRITING
      rule AssignRightShift(K1::K, K2::K) => K1 >>= K2 [anywhere]
 
      rule Dot(K::K, X::CId) => K . X [anywhere]
-     rule Arrow(K::K, X::CId) => K -> X [anywhere]
 
      /*@ This macro defines an important identity from
      \source[n1570]{\para{6.5.3.2}{3}}. As a syntactic macro, it should run
@@ -554,7 +549,7 @@ module C-ABSTRACT-REWRITING
      a qualified type, the result has the so-qualified version of the type of
      the designated member.}
      }*/
-     rule K::K -> F::CId => (* K) . F [anywhere]
+     rule Arrow(K::K, F::CId) => (* K) . F [anywhere]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.2.1}{2--3}}}{
      A postfix expression followed by an expression in square brackets
@@ -578,7 +573,7 @@ module C-ABSTRACT-REWRITING
      other than an lvalue. It follows from this that arrays are stored in
      row-major order (last subscript varies fastest).
      }*/
-     rule E1::K[E2::K] => *(E1 + E2) [anywhere]
+     rule ArrayIndex(E1::K, E2::K) => *(E1 + E2) [anywhere]
 
 
 endmodule

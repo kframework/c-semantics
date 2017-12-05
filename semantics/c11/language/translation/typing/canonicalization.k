@@ -447,4 +447,6 @@ module C-TYPING-CANONICALIZATION
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Unsigned()) ListItem(Long())) => type(unsigned-long-long-int)
      rule canonicalizeSpecifier(ListItem(Int()) ListItem(Long()) ListItem(Long()) ListItem(Unsigned())) => type(unsigned-long-long-int)
 
+     rule canonicalizeSpecifier(ListItem(AutoType())) => type(auto-type)
+
 endmodule

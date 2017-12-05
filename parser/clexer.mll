@@ -182,6 +182,7 @@ let init_lexicon _ =
 
       (* GCC Extensions *)
       ("__kcc_typeof", fun loc -> TYPEOF loc);
+      ("__kcc_auto_type", fun loc -> AUTO_TYPE loc);
 
       (* Not in C11. *)
       ("__attribute__", fun loc -> ATTRIBUTE loc);

@@ -4,8 +4,10 @@ module C-EXPR-ASSIGNMENT
      imports BOOL
      imports K-EQUAL
      imports SYMLOC-SYNTAX
+     imports C-ABSTRACT-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-CONVERSION-SYNTAX
+     imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
@@ -19,8 +21,9 @@ module C-EXPR-ASSIGNMENT
      }*/
 
      rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
-          ~> L:KResult := R:RValue
+          ~> L:Nclv := R:RValue
           requires utype(L) =/=Type utype(R)
+               andBool notBool isConstType(type(L))
                andBool (
                     (isPointerType(type(L)) andBool notBool isPointerType(type(R))
                          andBool notBool isNullPointerConstant(R))
@@ -34,19 +37,21 @@ module C-EXPR-ASSIGNMENT
                          orBool isArithmeticType(type(L))
                          orBool isStructOrUnionType(type(L))
                          orBool isBoolType(type(L)))
-               ) andBool notBool R ==K voidVal
+               ) andBool R =/=K voidVal
+               andBool notBool isAutoType(type(L))
 
      rule (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
-          ~> L:KResult := R:RValue
+          ~> L:Nclv := R:RValue
           requires (isPointerType(type(L)) andBool isPointerType(type(R)))
-               andBool notBool isVoidType(innerType(type(L)))
-               andBool notBool isVoidType(innerType(type(R)))
-               andBool (
-                    stripQualifiers(innerType(type(L)))
-                         =/=Type stripQualifiers(innerType(type(R)))
-                    orBool notBool (getQualifiers(innerType(type(R)))
+               andBool notBool isNullPointerConstant(R)
+               andBool utype(L) =/=Type utype(R)
+               andBool notBool isConstType(type(L))
+               andBool notBool (
+                    (stripQualifiers(innerType(type(L))) =/=Type stripQualifiers(innerType(type(R)))
+                              impliesBool (isVoidType(innerType(type(L))) orBool isVoidType(innerType(type(R)))))
+                    andBool (getQualifiers(innerType(type(R)))
                          <=Quals getQualifiers(innerType(type(L))))
-               )
+               ) andBool notBool isAutoType(type(L))
      rule (.K => CV("TEAS3", "'lvalue' required as left operand in assignment."))
           ~> tv(_, _) := _:RValue
 
@@ -57,7 +62,7 @@ module C-EXPR-ASSIGNMENT
           ...</k>
           <initializing> true </initializing>
      rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue."))
-               ~> L:KResult := _:RValue
+               ~> L:Nclv := _:RValue
           ...</k>
           <initializing> false </initializing>
           requires isConstType(type(L))
@@ -125,6 +130,8 @@ module C-EXPR-ASSIGNMENT
           <initializing> false </initializing>
           requires notBool isConstType(T)
                andBool (utype(T) ==Type utype(R))
+
+     rule ncle(_, (t(_, _, auto-type) => type(V))) := V:RValue
 
      rule E1:KResult *= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) * E2)

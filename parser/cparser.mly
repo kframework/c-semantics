@@ -308,7 +308,7 @@ let transformOffsetOf (speclist, dtype) member =
 %token<Cabs.cabsloc> IF TRY EXCEPT FINALLY
 %token ELSE
 
-%token<Cabs.cabsloc> ATTRIBUTE INLINE ASM TYPEOF FUNCTION__ PRETTY_FUNCTION__
+%token<Cabs.cabsloc> ATTRIBUTE INLINE ASM TYPEOF AUTO_TYPE FUNCTION__ PRETTY_FUNCTION__
 %token LABEL__
 %token<Cabs.cabsloc> BUILTIN_VA_ARG ATTRIBUTE_USED
 %token BUILTIN_VA_LIST
@@ -1050,6 +1050,7 @@ type_spec:   /* ISO 6.7.2 */
 |   TYPEOF LPAREN expression RPAREN     { TtypeofE (fst $3), $1 }
 |   TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
                                           TtypeofT (s, d), $1 }
+|   AUTO_TYPE                           { TautoType, $1 }
 |   COMPLEX        {
 	parse_warn "Encountered _Complex type.  These are not yet supported, and are currently ignored.";
 	Tcomplex, $1

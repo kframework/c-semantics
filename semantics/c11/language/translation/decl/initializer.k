@@ -1,11 +1,14 @@
 module C-DECL-INITIALIZER-SYNTAX
      imports BASIC-K
      imports COMMON-SORTS
+     imports C-TYPING-SORTS
 
      syntax KResult ::= initializer(K)
 
      // CId, type, initializer.
      syntax KItem ::= figureInit(CId, K, K) [strict(2)]
+
+     syntax Bool ::= isAutoType(Type) [function]
 
 endmodule
 
@@ -123,18 +126,27 @@ module C-DECL-INITIALIZER
           ...</k>
           <incomplete-length> N:Int </incomplete-length>
           [structural]
+     rule (.K => typeof(Expr)) ~> figureInit-aux(_:CId, t(_, _, auto-type),
+               initializer(Computation(_ := Expr:K)))
+          [structural]
+     rule (typeof(T:Type) => .K) ~> figureInit-aux(_:CId, t(_, _, auto-type) => T, _)
+          [structural]
 
      // id, type, initializer
      syntax KItem ::= "figureInit-aux" "(" CId "," Type "," K ")" [strict(3)]
      rule figureInit-aux(X:CId, T:Type, initializer(K:K))
           => giveType(X, T) ~> elaborateInit(K) ~> initValue(X, T, .K)
           requires isCompleteType(T)
+               andBool notBool isAutoType(T)
      rule (elaborateDone(K:K) => .K) ~> initValue(_, _, (.K => K))
+
+     rule isAutoType(t(_, _, auto-type)) => true
+     rule isAutoType(_) => false [owise]
 
      // Special array designator syntax so that it doesn't get caught by the
      // X[Y] => *(X + Y) macro.
      syntax KItem ::= K "[[" Int "]]"
-     rule K:K [[ N:Int ]] => K[N]::Expression
+     rule K:K [[ N:Int ]] => *(K + N)
 
      syntax KItem ::= "getInit"
      syntax KItem ::= fillInit(K)
@@ -570,7 +582,7 @@ module C-DECL-INITIALIZER
           => Computation(X := tv(getZero(T), utype(T)))
           requires isPointerType(T) orBool isArithmeticType(T)
      rule zeroType(X:K, t(Qs::Quals, Mods::Set, arrayType(T::Type, Len::Int)))
-          => zeroType(X[Len -Int 1]::Expression, T)
+          => zeroType(*(X + (Len -Int 1)), T)
           ~> zeroType(X, t(Qs, Mods, arrayType(T, Len -Int 1)))
           requires Len >Int 0
      rule zeroType(_, _) => .K [owise]
