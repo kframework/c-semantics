@@ -5,6 +5,8 @@ int foo (int *p1, int *p2) {
 }
 
 int main (void) {
+      int x = 2;
+      int result = (x = 1) + (x = 2);
 	int a = 0;
 	foo (&a, &a);
 	return 0;

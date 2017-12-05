@@ -40,29 +40,40 @@ module C-IO-BUFFERED
 
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
                => checkRestrict(true, Loc)
+               ~> checkSeq(stripProv(Loc))
                ~> checkWrite(stripProv(Loc), T)
                ~> checkBounds(stripProv(Loc), size(Bytes))
                ~> writeBytes(stripProv(Loc), Bytes)
           ...</k>
           <initializing> false </initializing>
      rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), _)
-               => checkBounds(stripProv(Loc), size(Bytes))
+               => checkSeq(stripProv(Loc))
+               ~> checkBounds(stripProv(Loc), size(Bytes))
                ~> writeBytes(stripProv(Loc), Bytes)
           ...</k>
           <initializing> true </initializing>
 
+     syntax KItem ::= checkSeq(SymLoc)
+     rule <k> checkSeq(Loc::SymLoc) => .K ...</k>
+          <locs-written>
+               Locs::Set (.Set => SetItem(Loc))
+          </locs-written>
+          requires notBool Loc in Locs
+          [structural]
+     rule <k> (.K => UNDEF("EIO8",
+               "Unsequenced side effect on scalar object with side effect of same object.") )
+               ~> checkSeq(Loc::SymLoc)
+          ...</k>
+          <locs-written> Locs::Set </locs-written>
+          requires Loc in Locs
+          [structural]
+
      syntax KItem ::= checkWrite(SymLoc, Type)
-     syntax KItem ::= checkBounds(SymLoc, Int)
      rule <k> checkWrite(loc(Base::SymBase, Offset::Int), T::Type) => .K ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <mem>... Base |-> object(ObjT::EffectiveType, Len::Int, _) ...</mem>
-          <locs-written>
-               Locs::Set (.Set => SetItem(loc(Base, Offset)))
-          </locs-written>
-          requires // Sequencing.
-               (notBool loc(Base, Offset) in Locs)
-               // Const.
-               andBool (notBool (Const() inQuals getQualsAtOffset(ObjT, Offset)))
+          requires // Const.
+               (notBool (Const() inQuals getQualsAtOffset(ObjT, Offset)))
                // Volatile.
                andBool ((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
                     orBool isVolatileType(T))
@@ -73,36 +84,8 @@ module C-IO-BUFFERED
                // Libc fixed.
                andBool (notBool isLibcFixedDuration(Base))
           [structural]
-     rule <k> checkWrite(Loc::SymLoc, _) => .K ...</k>
-          <locs-written>
-               Locs::Set (.Set => SetItem(Loc))
-          </locs-written>
-          requires notBool Loc in Locs andBool isNativeLoc(Loc)
-     rule <k> (.K => UNDEF("EIO8",
-               "Unsequenced side effect on scalar object with side effect of same object.") )
-               ~> checkWrite(Loc::SymLoc, _)
-          ...</k>
-          <locs-written> Locs::Set </locs-written>
-          requires Loc in Locs
-          [structural]
-     // TODO(chathhorn): probably redundant.
-     rule <k> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int) => .K ...</k>
-          <mem>... Base |-> object(_, Len::Int, _) ...</mem>
-          requires // Bounds.
-               (Offset +Int Size -Int 1 <Int Len)
-               andBool Offset >=Int 0
-     rule <k> checkBounds(Loc::SymLoc, _) => .K ...</k>
+     rule checkWrite(Loc::SymLoc, _) => .K
           requires isNativeLoc(Loc)
-     rule <k> (.K => UNDEF("EIO2",
-               "Trying to write outside the bounds of an object."))
-               ~> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int)
-          ...</k>
-          <mem>... Base |-> object(_, Len::Int, _) ...</mem>
-          requires Offset +Int Size -Int 1 >=Int Len orBool Offset <Int 0
-          [structural]
-     // if there is an undefined behavior associated with the write, we just eat it
-     // this is somewhat less safe than some of our other error recovery options,
-     // but all error recovery is essentially unsound anyway, so it should be fine
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type."))
                ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
@@ -130,6 +113,23 @@ module C-IO-BUFFERED
                "Trying to modify an unmodifiable object returned by a library function."))
           ~> checkWrite(loc(Base::SymBase, _), _)
           requires isLibcFixedDuration(Base)
+          [structural]
+
+     // TODO(chathhorn): probably redundant.
+     syntax KItem ::= checkBounds(SymLoc, Int)
+     rule <k> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int) => .K ...</k>
+          <mem>... Base |-> object(_, Len::Int, _) ...</mem>
+          requires // Bounds.
+               (Offset +Int Size -Int 1 <Int Len)
+               andBool Offset >=Int 0
+     rule <k> checkBounds(Loc::SymLoc, _) => .K ...</k>
+          requires isNativeLoc(Loc)
+     rule <k> (.K => UNDEF("EIO2",
+               "Trying to write outside the bounds of an object."))
+               ~> checkBounds(loc(Base::SymBase, Offset::Int), Size::Int)
+          ...</k>
+          <mem>... Base |-> object(_, Len::Int, _) ...</mem>
+          requires Offset +Int Size -Int 1 >=Int Len orBool Offset <Int 0
           [structural]
 
      syntax KItem ::= bwrite(SymLoc, List)
