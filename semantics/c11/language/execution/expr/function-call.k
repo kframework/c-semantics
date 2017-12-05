@@ -84,13 +84,19 @@ module C-EXPR-FUNCTION-CALL
           <functions>... Base |-> Fun:RValue ...</functions>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
-
-     rule <k> Call(
-               tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
+     rule <k> Call(tv(loc(obj(0, Align::Int, nativeAddress()), Address:Int), ut(_, pointerType(T:FunctionType))),
                rvlist(L:List))
                => sequencePoint
                ~> application(CurrLoc, obj(0, Align, nativeAddress()), functionObject(nativeFunction(Address), makeNativeDecl(T), .List), T, CLinkage, krlist(L))
           ...</k>
+          <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
+          [structural]
+     rule <k> Call(tv(loc(obj(0, 0, nativeSymbol(S::String)), _), ut(_, pointerType(_:FunctionType))),
+               rvlist(L:List))
+               => sequencePoint
+               ~> application(CurrLoc, obj(0, 0, nativeSymbol(S)), functionObject(Identifier(S), T, .List), T, CLinkage, krlist(L))
+          ...</k>
+          <external-types>... Identifier(S) |-> T::Type ...</external-types>
           <curr-program-loc> CurrLoc::CabsLoc </curr-program-loc>
           [structural]
 

@@ -11,6 +11,8 @@ use MIME::Base64;
 use String::Escape qw(quote backslash);
 use Getopt::Declare;
 use Cwd qw(abs_path getcwd);
+use UUID::Tiny qw(:std);
+
 
 # Here we trap control-c (and others) so we can clean up when that happens.
 $SIG{'ABRT'} = 'interruptHandler';
@@ -488,7 +490,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
   if ($args->{'-fmessage-length='}) {
     $messageLength = $args->{'-fmessage-length='};
   }
-  
+
   my $allSuppress = join(',', @suppress);
   my $rvError = `sh -c 'command -v rv-error'`;
   chop($rvError);
@@ -587,7 +589,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
 
   # At this point, we have 0 source files and 1 object file left for
   # the final calls to krun.
-  my $retval = execute(getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++'));
+  my $retval = execute(getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++', undef));
   checkError($retval, $programConfFile, 1);
 
   open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
@@ -704,7 +706,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     $retval = execute("ld","-r","-b","binary","-o","plugin_path.o", "plugin_path");
     checkError($retval, $programConfFile, 1);
     chdir("..");
-    
+
     my @cmd = ();
     if ($args->{'-Xk++'}) {
       push(@cmd, 'g++');
@@ -739,7 +741,7 @@ sub mergeObjs {
 
   if ($mergeObjs) {
     my $accum = tempFile();
-    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++');
+    my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++', undef);
     my $retval = execute(@cmd);
     checkError($retval, $accum, 1);
     @objFiles = ($accum);
@@ -882,7 +884,8 @@ sub compile {
   if ($lang eq 'c' or $lang eq 'c++') {
     my $kast = tempFile();
     my $obj = tempFile();
-    my $retval = execute(getKRunCommand($kast, \@arr, $inputFile, 0, $lang));
+    my $uuid = create_uuid_as_string();
+    my $retval = execute(getKRunCommand($kast, \@arr, $inputFile, 0, $lang, $uuid));
     checkError($retval, $kast, 1);
     my $compiler = 'gcc';
     if ($args->{'-Xk++'}) {
@@ -901,6 +904,7 @@ sub compile {
     } else {
       $retval = execute($compiler, '-c', "-std=$std", '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
       checkError($retval, $obj, 0);
+      system('globalize-syms', $uuid, $obj);
     }
     system('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
     system("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
@@ -951,7 +955,7 @@ sub add_arg {
 }
 
 sub getKRunCommand {
-  my ($output, $objsRef, $src, $link, $lang) = (@_);
+  my ($output, $objsRef, $src, $link, $lang, $uuid) = (@_);
   my @objs = @$objsRef;
 
   my @krun_args;
@@ -993,6 +997,13 @@ sub getKRunCommand {
 
   @krun_args = add_arg("OPTIONS", $opts, 'text', @krun_args);
   @krun_args = add_arg("JSON", $json, 'text', @krun_args);
+
+  if (!defined $uuid) {
+      $uuid = create_uuid_as_string();
+  }
+  my $encodedUuid = quote(backslash(quote($uuid)));
+  my $uuidOpt = "#token($encodedUuid, $quoteString)";
+  @krun_args = add_arg("UUID", $uuidOpt, 'text', @krun_args);
 
   if (scalar @objs) {
     my $allObjsFile = tempFile();

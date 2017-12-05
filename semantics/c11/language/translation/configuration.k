@@ -105,6 +105,8 @@ module C-CONFIGURATION
 
 <options> $OPTIONS:Set </options>
 
+<uuid> $UUID:String </uuid>
+
 </T>
 
 <json> $JSON:String </json>

@@ -24,9 +24,10 @@ module C-FUNCTION-DEF
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-PROCESS-LABEL-SYNTAX
+     imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
-     imports C-TYPING-SYNTAX
      imports C-TYPING-COMMON-SYNTAX
+     imports C-TYPING-SYNTAX
 
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare'(
@@ -216,13 +217,31 @@ module C-FUNCTION-DEF
           requires notBool isVoidType(T)
           [structural]
 
-     rule <k> OtherStatement() => .K ...</k>
-          <external-defs>... X |-> _ => .Map ...</external-defs>
+     // Function with external linkage.
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <external-defs>... X |-> Def::SymBase => .Map ...</external-defs>
           <curr-tu> Tu:String </curr-tu>
           <tu-id> Tu </tu-id>
           <genv> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </genv>
           <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
           <block-stack>... ListItem(<block-control>... <env> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </env> ...</block-control>) </block-stack>
           <function-tus>... .Map => X |-> Tu </function-tus>
+     // Function with internal linkage.
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <external-defs> Exts::Map </external-defs>
+          <external-types>... .Map => Identifier(S +String Uuid) |-> T </external-types>
+          <types>... X |-> T::Type ...</types>
+          <curr-tu> Tu::String </curr-tu>
+          <tu-id> Tu </tu-id>
+          <genv>... X |-> Def::SymBase ...</genv>
+          <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
+          <linkings>... .Map => Def |-> obj(0, 0, nativeSymbol(S +String Uuid)) </linkings>
+          <function-tus>... .Map => Identifier(S +String Uuid) |-> Tu </function-tus>
+          <uuid> Uuid::String </uuid>
+          requires notBool (X in_keys(Exts))
+
+     syntax KItem ::= lintFunElide(CId)
+     rule lintFunElide(_) => .K
+          requires notBool hasLint
 
 endmodule

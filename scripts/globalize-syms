@@ -1,0 +1,7 @@
+#!/bin/bash
+uuid="$1"
+obj="$2"
+for sym in `nm -t d --defined-only "$obj" | awk '$2 == "t" {print $3}'`; do
+      objcopy --redefine-sym "$sym=$sym$uuid" $obj
+      objcopy --globalize-symbol "$sym$uuid" $obj
+done

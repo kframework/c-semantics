@@ -18,6 +18,7 @@ FILES_TO_DIST = \
 	$(SCRIPTS_DIR)/merge-kcc-obj \
 	$(SCRIPTS_DIR)/split-kcc-obj \
 	$(SCRIPTS_DIR)/gccsymdump \
+	$(SCRIPTS_DIR)/globalize-syms \
 	$(SCRIPTS_DIR)/ignored-flags \
 	$(SCRIPTS_DIR)/program-runner \
 	$(SCRIPTS_DIR)/histogram-csv \

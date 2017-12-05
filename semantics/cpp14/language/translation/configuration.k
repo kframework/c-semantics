@@ -70,6 +70,9 @@ module C-CONFIGURATION
 <generated-annotations> .List </generated-annotations>
 
 <options> $OPTIONS:Set </options>
+
+<uuid> $UUID:String </uuid>
+
 </T>
 
 <json> $JSON:String </json>

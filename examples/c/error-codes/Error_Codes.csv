@@ -227,5 +227,6 @@ L-CMRE1,Reading a struct or union with uninitialized parts.,,Possible unintended
 L-EFNCE1,"Stack might overflow specified bound on some compilers or ABIs.",,Possible unintended behavior,X
 L-EIOE1,"Read a byte from a statically-allocated or thread-storage-allocated object that was initialized implicitly to 0.",,Possible unintended behavior,X
 L-EXC3,Comparing a function pointer to a null pointer constant.,,Possible unintended behavior,X
+L-TFD1,The function contains inline assembly or other language features unsupported by this tool (falling back to native implementation during execution).,,Possible unintended behavior,X
 SE-CID1,"Trying to look up identifier , but no such identifier is in scope.",6.5.1:2,Syntax error,
 SE-TCANON2,"Unsupported reserved identifier  (reserved variant of restrict).",,Syntax error,X
