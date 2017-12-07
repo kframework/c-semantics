@@ -22,6 +22,7 @@ module C-COMMON-EXPR-EVAL
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
+     imports LIBC-SYNTAX
 
      syntax KItem ::= "reval" "(" ")"
      rule reval(HOLE:K) => HOLE ~> reval() [heat]
@@ -150,6 +151,11 @@ module C-COMMON-EXPR-EVAL
      rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
           requires notBool (isSymLoc(V) andBool isPointerUType(T))
                andBool notBool isTrap(V)
+               andBool notBool isOpaque(V)
+          [structural]
+     rule checkUse(tv(V:Opaque, T::UType))
+          => checkOpaque(V)
+          ~> tv(V, T)
           [structural]
      rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]
@@ -191,5 +197,9 @@ module C-COMMON-EXPR-EVAL
                andBool notBool isStaticDuration(Loc)
                andBool notBool isNativeLoc(Loc)
           [structural]
+
+     syntax KItem ::= checkOpaque(Opaque) [function]
+     rule checkOpaque(_) => .K
+          requires notBool hasLint
 
 endmodule
