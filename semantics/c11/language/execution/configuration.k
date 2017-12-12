@@ -49,6 +49,8 @@ module C-CONFIGURATION
                </final-computation>
                <thread-local>
                     <locks> .List </locks>
+                    // For detecting recursive calls.
+                    <called-functions> .Map </called-functions>
                     // stack of function-control cells
                     <call-stack color="violet"> .List </call-stack>
                     <function-control>

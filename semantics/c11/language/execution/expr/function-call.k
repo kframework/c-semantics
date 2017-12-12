@@ -124,6 +124,10 @@ module C-EXPR-FUNCTION-CALL
      rule checkStackDepth => .K
           requires notBool hasLint
 
+     syntax KItem ::= checkRecursion(CId, String, Map) [function]
+     rule checkRecursion(_, _, _) => .K
+          requires notBool hasLint
+
      /*@ This extra step is useful for putting the function name in the
         transition graph. */
      // Function call (into C function)
@@ -139,10 +143,12 @@ module C-EXPR-FUNCTION-CALL
                ~> bind(getParams(DefT), getParams(CallT), L)
                ~> sequencePoint
                ~> checkStackDepth
+               ~> checkRecursion(X, getTU(Base), Calls)
                ~> #if isNativeLoc(Base) orBool isBuiltinLoc(Base)
                   #then callBuiltin #else Goto(funLabel) #fi
           </k>
-          <call-stack> .List => ListItem(
+          <called-functions> Calls::Map => incrementCalled(X, getTU(Base), Calls) </called-functions>
+          <call-stack> (.List => ListItem(
                <call-stack-frame>
                     <continuation> K:K </continuation>
                     <stack-function-control>
@@ -154,7 +160,7 @@ module C-EXPR-FUNCTION-CALL
                     </stack-function-control>
                     <stack-lang-linkage> CallingLang </stack-lang-linkage>
                </call-stack-frame>
-          ) ...</call-stack>
+          )) ...</call-stack>
           (<function-control>
                C::Bag
                <curr-tu> OldTu::String </curr-tu>
@@ -181,5 +187,12 @@ module C-EXPR-FUNCTION-CALL
                .List => ListItem(X)
           </curr-function-params>
           [structural]
+
+     syntax Map ::= incrementCalled(CId, String, Map) [function]
+     rule incrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
+          => (kpair(X, Tu) |-> (N +Int 1)) Calls
+     rule incrementCalled(X::CId, Tu::String, Calls::Map)
+          => (kpair(X, Tu) |-> 1) Calls
+          [owise]
 
 endmodule

@@ -113,9 +113,12 @@ module C-STMT-RETURN
                ~> K
           </k>
           (<function-control>
+               <curr-tu> Tu::String </curr-tu>
+               <curr-scope> blockScope(X::CId, _) </curr-scope>
                <live-va-lists> .Set </live-va-lists>
                <block-stack> .List </block-stack>
           ...</function-control> => <function-control> C </function-control>)
+          <called-functions> Calls::Map => decrementCalled(X, Tu, Calls) </called-functions>
           <call-stack>
                ListItem(
                     <call-stack-frame>
@@ -128,5 +131,12 @@ module C-STMT-RETURN
                ) => .List
           ...</call-stack>
           [structural]
+
+     syntax Map ::= decrementCalled(CId, String, Map) [function]
+     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> 1) Calls::Map)
+          => Calls
+     rule decrementCalled(X::CId, Tu::String, (kpair(X, Tu) |-> N::Int) Calls::Map)
+          => (kpair(X, Tu) |-> (N -Int 1)) Calls
+          [owise]
 
 endmodule
