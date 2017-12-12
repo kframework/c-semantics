@@ -303,6 +303,8 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
     { classifyLib($lib); }
   -Wl,<args>		Add flags to linker arguments.
     { push(@main::ldArgs, "-Wl,$args"); }
+  -u <symbol>		Pretend <symbol> is undefined, to force linking.
+    { push(@main::ldArgs, "-u $symbol"); }
   <files>...		C files to be compiled. [repeatable] [required] [undocumented]
     { classify(@files); }
   -M			Dependency generation. See documentation for GCC
