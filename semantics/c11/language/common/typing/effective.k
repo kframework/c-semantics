@@ -114,7 +114,10 @@ module C-TYPING-EFFECTIVE
           <mem>... Base |-> object(T::EffectiveType => mergeVariants(T, T'), _, _) ...</mem>
           requires notBool isNoType(T)
      rule <k> setEffectiveType(Base::SymBase, T:NoType) => .K ...</k>
-          <mem>... Base |-> object(_ => dynamicType(T), _, _) ...</mem>
+          <mem>... Base |-> object(dynamicType(_ => T), _, _) ...</mem>
+     rule <k> setEffectiveType(Base::SymBase, T':NoType) => .K ...</k>
+          <mem>... Base |-> object(T::EffectiveType, _, _) ...</mem>
+          requires notBool isDynamicType(T)
 
      rule getFixedFieldType(loc(_, _, _) #as Loc::SymLoc, F::CId, T::StructOrUnionType)
           => getFixedFieldType(stripProv(Loc), F, T)
