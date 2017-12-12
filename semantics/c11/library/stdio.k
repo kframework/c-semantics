@@ -9,6 +9,7 @@ module LIBC-STDIO
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-EXECUTION-ERROR-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -54,9 +55,9 @@ module LIBC-STDIO
           <uri> Path </uri>
           [structural]
      rule <k> fsetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> (.K => UNDEF("STDIO9", "'fsetpos': called to set a position that was not returned by a previous successful call to the fgetpos function on a stream associated with the same file."))
                ~> fsetpos(tv(opaque(FD:FD, _), _), tv(V::CValue, _))
@@ -86,9 +87,9 @@ module LIBC-STDIO
           requires isWritable(Mode) andBool (Op =/=K inputOp)
           [structural]
      rule <k> fflush(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
      rule <k> (.K => UNDEF("STDIO7", "'fflush': called on an input stream or an input/output stream on which the most recent operation was input."))
                ~> fflush(tv(opaque(FD:Int, _), _))
           ...</k>
@@ -141,13 +142,13 @@ module LIBC-STDIO
      rule <k> (.K => tell(FD))
                ~> fgetpos(tv(opaque(FD:Int, _), _), _)
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fgetpos(V:RValue, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> tv(Pos:Int, _) ~> fgetpos(tv(opaque(FD:Int, _), _), PosPtr::RValue)
                => Computation((* PosPtr) := tv(opaque(fpos(Path, Pos), utype(fpos_t)), utype(fpos_t)))
@@ -180,9 +181,9 @@ module LIBC-STDIO
           requires isWritable(Mode)
           [structural]
      rule <k> fputc(_, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fputc(N::Int, tv(opaque(FD:Int, _), _))
                => eof
@@ -223,9 +224,9 @@ module LIBC-STDIO
           requires isReadable(Mode)
           [structural]
      rule <k> fgetc(V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fgetc(tv(opaque(FD:Int, _), _))
                => eof
@@ -249,13 +250,13 @@ module LIBC-STDIO
                ~> cleareof(FD)
                ~> tv(C, utype(int))
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> ungetc(_, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("feof", FDPtr::RValue) => feof(* FDPtr)
@@ -279,9 +280,9 @@ module LIBC-STDIO
           requires notBool (Buffer ==K "" andBool Eof)
           [structural]
      rule <k> feof(V:RValue) => tv(0, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= ferror(K)
@@ -296,21 +297,21 @@ module LIBC-STDIO
           <ferror> 0 </ferror>
           [structural]
      rule <k> ferror(V:RValue) => tv(0, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool (notBool getFD(V) in OpenFiles)
+               orBool (notBool getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= fileno(K)
      context fileno(HOLE:KItem => reval(HOLE)) [result(RValue)]
      rule <k> fileno(tv(opaque(FD:Int, _), _)) => tv(FD, utype(int)) ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fileno(V:RValue) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("clearerr", FDPtr::RValue)
@@ -326,9 +327,9 @@ module LIBC-STDIO
           <ferror> _ => 0 </ferror>
           [structural]
      rule <k> clearerr(V:RValue) => voidVal ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= cleareof(Int)
@@ -356,12 +357,12 @@ module LIBC-STDIO
                ~> close(FD)
                ~> success
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fclose'(FD::Int) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires notBool (FD in OpenFiles)
+          <open-files> OpenFiles:Map </open-files>
+          requires notBool (FD in_keys(OpenFiles))
           [structural]
 
      rule builtin("fopen", Filename::RValue, Mode::RValue)
@@ -422,7 +423,12 @@ module LIBC-STDIO
                => Computation(fileLVal(Base) := tv(opaque(FD, utype(file)), utype(file)))
                ~> & fileLVal(Base)
           ...</k>
-          <open-files>... .Set => SetItem(FD) </open-files>
+          <open-files>... .Map => FD |-> printStackTrace(L, Tu, Sc, Loc, Env) </open-files>
+          <call-stack> L:List </call-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <renv> Env::Map </renv>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> Sc:Scope </curr-scope>
           <files>...
                (.Bag =>
                     <file>...
@@ -491,13 +497,13 @@ module LIBC-STDIO
                => setBuf(FD, Mode, Sz)
                ~> success
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> setbuf(V:RValue, _, _) => setErrno(#EBADF) ~> eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule builtin("fread", Ptr::RValue, tv(Size:Int, _), tv(NMemb:Int, _), FDPtr::RValue)
@@ -534,9 +540,9 @@ module LIBC-STDIO
           requires notBool isReadable(Mode)
           [structural]
      rule <k> fread(_, _, _, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= "fread'" "(" SymLoc "," Int "," K ")" [strict(3)]
@@ -657,9 +663,9 @@ module LIBC-STDIO
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fprintf(V:RValue, _) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      syntax KItem ::= fwrite(K, Int, K) [strict(1)]
@@ -681,9 +687,9 @@ module LIBC-STDIO
           requires notBool isWritable(Mode)
           [structural]
      rule <k> fwrite(_, _, V:RValue) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
 
      rule [vprintf]:
@@ -862,18 +868,23 @@ module LIBC-STDIO
      rule <k> fscanf(tv(opaque(FD:Int, _), _), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs, parseFormat(stringToList(S)), 0, "", 0)
           ...</k>
-          <open-files> OpenFiles:Set </open-files>
-          requires FD in OpenFiles
+          <open-files> OpenFiles:Map </open-files>
+          requires FD in_keys(OpenFiles)
           [structural]
      rule <k> fscanf(tv(_, _) #as V:RValue, _, _) => eof ...</k>
-          <open-files> OpenFiles:Set </open-files>
+          <open-files> OpenFiles:Map </open-files>
           requires (getFD(V) ==K "")
-               orBool notBool (getFD(V) in OpenFiles)
+               orBool notBool (getFD(V) in_keys(OpenFiles))
           [structural]
      rule <k> fscanf(str(FD::String), str(S::String), VarArgs::List)
                => fscanf'(FD, VarArgs, parseFormat(stringToList(S)), 0, "", 0)
           ...</k>
-          <open-files>... .Set => SetItem(FD) </open-files>
+          <open-files>... .Map => FD |-> printStackTrace(L, Tu, Sc, Loc, Env) </open-files>
+          <call-stack> L:List </call-stack>
+          <curr-tu> Tu::String </curr-tu>
+          <renv> Env::Map </renv>
+          <curr-program-loc> Loc:CabsLoc </curr-program-loc>
+          <curr-scope> Sc:Scope </curr-scope>
           <files>...
                (.Bag =>
                     <file>...

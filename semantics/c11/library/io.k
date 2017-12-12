@@ -279,11 +279,11 @@ module LIBC-IO
           [structural]
 
      rule <k> close(FD:Int) => #close(FD) ...</k>
-          <open-files>... SetItem(FD) => .Set </open-files>
+          <open-files>... FD |-> _ => .Map </open-files>
           (<file>... <fid> FD </fid> ...</file> => .Bag)
           [structural]
      rule <k> close(FD:String) => .K ...</k>
-          <open-files>... SetItem(FD) => .Set </open-files>
+          <open-files>... FD |-> _ => .Map </open-files>
           (<file>... <fid> FD </fid> ...</file> => .Bag)
           [structural]
 
@@ -313,8 +313,8 @@ module LIBC-IO
           <last-op> _ => seekOp </last-op>
           [structural]
 
-     rule <k> flushAll => flushAll'(OpenFiles) ...</k>
-          <open-files> OpenFiles::Set </open-files>
+     rule <k> flushAll => flushAll'(keys(OpenFiles)) ...</k>
+          <open-files> OpenFiles::Map </open-files>
           [structural]
 
      syntax KItem ::= "flushAll'" "(" Set ")"

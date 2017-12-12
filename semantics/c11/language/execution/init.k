@@ -132,7 +132,7 @@ module C-EXECUTION-INIT
                     <curr-tu> _ => MainTU </curr-tu>
                ...</thread>
           </threads>
-          <open-files> _ => SetItem(#stdin) SetItem(#stdout) SetItem(#stderr) </open-files>
+          <open-files> _ => (#stdin |-> "") (#stdout |-> "") (#stderr |-> "") </open-files>
           <files>...
                ( .Bag =>
                <file>...

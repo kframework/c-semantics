@@ -153,9 +153,12 @@ module C-COMMON-EXPR-EVAL
                andBool notBool isTrap(V)
                andBool notBool isOpaque(V)
           [structural]
-     rule checkUse(tv(V:Opaque, T::UType))
-          => checkOpaque(V)
-          ~> tv(V, T)
+     rule <k> checkUse(tv(V:Opaque, T::UType)) => tv(V, T) ...</k>
+          <curr-tu> "builtin" </curr-tu>
+          [structural]
+     rule <k> checkUse(tv(V:Opaque, T::UType)) => checkOpaque(V) ~> tv(V, T) ...</k>
+          <curr-tu> Tu::String </curr-tu>
+          requires Tu =/=K "builtin"
           [structural]
      rule checkUse(tv(trap, T::UType)) => trap(T)
           [structural]

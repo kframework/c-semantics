@@ -171,7 +171,7 @@ module C-CONFIGURATION
      // setjmp.h support.
      <jmp-bufs> .Map </jmp-bufs>
 
-     <open-files> .Set </open-files>
+     <open-files> .Map </open-files>
 
      <files color="lightgray">
           <file multiplicity="*" type="Set">
