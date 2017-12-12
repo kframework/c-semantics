@@ -200,9 +200,9 @@ module C-CONFIGURATION
      <sig-handling-state> .K </sig-handling-state>
      // Cells to store pointers returned by these functions that are
      // invalidated by subsequent calls.
-     <setlocale> .K </setlocale>
-     <localeconv> .K </localeconv>
-     <getenv> .K </getenv>
+     <setlocale> NullPointerConstant </setlocale>
+     <localeconv> NullPointerConstant </localeconv>
+     <getenv> NullPointerConstant </getenv>
 </library>
 
 

@@ -441,6 +441,7 @@ module LIBC-IO
 
      rule newFixedObject(tv(_, T::UType) #as V::RValue => getString(V))
           requires isCharType(innerType(T))
+               andBool notBool isNull(V)
           [structural]
      rule newFixedObject(str(Value::String))
           => newFixedString(bnew(!_:Int, arr(char, lengthString(Value) +Int 1), libcFixed), Value)
@@ -448,6 +449,10 @@ module LIBC-IO
      rule newFixedObject(tv(Loc:SymLoc, T::UType) #as V::RValue)
           => newFixedObject'(readBytes(Loc, byteSizeofType(innerType(T)), innerType(T)), innerType(T))
           requires notBool isCharType(innerType(T))
+               andBool notBool isNull(V)
+          [structural]
+     rule newFixedObject(V::RValue) => V
+          requires isNull(V)
           [structural]
 
      syntax KItem ::= "newFixedObject'" "(" K "," Type ")" [strict(1)]

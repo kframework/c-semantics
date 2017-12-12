@@ -5,6 +5,7 @@ module C-EXECUTION-INIT-SYNTAX
      syntax KItem ::= callMain(Int, K)
      syntax KItem ::= "initMainThread"
      syntax KItem ::= "callAtExit" | "callAtQuickExit"
+     syntax RValue ::= "NullPointerConstant" [function]
 endmodule
 
 module C-EXECUTION-INIT
@@ -69,7 +70,6 @@ module C-EXECUTION-INIT
      rule toRVal(R:RValue) => R
           [structural]
 
-     syntax RValue ::= "NullPointerConstant" [function]
      rule NullPointerConstant
           => tv(NullPointer, utype(pointerType(type(void))))
 

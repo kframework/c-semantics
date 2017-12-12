@@ -1,7 +1,10 @@
 #include <stdlib.h>
 
 int main(void) {
-      char* user = getenv("USER");
+      char * nothing = getenv("NOT_IN_ENV_456");
+      if (nothing) abort();
 
+
+      char * user = getenv("USER");
       *user = 'x';
 }

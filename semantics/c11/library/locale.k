@@ -3,6 +3,7 @@ module LIBC-LOCALE
      imports C-DYNAMIC-SYNTAX
      imports C-IO-BUFFERED-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
+     imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
 
@@ -10,28 +11,32 @@ module LIBC-LOCALE
           ~> builtin("setlocale", Cat::RValue, Locale::RValue)
           [structural]
      rule <k> Ptr:RValue ~> builtin("setlocale", _, _)
-               => Ptr
-          ...</k>
-          <setlocale> .K => Ptr </setlocale>
-          [structural]
-     rule <k> Ptr:RValue ~> builtin("setlocale", _, _)
                => deleteObject(base(Loc)) ~> Ptr
           ...</k>
-          <setlocale> tv(Loc:SymLoc, _) => Ptr </setlocale>
+          <setlocale> tv(Loc:SymLoc, _) #as OldPtr::RValue => Ptr </setlocale>
+          requires notBool isNull(OldPtr)
+          [structural]
+     rule <k> Ptr:RValue ~> builtin("setlocale", _, _)
+               => Ptr
+          ...</k>
+          <setlocale> OldPtr:RValue => Ptr </setlocale>
+          requires isNull(OldPtr)
           [structural]
 
      rule (.K => newFixedObject(nativeCall("localeconv", .List, .List)))
           ~> builtin("localeconv")
           [structural]
      rule <k> Ptr:RValue ~> builtin("localeconv")
-               => Ptr
-          ...</k>
-          <localeconv> .K => Ptr </localeconv>
-          [structural]
-     rule <k> Ptr:RValue ~> builtin("localeconv")
                => deleteObject(base(Loc)) ~> Ptr
           ...</k>
-          <localeconv> tv(Loc:SymLoc, _) => Ptr </localeconv>
+          <localeconv> tv(Loc:SymLoc, _) #as OldPtr::RValue => Ptr </localeconv>
+          requires notBool isNull(OldPtr)
+          [structural]
+     rule <k> Ptr:RValue ~> builtin("localeconv")
+               => Ptr
+          ...</k>
+          <localeconv> OldPtr:RValue => Ptr </localeconv>
+          requires isNull(OldPtr)
           [structural]
 
 endmodule
