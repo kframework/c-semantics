@@ -112,9 +112,9 @@ module C-TYPING-EFFECTIVE
      syntax KItem ::= setEffectiveType(SymBase, K) [strict(2)]
      rule <k> setEffectiveType(Base::SymBase, T'::EffectiveType) => .K ...</k>
           <mem>... Base |-> object(T::EffectiveType => mergeVariants(T, T'), _, _) ...</mem>
-          requires notBool isNoType(T)
-     rule <k> setEffectiveType(Base::SymBase, T:NoType) => .K ...</k>
-          <mem>... Base |-> object(dynamicType(_ => T), _, _) ...</mem>
+          requires notBool isNoType(T')
+     rule <k> setEffectiveType(Base::SymBase, T':NoType) => .K ...</k>
+          <mem>... Base |-> object(dynamicType(_ => T'), _, _) ...</mem>
      rule <k> setEffectiveType(Base::SymBase, T':NoType) => .K ...</k>
           <mem>... Base |-> object(T::EffectiveType, _, _) ...</mem>
           requires notBool isDynamicType(T)

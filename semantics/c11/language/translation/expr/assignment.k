@@ -20,10 +20,12 @@ module C-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
-          ~> L:Nclv := R:RValue
+     rule <k> (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
+               ~> L:Nclv := R:RValue
+          ...</k>
+          <initializing> IsInit:Bool </initializing>
           requires utype(L) =/=Type utype(R)
-               andBool notBool isConstType(type(L))
+               andBool (notBool isConstType(type(L)) orBool IsInit)
                andBool (
                     (isPointerType(type(L)) andBool notBool isPointerType(type(R))
                          andBool notBool isNullPointerConstant(R))
@@ -40,12 +42,14 @@ module C-EXPR-ASSIGNMENT
                ) andBool R =/=K voidVal
                andBool notBool isAutoType(type(L))
 
-     rule (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
-          ~> L:Nclv := R:RValue
+     rule <k> (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
+               ~> L:Nclv := R:RValue
+          ...</k>
+          <initializing> IsInit:Bool </initializing>
           requires (isPointerType(type(L)) andBool isPointerType(type(R)))
                andBool notBool isNullPointerConstant(R)
                andBool utype(L) =/=Type utype(R)
-               andBool notBool isConstType(type(L))
+               andBool (notBool isConstType(type(L)) orBool IsInit)
                andBool notBool (
                     (stripQualifiers(innerType(type(L))) =/=Type stripQualifiers(innerType(type(R)))
                               impliesBool (isVoidType(innerType(type(L))) orBool isVoidType(innerType(type(R)))))
