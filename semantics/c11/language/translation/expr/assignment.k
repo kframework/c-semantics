@@ -9,6 +9,7 @@ module C-EXPR-ASSIGNMENT
      imports C-CONVERSION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-SYNTAX
@@ -137,42 +138,42 @@ module C-EXPR-ASSIGNMENT
 
      rule ncle(_, (t(_, _, auto-type) => type(V))) := V:RValue
 
-     rule E1:KResult *= E2:RValue
+     rule E1:Nclv *= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) * E2)
-     rule E1:KResult /= E2:RValue
+     rule E1:Nclv /= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) / E2)
-     rule E1:KResult %= E2:RValue
+     rule E1:Nclv %= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) % E2)
-     rule E1:KResult += E2:RValue
+     rule E1:Nclv += E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) + E2)
-     rule E1:KResult -= E2:RValue
+     rule E1:Nclv -= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) - E2)
-     rule E1:KResult <<= E2:RValue
+     rule E1:Nclv <<= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) << E2)
-     rule E1:KResult >>= E2:RValue
+     rule E1:Nclv >>= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) >> E2)
-     rule E1:KResult &= E2:RValue
+     rule E1:Nclv &= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) & E2)
-     rule E1:KResult ^= E2:RValue
+     rule E1:Nclv ^= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) ^ E2)
-     rule E1:KResult |= E2:RValue
+     rule E1:Nclv |= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) | E2)
 
      context compoundAssign(_, (HOLE:KItem => reval(HOLE))) [result(RValue)]
-     rule <k> compoundAssign(LV:KResult, AExp:RValue)
+     rule <k> compoundAssign(LV:Nclv, AExp:RValue)
                => #compoundAssign(LV, LV, AExp)
           ...</k>
           <curr-scope> fileScope </curr-scope>
           requires notBool isNCLHold(LV)
-     rule <k> compoundAssign(LV:KResult, AExp:RValue)
-               => te(compoundAssign(LV, AExp), utype(LV))
+     rule <k> compoundAssign(LV:Nclv, AExp:RValue)
+               => te(compoundAssign(nclvToLV(LV), AExp), utype(LV))
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           requires isNCLHold(LV) orBool S =/=K fileScope
 
      syntax KItem ::= #compoundAssign(K, K, RValue)
      context #compoundAssign(_, (HOLE:KItem => reval(HOLE)), _) [result(RValue)]
-     rule #compoundAssign(LV:KResult, V:RValue, AExp:RValue)
+     rule #compoundAssign(LV::K, V:RValue, AExp:RValue)
           => fillLHoles(LV, fillRHoles(V, stripHold(AExp)))
 
 endmodule

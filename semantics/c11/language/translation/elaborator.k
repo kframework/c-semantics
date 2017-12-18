@@ -1,5 +1,6 @@
 module C-ELABORATOR-SYNTAX
      imports BASIC-K
+     imports C-ABSTRACT-SORTS
 
      syntax KItem ::= elaborate(K) [klabel(elaborate1)]
      syntax KItem ::= elaborate(K, K)
@@ -11,6 +12,9 @@ module C-ELABORATOR-SYNTAX
      syntax KItem ::= elaborateInit(K)
 
      syntax KItem ::= runInit(K)
+
+     // Converts nclv back to lv, so lvalues are re-evaluated during execution.
+     syntax KItem ::= nclvToLV(Nclv) [function]
 endmodule
 
 module C-ELABORATOR
@@ -59,5 +63,8 @@ module C-ELABORATOR
           => elaborate(K2) ~> elaborateDone(K1)
      rule elaborateDone(K2:K) ~> elaborateDone(K1:K)
           => elaborateDone(K1:K, K2:K)
+
+     rule nclvToLV(nclv(Loc::SymLoc, T::Type)) => lv(Loc, T)
+     rule nclvToLV(ncle(K:K, _)) => K
 
 endmodule

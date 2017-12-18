@@ -21,7 +21,7 @@ module C-EXPR-INC-AND-DEC
      the value 1 of the appropriate type is subtracted from it).
      }*/
 
-     rule postOp(LV:KResult, Op:K) => #postOp(LV, fillLHoles(LV, Op))
+     rule postOp(LV:Nclv, Op:K) => #postOp(LV, fillLHoles(LV, Op))
           [structual]
 
      syntax KItem ::= #postOp(K, K)
