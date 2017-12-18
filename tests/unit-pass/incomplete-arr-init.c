@@ -1,3 +1,8 @@
-char *a[] = {"one"};
+#include <stdio.h>
 
-int main(void) { }
+char *a[] = {"one"};
+const char b[] = {"two"};
+
+int main(void) {
+      printf("%s %s\n", a[0], b);
+}

@@ -178,7 +178,7 @@ module C-DECL-INITIALIZER
      rule fillInits(.List) => .K
           [structural]
 
-     syntax KItem ::= "next" | "down" | "block"
+     syntax SubObjectControl ::= "next" | "down" | "block"
 
      rule <curr-subobject>
                (ListItem(down) => ListItem(ncle(K[[0]], T)))
@@ -437,7 +437,7 @@ module C-DECL-INITIALIZER
      rule <k> fillInit(SingleInit(StringLiteral(_))) ...</k>
           <curr-subobject>
                (.List => ListItem(down))
-               ListItem(ncle(_, t(_, _, arrayType(T:CharType, _))))
+               ListItem(ncle(_, t(_, _, arrayType(_:CharType, _))))
           ...</curr-subobject>
           [structural]
      rule <k> fillInit(SingleInit(WStringLiteral(_))) ...</k>
@@ -527,13 +527,15 @@ module C-DECL-INITIALIZER
           [structural]
      rule <k> fillInit-aux(SingleInit(StringLiteral(""))) => .K ...</k>
           <curr-subobject>
-               ListItem(noMoreIndices => next)
+               ListItem(K:K => next)
           ...</curr-subobject>
+          requires notBool isSubObjectControl(K)
           [structural]
      rule <k> fillInit-aux(SingleInit(WStringLiteral(list(.List)))) => .K ...</k>
           <curr-subobject>
-               ListItem(noMoreIndices => next)
+               ListItem(K:K => next)
           ...</curr-subobject>
+          requires notBool isSubObjectControl(K)
           [structural]
 
      // This rule assumes all unrollings have already occurred, so it needs to
