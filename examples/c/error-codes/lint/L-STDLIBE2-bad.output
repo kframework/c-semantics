@@ -1,4 +1,6 @@
- Malloc overflows memory bound, returning null pointer.
-   at malloc(L-STDLIBE2-bad.c:10:5)
-   by main(L-STDLIBE2-bad.c:10:5)
-  Possible unintended behavior (L-STDLIBE2).
+Malloc overflows memory bound, returning null pointer:
+      > in malloc at L-STDLIBE2-bad.c:10:5
+        in main at L-STDLIBE2-bad.c:10:5
+
+    Possible unintended behavior (L-STDLIBE2):
+

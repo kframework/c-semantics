@@ -1,9 +1,11 @@
- Destroying a locked mutex.
-   at pthread_mutex_destroy(UB-PTHREAD2-bad.c:15:5)
-   by locker_thread(UB-PTHREAD2-bad.c:15:5)
-  Locked here:
-   at pthread_mutex_lock(UB-PTHREAD2-bad.c:14:5)
-   by locker_thread(UB-PTHREAD2-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD2).
-   see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
-   see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy
+Destroying a locked mutex:
+      > in pthread_mutex_destroy at UB-PTHREAD2-bad.c:15:5
+        in locker_thread at UB-PTHREAD2-bad.c:15:5
+    Locked here:
+      > in pthread_mutex_lock at UB-PTHREAD2-bad.c:14:5
+        in locker_thread at UB-PTHREAD2-bad.c:14:5
+
+    Undefined behavior (UB-PTHREAD2):
+        see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
+        see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy
+

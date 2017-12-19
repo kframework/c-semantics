@@ -1,4 +1,6 @@
- Dereferencing a pointer to FILE or directly using a FILE object.
-   at main(L-CEE6-bad.c:5:7)
-  Possible unintended behavior (L-CEE6).
-   see MISRA-C section 8.22:5 http://rvdoc.org/MISRA-C/8.22
+Dereferencing a pointer to FILE or directly using a FILE object:
+      > in main at L-CEE6-bad.c:5:7
+
+    Possible unintended behavior (L-CEE6):
+        see MISRA-C section 8.22:5 http://rvdoc.org/MISRA-C/8.22
+

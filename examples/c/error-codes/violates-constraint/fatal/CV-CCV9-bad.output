@@ -1,7 +1,9 @@
- Conversion from pointer to floating point type or from floating point type to pointer.
-   at main(CV-CCV9-bad.c:6:2)
-  Constraint violation (CV-CCV9).
-   see C11 section 6.5.4:4 http://rvdoc.org/C11/6.5.4
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+Conversion from pointer to floating point type or from floating point type to pointer:
+      > in main at CV-CCV9-bad.c:6:2
+
+    Constraint violation (CV-CCV9):
+        see C11 section 6.5.4:4 http://rvdoc.org/C11/6.5.4
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

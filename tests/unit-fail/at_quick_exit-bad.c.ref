@@ -1,9 +1,11 @@
- Called the at_quick_exit function after normal program termination has begun.
-   at at_quick_exit(at_quick_exit-bad.c:6:3)
-   by foo(at_quick_exit-bad.c:6:3)
-   by quick_exit(at_quick_exit-bad.c:11:3)
-   by main(at_quick_exit-bad.c:11:3)
-  Unspecified value or behavior (USP-STDLIB6).
-   see C11 section 7.22.4.3:2 http://rvdoc.org/C11/7.22.4.3
-   see C11 section J.1:1 item 45 http://rvdoc.org/C11/J.1
+Called the at_quick_exit function after normal program termination has begun:
+      > in at_quick_exit at at_quick_exit-bad.c:6:3
+        in foo at at_quick_exit-bad.c:6:3
+        in quick_exit at at_quick_exit-bad.c:11:3
+        in main at at_quick_exit-bad.c:11:3
+
+    Unspecified value or behavior (USP-STDLIB6):
+        see C11 section 7.22.4.3:2 http://rvdoc.org/C11/7.22.4.3
+        see C11 section J.1:1 item 45 http://rvdoc.org/C11/J.1
+
 Execution failed (configuration dumped)

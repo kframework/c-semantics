@@ -1,4 +1,6 @@
- Dereferencing a likely-invalid native pointer.
-   at main(L-CER7-bad-crash.c:3:7)
-  Possible unintended behavior (L-CER7).
+Dereferencing a likely-invalid native pointer:
+      > in main at L-CER7-bad-crash.c:3:7
+
+    Possible unintended behavior (L-CER7):
+
 Segmentation fault (core dumped)

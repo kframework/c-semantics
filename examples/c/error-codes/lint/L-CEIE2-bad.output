@@ -1,7 +1,9 @@
- File opened but never closed.
-  Opened here:
-   at fopen(L-CEIE2-bad.c:9:7)
-   by main(L-CEIE2-bad.c:9:7)
-  Possible unintended behavior (L-CEIE2).
-   see CERT-C section FIO42-C http://rvdoc.org/CERT-C/FIO42-C
-   see MISRA-C section 8.22:1 http://rvdoc.org/MISRA-C/8.22
+File opened but never closed:
+    Opened here:
+      > in fopen at L-CEIE2-bad.c:9:7
+        in main at L-CEIE2-bad.c:9:7
+
+    Possible unintended behavior (L-CEIE2):
+        see CERT-C section FIO42-C http://rvdoc.org/CERT-C/FIO42-C
+        see MISRA-C section 8.22:1 http://rvdoc.org/MISRA-C/8.22
+

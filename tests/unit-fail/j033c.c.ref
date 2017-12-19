@@ -1,8 +1,10 @@
- Trying to modify a string literal.
-   at main(j033c.c:5:7)
-  Undefined behavior (UB-CMW1).
-   see C11 section 6.4.5:7 http://rvdoc.org/C11/6.4.5
-   see C11 section J.2:1 item 33 http://rvdoc.org/C11/J.2
-   see CERT-C section STR30-C http://rvdoc.org/CERT-C/STR30-C
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Trying to modify a string literal:
+      > in main at j033c.c:5:7
+
+    Undefined behavior (UB-CMW1):
+        see C11 section 6.4.5:7 http://rvdoc.org/C11/6.4.5
+        see C11 section J.2:1 item 33 http://rvdoc.org/C11/J.2
+        see CERT-C section STR30-C http://rvdoc.org/CERT-C/STR30-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

@@ -1,7 +1,9 @@
 j056c.c:5:1: error: Non-constant static initializer.
-  Constraint violation (CV-TEAS5).
-   see C11 section 6.7.9:4 http://rvdoc.org/C11/6.7.9
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-TEAS5):
+        see C11 section 6.7.9:4 http://rvdoc.org/C11/6.7.9
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
 Translation failed (kcc_config dumped). To repeat, run this command in directory unit-fail-compilation:
 kcc -d -Werror -Wfatal-errors j056c.c

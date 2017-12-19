@@ -1,7 +1,9 @@
- 'thrd_join' or 'pthread_join' called for an invalid or already-joined thread.
-   at pthread_join(UB-THREADS1-bad.c:12:7)
-   by main(UB-THREADS1-bad.c:12:7)
-  Undefined behavior (UB-THREADS1).
-   see C11 section 7.26.5.6:2 http://rvdoc.org/C11/7.26.5.6
-   see POSIX 2008 section pthread_join http://rvdoc.org/POSIX%202008/pthread_join
-   see CERT-C section CON39-C http://rvdoc.org/CERT-C/CON39-C
+'thrd_join' or 'pthread_join' called for an invalid or already-joined thread:
+      > in pthread_join at UB-THREADS1-bad.c:12:7
+        in main at UB-THREADS1-bad.c:12:7
+
+    Undefined behavior (UB-THREADS1):
+        see C11 section 7.26.5.6:2 http://rvdoc.org/C11/7.26.5.6
+        see POSIX 2008 section pthread_join http://rvdoc.org/POSIX%202008/pthread_join
+        see CERT-C section CON39-C http://rvdoc.org/CERT-C/CON39-C
+

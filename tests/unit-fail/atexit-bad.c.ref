@@ -1,9 +1,11 @@
- Called the atexit function after normal program termination has begun.
-   at atexit(atexit-bad.c:6:3)
-   by foo(atexit-bad.c:6:3)
-   by exit(atexit-bad.c:11:3)
-   by main(atexit-bad.c:11:3)
-  Unspecified value or behavior (USP-STDLIB3).
-   see C11 section 7.22.4.2:2 http://rvdoc.org/C11/7.22.4.2
-   see C11 section J.1:1 item 44 http://rvdoc.org/C11/J.1
+Called the atexit function after normal program termination has begun:
+      > in atexit at atexit-bad.c:6:3
+        in foo at atexit-bad.c:6:3
+        in exit at atexit-bad.c:11:3
+        in main at atexit-bad.c:11:3
+
+    Unspecified value or behavior (USP-STDLIB3):
+        see C11 section 7.22.4.2:2 http://rvdoc.org/C11/7.22.4.2
+        see C11 section J.1:1 item 44 http://rvdoc.org/C11/J.1
+
 Execution failed (configuration dumped)

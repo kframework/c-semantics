@@ -1,18 +1,22 @@
- Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread.
-   at pthread_mutex_lock(UB-PTHREAD4-bad.c:15:5)
-   by locker_thread(UB-PTHREAD4-bad.c:15:5)
-  Locked here:
-   at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
-   by locker_thread(UB-PTHREAD4-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD4).
-   see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
-   see POSIX 2008 section pthread_mutex_lock http://rvdoc.org/POSIX%202008/pthread_mutex_lock
- Destroying a locked mutex.
-   at pthread_mutex_destroy(UB-PTHREAD4-bad.c:34:5)
-   by main(UB-PTHREAD4-bad.c:34:5)
-  Locked here:
-   at pthread_mutex_lock(UB-PTHREAD4-bad.c:14:5)
-   by locker_thread(UB-PTHREAD4-bad.c:14:5)
-  Undefined behavior (UB-PTHREAD2).
-   see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
-   see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy
+Attempting to lock a PTHREAD_MUTEX_DEFAULT mutex that is already locked by the current thread:
+      > in pthread_mutex_lock at UB-PTHREAD4-bad.c:15:5
+        in locker_thread at UB-PTHREAD4-bad.c:15:5
+    Locked here:
+      > in pthread_mutex_lock at UB-PTHREAD4-bad.c:14:5
+        in locker_thread at UB-PTHREAD4-bad.c:14:5
+
+    Undefined behavior (UB-PTHREAD4):
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see POSIX 2008 section pthread_mutex_lock http://rvdoc.org/POSIX%202008/pthread_mutex_lock
+
+Destroying a locked mutex:
+      > in pthread_mutex_destroy at UB-PTHREAD4-bad.c:34:5
+        in main at UB-PTHREAD4-bad.c:34:5
+    Locked here:
+      > in pthread_mutex_lock at UB-PTHREAD4-bad.c:14:5
+        in locker_thread at UB-PTHREAD4-bad.c:14:5
+
+    Undefined behavior (UB-PTHREAD2):
+        see CERT-C section CON31-C http://rvdoc.org/CERT-C/CON31-C
+        see POSIX 2008 section pthread_mutex_destroy http://rvdoc.org/POSIX%202008/pthread_mutex_destroy
+

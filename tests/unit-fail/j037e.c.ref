@@ -1,8 +1,10 @@
- Type of lvalue (long long) not compatible with the effective type of the object being accessed (long).
-   at main(j037e.c:8:7)
-  Undefined behavior (UB-EIO10).
-   see C11 section 6.5:7 http://rvdoc.org/C11/6.5
-   see C11 section J.2:1 item 37 http://rvdoc.org/C11/J.2
-   see CERT-C section EXP39-C http://rvdoc.org/CERT-C/EXP39-C
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Type of lvalue (long long) not compatible with the effective type of the object being accessed (long):
+      > in main at j037e.c:8:7
+
+    Undefined behavior (UB-EIO10):
+        see C11 section 6.5:7 http://rvdoc.org/C11/6.5
+        see C11 section J.2:1 item 37 http://rvdoc.org/C11/J.2
+        see CERT-C section EXP39-C http://rvdoc.org/CERT-C/EXP39-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

@@ -1,12 +1,14 @@
- Referring to an object outside of its lifetime.
-   at main(j009i.c:4:2)
-  Undefined behavior (UB-CEE4).
-   see C11 section 6.2.4:2 http://rvdoc.org/C11/6.2.4
-   see C11 section J.2:1 item 9 http://rvdoc.org/C11/J.2
-   see CERT-C section DCL21-C http://rvdoc.org/CERT-C/DCL21-C
-   see CERT-C section DCL30-C http://rvdoc.org/CERT-C/DCL30-C
-   see CERT-C section MEM30-C http://rvdoc.org/CERT-C/MEM30-C
-   see MISRA-C section 8.18:6 http://rvdoc.org/MISRA-C/8.18
-   see MISRA-C section 8.22:6 http://rvdoc.org/MISRA-C/8.22
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Referring to an object outside of its lifetime:
+      > in main at j009i.c:4:2
+
+    Undefined behavior (UB-CEE4):
+        see C11 section 6.2.4:2 http://rvdoc.org/C11/6.2.4
+        see C11 section J.2:1 item 9 http://rvdoc.org/C11/J.2
+        see CERT-C section DCL21-C http://rvdoc.org/CERT-C/DCL21-C
+        see CERT-C section DCL30-C http://rvdoc.org/CERT-C/DCL30-C
+        see CERT-C section MEM30-C http://rvdoc.org/CERT-C/MEM30-C
+        see MISRA-C section 8.18:6 http://rvdoc.org/MISRA-C/8.18
+        see MISRA-C section 8.22:6 http://rvdoc.org/MISRA-C/8.22
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
 Execution failed (configuration dumped)

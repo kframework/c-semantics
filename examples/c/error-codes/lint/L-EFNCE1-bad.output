@@ -1,4 +1,6 @@
- Stack might overflow specified bound on some compilers or ABIs.
-   at foo(L-EFNCE1-bad.c:10:3)
-   by main(L-EFNCE1-bad.c:10:3)
-  Possible unintended behavior (L-EFNCE1).
+Stack might overflow specified bound on some compilers or ABIs:
+      > in foo at L-EFNCE1-bad.c:10:3
+        in main at L-EFNCE1-bad.c:10:3
+
+    Possible unintended behavior (L-EFNCE1):
+

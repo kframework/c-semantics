@@ -1,11 +1,15 @@
- Realloc overflows memory bound, returning null pointer.
-   at realloc(L-STDLIBE3-bad.c:11:5)
-   by main(L-STDLIBE3-bad.c:11:5)
-  Possible unintended behavior (L-STDLIBE3).
- Memory malloced but never freed.
-  Malloced here:
-   at malloc(L-STDLIBE3-bad.c:10:5)
-   by main(L-STDLIBE3-bad.c:10:5)
-  Possible unintended behavior (L-CEIE1).
-   see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C
-   see MISRA-C section 8.22:1 http://rvdoc.org/MISRA-C/8.22
+Realloc overflows memory bound, returning null pointer:
+      > in realloc at L-STDLIBE3-bad.c:11:5
+        in main at L-STDLIBE3-bad.c:11:5
+
+    Possible unintended behavior (L-STDLIBE3):
+
+Memory malloced but never freed:
+    Malloced here:
+      > in malloc at L-STDLIBE3-bad.c:10:5
+        in main at L-STDLIBE3-bad.c:10:5
+
+    Possible unintended behavior (L-CEIE1):
+        see CERT-C section MEM31-C http://rvdoc.org/CERT-C/MEM31-C
+        see MISRA-C section 8.22:1 http://rvdoc.org/MISRA-C/8.22
+

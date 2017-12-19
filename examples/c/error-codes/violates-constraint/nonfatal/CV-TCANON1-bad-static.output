@@ -1,5 +1,7 @@
 CV-TCANON1-bad-static.c:3:1: error: Alignas attribute specifying an alignment less strict than would otherwise be required.
-  Constraint violation (CV-TCANON1).
-   see C11 section 6.7.5:4 http://rvdoc.org/C11/6.7.5
-   see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
-   see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+
+    Constraint violation (CV-TCANON1):
+        see C11 section 6.7.5:4 http://rvdoc.org/C11/6.7.5
+        see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
+        see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
+

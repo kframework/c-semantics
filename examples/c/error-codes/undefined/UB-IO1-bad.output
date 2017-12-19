@@ -1,8 +1,10 @@
- Stream input operation followed by an output operation without an intervening call to a file positioning function.
-   at fwrite(UB-IO1-bad.c:27:7)
-   by main(UB-IO1-bad.c:27:7)
-  Undefined behavior (UB-IO1).
-   see C11 section 7.21.5.3:7 http://rvdoc.org/C11/7.21.5.3
-   see C11 section J.2:1 item 151 http://rvdoc.org/C11/J.2
-   see CERT-C section FIO39-C http://rvdoc.org/CERT-C/FIO39-C
-   see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+Stream input operation followed by an output operation without an intervening call to a file positioning function:
+      > in fwrite at UB-IO1-bad.c:27:7
+        in main at UB-IO1-bad.c:27:7
+
+    Undefined behavior (UB-IO1):
+        see C11 section 7.21.5.3:7 http://rvdoc.org/C11/7.21.5.3
+        see C11 section J.2:1 item 151 http://rvdoc.org/C11/J.2
+        see CERT-C section FIO39-C http://rvdoc.org/CERT-C/FIO39-C
+        see MISRA-C section 8.1:3 http://rvdoc.org/MISRA-C/8.1
+
