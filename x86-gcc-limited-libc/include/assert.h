@@ -1,7 +1,5 @@
 // #ifndef _KCC_ASSERT_H // these can't be here since assert is supposed to be redefined each time it is included
 // #define _KCC_ASSERT_H
-#include <kcc_settings.h>
-
 #undef assert
 #if defined NDEBUG
 #define assert(ignore) ((void)0)

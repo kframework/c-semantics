@@ -1,6 +1,5 @@
 #ifndef _KCC_STRING_H
 #define _KCC_STRING_H
-#include <kcc_settings.h>
 #include <stddef.h>
 
 // string.h

@@ -1,6 +1,5 @@
 #ifndef _KCC_TIME_H
 #define _KCC_TIME_H
-#include <kcc_settings.h>
 #include <stddef.h>
 
 // #ifndef _KCC_EXPERIMENTAL_TIME

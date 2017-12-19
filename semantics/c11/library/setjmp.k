@@ -80,7 +80,7 @@ module LIBC-SETJMP
      }*/
      // The (apparent) return value from setjmp indicates whether control
      // reached that point normally or from a call to longjmp
-     rule <k> (builtin("__setjmp", Ptr:RValue)
+     rule <k> (builtin("_setjmp", Ptr:RValue)
                => addJmpBuf(!N:Int, Ptr, K, C)
                ~> success)
                ~> K:K

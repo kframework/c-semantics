@@ -384,6 +384,8 @@ module C-TYPING-SYNTAX
      syntax Int ::= "maxFloatPrecision" [function]
      syntax Int ::= "maxFloatExponent" [function]
 
+     // Turn array and function types into pointers.
+     syntax Type ::= adjustParam(Type) [function]
      syntax UType ::= arrayToPtrType(Type) [function]
 
      syntax String ::= showType(Type) [function]

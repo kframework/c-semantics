@@ -7,9 +7,12 @@ module C-TYPING-COMMON-SYNTAX
      // Function id, def return type, def params, local declarations.
      syntax RValue ::= functionObject(CId, Type, List)
 
+     syntax Type ::= adjustParams(Type) [function]
+
 endmodule
 
 module C-TYPING-COMMON
+     imports C-TYPING-COMMON-SYNTAX
      imports C-CONFIGURATION
      imports FLOAT
      imports K-REFLECTION
@@ -300,5 +303,28 @@ module C-TYPING-COMMON
      rule showDType(typedDeclaration(T::Type, #NoName)) => showDeclarator("", T)
      rule showDType(typedDeclaration(T::Type, #NoName(_))) => showDeclarator("", T)
      rule showDType(typedDeclaration(T::Type, X::CId)) => showDeclarator(" " +String idToString(X), T) [owise]
+
+     rule adjustParams(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
+          => t(Qs, Mods, functionType(R, adjustParams'(Params)))
+     rule adjustParams(T::Type) => T [owise]
+
+     syntax List ::= "adjustParams'" "(" List ")" [function]
+     rule adjustParams'(ListItem(typedDeclaration(T::Type, X::CId)) Ds::List)
+          => ListItem(typedDeclaration(adjustParam(T), X)) adjustParams'(Ds)
+     rule adjustParams'(ListItem(t(...) #as T::Type) Ds::List)
+          => ListItem(adjustParam(T)) adjustParams'(Ds)
+     rule adjustParams'(ListItem(variadic) Ds::List)
+          => ListItem(variadic) adjustParams'(Ds)
+     rule adjustParams'(.List) => .List
+
+     rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
+          => type(pointerType(t(Qs, Mods, functionType(R, Params))))
+     rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
+     rule adjustParam(T::Type) => T [owise]
+
+     rule arrayToPtrType(T:ArrayType)
+          => ut(getModifiers(T), pointerType(innerType(T)))
+     rule arrayToPtrType(T::Type) => utype(T) [owise]
+
 
 endmodule

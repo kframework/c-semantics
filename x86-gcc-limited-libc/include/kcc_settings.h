@@ -1,12 +1,6 @@
 #ifndef _KCC_KCC_SETTINGS_H
 #define _KCC_KCC_SETTINGS_H
 
-#define _KCC_BITS_PER_BYTE 8
-#define _KCC_SIZE_T unsigned int
-#define _KCC_PTRDIFF_T int
-#define _KCC_WCHAR_T int
-#define _KCC_NULL ((void *)0)
-
 // Some things not in the C11 standard (mostly GCCisms, I think).
 #define __FUNCTION__ __func__
 
@@ -17,12 +11,41 @@
 #define __inline inline
 #define __inline__ inline
 
-#define alignof _Alignof
-#define __alignof _Alignof
-#define __alignof__ _Alignof
-
 #define __const const
 
 #define __signed__ signed
 
+#ifndef __cplusplus
+// we don't use the C parser for C++, so we need clang to recognize these primitives
+
+#define __alignof _Alignof
+#define __alignof__ _Alignof
+
+#define __thread _Thread_local
+
+#define __builtin_offsetof(t, m) __kcc_offsetof(t, m)
+
+#define typeof __kcc_typeof
+#define __typeof__ __kcc_typeof
+#define __auto_type __kcc_auto_type
+
+// OpenSSL checks for this macro rather than checking __GNUC__ like it's
+// supposed to, so we have to undefine this macro so that it knows that]
+// extension is missing.
+#undef __ATOMIC_RELAXED 
+#undef __ATOMIC_CONSUME
+#undef __ATOMIC_ACQUIRE
+#undef __ATOMIC_RELEASE
+#undef __ATOMIC_ACQ_REL
+#undef __ATOMIC_SEQ_CST
+
+#define __STDC_NO_ATOMICS__
+
+#endif
+
+#define _DEFAULT_SOURCE
+
+// this should not affect semantics on 64 bit machine and violates a constraint
+// if you do not have gcc
+#undef _FILE_OFFSET_BITS
 #endif

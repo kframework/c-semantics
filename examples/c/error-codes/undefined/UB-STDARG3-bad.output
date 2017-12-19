@@ -1,5 +1,5 @@
 'va_arg' called on an uninitialized va_list:
-      > in __va_inc at UB-STDARG3-bad.c:7:7
+      > in __kcc_va_inc at UB-STDARG3-bad.c:7:7
         in f at UB-STDARG3-bad.c:7:7
         in main at UB-STDARG3-bad.c:11:7
 

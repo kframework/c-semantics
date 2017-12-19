@@ -8,7 +8,7 @@ Unary '&' operator applied to a value with register storage class:
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1
 
 'va_start' called on function whose last fixed argument is declared with the register storage class:
-      > in __va_start at UB-STDARG10-bad.c:5:4
+      > in __kcc_va_start at UB-STDARG10-bad.c:5:4
         in foo at UB-STDARG10-bad.c:5:4
         in main at UB-STDARG10-bad.c:11:3
 

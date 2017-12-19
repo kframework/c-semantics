@@ -1,5 +1,5 @@
 'va_start' called on function whose last fixed argument is not compatible with type after default argument promotions:
-      > in __va_start at va_start-2.c:5:4
+      > in __kcc_va_start at va_start-2.c:5:4
         in foo at va_start-2.c:5:4
         in main at va_start-2.c:10:3
 

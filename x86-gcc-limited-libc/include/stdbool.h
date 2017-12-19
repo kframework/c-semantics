@@ -1,6 +1,5 @@
 #ifndef _KCC_STDBOOL_H
 #define _KCC_STDBOOL_H
-#include <kcc_settings.h>
 
 #define bool _Bool
 #define true 1

@@ -1,6 +1,5 @@
 #ifndef _KCC_STDLIB_H
 #define _KCC_STDLIB_H
-#include <kcc_settings.h>
 #include <stddef.h>
 
 // stdlib.h

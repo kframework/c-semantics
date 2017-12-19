@@ -40,10 +40,10 @@ module LIBC-STDARG
      ////////////////////////////--
      // Stdarg.h
      ////////////////////////////--
-          // ,, "__va_inc"
-          // ,, "__va_start"
-          // ,, "va_end"
-          // ,, "__va_copy"
+          // ,, "__kcc_va_inc"
+          // ,, "__kcc_va_start"
+          // ,, "__kcc_va_end"
+          // ,, "__kcc_va_copy"
 
 
      /*@ \fromStandard{\source[n1570]{\para{7.16.1}{1}}}{
@@ -58,9 +58,9 @@ module LIBC-STDARG
      function.
      }*/
 
-     // va_list __va_start(va_list* ap, void* pN);
+     // va_list __kcc_va_start(va_list* ap, void* pN);
      rule [va-start]:
-          <k> builtin("__va_start", tv(Loc:SymLoc, T:PointerUType), _)
+          <k> builtin("__kcc_va_start", tv(Loc:SymLoc, T:PointerUType), _)
                => checkVarArgs
                ~> checkDead(read(Loc, innerType(T)))
                ~> addVaList(!N:Int, tv(Loc, T), filterVarArgs(P))
@@ -81,7 +81,7 @@ module LIBC-STDARG
           => addVaList'(N', VaListPtr, hListToList(Args))
           requires allRValueInHeatList(Args)
      rule <k> addVaList'(N'::Int, VaListPtr::RValue, Args::List)
-               => Computation((* VaListPtr) := tv(N', utype(va_list)))
+               => Computation((* VaListPtr) := tv(opaque(N', utype(va_list)), utype(va_list)))
           ...</k>
           <va-lists>
                VaLists:Map (.Map => N' |-> Args)
@@ -98,13 +98,13 @@ module LIBC-STDARG
      syntax KItem ::= checkDead(K) [strict]
      rule <k> (.K => UNDEF("STDARG2",
                     "'va_start' or 'va_copy' used to reinitialize a va_list without an intervening call to va_end."))
-               ~> checkDead(tv(N:Int, _))
+               ~> checkDead(tv(opaque(N:Int, _), _))
           ...</k>
           <va-lists>... N |-> _ ...</va-lists>
           [structural]
-     rule <k> checkDead(tv(N:Int, _)) => .K ...</k>
+     rule <k> checkDead(tv(V::CValue, _)) => .K ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool N in_keys(VaLists)
+          requires notBool (fromOpaque(V) in_keys(VaLists))
           [structural]
      // Avoid triggering errors if it's a trap.
      rule checkDead(V:KResult) => .K
@@ -129,25 +129,25 @@ module LIBC-STDARG
           ...</call-stack>
           [structural]
 
-     rule <k> builtin("__va_inc", tv(N:Int, _)) => V ...</k>
+     rule <k> builtin("__kcc_va_inc", tv(opaque(N:Int, _), _)) => V ...</k>
           <va-lists>... N |-> ((ListItem(V:RValue) => .List) _:List) ...</va-lists>
           [structural]
      rule <k> (.K => UNDEF("STDARG3",
                     "'va_arg' called on an uninitialized va_list."))
-               ~> builtin("__va_inc", tv(N:Int, _))
+               ~> builtin("__kcc_va_inc", tv(V::CValue, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool N in_keys(VaLists)
+          requires notBool (fromOpaque(V) in_keys(VaLists))
           [structural]
      rule <k> (.K => UNDEF("STDARG6",
                     "'va_arg' called with no arguments remaining."))
-               ~> builtin("__va_inc", tv(N:Int, _))
+               ~> builtin("__kcc_va_inc", tv(opaque(N:Int, _), _))
           ...</k>
           <va-lists>... N |-> .List ...</va-lists>
           [structural]
 
      rule [va-copy]:
-          <k> builtin("__va_copy", Dst:RValue, tv(Src:Int, _))
+          <k> builtin("__kcc_va_copy", Dst:RValue, tv(opaque(Src:Int, _), _))
                => checkDead(* Dst)
                ~> addVaList'(!N:Int, Dst, Args)
                ~> voidVal
@@ -156,14 +156,14 @@ module LIBC-STDARG
           [structural]
      rule <k> (.K => UNDEF("STDARG4",
                     "'va_copy' called on an uninitialized source va_list."))
-               ~> builtin("__va_copy", _, tv(Src:Int, _))
+               ~> builtin("__kcc_va_copy", _, tv(V::CValue, _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
-          requires notBool Src in_keys(VaLists)
+          requires notBool (fromOpaque(V) in_keys(VaLists))
           [structural]
 
      rule [va-end]:
-          <k> builtin("va_end", tv(N:Int, _)) => voidVal ...</k>
+          <k> builtin("__kcc_va_end", tv(opaque(N:Int, _), _)) => voidVal ...</k>
           <va-lists>... N |-> _ => .Map ...</va-lists>
           <call-stack> ListItem(
                <call-stack-frame>...
@@ -175,7 +175,7 @@ module LIBC-STDARG
           [structural]
      rule <k> (.K => UNDEF("STDARG5",
                     "'va_end' called on an uninitialized va_list."))
-               ~> builtin("va_end", tv(Src:Int, _))
+               ~> builtin("__kcc_va_end", tv(V::CValue, _))
           ...</k>
           <call-stack> ListItem(
                <call-stack-frame>...
@@ -184,7 +184,7 @@ module LIBC-STDARG
                     ...</function-control> </stack-function-control>
                ...</call-stack-frame>)
           ...</call-stack>
-          requires notBool (Src in VaLists)
+          requires notBool (fromOpaque(V) in VaLists)
           [structural]
 
      syntax KItem ::= "checkVarArgs"

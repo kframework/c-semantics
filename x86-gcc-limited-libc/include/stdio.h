@@ -1,6 +1,5 @@
 #ifndef _KCC_STDIO_H
 #define _KCC_STDIO_H
-#include <kcc_settings.h>
 #include <stddef.h>
 #include <stdarg.h>
 

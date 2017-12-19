@@ -66,12 +66,12 @@ module C-LINKING-INIT
      syntax String ::= idToSymbol(CId) [function]
      rule idToSymbol(Identifier(S::String)) => S
 
-     rule (.K => addBuiltin(X, T, obj(0, byteAlignofType(T), builtinSymbol(idToSymbol(X))), true))
+     rule (.K => addBuiltin(X, adjustParams(T), obj(0, byteAlignofType(T), builtinSymbol(idToSymbol(X))), true))
                ~> addBuiltins((X::CId |-> T:Type => .Map) _)
      rule addBuiltins(.Map) => .K
 
      syntax KItem ::= addNativeSymbols(Map)
-     rule (.K => addBuiltin(X, T, obj(0, byteAlignofType(T), nativeSymbol(idToSymbol(X))), false))
+     rule (.K => addBuiltin(X, adjustParams(T), obj(0, byteAlignofType(T), nativeSymbol(idToSymbol(X))), false))
                ~> addNativeSymbols((X::CId |-> T:Type => .Map) _)
      rule addNativeSymbols(.Map) => .K
 

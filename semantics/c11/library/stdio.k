@@ -694,12 +694,16 @@ module LIBC-STDIO
 
      rule [vprintf]:
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vprintf", _, tv(VaList::Int, _))
+               ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vprintf", _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vprintf", _, tv(VaList::Int, _))
+               ~> builtin("vprintf", _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -714,12 +718,16 @@ module LIBC-STDIO
 
      rule [vfprintf]:
           <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vfprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vfprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vfprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -751,12 +759,16 @@ module LIBC-STDIO
           [structural]
 
      rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vsprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vsprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vsprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -767,12 +779,16 @@ module LIBC-STDIO
           [structural]
 
      rule <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
-               ~> builtin("vasprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vasprintf", _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vasprintf", _, _, tv(VaList::Int, _))
+               ~> builtin("vasprintf", _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)
@@ -799,12 +815,17 @@ module LIBC-STDIO
           [structural]
 
      rule [vsnprintf]:
-          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`)))) ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+          <k> (.K => toHeatList(mapList(VarArgs, #klabel(`*__C-SYNTAX`))))
+               ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists>... VaList |-> VarArgs:List ...</va-lists>
           [structural]
+     rule (.K => errorUninitVaList)
+          ~> builtin("vsnprintf", _, _, _, tv(V::CValue, _))
+          requires getKLabel(V) =/=K #klabel(`opaque`)
+          [structural]
      rule <k> (.K => errorUninitVaList)
-               ~> builtin("vsnprintf", _, _, _, tv(VaList::Int, _))
+               ~> builtin("vsnprintf", _, _, _, tv(opaque(VaList::Int, _), _))
           ...</k>
           <va-lists> VaLists:Map </va-lists>
           requires notBool VaList in_keys(VaLists)

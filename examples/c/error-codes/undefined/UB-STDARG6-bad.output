@@ -1,5 +1,5 @@
 'va_arg' called with no arguments remaining:
-      > in __va_inc at UB-STDARG6-bad.c:5:7
+      > in __kcc_va_inc at UB-STDARG6-bad.c:5:7
         in f at UB-STDARG6-bad.c:5:7
         in main at UB-STDARG6-bad.c:11:7
 

@@ -1,6 +1,5 @@
 #ifndef _KCC_LOCALE_H
 #define _KCC_LOCALE_H
-#include <kcc_settings.h>
 #include <stddef.h>
 
 #ifndef _KCC_EXPERIMENTAL_LOCALE

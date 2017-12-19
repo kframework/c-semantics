@@ -1,6 +1,5 @@
 #ifndef _KCC_STDINT_H
 #define _KCC_STDINT_H
-#include <kcc_settings.h>
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;

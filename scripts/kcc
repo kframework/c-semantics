@@ -893,18 +893,10 @@ sub compile {
     if ($args->{'-Xk++'}) {
       $compiler = 'g++';
     }
-    my $std = $args->{'-std='};
-    if (!$std) {
-      if ($lang eq 'c') {
-        $std = 'c11';
-      } else {
-        $std = 'c++14';
-      }
-    }
     if ($args->{'-fno-native-compilation'}) {
-      system($compiler, '-c', "-std=$std", '-x', $lang, '/dev/null', '-o', $obj);
+      system($compiler, '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj);
     } else {
-      $retval = execute($compiler, '-c', "-std=$std", '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
+      $retval = execute($compiler, '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
       checkError($retval, $obj, 0);
       system('globalize-syms', $uuid, $obj);
     }
@@ -1061,13 +1053,13 @@ sub preprocess {
   }
   if ($lang eq 'c++') {
     my @ppArgs = ("$profileDirectory/cpp-pp",
-      @main::cppArgs, $inputFile, '-o', $output);
+      @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
     return execPreprocess($output, $isStdout, @ppArgs);
   }
 
   my @ppArgs = ("$profileDirectory/pp",
-    @main::cppArgs, $inputFile, '-o', $output);
+    @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
   return execPreprocess($output, $isStdout, @ppArgs);
 }
@@ -1113,7 +1105,8 @@ sub parse {
   checkError(preprocess($ppResult, $inputFile, $lang), $ppResult, 0);
 
   if ($lang eq 'c++') {
-    my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output -std=c++14 > $kast");
+    my $std = getStd('c++');
+    my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output $std > $kast");
     if ($args->{'-d'}) {
       print("$cmd\n");
     }
@@ -1130,6 +1123,22 @@ sub parse {
   checkError($? >> 8, $kast, 0);
 
   return $kast;
+}
+
+sub getStd {
+  my ($lang) = (@_);
+
+  my $std;
+  if (defined $args->{'-std='}) {
+    $std = $args->{'-std='};
+  } elsif ($lang eq 'c++') {
+    $std = 'c++14';
+  } elsif ($lang eq 'c') {
+    $std = 'c11';
+  } else {
+    return '';
+  }
+  return "-std=$std";
 }
 
 sub checkError {

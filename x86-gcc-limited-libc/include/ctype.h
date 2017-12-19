@@ -1,8 +1,6 @@
 #ifndef _KCC_CTYPE_H
 #define _KCC_CTYPE_H
 
-#include <kcc_settings.h>
-
 int isalnum(int c);
 int isalpha(int c);
 int isblank(int c);

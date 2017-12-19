@@ -14,11 +14,6 @@ module C-TYPING-MISC
      imports C-SYNTAX
 
      //TODO(chathhorn): a lot of junk dumped here.
-
-     rule arrayToPtrType(T:ArrayType)
-          => ut(getModifiers(T), pointerType(innerType(T)))
-     rule arrayToPtrType(T::Type) => utype(T) [owise]
-
      rule simpleType(t(_, _, T::SimpleType)) => T
 
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))

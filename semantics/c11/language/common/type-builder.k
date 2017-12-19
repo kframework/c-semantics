@@ -15,8 +15,7 @@ module C-TYPE-BUILDER-SYNTAX
      syntax Type ::= const(FlexType) [function]
      syntax Type ::= noreturn(FlexType) [function]
      syntax Type ::= restrict(FlexType) [function]
-     syntax Type ::= struct(String) [function]
-     syntax Type ::= union(String) [function]
+     syntax Type ::= typeref(String) [function]
      syntax Type ::= typdef(String) [function]
      syntax DType ::= decl(FlexType, String) [function]
      syntax List ::= field(FlexType, String) [function]
@@ -66,11 +65,10 @@ module C-TYPE-BUILDER
 
      rule restrict(T:FlexType) => addQualifier(Restrict(), expand(T))
 
-     rule struct(S:String) => #struct(Identifier(S), #configuration)
-     rule union(S:String) => #struct(Identifier(S), #configuration)
-     syntax Type ::= #struct(CId, K) [function]
+     rule typeref(S:String) => #typeref(Identifier(S), #configuration)
+     syntax Type ::= #typeref(CId, K) [function]
 
-     rule #struct(X:CId, <generatedTop>... <external-defs>... X |-> Base:SymBase ...</external-defs> <mem>... Base |-> object(T:Type, _, _) ...</mem> ...</generatedTop>) => T
+     rule #typeref(X:CId, <generatedTop>... <external-defs>... X |-> Base:SymBase ...</external-defs> <mem>... Base |-> object(T:Type, _, _) ...</mem> ...</generatedTop>) => T
 
      rule decl(T:FlexType, S:String)
           => typedDeclaration(expand(T), Identifier(S))

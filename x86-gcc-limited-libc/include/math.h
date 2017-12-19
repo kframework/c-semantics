@@ -1,6 +1,5 @@
 #ifndef _KCC_MATH_H
 #define _KCC_MATH_H
-#include <kcc_settings.h>
 
 // math.h (real c99 needs -lm to get math library linked in)
 double sqrt(double x);

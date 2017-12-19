@@ -227,13 +227,6 @@ module C-TYPING-INTERPRETATION
           => typedef(X, T)
           [structural]
 
-     // Turn array and function types into pointers.
-     syntax Type ::= adjustParam(Type) [function]
-     rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
-          => type(pointerType(t(Qs, Mods, functionType(R, Params))))
-     rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
-     rule adjustParam(T::Type) => T [owise]
-
      rule numberUnnamed(ListItem(typedDeclaration(T::Type, _:NoName)) Fs::List)
           => ListItem(typedDeclaration(T, #NoName(!N:Int))) numberUnnamed(Fs)
      rule numberUnnamed(ListItem(K:K) Fs::List) => ListItem(K) numberUnnamed(Fs) [owise]
