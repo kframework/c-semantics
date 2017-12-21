@@ -3,7 +3,8 @@ SCRIPTS_DIR = scripts
 PARSER_DIR = parser
 CPPPARSER_DIR = cpp-parser
 export PROFILE_DIR = $(shell pwd)/x86-gcc-limited-libc
-export PROFILE=$(shell basename $(PROFILE_DIR))
+export PROFILE = $(shell basename $(PROFILE_DIR))
+export SUBPROFILE_DIRS =
 TESTS_DIR = tests
 PARSER = $(PARSER_DIR)/cparser
 DIST_DIR = dist
@@ -40,7 +41,7 @@ check-vars:
 	@if ! krun --version > /dev/null 2>&1; then echo "ERROR: You don't seem to have krun installed.  You need to install this before continuing.  Please see INSTALL.md for more information."; false; fi
 	@perl $(SCRIPTS_DIR)/checkForModules.pl
 
-$(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/*) $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp | check-vars
+$(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/include/* $(PROFILE_DIR)/pp $(PROFILE_DIR)/cpp-pp) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/include/*) $(d)/pp $(d)/cpp-pp) | check-vars
 	@mkdir -p $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PROFILE)/lib
 	@printf "%s" $(PROFILE) > $(DIST_DIR)/current-profile
@@ -50,6 +51,18 @@ $(DIST_DIR)/kcc: $(SCRIPTS_DIR)/kcc $(FILES_TO_DIST) $(wildcard $(PROFILE_DIR)/i
 	@cp -RLp $(PROFILE_DIR)/include $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/src $(DIST_DIR)/$(PROFILE)
 	@cp -RLp $(PROFILE_DIR)/compiler-src $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		mkdir -p $(DIST_DIR)/$(shell basename $(d))/lib)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -Lp $(d)/pp $(DIST_DIR)/$(shell basename $(d)))
+	@-$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -Lp $(d)/cpp-pp $(DIST_DIR)/$(shell basename $(d)))
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(d)/include $(DIST_DIR)/$(shell basename $(d)))
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(d)/src $(DIST_DIR)/$(shell basename $(d)))
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(d)/compiler-src $(DIST_DIR)/$(shell basename $(d)))
 	@cp -RLp $(FILES_TO_DIST) $(DIST_DIR)
 	@cat $(SCRIPTS_DIR)/kcc | perl $(SCRIPTS_DIR)/getopt.pl > $(DIST_DIR)/kcc
 	@chmod --reference=$(SCRIPTS_DIR)/kcc $(DIST_DIR)/kcc
@@ -60,27 +73,48 @@ $(PROFILE_DIR)/cpp-pp:
 
 $(DIST_DIR)/$(PROFILE)/c11-cpp14-kompiled/c11-cpp14-kompiled/timestamp: $(DIST_DIR)/kcc execution-semantics
 	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-cpp14-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp: $(DIST_DIR)/kcc translation-semantics
 	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp: $(DIST_DIR)/kcc cpp-semantics
 	@cp -p -RL $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/cpp14-translation-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp: semantics
 	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
 $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp: semantics
 	@cp -RL $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(PROFILE)
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		cp -RLp $(SEMANTICS_DIR)/$(PROFILE)/c11-nd-thread-kompiled $(DIST_DIR)/$(shell basename $(d)))
 
-$(DIST_DIR)/$(PROFILE)/lib/libstdc++.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(DIST_DIR)/kcc
+$(DIST_DIR)/$(PROFILE)/lib/libstdc++.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/compiler-src/*.C) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/compiler-src/*)) $(DIST_DIR)/kcc
 	@echo "Translating the C++ standard library... ($(PROFILE_DIR))"
 	cd $(PROFILE_DIR)/compiler-src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libstdc++.so *.C $(KCCFLAGS) -I .
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		$(shell pwd)/$(DIST_DIR)/kcc -profile $(shell basename $(d)) && \
+		cd $(d)/compiler-src && \
+		$(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libstdc++.so *.C $(KCCFLAGS) -I .)
+	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 
-$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*.c) $(DIST_DIR)/kcc
+$(DIST_DIR)/$(PROFILE)/lib/libc.so: $(DIST_DIR)/$(PROFILE)/cpp14-translation-kompiled/cpp14-translation-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-translation-kompiled/c11-translation-kompiled/timestamp $(wildcard $(PROFILE_DIR)/src/*.c) $(foreach d,$(SUBPROFILE_DIRS),$(wildcard $(d)/src/*.c)) $(DIST_DIR)/kcc
 	@echo "Translating the C standard library... ($(PROFILE_DIR))"
 	cd $(PROFILE_DIR)/src && $(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(PROFILE)/lib/libc.so *.c $(KCCFLAGS) -I .
+	@$(foreach d,$(SUBPROFILE_DIRS), \
+		echo "Translating the C standard library... ($(d))" && \
+		$(shell pwd)/$(DIST_DIR)/kcc -profile $(shell basename $(d)) && \
+		cd $(d)/src && \
+		$(shell pwd)/$(DIST_DIR)/kcc -nodefaultlibs -Xbuiltins -fno-native-compilation -shared -o $(shell pwd)/$(DIST_DIR)/$(shell basename $(d))/lib/libc.so *.c $(KCCFLAGS) -I .)
+	@$(shell pwd)/$(DIST_DIR)/kcc -profile $(PROFILE)
 	@echo "Done."
 
 $(DIST_DIR): test-build $(DIST_DIR)/$(PROFILE)/c11-nd-kompiled/c11-nd-kompiled/timestamp $(DIST_DIR)/$(PROFILE)/c11-nd-thread-kompiled/c11-nd-thread-kompiled/timestamp
