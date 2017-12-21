@@ -39,12 +39,14 @@ module C-TYPING-MISC
      rule flipSignedness(unsigned-int) => int
      rule flipSignedness(unsigned-long-int) => long-int
      rule flipSignedness(unsigned-long-long-int) => long-long-int
+     rule flipSignedness(unsigned-oversized-int) => oversized-int
 
      rule flipSignedness(_:SimpleSignedCharType) => unsigned-char
      rule flipSignedness(short-int) => unsigned-short-int
      rule flipSignedness(int) => unsigned-int
      rule flipSignedness(long-int) => unsigned-long-int
      rule flipSignedness(long-long-int) => unsigned-long-long-int
+     rule flipSignedness(oversized-int) => unsigned-oversized-int
 
      rule flipSignedness(bool) => bool
 

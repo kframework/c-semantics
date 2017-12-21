@@ -86,6 +86,8 @@ module C-COMMON-PROMOTION
      rule rank(ut(_, unsigned-long-int)) => 4
      rule rank(ut(_, long-long-int)) => 5
      rule rank(ut(_, unsigned-long-long-int)) => 5
+     rule rank(ut(_, oversized-int)) => 6
+     rule rank(ut(_, unsigned-oversized-int)) => 6
      rule rank(ut(_, enumType(S::TagId))) => rank(utype(getEnumAlias(S)))
      rule rank(ut(_, bitfieldType(T::SimpleType, _))) => rank(utype(T))
 
@@ -124,6 +126,8 @@ module C-COMMON-PROMOTION
      rule isPromoted(ut(_, unsigned-long-int)) => true
      rule isPromoted(ut(_, long-long-int)) => true
      rule isPromoted(ut(_, unsigned-long-long-int)) => true
+     rule isPromoted(ut(_, oversized-int)) => true
+     rule isPromoted(ut(_, unsigned-oversized-int)) => true
      rule isPromoted(_) => false [owise]
 
      // <= so enums become ints

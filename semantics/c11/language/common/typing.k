@@ -110,7 +110,7 @@ module C-TYPING-SYNTAX
      syntax SimpleUnsignedBitfieldType ::= bitfieldType(SimpleUnsignedType, Int)
 
      syntax SimpleSignedType ::= "short-int" | SimpleSignedIntType
-                               | "long-int" | "long-long-int"
+                               | "long-int" | "long-long-int" | "oversized-int"
                                | SimpleSignedCharType
                                | SimpleSignedBitfieldType
      syntax SimpleFloatType ::= "float" | "double" | "long-double"
@@ -121,6 +121,7 @@ module C-TYPING-SYNTAX
      syntax SimpleUnsignedType ::= SimpleBoolType | "unsigned-short-int"
                                  | SimpleUnsignedIntType | "unsigned-long-int"
                                  | "unsigned-long-long-int"
+                                 | "unsigned-oversized-int"
                                  | SimpleUnsignedCharType
                                  | SimpleUnsignedBitfieldType
      syntax SimpleUnsignedIntType ::= "unsigned-int"

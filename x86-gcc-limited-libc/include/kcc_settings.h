@@ -28,6 +28,9 @@
 #define typeof __kcc_typeof
 #define __typeof__ __kcc_typeof
 #define __auto_type __kcc_auto_type
+#define __int128 __kcc_oversized_int
+typedef __int128 __int128_t;
+typedef unsigned __int128 __uint128_t;
 
 // OpenSSL checks for this macro rather than checking __GNUC__ like it's
 // supposed to, so we have to undefine this macro so that it knows that]

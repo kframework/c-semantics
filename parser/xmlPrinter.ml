@@ -700,7 +700,7 @@ and printTypeSpec = function
 	| Tshort -> kapply "Short"  nil
 	| Tint -> kapply "Int"  nil
 	| Tlong -> kapply "Long"  nil
-	| Tint64 -> kapply "Int64"  nil
+	| ToversizedInt -> kapply "OversizedInt"  nil
 	| Tfloat -> kapply "Float"  nil
 	| Tdouble -> kapply "Double"  nil
 	| Tsigned -> kapply "Signed"  nil

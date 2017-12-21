@@ -69,6 +69,7 @@ module C-ABSTRACT-SYNTAX
      syntax TypeSpecifier ::= Short()
      syntax TypeSpecifier ::= Int()
      syntax TypeSpecifier ::= Long()
+     syntax TypeSpecifier ::= OversizedInt()
      syntax TypeSpecifier ::= Float()
      syntax TypeSpecifier ::= Double()
      syntax TypeSpecifier ::= Signed()

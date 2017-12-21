@@ -131,6 +131,7 @@ module C-TYPING-COMMON
      rule numBytes(int) => cfg:sizeofInt
      rule numBytes(long-int) => cfg:sizeofLongInt
      rule numBytes(long-long-int) => cfg:sizeofLongLongInt
+     rule numBytes(oversized-int) => cfg:sizeofOversizedInt
 
      rule numBytes(float) => cfg:sizeofFloat
      rule numBytes(double) => cfg:sizeofDouble
@@ -141,6 +142,7 @@ module C-TYPING-COMMON
      rule numBytes(unsigned-int) => numBytes(int)
      rule numBytes(unsigned-long-int) => numBytes(long-int)
      rule numBytes(unsigned-long-long-int) => numBytes(long-long-int)
+     rule numBytes(unsigned-oversized-int) => numBytes(oversized-int)
      rule numBytes(enumType(S::TagId)) => numBytes(getEnumAlias(S))
      rule numBytes(_) => 0 [owise]
 
@@ -186,6 +188,10 @@ module C-TYPING-COMMON
           => 0 -Int (1 <<Int absInt(numBits(long-long-int) -Int 1))
      rule max(ut(_, long-long-int))
           => (1 <<Int absInt(numBits(long-long-int) -Int 1)) -Int 1
+     rule min(ut(_, oversized-int))
+          => 0 -Int (1 <<Int absInt(numBits(oversized-int) -Int 1))
+     rule max(ut(_, oversized-int))
+          => (1 <<Int absInt(numBits(oversized-int) -Int 1)) -Int 1
 
      rule min(_:UnsignedIntegerUType) => 0
 
@@ -204,6 +210,8 @@ module C-TYPING-COMMON
           => (1 <<Int absInt(numBits(unsigned-long-int))) -Int 1
      rule max(ut(_, unsigned-long-long-int))
           => (1 <<Int absInt(numBits(unsigned-long-long-int))) -Int 1
+     rule max(ut(_, unsigned-oversized-int))
+          => (1 <<Int absInt(numBits(unsigned-oversized-int))) -Int 1
 
      rule min(ut(_, enumType(S::TagId))) => min(utype(getEnumAlias(S)))
      rule max(ut(_, enumType(S::TagId))) => max(utype(getEnumAlias(S)))
@@ -234,11 +242,13 @@ module C-TYPING-COMMON
      rule showTypeSpecifier(int) => "int"
      rule showTypeSpecifier(long-int) => "long"
      rule showTypeSpecifier(long-long-int) => "long long"
+     rule showTypeSpecifier(oversized-int) => "__kcc_oversized_int"
      rule showTypeSpecifier(unsigned-char) => "unsigned char"
      rule showTypeSpecifier(unsigned-short-int) => "unsigned short"
      rule showTypeSpecifier(unsigned-int) => "unsigned int"
      rule showTypeSpecifier(unsigned-long-int) => "unsigned long"
      rule showTypeSpecifier(unsigned-long-long-int) => "unsigned long long"
+     rule showTypeSpecifier(unsigned-oversized-int) => "__kcc_oversized_uint"
      rule showTypeSpecifier(float) => "float"
      rule showTypeSpecifier(double) => "double"
      rule showTypeSpecifier(long-double) => "long double"

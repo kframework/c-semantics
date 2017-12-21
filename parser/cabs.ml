@@ -62,7 +62,7 @@ type typeSpecifier = (* Merge all specifiers into one type *)
   | Tshort
   | Tint
   | Tlong
-  | Tint64
+  | ToversizedInt
   | Tfloat
   | Tdouble
   | Tsigned

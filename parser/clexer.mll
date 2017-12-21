@@ -148,6 +148,7 @@ let init_lexicon _ =
       ("inline", fun loc -> INLINE loc); 
       ("int", fun loc -> INT loc);
       ("long", fun loc -> LONG loc);
+      ("__kcc_oversized_int", fun loc -> OVERSIZED_INT loc);
       ("register", fun loc -> REGISTER loc);
       ("restrict", fun loc -> RESTRICT loc);
       ("__restrict", fun loc -> RESTRICT_RESERVED ("__restrict",loc));
