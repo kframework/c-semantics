@@ -545,7 +545,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
       if (!$noLicense && $msg ne '') {
         printf "%s\n", $msg;
       }
-      my $result = tempFile();
+      my $result = tempFile('compile');
       compile($result, $srcFiles[0], $srcFiles[1]);
       move($result, $oval);
     } else {
@@ -554,7 +554,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
       }
       for (my $i = 0; $i < $#srcFiles; $i += 2) {
         $oval = basename($srcFiles[$i], ".c", ".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C", ".h", ".hh", ".hp", ".hxx", ".hpp", ".HPP", ".h++", ".H", ".tcc") . ".o";
-        my $result = tempFile();
+        my $result = tempFile('compile');
         compile($result, $srcFiles[$i], $srcFiles[$i+1]);
         move($result, $oval);
       }
@@ -564,9 +564,9 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
 
   if ($args->{'-shared'}) {
     mergeObjs(1, 0);
-    my $obj = tempFile();
+    my $obj = tempFile('merge');
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    system("$distDirectory/merge-kcc-obj", $obj, $objFiles[0], $main::oflag || 'a.out');
+    execute("$distDirectory/merge-kcc-obj", $obj, $objFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
@@ -583,7 +583,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
 
   my $oval = $main::oflag || 'a.out';
 
-  my $programConfFile = tempFile();
+  my $programConfFile = tempFile('conf');
 
   if (!$noLicense && $msg ne '') {
     printf "%s\n", $msg;
@@ -593,10 +593,6 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
   # the final calls to krun.
   my $retval = execute(getKRunCommand($programConfFile, \@objFiles, undef, 1, 'c++', undef));
   checkError($retval, $programConfFile, 1);
-
-  open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
-  my $programConf = join("", <FILE>);
-  close(FILE);
 
   # add space to end of args with () so that batch scripts work on windows
   my @options = initOptions();
@@ -636,6 +632,9 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
   my $opts = makeSet(@options);
 
   if ($args->{'-frunner-script'} || !$use_compile) {
+    open(FILE, $programConfFile) or error("Couldn't open file: $!\n");
+    my $programConf = join("", <FILE>);
+    close(FILE);
     $programConf = encode_base64($programConf);
     open(FILE, catfile($distDirectory, 'program-runner')) or error("Couldn't open file: $!\n");
     my $template = join("", <FILE>);
@@ -654,7 +653,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     }
 
     if (@nativeObjFiles) {
-      my $obj = tempFile();
+      my $obj = tempFile('obj');
       execute('ld', '-r', '-o', $obj, @nativeObjFiles);
       open(FILE, $obj) or error("Couldn't open file: $!\n");
       my $programObj = join("", <FILE>);
@@ -678,10 +677,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     or error("Call to chmod $oval failed.\n");
   } else {
     my $dir = $profileDirectory . "/c11-cpp14-kompiled/c11-cpp14-kompiled/";
-    my $tempDir = File::Temp->newdir(
-        TEMPLATE => 'tmp-kcc-res-XXXX',
-        CLEANUP => 0);
-    push (@tempFiles, $tempDir);
+    my $tempDir = tempDir('res');
     $retval = execute($dir . "marshalvalue",
       $dir . "realdef.cma",
       '-c', 'ARGV', '`#argv`(.KList) ', 'text',
@@ -721,8 +717,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
                catfile($tempDir, 'plugin_path.o'),
                "-lmpfr","-lgmp","-lffi","-lm","-ldl",'-Wl,--no-as-needed',
                @ldArgs, @nativeObjFiles);
-    my $retval = execute(@cmd);
-    checkError($retval, $programConfFile, 1);
+    checkError(execute(@cmd), $programConfFile, 1);
   }
 
   return 0;
@@ -734,7 +729,7 @@ sub mergeObjs {
   my @pids = ();
 
   while (scalar @srcFiles > $numSrc * 2) {
-    my $oval = tempFile();
+    my $oval = tempFile('merge');
     my $input = shift @srcFiles;
     my $lang = shift @srcFiles;
     compile($oval, $input, $lang);
@@ -742,10 +737,9 @@ sub mergeObjs {
   }
 
   if ($mergeObjs) {
-    my $accum = tempFile();
+    my $accum = tempFile('merge');
     my @cmd = getKRunCommand($accum, \@objFiles, undef, 0, 'c++', undef);
-    my $retval = execute(@cmd);
-    checkError($retval, $accum, 1);
+    checkError(execute(@cmd), $accum, 1);
     @objFiles = ($accum);
   }
 }
@@ -762,8 +756,7 @@ sub isKObj {
 
 sub isAr {
   my $filename = shift;
-  my $retval = system("ar t $filename > /dev/null 2>&1") >> 8;
-  return $retval == 0;
+  return (execute("ar t $filename > /dev/null 2>&1") == 0);
 }
 
 sub classifyLib {
@@ -825,16 +818,16 @@ sub classify {
       push(@srcFiles, $_, 'c++');
     } elsif ($lang ne 'none') {
       error("Unsupported -x option: $lang\n");
-    } elsif (isKObj($_)) {
-      my $kast = tempFile();
-      my $obj = tempFile();
-      system("$distDirectory/split-kcc-obj", $_, $obj, $kast);
-      push(@objFiles, $kast);
-      push(@nativeObjFiles, $obj);
     } elsif (isAr($_)) {
       my ($base, $dir, $suffix) = fileparse($_);
       push(@nativeObjFiles, $_);
       extractStatic($_, $base, $suffix);
+    } elsif (isKObj($_)) {
+      my $kast = tempFile('kast');
+      my $obj = tempFile('obj');
+      execute("$distDirectory/split-kcc-obj", $_, $obj, $kast);
+      push(@objFiles, $kast);
+      push(@nativeObjFiles, $obj);
     } elsif (isNativeObj($_) or -e $_) {
       push(@nativeObjFiles, $_);
     } else {
@@ -847,23 +840,15 @@ sub classify {
 
 sub isNativeObj {
   my ($file) = (@_);
-  system("nm $file > /dev/null 2>&1");
-  if ($? >> 8) {
-    return 0;
-  }
-  return 1;
+  return (execute("nm $file > /dev/null 2>&1") == 0);
 }
 
 sub extractStatic {
   my ($file, $basename, $suffix) = (@_);
   -e $file or error("$file does not exist.\n");
-  my $tempDir = File::Temp->newdir(
-      TEMPLATE => 'tmp-kcc-ar-XXXX',
-      CLEANUP => 0);
-  push (@tempFiles, $tempDir);
+  my $tempDir = tempDir('ar');
   copy ($file, $tempDir);
-  system("cd $tempDir && ar -x $basename$suffix");
-  if ($? >> 8) {
+  if (execute("cd $tempDir && ar -x $basename$suffix")) {
     error("failed to run ar -x.\n");
   }
   opendir my $dir, $tempDir or error("Cannot open directory: $tempDir\n");
@@ -872,9 +857,13 @@ sub extractStatic {
   for (@files) {
     if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
       if (isKObj("$tempDir/$_")) {
-        my $kast = tempFile();
-        system("$distDirectory/split-kcc-obj", "$tempDir/$_", "/dev/null", $kast);
+        my $kast = tempFile('ar-kast');
+        my $obj = tempFile('ar-obj');
+        execute("$distDirectory/split-kcc-obj", "$tempDir/$_", $obj, $kast);
         push(@objFiles, $kast);
+        push(@nativeObjFiles, $obj);
+      } else {
+        push(@nativeObjFiles, "$tempDir/$_");
       }
     }
   }
@@ -884,8 +873,8 @@ sub compile {
   my ($oval, $inputFile, $lang) = (@_);
   my @arr = ();
   if ($lang eq 'c' or $lang eq 'c++') {
-    my $kast = tempFile();
-    my $obj = tempFile();
+    my $kast = tempFile('kast');
+    my $obj = tempFile('obj');
     my $uuid = create_uuid_as_string();
     my $retval = execute(getKRunCommand($kast, \@arr, $inputFile, 0, $lang, $uuid));
     checkError($retval, $kast, 1);
@@ -894,14 +883,14 @@ sub compile {
       $compiler = 'g++';
     }
     if ($args->{'-fno-native-compilation'}) {
-      system($compiler, '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj);
+      execute($compiler, '-c', getStd($lang), '-x', $lang, '/dev/null', '-o', $obj);
     } else {
       $retval = execute($compiler, '-c', getStd($lang), '-x', $lang, $inputFile, '-o', $obj, @cppArgs);
       checkError($retval, $obj, 0);
-      system('globalize-syms', $uuid, $obj);
+      execute('globalize-syms', $uuid, $obj);
     }
-    system('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
-    system("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
+    execute('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
+    execute("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -1000,7 +989,7 @@ sub getKRunCommand {
   @krun_args = add_arg("UUID", $uuidOpt, 'text', @krun_args);
 
   if (scalar @objs) {
-    my $allObjsFile = tempFile();
+    my $allObjsFile = tempFile('all-objs');
     my @catArgs = ();
     my @objTexts = ();
     for (my $i = 0; $i < scalar @objFiles; $i++) {
@@ -1035,8 +1024,8 @@ sub getKRunCommand {
 }
 
 sub dumpSymbols {
-  my $ret = tempFile();
-  system("$distDirectory/gccsymdump @ldArgs @nativeObjFiles > $ret");
+  my $ret = tempFile('syms');
+  execute("$distDirectory/gccsymdump @ldArgs @nativeObjFiles > $ret");
   return rel2abs($ret);
 }
 
@@ -1044,7 +1033,7 @@ sub preprocess {
   my ($output, $inputFile, $lang) = (@_);
   my $isStdout = 0;
   if ($output eq '-') {
-    $output = tempFile();
+    $output = tempFile('pp');
     $isStdout = 1;
   }
   my $directoryname = dirname($inputFile);
@@ -1068,9 +1057,9 @@ sub execPreprocess {
   my ($output, $isStdout, @ppArgs) = (@_);
   my $retval = execute(@ppArgs);
   if (!$retval) {
-    system("rv-ifdefclear", $output);
+    execute("rv-ifdefclear", $output);
     for (@ifdef) {
-      system("rv-ifdefall", $output, @$_);
+      execute("rv-ifdefall", $output, @$_);
     }
     if ($isStdout) {
       execute("cat", $output);
@@ -1082,7 +1071,7 @@ sub execPreprocess {
 sub execute {
   my @cmd = @_;
   if ($args->{'-d'}) {
-    print("'" . join("' '", @cmd) . "'\n");
+    print(join(" ", @cmd) . "\n");
   }
   my $pgm = shift @cmd;
   system($pgm, @cmd);
@@ -1090,37 +1079,37 @@ sub execute {
 }
 
 sub tempFile {
-  my $file = File::Temp->new(
-      TEMPLATE => 'tmp-kcc-XXXXXXX',
-      UNLINK => 0 );
+  my ($name) = (@_);
+  my $file = mktemp("tmp-kcc-$name-XXXXX");
   push(@tempFiles, $file);
   return $file;
+}
+
+sub tempDir {
+  my ($name) = (@_);
+  my $dir = File::Temp->newdir(
+      TEMPLATE => "tmp-kcc-$name-XXXXX",
+      CLEANUP => 0 );
+  push(@tempFiles, $dir);
+  return $dir;
 }
 
 sub parse {
   my ($inputFile, $lang) = (@_);
 
-  my $ppResult = tempFile();
-  my $kast = tempFile();
+  my $ppResult = tempFile('pp');
+  my $kast = tempFile('kast');
   checkError(preprocess($ppResult, $inputFile, $lang), $ppResult, 0);
 
   if ($lang eq 'c++') {
     my $std = getStd('c++');
     my $cmd = ("$cppparser $ppResult -- -x c++-cpp-output $std > $kast");
-    if ($args->{'-d'}) {
-      print("$cmd\n");
-    }
-    system($cmd);
-    checkError($? >> 8, $kast, 0);
+    checkError(execute($cmd), $kast, 0);
 
     return $kast;
   }
   my $cmd = ("$cparser $ppResult --trueName '$inputFile' > $kast");
-  if ($args->{'-d'}) {
-    print("$cmd\n");
-  }
-  system($cmd);
-  checkError($? >> 8, $kast, 0);
+  checkError(execute($cmd), $kast, 0);
 
   return $kast;
 }
@@ -1145,7 +1134,7 @@ sub checkError {
   my ($retval, $output, $isBinary) = (@_);
   if ($retval) {
     if ($isBinary) {
-      system("k-bin-to-text", $output, 'kcc_config');
+      execute("k-bin-to-text", $output, 'kcc_config');
     } else {
       copy($output, 'kcc_config');
     }
