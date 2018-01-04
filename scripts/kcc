@@ -52,6 +52,17 @@ my $profileDirectory;
 my $use_interpreter = -e "$profileDirectory/cpp14-translation-kompiled/cpp14-translation-kompiled/interpreter";
 my $use_compile = -e "$profileDirectory/c11-cpp14-kompiled/c11-cpp14-kompiled/execution_partial.o";
 
+our $buildNumber = '';
+our $isRelease;
+{
+  local $/=undef;
+  if (open FILE, "$distDirectory/build-number") {
+      $buildNumber = <FILE>;
+      close FILE;
+  }
+  $isRelease = $buildNumber ne '';
+}
+
 our $defaultProfile;
 {
   local $/=undef;
@@ -236,6 +247,9 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
   -version		Show version information. [undocumented]
     {
       print("\n	" . $0 . ": version 1.0 GNU-compatible\n\n");
+      if ($main::isRelease) {
+            print("	Build number: $main::buildNumber\n");
+      }
       my $profiles = join("\n	                    ", @main::profiles);
       print("	Current profile: $main::profile\n	Installed profiles: $profiles\n	Default profile: $main::defaultProfile\n\n	To request additional profiles, contact runtimeverification.com/support.\n\n");
       exit 0;
@@ -1133,7 +1147,7 @@ sub getStd {
 sub checkError {
   my ($retval, $output, $isBinary) = (@_);
   if ($retval) {
-    if ($isBinary) {
+    if ($isBinary && !$isRelease ) {
       execute("k-bin-to-text", $output, 'kcc_config');
     } else {
       copy($output, 'kcc_config');
