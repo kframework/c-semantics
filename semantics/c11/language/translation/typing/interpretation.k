@@ -12,6 +12,7 @@ endmodule
 module C-TYPING-INTERPRETATION
      imports C-TYPING-INTERPRETATION-SYNTAX
      imports C-CONFIGURATION
+     imports COLLECTIONS
      imports INT
      imports COMMON-SORTS
      imports COMPAT-SYNTAX
@@ -147,8 +148,12 @@ module C-TYPING-INTERPRETATION
      rule applyTypeFunction(makeIncompleteArrayType, T::Type)
           => t(noQuals, getSpecifiers(T), incompleteArrayType(stripSpecifiers(T)))
 
-     rule applyTypeFunction(makeArrayType(tv(N:Int, T'::UType), Specifier(list(ListItem(Static())))), T::Type)
-          => t(noQuals, getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
+     rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(Specs::List))), T::Type)
+          => t(toQuals(List2Set(Specs)), getSpecifiers(T) SetItem(arrayStatic(N)), arrayType(stripSpecifiers(T), N))
+          requires Static() in Specs
+     rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(Specs::List))), T::Type)
+          => t(toQuals(List2Set(Specs)), getSpecifiers(T), arrayType(stripSpecifiers(T), N))
+          requires notBool (Static() in Specs)
      // TODO(chathhorn): Other qualifiers?
      rule applyTypeFunction(makeArrayType(tv(N:Int, _), Specifier(list(.List))), T::Type)
           => t(noQuals, getSpecifiers(T), arrayType(stripSpecifiers(T), N))

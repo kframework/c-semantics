@@ -387,7 +387,7 @@ module C-TYPING-SYNTAX
 
      // Turn array and function types into pointers.
      syntax Type ::= adjustParam(Type) [function]
-     syntax UType ::= arrayToPtrType(Type) [function]
+     syntax Type ::= arrayToPtrType(Type) [function]
 
      syntax String ::= showType(Type) [function]
      syntax String ::= showDType(DType) [function]

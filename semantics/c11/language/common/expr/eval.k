@@ -104,7 +104,7 @@ module C-COMMON-EXPR-EVAL
 
      rule reval(nclv(Loc::SymLoc, T:ArrayType)
           => checkRegister(Loc)
-          ~> checkUse(tv(arrayToPtrLoc(Loc, T), arrayToPtrType(T))))
+          ~> checkUse(tv(arrayToPtrLoc(Loc, T), utype(arrayToPtrType(T)))))
           [structural]
 
      syntax SymLoc ::= arrayToPtrLoc(SymLoc, Type) [function]

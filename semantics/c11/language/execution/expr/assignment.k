@@ -32,6 +32,7 @@ module C-EXPR-ASSIGNMENT
           ~> write(Loc, V, T')
           ~> tv(V, stripConstants(T))
           requires isRestrictType(T')
+               andBool notBool fromArrayStatic(T')
                andBool (T ==Type utype(T'))
           [structural]
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)

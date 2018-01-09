@@ -218,20 +218,32 @@ module C-TYPING-COMMON
 
      rule innerType(T:UType) => innerType(type(T))
 
-     rule innerType(t(Qs::Quals, _, arrayType(T::Type, _))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, flexibleArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, incompleteArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, unspecifiedArrayType(T::Type))) => addQualifiers(Qs, T)
-     rule innerType(t(Qs::Quals, _, variableLengthArrayType(T::Type, _))) => addQualifiers(Qs, T)
+     rule innerType(t(_, _, arrayType(T::Type, _))) => T
+     rule innerType(t(_, _, flexibleArrayType(T::Type))) => T
+     rule innerType(t(_, _, incompleteArrayType(T::Type))) => T
+     rule innerType(t(_, _, unspecifiedArrayType(T::Type))) => T
+     rule innerType(t(_, _, variableLengthArrayType(T::Type, _))) => T
      rule innerType(t(_, _, bitfieldType(T::SimpleType, _))) => type(T)
      rule innerType(t(_, _, functionType(T::UType, _))) => type(T)
      rule innerType(t(_, _, pointerType(T::Type))) => T
 
+     // The qualifier slot on arrays has a special purpose: it is for
+     // qualifiers set in function parameters meant to qualify the pointer type
+     // after array-to-pointer conversion.
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, arrayType(T::Type, N::Int)))
+          => t(Qs, Mods, arrayType(addQualifiers(Qs', T), N))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, flexibleArrayType(T::Type)))
+          => t(Qs, Mods, flexibleArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, incompleteArrayType(T::Type)))
+          => t(Qs, Mods, incompleteArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, unspecifiedArrayType(T::Type)))
+          => t(Qs, Mods, unspecifiedArrayType(addQualifiers(Qs', T)))
+     rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, variableLengthArrayType(T::Type, K:K)))
+          => t(Qs, Mods, variableLengthArrayType(addQualifiers(Qs', T), K))
      rule addQualifiers(Qs'::Quals, t(Qs::Quals, Mods::Set, T::SimpleType))
-          => t(Qs +Quals Qs', Mods, T)
+          => t(Qs +Quals Qs', Mods, T) [owise]
 
-     rule getQualifiers(t(Qs::Quals, _, T:SimpleArrayType))
-          => Qs +Quals getQualifiers(innerType(type(T)))
+     rule getQualifiers(t(_, _, _:SimpleArrayType) #as T::Type) => getQualifiers(innerType(T))
      rule getQualifiers(t(Qs::Quals, _, _)) => Qs [owise]
 
      syntax String ::= showTypeSpecifier(SimpleType) [function]
@@ -329,12 +341,12 @@ module C-TYPING-COMMON
 
      rule adjustParam(t(Qs::Quals, Mods::Set, functionType(R::UType, Params::List)))
           => type(pointerType(t(Qs, Mods, functionType(R, Params))))
-     rule adjustParam(T:ArrayType) => type(arrayToPtrType(T))
+     rule adjustParam(T:ArrayType) => arrayToPtrType(T)
      rule adjustParam(T::Type) => T [owise]
 
-     rule arrayToPtrType(T:ArrayType)
-          => ut(getModifiers(T), pointerType(innerType(T)))
-     rule arrayToPtrType(T::Type) => utype(T) [owise]
+     rule arrayToPtrType(t(Qs::Quals, Mods::Set, _:SimpleArrayType) #as T::Type)
+          => t(Qs, Mods, pointerType(innerType(T)))
+     rule arrayToPtrType(T::Type) => T [owise]
 
 
 endmodule

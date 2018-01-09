@@ -1149,6 +1149,7 @@ mycvspec_list:
 
 mycvspec:
 	| STATIC { SpecStorage STATIC }
+      | cvspec { fst $1 }
 	
 parameter_list_startscope:
     LPAREN                         { !Lexerhack.push_context () }

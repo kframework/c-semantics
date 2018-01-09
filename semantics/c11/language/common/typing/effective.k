@@ -253,8 +253,8 @@ module C-TYPING-EFFECTIVE
           => ListItem(T) ListItem(t(Qs, .Set, InnerT))
      // we have some redundancy here because we are trying to make matching as fast as possible,
      // so we avoid side conditions on these rules as much as we can.
-     rule getTypesAtOffset(t(_, _, _:SimpleArrayType) #as T::ArrayType, 0)
-          => ListItem(T) getTypesAtOffset(getElementType(0, T), 0)
+     rule getTypesAtOffset(t(Qs::Quals, _, _:SimpleArrayType) #as T::ArrayType, 0)
+          => ListItem(T) getTypesAtOffset(addQualifiers(Qs, getElementType(0, T)), 0)
      rule getTypesAtOffset(t(Qs::Quals, _, structType(_)) #as T::StructType, 0)
           => ListItem(T) getTypesAtOffset(addQualifiers(Qs, getFieldTypeAtOffset(0, T)), 0)
      rule getTypesAtOffset(t(Qs::Quals, _, unionType(_)) #as T::UnionType, 0)
@@ -262,13 +262,13 @@ module C-TYPING-EFFECTIVE
                #then .List
                #else getTypesAtOffset(addQualifiers(Qs, getActiveVariant(T)), 0) #fi
 
-     rule getTypesAtOffset(t(_, _, arrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
+     rule getTypesAtOffset(t(Qs::Quals, _, arrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
           => #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0
-               #then getTypesAtOffset(getElementType(Offset, T), Offset %Int bitSizeofType(InnerT)) #else .List #fi
+               #then getTypesAtOffset(addQualifiers(Qs, getElementType(Offset, T)), Offset %Int bitSizeofType(InnerT)) #else .List #fi
           requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
-     rule getTypesAtOffset(t(_, _, variableLengthArrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
+     rule getTypesAtOffset(t(Qs::Quals, _, variableLengthArrayType(InnerT::Type, _)) #as T::ArrayType, Offset::Int)
           => #if isCompleteType(InnerT) andBool bitSizeofType(InnerT) >Int 0
-               #then getTypesAtOffset(getElementType(Offset, T), Offset %Int bitSizeofType(InnerT)) #else .List #fi
+               #then getTypesAtOffset(addQualifiers(Qs, getElementType(Offset, T)), Offset %Int bitSizeofType(InnerT)) #else .List #fi
           requires Offset >Int 0 andBool Offset <Int bitSizeofType(T)
      rule getTypesAtOffset(t(Qs::Quals, _, structType(_)) #as T::StructType, Offset::Int)
           => getTypesAtOffset(addQualifiers(Qs, getFieldTypeAtOffset(Offset, T)), Offset -Int floorBitOffset(Offset, T))
