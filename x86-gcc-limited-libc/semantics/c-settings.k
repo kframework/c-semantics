@@ -9,8 +9,6 @@ module C-SETTINGS
      imports C-SETTINGS-SYNTAX
      imports C-TYPING-SYNTAX
 
-     rule cfg:enumAlias => int
-
      syntax SimpleSignedCharType ::= SimpleCharType
      syntax SimpleSignedType ::= SimpleEnumType
 

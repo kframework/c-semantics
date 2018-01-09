@@ -108,6 +108,7 @@ and spec_elem =
   
   | SpecAlignment of alignment_spec
   | SpecType of typeSpecifier
+  | SpecMissingType
   | SpecPattern of string       (* specifier pattern variable *)
 
 and alignment_spec =
@@ -269,7 +270,8 @@ and unary_operator =
 and expression =
     NOTHING
   | UNSPECIFIED
-  | OffsetOf of type_name * expression * cabsloc
+  | OFFSETOF of type_name * expression * cabsloc
+  | TYPES_COMPAT of type_name * type_name * cabsloc
   | LOCEXP of expression * cabsloc
   | UNARY of unary_operator * expression
   | LABELADDR of string  (* GCC's && Label *)

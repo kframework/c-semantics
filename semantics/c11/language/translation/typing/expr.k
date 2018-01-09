@@ -152,6 +152,8 @@ module C-TYPING-EXPR
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
      rule typeof(OffsetOf(_, _, _)
           => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
+     rule typeof(TypesCompat(_, _, _, _)
+          => t(noQuals, SetItem(IntegerConstant), cfg:sizeut))
 
      // cast expression
      context typeof(Cast((HOLE:KItem), _, _)) [result(Type)]

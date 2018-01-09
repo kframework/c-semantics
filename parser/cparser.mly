@@ -209,49 +209,6 @@ let fst3 (result, _, _) = result
 let snd3 (_, result, _) = result
 let trd3 (_, _, result) = result
 
-
-(*
-   transform:  __builtin_offsetof(type, member)
-   into     :  (size_t) (&(type * ) 0)->member
- *)
-
-let transformOffsetOf (speclist, dtype) member =
-  let rec addPointer = function
-    | JUSTBASE ->
-	PTR([], JUSTBASE)
-    | PARENTYPE (attrs1, dtype, attrs2) ->
-	PARENTYPE (attrs1, addPointer dtype, attrs2)
-    | ARRAY (dtype, attrs, expr, qualifiers) ->
-	ARRAY (addPointer dtype, attrs, expr, qualifiers)
-    | PTR (attrs, dtype) ->
-	PTR (attrs, addPointer dtype)
-    | PROTO (dtype, names, variadic) ->
-	PROTO (addPointer dtype, names, variadic)
-    | NOPROTO (dtype, names, variadic) ->
-	NOPROTO (addPointer dtype, names, variadic)
-  in
-  let nullType = (speclist, addPointer dtype) in
-  let nullExpr = CONSTANT (CONST_INT "0") in
-  let castExpr = CAST (nullType, SINGLE_INIT nullExpr) in
-
-  let rec replaceBase = function
-    | VARIABLE field ->
-	MEMBEROFPTR (castExpr, field)
-    | MEMBEROF (base, field) ->
-	MEMBEROF (replaceBase base, field)
-    | INDEX (base, index) ->
-	INDEX (replaceBase base, index)
-    | _ ->
-	parse_error "malformed offset expression in __builtin_offsetof";
-        raise Parsing.Parse_error
-  in
-  let memberExpr = replaceBase member in
-  let addrExpr = UNARY (ADDROF, memberExpr) in
-  (* slight cheat: hard-coded assumption that size_t == unsigned int *)
-  let sizeofType = [SpecType Tunsigned], JUSTBASE in
-  let resultExpr = CAST (sizeofType, SINGLE_INIT addrExpr) in
-  resultExpr
-
 %}
 
 %token <string * Cabs.cabsloc> IDENT
@@ -308,19 +265,16 @@ let transformOffsetOf (speclist, dtype) member =
 %token<Cabs.cabsloc> IF TRY EXCEPT FINALLY
 %token ELSE
 
-%token<Cabs.cabsloc> ATTRIBUTE INLINE ASM TYPEOF AUTO_TYPE FUNCTION__ PRETTY_FUNCTION__
+%token<Cabs.cabsloc> ATTRIBUTE INLINE ASM KCC_TYPEOF FUNCTION__ PRETTY_FUNCTION__
 %token LABEL__
-%token<Cabs.cabsloc> BUILTIN_VA_ARG ATTRIBUTE_USED
-%token BUILTIN_VA_LIST
+%token<Cabs.cabsloc> ATTRIBUTE_USED
 %token BLOCKATTRIBUTE
-%token<Cabs.cabsloc> BUILTIN_TYPES_COMPAT BUILTIN_OFFSETOF
 %token<Cabs.cabsloc> DECLSPEC
 %token<string * Cabs.cabsloc> MSASM MSATTR
 %token<string * Cabs.cabsloc> PRAGMA_LINE
 %token<Cabs.cabsloc> PRAGMA
 %token PRAGMA_EOL
 
-%token<Cabs.cabsloc> OFFSETOF
 %token<Cabs.cabsloc> BEGINANNOTATION ENDANNOTATION
 %token<Cabs.cabsloc> PROPERTY
 %token LTL ATOM LTL_BUILTIN_TOK
@@ -329,6 +283,8 @@ let transformOffsetOf (speclist, dtype) member =
 /* sm: cabs tree transformation specification keywords */
 %token<Cabs.cabsloc> AT_TRANSFORM AT_TRANSFORMEXPR AT_SPECIFIER AT_EXPR
 %token AT_NAME
+
+%token<Cabs.cabsloc> KCC_OFFSETOF KCC_TYPES_COMPAT KCC_AUTO_TYPE
 
 /* operator precedence */
 %nonassoc 	IF
@@ -440,15 +396,6 @@ global:
 | ASM LPAREN string_constant RPAREN SEMICOLON
                                         { GLOBASM (fst $3, (*handleLoc*) $1) }
 | pragma                                { $1 }
-/* (* Old-style function prototype. This should be somewhere else, like in
-    * "declaration". For now we keep it at global scope only because in local
-    * scope it looks too much like a function call  *) */
-| IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list SEMICOLON
-{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-
-/* (* Old style function prototype, but without any arguments *) */
-| IDENT LPAREN RPAREN  SEMICOLON
-{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
 
 /* transformer for a toplevel construct */
 | AT_TRANSFORM LBRACE global RBRACE  IDENT/*to*/  LBRACE globals RBRACE {
@@ -504,17 +451,6 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 			{INDEX (fst $1, smooth_expression $2), snd $1}
 |		postfix_expression LPAREN arguments RPAREN
 			{CALL (fst $1, $3), snd $1}
-|               BUILTIN_VA_ARG LPAREN expression COMMA type_name RPAREN
-                        { let b, d = $5 in
-                          CALL (VARIABLE "__builtin_va_arg",
-                                [fst $3; TYPE_SIZEOF (b, d)]), $1 }
-|               BUILTIN_TYPES_COMPAT LPAREN type_name COMMA type_name RPAREN
-                        { let b1,d1 = $3 in
-                          let b2,d2 = $5 in
-                          CALL (VARIABLE "__builtin_types_compatible_p",
-                                [TYPE_SIZEOF(b1,d1); TYPE_SIZEOF(b2,d2)]), $1 }
-|               BUILTIN_OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
-                        { transformOffsetOf $3 $5, $1 }
 |		postfix_expression DOT id_or_typename
 		        {MEMBEROF (fst $1, $3), snd $1}
 |		postfix_expression ARROW id_or_typename
@@ -526,8 +462,10 @@ postfix_expression:                     /*(* 6.5.2 *)*/
 /* (* We handle GCC constructor expressions *) */
 |		LPAREN type_name RPAREN LBRACE initializer_list_opt RBRACE
 		        { CAST($2, COMPOUND_INIT $5), $1 }
-|		OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
-		        { OffsetOf ($3, $5, $1), $1 }
+|		KCC_OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
+		        { OFFSETOF ($3, $5, $1), $1 }
+|		KCC_TYPES_COMPAT LPAREN type_name COMMA type_name RPAREN
+		        { TYPES_COMPAT ($3, $5, $1), $1 }
 ;
 
 bit_number: /* Renesas extension for x.0 */
@@ -1047,10 +985,10 @@ type_spec:   /* ISO 6.7.2 */
 |   ENUM   attribute_nocv_list                LBRACE enum_list maybecomma RBRACE
                                                    { Tenum   ("", Some $4, $2), $1 }
 |   NAMED_TYPE      { Tnamed (fst $1), snd $1 }
-|   TYPEOF LPAREN expression RPAREN     { TtypeofE (fst $3), $1 }
-|   TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
+|   KCC_TYPEOF LPAREN expression RPAREN     { TtypeofE (fst $3), $1 }
+|   KCC_TYPEOF LPAREN type_name RPAREN      { let s, d = $3 in
                                           TtypeofT (s, d), $1 }
-|   AUTO_TYPE                           { TautoType, $1 }
+|   KCC_AUTO_TYPE                       { TautoType, $1 }
 |   COMPLEX        {
 	parse_warn "Encountered _Complex type.  These are not yet supported, and are currently ignored.";
 	Tcomplex, $1
@@ -1289,23 +1227,21 @@ function_def_start:  /* (* ISO 6.9.1 *) */
                             { announceFunctionName $2;
                               (snd $1, fst $1, $2)
                             }
-
+| declarator
+                            { announceFunctionName $1;
+                              let (_, _, _, loc) = $1 in
+                              (loc, (SpecMissingType :: []), $1)
+                            }
 /* (* Old-style function prototype *) */
 | decl_spec_list old_proto_decl
                             { announceFunctionName $2;
                               (snd $1, fst $1, $2)
                             }
-/* (* New-style function that does not have a return type *) */
-| IDENT parameter_list_startscope rest_par_list RPAREN
-{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-
-/* (* No return type and old-style parameter list *) */
-| IDENT LPAREN old_parameter_list_ne RPAREN old_pardef_list
-{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
-
-/* (* No return type and no parameters *) */
-| IDENT LPAREN                      RPAREN
-{ parse_error "In C99 and higher, functions must have a return type"; raise Parsing.Parse_error}
+| old_proto_decl
+                            { announceFunctionName $1;
+                              let (_, _, _, loc) = $1 in
+                              (loc, (SpecMissingType :: []), $1)
+                            }
 ;
 
 /* const/volatile as type specifier elements */

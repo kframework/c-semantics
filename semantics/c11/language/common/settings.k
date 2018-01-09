@@ -3,8 +3,6 @@ module C-SETTINGS-SYNTAX
      imports STRING
      imports LIST
 
-     syntax SimpleBasicType ::= "cfg:enumAlias" [function]
-
      syntax Int ::= "cfg:sizeofBool" [function]
      syntax Int ::= "cfg:sizeofSignedChar" [function]
      syntax Int ::= "cfg:sizeofShortInt" [function]

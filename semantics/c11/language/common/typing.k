@@ -51,7 +51,7 @@ module C-TYPING-SYNTAX
      syntax FieldInfo ::= fieldInfo(List, Int, Map, Map, Set)
      syntax EnumInfo ::= enumInfo(enumAlias: SimpleType, ctMap: Map)
      syntax TagInfo ::= FieldInfo | EnumInfo
-     syntax SimpleType ::= getEnumAlias(TagId) [function]
+     syntax SimpleBasicType ::= getEnumAlias(TagId) [function]
      syntax FieldInfo ::= getFields(StructOrUnionType) [function]
      syntax FieldInfo ::= getFields(StructOrUnionUType) [function]
      syntax FieldInfo ::= getFlatFields(StructOrUnionType) [function]

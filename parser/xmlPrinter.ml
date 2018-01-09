@@ -447,7 +447,8 @@ and printIntLiteral i =
 	
 and printExpression exp =
 	match exp with
-	| OffsetOf ((spec, declType), exp, loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: (printExpression exp) :: []) "OffsetOf") loc
+	| OFFSETOF ((spec, declType), exp, loc) -> printExpressionLoc (wrap ((printSpecifier spec) :: (printDeclType declType) :: (printExpression exp) :: []) "OffsetOf") loc
+	| TYPES_COMPAT ((spec1, declType1), (spec2, declType2), loc) -> printExpressionLoc (wrap ((printSpecifier spec1) :: (printDeclType declType1) :: (printSpecifier spec2) :: (printDeclType declType2) :: []) "TypesCompat") loc
 	| GENERIC (exp, assocs) -> wrap (printExpression exp :: printGenericAssocs assocs :: []) "Generic"
 	| LOCEXP (exp, loc) -> printExpressionLoc (printExpression exp) loc
 	| UNARY (op, exp1) -> printUnaryExpression op exp1
@@ -662,6 +663,7 @@ and printSingleNameList a =
 and printSpecElem a =
 	match a with
 	| SpecTypedef -> kapply "SpecTypedef"  nil
+	| SpecMissingType -> kapply "MissingType"  nil
 	| SpecCV cv -> 
 		(match cv with
 		| CV_CONST -> kapply "Const"  nil

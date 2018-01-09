@@ -300,6 +300,7 @@ module C-ABSTRACT-SYNTAX
      NOTHING
      */
      syntax Expression ::= OffsetOf(K, K, K) [strict(1)]
+     syntax Expression ::= TypesCompat(K, K, K, K) [strict(1, 3)]
      syntax Expression ::= ExpressionLoc(K, K) [function]
 
      //must be declared as function,

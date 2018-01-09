@@ -59,4 +59,11 @@ module LIBC-STRING
           <strerror-cache>... .Map => Err |-> ErrStr </strerror-cache>
           [structural]
 
+     rule builtin("strerror_r", A1::RValue, A2::RValue, A3::RValue)
+          => nativeCall("__xpg_strerror_r", ListItem(A1) ListItem(A2) ListItem(A3), .List)
+          [native-call]
+     rule builtin("__xpg_strerror_r", A1::RValue, A2::RValue, A3::RValue)
+          => nativeCall("__xpg_strerror_r", ListItem(A1) ListItem(A2) ListItem(A3), .List)
+          [native-call]
+
 endmodule

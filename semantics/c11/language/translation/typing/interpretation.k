@@ -123,6 +123,8 @@ module C-TYPING-INTERPRETATION
           => t(Qs, Mods, incompleteArrayType(pushTypeDown(T, Lbl)))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, pointerType(T::Type)), Lbl:K)
           => t(Qs, Mods, pointerType(pushTypeDown(T, Lbl)))
+     rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType(T::UType, L:List)), Lbl:K)
+          => t(Qs, Mods, functionType'(pushTypeDown(type(T), Lbl), L))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, functionType'(T::Type, L:List)), Lbl:K)
           => t(Qs, Mods, functionType'(pushTypeDown(T, Lbl), L))
      rule pushTypeDown(t(Qs::Quals, Mods::Set, structType(X::TagId)), Lbl:K)

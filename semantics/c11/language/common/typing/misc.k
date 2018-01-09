@@ -19,15 +19,15 @@ module C-TYPING-MISC
      rule correspondingUnsignedType(ut(S::Set, T:SimpleSignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
-     rule correspondingUnsignedType(ut(S::Set, enumType(_)))
-          => correspondingUnsignedType(ut(S, cfg:enumAlias))
+     rule correspondingUnsignedType(ut(S::Set, enumType(Tag::TagId)))
+          => correspondingUnsignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingUnsignedType(T::UType) => T [owise]
 
      rule correspondingSignedType(ut(S::Set, T:SimpleUnsignedType))
           => ut(S, flipSignedness(T))
           requires notBool isSimpleEnumType(T)
-     rule correspondingSignedType(ut(S::Set, enumType(_)))
-          => correspondingSignedType(ut(S, cfg:enumAlias))
+     rule correspondingSignedType(ut(S::Set, enumType(Tag::TagId)))
+          => correspondingSignedType(ut(S, getEnumAlias(Tag)))
      rule correspondingSignedType(T::UType) => T [owise]
 
      syntax SimpleIntegerType ::= flipSignedness(SimpleIntegerType) [function]

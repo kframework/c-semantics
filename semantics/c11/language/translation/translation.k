@@ -40,6 +40,7 @@ require "expr/reference.k"
 require "expr/relational.k"
 require "expr/sequencing.k"
 require "expr/sizeof.k"
+require "expr/types-compat.k"
 require "expr/unary.k"
 
 require "stmt/block.k"
@@ -102,6 +103,7 @@ module C-TRANSLATION
      imports C-EXPR-RELATIONAL
      imports C-EXPR-SEQUENCING
      imports C-EXPR-SIZEOF
+     imports C-EXPR-TYPES-COMPAT
      imports C-EXPR-UNARY
 
      imports C-STMT-BLOCK

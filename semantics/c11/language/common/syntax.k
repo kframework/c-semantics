@@ -71,6 +71,7 @@ module C-SYNTAX
      | SpecInline
      */
      syntax SpecifierElem ::= SpecTypedef()
+     syntax SpecifierElem ::= MissingType()
      // the following are because I flattened SpecifierElem
      syntax SpecifierElem ::= Modifier
 
