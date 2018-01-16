@@ -834,7 +834,6 @@ sub classify {
       error("Unsupported -x option: $lang\n");
     } elsif (isAr($_)) {
       my ($base, $dir, $suffix) = fileparse($_);
-      push(@nativeObjFiles, $_);
       extractStatic($_, $base, $suffix);
     } elsif (isKObj($_)) {
       my $kast = tempFile('kast');
