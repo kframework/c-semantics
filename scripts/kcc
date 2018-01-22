@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use File::Basename;
-use File::Temp;
+use File::Temp qw(SEEK_END tempfile tempdir);
 use File::Spec::Functions qw(rel2abs catfile);
 use File::Copy;
 use File::Path qw(rmtree);
@@ -26,8 +26,8 @@ $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
 my @objFiles = ();
 my @nativeObjFiles = ();
+my @nativeLibs = ();
 my @srcFiles = ();
-my @tempFiles = ();
 
 my $MAGIC = "\x7fKAST";
 
@@ -528,6 +528,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
   $ENV{K_OPTS} = "-Xmx$heapSize";
   if ($args->{'-d'}) {
     $ENV{OCAMLRUNPARAM} = "s=32M,b,l=8M";
+    $File::Temp::KEEP_ALL = 1;
   } else {
     $ENV{OCAMLRUNPARAM} = "s=32M,l=8M";
   }
@@ -710,14 +711,16 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     open(my $pluginPath, '>', catfile($tempDir, "plugin_path")) or error("Couldn't open file: $!\n");
     print $pluginPath $dir . "realdef.cma";
     close($pluginPath);
+
+    my $old_cwd = getcwd();
     chdir($tempDir);
-    $retval = execute("ld","-r","-b","binary","-o","kore_term.o","kore_term");
+    $retval = execute('ld', '-r', '-b', 'binary', '-o', 'kore_term.o', 'kore_term');
     checkError($retval, $programConfFile, 1);
-    $retval = execute("ld","-r","-b","binary","-o","marshal_term.o","marshal_term");
+    $retval = execute('ld', '-r', '-b', 'binary', '-o', 'marshal_term.o', 'marshal_term');
     checkError($retval, $programConfFile, 1);
-    $retval = execute("ld","-r","-b","binary","-o","plugin_path.o", "plugin_path");
+    $retval = execute('ld', '-r', '-b', 'binary', '-o', 'plugin_path.o', 'plugin_path');
     checkError($retval, $programConfFile, 1);
-    chdir("..");
+    chdir($old_cwd);
 
     my @cmd = ();
     if ($args->{'-Xk++'}) {
@@ -725,12 +728,12 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     } else {
       push(@cmd, 'gcc');
     }
-    push(@cmd, $dir . 'execution_partial.o', '-o', $oval, '-Wl,-E',
+    push(@cmd, catfile($dir, 'execution_partial.o'), '-o', $oval, '-Wl,-E',
                catfile($tempDir, 'kore_term.o'),
                catfile($tempDir, 'marshal_term.o'),
                catfile($tempDir, 'plugin_path.o'),
                "-lmpfr","-lgmp","-lffi","-lm","-ldl",'-Wl,--no-as-needed',
-               @ldArgs, @nativeObjFiles);
+               @ldArgs, @nativeObjFiles, @nativeLibs);
     checkError(execute(@cmd), $programConfFile, 1);
   }
 
@@ -867,18 +870,24 @@ sub extractStatic {
   opendir my $dir, $tempDir or error("Cannot open directory: $tempDir\n");
   my @files = readdir $dir;
   closedir $dir;
+  my @repackageObjs = ();
   for (@files) {
     if ($_ ne "$basename$suffix" && $_ ne "." && $_ ne "..") {
-      if (isKObj("$tempDir/$_")) {
-        my $kast = tempFile('ar-kast');
-        my $obj = tempFile('ar-obj');
-        execute("$distDirectory/split-kcc-obj", "$tempDir/$_", $obj, $kast);
+      if (isKObj(catfile($tempDir, $_))) {
+        my $kast = tempFile("ar-kast-$_");
+        my $obj = tempFile("ar-obj-$_");
+        execute(catfile($distDirectory, 'split-kcc-obj'), catfile($tempDir, $_), $obj, $kast);
         push(@objFiles, $kast);
-        push(@nativeObjFiles, $obj);
+        push(@repackageObjs, $obj);
       } else {
-        push(@nativeObjFiles, "$tempDir/$_");
+        push(@repackageObjs, catfile($tempDir, $_));
       }
     }
+  }
+  if (scalar @repackageObjs) {
+    my $repackaged = tempFile('repackaged', "-$basename");
+    execute('ar', 'rcs', $repackaged,  @repackageObjs);
+    push(@nativeLibs, $repackaged);
   }
 }
 
@@ -1007,10 +1016,12 @@ sub getKRunCommand {
     my @objTexts = ();
     for (my $i = 0; $i < scalar @objFiles; $i++) {
       my $thisObj = `cat $objFiles[$i]`;
-      # push(@objTexts, "`unwrapObj`($thisObj)");
-      $thisObj = substr($thisObj, 8, -1);
-      # wrap $thisObj with `unwrapObj`()
-      push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
+      if (length $thisObj) {
+        # push(@objTexts, "`unwrapObj`($thisObj)");
+        $thisObj = substr($thisObj, 8, -1);
+        # wrap $thisObj with `unwrapObj`()
+        push(@objTexts, "$thisObj\x02\x00\x00\x00\x00\x00\x00\x00\x09\x00u\x00n\x00w\x00r\x00a\x00p\x00O\x00b\x00j\x00\x00\x00\x00\x01");
+      }
     }
     my $objText = join('', @objTexts);
     my $one = chr((scalar @objTexts >> 24) & 0xff);
@@ -1038,7 +1049,7 @@ sub getKRunCommand {
 
 sub dumpSymbols {
   my $ret = tempFile('syms');
-  execute("$distDirectory/gccsymdump @ldArgs @nativeObjFiles > $ret");
+  execute(catfile($distDirectory, 'gccsymdump') . " @ldArgs @nativeObjFiles @nativeLibs > $ret");
   return rel2abs($ret);
 }
 
@@ -1091,19 +1102,32 @@ sub execute {
   return $? >> 8;
 }
 
+my $tempRoot;
 sub tempFile {
-  my ($name) = (@_);
-  my $file = mktemp("tmp-kcc-$name-XXXXX");
-  push(@tempFiles, $file);
+  my ($name, $ext) = (@_);
+
+  if (!defined $tempRoot) {
+    $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
+  }
+
+  my $file;
+  if (defined $ext) {
+    (undef, $file) = tempfile("$tempRoot/$name-XXXXX", UNLINK => 1, OPEN => 0, SUFFIX => $ext);
+  } else {
+    (undef, $file) = tempfile("$tempRoot/$name-XXXXX", UNLINK => 1, OPEN => 0);
+  }
   return $file;
 }
 
 sub tempDir {
   my ($name) = (@_);
-  my $dir = File::Temp->newdir(
-      TEMPLATE => "tmp-kcc-$name-XXXXX",
-      CLEANUP => 0 );
-  push(@tempFiles, $dir);
+
+  if (!defined $tempRoot) {
+    $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
+  }
+
+  my $dir = tempdir("$tempRoot/tmp-kcc-$name-XXXXX", CLEANUP => 1);
+
   return $dir;
 }
 
@@ -1155,7 +1179,7 @@ sub checkError {
       print STDERR "Translation failed (kcc_config dumped). Refer to last command run for details.\n";
       exit $retval;
     } else {
-      my $dir=basename(getcwd());
+      my $dir = basename(getcwd());
       print STDERR "Translation failed (kcc_config dumped). To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
       exit $retval;
     }
@@ -1180,17 +1204,7 @@ sub interruptHandler {
 # This subroutine can be used as a way to ensure we clean up all resources
 # whenever we exit. This is going to be mostly temp files. If the program
 # terminates for almost any reason, this code will be executed.
-sub finalCleanup {
-  if (!$args->{'-d'}) {
-    for (@tempFiles) {
-      if (-d $_) {
-        rmtree(rel2abs($_)) or error("Cannot remove_tree $_: $!");
-      } else {
-        unlink;
-      }
-    }
-  }
-}
+sub finalCleanup { }
 
 sub error {
   print STDERR @_;
