@@ -10,7 +10,6 @@ extern FILE* stdin;
 extern FILE* stdout;
 extern FILE* stderr;
 
-// stdio.h
 #define EOF -1
 
 int fprintf(FILE * restrict stream, const char * restrict format, ...);

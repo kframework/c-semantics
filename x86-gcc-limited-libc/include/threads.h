@@ -1,14 +1,14 @@
 #ifndef _KCC_THREADS_H
 #define _KCC_THREADS_H
 
-// some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
+/* Some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548. */
 #include <time.h>
-// expands to a value that can be used to initialize an object of type
-// once_flag
+/* Expands to a value that can be used to initialize an object of type
+ * once_flag. */
 #define ONCE_FLAG_INIT 0
 
-// expands to an integer constant expression representing the maximum number of
-// times that destructors will be called when a thread terminates.
+/* Expands to an integer constant expression representing the maximum number of
+ * times that destructors will be called when a thread terminates. */
 #define TSS_DTOR_ITERATIONS 1
 
 typedef int cnd_t;
@@ -18,25 +18,25 @@ typedef struct mtx_t_ { int id; int type; thrd_t owner; int owned; int flag; int
 typedef void (*tss_dtor_t)(void*);
 typedef int (*thrd_start_t)(void*);
 typedef int once_flag;
+
+/* A structure type that holds a time specified in seconds and nanoseconds. */
 typedef struct xtime_ {time_t sec; long nsec;} xtime;
-// which is a structure type that holds a time specified in seconds and
-// nanoseconds. 
 
 enum {
-	mtx_plain = 0, // which is passed to mtx_init to create a mutex object that supports neither timeout nor test and return;
-	mtx_recursive = 1, // which is passed to mtx_init to create a mutex object that supports recursive locking;
-	mtx_timed = 2, // which is passed to mtx_init to create a mutex object that supports timeout;
-	mtx_try = 4, // which is passed to mtx_init to create a mutex object that supports test and return;
+      mtx_plain = 0,     /* passed to mtx_init to create a mutex object that supports neither timeout nor test and return; */
+      mtx_recursive = 1, /* passed to mtx_init to create a mutex object that supports recursive locking; */
+      mtx_timed = 2,     /* passed to mtx_init to create a mutex object that supports timeout; */
+      mtx_try = 4,       /* passed to mtx_init to create a mutex object that supports test and return; */
 };
 enum {
-	thrd_success = 0, //which is returned by a function to indicate that the requested operation succeeded;
-	thrd_error = 1, // which is returned by a function to indicate that the requested operation failed; and
-	thrd_timeout = 2, //which is returned by a timed wait function to indicate that the time specified in the call was reached without acquiring the requested resource;
-	thrd_busy = 3, // which is returned by a function to indicate that the requested operation failed because a resource requested by a test and return function is already in use;
-	thrd_nomem = 4 // which is returned by a function to indicate that the requested operation failed because it was unable to allocate memory.
+      thrd_success = 0,  /* returned by a function to indicate that the requested operation succeeded; */
+      thrd_error = 1,    /* returned by a function to indicate that the requested operation failed; and */
+      thrd_timeout = 2,  /* returned by a timed wait function to indicate that the time specified in the call was reached without acquiring the requested resource; */
+      thrd_busy = 3,     /* returned by a function to indicate that the requested operation failed because a resource requested by a test and return function is already in use; */
+      thrd_nomem = 4     /* returned by a function to indicate that the requested operation failed because it was unable to allocate memory. */
 };
 
-// our threading primitive
+/* Our threading primitive. */
 int __test_and_set(int *p, int value);
 
 /* C1X 7.25.2.1

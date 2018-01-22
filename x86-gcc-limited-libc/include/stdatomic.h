@@ -1,7 +1,7 @@
 #ifndef _KCC_STDATOMIC_H
 #define _KCC_STDATOMIC_H
 
-// some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548
+/* Some comments below are © ISO/IEC and come from 9899:201x n1516 and n1548. */
 
 
 /* C1X 7.17.3
@@ -10,12 +10,12 @@ memory synchronization operations as defined in 5.1.2.4 and may provide for
 operation ordering. Its enumeration constants are as follows:
 */
 enum memory_order {
-	memory_order_relaxed,
-	memory_order_consume,
-	memory_order_acquire,
-	memory_order_release,
-	memory_order_acq_rel,
-	memory_order_seq_cst,
+      memory_order_relaxed,
+      memory_order_consume,
+      memory_order_acquire,
+      memory_order_release,
+      memory_order_acq_rel,
+      memory_order_seq_cst,
 };
 
 

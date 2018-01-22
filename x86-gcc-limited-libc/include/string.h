@@ -2,7 +2,6 @@
 #define _KCC_STRING_H
 #include <stddef.h>
 
-// string.h
 size_t strlen(const char *str);
 int strcmp(const char *str1, const char *str2);
 char *strcpy(char * restrict s1, const char * restrict s2);

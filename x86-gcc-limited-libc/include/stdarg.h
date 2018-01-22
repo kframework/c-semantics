@@ -27,21 +27,21 @@ typedef __gnuc_va_list va_list;
  *
  * one type is a signed integer type, the other type is the corresponding
  * unsigned integer type, and the value is representable in both types;
- * 
+ *
  * one type is pointer to void and the other is a pointer to a character type.
- */ 
-// type va_arg(va_list ap, type);
+ */
+/* type va_arg(va_list ap, type); */
 #define va_arg(ap, t) (*((t*)(__kcc_va_inc((ap)))))
 void *__kcc_va_inc(va_list ap); // increments the ap, and returns the current vararg
 
-// void va_start(va_list ap, parmN);
+/* void va_start(va_list ap, parmN); */
 #define va_start(ap, pN) (__kcc_va_start((&(ap)), ((void*)(&(pN)))))
 void __kcc_va_start(va_list *ap, void *pN);
 
 #define va_end __kcc_va_end
 void __kcc_va_end(va_list ap);
 
-// void va_copy(va_list dst, va_list src);
+/* void va_copy(va_list dst, va_list src); */
 #define va_copy(dst, src) (__kcc_va_copy((&(dst)), (src)))
 void __kcc_va_copy(va_list *dst, va_list src);
 
