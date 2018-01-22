@@ -560,7 +560,6 @@ module LIBC-STDIO
 
      syntax KItem ::= fgets(RValue, Int, K)
      context fgets(_, _, HOLE:KItem => reval(HOLE)) [result(RValue)]
-
      rule fgets(Ptr::RValue, NMemb::Int, _) => Ptr
           requires NMemb <Int 1
           [structural]
@@ -572,44 +571,49 @@ module LIBC-STDIO
           ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
           requires NMemb >Int 1
           [structural]
-     rule <k> tv(V::CValue, _) ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
+     rule <k> V:RValue ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
                => trapBuf(Loc, NMemb)
                ~> tv(NullPointer, utype(pointerType(type(char))))
           ...</k>
           <fid> FD </fid>
           <read-buffer> Buffer::String </read-buffer>
           <feof> Eof:Bool </feof>
-          requires V =/=K 1 andBool notBool (Buffer ==K "" andBool Eof)
+          requires V ==K eof andBool notBool (Buffer ==K "" andBool Eof)
           [structural]
-     rule <k> tv(V::CValue, _) ~> fgets(Ptr::RValue, NMemb::Int, tv(opaque(FD::Int, _), _))
-               => Ptr
+     rule <k> tv(V:Int, _) ~> fgets(tv(Loc:SymLoc, _), NMemb::Int, tv(opaque(FD::Int, _), _))
+               => trapBuf(Loc, NMemb)
+               ~> tv(NullPointer, utype(pointerType(type(char))))
           ...</k>
           <fid> FD </fid>
           <read-buffer> "" </read-buffer>
           <feof> true </feof>
-          requires V =/=K 1
+          requires V =/=Int 1
+          [structural]
+     rule <k> (tv(0, _) => str("")) ~> fgets(_, _, tv(opaque(FD::Int, _), _)) ...</k>
+          <fid> FD </fid>
+          <read-buffer> Buffer::String </read-buffer>
+          <feof> Eof:Bool </feof>
+          requires notBool (Buffer ==K "" andBool Eof)
           [structural]
      rule (tv(1, _) => getString(Ptr)) ~> fgets(Ptr::RValue, _, _)
           [structural]
      rule str(S::String) ~> fgets(Ptr::RValue, NMemb::Int, _)
           => Ptr
           requires lengthString(S) >=Int NMemb -Int 1
-               orBool S ==K "\n"
           [structural]
      rule (str(S::String) => readNewline(Ptr + lengthString(S), FD)) ~> fgets(Ptr::RValue, NMemb::Int, FD:RValue)
           requires lengthString(S) <Int NMemb -Int 1
           [structural]
+     rule doneReadNewline ~> fgets(Ptr::RValue, NMemb::Int, _) => Ptr
+          [structural]
 
      syntax KItem ::= readNewline(K, RValue)
+     syntax KResult ::= "doneReadNewline"
      context readNewline(HOLE:KItem => reval(HOLE), _) [result(RValue)]
-
      rule (.K => fscanf(FD, str("%1[\n]"), ListItem(Ptr)))
           ~> readNewline(Ptr:RValue, FD::RValue)
           [structural]
-     rule tv(1, _) ~> readNewline(Ptr:RValue, _) => str("\n")
-          [structural]
-     rule tv(V::CValue, _) ~> (readNewline(_, _) => .K)
-          requires V =/=K 1
+     rule _:RValue ~> readNewline(_, _) => doneReadNewline
           [structural]
 
      //////////////////////////
