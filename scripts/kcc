@@ -24,12 +24,17 @@ $SIG{'TRAP'} = 'interruptHandler';
 $SIG{'STOP'} = 'interruptHandler';
 $SIG{'INT'} = 'interruptHandler'; # Handle control-c.
 
+my $RVMAIN = '__rvmatch_main'; # Symbol 'main' gets rewritten to in natively-compiled code.
+my $MAGIC = "\x7fKAST";
+
 my @objFiles = ();
 my @nativeObjFiles = ();
 my @nativeLibs = ();
 my @srcFiles = ();
 
-my $MAGIC = "\x7fKAST";
+our @cppArgs = ();
+our @ld_lib = ();
+our @ldArgs = ('-lmpfr', '-lgmp', '-lffi', '-lm', '-ldl', '-Wl,--no-as-needed', '-u', $RVMAIN);
 
 my $distDirectory = dirname(rel2abs($0));
 if (defined $ENV{KCC_COMMAND_NAME}) {
@@ -38,39 +43,32 @@ if (defined $ENV{KCC_COMMAND_NAME}) {
   $0 = basename($0);
 }
 
-our $profile;
-my $profileDirectory;
-{
-  local $/=undef;
-  open FILE, "$distDirectory/current-profile"
-    or error("Couldn't find current profile: please fix $distDirectory/current-profile.\n");
-  $profile = <FILE>;
-  $profileDirectory = "$distDirectory/$profile";
-  close FILE;
-}
+our $profile = do {
+  local $/ = undef;
+  open my $fh, '<', catfile($distDirectory, 'current-profile')
+    or error("Couldn't find current profile: please fix " . catfile($distDirectory, 'current-profile') . ".\n");
+  <$fh>;
+};
 
-my $use_interpreter = -e "$profileDirectory/cpp14-translation-kompiled/cpp14-translation-kompiled/interpreter";
-my $use_compile = -e "$profileDirectory/c11-cpp14-kompiled/c11-cpp14-kompiled/execution_partial.o";
+my $profileDirectory = catfile($distDirectory, $profile);
+my $use_interpreter = -e catfile($profileDirectory, 'cpp14-translation-kompiled', 'cpp14-translation-kompiled', 'interpreter');
+my $use_compile = -e catfile($profileDirectory, 'c11-cpp14-kompiled', 'c11-cpp14-kompiled', 'execution_partial.o');
 
-our $buildNumber = '';
-our $isRelease;
-{
-  local $/=undef;
-  if (open FILE, "$distDirectory/build-number") {
-      $buildNumber = <FILE>;
-      close FILE;
-  }
-  $isRelease = $buildNumber ne '';
-}
+our $buildNumber = do {
+  local $/ = undef;
+  if (open my $fh, '<', catfile($distDirectory, 'build-number')) {
+    <$fh>;
+  } else { ''; }
+};
 
-our $defaultProfile;
-{
-  local $/=undef;
-  open FILE, "$distDirectory/default-profile"
-    or error("Couldn't find default profile: please fix $distDirectory/default-profile.\n");
-  $defaultProfile = <FILE>;
-  close FILE;
-}
+our $isRelease = $buildNumber ne '';
+
+our $defaultProfile = do {
+  local $/ = undef;
+  open my $fh, '<', catfile($distDirectory, 'default-profile')
+    or error("Couldn't find default profile: please fix " . catfile($distDirectory, 'default-profile') . ".\n");
+  <$fh>;
+};
 
 opendir (my $DIR, $distDirectory);
 our @profiles = ();
@@ -83,15 +81,14 @@ while ( my $entry = readdir $DIR) {
 my $ignoredFlagsRegex = "^(";
 {
   my $sep = "";
-  open FILE, "$distDirectory/ignored-flags"
-    or error("Couldn't load ignored flag list. Please touch $distDirectory/ignored-flags.\n");
-  while (<FILE>) {
+  open my $fh, '<', catfile($distDirectory, 'ignored-flags')
+    or error("Couldn't load ignored flag list. Please touch " . catfile($distDirectory, 'ignored-flags') . ".\n");
+  while (<$fh>) {
     chop($_);
     $ignoredFlagsRegex = "$ignoredFlagsRegex$sep(?:$_)";
     $sep = "|";
   }
   $ignoredFlagsRegex = "$ignoredFlagsRegex)\$";
-  close FILE;
 }
 my $ignoredFlags = qr/$ignoredFlagsRegex/;
 
@@ -122,10 +119,8 @@ our $ourDist = $distDirectory;
 my $cparser = catfile($distDirectory, 'cparser');
 my $cppparser = catfile($distDirectory, 'clang-kast');
 
-my $C_TRANS_DEF =
-      catfile($profileDirectory, "c11-translation-kompiled");
-my $CPP_TRANS_DEF =
-      catfile($profileDirectory, "cpp14-translation-kompiled");
+my $C_TRANS_DEF = catfile($profileDirectory, "c11-translation-kompiled");
+my $CPP_TRANS_DEF = catfile($profileDirectory, "cpp14-translation-kompiled");
 
 my @originalArgv;
 
@@ -204,9 +199,6 @@ my @cppWarnsList = (
 );
 our %cppWarns =  map { $_ => 1 } @cppWarnsList;
 
-our @cppArgs = ();
-our @ld_lib = ();
-our @ldArgs = ();
 our @suppress = ();
 our @ifdef = ();
 our $fatalErrors = "false";
@@ -228,20 +220,20 @@ sub main {
     # to display as an argument
     pop(@originalArgv);
   }
-my $self = ({});
-sub usage {}
-bless $self;
-	my $_args = ();
-	my $_get_nextline = sub { undef };
-		foreach (@ARGV) {
-			# Clean entries: remove spaces, tabs and newlines
-			$_ =~ tr/ \t\n/\0\0\0/;
-		}
-		$_args = join(' ', @ARGV);
-		my $source = '';
-$self->{_internal}{args} = (());
-$self->{_internal}{args}[0]{required} = 1;
-$self->{_internal}{args}[0]{desc} = "<files>...";
+  my $self = ({});
+  sub usage {}
+  bless $self;
+  my $_args = ();
+  my $_get_nextline = sub { undef };
+  foreach (@ARGV) {
+    # Clean entries: remove spaces, tabs and newlines
+    $_ =~ tr/ \t\n/\0\0\0/;
+  }
+  $_args = join(' ', @ARGV);
+  my $source = '';
+  $self->{_internal}{args} = (());
+  $self->{_internal}{args}[0]{required} = 1;
+  $self->{_internal}{args}[0]{desc} = "<files>...";
 =for Getopt::Declare
   [strict]
   -version		Show version information. [undocumented]
@@ -318,7 +310,7 @@ $self->{_internal}{args}[0]{desc} = "<files>...";
   -Wl,<args>		Add flags to linker arguments.
     { push(@main::ldArgs, "-Wl,$args"); }
   -u <symbol>		Pretend <symbol> is undefined, to force linking.
-    { push(@main::ldArgs, "-u $symbol"); }
+    { push(@main::ldArgs, '-u', $symbol); }
   <files>...		C files to be compiled. [repeatable] [required] [undocumented]
     { classify(@files); }
   -M			Dependency generation. See documentation for GCC
@@ -581,7 +573,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     mergeObjs(1, 0);
     my $obj = tempFile('merge');
     execute('ld', '-r', '-o', $obj, @nativeObjFiles);
-    execute("$distDirectory/merge-kcc-obj", $obj, $objFiles[0], $main::oflag || 'a.out');
+    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $objFiles[0], $main::oflag || 'a.out');
     return 0;
   }
 
@@ -691,25 +683,25 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
     ($numFilesChanged == 1)
     or error("Call to chmod $oval failed.\n");
   } else {
-    my $dir = $profileDirectory . "/c11-cpp14-kompiled/c11-cpp14-kompiled/";
+    my $dir = catfile($profileDirectory, 'c11-cpp14-kompiled', 'c11-cpp14-kompiled');
     my $tempDir = tempDir('res');
-    $retval = execute($dir . "marshalvalue",
-      $dir . "realdef.cma",
+    $retval = execute(catfile($dir, 'marshalvalue'),
+      catfile($dir, 'realdef.cma'),
       '-c', 'ARGV', '`#argv`(.KList) ', 'text',
       '-c', 'OPTIONS', $opts, 'text',
       '-c', 'JSON', "#token($encodedJson, $quoteString)", 'text',
-      '--output-file', "$tempDir/kore_term"
+      '--output-file', catfile($tempDir, 'kore_term')
     );
     checkError($retval, $programConfFile, 1);
-    $retval = execute($dir . "marshalvalue",
-      $dir . "realdef.cma", '-s', # -s before -c
+    $retval = execute(catfile($dir, 'marshalvalue'),
+      catfile($dir, 'realdef.cma'), '-s', # -s before -c
       '-c', 'PGM', $programConfFile, 'binaryfile',
-      '--output-file', "$tempDir/marshal_term"
+      '--output-file', catfile($tempDir, 'marshal_term')
     );
     checkError($retval, $programConfFile, 1);
 
     open(my $pluginPath, '>', catfile($tempDir, "plugin_path")) or error("Couldn't open file: $!\n");
-    print $pluginPath $dir . "realdef.cma";
+    print $pluginPath catfile($dir, 'realdef.cma');
     close($pluginPath);
 
     my $old_cwd = getcwd();
@@ -732,8 +724,7 @@ The format for the issue report (JSON/CSV) is inferred from the file extension.
                catfile($tempDir, 'kore_term.o'),
                catfile($tempDir, 'marshal_term.o'),
                catfile($tempDir, 'plugin_path.o'),
-               "-lmpfr","-lgmp","-lffi","-lm","-ldl",'-Wl,--no-as-needed',
-               @ldArgs, @nativeObjFiles, @nativeLibs);
+               @ldArgs);
     checkError(execute(@cmd), $programConfFile, 1);
   }
 
@@ -841,11 +832,13 @@ sub classify {
     } elsif (isKObj($_)) {
       my $kast = tempFile('kast');
       my $obj = tempFile('obj');
-      execute("$distDirectory/split-kcc-obj", $_, $obj, $kast);
+      execute(catfile($distDirectory, 'split-kcc-obj'), $_, $obj, $kast);
       push(@objFiles, $kast);
       push(@nativeObjFiles, $obj);
+      push(@ldArgs, $obj);
     } elsif (isNativeObj($_) or -e $_) {
       push(@nativeObjFiles, $_);
+      push(@ldArgs, $_);
     } else {
       if (!($_ =~ $ignoredFlags)) {
         warn("Unsupported option: $_\n");
@@ -888,6 +881,7 @@ sub extractStatic {
     my $repackaged = tempFile('repackaged', "-$basename");
     execute('ar', 'rcs', $repackaged,  @repackageObjs);
     push(@nativeLibs, $repackaged);
+    push(@ldArgs, $repackaged);
   }
 }
 
@@ -911,8 +905,8 @@ sub compile {
       checkError($retval, $obj, 0);
       execute('globalize-syms', $uuid, $obj);
     }
-    execute('objcopy', '--redefine-sym', 'main=__rvmatch_main', $obj);
-    execute("$distDirectory/merge-kcc-obj", $obj, $kast, $oval);
+    execute('objcopy', '--redefine-sym', "main=$RVMAIN", $obj);
+    execute(catfile($distDirectory, 'merge-kcc-obj'), $obj, $kast, $oval);
   } else {
     my $retval = execute('gcc', '-c', '-x', $lang, $inputFile, '-o', $oval, @cppArgs);
     checkError($retval, $oval, 0);
@@ -966,10 +960,10 @@ sub getKRunCommand {
   my @krun_args;
   my $symbols = $link ? dumpSymbols() : 'dummy';
   if ($use_interpreter) {
-    my $dir = $lang eq 'c++' ? $CPP_TRANS_DEF . "/cpp14-translation-kompiled/" : $C_TRANS_DEF . "/c11-translation-kompiled/";
+    my $dir = $lang eq 'c++' ? catfile($CPP_TRANS_DEF, 'cpp14-translation-kompiled') : catfile($C_TRANS_DEF, 'c11-translation-kompiled');
     @krun_args = (
-      $dir . "interpreter",
-      $dir . "realdef.cma",
+      catfile($dir, 'interpreter'),
+      catfile($dir, 'realdef.cma'),
       $symbols,
       '--output-file', $output,
     );
@@ -1015,7 +1009,11 @@ sub getKRunCommand {
     my @catArgs = ();
     my @objTexts = ();
     for (my $i = 0; $i < scalar @objFiles; $i++) {
-      my $thisObj = `cat $objFiles[$i]`;
+      my $thisObj = do {
+        local $/ = undef;
+        open my $fh, '<', $objFiles[$i];
+        <$fh>;
+      };
       if (length $thisObj) {
         # push(@objTexts, "`unwrapObj`($thisObj)");
         $thisObj = substr($thisObj, 8, -1);
@@ -1049,7 +1047,7 @@ sub getKRunCommand {
 
 sub dumpSymbols {
   my $ret = tempFile('syms');
-  execute(catfile($distDirectory, 'gccsymdump') . " @ldArgs @nativeObjFiles @nativeLibs > $ret");
+  execute(catfile($distDirectory, 'gccsymdump') . " @ldArgs > $ret");
   return rel2abs($ret);
 }
 
@@ -1065,13 +1063,13 @@ sub preprocess {
     push(@main::cppArgs, '-pedantic');
   }
   if ($lang eq 'c++') {
-    my @ppArgs = ("$profileDirectory/cpp-pp",
+    my @ppArgs = (catfile($profileDirectory, 'cpp-pp'),
       @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
     return execPreprocess($output, $isStdout, @ppArgs);
   }
 
-  my @ppArgs = ("$profileDirectory/pp",
+  my @ppArgs = (catfile($profileDirectory, 'pp'),
     @main::cppArgs, getStd($lang), $inputFile, '-o', $output);
 
   return execPreprocess($output, $isStdout, @ppArgs);
@@ -1097,8 +1095,7 @@ sub execute {
   if ($args->{'-d'}) {
     print(join(" ", @cmd) . "\n");
   }
-  my $pgm = shift @cmd;
-  system($pgm, @cmd);
+  system(@cmd);
   return $? >> 8;
 }
 
@@ -1112,9 +1109,9 @@ sub tempFile {
 
   my $file;
   if (defined $ext) {
-    (undef, $file) = tempfile("$tempRoot/$name-XXXXX", UNLINK => 1, OPEN => 0, SUFFIX => $ext);
+    (undef, $file) = tempfile(catfile($tempRoot, "$name-XXXXX"), UNLINK => 1, OPEN => 0, SUFFIX => $ext);
   } else {
-    (undef, $file) = tempfile("$tempRoot/$name-XXXXX", UNLINK => 1, OPEN => 0);
+    (undef, $file) = tempfile(catfile($tempRoot, "$name-XXXXX"), UNLINK => 1, OPEN => 0);
   }
   return $file;
 }
@@ -1126,7 +1123,7 @@ sub tempDir {
     $tempRoot = tempdir(".tmp-kcc-XXXXX", CLEANUP => 1);
   }
 
-  my $dir = tempdir("$tempRoot/tmp-kcc-$name-XXXXX", CLEANUP => 1);
+  my $dir = tempdir(catfile($tempRoot, "tmp-kcc-$name-XXXXX"), CLEANUP => 1);
 
   return $dir;
 }
