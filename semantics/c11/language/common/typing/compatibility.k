@@ -291,8 +291,6 @@ module C-TYPING-COMPATIBILITY
      rule #areParamsCompat(_, _, _) => false [owise]
 
      syntax Bool ::= #areCompatFields(List, List, Set) [function]
-     rule #areCompatFields(ListItem(t(...) #as T::Type) L::List, ListItem(t(...)  #as T'::Type) L'::List, Cache::Set)
-          => #areCompat(T, T', Cache) andBool #areCompatFields(L, L', Cache)
      rule #areCompatFields(
                ListItem(typedDeclaration(T::Type, X:CId)) L::List,
                ListItem(typedDeclaration(T'::Type, X)) L'::List, Cache::Set)

@@ -348,5 +348,4 @@ module C-TYPING-COMMON
           => t(Qs, Mods, pointerType(innerType(T)))
      rule arrayToPtrType(T::Type) => T [owise]
 
-
 endmodule
