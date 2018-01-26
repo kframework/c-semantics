@@ -1279,9 +1279,8 @@ module LIBC-STDIO
           => ((substrString(D, 0, 2) ==String "[^")
                     andBool (findChar(D, C, 2) ==Int -1))
                orBool ((substrString(D, 0, 2) =/=String "[^")
-                    andBool (firstChar(D) ==String "[")
                     andBool (findChar(D, C, 1) =/=Int -1))
-          requires lengthString(D) >Int 1
+          requires firstChar(D) ==String "["
 
      rule inScanSet(_, _, _) => false [owise]
 
@@ -1603,14 +1602,14 @@ module LIBC-STDIO
                orBool C ==String "p"
                orBool C ==String "n"
      rule parseConvSpec'(ListItem("[") ListItem("^") ListItem("]") L::List)
-          => parseStrResult("[^]" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[^]" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
      rule parseConvSpec'(ListItem("[") ListItem("^") L::List)
-          => parseStrResult("[^" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[^" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
           requires notBool atHead("]", L)
      rule parseConvSpec'(ListItem("[") ListItem("]") L::List)
-          => parseStrResult("[]" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[]" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
      rule parseConvSpec'(ListItem("[") L::List)
-          => parseStrResult("[" +String parseString("]", L), tail(eatString("]", L)))
+          => parseStrResult("[" +String expandRanges(parseString("]", L)), tail(eatString("]", L)))
           requires notBool atHead("^", L) andBool notBool atHead("]", L)
      rule parseConvSpec'(L::List) => parseStrResult("", L) [owise]
 
@@ -1627,6 +1626,26 @@ module LIBC-STDIO
 
      syntax List ::= snd(ParseStrResult) [function, klabel(sndParseStr)]
      rule snd(parseStrResult(_, L::List)) => L
+
+     syntax String ::= expandRanges(String) [function]
+     rule expandRanges(S::String) => expandRanges'(firstChar(S), stringToList(butFirstChar(S)))
+          requires lengthString(S) >=Int 3
+     rule expandRanges(S::String) => S [owise]
+
+     syntax String ::= "expandRanges'" "(" String "," List ")" [function]
+     rule expandRanges'(C::String, ListItem(C'::String) L::List)
+          => C +String expandRanges'(C', L)
+          requires C' =/=String "-" orBool L ==K .List
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String expandRanges'(chrChar(ordChar(C) +Int 1), ListItem("-") ListItem(End) L)
+          requires ordChar(C) <Int (ordChar(End) -Int 1)
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String expandRanges'(End, L)
+          requires ordChar(C) >=Int (ordChar(End) -Int 1) andBool ordChar(C) <=Int ordChar(End)
+     rule expandRanges'(C::String, ListItem("-") ListItem(End::String) L::List)
+          => C +String "-" +String expandRanges'(End, L)
+          requires ordChar(C) >Int ordChar(End)
+     rule expandRanges'(C::String, .List) => C
 
      syntax KItem ::= formatter(K, List) [strict(1)]
      rule [format-start]:
