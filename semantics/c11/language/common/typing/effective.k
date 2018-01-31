@@ -59,6 +59,8 @@ module C-TYPING-EFFECTIVE
                andBool notBool isNoType(LAT)
      rule updateLastAccessType(Loc::SymLoc, T::Type, dynamicType(_:NoType))
           => setLastAccessType(Loc, dynamicType(T))
+     rule updateLastAccessType(Loc::SymLoc, T::Type, _:NoType)
+          => setLastAccessType(Loc, dynamicType(T))
      rule updateLastAccessType(Loc::SymLoc, _, _) => Loc [owise]
 
      rule updateLastAccessVariant(Loc::SymLoc, F::CId, LAT::EffectiveType)

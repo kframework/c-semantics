@@ -1,6 +1,5 @@
-union u {
-      int word;
-      unsigned char bytes[4];
-};
+union U { int word; unsigned char bytes[4]; };
+struct S { int a; int b; };
 
-union u foo;
+union U u;
+struct S s;

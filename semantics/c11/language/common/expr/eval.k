@@ -6,7 +6,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      syntax KItem ::= instantiate(SymLoc, Type)
      syntax KItem ::= checkUse(K) [strict]
      syntax KItem ::= checkLoc(SymLoc)
-     syntax KItem ::= checkCompleteLValue(Type)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -48,6 +47,7 @@ module C-COMMON-EXPR-EVAL
      value has the type of the lvalue. \ldots
      }*/
 
+     syntax KItem ::= checkCompleteLValue(Type)
      rule checkCompleteLValue(T::Type) => .K
           requires isCompleteType(T)
      rule (.K => UNDEF("CEE5", "Trying to convert an incomplete lvalue not of array type."))
@@ -65,8 +65,11 @@ module C-COMMON-EXPR-EVAL
           <linkings> Linkings::Map </linkings>
           requires Loc =/=K NullPointer andBool (base(Loc) in_keys(Linkings))
           [structural]
-     rule lv(Loc::SymLoc, T::Type) => lvalConvert(Loc, T, getLastAccessType(Loc))
-          requires Loc =/=K NullPointer andBool notBool isLinkerLoc(Loc)
+     rule <k> lv(Loc::SymLoc, T::Type)
+               => lvalConvert(Loc, T, getLastAccessType(Loc))
+          ...</k>
+          <linkings> Linkings::Map </linkings>
+          requires Loc =/=K NullPointer andBool notBool base(Loc) in_keys(Linkings)
           [structural]
      rule lv(NullPointer, T::Type) => nclv(NullPointer, T)
           [structural]
@@ -82,8 +85,8 @@ module C-COMMON-EXPR-EVAL
           <mem> Mem::Map </mem>
           requires base(Loc) in_keys(Mem)
           [structural]
-     rule <k> lvalConvert(Loc::SymLoc, T::Type, _)
-               => nclv(Loc, T)
+     rule <k> lvalConvert(Loc::SymLoc, T::Type, LAT:EffectiveType)
+               => nclv(updateLastAccessType(Loc, T, LAT), T)
           ...</k>
           <mem> Mem::Map </mem>
           requires notBool (base(Loc) in_keys(Mem))
