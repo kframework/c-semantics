@@ -6,6 +6,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
+     imports C-SYMLOC-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -65,6 +66,12 @@ module C-COMMON-EXPR-MULTIPLICATIVE
                andBool (I2 =/=Int 0)
                andBool (min(T) <=Int I1 /Int I2)
                andBool (max(T) >=Int I1 /Int I2)
+               andBool T ==Type T'
+          [structural]
+     rule (.K => IMPL("CEMX4", "Modulus operator with a pointer value as an argument."))
+          ~> tv(I1:SymLoc, T::UType) % tv(I2:Int, T'::UType)
+          requires isPromoted(T)
+               andBool (I2 =/=Int 0)
                andBool T ==Type T'
           [structural]
      rule (.K => UNDEF("CEMX2", "Modulus by 0."))
