@@ -23,12 +23,13 @@ module C-DECL-INITIALIZER
      imports COMPAT-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
+     imports C-BITSIZE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ENV-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-SYNTAX
      imports C-SETTINGS-SYNTAX
+     imports C-SYNTAX
      imports C-TYPING-EXPR-SYNTAX
      imports C-TYPING-SYNTAX
 
@@ -582,20 +583,18 @@ module C-DECL-INITIALIZER
      syntax KItem ::= zeroType(K, Type) [function]
      rule zeroType(X:K, T::Type)
           => Computation(X := tv(getZero(T), utype(T)))
-          requires isPointerType(T) orBool isArithmeticType(T)
+          requires isPointerType(T)
+               orBool (isArithmeticType(T) andBool (bitSizeofType(T) >Int 0))
      rule zeroType(X:K, t(Qs::Quals, Mods::Set, arrayType(T::Type, Len::Int)))
           => zeroType(*(X + (Len -Int 1)), T)
           ~> zeroType(X, t(Qs, Mods, arrayType(T, Len -Int 1)))
           requires Len >Int 0
-     rule zeroType(_, _) => .K [owise]
-
      rule zeroType(X:K, T:StructType) => zeroStruct(X, findFieldNames(T), T)
      rule zeroType(X:K, T:UnionType)
           => zeroStruct(X, ListItem({(findFieldNames(T))[0]}<:K), T)
-
      rule zeroType(_, _:FunctionType) => .K
-
      rule zeroType(_, t(_, _, flexibleArrayType(_))) => .K
+     rule zeroType(_, _) => .K [owise]
 
      syntax KItem ::= zeroStruct(K, List, StructOrUnionType) [function]
      rule zeroStruct(X:K, ListItem(F::CId) L:List, T::StructOrUnionType)

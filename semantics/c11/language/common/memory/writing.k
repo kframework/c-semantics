@@ -145,7 +145,7 @@ module C-MEMORY-WRITING
                     | makeStructUnionUnknown(SymBase, Int, Int, Type) [function]
 
      rule makePaddingUnknown(Base::SymBase, Offset::Int, EffT:Type)
-          => makeStructUnionUnknown(Base, 0, Offset , EffT)
+          => makeStructUnionUnknown(Base, 0, Offset, EffT)
      rule makePaddingUnknown(Base::SymBase, Offset::Int, dynamicType(EffT::Type))
           => makeStructUnionUnknown(Base, 0, Offset, EffT)
 

@@ -42,6 +42,7 @@ module C-DECL-TAGGED
      rule StructDef(X::CId, krlist(L:List), list(Mods::List))
           => addTag(X, makeStructFieldInfo(Packed() in Mods, incompleteToFlexibleArrayMember(numberUnnamed(L))))
           requires hasNamedField(L) andBool structFieldsComplete(L)
+               andBool (firstNamedZeroLengthBitfield(L) ==String "")
           [structural]
      rule (.K => UNDEF("CDT1", "Structs must contain a named member."))
           ~> StructDef(_, krlist(L:List), _)
@@ -51,9 +52,14 @@ module C-DECL-TAGGED
           ~> StructDef(_, krlist(L:List), _)
           requires notBool structFieldsComplete(L)
           [structural]
+     rule (.K => errorNamedZeroLengthBitfield(firstNamedZeroLengthBitfield(L)))
+          ~> StructDef(_, krlist(L:List), _)
+          requires firstNamedZeroLengthBitfield(L) =/=String ""
+          [structural]
      rule UnionDef(X::CId, krlist(L:List), list(Mods::List))
           => addTag(X, makeUnionFieldInfo(Packed() in Mods, numberUnnamed(L)))
           requires hasNamedField(L) andBool allComplete(L)
+               andBool (firstNamedZeroLengthBitfield(L) ==String "")
           [structural]
      rule (.K => UNDEF("CDT2", "Unions must contain a named member."))
           ~> UnionDef(_, krlist(L:List), _)
@@ -63,6 +69,14 @@ module C-DECL-TAGGED
           ~> UnionDef(_, krlist(L:List), _)
           requires notBool allComplete(L)
           [structural]
+     rule (.K => errorNamedZeroLengthBitfield(firstNamedZeroLengthBitfield(L)))
+          ~> UnionDef(_, krlist(L:List), _)
+          requires firstNamedZeroLengthBitfield(L) =/=String ""
+          [structural]
+
+     syntax KItem ::= errorNamedZeroLengthBitfield(String) [function]
+     rule errorNamedZeroLengthBitfield(F::String)
+          => CV("CDT5", "Declaration for zero-length bit-field " +String F +String " has a declarator.")
 
      syntax KItem ::= defEnumConstants(Bool, CId, Int, Int, Int, List, Map)
 
@@ -225,9 +239,15 @@ module C-DECL-TAGGED
      syntax String ::= firstIncompleteOrFlexible(List) [function]
      rule firstIncompleteOrFlexible(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
           requires notBool isCompleteType(T) orBool isFlexibleType(T)
-     rule firstIncompleteOrFlexible((ListItem(typedDeclaration(T::Type, X::CId)) => .List) _)
-          requires isCompleteType(T) andBool notBool isFlexibleType(T)
+     rule firstIncompleteOrFlexible((ListItem(_) => .List) _) [owise]
      rule firstIncompleteOrFlexible(.List) => ""
+
+     syntax String ::= firstNamedZeroLengthBitfield(List) [function]
+     rule firstNamedZeroLengthBitfield(ListItem(typedDeclaration(T::Type, X::CId)) _) => idToString(X)
+          requires (bitSizeofType(T) ==Int 0) andBool isBitfieldType(T)
+               andBool notBool isNoName(X)
+     rule firstNamedZeroLengthBitfield((ListItem(_) => .List) _) [owise]
+     rule firstNamedZeroLengthBitfield(.List) => ""
 
      rule makeUnionFieldInfo(Pack::Bool, Fs::List)
           => makeUnionFieldInfo'(Pack, Fs, .Map, .Map, .List)
