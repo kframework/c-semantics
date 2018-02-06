@@ -118,6 +118,7 @@ module C-LINKING-INIT
           <mem> Mem::Map => Mem[Base <- object(T, 1, makeEmptyArray(1))] </mem>
           <functions> Fun::Map => Fun[Base <- functionObject(B, T, .List)] </functions>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
+          <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>
@@ -127,6 +128,7 @@ module C-LINKING-INIT
 
      rule <k> declareBuiltinConstant(B:CId, T::Type, Base:SymBase) => .K ...</k>
           <external-decls> Decls::Map => Decls[B += Tu] </external-decls>
+          <external-decls-loc> DeclLocs::Map => DeclLocs[B <- UnknownCabsLoc] </external-decls-loc>
           <external-defs> Defs::Map => Defs[B <- Base] </external-defs>
           <external-defs-loc> Locs::Map => Locs[B <- UnknownCabsLoc] </external-defs-loc>
           <curr-tu> Tu:String </curr-tu>
@@ -166,15 +168,17 @@ module C-LINKING-INIT
      rule checkMerge(
           (<global>...
                <external-types> Types:Map </external-types>
+               <external-decls-loc> DeclLocs:Map </external-decls-loc>
                <external-defs> Defs:Map </external-defs>
                <external-defs-loc> Locs:Map </external-defs-loc>
           ...</global>),
           (<global>...
                <external-types> Types':Map </external-types>
+               <external-decls-loc> DeclLocs':Map </external-decls-loc>
                <external-defs> Defs':Map </external-defs>
                <external-defs-loc> Locs':Map </external-defs-loc>
           ...</global>))
-          => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types', updateMap(Locs, Locs'))
+          => checkExtTypes(.K, keys(Types), Types, keys(Types'), Types', updateMap(DeclLocs, DeclLocs'))
           ~> checkExtDefs(.K, keys(Defs), keys(Defs'), updateMap(Locs, Locs'))
 
      rule checkExtTypes(.K => X, (SetItem(X::CId) => .Set) _, _, _, _, _)
@@ -194,9 +198,11 @@ module C-LINKING-INIT
           <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
           requires notBool (X in_keys(Locs))
      rule (checkExtType(true) => .K) ~> checkExtTypes(X:KItem => .K, _, _, _, _, _)
-     rule (.K => EXT-UNDEF("TIN1",
-          "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units."))
-          ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, _)
+     rule <k> (.K => EXT-UNDEF("TIN1",
+               "Identifier " +String idToString({X}:>CId) +String " declared with incompatible types in different translation units."))
+               ~> checkExtType(false) ~> checkExtTypes(X:KItem, _, _, _, _, X |-> L::CabsLoc _)
+          ...</k>
+          <curr-program-loc> _ => L </curr-program-loc>
      rule <k> checkExtTypes(.K, .Set, _, _, _, _) => .K ...</k>
           <curr-program-loc> _ => UnknownCabsLoc </curr-program-loc>
 
@@ -241,6 +247,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> ExtDecls1:Map </external-decls>
+                    <external-decls-loc> ExtDeclsLoc1:Map </external-decls-loc>
                     <external-uses> ExtUses1:Map </external-uses>
                     <external-defs-loc> ExtDefsLoc1:Map </external-defs-loc>
                     <odr-decls> OdrDecls1:Map </odr-decls>
@@ -267,6 +274,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> ExtDecls2:Map </external-decls>
+                    <external-decls-loc> ExtDeclsLoc2:Map </external-decls-loc>
                     <external-uses> ExtUses2:Map </external-uses>
                     <external-defs-loc> ExtDefsLoc2:Map </external-defs-loc>
                     <odr-decls> OdrDecls2:Map </odr-decls>
@@ -294,6 +302,7 @@ module C-LINKING-INIT
 
                <linking-state>
                     <external-decls> mergeDecls(ExtDecls1, ExtDecls2) </external-decls>
+                    <external-decls-loc> updateMap(ExtDeclsLoc1, ExtDeclsLoc2) </external-decls-loc>
                     <external-uses> updateMap(ExtUses1, ExtUses2) </external-uses>
                     <external-defs-loc> updateMap(ExtDefsLoc1, ExtDefsLoc2) </external-defs-loc>
                     <odr-decls> mergeDecls(OdrDecls1, OdrDecls2) </odr-decls>

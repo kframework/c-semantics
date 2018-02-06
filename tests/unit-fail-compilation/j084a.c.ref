@@ -1,4 +1,4 @@
-j084a.c:4:7: error: No definition for symbol with external linkage: a.
+j084a.c:1:1: error: No definition for symbol with external linkage: a.
 
     Undefined behavior (UB-TDR2):
         see C11 section 6.9:5 http://rvdoc.org/C11/6.9

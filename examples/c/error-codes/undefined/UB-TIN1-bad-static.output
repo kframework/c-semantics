@@ -1,4 +1,4 @@
-UB-TIN1-bad-static-link2.c:3:1: error: Identifier a declared with incompatible types in different translation units.
+UB-TIN1-bad-static-link1.c:3:1: error: Identifier a declared with incompatible types in different translation units.
 
     Undefined behavior (UB-TIN1):
         see C11 section 6.2.7:2 http://rvdoc.org/C11/6.2.7

@@ -1,4 +1,4 @@
-j041c-link2.c:1:1: error: Identifier f declared with incompatible types in different translation units.
+j041c-link1.c:1:1: error: Identifier f declared with incompatible types in different translation units.
 
     Undefined behavior (UB-TIN1):
         see C11 section 6.2.7:2 http://rvdoc.org/C11/6.2.7

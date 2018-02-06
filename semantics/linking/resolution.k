@@ -71,6 +71,10 @@ module C-LINKING-RESOLUTION
           ...</k>
           <external-defs> Defs:Map </external-defs>
           <external-types> Types:Map </external-types>
+          <external-decls-loc>...
+               X |-> L::CabsLoc
+          ...</external-decls-loc>
+          <curr-program-loc> _ => L </curr-program-loc>
           requires notBool (X in_keys(Defs))
                orBool notBool (X in_keys(Types))
           [structural]

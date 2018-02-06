@@ -603,6 +603,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-decls-loc> DeclsLoc::Map => DeclsLoc[X <- L] </external-decls-loc>
           <external-types> Types::Map => Types[X <- T'] </external-types>
           [structural]
      // New def.
@@ -610,6 +611,7 @@ module C-DECL-GLOBAL
           <curr-tu> Tu:String </curr-tu>
           <curr-program-loc> L:CabsLoc </curr-program-loc>
           <external-decls> Decls::Map => Decls[X += Tu] </external-decls>
+          <external-decls-loc> DeclsLoc::Map => DeclsLoc[X <- L] </external-decls-loc>
           <external-types> Types::Map => Types[X <- T'] </external-types>
           <external-defs> Defs::Map => Defs[X <- Base'] </external-defs>
           <external-defs-loc> DefsLoc::Map => DefsLoc[X <- L] </external-defs-loc>
