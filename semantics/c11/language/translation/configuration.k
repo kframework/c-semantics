@@ -3,8 +3,9 @@ module C-CONFIGURATION
      imports INT-SYNTAX
      imports MAP
      imports SET
-     imports COMMON-SYNTAX
      imports C-LINKING-INIT-SYNTAX
+     imports COMMON-SYNTAX
+     imports LIBC-SYNTAX
      imports COMMON-CONFIGURATION
 
      configuration

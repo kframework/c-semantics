@@ -427,6 +427,8 @@ sub main {
 				compiler.
 				WARNING: Due to technical limitations this also
 				disables support for inline assembly.
+  -fuse-native-std-lib	Use native implementations instead of semantics when
+			interpreting calls to standard library functions.
   -x <language>		Set language for input files.
     { $main::xLang = $language; }
   -pthread		Enables pthread library (experimental)
@@ -930,6 +932,9 @@ sub initOptions {
   my @options = ();
   if ($args->{'-frecover-all-errors'}) {
     push(@options, "`RecoverAll`(.KList)");
+  }
+  if ($args->{'-fuse-native-std-lib'}) {
+    push(@options, "`UseNativeStdLib`(.KList)");
   }
   if ($args->{'-flint'} || $args->{'-Wlint'}) {
     push(@options, "`Lint`(.KList)");

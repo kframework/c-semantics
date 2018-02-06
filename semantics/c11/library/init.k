@@ -32,6 +32,8 @@ module LIBC-SYNTAX
      syntax LValue ::= fileLVal(SymBase) [function]
      syntax LValue ::= filePtr(SymBase) [function]
 
+     syntax Opts ::= UseNativeStdLib()
+
 endmodule
 
 module LIBC-INIT
