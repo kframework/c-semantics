@@ -88,7 +88,7 @@ module C-CONVERSION
      type.
      }*/
      rule cast(T':UnsignedIntegerUType, tv(I:Int, T:IntegerUType))
-          => cast(T', tv(I +Int max(T') +Int 1, T))
+          => tv(I modInt (max(T') +Int 1), castTypes(T', T))
           requires (I <Int min(T')) andBool notBool hasLint
 
      rule cast(T':UnsignedIntegerUType, tv(I:Int, T:IntegerUType))
