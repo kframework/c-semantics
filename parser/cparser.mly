@@ -1294,6 +1294,7 @@ attribute:
 |   RESTRICT               { SpecCV CV_RESTRICT, $1 }
 |   RESTRICT_RESERVED      { SpecCV (CV_RESTRICT_RESERVED $1), (snd $1) }
 |   VOLATILE               { SpecCV CV_VOLATILE, $1 }
+|   ATOMIC                 { SpecCV(CV_ATOMIC), $1 }
 ;
 
 /** (* PRAGMAS and ATTRIBUTES *) ***/
