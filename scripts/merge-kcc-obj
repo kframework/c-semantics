@@ -2,8 +2,11 @@
 export LC_ALL=C
 objin="$1"
 kastin="$2"
-out="$3"
+trampin="$3"
+out="$4"
 size=`du -b "$kastin" | cut -f1`
-cat "$objin" "$kastin" > "$out"
-writelong $size >> $out
+trampsize=`du -b "$trampin" | cut -f1`
+cat "$objin" "$kastin" "$trampin" > "$out"
+"$(dirname "$0")/writelong" $trampsize >> $out
+"$(dirname "$0")/writelong" $size >> $out
 printf "\x7fKAST" >> $out
