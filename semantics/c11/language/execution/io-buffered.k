@@ -442,16 +442,17 @@ module C-IO-BUFFERED
      rule filterBuffer(ListItem(bwrite(loc(Base::SymBase, _), _)) L::List, Base) => filterBuffer(L, Base)
      rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
-     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(M[Offset]), T)
+     rule readBytesForWriting(loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset), _, _)
+     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List)
+              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(M[Offset]))
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
                Base |-> object(_, _, M::Array)
           ...</mem>
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M) [structural]
-     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List, T::Type)
-              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)), T)
+     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List)
+              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)))
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
@@ -459,7 +460,7 @@ module C-IO-BUFFERED
           ...</mem>
           requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
                andBool notBool (loc(Base, Offset) in locations(Mem))
-     rule readBytesForWriting(_, 0, Aux::List, _) => dataList(Aux)
+     rule readBytesForWriting(_, 0, Aux::List) => dataList(Aux)
           [structural]
 
      syntax Quals ::= getQualsAtOffset(EffectiveType, Int) [function, klabel(getQualsAtOffset2)]

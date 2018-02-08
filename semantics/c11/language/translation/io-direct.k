@@ -36,8 +36,8 @@ module C-IO-DIRECT
      rule readBytes(Loc:SymLoc, Size:Int, _)
           => readBytes'(stripProv(Loc), Size, .List)
           [structural]
-     rule readBytesForWriting(Loc:SymLoc, Size:Int, .List, _)
-          => readBytes'(Loc, Size, .List)
+     rule readBytesForWriting(Loc:SymLoc, Size:Int, .List)
+          => readBytes'(stripProv(Loc), Size, .List)
           [structural]
 
      // loc, size in bytes, aux list

@@ -128,14 +128,14 @@ module C-MEMORY-WRITING
      rule writeSpecific'(Loc::SymLoc, V:Int, T::Type)
           => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
+                    readBytesForWriting(Loc, (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List), bitOffsetIntoLastByte(Loc)), T)
           requires ((bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T))
                andBool (V >=Int 0)
           [structural]
      rule writeSpecific'(Loc::SymLoc, V:Pieces, T::Type)
           => writeBytes(Loc,
                calculateNewBytes(piece(V, bitSizeofType(T)),
-                    readBytesForWriting(stripProv(Loc), (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List, T), bitOffsetIntoLastByte(Loc)), T)
+                    readBytesForWriting(Loc, (bitOffsetIntoLastByte(Loc) +Int bitSizeofType(T) +Int cfg:bitsPerByte -Int 1) /Int cfg:bitsPerByte, .List), bitOffsetIntoLastByte(Loc)), T)
           requires (bitSizeofType(T) %Int cfg:bitsPerByte =/=Int 0) orBool isBitfieldType(T)
           [structural]
 
@@ -161,21 +161,22 @@ module C-MEMORY-WRITING
      rule makeStructUnionUnknown(_, _, _, _) => .K [owise]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
-     rule makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
-          => writeBytes(Loc +bytes byteSizeofType(T),
-               times(Sz -Int byteSizeofType(T),
-                    piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
+     rule (.K => makeUnknownBytes(readBytesForWriting(Loc, Sz -Int byteSizeofType(T), .List)))
+          ~> makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
           requires Sz >Int byteSizeofType(T) andBool notBool isNoType(T)
+          [structural]
+     rule dataList(Bytes::List) ~> makeUnionUnknown(Loc::SymLoc, T::Type, _)
+          => writeBytes(Loc +bytes byteSizeofType(T), Bytes)
           [structural]
      rule makeUnionUnknown(_, T::Type, Sz::Int) => .K
           requires Sz <=Int byteSizeofType(T) orBool isNoType(T)
           [structural]
 
-     rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
-          => writeBytes(Loc +bytes I,
-               ListItem(piece(unknown(max(utype(signed-char))), cfg:bitsPerByte)))
-          ~> makeStructUnknown(Loc, Fields, I +Int 1)
+     rule (.K => makeUnknownBytes(readBytesForWriting(Loc +bytes I, 1, .List)))
+          ~> makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
           requires isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
+     rule (dataList(Bytes::List) => writeBytes(Loc +bytes I, Bytes))
+          ~> makeStructUnknown(Loc::SymLoc, _, I::Int => I +Int 1)
      rule makeStructUnknown(Loc::SymLoc, fieldInfo(_, Sz::Int, _, _, _) #as Fields::FieldInfo, I::Int)
           => makeStructUnknown(Loc, Fields, I +Int 1)
           requires notBool isPaddingOffset(I, Fields) andBool I *Int cfg:bitsPerByte <Int Sz
@@ -274,7 +275,7 @@ module C-MEMORY-WRITING
           requires isCharType(type(T))
                andBool notBool isInt(N)
      rule splitBytes(tv(unknown(I:Int), T::UType))
-          => makeUnknown(splitBytes(tv(I, T)))
+          => makeUnknownBytes(splitBytes(tv(I, T)))
      rule splitBytes(tv(I:Int, T::UType))
           => splitBytes(I, byteSizeofType(T))
      rule splitBytes(tv(F:Float, T::UType))
@@ -289,8 +290,10 @@ module C-MEMORY-WRITING
           => splitStructBytes(dataList(L), T,
                byteSizeofType(T))
 
+     syntax KItem ::= makeUnknownBytes(K) [strict]
+     rule makeUnknownBytes(dataList(L::List)) => makeUnknownAux(L, .List)
+
      syntax KItem ::= makeUnknownAux(List, List) [function]
-     rule makeUnknown(dataList(L::List)) => makeUnknownAux(L, .List)
      rule makeUnknownAux((ListItem(piece(I:Int, PieceLen:Int)) => .List) L::List, _:List (.List => ListItem(piece(unknown(I), PieceLen))))
      rule makeUnknownAux(.List, L::List) => dataList(L)
      rule makeUnknownAux((ListItem(B::Bits) => .List) L::List, _:List (.List => ListItem(B))) [owise]

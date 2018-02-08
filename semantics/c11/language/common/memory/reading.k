@@ -8,7 +8,7 @@ module C-MEMORY-READING-SYNTAX
 
      // Returns the bytes in the order in which they are in memory.
      syntax KItem ::= readBytes(SymLoc, Int, Type)
-     syntax KItem ::= readBytesForWriting(SymLoc, Int, List, Type)
+     syntax KItem ::= readBytesForWriting(SymLoc, Int, List)
 
      syntax KItem ::= concretize(UType, K) [strict(2)]
 
