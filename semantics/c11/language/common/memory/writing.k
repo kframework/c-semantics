@@ -161,7 +161,7 @@ module C-MEMORY-WRITING
      rule makeStructUnionUnknown(_, _, _, _) => .K [owise]
 
      // Flag unknown from (&union + sizeof union.F) to (&union + sizeof union).
-     rule (.K => makeUnknownBytes(readBytesForWriting(Loc, Sz -Int byteSizeofType(T), .List)))
+     rule (.K => makeUnknownBytes(readBytesForWriting(Loc +bytes byteSizeofType(T), Sz -Int byteSizeofType(T), .List)))
           ~> makeUnionUnknown(Loc::SymLoc, T::Type, Sz::Int)
           requires Sz >Int byteSizeofType(T) andBool notBool isNoType(T)
           [structural]
