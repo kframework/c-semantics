@@ -66,4 +66,3 @@ Program               Directory
 -------               ---------
 CIL C Parser          c-semantics/parser
 Original C Semantics  c-semantics/
-cdecl                 c-semantics/scripts/cdecl-3.6.tar.gz

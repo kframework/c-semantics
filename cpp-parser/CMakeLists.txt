@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.4)
-project(clang-tools)
+project(clang-kast)
 
 set(LLVM_PATH /usr/lib/llvm-3.9 CACHE PATH "LLVM path")
 link_directories(${LLVM_PATH}/lib)
@@ -11,13 +11,11 @@ add_definitions(
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-unused-variable")
-set(CLANG_KAST_FILES ClangKast.cc)
-set(CALL_SITES_FILES CallSites.cc)
-add_executable(clang-kast ${CLANG_KAST_FILES})
-add_executable(call-sites ${CALL_SITES_FILES})
 
-include(FindCurses)
-set(LIBS
+set(SOURCE_FILES ClangKast.cc)
+add_executable(clang-kast ${SOURCE_FILES})
+
+target_link_libraries(clang-kast
   clangFrontend
   clangSerialization
   clangDriver
@@ -29,6 +27,9 @@ set(LIBS
   clangEdit
   clangLex
   clangTooling
+)
+
+target_link_libraries(clang-kast
   LLVMProfileData
   LLVMX86AsmParser # MC, MCParser, Support, X86Desc, X86Info
   LLVMX86Desc # MC, Support, X86AsmPrinter, X86Info
@@ -48,16 +49,15 @@ set(LIBS
   LLVMBitReader # Core, Support
   LLVMCore # Support
   LLVMSupport
-  pthread
-  z
-  dl
-  ${CURSES_LIBRARIES}
 )
 
-target_link_libraries(clang-kast ${LIBS})
-target_link_libraries(call-sites ${LIBS})
+include(FindCurses)
+target_link_libraries(clang-kast
+    pthread
+    z
+    dl
+    ${CURSES_LIBRARIES}
+)
 
 install(TARGETS clang-kast
-        RUNTIME DESTINATION bin)
-install(TARGETS call-sites
         RUNTIME DESTINATION bin)
