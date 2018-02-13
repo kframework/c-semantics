@@ -331,6 +331,11 @@ module LIBC-IO
           <write-buffer> S:String => "" </write-buffer>
           <sending>... .List => ListItem(S) </sending>
           [structural]
+     rule <k> flush(FD:Int) => .K ...</k>
+          <open-files> OpenFiles::Map </open-files>
+          requires notBool (FD in_keys(OpenFiles))
+          [structural]
+
 
      rule <k> tell(FD::FD) => Pos ...</k>
           <fid> FD </fid>
