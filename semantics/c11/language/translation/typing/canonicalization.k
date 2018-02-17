@@ -455,4 +455,7 @@ module C-TYPING-CANONICALIZATION
 
      rule canonicalizeSpecifier(ListItem(AutoType())) => type(auto-type)
 
+     rule (.K => CV("TCANON4", "Declaration with no type specifiers."))
+          ~> canonicalizeSpecifier(.List)
+
 endmodule
