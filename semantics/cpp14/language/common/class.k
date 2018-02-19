@@ -8,7 +8,7 @@ module CPP-CLASS-SYNTAX
      imports CPP-DYNAMIC-SORTS
      imports CPP-TYPING-SORTS
      imports INT
-     syntax ClassOffset ::= classOffset(Int)
+     syntax ClassOffset ::= classOffset(naoffset:Int, offset: Int)
      syntax Expr ::= evalBraceOrEqualInitializer(class: Class, object: Expr, initializer: Expr) [strict(2)]
      syntax KItem ::= returnFromBraceOrEqualInitializer(LVal, Scope)
      syntax This ::= This()

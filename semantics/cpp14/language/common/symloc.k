@@ -80,7 +80,7 @@ module CPP-SYMLOC
           => #baseClassSubobject(L, B, getClassInfo(D))
           requires L =/=K NullPointer
      syntax SymLoc ::= #baseClassSubobject(SymLoc, Class, ClassInfo) [function]
-     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_::CPPType |-> classOffset(Offset::Int)) ...</cenv> ...</class>)
+     rule #baseClassSubobject(L::SymLoc, B::Class, <class>... <cenv>... baseClass(B) |-> (_::CPPType |-> classOffset(_, Offset::Int)) ...</cenv> ...</class>)
           => L +bytes Offset /Int cfg:bitsPerByte
 
 endmodule
