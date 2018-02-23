@@ -25,27 +25,26 @@ module C-COMMON-EXPR-MEMBERS
      an lvalue. If the first expression has qualified type, the result has the
      so-qualified version of the type of the designated member.
      }*/
-     rule <k> nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
-               => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
-          ...</k>
-          <initializing> Initializing:Bool </initializing>
-          requires notBool (Atomic() inQuals getQualifiers(T)) orBool Initializing
+     rule nclv(Loc::SymLoc, T:StructOrUnionType) .init F:CId
+          => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
           [structural]
-     rule <k> (.K => UNDEF("CEM1",
-               "Attempting to access a member in an atomic struct."))
-               ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
-          ...</k>
-          <initializing> false </initializing>
+     rule nclv(Loc::SymLoc, T:StructOrUnionType) . F:CId
+          => createLv(Loc, T, F, getLastAccessType(Loc), getFixedFieldType(Loc, F, T))
+          requires notBool (Atomic() inQuals getQualifiers(T))
+          [structural]
+     rule (.K => UNDEF("CEM1", "Attempting to access a member in an atomic struct."))
+          ~> Lbl:KLabel(_, t(Qs::Quals, _, structType(_))) . _:CId
           requires Atomic() inQuals Qs
                andBool isNCLKLabel(#klabel(Lbl))
           [structural]
-     rule <k> (.K => UNDEF("CEM2",
-               "Attempting to access a member in an atomic union."))
-               ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => UNDEF("CEM2", "Attempting to access a member in an atomic union."))
+          ~> Lbl:KLabel(_, t(Qs::Quals, _, unionType(_))) . _:CId
           requires Atomic() inQuals Qs
                andBool isNCLKLabel(#klabel(Lbl))
+          [structural]
+
+     rule nclv(Loc::SymLoc, T:ArrayType) [[ N::Int ]]
+          => * (checkUse(tv(Loc, utype(arrayToPtrType(T)))) + tv(N, utype(int)))
           [structural]
 
      syntax KItem ::= createLv(SymLoc, StructOrUnionType, CId, K, K) [strict(4, 5)]

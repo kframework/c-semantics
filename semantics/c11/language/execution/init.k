@@ -84,15 +84,13 @@ module C-EXECUTION-INIT
      rule incomingArguments-aux(ListItem(S:String) L:List, N:Int)
           => allocObject(bnew(N +Int 1, strType(S), argv), strType(S))
           ~> writeString(lnew(bnew(N +Int 1, strType(S), argv)), S)
-          ~> allowInit(Computation(
-               *(mainArguments + tv(N, utype(int)))
-                    := lv(lnew(bnew(N +Int 1, strType(S), argv)), strType(S))))
+          ~> Initializer(*(mainArguments + tv(N, utype(int)))
+               := lv(lnew(bnew(N +Int 1, strType(S), argv)), strType(S)))
           ~> incomingArguments-aux(L:List, N:Int +Int 1)
           [structural]
      rule incomingArguments-aux(.List, N:Int)
-          => allowInit(Computation(
-               *(mainArguments + tv(N, utype(int)))
-                    := NullPointerConstant))
+          => Initializer(*(mainArguments + tv(N, utype(int)))
+               := NullPointerConstant)
           [structural]
 
      rule pgmArgs(L:List)
@@ -253,13 +251,6 @@ module C-EXECUTION-INIT
 
      rule <k> L:CabsLoc => .K ...</k>
           <curr-program-loc> _ => L </curr-program-loc>
-          [structural]
-
-     /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
-     The expression in an expression statement is evaluated as a void expression
-     for its side effects.
-     }*/
-     rule Computation(_:RValue) => sequencePoint
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{3}}}{

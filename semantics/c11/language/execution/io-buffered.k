@@ -14,7 +14,7 @@ module C-IO-BUFFERED-SYNTAX
 
      syntax Quals ::= getQualsAtOffset(List) [function]
 
-     syntax KItem ::= writeBytesBuffered(SymLoc, List) [function]
+     syntax KItem ::= writeBytesBuffered(SymLoc, List)
 
 endmodule
 
@@ -36,22 +36,15 @@ module C-IO-BUFFERED
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
 
-     rule writeBytesBuffered(Loc::SymLoc, Bytes::List) => writeBytes(Loc, Bytes)
+     rule writeBytes(Loc::SymLoc, Bytes::List, T::Type)
+          => checkRestrict(true, Loc)
+          ~> checkWrite(stripProv(Loc), T)
+          ~> checkSeq(stripProv(Loc))
+          ~> checkBounds(stripProv(Loc), size(Bytes))
+          ~> writeBytesBuffered(stripProv(Loc), Bytes)
 
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::Type)
-               => checkRestrict(true, Loc)
-               ~> checkSeq(stripProv(Loc))
-               ~> checkWrite(stripProv(Loc), T)
-               ~> checkBounds(stripProv(Loc), size(Bytes))
-               ~> writeBytes(stripProv(Loc), Bytes)
-          ...</k>
-          <initializing> false </initializing>
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), _)
-               => checkSeq(stripProv(Loc))
-               ~> checkBounds(stripProv(Loc), size(Bytes))
-               ~> writeBytes(stripProv(Loc), Bytes)
-          ...</k>
-          <initializing> true </initializing>
+     rule initBytes(Loc::SymLoc, Bytes::List)
+          => writeBytesBuffered(stripProv(Loc), Bytes)
 
      syntax KItem ::= checkSeq(SymLoc)
      rule <k> checkSeq(Loc::SymLoc) => .K ...</k>
@@ -133,8 +126,8 @@ module C-IO-BUFFERED
           [structural]
 
      syntax KItem ::= bwrite(SymLoc, List)
-     rule <k> writeBytes(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
-          <buffer>... (.List => ListItem(bwrite(loc(Base, Offset), L))) </buffer>
+     rule <k> writeBytesBuffered(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
+          <buffer>... .List => ListItem(bwrite(loc(Base, Offset), L)) </buffer>
           [structural]
 
      //TODO(dwightguth): when we do symbolic execution we need to rework this stuff to obey the C11 memory model
@@ -404,7 +397,7 @@ module C-IO-BUFFERED
           <mem>...
                Old |-> object(_, _, M::Array)
                New |-> object(_, _,
-                    M'::Array => M'[N' -Int 1 <- M[N' -Int 1]])
+                    M'::Array => M'[N' -Int 1 <- M[N' -Int 1] ])
           ...</mem>
           requires ((N' -Int 1) in_keys(M)) andBool (N' >Int 0)
           [structural]

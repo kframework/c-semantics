@@ -9,8 +9,6 @@ module C-DECL-GLOBAL-SYNTAX
      syntax DeclState ::= "declared" | "completed"
                         | "allocated" | "initialized"
 
-     syntax K ::= stripInitHolds(K) [function]
-
      // The last bool argument indicates whether a tentative def has been
      // encountered. This is only relevant in the case of symbols with external
      // linkage, which must then be completed and allocated at the end of
@@ -537,7 +535,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(stripInitHolds(Init))
+          ~> runInit(Init)
           requires isCompleteType(T)
           [structural]
 
@@ -547,7 +545,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(stripInitHolds(Init))
+          ~> runInit(Init)
           requires isCompleteType(T)
           [structural]
 
@@ -556,7 +554,7 @@ module C-DECL-GLOBAL
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(stripInitHolds(Init))
+          ~> runInit(Init)
           requires isCompleteType(T)
           [structural]
 
@@ -566,12 +564,6 @@ module C-DECL-GLOBAL
           ~> declareExternalVariable'(false, initValue(X:CId, _, _),
                initialized, _, _)
           [structural]
-
-     rule stripInitHolds(Computation(Init:K) ~> K:K)
-          => Computation(stripHold(Init)) ~> stripInitHolds(K)
-     rule stripInitHolds(L:CabsLoc ~> K:K)
-          => L ~> stripInitHolds(K)
-     rule stripInitHolds(.K) => .K
 
      syntax KItem ::= updateDecl(CId, Linkage, DeclState)
      rule <k> updateDecl(X:CId, external, S':DeclState)

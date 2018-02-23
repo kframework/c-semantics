@@ -14,19 +14,14 @@ module C-IO-DIRECT
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
 
-     syntax KItem ::= writeByte(SymLoc, Bits)
-
-     rule writeBytes(Loc::SymLoc, dataList(Bytes::List), _) => writeBytes(stripProv(Loc), Bytes)
+     rule initBytes(Loc::SymLoc, ListItem(V:Bits) L::List)
+          => initByte(stripProv(Loc), V) ~> initBytes(Loc +bytes 1, L)
+          [structural]
+     rule initBytes(_, .List) => .K
           [structural]
 
-     rule writeBytes(Loc::SymLoc, ListItem(V:Bits) L::List)
-          => writeByte(Loc, V) ~> writeBytes(Loc +bytes 1, L)
-          [structural]
-
-     rule writeBytes(_, .List) => .K
-          [structural]
-
-     rule <k> writeByte(loc(Base::SymBase, Offset::Int), V::Bits) => .K ...</k>
+     syntax KItem ::= initByte(SymLoc, Bits)
+     rule <k> initByte(loc(Base::SymBase, Offset::Int), V::Bits) => .K ...</k>
           <mem>...
                Base |-> object(_, Len:Int, (M::Array => M[Offset <- V]))
           ...</mem>

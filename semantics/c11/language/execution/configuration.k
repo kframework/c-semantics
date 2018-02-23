@@ -41,7 +41,6 @@ module C-CONFIGURATION
                     ~> pgmArgs($ARGV:List)
                     ~> callMain(size($ARGV:List), incomingArguments($ARGV:List))
                </k>
-               <initializing> false </initializing>
 
                <duration color="black"> auto(0) </duration>
                <final-computation multiplicity="?" color="lightgray">

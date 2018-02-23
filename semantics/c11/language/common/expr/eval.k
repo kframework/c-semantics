@@ -130,18 +130,11 @@ module C-COMMON-EXPR-EVAL
           [structural]
 
      syntax KItem ::= checkRegister(SymLoc)
-     rule <k> checkRegister(_) => .K ...</k>
-          <initializing> true </initializing>
-          [structural]
-     rule <k> checkRegister(Loc:SymLoc) => .K ...</k>
-          <initializing> false </initializing>
+     rule checkRegister(Loc:SymLoc) => .K
           requires notBool isRegisterLoc(Loc)
           [structural]
-     rule <k> (.K => UNDEF("CEE1",
-                    "Address of an array declared with register storage class used in an expression."))
-              ~> checkRegister(Loc:SymLoc)
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => UNDEF("CEE1", "Address of an array declared with register storage class used in an expression."))
+          ~> checkRegister(Loc:SymLoc)
           requires isRegisterLoc(Loc)
           [structural]
 

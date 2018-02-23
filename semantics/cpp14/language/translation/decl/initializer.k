@@ -61,7 +61,7 @@ module CPP-DECL-INITIALIZER
           <curr-program-loc> _ => L </curr-program-loc>
 
      // 8.5:6.1
-     rule zeroInit(Base:LVal, T:CPPScalarType) => le(Base, trace(Base), T) := interpret(prv(0, noTrace, T))
+     rule zeroInit(Base:LVal, T:CPPScalarType) => le(Base, trace(Base), T) :=init interpret(prv(0, noTrace, T))
 
      // 8.5:12
      rule #figureInit(Base:LVal, DestT::CPPType, _, NoInit(), _, _, IsConstructor::ConstructorType)
@@ -138,7 +138,7 @@ module CPP-DECL-INITIALIZER
 
      // expression initializer, non-class type
      rule #figureInit(Base:LVal, DestT::CPPType, _, E:Expr, SrcT:CPPType, SrcCat:ValueCategory, _)
-          => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) := E #else ill-formed #fi
+          => #if canConvertWithStandardConversion(DestT, SrcT, SrcCat) #then le(Base, trace(Base), DestT) :=init E #else ill-formed #fi
           requires notBool isCPPRefType(DestT) andBool notBool isCPPArrayType(DestT) andBool notBool isCPPClassType(DestT) andBool notBool isCPPClassType(SrcT) 
 
      rule #figureInit(... base: lv(loc(Base::SymBase, _), _, _), init: S:Stmt)

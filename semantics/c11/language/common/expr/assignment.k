@@ -65,4 +65,24 @@ module C-COMMON-EXPR-ASSIGNMENT
      rule L:Nclv := (R:RValue => cast(utype(L), R))
           requires isBoolType(type(L)) andBool isPointerType(type(R))
 
+     rule Initializer(L:Nclv := (R:RValue => cast(utype(L), R)))
+          requires isArithmeticType(type(L)) andBool isArithmeticType(type(R))
+               andBool utype(L) =/=Type utype(R)
+
+     rule Initializer(L:Nclv := (R:RValue => cast(utype(L), R)))
+          requires isPointerType(type(L)) andBool isPointerType(type(R))
+               andBool notBool isNullPointerConstant(R)
+               andBool (stripQualifiers(innerType(type(L))) =/=Type stripQualifiers(innerType(type(R)))
+                         impliesBool (isVoidType(innerType(type(L))) orBool isVoidType(innerType(type(R)))))
+               andBool (getQualifiers(innerType(type(R)))
+                    <=Quals getQualifiers(innerType(type(L))))
+               andBool utype(L) =/=Type utype(R)
+
+     rule Initializer(L:Nclv := (R:RValue => cast(utype(L), R)))
+          requires isPointerType(type(L)) andBool isNullPointerConstant(R)
+               andBool utype(L) =/=Type utype(R)
+
+     rule Initializer(L:Nclv := (R:RValue => cast(utype(L), R)))
+          requires isBoolType(type(L)) andBool isPointerType(type(R))
+
 endmodule

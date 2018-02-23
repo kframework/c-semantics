@@ -21,12 +21,10 @@ module C-EXPR-ASSIGNMENT
      a subexpression that is not evaluated.
      }*/
 
-     rule <k> (.K => CV("TEAS1", "Incompatible types in assignment or function call arguments."))
-               ~> L:Nclv := R:RValue
-          ...</k>
-          <initializing> IsInit:Bool </initializing>
+     rule (.K => CV("TEAS1", "Incompatible types in assignment."))
+          ~> L:Nclv := R:RValue
           requires utype(L) =/=Type utype(R)
-               andBool (notBool isConstType(type(L)) orBool IsInit)
+               andBool notBool isConstType(type(L))
                andBool (
                     (isPointerType(type(L)) andBool notBool isPointerType(type(R))
                          andBool notBool isNullPointerConstant(R))
@@ -41,35 +39,26 @@ module C-EXPR-ASSIGNMENT
                          orBool isStructOrUnionType(type(L))
                          orBool isBoolType(type(L)))
                ) andBool R =/=K voidVal
-               andBool notBool isAutoType(type(L))
 
-     rule <k> (.K => CV("TEAS2", "Incompatible pointer types in assignment or function call arguments."))
-               ~> L:Nclv := R:RValue
-          ...</k>
-          <initializing> IsInit:Bool </initializing>
+     rule (.K => CV("TEAS2", "Incompatible pointer types in assignment."))
+          ~> L:Nclv := R:RValue
           requires (isPointerType(type(L)) andBool isPointerType(type(R)))
                andBool notBool isNullPointerConstant(R)
                andBool utype(L) =/=Type utype(R)
-               andBool (notBool isConstType(type(L)) orBool IsInit)
+               andBool notBool isConstType(type(L))
                andBool notBool (
                     (stripQualifiers(innerType(type(L))) =/=Type stripQualifiers(innerType(type(R)))
                               impliesBool (isVoidType(innerType(type(L))) orBool isVoidType(innerType(type(R)))))
                     andBool (getQualifiers(innerType(type(R)))
                          <=Quals getQualifiers(innerType(type(L))))
-               ) andBool notBool isAutoType(type(L))
+               )
      rule (.K => CV("TEAS3", "'lvalue' required as left operand in assignment."))
           ~> tv(_, _) := _:RValue
 
      rule (.K => UNDEF("TEAS4", "Void value as right operand in assignment."))
           ~> _ := voidVal
-     rule <k> (.K => CV("TEAS5", "Non-constant static initializer."))
-               ~> nclv(_, _) := te(_, _)
-          ...</k>
-          <initializing> true </initializing>
-     rule <k> (.K => CV("TEAS6", "Trying to write through a const lvalue."))
-               ~> L:Nclv := _:RValue
-          ...</k>
-          <initializing> false </initializing>
+     rule (.K => CV("TEAS6", "Trying to write through a const lvalue."))
+          ~> L:Nclv := _:RValue
           requires isConstType(type(L))
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.16.1}{2}}}{
@@ -98,45 +87,18 @@ module C-EXPR-ASSIGNMENT
      \cinline{memory_order_seq_cst} memory order semantics.
      }*/
 
-     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => write(Loc, V, T)
-               ~> tv(V, stripConstants(utype(T')))
-          ...</k>
-          <initializing> true </initializing>
-          requires notBool isLinkerLoc(Loc)
-               andBool (utype(T) ==Type T')
-     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
-          ...</k>
-          <initializing> true </initializing>
-          requires isLinkerLoc(Loc)
-               andBool (utype(T) ==Type T')
-     rule <k> ncle(L:K, T::Type) := R:RValue
-               => te(L := stripHold(R), stripConstants(utype(R)))
-          ...</k>
-          <initializing> true </initializing>
-          requires utype(T) ==Type utype(R)
-
-     rule <k> nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
-               => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
-          ...</k>
-          <initializing> false </initializing>
+     rule nclv(Loc:SymLoc, T::Type) := tv(V:CValue, T'::UType)
+          => te(lv(Loc, T) := checkUse(tv(V, T')), stripConstants(utype(T')))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
-     rule <k> nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
-               => te(lv(Loc, T) := K, stripConstants(utype(T')))
-          ...</k>
-          <initializing> false </initializing>
+     rule nclv(Loc:SymLoc, T::Type) := te(K:K, T'::UType)
+          => te(lv(Loc, T) := K, stripConstants(utype(T')))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type T')
-     rule <k> ncle(L:K, T::Type) := R:RValue
-               => te(L := stripHold(R), stripConstants(utype(R)))
-          ...</k>
-          <initializing> false </initializing>
+     rule ncle(L:K, T::Type) := R:RValue
+          => te(L := stripHold(R), stripConstants(utype(R)))
           requires notBool isConstType(T)
                andBool (utype(T) ==Type utype(R))
-
-     rule ncle(_, (t(_, _, auto-type) => type(V))) := V:RValue
 
      rule E1:Nclv *= E2:RValue
           => compoundAssign(E1, ncle(LHOLE, type(E1)) := te(RHOLE, utype(E1)) * E2)

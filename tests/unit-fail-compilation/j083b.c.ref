@@ -1,6 +1,7 @@
-j083b.c:2:7: error: Incompatible types in assignment or function call arguments.
+j083b.c:2:7: error: Incompatible types in initializer or function call arguments.
 
-    Constraint violation (CV-TEAS1):
+    Constraint violation (CV-TSE1):
+        see C11 section 6.7.9:11 http://rvdoc.org/C11/6.7.9
         see C11 section 6.5.16.1:1 http://rvdoc.org/C11/6.5.16.1
         see CERT-C section MSC40-C http://rvdoc.org/CERT-C/MSC40-C
         see MISRA-C section 8.1:1 http://rvdoc.org/MISRA-C/8.1

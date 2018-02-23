@@ -60,7 +60,7 @@ module C-DECL-LOCAL
           [structural]
      // Compound literal encountered again after goto.
      rule <k> declareInternalVariable(X:CId, _, initValue(_, T::Type, Init:K))
-               => allowInit(Init)
+               => Init
                ~> sequencePoint
           ...</k>
           <env> Env::Map </env>
@@ -104,7 +104,7 @@ module C-DECL-LOCAL
                => allocObject(Base, T)
                ~> addToEnv(X, Base)
                ~> giveType(X, T)
-               ~> allowInit(Init)
+               ~> Init
                ~> sequencePoint
           ...</k>
           <local-addresses>... .Set => SetItem(Base) ...</local-addresses>

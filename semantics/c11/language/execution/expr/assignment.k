@@ -14,16 +14,13 @@ module C-EXPR-ASSIGNMENT
           ~> write(Loc, V, T')
           ~> tv(V, stripConstants(T))
           requires notBool isRestrictType(T')
-               andBool notBool fromArrayStatic(T')
                andBool (T ==Type utype(T'))
           [structural]
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:CValue, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
-          ~> checkArrayStaticAssign(T', V)
           ~> write(Loc, V, T')
           ~> tv(V, stripConstants(T))
           requires notBool isRestrictType(T')
-               andBool fromArrayStatic(T')
                andBool (T ==Type utype(T'))
           [structural]
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
@@ -32,17 +29,14 @@ module C-EXPR-ASSIGNMENT
           ~> write(Loc, V, T')
           ~> tv(V, stripConstants(T))
           requires isRestrictType(T')
-               andBool notBool fromArrayStatic(T')
                andBool (T ==Type utype(T'))
           [structural]
      rule nclv(Loc:SymLoc, T'::Type) := tv(V:SymLoc, T::UType)
           => checkOverlap(stripProv(Loc), T, T')
-          ~> checkArrayStaticAssign(T', V)
           ~> checkRestrictAssign(getRestrictBlock(T'), getRelevantTags(Loc, V))
           ~> write(Loc, V, T')
           ~> tv(V, stripConstants(T))
           requires isRestrictType(T')
-               andBool fromArrayStatic(T')
                andBool (T ==Type utype(T'))
           [structural]
 
@@ -92,46 +86,6 @@ module C-EXPR-ASSIGNMENT
           ~> checkRestrictAssign(fileScope, Tags:Set)
           requires notBool (fileScope in Tags)
                andBool Tags =/=K .Set
-
-     syntax Bool ::= fromArrayStatic(Type) [function]
-     rule fromArrayStatic(t(Qs::Quals, SetItem(K:K) S:Set, T::SimpleType))
-          => (getKLabel(K) ==K #klabel(`arrayStatic`)) orBool fromArrayStatic(t(Qs, S, T))
-     rule fromArrayStatic(_) => false [owise]
-
-     syntax KItem ::= checkArrayStaticAssign(Type, CValue)
-                    | "checkArrayStaticAssign'" "(" Type "," Modifier "," Provenance ")"
-
-     rule checkArrayStaticAssign(t(_, Mods:Set, pointerType(T:Type)), loc(_, _, Prov:Set))
-          => checkArrayStaticAssign'(T,
-               {getFirstMatch(Mods, #klabel(`arrayStatic`))}:>Modifier,
-               {getFirstMatch(Prov, #klabel(`fromArray`))}:>Provenance)
-     rule (.K => UNDEF("EEA4",
-               "Passing a pointer not to an array object as a function parameter with a static-qualified array size."))
-          ~> checkArrayStaticAssign(_, Loc:SymLoc)
-          requires notBool isFromArray(Loc)
-
-     rule checkArrayStaticAssign'(T:Type,
-               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
-          => .K
-          requires (Sz -Int Offset) >=Int (N *Int byteSizeofType(T))
-     rule (.K => UNDEF("EEA5",
-               "Passing a pointer to an array object of fewer elements than required by a function parameter with a static-qualified array size."))
-          ~> checkArrayStaticAssign'(T:Type,
-               arrayStatic(N:Int), fromArray(Offset:Int, Sz:Int))
-          requires (Sz -Int Offset) <Int (N *Int byteSizeofType(T))
-
-     syntax KItem ::= getFirstMatch(Set, K) [function]
-                    | "getFirstMatch'" "(" K "," Set "," K ")" [function]
-
-     rule getFirstMatch(S:Set, L:K) => getFirstMatch'(.K, S, L)
-
-     rule getFirstMatch'((.K => K), (SetItem(K:K) => .Set) _, _)
-     rule getFirstMatch'((K:K => .K), _, L:K)
-          requires getKLabel(K) =/=K L
-               andBool K =/=K .K
-     rule getFirstMatch'(K:K, _, L:K) => K
-          requires getKLabel(K) ==K L
-     rule getFirstMatch'(.K, .Set, _) => .K
 
      rule compoundAssign(LV:KResult, AExp:K)
           => #compoundAssign(LV, LV, AExp)

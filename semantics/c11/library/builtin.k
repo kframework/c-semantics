@@ -174,24 +174,24 @@ module LIBC-BUILTIN
      syntax K ::= "initStdio" [function]
      rule initStdio
           => alloc(bnew(!Stdin:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdin, file, libc)) := stdin))
+          ~> Initializer(fileLVal(bnew(!Stdin, file, libc)) := stdin)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdin")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdin"))) := & fileLVal(bnew(!Stdin, file, libc)))
 
           ~> alloc(bnew(!Stdout:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stdout, file, libc)) := stdout))
+          ~> Initializer(fileLVal(bnew(!Stdout, file, libc)) := stdout)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stdout")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stdout"))) := & fileLVal(bnew(!Stdout, file, libc)))
 
           ~> alloc(bnew(!Stderr:Int, file, libc), file, byteSizeofType(file))
-          ~> allowInit(Computation(fileLVal(bnew(!Stderr, file, libc)) := stderr))
+          ~> Initializer(fileLVal(bnew(!Stderr, file, libc)) := stderr)
           ~> alloc(bnew(0, type(pointerType(file)), builtinSymbol("stderr")), type(pointerType(file)), byteSizeofType(type(pointerType(file))))
-          ~> allowInit(Computation(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, libc))))
+          ~> Initializer(filePtr(bnew(0, type(pointerType(file)), builtinSymbol("stderr"))) := & fileLVal(bnew(!Stderr, file, libc)))
 
      // TODO(_Thread_local errno)
      syntax K ::= "initErrno" [function]
      rule initErrno
           => alloc(obj(0, byteAlignofType(type(int)), builtinSymbol("errno")), type(int), byteSizeofType(type(int)))
-          ~> allowInit(Computation(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int))))
+          ~> Initializer(lv(lnew(obj(0, byteAlignofType(type(int)), builtinSymbol("errno"))), type(int)) := tv(0, utype(int)))
 
 endmodule

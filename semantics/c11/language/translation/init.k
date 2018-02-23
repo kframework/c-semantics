@@ -79,12 +79,4 @@ module C-TRANSLATION-INIT
 
      rule NothingExpression() => {emptyValue}:>Expression
 
-     rule Computation(.K) => .K
-     rule <k> Computation(V:RValue) => .K ...</k>
-          <elab>... .K => Computation(V) </elab>
-          requires isHold(V)
-     // Totally elide pure expressions from the translated program.
-     rule Computation(V:RValue) => .K
-          requires notBool isHold(V)
-
 endmodule

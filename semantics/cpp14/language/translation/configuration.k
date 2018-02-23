@@ -35,10 +35,6 @@ module C-CONFIGURATION
 
      <deferred-class-actions> .K </deferred-class-actions>
 
-     // Toggle to allow writes and other special treatment
-     // for initializers.
-     <initializing> false </initializing>
-
      <curr-state>
          <curr-tu color="lightgray"> "" </curr-tu>
          <curr-lang-linkage> CPPLinkage </curr-lang-linkage>

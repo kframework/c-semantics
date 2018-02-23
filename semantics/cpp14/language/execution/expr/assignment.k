@@ -10,6 +10,10 @@ module CPP-EXPR-ASSIGNMENT
           => write(Loc, convertType(utype(T), prv(V, Tr', T')), T)
           ~> lv(Loc, Tr, T)
           requires notBool isCPPClassType(T)
+     rule lv(Loc:SymLoc, Tr::Trace, T::CPPType) :=init prv(V::CPPValue, Tr'::Trace, T'::CPPType)
+          => init(Loc, convertType(utype(T), prv(V, Tr', T')), T)
+          ~> lv(Loc, Tr, T)
+          requires notBool isCPPClassType(T)
 
      rule compoundAssign(L:LVal, R::Expr, _)
           => fillLHoles(L, fillRHoles(L, R))

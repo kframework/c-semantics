@@ -26,7 +26,7 @@ module CPP-STMT-RETURN
      syntax KItem ::= prepareReturn(CPPType, K)
 
      rule prepareReturn(T::CPPType, Init:K)
-          => Return'(allowInit(Init), T)
+          => Return'(Init, T)
           requires notBool isCPPVoidType(T)
 
      rule prepareReturn(T:CPPVoidType, V:PRVal) => Return''(V)

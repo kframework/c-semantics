@@ -46,10 +46,6 @@ module C-CONFIGURATION
 
      <elab-stack> .List </elab-stack>
 
-     // Toggle to allow writes and other special treatment
-     // for initializers.
-     <initializing> false </initializing>
-
      <curr-state>
           <curr-tu color="lightgray"> "" </curr-tu>
           <curr-function> .K </curr-function>

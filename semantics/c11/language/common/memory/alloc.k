@@ -72,10 +72,10 @@ module C-MEMORY-ALLOC
 
      rule allocString(Base::SymBase, S::String)
           => allocObject(Base, type(arrayType(type(char), lengthString(S) +Int 1)))
-          ~> allowInit(writeString(lnew(Base), S))
+          ~> initString(lnew(Base), S)
 
      rule allocWString(Base::SymBase, S::List)
           => allocObject(Base, type(arrayType(type(cfg:wcharut), size(S) +Int 1)))
-          ~> allowInit(writeWString(lnew(Base), S))
+          ~> initWString(lnew(Base), S)
 
 endmodule

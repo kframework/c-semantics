@@ -56,9 +56,6 @@ module COMMON-SYNTAX
 
      syntax LanguageLinkage ::= "CLinkage" | "CPPLinkage"
 
-     syntax KItem ::= allowInit(K)
-     syntax Expr ::= allowInit(Expr)
-
      syntax KItem ::= CodeLoc(K, CabsLoc)
 
 endmodule

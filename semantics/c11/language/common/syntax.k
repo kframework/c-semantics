@@ -45,6 +45,9 @@ module C-SYNTAX
      syntax Statement ::= Computation(K) [latex({{#1}};)]
      context Computation(HOLE:KItem => reval(HOLE)) [result(RValue)]
 
+     syntax Statement ::= "Initializer" "(" K ":=" K ")" [strict(1)]
+     context Initializer(_ := (HOLE:KItem => reval(HOLE))) [result(RValue)]
+
      /*
      and storage =
      NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER
@@ -280,7 +283,6 @@ module C-SYNTAX
      | MEMBEROF of expression * string
      */
      syntax Expression ::= K "." CId [left, strict(1)]
-
 
      syntax Expression ::= GnuBody(K)
 

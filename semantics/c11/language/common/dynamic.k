@@ -68,6 +68,7 @@ module C-DYNAMIC-SYNTAX
 
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
+     syntax LValue ::= Nclv | LHold | NCLHold | TrapLValue
      syntax KResult ::= RValue | Type | UType | DType | Nclv | TrapLValue
 
      syntax BlockScope ::= blockScope(CId, Int)
@@ -137,6 +138,12 @@ module C-DYNAMIC-SYNTAX
 
      syntax Bool ::= isNCLKLabel(K) [function, klabelPredicate]
                    | isRKLabel(K) [function, klabelPredicate]
+
+     // Initializers.
+     syntax InitLValue ::= LValue
+                         | InitLValue "[[" Int "]]" [strict(1)]
+                         | InitLValue ".init" CId [strict(1)]
+
 endmodule
 
 module C-DYNAMIC
@@ -193,18 +200,6 @@ module C-DYNAMIC
 
      rule N:Int => tv(N, utype(cfg:largestUnsigned))
           [structural] // for internal computations
-
-     rule <k> allowInit(K:K) => K ~> initDone(I) ...</k>
-          <initializing> I:Bool => true </initializing>
-          [structural]
-
-     syntax KItem ::= initDone(Bool)
-     rule <k> R:KResult ~> initDone(I::Bool) => R ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
-     rule <k> initDone(I::Bool) => .K ...</k>
-          <initializing> _ => I </initializing>
-          [structural]
 
      rule isNoInit(NoInit()) => true
      rule isNoInit(initValue(_, _, .K)) => true

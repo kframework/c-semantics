@@ -25,7 +25,7 @@ module CPP-DECL-DECLARATOR
      rule declareNonStaticObject(#NoName, _, Init::Expr, _, _, _) => ExpressionStmt(Init)
 
      rule <k> initializeObject(Init::Expr) 
-              => allowInit(ExpressionStmt(Init))
+              => ExpressionStmt(Init)
               ~> sequencePoint
           ...</k>
           <should-init> true </should-init>

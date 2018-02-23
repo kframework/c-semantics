@@ -38,7 +38,7 @@ module CPP-EXPR-FUNCTION-CALL
      syntax Expr ::= prepareArguments(CabsLoc, SymBase, K, CPPType, Bool, List)
 
      rule prepareArguments(CurrLoc::CabsLoc, Base::SymBase, Fun:K, CallT::CPPType, IsVirtual::Bool, Args::List)
-          => evalArgs(CurrLoc, Base, Fun, CallT, IsVirtual, list(mapList(Args, #klabel(`allowInit`))))
+          => evalArgs(CurrLoc, Base, Fun, CallT, IsVirtual, list(Args))
 
      syntax Expr ::= evalArgs(CabsLoc, SymBase, fun: K, CPPType, Bool, args: StrictList)
 
@@ -141,7 +141,7 @@ module CPP-EXPR-FUNCTION-CALL
           ...</function-control>)
 
      rule <k> bindParam(X::CId, T::CPPType, V:Val) => declareNonStaticObject(X, T, 
-               Name(NoNNS(), X) := V, 
+               Name(NoNNS(), X) :=init V, 
                Var(CopyInit()), AutoStorage, .Set) ...</k>
           <curr-function-params>... .List => ListItem(X) </curr-function-params>       
           requires notBool isCPPRefType(T)

@@ -24,7 +24,7 @@ module CPP-EXPR-REFERENCE
 
      rule <k> bindReference(lv(Loc::SymLoc, Tr1::Trace, T1::CPPType), prv(V::CPPValue, Tr2::Trace, T2::CPPType))
               => allocObject(bnew(!I:Int, innerType(T1), .Set, D), innerType(T1), byteSizeofType(innerType(T1)))
-              ~> bindReference(lv(Loc, Tr1, T1), lv(lnew(bnew(!I:Int, innerType(T1), .Set, D)), noTrace, innerType(T1)) := prv(V, Tr2, T2)) ...</k>
+              ~> bindReference(lv(Loc, Tr1, T1), lv(lnew(bnew(!I:Int, innerType(T1), .Set, D)), noTrace, innerType(T1)) :=init prv(V, Tr2, T2)) ...</k>
           <duration> D::Duration </duration>
           requires notBool isCPPClassType(T2) andBool notBool isCPPArrayType(T2) andBool notBool isCPPClassType(T1)
 

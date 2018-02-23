@@ -25,5 +25,8 @@ int *t1 = &*((int*)0);
 
 int main(void) {
       int *t2 = 0;
-      return *p + *q + *r + *s + (t1 != t2);
+      int x = 1;
+      int y = (e1 = x - 1);
+      return *p + *q + *r + *s + (t1 != t2) + e1 + y;
 }
+

@@ -470,7 +470,7 @@ module CPP-DECL-DECLARATOR
 
      syntax Expr ::= getDefaultReturnOp(QualId, CPPTypeExpr) [function]
      rule getDefaultReturnOp(GlobalNamespace() :: Identifier("main"), T::CPPTypeExpr)
-          => le(temp(!I:Int, type(int)), noTrace, T) := prv(0, noTrace, type(int))
+          => le(temp(!I:Int, type(int)), noTrace, T) :=init prv(0, noTrace, type(int))
      rule getDefaultReturnOp(_, _) => prv(voidVal, noTrace, type(void)) [owise]
 
      syntax KItem ::= dummyBind(List)
@@ -502,7 +502,7 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(pre(BuiltinCallOp(...), _, _)) => false
      rule isStaticInitialization(le(beginConstruction(...), _, _)) => true
      rule isStaticInitialization(le(endConstruction(...), _, _)) => true
-     rule isStaticInitialization(le(_ := V::Expr, _, _)) => false
+     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => false
           requires notBool isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => false
           requires notBool isEvalVal(V)
@@ -510,7 +510,7 @@ module CPP-DECL-DECLARATOR
      rule isStaticInitialization(le(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(pre(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
      rule isStaticInitialization(xe(compoundInit(E1::Expr, E2::Expr), _, _) => compoundInit(E1, E2))
-     rule isStaticInitialization(le(_ := V::Expr, _, _)) => true
+     rule isStaticInitialization(le(_ :=init V::Expr, _, _)) => true
           requires isEvalVal(V)
      rule isStaticInitialization(le(bindReference(_, V::Expr), _, _)) => true
           requires isEvalVal(V)

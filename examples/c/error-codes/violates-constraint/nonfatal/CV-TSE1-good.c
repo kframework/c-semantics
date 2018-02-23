@@ -1,11 +1,11 @@
 // Copyright (c) 2015-2018 Runtime Verification, Inc. (RV-Match team). All Rights Reserved.
 
-int f(int x){
-	return x;
-}
+struct s {
+	int x;
+	int y;
+};
 
 int main(void){
-	int (*x)(int);
-      x = &f;
-	return x(0);
+	struct s s0 = {0};
+	return s0.x;
 }

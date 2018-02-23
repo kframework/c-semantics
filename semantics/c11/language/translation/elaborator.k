@@ -41,7 +41,7 @@ module C-ELABORATOR
                ListItem(elabFrame(Cont:K, OldElab:K)) => .List
           ...</elab-stack>
 
-     rule <k> elaborateInit(K:K) ~> Cont:K => allowInit(K) </k>
+     rule <k> elaborateInit(K:K) ~> Cont:K => K </k>
           <elab> OldElab:K => .K </elab>
           (I:InitCalcCell
                => <init-calc>... .Bag ...</init-calc>)

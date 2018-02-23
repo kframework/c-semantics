@@ -181,7 +181,7 @@ module C-EXPR-FUNCTION-CALL
           [structural]
 
      rule <k> bindParam(X:CId, T:Type, V:RValue)
-               => declareInternalVariable(X, T, initValue(X, T, Computation(X := V)))
+               => declareInternalVariable(X, T, initValue(X, T, Initializer(X := V)))
           ...</k>
           <curr-function-params>...
                .List => ListItem(X)

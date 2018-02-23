@@ -486,7 +486,7 @@ module LIBC-STDIO
 
      syntax KItem ::= trapBuf(SymLoc, Int)
      rule trapBuf(Loc::SymLoc, Sz::Int)
-          => writeBytes(stripProv(Loc), dataList(times(Sz, piece(trap, cfg:bitsPerByte))), type(arrayType(type(unsigned-char), Sz)))
+          => initBytes(stripProv(Loc), times(Sz, piece(trap, cfg:bitsPerByte)))
           requires notBool isNull(tv(Loc, utype(pointerType(type(void)))))
                andBool Sz >Int 0
      rule trapBuf(_, _) => .K [owise]

@@ -125,7 +125,7 @@ module CPP-SYNTAX
                    > left:
                      Expr "+" Expr
                    | Expr "-" Expr
-	           > left:
+                   > left:
                      Expr "<<" Expr
                    | Expr ">>" Expr
                    > left:
@@ -148,6 +148,7 @@ module CPP-SYNTAX
                      Expr "||" Expr
                    > right:
                      Expr ":=" Init [strict(1)]
+                   | Expr ":=init" Init [strict(1)]
                    | Expr "+=" Init [strict(1)]
                    | Expr "-=" Init [strict(1)]
                    | Expr "*=" Init [strict(1)]
@@ -173,6 +174,7 @@ module CPP-SYNTAX
      syntax BraceInit ::= ExprLoc(CabsLoc, BraceInit)
 
      context _ := (HOLE:Expr => reval(HOLE)) [result(PRVal)]
+     context _ :=init (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context _ += (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context _ -= (HOLE:Expr => reval(HOLE)) [result(PRVal)]
      context _ *= (HOLE:Expr => reval(HOLE)) [result(PRVal)]

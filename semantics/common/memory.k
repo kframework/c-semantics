@@ -15,7 +15,7 @@ module MEMORY-SYNTAX
      /* object(effective type, size, byte map) */
      syntax KItem ::= object(EffectiveType, Int, Array)
 
-     syntax DataList ::= splitBytes(EffectiveValue, Int) [function]
+     syntax List ::= splitBytes(EffectiveValue, Int) [function]
 
      syntax BitValue ::= joinBytes(List) [function]
 
@@ -30,26 +30,25 @@ module MEMORY
      imports BITS-SYNTAX
      imports C-SETTINGS-SYNTAX
 
-     syntax DataList ::= #splitValueBytes(EffectiveValue, Int, K, List) [function]
-                       | #splitIntegerBytes(Int, Int, List) [function]
-
      rule splitBytes(Loc::EffectiveValue, Len:Int)
-          => #splitValueBytes(Loc, Len, 0, .List)
+          => #splitValueBytes(Loc, Len, 0)
           requires notBool isInt(Loc)
      rule splitBytes(I:Int, Len:Int)
-          => #splitIntegerBytes(I, Len, .List)
+          => #splitIntegerBytes(I, Len)
 
-     rule #splitValueBytes(Loc::EffectiveValue, Len:Int, N:Int, L:List)
-          => #splitValueBytes(Loc, Len -Int 1, N +Int 1,
-               L ListItem(piece(encodedValue(Loc, N *Int cfg:bitsPerByte, (N +Int 1) *Int cfg:bitsPerByte), cfg:bitsPerByte)))
+     syntax List ::= #splitValueBytes(EffectiveValue, Int, Int) [function]
+     rule #splitValueBytes(Loc::EffectiveValue, Len:Int, N:Int)
+          => ListItem(piece(encodedValue(Loc, N *Int cfg:bitsPerByte, (N +Int 1) *Int cfg:bitsPerByte), cfg:bitsPerByte))
+               #splitValueBytes(Loc, Len -Int 1, N +Int 1)
           requires Len >Int 0
-     rule #splitValueBytes(_, 0, _, L:List) => dataList(L:List)
+     rule #splitValueBytes(_, 0, _) => .List
 
-     rule #splitIntegerBytes(I:Int, Len:Int, L:List)
-          => #splitIntegerBytes(I >>Int cfg:bitsPerByte, Len -Int 1,
-               L ListItem(piece(I &Int byteMaskSet, cfg:bitsPerByte)))
+     syntax List ::= #splitIntegerBytes(Int, Int) [function]
+     rule #splitIntegerBytes(I:Int, Len:Int)
+          => ListItem(piece(I &Int byteMaskSet, cfg:bitsPerByte))
+               #splitIntegerBytes(I >>Int cfg:bitsPerByte, Len -Int 1)
           requires Len >Int 0
-     rule #splitIntegerBytes(_, 0, L:List) => dataList(L)
+     rule #splitIntegerBytes(_, 0) => .List
 
      syntax Int ::= "byteMaskSet" [function]
      rule byteMaskSet => (1 <<Int cfg:bitsPerByte) -Int 1

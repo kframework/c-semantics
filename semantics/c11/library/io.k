@@ -468,14 +468,14 @@ module LIBC-IO
      syntax KItem ::= newFixedString(SymBase, String)
      rule newFixedString(Base::SymBase, Value::String)
           => alloc(Base, arr(char, lengthString(Value) +Int 1), lengthString(Value) +Int 1)
-          ~> allowInit(writeString(loc(Base, 0), Value))
+          ~> initString(loc(Base, 0), Value)
           ~> tv(loc(Base, 0), utype(ptr(char)))
           [structural]
 
      syntax KItem ::= newFixedBytes(SymBase, List, Type)
      rule newFixedBytes(Base::SymBase, Bytes::List, T::Type)
           => alloc(Base, T, byteSizeofType(utype(T)))
-          ~> allowInit(writeBytes(loc(Base, 0), dataList(Bytes), T))
+          ~> initBytes(loc(Base, 0), Bytes)
           ~> tv(loc(Base, 0), utype(ptr(T)))
           [structural]
 

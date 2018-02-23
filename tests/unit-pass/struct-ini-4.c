@@ -16,7 +16,7 @@ struct { char a[4]; char b[4]; } s3 = { "a", "x" } ;
 struct { wchar_t a[4]; wchar_t b[4]; } s4 = { L"abc", L"xyz" } ;
 struct { wchar_t a[4]; wchar_t b[4]; } s5 = { L"a", L"x" } ;
 
-const struct { signed char *a; } s6 = { "abc" };
+const struct { signed char *a; } s6 = { (signed char *) "abc" };
 
 int main() {
       printf("s.c: %d, %d, %d\n", s.c[0], s.c[1], s.c[2]);

@@ -14,20 +14,16 @@ module CPP-EXECUTION-IO
      imports CPP-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
 
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
-              => checkWrite(Loc, T)
-              ~> writeBytesBuffered(Loc, Bytes)
-          ...</k>
-          <initializing> false </initializing>
+     rule writeBytes(Loc::SymLoc, Bytes::List, T::CPPType)
+          => checkWrite(Loc, T)
+          ~> writeBytesBuffered(Loc, Bytes)
           requires notBool isLinkerLoc(Loc)
-
-     rule <k> writeBytes(Loc::SymLoc, dataList(Bytes::List), T::CPPType)
-              => writeBytesBuffered(Loc, Bytes)
-          ...</k>
-          <initializing> true </initializing>
-          requires notBool isLinkerLoc(Loc)
-
      rule <k> writeBytes(loc((Base::SymBase => Base'), _), _, _) ...</k>
+          <linkings>... Base |-> Base'::SymBase ...</linkings>
+
+     rule initBytes(Loc::SymLoc, Bytes::List) => writeBytesBuffered(Loc, Bytes)
+          requires notBool isLinkerLoc(Loc)
+     rule <k> initBytes(loc((Base::SymBase => Base'), _), _) ...</k>
           <linkings>... Base |-> Base'::SymBase ...</linkings>
 
      syntax KItem ::= checkWrite(SymLoc, CPPType) [klabel(cppCheckWrite)]

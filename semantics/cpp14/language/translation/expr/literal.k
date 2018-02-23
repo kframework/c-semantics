@@ -55,7 +55,7 @@ module CPP-EXPR-LITERAL
      syntax KItem ::= allocString(SymBase, CPPType, String)
      rule allocString(Base::SymBase, T::CPPType, S::String)
           => allocObject(Base, T, lengthString(S))
-          ~> writeString(lnew(Base), S)
+          ~> initString(lnew(Base), S)
           ~> lv(lnew(Base), hasTrace(StringLiteral(S, T)), T)
 
 endmodule

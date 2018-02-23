@@ -32,14 +32,14 @@ module C-FUNCTION-DEF
      rule FunctionDefinition(typedDeclaration(T:FunctionType, X:CId), Blk:K)
           => declare'(
                typedDeclaration(toPrototype(emptyToVoid(T)), X),
-               initializer(Computation(initFunction(
+               initializer(initFunction(
                     &(X),
                     X,
                     functionObject(X,
                          // The return and parameter types from the definition.
                          t(getQualifiers(T), getModifiers(T), functionType(utype(elideDeclParams(innerType(T))),
                               elideList(getParams(emptyToVoid(T))))), .List)
-               )))
+               ))
           )
           ~> processFunDef(X, Blk)
           requires notBool hasDupParams(T)
@@ -143,12 +143,11 @@ module C-FUNCTION-DEF
           => true
      rule isArgvType(_) => false [owise]
 
-     rule initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue)
-          => te(initFunction(&(X), X, Fun), T)
+     rule <k> initFunction(tv(Loc:SymLoc, T::UType), X:CId, Fun:RValue) => .K ...</k>
+          <elab>... .K => initFunction(&(X), X, Fun) </elab>
           requires isLinkerLoc(Loc)
-     rule <k> initFunction(
-               tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
-               => voidVal
+     rule <k> initFunction(tv(Loc:SymLoc, ut(_, pointerType(_:FunctionType))), _, Fun:RValue)
+               => .K
           ...</k>
           <functions> M:Map => M[base(Loc) <- Fun] </functions>
           requires notBool isLinkerLoc(Loc)
