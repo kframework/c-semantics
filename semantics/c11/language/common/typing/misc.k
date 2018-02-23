@@ -307,15 +307,17 @@ module C-TYPING-MISC
           => getFieldOffset({(reverseList(getFieldNames(T)))[0]}:>CId, T) /Int cfg:bitsPerByte
 
      syntax Int ::= "floorFieldOffset'" "(" Int "," FieldInfo ")" [function]
+     rule floorFieldOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => Offset
      rule floorFieldOffset'(Offset::Int, Fields::FieldInfo)
-          => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields)
+          => getFieldOffset'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
 
      rule getFieldTypeAtOffset(Offset::Int, T::StructOrUnionType)
           => getFieldTypeAtOffset'(Offset, getFields(T))
 
      syntax Type ::= "getFieldTypeAtOffset'" "(" Int "," FieldInfo ")" [function]
+     rule getFieldTypeAtOffset'(Offset::Int, fieldInfo(.List, _, _, _, _)) => type(no-type)
      rule getFieldTypeAtOffset'(Offset::Int, Fields::FieldInfo)
-          => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields)
+          => getFieldType'(getFieldAtOffset'(Offset, Fields), Fields) [owise]
 
      rule resizeFlexibleType(T::StructOrUnionType, F::CId, N::Int)
           => setFieldsSize((N *Int cfg:bitsPerByte) +Int getFieldOffset(F, T), clearPaddingAfter(F, T))
