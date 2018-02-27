@@ -178,12 +178,15 @@ module C-MEMORY-READING
      syntax RValue ::= interpret(UType, BitValue) [function]
      rule interpret(T:IntegerUType, I:Int)
           => #if max(T) >=Int I #then tv(I, T) #else interpret(T, I -Int (1 <<Int absInt(bitSizeofType(T)))) #fi
+     rule interpret(T:IntegerUType, encodedValue(NullPointer, _, _)) => tv(unknown(0), T)
      rule interpret(T:PointerUType, I:Int) => tv(cfg:intToPointer(I, T), T)
-     rule interpret(T::UType, encodedValue(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
-          requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)
      rule interpret(T:FloatUType, 0) => tv(zeroCFloat(T), T)
+     rule interpret(T:FloatUType, encodedValue(NullPointer, _, _)) => tv(unknown(zeroCFloat(T)), T)
      rule interpret(T:FloatUType, I:Int) => tv(cfg:floatFromBits(I, T), T)
           requires I =/=Int 0
+     rule interpret(T::UType, encodedValue(Loc:SymLoc, 0, To::Int)) => tv(Loc, T)
+          requires To ==Int (cfg:ptrsize *Int cfg:bitsPerByte)
+               andBool notBool ((isIntegerUType(T) orBool isFloatUType(T)) andBool Loc ==K NullPointer)
      rule interpret(T::UType, encodedValue(F:Float, 0, To::Int)) => tv(F, T)
           requires isFullFloat(F, To)
      rule interpret(T::UType, encodedValue(opaque(V::Int, T'::UType), 0, To::Int)) => tv(opaque(V, T'), T)
