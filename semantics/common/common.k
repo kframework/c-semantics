@@ -19,6 +19,5 @@ module COMMON
   imports COMPAT
   imports ERROR
   imports COMMON-INIT
-  imports MEMORY
   imports SYMLOC
 endmodule

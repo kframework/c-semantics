@@ -5,7 +5,7 @@ module C-EXPR-ASSIGNMENT
      imports K-EQUAL
      imports SYMLOC-SYNTAX
      imports C-ABSTRACT-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DECL-INITIALIZER-SYNTAX
      imports C-DYNAMIC-SYNTAX

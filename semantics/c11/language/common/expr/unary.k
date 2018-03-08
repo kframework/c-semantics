@@ -13,7 +13,7 @@ module C-COMMON-EXPR-UNARY
      and the result has the promoted type.
      }*/
      rule [unaryPlus-int]:
-          + tv(I:Int, T::UType) => arithInterpret(T, I)
+          + tv(I:Int, T::UType) => intArithInterpret(T, I)
           requires isPromoted(T)
           [structural]
      rule [unaryPlus-intptr]:
@@ -29,11 +29,11 @@ module C-COMMON-EXPR-UNARY
      and the result has the promoted type.
      }*/
      rule [unaryMinus-int]:
-          - tv(I:Int, T::UType) => arithInterpret(T, 0 -Int I)
+          - tv(I:Int, T::UType) => intArithInterpret(T, 0 -Int I)
           requires isPromoted(T)
           [structural]
      rule [unaryMinus-float]:
-          - tv(F:Float, T::UType) => arithInterpret(T, zeroCFloat(T) -Float F)
+          - tv(F:Float, T::UType) => floatArithInterpret(T, zeroCFloat(T) -Float F)
           [structural]
 
      /*@ \fromStandard{\source[n1570]{\para{6.5.3.3}{5}}}{

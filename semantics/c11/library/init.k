@@ -20,11 +20,6 @@ module LIBC-SYNTAX
 
      syntax RValue ::= "eof" [function]
 
-     syntax CValue ::= Opaque
-     syntax EffectiveValue ::= Opaque
-     syntax Opaque ::= opaque(K, UType)
-     syntax KItem ::= fromOpaque(CValue) [function]
-
      syntax RValue ::= "stdin"  [function]
                      | "stdout" [function]
                      | "stderr" [function]
@@ -49,9 +44,6 @@ module LIBC-INIT
      imports LIBC-SYNTAX
      imports MAP
      imports SYMLOC-SYNTAX
-
-     rule fromOpaque(opaque(V:K, _)) => V
-     rule fromOpaque(_) => .K [owise]
 
      // Types for library functions defined in the semantics. These are the
      // definitive types against which all calls are checked for compatibility.
@@ -172,6 +164,7 @@ module LIBC-INIT
           (id("vsscanf") |-> fun(int, restrict(ptr(const(char))), restrict(ptr(const(char))), va_list)
 
           // string
+          (id("memset") |-> fun(ptr(void), ptr(void), int, size_t)
           (id("strcpy") |-> fun(ptr(char), restrict(ptr(char)), restrict(ptr(const(char))))
           (id("strerror") |-> fun(ptr(char), int)
           (id("strerror_r") |-> fun(int, int, ptr(char), size_t)
@@ -189,7 +182,7 @@ module LIBC-INIT
           extensionBuiltins
           // we need these parentheses to avoid an exponential explosion of parsing time;
           // really should look further into true priorities in the parser kernel.
-          )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+          ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
      rule mtx_t => typeref("__kcc_typeref_mtx_t")
      rule jmp_buf => typeref("__kcc_typeref_jmp_buf")

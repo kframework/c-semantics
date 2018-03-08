@@ -4,8 +4,8 @@ module C-COMMON-EXPR-REFERENCE
      imports K-EQUAL
      imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-SYNTAX

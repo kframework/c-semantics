@@ -1,5 +1,5 @@
 A pointer (or array subscript) outside the bounds of an object:
-      > in memset at string.c:31:13
+      > in memset at bounds4.c:11:3
         in init_node at bounds4.c:11:3
         in main at bounds4.c:16:3
 

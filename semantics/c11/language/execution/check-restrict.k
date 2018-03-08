@@ -1,4 +1,4 @@
-module C-CHECK-LOC-SYNTAX
+module C-CHECK-RESTRICT-SYNTAX
      imports INT-SYNTAX
      imports MAP
      imports STRING
@@ -13,8 +13,8 @@ module C-CHECK-LOC-SYNTAX
      syntax KItem ::= checkRestrict(Bool, SymLoc)
 endmodule
 
-module C-CHECK-LOC
-     imports C-CHECK-LOC-SYNTAX
+module C-CHECK-RESTRICT
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports INT

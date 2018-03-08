@@ -1,4 +1,4 @@
-module C-IO-BUFFERED-SYNTAX
+module C-IO-SYNTAX
      imports INT-SYNTAX
      imports LIST
      imports MAP
@@ -12,21 +12,19 @@ module C-IO-BUFFERED-SYNTAX
 
      syntax Set ::= locations(List) [function]
 
-     syntax Quals ::= getQualsAtOffset(List) [function]
-
      syntax KItem ::= writeBytesBuffered(SymLoc, List)
 
 endmodule
 
-module C-IO-BUFFERED
-     imports C-IO-BUFFERED-SYNTAX
+module C-IO
+     imports C-IO-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
      imports INT
      imports BITS-SYNTAX
      imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
@@ -36,15 +34,23 @@ module C-IO-BUFFERED
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
 
-     rule writeBytes(Loc::SymLoc, Bytes::List, T::Type)
+     rule writeBytes(Loc::SymLoc, Bytes::List)
           => checkRestrict(true, Loc)
-          ~> checkWrite(stripProv(Loc), T)
+          ~> checkWrite(stripProv(Loc))
           ~> checkSeq(stripProv(Loc))
           ~> checkBounds(stripProv(Loc), size(Bytes))
           ~> writeBytesBuffered(stripProv(Loc), Bytes)
+     rule writeBytesFill(Loc::SymLoc, N::Int, V::Bits)
+          => checkRestrict(true, Loc)
+          ~> checkWrite(stripProv(Loc))
+          ~> checkSeq(stripProv(Loc))
+          ~> checkBounds(stripProv(Loc), N)
+          ~> fillBytesBuffered(stripProv(Loc), N, V)
 
      rule initBytes(Loc::SymLoc, Bytes::List)
           => writeBytesBuffered(stripProv(Loc), Bytes)
+     rule initBytesFill(Loc::SymLoc, N::Int, V::Bits)
+          => fillBytesBuffered(stripProv(Loc), N, V)
 
      syntax KItem ::= checkSeq(SymLoc)
      rule <k> checkSeq(Loc::SymLoc) => .K ...</k>
@@ -61,15 +67,12 @@ module C-IO-BUFFERED
           requires Loc in Locs
           [structural]
 
-     syntax KItem ::= checkWrite(SymLoc, Type)
-     rule <k> checkWrite(loc(Base::SymBase, Offset::Int), T::Type) => .K ...</k>
+     syntax KItem ::= checkWrite(SymLoc)
+     rule <k> checkWrite(loc(Base::SymBase, Offset::Int)) => .K ...</k>
           <thread-id> ThreadId::Int </thread-id>
           <mem>... Base |-> object(ObjT::EffectiveType, Len::Int, _) ...</mem>
           requires // Const.
                (notBool (Const() inQuals getQualsAtOffset(ObjT, Offset)))
-               // Volatile.
-               andBool ((notBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset)))
-                    orBool isVolatileType(T))
                // Cross-thread writes.
                andBool notBool ((isThreadDuration(loc(Base, Offset))
                          orBool isAutoDuration(loc(Base, Offset)))
@@ -77,26 +80,18 @@ module C-IO-BUFFERED
                // Libc fixed.
                andBool (notBool isLibcFixedDuration(Base))
           [structural]
-     rule checkWrite(Loc::SymLoc, _) => .K
+     rule checkWrite(Loc::SymLoc) => .K
           requires isNativeLoc(Loc)
      rule <k> (.K => UNDEF("EIO3",
                "Trying to modify an object declared with const type."))
-               ~> checkWrite(loc(Base::SymBase, Offset::Int), _)
+               ~> checkWrite(loc(Base::SymBase, Offset::Int))
           ...</k>
           <mem>... Base |-> object(ObjT::EffectiveType, _, _) ...</mem>
           requires Const() inQuals getQualsAtOffset(ObjT, Offset)
           [structural]
-     rule <k> (.K => UNDEF("EIO4",
-               "Trying to modify an object declared with volatile type through a non-volatile lvalue."))
-               ~> checkWrite(loc(Base::SymBase, Offset::Int), T::Type)
-          ...</k>
-          <mem>... Base |-> object(ObjT::EffectiveType, _, _) ...</mem>
-          requires notBool isVolatileType(T)
-               andBool (Volatile() inQuals getQualsAtOffset(ObjT, Offset))
-          [structural]
      rule <k> (.K => IMPL("EIO5",
                "Trying to modify an object with thread or auto storage duration in a thread other than the one in which the object is associated."))
-               ~> checkWrite(Loc::SymLoc, _)
+               ~> checkWrite(Loc::SymLoc)
           ...</k>
           <thread-id> ThreadId::Int </thread-id>
           requires (isThreadDuration(Loc) orBool isAutoDuration(Loc))
@@ -104,7 +99,7 @@ module C-IO-BUFFERED
           [structural]
      rule (.K => UNDEF("EIO11",
                "Trying to modify an unmodifiable object returned by a library function."))
-          ~> checkWrite(loc(Base::SymBase, _), _)
+          ~> checkWrite(loc(Base::SymBase, _))
           requires isLibcFixedDuration(Base)
           [structural]
 
@@ -125,24 +120,24 @@ module C-IO-BUFFERED
           requires Offset +Int Size -Int 1 >=Int Len orBool Offset <Int 0
           [structural]
 
-     syntax KItem ::= bwrite(SymLoc, List)
-     rule <k> writeBytesBuffered(loc(Base::SymBase, Offset::Int), L::List) => .K ...</k>
-          <buffer>... .List => ListItem(bwrite(loc(Base, Offset), L)) </buffer>
+     rule <k> writeBytesBuffered(Loc::SymLoc, L::List) => .K ...</k>
+          <buffer>... .List => ListItem(bwrite(Loc, L)) </buffer>
+          [structural]
+
+     syntax KItem ::= fillBytesBuffered(SymLoc, Int, Bits)
+     rule <k> fillBytesBuffered(Loc::SymLoc, N::Int, V::Bits) => .K ...</k>
+          <buffer>... .List => ListItem(bfill(Loc, N, V)) </buffer>
           [structural]
 
      //TODO(dwightguth): when we do symbolic execution we need to rework this stuff to obey the C11 memory model
+     syntax KItem ::= bwrite(SymLoc, List)
+     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
      rule <buffer>
                ListItem(bwrite(loc(Base::SymBase, Offset::Int), L::List)) => .List
           ...</buffer>
-          <mem> M::Map => writeBuffer(M, Base, M[Base], Offset, L) </mem>
+          <mem> M::Map => bufferWrite(M, Base, M[Base], Offset, L) </mem>
           requires notBool isNativeLoc(loc(Base, Offset))
           [structural]
-
-     syntax Map ::= writeBuffer(Map, SymBase, K, Int, List) [function]
-     rule writeBuffer(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
-          => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
-
-     syntax List ::= #writeNativeByte(SymLoc, K) [function, hook(C_SEMANTICS.writeNativeByte), impure]
      rule <buffer>
                ListItem(bwrite((Loc::SymLoc => Loc +bytes 1), ((ListItem(V:K) => #writeNativeByte(Loc, V)) _::List)))
           ...</buffer>
@@ -151,6 +146,27 @@ module C-IO-BUFFERED
                ListItem(bwrite(Loc::SymLoc, .List)) => .List
           ...</buffer>
           requires isNativeLoc(Loc)
+
+     syntax KItem ::= bfill(SymLoc, Int, Bits)
+     syntax List ::= #fillNativeBytes(SymLoc, Int, K) [function, hook(C_SEMANTICS.fillNativeBytes), impure]
+     rule <buffer>
+               ListItem(bfill(Loc::SymLoc, N::Int, V::Bits)) => .List
+          ...</buffer>
+          <mem> M::Map => bufferFill(M, base(Loc), M[base(Loc)], offset(Loc), N, V) </mem>
+          requires notBool isNativeLoc(Loc)
+          [structural]
+     rule <buffer>
+               ListItem(bfill(Loc::SymLoc, N::Int, V::Bits)) => #fillNativeBytes(Loc, N, V)
+          ...</buffer>
+          requires isNativeLoc(Loc)
+
+     syntax Map ::= bufferWrite(Map, SymBase, K, Int, List) [function]
+     rule bufferWrite(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, Buffer::List)
+          => M[Base <- object(T, Len, updateArray(Bytes, Offset, Buffer))]
+
+     syntax Map ::= bufferFill(Map, SymBase, K, Int, Int, Bits) [function]
+     rule bufferFill(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, N::Int, V::Bits)
+          => M[Base <- object(T, Len, fillArray(Bytes, Offset, N, V))]
 
      rule locations(.List) => .Set
      rule locations(ListItem(bwrite(Loc::SymLoc, Bytes::List)) L::List)
@@ -216,7 +232,7 @@ module C-IO-BUFFERED
 
      // loc, size in bytes, aux list
      syntax K ::= "readBytes-aux" "(" SymLoc "," Int "," List "," Type "," K "," K "," K "," Set "," List "," Bool "," Bool "," Bool "," Bool ")" [function]
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1,
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(M[Offset]) Aux,
                         T::Type,
@@ -230,7 +246,7 @@ module C-IO-BUFFERED
                         VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
                         _)
           requires Size >Int 0 andBool Offset in_keys(M)
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1,
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(M[Offset]) Aux,
                         T::Type,
@@ -244,7 +260,7 @@ module C-IO-BUFFERED
                         VolatileErr:Bool => VolatileErr orBool assertVolatile(ObjT, Offset, T),
                         _)
           requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M)
-     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1, 
+     rule readBytes-aux(loc(Base::SymBase, Offset::Int) => loc(Base, Offset) +bytes -1,
                         Size::Int => Size -Int 1,
                         Aux::List => ListItem(getUninitializedBits(loc(Base, Offset), ObjT)) Aux,
                         T::Type,
@@ -274,8 +290,8 @@ module C-IO-BUFFERED
                         _,
                         _)
           requires Size >Int 0 andBool notBool (Loc in locations(Mem))
-     rule readBytes-aux(_, 0, Aux::List, _, _, _, _, _, _, Seq:Bool, InBounds:Bool, VolatileErr:Bool, Uninit:Bool) 
-          => #if Seq #then errorUnseqEffects #else .K #fi ~> 
+     rule readBytes-aux(_, 0, Aux::List, _, _, _, _, _, _, Seq:Bool, InBounds:Bool, VolatileErr:Bool, Uninit:Bool)
+          => #if Seq #then errorUnseqEffects #else .K #fi ~>
              #if InBounds #then errorReadOutOfBounds #else .K #fi ~>
              #if VolatileErr #then errorNonVolatileLVal #else .K #fi ~>
              #if Uninit #then errorUninit #else .K #fi ~>
@@ -285,14 +301,12 @@ module C-IO-BUFFERED
      syntax Bits ::= getUninitializedBits(SymLoc, EffectiveType) [function]
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
-     rule getUninitializedBits(L::SymLoc, dynamicType(T::Type)) => getUninitializedBits(L, T)
+     rule getUninitializedBits(L::SymLoc, dynamicType(T::Type))
+          => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
           requires isStaticDuration(L) orBool isThreadDuration(L)
-     rule getUninitializedBits(L::SymLoc, T:Type)
+     rule getUninitializedBits(L::SymLoc, t(...) #as T::Type)
           => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
-          requires isStaticDuration(L)
-     rule getUninitializedBits(L::SymLoc, T:Type)
-          => getZeroedBits(offset(L) *Int cfg:bitsPerByte, cfg:bitsPerByte, T)
-          requires isThreadDuration(L)
+          requires isStaticDuration(L) orBool isThreadDuration(L)
 
      syntax Bits ::= getZeroedBits(Int, Int, Type) [function]
      rule getZeroedBits(_, N::Int, T::Type)
@@ -329,7 +343,7 @@ module C-IO-BUFFERED
             Offsets::Map (FId |-> FOffset::Int),
             PaddingOffs::Set))
           => #if isNoName(FId) #then
-               //the bits of the field in the current byte are traps, because it was unnamed
+               // the bits of the field in the current byte are traps, because it was unnamed
                piece(trap, minInt(FOffset +Int bitSizeofType(T),
                                   Offset +Int N) -Int
                            maxInt(FOffset, Offset))
@@ -341,7 +355,7 @@ module C-IO-BUFFERED
                               maxInt(FOffset, Offset)), T)
              #fi
                bit::
-                 //read the remaining bits in the byte
+                 // read the remaining bits in the byte
                  getZeroedBits(minInt(FOffset +Int bitSizeofType(T),
                                       Offset +Int N), N -Int
                    (minInt(FOffset +Int bitSizeofType(T),
@@ -435,36 +449,28 @@ module C-IO-BUFFERED
      rule filterBuffer(ListItem(bwrite(loc(Base::SymBase, _), _)) L::List, Base) => filterBuffer(L, Base)
      rule filterBuffer(ListItem(K:K) L::List, Base::SymBase) => ListItem(K) filterBuffer(L, Base) [owise]
 
-     rule readBytesForWriting(loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset), _, _)
-     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List)
-              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(M[Offset]))
+     rule readBytesForWriting(loc(Base::SymBase, Offset::Int, _) => loc(Base, Offset), _)
+     rule (.K => dataList(.List)) ~> readBytesForWriting(loc(_, _), Size::Int)
+          requires Size >Int 0
+     rule <k> dataList(_::List (.List => ListItem(M[Offset])))
+               ~> readBytesForWriting(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc => Loc +bytes 1, Size::Int => Size -Int 1)
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
                Base |-> object(_, _, M::Array)
           ...</mem>
-          requires Size >Int 0 andBool notBool (loc(Base, Offset) in locations(Mem)) andBool Offset in_keys(M) [structural]
-     rule <k> readBytesForWriting(loc(Base::SymBase, Offset::Int), Size::Int, Aux::List)
-              => readBytesForWriting(loc(Base, Offset) +bytes 1, Size -Int 1, Aux ListItem(getUninitializedBits(loc(Base, Offset), ObjT)))
+          requires Size >Int 0 andBool notBool (Loc in locations(Mem)) andBool Offset in_keys(M) [structural]
+     rule <k> dataList(_::List (.List => ListItem(getUninitializedBits(Loc, ObjT))))
+               ~> readBytesForWriting(loc(Base::SymBase, Offset::Int) #as Loc::SymLoc => Loc +bytes 1, Size::Int => Size -Int 1)
           ...</k>
           <buffer> Mem::List </buffer>
           <mem>...
-               Base |-> object(ObjT::EffectiveType, _, (M::Array => M[Offset <- getUninitializedBits(loc(Base, Offset), ObjT)]))
+               Base |-> object(ObjT::EffectiveType, _, (M::Array => M[Offset <- getUninitializedBits(Loc, ObjT)]))
           ...</mem>
           requires Size >Int 0 andBool (notBool (Offset in_keys(M)))
-               andBool notBool (loc(Base, Offset) in locations(Mem))
-     rule readBytesForWriting(_, 0, Aux::List) => dataList(Aux)
+               andBool notBool (Loc in locations(Mem))
+     rule dataList(_) ~> (readBytesForWriting(_, 0) => .K)
           [structural]
-
-     syntax Quals ::= getQualsAtOffset(EffectiveType, Int) [function, klabel(getQualsAtOffset2)]
-     rule getQualsAtOffset(dynamicType(T::Type), Offset::Int) => getQualsAtOffset(T, Offset)
-     rule getQualsAtOffset(T:Type, Offset::Int)
-          => getQualsAtOffset(getTypesAtOffset(T, Offset *Int cfg:bitsPerByte))
-     rule getQualsAtOffset(_, _) => noQuals [owise]
-
-     rule getQualsAtOffset(ListItem(T:Type) Ts:List)
-          => getQualifiers(T) +Quals getQualsAtOffset(Ts)
-     rule getQualsAtOffset(.List) => noQuals
 
      rule [err00037]:
           (.K => UNDEF("CEER1", "Trying to read through a null pointer.") ) ~>

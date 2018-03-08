@@ -1,6 +1,7 @@
 // information used by execution and translation configuration and therefore
 // included in all C and C++ modules
 module C-DYNAMIC-SORTS
+     imports COMMON-SORTS
      syntax LHold
      syntax RHold
      syntax NCLHold
@@ -9,9 +10,8 @@ module C-DYNAMIC-SORTS
      syntax Nclv
      syntax Hold
      syntax Scope
-     syntax NumValue
-     syntax CValue
      syntax TrapLValue
+     syntax Agg
      syntax Typed ::= LValue | RValue | Hold | Nclv | TrapLValue
 endmodule
 
@@ -27,7 +27,6 @@ module C-DYNAMIC-SYNTAX
      imports K-REFLECTION
      imports LIST
      imports BITS-SORTS
-     imports C-COMMON-EXPR-EVAL-SYNTAX
      imports C-DYNAMIC-SORTS
      imports C-REVAL-SYNTAX
      imports C-TYPING-SORTS
@@ -60,11 +59,6 @@ module C-DYNAMIC-SYNTAX
      syntax KItem ::= value(K) [function]
 
      syntax KItem ::= "discard"
-
-     syntax NumValue ::= Float | BitValue // Int is a subsort of BitValue
-     syntax CValue ::= SymLoc | Agg
-     syntax EffectiveValue ::= CValue
-     syntax C ::= NumValue | Type | RValue
 
      syntax Nclv ::= nclv(SymLoc, Type)
      syntax TrapLValue ::= trap(UType) [klabel(trap1)]
@@ -144,6 +138,10 @@ module C-DYNAMIC-SYNTAX
                          | InitLValue "[[" Int "]]" [strict(1)]
                          | InitLValue ".init" CId [strict(1)]
 
+     syntax EncodableValue ::= Opaque
+     syntax Opaque ::= opaque(K, UType)
+     syntax KItem ::= fromOpaque(CValue) [function]
+
 endmodule
 
 module C-DYNAMIC
@@ -151,6 +149,7 @@ module C-DYNAMIC
      imports C-CONFIGURATION
      imports BOOL
      imports K-EQUAL
+     imports C-CHECK-USE-SYNTAX
      imports C-SETTINGS-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
@@ -230,4 +229,8 @@ module C-DYNAMIC
      rule allRValueInHeatList(hItem(_) hs:: _) => false
      rule allRValueInHeatList(hrItem(_) hs:: HL:HeatList)
           => allRValueInHeatList(HL)
+
+     rule fromOpaque(opaque(V:K, _)) => V
+     rule fromOpaque(_) => .K [owise]
+
 endmodule

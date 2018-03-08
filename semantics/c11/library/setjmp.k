@@ -3,10 +3,10 @@ module LIBC-SETJMP
      imports C-CONFIGURATION
      imports INT
      imports K-EQUAL
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-SYNTAX

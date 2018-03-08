@@ -126,7 +126,7 @@ module C-DECL-LOCAL
                => allocObject(bnew(!I:Int, T, static(TU)), T)
                ~> addToEnv(X, T, bnew(!I, T, static(TU)))
                ~> giveType(X, T)
-               ~> runInit(Init)
+               ~> Init
           ...</k>
           <curr-scope> S:Scope </curr-scope>
           <curr-tu> TU:String </curr-tu>

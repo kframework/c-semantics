@@ -5,7 +5,7 @@ module C-EXPR-FUNCTION-CALL
      imports COMPAT-SYNTAX
      imports C-ABSTRACT-SORTS
      imports C-BINDING-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ELABORATOR-SYNTAX
      imports C-ERROR-SYNTAX
@@ -69,6 +69,6 @@ module C-EXPR-FUNCTION-CALL
      rule (elaborateDone(.K) => .K) ~> elabCall(_, _, _, _)
 
      rule bindParam(_, T:Type, V:RValue)
-          => runInit(Initializer(ncle(fauxParam, T) := V))
+          => Initializer(ncle(fauxParam, T) := V)
 
 endmodule

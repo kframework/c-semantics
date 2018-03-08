@@ -4,8 +4,6 @@ module C-COMMON-EXPR-EVAL-SYNTAX
      imports SYMLOC-SORTS
 
      syntax KItem ::= instantiate(SymLoc, Type)
-     syntax KItem ::= checkUse(K) [strict]
-     syntax KItem ::= checkLoc(SymLoc)
 endmodule
 
 module C-COMMON-EXPR-EVAL
@@ -17,12 +15,12 @@ module C-COMMON-EXPR-EVAL
      imports BITS-SYNTAX
      imports SETTINGS-SYNTAX
      imports C-BITSIZE-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-SYMLOC-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
      imports C-TYPING-SYNTAX
-     imports LIBC-SYNTAX
 
      syntax KItem ::= "reval" "(" ")"
      rule reval(HOLE:K) => HOLE ~> reval() [heat]
@@ -137,65 +135,5 @@ module C-COMMON-EXPR-EVAL
           ~> checkRegister(Loc:SymLoc)
           requires isRegisterLoc(Loc)
           [structural]
-
-     rule checkUse(V:KResult) => V
-          requires getKLabel(V) =/=K #klabel(`tv`)
-          [structural]
-     rule checkUse(tv(V::CValue, T::UType)) => tv(V, T)
-          requires notBool (isSymLoc(V) andBool isPointerUType(T))
-               andBool notBool isTrap(V)
-               andBool notBool isOpaque(V)
-          [structural]
-     rule <k> checkUse(tv(V:Opaque, T::UType)) => tv(V, T) ...</k>
-          <curr-tu> "builtin" </curr-tu>
-          [structural]
-     rule <k> checkUse(tv(V:Opaque, T::UType)) => checkOpaque(V) ~> tv(V, T) ...</k>
-          <curr-tu> Tu::String </curr-tu>
-          requires Tu =/=K "builtin"
-          [structural]
-     rule checkUse(tv(trap, T::UType)) => trap(T)
-          [structural]
-     rule <k> checkUse(tv(V:SymLoc, T:PointerUType))
-               => checkLoc(resolveLinking(V, Linkings))
-               ~> tv(resolveLinking(V, Linkings), T)
-          ...</k>
-          <linkings> Linkings::Map </linkings>
-          [structural]
-
-     syntax Error ::= "errorLocBounds"
-     syntax KItem ::= "errorLocInvalid"
-     rule checkLoc(NullPointer) => .K
-          [structural]
-     rule checkLoc(loc(_, _, _) #as Loc::SymLoc => stripProv(Loc))
-          [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int)) => .K ...</k>
-          <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
-          requires (Offset <=Int Sz) andBool (Offset >=Int 0)
-          [structural]
-     rule <k> checkLoc(loc(Base::SymBase, Offset::Int))
-               => UNDEF("CEE3", "Found pointer that refers outside the bounds of an object + 1.")
-               ~> errorLocBounds
-          ...</k>
-          <mem>... Base |-> object(_, Sz::Int, _) ...</mem>
-          requires (Offset >Int Sz) orBool (Offset <Int 0)
-          [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc) => .K ...</k>
-          <mem> Mem::Map </mem>
-          requires (isStaticDuration(Loc) orBool isNativeLoc(Loc))
-               andBool notBool (base(Loc) in_keys(Mem))
-          [structural]
-     rule <k> checkLoc(loc(_, _) #as Loc::SymLoc)
-               => UNDEF("CEE4", "Referring to an object outside of its lifetime.")
-               ~> errorLocInvalid
-          ...</k>
-          <mem> Mem::Map </mem>
-          requires notBool (base(Loc) in_keys(Mem))
-               andBool notBool isStaticDuration(Loc)
-               andBool notBool isNativeLoc(Loc)
-          [structural]
-
-     syntax KItem ::= checkOpaque(Opaque) [function]
-     rule checkOpaque(_) => .K
-          requires notBool hasLint
 
 endmodule

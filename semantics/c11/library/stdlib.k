@@ -11,7 +11,7 @@ module LIBC-STDLIB
      imports STRING
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX

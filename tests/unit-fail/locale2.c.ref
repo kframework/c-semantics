@@ -1,5 +1,5 @@
 Trying to modify an unmodifiable object returned by a library function:
-      > in memset at string.c:31:13
+      > in memset at locale2.c:7:7
         in main at locale2.c:7:7
 
     Undefined behavior (UB-EIO11):

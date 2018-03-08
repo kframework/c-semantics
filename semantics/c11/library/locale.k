@@ -1,7 +1,7 @@
 module LIBC-LOCALE
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX

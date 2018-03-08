@@ -1,14 +1,16 @@
 module COMMON-SORTS
+     imports BITS-SORTS
+     imports SYMLOC-SORTS
      imports INT-SYNTAX
      imports FLOAT-SYNTAX
+     syntax CValue ::= BitValue | Agg | Encodable | IntPtr
+     syntax EffectiveValue ::= Int | Float | CValue
+     syntax Agg
      syntax CId
      syntax CabsLoc
      syntax Qualifier
      syntax Quals
      syntax EvalContext
-     syntax CValue ::= NumValue
-     syntax NumValue ::= Int
-     syntax EffectiveValue ::= Int | Float
      syntax LanguageLinkage
      syntax Namespace
      syntax Scope

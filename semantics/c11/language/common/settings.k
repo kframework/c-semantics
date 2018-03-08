@@ -1,5 +1,6 @@
 module C-SETTINGS-SYNTAX
      imports SETTINGS-SYNTAX
+     imports COMMON-SORTS
      imports STRING
      imports LIST
 

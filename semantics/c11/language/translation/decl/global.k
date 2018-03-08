@@ -535,7 +535,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(Init)
+          ~> Init
           requires isCompleteType(T)
           [structural]
 
@@ -545,7 +545,7 @@ module C-DECL-GLOBAL
           => giveCompositeType(X, T)
           ~> allocateDecl(X)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(Init)
+          ~> Init
           requires isCompleteType(T)
           [structural]
 
@@ -554,7 +554,7 @@ module C-DECL-GLOBAL
                allocated, Lnk:Linkage, _)
           => giveCompositeType(X, T)
           ~> updateDecl(X, Lnk, initialized)
-          ~> runInit(Init)
+          ~> Init
           requires isCompleteType(T)
           [structural]
 

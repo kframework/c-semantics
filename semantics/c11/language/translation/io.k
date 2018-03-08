@@ -1,4 +1,4 @@
-module C-IO-DIRECT
+module C-IO
      imports C-CONFIGURATION
      imports ARRAY
      imports BOOL
@@ -15,23 +15,25 @@ module C-IO-DIRECT
      imports C-TYPING-SYNTAX
 
      rule initBytes(Loc::SymLoc, ListItem(V:Bits) L::List)
-          => initByte(stripProv(Loc), V) ~> initBytes(Loc +bytes 1, L)
+          => initBytesFill(Loc, 1, V) ~> initBytes(Loc +bytes 1, L)
           [structural]
      rule initBytes(_, .List) => .K
           [structural]
 
-     syntax KItem ::= initByte(SymLoc, Bits)
-     rule <k> initByte(loc(Base::SymBase, Offset::Int), V::Bits) => .K ...</k>
-          <mem>...
-               Base |-> object(_, Len:Int, (M::Array => M[Offset <- V]))
-          ...</mem>
-          requires Offset <Int Len
+     rule initBytesFill(loc(_, _, _) #as Loc::SymLoc => stripProv(Loc), _, _)
+
+     rule <k> initBytesFill(loc(Base::SymBase, Offset::Int), N::Int, V::Bits) => .K ...</k>
+          <mem> M::Map => fillBuffer(M, Base, M[Base], Offset, N, V) </mem>
           [structural]
+
+     syntax Map ::= fillBuffer(Map, SymBase, K, Int, Int, Bits) [function]
+     rule fillBuffer(M::Map, Base::SymBase, object(T::EffectiveType, Len::Int, Bytes::Array), Offset::Int, N::Int, V::Bits)
+          => M[Base <- object(T, Len, fillArray(Bytes, Offset, N, V))]
 
      rule readBytes(Loc:SymLoc, Size:Int, _)
           => readBytes'(stripProv(Loc), Size, .List)
           [structural]
-     rule readBytesForWriting(Loc:SymLoc, Size:Int, .List)
+     rule readBytesForWriting(Loc:SymLoc, Size:Int)
           => readBytes'(stripProv(Loc), Size, .List)
           [structural]
 

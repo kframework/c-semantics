@@ -29,22 +29,22 @@ module C-COMMON-EXPR-MULTIPLICATIVE
      }*/
 
      rule tv(I1:Int, T::UType) * tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 *Int I2)
+          => intArithInterpret(T, I1 *Int I2)
           requires isPromoted(T)
                andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) * tv(F2:Float, T'::UType)
-          => arithInterpret(T, F1 *Float F2)
+          => floatArithInterpret(T, F1 *Float F2)
           requires T ==Type T'
           [structural]
 
      rule tv(I1:Int, T::UType) / tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 /Int I2)
+          => intArithInterpret(T, I1 /Int I2)
           requires isPromoted(T) andBool I2 =/=Int 0
                andBool T ==Type T'
           [structural]
      rule tv(F1:Float, T::UType) / tv(F2:Float, T'::UType)
-          => arithInterpret(T, F1 /Float F2)
+          => floatArithInterpret(T, F1 /Float F2)
           requires T ==Type T' andBool F2 =/=Float 0.0
           [structural]
      rule (.K => UNDEF("CEMX1", "Division by 0."))
@@ -61,7 +61,7 @@ module C-COMMON-EXPR-MULTIPLICATIVE
 
 
      rule tv(I1:Int, T::UType) % tv(I2:Int, T'::UType)
-          => arithInterpret(T, I1 %Int I2)
+          => intArithInterpret(T, I1 %Int I2)
           requires isPromoted(T)
                andBool (I2 =/=Int 0)
                andBool (min(T) <=Int I1 /Int I2)

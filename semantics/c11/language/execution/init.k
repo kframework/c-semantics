@@ -10,7 +10,7 @@ endmodule
 
 module C-EXECUTION-INIT
      imports BITS-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-CONFIGURATION
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX

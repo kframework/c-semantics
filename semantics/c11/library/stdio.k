@@ -10,7 +10,7 @@ module LIBC-STDIO
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-EXECUTION-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-READING-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX

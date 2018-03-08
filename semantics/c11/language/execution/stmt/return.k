@@ -9,12 +9,12 @@ module C-STMT-RETURN
      imports RETURN-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
-     imports C-CHECK-LOC-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX

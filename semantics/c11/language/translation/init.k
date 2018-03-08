@@ -39,7 +39,7 @@ module C-TRANSLATION-INIT
 
      syntax KItem ::= preDeclareStrings(List)
      rule preDeclareStrings(ListItem(K:K) L:List)
-          => runInit(K ~> discard)
+          => K ~> discard
           ~> preDeclareStrings(L)
           [structural]
      rule preDeclareStrings(.List) => .K

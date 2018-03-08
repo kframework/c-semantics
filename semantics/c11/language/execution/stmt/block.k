@@ -1,9 +1,9 @@
 module C-STMT-BLOCK
      imports C-CONFIGURATION
      imports INT
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-DYNAMIC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
 
      rule <k> pushBlock(Tag:Int)
                => enterRestrictBlock(blockScope(F, Tag))

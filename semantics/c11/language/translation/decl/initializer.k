@@ -165,7 +165,7 @@ module C-DECL-INITIALIZER
           <curr-object>
                .List => ListItem(ncle(ncle(X, T), T))
           </curr-object>
-          <saved-init>... .K => zero(X) </saved-init>
+          <saved-init>... .K => Zero(X) </saved-init>
           [structural]
 
      rule fillInits(ListItem(InitFragment(K:K, Exp:K)) L:List)
@@ -359,6 +359,11 @@ module C-DECL-INITIALIZER
      rule getTopArrayUse((K::InitLValue [[N::Int]])[[_]]) => getTopArrayUse(K[[N]])
      rule getTopArrayUse((K::InitLValue .init _)[[_]]) => getTopArrayUse(K)
 
+     syntax KItem ::= trapPadding(K) [function]
+     rule trapPadding(K::InitLValue .init F::CId) => InitPadding(K, F) ~> trapPadding(K)
+     rule trapPadding(K::InitLValue [[_]]) => trapPadding(K)
+     rule trapPadding(_:LValue) => .K
+
      syntax KItem ::= initializeSingleInit(K) [strict]
 
      rule (.K => typeof(K)) ~> initializeSingleInit(K:KResult)
@@ -374,7 +379,7 @@ module C-DECL-INITIALIZER
                N::Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               .K => Initializer(K := K')
+               .K => trapPadding(K) ~> Initializer(K := K')
           </saved-init>
           requires notBool isAggregateOrUnionType(T)
                andBool notBool isStructOrUnionType(T')
@@ -421,7 +426,7 @@ module C-DECL-INITIALIZER
                N:Int => maxInt(N, getTopArrayUse(K))
           </incomplete-length>
           <saved-init>...
-               .K => Initializer(K := K')
+               .K => trapPadding(K) ~> Initializer(K := K')
           </saved-init>
           [structural]
 
@@ -557,48 +562,5 @@ module C-DECL-INITIALIZER
                andBool (isBasicType(T) orBool isPointerType(T)
                     orBool isBitfieldType(T))
           [structural]
-
-     // c1x 6.7.9:10 If an object that has automatic storage duration is not
-     // initialized explicitly, its value is indeterminate. If an object that
-     // has static or thread storage duration is not initialized explicitly,
-     // then:
-     // -- if it has pointer type, it is initialized to a null pointer;
-     // -- if it has arithmetic type, it is initialized to (positive or
-     // unsigned) zero;
-     // -- if it is an aggregate, every member is initialized (recursively)
-     // according to these rules, and any padding is initialized to zero bits;
-     // -- if it is a union, the first named member is initialized
-     // (recursively) according to these rules, and any padding is initialized
-     // to zero bits;
-
-     syntax KItem ::= zero(CId)
-     rule <k> zero(X:CId) => zeroType(ncle(X, T), T) ...</k>
-          <types>... X |-> T:Type ...</types>
-
-     syntax KItem ::= zeroType(K, Type) [function]
-     rule zeroType(X:K, T::Type)
-          => Initializer(X := tv(getZero(T), utype(T)))
-          requires isPointerType(T)
-               orBool (isArithmeticType(T) andBool (bitSizeofType(T) >Int 0))
-     rule zeroType(X:K, t(Qs::Quals, Mods::Set, arrayType(T::Type, Len::Int)))
-          => zeroType(X[[Len -Int 1]], T)
-          ~> zeroType(X, t(Qs, Mods, arrayType(T, Len -Int 1)))
-          requires Len >Int 0
-     rule zeroType(X:K, T:StructType) => zeroStruct(X, findFieldNames(T), T)
-     rule zeroType(X:K, T:UnionType)
-          => zeroStruct(X, ListItem({(findFieldNames(T))[0]}<:K), T)
-     rule zeroType(_, _:FunctionType) => .K
-     rule zeroType(_, t(_, _, flexibleArrayType(_))) => .K
-     rule zeroType(_, _) => .K [owise]
-
-     syntax KItem ::= zeroStruct(K, List, StructOrUnionType) [function]
-     rule zeroStruct(X:K, ListItem(F::CId) L:List, T::StructOrUnionType)
-          => zeroType(X .init F, findFieldType(F, T)) ~> zeroStruct(X, L, T)
-     rule zeroStruct(_, _, _) => .K [owise]
-
-     syntax CValue ::= getZero(Type) [function]
-     rule getZero(t(_, _, T:SimpleFloatType)) => zeroCFloat(utype(T))
-     rule getZero(_:PointerType) => NullPointer
-     rule getZero(_) => 0 [owise]
 
 endmodule

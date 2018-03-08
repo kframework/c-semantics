@@ -18,7 +18,7 @@ module C-EXPR-FUNCTION-CALL
      imports COMMON-BUILTIN-SYNTAX
      imports C-ALIGNMENT-SYNTAX
      imports C-BINDING-SYNTAX
-     imports C-CHECK-LOC-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
      imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ENV-SYNTAX

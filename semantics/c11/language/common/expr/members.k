@@ -8,7 +8,7 @@ module C-COMMON-EXPR-MEMBERS
      imports C-ALIGNMENT-SYNTAX
      imports C-BITSIZE-SYNTAX
      imports C-BITS-SYNTAX
-     imports C-COMMON-EXPR-EVAL-SYNTAX
+     imports C-CHECK-USE-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-READING-SYNTAX
@@ -50,9 +50,7 @@ module C-COMMON-EXPR-MEMBERS
      syntax KItem ::= createLv(SymLoc, StructOrUnionType, CId, K, K) [strict(4, 5)]
      rule createLv(NullPointer => loc(obj(0, 1, nativeAddress()), 0), _, _, _, _)
      rule createLv(Loc::SymLoc, T::StructOrUnionType, F::CId, LAT:EffectiveType, t(...) #as T'::Type)
-          => lv(setBitOffset(findFieldOffset(F, T) %Int cfg:bitsPerByte,
-                    updateLastAccessVariant(Loc, F, LAT) +bytes (findFieldOffset(F, T) /Int cfg:bitsPerByte)),
-               addQualifiers(getQualifiers(T), T'))
+          => lv(updateLastAccessVariant(Loc, F, LAT) +bits findFieldOffset(F, T), addQualifiers(getQualifiers(T), T'))
           requires Loc =/=K NullPointer andBool notBool isNoType(T')
      rule (.K => unknownMemberAccess)
           ~> createLv(_, _, _, _, _:NoType)

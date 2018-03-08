@@ -8,8 +8,8 @@ module CPP-STMT-RETURN
      imports CPP-STMT-RETURN-SYNTAX
      imports C-CONFIGURATION
      imports BOOL
-     imports C-CHECK-LOC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

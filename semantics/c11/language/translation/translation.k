@@ -8,7 +8,7 @@ require "env.k"
 require "error.k"
 require "function-def.k"
 require "init.k"
-require "io-direct.k"
+require "io.k"
 require "literal.k"
 require "process-label.k"
 require "promotion.k"
@@ -70,7 +70,7 @@ module C-TRANSLATION
      imports C-ELABORATOR
      imports C-ENV
      imports C-FUNCTION-DEF
-     imports C-IO-DIRECT
+     imports C-IO
      imports C-LITERAL
      imports C-PROCESS-LABEL
      imports C-PROMOTION

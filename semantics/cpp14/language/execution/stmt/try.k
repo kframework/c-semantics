@@ -1,8 +1,8 @@
 module CPP-STMT-TRY
      imports C-CONFIGURATION
      imports K-REFLECTION
-     imports C-CHECK-LOC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-CONVERSION-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

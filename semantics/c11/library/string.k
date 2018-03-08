@@ -2,21 +2,35 @@ module LIBC-STRING
      imports C-CONFIGURATION
      imports INT
      imports K-EQUAL
+     imports BITS-SYNTAX
+     imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
+     imports C-CONVERSION-SYNTAX
      imports C-DYNAMIC-SYNTAX
      imports C-ERROR-SYNTAX
      imports C-MEMORY-ALLOC-SYNTAX
      imports C-MEMORY-WRITING-SYNTAX
      imports C-NATIVE-BRIDGE-SYNTAX
      imports C-SYMLOC-SYNTAX
+     imports C-SYNTAX
      imports C-TYPE-BUILDER-SYNTAX
      imports C-TYPING-SYNTAX
      imports LIBC-BUILTIN-SYNTAX
      imports LIBC-IO-SYNTAX
 
+     rule (.K => cast(utype(unsigned-char), V))
+          ~> builtin("memset", _, V::RValue, _)
+          requires notBool isUCharType(type(V))
+          [structural]
+     rule tv(V:Int, _) ~> builtin("memset", tv(Dest:SymLoc, T::UType), _, tv(N:Int, _))
+          => tv(Dest, utype(pointerType(type(unsigned-char)))) + tv(N, utype(int)) // Verify address is valid.
+          ~> discard
+          ~> writeBytesFill(Dest, N, piece(V, cfg:bitsPerByte))
+          ~> tv(Dest, T)
+          [structural]
+
      // try to use getString
      // fixme should detect overlaps
-     syntax KItem ::= strcpy(SymLoc, SymLoc, SymLoc)
      rule builtin("strcpy",
                tv(Dest:SymLoc, ut(_, pointerType(_))),
                tv(Src:SymLoc, ut(_, pointerType(_))))
@@ -30,6 +44,7 @@ module LIBC-STRING
                tv(Src:SymLoc, ut(_, pointerType(_))))
           requires Dest ==K NullPointer orBool Src ==K NullPointer
 
+     syntax KItem ::= strcpy(SymLoc, SymLoc, SymLoc)
      rule (.K => reval(nclv(Src:SymLoc, type(char))))
           ~> strcpy(_, (Src => Src +bytes 1), _)
           [structural]

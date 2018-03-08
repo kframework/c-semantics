@@ -9,7 +9,7 @@ module CPP-EXECUTION-IO
      imports SETTINGS-SYNTAX
      imports SYMLOC-SYNTAX
      imports C-TYPING-EFFECTIVE-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-IO-SYNTAX
      imports CPP-BITSIZE-SYNTAX
      imports CPP-ERROR-SYNTAX
      imports CPP-TYPING-SYNTAX
@@ -70,10 +70,6 @@ module CPP-EXECUTION-IO
      rule getUninitializedBits(L::SymLoc, _) => piece(trap, cfg:bitsPerByte)
           requires notBool (isStaticDuration(L) orBool isThreadDuration(L))
      rule getUninitializedBits(L::SymLoc, _) => piece(0, cfg:bitsPerByte) [owise]
-
-     rule getQualsAtOffset(ListItem(t(Q::Quals, _, _)) Ts::List)
-          => Q +Quals getQualsAtOffset(Ts)
-
 
      rule (.K => DRAFTING("EIO1",
                "Reading outside the bounds of an object."))

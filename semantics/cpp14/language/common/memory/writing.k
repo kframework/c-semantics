@@ -18,6 +18,7 @@ endmodule
 module CPP-MEMORY-WRITING
      imports CPP-MEMORY-WRITING-SYNTAX
      imports STRING
+     imports BITS-SYNTAX
      imports MEMORY-SYNTAX
      imports SYMLOC-SYNTAX
      imports CPP-BITSIZE-SYNTAX
@@ -33,8 +34,8 @@ module CPP-MEMORY-WRITING
      rule init(Loc::SymLoc, V:PRVal, _)
           => initBytes(stripProv(Loc), splitBytes(V))
 
-     rule splitBytes(prv(V::CPPValue, _, T::CPPType))
-          => splitBytes(V, byteSizeofType(T))
+     rule splitBytes(prv(V:Encodable, _, T::CPPType))
+          => splitToBytes(encode(V, 0, bitSizeofType(T)))
 
      rule initString(Loc::SymLoc, S::String)
           => ExpressionStmt(

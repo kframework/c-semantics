@@ -48,6 +48,9 @@ module C-SYNTAX
      syntax Statement ::= "Initializer" "(" K ":=" K ")" [strict(1)]
      context Initializer(_ := (HOLE:KItem => reval(HOLE))) [result(RValue)]
 
+     syntax Statement ::= Zero(K) [strict]
+     syntax Statement ::= InitPadding(K, CId) [strict(1)]
+
      /*
      and storage =
      NO_STORAGE | AUTO | STATIC | EXTERN | REGISTER

@@ -22,7 +22,6 @@ module C-TYPING-SYNTAX
      imports STRING-SYNTAX
      imports MAP
 
-     syntax CValue ::= Int // defined in C-DYNAMIC-SYNTAX
      syntax Qualifier // defined in C-SYNTAX
      syntax Storage // defined in C-SYNTAX
 
@@ -66,6 +65,8 @@ module C-TYPING-SYNTAX
      syntax EffectiveType ::= mergeVariants(EffectiveType, EffectiveType) [function]
      syntax Type ::= clearActiveVariant(Type) [function]
      syntax Int  ::= floorBitOffset(Int, Type) [function]
+     syntax Int  ::= ceilBitOffset(Int, Type) [function]
+     syntax CId ::= getFieldAtOffset(Int, StructOrUnionType) [function]
      syntax Type ::= getFieldTypeAtOffset(Int, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldType(CId, Type, StructOrUnionType) [function]
      syntax StructOrUnionType ::= setFieldTypeAtOffset(Int, Type, StructOrUnionType) [function]
@@ -78,6 +79,7 @@ module C-TYPING-SYNTAX
      syntax List ::= findFieldNames(Type) [function]
      syntax Int  ::= findFieldOffset(CId, StructOrUnionType) [function]
      syntax Type ::= findFieldType(CId, Type) [function]
+     syntax List ::= findUnnamedBitfields(Type) [function]
 
      syntax Bool ::= isCompletePointerType(Type) [function]
                    | isCompleteType(Type) [function]
@@ -278,7 +280,8 @@ module C-TYPING-SYNTAX
      syntax Int ::= max(UType) [function]
      syntax Float ::= fmax(UType) [function]
      syntax Float ::= fmin(UType) [function]
-     syntax Bool ::= inRange(CValue, UType) [function]
+     syntax Bool ::= intInRange(Int, IntegerUType) [function]
+     syntax Bool ::= floatInRange(Float, FloatUType) [function]
 
      syntax Modifier ::= Packed()
 

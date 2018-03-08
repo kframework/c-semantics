@@ -36,7 +36,7 @@ module LIBC-IO-SYNTAX
 
      syntax RValue ::= str(String)
 
-     syntax Int ::= pointerToInt(CValue) [function]
+     syntax Int ::= pointerToInt(SymLoc) [function]
      syntax String ::= pointerToString(SymLoc) [function]
 
      syntax Int ::= "bufSiz" [function]
@@ -420,7 +420,7 @@ module LIBC-IO
      rule reval(tv(B:Int, _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(B))
           [structural]
-     rule reval(tv(encodedValue(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
+     rule reval(tv(encodedPtr(B:SymLoc, From::Int, To::Int), _)) ~> getBytes'(Loc::SymLoc, N::Int, S::String)
           => getBytes'(Loc, N, S +String chrChar(bitsValue(pointerToInt(B), From, To)))
           [structural]
      rule getBytes'(_, 0, S::String) => str(S)

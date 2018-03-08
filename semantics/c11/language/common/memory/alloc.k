@@ -53,11 +53,7 @@ module C-MEMORY-ALLOC
 
      // Used by calloc.
      syntax Array ::= createArray(Int, Bits) [function]
-     rule createArray(I::Int, B::Bits) => fillArray(0, I, makeEmptyArray(I), B)
-     syntax Array ::= fillArray(Int, Int, Array, Bits) [function]
-     rule fillArray(I::Int, Len::Int, A::Array, B::Bits) => fillArray(I +Int 1, Len, A [ I <- B ], B)
-          requires I <Int Len
-     rule fillArray(Len::Int, Len, A::Array, _) => A
+     rule createArray(I::Int, B::Bits) => fillArray(makeEmptyArray(I), 0, I, B)
 
      rule <k> zeroObject(Base:SymBase) => .K ...</k>
           <mem>...

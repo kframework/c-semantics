@@ -1,8 +1,8 @@
 module CPP-STMT-BLOCK
      imports C-CONFIGURATION
      imports INT
-     imports C-CHECK-LOC-SYNTAX
-     imports C-IO-BUFFERED-SYNTAX
+     imports C-CHECK-RESTRICT-SYNTAX
+     imports C-IO-SYNTAX
      imports C-SEQUENCE-POINT-SYNTAX
      imports CPP-BUILTIN-SYNTAX
      imports CPP-DYNAMIC-SYNTAX

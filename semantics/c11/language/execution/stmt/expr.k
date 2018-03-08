@@ -7,6 +7,7 @@ module C-STMT-EXPR
      imports C-SEQUENCE-POINT-SYNTAX
      imports C-SYNTAX
      imports C-TYPING-SYNTAX
+     imports SETTINGS-SYNTAX
 
      /*@ \fromStandard{\source[n1570]{\para{6.8.3}{2}}}{
      The expression in an expression statement is evaluated as a void expression
@@ -81,5 +82,11 @@ module C-STMT-EXPR
      rule getFirstMatch'(K:K, _, L:K) => K
           requires getKLabel(K) ==K L
      rule getFirstMatch'(.K, .Set, _) => .K
+
+     rule Zero(nclv(Loc::SymLoc, T::Type))
+          => initBytesFill(Loc, byteSizeofType(T), piece(0, cfg:bitsPerByte))
+
+     rule InitPadding(nclv(Loc::SymLoc, T::StructOrUnionType), F::CId)
+          => initPadding(Loc, T, F)
 
 endmodule

@@ -1,10 +1,10 @@
 require "check-effective.k"
-require "check-loc.k"
+require "check-restrict.k"
 require "configuration.k"
 require "env.k"
 require "error.k"
 require "init.k"
-require "io-buffered.k"
+require "io.k"
 require "sequence-point.k"
 
 require "stmt/block.k"
@@ -37,8 +37,8 @@ module C-EXECUTION
      imports C-EXECUTION-INIT
 
      imports C-CHECK-EFFECTIVE
-     imports C-CHECK-LOC
-     imports C-IO-BUFFERED
+     imports C-CHECK-RESTRICT
+     imports C-IO
      imports C-SEQUENCE-POINT
 
      imports C-STMT-BLOCK
