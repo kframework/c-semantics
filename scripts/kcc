@@ -930,6 +930,9 @@ sub pushObj {
 
 sub initOptions {
   my @options = ();
+  if ($args->{'-fno-native-compilation'}) {
+    push(@options, "`NoNativeFallback`(.KList)");
+  }
   if ($args->{'-frecover-all-errors'}) {
     push(@options, "`RecoverAll`(.KList)");
   }
@@ -1177,12 +1180,18 @@ sub checkError {
     } else {
       copy($output, 'kcc_config');
     }
+    print STDERR "Translation failed";
+    if (-e 'kcc_config') {
+      print STDERR " (kcc_config dumped). ";
+    } else {
+      print STDERR ". ";
+    }
     if ($args->{'-d'}) {
-      print STDERR "Translation failed (kcc_config dumped). Refer to last command run for details.\n";
+      print STDERR "Refer to last command run for details.\n";
       exit $retval;
     } else {
       my $dir = basename(getcwd());
-      print STDERR "Translation failed (kcc_config dumped). To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
+      print STDERR "To repeat, run this command in directory $dir:\n$0 -d @originalArgv\n";
       exit $retval;
     }
   }

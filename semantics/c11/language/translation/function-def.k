@@ -225,6 +225,8 @@ module C-FUNCTION-DEF
           <curr-scope> blockScope(Identifier(S::String) #as X::CId, _) </curr-scope>
           <block-stack>... ListItem(<block-control>... <env> Env::Map => Env[X <- obj(0, 0, nativeSymbol(S))] </env> ...</block-control>) </block-stack>
           <function-tus>... .Map => X |-> Tu </function-tus>
+          <options> Opts::Set </options>
+          requires notBool (NoNativeFallback() in Opts)
      // Function with internal linkage.
      rule <k> OtherStatement() => lintFunElide(X) ...</k>
           <external-defs> Exts::Map </external-defs>
@@ -237,7 +239,13 @@ module C-FUNCTION-DEF
           <linkings>... .Map => Def |-> obj(0, 0, nativeSymbol(S +String Uuid)) </linkings>
           <function-tus>... .Map => Identifier(S +String Uuid) |-> Tu </function-tus>
           <uuid> Uuid::String </uuid>
+          <options> Opts::Set </options>
           requires notBool (X in_keys(Exts))
+               andBool notBool (NoNativeFallback() in Opts)
+     rule <k> OtherStatement() => lintFunElide(X) ...</k>
+          <options> Opts::Set </options>
+          <curr-scope> blockScope(X::CId, _) </curr-scope>
+          requires NoNativeFallback() in Opts
 
      syntax KItem ::= lintFunElide(CId)
      rule lintFunElide(_) => .K

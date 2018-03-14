@@ -22,14 +22,6 @@ size_t strlen(const char * str) {
       return(s - str);
 }
 
-void* memset(void* dest, int value, size_t len) {
-      unsigned char *ptr = (unsigned char*)dest;
-      while (len-- > 0) {
-            *ptr++ = value;
-      }
-      return dest;
-}
-
 // public domain implementation from http://en.wikibooks.org/wiki/C_Programming/Strings
 void *memchr(const void *s, int c, size_t n) {
       const unsigned char *src = s;

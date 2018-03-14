@@ -7,7 +7,7 @@ module C-LINKING-INIT-SYNTAX
      syntax KItem ::= load(K) 
      syntax KItem ::= "link" | "cleanup" | "reportSuccess" | "builtinTu"
 
-     syntax TransOpts ::= Debug() | NoLink() | XBuiltins()
+     syntax TransOpts ::= Debug() | NoLink() | XBuiltins() | NoNativeFallback()
 
      syntax KItem ::= makeTu(String)
 

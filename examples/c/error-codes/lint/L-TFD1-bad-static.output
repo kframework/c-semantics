@@ -1,4 +1,4 @@
-L-TFD1-bad-static.c:1:1: warning: The function f contains inline assembly or other language features unsupported by this tool (falling back to native implementation during execution).
+L-TFD1-bad-static.c:1:1: warning: The function f contains inline assembly or other language features unsupported by this tool. Using the natively-compiled implementation of this function during execution.
 
     Possible unintended behavior (L-TFD1):
 
