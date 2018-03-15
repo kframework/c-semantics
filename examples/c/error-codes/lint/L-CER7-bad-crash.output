@@ -1,4 +1,4 @@
-Dereferencing a likely-invalid native pointer:
+Dereferencing a native pointer:
       > in main at L-CER7-bad-crash.c:3:7
 
     Possible unintended behavior (L-CER7):
