@@ -36,6 +36,10 @@ our @cppArgs = ();
 our @ld_lib = ();
 our @ldArgs = ('-lmpfr', '-lgmp', '-lffi', '-lm', '-ldl', '-Wl,--no-as-needed', '-u', $RVMAIN);
 
+if ((split /\./, `gcc -dumpversion`)[0] + 0 >= 5) { # gcc version >= 5
+  push @ldArgs, '-no-pie';
+}
+
 my $distDirectory = dirname(rel2abs($0));
 if (defined $ENV{KCC_COMMAND_NAME}) {
   $0 = $ENV{KCC_COMMAND_NAME};
