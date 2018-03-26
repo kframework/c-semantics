@@ -259,7 +259,7 @@ module C-COMMON-EXPR-BITWISE
           requires notBool isNegZero(N, T)
      rule bitwiseInterpret(tv(N::CValue, T::UType)) => tv(N, T)
           requires notBool isInt(N)
-     rule (.K => UNDEF("CEB12",
+     rule (.K => IMPLUB("CEB12",
                // TODO(chathhorn): this can result in false positives in cases
                // such as "~~INT_MIN" (where INT_MIN == ~INT_MAX) because
                // clearly INT_MIN can't be a trap representation.
@@ -282,21 +282,20 @@ module C-COMMON-EXPR-BITWISE
      rule isNegZero(N::Int, T::UType) => false
           requires N =/=Int min(T) andBool N =/=Int -1
 
-
-     rule tv(V:CValue, T::UType) ^ tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) ^ stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) ^ tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) ^ tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) & tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) & stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) & tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) & tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) | tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) | stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) | tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) | tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) >> tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) >> stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) >> tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) >> tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) << tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) << stripUnknown(tv(V', T')))
+     rule tv(V::CValue, T::UType) << tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) << tv(stripUnknown(V'), T'))
           requires (isUnknown(V) orBool isUnknown(V'))
 
 endmodule

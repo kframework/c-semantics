@@ -276,11 +276,11 @@ module C-COMMON-EXPR-ADDITIVE
           requires T ==Type T'
           [structural]
 
-     rule tv(V:CValue, T::UType) + tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
-          requires (isUnknown(V) orBool isUnknown(V'))
-     rule tv(V:CValue, T::UType) - tv(V':CValue, T'::UType)
-          => makeUnknown(stripUnknown(tv(V, T)) + stripUnknown(tv(V', T')))
-          requires (isUnknown(V) orBool isUnknown(V'))
+     rule tv(V::CValue, T::UType) + tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
+          requires isUnknown(V) orBool isUnknown(V')
+     rule tv(V::CValue, T::UType) - tv(V'::CValue, T'::UType)
+          => makeUnknown(tv(stripUnknown(V), T) + tv(stripUnknown(V'), T'))
+          requires isUnknown(V) orBool isUnknown(V')
 
 endmodule

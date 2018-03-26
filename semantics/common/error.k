@@ -11,7 +11,7 @@ module ERROR-SYNTAX
 
      syntax K ::= reportError(ErrorMsg, tu: String, Scope, CabsLoc, Map, K) [function, hook(C_SEMANTICS.error)]
 
-     syntax ErrorCategory ::= Undef(LanguageLinkage) | Unspec(LanguageLinkage) | Impl(LanguageLinkage) | Cond() | Ill() | Drafting(LanguageLinkage) | Constraint() | Syntax(LanguageLinkage)
+     syntax ErrorCategory ::= Undef(LanguageLinkage) | Unspec(LanguageLinkage) | Impl(LanguageLinkage) | ImplUB(LanguageLinkage) | Cond() | Ill() | Drafting(LanguageLinkage) | Constraint() | Syntax(LanguageLinkage)
      syntax KItem ::= EXIT(ErrorMsg)
      syntax ErrorExit ::= "HALT"
      syntax KItem ::= FATAL()

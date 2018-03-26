@@ -77,7 +77,7 @@ module C-MEMORY-READING
                andBool notBool (hasTrap(L) andBool hasLint)
           [structural]
      rule concretize(T::UType, dataList(L::List))
-          => makeUnknown(concretize(T, stripUnknown(dataList(L))))
+          => makeUnknown(concretize(T, stripUnknownAux(L, .List)))
           requires (hasUnknown(L) andBool notBool isPointerUType(T))
                andBool (notBool hasTrap(L))
                andBool notBool isStructOrUnionType(type(T))
@@ -99,7 +99,6 @@ module C-MEMORY-READING
           [structural]
 
      syntax KItem ::= stripUnknownAux(List, List) [function]
-     rule stripUnknown(dataList(L::List)) => stripUnknownAux(L, .List)
      rule stripUnknownAux((ListItem(piece(unknown(I::Int), PieceLen::Int)) => .List) _, _::List (.List => ListItem(piece(I, PieceLen))))
      rule stripUnknownAux((ListItem(piece(pieces(L::List), _)) => L) _, _)
      rule stripUnknownAux((ListItem(B::Bits) => .List) _, _::List (.List => ListItem(B))) [owise]
