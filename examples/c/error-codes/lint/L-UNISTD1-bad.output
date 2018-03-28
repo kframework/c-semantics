@@ -5,5 +5,5 @@ Called sleep while holding lock on mutexes:
       > in pthread_mutex_lock at L-UNISTD1-bad.c:12:5
         in main at L-UNISTD1-bad.c:12:5
 
-    Possible unintended behavior (L-UNISTD1):
+    Possible unintended behavior (L-UNISTD1)
 

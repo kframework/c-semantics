@@ -2,7 +2,7 @@ Realloc overflows memory bound, returning null pointer:
       > in realloc at L-STDLIBE3-bad.c:11:5
         in main at L-STDLIBE3-bad.c:11:5
 
-    Possible unintended behavior (L-STDLIBE3):
+    Possible unintended behavior (L-STDLIBE3)
 
 Memory malloced but never freed:
     Malloced here:

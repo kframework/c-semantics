@@ -2,5 +2,5 @@ Stack might overflow specified bound on some compilers or ABIs:
       > in foo at L-EFNCE1-bad.c:10:3
         in main at L-EFNCE1-bad.c:10:3
 
-    Possible unintended behavior (L-EFNCE1):
+    Possible unintended behavior (L-EFNCE1)
 

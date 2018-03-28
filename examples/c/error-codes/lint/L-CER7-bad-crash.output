@@ -1,6 +1,6 @@
 Dereferencing a native pointer:
       > in main at L-CER7-bad-crash.c:3:7
 
-    Possible unintended behavior (L-CER7):
+    Possible unintended behavior (L-CER7)
 
 Segmentation fault (core dumped)

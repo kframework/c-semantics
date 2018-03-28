@@ -1,12 +1,14 @@
 module C-CONFIGURATION
+     imports C-LINKING-INIT-SYNTAX
+     imports COMMON-CONFIGURATION
+     imports CPP-DYNAMIC-SYNTAX
+     imports DEFAULT-STRATEGY
      imports MAP
      imports SET
-     imports C-LINKING-INIT-SYNTAX
-     imports CPP-DYNAMIC-SYNTAX
-     imports COMMON-CONFIGURATION
 
      configuration
 <global />
+<s />
 <result-value color="red" exit=""> 1 </result-value>
 <T multiplicity="?">
 <exec>

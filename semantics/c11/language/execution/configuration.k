@@ -5,6 +5,7 @@ module C-CONFIGURATION
      imports COMMON-CONFIGURATION
      imports COMMON-INIT-SYNTAX
      imports COMMON-SYNTAX
+     imports DEFAULT-STRATEGY
      imports INT-SYNTAX
      imports LIBC-IO-SYNTAX
      imports LIST
@@ -13,7 +14,8 @@ module C-CONFIGURATION
      imports SYMLOC-SYNTAX
 
      configuration
-<global/>
+<global />
+<s />
 <result-value color="red" exit=""> 139:EffectiveValue </result-value>
 <T>
 <exec multiplicity="?">

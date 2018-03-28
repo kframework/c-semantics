@@ -1,5 +1,5 @@
 Read a byte from a statically-allocated or thread-storage-allocated object that was initialized implicitly to 0:
       > in main at L-EIOE1-bad.c:4:3
 
-    Possible unintended behavior (L-EIOE1):
+    Possible unintended behavior (L-EIOE1)
 

@@ -1,15 +1,17 @@
 module C-CONFIGURATION
      imports BOOL-SYNTAX
+     imports C-LINKING-INIT-SYNTAX
+     imports COMMON-CONFIGURATION
+     imports COMMON-SYNTAX
+     imports DEFAULT-STRATEGY
      imports INT-SYNTAX
+     imports LIBC-SYNTAX
      imports MAP
      imports SET
-     imports C-LINKING-INIT-SYNTAX
-     imports COMMON-SYNTAX
-     imports LIBC-SYNTAX
-     imports COMMON-CONFIGURATION
 
      configuration
-<global/>
+<global />
+<s />
 <result-value color="red" exit=""> 1 </result-value>
 <T multiplicity="?">
 <exec>
