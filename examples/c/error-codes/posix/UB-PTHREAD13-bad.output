@@ -1,0 +1,8 @@
+Setting an uncreated key:
+      > in pthread_setspecific at UB-PTHREAD13-bad.c:6:7
+        in main at UB-PTHREAD13-bad.c:6:7
+
+    Undefined behavior (UB-PTHREAD13):
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see POSIX 2008 section pthread_setspecific http://rvdoc.org/POSIX%202008/pthread_setspecific
+

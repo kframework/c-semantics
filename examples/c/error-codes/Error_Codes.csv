@@ -135,6 +135,9 @@ UB-PTHREAD5,Called lock on an object that was not initialized with pthread_mutex
 UB-PTHREAD6,Attempting to unlock a PTHREAD_MUTEX_DEFAULT or PTHREAD_MUTEX_NORMAL mutex which is not robust and which has not been locked by the current thread.,POSIX 2008 sec. pthread_mutex_lock,Undefined Behavior,X
 UB-PTHREAD7,Called unlock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_unlock,Undefined Behavior,X
 UB-PTHREAD8,Called trylock on an object that was not initialized with pthread_mutex_init.,POSIX 2008 sec. pthread_mutex_trylock,Undefined Behavior,X
+UB-PTHREAD10,"First argument of NULL, but required to be non-NULL",POSIX 2008,Undefined Behavior,X
+UB-PTHREAD12,Deleting an uncreated key.,POSIX 2008 sec. pthread_key_delete,Undefined Behavior,X
+UB-PTHREAD13,Setting an uncreated key.,POSIX 2008 sec. pthread_setspecific,Undefined Behavior,X
 USP-CEER6,Unspecified value returned from main function.,5.1.2.2.3:1,Unspecified Behavior,
 USP-CERL7,Comparison of unspecified value.,6.5.9,Unspecified Behavior,
 USP-CMR1,Trying to reinterpret integer bytes as floating bytes.,"6.2.6.1:1, J.1:1 item 9",Unspecified Behavior,
@@ -222,6 +225,7 @@ IMPL-EIO6,Attempting to access an object with thread or auto storage duration in
 IMPLUB-CEB12,Potential negative zero produced via bitwise operations (this could be a false positive).,"6.2.6.2:4, J.2:1 item 14",Implementation-dependent undefined Behavior,
 IMPLUB-CEMX5,Division by an implementation-defined or unspecified value.,"6.5.5:5, J.2:1 item 45",Implementation-dependent undefined Behavior,
 IMPLUB-CEMX6,Modulus by an implementation-defined or unspecified value.,"6.5.5:5, J.2:1 item 45",Implementation-dependent undefined Behavior,
+UB-PTHREAD99,Unimplemented pthread function.,POSIX 2008,Implementation Defined Behavior,
 L-PTHREAD9,Terminating a thread while holding lock on mutexes.,,Possible unintended behavior,X
 L-STDLIBE1,Called free() on a null pointer.,,Possible unintended behavior,X
 L-STDLIBE2,"Malloc overflows memory bound, returning null pointer.",,Possible unintended behavior,X

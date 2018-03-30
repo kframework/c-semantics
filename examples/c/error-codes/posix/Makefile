@@ -14,11 +14,11 @@ comparison: ${TEST_COMPARISON}
 
 %.kcc: %.c
 	@echo -n "Compiling $<... "
-	@kcc -o $@ $< -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -fno-native-compilation -o $@ $< -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %.kcc: %-link1.c %-link2.c
 	@echo -n "Compiling $^... "
-	@kcc -o $@ $^ -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
+	@kcc -fno-native-compilation -o $@ $^ -pthread > $@.tmp.out 2>&1; ${CHECK_RESULT_COMPILE}
 
 %-good.out: %-good.kcc
 	@echo -n "Running $<... "

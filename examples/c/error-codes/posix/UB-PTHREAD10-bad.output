@@ -1,0 +1,8 @@
+First argument of pthread_key_create NULL, but required to be non-NULL:
+      > in pthread_key_create at UB-PTHREAD10-bad.c:4:7
+        in main at UB-PTHREAD10-bad.c:4:7
+
+    Undefined behavior (UB-PTHREAD10):
+        see CERT-C section MSC15-C http://rvdoc.org/CERT-C/MSC15-C
+        see POSIX 2008 section  http://rvdoc.org/POSIX%202008/
+

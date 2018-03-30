@@ -50,6 +50,8 @@ module C-CONFIGURATION
                </final-computation>
                <thread-local>
                     <locks> .List </locks>
+                    <pthread-keys> .Map </pthread-keys>
+                    <pthread-active-keys> .Map </pthread-active-keys>
                     // For detecting recursive calls.
                     <called-functions> .Map </called-functions>
                     // stack of function-control cells
